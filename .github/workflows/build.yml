@@ -1,0 +1,241 @@
+name: Build MediaMuster
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+### Grant permission to write to the Releases page ###
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            name: MediaMuster-Mac
+          - os: windows-latest
+            name: MediaMuster-Win
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      ### Install Qt ###
+      - name: Install Qt (macOS)
+        if: runner.os == 'macOS'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.3'
+          host: 'mac'
+          target: 'desktop'
+          dir: '${{ runner.temp }}/Qt'
+
+      - name: Install Qt (Windows)
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          dir: '${{ runner.temp }}\Qt'
+
+      ### Build (macOS) ###
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${Qt6_DIR}"
+          cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
+
+      ### Build (Windows) ###
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$env:Qt6_DIR"
+          cmake --build . --config Release --parallel $env:NUMBER_OF_PROCESSORS
+
+      ### Code signing certificate (macOS) ###
+      - name: Import code-signing cert
+        if: runner.os == 'macOS' && env.MAC_CERTS_BASE64 != ''
+        env:
+          MAC_CERTS_BASE64: ${{ secrets.MAC_CERTS_BASE64 }}
+        uses: Apple-Actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.MAC_CERTS_BASE64 }}
+          p12-password:    ${{ secrets.MAC_CERTS_PASSWORD }}
+
+      ### Package (macOS) ###
+      - name: Package macOS
+        if: runner.os == 'macOS'
+        env:
+          APPLE_TEAM_ID:     ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        run: |
+          set -e
+          cd build
+
+          macdeployqt MediaMuster.app -verbose=1
+
+          build_dmg() {
+            local STAGING="$RUNNER_TEMP/dmg-staging"
+            rm -rf "$STAGING"
+            mkdir -p "$STAGING"
+            cp -R MediaMuster.app "$STAGING/"
+            ln -s /Applications "$STAGING/Applications"
+            sync
+            sleep 4
+            rm -f MediaMuster-Mac.dmg
+            hdiutil create -volname "MediaMuster" -srcfolder "$STAGING" -ov -format UDZO MediaMuster-Mac.dmg
+            rm -rf "$STAGING"
+          }
+
+          IDENTITY=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)"/\1/' || true)
+
+          if [ -n "$IDENTITY" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            echo "── Real Developer ID signing + notarization ──"
+            codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" MediaMuster.app
+            codesign --verify --verbose=2 MediaMuster.app
+            sync
+            sleep 2
+            build_dmg
+            xcrun notarytool submit MediaMuster-Mac.dmg --apple-id "$APPLE_ID_USERNAME" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+            xcrun stapler staple MediaMuster-Mac.dmg
+            xcrun stapler validate MediaMuster-Mac.dmg
+          else
+            echo "── No signing identity available — ad-hoc signature ──"
+            codesign --force --deep --sign - MediaMuster.app
+            build_dmg
+          fi
+
+      ### Package (Windows) ###
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $cmakeContent = Get-Content "CMakeLists.txt" -Raw
+          $appVersion = [regex]::Match($cmakeContent, 'project\s*\([^)]*VERSION\s+([0-9\.]+)').Groups[1].Value
+          if (-not $appVersion) { $appVersion = "1.0.0" }
+          $nsisVersion = $appVersion
+          while (($nsisVersion -split '\.').Count -lt 4) { $nsisVersion += ".0" }
+
+          cd build
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          Copy-Item -Path Release\MediaMuster.exe -Destination dist\
+
+          windeployqt --release --no-translations --no-opengl-sw --no-system-d3d-compiler dist\MediaMuster.exe
+
+          # Install NSIS via Chocolatey, with up to 3 retries #
+          $makensis = "C:\Program Files (x86)\NSIS\makensis.exe"
+          if (-not (Test-Path $makensis)) {
+              $maxRetries = 3
+              for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+                  Write-Host "Installing NSIS via Chocolatey (attempt $attempt of $maxRetries)..."
+                  choco install nsis -y --no-progress
+                  if (Test-Path $makensis) {
+                      Write-Host "NSIS installed successfully."
+                      break
+                  }
+                  if ($attempt -lt $maxRetries) {
+                      Write-Host "Chocolatey install did not produce makensis.exe; retrying in 30s..."
+                      Start-Sleep -Seconds 30
+                  }
+              }
+              if (-not (Test-Path $makensis)) {
+                  throw "NSIS install failed after $maxRetries attempts. Chocolatey may be down? see https://status.chocolatey.org/"
+              }
+          }
+          & $makensis /VERSION
+
+          $nsisScript = @'
+          !include "FileFunc.nsh"
+          Name "MediaMuster"
+          OutFile "MediaMuster.exe"
+          SilentInstall silent
+          RequestExecutionLevel user
+          VIProductVersion "VERSION_PLACEHOLDER_4PART"
+          VIAddVersionKey "ProductName"     "MediaMuster"
+          VIAddVersionKey "FileDescription" "MediaMuster portable launcher"
+          VIAddVersionKey "FileVersion"     "VERSION_PLACEHOLDER"
+          VIAddVersionKey "CompanyName"     "MediaMuster"
+          VIAddVersionKey "LegalCopyright"  ""
+          Icon "..\res\mediamuster-win.ico"
+          Section
+            SetOutPath "$TEMP\MediaMusterPortable"
+            IfFileExists "$TEMP\MediaMusterPortable\MediaMuster.exe" maybeSkip
+            Goto doExtract
+            maybeSkip:
+              ClearErrors
+              FileOpen $0 "$TEMP\MediaMusterPortable\MediaMuster.exe" a
+              IfErrors launchExisting
+              FileClose $0
+            doExtract:
+              File /r "dist\*"
+            launchExisting:
+              Exec '"$TEMP\MediaMusterPortable\MediaMuster.exe"'
+          SectionEnd
+          '@
+
+          $nsisScript = $nsisScript -replace 'VERSION_PLACEHOLDER_4PART', $nsisVersion
+          $nsisScript = $nsisScript -replace 'VERSION_PLACEHOLDER', $appVersion
+          $nsisScript = ($nsisScript -split "`n" | ForEach-Object { $_ -replace '^          ', '' }) -join "`n"
+          $nsisScript | Out-File -FilePath "portable.nsi" -Encoding ASCII
+
+          & $makensis /V2 portable.nsi
+          if ($LASTEXITCODE -ne 0) { throw "NSIS build failed with exit code $LASTEXITCODE" }
+          if (-not (Test-Path "MediaMuster.exe")) { throw "MediaMuster.exe was not produced by NSIS" }
+
+      ### Upload artifacts ###
+      - name: Upload macOS artifact
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: MediaMuster-Mac
+          path: build/MediaMuster-Mac.dmg
+
+      - name: Upload Windows artifact
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: MediaMuster-Win
+          path: build/MediaMuster.exe
+
+  ### Push to Releases page if tagged ###
+  release:
+    name: Publish Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release-assets/MediaMuster-Mac.dmg
+            release-assets/MediaMuster.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
