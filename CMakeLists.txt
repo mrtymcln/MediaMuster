@@ -1,4 +1,12 @@
 cmake_minimum_required(VERSION 3.31)
+
+if(APPLE AND NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
+endif()
+if(APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Build architectures for macOS")
+endif()
+
 ### App name and version ###
 project(MediaMuster VERSION 0.0.1 LANGUAGES CXX)
 
