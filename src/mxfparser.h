@@ -3,10 +3,6 @@
 #include <QByteArray>
 #include <QString>
 
-// Extracts technical metadata from MXF file headers via direct KLV parsing.
-// Only the header partition is read — essence data is never touched.
-// Reads are capped at 512 KB so partial or corrupt files don't hang the scanner.
-
 struct MxfMetadata
 {
 	QString codec;
@@ -29,11 +25,13 @@ struct MxfMetadata
 class MxfParser
 {
 public:
-	[[nodiscard]] static MxfMetadata parseHeader(const QString &filePath);
+	[[nodiscard]] static MxfMetadata parseHeader(const QString &filePath,
+												 qint64 *bytesRead = nullptr);
 	[[nodiscard]] static QString codecFromEssenceLabel(const QByteArray &label, const QString &fps);
 	[[nodiscard]] static QString formatUmid(const QByteArray &raw);
 
 private:
+	[[nodiscard]] static MxfMetadata parseFromBuffer(const QByteArray &data);
 	[[nodiscard]] static qint64 readBerLength(const QByteArray &data, qint64 offset, int &bytesUsed);
 	[[nodiscard]] static quint16 readUint16BE(const QByteArray &data, qint64 offset);
 	[[nodiscard]] static quint32 readUint32BE(const QByteArray &data, qint64 offset);

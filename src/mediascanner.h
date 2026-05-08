@@ -12,14 +12,10 @@
 #include <QtConcurrent>
 #include <atomic>
 
-// MediaScanner — Controller for the background scanning process
+class ScannerWorker;
 
-class ScannerWorker; // Forward declaration
-
-// Log entry struct: defined here because
-// MediaScanner's scanLogBatch signal takes a QVector<LogMsg> and the moc
-// needs the full type visible at signal-declaration time. Used by both
-// the controller's batch signal and ScannerWorker's internal buffering.
+// LogMsg lives at file scope because MediaScanner's scanLogBatch signal takes
+// a QVector<LogMsg> — moc needs the full type visible at signal-declaration time.
 struct LogMsg
 {
 	int level;
@@ -54,30 +50,25 @@ signals:
 	// Coalesced log signal. Emits up to ~50 lines per batch or every
 	// ~100 ms, whichever comes first.
 	void scanLogBatch(const QVector<LogMsg> &batch);
-
 	void scanFinished(const QVector<MediaFile> &results);
-	void scanError(const QString &error);
 
 private:
 	QThread *m_thread = nullptr;
 	// QPointer auto-clears when the worker is destroyed via deleteLater
-	// on the worker thread, so cancelScan from the GUI thread can safely
+	// on the worker thread, so cancelScan from the UI thread can safely
 	// race with the worker's natural shutdown.
 	QPointer<ScannerWorker> m_worker;
 	std::atomic<bool> m_running{false};
 };
 
-// ScannerWorker — The isolated background task
 struct ScanTask
 {
 	QString folderPath;
 	QString folderNumber;
 	QString driveName;
 	QString drivePath;
-	bool parseMxf;
 };
 
-// Result from a single folder scan: files + buffered logs
 struct FolderResult
 {
 	QVector<MediaFile> files;
@@ -99,21 +90,15 @@ signals:
 				  const QString &currentPath);
 
 	// Coalesced log signal: emitted in batches of up to ~50 entries or
-	// every ~100 ms (whichever comes first) to keep the GUI thread from
-	// drowning in QPlainTextEdit::appendPlainText calls during big scans.
+	// every ~100 ms (whichever comes first) to keep the console clean.
 	void logBatch(const QVector<LogMsg> &batch);
-
 	void finished(const QVector<MediaFile> &results);
 
 private:
 	void doScan();
 
-	// Append a log line to the pending buffer. Thread-safe: can be called
-	// from the worker thread or any QtConcurrent pool thread.
+	// Thread-safe; the mutex lets pool threads append without racing the worker.
 	void emitLog(int level, const QString &module, const QString &msg);
-
-	// Drain the pending log buffer into a logBatch signal. Called from
-	// the worker thread on a timer (~100 ms) and once at scan end.
 	void flushLogs();
 
 	QVector<MediaFile> scanDrive(const QString &drivePath,
@@ -122,21 +107,24 @@ private:
 								   const QString &driveName,
 								   const QString &drivePath);
 
-	// The isolated multi-threaded payload function
 	FolderResult processFolderTask(const ScanTask &task);
 
 	MediaFile buildMediaFile(const QString &filePath, const QString &driveName,
 							 const QString &drivePath,
 							 const QString &folderNumber,
 							 const PmrParser::ProjectMaps &pmrMaps,
-							 const MdbParser::RecordMap &mdbMap, bool parseMxf);
+							 const MdbParser::RecordMap &mdbMap);
+
+	// Stage 2 — runs in parallel across every collected MXF file once the
+	// folder walk is done. Pulls all idle cores into the slow part of the
+	// scan instead of leaving them per-folder bound.
+	void parseMxfHeadersConcurrently(QVector<MediaFile> &files);
 
 	bool isNonPortableFilename(const QString &name) const;
 	static bool canReadPath(const QString &path);
 
 	MediaScanner::Options m_options;
-	std::atomic<bool> m_cancel;
-	QStringList m_deniedPaths;
+	std::atomic<bool> m_cancel{false};
 
 	// Log batching: guarded by m_logMutex. Both the worker thread and
 	// QtConcurrent pool threads append to m_pendingLogs via emitLog().

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName("Martin McLean");
     app.setOrganizationDomain("com.McLean.MediaMuster");
 
-    // About Dialog icon. Dock icon comes from the icns/ico.
+    // Dock icon comes from the icns/ico; this is for the About dialog.
     app.setWindowIcon(QIcon(":/res/mediamuster.png"));
 
 #ifdef Q_OS_MAC

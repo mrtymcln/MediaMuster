@@ -16,33 +16,26 @@
 #include <unistd.h>
 #endif
 
-// O(1) case-insensitive lookup for junk-file filtering across 290K+ files.
-// All keys stored lowercase so Windows variants like "Desktop.ini" and
-// "thumbs.db" still match.
 static const QSet<QString> JUNK_FILES = {
 	".ds_store", "thumbs.db", ".spotlight-v100", ".fseventsd",
 	".trashes", "desktop.ini", "._.ds_store"};
 
-// Lifecycle: startScan owns a QThread+worker pair; QPointer guards cancelScan
-// against a worker already queued for deleteLater; dtor copies m_thread locally
-// before waiting so the QThread::finished lambda can't null it mid-wait.
 MediaScanner::MediaScanner(QObject *parent) : QObject(parent) {}
 
 MediaScanner::~MediaScanner()
 {
 	cancelScan();
-	// Local copy so QThread::finished can't null m_thread mid-wait.
+	// Local copy so QThread::finished can't null m_thread out from under us.
 	if (QThread *t = m_thread)
 	{
 		t->quit();
-		// 5 s grace; terminate rather than leak the thread into the dying process.
 		if (!t->wait(5000))
 		{
 			qWarning("MediaScanner: worker did not quit within 5s; terminating");
 			t->terminate();
 			t->wait(1000);
 		}
-		// No delete: thread is `this`'s child, already queued for deleteLater on finished.
+		// No delete: thread is parented to `this` and self-deletes on finished.
 	}
 }
 
@@ -55,46 +48,36 @@ void MediaScanner::startScan(const Options &options)
 
 	m_thread = new QThread(this);
 	auto *worker = new ScannerWorker(options);
-	m_worker = worker; // QPointer assignment
+	m_worker = worker;
 	worker->moveToThread(m_thread);
 
-	// Cross-thread; explicit QueuedConnection.
 	connect(worker, &ScannerWorker::progress, this,
 			&MediaScanner::scanProgress, Qt::QueuedConnection);
-
-	// Forward worker's coalesced log batches straight through to the GUI.
 	connect(worker, &ScannerWorker::logBatch, this,
-			[this](const QVector<LogMsg> &batch)
-			{ emit scanLogBatch(batch); }, Qt::QueuedConnection);
+			&MediaScanner::scanLogBatch, Qt::QueuedConnection);
 	connect(worker, &ScannerWorker::finished, this, [this](const QVector<MediaFile> &results)
 			{
-                m_running.store(false);
-                emit scanFinished(results); }, Qt::QueuedConnection);
+				m_running.store(false);
+				emit scanFinished(results); }, Qt::QueuedConnection);
 
-	// Thread lifecycle management
 	connect(m_thread, &QThread::started, worker, &ScannerWorker::process);
 	connect(worker, &ScannerWorker::finished, m_thread, &QThread::quit);
-	connect(worker, &ScannerWorker::finished, worker,
-			&ScannerWorker::deleteLater);
+	connect(worker, &ScannerWorker::finished, worker, &ScannerWorker::deleteLater);
 	connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-	connect(m_thread, &QThread::finished, this, [this]()
-			{
-				m_thread = nullptr;
-				// m_worker is a QPointer; auto-clears on worker deleteLater.
-			});
+	connect(m_thread, &QThread::finished, this, [this]
+			{ m_thread = nullptr; });
 
 	m_thread->start();
 }
 
 void MediaScanner::cancelScan()
 {
-	// QPointer; safe even if the worker has been deleted on its thread.
 	if (auto *w = m_worker.data())
 		w->cancel();
 }
 
 ScannerWorker::ScannerWorker(const MediaScanner::Options &options)
-	: m_options(options), m_cancel(false) {}
+	: m_options(options) {}
 
 void ScannerWorker::cancel()
 {
@@ -105,14 +88,88 @@ void ScannerWorker::process() { doScan(); }
 
 namespace
 {
-	// 50 entries or 100 ms, whichever comes first.
 	constexpr int kLogBatchMaxSize = 50;
 	constexpr qint64 kLogBatchMaxAgeMs = 100;
 
 	// Per-thread flush clock; avoids cross-thread time reads.
 	thread_local qint64 t_lastFlushElapsed = 0;
 	thread_local QElapsedTimer t_flushTimer;
-} // namespace
+
+	// Bitrate string from durationFrames + sizeBytes for video, or sampleRate
+	// for audio. Called once in Stage 1, then again in Stage 2 after MXF
+	// data has been merged — both inputs can change.
+	void recomputeBitrate(MediaFile &mf)
+	{
+		mf.bitRateString.clear();
+
+		if (mf.mediaType == MediaFile::Type::Audio)
+		{
+			if (mf.sampleRate > 0)
+				mf.bitRateString = QString::number(mf.sampleRate / 1000) + " kHz";
+			return;
+		}
+
+		const float fpsNum = mf.fps.toFloat();
+		if (fpsNum <= 0 || mf.durationFrames <= 0 || mf.sizeBytes <= 0)
+			return;
+		const float seconds = mf.durationFrames / fpsNum;
+		if (seconds <= 0)
+			return;
+
+		int mbps = qRound((mf.sizeBytes * 8.0) / (seconds * 1000000.0));
+		// Snap to a common DNxHD bitrate; ordered hot-first for early break.
+		static constexpr std::array<int, 12> kStandards{
+			36, 145, 220, 115, 120, 175, 185, 45, 50, 100, 350, 440};
+		for (int s : kStandards)
+		{
+			if (qAbs(mbps - s) <= 10)
+			{
+				mbps = s;
+				break;
+			}
+		}
+		mf.bitRateString = QString::number(mbps);
+	}
+
+	// Merge MXF metadata into a MediaFile and recompute the dependent fields
+	// (audio override, bitRateString, isBadUmid). Used by Stage 2.
+	void applyMxfMetadata(MediaFile &mf, const MxfMetadata &mxf)
+	{
+		if (mxf.valid)
+		{
+			const int dot = mf.fileName.lastIndexOf(QLatin1Char('.'));
+			const QString fileBase = (dot > 0) ? mf.fileName.left(dot) : mf.fileName;
+
+			if (!mxf.umid.isEmpty())
+				mf.umid = mxf.umid;
+			if (mf.clipName == fileBase && !mxf.clipName.isEmpty())
+				mf.clipName = mxf.clipName;
+			if (!mxf.codec.isEmpty())
+				mf.codec = mxf.codec;
+			if (!mxf.essenceContainerLabel.isEmpty())
+				mf.codecHex = mxf.essenceContainerLabel.toHex().toUpper();
+			if (!mxf.resolution.isEmpty())
+				mf.resolution = mxf.resolution;
+			if (!mxf.fps.isEmpty())
+				mf.fps = mxf.fps;
+			if (!mxf.bitDepth.isEmpty())
+				mf.bitDepth = mxf.bitDepth;
+			if (mxf.sampleRate > 0)
+				mf.sampleRate = mxf.sampleRate;
+			if (mxf.channels > 0)
+				mf.channels = mxf.channels;
+			if (mxf.durationFrames > 0)
+				mf.durationFrames = mxf.durationFrames;
+			if (mxf.isAudio || mf.codec == "PCM Audio")
+				mf.mediaType = MediaFile::Type::Audio;
+		}
+
+		recomputeBitrate(mf);
+		// UMID with zeros = Avid never wrote a real material number.
+		if (!mf.umid.isEmpty())
+			mf.isBadUmid = MobId::isAllZero(mf.umid);
+	}
+}
 
 void ScannerWorker::emitLog(int level, const QString &module,
 							const QString &msg)
@@ -154,7 +211,7 @@ bool ScannerWorker::canReadPath(const QString &path)
 {
 #ifdef Q_OS_MAC
 	return access(path.toUtf8().constData(), R_OK) == 0;
-#else // Q_OS_WIN
+#else
 	return QFileInfo(path).isReadable();
 #endif
 }
@@ -165,7 +222,7 @@ void ScannerWorker::doScan()
 
 	emitLog(0, "scanner",
 			QString("Scanning %1 location(s)...")
-				.arg(static_cast<int>(m_options.drivePaths.size())));
+				.arg(m_options.drivePaths.size()));
 
 	for (const QString &drivePath : m_options.drivePaths)
 	{
@@ -183,7 +240,7 @@ void ScannerWorker::doScan()
 					QString("Permission denied: %1").arg(drivePath));
 			emitLog(1, "scanner",
 					"Grant Full Disk Access in System Preferences > Privacy & "
-					"Security"); // do not change to System Settings.
+					"Security");
 			continue;
 		}
 
@@ -199,7 +256,7 @@ void ScannerWorker::doScan()
 			emitLog(3, "scanner",
 					QString("  %1: %2 media files found")
 						.arg(driveName)
-						.arg(static_cast<int>(driveFiles.size())));
+						.arg(driveFiles.size()));
 		}
 	}
 
@@ -210,18 +267,26 @@ void ScannerWorker::doScan()
 		return;
 	}
 
-	// Summary
+	parseMxfHeadersConcurrently(allFiles);
+
+	if (m_cancel.load(std::memory_order_relaxed))
+	{
+		emitLog(1, "scanner", "Scan cancelled by user");
+		emit finished(allFiles);
+		return;
+	}
+
 	int unmanaged = 0, badUmid = 0, unreferenced = 0, nonPortable = 0;
 	for (const auto &f : allFiles)
 	{
 		if (f.isUnmanaged)
-			unmanaged++;
+			++unmanaged;
 		if (f.isBadUmid)
-			badUmid++;
+			++badUmid;
 		if (f.isUnreferenced)
-			unreferenced++;
+			++unreferenced;
 		if (f.isNonPortable)
-			nonPortable++;
+			++nonPortable;
 	}
 
 	if (allFiles.isEmpty())
@@ -235,7 +300,7 @@ void ScannerWorker::doScan()
 	{
 		emitLog(3, "scanner",
 				QString("Scan complete: %1 files found")
-					.arg(static_cast<int>(allFiles.size())));
+					.arg(allFiles.size()));
 	}
 
 	if (unmanaged > 0)
@@ -249,11 +314,8 @@ void ScannerWorker::doScan()
 		emitLog(1, "scanner",
 				QString("%1 non-portable filenames").arg(nonPortable));
 
-	// Drain any final buffered logs before the GUI is told the scan ended,
-	// so the console reflects the complete picture by the time the user
-	// looks at it.
+	// Drain any final buffered logs before the UI is told the scan ended.
 	flushLogs();
-
 	emit finished(allFiles);
 }
 
@@ -262,82 +324,68 @@ QVector<MediaFile> ScannerWorker::scanDrive(const QString &drivePath,
 {
 	QVector<MediaFile> files;
 	QDir dir(drivePath);
-	QString dirName = dir.dirName();
+	const QString dirName = dir.dirName();
 
-	// strategy 1: <path>/Avid MediaFiles/MXF exists at the volume root
-	QString mxfViaRoot = drivePath + "/Avid MediaFiles/MXF";
+	// 1) Volume root contains Avid MediaFiles/MXF.
+	const QString mxfViaRoot = drivePath + "/Avid MediaFiles/MXF";
 	if (QDir(mxfViaRoot).exists())
 	{
-		emitLog(0, "scanner", QString("  Found Avid MediaFiles/MXF"));
+		emitLog(0, "scanner", QStringLiteral("  Found Avid MediaFiles/MXF"));
 		return scanMxfRoot(mxfViaRoot, driveName, drivePath);
 	}
 
-	// strategy 2: path contains "Avid MediaFiles"
-	if (dirName == "Avid MediaFiles" ||
-		drivePath.contains("Avid MediaFiles", Qt::CaseInsensitive))
+	// 2) Path is somewhere inside an Avid MediaFiles directory.
+	constexpr int kAvidLen = sizeof("Avid MediaFiles") - 1;
+	const int avidIdx = drivePath.indexOf("Avid MediaFiles", 0, Qt::CaseInsensitive);
+	if (avidIdx >= 0)
 	{
-
-		QString avidPart = drivePath;
-		int idx = drivePath.indexOf("Avid MediaFiles", 0, Qt::CaseInsensitive);
-		if (idx >= 0)
-		{
-			avidPart =
-				drivePath.left(idx) +
-				drivePath.mid(
-					idx, static_cast<int>(QString("Avid MediaFiles").length()));
-		}
-		QString mxfInside = avidPart + "/MXF";
+		const QString avidPart = drivePath.left(avidIdx + kAvidLen);
+		const QString mxfInside = avidPart + "/MXF";
 		if (QDir(mxfInside).exists())
 		{
-			emitLog(0, "scanner",
-					QString("  Found MXF folder at %1").arg(mxfInside));
+			emitLog(0, "scanner", QString("  Found MXF folder at %1").arg(mxfInside));
 			return scanMxfRoot(mxfInside, driveName, avidPart);
 		}
 
 		if (drivePath.endsWith("/MXF", Qt::CaseInsensitive))
 		{
-			emitLog(0, "scanner", QString("  Pointed directly at MXF folder"));
-			return scanMxfRoot(drivePath, driveName,
-							   QFileInfo(drivePath).absolutePath());
+			emitLog(0, "scanner", QStringLiteral("  Pointed directly at MXF folder"));
+			return scanMxfRoot(drivePath, driveName, QFileInfo(drivePath).absolutePath());
 		}
 	}
 
-	// strategy 3: path is itself an MXF folder
+	// 3) Path itself is an MXF or OMF root.
 	if (dirName.compare("MXF", Qt::CaseInsensitive) == 0 ||
 		dirName.compare("OMF", Qt::CaseInsensitive) == 0)
 	{
-		QStringList subs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+		const QStringList subs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 		if (!subs.isEmpty())
 		{
 			emitLog(0, "scanner",
-					QString("  MXF folder with %1 subfolders")
-						.arg(static_cast<int>(subs.size())));
-			return scanMxfRoot(drivePath, driveName,
-							   QFileInfo(drivePath).absolutePath());
+					QString("  MXF folder with %1 subfolders").arg(subs.size()));
+			return scanMxfRoot(drivePath, driveName, QFileInfo(drivePath).absolutePath());
 		}
 	}
 
-	// strategy 4: path has .mdb or .pmr — single media folder
+	// 4) Single media folder — has the per-folder Avid databases.
 	if (QFile::exists(drivePath + "/msmMMOB.mdb") ||
 		QFile::exists(drivePath + "/msmFMID.pmr"))
 	{
-		emitLog(0, "scanner", QString("  Found database files in folder"));
+		emitLog(0, "scanner", QStringLiteral("  Found database files in folder"));
 
 		ScanTask t;
 		t.folderPath = drivePath;
 		t.folderNumber = dir.dirName();
 		t.driveName = driveName;
 		t.drivePath = QFileInfo(drivePath).absolutePath();
-		t.parseMxf = m_options.parseMxfHeaders;
 
 		auto result = processFolderTask(t);
-		// Emit buffered logs (single-threaded path, safe to emit directly)
 		for (const auto &msg : result.logs)
 			emitLog(msg.level, msg.module, msg.message);
 		return result.files;
 	}
 
-	// strategy 5: deep search for Avid MediaFiles
+	// 5) Deep search.
 	emitLog(0, "scanner",
 			QString("  Searching for Avid MediaFiles in %1...").arg(driveName));
 
@@ -409,11 +457,6 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
 		if (m_cancel.load(std::memory_order_relaxed))
 			break;
 
-		// Avid puts problematic files here; preserve the deep-scan path.
-		if (folder.compare("Quarantined Files", Qt::CaseInsensitive) == 0)
-		{
-		}
-
 		QString folderPath = mxfDir.filePath(folder);
 
 		if (!canReadPath(folderPath))
@@ -428,7 +471,6 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
 		t.folderNumber = folder;
 		t.driveName = driveName;
 		t.drivePath = drivePath;
-		t.parseMxf = m_options.parseMxfHeaders;
 		tasks.append(t);
 	}
 
@@ -437,9 +479,9 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
 				.arg(tasks.size()));
 
 	std::atomic<int> completedFolders{0};
-	int totalFolders = tasks.size();
+	const int totalFolders = tasks.size();
 
-	// Cap progress emits at ~30 Hz to spare the GUI event loop.
+	// Cap progress emits at ~30 Hz to spare the UI event loop.
 	QElapsedTimer progressTimer;
 	progressTimer.start();
 	std::atomic<qint64> lastProgressMs{0};
@@ -452,7 +494,7 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
             auto res = this->processFolderTask(t);
             int done = ++completedFolders;
 
-            // Slow-mode throttle; no-op otherwise.
+            // Slow-mode throttle; a no-op when slow mode is off.
             DebugSlowdown::pauseForMs(80);
 
             // Always emit on the last folder so the bar hits 100%; otherwise gate to ~30 Hz.
@@ -465,7 +507,6 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
             }
             return res; });
 
-	// Wait for all threads to finish
 	future.waitForFinished();
 
 	// Drain per-task logs in input order for deterministic console output.
@@ -488,15 +529,15 @@ FolderResult ScannerWorker::processFolderTask(const ScanTask &task)
 	if (m_cancel.load(std::memory_order_relaxed))
 		return result;
 
-	// Helper lambda to buffer logs instead of emitting from pool threads
+	// Pool threads can't emit signals safely; buffer logs and drain back on the worker thread.
 	auto bufLog = [&result](int level, const QString &module, const QString &msg)
 	{
 		result.logs.append({level, module, msg});
 	};
 
-	// One pass builds primary (NFC+lowercase) + fallback (ext stripped, dots→'_') maps.
+	// Missing PMR and MDB is normal in Interplay environments.
 	PmrParser::ProjectMaps pmrMaps;
-	QString pmrPath = task.folderPath + "/msmFMID.pmr";
+	const QString pmrPath = task.folderPath + "/msmFMID.pmr";
 	if (QFile::exists(pmrPath))
 	{
 		pmrMaps = PmrParser::buildFileMapWithFallback(pmrPath);
@@ -507,14 +548,11 @@ FolderResult ScannerWorker::processFolderTask(const ScanTask &task)
 	}
 	else
 	{
-		// missing PMR files in Interplay / non-numbered folders is normal.
-		bufLog(0, "pmr",
-			   QString("  No msmFMID.pmr in /%1").arg(task.folderNumber));
+		bufLog(0, "pmr", QString("  No msmFMID.pmr in /%1").arg(task.folderNumber));
 	}
 
-	// MDB extraction.
 	MdbParser::RecordMap mdbMap;
-	QString mdbPath = task.folderPath + "/msmMMOB.mdb";
+	const QString mdbPath = task.folderPath + "/msmMMOB.mdb";
 	if (QFile::exists(mdbPath))
 	{
 		mdbMap = MdbParser::buildMobMap(mdbPath);
@@ -525,48 +563,45 @@ FolderResult ScannerWorker::processFolderTask(const ScanTask &task)
 	}
 	else
 	{
-		// missing MDB files in Interplay / non-numbered folders is normal.
-		bufLog(0, "mdb",
-			   QString("  No msmMMOB.mdb in /%1").arg(task.folderNumber));
+		bufLog(0, "mdb", QString("  No msmMMOB.mdb in /%1").arg(task.folderNumber));
 	}
 
-	// Now walk the actual files in the folder.
 	QFileInfoList entries;
 	QDir folder(task.folderPath);
 
-	// Deep recursive scan specifically for the Quarantined folder to catch nested items
+	// Deep recursive scan for the Quarantined folder to catch nested items;
+	// flat scan everywhere else.
 	if (task.folderNumber.compare("Quarantined Files", Qt::CaseInsensitive) == 0)
 	{
-		QDirIterator it(task.folderPath, QDir::Files | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+		QDirIterator it(task.folderPath, QDir::Files | QDir::NoDotAndDotDot,
+						QDirIterator::Subdirectories);
+		int mxfCount = 0;
 		while (it.hasNext())
 		{
 			it.next();
-			entries.append(it.fileInfo());
-		}
-
-		int mxfCount = 0;
-		for (const QFileInfo &entry : entries)
-		{
-			if (entry.suffix().toLower() == "mxf")
-				mxfCount++;
+			const QFileInfo fi = it.fileInfo();
+			if (fi.suffix().compare("mxf", Qt::CaseInsensitive) == 0)
+				++mxfCount;
+			entries.append(fi);
 		}
 
 		if (entries.isEmpty())
-		{
-			bufLog(0, "scanner", QString("  Quarantined Files folder on %1 is empty").arg(task.driveName));
-		}
+			bufLog(0, "scanner",
+				   QString("  Quarantined Files folder on %1 is empty")
+					   .arg(task.driveName));
 		else if (mxfCount > 0)
-		{
-			bufLog(1, "scanner", QString("⚠️ Avid Quarantined Files folder on %1 contains %2 MXF file(s)!").arg(task.driveName).arg(mxfCount));
-		}
+			bufLog(1, "scanner",
+				   QString("⚠️ Avid Quarantined Files folder on %1 contains %2 MXF file(s)!")
+					   .arg(task.driveName)
+					   .arg(mxfCount));
 		else
-		{
-			bufLog(0, "scanner", QString("  Quarantined Files folder on %1 contains %2 non-MXF file(s)").arg(task.driveName).arg(entries.size()));
-		}
+			bufLog(0, "scanner",
+				   QString("  Quarantined Files folder on %1 contains %2 non-MXF file(s)")
+					   .arg(task.driveName)
+					   .arg(entries.size()));
 	}
 	else
 	{
-		// Standard single-level extraction for all normal media folders
 		entries = folder.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
 	}
 
@@ -583,7 +618,7 @@ FolderResult ScannerWorker::processFolderTask(const ScanTask &task)
 
 		MediaFile mf =
 			buildMediaFile(entry.filePath(), task.driveName, task.drivePath,
-						   task.folderNumber, pmrMaps, mdbMap, task.parseMxf);
+						   task.folderNumber, pmrMaps, mdbMap);
 
 		if (isJunk)
 		{
@@ -610,13 +645,10 @@ FolderResult ScannerWorker::processFolderTask(const ScanTask &task)
 MediaFile ScannerWorker::buildMediaFile(
 	const QString &filePath, const QString &driveName, const QString &drivePath,
 	const QString &folderNumber, const PmrParser::ProjectMaps &pmrMaps,
-	const MdbParser::RecordMap &mdbMap, bool parseMxf)
+	const MdbParser::RecordMap &mdbMap)
 {
 	MediaFile mf;
 	QFileInfo fi(filePath);
-
-	// No synthetic UUID — filePath + mobId/compositionMobId is enough; UUID gen was
-	// measurable CPU at 290k files for a value no lookup uses.
 	mf.filePath = filePath;
 	mf.fileName = fi.fileName();
 	mf.extension = "." + fi.suffix().toLower();
@@ -624,7 +656,6 @@ MediaFile ScannerWorker::buildMediaFile(
 	mf.drivePath = drivePath;
 	mf.mxfFolder = folderNumber;
 
-	// Pre-compute Volume column ("DATA/Avid MediaFiles/MXF/2") once — paint hot path.
 	{
 		const QString containingDir = fi.absolutePath();
 		QString relInsideVolume = containingDir;
@@ -648,19 +679,14 @@ MediaFile ScannerWorker::buildMediaFile(
 	mf.clipName = fi.completeBaseName();
 	mf.isNonPortable = isNonPortableFilename(mf.fileName);
 
-	// Primary key normalises NFC+case (HFS+/APFS NFD vs Avid NFC, SMB/NEXIS/NTFS case);
-	// fallback strips extension and punctuation. Both pre-built per PMR — each lookup O(1).
 	const QString primaryKey =
 		mf.fileName.normalized(QString::NormalizationForm_C).toLower();
 
-	// Apply a PMR hit; shared by primary and fallback branches.
 	auto applyPmrHit = [&mf](const PmrEntry &pmr)
 	{
 		mf.project = pmr.project;
-		mf.mobId = pmr.mobIdHex;
-		mf.compositionMobId = pmr.compositionMobIdHex;
-		if (!pmr.bin.isEmpty())
-			mf.originalBin = pmr.bin;
+		mf.mobId = pmr.mobId;
+		mf.compositionMobId = pmr.compositionMobId;
 	};
 
 	auto pmrIt = pmrMaps.primary.find(primaryKey);
@@ -678,8 +704,8 @@ MediaFile ScannerWorker::buildMediaFile(
 			applyPmrHit(pmrIt->first());
 	}
 
-	// Merge file-MOB and composition-MOB records: clip name/TC live on the
-	// composition; bin/source/imported live on either.
+	// File-MOB / Composition-MOB carry overlapping fields:
+	// clipname/timecode live on the composition; bin/source/imported on either.
 	auto applyMdbRecord = [&mf](const MdbRecord &rec)
 	{
 		if (!rec.clipName.isEmpty())
@@ -711,39 +737,8 @@ MediaFile ScannerWorker::buildMediaFile(
 			applyMdbRecord(mdbIt.value());
 	}
 
-	if (parseMxf && mf.extension == ".mxf" && fi.size() > 1024)
-	{
-		MxfMetadata mxf = MxfParser::parseHeader(filePath);
-		if (mxf.valid)
-		{
-			if (!mxf.umid.isEmpty())
-				mf.umid = mxf.umid;
-			if (mf.clipName == fi.completeBaseName() && !mxf.clipName.isEmpty())
-				mf.clipName = mxf.clipName;
-			if (!mxf.codec.isEmpty())
-				mf.codec = mxf.codec;
-			if (!mxf.essenceContainerLabel.isEmpty())
-				mf.codecHex = mxf.essenceContainerLabel.toHex().toUpper();
-			if (!mxf.resolution.isEmpty())
-				mf.resolution = mxf.resolution;
-			if (!mxf.fps.isEmpty())
-				mf.fps = mxf.fps;
-			if (!mxf.bitDepth.isEmpty())
-				mf.bitDepth = mxf.bitDepth;
-
-			if (mxf.sampleRate > 0)
-				mf.sampleRate = mxf.sampleRate;
-			if (mxf.channels > 0)
-				mf.channels = mxf.channels;
-			if (mxf.durationFrames > 0)
-				mf.durationFrames = mxf.durationFrames;
-
-			if (mxf.isAudio || mf.codec == "PCM Audio")
-			{
-				mf.mediaType = MediaFile::Type::Audio;
-			}
-		}
-	}
+	// MXF header parsing is deferred to parseMxfHeadersConcurrently so all
+	// idle cores can attack it in parallel rather than serially per folder.
 
 	if (mf.extension == ".wav" || mf.extension == ".aif" ||
 		mf.extension == ".aiff" || mf.extension == ".bwf")
@@ -755,11 +750,9 @@ MediaFile ScannerWorker::buildMediaFile(
 
 	mf.kind = "Media";
 
-	// Precompute detection in three passes:
-	//   filename prefix (V##/A## source, P##/W… precomp) → Avid effect vocabulary
-	//   in the clip name → "precomput" substring as a catch-all.
-	// Filename-first because clip names can legitimately have commas/punctuation
-	// (e.g. "Track 01, String Quartet, Movement III") so a raw comma count misclassifies.
+	// Precomp detection: filename prefix (P##/W##) first, then Avid Effect
+	// keywords in the clip name. Filename takes precedence because clips
+	// can legitimately contain commas.
 	static const QRegularExpression kPrecompPrefixRe(
 		QStringLiteral("^(?:P\\d+\\.|W[A-Z0-9]+[A-Z]\\d+\\.|WA\\d+\\.)"),
 		QRegularExpression::CaseInsensitiveOption);
@@ -768,40 +761,24 @@ MediaFile ScannerWorker::buildMediaFile(
 
 	if (!isPrecomp)
 	{
-		// Frequent effects first for early-out; matched against lowerClip.
 		static const QStringList kAvidEffectKeywords = {
-			// Most common in daily editing
-			"Dissolve",
-			"Resize",
-			"Title",
-			"Color_Correction",
-			"Color_Adapter",
-			// Common but less frequent
-			"Precompute",
-			"FrameFlex",
-			"Color_LUT",
-			"Color_Effect",
-			"Timecode_Burn-In",
-			"Stabilize",
-			"Submaster",
-			"Motion Effect",
-			"Flop",
-			"Flip",
-		};
+			"dissolve", "resize", "title", "color_correction", "color_adapter",
+			"precompute", "frameflex", "color_lut", "color_effect",
+			"timecode_burn-in", "stabilize", "submaster", "motion effect",
+			"flop", "flip"};
 
 		const QString lowerClip = mf.clipName.toLower();
-
 		for (const QString &kw : kAvidEffectKeywords)
 		{
-			if (lowerClip.contains(kw.toLower()))
+			if (lowerClip.contains(kw))
 			{
 				isPrecomp = true;
 				break;
 			}
 		}
 
-		// Boris Sapphire renders show up as "Source,S_Glow,1" — require the leading comma
-		// so source clips that legitimately start with "S_" don't get swept up.
+		// Boris Sapphire renders look like "Source,S_Glow,1". The leading
+		// comma keeps clips that legitimately start with "S_" out.
 		if (!isPrecomp && mf.clipName.contains(",S_"))
 			isPrecomp = true;
 	}
@@ -809,48 +786,12 @@ MediaFile ScannerWorker::buildMediaFile(
 	if (isPrecomp)
 		mf.kind = "Precompute";
 
-	if (mf.mediaType == MediaFile::Type::Audio)
-	{
-		if (mf.sampleRate > 0)
-		{
-			mf.bitRateString = QString::number(mf.sampleRate / 1000) + " kHz";
-		}
-	}
-	else
-	{
-		float fpsNum = mf.fps.toFloat();
-		if (fpsNum > 0 && mf.durationFrames > 0 && mf.sizeBytes > 0)
-		{
-			float seconds = mf.durationFrames / fpsNum;
-			if (seconds > 0)
-			{
-				int mbps = qRound((mf.sizeBytes * 8.0) / (seconds * 1000000.0));
-				// Snap to a common DNxHD bitrate; ordered hot-first for early break
-				// (DNxHD 36/145/220 dominate real projects).
-				static constexpr std::array<int, 12> kStandards{
-					36, 145, 220, 115, 120, 175, 185, 45, 50, 100, 350, 440};
-				for (int std : kStandards)
-				{
-					if (qAbs(mbps - std) <= 10)
-					{
-						mbps = std;
-						break;
-					}
-				}
-				mf.bitRateString = QString::number(mbps);
-			}
-		}
-	}
+	recomputeBitrate(mf);
 
 	if (mf.project.isEmpty())
 	{
 		mf.isUnmanaged = true;
 		mf.project = "UNMANAGED_FILES";
-	}
-	if (!mf.umid.isEmpty())
-	{
-		// All-zero UMID — Avid never wrote a real material number.
-		mf.isBadUmid = MobId::isAllZero(mf.umid);
 	}
 	if (!mf.mobId.isEmpty() && mf.isUnmanaged && !mdbMap.isEmpty())
 	{
@@ -861,10 +802,71 @@ MediaFile ScannerWorker::buildMediaFile(
 	return mf;
 }
 
+void ScannerWorker::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
+{
+	if (!m_options.parseMxfHeaders)
+		return;
+
+	QVector<int> mxfIndices;
+	mxfIndices.reserve(files.size() / 4);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		if (files[i].extension == QLatin1String(".mxf") && files[i].sizeBytes > 1024)
+			mxfIndices.append(i);
+	}
+	if (mxfIndices.isEmpty())
+		return;
+
+	const int total = mxfIndices.size();
+	emitLog(0, "scanner", QString("Parsing MXF headers for %1 files").arg(total));
+	emit progress("Parsing MXF headers", 0, total, {});
+
+	std::atomic<int> done{0};
+	std::atomic<qint64> totalBytesRead{0};
+	std::atomic<qint64> maxBytesRead{0};
+	std::atomic<qint64> lastEmitMs{0};
+	QElapsedTimer timer;
+	timer.start();
+
+	QtConcurrent::blockingMap(mxfIndices, [&](int idx)
+	{
+		if (m_cancel.load(std::memory_order_relaxed))
+			return;
+		MediaFile &mf = files[idx];
+		qint64 bytesRead = 0;
+		const MxfMetadata mxf = MxfParser::parseHeader(mf.filePath, &bytesRead);
+		applyMxfMetadata(mf, mxf);
+
+		totalBytesRead.fetch_add(bytesRead, std::memory_order_relaxed);
+		// Lock-free max via CAS loop.
+		qint64 prev = maxBytesRead.load(std::memory_order_relaxed);
+		while (bytesRead > prev &&
+			   !maxBytesRead.compare_exchange_weak(prev, bytesRead,
+												   std::memory_order_relaxed))
+		{
+		}
+
+		const int n = ++done;
+		const qint64 now = timer.elapsed();
+		const qint64 last = lastEmitMs.load(std::memory_order_relaxed);
+		if (n == total || (now - last) >= 33)
+		{
+			lastEmitMs.store(now, std::memory_order_relaxed);
+			emit progress("Parsing MXF headers", n, total, mf.fileName);
+		}
+	});
+
+	const qint64 totalBytes = totalBytesRead.load();
+	const qint64 maxBytes = maxBytesRead.load();
+	const qint64 avgKB = total > 0 ? (totalBytes / total) / 1024 : 0;
+	emitLog(0, "mxf",
+			QString("MXF parse: %1 files, avg %2 KB/file, max %3 KB, total %4 MB read")
+				.arg(total).arg(avgKB).arg(maxBytes / 1024).arg(totalBytes / (1024 * 1024)));
+}
+
 bool ScannerWorker::isNonPortableFilename(const QString &name) const
 {
-	// ASCII fast-path; replaced a thread_local QRegularExpression that was
-	// ~6% of scan CPU at 290k files. Allowed: A-Z a-z 0-9 . _ - space , ( ) [ ] + = ' ~ @ # % &
+	// Allowed: A-Z a-z 0-9 . _ - space , ( ) [ ] + = ' ~ @ # % &
 	static const auto kPortableChars = []
 	{
 		std::array<bool, 128> t{};
@@ -879,14 +881,10 @@ bool ScannerWorker::isNonPortableFilename(const QString &name) const
 		return t;
 	}();
 
-	if (name.isEmpty())
-		return false;
 	for (QChar ch : name)
 	{
 		const ushort u = ch.unicode();
-		if (u >= 128)
-			return true; // non-ASCII
-		if (!kPortableChars[u])
+		if (u >= 128 || !kPortableChars[u])
 			return true;
 	}
 	return false;

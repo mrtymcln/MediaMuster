@@ -1,4 +1,5 @@
 #include "rebalancedialog.h"
+#include "formatutil.h"
 #include "rebalancer.h"
 
 #include <QApplication>
@@ -13,36 +14,13 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSet>
+#include <QShowEvent>
+#include <QSignalBlocker>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QVBoxLayout>
 
 #include <algorithm>
-
-namespace
-{
-	QString fmtBytes(qint64 b)
-	{
-		if (b >= static_cast<qint64>(1024) * 1024 * 1024 * 1024)
-			return QString("%1 TB")
-				.arg(b / (1024.0 * 1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
-		if (b >= static_cast<qint64>(1024) * 1024 * 1024)
-			return QString("%1 GB").arg(b / (1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
-		if (b >= 1024 * 1024)
-			return QString("%1 MB").arg(b / (1024.0 * 1024.0), 0, 'f', 1);
-		if (b >= 1024)
-			return QString("%1 KB").arg(b / 1024.0, 0, 'f', 1);
-		return QString("%1 B").arg(b);
-	}
-
-	QString fmtBytesSigned(qint64 b)
-	{
-		if (b == 0)
-			return QStringLiteral("—");
-		const QString sign = (b > 0 ? QStringLiteral("+") : QStringLiteral("−"));
-		return sign + fmtBytes(qAbs(b));
-	}
-} // namespace
 
 RebalanceDialog::RebalanceDialog(
 	const QHash<QString, QString> &mxfRootsByLabel,
@@ -53,7 +31,9 @@ RebalanceDialog::RebalanceDialog(
 	  m_mxfRootsByLabel(mxfRootsByLabel),
 	  m_filesByMxfRoot(filesByMxfRoot)
 {
-	setWindowTitle(tr("Rebalance MXF Folders"));
+	setWindowTitle(tr("Rebalance"));
+	setWindowFlags(windowFlags() | Qt::Tool);
+	setAttribute(Qt::WA_MacAlwaysShowToolWindow, true);
 	setMinimumSize(720, 540);
 	resize(860, 640);
 
@@ -61,7 +41,7 @@ RebalanceDialog::RebalanceDialog(
 	connect(m_rebalancer, &Rebalancer::progress,
 			this, &RebalanceDialog::onProgress);
 	connect(m_rebalancer, &Rebalancer::log,
-			this, &RebalanceDialog::onLog);
+			this, &RebalanceDialog::logMessage);
 	connect(m_rebalancer, &Rebalancer::finished,
 			this, &RebalanceDialog::onFinished);
 	connect(m_rebalancer, &Rebalancer::aborted,
@@ -71,14 +51,24 @@ RebalanceDialog::RebalanceDialog(
 
 	QStringList labels = m_mxfRootsByLabel.keys();
 	std::sort(labels.begin(), labels.end());
-	for (const QString &lbl : labels)
-		m_drivePicker->addItem(lbl);
-	int idx = labels.indexOf(initialLabel);
-	if (idx < 0)
-		idx = 0;
-	m_drivePicker->setCurrentIndex(idx);
+	{
+		const QSignalBlocker blocker(m_drivePicker);
+		for (const QString &lbl : labels)
+			m_drivePicker->addItem(lbl);
+		int idx = labels.indexOf(initialLabel);
+		if (idx < 0)
+			idx = 0;
+		m_drivePicker->setCurrentIndex(idx);
+	}
 
 	recomputePlan();
+}
+
+void RebalanceDialog::showEvent(QShowEvent *event)
+{
+	QDialog::showEvent(event);
+	raise();
+	activateWindow();
 }
 
 void RebalanceDialog::setupUi()
@@ -87,23 +77,30 @@ void RebalanceDialog::setupUi()
 	root->setContentsMargins(16, 16, 16, 16);
 	root->setSpacing(12);
 
+	auto *intro = new QLabel;
+	intro->setWordWrap(true);
+	intro->setTextFormat(Qt::RichText);
+	intro->setText(tr(
+		"<p style='margin-top:0'>Avid recommends keeping each MediaFiles "
+		"folder under 5,000 files. Rebalance the files on the selected "
+		"volume for better performance.</p>"
+		"<p>A clip's relatives are kept together: first placed into an "
+		"existing folder with free space, and only into a new folder "
+		"when all have reached capacity.</p>"
+		"<p>In a Nexis environment, each host writes into its own folder "
+		"set — Rebalance will keep those sets separate.</p>"
+		"<p style='margin-bottom:0'>Avid will update its media database "
+		"to reflect the new locations on next launch.</p>"));
+	root->addWidget(intro);
+
 	auto *driveRow = new QHBoxLayout;
 	driveRow->setSpacing(8);
-	driveRow->addWidget(new QLabel(tr("Drive:")));
+	driveRow->addWidget(new QLabel(tr("Volume:")));
 	m_drivePicker = new QComboBox;
 	m_drivePicker->setMinimumWidth(220);
 	driveRow->addWidget(m_drivePicker);
 	driveRow->addStretch();
 	root->addLayout(driveRow);
-
-	auto *intro = new QLabel(tr(
-		"Avid Media Composer recommends keeping each MediaFiles folder "
-		"under 5,000 files. Rebalance redistributes MXF files within "
-		"this drive only, creating new folders as needed. Avid will "
-		"rebuild its media database on next project open."));
-	intro->setWordWrap(true);
-	intro->setStyleSheet("color:#666;");
-	root->addWidget(intro);
 
 	m_summaryLabel = new QLabel;
 	m_summaryLabel->setWordWrap(true);
@@ -114,7 +111,7 @@ void RebalanceDialog::setupUi()
 	m_tableModel = new QStandardItemModel(this);
 	m_tableModel->setHorizontalHeaderLabels(
 		QStringList() << tr("Folder") << tr("Current") << tr("Projected")
-					  << tr("Out") << tr("In") << tr("ΔBytes"));
+					  << tr("Out") << tr("In") << tr("Delta"));
 	m_tableView = new QTableView;
 	m_tableView->setModel(m_tableModel);
 	m_tableView->setSelectionMode(QAbstractItemView::NoSelection);
@@ -140,17 +137,16 @@ void RebalanceDialog::setupUi()
 	auto *footer = new QHBoxLayout;
 	footer->addStretch();
 	m_btnCancel = new QPushButton(tr("Cancel"));
-	m_btnExecute = new QPushButton(tr("Execute Rebalance"));
-	m_btnExecute->setDefault(true);
+	m_btnRebalance = new QPushButton(tr("Rebalance"));
+	m_btnRebalance->setDefault(true);
 	footer->addWidget(m_btnCancel);
-	footer->addWidget(m_btnExecute);
+	footer->addWidget(m_btnRebalance);
 	root->addLayout(footer);
 
-	connect(m_drivePicker,
-			QOverload<int>::of(&QComboBox::currentIndexChanged),
+	connect(m_drivePicker, &QComboBox::currentIndexChanged,
 			this, &RebalanceDialog::onDriveChanged);
-	connect(m_btnExecute, &QPushButton::clicked,
-			this, &RebalanceDialog::onExecuteClicked);
+	connect(m_btnRebalance, &QPushButton::clicked,
+			this, &RebalanceDialog::onRebalanceClicked);
 	connect(m_btnCancel, &QPushButton::clicked,
 			this, &RebalanceDialog::onCancelClicked);
 }
@@ -200,7 +196,7 @@ void RebalanceDialog::renderPlan()
 	lines << tr("<b>Total files to move:</b> %1")
 				 .arg(m_currentPlan.totalFiles());
 	lines << tr("<b>Total bytes:</b> %1")
-				 .arg(fmtBytes(m_currentPlan.totalBytes()));
+				 .arg(Format::bytes(m_currentPlan.totalBytes()));
 	lines << tr("<b>New folders:</b> %1%2")
 				 .arg(newFolderNames.size())
 				 .arg(newFolderNames.isEmpty()
@@ -232,26 +228,21 @@ void RebalanceDialog::renderPlan()
 			  });
 
 	const QBrush dimmed(QColor(150, 150, 150));
+	const QString dash = QStringLiteral("—");
 	for (const FolderState &fs : sorted)
 	{
-		const QString name = fs.isNew
-								 ? (fs.name + QStringLiteral(" *"))
-								 : fs.name;
+		const QString name = fs.isNew ? (fs.name + QStringLiteral(" *")) : fs.name;
 		const int projected = fs.count + fs.filesIn - fs.filesOut;
 		const qint64 deltaBytes = fs.bytesIn - fs.bytesOut;
-		const QString dash = QStringLiteral("—");
 
-		QList<QStandardItem *> row;
-		row << new QStandardItem(name);
-		row << new QStandardItem(QString::number(fs.count));
-		row << new QStandardItem(
-			fs.inScope ? QString::number(projected) : dash);
-		row << new QStandardItem(
-			fs.inScope ? QString::number(fs.filesOut) : dash);
-		row << new QStandardItem(
-			fs.inScope ? QString::number(fs.filesIn) : dash);
-		row << new QStandardItem(
-			fs.inScope ? fmtBytesSigned(deltaBytes) : dash);
+		QList<QStandardItem *> row{
+			new QStandardItem(name),
+			new QStandardItem(QString::number(fs.count)),
+			new QStandardItem(fs.inScope ? QString::number(projected) : dash),
+			new QStandardItem(fs.inScope ? QString::number(fs.filesOut) : dash),
+			new QStandardItem(fs.inScope ? QString::number(fs.filesIn) : dash),
+			new QStandardItem(fs.inScope ? Format::bytesSigned(deltaBytes) : dash),
+		};
 
 		for (QStandardItem *cell : row)
 		{
@@ -259,7 +250,6 @@ void RebalanceDialog::renderPlan()
 			if (!fs.inScope)
 				cell->setForeground(dimmed);
 		}
-		// Right-align numeric columns.
 		for (int i = 1; i < row.size(); ++i)
 			row[i]->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 		m_tableModel->appendRow(row);
@@ -267,14 +257,14 @@ void RebalanceDialog::renderPlan()
 	m_tableView->setSortingEnabled(true);
 
 	const bool hasWork = m_currentPlan.totalFiles() > 0;
-	m_btnExecute->setEnabled(hasWork && !m_running);
-	m_btnExecute->setToolTip(
+	m_btnRebalance->setEnabled(hasWork && !m_running);
+	m_btnRebalance->setToolTip(
 		hasWork
 			? QString()
 			: tr("Nothing to do — every folder is already under 5,000 files."));
 }
 
-void RebalanceDialog::onExecuteClicked()
+void RebalanceDialog::onRebalanceClicked()
 {
 	if (m_running)
 		return;
@@ -296,8 +286,8 @@ void RebalanceDialog::onExecuteClicked()
 		return;
 
 	m_running = true;
-	m_didExecute = true;
-	m_executedLabel = m_currentPlan.driveLabel;
+	m_didRebalance = true;
+	m_rebalancedLabel = m_currentPlan.driveLabel;
 	setBusy(true);
 
 	m_progressBar->setRange(0, m_currentPlan.totalFiles());
@@ -306,8 +296,8 @@ void RebalanceDialog::onExecuteClicked()
 	m_progressLabel->setVisible(true);
 	m_progressLabel->setText(tr("Starting…"));
 
-	m_btnExecute->setText(tr("Working…"));
-	m_btnExecute->setEnabled(false);
+	m_btnRebalance->setText(tr("Working…"));
+	m_btnRebalance->setEnabled(false);
 	m_btnCancel->setText(tr("Cancel Operation"));
 
 	m_rebalancer->executeAsync(m_currentPlan);
@@ -319,7 +309,7 @@ void RebalanceDialog::onCancelClicked()
 	{
 		m_rebalancer->cancel();
 		m_btnCancel->setEnabled(false);
-		m_btnCancel->setText(tr("Canceling…"));
+		m_btnCancel->setText(tr("Cancelling…"));
 	}
 	else
 	{
@@ -337,35 +327,30 @@ void RebalanceDialog::onProgress(int current, int total,
 		tr("%1 / %2  %3").arg(current).arg(total).arg(detail));
 }
 
-void RebalanceDialog::onLog(int /*level*/, const QString & /*msg*/)
-{
-	// Future log view hook.
-}
-
-void RebalanceDialog::onFinished(int succeeded, int failed, bool canceled)
+void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 {
 	m_running = false;
 	setBusy(false);
 
 	m_progressLabel->setText(
-		canceled ? tr("Canceled — %1 moved, %2 failed")
+		cancelled ? tr("Cancelled — %1 moved, %2 failed")
 					   .arg(succeeded)
 					   .arg(failed)
 				 : tr("Done — %1 moved, %2 failed")
 					   .arg(succeeded)
 					   .arg(failed));
 
-	m_btnExecute->setText(tr("Close"));
-	m_btnExecute->setEnabled(true);
-	disconnect(m_btnExecute, &QPushButton::clicked,
-			   this, &RebalanceDialog::onExecuteClicked);
-	connect(m_btnExecute, &QPushButton::clicked,
+	m_btnRebalance->setText(tr("Close"));
+	m_btnRebalance->setEnabled(true);
+	disconnect(m_btnRebalance, &QPushButton::clicked,
+			   this, &RebalanceDialog::onRebalanceClicked);
+	connect(m_btnRebalance, &QPushButton::clicked,
 			this, &QDialog::accept);
 	m_btnCancel->setVisible(false);
 
 	const QString body =
-		canceled
-			? tr("Rebalance was canceled.\n\n%1 file(s) moved, %2 failed.")
+		cancelled
+			? tr("Rebalance was cancelled.\n\n%1 file(s) moved, %2 failed.")
 				  .arg(succeeded)
 				  .arg(failed)
 			: (failed == 0
@@ -388,8 +373,8 @@ void RebalanceDialog::onAborted(const QString &reason)
 	m_progressBar->setVisible(false);
 	m_progressLabel->setVisible(false);
 
-	m_btnExecute->setText(tr("Execute Rebalance"));
-	m_btnExecute->setEnabled(m_currentPlan.totalFiles() > 0);
+	m_btnRebalance->setText(tr("Rebalance"));
+	m_btnRebalance->setEnabled(m_currentPlan.totalFiles() > 0);
 	m_btnCancel->setEnabled(true);
 	m_btnCancel->setText(tr("Cancel"));
 

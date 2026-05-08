@@ -7,18 +7,16 @@
 #include <QMetaType>
 #include <cmath>
 
-// One entry in the Avid media database.
-
 struct MediaFile
 {
 	// Identity: filePath is primary; mobId/compositionMobId are secondary.
 	QString mobId;			  // Avid MOB ID from MDB/PMR
-	QString compositionMobId; // master-clip MOB; V01/A01/A02 share this
+	QString compositionMobId; // master clip MOB; V01/A01/A02 share this
 	QString umid;			  // Unique Material Identifier from the MXF header
 
-	// Database metadata (.mdb / .pmr).
+	// MDB and PMR database metadata.
 	QString clipName;
-	QString project;	 // "UNMANAGED_FILES" if not in any project DB
+	QString project;	 // "UNMANAGED_FILES" when the file is orphaned or absent from every database
 	QString originalBin; // MDB _ORG_BIN — frozen at import; live value lives in interplayCurrentBin
 
 	// Technical metadata from the MXF header or MDB.
@@ -32,8 +30,8 @@ struct MediaFile
 	qint64 durationFrames = 0;
 	QString startTimecode; // from MDB _COLUMN_START if present
 
-	// AMA-link metadata. When isImported is true, sourceFilePath is what
-	// Avid recorded at import (typically the QuickTime/camera original).
+	// Avid Media Access metadata. When isImported is true, sourceFilePath
+	// is the path Avid recorded for the original file at import time.
 	QString sourceFilePath;
 	QString sourceFileName;
 	QString sourceContainer; // "QTFF", "MXF", etc.
@@ -42,23 +40,18 @@ struct MediaFile
 	QString kind;		   // "Media", "Precompute"
 	QString bitRateString; // "120", "36", "48 kHz"
 
-	// Filesystem.
 	QString filePath;
 	QString fileName;
 	QString extension;
 	QString driveName;
 	QString drivePath;
-	QString mxfFolder; // numbered folder ("1", "2", ...)
-
-	// Pre-baked "DATA / 2" — rebuilding per paint was measurable on 290k rows.
+	QString mxfFolder;
 	QString volumeDisplay;
-
 	qint64 sizeBytes = 0;
 	double sizeMB = 0.0;
 	QDateTime modified;
 	QDateTime created;
 
-	// Classification
 	enum class Type
 	{
 		Video,
@@ -66,25 +59,18 @@ struct MediaFile
 	};
 	Type mediaType = Type::Video;
 
-	// Flags.
 	bool isUnmanaged = false;	 // not in any .mdb
-	bool isBadUmid = false;		 // UMID null/zeroed
+	bool isBadUmid = false;		 // UMID null or zeroed
 	bool isNonPortable = false;	 // filename has non-portable chars
 	bool isUnreferenced = false; // in MDB but not in any project PMR
 	bool isDSStore = false;		 // .DS_Store / Thumbs.db rubbish
 
-	// CTMS/Interplay stubs — carried through scanner→model→export so a later
-	// schema bump isn't needed. Empty in standalone mode.
-	QString interplayAssetId;	   // CTMS base.id GUID
-	QString interplayCurrentBin;   // CTMS loc:locations — live bin, not frozen
+	// Avid Interplay stubs — carried through scanner>model>export so a later
+	// schema bump isn't needed. Empty in standalone environment.
+	QString interplayAssetId;	 // CTMS base.id GUID
+	QString interplayCurrentBin; // CTMS loc:locations
 	bool interplayRegistered = false;
 	QDateTime interplayLastSeen;
-
-	// Convenience
-	QString mediaTypeString() const
-	{
-		return mediaType == Type::Audio ? "audio" : "video";
-	}
 
 	// HH:MM:SS:FF; empty if fps isn't enough info (uses sampleRate for audio).
 	QString durationDisplay() const
@@ -134,15 +120,14 @@ struct MediaFile
 	}
 };
 
-// A mounted volume that may contain Avid media.
 struct DriveInfo
 {
 	QString name;
-	QString path; // Mount point
+	QString path;
 	qint64 totalBytes = 0;
 	qint64 usedBytes = 0;
 	qint64 freeBytes = 0;
-	QString driveType; // "NEXIS", "ISIS", "SAN", "Local", "USB", "Network"
+	QString driveType;
 	bool hasAvidMedia = false;
 	bool isMounted = true;
 
@@ -167,7 +152,6 @@ private:
 	}
 };
 
-// Aggregate stats per project.
 struct ProjectSummary
 {
 	QString name;
@@ -176,10 +160,8 @@ struct ProjectSummary
 	qint64 totalBytes = 0;
 	QVector<QString> bins;
 	QVector<QString> drives;
-	QVector<QString> codecs;
 };
 
-// Register custom types for cross-thread signal/slot delivery.
 Q_DECLARE_METATYPE(MediaFile)
 Q_DECLARE_METATYPE(QVector<MediaFile>)
 Q_DECLARE_METATYPE(DriveInfo)

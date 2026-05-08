@@ -12,12 +12,11 @@ class QComboBox;
 class QLabel;
 class QProgressBar;
 class QPushButton;
+class QShowEvent;
 class QStandardItemModel;
 class QTableView;
 class Rebalancer;
 
-// Preview + execute UI for the rebalancer. Caller supplies label→mxfRoot and
-// mxfRoot→files maps; the dialog recomputes the plan on open and on drive change.
 class RebalanceDialog : public QDialog
 {
 	Q_OBJECT
@@ -27,19 +26,22 @@ public:
 					const QString &initialLabel,
 					QWidget *parent = nullptr);
 
-	// True if the user started an execute; caller uses this to trigger a re-scan.
-	bool didExecute() const { return m_didExecute; }
+	bool didRebalance() const { return m_didRebalance; }
 
-	// Drive label of the most recently rebalanced drive — tells caller which to re-scan.
-	QString executedLabel() const { return m_executedLabel; }
+	QString rebalancedLabel() const { return m_rebalancedLabel; }
+
+signals:
+	void logMessage(int level, const QString &message);
+
+protected:
+	void showEvent(QShowEvent *event) override;
 
 private slots:
 	void onDriveChanged(int idx);
-	void onExecuteClicked();
+	void onRebalanceClicked();
 	void onCancelClicked();
 	void onProgress(int current, int total, const QString &detail);
-	void onLog(int level, const QString &msg);
-	void onFinished(int succeeded, int failed, bool canceled);
+	void onFinished(int succeeded, int failed, bool cancelled);
 	void onAborted(const QString &reason);
 
 private:
@@ -55,8 +57,8 @@ private:
 
 	Rebalancer *m_rebalancer = nullptr;
 	bool m_running = false;
-	bool m_didExecute = false;
-	QString m_executedLabel;
+	bool m_didRebalance = false;
+	QString m_rebalancedLabel;
 
 	QComboBox *m_drivePicker = nullptr;
 	QLabel *m_summaryLabel = nullptr;
@@ -64,6 +66,6 @@ private:
 	QTableView *m_tableView = nullptr;
 	QProgressBar *m_progressBar = nullptr;
 	QLabel *m_progressLabel = nullptr;
-	QPushButton *m_btnExecute = nullptr;
+	QPushButton *m_btnRebalance = nullptr;
 	QPushButton *m_btnCancel = nullptr;
 };

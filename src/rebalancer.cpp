@@ -35,20 +35,12 @@ void Rebalancer::cancel()
 
 std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
 {
-	int lastDot = name.lastIndexOf('.');
-	QString prefix;
-	QString tail;
-	if (lastDot < 0)
-	{
-		tail = name;
-	}
-	else
-	{
-		prefix = name.left(lastDot);
-		tail = name.mid(lastDot + 1);
-	}
+	const int lastDot = name.lastIndexOf('.');
+	const QString prefix = lastDot < 0 ? QString() : name.left(lastDot);
+	const QString tail = lastDot < 0 ? name : name.mid(lastDot + 1);
+
 	bool ok = false;
-	int n = tail.toInt(&ok);
+	const int n = tail.toInt(&ok);
 	if (!ok || n <= 0)
 		return std::nullopt;
 
@@ -61,7 +53,7 @@ std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
 
 namespace
 {
-	// Composition key; loose files get a unique singleton keyed by path.
+	// Loose files get a unique singleton key so they each become their own group.
 	QString compositionKey(const MediaFile &mf)
 	{
 		return mf.compositionMobId.isEmpty()
@@ -69,10 +61,10 @@ namespace
 				   : mf.compositionMobId;
 	}
 
-	// Re-parses the on-disk path; MoveOp doesn't carry the source FolderId.
+	// MoveOp doesn't carry the source FolderId, so re-parse from the path.
 	std::optional<FolderId> srcFolderOf(const QString &srcPath)
 	{
-		QString folderName =
+		const QString folderName =
 			QFileInfo(QFileInfo(srcPath).absolutePath()).fileName();
 		return Rebalancer::parseFolderName(folderName);
 	}
@@ -94,56 +86,51 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		return plan;
 	}
 
-	// Walk existing subfolders and grab the real on-disk file counts.
-	QHash<QString, QSet<int>> existingByPrefix; // prefix -> {n}
+	QHash<QString, QSet<int>> existingByPrefix; // prefix → {n}
 	QHash<FolderId, int> realCount;
 
 	const QStringList subdirs = mxfDir.entryList(
 		QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 	for (const QString &name : subdirs)
 	{
-		const QString full = mxfDir.filePath(name);
-		const int onDiskCount =
-			QDir(full)
-				.entryList(QDir::Files | QDir::NoDotAndDotDot)
-				.count();
+		const int onDiskCount = QDir(mxfDir.filePath(name))
+									.entryList(QDir::Files | QDir::NoDotAndDotDot)
+									.count();
 
-		auto parsed = parseFolderName(name);
+		const auto parsed = parseFolderName(name);
 		FolderState fs;
 		fs.name = name;
 		fs.count = onDiskCount;
 		fs.inScope = parsed.has_value();
-		if (!parsed)
+		if (parsed)
 		{
-			plan.folders.append(fs);
-			continue;
+			fs.id = *parsed;
+			existingByPrefix[fs.id.prefix].insert(fs.id.n);
+			realCount[fs.id] = onDiskCount;
 		}
-		fs.id = *parsed;
-		existingByPrefix[fs.id.prefix].insert(fs.id.n);
-		realCount[fs.id] = onDiskCount;
 		plan.folders.append(fs);
 	}
 
-	// Bytes per folder come only from indexed files; ΔBytes is what matters here.
+	// Per-folder bytes come only from indexed files; ΔBytes is what matters here.
 	QHash<FolderId, qint64> realBytes;
 	for (const auto &mf : files)
 	{
-		auto fid = parseFolderName(mf.mxfFolder);
-		if (fid)
+		if (const auto fid = parseFolderName(mf.mxfFolder))
 			realBytes[*fid] += mf.sizeBytes;
 	}
 	for (auto &fs : plan.folders)
+	{
 		if (fs.inScope)
 			fs.bytes = realBytes.value(fs.id, 0);
+	}
 
 	// Bucket by compositionMobId so siblings of one master clip stay together.
+	// Out-of-scope folders ("Quarantined Files") stay put.
 	QHash<QString, QVector<MediaFile>> bucketed;
 	for (const auto &mf : files)
 	{
-		// Out-of-scope folders ("Quarantined Files") stay put.
-		if (!parseFolderName(mf.mxfFolder).has_value())
-			continue;
-		bucketed[compositionKey(mf)].append(mf);
+		if (parseFolderName(mf.mxfFolder))
+			bucketed[compositionKey(mf)].append(mf);
 	}
 
 	// For each group, pick a home prefix + home N.
@@ -167,8 +154,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		QHash<QString, int> prefixCount;
 		for (const auto &m : g.members)
 		{
-			auto fid = parseFolderName(m.mxfFolder);
-			if (fid)
+			if (const auto fid = parseFolderName(m.mxfFolder))
 				prefixCount[fid->prefix] += 1;
 		}
 
@@ -185,11 +171,11 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 			}
 		}
 
-		// Home N = smallest N within home prefix that contains a member.
+		// Home N = smallest N within the home prefix that contains a member.
 		int home = INT_MAX;
 		for (const auto &m : g.members)
 		{
-			auto fid = parseFolderName(m.mxfFolder);
+			const auto fid = parseFolderName(m.mxfFolder);
 			if (fid && fid->prefix == g.homePrefix)
 				home = qMin(home, fid->n);
 		}
@@ -258,15 +244,10 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 
 	auto pushOp = [&](const MediaFile &m, FolderId dest)
 	{
-		auto src = parseFolderName(m.mxfFolder);
+		const auto src = parseFolderName(m.mxfFolder);
 		if (!src || *src == dest)
 			return;
-		MoveOp op;
-		op.srcPath = m.filePath;
-		op.dest = dest;
-		op.compositionMobId = m.compositionMobId;
-		op.sizeBytes = m.sizeBytes;
-		plan.ops.append(op);
+		plan.ops.append({m.filePath, dest, m.compositionMobId, m.sizeBytes});
 		projected[*src] -= 1;
 		projected[dest] += 1;
 	};
@@ -310,9 +291,9 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		int membersAtHome = 0;
 		for (const auto &m : g.members)
 		{
-			auto fid = parseFolderName(m.mxfFolder);
+			const auto fid = parseFolderName(m.mxfFolder);
 			if (fid && *fid == home)
-				membersAtHome += 1;
+				++membersAtHome;
 		}
 		const int neededAtHome = size - membersAtHome;
 
@@ -325,7 +306,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		{
 			for (const auto &m : g.members)
 			{
-				auto fid = parseFolderName(m.mxfFolder);
+				const auto fid = parseFolderName(m.mxfFolder);
 				if (fid && *fid != home)
 					pushOp(m, home);
 			}
@@ -353,7 +334,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 
 		for (const auto &m : g.members)
 		{
-			auto fid = parseFolderName(m.mxfFolder);
+			const auto fid = parseFolderName(m.mxfFolder);
 			if (!fid || *fid != dest)
 				pushOp(m, dest);
 		}
@@ -362,13 +343,14 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 	// Tally per-folder filesIn/filesOut/bytesIn/bytesOut for the preview.
 	QHash<FolderId, FolderState *> stateByFid;
 	for (auto &fs : plan.folders)
+	{
 		if (fs.inScope)
 			stateByFid[fs.id] = &fs;
+	}
 
 	for (const auto &op : plan.ops)
 	{
-		auto srcFid = srcFolderOf(op.srcPath);
-		if (srcFid && stateByFid.contains(*srcFid))
+		if (auto srcFid = srcFolderOf(op.srcPath); srcFid && stateByFid.contains(*srcFid))
 		{
 			stateByFid[*srcFid]->filesOut += 1;
 			stateByFid[*srcFid]->bytesOut += op.sizeBytes;
@@ -391,13 +373,9 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 		m_thread->wait(5000);
 	}
 	m_cancel.store(false, std::memory_order_relaxed);
-	m_thread = QThread::create([this, plan]()
-							   { doExecute(plan); });
-	connect(m_thread, &QThread::finished, m_thread,
-			&QThread::deleteLater);
-	connect(m_thread, &QThread::finished, this,
-			[this]()
-			{ m_thread = nullptr; });
+	m_thread = QThread::create([this, plan] { doExecute(plan); });
+	connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
+	connect(m_thread, &QThread::finished, this, [this] { m_thread = nullptr; });
 	m_thread->start();
 }
 
@@ -405,7 +383,7 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 {
 	int succeeded = 0;
 	int failed = 0;
-	bool canceled = false;
+	bool cancelled = false;
 	QSet<FolderId> touched;
 	const int total = plan.ops.size();
 
@@ -477,39 +455,37 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 		// Cancel only at composition-group boundaries; siblings stay atomic.
 		if (m_cancel.load(std::memory_order_relaxed))
 		{
-			canceled = true;
+			cancelled = true;
 			break;
 		}
 
 		for (int idx : opsByComp[compKey])
 		{
 			const MoveOp &op = plan.ops[idx];
-			const QString destDir =
-				plan.mxfRoot + "/" + op.dest.display();
-			const QString destPath =
-				destDir + "/" + QFileInfo(op.srcPath).fileName();
+			const QString destPath = plan.mxfRoot + QLatin1Char('/') +
+									 op.dest.display() + QLatin1Char('/') +
+									 QFileInfo(op.srcPath).fileName();
 
 			if (QFile::exists(destPath))
 			{
 				emit log(2, tr("Destination already exists, skipping: %1")
 								.arg(destPath));
-				failed += 1;
+				++failed;
 			}
 			else if (QFile::rename(op.srcPath, destPath))
 			{
-				succeeded += 1;
+				++succeeded;
 				touched.insert(op.dest);
-				auto srcFid = srcFolderOf(op.srcPath);
-				if (srcFid)
+				if (const auto srcFid = srcFolderOf(op.srcPath))
 					touched.insert(*srcFid);
 			}
 			else
 			{
 				emit log(1, tr("Move failed: %1 → %2")
 								.arg(op.srcPath, destPath));
-				failed += 1;
+				++failed;
 			}
-			doneCount += 1;
+			++doneCount;
 
 			// 30 Hz throttle on progress emit.
 			const qint64 now = timer.elapsed();
@@ -525,23 +501,22 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	// Delete stale per-folder DBs; Avid rebuilds them on next project open.
 	for (const FolderId &fid : touched)
 	{
-		const QString folderPath =
-			plan.mxfRoot + "/" + fid.display();
-		QFile mdb(folderPath + "/msmMMOB.mdb");
-		QFile pmr(folderPath + "/msmFMID.pmr");
-		if (mdb.exists() && !mdb.remove())
-			emit log(1, tr("Couldn't delete %1").arg(mdb.fileName()));
-		if (pmr.exists() && !pmr.remove())
-			emit log(1, tr("Couldn't delete %1").arg(pmr.fileName()));
+		const QString folderPath = plan.mxfRoot + QLatin1Char('/') + fid.display();
+		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
+		{
+			QFile f(folderPath + QLatin1String(db));
+			if (f.exists() && !f.remove())
+				emit log(1, tr("Couldn't delete %1").arg(f.fileName()));
+		}
 	}
 
 	emit log(0, tr("Rebalance %1: %2 moved, %3 failed%4")
-					.arg(canceled ? tr("canceled") : tr("complete"))
+					.arg(cancelled ? tr("cancelled") : tr("complete"))
 					.arg(succeeded)
 					.arg(failed)
 					.arg(touched.isEmpty()
 							 ? QString()
 							 : tr(", databases reset in %1 folders")
 								   .arg(touched.size())));
-	emit finished(succeeded, failed, canceled);
+	emit finished(succeeded, failed, cancelled);
 }

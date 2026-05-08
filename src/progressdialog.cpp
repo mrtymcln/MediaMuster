@@ -13,14 +13,11 @@ ProgressDialog::ProgressDialog(QWidget *parent) : QDialog(parent)
 {
     setWindowTitle(tr("Progress"));
 
-    // App-modal — no other window can be clicked while a scan or file
-    // op is running. Cancel is the only out.
+    // Progress dialog is modal, so Cancel is the only out.
     setModal(true);
 
-    // Qt::Sheet renders as a native macOS sheet (slides from the parent's
-    // title bar, dims the parent) and as a frameless modal child on
-    // Windows. Width inherits from the parent on macOS so setMinimumWidth
-    // is ignored there; Windows respects explicit sizes.
+    // Qt::Sheet paints a sheet (slides from the parent's title bar)
+    // on macOS; and paints a frameless window on Windows.
     setWindowFlags(Qt::Sheet);
 
     setMinimumWidth(520);
@@ -100,7 +97,7 @@ void ProgressDialog::setProgress(int current, int total)
 
 void ProgressDialog::setDetail(const QString &text)
 {
-    // Mid-elide so long paths still show the volume (head) and filename (tail).
+    // Mid-elide so long paths still show the head and tail.
     const int availWidth = m_detailLabel->width() > 0
                                ? m_detailLabel->width()
                                : 420;

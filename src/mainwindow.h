@@ -13,7 +13,6 @@
 #include <QSet>
 #include <QSortFilterProxyModel>
 
-// Forward decls — widget headers included in .cpp.
 class QDragEnterEvent;
 class QDragLeaveEvent;
 class QDropEvent;
@@ -28,7 +27,6 @@ class QStatusBar;
 class QTabBar;
 class QTableView;
 
-// DriveListWidget — QListWidget with drag-and-drop of folders/volumes
 class DriveListWidget : public QListWidget
 {
 	Q_OBJECT
@@ -48,8 +46,6 @@ private:
 	void setDropHighlight(bool on);
 };
 
-// MediaTableModel
-
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -61,18 +57,18 @@ public:
 		FileName,
 		Project,
 		OriginalBin, // from MDB _ORG_BIN
-		Kind,        // Video / Audio
+		Kind,		 // Video / Audio
 		Codec,
 		Resolution,
 		Fps,
 		Duration,
 		StartTC,
 		SizeMB,
-		Volume,      // "DATA / 2"
+		Volume,
 		Created,
-		Source,      // import source filename
-		Type,        // Media / Precomp
-		Count_       // sentinel; keep last
+		Source, // filename of source file before import
+		Type,	// Media / Precomp
+		Count_	// sentinel; keep last
 	};
 
 	// Unary + → int (Qt model APIs want int): +Column::ClipName.
@@ -98,8 +94,6 @@ private:
 	QVector<MediaFile> m_files;
 	bool m_showRawCodecHex = false;
 };
-
-// MediaFilterProxy
 
 class MediaFilterProxy : public QSortFilterProxyModel
 {
@@ -141,8 +135,6 @@ private:
 	QSet<QString> m_binFilterAcceptedMobs;
 };
 
-// MainWindow
-
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -169,13 +161,15 @@ private slots:
 	void onProjectSummary();
 	void onRevealInFinder();
 	void onSelectRelatives();
-	void onAutoFitColumns();
+	void autoFitColumns();
 	void onTableDoubleClicked(const QModelIndex &index);
 	void onPathsDropped(const QStringList &paths);
 	void onCheckPermissions();
 	void onFilterByBins();
 	void onRebalance();
 	void onAbout();
+	void showMediaMusterTrashDialog(const QString &trashFolderPath, int fileCount);
+	void showTableContextMenu(const QPoint &pos);
 
 private:
 	void setupUi();
@@ -185,7 +179,6 @@ private:
 	void addLog(int level, const QString &module, const QString &message);
 	void updateStatusBar();
 	void updateFilterCounts();
-	void autoFitColumns();
 	void openManageMedia(int initialOp);
 	void setBusy(bool busy);
 	class ProgressDialog *progressDialog();
@@ -195,26 +188,17 @@ private:
 	// Rebuild from scratch on any filter change — chips are 0-6, diffing isn't worth it.
 	void rebuildFilterChips();
 
-	// Auto-scales bytes to B/KB/MB/GB/TB.
-	static QString formatBytes(qint64 bytes);
-
-	// Drive icon by DriveInfo::driveType; falls back to QStorageInfo on path.
 	static QIcon iconForDriveType(const QString &driveType,
 								  const QString &path = {});
-
-	// Project icon; UNMANAGED_FILES gets a warning glyph.
 	static QIcon iconForProject(const QString &projectName);
 
-	// Modules
 	DriveManager *m_driveManager;
 	MediaScanner *m_scanner;
 	MediaManager *m_fileOps;
 
-	// Models
 	MediaTableModel *m_model;
 	MediaFilterProxy *m_proxy;
 
-	// UI widgets
 	QSplitter *m_mainSplitter;
 	QWidget *m_sidePanel;
 	DriveListWidget *m_driveList;
@@ -228,7 +212,6 @@ private:
 	QPlainTextEdit *m_console;
 	QSplitter *m_contentSplitter;
 
-	// Lazy; reused across scans and file ops so reopens don't flicker.
 	class ProgressDialog *m_progressDialog = nullptr;
 
 	QPushButton *m_btnFileOps;
@@ -244,24 +227,18 @@ private:
 	QLabel *m_statusSep1;
 	QLabel *m_statusSep2;
 
-	// State
 	QVector<MediaFile> m_allFiles;
 	QElapsedTimer m_scanTimer;
-	bool m_consoleVisible = true;
 	bool m_showAllFilterTabs = false;
 	QSet<QString> m_manualDrives;
 
-	// Tracks moved/deleted paths for removal from the table.
 	bool m_removeAfterOp = false;
 	QSet<QString> m_successfulOpPaths;
 
-	// Title for the in-flight op's progress dialog.
 	QString m_pendingOpTitle;
 
-	// Lazy; chain state persists across close/reopen.
 	class BinFilterDialog *m_binFilterDialog = nullptr;
 
-	// Mirror of bin-filter state so the chip strip can read it without poking the dialog.
 	bool m_binFilterActive = false;
 	int m_binFilterMobCount = 0;
 };

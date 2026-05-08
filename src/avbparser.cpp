@@ -9,38 +9,34 @@
 #include <cstring>
 #include <utility>
 
-// AVB header layout (first ~20 bytes):
-// 06 00 "DomainDJBO"  07 00 "AObjDoc"  04 13 00  <YYYY/MM/DD HH:MM:SS>
+// Pulls MOB IDs out of an Avid bin (.avb) by scanning for 32-byte MOB
+// patterns. We never decode the full Bento object graph — for filtering
+// all that matters is the set of clips the bin references.
 //
-// After the prelude the file is a Bento container stream. The full object
-// graph is not parsed here — we only need the MOB ID.
+// An Avid bin is a Bento container with this header layout:
+//   06 00 "DomainDJBO"  07 00 "AObjDoc"  04 13 00  <YYYY/MM/DD HH:MM:SS>
 //
 // MOB IDs appear in two forms:
-//
 //   1. Binary — 32-byte runs in the byte stream:
 //         SMPTE UMID   06 0E 2B 34 04 01 ...   (32 bytes)
 //         Avid MOB     06 0A 2B 34 01 01 0F ... (32 bytes)
 //
-//   2. ASCII hex-string — same underlying 32 bytes, serialised with dashes
+//   2. ASCII hex string — same underlying 32 bytes, serialised with dashes
 //      at field boundaries, e.g.:
 //         "060a2b340101010001010f0013-000000-6b0fb74dc6fa687b-..."
 //      64 hex chars after stripping dashes.
 //
 // Endian mismatch:
-//   Bytes 16..23 hold a (uint32, uint16, uint16) triple.
-//   AVB files store these little-endian; PMR files store them big-endian.
-//   The same logical MOB therefore has two distinct 32-byte representations.
-//
-//   Example of the AVB ↔ PMR endian flip ("RAY 80 ama" composition MOB):
-//     Bin : 060a2b3401010105 01010f1013000000 a4bb7f13 1139 9006 6d01ce4ff0f5d57a
-//     PMR : 060a2b3401010105 01010f1013000000 137fbba4 3911 0690 6d01ce4ff0f5d57a
-//                                             [u32]    [u16][u16]
-//
-//   Both variants are stored in mobIds so lookups against MediaFile::mobId
-//   and MediaFile::compositionMobId work regardless of source.
+//   Bytes 16..23 hold a (uint32, uint16, uint16) triple. AVB stores them
+//   little-endian; PMR stores them big-endian. The same logical MOB therefore
+//   has two distinct 32-byte representations, e.g.:
+//     Bin : 060a2b3401010105 01010f1013000000 78563412 bbaa ddcc 0123456789abcdef
+//     PMR : 060a2b3401010105 01010f1013000000 12345678 aabb ccdd 0123456789abcdef
+//   Both variants land in mobIds so lookups against MediaFile::mobId and
+//   MediaFile::compositionMobId hit regardless of source.
 //
 // Bento sentinels share the 06 0? 2B 34 prefix (e.g. 06 0E 2B 34 7F 7F 2A 80)
-// and are excluded by the byte-4/12/20 checks in the validators below.
+// and are filtered out by the byte-4/12/20 checks in the validators below.
 
 namespace
 {
@@ -91,19 +87,18 @@ namespace
         }
         if (clean.size() != 64)
             return false;
-        const QByteArray raw = QByteArray::fromHex(clean);
-        std::memcpy(out, raw.constData(), kMobIdLen);
+        std::memcpy(out, QByteArray::fromHex(clean).constData(), kMobIdLen);
         return true;
     }
-} // namespace
+}
 
 AvbBin AvbParser::parse(const QString &avbFilePath)
 {
     AvbBin result;
     result.filePath = avbFilePath;
 
+    // completeBaseName() preserves dots ("director.cuts.avb" → "director.cuts").
     QFileInfo fi(avbFilePath);
-    // preserves fullstops in the filename (e.g. "director.cuts.avb" = "director.cuts")
     result.displayName = fi.completeBaseName();
 
     QFile file(avbFilePath);
@@ -136,38 +131,32 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
         return result;
     }
 
-    const uchar *data = reinterpret_cast<const uchar *>(buf.constData());
+    const auto *data = reinterpret_cast<const uchar *>(buf.constData());
     const qint64 size = buf.size();
 
-    // pass 1: binary 32-byte MOB IDs
+    // Pass 1: binary 32-byte MOB IDs.
     const qint64 scanEnd = size - kMobIdLen;
-    qint64 i = 0;
-    while (i <= scanEnd)
+    for (qint64 i = 0; i <= scanEnd;)
     {
         if (data[i] != 0x06 || data[i + 2] != 0x2B || data[i + 3] != 0x34)
         {
             ++i;
             continue;
         }
-
-        const uchar b1 = data[i + 1];
         const uchar *p = data + i;
-        if (b1 == 0x0E && isValidSmpteUmid(p))
+        if ((data[i + 1] == 0x0E && isValidSmpteUmid(p)) ||
+            (data[i + 1] == 0x0A && isValidAvidMob(p)))
         {
             insertBothForms(result.mobIds, p);
             i += kMobIdLen;
-            continue;
         }
-        if (b1 == 0x0A && isValidAvidMob(p))
+        else
         {
-            insertBothForms(result.mobIds, p);
-            i += kMobIdLen;
-            continue;
+            ++i;
         }
-        ++i;
     }
 
-    // pass 2: ASCII hex-string MOB IDs (same form PMR records use). Match the
+    // Pass 2: ASCII hex string MOB IDs (the format used by PMR). Match the
     // prefix then up to 68 chars of [0-9a-f-]; decoder validates after dashes are stripped.
     static const QRegularExpression kHexStringMobRe(
         QStringLiteral("06(?:0a|0e)2b34[0-9a-f-]{56,68}"));
@@ -175,9 +164,8 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
     auto it = kHexStringMobRe.globalMatch(asLatin1);
     while (it.hasNext())
     {
-        const QRegularExpressionMatch m = it.next();
         uchar raw[kMobIdLen];
-        if (decodeHexStringMob(m.captured(0).toLatin1(), raw))
+        if (decodeHexStringMob(it.next().captured(0).toLatin1(), raw))
             insertBothForms(result.mobIds, raw);
     }
 

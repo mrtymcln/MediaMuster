@@ -2,10 +2,10 @@ name: Build MediaMuster
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     tags: [ 'v*' ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
 
 ### Grant permission to write to the Releases page ###
@@ -27,12 +27,12 @@ jobs:
     name: ${{ matrix.name }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       ### Install Qt ###
       - name: Install Qt (macOS)
         if: runner.os == 'macOS'
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: '6.5.3'
           host: 'mac'
@@ -41,7 +41,7 @@ jobs:
 
       - name: Install Qt (Windows)
         if: runner.os == 'Windows'
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: '6.5.3'
           host: 'windows'
@@ -80,7 +80,7 @@ jobs:
         if: runner.os == 'macOS' && env.MAC_CERTS_BASE64 != ''
         env:
           MAC_CERTS_BASE64: ${{ secrets.MAC_CERTS_BASE64 }}
-        uses: Apple-Actions/import-codesign-certs@v3
+        uses: Apple-Actions/import-codesign-certs@v7
         with:
           p12-file-base64: ${{ secrets.MAC_CERTS_BASE64 }}
           p12-password:    ${{ secrets.MAC_CERTS_PASSWORD }}
@@ -211,14 +211,14 @@ jobs:
       ### Upload artifacts ###
       - name: Upload macOS artifact
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MediaMuster-Mac
           path: build/MediaMuster-Mac.dmg
 
       - name: Upload Windows artifact
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MediaMuster-Win
           path: build/MediaMuster.exe
@@ -231,13 +231,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-assets
           merge-multiple: true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             release-assets/MediaMuster-Mac.dmg

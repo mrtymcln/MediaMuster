@@ -2,7 +2,6 @@
 
 #include <QString>
 
-// Mono font for the log console only; the rest of the UI uses native styling.
 namespace Theme
 {
     inline QString monoFont()

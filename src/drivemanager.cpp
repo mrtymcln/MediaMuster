@@ -6,6 +6,8 @@
 #include <QStandardPaths>
 #include <QProcess>
 
+#include <algorithm>
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -28,24 +30,17 @@ void DriveManager::stopMonitoring()
 void DriveManager::pollDrives()
 {
     auto current = detectDrives();
-    bool changed = current.size() != m_lastDrives.size();
-    if (!changed)
-    {
-        for (int i = 0; i < static_cast<int>(current.size()); ++i)
-        {
-            if (current[i].name != m_lastDrives[i].name ||
-                current[i].path != m_lastDrives[i].path)
-            {
-                changed = true;
-                break;
-            }
-        }
-    }
-    if (changed)
-    {
-        m_lastDrives = current;
-        emit drivesChanged(current);
-    }
+    const bool sameIdentity = current.size() == m_lastDrives.size() &&
+                              std::equal(current.cbegin(), current.cend(), m_lastDrives.cbegin(),
+                                         [](const DriveInfo &a, const DriveInfo &b)
+                                         {
+                                             return a.name == b.name && a.path == b.path;
+                                         });
+    if (sameIdentity)
+        return;
+
+    m_lastDrives = current;
+    emit drivesChanged(current);
 }
 
 QStringList DriveManager::knownAvidLocations()
@@ -74,14 +69,14 @@ QVector<DriveInfo> DriveManager::detectDrives() const
     QVector<DriveInfo> drives;
     QSet<QString> seenPaths;
 
-    // QStorageInfo covers most cases but can miss Nexis and some network mounts.
+    // QStorageInfo covers most cases but can miss Nexis and other network mounts.
     for (const QStorageInfo &vol : QStorageInfo::mountedVolumes())
     {
         if (!vol.isValid() || !vol.isReady())
             continue;
 
-        QString mountPath = vol.rootPath();
-        if (vol.bytesTotal() < static_cast<qint64>(500) * 1024 * 1024)
+        const QString mountPath = vol.rootPath();
+        if (vol.bytesTotal() < qint64(500) * 1024 * 1024)
             continue;
 
 #ifdef Q_OS_MAC
@@ -107,10 +102,6 @@ QVector<DriveInfo> DriveManager::detectDrives() const
         {
             name = QDir(mountPath).dirName();
         }
-#endif
-#ifdef Q_OS_WIN
-        if (name.isEmpty())
-            name = mountPath;
 #endif
         if (name.isEmpty())
             name = mountPath;
@@ -156,7 +147,7 @@ QVector<DriveInfo> DriveManager::detectDrives() const
 #endif
 
     // Pick up Avid directories that sit inside an already-mounted
-    // volume (typically the boot drive) rather than on their own mount point.
+    // volume (typically the system drive) rather than on their own mount point.
     for (const QString &avidPath : knownAvidLocations())
     {
         QDir avidDir(avidPath);
@@ -176,29 +167,6 @@ QVector<DriveInfo> DriveManager::detectDrives() const
         info.isMounted = true;
         drives.append(info);
     }
-
-#ifdef Q_OS_WIN
-    // Probe well-known Nexis UNC paths that Windows won't enumerate on its own.
-    for (const char *unc : {"\\\\Nexis", "\\\\Avid"})
-    {
-        QString uncPath = QString::fromLatin1(unc);
-        if (QDir(uncPath).exists() && !seenPaths.contains(uncPath))
-        {
-            seenPaths.insert(uncPath);
-            QStorageInfo si(uncPath);
-            DriveInfo info;
-            info.name = uncPath.mid(2);
-            info.path = uncPath;
-            info.totalBytes = si.isValid() ? si.bytesTotal() : 0;
-            info.freeBytes = si.isValid() ? si.bytesAvailable() : 0;
-            info.usedBytes = info.totalBytes - info.freeBytes;
-            info.driveType = "Nexis";
-            info.hasAvidMedia = hasAvidMediaFolder(uncPath);
-            info.isMounted = true;
-            drives.append(info);
-        }
-    }
-#endif
 
     std::sort(drives.begin(), drives.end(), [](const DriveInfo &a, const DriveInfo &b)
               {
@@ -245,8 +213,7 @@ QString DriveManager::detectDriveType(const QString &name, const QString &path)
     QStorageInfo si(path);
     const QString fsType = QString::fromLatin1(si.fileSystemType()).toLower();
 
-    // AvidFOS is the Nexis filesystem. The name check is a fallback for when
-    // the FS query comes back empty but the volume is clearly named after Nexis.
+    // AvidFOS is the Nexis filesystem.
     if (fsType == "avidfos" || fsType == "avidfs" || upper.contains("NEXIS"))
         return "Nexis";
 

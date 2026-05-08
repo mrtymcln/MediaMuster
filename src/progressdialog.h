@@ -5,12 +5,6 @@
 class QLabel;
 class QProgressBar;
 class QPushButton;
-
-// Reusable progress dialog for scans and file operations. Shows a title,
-// a secondary detail label (filename/path, mid-elided), a progress bar
-// that flips to indeterminate when total == 0, a counter, and a Cancel
-// button. Caller opens it via begin(); only the Cancel button can abort.
-
 class ProgressDialog : public QDialog
 {
     Q_OBJECT

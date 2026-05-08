@@ -12,7 +12,6 @@ class QListWidget;
 class QListWidgetItem;
 class QPushButton;
 
-// Non-modal dialog for filtering media against one or more Avid bins.
 // Holds a bin set (loaded .avb files as AvbBins) and an ordered chain
 // of (operation, bin set) steps. filterChainChanged emits the resolved
 // accepted-MOB set, or an empty set with isActive=false if the chain
@@ -85,11 +84,9 @@ private:
     // universe doesn't matter because the intersect narrows immediately.
     QSet<QString> allLoadedMobs() const;
 
-    // State
     QVector<AvbBin> m_bins;
     QVector<ChainStep> m_chain;
 
-    // UI
     QListWidget *m_binList = nullptr;
     QLabel *m_binListSummary = nullptr;
     QListWidget *m_chainList = nullptr;

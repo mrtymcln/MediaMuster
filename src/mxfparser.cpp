@@ -1,16 +1,22 @@
 #include "mxfparser.h"
 #include <QFile>
+#include <QHash>
 #include <QtEndian>
 #include <algorithm>
 #include <array>
 #include <cstring>
-#include <unordered_map>
 
-// SMPTE Universal Labels
-static const char UL_HEADER_PARTITION[] =
+// Extracts technical metadata from MXF file headers via direct KLV parsing.
+// Only the header partition is read — essence data is never touched.
+//
+// The two SMPTE Universal Labels below are the KLV keys we anchor against:
+// the Header Partition Pack marks where parsing starts, and the Set prefix
+// flags every metadata Set we care about (descriptors, packages, components).
+
+static constexpr char UL_HEADER_PARTITION[] =
 	"\x06\x0e\x2b\x34\x02\x05\x01\x01\x0d\x01\x02\x01\x01\x02";
 
-static const char UL_SET_PREFIX[] =
+static constexpr char UL_SET_PREFIX[] =
 	"\x06\x0e\x2b\x34\x02\x53\x01\x01\x0d\x01\x01\x01\x01\x01";
 
 static constexpr quint8 SET_CDCI = 0x28;
@@ -23,7 +29,7 @@ static constexpr quint8 SET_SEQUENCE = 0x0F;
 static constexpr quint8 SET_SOURCE_CLIP = 0x11;
 static constexpr quint8 SET_TIMECODE = 0x14;
 
-// Duration fields come in 4- or 8-byte big-endian form depending on the MXF flavour.
+// Duration fields come in 4- or 8-byte big endian form depending on the MXF flavour.
 // Caller must have verified that pos + len is within data bounds.
 static qint64 readDuration(const QByteArray &data, qint64 pos, quint16 len)
 {
@@ -38,7 +44,6 @@ static qint64 readDuration(const QByteArray &data, qint64 pos, quint16 len)
 	}
 	return qFromBigEndian<quint32>(p);
 }
-
 
 qint64 MxfParser::readBerLength(const QByteArray &data, qint64 offset, int &bytesUsed)
 {
@@ -80,17 +85,39 @@ quint32 MxfParser::readUint32BE(const QByteArray &data, qint64 offset)
 	return qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(data.constData() + offset));
 }
 
-
-MxfMetadata MxfParser::parseHeader(const QString &filePath)
+// Avid allocates 256 KB or 512 KB for the header, depending on Media Composer version.
+// Fall back to 512 KB read if the first pass yields no valid metadata results.
+MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 {
-	MxfMetadata meta;
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly))
-		return meta;
+	{
+		if (bytesRead)
+			*bytesRead = 0;
+		return {};
+	}
 
-	// 512 KB covers every real-world MXF header partition we've seen.
-	const QByteArray data = file.read(512 * 1024);
+	constexpr qint64 kFastRead = 256 * 1024;
+	constexpr qint64 kFallbackRead = 512 * 1024;
+
+	QByteArray data = file.read(kFastRead);
+	MxfMetadata meta = parseFromBuffer(data);
+
+	if (!meta.valid && data.size() < kFallbackRead)
+	{
+		data.append(file.read(kFallbackRead - data.size()));
+		meta = parseFromBuffer(data);
+	}
 	file.close();
+
+	if (bytesRead)
+		*bytesRead = data.size();
+	return meta;
+}
+
+MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
+{
+	MxfMetadata meta;
 
 	qint64 pos = 0;
 	const int headerIdx = data.indexOf(QByteArray(UL_HEADER_PARTITION, 14));
@@ -192,7 +219,6 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath)
 	return meta;
 }
 
-
 void MxfParser::parseDescriptorSet(const QByteArray &data, qint64 startPos, qint64 length, MxfMetadata &out)
 {
 	qint64 pos = startPos;
@@ -263,7 +289,7 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, qint64 startPos, qint
 					out.sampleRate = static_cast<int>(num / den);
 			}
 			break;
-		case 0x3301: // video quantization bits
+		case 0x3301: // video quantisation bits
 			if (len >= 4)
 				out.bitDepth = QString("%1-bit").arg(readUint32BE(data, pos));
 			break;
@@ -279,7 +305,6 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, qint64 startPos, qint
 		pos += len;
 	}
 }
-
 
 void MxfParser::parseMaterialPackage(const QByteArray &data, qint64 startPos, qint64 length, MxfMetadata &out)
 {
@@ -316,7 +341,6 @@ void MxfParser::parseMaterialPackage(const QByteArray &data, qint64 startPos, qi
 	}
 }
 
-
 void MxfParser::parseStructuralComponent(const QByteArray &data, qint64 startPos, qint64 length, MxfMetadata &out)
 {
 	qint64 pos = startPos;
@@ -340,18 +364,17 @@ void MxfParser::parseStructuralComponent(const QByteArray &data, qint64 startPos
 	}
 }
 
-// Codec dictionary — 61 ULs verified against real-world files from Media Composer 2023 and 2025.
-
+// ULs verified against files from Media Composer 2023 and 2025.
 QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString &fps)
 {
 	if (label.isEmpty())
 		return {};
 
-	const QString hexStr = label.toHex().toUpper();
-
-	static const std::unordered_map<QString, QString> kCodecs = {
-
-		// Avid legacy (JFIF / meridien / MJPEG)
+	// Hex strings here are decoded once at first call; lookup uses raw bytes
+	// against `label` directly — no per-call toHex/toUpper allocation.
+	struct Entry { const char *hex; const char *name; };
+	static constexpr Entry kEntries[] = {
+		// Avid legacy (JFIF / Meridien / MJPEG)
 		{"060E2B34040101010D01030102010101", "Avid 15:1s"},
 		{"060E2B34040101010D01030102010201", "Avid 2:1"},
 		{"060E2B34040101010D01030102010401", "Avid 3:1"},
@@ -361,13 +384,13 @@ QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString 
 		{"060E2B34040101010D01030102050101", "Avid 1:1 8-bit"},
 		{"060E2B34040101010D01030102050201", "Avid 1:1 10-bit"},
 
-		// DNxHD — Avid private ULs (bitrate names resolved from fps below)
+		// DNxHD — Avid private (bitrate names resolved from fps below)
 		{"060E2B34040101010D01030102060301", "DNxHD LB"},
 		{"060E2B34040101010D01030102060101", "DNxHD SQ"},
 		{"060E2B34040101010D01030102060201", "DNxHD HQ"},
 		{"060E2B34040101010D01030102060202", "DNxHD HQX"},
 
-		// DNxHD — SMPTE VC-3 registered ULs (namespace 04.01.02.02.71.XX.00.00)
+		// DNxHD — SMPTE VC-3 registered (namespace 04.01.02.02.71.XX.00.00)
 		{"060E2B340401010A0401020271130000", "DNxHD LB"},  // CID 0x13
 		{"060E2B340401010A0401020271030000", "DNxHD SQ"},  // CID 0x03
 		{"060E2B340401010A0401020271040000", "DNxHD HQ"},  // CID 0x04
@@ -375,18 +398,18 @@ QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString 
 		{"060E2B340401010A0401020271070000", "DNxHD HQX"}, // CID 0x07 — 10-bit 4:2:2
 		{"060E2B340401010A0401020271090000", "DNxHD HQ"},  // CID 0x09 — 8-bit 4:2:2
 
-		// DNxHR — Avid private ULs (namespace 0D.01.03.01.02.11.XX.01)
+		// DNxHR — Avid private (namespace 0D.01.03.01.02.11.XX.01)
 		{"060E2B34040101010D01030102110101", "DNxHR LB"},
 		{"060E2B34040101010D01030102110201", "DNxHR SQ"},
 		{"060E2B34040101010D01030102110301", "DNxHR HQ"},
 		{"060E2B34040101010D01030102110401", "DNxHR HQX"},
 		{"060E2B34040101010D01030102110501", "DNxHR 444"},
 
-		// DNxHR — Avid private essence coding namespace (0E.04.02.01.02.11.XX.00)
+		// DNxHR — Avid private (namespace 0E.04.02.01.02.11.XX.00)
 		{"060E2B34040101010E04020102110300", "DNxHR HQ"},
 		{"060E2B34040101010E04020102110400", "DNxHR HQX"},
 
-		// DNxHR — SMPTE registered ULs
+		// DNxHR — SMPTE registered
 		{"060E2B340401010D0401020271250000", "DNxHR SQ"}, // CID 0x25
 		{"060E2B340401010D0401020271260000", "DNxHR HQ"}, // CID 0x26
 
@@ -414,7 +437,8 @@ QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString 
 		{"060E2B340401010A0401020201323001", "AVC-Intra 100"},
 		{"060E2B340401010A0401020201323104", "AVC-Intra 100 (4:2:2)"},
 
-		// AVC Long GOP — single UL covers 6/12/25/35/50 Mbps variants
+		// AVC Long GOP — covers variants
+		{"060E2B340401010D0401020201312001", "AVC Long GOP"},
 		{"060E2B340401010D0401020201314001", "AVC Long GOP"},
 		{"060E2B340401010D0401020201316001", "AVC Long GOP"},
 
@@ -430,7 +454,7 @@ QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString 
 		{"060E2B34040101070401020203010100", "JPEG 2000"},
 		{"060E2B340401010D040102020301020A", "JPEG 2000 IMF"},
 
-		// Apple ProRes — Avid legacy ULs
+		// Apple ProRes — Avid private
 		{"060E2B34040101010D010301020C0101", "Apple ProRes Proxy"},
 		{"060E2B34040101010D010301020C0201", "Apple ProRes LT"},
 		{"060E2B34040101010D010301020C0301", "Apple ProRes 422"},
@@ -445,16 +469,27 @@ QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString 
 		{"060E2B340401010D0401020203060500", "Apple ProRes 4444"},
 		{"060E2B340401010D0401020203060600", "Apple ProRes 4444 XQ"},
 
-		// Avid miscellaneous
+		// miscellaneous
 		{"060E2B34040101010E04030101030200", "Avid Title/Matte"},
 		{"4B464141000D4D4F", "Avid Title (Uncompressed)"},
 		{"060E2B34040101010D01030102060100", "PCM Audio"},
 	};
 
-	const auto it = kCodecs.find(hexStr);
+	static const QHash<QByteArray, QString> kCodecs = []
+	{
+		QHash<QByteArray, QString> m;
+		m.reserve(std::size(kEntries));
+		for (const auto &e : kEntries)
+			m.insert(QByteArray::fromHex(e.hex), QString::fromLatin1(e.name));
+		return m;
+	}();
+
+	const auto it = kCodecs.find(label);
 	if (it == kCodecs.end())
 	{
-		// Unknown UL — try to return the family name from the byte structure so editors see
+		// Unknown UL — build the hex string only for the error path.
+		const QString hexStr = QString::fromLatin1(label.toHex().toUpper());
+		// Try to return the family name from the byte structure so editors see
 		// something more useful than the raw hex.
 		QString family;
 		if (label.size() >= 16)
@@ -495,7 +530,7 @@ QString MxfParser::codecFromEssenceLabel(const QByteArray &label, const QString 
 		return "Unknown (" + hexStr + ")";
 	}
 
-	const QString &baseName = it->second;
+	const QString &baseName = it.value();
 
 	// DNxHD bitrates depend on framerate — the UL only identifies the quality tier.
 	if (baseName == "DNxHD LB")
@@ -539,12 +574,11 @@ QString MxfParser::formatUmid(const QByteArray &raw)
 	if (raw.size() < 32)
 		return {};
 
-	if (std::all_of(raw.cbegin(), raw.cbegin() + 32, [](char c)
-					{ return c == '\0'; }))
+	if (std::all_of(raw.cbegin(), raw.cbegin() + 32,
+					[](char c) { return c == '\0'; }))
 		return QStringLiteral("0000000000000000.0000000000000000."
 							  "0000000000000000.0000000000000000");
 
-	// In-place hex build; no per-byte alloc.
 	static constexpr char kHex[] = "0123456789ABCDEF";
 	QString result(67, Qt::Uninitialized);
 	int out = 0;

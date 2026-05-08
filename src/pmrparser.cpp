@@ -1,167 +1,136 @@
 #include "pmrparser.h"
 #include "mobid.h"
+
 #include <QFile>
-#include <QDir>
 #include <QDebug>
 #include <QtEndian>
 
-// PMR File Format (reverse-engineered from Media Composer 2024)
+// msmFMID.pmr — is the Persistent Media Record written into every
+// Avid MediaFiles/MXF folder. It is a flat Filename to MobId index, and the
+// fastest way to map an essence file to its source/master Mobs without
+// walking the MXF headers.
 //
-// All integers are LITTLE-ENDIAN.
-//
-// Header (12 bytes):
-//   uint32 LE: related to file/data size
-//   uint32 LE: version or format indicator (observed: 8)
-//   uint32 LE: pair_count: number of FILE+COMP pairs
-//
-// Records (pair_count × 2 entries, alternating):
-//
-//   FILE record:
-//     32 bytes: MOB ID (SMPTE UMID: source/file mob)
-//     uint16 LE: filename string length
-//     N bytes: filename (UTF-8, NOT null-terminated)
-//     uint16 LE: project name string length
-//     M bytes: project name (UTF-8, NOT null-terminated)
-//
-//   COMP record (composition/material mob):
-//     32 bytes: MOB ID (SMPTE UMID: material mob)
-//     4 bytes: flags or reference data (purpose unknown)
-//
-// The file may contain a second section repeating the same data
-// with uint32 LE string lengths instead of uint16.
+// Layout is reverse-engineered from Media Composer 2025, all integers LE:
+//   Header (12 bytes):  uint32 sizeHint, uint32 version (=8), uint32 pairCount
+//   Body (pairCount × 2 records, alternating FILE then COMP):
+//     FILE: 32-byte MOB | uint16 nameLen | name (UTF-8) | uint16 projLen | project (UTF-8)
+//     COMP: 32-byte MOB | 4 bytes (flags/refs — purpose unknown)
+// The COMP MOB is the master clip. Sibling tracks (V01/A01/A02 etc)
+// all reference the same COMP, which is how we group relatives.
 
-static quint16 readU16LE(const QByteArray &d, qint64 o)
+namespace
 {
-    if (o + 2 > d.size())
-        return 0;
-    return qFromLittleEndian<quint16>(reinterpret_cast<const uchar *>(d.constData() + o));
-}
+    constexpr qint64 kHeaderSize = 12;
+    constexpr qint64 kMobIdSize = MobId::kRawSize;
+    constexpr qint64 kCompTrailerSize = 4;
+    constexpr quint16 kMaxStringLen = 1024;
+    constexpr quint32 kMaxPairCount = 5'000'000;
 
-static quint32 readU32LE(const QByteArray &d, qint64 o)
-{
-    if (o + 4 > d.size())
-        return 0;
-    return qFromLittleEndian<quint32>(reinterpret_cast<const uchar *>(d.constData() + o));
-}
+    template <typename T>
+    T readLE(const QByteArray &data, qint64 offset)
+    {
+        if (offset < 0 || offset + qint64(sizeof(T)) > data.size())
+            return T{};
+        return qFromLittleEndian<T>(data.constData() + offset);
+    }
 
-QString PmrParser::readString(const QByteArray &data, qint64 offset, int length)
-{
-    if (length <= 0 || offset + length > data.size())
-        return {};
-    QByteArray raw = data.mid(static_cast<qsizetype>(offset), length);
-    // Strip any leading/trailing null bytes
-    while (!raw.isEmpty() && raw.at(0) == '\0')
-        raw.remove(0, 1);
-    int end = static_cast<int>(raw.indexOf('\0'));
-    if (end >= 0)
-        raw.truncate(end);
-    return QString::fromUtf8(raw);
-}
-
-QString PmrParser::formatMobId(const QByteArray &raw)
-{
-    return MobId::format(raw);
+    QString readString(const QByteArray &data, qint64 offset, qint64 length)
+    {
+        if (length <= 0 || offset < 0 || offset + length > data.size())
+            return {};
+        const char *begin = data.constData() + offset;
+        const char *end = begin + length;
+        while (begin < end && *begin == '\0')
+            ++begin;
+        const char *terminator = std::find(begin, end, '\0');
+        return QString::fromUtf8(begin, terminator - begin);
+    }
 }
 
 QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath)
 {
-    QVector<PmrEntry> entries;
-
     QFile file(pmrFilePath);
     if (!file.open(QIODevice::ReadOnly))
     {
-        qWarning() << "PMR: Cannot open" << pmrFilePath;
-        return entries;
+        qWarning() << "PMR: cannot open" << pmrFilePath;
+        return {};
+    }
+    const QByteArray data = file.readAll();
+
+    if (data.size() < kHeaderSize + kMobIdSize)
+    {
+        qWarning() << "PMR: file too small" << data.size() << pmrFilePath;
+        return {};
     }
 
-    QByteArray data = file.readAll();
-    file.close();
-
-    if (data.size() < 16)
+    const quint32 pairCount = readLE<quint32>(data, 8);
+    if (pairCount == 0 || pairCount > kMaxPairCount)
     {
-        qWarning() << "PMR: File too small" << data.size();
-        return entries;
+        qWarning() << "PMR: implausible pair count" << pairCount << pmrFilePath;
+        return {};
     }
 
-    // 12-byte header, LE.
-    quint32 word0 = readU32LE(data, 0);
-    quint32 word1 = readU32LE(data, 4); // version/format (typically 8)
-    quint32 pairCount = readU32LE(data, 8);
+    QVector<PmrEntry> entries;
+    entries.reserve(pairCount);
 
-    qDebug() << "PMR:" << pmrFilePath;
-    qDebug() << "  Header: word0=" << word0 << "word1=" << word1
-             << "pairCount=" << pairCount << "fileSize=" << data.size();
+    qint64 pos = kHeaderSize;
+    int lastFileIdx = -1;
+    const quint32 totalRecords = pairCount * 2;
 
-    if (pairCount == 0 || pairCount > 5000000)
+    for (quint32 i = 0; i < totalRecords; ++i)
     {
-        qWarning() << "PMR: Suspicious pair count" << pairCount;
-        return entries;
-    }
-
-    // Pair = FILE + COMP. The COMP MOB attaches to the most recent FILE so siblings
-    // (V01 + A01 + A02 of one AMA transcode) group on it downstream.
-    qint64 pos = 12;
-    quint32 totalRecords = pairCount * 2;
-    int lastFileEntryIdx = -1;
-
-    for (quint32 i = 0; i < totalRecords && pos + 34 < data.size(); ++i)
-    {
-        // Every record starts with a 32-byte MOB ID
-        if (pos + 32 > data.size())
+        if (pos + kMobIdSize + 2 > data.size())
             break;
-        QByteArray mob = data.mid(static_cast<qsizetype>(pos), 32);
-        pos += 32;
 
-        // Read 2-byte LE value to determine record type
-        if (pos + 2 > data.size())
-            break;
-        quint16 firstWord = readU16LE(data, pos);
+        const QString mobHex =
+            MobId::format(reinterpret_cast<const unsigned char *>(data.constData() + pos));
+        pos += kMobIdSize;
 
-        if (firstWord > 0 && firstWord < 1024)
+        const quint16 firstWord = readLE<quint16>(data, pos);
+
+        // FILE records lead with a 1..1023-byte filename length; COMP records
+        // lead with flag bytes that, in observed files, sit outside that range.
+        const bool isFile = firstWord > 0 && firstWord < kMaxStringLen;
+
+        if (isFile)
         {
-            // FILE record: filename + project name.
-            pos += 2; // filename length
-            quint16 fnLen = firstWord;
-
-            if (pos + fnLen > data.size())
+            pos += 2;
+            const quint16 nameLen = firstWord;
+            if (pos + nameLen + 2 > data.size())
                 break;
-            QString fileName = readString(data, pos, fnLen);
-            pos += fnLen;
 
-            // Read project name
-            if (pos + 2 > data.size())
-                break;
-            quint16 projLen = readU16LE(data, pos);
+            QString fileName = readString(data, pos, nameLen);
+            pos += nameLen;
+
+            const quint16 projLen = readLE<quint16>(data, pos);
             pos += 2;
 
             QString project;
-            if (projLen > 0 && projLen < 1024 && pos + projLen <= data.size())
+            if (projLen > 0 && projLen < kMaxStringLen && pos + projLen <= data.size())
             {
                 project = readString(data, pos, projLen);
                 pos += projLen;
             }
 
-            if (!fileName.isEmpty())
-            {
-                PmrEntry entry;
-                entry.mobId = mob;
-                entry.mobIdHex = formatMobId(mob);
-                entry.fileName = fileName;
-                entry.project = project;
-                entries.append(entry);
-                lastFileEntryIdx = entries.size() - 1;
-            }
+            if (fileName.isEmpty())
+                continue;
+
+            PmrEntry entry;
+            entry.mobId = mobHex;
+            entry.fileName = std::move(fileName);
+            entry.project = std::move(project);
+            entries.append(std::move(entry));
+            lastFileIdx = entries.size() - 1;
         }
         else
         {
-            // COMP record: attach to last FILE, then clear so we don't double-attach.
-            pos += 4;
-            if (lastFileEntryIdx >= 0 &&
-                lastFileEntryIdx < entries.size())
+            // COMP record — attach Master Clip MOB to the previous FILE,
+            // then drop the index so a stray COMP can't double-attach.
+            pos += kCompTrailerSize;
+            if (lastFileIdx >= 0)
             {
-                entries[lastFileEntryIdx].compositionMobId = mob;
-                entries[lastFileEntryIdx].compositionMobIdHex = formatMobId(mob);
-                lastFileEntryIdx = -1;
+                entries[lastFileIdx].compositionMobId = mobHex;
+                lastFileIdx = -1;
             }
         }
     }
@@ -169,27 +138,24 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath)
     return entries;
 }
 
-
 PmrParser::ProjectMaps PmrParser::buildFileMapWithFallback(const QString &pmrFilePath)
 {
-    ProjectMaps maps;
-    auto entries = parse(pmrFilePath);
-
-    // Fallback key: strip extension, dots → '_', lowercase. Catches Avid's
-    // recorded basename differing from the on-disk filename in case/punctuation.
-    auto fallbackKey = [](const QString &name) -> QString
+    // Fallback: strips extension, lowers case, and swaps dots for '_' for
+    // mismatches between actual database and OS filesystem.
+    const auto fallbackKey = [](const QString &name)
     {
-        const int lastDot = name.lastIndexOf('.');
+        const int lastDot = name.lastIndexOf(QLatin1Char('.'));
         QString base = (lastDot > 0) ? name.left(lastDot) : name;
-        return base.replace('.', '_').toLower();
+        return base.replace(QLatin1Char('.'), QLatin1Char('_')).toLower();
     };
 
-    for (const auto &e : entries)
+    ProjectMaps maps;
+    for (const auto &entry : parse(pmrFilePath))
     {
         const QString primaryKey =
-            e.fileName.normalized(QString::NormalizationForm_C).toLower();
-        maps.primary[primaryKey].append(e);
-        maps.fallback[fallbackKey(primaryKey)].append(e);
+            entry.fileName.normalized(QString::NormalizationForm_C).toLower();
+        maps.primary[primaryKey].append(entry);
+        maps.fallback[fallbackKey(primaryKey)].append(entry);
     }
     return maps;
 }

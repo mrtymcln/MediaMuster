@@ -1,8 +1,8 @@
 #include "managemediadialog.h"
+#include "formatutil.h"
+#include "mediamanager.h"
 
 #include <QButtonGroup>
-#include <QStandardItemModel>
-#include <QStorageInfo>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDir>
@@ -15,20 +15,35 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QShowEvent>
+#include <QSignalBlocker>
+#include <QStandardItemModel>
+#include <QStorageInfo>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
-static QString formatBytes(qint64 bytes)
+// Updates a preview row's destination column to reflect the chosen conflict
+// policy. For Keep Both we show the actual ".Copy.NN" path that will be used;
+// for Replace/Skip we show the original conflict path in red.
+static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseDest,
+                                     ManageMediaDialog::ConflictPolicy policy)
 {
-    if (bytes >= static_cast<qint64>(1024) * 1024 * 1024 * 1024)
-        return QString("%1 TB").arg(bytes / (1024.0 * 1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
-    if (bytes >= static_cast<qint64>(1024) * 1024 * 1024)
-        return QString("%1 GB").arg(bytes / (1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
-    if (bytes >= 1024 * 1024)
-        return QString("%1 MB").arg(bytes / (1024.0 * 1024.0), 0, 'f', 1);
-    if (bytes >= 1024)
-        return QString("%1 KB").arg(bytes / 1024.0, 0, 'f', 1);
-    return QString("%1 B").arg(bytes);
+    if (policy == ManageMediaDialog::ConflictPolicy::KeepBoth)
+    {
+        const QString renamed = MediaManager::generateRenamePath(baseDest);
+        if (!renamed.isEmpty())
+        {
+            item->setText(1, renamed);
+            item->setForeground(1, QBrush());
+            item->setToolTip(1, QString());
+            return;
+        }
+    }
+    item->setText(1, baseDest);
+    item->setForeground(1, Qt::red);
+    item->setToolTip(1, policy == ManageMediaDialog::ConflictPolicy::KeepBoth
+                            ? ManageMediaDialog::tr("Couldn't generate a unique name (999 .Copy.NN slots already used)")
+                            : ManageMediaDialog::tr("File already exists at destination"));
 }
 
 ManageMediaDialog::ManageMediaDialog(const QVector<MediaFile> &files,
@@ -43,8 +58,6 @@ ManageMediaDialog::ManageMediaDialog(const QVector<MediaFile> &files,
     resize(780, 620);
     setupUi();
 
-    // Pre-select the requested operation (e.g: when invoked from the
-    // context menu's "Copy To…" / "Move To…" / "Delete" items).
     switch (initialOp)
     {
     case Operation::Copy:
@@ -57,7 +70,7 @@ ManageMediaDialog::ManageMediaDialog(const QVector<MediaFile> &files,
         m_radioDelete->setChecked(true);
         break;
     }
-    onOperationChanged(); // sets visibility, populates preview, updates summary
+    onOperationChanged();
 }
 
 void ManageMediaDialog::setupUi()
@@ -66,7 +79,6 @@ void ManageMediaDialog::setupUi()
     root->setContentsMargins(16, 16, 16, 16);
     root->setSpacing(12);
 
-    // ---- operation group ----
     auto *opGroup = new QGroupBox(tr("Operation"));
     auto *opLayout = new QVBoxLayout(opGroup);
     opLayout->setSpacing(8);
@@ -83,7 +95,7 @@ void ManageMediaDialog::setupUi()
         lay->addWidget(radio);
         auto *d = new QLabel(desc);
         d->setWordWrap(true);
-        d->setStyleSheet(QStringLiteral("QLabel { color: palette(mid); }"));
+        d->setStyleSheet(QStringLiteral("QLabel { color: palette(placeholder-text); }"));
         lay->addWidget(d, 1);
         return row;
     };
@@ -93,7 +105,7 @@ void ManageMediaDialog::setupUi()
     opLayout->addWidget(makeOpRow(m_radioMove, tr("Move"),
                                   tr("Move the selected files. Originals are removed after a successful copy.")));
     opLayout->addWidget(makeOpRow(m_radioDelete, tr("Delete"),
-                                  tr("Send the selected files to the Bin. Files can be recovered from the Bin if needed.")));
+                                  tr("Delete the selected files. Deleted files can be recovered if needed.")));
 
     m_radioCopy->setChecked(true);
 
@@ -104,7 +116,6 @@ void ManageMediaDialog::setupUi()
 
     root->addWidget(opGroup);
 
-    // ---- destination group (hidden when delete is selected) ----
     m_destWidget = new QGroupBox(tr("Destination"));
     auto *destOuter = new QVBoxLayout(static_cast<QGroupBox *>(m_destWidget));
     destOuter->setSpacing(4);
@@ -123,20 +134,13 @@ void ManageMediaDialog::setupUi()
     m_spaceWarning->setVisible(false);
     destOuter->addWidget(m_spaceWarning);
 
-    root->addWidget(m_destWidget);
-
-    // ---- options group ----
-    m_optGroup = new QGroupBox(tr("Options"));
-    auto *optLayout = new QVBoxLayout(m_optGroup);
-
     m_chkPreserve = new QCheckBox(
         tr("Preserve Avid folder structure (Avid MediaFiles/MXF/<N>/…)"));
     m_chkPreserve->setChecked(true);
-    optLayout->addWidget(m_chkPreserve);
+    destOuter->addWidget(m_chkPreserve);
 
-    root->addWidget(m_optGroup);
+    root->addWidget(m_destWidget);
 
-    // ---- conflict resolution (hidden until conflicts are detected) ----
     m_conflictGroup = new QGroupBox(tr("Conflicts"));
     auto *conflictLayout = new QHBoxLayout(m_conflictGroup);
 
@@ -146,21 +150,20 @@ void ManageMediaDialog::setupUi()
     conflictLayout->addWidget(conflictLabel, 1);
 
     m_conflictGlobalCombo = new QComboBox;
-    m_conflictGlobalCombo->addItem(tr("Overwrite"), +ConflictPolicy::Overwrite);
+    m_conflictGlobalCombo->addItem(tr("Keep Both"), +ConflictPolicy::KeepBoth);
     m_conflictGlobalCombo->addItem(tr("Skip"), +ConflictPolicy::Skip);
-    m_conflictGlobalCombo->addItem(tr("Append '.Copy.01'"), +ConflictPolicy::Rename);
+    m_conflictGlobalCombo->addItem(tr("Replace"), +ConflictPolicy::Replace);
     m_conflictGlobalCombo->addItem(tr("— Mixed —"), -1);
-    // Make "Mixed" non-selectable: it is set only programmatically
+    // "Mixed" is informational; only set programmatically.
     if (auto *model = qobject_cast<QStandardItemModel *>(m_conflictGlobalCombo->model()))
         model->item(3)->setFlags(Qt::NoItemFlags);
     m_conflictGlobalCombo->setCurrentIndex(0);
     m_conflictGlobalCombo->setMinimumWidth(180);
     conflictLayout->addWidget(m_conflictGlobalCombo);
 
-    m_conflictGroup->setVisible(false); // shown only when conflicts exist
+    m_conflictGroup->setVisible(false);
     root->addWidget(m_conflictGroup);
 
-    // ---- preview group ----
     auto *previewGroup = new QGroupBox(tr("Preview"));
     auto *previewLayout = new QVBoxLayout(previewGroup);
 
@@ -170,6 +173,7 @@ void ManageMediaDialog::setupUi()
     m_previewTree->setMinimumHeight(140);
     m_previewTree->setSortingEnabled(true);
     m_previewTree->header()->setSectionResizeMode(QHeaderView::Stretch);
+    m_previewTree->setTextElideMode(Qt::ElideLeft);
     previewLayout->addWidget(m_previewTree);
 
     m_summaryLabel = new QLabel;
@@ -177,7 +181,6 @@ void ManageMediaDialog::setupUi()
 
     root->addWidget(previewGroup, 1);
 
-    // ---- footer ----
     auto *footer = new QHBoxLayout;
     footer->addStretch(1);
     m_btnCancel = new QPushButton(tr("Cancel"));
@@ -188,7 +191,6 @@ void ManageMediaDialog::setupUi()
     footer->addWidget(m_btnExecute);
     root->addLayout(footer);
 
-    // ---- wiring ----
     connect(m_btnChoose, &QPushButton::clicked, this,
             &ManageMediaDialog::onChooseDestination);
     connect(m_btnCancel, &QPushButton::clicked, this, &QDialog::reject);
@@ -204,11 +206,16 @@ void ManageMediaDialog::setupUi()
             [this](bool)
             { updatePreview(); });
     connect(m_conflictGlobalCombo,
-            QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &QComboBox::currentIndexChanged, this,
             &ManageMediaDialog::onGlobalConflictPolicyChanged);
 }
 
-// Slots
+void ManageMediaDialog::showEvent(QShowEvent *event)
+{
+    QDialog::showEvent(event);
+    raise();
+    activateWindow();
+}
 
 void ManageMediaDialog::onChooseDestination()
 {
@@ -222,7 +229,6 @@ void ManageMediaDialog::onOperationChanged()
 {
     const bool isDel = (operation() == Operation::Delete);
     m_destWidget->setVisible(!isDel);
-    m_optGroup->setVisible(!isDel);
 
     switch (operation())
     {
@@ -233,39 +239,35 @@ void ManageMediaDialog::onOperationChanged()
         m_btnExecute->setText(tr("Move"));
         break;
     case Operation::Delete:
-        m_btnExecute->setText(tr("Send to Bin"));
+        m_btnExecute->setText(tr("Delete"));
         break;
     }
 
-    updatePreview(); // calls updateSummary() internally
+    updatePreview();
 }
 
 void ManageMediaDialog::onGlobalConflictPolicyChanged(int index)
 {
+    // "Mixed" is set only programmatically — don't push it to per-file combos.
     if (m_conflictGlobalCombo->itemData(index).toInt() == -1)
-        return; // "Mixed" — informational only, do not push to per-file combos
+        return;
 
-    for (auto *combo : m_perFileConflictCombos)
+    const ConflictPolicy policy = static_cast<ConflictPolicy>(
+        m_conflictGlobalCombo->itemData(index).toInt());
+
+    // Walk conflict rows directly (only they own a combo at column 2). The
+    // signal blocker stops each per-file change from re-triggering syncGlobal,
+    // so we update the destination preview ourselves.
+    for (int i = 0; i < m_previewTree->topLevelItemCount(); ++i)
     {
-        combo->blockSignals(true); // prevent per-row signal storm
+        QTreeWidgetItem *item = m_previewTree->topLevelItem(i);
+        auto *combo = qobject_cast<QComboBox *>(m_previewTree->itemWidget(item, 2));
+        if (!combo)
+            continue;
+        const QSignalBlocker blocker(combo);
         combo->setCurrentIndex(index);
-        combo->blockSignals(false);
+        applyConflictPolicyToRow(item, item->data(1, Qt::UserRole).toString(), policy);
     }
-}
-
-// Preview
-
-QString ManageMediaDialog::buildDestPath(const MediaFile &mf,
-                                         const QString &destRoot,
-                                         bool preserve) const
-{
-    const QDir root(destRoot);
-    if (preserve)
-    {
-        return root.filePath(
-            QStringLiteral("Avid MediaFiles/MXF/%1/%2").arg(mf.mxfFolder, mf.fileName));
-    }
-    return root.filePath(mf.fileName);
 }
 
 void ManageMediaDialog::updatePreview()
@@ -281,37 +283,31 @@ void ManageMediaDialog::updatePreview()
 
     if (op == Operation::Delete)
     {
-        m_previewTree->setHeaderLabels({tr("File"), tr("Size"), tr("Action")});
-        m_previewTree->setColumnCount(3);
+        m_previewTree->setHeaderLabels({tr("Source")});
+        m_previewTree->setColumnCount(1);
         for (const MediaFile &mf : m_files)
-        {
-            auto *item = new QTreeWidgetItem(
-                {mf.filePath, mf.sizeDisplay(), tr("Send to Bin")});
-            m_previewTree->addTopLevelItem(item);
-        }
+            m_previewTree->addTopLevelItem(new QTreeWidgetItem({mf.filePath}));
         m_conflictGroup->setVisible(false);
     }
     else
     {
-        // Columns: Source(0) | Size(1) | Destination(2) [| If exists(3)]
-        // The 4th column is added only if conflicts are detected, to avoid
-        // a confusing empty column in the common no-conflict case.
-        m_previewTree->setHeaderLabels({tr("Source"), tr("Size"), tr("Destination")});
-        m_previewTree->setColumnCount(3);
+        // Columns: Source | Destination | If exists (only for conflicts)
+        m_previewTree->setHeaderLabels({tr("Source"), tr("Destination")});
+        m_previewTree->setColumnCount(2);
 
         if (dest.isEmpty())
         {
             for (const MediaFile &mf : m_files)
             {
                 auto *item = new QTreeWidgetItem(
-                    {mf.filePath, mf.sizeDisplay(), tr("(choose destination)")});
-                item->setForeground(2, Qt::gray);
+                    {mf.filePath, tr("(choose destination)")});
+                item->setForeground(1, Qt::gray);
                 m_previewTree->addTopLevelItem(item);
             }
         }
         else
         {
-            // When global is "Mixed" (data == -1) new combos default to Overwrite.
+            // New per-file combos default to Overwrite when global is "Mixed".
             const int globalIdx = (m_conflictGlobalCombo->currentData().toInt() == -1)
                                       ? 0
                                       : m_conflictGlobalCombo->currentIndex();
@@ -320,6 +316,7 @@ void ManageMediaDialog::updatePreview()
             {
                 QTreeWidgetItem *item;
                 QString sourcePath;
+                QString baseDest;
                 bool conflict;
             };
             QVector<RowInfo> rows;
@@ -327,40 +324,52 @@ void ManageMediaDialog::updatePreview()
 
             for (const MediaFile &mf : m_files)
             {
-                const QString dp = buildDestPath(mf, dest, preserve);
+                const QString dp = MediaManager::buildDestPath(mf, dest, preserve);
                 const bool conflict = QFileInfo::exists(dp);
-                auto *item = new QTreeWidgetItem({mf.filePath, mf.sizeDisplay(), dp});
+                auto *item = new QTreeWidgetItem({mf.filePath, dp});
+                // Stash baseDest on the item so the global-cascade handler can
+                // recompute the destination preview without a closure.
+                item->setData(1, Qt::UserRole, dp);
 
                 if (conflict)
                 {
-                    item->setForeground(2, Qt::red);
-                    item->setToolTip(2, tr("File already exists at destination"));
+                    item->setForeground(1, Qt::red);
+                    item->setToolTip(1, tr("File already exists at destination"));
                     ++conflictCount;
                 }
                 m_previewTree->addTopLevelItem(item);
-                rows.append({item, mf.filePath, conflict});
+                rows.append({item, mf.filePath, dp, conflict});
             }
 
             if (conflictCount > 0)
             {
                 m_previewTree->setHeaderLabels(
-                    {tr("Source"), tr("Size"), tr("Destination"), tr("If exists")});
-                m_previewTree->setColumnCount(4);
+                    {tr("Source"), tr("Destination"), tr("If exists")});
+                m_previewTree->setColumnCount(3);
 
                 for (const RowInfo &r : rows)
                 {
                     if (!r.conflict)
                         continue;
                     auto *combo = new QComboBox;
-                    combo->addItem(tr("Overwrite"), +ConflictPolicy::Overwrite);
+                    combo->addItem(tr("Keep Both"), +ConflictPolicy::KeepBoth);
                     combo->addItem(tr("Skip"), +ConflictPolicy::Skip);
-                    combo->addItem(tr("Append '.Copy.01'"), +ConflictPolicy::Rename);
+                    combo->addItem(tr("Replace"), +ConflictPolicy::Replace);
                     combo->setCurrentIndex(globalIdx);
-                    m_previewTree->setItemWidget(r.item, 3, combo);
+                    m_previewTree->setItemWidget(r.item, 2, combo);
                     m_perFileConflictCombos.insert(r.sourcePath, combo);
-                    connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                            this, [this](int)
-                            { syncGlobalFromPerFile(); });
+
+                    // Reflect the initial policy in the destination column —
+                    // Keep Both is the renamed path, Replace/Skip is red text.
+                    applyConflictPolicyToRow(r.item, r.baseDest,
+                                             static_cast<ConflictPolicy>(combo->currentData().toInt()));
+
+                    connect(combo, &QComboBox::currentIndexChanged,
+                            this, [this, item = r.item, baseDest = r.baseDest, combo](int)
+                            {
+                                applyConflictPolicyToRow(item, baseDest,
+                                    static_cast<ConflictPolicy>(combo->currentData().toInt()));
+                                syncGlobalFromPerFile(); });
                 }
             }
         }
@@ -375,7 +384,7 @@ void ManageMediaDialog::updatePreview()
         }
     }
 
-    syncGlobalFromPerFile(); // keep global in sync after tree rebuild
+    syncGlobalFromPerFile();
     m_previewTree->setSortingEnabled(true);
     updateSummary();
 }
@@ -397,7 +406,7 @@ void ManageMediaDialog::updateSummary()
         opVerb = tr("Move");
         break;
     case Operation::Delete:
-        opVerb = tr("Send to Bin");
+        opVerb = tr("Delete");
         break;
     }
 
@@ -406,7 +415,7 @@ void ManageMediaDialog::updateSummary()
             .arg(opVerb)
             .arg(count)
             .arg(count == 1 ? "" : "s")
-            .arg(formatBytes(totalBytes)));
+            .arg(Format::bytes(totalBytes)));
 
     bool canExecute = !m_files.isEmpty();
     const QString dest = m_destPath->text();
@@ -421,8 +430,8 @@ void ManageMediaDialog::updateSummary()
         {
             m_spaceWarning->setText(
                 tr("Insufficient space: %1 needed, %2 free on destination volume")
-                    .arg(formatBytes(totalBytes))
-                    .arg(formatBytes(storage.bytesAvailable())));
+                    .arg(Format::bytes(totalBytes))
+                    .arg(Format::bytes(storage.bytesAvailable())));
             m_spaceWarning->setVisible(true);
             canExecute = false;
         }
@@ -457,14 +466,11 @@ void ManageMediaDialog::syncGlobalFromPerFile()
         }
     }
 
-    m_conflictGlobalCombo->blockSignals(true);
+    const QSignalBlocker blocker(m_conflictGlobalCombo);
     m_conflictGlobalCombo->setCurrentIndex(
         (allSame && commonIdx >= 0) ? commonIdx
                                     : m_conflictGlobalCombo->findData(-1));
-    m_conflictGlobalCombo->blockSignals(false);
 }
-
-// Accessors (read after exec() returns Accepted)
 
 ManageMediaDialog::Operation ManageMediaDialog::operation() const
 {

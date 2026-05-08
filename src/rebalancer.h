@@ -10,10 +10,6 @@
 #include <optional>
 
 class QThread;
-
-// Redistributes MXF files across numbered MediaFiles subfolders so each ends ≤ CAP files.
-// Two phases: computePlan (sync) and executeAsync (background). After all moves the per-folder
-// msmMMOB.mdb / msmFMID.pmr are deleted; Avid rebuilds them on next project open.
 class Rebalancer : public QObject
 {
 	Q_OBJECT
@@ -42,7 +38,7 @@ public:
 signals:
 	void progress(int current, int total, const QString &detail);
 	void log(int level, const QString &message);
-	void finished(int succeeded, int failed, bool canceled);
+	void finished(int succeeded, int failed, bool cancelled);
 
 	// Pre-flight refused (e.g. files locked); no moves done. No 'finished' will follow.
 	void aborted(const QString &reason);

@@ -1,30 +1,74 @@
 #include "mediamanager.h"
 #include "debugslowdown.h"
+#include "mediamanagerverify.h"
+#include "third_party/xxhash.h"
 #include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QStorageInfo>
+#include <optional>
+#ifdef __APPLE__
+#include <sys/clonefile.h>
+#endif
 
 static constexpr qint64 COPY_BUFFER_SIZE = 4 * 1024 * 1024; // 4 MB chunks
+
+namespace
+{
+    struct XxhStream
+    {
+        XXH3_state_t *s = XXH3_createState();
+        XxhStream() { if (s) XXH3_64bits_reset(s); }
+        ~XxhStream() { if (s) XXH3_freeState(s); }
+        XxhStream(const XxhStream &) = delete;
+        XxhStream &operator=(const XxhStream &) = delete;
+        void update(const void *data, size_t n) { XXH3_64bits_update(s, data, n); }
+        quint64 digest() const { return XXH3_64bits_digest(s); }
+        bool ok() const { return s != nullptr; }
+    };
+
+    // APFS fast path for copy operation. Returns true if succeeded —
+    // caller should treat this as completed, and skip both the byte loop
+    // and the verify pass.
+    bool tryCloneFile(const QString &src, const QString &dst)
+    {
+#ifdef __APPLE__
+        return clonefile(src.toLocal8Bit().constData(),
+                         dst.toLocal8Bit().constData(),
+                         0) == 0;
+#else
+        Q_UNUSED(src);
+        Q_UNUSED(dst);
+        return false;
+#endif
+    }
+
+    // Tail-end log line for Copy/Move/Delete. Skipped count is suppressed when 0.
+    QString formatOperationSummary(const QString &verb, int succeeded, int failed, int skipped = 0)
+    {
+        QString s = QString("%1 complete: %2 succeeded, %3 failed")
+                        .arg(verb).arg(succeeded).arg(failed);
+        if (skipped > 0)
+            s += QString(", %1 skipped").arg(skipped);
+        return s;
+    }
+}
 
 MediaManager::MediaManager(QObject *parent) : QObject(parent) {}
 
 MediaManager::~MediaManager()
 {
-    if (m_thread)
+    if (!m_thread)
+        return;
+    cancel();
+    m_thread->quit();
+    if (!m_thread->wait(5000))
     {
-        cancel();
-        m_thread->quit();
-        if (!m_thread->wait(5000))
-        {
-            // Last-resort terminate.
-            qWarning("FileOperations: worker did not quit within 5s; terminating");
-            m_thread->terminate();
-            m_thread->wait(1000);
-        }
-        // Thread self-deletes via QThread::finished → deleteLater; don't delete here.
+        qWarning("MediaManager: worker did not quit within 5s; terminating");
+        m_thread->terminate();
+        m_thread->wait(1000);
     }
 }
 
@@ -34,78 +78,114 @@ void MediaManager::cancel()
 }
 
 QString MediaManager::buildDestPath(const MediaFile &mf, const QString &destRoot,
-                                      bool preserve)
+                                    bool preserve)
 {
     if (preserve)
-    {
-        QString subPath = QString("Avid MediaFiles/MXF/%1/%2")
-                              .arg(mf.mxfFolder)
-                              .arg(mf.fileName);
-        return destRoot + "/" + subPath;
-    }
-    else
-    {
-        return destRoot + "/" + mf.fileName;
-    }
+        return destRoot + QStringLiteral("/Avid MediaFiles/MXF/") + mf.mxfFolder +
+               QLatin1Char('/') + mf.fileName;
+    return destRoot + QLatin1Char('/') + mf.fileName;
 }
 
-// Inserts .Copy.NN before the extension, incrementing until free.
-// V01.E5FD948F_…AV.mxf → V01.E5FD948F_…AV.Copy.01.mxf → .Copy.02.mxf …
-// Returns empty if 999 copies exhausted.
 QString MediaManager::generateRenamePath(const QString &destPath)
 {
     const QFileInfo fi(destPath);
-    const QString dir  = fi.absolutePath();
-    const QString base = fi.completeBaseName(); // everything before last '.'
-    const QString ext  = fi.suffix();           // extension without the dot
+    const QString dir = fi.absolutePath();
+    const QString base = fi.completeBaseName();
+    const QString ext = fi.suffix();
 
     for (int n = 1; n <= 999; ++n)
     {
-        QString candidate;
-        if (ext.isEmpty())
-            candidate = QString("%1/%2.Copy.%3")
-                            .arg(dir, base)
-                            .arg(n, 2, 10, QChar('0'));
-        else
-            candidate = QString("%1/%2.Copy.%3.%4")
-                            .arg(dir, base)
-                            .arg(n, 2, 10, QChar('0'))
-                            .arg(ext);
-
+        const QString suffix = QString::asprintf(".Copy.%02d", n);
+        const QString candidate = ext.isEmpty()
+                                      ? dir + QLatin1Char('/') + base + suffix
+                                      : dir + QLatin1Char('/') + base + suffix + QLatin1Char('.') + ext;
         if (!QFile::exists(candidate))
             return candidate;
     }
-    return {}; // extremely unlikely — 999 copies of the same file
+    return {};
+}
+
+MediaManager::ConflictAction MediaManager::resolveConflict(
+    const MediaFile &mf, QString &dstPath, const QHash<QString, int> &policies)
+{
+    if (!QFile::exists(dstPath))
+        return ConflictAction::Proceed;
+
+    const int policy = policies.value(mf.filePath, +ConflictPolicy::Replace);
+
+    if (policy == +ConflictPolicy::Skip)
+    {
+        emit operationItemDone(mf.fileName, true, "Skipped (already exists)", true);
+        return ConflictAction::Skip;
+    }
+
+    if (policy == +ConflictPolicy::KeepBoth)
+    {
+        const QString renamed = generateRenamePath(dstPath);
+        if (renamed.isEmpty())
+        {
+            emit operationItemDone(mf.fileName, false,
+                                   tr("There are already 999 copies! Did somebody mean to delete some of these?"));
+            return ConflictAction::Fail;
+        }
+        dstPath = renamed;
+        emit operationLog(0, QString("Renaming to %1").arg(QFileInfo(renamed).fileName()));
+    }
+    // Replace falls through — copyFileWithProgress will truncate dst, and
+    // doMove will clear the slot itself before calling QFile::rename.
+
+    return ConflictAction::Proceed;
 }
 
 bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
-                                          const QString &name, int current, int total)
+                                        const QString &name, int current, int total)
 {
     QFile srcFile(src);
     if (!srcFile.open(QIODevice::ReadOnly))
     {
         emit operationItemDone(name, false,
-            tr("Couldn't read the source file. The system said: %1").arg(srcFile.errorString()));
+                               tr("Couldn't read the source file. The system said: %1").arg(srcFile.errorString()));
         return false;
     }
 
     QFileInfo dstInfo(dst);
     QDir().mkpath(dstInfo.absolutePath());
 
+    // Clonefile won't overwrite an existing dst; remove it first so Replace policies can also use the fast path.
+    if (QFile::exists(dst))
+        QFile::remove(dst);
+
+    // On success the clone shares blocks with the source, so we skip both the byte loop and the verify pass.
+    if (tryCloneFile(src, dst))
+    {
+        emit operationProgress(name, current, total, 100.0);
+        emit operationLog(0, tr("Cloned %1").arg(name));
+        return true;
+    }
+
     QFile dstFile(dst);
     if (!dstFile.open(QIODevice::WriteOnly))
     {
         emit operationItemDone(name, false,
-            tr("Couldn't create the destination file. The system said: %1").arg(dstFile.errorString()));
+                               tr("Couldn't create the destination file. The system said: %1").arg(dstFile.errorString()));
         return false;
     }
 
-    qint64 totalSize = srcFile.size();
+    const qint64 totalSize = srcFile.size();
     qint64 copied = 0;
     QByteArray buffer;
     buffer.resize(COPY_BUFFER_SIZE);
 
-    // Throttle progress to 30 Hz or 32 MB; force final emit at 100%.
+    // Hashed during the existing read pass; only fed when verify is on.
+    const bool verify = MediaManagerVerify::enabled();
+    XxhStream srcHash;
+    if (verify && !srcHash.ok())
+    {
+        emit operationItemDone(name, false, tr("Couldn't initialise verification."));
+        return false;
+    }
+
+    // 32 MB progress throttle; final emit forced at 100%.
     constexpr qint64 kProgressIntervalMs = 33;
     constexpr qint64 kProgressIntervalBytes = 32 * 1024 * 1024;
     QElapsedTimer progressTimer;
@@ -115,27 +195,28 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
 
     while (!srcFile.atEnd() && !m_cancel.load(std::memory_order_relaxed))
     {
-        qint64 bytesRead = srcFile.read(buffer.data(), COPY_BUFFER_SIZE);
+        const qint64 bytesRead = srcFile.read(buffer.data(), COPY_BUFFER_SIZE);
         if (bytesRead <= 0)
             break;
 
-        qint64 bytesWritten = dstFile.write(buffer.data(), bytesRead);
+        const qint64 bytesWritten = dstFile.write(buffer.data(), bytesRead);
         if (bytesWritten != bytesRead)
         {
             emit operationItemDone(name, false,
-                tr("Write failed partway through. The system said: %1").arg(dstFile.errorString()));
+                                   tr("Write failed partway through. The system said: %1").arg(dstFile.errorString()));
             dstFile.close();
             QFile::remove(dst);
             return false;
         }
         copied += bytesWritten;
 
-        // Slow-mode chunk pause; no-op otherwise.
+        if (verify)
+            srcHash.update(buffer.constData(), bytesWritten);
+
         DebugSlowdown::pauseForMs(5);
 
         const qint64 nowMs = progressTimer.elapsed();
-        const bool atEnd = srcFile.atEnd();
-        if (atEnd ||
+        if (srcFile.atEnd() ||
             (nowMs - lastEmitMs) >= kProgressIntervalMs ||
             (copied - lastEmitBytes) >= kProgressIntervalBytes)
         {
@@ -155,33 +236,68 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
         return false;
     }
 
+    if (verify)
+    {
+        emit operationLog(0, tr("Verifying %1").arg(name));
+        const quint64 expected = srcHash.digest();
+        const std::optional<quint64> actual = hashFile(dst);
+
+        if (m_cancel.load(std::memory_order_relaxed))
+        {
+            QFile::remove(dst);
+            return false;
+        }
+
+        if (!actual || *actual != expected)
+        {
+            emit operationItemDone(name, false,
+                                   tr("Copy completed but failed verification. The destination file has been removed."));
+            QFile::remove(dst);
+            return false;
+        }
+    }
     return true;
 }
 
-void MediaManager::executeCopy(const QVector<MediaFile> &files, const QString &destRoot,
-                                 bool preserveStructure,
-                                 const QHash<QString, int> &conflictPolicies)
+std::optional<quint64> MediaManager::hashFile(const QString &path)
 {
-    // Wait for any in-progress operation to finish.
-    if (m_thread && m_thread->isRunning())
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+        return std::nullopt;
+
+    XxhStream h;
+    if (!h.ok())
+        return std::nullopt;
+
+    QByteArray buf;
+    buf.resize(COPY_BUFFER_SIZE);
+
+    while (!f.atEnd() && !m_cancel.load(std::memory_order_relaxed))
     {
-        cancel();
-        m_thread->wait(5000);
+        const qint64 n = f.read(buf.data(), COPY_BUFFER_SIZE);
+        if (n <= 0)
+            break;
+        h.update(buf.constData(), n);
     }
-    m_cancel.store(false, std::memory_order_relaxed);
-    m_thread = QThread::create([this, files, destRoot, preserveStructure, conflictPolicies]()
-                               { doCopy(files, destRoot, preserveStructure, conflictPolicies); });
-    connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-    connect(m_thread, &QThread::finished, this, [this]()
-            { m_thread = nullptr; });
-    m_thread->start();
+
+    if (m_cancel.load(std::memory_order_relaxed))
+        return std::nullopt;
+    return h.digest();
+}
+
+void MediaManager::executeCopy(const QVector<MediaFile> &files, const QString &destRoot,
+                               bool preserveStructure,
+                               const QHash<QString, int> &conflictPolicies)
+{
+    runOnWorker([this, files, destRoot, preserveStructure, conflictPolicies]
+                { doCopy(files, destRoot, preserveStructure, conflictPolicies); });
 }
 
 void MediaManager::doCopy(const QVector<MediaFile> &files, const QString &dest,
-                            bool preserve, const QHash<QString, int> &policies)
+                          bool preserve, const QHash<QString, int> &policies)
 {
     int succeeded = 0, failed = 0, skipped = 0;
-    int total = static_cast<int>(files.size());
+    const int total = files.size();
 
     emit operationLog(0, QString("Copying %1 files to %2").arg(total).arg(dest));
 
@@ -192,77 +308,44 @@ void MediaManager::doCopy(const QVector<MediaFile> &files, const QString &dest,
 
         emit operationProgress(mf.fileName, i + 1, total, 0);
 
-        if (QFile::exists(dstPath))
+        if (const auto action = resolveConflict(mf, dstPath, policies);
+            action != ConflictAction::Proceed)
         {
-            const int policy = policies.value(mf.filePath, +ConflictPolicy::Overwrite);
-
-            if (policy == +ConflictPolicy::Skip)
-            {
-                emit operationItemDone(mf.fileName, true, "Skipped (already exists)");
-                skipped++;
-                succeeded++;
-                continue;
-            }
-
-            if (policy == +ConflictPolicy::Rename)
-            {
-                const QString renamed = generateRenamePath(dstPath);
-                if (renamed.isEmpty())
-                {
-                    emit operationItemDone(mf.fileName, false,
-                        tr("Couldn't find a free name — there are already 999 copies. Did somebody mean to delete some of these?"));
-                    failed++;
-                    continue;
-                }
-                dstPath = renamed;
-                emit operationLog(0, QString("Renaming to %1").arg(QFileInfo(renamed).fileName()));
-            }
-            // Overwrite falls through; copyFileWithProgress overwrites.
+            (action == ConflictAction::Skip) ? ++skipped : ++failed;
+            continue;
         }
 
         if (copyFileWithProgress(mf.filePath, dstPath, mf.fileName, i + 1, total))
         {
             emit operationItemDone(mf.fileName, true, {});
-            succeeded++;
+            ++succeeded;
         }
         else
         {
-            failed++;
+            ++failed;
         }
 
         DebugSlowdown::pauseForMs(40);
     }
 
-    QString summary = QString("Copy complete: %1 succeeded, %2 failed").arg(succeeded).arg(failed);
-    if (skipped > 0)
-        summary += QString(", %1 skipped").arg(skipped);
-    emit operationLog(failed > 0 ? 1 : 3, summary);
+    emit operationLog(failed > 0 ? 1 : 3,
+                      formatOperationSummary("Copy", succeeded, failed, skipped));
     emit operationFinished(succeeded, failed);
 }
 
 void MediaManager::executeMove(const QVector<MediaFile> &files, const QString &destRoot,
-                                 bool preserveStructure,
-                                 const QHash<QString, int> &conflictPolicies)
+                               bool preserveStructure,
+                               const QHash<QString, int> &conflictPolicies)
 {
-    if (m_thread && m_thread->isRunning())
-    {
-        cancel();
-        m_thread->wait(5000);
-    }
-    m_cancel.store(false, std::memory_order_relaxed);
-    m_thread = QThread::create([this, files, destRoot, preserveStructure, conflictPolicies]()
-                               { doMove(files, destRoot, preserveStructure, conflictPolicies); });
-    connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-    connect(m_thread, &QThread::finished, this, [this]()
-            { m_thread = nullptr; });
-    m_thread->start();
+    runOnWorker([this, files, destRoot, preserveStructure, conflictPolicies]
+                { doMove(files, destRoot, preserveStructure, conflictPolicies); });
 }
 
 void MediaManager::doMove(const QVector<MediaFile> &files, const QString &dest,
-                            bool preserve, const QHash<QString, int> &policies)
+                          bool preserve, const QHash<QString, int> &policies)
 {
     int succeeded = 0, failed = 0, skipped = 0;
-    int total = static_cast<int>(files.size());
+    const int total = files.size();
 
     emit operationLog(0, QString("Moving %1 files to %2").arg(total).arg(dest));
 
@@ -273,101 +356,67 @@ void MediaManager::doMove(const QVector<MediaFile> &files, const QString &dest,
 
         emit operationProgress(mf.fileName, i + 1, total, 0);
 
-        if (QFile::exists(dstPath))
+        if (const auto action = resolveConflict(mf, dstPath, policies);
+            action != ConflictAction::Proceed)
         {
-            const int policy = policies.value(mf.filePath, +ConflictPolicy::Overwrite);
-
-            if (policy == +ConflictPolicy::Skip)
-            {
-                emit operationItemDone(mf.fileName, true, "Skipped (already exists)");
-                skipped++;
-                succeeded++;
-                continue;
-            }
-
-            if (policy == +ConflictPolicy::Rename)
-            {
-                const QString renamed = generateRenamePath(dstPath);
-                if (renamed.isEmpty())
-                {
-                    emit operationItemDone(mf.fileName, false,
-                        tr("Couldn't find a free name — there are already 999 copies. Did somebody mean to delete some of these?"));
-                    failed++;
-                    continue;
-                }
-                dstPath = renamed;
-                emit operationLog(0, QString("Renaming to %1").arg(QFileInfo(renamed).fileName()));
-            }
-
-            // Remove existing so rename can succeed.
-            if (policy == +ConflictPolicy::Overwrite)
-                QFile::remove(dstPath);
-        }
-
-        QDir().mkpath(QFileInfo(dstPath).absolutePath());
-
-        // Fast same-volume rename first.
-        if (QFile::rename(mf.filePath, dstPath))
-        {
-            emit operationItemDone(mf.fileName, true, {});
-            succeeded++;
+            (action == ConflictAction::Skip) ? ++skipped : ++failed;
             continue;
         }
 
-        // Cross-volume: copy then delete source.
+        // Replace-policy on Move: QFile::rename won't overwrite, so clear the slot.
+        // (KeepBoth has redirected dstPath to a non-existent path; no-op here.)
+        if (QFile::exists(dstPath))
+            QFile::remove(dstPath);
+
+        QDir().mkpath(QFileInfo(dstPath).absolutePath());
+
+        // Same-volume rename is the fast path.
+        if (QFile::rename(mf.filePath, dstPath))
+        {
+            emit operationItemDone(mf.fileName, true, {});
+            ++succeeded;
+            continue;
+        }
+
+        // Cross-volume: copy then delete source. Roll back dest if source delete fails.
         if (copyFileWithProgress(mf.filePath, dstPath, mf.fileName, i + 1, total))
         {
             if (QFile::remove(mf.filePath))
             {
                 emit operationItemDone(mf.fileName, true, {});
-                succeeded++;
+                ++succeeded;
             }
             else
             {
-                // Source remove failed — roll back dest so source remains the only copy.
                 QFile::remove(dstPath);
                 emit operationItemDone(mf.fileName, false,
-                    tr("The copy worked but the original couldn't be removed, so we rolled back. The file's still safe at its source."));
-                failed++;
+                                       tr("The copy worked but the original couldn't be removed, so we rolled back. The file's still safe at its source."));
+                ++failed;
             }
         }
         else
         {
-            failed++;
+            ++failed;
         }
 
         DebugSlowdown::pauseForMs(40);
     }
 
-    QString summary = QString("Move complete: %1 succeeded, %2 failed").arg(succeeded).arg(failed);
-    if (skipped > 0)
-        summary += QString(", %1 skipped").arg(skipped);
-    emit operationLog(failed > 0 ? 1 : 3, summary);
+    emit operationLog(failed > 0 ? 1 : 3,
+                      formatOperationSummary("Move", succeeded, failed, skipped));
     emit operationFinished(succeeded, failed);
 }
 
 void MediaManager::executeDelete(const QVector<MediaFile> &files)
 {
-    if (m_thread && m_thread->isRunning())
-    {
-        cancel();
-        m_thread->wait(5000);
-    }
-    m_cancel.store(false, std::memory_order_relaxed);
-    m_thread = QThread::create([this, files]()
-                               { doDelete(files); });
-    connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-    connect(m_thread, &QThread::finished, this, [this]()
-            { m_thread = nullptr; });
-    m_thread->start();
+    runOnWorker([this, files] { doDelete(files); });
 }
 
 void MediaManager::doDelete(const QVector<MediaFile> &files)
 {
-    int succeeded = 0, failed = 0;
-    int total = static_cast<int>(files.size());
-    int binChickenBinCount = 0;
-    QString binChickenBinPath; // last-used bin folder (for the post-op dialog)
+    int succeeded = 0, failed = 0, trashedCount = 0;
+    const int total = files.size();
+    QString trashFolder;
 
     emit operationLog(0, QString("Deleting %1 files").arg(total));
 
@@ -376,76 +425,73 @@ void MediaManager::doDelete(const QVector<MediaFile> &files)
         const MediaFile &mf = files[i];
         emit operationProgress(mf.fileName, i + 1, total, 0);
 
-        // attempt 1: OS recycle bin (fails on network/SMB/AFP/CIFS — no OS trash there).
         if (QFile::moveToTrash(mf.filePath))
         {
             emit operationItemDone(mf.fileName, true, {});
-            succeeded++;
+            ++succeeded;
             continue;
         }
 
-        // attempt 2: same-volume rename into _MediaMuster_Trash (mirrors source path
-        // so restore is exact). Instant rename — zero network I/O even for huge MXF.
-        //   //Nexis/Media/Avid MediaFiles/MXF/12/V01.mxf
-        //   → //Nexis/Media/_MediaMuster_Trash/Avid MediaFiles/MXF/12/V01.mxf
+        // Network volumes have no OS trash; fall back to a per-volume
+        // _MediaMuster_Trash that mirrors the source path.
         const QStorageInfo vol(mf.filePath);
         const QString volRoot = vol.rootPath();
 
         if (volRoot.isEmpty())
         {
             emit operationItemDone(mf.fileName, false,
-                tr("Couldn't figure out which volume this lives on, so it's been left alone."));
-            failed++;
+                                   tr("Couldn't figure out which volume this lives on, so it's been left alone."));
+            ++failed;
             continue;
         }
 
         const QString relPath = QDir(volRoot).relativeFilePath(mf.filePath);
+        const QChar lastChar = volRoot.back();
         const QString binRoot = volRoot +
-            (volRoot.endsWith('/') || volRoot.endsWith('\\')
-                 ? QStringLiteral("_MediaMuster_Trash")
-                 : QStringLiteral("/_MediaMuster_Trash"));
-        const QString binDest = binRoot + "/" + relPath;
+                                (lastChar == QLatin1Char('/') || lastChar == QLatin1Char('\\')
+                                     ? QStringLiteral("_MediaMuster_Trash")
+                                     : QStringLiteral("/_MediaMuster_Trash"));
+        const QString binDest = binRoot + QLatin1Char('/') + relPath;
 
-        const QString binDestDir = QFileInfo(binDest).absolutePath();
-        if (!QDir().mkpath(binDestDir))
+        if (!QDir().mkpath(QFileInfo(binDest).absolutePath()))
         {
             emit operationItemDone(mf.fileName, false,
-                tr("Couldn't create the MediaMuster Trash folder on this volume. File left alone — check your write permissions."));
-            failed++;
+                                   tr("Couldn't create the MediaMuster Trash. File left alone — check your write permissions."));
+            ++failed;
             continue;
         }
 
-        // Remove any prior trashed copy with the same name so rename succeeds.
+        // Clear any prior trashed copy with the same name so rename succeeds.
         if (QFile::exists(binDest))
             QFile::remove(binDest);
 
         if (QFile::rename(mf.filePath, binDest))
         {
             emit operationItemDone(mf.fileName, true, {});
-            succeeded++;
-            binChickenBinCount++;
-            binChickenBinPath = binRoot;
+            ++succeeded;
+            ++trashedCount;
+            trashFolder = binRoot;
         }
         else
         {
             emit operationItemDone(mf.fileName, false,
-                tr("Couldn't move this into the MediaMuster Trash. The file's still where it was — check whether anything else has it open."));
-            failed++;
+                                   tr("Couldn't move into the MediaMuster Trash. The file's still where it was — check if somebody else has it open."));
+            ++failed;
         }
 
         DebugSlowdown::pauseForMs(40);
     }
 
     emit operationLog(failed > 0 ? 1 : 3,
-                      QString("Delete complete: %1 succeeded, %2 failed").arg(succeeded).arg(failed));
+                      formatOperationSummary("Delete", succeeded, failed));
 
-    if (binChickenBinCount > 0)
+    if (trashedCount > 0)
     {
         emit operationLog(0,
-            QString("%1 file(s) moved to MediaMuster Trash at %2")
-                .arg(binChickenBinCount)
-                .arg(binChickenBinPath));
-        emit networkBinUsed(binChickenBinPath, binChickenBinCount);
+                          QString("%1 file(s) moved to MediaMuster Trash at %2")
+                              .arg(trashedCount)
+                              .arg(trashFolder));
+        emit mediaMusterTrashUsed(trashFolder, trashedCount);
     }
 
     emit operationFinished(succeeded, failed);

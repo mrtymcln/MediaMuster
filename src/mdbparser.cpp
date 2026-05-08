@@ -12,14 +12,14 @@
 // shifts between Avid versions so fixed-offset parsing is unreliable.
 //
 // Per-cluster parser: each distinct MOB ID gets a record built from strings
-// within ±1 KB of any occurrence. Exception: bin name uses a file-wide
+// within 1 KB of any occurrence. Exception: bin name uses a file-wide
 // _ORG_BIN scan and picks the marker closest to the MOB's first occurrence
 // (markers can sit more than 1 KB from their clip's first reference).
 //
 // Field sources:
 //   clipName        — value after an AAF "Name" column label. Fallback:
 //                     source basename with its media extension stripped
-//                     ("avid markers 1.mov" → "avid markers 1").
+//                     ("my amazing clip 88.mov" > "my amazing clip 88").
 //   bin             — bin name from the _ORG_BIN marker closest by byte
 //                     offset to this MOB's first occurrence.
 //   startTimecode   — value after _COLUMN_START, or any bare HH:MM:SS:FF
@@ -47,7 +47,6 @@ namespace
     const QString kMarkerNameCol = QStringLiteral("Name");
     const QString kMarkerStartCol = QStringLiteral("_COLUMN_START");
 
-    // QSet for O(1) lookup — QStringList::contains is O(n).
     const QSet<QString> kContainerHints = {
         QStringLiteral("QTFF"), QStringLiteral("MXF"), QStringLiteral("MOV"),
         QStringLiteral("AVI"), QStringLiteral("MP4"), QStringLiteral("WAV"),
@@ -129,6 +128,8 @@ namespace
 
     [[nodiscard]] QVector<ExtractedString> extractAllStrings(const QByteArray &data, int minLen = 3)
     {
+        const auto isPrintable = [](uchar c) { return c >= 0x20 && c < 0x7F; };
+
         QVector<ExtractedString> out;
         out.reserve(2048);
         const qint64 n = data.size();
@@ -136,24 +137,16 @@ namespace
         qint64 i = 0;
         while (i < n)
         {
-            const uchar c = static_cast<uchar>(ptr[i]);
-            if (c >= 0x20 && c < 0x7F)
-            {
-                const qint64 start = i;
-                while (i < n)
-                {
-                    const uchar cc = static_cast<uchar>(ptr[i]);
-                    if (cc < 0x20 || cc >= 0x7F)
-                        break;
-                    ++i;
-                }
-                if (const int len = static_cast<int>(i - start); len >= minLen)
-                    out.append({start, QString::fromLatin1(ptr + start, len)});
-            }
-            else
+            if (!isPrintable(static_cast<uchar>(ptr[i])))
             {
                 ++i;
+                continue;
             }
+            const qint64 start = i;
+            while (i < n && isPrintable(static_cast<uchar>(ptr[i])))
+                ++i;
+            if (const int len = int(i - start); len >= minLen)
+                out.append({start, QString::fromLatin1(ptr + start, len)});
         }
         return out;
     }
@@ -195,11 +188,11 @@ namespace
     {
         QVector<qint64> out;
         const qint64 n = data.size();
-        const uchar *ptr = reinterpret_cast<const uchar *>(data.constData());
-        qint64 i = 0;
-        while (i + 32 <= n)
+        const auto *ptr = reinterpret_cast<const uchar *>(data.constData());
+        for (qint64 i = 0; i + 32 <= n;)
         {
-            if (ptr[i] == 0x06 && ptr[i + 1] == 0x0a && ptr[i + 2] == 0x2b && ptr[i + 3] == 0x34)
+            if (ptr[i] == 0x06 && ptr[i + 1] == 0x0a &&
+                ptr[i + 2] == 0x2b && ptr[i + 3] == 0x34)
             {
                 out.append(i);
                 i += 32;
@@ -212,7 +205,7 @@ namespace
         return out;
     }
 
-    // Build the ±kClusterWindow cluster for a MOB, dedup'd by offset.
+    // ±kClusterWindow window around every MOB occurrence, dedup'd by offset.
     [[nodiscard]] QVector<ExtractedString> buildCluster(
         const QVector<qint64> &mobOffsets,
         const QVector<ExtractedString> &strings)
@@ -256,7 +249,7 @@ namespace
 
         const QVector<ExtractedString> cluster = buildCluster(mobOccurrences, allStrings);
 
-        // Single pass: mark import, harvest Name/_COLUMN_START label→value pairs.
+        // One pass: mark import, harvest Name and _COLUMN_START label > value pairs.
         for (int i = 0; i < cluster.size(); ++i)
         {
             const QString &raw = cluster[i].value;
@@ -340,7 +333,7 @@ namespace
         return rec;
     }
 
-} // anonymous namespace
+}
 
 QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath)
 {
@@ -370,12 +363,11 @@ QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath)
     for (const OrgBinMarker &m : orgBins)
         qDebug() << "  _ORG_BIN @" << m.offset << ":" << m.binName;
 
-    // Group MOB occurrences by hex id.
     QHash<QString, QVector<qint64>> mobOccurrences;
     QHash<QString, QByteArray> mobRawBytes;
     for (qint64 off : mobOffsets)
     {
-        const QByteArray mob = data.mid(static_cast<qsizetype>(off), 32);
+        const QByteArray mob = data.mid(qsizetype(off), 32);
         const QString hex = MobId::format(mob);
         mobOccurrences[hex].append(off);
         if (!mobRawBytes.contains(hex))
