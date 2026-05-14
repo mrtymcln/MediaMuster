@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mediafile.h"
+#include "workerthread.h"
 #include <QHash>
 #include <QObject>
 #include <QThread>
@@ -83,14 +84,18 @@ public:
                                  bool preserve);
 
 private:
-    // Spawns a worker thread to run fn(); cancels and waits for any prior thread first.
+    // Spawns a worker thread to run fn(); cancels and waits for any prior
+    // thread first. 5s grace before terminating — the previous "just
+    // wait(5000) and proceed" pattern would silently leave a stuck worker
+    // running while a new one started; joinOrTerminate guarantees we never
+    // have two workers in flight.
     template <typename Fn>
     void runOnWorker(Fn &&fn)
     {
         if (m_thread && m_thread->isRunning())
         {
             cancel();
-            m_thread->wait(5000);
+            WorkerThread::joinOrTerminate(m_thread, 5000);
         }
         m_cancel.store(false, std::memory_order_relaxed);
         auto *thread = QThread::create(std::forward<Fn>(fn));

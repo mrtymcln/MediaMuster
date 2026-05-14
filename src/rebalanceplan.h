@@ -36,7 +36,10 @@ struct FolderId
 
 inline size_t qHash(const FolderId &id, size_t seed = 0) noexcept
 {
-	return qHash(id.prefix, seed) ^ qHash(id.n, seed);
+	// XOR-ing two qHash results against the same seed leaks structure:
+	// any pair of prefixes whose partial hashes match collide for every n.
+	// qHashMulti mixes both fields through the hash state properly.
+	return qHashMulti(seed, id.prefix, id.n);
 }
 
 // One file-move planned by the rebalancer.

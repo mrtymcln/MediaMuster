@@ -1,6 +1,7 @@
 #include "mediascanner.h"
 #include "debugslowdown.h"
 #include "mobid.h"
+#include "workerthread.h"
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
@@ -17,9 +18,16 @@
 #include <unistd.h>
 #endif
 
-static const QSet<QString> JUNK_FILES = {
-	".ds_store", "thumbs.db", ".spotlight-v100", ".fseventsd",
-	".trashes", "desktop.ini", "._.ds_store"};
+// Meyers singleton: the QSet is constructed on first call (thread-safe in
+// C++11+) rather than during file-scope static init, sidestepping any
+// initialization-order surprises against other translation units' statics.
+static const QSet<QString> &junkFiles()
+{
+	static const QSet<QString> s = {
+		".ds_store", "thumbs.db", ".spotlight-v100", ".fseventsd",
+		".trashes", "desktop.ini", "._.ds_store"};
+	return s;
+}
 
 MediaScanner::MediaScanner(QObject *parent) : QObject(parent) {}
 
@@ -27,17 +35,11 @@ MediaScanner::~MediaScanner()
 {
 	cancelScan();
 	// Local copy so QThread::finished can't null m_thread out from under us.
-	if (QThread *t = m_thread)
-	{
-		t->quit();
-		if (!t->wait(5000))
-		{
-			qWarning("MediaScanner: worker did not quit within 5s; terminating");
-			t->terminate();
-			t->wait(1000);
-		}
-		// No delete: thread is parented to `this` and self-deletes on finished.
-	}
+	// 30s is generous compared to the worst-case cancel-respond time
+	// (cooperative cancel is checked at folder/file boundaries — sub-second
+	// in normal flow, single-digit seconds on a stuttering Nexis).
+	WorkerThread::joinOrTerminate(m_thread, 30000);
+	// No delete: thread is parented to `this` and self-deletes on finished.
 }
 
 void MediaScanner::startScan(const Options &options)
@@ -85,16 +87,19 @@ void ScannerWorker::cancel()
 	m_cancel.store(true, std::memory_order_relaxed);
 }
 
-void ScannerWorker::process() { doScan(); }
+void ScannerWorker::process()
+{
+	// Reset every entry so the flush clock starts at scan-begin even if a
+	// previous process() call left m_flushTimer running.
+	m_flushTimer.start();
+	m_lastFlushElapsed = 0;
+	doScan();
+}
 
 namespace
 {
 	constexpr int kLogBatchMaxSize = 50;
 	constexpr qint64 kLogBatchMaxAgeMs = 100;
-
-	// Per-thread flush clock; avoids cross-thread time reads.
-	thread_local qint64 t_lastFlushElapsed = 0;
-	thread_local QElapsedTimer t_flushTimer;
 
 	// Bitrate string from durationFrames + sizeBytes for video, or sampleRate
 	// for audio. Called once in Stage 1, then again in Stage 2 after MXF
@@ -180,17 +185,11 @@ void ScannerWorker::emitLog(int level, const QString &module,
 		QMutexLocker lock(&m_logMutex);
 		m_pendingLogs.append({level, module, msg});
 
-		if (!t_flushTimer.isValid())
-		{
-			t_flushTimer.start();
-			t_lastFlushElapsed = 0;
-		}
-
-		const qint64 nowMs = t_flushTimer.elapsed();
+		const qint64 nowMs = m_flushTimer.elapsed();
 		shouldFlush = m_pendingLogs.size() >= kLogBatchMaxSize ||
-					  (nowMs - t_lastFlushElapsed) >= kLogBatchMaxAgeMs;
+					  (nowMs - m_lastFlushElapsed) >= kLogBatchMaxAgeMs;
 		if (shouldFlush)
-			t_lastFlushElapsed = nowMs;
+			m_lastFlushElapsed = nowMs;
 	}
 	if (shouldFlush)
 		flushLogs();
@@ -615,7 +614,7 @@ FolderResult ScannerWorker::processFolderTask(const ScanTask &task)
 		if (fileName == "msmMMOB.mdb" || fileName == "msmFMID.pmr")
 			continue;
 
-		bool isJunk = JUNK_FILES.contains(fileName.toLower());
+		bool isJunk = junkFiles().contains(fileName.toLower());
 
 		MediaFile mf =
 			buildMediaFile(entry.filePath(), task.driveName, task.drivePath,

@@ -4,8 +4,14 @@
 #include <QSet>
 #include <QStringList>
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QRegularExpression>
 #include <algorithm>
+
+// Off by default — flood-prone on busy projects (one line per _ORG_BIN
+// marker plus per-file summaries). Enable when debugging the MDB format:
+//   QT_LOGGING_RULES="mediamuster.mdb.debug=true" ./MediaMuster
+Q_LOGGING_CATEGORY(lcMdb, "mediamuster.mdb", QtWarningMsg)
 
 // msmMMOB.mdb is an AAF property-based structure (named properties:
 // _ORG_BIN, _IMPORTSETTING, _COLUMN_START, _SRCFILE, UNC Path …); layout
@@ -206,11 +212,15 @@ namespace
     }
 
     // ±kClusterWindow window around every MOB occurrence, dedup'd by offset.
+    // Previously used a per-call QSet<qint64> to dedup overlapping windows;
+    // collect-sort-unique is allocation-free per MOB and cache-friendlier
+    // since the cluster is contiguous. Strings are uniquely keyed by offset,
+    // so duplicates land adjacent after sorting and std::unique collapses
+    // them in one pass.
     [[nodiscard]] QVector<ExtractedString> buildCluster(
         const QVector<qint64> &mobOffsets,
         const QVector<ExtractedString> &strings)
     {
-        QSet<qint64> seen;
         QVector<ExtractedString> cluster;
         cluster.reserve(64);
         for (qint64 off : mobOffsets)
@@ -222,17 +232,15 @@ namespace
                                                 [](const ExtractedString &es, qint64 val)
                                                 { return es.offset < val; });
             for (auto it = start; it != strings.cend() && it->offset <= hi; ++it)
-            {
-                if (!seen.contains(it->offset))
-                {
-                    seen.insert(it->offset);
-                    cluster.append(*it);
-                }
-            }
+                cluster.append(*it);
         }
         std::sort(cluster.begin(), cluster.end(),
                   [](const ExtractedString &a, const ExtractedString &b)
                   { return a.offset < b.offset; });
+        cluster.erase(std::unique(cluster.begin(), cluster.end(),
+                                  [](const ExtractedString &a, const ExtractedString &b)
+                                  { return a.offset == b.offset; }),
+                      cluster.end());
         return cluster;
     }
 
@@ -355,13 +363,13 @@ QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath)
     const QVector<ExtractedString> strings = extractAllStrings(data, 3);
     const QVector<OrgBinMarker> orgBins = findOrgBinMarkers(strings);
 
-    qDebug() << "MDB:" << mdbFilePath
-             << "size:" << data.size()
-             << "mobs:" << mobOffsets.size()
-             << "strings:" << strings.size()
-             << "_ORG_BIN markers:" << orgBins.size();
+    qCDebug(lcMdb) << "MDB:" << mdbFilePath
+                   << "size:" << data.size()
+                   << "mobs:" << mobOffsets.size()
+                   << "strings:" << strings.size()
+                   << "_ORG_BIN markers:" << orgBins.size();
     for (const OrgBinMarker &m : orgBins)
-        qDebug() << "  _ORG_BIN @" << m.offset << ":" << m.binName;
+        qCDebug(lcMdb) << "  _ORG_BIN @" << m.offset << ":" << m.binName;
 
     QHash<QString, QVector<qint64>> mobOccurrences;
     QHash<QString, QByteArray> mobRawBytes;
@@ -381,7 +389,7 @@ QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath)
             mobRawBytes.value(it.key()), it.key(), it.value(), strings, orgBins));
     }
 
-    qDebug() << "MDB: built" << records.size() << "per-MOB records";
+    qCDebug(lcMdb) << "MDB: built" << records.size() << "per-MOB records";
     return records;
 }
 

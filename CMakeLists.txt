@@ -86,6 +86,7 @@ set(HEADERS
     src/mobid.h
     src/csvutil.h
     src/debugslowdown.h
+    src/workerthread.h
     src/third_party/xxhash.h
 )
 

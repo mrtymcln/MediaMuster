@@ -162,17 +162,37 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
         }
     }
 
-    // Pass 2: ASCII hex string MOB IDs (the format used by the PMR). Match the
-    // prefix then up to 68 chars of [0-9a-f-]; decoder validates after dashes are stripped.
-    static const QRegularExpression kHexStringMobRe(
-        QStringLiteral("06(?:0a|0e)2b34[0-9a-f-]{56,68}"));
-    const QString asLatin1 = QString::fromLatin1(buf);
-    auto it = kHexStringMobRe.globalMatch(asLatin1);
-    while (it.hasNext())
+    // Pass 2: ASCII hex string MOB IDs (the format used by the PMR). Manual
+    // byte scan instead of a regex on a QString — `QString::fromLatin1(buf)`
+    // on a 64 MB cap doubled the buffer to a 128 MB QString just to run the
+    // pattern. Match semantics are identical to the old regex
+    // `06(?:0a|0e)2b34[0-9a-f-]{56,68}`: 8-char prefix, then 56-68 chars
+    // from [0-9a-f-]. decodeHexStringMob still validates the decoded length
+    // downstream.
+    const char *bytes = buf.constData();
+    auto isHexDash = [](char c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || c == '-';
+    };
+    for (qint64 i = 0; i + 8 <= size; ++i)
     {
-        uchar raw[kMobIdLen];
-        if (decodeHexStringMob(it.next().captured(0).toLatin1(), raw))
-            insertBothForms(result.mobIds, raw);
+        if (bytes[i] != '0' || bytes[i + 1] != '6') continue;
+        if (bytes[i + 2] != '0') continue;
+        if (bytes[i + 3] != 'a' && bytes[i + 3] != 'e') continue;
+        if (bytes[i + 4] != '2' || bytes[i + 5] != 'b') continue;
+        if (bytes[i + 6] != '3' || bytes[i + 7] != '4') continue;
+
+        qint64 j = i + 8;
+        const qint64 maxEnd = qMin(i + 8 + 68, size);
+        while (j < maxEnd && isHexDash(bytes[j]))
+            ++j;
+
+        if (j - i >= 8 + 56)
+        {
+            uchar raw[kMobIdLen];
+            if (decodeHexStringMob(QByteArray::fromRawData(bytes + i, int(j - i)), raw))
+                insertBothForms(result.mobIds, raw);
+            i = j - 1; // ++i next iteration will land at j
+        }
     }
 
     result.valid = true;

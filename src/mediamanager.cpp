@@ -2,6 +2,7 @@
 #include "debugslowdown.h"
 #include "formatutil.h"
 #include "mediamanagerverify.h"
+#include "workerthread.h"
 #include "third_party/xxhash.h"
 #include <QDebug>
 #include <QDir>
@@ -23,8 +24,13 @@ namespace
         XXH3_state_t *s = XXH3_createState();
         XxhStream() { if (s) XXH3_64bits_reset(s); }
         ~XxhStream() { if (s) XXH3_freeState(s); }
+        // Rule of Five: copies are deleted (XXH3 state isn't copyable), so
+        // moves would be implicitly deleted too — declare them so intent is
+        // explicit instead of relying on the compiler's silent inference.
         XxhStream(const XxhStream &) = delete;
         XxhStream &operator=(const XxhStream &) = delete;
+        XxhStream(XxhStream &&) = delete;
+        XxhStream &operator=(XxhStream &&) = delete;
         void update(const void *data, size_t n) { XXH3_64bits_update(s, data, n); }
         quint64 digest() const { return XXH3_64bits_digest(s); }
         bool ok() const { return s != nullptr; }
@@ -64,16 +70,10 @@ MediaManager::MediaManager(QObject *parent) : QObject(parent) {}
 
 MediaManager::~MediaManager()
 {
-    if (!m_thread)
-        return;
     cancel();
-    m_thread->quit();
-    if (!m_thread->wait(5000))
-    {
-        qWarning("MediaManager: worker did not quit within 5s; terminating");
-        m_thread->terminate();
-        m_thread->wait(1000);
-    }
+    // 30s grace: copy/move workers check m_cancel between 4 MB chunks, so
+    // they respond within a single read on any sane volume.
+    WorkerThread::joinOrTerminate(m_thread, 30000);
 }
 
 void MediaManager::cancel()
@@ -99,7 +99,11 @@ QString MediaManager::generateRenamePath(const QString &destPath)
 
     for (int n = 1; n <= 999; ++n)
     {
-        const QString suffix = QString::asprintf(".Copy.%02d", n);
+        // arg(value, width, base, fillChar) is the type-safe Qt 6 function for
+        // zero-padded integers; QString::asprintf is the C sprintf
+        // holdover we used to reach for in Qt 5.
+        const QString suffix =
+            QStringLiteral(".Copy.%1").arg(n, 2, 10, QLatin1Char('0'));
         const QString candidate = ext.isEmpty()
                                       ? dir + QLatin1Char('/') + base + suffix
                                       : dir + QLatin1Char('/') + base + suffix + QLatin1Char('.') + ext;
@@ -167,8 +171,11 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
         return true;
     }
 
+    // NewOnly closes the TOCTOU window between the QFile::remove above and
+    // this open: if another process raced in and created dst, we fail loud
+    // instead of silently truncating whatever appeared.
     QFile dstFile(dst);
-    if (!dstFile.open(QIODevice::WriteOnly))
+    if (!dstFile.open(QIODevice::WriteOnly | QIODevice::NewOnly))
     {
         emit operationItemDone(name, false,
                                tr("Couldn't create the destination file. The system said: %1").arg(dstFile.errorString()));

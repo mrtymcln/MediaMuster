@@ -17,7 +17,7 @@ struct MediaFile
 	// MDB and PMR database metadata.
 	QString clipName;
 	QString project;	 // "UNMANAGED_FILES" when the file is orphaned or absent from every database
-	QString originalBin; // MDB _ORG_BIN — frozen at import; live value lives in interplayCurrentBin
+	QString originalBin; // MDB _ORG_BIN — frozen at import time
 
 	// Technical metadata from the MXF header or MDB.
 	QString codec;		// "DNxHD 145", "PCM Audio"
@@ -64,13 +64,6 @@ struct MediaFile
 	bool isNonPortable = false;	 // filename has non-portable chars
 	bool isUnreferenced = false; // in MDB but not in any project PMR
 	bool isDSStore = false;		 // .DS_Store / Thumbs.db rubbish
-
-	// Avid Interplay stubs — carried through scanner>model>export so a later
-	// schema bump isn't needed. Empty in standalone environment.
-	QString interplayAssetId;	 // CTMS base.id GUID
-	QString interplayCurrentBin; // CTMS loc:locations
-	bool interplayRegistered = false;
-	QDateTime interplayLastSeen;
 
 	// HH:MM:SS:FF; empty if fps isn't enough info (uses sampleRate for audio).
 	QString durationDisplay() const

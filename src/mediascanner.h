@@ -4,6 +4,7 @@
 #include "mediafile.h"
 #include "mxfparser.h"
 #include "pmrparser.h"
+#include <QElapsedTimer>
 #include <QFuture>
 #include <QMutex>
 #include <QObject>
@@ -130,4 +131,10 @@ private:
 	// QtConcurrent pool threads append to m_pendingLogs via emitLog().
 	QMutex m_logMutex;
 	QVector<LogMsg> m_pendingLogs;
+
+	// Flush clock; scan-scoped (member, not thread_local) so it dies with
+	// the scan rather than persisting in QtConcurrent pool threads across
+	// rescans. Started at the top of process(); accessed under m_logMutex.
+	QElapsedTimer m_flushTimer;
+	qint64 m_lastFlushElapsed = 0;
 };

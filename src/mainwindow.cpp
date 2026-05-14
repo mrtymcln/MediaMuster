@@ -293,7 +293,9 @@ void MediaFilterProxy::setFilterMode(FilterMode mode)
 }
 void MediaFilterProxy::setSearchText(const QString &text)
 {
-	m_search = text.toLower();
+	// No need to lowercase here — filterAcceptsRow uses Qt::CaseInsensitive
+	// contains, which folds both sides during comparison without allocating.
+	m_search = text;
 	invalidateRowsFilter();
 }
 
@@ -368,16 +370,19 @@ bool MediaFilterProxy::filterAcceptsRow(int row,
 
 	if (!m_search.isEmpty())
 	{
-		return f.clipName.toLower().contains(m_search) ||
-			   f.project.toLower().contains(m_search) ||
-			   f.originalBin.toLower().contains(m_search) ||
-			   f.mxfFolder.toLower().contains(m_search) ||
-			   f.codec.toLower().contains(m_search) ||
-			   f.driveName.toLower().contains(m_search) ||
-			   f.fileName.toLower().contains(m_search) ||
-			   f.sourceFileName.toLower().contains(m_search) ||
-			   f.sourceFilePath.toLower().contains(m_search) ||
-			   f.startTimecode.toLower().contains(m_search);
+		// Qt::CaseInsensitive folds on the fly during comparison; the previous
+		// `.toLower().contains(...)` allocated ten throwaway QStrings per row
+		// on every keystroke (~500k transient strings for a 50k-file scan).
+		return f.clipName.contains(m_search, Qt::CaseInsensitive) ||
+			   f.project.contains(m_search, Qt::CaseInsensitive) ||
+			   f.originalBin.contains(m_search, Qt::CaseInsensitive) ||
+			   f.mxfFolder.contains(m_search, Qt::CaseInsensitive) ||
+			   f.codec.contains(m_search, Qt::CaseInsensitive) ||
+			   f.driveName.contains(m_search, Qt::CaseInsensitive) ||
+			   f.fileName.contains(m_search, Qt::CaseInsensitive) ||
+			   f.sourceFileName.contains(m_search, Qt::CaseInsensitive) ||
+			   f.sourceFilePath.contains(m_search, Qt::CaseInsensitive) ||
+			   f.startTimecode.contains(m_search, Qt::CaseInsensitive);
 	}
 	return true;
 }
@@ -1043,6 +1048,15 @@ void MainWindow::setupConnections()
 				[this]()
 				{ rebuildFilterChips(); });
 	}
+
+	// 100 ms debounce so the status bar's O(n) byte walk doesn't fire on
+	// every filter change. updateStatusBar() restarts this timer; the actual
+	// work runs once in doUpdateStatusBar after the burst settles.
+	m_statusBarUpdateTimer = new QTimer(this);
+	m_statusBarUpdateTimer->setSingleShot(true);
+	m_statusBarUpdateTimer->setInterval(100);
+	connect(m_statusBarUpdateTimer, &QTimer::timeout, this,
+			&MainWindow::doUpdateStatusBar);
 	connect(m_tableView->selectionModel(),
 			&QItemSelectionModel::selectionChanged, this,
 			&MainWindow::onSelectionChanged);
@@ -2190,6 +2204,14 @@ ProgressDialog *MainWindow::progressDialog()
 }
 
 void MainWindow::updateStatusBar()
+{
+	// Debounced. Every call restarts the singleShot timer; doUpdateStatusBar
+	// runs 100 ms after the last trigger, so each keystroke/filter change
+	// coalesces into one O(n) walk.
+	m_statusBarUpdateTimer->start();
+}
+
+void MainWindow::doUpdateStatusBar()
 {
 	const int total = m_proxy->rowCount();
 	const int grandTotal = m_allFiles.size();

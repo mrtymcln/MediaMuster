@@ -1,4 +1,5 @@
 #include "rebalancer.h"
+#include "workerthread.h"
 
 #include <QDir>
 #include <QElapsedTimer>
@@ -16,16 +17,10 @@ Rebalancer::Rebalancer(QObject *parent) : QObject(parent) {}
 
 Rebalancer::~Rebalancer()
 {
-	if (m_thread)
-	{
-		cancel();
-		m_thread->quit();
-		if (!m_thread->wait(5000))
-		{
-			m_thread->terminate();
-			m_thread->wait(1000);
-		}
-	}
+	cancel();
+	// 30s grace: doExecute checks m_cancel at composition-group boundaries,
+	// so a stuck worker means something genuinely wrong, not just a slow op.
+	WorkerThread::joinOrTerminate(m_thread, 30000);
 }
 
 void Rebalancer::cancel()
@@ -62,11 +57,12 @@ namespace
 	}
 
 	// MoveOp doesn't carry the source FolderId, so re-parse from the path.
+	// QFileInfo::dir().dirName() yields the parent folder's name without
+	// constructing a second QFileInfo around the parent path.
 	std::optional<FolderId> srcFolderOf(const QString &srcPath)
 	{
-		const QString folderName =
-			QFileInfo(QFileInfo(srcPath).absolutePath()).fileName();
-		return Rebalancer::parseFolderName(folderName);
+		return Rebalancer::parseFolderName(
+			QFileInfo(srcPath).dir().dirName());
 	}
 } // namespace
 
@@ -341,24 +337,29 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 	}
 
 	// Tally per-folder filesIn/filesOut/bytesIn/bytesOut for the preview.
-	QHash<FolderId, FolderState *> stateByFid;
-	for (auto &fs : plan.folders)
+	// Indices, not pointers — a future post-tally append to plan.folders
+	// (via allocateNewFolder or similar) would silently invalidate every
+	// pointer in this hash; indices survive QVector reallocations.
+	QHash<FolderId, int> stateByFid;
+	for (int i = 0; i < plan.folders.size(); ++i)
 	{
-		if (fs.inScope)
-			stateByFid[fs.id] = &fs;
+		if (plan.folders[i].inScope)
+			stateByFid[plan.folders[i].id] = i;
 	}
 
 	for (const auto &op : plan.ops)
 	{
 		if (auto srcFid = srcFolderOf(op.srcPath); srcFid && stateByFid.contains(*srcFid))
 		{
-			stateByFid[*srcFid]->filesOut += 1;
-			stateByFid[*srcFid]->bytesOut += op.sizeBytes;
+			const int idx = stateByFid.value(*srcFid);
+			plan.folders[idx].filesOut += 1;
+			plan.folders[idx].bytesOut += op.sizeBytes;
 		}
 		if (stateByFid.contains(op.dest))
 		{
-			stateByFid[op.dest]->filesIn += 1;
-			stateByFid[op.dest]->bytesIn += op.sizeBytes;
+			const int idx = stateByFid.value(op.dest);
+			plan.folders[idx].filesIn += 1;
+			plan.folders[idx].bytesIn += op.sizeBytes;
 		}
 	}
 
@@ -370,7 +371,7 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 	if (m_thread && m_thread->isRunning())
 	{
 		cancel();
-		m_thread->wait(5000);
+		WorkerThread::joinOrTerminate(m_thread, 5000);
 	}
 	m_cancel.store(false, std::memory_order_relaxed);
 	m_thread = QThread::create([this, plan] { doExecute(plan); });

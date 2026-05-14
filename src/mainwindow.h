@@ -26,6 +26,7 @@ class QSplitter;
 class QStatusBar;
 class QTabBar;
 class QTableView;
+class QTimer;
 
 class DriveListWidget : public QListWidget
 {
@@ -177,7 +178,8 @@ private:
 	void setupConnections();
 	void startScanWithPaths(const QStringList &paths);
 	void addLog(int level, const QString &module, const QString &message);
-	void updateStatusBar();
+	void updateStatusBar();    // schedules a 100ms debounced refresh
+	void doUpdateStatusBar();  // the actual O(n) walk; fires from the debounce
 	void updateFilterCounts();
 	void openManageMedia(int initialOp);
 	void setBusy(bool busy);
@@ -241,4 +243,8 @@ private:
 
 	bool m_binFilterActive = false;
 	int m_binFilterMobCount = 0;
+
+	// Debounces the status bar's O(n) byte-tally so bursts of filter
+	// changes (typing in search, rapid tab clicks) coalesce into one walk.
+	QTimer *m_statusBarUpdateTimer = nullptr;
 };
