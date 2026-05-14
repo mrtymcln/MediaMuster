@@ -87,7 +87,13 @@ namespace
         }
         if (clean.size() != 64)
             return false;
-        std::memcpy(out, QByteArray::fromHex(clean).constData(), kMobIdLen);
+        // fromHex silently skips characters not in [0-9a-fA-F] and returns a
+        // shorter buffer; validate the decoded size before the memcpy so the
+        // function stays safe if the caller's regex ever loosens.
+        const QByteArray decoded = QByteArray::fromHex(clean);
+        if (decoded.size() != kMobIdLen)
+            return false;
+        std::memcpy(out, decoded.constData(), kMobIdLen);
         return true;
     }
 }
@@ -112,7 +118,7 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
     static constexpr qint64 kMaxBinBytes = 64LL * 1024 * 1024;
     if (file.size() > kMaxBinBytes)
     {
-        qWarning() << "AVB: file too large, refusing to parse" << avbFilePath
+        qWarning() << "AVB: larger than 64 MB." << avbFilePath
                    << file.size() << "bytes";
         return result;
     }
@@ -156,7 +162,7 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
         }
     }
 
-    // Pass 2: ASCII hex string MOB IDs (the format used by PMR). Match the
+    // Pass 2: ASCII hex string MOB IDs (the format used by the PMR). Match the
     // prefix then up to 68 chars of [0-9a-f-]; decoder validates after dashes are stripped.
     static const QRegularExpression kHexStringMobRe(
         QStringLiteral("06(?:0a|0e)2b34[0-9a-f-]{56,68}"));

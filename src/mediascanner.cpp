@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QElapsedTimer>
+#include <QFile>
 #include <QFileInfo>
 #include <QMutexLocker>
 #include <QPointer>
@@ -210,7 +211,7 @@ void ScannerWorker::flushLogs()
 bool ScannerWorker::canReadPath(const QString &path)
 {
 #ifdef Q_OS_MAC
-	return access(path.toUtf8().constData(), R_OK) == 0;
+	return access(QFile::encodeName(path).constData(), R_OK) == 0;
 #else
 	return QFileInfo(path).isReadable();
 #endif

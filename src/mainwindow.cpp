@@ -1663,9 +1663,9 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath,
 					   .arg(fileCount)
 					   .arg(fileCount == 1 ? "" : "s"));
 	msgBox.setInformativeText(
-		tr("Network drives don't have an OS-level recycle bin, so "
+		tr("Network drives only support permenant delete, so "
 		   "MediaMuster has moved the file%1 to:\n\n%2\n\n"
-		   "These files can be restored by dragging them back to "
+		   "These files can be restored by moving them back to "
 		   "their original location. To permanently delete them, "
 		   "click \"Empty Trash\".")
 			.arg(fileCount == 1 ? "" : "s")

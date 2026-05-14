@@ -414,11 +414,29 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 								 .arg(it.key().display()));
 				return;
 			}
-			if (!QFile::rename(probe, src))
+			// Retry rename-back on the renamed file, so it doesn't get lost.
+			constexpr int kRestoreAttempts = 5;
+			constexpr int kRestoreBackoffMs = 100;
+			bool restored = false;
+			for (int attempt = 0; attempt < kRestoreAttempts; ++attempt)
 			{
-				emit log(2,
-						 tr("Probe rename-back failed for %1; left at %2")
-							 .arg(src, probe));
+				if (QFile::rename(probe, src))
+				{
+					restored = true;
+					break;
+				}
+				QThread::msleep(kRestoreBackoffMs);
+			}
+			if (!restored)
+			{
+				emit aborted(tr("Couldn't restore a pre-flight test rename. "
+								"'%1' needs to be renamed back to '%2' — "
+								"Avid or another app probably grabbed it "
+								"between the two attempts. No rebalance "
+								"moves have been made; restore the file "
+								"and try again.")
+								 .arg(probe, src));
+				return;
 			}
 		}
 	}

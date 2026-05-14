@@ -1,5 +1,6 @@
 #include "mediamanager.h"
 #include "debugslowdown.h"
+#include "formatutil.h"
 #include "mediamanagerverify.h"
 #include "third_party/xxhash.h"
 #include <QDebug>
@@ -35,8 +36,11 @@ namespace
     bool tryCloneFile(const QString &src, const QString &dst)
     {
 #ifdef __APPLE__
-        return clonefile(src.toLocal8Bit().constData(),
-                         dst.toLocal8Bit().constData(),
+        // encodeName guarantees UTF-8 bytes regardless of LC_CTYPE; clonefile
+        // (and APFS/HFS+ in general) expects UTF-8, and toLocal8Bit can produce
+        // non-UTF-8 when the locale is C or POSIX.
+        return clonefile(QFile::encodeName(src).constData(),
+                         QFile::encodeName(dst).constData(),
                          0) == 0;
 #else
         Q_UNUSED(src);
@@ -196,7 +200,17 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
     while (!srcFile.atEnd() && !m_cancel.load(std::memory_order_relaxed))
     {
         const qint64 bytesRead = srcFile.read(buffer.data(), COPY_BUFFER_SIZE);
-        if (bytesRead <= 0)
+        // QIODevice::read returns -1 on error and 0 on EOF; conflating the two
+        // hides a truncated copy because the verify pass would still succeed.
+        if (bytesRead < 0)
+        {
+            emit operationItemDone(name, false,
+                                   tr("Read failed partway through. The system said: %1").arg(srcFile.errorString()));
+            dstFile.close();
+            QFile::remove(dst);
+            return false;
+        }
+        if (bytesRead == 0)
             break;
 
         const qint64 bytesWritten = dstFile.write(buffer.data(), bytesRead);
@@ -232,6 +246,25 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
 
     if (m_cancel.load(std::memory_order_relaxed))
     {
+        QFile::remove(dst);
+        return false;
+    }
+
+    // Detect file size changes during the copy operation.
+    // Shrinking, growing, moving, or deleting from another machine
+    // truncates the source under us. The destination isn't a
+    // coherent snapshot of the file we started on — the verify pass
+    // can't catch it because srcHash only saw the bytes we read.
+    const qint64 srcSizeAfter = QFileInfo(src).size();
+    if (copied != totalSize || srcSizeAfter != totalSize)
+    {
+        emit operationItemDone(name, false,
+                               tr("Source file changed during the copy "
+                                  "(started at %1, read %2, now %3). "
+                                  "Try again when the file is stable.")
+                                   .arg(Format::bytes(totalSize),
+                                        Format::bytes(copied),
+                                        Format::bytes(srcSizeAfter)));
         QFile::remove(dst);
         return false;
     }
