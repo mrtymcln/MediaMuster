@@ -1,13 +1,10 @@
 #pragma once
 
+#include "backgroundjob.h"
 #include "mediafile.h"
-#include "workerthread.h"
 #include <QHash>
 #include <QObject>
-#include <QThread>
-#include <atomic>
 #include <optional>
-#include <utility>
 
 class MediaManager : public QObject
 {
@@ -25,7 +22,7 @@ public:
     friend constexpr int operator+(ConflictPolicy p) noexcept { return static_cast<int>(p); }
 
     explicit MediaManager(QObject *parent = nullptr);
-    ~MediaManager();
+    ~MediaManager() override = default; // m_job handles cancel + join
 
     // conflictPolicies: per-file policy keyed by source file path.
     // Files not in the map default to Replace.
@@ -36,7 +33,7 @@ public:
                      bool preserveStructure = true,
                      const QHash<QString, int> &conflictPolicies = {});
     void executeDelete(const QVector<MediaFile> &files);
-    void cancel();
+    void cancel() { m_job.cancel(); }
 
 signals:
     void operationProgress(const QString &fileName, int current, int total, double pct);
@@ -48,6 +45,15 @@ signals:
     // Emitted after a delete operation if any files were moved to the
     // MediaMuster Trash on a network volume.
     void mediaMusterTrashUsed(const QString &trashFolderPath, int fileCount);
+
+public:
+    // Appends ".Copy.NN" to end of filename, incrementing until free.
+    static QString generateRenamePath(const QString &destPath);
+
+    // Preserve=true mirrors the Avid MediaFiles/MXF/<n>/<filename> structure;
+    // Preserve=false flattens the structure.
+    static QString buildDestPath(const MediaFile &mf, const QString &destRoot,
+                                 bool preserve);
 
 private:
     enum class ConflictAction
@@ -74,40 +80,5 @@ private:
     // Returns nullopt on open error or cancel.
     std::optional<quint64> hashFile(const QString &path);
 
-public:
-    // Appends ".Copy.NN" to end of filename, incrementing until free.
-    static QString generateRenamePath(const QString &destPath);
-
-    // Preserve=true mirrors the Avid MediaFiles/MXF/<n>/<filename> structure;
-    // Preserve=false flattens the structure.
-    static QString buildDestPath(const MediaFile &mf, const QString &destRoot,
-                                 bool preserve);
-
-private:
-    // Spawns a worker thread to run fn(); cancels and waits for any prior
-    // thread first. 5s grace before terminating — the previous "just
-    // wait(5000) and proceed" pattern would silently leave a stuck worker
-    // running while a new one started; joinOrTerminate guarantees we never
-    // have two workers in flight.
-    template <typename Fn>
-    void runOnWorker(Fn &&fn)
-    {
-        if (m_thread && m_thread->isRunning())
-        {
-            cancel();
-            WorkerThread::joinOrTerminate(m_thread, 5000);
-        }
-        m_cancel.store(false, std::memory_order_relaxed);
-        auto *thread = QThread::create(std::forward<Fn>(fn));
-        m_thread = thread;
-        // Identity-check guards against the previous thread's queued lambda
-        // nullifying m_thread after a new operation has reassigned it.
-        connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-        connect(thread, &QThread::finished, this, [this, thread]
-                { if (m_thread == thread) m_thread = nullptr; });
-        thread->start();
-    }
-
-    QThread *m_thread = nullptr;
-    std::atomic<bool> m_cancel{false};
+    BackgroundJob m_job{this};
 };

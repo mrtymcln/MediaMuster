@@ -84,6 +84,7 @@ set(HEADERS
     src/managemediadialog.h
     src/progressdialog.h
     src/mobid.h
+    src/backgroundjob.h
     src/csvutil.h
     src/debugslowdown.h
     src/pmrkey.h

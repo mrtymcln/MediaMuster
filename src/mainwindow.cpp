@@ -21,6 +21,7 @@
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFutureWatcher>
 #include <QFont>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -79,6 +80,7 @@ namespace
 #include <QStyle>
 #include <QTabBar>
 #include <QTableView>
+#include <QtConcurrent>
 
 DriveListWidget::DriveListWidget(QWidget *parent) : QListWidget(parent)
 {
@@ -100,27 +102,40 @@ void DriveListWidget::setDropHighlight(bool on)
 	}
 }
 
+// Used by dragEnter and dragMove so both honour the same drop-accept rule
+// — previously dragMove accepted any URL, which made the cursor lie when
+// the drop would actually be filtered out.
+static bool dragHasLocalDir(const QMimeData *mime)
+{
+	if (!mime || !mime->hasUrls())
+		return false;
+	for (const QUrl &url : mime->urls())
+	{
+		if (url.isLocalFile() && QFileInfo(url.toLocalFile()).isDir())
+			return true;
+	}
+	return false;
+}
+
 void DriveListWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-	if (event->mimeData()->hasUrls())
+	if (dragHasLocalDir(event->mimeData()))
 	{
-		for (const QUrl &url : event->mimeData()->urls())
-		{
-			if (url.isLocalFile() && QFileInfo(url.toLocalFile()).isDir())
-			{
-				event->acceptProposedAction();
-				setDropHighlight(true);
-				return;
-			}
-		}
+		event->acceptProposedAction();
+		setDropHighlight(true);
 	}
-	event->ignore();
+	else
+	{
+		event->ignore();
+	}
 }
 
 void DriveListWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-	if (event->mimeData()->hasUrls())
+	if (dragHasLocalDir(event->mimeData()))
 		event->acceptProposedAction();
+	else
+		event->ignore();
 }
 
 void DriveListWidget::dragLeaveEvent(QDragLeaveEvent *event)
@@ -135,12 +150,15 @@ void DriveListWidget::dropEvent(QDropEvent *event)
 	QStringList paths;
 	for (const QUrl &url : event->mimeData()->urls())
 	{
-		if (url.isLocalFile())
-		{
-			QString path = url.toLocalFile();
-			if (QFileInfo(path).isDir())
-				paths.append(path);
-		}
+		if (!url.isLocalFile())
+			continue;
+		const QString path = url.toLocalFile();
+		const QFileInfo fi(path);
+		// Filter to directories that actually exist and are readable —
+		// a drop of a now-deleted shortcut would otherwise emit an
+		// invalid path downstream.
+		if (fi.isDir() && fi.exists() && fi.isReadable())
+			paths.append(path);
 	}
 	if (!paths.isEmpty())
 	{
@@ -160,6 +178,40 @@ void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
 	beginResetModel();
 	m_files = files;
 	endResetModel();
+}
+
+void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
+{
+	if (paths.isEmpty() || m_files.isEmpty())
+		return;
+
+	// Walk from the end and group contiguous removals into ranges. We
+	// close each range when we hit a non-removal (or the front of the
+	// vector). Processing high-to-low keeps the lower-index ranges' row
+	// numbers valid through every erase.
+	int rangeEnd = -1; // -1 means "no range in progress"
+	for (int i = m_files.size() - 1; i >= 0; --i)
+	{
+		const bool removeThis = paths.contains(m_files[i].filePath);
+		if (removeThis && rangeEnd == -1)
+		{
+			rangeEnd = i;
+		}
+		else if (!removeThis && rangeEnd != -1)
+		{
+			beginRemoveRows({}, i + 1, rangeEnd);
+			m_files.erase(m_files.begin() + i + 1,
+						  m_files.begin() + rangeEnd + 1);
+			endRemoveRows();
+			rangeEnd = -1;
+		}
+	}
+	if (rangeEnd != -1)
+	{
+		beginRemoveRows({}, 0, rangeEnd);
+		m_files.erase(m_files.begin(), m_files.begin() + rangeEnd + 1);
+		endRemoveRows();
+	}
 }
 
 const MediaFile &MediaTableModel::fileAt(int row) const { return m_files[row]; }
@@ -999,24 +1051,21 @@ void MainWindow::setupConnections()
 			addLog(fail > 0 ? 1 : 3, "ops",
 				   QString("Complete: %1 ok, %2 failed").arg(ok).arg(fail));
 
-			// After a Move or Delete, remove successful files
-			// from the table so it reflects reality without a re-scan.
+			// After a Move or Delete, remove successful files from the
+			// table so it reflects reality without a re-scan. The model
+			// emits begin/endRemoveRows per contiguous range, so the
+			// view preserves scroll position and selection instead of
+			// flickering through a full reset.
 			if (m_removeAfterOp && !m_successfulOpPaths.isEmpty())
 			{
-				QVector<MediaFile> remaining;
-				remaining.reserve(m_allFiles.size() - m_successfulOpPaths.size());
-				for (const auto &f : m_allFiles)
-				{
-					if (!m_successfulOpPaths.contains(f.filePath))
-						remaining.append(f);
-				}
-				m_allFiles = std::move(remaining);
-				m_model->setMediaFiles(m_allFiles);
+				const int removedCount = m_successfulOpPaths.size();
+				m_model->removeFilesByPath(m_successfulOpPaths);
+				m_allFiles = m_model->allFiles();
 				updateFilterCounts();
 				updateStatusBar();
 				addLog(0, "ops",
 					   QString("Removed %1 files from table")
-						   .arg(m_successfulOpPaths.size()));
+						   .arg(removedCount));
 			}
 			m_removeAfterOp = false;
 			m_successfulOpPaths.clear();
@@ -1057,6 +1106,16 @@ void MainWindow::setupConnections()
 	m_statusBarUpdateTimer->setInterval(100);
 	connect(m_statusBarUpdateTimer, &QTimer::timeout, this,
 			&MainWindow::doUpdateStatusBar);
+
+	// Same pattern for the "X MB selected" tally: every keyboard arrow or
+	// mouse drag fires onSelectionChanged. Cheap state (button enable,
+	// row count) runs synchronously; the expensive byte sum runs once
+	// when the selection settles.
+	m_selectionBytesTimer = new QTimer(this);
+	m_selectionBytesTimer->setSingleShot(true);
+	m_selectionBytesTimer->setInterval(100);
+	connect(m_selectionBytesTimer, &QTimer::timeout, this,
+			&MainWindow::doUpdateSelectionBytes);
 	connect(m_tableView->selectionModel(),
 			&QItemSelectionModel::selectionChanged, this,
 			&MainWindow::onSelectionChanged);
@@ -1581,8 +1640,12 @@ void MainWindow::onSearchChanged(const QString &text)
 
 void MainWindow::onSelectionChanged()
 {
-	const auto rows = m_tableView->selectionModel()->selectedRows();
-	const int selectedCount = rows.size();
+	// Counting via ranges is O(ranges), not O(rows). selectedRows() would
+	// build a 300k-entry QModelIndexList on a Cmd+A, just to call .size().
+	const auto selection = m_tableView->selectionModel()->selection();
+	int selectedCount = 0;
+	for (const QItemSelectionRange &range : selection)
+		selectedCount += range.bottom() - range.top() + 1;
 	const bool hasSelection = selectedCount > 0;
 
 	m_btnFileOps->setEnabled(hasSelection);
@@ -1594,11 +1657,26 @@ void MainWindow::onSelectionChanged()
 	if (!hasSelection)
 		return;
 
-	qint64 selBytes = 0;
-	for (const auto &pi : rows)
-		selBytes += m_model->fileAt(m_proxy->mapToSource(pi).row()).sizeBytes;
-
 	m_statusSelected->setText(QString("%1 selected").arg(selectedCount));
+	// Defer the byte-sum walk; for a Cmd+A on a 300k-row table it's
+	// O(N × log N) for mapToSource on every row. Debouncing coalesces
+	// rapid selection changes into a single tally.
+	m_selectionBytesTimer->start();
+}
+
+void MainWindow::doUpdateSelectionBytes()
+{
+	qint64 selBytes = 0;
+	const auto selection = m_tableView->selectionModel()->selection();
+	for (const QItemSelectionRange &range : selection)
+	{
+		for (int row = range.top(); row <= range.bottom(); ++row)
+		{
+			const int srcRow =
+				m_proxy->mapToSource(m_proxy->index(row, 0)).row();
+			selBytes += m_model->fileAt(srcRow).sizeBytes;
+		}
+	}
 	m_statusSelSize->setText(
 		QString("%1 selected").arg(Format::bytes(selBytes)));
 }
@@ -1738,40 +1816,14 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath,
 				   .arg(trashFolderPath));
 }
 
-void MainWindow::onExportCsv()
+// File write runs on a worker thread; this lives at file scope (rather than
+// inside onExportCsv as a lambda) so the move-captured rows vector reads
+// cleanly. Returns true on success, false if the file couldn't be opened.
+static bool writeCsvFile(const QString &path, const QVector<MediaFile> &rows)
 {
-	const auto sel = selectedFiles();
-	bool exportSelected = false;
-
-	if (!sel.isEmpty())
-	{
-		QMessageBox msgBox(this);
-		msgBox.setWindowTitle("Export CSV");
-		msgBox.setText("Export all rows, or only the selected rows?");
-		auto *btnSel = msgBox.addButton("Selected", QMessageBox::AcceptRole);
-		auto *btnAll = msgBox.addButton("All", QMessageBox::AcceptRole);
-		msgBox.addButton(QMessageBox::Cancel);
-		msgBox.setDefaultButton(btnSel);
-		msgBox.exec();
-
-		auto *clicked = msgBox.clickedButton();
-		if (clicked == btnSel)
-			exportSelected = true;
-		else if (clicked != btnAll)
-			return;
-	}
-
-	QString path = QFileDialog::getSaveFileName(
-		this, "Export CSV", QDir::homePath() + "/mediamuster_export.csv",
-		"CSV Files (*.csv)");
-	if (path.isEmpty())
-		return;
 	QFile file(path);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-	{
-		addLog(2, "export", "Cannot write to " + path);
-		return;
-	}
+		return false;
 	QTextStream out(&file);
 
 	out << "Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
@@ -1780,7 +1832,7 @@ void MainWindow::onExportCsv()
 		   "UMID,Type,Date Created\n";
 
 	// RFC-4180 quoting via CsvUtil — embedded commas/quotes/newlines are safe.
-	auto writeRow = [&out](const MediaFile &f)
+	for (const MediaFile &f : rows)
 	{
 		out << CsvUtil::quoted(f.clipName) << ','
 			<< CsvUtil::quoted(f.fileName) << ','
@@ -1808,33 +1860,91 @@ void MainWindow::onExportCsv()
 					? f.created.toString("yyyy-MM-dd")
 					: f.modified.toString("yyyy-MM-dd"))
 			<< '\n';
-	};
+	}
+	return out.status() == QTextStream::Ok;
+}
 
-	int count = 0;
+void MainWindow::onExportCsv()
+{
+	const auto sel = selectedFiles();
+	bool exportSelected = false;
+
+	if (!sel.isEmpty())
+	{
+		QMessageBox msgBox(this);
+		msgBox.setWindowTitle("Export CSV");
+		msgBox.setText("Export all rows, or only the selected rows?");
+		auto *btnSel = msgBox.addButton("Selected", QMessageBox::AcceptRole);
+		auto *btnAll = msgBox.addButton("All", QMessageBox::AcceptRole);
+		msgBox.addButton(QMessageBox::Cancel);
+		msgBox.setDefaultButton(btnSel);
+		msgBox.exec();
+
+		auto *clicked = msgBox.clickedButton();
+		if (clicked == btnSel)
+			exportSelected = true;
+		else if (clicked != btnAll)
+			return;
+	}
+
+	const QString path = QFileDialog::getSaveFileName(
+		this, "Export CSV", QDir::homePath() + "/mediamuster_export.csv",
+		"CSV Files (*.csv)");
+	if (path.isEmpty())
+		return;
+
+	// Snapshot the rows on the main thread (Qt models are thread-affine,
+	// so we can't touch m_model/m_proxy from the worker). The snapshot
+	// freezes the export against any filter/sort changes the user makes
+	// after they click Save.
+	QVector<MediaFile> rows;
 	if (exportSelected)
 	{
-		for (const auto &f : sel)
-		{
-			writeRow(f);
-			count++;
-		}
+		rows = sel;
 	}
 	else
 	{
+		rows.reserve(m_proxy->rowCount());
 		for (int row = 0; row < m_proxy->rowCount(); ++row)
 		{
-			auto si = m_proxy->mapToSource(m_proxy->index(row, 0));
-			writeRow(m_model->fileAt(si.row()));
-			count++;
+			const auto si = m_proxy->mapToSource(m_proxy->index(row, 0));
+			rows.append(m_model->fileAt(si.row()));
 		}
 	}
 
-	file.close();
-	addLog(3, "export",
-		   QString("Exported %1 %2 to %3")
-			   .arg(count)
-			   .arg(exportSelected ? "selected records" : "records")
-			   .arg(path));
+	const int count = rows.size();
+	const QString label = exportSelected ? "selected records" : "records";
+	addLog(0, "export",
+		   QString("Exporting %1 %2 to %3").arg(count).arg(label).arg(path));
+	m_btnExport->setEnabled(false);
+
+	// Dispatch the actual file write to a worker so a 300k-row export
+	// doesn't freeze the UI. The watcher's finished slot runs on the
+	// main thread when the worker returns, so re-enabling the button and
+	// logging the result is safe without extra marshalling.
+	auto *watcher = new QFutureWatcher<bool>(this);
+	connect(watcher, &QFutureWatcher<bool>::finished, this,
+			[this, watcher, path, count, label]()
+			{
+				const bool ok = watcher->result();
+				watcher->deleteLater();
+				m_btnExport->setEnabled(true);
+				if (ok)
+				{
+					addLog(3, "export",
+						   QString("Exported %1 %2 to %3")
+							   .arg(count).arg(label).arg(path));
+				}
+				else
+				{
+					addLog(2, "export",
+						   QString("Failed to write %1").arg(path));
+				}
+			});
+
+	watcher->setFuture(QtConcurrent::run(
+		[path, rows = std::move(rows)]()
+		{ return writeCsvFile(path, rows); }));
 }
 
 void MainWindow::onProjectSummary()

@@ -1,15 +1,14 @@
 #pragma once
 
+#include "backgroundjob.h"
 #include "mediafile.h"
 #include "rebalanceplan.h"
 
 #include <QObject>
 #include <QString>
 #include <QVector>
-#include <atomic>
 #include <optional>
 
-class QThread;
 class Rebalancer : public QObject
 {
 	Q_OBJECT
@@ -18,7 +17,7 @@ public:
 	static constexpr int CAP = 4999;
 
 	explicit Rebalancer(QObject *parent = nullptr);
-	~Rebalancer() override;
+	~Rebalancer() override = default; // m_job handles cancel + join
 
 	// Builds a plan; synchronous file I/O on the caller's thread.
 	static RebalancePlan computePlan(const QString &mxfRoot,
@@ -33,7 +32,7 @@ public:
 	void executeAsync(const RebalancePlan &plan);
 
 	// Thread-safe cancel; checked at composition-group boundaries so siblings stay together.
-	void cancel();
+	void cancel() { m_job.cancel(); }
 
 signals:
 	void progress(int current, int total, const QString &detail);
@@ -46,6 +45,5 @@ signals:
 private:
 	void doExecute(const RebalancePlan &plan);
 
-	QThread *m_thread = nullptr;
-	std::atomic<bool> m_cancel{false};
+	BackgroundJob m_job{this};
 };

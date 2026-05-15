@@ -274,16 +274,37 @@ void BinFilterDialog::setupUi()
                     tr("%1 loaded, %2 ticked").arg(loaded).arg(ticked)); });
 }
 
+// Shared by dragEnter, dragMove, and dropEvent — previously the first two
+// accepted any URL, so the cursor showed "drop allowed" for files that
+// dropEvent would actually filter out.
+static bool dragHasAvb(const QMimeData *mime)
+{
+    if (!mime || !mime->hasUrls())
+        return false;
+    for (const QUrl &url : mime->urls())
+    {
+        if (url.isLocalFile() &&
+            url.toLocalFile().endsWith(QStringLiteral(".avb"),
+                                       Qt::CaseInsensitive))
+            return true;
+    }
+    return false;
+}
+
 void BinFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasUrls())
+    if (dragHasAvb(event->mimeData()))
         event->acceptProposedAction();
+    else
+        event->ignore();
 }
 
 void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasUrls())
+    if (dragHasAvb(event->mimeData()))
         event->acceptProposedAction();
+    else
+        event->ignore();
 }
 
 void BinFilterDialog::dropEvent(QDropEvent *event)
@@ -329,8 +350,12 @@ void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
 void BinFilterDialog::appendBinItem(int idx)
 {
     const AvbBin &bin = m_bins[idx];
+    // "refs" was misleading — Avid clips reference multiple MOBs (file,
+    // source, master, track, timecode), so one MXF can show up as 5-10
+    // here. Calling them what they actually are.
     auto *item = new QListWidgetItem(
-        tr("%1  —  %2 refs").arg(bin.displayName).arg(bin.mobIds.size()),
+        tr("%1  —  %2").arg(bin.displayName,
+                            tr("%n MOB ID(s)", nullptr, bin.mobIds.size())),
         m_binList);
     item->setData(Qt::UserRole, idx);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
@@ -470,10 +495,10 @@ void BinFilterDialog::rebuildChainList()
                       .join(QStringLiteral(", "));
 
         auto *item = new QListWidgetItem(
-            tr("%1.  %2:  %3    (%4 refs)")
+            tr("%1.  %2:  %3    (%4)")
                 .arg(i + 1)
-                .arg(opLabel(step.op), binNames)
-                .arg(step.mobIds.size()));
+                .arg(opLabel(step.op), binNames,
+                     tr("%n MOB ID(s)", nullptr, step.mobIds.size())));
         item->setData(Qt::UserRole, i);
         m_chainList->addItem(item);
     }

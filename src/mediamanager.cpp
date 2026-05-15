@@ -3,7 +3,6 @@
 #include "formatutil.h"
 #include "mediamanagerverify.h"
 #include "progressthrottle.h"
-#include "workerthread.h"
 #include "third_party/xxhash.h"
 #include <QDebug>
 #include <QDir>
@@ -68,19 +67,6 @@ namespace
 }
 
 MediaManager::MediaManager(QObject *parent) : QObject(parent) {}
-
-MediaManager::~MediaManager()
-{
-    cancel();
-    // 30s grace: copy/move workers check m_cancel between 4 MB chunks, so
-    // they respond within a single read on any sane volume.
-    WorkerThread::joinOrTerminate(m_thread, 30000);
-}
-
-void MediaManager::cancel()
-{
-    m_cancel.store(true, std::memory_order_relaxed);
-}
 
 QString MediaManager::buildDestPath(const MediaFile &mf, const QString &destRoot,
                                     bool preserve)
@@ -204,7 +190,7 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
     ProgressThrottle throttle;
     qint64 lastEmitBytes = 0;
 
-    while (!srcFile.atEnd() && !m_cancel.load(std::memory_order_relaxed))
+    while (!srcFile.atEnd() && !m_job.isCancelled())
     {
         const qint64 bytesRead = srcFile.read(buffer.data(), COPY_BUFFER_SIZE);
         // QIODevice::read returns -1 on error and 0 on EOF; conflating the two
@@ -249,7 +235,7 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
     srcFile.close();
     dstFile.close();
 
-    if (m_cancel.load(std::memory_order_relaxed))
+    if (m_job.isCancelled())
     {
         QFile::remove(dst);
         return false;
@@ -280,7 +266,7 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
         const quint64 expected = srcHash.digest();
         const std::optional<quint64> actual = hashFile(dst);
 
-        if (m_cancel.load(std::memory_order_relaxed))
+        if (m_job.isCancelled())
         {
             QFile::remove(dst);
             return false;
@@ -310,7 +296,7 @@ std::optional<quint64> MediaManager::hashFile(const QString &path)
     QByteArray buf;
     buf.resize(COPY_BUFFER_SIZE);
 
-    while (!f.atEnd() && !m_cancel.load(std::memory_order_relaxed))
+    while (!f.atEnd() && !m_job.isCancelled())
     {
         const qint64 n = f.read(buf.data(), COPY_BUFFER_SIZE);
         if (n <= 0)
@@ -318,7 +304,7 @@ std::optional<quint64> MediaManager::hashFile(const QString &path)
         h.update(buf.constData(), n);
     }
 
-    if (m_cancel.load(std::memory_order_relaxed))
+    if (m_job.isCancelled())
         return std::nullopt;
     return h.digest();
 }
@@ -327,7 +313,7 @@ void MediaManager::executeCopy(const QVector<MediaFile> &files, const QString &d
                                bool preserveStructure,
                                const QHash<QString, int> &conflictPolicies)
 {
-    runOnWorker([this, files, destRoot, preserveStructure, conflictPolicies]
+    m_job.start([this, files, destRoot, preserveStructure, conflictPolicies]
                 { doCopy(files, destRoot, preserveStructure, conflictPolicies); });
 }
 
@@ -339,7 +325,7 @@ void MediaManager::doCopy(const QVector<MediaFile> &files, const QString &dest,
 
     emit operationLog(0, QString("Copying %1 files to %2").arg(total).arg(dest));
 
-    for (int i = 0; i < total && !m_cancel.load(std::memory_order_relaxed); ++i)
+    for (int i = 0; i < total && !m_job.isCancelled(); ++i)
     {
         const MediaFile &mf = files[i];
         QString dstPath = buildDestPath(mf, dest, preserve);
@@ -375,7 +361,7 @@ void MediaManager::executeMove(const QVector<MediaFile> &files, const QString &d
                                bool preserveStructure,
                                const QHash<QString, int> &conflictPolicies)
 {
-    runOnWorker([this, files, destRoot, preserveStructure, conflictPolicies]
+    m_job.start([this, files, destRoot, preserveStructure, conflictPolicies]
                 { doMove(files, destRoot, preserveStructure, conflictPolicies); });
 }
 
@@ -387,7 +373,7 @@ void MediaManager::doMove(const QVector<MediaFile> &files, const QString &dest,
 
     emit operationLog(0, QString("Moving %1 files to %2").arg(total).arg(dest));
 
-    for (int i = 0; i < total && !m_cancel.load(std::memory_order_relaxed); ++i)
+    for (int i = 0; i < total && !m_job.isCancelled(); ++i)
     {
         const MediaFile &mf = files[i];
         QString dstPath = buildDestPath(mf, dest, preserve);
@@ -447,7 +433,7 @@ void MediaManager::doMove(const QVector<MediaFile> &files, const QString &dest,
 
 void MediaManager::executeDelete(const QVector<MediaFile> &files)
 {
-    runOnWorker([this, files] { doDelete(files); });
+    m_job.start([this, files] { doDelete(files); });
 }
 
 void MediaManager::doDelete(const QVector<MediaFile> &files)
@@ -458,7 +444,7 @@ void MediaManager::doDelete(const QVector<MediaFile> &files)
 
     emit operationLog(0, QString("Deleting %1 files").arg(total));
 
-    for (int i = 0; i < total && !m_cancel.load(std::memory_order_relaxed); ++i)
+    for (int i = 0; i < total && !m_job.isCancelled(); ++i)
     {
         const MediaFile &mf = files[i];
         emit operationProgress(mf.fileName, i + 1, total, 0);

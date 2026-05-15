@@ -87,6 +87,12 @@ public:
 						int role) const override;
 
 	void setMediaFiles(const QVector<MediaFile> &files);
+
+	// Incremental removal — emits beginRemoveRows/endRemoveRows per
+	// contiguous range so the view preserves scroll position and
+	// selection instead of flickering through a full reset.
+	void removeFilesByPath(const QSet<QString> &paths);
+
 	const MediaFile &fileAt(int row) const;
 	const QVector<MediaFile> &allFiles() const { return m_files; }
 	void setShowRawCodecHex(bool on);
@@ -180,6 +186,7 @@ private:
 	void addLog(int level, const QString &module, const QString &message);
 	void updateStatusBar();    // schedules a 100ms debounced refresh
 	void doUpdateStatusBar();  // the actual O(n) walk; fires from the debounce
+	void doUpdateSelectionBytes(); // debounced byte-sum for the "X MB selected" status
 	void updateFilterCounts();
 	void openManageMedia(int initialOp);
 	void setBusy(bool busy);
@@ -247,4 +254,9 @@ private:
 	// Debounces the status bar's O(n) byte-tally so bursts of filter
 	// changes (typing in search, rapid tab clicks) coalesce into one walk.
 	QTimer *m_statusBarUpdateTimer = nullptr;
+
+	// Debounces the selected-bytes tally — Cmd+A on a 300k-row table makes
+	// the byte sum O(N × log N) for mapToSource, which we don't want to
+	// recompute on every keyboard-arrow selection tweak.
+	QTimer *m_selectionBytesTimer = nullptr;
 };

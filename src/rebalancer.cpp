@@ -1,11 +1,11 @@
 #include "rebalancer.h"
-#include "workerthread.h"
 
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QHash>
+#include <QRegularExpression>
 #include <QSet>
 #include <QThread>
 #include <QUuid>
@@ -14,19 +14,6 @@
 #include <climits>
 
 Rebalancer::Rebalancer(QObject *parent) : QObject(parent) {}
-
-Rebalancer::~Rebalancer()
-{
-	cancel();
-	// 30s grace: doExecute checks m_cancel at composition-group boundaries,
-	// so a stuck worker means something genuinely wrong, not just a slow op.
-	WorkerThread::joinOrTerminate(m_thread, 30000);
-}
-
-void Rebalancer::cancel()
-{
-	m_cancel.store(true, std::memory_order_relaxed);
-}
 
 std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
 {
@@ -368,16 +355,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 
 void Rebalancer::executeAsync(const RebalancePlan &plan)
 {
-	if (m_thread && m_thread->isRunning())
-	{
-		cancel();
-		WorkerThread::joinOrTerminate(m_thread, 5000);
-	}
-	m_cancel.store(false, std::memory_order_relaxed);
-	m_thread = QThread::create([this, plan] { doExecute(plan); });
-	connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-	connect(m_thread, &QThread::finished, this, [this] { m_thread = nullptr; });
-	m_thread->start();
+	m_job.start([this, plan] { doExecute(plan); });
 }
 
 void Rebalancer::doExecute(const RebalancePlan &plan)
@@ -387,6 +365,46 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	bool cancelled = false;
 	QSet<FolderId> touched;
 	const int total = plan.ops.size();
+
+	// Recover any orphaned probe-rename files left behind by a previous
+	// run that was force-quit / crashed between forward and rename-back.
+	// Avid can't see files with the suffix, so without this they'd be
+	// invisible to the editor — even though they're whole and intact.
+	// Match ".__rebalprobe_" + a 36-char QUuid (hex + dashes); rename back
+	// if the original slot is free, otherwise log and leave alone.
+	{
+		static const QRegularExpression probeRe(
+			QStringLiteral("^(.*)\\.__rebalprobe_[0-9a-f-]{36}$"));
+		QDir mxfDir(plan.mxfRoot);
+		for (const QString &subdir :
+			 mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+		{
+			QDir folder(mxfDir.filePath(subdir));
+			for (const QString &name :
+				 folder.entryList(QDir::Files | QDir::NoDotAndDotDot))
+			{
+				const auto m = probeRe.match(name);
+				if (!m.hasMatch())
+					continue;
+				const QString original = m.captured(1);
+				const QString suffixed = folder.filePath(name);
+				const QString restored = folder.filePath(original);
+				if (QFile::exists(restored))
+				{
+					emit log(2, tr("Orphan probe '%1' would collide with "
+								   "existing '%2'; left in place.")
+									.arg(name, original));
+					continue;
+				}
+				if (QFile::rename(suffixed, restored))
+					emit log(0, tr("Recovered orphan probe: %1 → %2")
+									.arg(name, original));
+				else
+					emit log(2, tr("Could not rename orphan probe %1.")
+									.arg(name));
+			}
+		}
+	}
 
 	// Pre-flight: probe rename per donor folder; failure = files locked.
 	{
@@ -472,7 +490,7 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	for (const QString &compKey : compOrder)
 	{
 		// Cancel only at composition-group boundaries; siblings stay atomic.
-		if (m_cancel.load(std::memory_order_relaxed))
+		if (m_job.isCancelled())
 		{
 			cancelled = true;
 			break;
