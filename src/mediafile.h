@@ -98,19 +98,6 @@ struct MediaFile
 			.arg(frames, 2, 10, QChar('0'));
 	}
 
-	QString sizeDisplay() const
-	{
-		constexpr qint64 KB = 1024;
-		constexpr qint64 MB = KB * 1024;
-		constexpr qint64 GB = MB * 1024;
-		if (sizeBytes >= GB)
-			return QString::number(sizeBytes / double(GB), 'f', 2) + " GB";
-		if (sizeBytes >= MB)
-			return QString::number(sizeBytes / double(MB), 'f', 1) + " MB";
-		if (sizeBytes >= KB)
-			return QString::number(sizeBytes / double(KB), 'f', 1) + " KB";
-		return QString::number(sizeBytes) + " B";
-	}
 };
 
 struct DriveInfo
@@ -129,19 +116,6 @@ struct DriveInfo
 		if (totalBytes == 0)
 			return 0;
 		return 100.0 * usedBytes / totalBytes;
-	}
-
-	QString totalDisplay() const { return formatTbOrGb(totalBytes); }
-	QString usedDisplay() const { return formatTbOrGb(usedBytes); }
-
-private:
-	static QString formatTbOrGb(qint64 bytes)
-	{
-		constexpr qint64 GB = qint64(1024) * 1024 * 1024;
-		constexpr qint64 TB = GB * 1024;
-		if (bytes >= TB)
-			return QString::number(bytes / double(TB), 'f', 1) + " TB";
-		return QString::number(bytes / double(GB), 'f', 1) + " GB";
 	}
 };
 

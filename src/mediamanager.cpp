@@ -2,6 +2,7 @@
 #include "debugslowdown.h"
 #include "formatutil.h"
 #include "mediamanagerverify.h"
+#include "progressthrottle.h"
 #include "workerthread.h"
 #include "third_party/xxhash.h"
 #include <QDebug>
@@ -196,12 +197,11 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
         return false;
     }
 
-    // 32 MB progress throttle; final emit forced at 100%.
-    constexpr qint64 kProgressIntervalMs = 33;
+    // Time-gated progress emits via ProgressThrottle, plus a 32 MB byte
+    // threshold so very large copies still tick visibly even when the time
+    // gate is rate-limiting the UI.
     constexpr qint64 kProgressIntervalBytes = 32 * 1024 * 1024;
-    QElapsedTimer progressTimer;
-    progressTimer.start();
-    qint64 lastEmitMs = 0;
+    ProgressThrottle throttle;
     qint64 lastEmitBytes = 0;
 
     while (!srcFile.atEnd() && !m_cancel.load(std::memory_order_relaxed))
@@ -236,14 +236,12 @@ bool MediaManager::copyFileWithProgress(const QString &src, const QString &dst,
 
         DebugSlowdown::pauseForMs(5);
 
-        const qint64 nowMs = progressTimer.elapsed();
         if (srcFile.atEnd() ||
-            (nowMs - lastEmitMs) >= kProgressIntervalMs ||
+            throttle.shouldEmit() ||
             (copied - lastEmitBytes) >= kProgressIntervalBytes)
         {
             const double pct = totalSize > 0 ? (100.0 * copied / totalSize) : 100.0;
             emit operationProgress(name, current, total, pct);
-            lastEmitMs = nowMs;
             lastEmitBytes = copied;
         }
     }

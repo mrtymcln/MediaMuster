@@ -1,5 +1,6 @@
 #include "pmrparser.h"
 #include "mobid.h"
+#include "pmrkey.h"
 
 #include <QFile>
 #include <QDebug>
@@ -140,22 +141,12 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath)
 
 PmrParser::ProjectMaps PmrParser::buildFileMapWithFallback(const QString &pmrFilePath)
 {
-    // Fallback: strips extension, lowers case, and swaps dots for '_' for
-    // mismatches between actual database and OS filesystem.
-    const auto fallbackKey = [](const QString &name)
-    {
-        const int lastDot = name.lastIndexOf(QLatin1Char('.'));
-        QString base = (lastDot > 0) ? name.left(lastDot) : name;
-        return base.replace(QLatin1Char('.'), QLatin1Char('_')).toLower();
-    };
-
     ProjectMaps maps;
     for (const auto &entry : parse(pmrFilePath))
     {
-        const QString primaryKey =
-            entry.fileName.normalized(QString::NormalizationForm_C).toLower();
-        maps.primary[primaryKey].append(entry);
-        maps.fallback[fallbackKey(primaryKey)].append(entry);
+        const QString key = PmrKey::primary(entry.fileName);
+        maps.primary[key].append(entry);
+        maps.fallback[PmrKey::fallback(key)].append(entry);
     }
     return maps;
 }

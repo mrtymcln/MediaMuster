@@ -1,6 +1,8 @@
 #include "mediascanner.h"
 #include "debugslowdown.h"
 #include "mobid.h"
+#include "pmrkey.h"
+#include "progressthrottle.h"
 #include "workerthread.h"
 #include <QDebug>
 #include <QDir>
@@ -482,14 +484,11 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
 	const int totalFolders = tasks.size();
 
 	// Cap progress emits at ~30 Hz to spare the UI event loop.
-	QElapsedTimer progressTimer;
-	progressTimer.start();
-	std::atomic<qint64> lastProgressMs{0};
+	ProgressThrottle throttle;
 
 	// Concurrent per-folder scan; results returned in input order.
 	QFuture<FolderResult> future = QtConcurrent::mapped(
-		tasks, [this, &completedFolders, totalFolders, &progressTimer,
-				&lastProgressMs](const ScanTask &t)
+		tasks, [this, &completedFolders, totalFolders, &throttle](const ScanTask &t)
 		{
             auto res = this->processFolderTask(t);
             int done = ++completedFolders;
@@ -498,10 +497,7 @@ QVector<MediaFile> ScannerWorker::scanMxfRoot(const QString &mxfRootPath,
             DebugSlowdown::pauseForMs(80);
 
             // Always emit on the last folder so the bar hits 100%; otherwise gate to ~30 Hz.
-            const qint64 nowMs = progressTimer.elapsed();
-            const qint64 lastMs = lastProgressMs.load(std::memory_order_relaxed);
-            if (done == totalFolders || (nowMs - lastMs) >= 33) {
-                lastProgressMs.store(nowMs, std::memory_order_relaxed);
+            if (done == totalFolders || throttle.shouldEmit()) {
                 emit progress(QString("Scanning %1").arg(t.driveName), done,
                               totalFolders, t.folderPath);
             }
@@ -679,8 +675,7 @@ MediaFile ScannerWorker::buildMediaFile(
 	mf.clipName = fi.completeBaseName();
 	mf.isNonPortable = isNonPortableFilename(mf.fileName);
 
-	const QString primaryKey =
-		mf.fileName.normalized(QString::NormalizationForm_C).toLower();
+	const QString primaryKey = PmrKey::primary(mf.fileName);
 
 	auto applyPmrHit = [&mf](const PmrEntry &pmr)
 	{
@@ -696,10 +691,7 @@ MediaFile ScannerWorker::buildMediaFile(
 	}
 	else
 	{
-		const int lastDot = primaryKey.lastIndexOf('.');
-		QString base = (lastDot > 0) ? primaryKey.left(lastDot) : primaryKey;
-		const QString fallbackKey = base.replace('.', '_');
-		pmrIt = pmrMaps.fallback.find(fallbackKey);
+		pmrIt = pmrMaps.fallback.find(PmrKey::fallback(primaryKey));
 		if (pmrIt != pmrMaps.fallback.end() && !pmrIt->isEmpty())
 			applyPmrHit(pmrIt->first());
 	}
@@ -824,9 +816,7 @@ void ScannerWorker::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 	std::atomic<int> done{0};
 	std::atomic<qint64> totalBytesRead{0};
 	std::atomic<qint64> maxBytesRead{0};
-	std::atomic<qint64> lastEmitMs{0};
-	QElapsedTimer timer;
-	timer.start();
+	ProgressThrottle throttle;
 
 	QtConcurrent::blockingMap(mxfIndices, [&](int idx)
 	{
@@ -847,13 +837,8 @@ void ScannerWorker::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 		}
 
 		const int n = ++done;
-		const qint64 now = timer.elapsed();
-		const qint64 last = lastEmitMs.load(std::memory_order_relaxed);
-		if (n == total || (now - last) >= 33)
-		{
-			lastEmitMs.store(now, std::memory_order_relaxed);
+		if (n == total || throttle.shouldEmit())
 			emit progress("Parsing MXF headers", n, total, mf.fileName);
-		}
 	});
 
 	const qint64 totalBytes = totalBytesRead.load();
