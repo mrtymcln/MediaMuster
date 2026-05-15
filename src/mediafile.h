@@ -52,7 +52,7 @@ struct MediaFile
 	QDateTime modified;
 	QDateTime created;
 
-	enum class Type
+	enum class Type : int
 	{
 		Video,
 		Audio

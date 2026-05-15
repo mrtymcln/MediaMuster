@@ -12,7 +12,7 @@ class MediaManager : public QObject
 public:
     // Per-file conflict policy for Copy/Move operations. The dialog
     // exposes this via ManageMediaDialog::ConflictPolicy alias.
-    enum class ConflictPolicy
+    enum class ConflictPolicy : int
     {
         KeepBoth = 0,
         Skip = 1,
@@ -56,7 +56,7 @@ public:
                                  bool preserve);
 
 private:
-    enum class ConflictAction
+    enum class ConflictAction : int
     {
         Proceed, // no conflict, or Replace policy — caller continues with copy/move
         Skip,    // user picked Skip; helper has already emitted operationItemDone

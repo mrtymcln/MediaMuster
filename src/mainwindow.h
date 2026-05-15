@@ -52,7 +52,7 @@ class MediaTableModel : public QAbstractTableModel
 	Q_OBJECT
 public:
 	// Order: identity, context, properties.
-	enum class Column
+	enum class Column : int
 	{
 		ClipName,
 		FileName,
@@ -106,7 +106,7 @@ class MediaFilterProxy : public QSortFilterProxyModel
 {
 	Q_OBJECT
 public:
-	enum class FilterMode
+	enum class FilterMode : int
 	{
 		All,
 		Video,
