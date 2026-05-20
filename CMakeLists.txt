@@ -20,6 +20,8 @@ endif()
 ### Define app version here ###
 project(MediaMuster VERSION 0.0.1 LANGUAGES C CXX)
 
+option(SELF_DESTRUCT "Lock the app after the expiry date" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
@@ -125,6 +127,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Gui
     Qt6::Concurrent
 )
+
+if(SELF_DESTRUCT)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        SELF_DESTRUCT
+        SELF_DESTRUCT_DATE="2026-07-31"
+    )
+    message(STATUS "SelfDestruct enabled — expires 2026-07-31")
+endif()
 
 if(APPLE)
     find_library(COREFOUNDATION_LIB CoreFoundation)

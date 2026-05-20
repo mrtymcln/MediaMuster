@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "version.h"
 #include <QApplication>
+#include <QDate>
 #include <QIcon>
+#include <QMessageBox>
 #include <QStyleFactory>
 
 int main(int argc, char *argv[])
@@ -24,6 +26,15 @@ int main(int argc, char *argv[])
 #endif
 
 	// MARK: - Run
+
+#ifdef SELF_DESTRUCT
+	if (QDate::currentDate() > QDate::fromString(SELF_DESTRUCT_DATE, Qt::ISODate)) {
+		QMessageBox::critical(nullptr, "MediaMuster beta programme",
+			"This beta build expired on " SELF_DESTRUCT_DATE ".\n"
+			"Please download the latest version.");
+		return 1;
+	}
+#endif
 
 	MainWindow window;
 	window.show();
