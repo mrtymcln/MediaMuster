@@ -19,72 +19,100 @@ class QTreeWidgetItem;
 class QGroupBox;
 class QShowEvent;
 
+// MARK: - ManageMediaDialog
+
+/// Drives MediaManager. Lets the editor pick Copy / Move / Delete,
+/// choose a destination, decide whether to preserve the Avid folder
+/// structure, and resolve per-file conflicts before the op happens.
+///
+/// Preview tree shows source + destination per file. Conflicting
+/// rows gain a per-row policy combo (Keep Both / Skip / Replace).
+/// A global combo applies the same policy to every conflicting row;
+/// syncing goes both ways via syncGlobalFromPerFile.
 class ManageMediaDialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    enum class Operation
-    {
-        Copy,
-        Move,
-        Delete
-    };
-    // Source of truth lives on MediaManager — alias it here.
-    using ConflictPolicy = MediaManager::ConflictPolicy;
+	enum class Operation
+	{
+		Copy,
+		Move,
+		Delete
+	};
 
-    friend constexpr int operator+(Operation o) noexcept { return static_cast<int>(o); }
+	/// Aliased so dialog clients don't need to include mediamanager.h.
+	using ConflictPolicy = MediaManager::ConflictPolicy;
 
-    explicit ManageMediaDialog(const QVector<MediaFile> &files,
-                               QWidget *parent = nullptr,
-                               Operation initialOp = Operation::Copy);
+	/// Unary + for nicer call sites — +Operation::Copy instead of
+	/// static_cast<int>(Operation::Copy).
+	friend constexpr int operator+(Operation o) noexcept
+	{
+		return static_cast<int>(o);
+	}
 
-    Operation operation() const;
-    QString destination() const;
-    bool preserveStructure() const;
+	explicit ManageMediaDialog(const QVector<MediaFile> &files,
+	                           QWidget *parent = nullptr,
+	                           Operation initialOp = Operation::Copy);
 
-    // Per-file conflict resolution. Key = source file path.
-    // The caller should check before executing, to honour the user's per-file choices.
-    QHash<QString, ConflictPolicy> conflictPolicies() const;
+	// MARK: - Result accessors
+
+	Operation operation() const;
+	QString destination() const;
+	bool preserveStructure() const;
+
+	/// Keyed by source file path. Only contains entries for rows
+	/// that actually conflicted with an existing destination;
+	/// MediaManager treats absent keys as Replace, so the caller
+	/// passes this straight through.
+	QHash<QString, ConflictPolicy> conflictPolicies() const;
 
 protected:
-    void showEvent(QShowEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 private slots:
-    void onChooseDestination();
-    void onOperationChanged();
-    void onGlobalConflictPolicyChanged(int index);
+	void onChooseDestination();
+	void onOperationChanged();
+	void onGlobalConflictPolicyChanged(int index);
 
 private:
-    void setupUi();
-    void updatePreview();
-    void updateSummary();
-    void syncGlobalFromPerFile();
+	void setupUi();
+	void updatePreview();
+	void updateSummary();
+	void syncGlobalFromPerFile();
 
-    QVector<MediaFile> m_files;
+	QVector<MediaFile> m_files;
 
-    QRadioButton *m_radioCopy = nullptr;
-    QRadioButton *m_radioMove = nullptr;
-    QRadioButton *m_radioDelete = nullptr;
-    QButtonGroup *m_opGroup = nullptr;
+	// MARK: - Operation radios
 
-    QLineEdit *m_destPath = nullptr;
-    QPushButton *m_btnChoose = nullptr;
-    QWidget *m_destWidget = nullptr;
+	QRadioButton *m_radioCopy = nullptr;
+	QRadioButton *m_radioMove = nullptr;
+	QRadioButton *m_radioDelete = nullptr;
+	QButtonGroup *m_opGroup = nullptr;
 
-    QCheckBox *m_chkPreserve = nullptr;
+	// MARK: - Destination row
 
-    QLabel *m_spaceWarning = nullptr;
+	QLineEdit *m_destPath = nullptr;
+	QPushButton *m_btnChoose = nullptr;
+	QWidget *m_destWidget = nullptr;
 
-    QGroupBox *m_conflictGroup = nullptr;
-    QComboBox *m_conflictGlobalCombo = nullptr;
+	QCheckBox *m_chkPreserve = nullptr;
 
-    QTreeWidget *m_previewTree = nullptr;
-    QLabel *m_summaryLabel = nullptr;
+	QLabel *m_spaceWarning = nullptr;
 
-    // Per-file conflict combos: keyed by source path. Only conflict
-    // rows have entries; non-conflict rows are not in this map.
-    QHash<QString, QComboBox *> m_perFileConflictCombos;
+	// MARK: - Conflicts
 
-    QPushButton *m_btnCancel = nullptr;
-    QPushButton *m_btnExecute = nullptr;
+	QGroupBox *m_conflictGroup = nullptr;
+	QComboBox *m_conflictGlobalCombo = nullptr;
+
+	// MARK: - Preview
+
+	QTreeWidget *m_previewTree = nullptr;
+	QLabel *m_summaryLabel = nullptr;
+
+	/// Keyed by source path. Only conflict rows have entries —
+	/// that's how we know which rows to walk.
+	QHash<QString, QComboBox *> m_perFileConflictCombos;
+
+	QPushButton *m_btnCancel = nullptr;
+	QPushButton *m_btnExecute = nullptr;
 };

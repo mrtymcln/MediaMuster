@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "mediafile.h"
 #include "version.h"
 #include <QApplication>
 #include <QIcon>
@@ -7,29 +6,26 @@
 
 int main(int argc, char *argv[])
 {
-    qRegisterMetaType<MediaFile>("MediaFile");
-    qRegisterMetaType<QVector<MediaFile>>("QVector<MediaFile>");
-    qRegisterMetaType<DriveInfo>("DriveInfo");
-    qRegisterMetaType<QVector<DriveInfo>>("QVector<DriveInfo>");
+	QApplication app(argc, argv);
 
-    QApplication app(argc, argv);
+	app.setApplicationName(APP_NAME);
+	app.setApplicationVersion(APP_VERSION);
+	app.setOrganizationName("Martin McLean");
+	app.setOrganizationDomain("com.McLean.MediaMuster");
 
-    app.setApplicationName(APP_NAME);
-    app.setApplicationVersion(APP_VERSION);
-    app.setOrganizationName("Martin McLean");
-    app.setOrganizationDomain("com.McLean.MediaMuster");
-
-    // Dock icon comes from the icns/ico; this is for the About dialog.
-    app.setWindowIcon(QIcon(":/res/mediamuster.png"));
+	// Dock icon comes from the bundled .icns/.ico; this only sets
+	// the dialog-box icon.
+	app.setWindowIcon(QIcon(":/res/mediamuster.png"));
 
 #ifdef Q_OS_MAC
-    app.setStyle(QStyleFactory::create("macos"));
+	app.setStyle(QStyleFactory::create("macos"));
 #elif defined(Q_OS_WIN)
-    app.setStyle(QStyleFactory::create("windows"));
+	app.setStyle(QStyleFactory::create("windows"));
 #endif
 
-    MainWindow window;
-    window.show();
+	// MARK: - Run
 
-    return app.exec();
+	MainWindow window;
+	window.show();
+	return app.exec();
 }

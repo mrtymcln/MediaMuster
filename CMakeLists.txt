@@ -51,7 +51,7 @@ configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
-    src/drivemanager.cpp
+    src/volumemanager.cpp
     src/mediascanner.cpp
     src/mxfparser.cpp
     src/pmrparser.cpp
@@ -69,7 +69,7 @@ set(SOURCES
 
 set(HEADERS
     src/mainwindow.h
-    src/drivemanager.h
+    src/volumemanager.h
     src/mediascanner.h
     src/mxfparser.h
     src/pmrparser.h
@@ -87,6 +87,7 @@ set(HEADERS
     src/backgroundjob.h
     src/csvutil.h
     src/debugslowdown.h
+    src/dragdroputil.h
     src/pmrkey.h
     src/progressthrottle.h
     src/workerthread.h
@@ -136,6 +137,34 @@ if(APPLE)
     )
 elseif(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE shell32 ole32)
+endif()
+
+if(APPLE)
+    set(MEDIAMUSTER_CODESIGN_IDENTITY
+        "Developer ID Application: Martin McLean (RV65KD7NWB)"
+        CACHE STRING "Codesign identity for the .app bundle")
+    execute_process(
+        COMMAND security find-identity -v -p codesigning
+        OUTPUT_VARIABLE _mm_identities
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(FIND "${_mm_identities}" "${MEDIAMUSTER_CODESIGN_IDENTITY}" _mm_idx)
+    if(_mm_idx GREATER -1)
+        message(STATUS "Codesign identity: ${MEDIAMUSTER_CODESIGN_IDENTITY}")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND xattr -cr "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>"
+            COMMAND codesign --force --deep --sign "${MEDIAMUSTER_CODESIGN_IDENTITY}"
+                    "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>"
+            COMMENT "Stripping the codesigning bundle"
+            VERBATIM)
+    else()
+        message(STATUS
+            "Codesign identity '${MEDIAMUSTER_CODESIGN_IDENTITY}' not in keychain")
+        message(STATUS
+            "FDA permissions won't survive rebuilds")
+    endif()
+    unset(_mm_identities)
+    unset(_mm_idx)
 endif()
 
 install(TARGETS ${PROJECT_NAME}

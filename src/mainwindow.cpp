@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "binfilterdialog.h"
 #include "debugslowdown.h"
+#include "dragdroputil.h"
 #include "formatutil.h"
 #include "managemediadialog.h"
 #include "mediamanagerverify.h"
@@ -49,20 +50,31 @@
 #include <array>
 #include "csvutil.h"
 
+// MARK: - Log-level prefixes
+
 namespace
 {
-	constexpr std::array<const char *, 5> kLogLevelPfx{"INFO", "WARN", "ERR ", " OK ", "DBG "};
-	const char *logPfx(int level)
-	{
-		return kLogLevelPfx[(level >= 0 && level < int(kLogLevelPfx.size())) ? level : 4];
-	}
+constexpr std::array<const char *, 5> kLogLevelPfx{"INFO", "WARN", "ERR ", " OK ", "DBG "};
+const char *logPfx(int level)
+{
+	return kLogLevelPfx[(level >= 0 && level < int(kLogLevelPfx.size())) ? level : 4];
 }
+
+// Console log-line format: `HH:MM:SS [LEVEL] [module] message`.
+// Shared by addLog and onScanLogBatch.
+QString formatLogLine(const QString &time, int level,
+                      const QString &module, const QString &message)
+{
+	return QStringLiteral("%1 [%2] [%3] %4")
+	    .arg(time, QLatin1String(logPfx(level)), module, message);
+}
+} // namespace
 
 #ifdef Q_OS_WIN
 #include <windows.h>
-#include <shlobj.h>	  // SHOpenFolderAndSelectItems, SHParseDisplayName
-#include <objbase.h>  // CoInitializeEx — Shell API needs COM apartment
-#include <QSettings>  // registry read for Windows DisplayVersion + UBR
+#include <shlobj.h>  // SHOpenFolderAndSelectItems, SHParseDisplayName
+#include <objbase.h> // CoInitializeEx — Shell API needs COM apartment
+#include <QSettings> // registry read for Windows DisplayVersion + UBR
 #endif
 
 #include <QDragEnterEvent>
@@ -82,19 +94,22 @@ namespace
 #include <QTableView>
 #include <QtConcurrent>
 
-DriveListWidget::DriveListWidget(QWidget *parent) : QListWidget(parent)
+// MARK: - VolumeListWidget
+
+VolumeListWidget::VolumeListWidget(QWidget *parent)
+    : QListWidget(parent)
 {
 	setAcceptDrops(true);
 	setDragDropMode(QAbstractItemView::DropOnly);
 }
 
-void DriveListWidget::setDropHighlight(bool on)
+void VolumeListWidget::setDropHighlight(bool on)
 {
 	if (on)
 	{
 		setStyleSheet(
-			"QListWidget { border: 2px solid #4A90E2; "
-			"background-color: rgba(74, 144, 226, 0.08); }");
+		    "QListWidget { border: 2px solid #4A90E2; "
+		    "background-color: rgba(74, 144, 226, 0.08); }");
 	}
 	else
 	{
@@ -102,22 +117,15 @@ void DriveListWidget::setDropHighlight(bool on)
 	}
 }
 
-// Used by dragEnter and dragMove so both honour the same drop-accept rule
-// — previously dragMove accepted any URL, which made the cursor lie when
-// the drop would actually be filtered out.
+// Shared by dragEnterEvent and dragMoveEvent so both honour the
+// same drop-accept rules.
 static bool dragHasLocalDir(const QMimeData *mime)
 {
-	if (!mime || !mime->hasUrls())
-		return false;
-	for (const QUrl &url : mime->urls())
-	{
-		if (url.isLocalFile() && QFileInfo(url.toLocalFile()).isDir())
-			return true;
-	}
-	return false;
+	return DragDropUtil::hasAnyLocalUrl(mime, [](const QString &path)
+	                                    { return QFileInfo(path).isDir(); });
 }
 
-void DriveListWidget::dragEnterEvent(QDragEnterEvent *event)
+void VolumeListWidget::dragEnterEvent(QDragEnterEvent *event)
 {
 	if (dragHasLocalDir(event->mimeData()))
 	{
@@ -130,7 +138,7 @@ void DriveListWidget::dragEnterEvent(QDragEnterEvent *event)
 	}
 }
 
-void DriveListWidget::dragMoveEvent(QDragMoveEvent *event)
+void VolumeListWidget::dragMoveEvent(QDragMoveEvent *event)
 {
 	if (dragHasLocalDir(event->mimeData()))
 		event->acceptProposedAction();
@@ -138,13 +146,13 @@ void DriveListWidget::dragMoveEvent(QDragMoveEvent *event)
 		event->ignore();
 }
 
-void DriveListWidget::dragLeaveEvent(QDragLeaveEvent *event)
+void VolumeListWidget::dragLeaveEvent(QDragLeaveEvent *event)
 {
 	setDropHighlight(false);
 	QListWidget::dragLeaveEvent(event);
 }
 
-void DriveListWidget::dropEvent(QDropEvent *event)
+void VolumeListWidget::dropEvent(QDropEvent *event)
 {
 	setDropHighlight(false);
 	QStringList paths;
@@ -154,9 +162,7 @@ void DriveListWidget::dropEvent(QDropEvent *event)
 			continue;
 		const QString path = url.toLocalFile();
 		const QFileInfo fi(path);
-		// Filter to directories that actually exist and are readable —
-		// a drop of a now-deleted shortcut would otherwise emit an
-		// invalid path downstream.
+		// Filter to directories that actually exist and are readable.
 		if (fi.isDir() && fi.exists() && fi.isReadable())
 			paths.append(path);
 	}
@@ -167,11 +173,21 @@ void DriveListWidget::dropEvent(QDropEvent *event)
 	}
 }
 
-MediaTableModel::MediaTableModel(QObject *parent)
-	: QAbstractTableModel(parent) {}
+// MARK: - MediaTableModel
 
-int MediaTableModel::rowCount(const QModelIndex &) const { return m_files.size(); }
-int MediaTableModel::columnCount(const QModelIndex &) const { return +Column::Count_; }
+MediaTableModel::MediaTableModel(QObject *parent)
+    : QAbstractTableModel(parent)
+{
+}
+
+int MediaTableModel::rowCount(const QModelIndex &) const
+{
+	return m_files.size();
+}
+int MediaTableModel::columnCount(const QModelIndex &) const
+{
+	return +Column::Count_;
+}
 
 void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
 {
@@ -185,10 +201,8 @@ void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
 	if (paths.isEmpty() || m_files.isEmpty())
 		return;
 
-	// Walk from the end and group contiguous removals into ranges. We
-	// close each range when we hit a non-removal (or the front of the
-	// vector). Processing high-to-low keeps the lower-index ranges' row
-	// numbers valid through every erase.
+	// Back-to-front so lower-index rows stay valid through each erase.
+	// Groups contiguous removals into begin/endRemoveRows ranges.
 	int rangeEnd = -1; // -1 means "no range in progress"
 	for (int i = m_files.size() - 1; i >= 0; --i)
 	{
@@ -201,7 +215,7 @@ void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
 		{
 			beginRemoveRows({}, i + 1, rangeEnd);
 			m_files.erase(m_files.begin() + i + 1,
-						  m_files.begin() + rangeEnd + 1);
+			              m_files.begin() + rangeEnd + 1);
 			endRemoveRows();
 			rangeEnd = -1;
 		}
@@ -214,7 +228,10 @@ void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
 	}
 }
 
-const MediaFile &MediaTableModel::fileAt(int row) const { return m_files[row]; }
+const MediaFile &MediaTableModel::fileAt(int row) const
+{
+	return m_files[row];
+}
 
 void MediaTableModel::setShowRawCodecHex(bool on)
 {
@@ -263,8 +280,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.volumeDisplay;
 		case Column::Created:
 			return f.created.isValid()
-					   ? f.created.toString("yyyy-MM-dd HH:mm")
-					   : f.modified.toString("yyyy-MM-dd HH:mm");
+			           ? f.created.toString("yyyy-MM-dd HH:mm")
+			           : f.modified.toString("yyyy-MM-dd HH:mm");
 		case Column::Source:
 			return f.sourceFileName;
 		case Column::Type:
@@ -298,7 +315,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 }
 
 QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation,
-									 int role) const
+                                     int role) const
 {
 	if (orientation != Qt::Horizontal)
 		return {};
@@ -308,17 +325,17 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation,
 		if (section == +Column::OriginalBin)
 		{
 			return tr(
-				"The bin this clip was originally imported into.");
+			    "The bin this clip was originally imported into.");
 		}
 		if (section == +Column::Volume)
 		{
 			return tr(
-				"The filepath for this clip.");
+			    "The filepath for this clip.");
 		}
 		if (section == +Column::Created)
 		{
 			return tr(
-				"Falls back to Date Modified, if Date Created is unavailable.");
+			    "Falls back to Date Modified, if Date Created is unavailable.");
 		}
 		return {};
 	}
@@ -327,26 +344,31 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation,
 		return {};
 
 	const char *headers[] = {"Clip Name", "Filename", "Project", "Original Bin",
-							 "Kind", "Codec", "Resolution", "FPS",
-							 "Duration", "Start TC", "Size (MB)",
-							 "Volume", "Date Created", "Source", "Type"};
+	                         "Kind", "Codec", "Resolution", "FPS",
+	                         "Duration", "Start TC", "Size (MB)",
+	                         "Volume", "Date Created", "Source", "Type"};
 	if (section >= 0 && section < +Column::Count_)
 		return QString(headers[section]);
 	return {};
 }
 
+// MARK: - MediaFilterProxy
+
 MediaFilterProxy::MediaFilterProxy(QObject *parent)
-	: QSortFilterProxyModel(parent) {}
+    : QSortFilterProxyModel(parent)
+{
+}
 
 void MediaFilterProxy::setFilterMode(FilterMode mode)
 {
 	m_mode = mode;
 	invalidateRowsFilter();
 }
+
 void MediaFilterProxy::setSearchText(const QString &text)
 {
-	// No need to lowercase here — filterAcceptsRow uses Qt::CaseInsensitive
-	// contains, which folds both sides during comparison without allocating.
+	// filterAcceptsRow uses Qt::CaseInsensitive contains — folds
+	// inline, no throwaway lowercased copies.
 	m_search = text;
 	invalidateRowsFilter();
 }
@@ -358,7 +380,7 @@ void MediaFilterProxy::setProjectFilter(const QSet<QString> &projects)
 }
 
 void MediaFilterProxy::setBinFilterMobs(bool isActive,
-										const QSet<QString> &acceptedMobs)
+                                        const QSet<QString> &acceptedMobs)
 {
 	m_binFilterActive = isActive;
 	m_binFilterAcceptedMobs = isActive ? acceptedMobs : QSet<QString>{};
@@ -366,7 +388,7 @@ void MediaFilterProxy::setBinFilterMobs(bool isActive,
 }
 
 bool MediaFilterProxy::filterAcceptsRow(int row,
-										const QModelIndex &parent) const
+                                        const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
 	auto *model = qobject_cast<MediaTableModel *>(sourceModel());
@@ -413,34 +435,32 @@ bool MediaFilterProxy::filterAcceptsRow(int row,
 	if (m_binFilterActive)
 	{
 		const bool hit =
-			(!f.mobId.isEmpty() && m_binFilterAcceptedMobs.contains(f.mobId)) ||
-			(!f.compositionMobId.isEmpty() &&
-			 m_binFilterAcceptedMobs.contains(f.compositionMobId));
+		    (!f.mobId.isEmpty() && m_binFilterAcceptedMobs.contains(f.mobId)) ||
+		    (!f.compositionMobId.isEmpty() &&
+		     m_binFilterAcceptedMobs.contains(f.compositionMobId));
 		if (!hit)
 			return false;
 	}
 
 	if (!m_search.isEmpty())
 	{
-		// Qt::CaseInsensitive folds on the fly during comparison; the previous
-		// `.toLower().contains(...)` allocated ten throwaway QStrings per row
-		// on every keystroke (~500k transient strings for a 50k-file scan).
+		// Qt::CaseInsensitive folds on the fly during the compare.
 		return f.clipName.contains(m_search, Qt::CaseInsensitive) ||
-			   f.project.contains(m_search, Qt::CaseInsensitive) ||
-			   f.originalBin.contains(m_search, Qt::CaseInsensitive) ||
-			   f.mxfFolder.contains(m_search, Qt::CaseInsensitive) ||
-			   f.codec.contains(m_search, Qt::CaseInsensitive) ||
-			   f.driveName.contains(m_search, Qt::CaseInsensitive) ||
-			   f.fileName.contains(m_search, Qt::CaseInsensitive) ||
-			   f.sourceFileName.contains(m_search, Qt::CaseInsensitive) ||
-			   f.sourceFilePath.contains(m_search, Qt::CaseInsensitive) ||
-			   f.startTimecode.contains(m_search, Qt::CaseInsensitive);
+		       f.project.contains(m_search, Qt::CaseInsensitive) ||
+		       f.originalBin.contains(m_search, Qt::CaseInsensitive) ||
+		       f.mxfFolder.contains(m_search, Qt::CaseInsensitive) ||
+		       f.codec.contains(m_search, Qt::CaseInsensitive) ||
+		       f.volumeName.contains(m_search, Qt::CaseInsensitive) ||
+		       f.fileName.contains(m_search, Qt::CaseInsensitive) ||
+		       f.sourceFileName.contains(m_search, Qt::CaseInsensitive) ||
+		       f.sourceFilePath.contains(m_search, Qt::CaseInsensitive) ||
+		       f.startTimecode.contains(m_search, Qt::CaseInsensitive);
 	}
 	return true;
 }
 
 bool MediaFilterProxy::lessThan(const QModelIndex &left,
-								const QModelIndex &right) const
+                                const QModelIndex &right) const
 {
 	const QVariant lv = sourceModel()->data(left, Qt::UserRole);
 	const QVariant rv = sourceModel()->data(right, Qt::UserRole);
@@ -451,13 +471,19 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left,
 	case MediaTableModel::Column::Created:
 		return lv.toDateTime() < rv.toDateTime();
 	default:
-		return lv.toString().toLower() < rv.toString().toLower();
+		// Qt::CaseInsensitive folds inline — no toLower() copies.
+		// Saves ~20M allocations per sort on 300K rows.
+		return QString::compare(lv.toString(), rv.toString(),
+		                        Qt::CaseInsensitive) < 0;
 	}
 }
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+// MARK: - MainWindow construction
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
-	m_driveManager = new DriveManager(this);
+	m_volumeManager = new VolumeManager(this);
 	m_scanner = new MediaScanner(this);
 	m_fileOps = new MediaManager(this);
 	m_model = new MediaTableModel(this);
@@ -475,22 +501,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 	addLog(0, "app", QString("%1 %2 initialised").arg(APP_NAME, APP_VERSION));
 
 #ifdef Q_OS_MAC
-	// QSysInfo stops at major.minor; QOperatingSystemVersion gives the patch.
 	{
 		const auto v = QOperatingSystemVersion::current();
 		addLog(0, "app",
-			   QString("Platform: %1 %2.%3.%4")
-				   .arg(v.name())
-				   .arg(v.majorVersion())
-				   .arg(v.minorVersion())
-				   .arg(v.microVersion()));
+		       QString("Platform: %1 %2.%3.%4")
+		           .arg(v.name())
+		           .arg(v.majorVersion())
+		           .arg(v.minorVersion())
+		           .arg(v.microVersion()));
 	}
 #else
 	{
 		QString platform = QSysInfo::prettyProductName();
 		QSettings reg(QStringLiteral(
-						  "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"),
-					  QSettings::NativeFormat);
+		                  "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"),
+		              QSettings::NativeFormat);
 		const QString displayVersion = reg.value("DisplayVersion").toString();
 		const QString buildNumber = reg.value("CurrentBuildNumber").toString();
 		const QVariant ubr = reg.value("UBR");
@@ -504,7 +529,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 			if (ubr.isValid())
 				extras += "." + ubr.toString();
 		}
-		// Replace Qt's noisy "Version XXXX" suffix with the registry-derived one.
 		if (!displayVersion.isEmpty() || !buildNumber.isEmpty())
 		{
 			const int versionIdx = platform.indexOf(" Version ");
@@ -516,18 +540,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 	}
 #endif
 
-	onDetectDrives();
-	m_driveManager->startMonitoring();
+	onDetectVolumes();
+	m_volumeManager->startMonitoring();
 
 #ifdef Q_OS_MAC
-	if (!DriveManager::hasFullDiskAccess())
+	if (!VolumeManager::hasFullDiskAccess())
 	{
 		addLog(1, "app",
-			   "Full Disk Access not granted. Some locations may be "
-			   "inaccessible.");
+		       "Full Disk Access not granted. Some locations may be "
+		       "inaccessible.");
 		addLog(0, "app",
-			   "Go to System Preferences > Privacy & Security > Full Disk "
-			   "Access, to grant permission.");
+		       "Go to System Preferences > Privacy & Security > Full Disk "
+		       "Access, to grant permission.");
 	}
 	else
 	{
@@ -538,6 +562,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 MainWindow::~MainWindow() = default;
 
+// MARK: - UI layout
+
 void MainWindow::setupUi()
 {
 	m_sidePanel = new QWidget;
@@ -546,37 +572,37 @@ void MainWindow::setupUi()
 	sideLayout->setContentsMargins(0, 0, 0, 0);
 	sideLayout->setSpacing(12);
 
-	auto *volGroup = new QGroupBox("Volumes");
+	auto *volGroup = new QGroupBox(tr("Volumes"));
 	auto *volLayout = new QVBoxLayout(volGroup);
 	volLayout->setContentsMargins(6, 6, 6, 6);
 	volLayout->setSpacing(4);
 
-	m_driveList = new DriveListWidget;
-	m_driveList->setSelectionMode(QAbstractItemView::MultiSelection);
-	m_driveList->setMinimumHeight(60);
-	m_driveList->setMaximumHeight(140);
-	m_driveList->setToolTip(
-		"Drag folders or volumes here to add them.");
-	m_driveList->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-	volLayout->addWidget(m_driveList);
+	m_volumeList = new VolumeListWidget;
+	m_volumeList->setSelectionMode(QAbstractItemView::MultiSelection);
+	m_volumeList->setMinimumHeight(60);
+	m_volumeList->setMaximumHeight(140);
+	m_volumeList->setToolTip(
+	    tr("Drag folders or volumes here to add them."));
+	m_volumeList->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+	volLayout->addWidget(m_volumeList);
 
-	m_scanButton = new QPushButton("Scan Selected");
+	m_scanButton = new QPushButton(tr("Scan Selected"));
 	m_scanButton->setDefault(true);
 	volLayout->addWidget(m_scanButton);
 
-	m_scanAllButton = new QPushButton("Scan All");
+	m_scanAllButton = new QPushButton(tr("Scan All"));
 	m_scanAllButton->setToolTip(
-		"Scan every mounted volume and known Avid location");
+	    tr("Scan every mounted volume and known Avid location"));
 	volLayout->addWidget(m_scanAllButton);
 
 	sideLayout->addWidget(volGroup);
 
-	auto *projGroup = new QGroupBox("Projects");
+	auto *projGroup = new QGroupBox(tr("Projects"));
 	auto *projLayout = new QVBoxLayout(projGroup);
 	projLayout->setContentsMargins(6, 6, 6, 6);
 	m_projectList = new QListWidget;
 	m_projectList->setSelectionMode(QAbstractItemView::MultiSelection);
-	// Prevent long project names from expanding the splitter.
+	// Prevent long project names from blowing out the splitter.
 	m_projectList->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
 	projLayout->addWidget(m_projectList);
 	sideLayout->addWidget(projGroup);
@@ -594,22 +620,23 @@ void MainWindow::setupUi()
 	m_filterTabs->setDocumentMode(true);
 
 	m_searchField = new QLineEdit;
-	m_searchField->setPlaceholderText("Search");
+	m_searchField->setPlaceholderText(tr("Search"));
 	m_searchField->setClearButtonEnabled(true);
 	m_searchField->setMinimumWidth(200);
 	m_searchField->setMaximumWidth(320);
 
-	m_btnFileOps = new QPushButton("Manage Media...");
-	m_btnBinFilter = new QPushButton("Filter by Bin...");
-	m_btnExport = new QPushButton("Export CSV...");
-	m_btnRebalance = new QPushButton("Rebalance...");
+	m_btnFileOps = new QPushButton(tr("Manage Media..."));
+	m_btnBinFilter = new QPushButton(tr("Filter by Bin..."));
+	m_btnExport = new QPushButton(tr("Export CSV..."));
+	m_btnRebalance = new QPushButton(tr("Rebalance..."));
 	m_btnRebalance->setToolTip(
-		tr("Redistribute MXF files so each MediaFiles folder stays "
-		   "under 5,000 files (Avid recommendation)."));
+	    tr("Redistribute MXF files so each MediaFiles folder stays "
+	       "under 5,000 files (Avid recommendation)."));
 	m_btnFileOps->setEnabled(false);
 	m_btnRebalance->setEnabled(false);
 
-	// Hidden until a filter is active; rebuilt by rebuildFilterChips().
+	// Hidden until a filter is active; rebuilt from scratch by
+	// rebuildFilterChips on every filter change.
 	m_chipsBar = new QWidget;
 	m_chipsBar->setVisible(false);
 	auto *chipsInternal = new QHBoxLayout(m_chipsBar);
@@ -655,7 +682,8 @@ void MainWindow::setupUi()
 	m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_tableView->setFont(QFont(Theme::monoFont(), Theme::monoFontSize()));
 
-	// Starting widths; autoFitColumns() runs after the first scan.
+	// Starting widths. autoFitColumns runs once after the first
+	// scan to size them to actual content.
 	m_tableView->setColumnWidth(+MediaTableModel::Column::ClipName, 180);
 	m_tableView->setColumnWidth(+MediaTableModel::Column::FileName, 150);
 	m_tableView->setColumnWidth(+MediaTableModel::Column::Project, 100);
@@ -684,7 +712,7 @@ void MainWindow::setupUi()
 	m_contentSplitter->setStretchFactor(0, 1);
 	m_contentSplitter->setStretchFactor(1, 0);
 
-	// Table dominates mainwindow; Console at minimum size.
+	// Default - table dominates the window; console sits at its minimum size.
 	m_contentSplitter->setSizes({100000, 80});
 
 	auto *contentWidget = new QWidget;
@@ -702,8 +730,8 @@ void MainWindow::setupUi()
 
 	setCentralWidget(m_mainSplitter);
 
-	m_statusFiles = new QLabel("0 files");
-	m_statusSize = new QLabel("0 GB");
+	m_statusFiles = new QLabel(tr("0 files"));
+	m_statusSize = new QLabel(tr("0 GB"));
 	m_statusSelected = new QLabel;
 	m_statusSelSize = new QLabel;
 	m_statusScanTime = new QLabel;
@@ -728,108 +756,109 @@ void MainWindow::setupUi()
 	statusBar()->addPermanentWidget(m_statusScanTime);
 }
 
+// MARK: - Menus
+
 void MainWindow::setupMenus()
 {
 	auto *fileMenu = menuBar()->addMenu("&File");
 
-	auto *a2 = fileMenu->addAction("Add &Folder or Volume");
+	auto *a2 = fileMenu->addAction(tr("Add &Folder or Volume"));
 	a2->setShortcut(QKeySequence("Ctrl+O"));
 	connect(a2, &QAction::triggered, this, [this]()
-			{
+	        {
         QString dir =
             QFileDialog::getExistingDirectory(this, "Add Volume or Folder");
         if (!dir.isEmpty())
-            addDrivePath(dir); });
+            addVolumePath(dir); });
 
 	fileMenu->addSeparator();
 
-	auto *a1 = fileMenu->addAction("Scan &Selected");
+	auto *a1 = fileMenu->addAction(tr("Scan &Selected"));
 	connect(a1, &QAction::triggered, this, &MainWindow::onScanClicked);
 
-	auto *a1b = fileMenu->addAction("Scan &All");
+	auto *a1b = fileMenu->addAction(tr("Scan &All"));
 	a1b->setShortcut(QKeySequence("Ctrl+Shift+A"));
 	connect(a1b, &QAction::triggered, this, &MainWindow::onScanAllClicked);
 
-	auto *ra = fileMenu->addAction("Refresh &Volumes");
+	auto *ra = fileMenu->addAction(tr("Refresh &Volumes"));
 	ra->setShortcut(QKeySequence("Ctrl+Shift+D"));
-	connect(ra, &QAction::triggered, this, &MainWindow::onDetectDrives);
+	connect(ra, &QAction::triggered, this, &MainWindow::onDetectVolumes);
 
 	fileMenu->addSeparator();
 
-	auto *revealAct = fileMenu->addAction("Reveal in Finder");
+	auto *revealAct = fileMenu->addAction(tr("Reveal in Finder"));
 	revealAct->setShortcut(QKeySequence("Ctrl+Shift+R"));
 	connect(revealAct, &QAction::triggered, this,
-			&MainWindow::onRevealInFinder);
+	        &MainWindow::onRevealInFinder);
 
 	fileMenu->addSeparator();
 
-	auto *a3 = fileMenu->addAction("&Export CSV...");
+	auto *a3 = fileMenu->addAction(tr("&Export CSV..."));
 	a3->setShortcut(QKeySequence("Ctrl+E"));
 	connect(a3, &QAction::triggered, this, &MainWindow::onExportCsv);
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
-	auto *a4 = fileMenu->addAction("&Quit");
+	auto *a4 = fileMenu->addAction(tr("&Quit"));
 	a4->setShortcut(QKeySequence("Ctrl+Q"));
 	connect(a4, &QAction::triggered, qApp, &QApplication::quit);
 #endif
 
 	auto *editMenu = menuBar()->addMenu("&Edit");
-	auto *a5 = editMenu->addAction("&Find");
+	auto *a5 = editMenu->addAction(tr("&Find"));
 	a5->setShortcut(QKeySequence::Find);
 	connect(a5, &QAction::triggered, m_searchField,
-			qOverload<>(&QWidget::setFocus));
-	auto *a6 = editMenu->addAction("Select &All");
+	        qOverload<>(&QWidget::setFocus));
+	auto *a6 = editMenu->addAction(tr("Select &All"));
 	a6->setShortcut(QKeySequence::SelectAll);
 	connect(a6, &QAction::triggered, m_tableView, &QTableView::selectAll);
 
-	// "Select Relatives" picks every row in the visible table that
-	// shares the selected file's composition Mob (e.g. V01 + A01 + A02 of
-	// the same master clip).
-	auto *relAct = editMenu->addAction("Select &Relatives");
+	// Picks every visible row sharing the selected file's
+	// composition MOB — e.g. V01 + A01 + A02 of the same master.
+	auto *relAct = editMenu->addAction(tr("Select &Relatives"));
 	relAct->setShortcut(QKeySequence("Ctrl+Shift+L"));
 	connect(relAct, &QAction::triggered, this,
-			&MainWindow::onSelectRelatives);
+	        &MainWindow::onSelectRelatives);
 
 	auto *viewMenu = menuBar()->addMenu("&View");
-	auto *ca = viewMenu->addAction("Show &Console");
+	auto *ca = viewMenu->addAction(tr("Show &Console"));
 	ca->setCheckable(true);
 	ca->setChecked(true);
 	connect(ca, &QAction::triggered, this, [this](bool c)
-			{ m_console->setVisible(c); });
+	        { m_console->setVisible(c); });
 
-	// Off by default — empty tabs hide themselves so the bar isn't cluttered with "(0)"s.
-	auto *showAllTabsAct = viewMenu->addAction("Show &All Filter Tabs");
+	// Off by default — empty tabs hide themselves so the bar isn't
+	// cluttered with (0) placeholders.
+	auto *showAllTabsAct = viewMenu->addAction(tr("Show &All Filter Tabs"));
 	showAllTabsAct->setCheckable(true);
 	showAllTabsAct->setChecked(false);
 	connect(showAllTabsAct, &QAction::triggered, this, [this](bool on)
-			{
+	        {
 		m_showAllFilterTabs = on;
 		updateFilterCounts(); });
 
 	viewMenu->addSeparator();
 
-	auto *fitAct = viewMenu->addAction("&Resize Columns to Fit");
+	auto *fitAct = viewMenu->addAction(tr("&Resize Columns to Fit"));
 	fitAct->setShortcut(QKeySequence("Ctrl+T"));
 	connect(fitAct, &QAction::triggered, this, &MainWindow::autoFitColumns);
 
-	// Holds items that don't fit naturally in File/Edit/View.
 	auto *specialMenu = menuBar()->addMenu("&Special");
-	auto *sa = specialMenu->addAction("&Project Summary");
+	auto *sa = specialMenu->addAction(tr("&Project Summary"));
 	connect(sa, &QAction::triggered, this, &MainWindow::onProjectSummary);
 
 	specialMenu->addSeparator();
-	auto *bfa = specialMenu->addAction("Filter by &Bin...");
+	auto *bfa = specialMenu->addAction(tr("Filter by &Bin..."));
 	bfa->setShortcut(QKeySequence("Ctrl+Shift+B"));
 	connect(bfa, &QAction::triggered, this, &MainWindow::onFilterByBins);
 
 	specialMenu->addSeparator();
-	auto *rba = specialMenu->addAction("&Rebalance...");
+	auto *rba = specialMenu->addAction(tr("&Rebalance..."));
 	connect(rba, &QAction::triggered, this, &MainWindow::onRebalance);
 
 #ifdef Q_OS_MAC
 	specialMenu->addSeparator();
-	auto *pa = specialMenu->addAction("Check &Permissions...");
+	auto *pa = specialMenu->addAction(tr("Check &Permissions..."));
 	connect(pa, &QAction::triggered, this, &MainWindow::onCheckPermissions);
 #endif
 
@@ -838,7 +867,7 @@ void MainWindow::setupMenus()
 	slowAct->setCheckable(true);
 	slowAct->setChecked(false);
 	connect(slowAct, &QAction::triggered, this, [this](bool on)
-			{
+	        {
 		DebugSlowdown::setEnabled(on);
 		addLog(0, "app", on ? "Slow Mode enabled (1/50th speed)"
 							: "Slow Mode disabled"); });
@@ -847,7 +876,7 @@ void MainWindow::setupMenus()
 	verifyAct->setCheckable(true);
 	verifyAct->setChecked(MediaManagerVerify::enabled());
 	connect(verifyAct, &QAction::triggered, this, [this](bool on)
-			{
+	        {
 		MediaManagerVerify::setEnabled(on);
 		addLog(0, "app", on ? "Verification checks enabled"
 							: "Verification checks disabled"); });
@@ -856,7 +885,7 @@ void MainWindow::setupMenus()
 	rawHexAct->setCheckable(true);
 	rawHexAct->setChecked(false);
 	connect(rawHexAct, &QAction::triggered, this, [this](bool on)
-			{
+	        {
 		m_model->setShowRawCodecHex(on);
 		addLog(0, "app", on ? "Codec as Raw Hex enabled"
 							: "Codec as Raw Hex disabled"); });
@@ -872,15 +901,17 @@ void MainWindow::setupMenus()
 	fusionAct->setCheckable(true);
 	fusionAct->setChecked(false);
 	connect(fusionAct, &QAction::triggered, this, [this, nativeStyleName](bool on)
-			{
+	        {
 		const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
 		QApplication::setStyle(QStyleFactory::create(target));
 		addLog(0, "app", QStringLiteral("Style: %1").arg(target)); });
 
 	auto *helpMenu = menuBar()->addMenu("&Help");
-	auto *aa = helpMenu->addAction("About MediaMuster");
+	auto *aa = helpMenu->addAction(tr("About MediaMuster"));
 	connect(aa, &QAction::triggered, this, &MainWindow::onAbout);
 }
+
+// MARK: - About dialog
 
 void MainWindow::onAbout()
 {
@@ -894,10 +925,9 @@ void MainWindow::onAbout()
 	layout->setSpacing(8);
 	layout->setAlignment(Qt::AlignHCenter);
 
-	// Skip the icon block if the build didn't bundle one.
 	auto *icon = new QLabel;
 	const QPixmap appIcon =
-		QApplication::windowIcon().pixmap(QSize(96, 96));
+	    QApplication::windowIcon().pixmap(QSize(96, 96));
 	if (!appIcon.isNull())
 	{
 		icon->setPixmap(appIcon);
@@ -916,7 +946,7 @@ void MainWindow::onAbout()
 	name->setAlignment(Qt::AlignHCenter);
 	layout->addWidget(name);
 
-	auto *version = new QLabel(QString("Version %1").arg(APP_VERSION));
+	auto *version = new QLabel(tr("Version %1").arg(APP_VERSION));
 	{
 		QFont f = version->font();
 		f.setPointSize(f.pointSize() - 1);
@@ -929,7 +959,7 @@ void MainWindow::onAbout()
 	layout->addSpacing(10);
 
 	auto *copyright = new QLabel(
-		tr("Copyright © 2026 Martin McLean.\nAll rights reserved."));
+	    tr("Copyright © 2026 Martin McLean.\nAll rights reserved."));
 	copyright->setAlignment(Qt::AlignHCenter);
 	{
 		QFont f = copyright->font();
@@ -942,10 +972,10 @@ void MainWindow::onAbout()
 	layout->addSpacing(10);
 
 	auto *credits = new QLabel(
-		tr("Built with <a href=\"https://qt.io/download-qt-installer\">Qt %1</a> under GNU LGPL v3.<br>"
-		   "Developed from examination of files,<br>"
-		   "no copyright infringement intended.")
-			.arg(QT_VERSION_STR));
+	    tr("Built with <a href=\"https://qt.io/download-qt-installer\">Qt %1</a> under GNU LGPL v3.<br>"
+	       "Developed from examination of files,<br>"
+	       "no copyright infringement intended.")
+	        .arg(QT_VERSION_STR));
 	credits->setAlignment(Qt::AlignHCenter);
 	credits->setOpenExternalLinks(true);
 	credits->setTextFormat(Qt::RichText);
@@ -973,304 +1003,307 @@ void MainWindow::onAbout()
 	dlg->show();
 }
 
+// MARK: - Signal wiring
+
 void MainWindow::setupConnections()
 {
 	connect(
-		m_driveManager, &DriveManager::drivesChanged, this,
-		[this](const QVector<DriveInfo> &)
-		{
-			if (m_driveList->count() == 0)
-				onDetectDrives();
-		},
-		Qt::QueuedConnection);
+	    m_volumeManager, &VolumeManager::volumesChanged, this,
+	    [this](const QVector<VolumeInfo> &volumes)
+	    {
+		    // The poller's pool thread already did the work — use the
+		    // vector the signal carries.
+		    rebuildVolumeList(volumes);
+	    },
+	    Qt::QueuedConnection);
 
 	connect(m_scanner, &MediaScanner::scanProgress, this,
-			&MainWindow::onScanProgress, Qt::QueuedConnection);
+	        &MainWindow::onScanProgress, Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanLogBatch, this,
-			&MainWindow::onScanLogBatch, Qt::QueuedConnection);
+	        &MainWindow::onScanLogBatch, Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanFinished, this,
-			&MainWindow::onScanFinished, Qt::QueuedConnection);
+	        &MainWindow::onScanFinished, Qt::QueuedConnection);
 
 	connect(
-		m_fileOps, &MediaManager::operationProgress, this,
-		[this](const QString &name, int cur, int total, double)
-		{
-			auto *dlg = progressDialog();
-			if (!dlg->isVisible())
-			{
-				setBusy(true);
-				dlg->begin(m_pendingOpTitle.isEmpty()
-							   ? tr("Processing files...")
-							   : m_pendingOpTitle);
-			}
-			dlg->setProgress(cur, total);
-			dlg->setDetail(name);
-		},
-		Qt::QueuedConnection);
+	    m_fileOps, &MediaManager::operationProgress, this,
+	    [this](const QString &name, int cur, int total, double)
+	    {
+		    auto *dlg = progressDialog();
+		    if (!dlg->isVisible())
+		    {
+			    setBusy(true);
+			    dlg->begin(m_pendingOpTitle.isEmpty()
+			                   ? tr("Processing files...")
+			                   : m_pendingOpTitle);
+		    }
+		    dlg->setProgress(cur, total);
+		    dlg->setDetail(name);
+	    },
+	    Qt::QueuedConnection);
 	connect(
-		m_fileOps, &MediaManager::operationLog, this,
-		[this](int level, const QString &message)
-		{
-			addLog(level, "ops", message);
-			// Surface verification on the progress dialog so big network
-			// ops don't look frozen between read and verify.
-			if (message.startsWith(QStringLiteral("Verifying ")))
-			{
-				if (auto *dlg = progressDialog(); dlg && dlg->isVisible())
-					dlg->setDetail(message);
-			}
-		},
-		Qt::QueuedConnection);
+	    m_fileOps, &MediaManager::operationLog, this,
+	    [this](int level, const QString &message)
+	    {
+		    addLog(level, "ops", message);
+		    // Surface verify activity so big copies don't look frozen
+		    // between 'bytes finished' and 'verify pass done'.
+		    if (message.startsWith(QStringLiteral("Verifying ")))
+		    {
+			    if (auto *dlg = progressDialog(); dlg && dlg->isVisible())
+				    dlg->setDetail(message);
+		    }
+	    },
+	    Qt::QueuedConnection);
 	connect(
-		m_fileOps, &MediaManager::operationItemDone, this,
-		[this](const QString &name, bool ok, const QString &err, bool skipped)
-		{
-			addLog(ok ? 3 : 2, "ops",
-				   ok ? name + " done" : name + " FAILED: " + err);
-			// Track successful paths for post-op table update.
-			// Skipped items left the source file in place, so don't prune the row.
-			if (ok && !skipped && m_removeAfterOp)
-			{
-				// Find the full path by matching filename against m_allFiles.
-				for (const auto &f : m_allFiles)
-				{
-					if (f.fileName == name)
-					{
-						m_successfulOpPaths.insert(f.filePath);
-						break;
-					}
-				}
-			}
-		},
-		Qt::QueuedConnection);
-	connect(
-		m_fileOps, &MediaManager::operationFinished, this,
-		[this](int ok, int fail)
-		{
-			setBusy(false);
-			addLog(fail > 0 ? 1 : 3, "ops",
-				   QString("Complete: %1 ok, %2 failed").arg(ok).arg(fail));
+	    m_fileOps, &MediaManager::operationItemDone, this,
+	    [this](const QString &name, const QString &filePath, bool ok,
+	           const QString &err, bool skipped)
+	    {
+		    addLog(ok ? 3 : 2, "ops",
+		           ok ? name + " done" : name + " FAILED: " + err);
 
-			// After a Move or Delete, remove successful files from the
-			// table so it reflects reality without a re-scan. The model
-			// emits begin/endRemoveRows per contiguous range, so the
-			// view preserves scroll position and selection instead of
-			// flickering through a full reset.
-			if (m_removeAfterOp && !m_successfulOpPaths.isEmpty())
-			{
-				const int removedCount = m_successfulOpPaths.size();
-				m_model->removeFilesByPath(m_successfulOpPaths);
-				m_allFiles = m_model->allFiles();
-				updateFilterCounts();
-				updateStatusBar();
-				addLog(0, "ops",
-					   QString("Removed %1 files from table")
-						   .arg(removedCount));
-			}
-			m_removeAfterOp = false;
-			m_successfulOpPaths.clear();
-			m_pendingOpTitle.clear();
-		},
-		Qt::QueuedConnection);
+		    // Track successful paths so we can prune the table once
+		    // the job finishes. Skipped items left the source alone
+		    // — pruning their rows would lie about table state.
+		    if (ok && !skipped && m_removeAfterOp)
+			    m_successfulOpPaths.insert(filePath);
+	    },
+	    Qt::QueuedConnection);
+	connect(
+	    m_fileOps, &MediaManager::operationFinished, this,
+	    [this](int ok, int fail)
+	    {
+		    setBusy(false);
+		    addLog(fail > 0 ? 1 : 3, "ops",
+		           QString("Complete: %1 ok, %2 failed").arg(ok).arg(fail));
 
-	// Network drives have no OS recycle bin, so deletes will relocate to
-	// a per-volume "_MediaMuster_Trash" folder.
+		    // After Move/Delete, prune successful files so the table
+		    // reflects reality without a re-scan. begin/endRemoveRows
+		    // per contiguous range preserves scroll and selection.
+		    if (m_removeAfterOp && !m_successfulOpPaths.isEmpty())
+		    {
+			    const int removedCount = m_successfulOpPaths.size();
+			    m_model->removeFilesByPath(m_successfulOpPaths);
+			    m_allFiles = m_model->allFiles();
+			    updateFilterCounts();
+			    updateStatusBar();
+			    addLog(0, "ops",
+			           QString("Removed %1 files from table")
+			               .arg(removedCount));
+		    }
+		    m_removeAfterOp = false;
+		    m_successfulOpPaths.clear();
+		    m_pendingOpTitle.clear();
+	    },
+	    Qt::QueuedConnection);
+
+	// Network volumes have no OS recycle bin, so deletes there
+	// land in a per-volume `_MediaMuster_Trash` folder.
 	connect(m_fileOps, &MediaManager::mediaMusterTrashUsed,
-			this, &MainWindow::showMediaMusterTrashDialog,
-			Qt::QueuedConnection);
+	        this, &MainWindow::showMediaMusterTrashDialog,
+	        Qt::QueuedConnection);
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this,
-			&MainWindow::onFilterChanged);
+	        &MainWindow::onFilterChanged);
 
-	// 200 ms debounce so search doesn't fire on every keystroke.
+	// 200 ms debounce on the expensive proxy invalidation. Chip
+	// strip still updates per-keystroke for instant feedback.
 	{
 		auto *searchDebounce = new QTimer(this);
 		searchDebounce->setSingleShot(true);
 		searchDebounce->setInterval(200);
 		connect(m_searchField, &QLineEdit::textChanged,
-				searchDebounce, qOverload<>(&QTimer::start));
+		        searchDebounce, qOverload<>(&QTimer::start));
 		connect(searchDebounce, &QTimer::timeout, this, [this]()
-				{ onSearchChanged(m_searchField->text()); });
+		        { onSearchChanged(m_searchField->text()); });
 
-		// Chips update per-keystroke; the table filter waits for the debounce.
 		connect(m_searchField, &QLineEdit::textChanged, this,
-				[this]()
-				{ rebuildFilterChips(); });
+		        [this]()
+		        { rebuildFilterChips(); });
 	}
 
-	// 100 ms debounce so the status bar's O(n) byte walk doesn't fire on
-	// every filter change. updateStatusBar() restarts this timer; the actual
-	// work runs once in doUpdateStatusBar after the burst settles.
+	// 100 ms debounce on the status bar's O(n) byte walk.
+	// updateStatusBar restarts the timer; doUpdateStatusBar runs
+	// once the burst settles.
 	m_statusBarUpdateTimer = new QTimer(this);
 	m_statusBarUpdateTimer->setSingleShot(true);
 	m_statusBarUpdateTimer->setInterval(100);
 	connect(m_statusBarUpdateTimer, &QTimer::timeout, this,
-			&MainWindow::doUpdateStatusBar);
+	        &MainWindow::doUpdateStatusBar);
 
-	// Same pattern for the "X MB selected" tally: every keyboard arrow or
-	// mouse drag fires onSelectionChanged. Cheap state (button enable,
-	// row count) runs synchronously; the expensive byte sum runs once
-	// when the selection settles.
+	// Same pattern for the 'X MB selected' string — cheap state
+	// runs synchronously, byte sum waits for the timer.
 	m_selectionBytesTimer = new QTimer(this);
 	m_selectionBytesTimer->setSingleShot(true);
 	m_selectionBytesTimer->setInterval(100);
 	connect(m_selectionBytesTimer, &QTimer::timeout, this,
-			&MainWindow::doUpdateSelectionBytes);
+	        &MainWindow::doUpdateSelectionBytes);
 	connect(m_tableView->selectionModel(),
-			&QItemSelectionModel::selectionChanged, this,
-			&MainWindow::onSelectionChanged);
+	        &QItemSelectionModel::selectionChanged, this,
+	        &MainWindow::onSelectionChanged);
 	connect(m_tableView, &QTableView::doubleClicked, this,
-			&MainWindow::onTableDoubleClicked);
+	        &MainWindow::onTableDoubleClicked);
 	connect(m_btnFileOps, &QPushButton::clicked, this,
-			&MainWindow::onFileOperations);
+	        &MainWindow::onFileOperations);
 	connect(m_btnBinFilter, &QPushButton::clicked, this,
-			&MainWindow::onFilterByBins);
+	        &MainWindow::onFilterByBins);
 	connect(m_btnExport, &QPushButton::clicked, this, &MainWindow::onExportCsv);
 	connect(m_btnRebalance, &QPushButton::clicked, this, &MainWindow::onRebalance);
 	connect(m_scanButton, &QPushButton::clicked, this,
-			&MainWindow::onScanClicked);
+	        &MainWindow::onScanClicked);
 	connect(m_scanAllButton, &QPushButton::clicked, this,
-			&MainWindow::onScanAllClicked);
+	        &MainWindow::onScanAllClicked);
 
-	connect(m_driveList, &DriveListWidget::pathsDropped, this,
-			&MainWindow::onPathsDropped);
+	connect(m_volumeList, &VolumeListWidget::pathsDropped, this,
+	        &MainWindow::onPathsDropped);
 
 	connect(m_projectList, &QListWidget::itemSelectionChanged, this,
-			[this]()
-			{
-				QSet<QString> selected;
-				for (auto *item : m_projectList->selectedItems())
-				{
-					selected.insert(item->data(Qt::UserRole).toString());
-				}
-				m_proxy->setProjectFilter(selected);
-				updateStatusBar();
-				rebuildFilterChips();
-			});
+	        [this]()
+	        {
+		        QSet<QString> selected;
+		        for (auto *item : m_projectList->selectedItems())
+		        {
+			        selected.insert(item->data(Qt::UserRole).toString());
+		        }
+		        m_proxy->setProjectFilter(selected);
+		        updateStatusBar();
+		        rebuildFilterChips();
+	        });
 
 	connect(m_tableView, &QTableView::customContextMenuRequested,
-			this, &MainWindow::showTableContextMenu);
+	        this, &MainWindow::showTableContextMenu);
 
 	new QShortcut(QKeySequence::Delete, this, [this]()
-				  { onDeleteClicked(); });
+	              { openManageMedia(+ManageMediaDialog::Operation::Delete); });
 
 	new QShortcut(QKeySequence(Qt::Key_Escape), this, [this]()
-				  {
+	              {
 					  m_searchField->clear();
 					  m_projectList->clearSelection();
-					  m_filterTabs->setCurrentIndex(0);
-				  });
+					  m_filterTabs->setCurrentIndex(0); });
 }
+
+// MARK: - Full Disk Access prompt
 
 void MainWindow::onCheckPermissions()
 {
 #ifdef Q_OS_MAC
-	bool hasFDA = DriveManager::hasFullDiskAccess();
+	bool hasFDA = VolumeManager::hasFullDiskAccess();
 	if (hasFDA)
 	{
 		QMessageBox::information(
-			this, "Permissions",
-			"Full Disk Access is <b>granted</b>.<br><br>"
-			"I can muster all volumes and folders on this Mac!");
+		    this, tr("Permissions"),
+		    tr("Full Disk Access is <b>granted</b>.<br><br>"
+		       "I can muster all volumes and folders on this Mac!"));
 	}
 	else
 	{
-		auto ret = QMessageBox::warning(
-			this, "Permissions",
-			"Full Disk Access is <b>not granted</b>.<br><br>"
-			"I may not be able to muster all your media.<br><br>"
-			"Would you like to open System Preferences to grant access?",
-			QMessageBox::Yes | QMessageBox::No);
+		const auto ret = QMessageBox::warning(
+		    this, tr("Permissions"),
+		    tr("Full Disk Access is <b>not granted</b>.<br><br>"
+		       "I may not be able to muster all your media.<br><br>"
+		       "Would you like to open System Preferences to grant access?<br><br>"
+		       "<i>After granting access, quit and relaunch MediaMuster.</i>"),
+		    QMessageBox::Yes | QMessageBox::No);
 		if (ret == QMessageBox::Yes)
 		{
-			DriveManager::openFullDiskAccessSettings();
+			VolumeManager::openFullDiskAccessSettings();
 		}
 	}
 #endif // Q_OS_MAC
 }
 
+// MARK: - Bin filter
+
 void MainWindow::onFilterByBins()
 {
-	// Lazy; chain state persists across close/reopen. Parented to MainWindow.
+	// Lazy construction — dialog stays parented to the main window
+	// so chain state persists across show/hide.
 	if (!m_binFilterDialog)
 	{
 		m_binFilterDialog = new BinFilterDialog(this);
 		connect(m_binFilterDialog, &BinFilterDialog::filterChainChanged,
-				m_proxy, &MediaFilterProxy::setBinFilterMobs);
+		        m_proxy, &MediaFilterProxy::setBinFilterMobs);
 		connect(m_binFilterDialog, &BinFilterDialog::filterChainChanged, this,
-				[this](bool isActive, const QSet<QString> &acceptedMobs)
-				{
-					// Cached so the chip strip doesn't reach into the dialog.
-					m_binFilterActive = isActive;
-					m_binFilterMobCount = acceptedMobs.size();
-					rebuildFilterChips();
+		        [this](bool isActive, const QSet<QString> &acceptedMobs)
+		        {
+			        m_binFilterActive = isActive;
+			        m_binFilterMobCount = acceptedMobs.size();
+			        rebuildFilterChips();
 
-					if (!isActive)
-					{
-						addLog(0, "binfilter", "Bin filter cleared");
-						updateStatusBar();
-						return;
-					}
-					addLog(3, "binfilter",
-						   QString("Bin filter active — %1 MOBs accepted")
-							   .arg(acceptedMobs.size()));
-					// Sample bin/file MOBs side-by-side to spot namespace mismatches.
-					if (!acceptedMobs.isEmpty() && !m_allFiles.isEmpty())
-					{
-						auto binSample = *acceptedMobs.constBegin();
-						QString fileSample = m_allFiles.first().mobId;
-						QString compSample = m_allFiles.first().compositionMobId;
-						addLog(4, "binfilter",
-							   QString("Bin MOB sample   : %1").arg(binSample));
-						addLog(4, "binfilter",
-							   QString("File mobId sample: %1").arg(fileSample));
-						addLog(4, "binfilter",
-							   QString("File compMobId   : %1").arg(compSample));
+			        if (!isActive)
+			        {
+				        addLog(0, "binfilter", "Bin filter cleared");
+				        updateStatusBar();
+				        return;
+			        }
+			        addLog(3, "binfilter",
+			               QString("Bin filter active — %1 MOBs accepted")
+			                   .arg(acceptedMobs.size()));
 
-						int hits = 0;
-						for (const MediaFile &f : m_allFiles)
-						{
-							if (!f.mobId.isEmpty() &&
-								acceptedMobs.contains(f.mobId))
-							{
-								++hits;
-								continue;
-							}
-							if (!f.compositionMobId.isEmpty() &&
-								acceptedMobs.contains(f.compositionMobId))
-							{
-								++hits;
-							}
-						}
-						addLog(hits > 0 ? 3 : 1, "binfilter",
-							   QString("Matched %1 / %2 scanned files")
-								   .arg(hits)
-								   .arg(m_allFiles.size()));
-					}
-					updateStatusBar();
-				});
+			        // Log a bin sample + file sample side-by-side to spot
+			        // namespace mismatches (case, dotted vs undotted hex).
+			        if (!acceptedMobs.isEmpty() && !m_allFiles.isEmpty())
+			        {
+				        auto binSample = *acceptedMobs.constBegin();
+				        QString fileSample = m_allFiles.first().mobId;
+				        QString compSample = m_allFiles.first().compositionMobId;
+				        addLog(4, "binfilter",
+				               QString("Bin MOB sample   : %1").arg(binSample));
+				        addLog(4, "binfilter",
+				               QString("File mobId sample: %1").arg(fileSample));
+				        addLog(4, "binfilter",
+				               QString("File compMobId   : %1").arg(compSample));
+
+				        int hits = 0;
+				        for (const MediaFile &f : m_allFiles)
+				        {
+					        if (!f.mobId.isEmpty() &&
+					            acceptedMobs.contains(f.mobId))
+					        {
+						        ++hits;
+						        continue;
+					        }
+					        if (!f.compositionMobId.isEmpty() &&
+					            acceptedMobs.contains(f.compositionMobId))
+					        {
+						        ++hits;
+					        }
+				        }
+				        addLog(hits > 0 ? 3 : 1, "binfilter",
+				               QString("Matched %1 / %2 scanned files")
+				                   .arg(hits)
+				                   .arg(m_allFiles.size()));
+			        }
+			        updateStatusBar();
+		        });
 	}
 	m_binFilterDialog->show();
 	m_binFilterDialog->raise();
 	m_binFilterDialog->activateWindow();
 }
 
-// Redistribute MXF files so each MediaFiles folder stays under Avid's 5000-file limit.
+// MARK: - Rebalance
+
+// Gathers the volume > mxfRoot map from the indexed files so the
+// picker only shows volumes with scanned data.
 void MainWindow::onRebalance()
 {
 	if (m_allFiles.isEmpty())
 	{
 		QMessageBox::information(
-			this, tr("Rebalance"),
-			tr("Please scan a volume first. I need to know where things are before I can rebalance them."));
+		    this, tr("Rebalance"),
+		    tr("Please scan a volume first. I need to know where things are before I can rebalance them."));
 		return;
 	}
 
-	// MXF root = grandparent of the file: <drive>/Avid MediaFiles/MXF/<folder>/<file.mxf>.
+	// MXF root = grandparent of the file:
+	//   <volume>/Avid MediaFiles/MXF/<folder>/<file.mxf>
+	//                              ^^^^^^^^ this is the root we want
 	QHash<QString, QString> mxfRootsByLabel;
 	QHash<QString, QVector<MediaFile>> filesByMxfRoot;
 	QHash<QString, int> countByLabel;
-	QHash<QString, QString> drivePathByLabel;
+	QHash<QString, QString> volumePathByLabel;
 
 	for (const MediaFile &mf : m_allFiles)
 	{
@@ -1278,38 +1311,40 @@ void MainWindow::onRebalance()
 			continue;
 		const QString folderDir = QFileInfo(mf.filePath).absolutePath();
 		const QString mxfRoot = QFileInfo(folderDir).absolutePath();
-		// Skip non-standard layouts; grandparent must be the literal "MXF" folder.
+
+		// Grandparent must be the literal 'MXF' folder — anything
+		// else isn't safe to rebalance.
 		if (QFileInfo(mxfRoot).fileName() != QStringLiteral("MXF"))
 			continue;
 
-		QString label = mf.driveName;
+		QString label = mf.volumeName;
 		if (label.isEmpty())
-			label = QFileInfo(mf.drivePath).fileName();
+			label = QFileInfo(mf.volumePath).fileName();
 		if (label.isEmpty())
 			label = mxfRoot;
 
 		mxfRootsByLabel.insert(label, mxfRoot);
 		filesByMxfRoot[mxfRoot].append(mf);
 		countByLabel[label] += 1;
-		if (!drivePathByLabel.contains(label))
-			drivePathByLabel.insert(label, mf.drivePath);
+		if (!volumePathByLabel.contains(label))
+			volumePathByLabel.insert(label, mf.volumePath);
 	}
 
 	if (filesByMxfRoot.isEmpty())
 	{
 		QMessageBox::warning(
-			this, tr("Rebalance"),
-			tr("No standard 'Avid MediaFiles/MXF' folders were found in "
-			   "the current scan. Rebalance only operates on "
-			   "Avid's standard file structure."));
+		    this, tr("Rebalance"),
+		    tr("No 'Avid MediaFiles/MXF' folders were found in "
+		       "the current scan. Rebalance only operates on "
+		       "Avid's file structure."));
 		return;
 	}
 
-	// Default the picker to whichever volume has the most scanned files.
+	// Default to whichever volume has the most scanned files.
 	QString initialLabel;
 	int maxCount = -1;
 	for (auto it = countByLabel.constBegin();
-		 it != countByLabel.constEnd(); ++it)
+	     it != countByLabel.constEnd(); ++it)
 	{
 		if (it.value() > maxCount)
 		{
@@ -1319,47 +1354,50 @@ void MainWindow::onRebalance()
 	}
 
 	addLog(0, "rebalance",
-		   QString("Opening rebalance dialog (%1 drive(s), default '%2')")
-			   .arg(mxfRootsByLabel.size())
-			   .arg(initialLabel));
+	       QString("Opening rebalance dialog (%1 volume(s), default '%2')")
+	           .arg(mxfRootsByLabel.size())
+	           .arg(initialLabel));
 
 	RebalanceDialog dlg(mxfRootsByLabel, filesByMxfRoot,
-						initialLabel, this);
+	                    initialLabel, this);
 	connect(&dlg, &RebalanceDialog::logMessage, this,
-			[this](int level, const QString &msg)
-			{ addLog(level, QStringLiteral("rebalance"), msg); });
+	        [this](int level, const QString &msg)
+	        { addLog(level, QStringLiteral("rebalance"), msg); });
 	dlg.exec();
 
-	// Re-scan the volume so the table catches up with the moves.
+	// Re-scan if didRebalance — a cancelled run can still have
+	// moved files.
 	if (!dlg.didRebalance())
 		return;
 
-	const QString drivePath = drivePathByLabel.value(dlg.rebalancedLabel());
-	if (drivePath.isEmpty())
+	const QString volumePath = volumePathByLabel.value(dlg.rebalancedLabel());
+	if (volumePath.isEmpty())
 	{
 		addLog(1, "rebalance",
-			   "Couldn't determine volume path for re-scan; please scan "
-			   "manually");
+		       "Couldn't determine volume path for re-scan; please scan "
+		       "manually");
 		return;
 	}
 	addLog(0, "rebalance",
-		   QString("Re-scanning '%1' after rebalance").arg(drivePath));
-	startScanWithPaths(QStringList() << drivePath);
+	       QString("Re-scanning '%1' after rebalance").arg(volumePath));
+	startScanWithPaths(QStringList() << volumePath);
 }
+
+// MARK: - Volume list management
 
 void MainWindow::onPathsDropped(const QStringList &paths)
 {
 	for (const QString &path : paths)
-		addDrivePath(path);
+		addVolumePath(path);
 }
 
-void MainWindow::addDrivePath(const QString &path)
+void MainWindow::addVolumePath(const QString &path)
 {
-	for (int i = 0; i < m_driveList->count(); ++i)
+	for (int i = 0; i < m_volumeList->count(); ++i)
 	{
-		if (m_driveList->item(i)->data(Qt::UserRole).toString() == path)
+		if (m_volumeList->item(i)->data(Qt::UserRole).toString() == path)
 		{
-			m_driveList->item(i)->setSelected(true);
+			m_volumeList->item(i)->setSelected(true);
 			return;
 		}
 	}
@@ -1368,8 +1406,9 @@ void MainWindow::addDrivePath(const QString &path)
 	if (name.isEmpty())
 		name = path;
 
-	// No DriveInfo for manual paths — icon helper sniffs QStorageInfo.
-	auto *item = new QListWidgetItem(iconForDriveType({}, path), name);
+	// Manually-added paths have unknown volume type; icon helper
+	// sniffs QStorageInfo.
+	auto *item = new QListWidgetItem(iconForVolumeType({}, path), name);
 	item->setData(Qt::UserRole, path);
 
 	QString tooltip = path;
@@ -1378,32 +1417,49 @@ void MainWindow::addDrivePath(const QString &path)
 	{
 		const qint64 used = si.bytesTotal() - si.bytesAvailable();
 		tooltip += QString("\n%1 of %2 used")
-					   .arg(Format::bytes(used), Format::bytes(si.bytesTotal()));
+		               .arg(Format::bytes(used), Format::bytes(si.bytesTotal()));
 	}
 	item->setToolTip(tooltip);
 	item->setSelected(true);
-	m_driveList->addItem(item);
-	m_manualDrives.insert(path);
-	addLog(0, "drives", QString("Added: %1").arg(path));
+	m_volumeList->addItem(item);
+	m_manualVolumes.insert(path);
+	addLog(0, "volumes", QString("Added: %1").arg(path));
 }
 
-void MainWindow::onDetectDrives()
+void MainWindow::onDetectVolumes()
 {
-	auto drives = m_driveManager->detectDrives();
-	QSet<QString> manualCopy = m_manualDrives;
-	m_driveList->clear();
+	// Synchronous re-detect and rebuild. Seed the VolumeManager
+	// cache so the next async poll's identity check has a baseline.
+	auto drives = m_volumeManager->detectVolumes();
+	m_volumeManager->seedLastVolumes(drives);
+	rebuildVolumeList(std::move(drives));
+}
 
-	// Count name collisions (e.g. "Macintosh HD" + APFS data sibling) so we can suffix.
+void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
+{
+	// Snapshot selected paths so the rebuild can restore ticks.
+	// Otherwise a 'hot' volume mount would clear the selection.
+	QSet<QString> previouslySelected;
+	for (auto *item : m_volumeList->selectedItems())
+		previouslySelected.insert(item->data(Qt::UserRole).toString());
+
+	QSet<QString> manualCopy = m_manualVolumes;
+	m_volumeList->clear();
+
+	// Count name collisions (e.g. 'Macintosh HD' + its APFS data
+	// relative) so we know which entries need a suffix.
 	QHash<QString, int> nameCounts;
-	for (const auto &d : drives)
+	for (const auto &d : volumes)
 		++nameCounts[d.name];
 
-	// Disk-Utility-style suffix: system root keeps bare name; others get last path component.
-	// "/System/Volumes/Data" → "Data" → "Macintosh HD - Data".
+	// Disk Utility-style suffix: system root keeps its bare name,
+	// every other colliding volume gets the last path component
+	// appended. So `/System/Volumes/Data` becomes
+	// 'Macintosh HD - Data'.
 	auto suffixForPath = [](const QString &path, const QString &name) -> QString
 	{
 		if (path == QLatin1String("/") || path.isEmpty())
-			return {}; // system volume — bare name
+			return {};
 
 		QString p = path;
 		while (p.endsWith(QLatin1Char('/')) || p.endsWith(QLatin1Char('\\')))
@@ -1413,15 +1469,16 @@ void MainWindow::onDetectDrives()
 		if (basename.isEmpty())
 			basename = p;
 
-		// Use full path if basename echoes volume name (e.g. /Volumes/Backup, /Volumes/Backup-1).
+		// If basename echoes the volume name (e.g. /Volumes/Backup
+		// and /Volumes/Backup-1 both 'Backup'), fall back to the
+		// full path to keep rows distinct.
 		if (basename.compare(name, Qt::CaseInsensitive) == 0)
 			return path;
 		return basename;
 	};
 
-	for (const DriveInfo &d : drives)
+	for (const VolumeInfo &d : volumes)
 	{
-		// Volume name + path suffix on collision; capacity/type stay in the tooltip.
 		QString displayName = d.name;
 		if (nameCounts.value(d.name) > 1)
 		{
@@ -1431,16 +1488,16 @@ void MainWindow::onDetectDrives()
 		}
 
 		auto *item = new QListWidgetItem(
-			iconForDriveType(d.driveType, d.path), displayName);
+		    iconForVolumeType(d.volumeType, d.path), displayName);
 		item->setData(Qt::UserRole, d.path);
 
 		QString tooltip = d.path;
 		if (d.totalBytes > 0)
 		{
 			tooltip += QString("\n%1 of %2 used (%3)")
-						   .arg(Format::bytes(d.usedBytes),
-								Format::bytes(d.totalBytes),
-								d.driveType);
+			               .arg(Format::bytes(d.usedBytes),
+			                    Format::bytes(d.totalBytes),
+			                    d.volumeType);
 		}
 		item->setToolTip(tooltip);
 
@@ -1449,43 +1506,56 @@ void MainWindow::onDetectDrives()
 			QFont f = item->font();
 			f.setBold(true);
 			item->setFont(f);
-			item->setSelected(true);
 		}
 
-		m_driveList->addItem(item);
-		manualCopy.remove(d.path); // Don't re-add if already detected
+		// Preserve previous ticks for paths that still exist, and
+		// auto-select newly mounted volumes.
+		const bool wasSelected = previouslySelected.contains(d.path);
+		const bool newAvidVolume = d.hasAvidMedia && !wasSelected && !previouslySelected.isEmpty();
+		// Empty previouslySelected = cold start (auto-select every
+		// Avid volume); non-empty = hot mount (only auto-select new).
+		const bool coldStart = previouslySelected.isEmpty() && d.hasAvidMedia;
+		if (wasSelected || newAvidVolume || coldStart)
+			item->setSelected(true);
+
+		m_volumeList->addItem(item);
+		// Already detected? Drop from the manual set so we don't
+		// double-add the same volume below.
+		manualCopy.remove(d.path);
 	}
 
 	for (const QString &mp : manualCopy)
-		addDrivePath(mp);
+		addVolumePath(mp);
 
 	int ac = 0;
-	for (const auto &d : drives)
+	for (const auto &d : volumes)
 		if (d.hasAvidMedia)
 			++ac;
-	addLog(0, "drives",
-		   QString("Found %1 volumes (%2 with Avid MediaFiles)")
-			   .arg(drives.size()).arg(ac));
+	addLog(0, "volumes",
+	       QString("Found %1 volumes (%2 with Avid MediaFiles)")
+	           .arg(volumes.size())
+	           .arg(ac));
 }
+
+// MARK: - Scan controls
 
 void MainWindow::onScanClicked()
 {
 	if (m_scanner->isRunning())
 	{
 		m_scanner->cancelScan();
-		m_scanButton->setText("Scan Selected");
 		return;
 	}
 
 	QStringList paths;
-	for (auto *item : m_driveList->selectedItems())
+	for (auto *item : m_volumeList->selectedItems())
 		paths << item->data(Qt::UserRole).toString();
 
 	if (paths.isEmpty())
 	{
 		QMessageBox::information(
-			this, "No Volumes Selected",
-			"Select at least one volume, or use \"Scan All Drives\".");
+		    this, tr("No Volumes Selected"),
+		    tr("Select at least one volume, or use \"Scan All Volumes\"."));
 		return;
 	}
 	startScanWithPaths(paths);
@@ -1499,8 +1569,8 @@ void MainWindow::onScanAllClicked()
 		return;
 	}
 
-	QStringList paths = m_driveManager->allScannablePaths();
-	for (const QString &mp : m_manualDrives)
+	QStringList paths = m_volumeManager->allScannablePaths();
+	for (const QString &mp : m_manualVolumes)
 	{
 		if (!paths.contains(mp))
 			paths.append(mp);
@@ -1513,9 +1583,8 @@ void MainWindow::onScanAllClicked()
 void MainWindow::startScanWithPaths(const QStringList &paths)
 {
 	MediaScanner::Options opts;
-	opts.drivePaths = paths;
+	opts.volumePaths = paths;
 	opts.parseMxfHeaders = true;
-	opts.scanUnmanaged = true;
 
 	setBusy(true);
 	progressDialog()->begin(tr("Scanning media..."));
@@ -1526,22 +1595,22 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 }
 
 void MainWindow::onScanProgress(const QString &phase, int current, int total,
-								const QString &currentPath)
+                                const QString &currentPath)
 {
 	auto *dlg = progressDialog();
 	dlg->setProgress(current, total);
 
-	// Cosmetic path normalisation for the progress dialog:
-	//   /Volumes/haa-edit/...     > Volumes/haa-edit/...
-	//   /Users/Shared/...         > System Drive/Users/Shared/...
-	//   C:\Avid MediaFiles\MXF\1  > native separators kept
+	// Friendlier display than a bare `/`-prefixed path:
+	//   /Volumes/haa-edit/...     → "Volumes/haa-edit/..."
+	//   /Users/Shared/...         → "System Volume/Users/Shared/..."
+	//   C:\Avid MediaFiles\MXF\1  → native separators kept
 	QString displayPath = currentPath;
 
 #ifdef Q_OS_MAC
 	if (displayPath.startsWith('/'))
 	{
 		if (!displayPath.startsWith("/Volumes/"))
-			displayPath = "System Drive" + displayPath;
+			displayPath = "System Volume" + displayPath;
 		else
 			displayPath.remove(0, 1);
 	}
@@ -1554,7 +1623,8 @@ void MainWindow::onScanProgress(const QString &phase, int current, int total,
 
 void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 {
-	// One appendPlainText per batch — one reflow instead of N keeps the console responsive.
+	// One appendPlainText per batch — keeps the console responsive
+	// under heavy scanner log volume.
 	if (batch.isEmpty())
 		return;
 
@@ -1564,16 +1634,10 @@ void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 
 	for (int i = 0; i < batch.size(); ++i)
 	{
-		const LogMsg &m = batch[i];
 		if (i > 0)
 			combined += QLatin1Char('\n');
-		combined += now;
-		combined += QLatin1String(" [");
-		combined += QLatin1String(logPfx(m.level));
-		combined += QLatin1String("] [");
-		combined += m.module;
-		combined += QLatin1String("] ");
-		combined += m.message;
+		combined += formatLogLine(now, batch[i].level,
+		                          batch[i].module, batch[i].message);
 	}
 	m_console->appendPlainText(combined);
 }
@@ -1602,8 +1666,8 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	{
 		auto [count, bytes] = projectStats[p];
 		auto *item = new QListWidgetItem(
-			iconForProject(p),
-			QString("%1 (%2 files, %3)").arg(p).arg(count).arg(Format::bytes(bytes)));
+		    iconForProject(p),
+		    QString("%1 (%2 files, %3)").arg(p).arg(count).arg(Format::bytes(bytes)));
 		item->setData(Qt::UserRole, p);
 		m_projectList->addItem(item);
 	}
@@ -1615,13 +1679,15 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	setBusy(false);
 }
 
+// MARK: - Filter / search slots
+
 void MainWindow::onFilterChanged(int index)
 {
-	// Order must match the tabs in setupUi.
+	// Order must match the tab order in setupUi. Both ends are indexed.
 	using FM = MediaFilterProxy::FilterMode;
 	static const FM m[] = {
-		FM::All, FM::Video, FM::Audio, FM::Unmanaged,
-		FM::BadUmid, FM::Unreferenced, FM::NonPortable, FM::Quarantined};
+	    FM::All, FM::Video, FM::Audio, FM::Unmanaged,
+	    FM::BadUmid, FM::Unreferenced, FM::NonPortable, FM::Quarantined};
 
 	if (index >= 0 && index < 8)
 	{
@@ -1640,8 +1706,7 @@ void MainWindow::onSearchChanged(const QString &text)
 
 void MainWindow::onSelectionChanged()
 {
-	// Counting via ranges is O(ranges), not O(rows). selectedRows() would
-	// build a 300k-entry QModelIndexList on a Cmd+A, just to call .size().
+	// Counting via ranges is O(ranges), not O(rows), so its faster. 
 	const auto selection = m_tableView->selectionModel()->selection();
 	int selectedCount = 0;
 	for (const QItemSelectionRange &range : selection)
@@ -1658,9 +1723,11 @@ void MainWindow::onSelectionChanged()
 		return;
 
 	m_statusSelected->setText(QString("%1 selected").arg(selectedCount));
-	// Defer the byte-sum walk; for a Cmd+A on a 300k-row table it's
-	// O(N × log N) for mapToSource on every row. Debouncing coalesces
-	// rapid selection changes into a single tally.
+
+	// Defer the byte-sum walk. For Cmd-A on a big table it's
+	// O(N × log N) — one mapToSource per row, each one hitting the
+	// proxy's index. Debouncing coalesces rapid selection changes
+	// (arrow keys, shift-click ranges) into one tally.
 	m_selectionBytesTimer->start();
 }
 
@@ -1673,32 +1740,19 @@ void MainWindow::doUpdateSelectionBytes()
 		for (int row = range.top(); row <= range.bottom(); ++row)
 		{
 			const int srcRow =
-				m_proxy->mapToSource(m_proxy->index(row, 0)).row();
+			    m_proxy->mapToSource(m_proxy->index(row, 0)).row();
 			selBytes += m_model->fileAt(srcRow).sizeBytes;
 		}
 	}
 	m_statusSelSize->setText(
-		QString("%1 selected").arg(Format::bytes(selBytes)));
+	    QString("%1 selected").arg(Format::bytes(selBytes)));
 }
+
+// MARK: - File operation entry points
 
 void MainWindow::onFileOperations()
 {
 	openManageMedia(+ManageMediaDialog::Operation::Copy);
-}
-
-void MainWindow::onCopyClicked()
-{
-	openManageMedia(+ManageMediaDialog::Operation::Copy);
-}
-
-void MainWindow::onMoveClicked()
-{
-	openManageMedia(+ManageMediaDialog::Operation::Move);
-}
-
-void MainWindow::onDeleteClicked()
-{
-	openManageMedia(+ManageMediaDialog::Operation::Delete);
 }
 
 void MainWindow::openManageMedia(int initialOp)
@@ -1708,16 +1762,14 @@ void MainWindow::openManageMedia(int initialOp)
 		return;
 
 	ManageMediaDialog dlg(files, this,
-						  static_cast<ManageMediaDialog::Operation>(initialOp));
+	                      static_cast<ManageMediaDialog::Operation>(initialOp));
 	if (dlg.exec() != QDialog::Accepted)
 		return;
 
-	QHash<QString, int> policies;
-	const auto perFile = dlg.conflictPolicies();
-	for (auto it = perFile.constBegin(); it != perFile.constEnd(); ++it)
-		policies.insert(it.key(), static_cast<int>(it.value()));
+	const auto policies = dlg.conflictPolicies();
 
-	// Move/Delete prunes the table; Copy does not.
+	// Move/Delete prune the table on completion. Copy leaves source
+	// rows in place.
 	m_removeAfterOp = (dlg.operation() != ManageMediaDialog::Operation::Copy);
 	m_successfulOpPaths.clear();
 
@@ -1727,14 +1779,14 @@ void MainWindow::openManageMedia(int initialOp)
 		addLog(0, "ops", QString("Copying %1 files to %2").arg(files.size()).arg(dlg.destination()));
 		m_pendingOpTitle = tr("Copying files...");
 		m_fileOps->executeCopy(files, dlg.destination(),
-							   dlg.preserveStructure(), policies);
+		                       dlg.preserveStructure(), policies);
 		break;
 
 	case ManageMediaDialog::Operation::Move:
 		addLog(0, "ops", QString("Moving %1 files to %2").arg(files.size()).arg(dlg.destination()));
 		m_pendingOpTitle = tr("Moving files...");
 		m_fileOps->executeMove(files, dlg.destination(),
-							   dlg.preserveStructure(), policies);
+		                       dlg.preserveStructure(), policies);
 		break;
 
 	case ManageMediaDialog::Operation::Delete:
@@ -1745,29 +1797,31 @@ void MainWindow::openManageMedia(int initialOp)
 	}
 }
 
+// MARK: - MediaMuster Trash dialog
+
 void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath,
-											int fileCount)
+                                            int fileCount)
 {
 	QMessageBox msgBox(this);
 	msgBox.setIcon(QMessageBox::Information);
 	msgBox.setWindowTitle(tr("MediaMuster Trash"));
 	msgBox.setText(tr("<b>%1 file%2 moved to the MediaMuster Trash</b>")
-					   .arg(fileCount)
-					   .arg(fileCount == 1 ? "" : "s"));
+	                   .arg(fileCount)
+	                   .arg(fileCount == 1 ? "" : "s"));
 	msgBox.setInformativeText(
-		tr("Network drives only support permenant delete, so "
-		   "MediaMuster has moved the file%1 to:\n\n%2\n\n"
-		   "These files can be restored by moving them back to "
-		   "their original location. To permanently delete them, "
-		   "click \"Empty Trash\".")
-			.arg(fileCount == 1 ? "" : "s")
-			.arg(trashFolderPath));
+	    tr("Network volumes only support permanent delete, so "
+	       "MediaMuster has moved the file%1 to:\n\n%2\n\n"
+	       "These files can be restored by moving them back to "
+	       "their original location. To permanently delete them, "
+	       "click \"Empty Trash\".")
+	        .arg(fileCount == 1 ? "" : "s")
+	        .arg(trashFolderPath));
 
 	auto *btnOk = msgBox.addButton(QMessageBox::Ok);
 	auto *btnOpen = msgBox.addButton(tr("Take Me There"),
-									 QMessageBox::ActionRole);
+	                                 QMessageBox::ActionRole);
 	auto *btnEmpty = msgBox.addButton(tr("Empty Trash"),
-									  QMessageBox::DestructiveRole);
+	                                  QMessageBox::DestructiveRole);
 	msgBox.setDefaultButton(btnOk);
 	msgBox.exec();
 
@@ -1777,7 +1831,7 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath,
 		QProcess::startDetached("open", {trashFolderPath});
 #elif defined(Q_OS_WIN)
 		QProcess::startDetached("explorer.exe",
-								{QDir::toNativeSeparators(trashFolderPath)});
+		                        {QDir::toNativeSeparators(trashFolderPath)});
 #endif
 		return;
 	}
@@ -1796,29 +1850,29 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath,
 	}
 
 	const auto ret = QMessageBox::warning(
-		this, tr("Empty the MediaMuster Trash"),
-		tr("Permanently delete %1 file%2 (%3) from:\n\n%4\n\n"
-		   "This cannot be undone.")
-			.arg(trashFileCount)
-			.arg(trashFileCount == 1 ? "" : "s")
-			.arg(Format::bytes(trashBytes), trashFolderPath),
-		QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+	    this, tr("Empty the MediaMuster Trash"),
+	    tr("Permanently delete %1 file%2 (%3) from:\n\n%4\n\n"
+	       "This cannot be undone.")
+	        .arg(trashFileCount)
+	        .arg(trashFileCount == 1 ? "" : "s")
+	        .arg(Format::bytes(trashBytes), trashFolderPath),
+	    QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
 	if (ret != QMessageBox::Yes)
 		return;
 
 	if (QDir(trashFolderPath).removeRecursively())
 		addLog(3, "ops",
-			   QString("MediaMuster Trash emptied: %1").arg(trashFolderPath));
+		       QString("MediaMuster Trash emptied: %1").arg(trashFolderPath));
 	else
 		addLog(2, "ops",
-			   QString("Failed to empty MediaMuster Trash: %1")
-				   .arg(trashFolderPath));
+		       QString("Failed to empty MediaMuster Trash: %1")
+		           .arg(trashFolderPath));
 }
 
-// File write runs on a worker thread; this lives at file scope (rather than
-// inside onExportCsv as a lambda) so the move-captured rows vector reads
-// cleanly. Returns true on success, false if the file couldn't be opened.
+// MARK: - CSV export
+
+// Worker-thread CSV writer. File scope so the move-captured rows read cleanly.
 static bool writeCsvFile(const QString &path, const QVector<MediaFile> &rows)
 {
 	QFile file(path);
@@ -1827,39 +1881,38 @@ static bool writeCsvFile(const QString &path, const QVector<MediaFile> &rows)
 	QTextStream out(&file);
 
 	out << "Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
-		   "Duration,Start TC,Source File,Source Path,Source Container,"
-		   "Imported,Size (MB),Volume,Folder,Path,MOB ID,Composition MOB,"
-		   "UMID,Type,Date Created\n";
+	       "Duration,Start TC,Source File,Source Path,Source Container,"
+	       "Imported,Size (MB),Volume,Folder,Path,MOB ID,Composition MOB,"
+	       "UMID,Type,Date Created\n";
 
-	// RFC-4180 quoting via CsvUtil — embedded commas/quotes/newlines are safe.
 	for (const MediaFile &f : rows)
 	{
 		out << CsvUtil::quoted(f.clipName) << ','
-			<< CsvUtil::quoted(f.fileName) << ','
-			<< CsvUtil::quoted(f.project) << ','
-			<< CsvUtil::quoted(f.originalBin) << ','
-			<< CsvUtil::quoted(f.mediaType == MediaFile::Type::Audio ? "Audio" : "Video") << ','
-			<< CsvUtil::quoted(f.codec) << ','
-			<< CsvUtil::quoted(f.resolution) << ','
-			<< CsvUtil::quoted(f.fps) << ','
-			<< CsvUtil::quoted(f.durationDisplay()) << ','
-			<< CsvUtil::quoted(f.startTimecode) << ','
-			<< CsvUtil::quoted(f.sourceFileName) << ','
-			<< CsvUtil::quoted(f.sourceFilePath) << ','
-			<< CsvUtil::quoted(f.sourceContainer) << ','
-			<< (f.isImported ? "yes" : "no") << ','
-			<< QString::number(f.sizeMB, 'f', 1) << ','
-			<< CsvUtil::quoted(f.driveName) << ','
-			<< CsvUtil::quoted(f.mxfFolder) << ','
-			<< CsvUtil::quoted(f.filePath) << ','
-			<< CsvUtil::quoted(f.mobId) << ','
-			<< CsvUtil::quoted(f.compositionMobId) << ','
-			<< CsvUtil::quoted(f.umid) << ','
-			<< CsvUtil::quoted(f.kind) << ','
-			<< (f.created.isValid()
-					? f.created.toString("yyyy-MM-dd")
-					: f.modified.toString("yyyy-MM-dd"))
-			<< '\n';
+		    << CsvUtil::quoted(f.fileName) << ','
+		    << CsvUtil::quoted(f.project) << ','
+		    << CsvUtil::quoted(f.originalBin) << ','
+		    << CsvUtil::quoted(f.mediaType == MediaFile::Type::Audio ? "Audio" : "Video") << ','
+		    << CsvUtil::quoted(f.codec) << ','
+		    << CsvUtil::quoted(f.resolution) << ','
+		    << CsvUtil::quoted(f.fps) << ','
+		    << CsvUtil::quoted(f.durationDisplay()) << ','
+		    << CsvUtil::quoted(f.startTimecode) << ','
+		    << CsvUtil::quoted(f.sourceFileName) << ','
+		    << CsvUtil::quoted(f.sourceFilePath) << ','
+		    << CsvUtil::quoted(f.sourceContainer) << ','
+		    << (f.isImported ? "yes" : "no") << ','
+		    << QString::number(f.sizeMB, 'f', 1) << ','
+		    << CsvUtil::quoted(f.volumeName) << ','
+		    << CsvUtil::quoted(f.mxfFolder) << ','
+		    << CsvUtil::quoted(f.filePath) << ','
+		    << CsvUtil::quoted(f.mobId) << ','
+		    << CsvUtil::quoted(f.compositionMobId) << ','
+		    << CsvUtil::quoted(f.umid) << ','
+		    << CsvUtil::quoted(f.kind) << ','
+		    << (f.created.isValid()
+		            ? f.created.toString("yyyy-MM-dd")
+		            : f.modified.toString("yyyy-MM-dd"))
+		    << '\n';
 	}
 	return out.status() == QTextStream::Ok;
 }
@@ -1872,10 +1925,10 @@ void MainWindow::onExportCsv()
 	if (!sel.isEmpty())
 	{
 		QMessageBox msgBox(this);
-		msgBox.setWindowTitle("Export CSV");
-		msgBox.setText("Export all rows, or only the selected rows?");
-		auto *btnSel = msgBox.addButton("Selected", QMessageBox::AcceptRole);
-		auto *btnAll = msgBox.addButton("All", QMessageBox::AcceptRole);
+		msgBox.setWindowTitle(tr("Export CSV"));
+		msgBox.setText(tr("Export all rows, or only the selected rows?"));
+		auto *btnSel = msgBox.addButton(tr("Selected"), QMessageBox::AcceptRole);
+		auto *btnAll = msgBox.addButton(tr("All"), QMessageBox::AcceptRole);
 		msgBox.addButton(QMessageBox::Cancel);
 		msgBox.setDefaultButton(btnSel);
 		msgBox.exec();
@@ -1888,15 +1941,13 @@ void MainWindow::onExportCsv()
 	}
 
 	const QString path = QFileDialog::getSaveFileName(
-		this, "Export CSV", QDir::homePath() + "/mediamuster_export.csv",
-		"CSV Files (*.csv)");
+	    this, "Export CSV", QDir::homePath() + "/mediamuster_export.csv",
+	    "CSV Files (*.csv)");
 	if (path.isEmpty())
 		return;
 
-	// Snapshot the rows on the main thread (Qt models are thread-affine,
-	// so we can't touch m_model/m_proxy from the worker). The snapshot
-	// freezes the export against any filter/sort changes the user makes
-	// after they click Save.
+	// Snapshot on the main thread — Qt models are thread-affine.
+	// Also freezes the export against later filter/sort changes.
 	QVector<MediaFile> rows;
 	if (exportSelected)
 	{
@@ -1915,44 +1966,45 @@ void MainWindow::onExportCsv()
 	const int count = rows.size();
 	const QString label = exportSelected ? "selected records" : "records";
 	addLog(0, "export",
-		   QString("Exporting %1 %2 to %3").arg(count).arg(label).arg(path));
+	       QString("Exporting %1 %2 to %3").arg(count).arg(label).arg(path));
 	m_btnExport->setEnabled(false);
 
-	// Dispatch the actual file write to a worker so a 300k-row export
-	// doesn't freeze the UI. The watcher's finished slot runs on the
-	// main thread when the worker returns, so re-enabling the button and
-	// logging the result is safe without extra marshalling.
+	// Dispatch the write to a worker so big exports don't freeze the UI.
 	auto *watcher = new QFutureWatcher<bool>(this);
 	connect(watcher, &QFutureWatcher<bool>::finished, this,
-			[this, watcher, path, count, label]()
-			{
-				const bool ok = watcher->result();
-				watcher->deleteLater();
-				m_btnExport->setEnabled(true);
-				if (ok)
-				{
-					addLog(3, "export",
-						   QString("Exported %1 %2 to %3")
-							   .arg(count).arg(label).arg(path));
-				}
-				else
-				{
-					addLog(2, "export",
-						   QString("Failed to write %1").arg(path));
-				}
-			});
+	        [this, watcher, path, count, label]()
+	        {
+		        const bool ok = watcher->result();
+		        watcher->deleteLater();
+		        m_btnExport->setEnabled(true);
+		        if (ok)
+		        {
+			        addLog(3, "export",
+			               QString("Exported %1 %2 to %3")
+			                   .arg(count)
+			                   .arg(label)
+			                   .arg(path));
+		        }
+		        else
+		        {
+			        addLog(2, "export",
+			               QString("Failed to write %1").arg(path));
+		        }
+	        });
 
 	watcher->setFuture(QtConcurrent::run(
-		[path, rows = std::move(rows)]()
-		{ return writeCsvFile(path, rows); }));
+	    [path, rows = std::move(rows)]()
+	    { return writeCsvFile(path, rows); }));
 }
+
+// MARK: - Project summary
 
 void MainWindow::onProjectSummary()
 {
 	if (m_allFiles.isEmpty())
 	{
-		QMessageBox::information(this, "Project Summary",
-								 "Hold your horses! Scan some media first to see the project summary.");
+		QMessageBox::information(this, tr("Project Summary"),
+		                         tr("Hold your horses! Scan some media first to see the project summary."));
 		return;
 	}
 	QMap<QString, ProjectSummary> map;
@@ -1967,17 +2019,17 @@ void MainWindow::onProjectSummary()
 		s.totalBytes += f.sizeBytes;
 		if (!f.originalBin.isEmpty() && !s.bins.contains(f.originalBin))
 			s.bins.append(f.originalBin);
-		if (!s.drives.contains(f.driveName))
-			s.drives.append(f.driveName);
+		if (!s.volumes.contains(f.volumeName))
+			s.volumes.append(f.volumeName);
 	}
 	auto *dlg = new QDialog(this);
-	dlg->setWindowTitle("Project Summary");
+	dlg->setWindowTitle(tr("Project Summary"));
 	dlg->resize(600, 380);
 	dlg->setAttribute(Qt::WA_DeleteOnClose);
 	auto *t = new QTableView(dlg);
 	auto *sm = new QStandardItemModel(static_cast<int>(map.size()), 5, dlg);
 	sm->setHorizontalHeaderLabels(
-		{"Project", "Video", "Audio", "Bins", "Size"});
+	    {"Project", "Video", "Audio", "Bins", "Size"});
 	int r = 0;
 	for (auto it = map.begin(); it != map.end(); ++it, ++r)
 	{
@@ -1986,8 +2038,8 @@ void MainWindow::onProjectSummary()
 		sm->setItem(r, 1, new QStandardItem(QString::number(s.videoCount)));
 		sm->setItem(r, 2, new QStandardItem(QString::number(s.audioCount)));
 		sm->setItem(r, 3,
-					new QStandardItem(
-						QString::number(static_cast<int>(s.bins.size()))));
+		            new QStandardItem(
+		                QString::number(static_cast<int>(s.bins.size()))));
 		sm->setItem(r, 4, new QStandardItem(Format::bytes(s.totalBytes)));
 	}
 	t->setModel(sm);
@@ -2003,6 +2055,8 @@ void MainWindow::onProjectSummary()
 	l->addWidget(b);
 	dlg->show();
 }
+
+// MARK: - Reveal in Finder
 
 void MainWindow::onRevealInFinder()
 {
@@ -2021,20 +2075,20 @@ void MainWindow::onRevealInFinder()
 	const bool fileExists = fi.exists();
 	const QString parentDir = fi.absolutePath();
 
-	// Fallback used by every platform branch.
+	// Open the parent enclosing folder, if the file itself can't be revealed. 
 	auto openParent = [this, parentDir]()
 	{
 		if (parentDir.isEmpty() || !QFileInfo(parentDir).exists())
 		{
 			addLog(2, "reveal",
-				   "Cannot reveal: file and parent folder are both unreachable");
+			       "Cannot reveal: file and parent folder are both unreachable");
 			return;
 		}
 #ifdef Q_OS_MAC
 		QProcess::startDetached("open", {parentDir});
 #else // Q_OS_WIN
 		QProcess::startDetached("explorer.exe",
-								{QDir::toNativeSeparators(parentDir)});
+		                        {QDir::toNativeSeparators(parentDir)});
 #endif
 	};
 
@@ -2042,25 +2096,26 @@ void MainWindow::onRevealInFinder()
 	if (!fileExists)
 	{
 		addLog(1, "reveal",
-			   QString("File not found, opening parent folder: %1").arg(parentDir));
+		       QString("File not found, opening parent folder: %1").arg(parentDir));
 		openParent();
 		return;
 	}
 
 #ifdef Q_OS_MAC
-	// open -R: fast path, no Automation prompt.
+	// Fast path: `open -R <path>`. Works for most local paths.
 	if (QProcess::startDetached("open", {"-R", path}))
 		return;
 
-	// AppleScript fallback — more resilient on network mounts but prompts for Automation.
+	// Fallback: AppleScript reveal — more resilient on network
+	// mounts where `open -R` loses the file.
 	QString escapedPath = path;
 	escapedPath.replace("\\", "\\\\").replace("\"", "\\\"");
 	const QString revealScript =
-		QString("tell application \"Finder\" to reveal POSIX file \"%1\"")
-			.arg(escapedPath);
+	    QString("tell application \"Finder\" to reveal POSIX file \"%1\"")
+	        .arg(escapedPath);
 	const QStringList args = {
-		"-e", revealScript,
-		"-e", "tell application \"Finder\" to activate"};
+	    "-e", revealScript,
+	    "-e", "tell application \"Finder\" to activate"};
 	if (QProcess::startDetached("osascript", args))
 		return;
 
@@ -2068,27 +2123,34 @@ void MainWindow::onRevealInFinder()
 	openParent();
 
 #elif defined(Q_OS_WIN)
-	// Reveal with highlight: SHParseDisplayName → explorer.exe /select → parent.
-	// Explorer needs exactly: explorer.exe /select,"<path>" — setNativeArguments
-	// bypasses Qt's quoting, which would otherwise glue the args into one token.
+	// Three-step reveal on Windows:
+	//   1. Shell API (SHParseDisplayName + SHOpenFolderAndSelectItems).
+	//   2. `explorer.exe /select,"<path>"` fallback.
+	//   3. Open parent folder unhighlighted.
+	//
+	// Explorer needs `/select,"<path>"` with the comma — use
+	// setNativeArguments so Qt's quoting doesn't glue the args.
 	const QString nativePath = QDir::toNativeSeparators(path);
 
-	// GetFullPathNameW handles relative components and long paths in one shot.
+	// `GetFullPathNameW` handles relative and long paths in one
+	// call. 4096 wchars is well above `MAX_PATH`.
 	std::wstring fullPath(4096, L'\0');
 	DWORD fullPathLen = GetFullPathNameW(
-		reinterpret_cast<LPCWSTR>(nativePath.utf16()),
-		static_cast<DWORD>(fullPath.size()), fullPath.data(), nullptr);
+	    reinterpret_cast<LPCWSTR>(nativePath.utf16()),
+	    static_cast<DWORD>(fullPath.size()), fullPath.data(), nullptr);
 	if (fullPathLen == 0 || fullPathLen >= fullPath.size())
 	{
 		addLog(1, "reveal",
-			   "GetFullPathNameW failed; opening parent folder");
+		       "GetFullPathNameW failed; opening parent folder");
 		openParent();
 		return;
 	}
 	fullPath.resize(fullPathLen);
 	const QString canonicalPath = QString::fromWCharArray(fullPath.data());
 
-	// Defensive CoInitializeEx; skip CoUninitialize on RPC_E_CHANGED_MODE.
+	// CoInitializeEx defensively — Qt may have already initialised
+	// COM with a different model (RPC_E_CHANGED_MODE). Skip the
+	// matching CoUninitialize in that case.
 	const HRESULT coHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 	const bool needCoUninit = (coHr == S_OK || coHr == S_FALSE);
 
@@ -2096,7 +2158,7 @@ void MainWindow::onRevealInFinder()
 	PIDLIST_ABSOLUTE pidl = nullptr;
 	SFGAOF sfgao = 0;
 	HRESULT parseHr = SHParseDisplayName(fullPath.data(), nullptr,
-										 &pidl, 0, &sfgao);
+	                                     &pidl, 0, &sfgao);
 	if (SUCCEEDED(parseHr) && pidl)
 	{
 		HRESULT openHr = SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
@@ -2105,15 +2167,15 @@ void MainWindow::onRevealInFinder()
 		if (!shellApiSucceeded)
 		{
 			addLog(1, "reveal",
-				   QString("SHOpenFolderAndSelectItems failed: 0x%1")
-					   .arg(static_cast<quint32>(openHr), 8, 16, QChar('0')));
+			       QString("SHOpenFolderAndSelectItems failed: 0x%1")
+			           .arg(static_cast<quint32>(openHr), 8, 16, QChar('0')));
 		}
 	}
 	else
 	{
 		addLog(1, "reveal",
-			   QString("SHParseDisplayName failed: 0x%1")
-				   .arg(static_cast<quint32>(parseHr), 8, 16, QChar('0')));
+		       QString("SHParseDisplayName failed: 0x%1")
+		           .arg(static_cast<quint32>(parseHr), 8, 16, QChar('0')));
 	}
 
 	if (needCoUninit)
@@ -2126,20 +2188,23 @@ void MainWindow::onRevealInFinder()
 	QProcess explorer;
 	explorer.setProgram("explorer.exe");
 	explorer.setNativeArguments(
-		QString("/select,\"%1\"").arg(canonicalPath));
+	    QString("/select,\"%1\"").arg(canonicalPath));
 	if (explorer.startDetached())
 		return;
 
-	// Last resort: just open the parent folder, no highlight.
+	// Last resort: just open the parent enclosing folder.
 	addLog(1, "reveal",
-		   "Shell API + explorer.exe /select both failed; opening parent");
+	       "Shell API + explorer.exe /select both failed; opening parent");
 	openParent();
 #endif
 }
 
+// MARK: - Select relatives
+
 void MainWindow::onSelectRelatives()
 {
-	// Selects every visible row sharing the composition MOB (V01/A01/A02 of one Master Clip).
+	// Selects every visible row sharing the composition MOB —
+	// V01 + A01 + A02 of one master clip. Hidden rows stay hidden.
 	auto sel = selectedFiles();
 	if (sel.isEmpty())
 		return;
@@ -2148,7 +2213,7 @@ void MainWindow::onSelectRelatives()
 	if (compMob.isEmpty())
 	{
 		addLog(1, "relatives",
-			   "Selected file has no composition MOB — nothing to select");
+		       "Selected file has no composition MOB — nothing to select");
 		return;
 	}
 
@@ -2167,10 +2232,11 @@ void MainWindow::onSelectRelatives()
 		const MediaFile &f = m_model->fileAt(sourceIndex.row());
 		if (f.compositionMobId == compMob)
 		{
-			// Select the whole row by spanning all columns.
+			// Span all columns so the row highlights end-to-end —
+			// selecting just column 0 leaves a narrow strip.
 			QModelIndex leftEdge = m_proxy->index(row, 0);
 			QModelIndex rightEdge = m_proxy->index(
-				row, +MediaTableModel::Column::Count_ - 1);
+			    row, +MediaTableModel::Column::Count_ - 1);
 			newSelection.select(leftEdge, rightEdge);
 			++matched;
 		}
@@ -2179,35 +2245,38 @@ void MainWindow::onSelectRelatives()
 	if (matched == 0)
 	{
 		addLog(1, "relatives",
-			   "No relatives found (the siblings may be filtered out)");
+		       "No relatives found (the relatives may be filtered out)");
 		return;
 	}
 
-	// Replace the existing selection with the relatives set and move the
-	// current-row focus to the first match so the user can see it.
+	// Replace the existing selection with the relatives set and
+	// scroll so the first match is in view — saves the editor
+	// hunting for what just got selected.
 	selModel->clearSelection();
 	selModel->select(newSelection,
-					 QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	                 QItemSelectionModel::Select | QItemSelectionModel::Rows);
 	if (!newSelection.isEmpty())
 	{
 		QModelIndex first = newSelection.indexes().first();
 		selModel->setCurrentIndex(
-			first,
-			QItemSelectionModel::NoUpdate);
+		    first,
+		    QItemSelectionModel::NoUpdate);
 		m_tableView->scrollTo(first, QAbstractItemView::EnsureVisible);
 	}
 
 	addLog(3, "relatives",
-		   QString("Selected %1 relative%2 (composition MOB: %3...)")
-			   .arg(matched)
-			   .arg(matched == 1 ? "" : "s")
-			   .arg(compMob.right(16)));
+	       QString("Selected %1 relative%2 (composition MOB: %3...)")
+	           .arg(matched)
+	           .arg(matched == 1 ? "" : "s")
+	           .arg(compMob.right(16)));
 }
 
 void MainWindow::onTableDoubleClicked(const QModelIndex &)
 {
 	onRevealInFinder();
 }
+
+// MARK: - Context menu
 
 void MainWindow::showTableContextMenu(const QPoint &pos)
 {
@@ -2220,15 +2289,15 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 		QString menuLabel = cellText;
 		if (menuLabel.length() > 25)
 			menuLabel = menuLabel.left(22) + "...";
-		menu.addAction(QString("Copy \"%1\"").arg(menuLabel),
-					   [cellText]()
-					   { QApplication::clipboard()->setText(cellText); });
+		menu.addAction(tr("Copy \"%1\"").arg(menuLabel),
+		               [cellText]()
+		               { QApplication::clipboard()->setText(cellText); });
 		menu.addSeparator();
 	}
 
-	menu.addAction("Reveal in Finder", this, &MainWindow::onRevealInFinder);
-	menu.addAction("Copy Path", [this]()
-				   {
+	menu.addAction(tr("Reveal in Finder"), this, &MainWindow::onRevealInFinder);
+	menu.addAction(tr("Copy Path"), [this]()
+	               {
 		const auto sel = selectedFiles();
 		if (sel.isEmpty())
 			return;
@@ -2239,20 +2308,25 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 
 	const auto sel = selectedFiles();
 	const bool hasComp =
-		!sel.isEmpty() && !sel.first().compositionMobId.isEmpty();
-	QAction *relAct = menu.addAction("Select Relatives", this,
-									 &MainWindow::onSelectRelatives);
+	    !sel.isEmpty() && !sel.first().compositionMobId.isEmpty();
+	QAction *relAct = menu.addAction(tr("Select Relatives"), this,
+	                                 &MainWindow::onSelectRelatives);
 	relAct->setEnabled(hasComp);
 	if (!hasComp)
-		relAct->setToolTip("No composition MOB — this file isn't related "
-						   "to a master clip we can follow");
+		relAct->setToolTip(tr("No composition MOB — this file isn't related "
+		                      "to a master clip we can follow"));
 
 	menu.addSeparator();
-	menu.addAction("Copy To...", this, &MainWindow::onCopyClicked);
-	menu.addAction("Move To...", this, &MainWindow::onMoveClicked);
-	menu.addAction("Delete...", this, &MainWindow::onDeleteClicked);
+	menu.addAction(tr("Copy To..."), this, [this]()
+	               { openManageMedia(+ManageMediaDialog::Operation::Copy); });
+	menu.addAction(tr("Move To..."), this, [this]()
+	               { openManageMedia(+ManageMediaDialog::Operation::Move); });
+	menu.addAction(tr("Delete..."), this, [this]()
+	               { openManageMedia(+ManageMediaDialog::Operation::Delete); });
 	menu.exec(m_tableView->viewport()->mapToGlobal(pos));
 }
+
+// MARK: - Selection helper
 
 QVector<MediaFile> MainWindow::selectedFiles() const
 {
@@ -2264,19 +2338,21 @@ QVector<MediaFile> MainWindow::selectedFiles() const
 	return result;
 }
 
+// MARK: - Console logging
+
 void MainWindow::addLog(int level, const QString &module,
-						const QString &message)
+                        const QString &message)
 {
-	m_console->appendPlainText(
-		QString("%1 [%2] [%3] %4")
-			.arg(QTime::currentTime().toString("HH:mm:ss"),
-				 QLatin1String(logPfx(level)), module, message));
+	m_console->appendPlainText(formatLogLine(
+	    QTime::currentTime().toString("HH:mm:ss"), level, module, message));
 }
+
+// MARK: - Column auto-fit
 
 void MainWindow::autoFitColumns()
 {
 	m_tableView->resizeColumnsToContents();
-	// Clamp at 300px so one long filename can't push the table off-screen.
+	// Clamp at 300px so long filenames can't push the table out.
 	for (int i = 0; i < +MediaTableModel::Column::Count_; ++i)
 	{
 		if (m_tableView->columnWidth(i) > 300)
@@ -2284,28 +2360,35 @@ void MainWindow::autoFitColumns()
 	}
 }
 
+// MARK: - Busy state
+
 void MainWindow::setBusy(bool busy)
 {
 	m_scanButton->setEnabled(!busy);
 	m_scanAllButton->setEnabled(!busy);
 
-	// Manage Media follows onSelectionChanged's "enabled if selected" rule when idle.
+	// Manage Media: always disabled when busy; otherwise follows selection.
 	const bool hasSel = m_tableView->selectionModel() && !m_tableView->selectionModel()->selectedRows().isEmpty();
 	m_btnFileOps->setEnabled(!busy && hasSel);
 	m_btnRebalance->setEnabled(!busy && !m_allFiles.isEmpty());
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();
+
+	// Skip the 5 second polling tick when a scan or op is running. 
+	m_volumeManager->setBusy(busy);
 }
+
+// MARK: - Progress dialog
 
 ProgressDialog *MainWindow::progressDialog()
 {
-	// Cancel signal goes to both workers; the idle one's cancel() is a no-op.
+	// Cancel fires on both workers — idle worker's cancel() is a no-op.
 	if (!m_progressDialog)
 	{
 		m_progressDialog = new ProgressDialog(this);
 		connect(m_progressDialog, &ProgressDialog::cancelRequested, this, [this]()
-				{
+		        {
 			m_scanner->cancelScan();
 			m_fileOps->cancel();
 			addLog(1, "app", "Cancel requested"); });
@@ -2313,11 +2396,12 @@ ProgressDialog *MainWindow::progressDialog()
 	return m_progressDialog;
 }
 
+// MARK: - Status bar
+
 void MainWindow::updateStatusBar()
 {
-	// Debounced. Every call restarts the singleShot timer; doUpdateStatusBar
-	// runs 100 ms after the last trigger, so each keystroke/filter change
-	// coalesces into one O(n) walk.
+	// Coalesces bursts: doUpdateStatusBar fires 100 ms after the
+	// last call.
 	m_statusBarUpdateTimer->start();
 }
 
@@ -2329,80 +2413,98 @@ void MainWindow::doUpdateStatusBar()
 	qint64 totalBytes = 0;
 	for (int i = 0; i < total; ++i)
 		totalBytes += m_model->fileAt(
-						  m_proxy->mapToSource(m_proxy->index(i, 0)).row())
-						  .sizeBytes;
+		                         m_proxy->mapToSource(m_proxy->index(i, 0)).row())
+		                  .sizeBytes;
 
 	m_statusFiles->setText(total < grandTotal
-							   ? QString("%1 files (filtered from %2)").arg(total).arg(grandTotal)
-							   : QString("%1 files").arg(total));
+	                           ? QString("%1 files (filtered from %2)").arg(total).arg(grandTotal)
+	                           : QString("%1 files").arg(total));
 	m_statusSize->setText(Format::bytes(totalBytes));
 }
 
+// MARK: - Filter tab counts
+
 void MainWindow::updateFilterCounts()
 {
-	struct TabStat { const char *label; int count = 0; };
+	struct TabStat
+	{
+		const char *label;
+		int count = 0;
+	};
 	TabStat stats[] = {
-		{"All", int(m_allFiles.size())},
-		{"Video"},
-		{"Audio"},
-		{"Orphaned"},
-		{"Bad UMID"},
-		{"Unreferenced"},
-		{"Non-Portable"},
-		{"Quarantined"},
+	    {"All", int(m_allFiles.size())},
+	    {"Video"},
+	    {"Audio"},
+	    {"Orphaned"},
+	    {"Bad UMID"},
+	    {"Unreferenced"},
+	    {"Non-Portable"},
+	    {"Quarantined"},
 	};
 
-	auto isQuarantined = [](const MediaFile &f) {
+	auto isQuarantined = [](const MediaFile &f)
+	{
 		return f.mxfFolder.contains("Quarantined", Qt::CaseInsensitive) ||
-			   f.filePath.contains("Quarantined", Qt::CaseInsensitive);
+		       f.filePath.contains("Quarantined", Qt::CaseInsensitive);
 	};
 
 	for (const MediaFile &f : m_allFiles)
 	{
-		if (f.mediaType == MediaFile::Type::Video) ++stats[1].count;
-		if (f.mediaType == MediaFile::Type::Audio) ++stats[2].count;
-		if (f.isUnmanaged)    ++stats[3].count;
-		if (f.isBadUmid)      ++stats[4].count;
-		if (f.isUnreferenced) ++stats[5].count;
-		if (f.isNonPortable)  ++stats[6].count;
-		if (isQuarantined(f)) ++stats[7].count;
+		if (f.mediaType == MediaFile::Type::Video)
+			++stats[1].count;
+		if (f.mediaType == MediaFile::Type::Audio)
+			++stats[2].count;
+		if (f.isUnmanaged)
+			++stats[3].count;
+		if (f.isBadUmid)
+			++stats[4].count;
+		if (f.isUnreferenced)
+			++stats[5].count;
+		if (f.isNonPortable)
+			++stats[6].count;
+		if (isQuarantined(f))
+			++stats[7].count;
 	}
 
 	for (int i = 0; i < 8; ++i)
 	{
 		m_filterTabs->setTabText(
-			i, QString("%1 (%2)").arg(stats[i].label).arg(stats[i].count));
-		// "All" stays visible; others auto-hide when empty unless overridden.
+		    i, QString("%1 (%2)").arg(stats[i].label).arg(stats[i].count));
+
+		// "All" stays visible no matter what; the others auto-hide
+		// when empty,  unless the editor choses 'Show All Filter Tabs'.
 		const bool visible =
-			(i == 0) || m_showAllFilterTabs || stats[i].count > 0;
+		    (i == 0) || m_showAllFilterTabs || stats[i].count > 0;
 		m_filterTabs->setTabVisible(i, visible);
 	}
 }
-QIcon MainWindow::iconForDriveType(const QString &driveType, const QString &path)
+
+// MARK: - Icon helpers
+
+QIcon MainWindow::iconForVolumeType(const QString &volumeType, const QString &path)
 {
 	auto *style = QApplication::style();
-	const QString t = driveType.toLower();
+	const QString t = volumeType.toLower();
 
 	if (t.contains("network") || t.contains("smb") || t.contains("nfs") ||
-		t.contains("afp") || t.contains("cifs") || t.contains("nexis"))
+	    t.contains("afp") || t.contains("cifs") || t.contains("nexis"))
 		return style->standardIcon(QStyle::SP_DriveNetIcon);
 	if (t.contains("cd") || t.contains("dvd") || t.contains("optical"))
 		return style->standardIcon(QStyle::SP_DriveCDIcon);
 	if (t.contains("removable") || t.contains("usb") || t.contains("flash") ||
-		t.contains("floppy"))
+	    t.contains("floppy"))
 		return style->standardIcon(QStyle::SP_DriveFDIcon);
 
-	// Manually-added folders have no driveType; sniff QStorageInfo for network mounts.
 	if (!path.isEmpty())
 	{
 		QStorageInfo si(path);
 		if (si.isValid())
 		{
 			const QString fs =
-				QString::fromUtf8(si.fileSystemType()).toLower();
+			    QString::fromUtf8(si.fileSystemType()).toLower();
 			if (fs.contains("smb") || fs.contains("nfs") ||
-				fs.contains("afp") || fs.contains("cifs") ||
-				fs.contains("webdav"))
+			    fs.contains("afp") || fs.contains("cifs") ||
+			    fs.contains("webdav"))
 				return style->standardIcon(QStyle::SP_DriveNetIcon);
 		}
 	}
@@ -2414,13 +2516,15 @@ QIcon MainWindow::iconForProject(const QString &projectName)
 {
 	auto *style = QApplication::style();
 
-	// UNMANAGED_FILES gets a warning symbol to stand out from managed projects.
+	// UNMANAGED_FILES gets a warning glyph so it stands out.
 	if (projectName.compare(QLatin1String("UNMANAGED_FILES"),
-							Qt::CaseInsensitive) == 0)
+	                        Qt::CaseInsensitive) == 0)
 		return style->standardIcon(QStyle::SP_MessageBoxWarning);
 
 	return style->standardIcon(QStyle::SP_DirIcon);
 }
+
+// MARK: - Filter chips
 
 void MainWindow::rebuildFilterChips()
 {
@@ -2438,39 +2542,40 @@ void MainWindow::rebuildFilterChips()
 	}
 
 	static const char *kChipStyle =
-		"QPushButton {"
-		" background-color: rgba(74, 144, 226, 0.18);"
-		" border: 1px solid rgba(74, 144, 226, 0.55);"
-		" border-radius: 11px;"
-		" padding: 3px 11px 4px 11px;"
-		" font-size: 12px;"
-		"}"
-		"QPushButton:hover {"
-		" background-color: rgba(74, 144, 226, 0.32);"
-		"}";
+	    "QPushButton {"
+	    " background-color: rgba(74, 144, 226, 0.18);"
+	    " border: 1px solid rgba(74, 144, 226, 0.55);"
+	    " border-radius: 11px;"
+	    " padding: 3px 11px 4px 11px;"
+	    " font-size: 12px;"
+	    "}"
+	    "QPushButton:hover {"
+	    " background-color: rgba(74, 144, 226, 0.32);"
+	    "}";
 
 	auto addChip = [this, layout](const QString &text,
-								  std::function<void()> onClose)
+	                              std::function<void()> onClose)
 	{
 		auto *chip = new QPushButton(text + "  ✕");
 		chip->setCursor(Qt::PointingHandCursor);
 		chip->setStyleSheet(kChipStyle);
 		chip->setToolTip(tr("Click to remove this filter"));
 		QObject::connect(chip, &QPushButton::clicked, this,
-						 [cb = std::move(onClose)]() { cb(); });
+		                 [cb = std::move(onClose)]()
+		                 { cb(); });
 		layout->addWidget(chip);
 	};
 
 	const int tabIdx = m_filterTabs->currentIndex();
 	if (tabIdx > 0)
 	{
-		// Strip the trailing "(123)" count from the tab label.
 		QString label = m_filterTabs->tabText(tabIdx);
 		const int paren = label.indexOf(QLatin1String(" ("));
 		if (paren > 0)
 			label.truncate(paren);
 		addChip(QString("Type: %1").arg(label),
-				[this]() { m_filterTabs->setCurrentIndex(0); });
+		        [this]()
+		        { m_filterTabs->setCurrentIndex(0); });
 	}
 
 	const QString searchText = m_searchField->text();
@@ -2480,31 +2585,33 @@ void MainWindow::rebuildFilterChips()
 		if (shown.length() > 24)
 			shown = shown.left(22) + QStringLiteral("...");
 		addChip(QString("Search: \"%1\"").arg(shown),
-				[this]() { m_searchField->clear(); });
+		        [this]()
+		        { m_searchField->clear(); });
 	}
 
 	for (auto *item : m_projectList->selectedItems())
 	{
 		const QString proj = item->data(Qt::UserRole).toString();
 		addChip(QString("Project: %1").arg(proj),
-				[item]() { item->setSelected(false); });
+		        [item]()
+		        { item->setSelected(false); });
 	}
 
-	// Pauses the proxy; the chain itself stays in the dialog.
+	// Chip pauses the proxy filter; the chain persists in dialog.
 	if (m_binFilterActive)
 	{
 		const int n = m_binFilterMobCount;
 		addChip(QString("Bin filter: %1 MOB%2").arg(n).arg(n == 1 ? "" : "s"),
-				[this]()
-				{
-					m_binFilterActive = false;
-					m_binFilterMobCount = 0;
-					m_proxy->setBinFilterMobs(false, {});
-					rebuildFilterChips();
-					updateStatusBar();
-					addLog(0, "binfilter",
-						   "Bin filter paused (chain preserved in dialog)");
-				});
+		        [this]()
+		        {
+			        m_binFilterActive = false;
+			        m_binFilterMobCount = 0;
+			        m_proxy->setBinFilterMobs(false, {});
+			        rebuildFilterChips();
+			        updateStatusBar();
+			        addLog(0, "binfilter",
+			               "Bin filter paused (chain preserved in dialog)");
+		        });
 	}
 
 	m_chipsBar->setVisible(layout->count() > 0);
