@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   build:
     strategy:
@@ -20,7 +24,10 @@ jobs:
         include:
           - os: macos-latest
             name: MediaMuster-Mac
-          - os: windows-latest
+          ### Pinned image, not a rolling label: the pinned Qt's headers are
+          ### patched below for the MSVC that ships on this image, and a
+          ### rolling label would move the compiler under that patch. ###
+          - os: windows-2022
             name: MediaMuster-Win
 
     runs-on: ${{ matrix.os }}
@@ -29,47 +36,61 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      ### Versions come from CMakeLists.txt, the one place they are written:
+      ### the app version from project(), the Qt release from MEDIAMUSTER_QT_VERSION ###
+      - name: Read versions from CMakeLists.txt
+        shell: bash
+        run: |
+          echo "APP_VERSION=$(sed -nE 's/^project\(MediaMuster VERSION ([0-9.]+).*/\1/p' CMakeLists.txt)" >> "$GITHUB_ENV"
+          echo "QT_VERSION=$(sed -nE 's/^set\(MEDIAMUSTER_QT_VERSION ([0-9.]+)\).*/\1/p' CMakeLists.txt)" >> "$GITHUB_ENV"
+
       ### Install Qt ###
       - name: Install Qt (macOS)
         if: runner.os == 'macOS'
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.5.3'
+          version: ${{ env.QT_VERSION }}
           host: 'mac'
           target: 'desktop'
           dir: '${{ runner.temp }}/Qt'
+          cache: true
 
       - name: Install Qt (Windows)
         if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.5.3'
+          version: ${{ env.QT_VERSION }}
           host: 'windows'
           target: 'desktop'
           arch: 'win64_msvc2019_64'
           dir: '${{ runner.temp }}\Qt'
+          cache: true
 
-      ### Build (macOS) ###
+      - name: Patch Qt for modern MSVC (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $root = if ($env:QT_ROOT_DIR) { $env:QT_ROOT_DIR } else { "$env:RUNNER_TEMP\Qt\Qt\$env:QT_VERSION\msvc2019_64" }
+          $h = Join-Path $root 'include\QtCore\qcompilerdetection.h'
+          $c = Get-Content $h -Raw
+          $c = $c.Replace('stdext::make_unchecked_array_iterator(x)', '(x)')
+          $c = $c.Replace('stdext::make_checked_array_iterator(x, size_t(N))', '(x)')
+          Set-Content $h $c -NoNewline
+
+      ### Build (macOS). Minimum macOS and the arm64+x86_64 pair are CMakeLists.txt
+      ### defaults, so they are not repeated here ###
       - name: Build (macOS)
         if: runner.os == 'macOS'
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           EXTRA=""
           if [[ "$GITHUB_REF_NAME" =~ ^v0\. ]]; then EXTRA="-DSELF_DESTRUCT=ON"; fi
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release \
                    -DCMAKE_PREFIX_PATH="${Qt6_DIR}" \
-                   -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-                   -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
                    $EXTRA
           cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
 
       ### Build (Windows) ###
-      - name: Setup MSVC (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Build (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -77,8 +98,12 @@ jobs:
           if ($env:GITHUB_REF_NAME -match '^v0\.') { $extra += '-DSELF_DESTRUCT=ON' }
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$env:Qt6_DIR" @extra
+          cmake .. -DCMAKE_PREFIX_PATH="$env:Qt6_DIR" @extra
           cmake --build . --config Release --parallel $env:NUMBER_OF_PROCESSORS
+
+      ### Test (macOS and Windows) ###
+      - name: Test (macOS and Windows)
+        run: ctest --test-dir build -C Release --output-on-failure
 
       ### Code signing certificate (macOS) ###
       - name: Import code-signing cert
@@ -91,7 +116,7 @@ jobs:
           p12-password:    ${{ secrets.MAC_CERTS_PASSWORD }}
 
       ### Package (macOS) ###
-      - name: Package macOS
+      - name: Package (macOS)
         if: runner.os == 'macOS'
         env:
           APPLE_TEAM_ID:     ${{ secrets.APPLE_TEAM_ID }}
@@ -101,7 +126,31 @@ jobs:
           set -e
           cd build
 
-          macdeployqt MediaMuster.app -verbose=1
+          DMG="MediaMuster-${APP_VERSION}-Mac.dmg"
+
+          macdeployqt MediaMuster.app
+
+          APP=MediaMuster.app
+          PLUG="$APP/Contents/PlugIns"
+          FW="$APP/Contents/Frameworks"
+          rm -rf "$PLUG/imageformats" "$PLUG/iconengines" "$PLUG/generic" \
+                 "$PLUG/tls" "$PLUG/networkinformation"
+          rm -rf "$FW/QtSvg.framework" "$FW/QtNetwork.framework"
+
+          missing=0
+          while IFS= read -r bin; do
+            for dep in $(otool -L "$bin" 2>/dev/null | awk '/@rpath\/Qt/ {print $1}' \
+                         | sed 's#@rpath/##; s#\.framework.*##' | sort -u); do
+              if [ ! -d "$FW/$dep.framework" ]; then
+                echo "MISSING framework: $dep (linked by $bin)"
+                missing=1
+              fi
+            done
+          done < <(find "$APP" -type f \( -perm -111 -o -name "*.dylib" \))
+          if [ "$missing" -ne 0 ]; then
+            echo "Qt framework trim broke a dependency"
+            exit 1
+          fi
 
           build_dmg() {
             local STAGING="$RUNNER_TEMP/dmg-staging"
@@ -111,8 +160,8 @@ jobs:
             ln -s /Applications "$STAGING/Applications"
             sync
             sleep 4
-            rm -f MediaMuster-Mac.dmg
-            hdiutil create -volname "MediaMuster" -srcfolder "$STAGING" -ov -format UDZO MediaMuster-Mac.dmg
+            rm -f "$DMG"
+            hdiutil create -volname "MediaMuster" -srcfolder "$STAGING" -ov -format ULMO "$DMG"
             rm -rf "$STAGING"
           }
 
@@ -120,14 +169,21 @@ jobs:
 
           if [ -n "$IDENTITY" ] && [ -n "$APPLE_TEAM_ID" ]; then
             echo "── Real Developer ID signing + notarization ──"
-            codesign --force --deep --options runtime --timestamp --sign "$IDENTITY" MediaMuster.app
-            codesign --verify --verbose=2 MediaMuster.app
+            # Nested-first, no --deep: --deep is deprecated. Sign every
+            # embedded framework and plugin macdeployqt added, then the app.
+            APP=MediaMuster.app
+            find "$APP/Contents/Frameworks" -maxdepth 1 -name "*.framework" \
+              -exec codesign --force --options runtime --timestamp --sign "$IDENTITY" {} \;
+            find "$APP/Contents/PlugIns" -name "*.dylib" \
+              -exec codesign --force --options runtime --timestamp --sign "$IDENTITY" {} \;
+            codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP"
+            codesign --verify --deep --strict --verbose=2 "$APP"
             sync
             sleep 2
             build_dmg
-            xcrun notarytool submit MediaMuster-Mac.dmg --apple-id "$APPLE_ID_USERNAME" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
-            xcrun stapler staple MediaMuster-Mac.dmg
-            xcrun stapler validate MediaMuster-Mac.dmg
+            xcrun notarytool submit "$DMG" --apple-id "$APPLE_ID_USERNAME" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+            xcrun stapler staple "$DMG"
+            xcrun stapler validate "$DMG"
           else
             echo "── No signing identity available — ad-hoc signature ──"
             codesign --force --deep --sign - MediaMuster.app
@@ -135,17 +191,14 @@ jobs:
           fi
 
       ### Package (Windows) ###
-      - name: Package Windows
+      - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
-          $cmakeContent = Get-Content "CMakeLists.txt" -Raw
-          $appVersion = [regex]::Match($cmakeContent, 'project\s*\([^)]*VERSION\s+([0-9\.]+)').Groups[1].Value
-          if (-not $appVersion) { $appVersion = "1.0.0" }
-          $nsisVersion = $appVersion
-          while (($nsisVersion -split '\.').Count -lt 4) { $nsisVersion += ".0" }
+          $appVersion = $env:APP_VERSION
+          if (-not $appVersion) { throw "APP_VERSION not set" }
 
           cd build
           New-Item -ItemType Directory -Path dist -Force | Out-Null
@@ -153,100 +206,72 @@ jobs:
 
           windeployqt --release --no-translations --no-opengl-sw --no-system-d3d-compiler dist\MediaMuster.exe
 
-          # Install NSIS via Chocolatey, with up to 3 retries #
-          $makensis = "C:\Program Files (x86)\NSIS\makensis.exe"
-          if (-not (Test-Path $makensis)) {
-              $maxRetries = 3
-              for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
-                  Write-Host "Installing NSIS via Chocolatey (attempt $attempt of $maxRetries)..."
-                  choco install nsis -y --no-progress
-                  if (Test-Path $makensis) {
-                      Write-Host "NSIS installed successfully."
-                      break
-                  }
-                  if ($attempt -lt $maxRetries) {
-                      Write-Host "Chocolatey install did not produce makensis.exe; retrying in 30s..."
-                      Start-Sleep -Seconds 30
-                  }
-              }
-              if (-not (Test-Path $makensis)) {
-                  throw "NSIS install failed after $maxRetries attempts. Chocolatey may be down? see https://status.chocolatey.org/"
-              }
+          Remove-Item -Force -ErrorAction SilentlyContinue dist\Qt6Network.dll
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\tls
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\networkinformation
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\generic
+          if (Test-Path dist\Qt6Network.dll) { throw "Qt6Network.dll survived the strip" }
+          Remove-Item -Force -ErrorAction SilentlyContinue dist\Qt6Svg.dll
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\iconengines
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\imageformats
+          if (Test-Path dist\Qt6Svg.dll) { throw "Qt6Svg.dll survived the strip" }
+          if (Test-Path dist\imageformats) { throw "imageformats survived the strip" }
+
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -property installationPath
+          $crt = Get-ChildItem "$vs\VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT" -Directory | Select-Object -Last 1
+          if (-not $crt) { throw "VC++ CRT redist folder not found under $vs" }
+          $keep = @('msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll',
+                    'msvcp140_atomic_wait.dll', 'msvcp140_codecvt_ids.dll',
+                    'vcruntime140.dll', 'vcruntime140_1.dll')
+          foreach ($dll in $keep) {
+            $src = Join-Path $crt.FullName $dll
+            if (-not (Test-Path $src)) { throw "Expected CRT DLL missing from redist: $dll" }
+            Copy-Item $src dist\
           }
-          & $makensis /VERSION
 
-          $nsisScript = @'
-          !include "FileFunc.nsh"
-          Name "MediaMuster"
-          OutFile "MediaMuster.exe"
-          SilentInstall silent
-          RequestExecutionLevel user
-          VIProductVersion "VERSION_PLACEHOLDER_4PART"
-          VIAddVersionKey "ProductName"     "MediaMuster"
-          VIAddVersionKey "FileDescription" "MediaMuster portable launcher"
-          VIAddVersionKey "FileVersion"     "VERSION_PLACEHOLDER"
-          VIAddVersionKey "CompanyName"     "MediaMuster"
-          VIAddVersionKey "LegalCopyright"  ""
-          Icon "..\res\mediamuster-win.ico"
-          Section
-            SetOutPath "$TEMP\MediaMusterPortable"
-            IfFileExists "$TEMP\MediaMusterPortable\MediaMuster.exe" maybeSkip
-            Goto doExtract
-            maybeSkip:
-              ClearErrors
-              FileOpen $0 "$TEMP\MediaMusterPortable\MediaMuster.exe" a
-              IfErrors launchExisting
-              FileClose $0
-            doExtract:
-              File /r "dist\*"
-            launchExisting:
-              Exec '"$TEMP\MediaMusterPortable\MediaMuster.exe"'
-          SectionEnd
-          '@
+          Rename-Item dist "MediaMuster-$appVersion-Win"
 
-          $nsisScript = $nsisScript -replace 'VERSION_PLACEHOLDER_4PART', $nsisVersion
-          $nsisScript = $nsisScript -replace 'VERSION_PLACEHOLDER', $appVersion
-          $nsisScript = ($nsisScript -split "`n" | ForEach-Object { $_ -replace '^          ', '' }) -join "`n"
-          $nsisScript | Out-File -FilePath "portable.nsi" -Encoding ASCII
-
-          & $makensis /V2 portable.nsi
-          if ($LASTEXITCODE -ne 0) { throw "NSIS build failed with exit code $LASTEXITCODE" }
-          if (-not (Test-Path "MediaMuster.exe")) { throw "MediaMuster.exe was not produced by NSIS" }
-
-      ### Upload artifacts ###
-      - name: Upload macOS artifact
+      ### Upload artefacts ###
+      - name: Upload macOS artefact
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
-          name: MediaMuster-Mac
-          path: build/MediaMuster-Mac.dmg
+          name: MediaMuster-${{ env.APP_VERSION }}-Mac
+          path: build/MediaMuster-${{ env.APP_VERSION }}-Mac.dmg
 
-      - name: Upload Windows artifact
+      - name: Upload Windows artefact
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v7
         with:
-          name: MediaMuster-Win
-          path: build/MediaMuster.exe
+          name: MediaMuster-${{ env.APP_VERSION }}-Win
+          path: build/MediaMuster-${{ env.APP_VERSION }}-Win
 
-  ### Push to Releases page if tagged ###
+  ### Push to Releases if tagged ###
   release:
     name: Publish Release
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Download all artifacts
+      - name: Download all artefacts
         uses: actions/download-artifact@v8
         with:
           path: release-assets
-          merge-multiple: true
+
+      - name: Zip the Windows folder
+        run: |
+          cd release-assets
+          # Each artefact downloaded into its own subdir; wrap the Windows app
+          # folder into a single versioned zip for the release.
+          zip -r "MediaMuster-${GITHUB_REF_NAME#v}-Win.zip" "MediaMuster-${GITHUB_REF_NAME#v}-Win"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
           files: |
-            release-assets/MediaMuster-Mac.dmg
-            release-assets/MediaMuster.exe
+            release-assets/MediaMuster-*-Mac/*.dmg
+            release-assets/MediaMuster-*-Win.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

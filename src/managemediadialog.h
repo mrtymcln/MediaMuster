@@ -4,6 +4,7 @@
 #include "mediamanager.h"
 
 #include <QDialog>
+#include <QFutureWatcher>
 #include <QHash>
 #include <QVector>
 
@@ -43,16 +44,8 @@ public:
 	/// Aliased so dialog clients don't need to include mediamanager.h.
 	using ConflictPolicy = MediaManager::ConflictPolicy;
 
-	/// Unary + for nicer call sites — +Operation::Copy instead of
-	/// static_cast<int>(Operation::Copy).
-	friend constexpr int operator+(Operation o) noexcept
-	{
-		return static_cast<int>(o);
-	}
-
-	explicit ManageMediaDialog(const QVector<MediaFile> &files,
-	                           QWidget *parent = nullptr,
-	                           Operation initialOp = Operation::Copy);
+	explicit ManageMediaDialog(const QVector<MediaFile> &files, QWidget *parent = nullptr,
+							   Operation initialOp = Operation::Copy);
 
 	// MARK: - Result accessors
 
@@ -61,9 +54,10 @@ public:
 	bool preserveStructure() const;
 
 	/// Keyed by source file path. Only contains entries for rows
-	/// that actually conflicted with an existing destination;
-	/// MediaManager treats absent keys as Replace, so the caller
-	/// passes this straight through.
+	/// that actually conflicted with an existing destination. A file absent
+	/// from the map was never flagged as a conflict; MediaManager skips it
+	/// rather than replace, should one appear. The caller passes this
+	/// straight through.
 	QHash<QString, ConflictPolicy> conflictPolicies() const;
 
 protected:
@@ -73,6 +67,11 @@ private slots:
 	void onChooseDestination();
 	void onOperationChanged();
 	void onGlobalConflictPolicyChanged(int index);
+
+	/// Applies the pool sweep's exists/rename results to the preview rows
+	/// (red conflict rows, per-row combos, duplicate-rename previews) and
+	/// re-enables Execute. Results from a superseded generation are dropped.
+	void onDestCheckFinished();
 
 private:
 	void setupUi();
@@ -109,10 +108,47 @@ private:
 	QTreeWidget *m_previewTree = nullptr;
 	QLabel *m_summaryLabel = nullptr;
 
-	/// Keyed by source path. Only conflict rows have entries —
+	/// Keyed by source path. Only conflict rows have entries;
 	/// that's how we know which rows to walk.
 	QHash<QString, QComboBox *> m_perFileConflictCombos;
 
 	QPushButton *m_btnCancel = nullptr;
 	QPushButton *m_btnExecute = nullptr;
+
+	// MARK: - Async destination check
+
+	// The exists()/rename probes for the preview run on a pool thread: on an
+	// SMB/Nexis share, thousands of synchronous stats per option change froze
+	// the dialog for seconds. While a sweep is in flight the Execute button is
+	// held disabled (m_checkingDest) so a Copy/Move can't launch against
+	// unknown conflicts; MediaManager still re-checks the disk live at
+	// execution time, so the preview is advisory either way.
+
+	/// One preview row awaiting sweep results. `item` stays valid for the
+	/// generation it was created in: updatePreview() is the only place the
+	/// tree is cleared, and it bumps m_destCheckGeneration first, so a
+	/// generation match guarantees the pointers are live.
+	struct PendingRow
+	{
+		QTreeWidgetItem *item = nullptr;
+		QString sourcePath;
+		QString destPath;
+		bool dupFirst = false; ///< First of several rows sharing destPath.
+		bool dupLater = false; ///< Later duplicate; renamed at execution.
+	};
+
+	/// Sweep output, index-aligned with m_pendingRows. `renamed` is null
+	/// unless the row needed a .Copy.NN preview (on-disk conflict or later
+	/// duplicate); null-despite-needing-one means all 999 slots were taken.
+	struct DestCheckResult
+	{
+		QVector<bool> exists;
+		QVector<QString> renamed;
+	};
+
+	QFutureWatcher<DestCheckResult> m_destCheckWatcher;
+	QVector<PendingRow> m_pendingRows;
+	int m_destCheckGeneration = 0; ///< Bumped by every updatePreview().
+	int m_destCheckLaunched = -1;  ///< Generation the in-flight sweep belongs to.
+	bool m_checkingDest = false;   ///< Gates Execute in updateSummary().
 };

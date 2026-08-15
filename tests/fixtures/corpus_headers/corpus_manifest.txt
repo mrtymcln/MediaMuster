@@ -1,0 +1,795 @@
+ROW|A01.E68BFCF1_126D30126D3D7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFDA9_1B22E01B22EB7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFDC9_1CAA501CAA5FFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFE81_2566E02566EA2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFEAF_278EB0278EBE6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFED4_295B30295B3B4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFEF1_2AB9F02AB9F7DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFF08_2BC6E02BC6E1EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A01.E68BFF5A_2FAA002FAA0DDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra CBG Class 300|material=1|bits=16-bit
+ROW|A01.E68BFF9A_32B33032B333FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra VBR Class 300|material=1|bits=16-bit
+ROW|A01.E68C0043_3ABA203ABA25AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra CGB Class 480|material=1|bits=16-bit
+ROW|A01.E68C00C9_4110D04110DD7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra VBR Class 480|material=1|bits=16-bit
+ROW|A01.E68C011C_4508704508711A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 4K 422|material=1|bits=16-bit
+ROW|A01.E68C01FD_4FAA904FAA97EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E68C021A_510A40510A410A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E68C023F_52D42052D42E6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E68C026B_54E17054E17D0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bitfloat|material=1|bits=16-bit
+ROW|A01.E68C029B_5733205733293A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E68C0303_5C17705C17788A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E68C04CD_71CC7071CC791A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A01.E68C04FF_7430E07430E55A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E68C0528_761D20761D202A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E68C0542_77627077627E8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E68C056C_795C40795C4C7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 Proxy|material=1|bits=16-bit
+ROW|A01.E68C0581_7A5E707A5E718A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 LT|material=1|bits=16-bit
+ROW|A01.E68C0598_7B6C207B6C284A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422|material=1|bits=16-bit
+ROW|A01.E68C05C0_7D51C07D51CA4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 HQ|material=1|bits=16-bit
+ROW|A01.E68C05E2_7EEE607EEE6EBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E68C05F5_7FD4C07FD4C06A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E68C0607_80AF0080AF03EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E68C0622_81F75081F75DEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E68C064F_8420B08420B19A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E68C0677_8606D08606DC8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E68C075E_90F1A090F1AD7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A01.E68C077F_9282A09282A1EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E68C079E_93FB3093FB355A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E68C07B7_952A40952A45CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E68C07D5_96961096961B0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E68C07E8_977CE0977CEB2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E68C07FD_987BC0987BCB9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E68C0814_9992F09992FFCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E68C0838_9B4F609B4F6F8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra CBG Class 300|material=1|bits=16-bit
+ROW|A01.E68C0879_9E5CD09E5CD9CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra VBR Class 300|material=1|bits=16-bit
+ROW|A01.E68C08A4_A069D0A069DA6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra CBG Class 480|material=1|bits=16-bit
+ROW|A01.E68C08C6_A20820A208296A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra VBR Class 480|material=1|bits=16-bit
+ROW|A01.E68C08FA_A48630A4863CBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 4K 422|material=1|bits=16-bit
+ROW|A01.E68C0966_A9A520A9A52C9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E68C097F_AAD4E0AAD4E73A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E68C09B1_AD3310AD33118A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E68C09CF_AE9F70AE9F753A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E68C09F9_B091B0B091B23A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E68C0A19_B219C0B219CB2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E68C33ED_2ADCD2ADCD815A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.01|material=1|bits=16-bit
+ROW|A01.E68C341A_2AFF32AFF38A4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.02|material=1|bits=16-bit
+ROW|A01.E68C343F_2B1B42B1B4793A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.03|material=1|bits=16-bit
+ROW|A01.E68C3451_2B28E2B28ECB1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.04|material=1|bits=16-bit
+ROW|A01.E68C3469_2B3A62B3A6774A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.05|material=1|bits=16-bit
+ROW|A01.E68C3484_2B4F52B4F5051A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.06|material=1|bits=24-bit
+ROW|A01.E68C349B_2B6052B605553A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.07|material=1|bits=24-bit
+ROW|A01.E68C3580_2C0EA2C0EA263A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.08|material=1|bits=24-bit
+ROW|A01.E68C3592_2C1C42C1C4314A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.09|material=1|bits=24-bit
+ROW|A01.E68C35B3_2C34B2C34B61AA.mxf|valid=1|audio=1|codec=MP2 Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4.new.10|material=1|bits=16-bit
+ROW|A01.E68C3619_2C8192C8195C2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx LB|material=1|bits=16-bit
+ROW|A01.E68C3640_2C9FA2C9FA52BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx SQ|material=1|bits=16-bit
+ROW|A01.E68C373B_2D5DF2D5DF5A0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx HQ|material=1|bits=16-bit
+ROW|A01.E68C3766_2D7EA2D7EA011A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx HQX|material=1|bits=16-bit
+ROW|A01.E68CB165_8A0758A07594EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E68CB17C_8A1928A192CCAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E68CB195_8A2BF8A2BF466A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422|material=1|bits=16-bit
+ROW|A01.E68CB1AC_8A3D38A3D388FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E68E1654_98C5698C5652EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra CBG Class 300|material=1|bits=16-bit
+ROW|A01.E68E18AF_9A8E39A8E3DD1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra VBR Class 300|material=1|bits=16-bit
+ROW|A01.E68E18DE_9AB1D9AB1D1CBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra CBG Class 480|material=1|bits=16-bit
+ROW|A01.E68E5B29_CCFB3CCFB39DAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC 4K Intra VBR Class 480|material=1|bits=16-bit
+ROW|A01.E68E5B60_CD24FCD24F38AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 4K 422|material=1|bits=16-bit
+ROW|A01.E68E5B88_CD434CD434F58A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E68E5B99_CD503CD503183A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E68E5CE6_CE4CCCE4CC59CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E68E5CF9_CE5B0CE5B0BD1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E68E5D2D_CE82ACE82A07DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E68E5D56_CEA1BCEA1B9D6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E68E61B6_D1F34D1F34499A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A01.E68E61E7_D2186D2186E07A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E68E621F_D242ED242E323A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E68E6237_D2551D2551A13A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E68E6BC8_D9969D996946FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E68E6D1B_DA97DDA97DA5FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E68E6F8C_DC71FDC71F190A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E68E6FA4_DC83DDC83D597A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E68E6FC6_DC9D5DC9D55AEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E68E6FDA_DCACCDCACC463A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E68E6FFB_DCC62DCC62280A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E68E7047_DCFFCDCFFC82CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E68E708C_DD33ADD33A5B0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E68E71CD_DE279DE27975FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A01.E68E7440_E002CE002CB23A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E68E745C_E0186E0186BB4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E68E7482_E034CE034C8A5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E68E74AD_E0553E0553925A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E68E74FE_E0935E093566BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E68E752E_E0B75E0B75192A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E68E7FE9_7A59107A591B6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E68E8001_7B74307B743BDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E68E801F_7CE7507CE75E7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E68E8031_7DC2A07DC2A11A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E68E8054_7F64B07F64BB0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E68E8091_82483082483CDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E68E80A5_834420834422AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E68E83FC_ABC890ABC895EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A01.E68E854E_BBD2E0BBD2E85A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A01.E68E8579_BDD530BDD5365A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A01.E68E859E_BF9400BF940C3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A01.E68E8619_C56A60C56A6D7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E68E866F_C982E0C982E33A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E68E8692_CB2C80CB2C877A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E68E86B6_CCE460CCE463DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E68E86DC_CEA980CEA98D0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A01.E68E8701_D06B60D06B682A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E68E8723_D20DB0D20DB15A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 2Mbps Proxy|material=1|bits=16-bit
+ROW|A01.E68E8738_D30CF0D30CFBAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A01.E68E8754_D46010D460170A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM 50|material=1|bits=16-bit
+ROW|A01.E690E6EC_DA24EDA24E293A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E690E6FA_DA2F9DA2F93A9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E690E708_DA3A4DA3A4B54A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E690E71A_DA479DA479C9AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E690E728_DA527DA52729CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E690E739_DA5F4DA5F4B5CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E690E749_DA6B2DA6B247CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E690E761_DA7DCDA7DC938A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A01.E690E78C_DA9E2DA9E2D21A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A01.E690E7A7_DAB26DAB26AF9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A01.E690E7FE_DAF50DAF5006FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A01.E690E811_DB035DB03598AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A01.E690E82E_DB192DB19240AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E690E85C_DB3C6DB3C6B7DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E690E877_DB50ADB50A92BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E690E8DA_DB9B9DB9B9CEEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E690E904_DBBB7DBBB7EA6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A01.E690E929_DBD76DBD76205A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E690E93E_DBE71DBE71D5FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 2Mbps Proxy|material=1|bits=16-bit
+ROW|A01.E690E992_DC278DC278506A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A01.E690E9C3_DC4CBDC4CB7C0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A01.E690E9D7_DC5B9DC5B999FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=DVCPro HD|material=1|bits=16-bit
+ROW|A01.E690EA0B_DC82FDC82F84EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K HD|material=1|bits=16-bit
+ROW|A01.E6966CE6_A3C580A3C589AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E6967023_CB0BE0CB0BE82A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E6967031_CBBA90CBBA946A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E69671C5_DEDE70DEDE796A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E69674FB_105D6105D63C0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E696763E_11529115294E1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E6967652_11614116145B4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E6967671_1178C1178C49BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A01.E69676B8_11AF211AF2D69A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A01.E6967DC2_1705D1705D0CDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A01.E6967E19_174791747976FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A01.E6967E2D_1757117571C5BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A01.E6967E52_1772E1772E5A1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E6967F5A_183B5183B513AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E6967F8C_1860F1860FA7FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E6967FA9_18774187744F3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E69682F3_1AF611AF61DA1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A01.E6968362_1B4A21B4A27FCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E6968379_1B5B61B5B6AA8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 2Mbps Proxy|material=1|bits=16-bit
+ROW|A01.E6968409_1BC8D1BC8D394A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A01.E6968417_1BD321BD32270A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A01.E696842C_1BE361BE366E1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DVCPro HD|material=1|bits=16-bit
+ROW|A01.E69684AA_1C42A1C42A135A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E69684C1_1C5401C54070BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E696852E_1CA6A1CA6A436A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E6968555_1CC421CC42847A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E6968576_1CDDD1CDDD6A0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E69685D0_1D2171D217EBDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K HD|material=1|bits=16-bit
+ROW|A01.E696869F_1DBEC1DBECCDFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A01.E69686CD_1DE1C1DE1CA0AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E69686E9_1DF711DF71BD9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E69687A9_1E8881E88859BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E69687EA_1EB9D1EB9DBB6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E69687F7_1EC3D1EC3D7C4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E696880D_1ED481ED48359A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E6968824_1EE611EE61AA6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E696883B_1EF721EF72BE9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A01.E6968E6E_23AAC23AAC63AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A01.E6968E96_23C9C23C9C889A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A01.E6968EE1_2402924029676A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra HD 422|material=1|bits=16-bit
+ROW|A01.E6968EF4_2410E2410ECCDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A01.E6968F33_244072440784DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A01.E6968F81_247B8247B87B9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E6968F93_2489724897CB5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E6968FAB_249BD249BDA1DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E6969009_24E2724E27AC8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E6969023_24F6E24F6EAEEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A01.E696906A_252C9252C953CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E6969078_2537325373305A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A01.E6969085_254132541344FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A01.E69690DD_2583A2583A792A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E6969109_25A5025A5031DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E6969131_25C3025C3018FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E696913F_25CE525CE52CBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E696914D_25D8525D85F79A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E696915B_25E3625E36DD5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K HD|material=1|bits=16-bit
+ROW|A01.E696916B_25EF525EF5BF4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E696920F_266BF266BF7C8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A01.E6969224_267B8267B871BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E6969231_2685B2685BD82A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E6969284_26C4226C423D2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E69692B4_26E9326E93593A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E69692C3_26F3E26F3EFC7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E69692CE_26FCC26FCCAB7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E69692DB_2706B2706B026A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E69692EC_2713A2713A15FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A01.E6969302_2723B2723B505A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A01.E6969318_2734A2734AEC8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A01.E696932C_2743E2743E720A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra HD 422|material=1|bits=16-bit
+ROW|A01.E696933F_27529275294AEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A01.E69BC5A2_1871E1871E41CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A01.E69BC5C0_1888B1888B73CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E69BC5ED_18AAC18AACCAAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A01.E69BC651_18F6518F650ABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A01.E69BC680_191A8191A8471A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E69BC696_192B1192B1AA0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A01.E69BC6C4_194DA194DA718A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E69BC750_19B8319B835C5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A01.E69BC76C_19CD019CD070BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A01.E69BC87F_1A9D71A9D7750A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E69BC890_1AAAD1AAADCA3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E69BC8A9_1ABDD1ABDD5ADA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E69BC936_1B2851B28566BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E69BC94C_1B3911B391752A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E69BC981_1B6141B614466A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K HD|material=1|bits=16-bit
+ROW|A01.E69BC991_1B6DA1B6DA025A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A01.E69BE078_2CCCF2CCCFC54A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A01.E69BE8DE_332B7332B72CEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A01.E69BE8F6_333DD333DD881A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A01.E69BE902_334723347209EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E69CB088_CA9EBCA9EB028A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E69CB09C_CAADDCAADD7D4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E69CB191_CB673CB673FF0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E69CB19D_CB708CB708DFBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A01.E69CB1AB_CB7B1CB7B19D9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E69CB574_CE5A0CE5A0632A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A01.E69CB57D_CE619CE61917BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A01.E69CB588_CE69CCE69C12DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A01.E69CB592_CE70CCE70CB99A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A01.E69CB59E_CE79ECE79E42BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A01.E69CB5AC_CE848CE8485F7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A01.E69CB5C7_CE99ACE99AAC3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A01.E69CB5F0_CEB88CEB88AD6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K HD|material=1|bits=16-bit
+ROW|A01.E69CED6D_F8CF2F8CF224DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E69CED77_F8D71F8D71A1DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E69CED82_F8DF1F8DF1DD1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E69CED8B_F8E5DF8E5DD4DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E69CED99_F8F08F8F08A81A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E69CEDC4_F9117F911729AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 1500Kps Proxy|material=1|bits=16-bit
+ROW|A01.E69CEDE1_F926CF926C990A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DV 25 411|material=1|bits=16-bit
+ROW|A01.E69CEDFC_F93B5F93B54ACA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DV 50|material=1|bits=16-bit
+ROW|A01.E69CEE13_F94CEF94CEE73A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K SD|material=1|bits=16-bit
+ROW|A01.E69CEE5F_F9868F98687DEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A01.E69CEE69_F98E3F98E32CDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A01.E69CEE72_F9952F9952B96A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A01.E69CEE7C_F99D0F99D03DBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A01.E69CEE8A_F9A77F9A7702EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A01.E69CEE96_F9B01F9B01A6EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K SD|material=1|bits=16-bit
+ROW|A02.E68BFCF2_126D30126D3DDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFDAA_1B22E01B22EC0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFDCA_1CAA601CAA605A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFE82_2566E02566EA8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFEB0_278EB0278EBF6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFED5_295B30295B3BAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFEF2_2AB9F02AB9F83A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFF09_2BC6E02BC6E27A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=16-bit
+ROW|A02.E68BFF5B_2FAA002FAA0E8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra CBG Class 300|material=1|bits=16-bit
+ROW|A02.E68BFF9B_32B33032B334AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra VBR Class 300|material=1|bits=16-bit
+ROW|A02.E68C0044_3ABA203ABA260A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra CGB Class 480|material=1|bits=16-bit
+ROW|A02.E68C00CA_4110D04110DDDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra VBR Class 480|material=1|bits=16-bit
+ROW|A02.E68C011D_4508704508719A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 4K 422|material=1|bits=16-bit
+ROW|A02.E68C01FE_4FAA904FAA988A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E68C021B_510A40510A419A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E68C0240_52D42052D42EEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E68C026C_54E17054E17DAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bitfloat|material=1|bits=16-bit
+ROW|A02.E68C029C_573320573329AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E68C0304_5C17705C1778FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E68C04CE_71CC7071CC79DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A02.E68C0500_7430E07430E5BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E68C0529_761D20761D208A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E68C0543_77627077627F0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E68C056D_795C40795C4CFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 Proxy|material=1|bits=16-bit
+ROW|A02.E68C0582_7A5E707A5E71FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 LT|material=1|bits=16-bit
+ROW|A02.E68C0599_7B6C207B6C291A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422|material=1|bits=16-bit
+ROW|A02.E68C05C1_7D51C07D51CABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 HQ|material=1|bits=16-bit
+ROW|A02.E68C05E3_7EEE707EEE708A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E68C05F6_7FD4C07FD4C0EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E68C0608_80AF0080AF047A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E68C0623_81F75081F75EDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E68C0650_8420B08420B22A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E68C0678_8606D08606DD0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=734|shows=00:00:30:14|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E68C075F_90F1A090F1ADEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A02.E68C0780_9282A09282A2BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E68C079F_93FB3093FB362A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E68C07B8_952A40952A467A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E68C07D6_96961096961B9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E68C07E9_977CE0977CEC0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E68C07FE_987BC0987BCC0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E68C0815_9993009993008A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E68C0839_9B4F709B4F700A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra CBG Class 300|material=1|bits=16-bit
+ROW|A02.E68C087A_9E5CD09E5CDAAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra VBR Class 300|material=1|bits=16-bit
+ROW|A02.E68C08A5_A069D0A069DAEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra CBG Class 480|material=1|bits=16-bit
+ROW|A02.E68C08C7_A20820A20829DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra VBR Class 480|material=1|bits=16-bit
+ROW|A02.E68C08FB_A48630A4863D8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 4K 422|material=1|bits=16-bit
+ROW|A02.E68C0967_A9A520A9A52D8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E68C0980_AAD4E0AAD4E7BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E68C09B2_AD3310AD33123A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E68C09D0_AE9F70AE9F765A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E68C09FA_B091B0B091B2AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E68C0A1A_B219C0B219CBCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E68C361A_2C8192C8195C7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx LB|material=1|bits=16-bit
+ROW|A02.E68C3641_2C9FA2C9FA533A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx SQ|material=1|bits=16-bit
+ROW|A02.E68C373C_2D5DF2D5DF5A8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx HQ|material=1|bits=16-bit
+ROW|A02.E68C3767_2D7EA2D7EA016A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx HQX|material=1|bits=16-bit
+ROW|A02.E68CB166_8A0758A075958A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E68CB17D_8A1928A192CD1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E68CB196_8A2BF8A2BF46CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422|material=1|bits=16-bit
+ROW|A02.E68CB1AD_8A3D38A3D3899A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E68E1655_98C5698C56536A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra CBG Class 300|material=1|bits=16-bit
+ROW|A02.E68E18B0_9A8E39A8E3DDAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra VBR Class 300|material=1|bits=16-bit
+ROW|A02.E68E18DF_9AB1D9AB1D1D4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra CBG Class 480|material=1|bits=16-bit
+ROW|A02.E68E5B2A_CCFB3CCFB39E1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC 4K Intra VBR Class 480|material=1|bits=16-bit
+ROW|A02.E68E5B61_CD24FCD24F392A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 4K 422|material=1|bits=16-bit
+ROW|A02.E68E5B89_CD434CD434F60A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E68E5B9A_CD503CD50318CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E68E5CE7_CE4CCCE4CC5A3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E68E5CFA_CE5B0CE5B0BD8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E68E5D2E_CE82ACE82A085A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E68E5D57_CEA1BCEA1B9DEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E68E61B7_D1F34D1F344A2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A02.E68E61E8_D2186D2186E0FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E68E6220_D242ED242E329A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E68E6238_D2551D2551A1BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E68E6BC9_D9969D9969475A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E68E6D1C_DA97DDA97DA6AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E68E6F8D_DC71FDC71F196A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E68E6FA5_DC83DDC83D59DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E68E6FC7_DC9D5DC9D55BEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E68E6FDB_DCACCDCACC469A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E68E6FFC_DCC62DCC6228BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E68E7048_DCFFCDCFFC834A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E68E708D_DD33ADD33A5B6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=918|shows=00:00:30:18|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E68E71CE_DE279DE279767A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A02.E68E7441_E002CE002CB2AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E68E745D_E0186E0186BBCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E68E7483_E034CE034C8ABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E68E74AE_E0553E055392CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E68E74FF_E0935E0935674A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E68E752F_E0B75E0B75199A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E68E7FEA_7A59107A591BDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E68E8002_7B74307B743C5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E68E8020_7CE7507CE75F1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E68E8032_7DC2A07DC2A1AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E68E8055_7F64B07F64BBAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E68E8092_82483082483D8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E68E80A6_8344208344234A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E68E83FD_ABC890ABC8967A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A02.E68E854F_BBD2E0BBD2E8DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A02.E68E857A_BDD530BDD536DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A02.E68E859F_BF9400BF940CAA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A02.E68E861A_C56A60C56A6DEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E68E8670_C982E0C982E3CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E68E8693_CB2C80CB2C87EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E68E86B7_CCE460CCE4645A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E68E86DD_CEA980CEA98D6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A02.E68E8702_D06B60D06B688A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E68E8724_D20DB0D20DB1EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 2Mbps Proxy|material=1|bits=16-bit
+ROW|A02.E68E8739_D30CF0D30CFC0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A02.E68E8755_D46010D460177A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM 50|material=1|bits=16-bit
+ROW|A02.E690E6ED_DA24EDA24E29AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E690E6FB_DA2F9DA2F93AFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E690E709_DA3A4DA3A4B5CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E690E71B_DA479DA479CA3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E690E729_DA527DA5272A4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E690E73A_DA5F4DA5F4B63A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E690E74A_DA6B2DA6B2487A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E690E762_DA7DCDA7DC942A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A02.E690E78D_DA9E2DA9E2D29A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A02.E690E7A8_DAB26DAB26B01A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A02.E690E7FF_DAF50DAF50078A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A02.E690E812_DB035DB035992A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A02.E690E82F_DB192DB192413A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E690E85D_DB3C6DB3C6B86A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E690E878_DB50ADB50A935A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E690E8DB_DB9B9DB9B9CF8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E690E905_DBBB7DBBB7EAFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A02.E690E92A_DBD76DBD7620BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E690E93F_DBE71DBE71D69A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 2Mbps Proxy|material=1|bits=16-bit
+ROW|A02.E690E993_DC278DC278516A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A02.E690E9C4_DC4CBDC4CB7C8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A02.E690E9D8_DC5B9DC5B99A9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=DVCPro HD|material=1|bits=16-bit
+ROW|A02.E690EA0C_DC82FDC82F858A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K HD|material=1|bits=16-bit
+ROW|A02.E6966CE7_A3C580A3C58A7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E6967024_CB0BE0CB0BE90A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E6967032_CBBA90CBBA953A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E69671C6_DEDE70DEDE7A1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E69674FC_105D6105D63C8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E696763F_11529115294ECA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E6967653_11614116145C2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E6967672_1178C1178C4A6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A02.E69676B9_11AF211AF2D75A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A02.E6967DC3_1705D1705D0D5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A02.E6967E1A_1747917479777A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A02.E6967E2E_1757117571C63A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A02.E6967E53_1772E1772E5ABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E6967F5B_183B5183B5143A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E6967F8D_1860F1860FA88A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E6967FAA_18774187744FEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E69682F4_1AF611AF61DABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A02.E6968363_1B4A21B4A2804A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E696837A_1B5B61B5B6AB3A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 2Mbps Proxy|material=1|bits=16-bit
+ROW|A02.E696840A_1BC8D1BC8D39EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A02.E6968418_1BD321BD32278A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A02.E696842D_1BE361BE366EEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DVCPro HD|material=1|bits=16-bit
+ROW|A02.E69684AB_1C42A1C42A13FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E69684C2_1C5401C540713A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E696852F_1CA6A1CA6A440A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E6968556_1CC421CC42850A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E6968577_1CDDD1CDDD6ABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E69685D1_1D2171D217EC6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K HD|material=1|bits=16-bit
+ROW|A02.E69686A0_1DBEC1DBECCE8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A02.E69686CE_1DE1C1DE1CA13A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E69686EA_1DF711DF71BE1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E69687AA_1E8881E8885A2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E69687EB_1EB9D1EB9DBC8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E69687F8_1EC3D1EC3D7CEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E696880E_1ED481ED48363A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E6968825_1EE611EE61AB0A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E696883C_1EF721EF72BF4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A02.E6968E6F_23AAC23AAC642A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A02.E6968E97_23C9C23C9C891A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A02.E6968EE2_240292402967EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra HD 422|material=1|bits=16-bit
+ROW|A02.E6968EF5_2410E2410ECD5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A02.E6968F34_2440724407857A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A02.E6968F82_247B8247B87C2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E6968F94_2489724897CBDA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E6968FAC_249BD249BDA24A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E696900A_24E2724E27ACEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E6969024_24F6E24F6EAF5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A02.E696906B_252C9252C9542A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E6969079_253732537330DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A02.E6969086_2541325413457A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A02.E69690DE_2583A2583A79CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E696910A_25A5025A50326A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E6969132_25C3025C30198A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E6969140_25CE525CE52D8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E696914E_25D8525D85F80A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E696915C_25E3625E36DDCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K HD|material=1|bits=16-bit
+ROW|A02.E696916C_25EF525EF5BFCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E6969210_266BF266BF7CFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx LB|material=1|bits=16-bit
+ROW|A02.E6969225_267B8267B8722A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E6969232_2685B2685BD89A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E6969285_26C4226C423D9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E69692B5_26E9326E9359AA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E69692C4_26F3E26F3EFCEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E69692CF_26FCC26FCCABFA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E69692DC_2706B2706B02DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E69692ED_2713A2713A167A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A02.E6969303_2723B2723B50FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 100|material=1|bits=16-bit
+ROW|A02.E6969319_2734A2734AED1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 200|material=1|bits=16-bit
+ROW|A02.E696932D_2743E2743E728A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra HD 422|material=1|bits=16-bit
+ROW|A02.E6969340_27529275294B7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 6|material=1|bits=16-bit
+ROW|A02.E69BC5A3_1871E1871E424A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 12|material=1|bits=16-bit
+ROW|A02.E69BC5C1_1888B1888B744A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E69BC5EE_18AAC18AACCB2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=16-bit
+ROW|A02.E69BC652_18F6518F650B2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 35|material=1|bits=16-bit
+ROW|A02.E69BC681_191A8191A847BA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E69BC697_192B1192B1AA9A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=16-bit
+ROW|A02.E69BC6C5_194DA194DA720A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E69BC751_19B8319B835CBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A02.E69BC76D_19CD019CD0712A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A02.E69BC880_1A9D71A9D7758A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E69BC891_1AAAD1AAADCABA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E69BC8AA_1ABDD1ABDD5B5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E69BC937_1B2851B285672A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E69BC94D_1B3911B391759A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E69BC982_1B6141B61446DA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K HD|material=1|bits=16-bit
+ROW|A02.E69BC992_1B6DA1B6DA02CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K IMF YCrCb|material=1|bits=16-bit
+ROW|A02.E69BE079_2CCCF2CCCFC59A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx SQ|material=1|bits=16-bit
+ROW|A02.E69BE8DF_332B7332B72D6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQ|material=1|bits=16-bit
+ROW|A02.E69BE8F7_333DD333DD889A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQX|material=1|bits=16-bit
+ROW|A02.E69BE903_33472334720A5A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E69CB089_CA9EBCA9EB031A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E69CB09D_CAADDCAADD7DCA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E69CB192_CB673CB673FF7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E69CB19E_CB708CB708E01A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 100|material=1|bits=16-bit
+ROW|A02.E69CB1AC_CB7B1CB7B19E2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E69CB575_CE5A0CE5A0639A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM EX 35|material=1|bits=16-bit
+ROW|A02.E69CB57E_CE619CE619182A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM HD 50|material=1|bits=16-bit
+ROW|A02.E69CB589_CE69CCE69C139A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=16-bit
+ROW|A02.E69CB593_CE70CCE70CBA1A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=16-bit
+ROW|A02.E69CB59F_CE79ECE79E432A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=16-bit
+ROW|A02.E69CB5AD_CE848CE848601A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=16-bit
+ROW|A02.E69CB5C8_CE99ACE99AACBA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=16-bit
+ROW|A02.E69CB5F1_CEB88CEB88ADEA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K HD|material=1|bits=16-bit
+ROW|A02.E69CED6E_F8CF2F8CF2252A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E69CED78_F8D71F8D71A29A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E69CED83_F8DF1F8DF1DD6A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E69CED8C_F8E5DF8E5DD54A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E69CED9A_F8F08F8F08A89A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E69CEDC5_F9117F91172A2A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 1500Kps Proxy|material=1|bits=16-bit
+ROW|A02.E69CEDE2_F926CF926C99CA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DV 25 411|material=1|bits=16-bit
+ROW|A02.E69CEDFD_F93B5F93B54B4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DV 50|material=1|bits=16-bit
+ROW|A02.E69CEE14_F94CEF94CEE7FA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K SD|material=1|bits=16-bit
+ROW|A02.E69CEE60_F9868F98687E4A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=16-bit
+ROW|A02.E69CEE6A_F98E3F98E32D8A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=16-bit
+ROW|A02.E69CEE73_F9952F9952B9EA.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=16-bit
+ROW|A02.E69CEE7D_F99D0F99D03E7A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=16-bit
+ROW|A02.E69CEE8B_F9A77F9A77036A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=16-bit
+ROW|A02.E69CEE97_F9B01F9B01A79A.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K SD|material=1|bits=16-bit
+ROW|TONE_100A01.00DDBBB0.612470.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=1440|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.06E8A34E.612470.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=1440|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.2|material=1|bits=24-bit
+ROW|TONE_100A01.0772AD76.612490.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=1500|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.08E72C22.612470.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=1500|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.3|material=1|bits=24-bit
+ROW|TONE_100A01.0A24CB17.612550.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.1DAFE820.612550.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=1440|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.2|material=1|bits=24-bit
+ROW|TONE_100A01.2A9F3DDD.612470.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.4|material=1|bits=24-bit
+ROW|TONE_100A01.2CB231BA.612590.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=24|drop=0|dur=1440|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.D1DBE5EE.612490.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.5|material=1|bits=24-bit
+ROW|TONE_100A01.DA018E82.612510.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=1500|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.DE1B29AE.612490.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=50|drop=0|dur=3000|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.F8C4CFDC.612600.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=30|drop=0|dur=1800|shows=00:01:00:00|clip=TONE: 1000 Hz @ -14.0 dB.1|material=1|bits=24-bit
+ROW|TONE_100A01.F97A04A3.612600.mxf|valid=1|audio=1|codec=PCM Audio|res=|fps=|base=25|drop=0|dur=1500|shows=00:01:00:00|clip=TONE: 1000 Hz @ -20.0 dB.2|material=1|bits=24-bit
+ROW|Untitled Sequence.175B1728V.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 145)|res=1920x1080|fps=29.97|base=30|drop=1|dur=18340|shows=00;10;11;28|clip=Untitled Sequence.05,Video Mixdown,1|material=1|bits=8-bit
+ROW|Untitled_Sequence.061365D4V.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Untitled_Sequence.02,Color_Correction+1|material=1|bits=8-bit
+ROW|Untitled_Sequence.089D9799V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Untitled_Sequence.03,Color_Correction+2|material=1|bits=10-bit
+ROW|Untitled_Sequence.0B4A3F9FV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Untitled_Sequence.04,Color_Correction+3|material=1|bits=10-bit
+ROW|Untitled_Sequence.D0A73B0BV.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Untitled_Sequence.01,3D_Ball+4|material=1|bits=10-bit
+ROW|Untitled_Sequence.D0C842F1V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Untitled_Sequence.01,Color_Adapter+5|material=1|bits=Float
+ROW|Untitled_Sequence.D0D84055V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Untitled_Sequence.01,Color_Adapter+6|material=1|bits=Float
+ROW|Untitled_Sequence.D1052562V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Untitled_Sequence.01,Color_Adapter+7|material=1|bits=12-bit
+ROW|Untitled_Sequence.D115C72AV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Untitled_Sequence.01,Color_Adapter+8|material=1|bits=10-bit
+ROW|Untitled_Sequence.D1247522V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Untitled_Sequence.01,Color_Adapter+9|material=1|bits=8-bit
+ROW|V01.E68BFCF0_126D30126D3CBV.mxf|valid=1|audio=0|codec=Avid DNx LB|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=8-bit
+ROW|V01.E68BFDA8_1B22E01B22E94V.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=8-bit
+ROW|V01.E68BFDC8_1CAA501CAA5F3V.mxf|valid=1|audio=0|codec=Avid DNx HQ|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=8-bit
+ROW|V01.E68BFE80_2566E02566E94V.mxf|valid=1|audio=0|codec=Avid DNx HQX|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=12-bit
+ROW|V01.E68BFEAE_278EB0278EBD2V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=10-bit
+ROW|V01.E68BFED3_295B30295B3A9V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=10-bit
+ROW|V01.E68BFEF0_2AB9F02AB9F73V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=10-bit
+ROW|V01.E68BFF07_2BC6E02BC6E03V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=file_example|material=1|bits=10-bit
+ROW|V01.E68BFF59_2FAA002FAA0C1V.mxf|valid=1|audio=0|codec=XAVC 4K Intra CBG Class 300|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra CBG Class 300|material=1|bits=10-bit
+ROW|V01.E68BFF99_32B33032B332CV.mxf|valid=1|audio=0|codec=XAVC 4K Intra VBR Class 300|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra VBR Class 300|material=1|bits=10-bit
+ROW|V01.E68C0042_3ABA203ABA24EV.mxf|valid=1|audio=0|codec=XAVC 4K Intra CBG Class 480|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra CGB Class 480|material=1|bits=10-bit
+ROW|V01.E68C00C8_4110D04110DC8V.mxf|valid=1|audio=0|codec=XAVC 4K Intra VBR Class 480|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC 4K Intra VBR Class 480|material=1|bits=10-bit
+ROW|V01.E68C011B_45086045086F3V.mxf|valid=1|audio=0|codec=AVC-Intra 4K 422|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 4K 422|material=1|bits=10-bit
+ROW|V01.E68C01FC_4FAA904FAA95DV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E68C0219_510A30510A3F6V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E68C023E_52D42052D42DAV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E68C026A_54E17054E17ADV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bitfloat|material=1|bits=Float
+ROW|V01.E68C029A_5733205733282V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E68C0302_5C17705C17776V.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=3840x2160|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E68C04CC_71CC7071CC76BV.mxf|valid=1|audio=0|codec=Avid DNx LB|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx LB|material=1|bits=8-bit
+ROW|V01.E68C04FE_7430E07430E4AV.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E68C0527_761D10761D1F7V.mxf|valid=1|audio=0|codec=Avid DNx HQ|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E68C0541_77627077627DBV.mxf|valid=1|audio=0|codec=Avid DNx HQX|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNx HQX|material=1|bits=12-bit
+ROW|V01.E68C056B_795C40795C4BBV.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 Proxy|material=1|bits=10-bit
+ROW|V01.E68C0580_7A5E707A5E70BV.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 LT|material=1|bits=10-bit
+ROW|V01.E68C0597_7B6C207B6C261V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422|material=1|bits=10-bit
+ROW|V01.E68C05BF_7D51C07D51C95V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Apple Prores 422 HQ|material=1|bits=10-bit
+ROW|V01.E68C05E1_7EEE607EEE6C6V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E68C05F4_7FD4B07FD4BFAV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E68C0606_80AF0080AF023V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E68C0621_81F75081F75B4V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E68C064E_8420B08420B08V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E68C0676_8606D08606DB7V.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=3840x2160|fps=24|base=24|drop=0|dur=734|shows=00:00:30:14|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E68C075D_90F1A090F1ACAV.mxf|valid=1|audio=0|codec=Avid DNx LB|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx LB|material=1|bits=8-bit
+ROW|V01.E68C077E_92829092829FDV.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E68C079D_93FB3093FB330V.mxf|valid=1|audio=0|codec=Avid DNx HQ|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E68C07B6_952A40952A448V.mxf|valid=1|audio=0|codec=Avid DNx HQX|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=12-bit
+ROW|V01.E68C07D4_969610969619EV.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E68C07E7_977CE0977CE93V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E68C07FC_987BC0987BCADV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E68C0813_9992F09992FD7V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E68C0837_9B4F609B4F6ECV.mxf|valid=1|audio=0|codec=XAVC 4K Intra CBG Class 300|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra CBG Class 300|material=1|bits=10-bit
+ROW|V01.E68C0878_9E5CD09E5CD8AV.mxf|valid=1|audio=0|codec=XAVC 4K Intra VBR Class 300|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra VBR Class 300|material=1|bits=10-bit
+ROW|V01.E68C08A3_A069D0A069D96V.mxf|valid=1|audio=0|codec=XAVC 4K Intra CBG Class 480|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra CBG Class 480|material=1|bits=10-bit
+ROW|V01.E68C08C5_A20820A208289V.mxf|valid=1|audio=0|codec=XAVC 4K Intra VBR Class 480|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC 4K Intra VBR Class 480|material=1|bits=10-bit
+ROW|V01.E68C08F9_A48630A4863B6V.mxf|valid=1|audio=0|codec=AVC-Intra 4K 422|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 4K 422|material=1|bits=10-bit
+ROW|V01.E68C0965_A9A520A9A52A1V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E68C097E_AAD4E0AAD4E66V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E68C09B0_AD3300AD330EDV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E68C09CE_AE9F70AE9F71EV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E68C09F8_B091B0B091B1AV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E68C0A18_B219C0B219C9EV.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=3840x2160|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E68C3618_2C8192C8195B8V.mxf|valid=1|audio=0|codec=Avid DNx LB|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx LB|material=1|bits=8-bit
+ROW|V01.E68C363F_2C9FA2C9FA51CV.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx SQ|material=1|bits=8-bit
+ROW|V01.E68C373A_2D5DF2D5DF593V.mxf|valid=1|audio=0|codec=Avid DNx HQ|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx HQ|material=1|bits=8-bit
+ROW|V01.E68C3765_2D7EA2D7EA00BV.mxf|valid=1|audio=0|codec=Avid DNx HQX|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zAvid DNx HQX|material=1|bits=12-bit
+ROW|V01.E68CB164_8A0758A07593BV.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E68CB17B_8A1928A192CBDV.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E68CB194_8A2BF8A2BF45AV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422|material=1|bits=10-bit
+ROW|V01.E68CB1AB_8A3D38A3D387BV.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zApple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E68E1653_98C5698C5651FV.mxf|valid=1|audio=0|codec=XAVC 4K Intra CBG Class 300|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra CBG Class 300|material=1|bits=10-bit
+ROW|V01.E68E18AE_9A8E39A8E3DBEV.mxf|valid=1|audio=0|codec=XAVC 4K Intra VBR Class 300|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra VBR Class 300|material=1|bits=10-bit
+ROW|V01.E68E18DD_9AB1D9AB1D1BAV.mxf|valid=1|audio=0|codec=XAVC 4K Intra CBG Class 480|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=zXAVC 4K Intra CBG Class 480|material=1|bits=10-bit
+ROW|V01.E68E5B28_CCFB3CCFB39C7V.mxf|valid=1|audio=0|codec=XAVC 4K Intra VBR Class 480|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC 4K Intra VBR Class 480|material=1|bits=10-bit
+ROW|V01.E68E5B5F_CD24FCD24F378V.mxf|valid=1|audio=0|codec=AVC-Intra 4K 422|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 4K 422|material=1|bits=10-bit
+ROW|V01.E68E5B87_CD434CD434F47V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E68E5B98_CD503CD503171V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E68E5CE5_CE4CCCE4CC58CV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E68E5CF8_CE5B0CE5B0BC2V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E68E5D2C_CE82ACE82A06CV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E68E5D55_CEA1BCEA1B9C3V.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=3840x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E68E61B5_D1F34D1F3448AV.mxf|valid=1|audio=0|codec=Avid DNx LB|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx LB|material=1|bits=8-bit
+ROW|V01.E68E61E6_D2186D2186DFAV.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E68E621E_D242ED242E31AV.mxf|valid=1|audio=0|codec=Avid DNx HQ|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E68E6236_D2551D2551A04V.mxf|valid=1|audio=0|codec=Avid DNx HQX|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNx HQX|material=1|bits=12-bit
+ROW|V01.E68E6BC7_D9969D9969465V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E68E6D1A_DA97DDA97DA4AV.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E68E6F8B_DC71FDC71F182V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E68E6FA3_DC83DDC83D589V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E68E6FC5_DC9D5DC9D559DV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E68E6FD9_DCACCDCACC45BV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E68E6FFA_DCC62DCC6225BV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E68E7046_DCFFCDCFFC81CV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E68E708B_DD33ADD33A5A3V.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=3840x2160|fps=30|base=30|drop=0|dur=918|shows=00:00:30:18|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E68E71CC_DE279DE279751V.mxf|valid=1|audio=0|codec=Avid DNx LB|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx LB|material=1|bits=8-bit
+ROW|V01.E68E743F_E002CE002CB14V.mxf|valid=1|audio=0|codec=Avid DNx SQ|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E68E745B_E0186E0186BA9V.mxf|valid=1|audio=0|codec=Avid DNx HQ|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E68E7481_E034CE034C895V.mxf|valid=1|audio=0|codec=Avid DNx HQX|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Avid DNx HQX|material=1|bits=12-bit
+ROW|V01.E68E74AC_E0553E0553917V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E68E74FD_E0935E093565AV.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E68E752D_E0B75E0B75183V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=3840x2160|fps=50|base=50|drop=0|dur=1530|shows=00:00:30:30|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E68E7FE8_7A59107A591A7V.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 120)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E68E8000_7B74307B743AAV.mxf|valid=1|audio=0|codec=Avid DNx HQ (DNxHD 185)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E68E801E_7CE7507CE75D6V.mxf|valid=1|audio=0|codec=Avid DNx HQX (DNxHD 185X)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=10-bit
+ROW|V01.E68E8030_7DC2907DC29FEV.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E68E8053_7F64B07F64BA2V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E68E8090_82483082483B9V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E68E80A4_8344208344212V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E68E83FB_ABC890ABC894BV.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 100|material=1|bits=10-bit
+ROW|V01.E68E854D_BBD2E0BBD2E76V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 100|material=1|bits=10-bit
+ROW|V01.E68E8578_BDD530BDD5350V.mxf|valid=1|audio=0|codec=AVC Long GOP 6|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 6|material=1|bits=8-bit
+ROW|V01.E68E859D_BF9400BF940B6V.mxf|valid=1|audio=0|codec=AVC Long GOP 12|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 12|material=1|bits=8-bit
+ROW|V01.E68E8618_C56A60C56A6CAV.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E68E866E_C982E0C982E1AV.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E68E8691_CB2C80CB2C86CV.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E68E86B5_CCE460CCE4628V.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E68E86DB_CEA980CEA98C6V.mxf|valid=1|audio=0|codec=AVC Long GOP 35|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 35|material=1|bits=10-bit
+ROW|V01.E68E8700_D06B60D06B677V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E68E8722_D20DB0D20DB04V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 2Mbps Proxy|material=1|bits=8-bit
+ROW|V01.E68E8737_D30CF0D30CFADV.mxf|valid=1|audio=0|codec=XDCAM EX 35|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM EX 35|material=1|bits=8-bit
+ROW|V01.E68E8753_D46010D460164V.mxf|valid=1|audio=0|codec=XDCAM HD 50|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM 50|material=1|bits=8-bit
+ROW|V01.E690E6EB_DA24EDA24E287V.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 120)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E690E6F9_DA2F9DA2F939CV.mxf|valid=1|audio=0|codec=Avid DNx HQ (DNxHD 185)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E690E707_DA3A4DA3A4B46V.mxf|valid=1|audio=0|codec=Avid DNx HQX (DNxHD 185X)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Avid DNx HQX|material=1|bits=10-bit
+ROW|V01.E690E719_DA479DA479C7EV.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E690E727_DA527DA52728BV.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E690E738_DA5F4DA5F4B4CV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E690E748_DA6B2DA6B2462V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E690E760_DA7DCDA7DC91BV.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC-Intra 100|material=1|bits=10-bit
+ROW|V01.E690E78B_DA9E2DA9E2D01V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 100|material=1|bits=10-bit
+ROW|V01.E690E7A6_DAB26DAB26AE8V.mxf|valid=1|audio=0|codec=XAVC HD Intra CBG Class 200|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XAVC HD Intra CBG Class 200|material=1|bits=10-bit
+ROW|V01.E690E7FD_DAF50DAF5005BV.mxf|valid=1|audio=0|codec=AVC Long GOP 6|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 6|material=1|bits=8-bit
+ROW|V01.E690E810_DB035DB035979V.mxf|valid=1|audio=0|codec=AVC Long GOP 12|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 12|material=1|bits=8-bit
+ROW|V01.E690E82D_DB192DB1923ECV.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E690E85B_DB3C6DB3C6B6BV.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E690E876_DB50ADB50A90BV.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E690E8D9_DB9B9DB9B9CC9V.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E690E903_DBBB7DBBB7E8EV.mxf|valid=1|audio=0|codec=AVC Long GOP 35|res=1920x1088|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=AVC Long GOP 35|material=1|bits=10-bit
+ROW|V01.E690E928_DBD76DBD761F5V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E690E93D_DBE71DBE71D4AV.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 2Mbps Proxy|material=1|bits=8-bit
+ROW|V01.E690E991_DC278DC2784E7V.mxf|valid=1|audio=0|codec=XDCAM EX 35|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM EX 35|material=1|bits=8-bit
+ROW|V01.E690E9C2_DC4CBDC4CB7AEV.mxf|valid=1|audio=0|codec=XDCAM HD 50|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=XDCAM HD 50|material=1|bits=8-bit
+ROW|V01.E690E9D6_DC5B9DC5B9983V.mxf|valid=1|audio=0|codec=DVCPro HD|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=DVCPro HD|material=1|bits=10-bit
+ROW|V01.E690EA0A_DC82FDC82F82CV.mxf|valid=1|audio=0|codec=JPEG 2000|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K HD|material=1|bits=10-bit
+ROW|V01.E6966CE5_A3C580A3C588BV.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 145)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E6967022_CB0BE0CB0BE6CV.mxf|valid=1|audio=0|codec=Avid DNx HQ (DNxHD 220)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E6967030_CBBA90CBBA935V.mxf|valid=1|audio=0|codec=Avid DNx HQX (DNxHD 220X)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQX|material=1|bits=10-bit
+ROW|V01.E69671C4_DEDE70DEDE787V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E69674FA_105D6105D63B7V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E696763D_11529115294D2V.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E6967651_11614116145A2V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E6967670_1178C1178C48BV.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 100|material=1|bits=10-bit
+ROW|V01.E69676B7_11AF211AF2D58V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 100|material=1|bits=10-bit
+ROW|V01.E6967DC1_1705D1705D0ADV.mxf|valid=1|audio=0|codec=XAVC HD Intra CBG Class 200|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 200|material=1|bits=10-bit
+ROW|V01.E6967E18_174791747975EV.mxf|valid=1|audio=0|codec=AVC Long GOP 6|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 6|material=1|bits=8-bit
+ROW|V01.E6967E2C_1757117571C45V.mxf|valid=1|audio=0|codec=AVC Long GOP 12|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 12|material=1|bits=8-bit
+ROW|V01.E6967E51_1772E1772E57CV.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E6967F59_183B5183B5129V.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E6967F8B_1860F1860FA6DV.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E6967FA8_18774187744DFV.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E69682F2_1AF611AF61D83V.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 35|material=1|bits=10-bit
+ROW|V01.E6968361_1B4A21B4A27ECV.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E6968378_1B5B61B5B6A96V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 2Mbps Proxy|material=1|bits=8-bit
+ROW|V01.E6968408_1BC8D1BC8D372V.mxf|valid=1|audio=0|codec=XDCAM EX 35|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM EX 35|material=1|bits=8-bit
+ROW|V01.E6968416_1BD321BD3225EV.mxf|valid=1|audio=0|codec=XDCAM HD 50|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM HD 50|material=1|bits=8-bit
+ROW|V01.E696842B_1BE361BE366C3V.mxf|valid=1|audio=0|codec=DVCPro HD|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DVCPro HD|material=1|bits=10-bit
+ROW|V01.E69684A9_1C42A1C42A121V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E69684C0_1C5401C5406FAV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E696852D_1CA6A1CA6A413V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E6968554_1CC421CC4282EV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E6968575_1CDDD1CDDD688V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=1920x2160|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E69685CF_1D2171D217E9EV.mxf|valid=1|audio=0|codec=JPEG 2000|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K HD|material=1|bits=10-bit
+ROW|V01.E696869E_1DBEC1DBECCC4V.mxf|valid=1|audio=0|codec=Avid DNx LB (DNxHD 36)|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx LB|material=1|bits=8-bit
+ROW|V01.E69686CC_1DE1C1DE1C9FCV.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 115)|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E69686E8_1DF711DF71BC5V.mxf|valid=1|audio=0|codec=Avid DNx HQ (DNxHD 175)|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E69687A8_1E8881E88858CV.mxf|valid=1|audio=0|codec=Avid DNx HQX (DNxHD 175X)|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQX|material=1|bits=10-bit
+ROW|V01.E69687E9_1EB9D1EB9DB98V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E69687F6_1EC3D1EC3D7B2V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E696880C_1ED481ED4834BV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E6968823_1EE611EE61A8AV.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E696883A_1EF721EF72BD8V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 100|material=1|bits=10-bit
+ROW|V01.E6968E6D_23AAC23AAC62AV.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC HD Intra CBG Class 100|material=1|bits=10-bit
+ROW|V01.E6968E95_23C9C23C9C87AV.mxf|valid=1|audio=0|codec=XAVC HD Intra CBG Class 200|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XAVC HD Intra CBG Class 200|material=1|bits=10-bit
+ROW|V01.E6968EE0_2402924029668V.mxf|valid=1|audio=0|codec=AVC-Intra HD 422|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra HD 422|material=1|bits=10-bit
+ROW|V01.E6968EF3_2410E2410ECB0V.mxf|valid=1|audio=0|codec=AVC Long GOP 6|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 6|material=1|bits=8-bit
+ROW|V01.E6968F32_244072440782EV.mxf|valid=1|audio=0|codec=AVC Long GOP 12|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 12|material=1|bits=8-bit
+ROW|V01.E6968F80_247B8247B8796V.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E6968F92_2489724897CA3V.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E6968FAA_249BD249BDA15V.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E6969008_24E2724E27AB9V.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E6969022_24F6E24F6EAE5V.mxf|valid=1|audio=0|codec=AVC Long GOP 35|res=1920x1088|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC Long GOP 35|material=1|bits=10-bit
+ROW|V01.E6969069_252C9252C952BV.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E6969077_25373253732E1V.mxf|valid=1|audio=0|codec=XDCAM EX 35|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM EX 35|material=1|bits=8-bit
+ROW|V01.E6969084_254132541343AV.mxf|valid=1|audio=0|codec=XDCAM HD 50|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM HD 50|material=1|bits=8-bit
+ROW|V01.E69690DC_2583A2583A776V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E6969108_25A5025A50304V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E6969130_25C3025C30180V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E696913E_25CE525CE52BBV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E696914C_25D8525D85F6DV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E696915A_25E3625E36DC6V.mxf|valid=1|audio=0|codec=JPEG 2000|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K HD|material=1|bits=10-bit
+ROW|V01.E696916A_25EF525EF5BE2V.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=1920x1080|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E696920E_266BF266BF7BCV.mxf|valid=1|audio=0|codec=Avid DNx LB (DNxHD 45)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx LB|material=1|bits=8-bit
+ROW|V01.E6969223_267B8267B8710V.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 145)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E6969230_2685B2685BD79V.mxf|valid=1|audio=0|codec=Avid DNx HQ (DNxHD 220)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E6969283_26C4226C423C9V.mxf|valid=1|audio=0|codec=Avid DNx HQX (DNxHD 220X)|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNx HQX|material=1|bits=10-bit
+ROW|V01.E69692B3_26E9326E9358AV.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E69692C2_26F3E26F3EFBFV.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E69692CD_26FCC26FCCAADV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E69692DA_2706B2706B01DV.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E69692EB_2713A2713A156V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra 100|material=1|bits=10-bit
+ROW|V01.E6969301_2723B2723B4F1V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 100|material=1|bits=10-bit
+ROW|V01.E6969317_2734A2734AEBEV.mxf|valid=1|audio=0|codec=XAVC HD Intra CBG Class 200|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XAVC HD Intra CBG Class 200|material=1|bits=10-bit
+ROW|V01.E696932B_2743E2743E714V.mxf|valid=1|audio=0|codec=AVC-Intra HD 422|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC-Intra HD 422|material=1|bits=10-bit
+ROW|V01.E696933E_27529275294A1V.mxf|valid=1|audio=0|codec=AVC Long GOP 6|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 6|material=1|bits=8-bit
+ROW|V01.E69BC5A1_1871E1871E408V.mxf|valid=1|audio=0|codec=AVC Long GOP 12|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 12|material=1|bits=8-bit
+ROW|V01.E69BC5BF_1888B1888B724V.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E69BC5EC_18AAC18AACC9BV.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 25|material=1|bits=10-bit
+ROW|V01.E69BC650_18F6518F650A2V.mxf|valid=1|audio=0|codec=AVC Long GOP 25|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 35|material=1|bits=10-bit
+ROW|V01.E69BC67F_191A8191A8458V.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E69BC695_192B1192B1A8FV.mxf|valid=1|audio=0|codec=AVC Long GOP 50|res=1920x1088|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=AVC Long GOP 50|material=1|bits=10-bit
+ROW|V01.E69BC6C3_194DA194DA6F9V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=480x270|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E69BC74F_19B8319B835BBV.mxf|valid=1|audio=0|codec=XDCAM EX 35|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM EX 35|material=1|bits=8-bit
+ROW|V01.E69BC76B_19CD019CD06FDV.mxf|valid=1|audio=0|codec=XDCAM HD 50|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=XDCAM HD 50|material=1|bits=8-bit
+ROW|V01.E69BC87E_1A9D71A9D7741V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E69BC88F_1AAAD1AAADC94V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E69BC8A8_1ABDD1ABDD59BV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E69BC935_1B2851B28565FV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E69BC94B_1B3911B391742V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E69BC980_1B6141B614459V.mxf|valid=1|audio=0|codec=JPEG 2000|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K HD|material=1|bits=10-bit
+ROW|V01.E69BC990_1B6DA1B6DA017V.mxf|valid=1|audio=0|codec=JPEG 2000 IMF|res=1920x1080|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K IMF YCrCb|material=1|bits=10-bit
+ROW|V01.E69BE077_2CCCF2CCCFC4CV.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 60)|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx SQ|material=1|bits=8-bit
+ROW|V01.E69BE8DD_332B7332B72BEV.mxf|valid=1|audio=0|codec=Avid DNx HQ (DNxHD 90)|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQ|material=1|bits=8-bit
+ROW|V01.E69BE8F5_333DD333DD876V.mxf|valid=1|audio=0|codec=Avid DNx HQX (DNxHD 90x)|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNx HQX|material=1|bits=10-bit
+ROW|V01.E69BE901_3347233472095V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E69CB087_CA9EBCA9EB008V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E69CB09B_CAADDCAADD7CBV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E69CB190_CB673CB673FE8V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E69CB19C_CB708CB708DF5V.mxf|valid=1|audio=0|codec=AVC/XAVC Intra 100|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=AVC-Intra 100|material=1|bits=10-bit
+ROW|V01.E69CB1AA_CB7B1CB7B19CFV.mxf|valid=1|audio=0|codec=H.264 Proxy|res=320x180|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E69CB573_CE5A0CE5A0628V.mxf|valid=1|audio=0|codec=XDCAM EX 35|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM EX 35|material=1|bits=8-bit
+ROW|V01.E69CB57C_CE619CE619171V.mxf|valid=1|audio=0|codec=XDCAM HD 50|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=XDCAM HD 50|material=1|bits=8-bit
+ROW|V01.E69CB587_CE69CCE69C11EV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 8bit|material=1|bits=8-bit
+ROW|V01.E69CB591_CE70CCE70CB91V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 10bit|material=1|bits=10-bit
+ROW|V01.E69CB59D_CE79ECE79E421V.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 12bit|material=1|bits=12-bit
+ROW|V01.E69CB5AB_CE848CE8485EDV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 32bit float|material=1|bits=Float
+ROW|V01.E69CB5C6_CE99ACE99AABAV.mxf|valid=1|audio=0|codec=Avid DNxUncompressed 2.14|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=Avid DNxUncompressed 422 16(2.14)bit|material=1|bits=Float
+ROW|V01.E69CB5EF_CEB88CEB88AC8V.mxf|valid=1|audio=0|codec=JPEG 2000|res=1280x720|fps=23.976|base=24|drop=0|dur=733|shows=00:00:30:13|clip=J2K HD|material=1|bits=10-bit
+ROW|V01.E69CED6C_F8CF2F8CF2246V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=720x486|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E69CED76_F8D71F8D71A10V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=720x486|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E69CED81_F8DF1F8DF1DCBV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=720x486|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E69CED8A_F8E5DF8E5DD42V.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=720x486|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E69CED98_F8F08F8F08A76V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=352x240|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E69CEDC3_F9117F9117290V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=352x240|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=H264 1500Kps Proxy|material=1|bits=8-bit
+ROW|V01.E69CEDE0_F926CF926C983V.mxf|valid=1|audio=0|codec=DV 25 411 i(NTSC)|res=720x480|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DV 25 411|material=1|bits=8-bit
+ROW|V01.E69CEDFB_F93B5F93B54A0V.mxf|valid=1|audio=0|codec=DV 50 i(NTSC)|res=720x480|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=DV 50|material=1|bits=8-bit
+ROW|V01.E69CEE12_F94CEF94CEE65V.mxf|valid=1|audio=0|codec=JPEG 2000|res=720x496|fps=29.97|base=30|drop=0|dur=917|shows=00:00:30:17|clip=J2K SD|material=1|bits=10-bit
+ROW|V01.E69CEE5E_F9868F98687D7V.mxf|valid=1|audio=0|codec=Apple ProRes Proxy|res=720x576|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 Proxy|material=1|bits=10-bit
+ROW|V01.E69CEE68_F98E3F98E32C3V.mxf|valid=1|audio=0|codec=Apple ProRes LT|res=720x576|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 LT|material=1|bits=10-bit
+ROW|V01.E69CEE71_F9952F9952B8DV.mxf|valid=1|audio=0|codec=Apple ProRes 422|res=720x576|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422|material=1|bits=10-bit
+ROW|V01.E69CEE7B_F99D0F99D03CEV.mxf|valid=1|audio=0|codec=Apple ProRes HQ|res=720x576|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=Apple ProRes 422 HQ|material=1|bits=10-bit
+ROW|V01.E69CEE89_F9A77F9A77023V.mxf|valid=1|audio=0|codec=H.264 Proxy|res=352x288|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=H264 800Kps Proxy|material=1|bits=8-bit
+ROW|V01.E69CEE95_F9B01F9B01A50V.mxf|valid=1|audio=0|codec=JPEG 2000|res=720x592|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=J2K SD|material=1|bits=10-bit
+ROW|zT_ßt_1080i_50_seqDD802366V.mxf|valid=1|audio=0|codec=JPEG 2000|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=zT_ßt_1080i_50_seq,Color_Correction+1|material=1|bits=10-bit
+ROW|zT_ßt_1080i_50_seqDD866C6BV.mxf|valid=1|audio=0|codec=DVCPro HD|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=zT_ßt_1080i_50_seq,1.85_Mask+2|material=1|bits=10-bit
+ROW|zT_ßt_1080i_50_seqDD8E459FV.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 120)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=zT_ßt_1080i_50_seq,10101010+3|material=1|bits=8-bit
+ROW|zT_ßt_1080i_50_seqDD91EF60V.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 120)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=zT_ßt_1080i_50_seq,14_9_Letterbox+4|material=1|bits=8-bit
+ROW|zT_ßt_1080i_50_seqDD93DBDFV.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 120)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=zT_ßt_1080i_50_seq,3D_Page_Fold+5|material=1|bits=8-bit
+ROW|zT_ßt_1080i_50_seqEBFBCAFEV.mxf|valid=1|audio=0|codec=Avid DNx SQ (DNxHD 120)|res=1920x1080|fps=25|base=25|drop=0|dur=765|shows=00:00:30:15|clip=zT_ßt_1080i_50_seq,AniMatte+6|material=1|bits=8-bit

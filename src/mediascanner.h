@@ -1,107 +1,36 @@
 #pragma once
 
+#include "backgroundjob.h"
 #include "mdbparser.h"
 #include "mediafile.h"
-#include "mxfparser.h"
 #include "pmrparser.h"
 #include <QElapsedTimer>
-#include <QFuture>
+#include <QHash>
 #include <QMutex>
 #include <QObject>
-#include <QPointer>
-#include <QThread>
-#include <QtConcurrent>
+#include <QPair>
+#include <QString>
+#include <QVector>
 #include <atomic>
-
-// MARK: - Forward declarations
-
-class ScannerWorker;
 
 // MARK: - LogMsg
 
-/// One coalesced log line. At file scope because
+/// One coalesced log line. File-scope because
 /// MediaScanner::scanLogBatch takes a QVector<LogMsg> and moc needs
-/// the full type visible at signal-declaration time.
+/// the full type at signal-declaration time.
 ///
-/// `level`: 0=info, 1=warn, 2=error, 3=success. `module` is the short
-/// tag rendered in the console ("scanner", "mxf", "pmr", "mdb").
+/// `module` is the console tag ('scanner', 'mxf', 'pmr', 'mdb').
 struct LogMsg
 {
-	int level = 0;
+	QtMsgType level = QtInfoMsg;
 	QString module;
 	QString message;
-};
-
-// MARK: - MediaScanner
-
-/// Walks volumes, locates `Avid MediaFiles/MXF` roots, reads per-folder
-/// `msmFMID.pmr` / `msmMMOB.mdb` databases, and parses MXF headers to
-/// assemble a MediaFile per essence file.
-///
-/// Scan runs on a worker QThread we own. Kept the explicit-thread
-/// pattern over BackgroundJob because the scanner needs per-folder
-/// parallelism via QtConcurrent::mapped, which the simpler one-shot
-/// job manager doesn't expose.
-///
-/// Cancellation is cooperative: cancelScan() flips a flag the worker
-/// checks at folder and file boundaries.
-class MediaScanner : public QObject
-{
-	Q_OBJECT
-public:
-	struct Options
-	{
-		QStringList volumePaths;
-		bool parseMxfHeaders = true; ///< Off skips the slow KLV walk (Stage 2).
-	};
-
-	explicit MediaScanner(QObject *parent = nullptr);
-	~MediaScanner();
-
-	// MARK: - Public API
-
-	/// No-op if a scan is already running (CAS against `m_running`
-	/// guards rapid double-clicks).
-	void startScan(const Options &options);
-
-	/// Safe to call from any thread.
-	void cancelScan();
-
-	bool isRunning() const
-	{
-		return m_running.load();
-	}
-
-signals:
-
-	// MARK: - Progress signals
-
-	void scanProgress(const QString &phase, int current, int total,
-	                  const QString &currentPath);
-
-	/// Up to ~50 lines per batch or every ~100 ms, whichever comes
-	/// first. Keeps the console readable and the UI event loop
-	/// unburdened during big scans.
-	void scanLogBatch(const QVector<LogMsg> &batch);
-
-	void scanFinished(const QVector<MediaFile> &results);
-
-private:
-	QThread *m_thread = nullptr;
-
-	/// QPointer auto-clears when the worker self-destructs on its own
-	/// thread, so cancelScan from the UI thread can safely race with
-	/// the worker's natural shutdown.
-	QPointer<ScannerWorker> m_worker;
-
-	std::atomic<bool> m_running{false};
 };
 
 // MARK: - ScanTask
 
 /// One unit of folder-level work submitted to QtConcurrent::mapped.
-/// Captures everything the per-folder parser needs without reaching
-/// back into the worker.
+/// Self-contained so the parser doesn't reach back into the scanner.
 struct ScanTask
 {
 	QString folderPath;
@@ -112,93 +41,144 @@ struct ScanTask
 
 // MARK: - FolderResult
 
-/// What a per-folder task produces. Logs are buffered here (rather
-/// than emitted from the pool thread directly) so the main worker can
-/// drain them in input order — keeps the console deterministic.
+/// What a per-folder task produces. Logs are buffered here
+/// so the orchestrator can drain them in input order.
 struct FolderResult
 {
 	QVector<MediaFile> files;
 	QVector<LogMsg> logs;
 };
 
-// MARK: - ScannerWorker
+// MARK: - MediaScanner
 
-/// The actual scanning logic. Lives on its own QThread, owned and
-/// managed by MediaScanner.
-class ScannerWorker : public QObject
+/// Walks volumes, finds `Avid MediaFiles/MXF` roots, reads per-folder
+/// `msmFMID.pmr` / `msmMMOB.mdb`, and parses MXF headers.
+/// One MediaFile per essence file.
+///
+/// Cancellation is cooperative; checked at folder/file boundaries
+/// so work in flight isn't left half-done.
+class MediaScanner : public QObject
 {
 	Q_OBJECT
 public:
-	explicit ScannerWorker(const MediaScanner::Options &options);
-	void cancel();
+	struct Options
+	{
+		QStringList volumePaths;
+	};
 
-public slots:
-	void process();
+	explicit MediaScanner(QObject *parent = nullptr);
+
+	/// Joins the scan worker before any member unwinds. `m_job` is declared
+	/// first (so destroyed last), and the worker touches m_logMutex /
+	/// m_mdbMapsByFolder / m_pendingLogs etc. — left to the default dtor it
+	/// would run on against members already gone. shutdown() closes that.
+	~MediaScanner() override { m_job.shutdown(); }
+
+	// MARK: - Public API
+
+	/// No-op if a scan is already running; rapid double-clicks
+	/// don't stack.
+	void startScan(const Options &options);
+
+	/// Safe to call from any thread.
+	void cancelScan();
 
 signals:
-	void progress(const QString &phase, int current, int total,
-	              const QString &currentPath);
 
-	void logBatch(const QVector<LogMsg> &batch);
+	// MARK: - Progress signals
 
-	void finished(const QVector<MediaFile> &results);
+	void scanProgress(int current, int total, const QString &currentPath);
+
+	/// Enumeration and parse are done; post-walk finalisation (MDB recovery,
+	/// tally) is running. The UI shows an indeterminate "Finalising..." so a
+	/// slow finalise on a big or networked share can't look like a frozen 100%.
+	void scanFinalising();
+
+	/// Coalesces up to ~50 lines or ~100 ms, whichever hits first.
+	/// Keeps the UI smooth under heavy load.
+	void scanLogBatch(const QVector<LogMsg> &batch);
+
+	void scanFinished(const QVector<MediaFile> &results);
 
 private:
+	// MARK: - Scan stages
+	//
+	// Everything below runs off-thread (BackgroundJob worker or
+	// QtConcurrent pool). Don't call from UI handlers.
+
 	void doScan();
 
-	/// Thread-safe log append. Both the worker thread and QtConcurrent
-	/// pool threads call this via the buffered fast-path in
-	/// processFolderTask.
-	void emitLog(int level, const QString &module, const QString &msg);
+	/// The one closing-up routine for every scan exit — cancel doors and
+	/// the normal finish alike — so per-scan state (over-cap summary,
+	/// cached MDB maps) can't leak into the next scan.
+	void concludeScan(const QVector<MediaFile> &files, bool cancelled);
 
-	/// Drain pending logs as one logBatch emit. Called when the batch
-	/// is full, when the age threshold hits, and once at end-of-scan
-	/// so nothing gets stranded.
-	void flushLogs();
-
-	QVector<MediaFile> scanVolume(const QString &volumePath,
-	                              const QString &volumeName);
-	QVector<MediaFile> scanMxfRoot(const QString &mxfRootPath,
-	                               const QString &volumeName,
-	                               const QString &volumePath);
+	QVector<MediaFile> scanVolume(const QString &volumePath, const QString &volumeName);
+	QVector<MediaFile> scanMxfRoot(const QString &mxfRootPath, const QString &volumeName,
+								   const QString &volumePath);
 
 	FolderResult processFolderTask(const ScanTask &task);
 
+	/// `folderDbIssue` is the folder-level database state computed by
+	/// processFolderTask; it decides whether an unmatched file is a verified
+	/// "No reference" or an unverifiable "No database".
 	MediaFile buildMediaFile(const QString &filePath, const QString &volumeName,
-	                         const QString &volumePath,
-	                         const QString &folderNumber,
-	                         const PmrParser::ProjectMaps &pmrMaps,
-	                         const MdbParser::RecordMap &mdbMap);
+							 const QString &volumePath, const QString &folderNumber,
+							 const PmrParser::ProjectMaps &pmrMaps,
+							 const MdbParser::RecordMap &mdbMap,
+							 MediaFile::DbIssue folderDbIssue);
 
-	/// Stage 2: parses every collected MXF file in parallel after the
-	/// folder walk. Most folders are tiny, so per-folder parallelism
-	/// alone starves cores.
+	/// Stage 2. Per-folder parallelism alone starves cores on small
+	/// folders, so parse every MXF in parallel after the walk.
 	void parseMxfHeadersConcurrently(QVector<MediaFile> &files);
 
-	bool isNonPortableFilename(const QString &name) const;
-	static bool canReadPath(const QString &path);
-
-	MediaScanner::Options m_options;
-	std::atomic<bool> m_cancel{false};
+	/// Stage 3. Re-join files the local databases couldn't attribute
+	/// ("No reference" and "No database" alike — a readable MDB can still
+	/// vouch for a file whose PMR was corrupt) against their folder's
+	/// cached MDB via the MXF UMID. Mostly no-op outside Interplay or
+	/// database corruption; sparse, so cheap.
+	void recoverUnreferencedFromMdb(QVector<MediaFile> &files);
 
 	// MARK: - Log batching
 
-	/// Guarded by m_logMutex. Both the worker thread and QtConcurrent
-	/// pool threads append via emitLog. The swap-then-emit dance in
-	/// flushLogs minimises mutex hold time.
+	/// Thread-safe log append. Called from the orchestrator and
+	/// from QtConcurrent pool threads.
+	void emitLog(QtMsgType level, const QString &module, const QString &msg);
+
+	/// Drain pending logs. Fires when batch fills, age limit hits, or
+	/// at scan end.
+	void flushLogs();
+
+	static bool isNonPortableFilename(const QString &name);
+	static bool canReadPath(const QString &path);
+
+	// MARK: - State
+
+	BackgroundJob m_job{this};
+	std::atomic<bool> m_running{false};
+
+	Options m_options;
+
+	/// Guarded by m_logMutex. Orchestrator + QtConcurrent pool threads
+	/// all append via emitLog. The swap-then-emit dance in flushLogs
+	/// keeps the mutex hold short.
 	QMutex m_logMutex;
 	QVector<LogMsg> m_pendingLogs;
 
-	/// Scan-scoped (member, not thread_local) so it dies with the
-	/// scan rather than persisting in pool threads across rescans.
+	/// Scan-scoped (member, not thread_local); dies with the scan
+	/// instead of sticking around in pool threads across rescans.
 	QElapsedTimer m_flushTimer;
 	qint64 m_lastFlushElapsed = 0;
 
-	// MARK: - Over-cap folder tracking
-
-	/// Watch list for folders over 4000 files (close to Avid's 5000
-	/// ceiling). Pool threads append under m_overfullMutex. Drained
-	/// into one summary line at end-of-scan.
+	/// Watch list for folders over kFolderWarn (4,500) files, near Avid's
+	/// 5,000 ceiling. Pool threads append under m_overfullMutex. Drained to
+	/// one summary line at end of scan.
 	QMutex m_overfullMutex;
 	QVector<QPair<QString, int>> m_overfullFolders;
+
+	/// Cached for Stage 3's UMID join. Keyed through PathKey::normalise
+	/// so Stage 1 (QDir::filePath) and Stage 3 (QFileInfo::absolutePath)
+	/// can't drift on the same folder identity.
+	QMutex m_mdbMapsMutex;
+	QHash<QString, MdbParser::RecordMap> m_mdbMapsByFolder;
 };

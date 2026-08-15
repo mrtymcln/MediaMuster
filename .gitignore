@@ -82,3 +82,7 @@ build/
 .vscode
 /.claude
 /.vscode
+# Compiled review probes (extensionless; rebuild before every sweep — see review/README.md)
+review/probes/mxfsweep
+review/probes/qtprobe
+review/probes/realpathtest

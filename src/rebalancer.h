@@ -1,5 +1,6 @@
 #pragma once
 
+#include "avidlimits.h"
 #include "backgroundjob.h"
 #include "mediafile.h"
 #include "rebalanceplan.h"
@@ -17,26 +18,28 @@
 ///
 /// Split in two halves:
 ///
-///   1. computePlan — synchronous pure function over indexed files
+///   1. computePlan: synchronous pure function over indexed files
 ///      plus current folder state on disk. Produces a RebalancePlan
 ///      describing every move, every new folder, every warning.
 ///      Nothing touched on disk yet.
 ///
-///   2. executeAsync — runs the approved plan on a worker thread.
+///   2. executeAsync: runs the approved plan on a worker thread.
 ///      Renames files into their target folders, deletes stale
 ///      per-folder .mdb / .pmr so Avid rebuilds them, and bookends
 ///      the run with a pre-flight probe rename to abort cleanly if a
 ///      donor folder is locked by an open Avid.
 ///
-/// Composition relatives stay together. Bucket by compositionMobId
-/// and treat each bucket as atomic — cancel fires between buckets,
+/// Relatives stay together. Bucket by masterMobId
+/// and treat each bucket as atomic; cancel fires between buckets,
 /// never mid-bucket.
 class Rebalancer : public QObject
 {
 	Q_OBJECT
 public:
-	/// Pack folders up to (not past) this — 1 file of slack below.
-	static constexpr int kFolderCap = 4999;
+	/// Pack folders up to (not past) this; one file below Avid's hard
+	/// ceiling. Sourced from AvidLimits so the cap and the ceiling can't
+	/// drift apart.
+	static constexpr int kFolderCap = AvidLimits::kFolderRecommend;
 
 	explicit Rebalancer(QObject *parent = nullptr);
 
@@ -44,35 +47,36 @@ public:
 
 	// MARK: - Planning
 
-	static RebalancePlan computePlan(const QString &mxfRoot,
-	                                 const QString &volumeLabel,
-	                                 const QVector<MediaFile> &files);
+	static RebalancePlan computePlan(const QString &mxfRoot, const QString &volumeLabel,
+									 const QVector<MediaFile> &files);
 
 	static std::optional<FolderId> parseFolderName(const QString &name);
 
+	/// The source folder a MoveOp came from, recomputed from its srcPath
+	/// (MoveOp doesn't store the FolderId). nullopt when the parent dir
+	/// isn't a conforming Avid folder name.
+	static std::optional<FolderId> srcFolderOf(const QString &srcPath);
+
 	// MARK: - Execution
 
-	/// Only one execute is in flight per instance — a second call
+	/// Only one execute is in flight per instance; a second call
 	/// cancels and joins the previous worker before starting the new one.
 	void executeAsync(const RebalancePlan &plan);
 
-	/// Checked at composition-group boundaries so relatives stay
-	/// together — never leave half a master clip's essence split
+	/// Checked at relatives-group boundaries so relatives stay
+	/// together; never leave half a master clip's essence split
 	/// across folders.
-	void cancel()
-	{
-		m_job.cancel();
-	}
+	void cancel() { m_job.cancel(); }
 
 signals:
 
 	// MARK: - Progress signals
 
 	void progress(int current, int total, const QString &detail);
-	void log(int level, const QString &message);
+	void log(QtMsgType level, const QString &message);
 	void finished(int succeeded, int failed, bool cancelled);
 
-	/// No moves performed and no `finished` will follow — the dialog
+	/// No moves performed and no `finished` will follow; the dialog
 	/// treats this as a terminal state on its own.
 	void aborted(const QString &reason);
 

@@ -4,16 +4,16 @@
 
 namespace Theme
 {
-inline QString monoFont()
-{
+	inline QString monoFont()
+	{
 #ifdef Q_OS_MAC
-	return QStringLiteral("Menlo");
+		return QStringLiteral("Menlo");
 #else // Q_OS_WIN
-	return QStringLiteral("Consolas");
+		return QStringLiteral("Consolas");
 #endif
-}
-inline int monoFontSize()
-{
-	return 12;
-}
+	}
+	inline int monoFontSize()
+	{
+		return 12;
+	}
 } // namespace Theme

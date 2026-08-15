@@ -15,9 +15,9 @@ class ProgressThrottle
 {
 public:
 	explicit ProgressThrottle(qint64 minIntervalMs = 33)
-	    : minIntervalMs_(minIntervalMs)
+		: m_minIntervalMs(minIntervalMs)
 	{
-		timer_.start();
+		m_timer.start();
 	}
 
 	/// Returns true at most once per `minIntervalMs` window across
@@ -26,16 +26,16 @@ public:
 	/// positive response?'.
 	bool shouldEmit()
 	{
-		const qint64 nowMs = timer_.elapsed();
-		qint64 lastMs = lastEmitMs_.load(std::memory_order_relaxed);
-		if ((nowMs - lastMs) < minIntervalMs_)
+		const qint64 nowMs = m_timer.elapsed();
+		qint64 lastMs = m_lastEmitMs.load(std::memory_order_relaxed);
+		if ((nowMs - lastMs) < m_minIntervalMs)
 			return false;
-		return lastEmitMs_.compare_exchange_strong(
-		    lastMs, nowMs, std::memory_order_relaxed);
+		return m_lastEmitMs.compare_exchange_strong(
+			lastMs, nowMs, std::memory_order_relaxed);
 	}
 
 private:
-	QElapsedTimer timer_;
-	std::atomic<qint64> lastEmitMs_{0};
-	qint64 minIntervalMs_ = 33;
+	QElapsedTimer m_timer;
+	std::atomic<qint64> m_lastEmitMs{0};
+	qint64 m_minIntervalMs;
 };

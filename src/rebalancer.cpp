@@ -1,22 +1,26 @@
 #include "rebalancer.h"
+#include "avidlayout.h"
+#include "formatutil.h"
+#include "opjournal.h"
+#include "probesweep.h"
+#include "progressthrottle.h"
 
 #include <QDir>
-#include <QElapsedTimer>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
 #include <QHash>
-#include <QRegularExpression>
 #include <QSet>
 #include <QThread>
 #include <QUuid>
 
 #include <algorithm>
-#include <climits>
+#include <limits>
 
 // MARK: - Construction
 
 Rebalancer::Rebalancer(QObject *parent)
-    : QObject(parent)
+	: QObject(parent)
 {
 }
 
@@ -36,59 +40,67 @@ std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
 	FolderId fid{prefix, n};
 
 	// Round-trip guard. `.5`, `01`, `MartysiMac.005` all parse as
-	// `n=5` but don't survive a canonical re-render — rejecting
-	// them keeps us from "rebalancing" a folder into a name that
+	// `n=5` but don't survive a canonical re-render; rejecting
+	// them keeps us from 'rebalancing' a folder into a name that
 	// doesn't match what was on disk.
 	if (fid.display() != name)
 		return std::nullopt;
 	return fid;
 }
 
+std::optional<FolderId> Rebalancer::srcFolderOf(const QString &srcPath)
+{
+	// dir().dirName() pulls the parent folder name straight off, no second
+	// QFileInfo allocation.
+	return parseFolderName(QFileInfo(srcPath).dir().dirName());
+}
+
 // MARK: - Planning helpers
 
 namespace
 {
-// Prefix for synthetic composition keys assigned to loose files
-// (no compositionMobId). Lets us detect 'this was a loose file'
-// later via a cheap startsWith check.
-inline constexpr QLatin1String kLoneCompositionPrefix("__lone__:");
+	/// True when a directory entry occupies Avid's per-folder file budget.
+	/// In an `Avid MediaFiles/MXF/<n>` folder only MXF essence counts:
+	/// Avid's own databases, dot-hidden files, shell junk, and stray
+	/// non-MXF files are not media. Counting them inflated the preview's
+	/// per-folder count and stole slots from the kFolderCap packing.
+	/// The name rule itself lives in AvidLayout, shared with the scanner
+	/// so the table and the rebalance preview count the same files.
+	bool countsTowardFolderBudget(const QString &fileName)
+	{
+		return AvidLayout::countsAsEssenceName(fileName);
+	}
 
-// Loose files get a unique synthetic key so each becomes a
-// one-member group; composition-bound files share the MOB id of
-// their master clip. Single implementation; planner-side and
-// executor-side overloads delegate here so the format can't drift.
-QString compositionKey(const QString &compMobId, const QString &fallbackPath)
-{
-	return compMobId.isEmpty()
-	           ? kLoneCompositionPrefix + fallbackPath
-	           : compMobId;
-}
+	// Prefix for synthetic relatives keys assigned to loose files
+	// (no masterMobId). Lets us detect 'this was a loose file'
+	// later via a cheap startsWith check.
+	inline constexpr QLatin1String kLoneKeyPrefix("__lone__:");
 
-QString compositionKey(const MediaFile &mf)
-{
-	return compositionKey(mf.compositionMobId, mf.filePath);
-}
+	// Loose files get a unique synthetic key so each becomes a
+	// one-member group; files with a master MOB share their master
+	// clip's ID. Single implementation; planner-side and
+	// executor-side overloads delegate here so the format can't drift.
+	QString relativesKey(const QString &masterMobId, const QString &fallbackPath)
+	{
+		return masterMobId.isEmpty() ? kLoneKeyPrefix + fallbackPath : masterMobId;
+	}
 
-QString compositionKey(const MoveOp &op)
-{
-	return compositionKey(op.compositionMobId, op.srcPath);
-}
+	QString relativesKey(const MediaFile &mf)
+	{
+		return relativesKey(mf.masterMobId, mf.filePath);
+	}
 
-// MoveOp doesn't carry the source FolderId — recompute it from the
-// source path. QFileInfo::dir().dirName() gives the parent folder
-// name directly, no second QFileInfo allocation.
-std::optional<FolderId> srcFolderOf(const QString &srcPath)
-{
-	return Rebalancer::parseFolderName(
-	    QFileInfo(srcPath).dir().dirName());
-}
+	QString relativesKey(const MoveOp &op)
+	{
+		return relativesKey(op.masterMobId, op.srcPath);
+	}
+
 } // namespace
 
 // MARK: - Plan computation
 
-RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
-                                      const QString &volumeLabel,
-                                      const QVector<MediaFile> &files)
+RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &volumeLabel,
+									  const QVector<MediaFile> &files)
 {
 	RebalancePlan plan;
 	plan.mxfRoot = mxfRoot;
@@ -96,24 +108,28 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 
 	QDir mxfDir(mxfRoot);
 	if (!mxfDir.exists())
-	{
-		plan.warnings.append(
-		    QObject::tr("MXF root not found: %1").arg(mxfRoot));
 		return plan;
-	}
 
 	// MARK: Snapshot current folder state on disk
 
 	QHash<QString, QSet<int>> existingByPrefix; // prefix → {n}
 	QHash<FolderId, int> realCount;
 
-	const QStringList subdirs = mxfDir.entryList(
-	    QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+	const QStringList subdirs = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 	for (const QString &name : subdirs)
 	{
-		const int onDiskCount = QDir(mxfDir.filePath(name))
-		                            .entryList(QDir::Files | QDir::NoDotAndDotDot)
-		                            .count();
+		// Count lazily via QDirIterator instead of materialising the whole
+		// filename list — Avid folders run to thousands of files, and this
+		// throwaway list would be one QString allocation per file. Only
+		// files that occupy Avid's budget count (see countsTowardFolderBudget).
+		int onDiskCount = 0;
+		QDirIterator folderFiles(mxfDir.filePath(name), QDir::Files | QDir::NoDotAndDotDot);
+		while (folderFiles.hasNext())
+		{
+			folderFiles.next();
+			if (countsTowardFolderBudget(folderFiles.fileName()))
+				++onDiskCount;
+		}
 
 		const auto parsed = parseFolderName(name);
 		FolderState fs;
@@ -129,15 +145,33 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		plan.folders.append(fs);
 	}
 
-	// MARK: Tally bytes per folder from the indexed file set
+	// MARK: Pre-parse each file's mxfFolder once
 
-	// Only indexed files contribute — the before/after preview
-	// shows delta bytes, so un-indexed files don't matter.
+	// parseFolderName tokenises "MartysiMac.42" into prefix+n on every
+	// call; doing it inline in each per-file loop below adds up to
+	// ~250k allocations on a 50k-file project. Pair each file with
+	// its parsed folder here so the inner loops can read directly.
+	// Files in out-of-scope folders (Quarantined, malformed names)
+	// are dropped; they're excluded from rebalancing anyway.
+	struct IndexedMedia
+	{
+		const MediaFile *file;
+		FolderId folder;
+	};
+
+	// MARK: Tally bytes + bucket files into relatives groups
+
+	// One pass over `files` does both: tallies bytes per source folder,
+	// and groups files by master MOB so relatives stay together.
 	QHash<FolderId, qint64> realBytes;
+	QHash<QString, QVector<IndexedMedia>> bucketed;
 	for (const auto &mf : files)
 	{
-		if (const auto fid = parseFolderName(mf.mxfFolder))
-			realBytes[*fid] += mf.sizeBytes;
+		const auto parsed = parseFolderName(mf.mxfFolder);
+		if (!parsed)
+			continue;
+		realBytes[*parsed] += mf.sizeBytes;
+		bucketed[relativesKey(mf)].append({&mf, *parsed});
 	}
 	for (auto &fs : plan.folders)
 	{
@@ -145,28 +179,17 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 			fs.bytes = realBytes.value(fs.id, 0);
 	}
 
-	// MARK: Bucket files into composition groups
-
-	// Relatives of one master clip stay together. Out-of-scope
-	// folders (e.g. Quarantined Files) are excluded — those stay
-	// put no matter how badly they push the file count up.
-	QHash<QString, QVector<MediaFile>> bucketed;
-	for (const auto &mf : files)
-	{
-		if (parseFolderName(mf.mxfFolder))
-			bucketed[compositionKey(mf)].append(mf);
-	}
-
 	// MARK: Build group descriptors with chosen home folder
 
-	// One composition (or one lone file) plus the `<prefix, n>`
-	// we want to consolidate it into.
+	// One relatives group (or one lone file) plus the `<prefix, n>` we
+	// want to consolidate it into. Members carry their pre-parsed
+	// FolderId so all downstream loops are re-parse-free.
 	struct Group
 	{
 		QString homePrefix;
 		int homeN = 1;
-		QString compositionMobId;
-		QVector<MediaFile> members;
+		QString masterMobId;
+		QVector<IndexedMedia> members;
 	};
 	QVector<Group> groups;
 	groups.reserve(bucketed.size());
@@ -175,17 +198,13 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 	{
 		Group g;
 		g.members = it.value();
-		g.compositionMobId =
-		    it.key().startsWith(kLoneCompositionPrefix) ? QString() : it.key();
+		g.masterMobId = it.key().startsWith(kLoneKeyPrefix) ? QString() : it.key();
 
 		QHash<QString, int> prefixCount;
 		for (const auto &m : g.members)
-		{
-			if (const auto fid = parseFolderName(m.mxfFolder))
-				prefixCount[fid->prefix] += 1;
-		}
+			prefixCount[m.folder.prefix] += 1;
 
-		// Most-populous prefix wins; tie broken by sorted prefix —
+		// Most-populous prefix wins; tie broken by sorted prefix, which
 		// keeps the home choice deterministic so reruns on the same
 		// project produce the same plan.
 		QStringList prefixes = prefixCount.keys();
@@ -203,29 +222,13 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		// Home N = smallest N within the home prefix that contains
 		// a member. Prefer existing folders over new ones, and lower
 		// numbers over higher.
-		int home = INT_MAX;
+		int home = std::numeric_limits<int>::max();
 		for (const auto &m : g.members)
 		{
-			const auto fid = parseFolderName(m.mxfFolder);
-			if (fid && fid->prefix == g.homePrefix)
-				home = qMin(home, fid->n);
+			if (m.folder.prefix == g.homePrefix)
+				home = qMin(home, m.folder.n);
 		}
-		g.homeN = (home == INT_MAX ? 1 : home);
-
-		// Cross-host-prefix groups are rare — usually an editor moved
-		// bins between systems by hand. Surface it.
-		if (prefixes.size() > 1)
-		{
-			plan.warnings.append(QObject::tr(
-			                         "Composition '%1' has members in multiple host prefixes; "
-			                         "consolidating into '%2'.")
-			                         .arg(g.compositionMobId.isEmpty()
-			                                  ? QStringLiteral("(loose)")
-			                                  : g.compositionMobId,
-			                              g.homePrefix.isEmpty()
-			                                  ? QStringLiteral("(none)")
-			                                  : g.homePrefix));
-		}
+		g.homeN = (home == std::numeric_limits<int>::max() ? 1 : home);
 
 		groups.append(g);
 	}
@@ -236,14 +239,14 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 	// Larger first so we don't waste capacity by scattering small
 	// groups into a folder that a 4000-file group then can't fit.
 	std::sort(groups.begin(), groups.end(),
-	          [](const Group &a, const Group &b)
-	          {
-		          if (a.homePrefix != b.homePrefix)
-			          return a.homePrefix < b.homePrefix;
-		          if (a.homeN != b.homeN)
-			          return a.homeN < b.homeN;
-		          return a.members.size() > b.members.size();
-	          });
+			  [](const Group &a, const Group &b)
+			  {
+				  if (a.homePrefix != b.homePrefix)
+					  return a.homePrefix < b.homePrefix;
+				  if (a.homeN != b.homeN)
+					  return a.homeN < b.homeN;
+				  return a.members.size() > b.members.size();
+			  });
 
 	// MARK: Pack groups into folders
 
@@ -284,14 +287,14 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		return id;
 	};
 
-	// No-op when src == dest (already where we want it).
-	auto pushOp = [&](const MediaFile &m, FolderId dest)
+	// No-op when src == dest (already where we want it). Takes
+	// IndexedMedia so the source folder is free; no re-parse.
+	auto pushOp = [&](const IndexedMedia &m, FolderId dest)
 	{
-		const auto src = parseFolderName(m.mxfFolder);
-		if (!src || *src == dest)
+		if (m.folder == dest)
 			return;
-		plan.ops.append({m.filePath, dest, m.compositionMobId, m.sizeBytes});
-		projected[*src] -= 1;
+		plan.ops.append({m.file->filePath, dest, m.file->masterMobId, m.file->sizeBytes});
+		projected[m.folder] -= 1;
 		projected[dest] += 1;
 	};
 
@@ -301,19 +304,10 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		const FolderId home{prefix, g.homeN};
 		const int size = static_cast<int>(g.members.size());
 
-		// Edge case: composition >= kFolderCap. Deterministic split
+		// Edge case: relatives group >= kFolderCap. Deterministic split
 		// across new folders.
 		if (size >= kFolderCap)
 		{
-			plan.warnings.append(QObject::tr(
-			                         "Composition '%1' has %2 streams (≥ %3); splitting "
-			                         "across multiple folders.")
-			                         .arg(g.compositionMobId.isEmpty()
-			                                  ? QStringLiteral("(loose)")
-			                                  : g.compositionMobId)
-			                         .arg(size)
-			                         .arg(kFolderCap));
-
 			int idx = 0;
 			while (idx < size)
 			{
@@ -323,8 +317,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 					target = home;
 				else
 					target = allocateNewFolder(prefix);
-				const int slack =
-				    kFolderCap - projected.value(target, 0);
+				const int slack = kFolderCap - projected.value(target, 0);
 				const int chunk = qMin(slack, size - idx);
 				for (int i = 0; i < chunk; ++i, ++idx)
 					pushOp(g.members[idx], target);
@@ -335,13 +328,12 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		int membersAtHome = 0;
 		for (const auto &m : g.members)
 		{
-			const auto fid = parseFolderName(m.mxfFolder);
-			if (fid && *fid == home)
+			if (m.folder == home)
 				++membersAtHome;
 		}
 		const int neededAtHome = size - membersAtHome;
 
-		// Already entirely at home and home isn't over kFolderCap —
+		// Already entirely at home and home isn't over kFolderCap, so
 		// leave it. Common case for a mildly fragmented project.
 		if (membersAtHome == size && projected.value(home, 0) <= kFolderCap)
 			continue;
@@ -351,8 +343,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 		{
 			for (const auto &m : g.members)
 			{
-				const auto fid = parseFolderName(m.mxfFolder);
-				if (fid && *fid != home)
+				if (m.folder != home)
 					pushOp(m, home);
 			}
 			continue;
@@ -382,8 +373,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 
 		for (const auto &m : g.members)
 		{
-			const auto fid = parseFolderName(m.mxfFolder);
-			if (!fid || *fid != dest)
+			if (m.folder != dest)
 				pushOp(m, dest);
 		}
 	}
@@ -425,7 +415,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot,
 void Rebalancer::executeAsync(const RebalancePlan &plan)
 {
 	m_job.start([this, plan]
-	            { doExecute(plan); });
+				{ doExecute(plan); });
 }
 
 void Rebalancer::doExecute(const RebalancePlan &plan)
@@ -436,50 +426,31 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	QSet<FolderId> touched;
 	const int total = plan.ops.size();
 
-	// MARK: Recover orphan probe files from a previous force-quit
+	// MARK: Open the journal before anything touches disk
 
-	// If a prior run was killed mid-probe, the suffixed file is
-	// stranded. Avid ignores it (suffix breaks format recognition)
-	// but the bytes are intact. Rename back where we can; skip
-	// (with a log line) where the original slot is now occupied.
+	// The journal used to open after the probes, which left the probe
+	// renames as the one disk mutation the WAL never saw — a crash between
+	// a probe's two renames stranded a real clip with no record. Probes are
+	// ops like any other now, so they open the journal first.
+	auto journal = std::make_unique<OpJournal>(
+		OpJournal::Kind::Rebalance, QJsonObject{{QStringLiteral("mxfRoot"), plan.mxfRoot}});
+	if (!journal->isOpen())
+		emit log(QtWarningMsg, OpJournal::openFailedText(OpJournal::Kind::Rebalance));
+
+	// MARK: Recover stranded probe files from a previous force-quit
+
+	// Journalled probes are restored by startup recovery; this sweep is the
+	// belt to that brace, catching strandings from older builds and from
+	// runs whose journal degraded. Shared with recovery via ProbeSweep.
 	{
-		static const QRegularExpression probeRe(
-		    QStringLiteral("^(.*)\\.__rebalprobe_[0-9a-f-]{36}$"));
-		static const QLatin1String kProbeMarker(".__rebalprobe_");
-		QDir mxfDir(plan.mxfRoot);
-		for (const QString &subdir :
-		     mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
-		{
-			QDir folder(mxfDir.filePath(subdir));
-			for (const QString &name :
-			     folder.entryList(QDir::Files | QDir::NoDotAndDotDot))
-			{
-				// Cheap substring prefilter — the regex is 5× more
-				// expensive than contains, and on a 100k-file system,
-				// almost no entries match anyway.
-				if (!name.contains(kProbeMarker))
-					continue;
-				const auto m = probeRe.match(name);
-				if (!m.hasMatch())
-					continue;
-				const QString original = m.captured(1);
-				const QString suffixed = folder.filePath(name);
-				const QString restored = folder.filePath(original);
-				if (QFile::exists(restored))
-				{
-					emit log(2, tr("Orphan probe '%1' would collide with "
-					               "existing '%2'; left in place.")
-					                .arg(name, original));
-					continue;
-				}
-				if (QFile::rename(suffixed, restored))
-					emit log(0, tr("Recovered orphan probe: %1 → %2")
-					                .arg(name, original));
-				else
-					emit log(2, tr("Could not rename orphan probe %1.")
-					                .arg(name));
-			}
-		}
+		const ProbeSweep::Result swept = ProbeSweep::recoverStranded(plan.mxfRoot);
+		for (const QString &name : swept.restored)
+			emit log(QtInfoMsg, QStringLiteral("Recovered stranded probe file: %1").arg(name));
+		for (const QString &name : swept.stuck)
+			emit log(QtCriticalMsg,
+					 QStringLiteral("Stranded probe file '%1' couldn't be restored (its original "
+									"name may be taken); left in place.")
+						 .arg(name));
 	}
 
 	// MARK: Pre-flight — probe rename per donor folder
@@ -489,6 +460,11 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	// rename fails and we abort cleanly before doing real damage.
 	// The retry on the rename-back handles the rare race where a
 	// watcher picks the file up between the two attempts.
+	//
+	// Each probe is write-ahead journalled (src → probe path) so a crash
+	// between the two renames is just an unfinished op: recovery's
+	// move-reversal renames the probe home at next launch. A clean
+	// out-and-back settles the op as skipped — disk unchanged.
 	{
 		QHash<FolderId, QString> probeFiles;
 		for (const MoveOp &op : plan.ops)
@@ -498,21 +474,25 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 				probeFiles.insert(*srcFid, op.srcPath);
 		}
 
-		const QString suffix = QStringLiteral(".__rebalprobe_") +
-		                       QUuid::createUuid().toString(
-		                           QUuid::WithoutBraces);
-		for (auto it = probeFiles.constBegin();
-		     it != probeFiles.constEnd(); ++it)
+		const QString suffix = ProbeSweep::makeProbeSuffix();
+		for (auto it = probeFiles.constBegin(); it != probeFiles.constEnd(); ++it)
 		{
 			const QString src = it.value();
 			const QString probe = src + suffix;
+
+			JournalOp jop(journal.get(), src, probe);
 			if (!QFile::rename(src, probe))
 			{
+				// Nothing moved; settle plain-failed and close the journal
+				// clean so recovery has nothing to chew on.
+				jop.failed(QStringLiteral("probe rename-out refused"));
+				journal->finish(0, 1, 0);
+				journal->prune();
 				emit aborted(tr("Cannot rename files in folder '%1'. "
-				                "Quit Avid Media Composer (or any other "
-				                "app that has these files open) and try "
-				                "again.")
-				                 .arg(it.key().display()));
+								"Quit Avid Media Composer (or any other "
+								"app that has these files open) and try "
+								"again.")
+								 .arg(it.key().display()));
 				return;
 			}
 
@@ -532,55 +512,66 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 			}
 			if (!restored)
 			{
+				// The clip is stranded under the probe name and we couldn't
+				// put it back. Dirty fail: the journal survives finish() so
+				// next launch's recovery keeps retrying the rename home.
+				jop.failedDirty(QStringLiteral("probe restore failed"));
+				journal->finish(0, 1, 0);
+				journal->prune(); // refuses: dirty
 				emit aborted(tr("Couldn't restore a pre-flight test rename. "
-				                "'%1' needs to be renamed back to '%2' — "
-				                "Avid or another app probably grabbed it "
-				                "between the two attempts. No rebalance "
-				                "moves have been made; restore the file "
-				                "and try again.")
-				                 .arg(probe, src));
+								"'%1' needs to be renamed back to '%2' — "
+								"Avid or another app probably grabbed it "
+								"between the two attempts. No rebalance "
+								"moves have been made; MediaMuster will keep "
+								"trying to restore it on the next launch.")
+								 .arg(probe, src));
 				return;
 			}
+			jop.skipped(); // out and back: disk unchanged
 		}
 	}
 
 	// MARK: Pre-create new folders
 
-	// Per-move failures are handled inside the move loop — if one
+	// Per-move failures are handled inside the move loop; if one
 	// of these mkpaths fails the corresponding moves will fail
 	// naturally and log themselves.
 	for (const FolderId &fid : plan.newFolders)
 	{
-		const QString path = plan.mxfRoot + "/" + fid.display();
+		const QString path = plan.mxfRoot + QLatin1Char('/') + fid.display();
 		if (!QDir().mkpath(path))
-			emit log(2, tr("Failed to create folder: %1").arg(path));
+			emit log(QtCriticalMsg, QStringLiteral("Failed to create folder: %1").arg(path));
 	}
 
 	// MARK: Group ops for atomic cancel boundaries
 
-	// Cancel only fires between composition groups, never within
+	// Cancel only fires between relatives groups, never within
 	// one. Lone files become one-op groups, so this is effectively
 	// per-file cancel for them.
 	QHash<QString, QVector<int>> opsByComp;
 	QStringList compOrder;
 	for (int i = 0; i < plan.ops.size(); ++i)
 	{
-		const QString key = compositionKey(plan.ops[i]);
+		const QString key = relativesKey(plan.ops[i]);
 		if (!opsByComp.contains(key))
 			compOrder.append(key);
 		opsByComp[key].append(i);
 	}
 
 	int doneCount = 0;
-	QElapsedTimer timer;
-	timer.start();
-	qint64 lastEmit = -100;
+	// ~30 Hz emit cap, same throttle the scanner/copy loops use.
+	ProgressThrottle throttle;
+
+	// Warn once if the journal degrades mid-run (see OpJournal::degraded()):
+	// the moves continue, but the user must know crash recovery stopped
+	// covering them.
+	bool journalDegradedWarned = false;
 
 	// MARK: Execute moves
 
 	for (const QString &compKey : compOrder)
 	{
-		// Cancel only at the top of each group — once we start a
+		// Cancel only at the top of each group; once we start a
 		// group we finish it, so relatives stay atomic.
 		if (m_job.isCancelled())
 		{
@@ -591,42 +582,51 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 		for (int idx : opsByComp[compKey])
 		{
 			const MoveOp &op = plan.ops[idx];
-			const QString destPath = plan.mxfRoot + QLatin1Char('/') +
-			                         op.dest.display() + QLatin1Char('/') +
-			                         QFileInfo(op.srcPath).fileName();
+			const QString destPath = plan.mxfRoot + QLatin1Char('/') + op.dest.display() +
+									 QLatin1Char('/') + QFileInfo(op.srcPath).fileName();
 
 			if (QFile::exists(destPath))
 			{
-				emit log(2, tr("Destination already exists, skipping: %1")
-				                .arg(destPath));
+				emit log(QtCriticalMsg,
+						 QStringLiteral("Destination already exists, skipping: %1").arg(destPath));
 				++failed;
-			}
-			else if (QFile::rename(op.srcPath, destPath))
-			{
-				++succeeded;
-				touched.insert(op.dest);
-				if (const auto srcFid = srcFolderOf(op.srcPath))
-					touched.insert(*srcFid);
 			}
 			else
 			{
-				emit log(1, tr("Move failed: %1 → %2")
-				                .arg(op.srcPath, destPath));
-				++failed;
+				JournalOp jop(journal.get(), op.srcPath, destPath, op.sizeBytes);
+				if (QFile::rename(op.srcPath, destPath))
+				{
+					jop.done();
+					++succeeded;
+					touched.insert(op.dest);
+					if (const auto srcFid = srcFolderOf(op.srcPath))
+						touched.insert(*srcFid);
+				}
+				else
+				{
+					jop.failed(QStringLiteral("rename failed"));
+					emit log(QtWarningMsg, QStringLiteral("Move failed: %1 → %2").arg(op.srcPath, destPath));
+					++failed;
+				}
 			}
 			++doneCount;
 
-			// ~30 Hz throttle — same cadence as the rest of the
-			// app. Last item always emits.
-			const qint64 now = timer.elapsed();
-			if (now - lastEmit >= 33 || doneCount == total)
+			if (journal->degraded() && !journalDegradedWarned)
 			{
-				emit progress(doneCount, total,
-				              QFileInfo(op.srcPath).fileName());
-				lastEmit = now;
+				journalDegradedWarned = true;
+				emit log(QtCriticalMsg, OpJournal::degradedText());
 			}
+
+			if (doneCount == total || throttle.shouldEmit())
+				emit progress(doneCount, total, QFileInfo(op.srcPath).fileName());
 		}
 	}
+
+	// Cancel means stop and keep: close the journal clean so recovery
+	// leaves the moves that did happen in place, then delete it. The DB
+	// reset below isn't journalled because Avid regenerates those files.
+	journal->finish(succeeded, failed, /*skipped=*/0, cancelled);
+	journal->prune();
 
 	// MARK: Reset per-folder databases
 
@@ -639,17 +639,18 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 		{
 			QFile f(folderPath + QLatin1String(db));
 			if (f.exists() && !f.remove())
-				emit log(1, tr("Couldn't delete %1").arg(f.fileName()));
+				emit log(QtWarningMsg, QStringLiteral("Couldn't delete %1").arg(f.fileName()));
 		}
 	}
 
-	emit log(0, tr("Rebalance %1: %2 moved, %3 failed%4")
-	                .arg(cancelled ? tr("cancelled") : tr("complete"))
-	                .arg(succeeded)
-	                .arg(failed)
-	                .arg(touched.isEmpty()
-	                         ? QString()
-	                         : tr(", databases reset in %1 folders")
-	                               .arg(touched.size())));
+	emit log(
+		QtInfoMsg,
+		QStringLiteral("Rebalance %1: %2 moved, %3 failed%4")
+			.arg(cancelled ? QStringLiteral("cancelled") : QStringLiteral("complete"),
+				 Format::count(succeeded), Format::count(failed),
+				 touched.isEmpty()
+					 ? QString()
+					 : QStringLiteral(", databases reset in %1 folders")
+						   .arg(Format::count(touched.size()))));
 	emit finished(succeeded, failed, cancelled);
 }

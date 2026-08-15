@@ -17,29 +17,43 @@
 ///
 /// Not a QObject. As a value member, `~BackgroundJob` runs before
 /// the owner's `~QObject`, so we disconnect the `finished` lambda
-/// explicitly — otherwise it could fire after the owner is gone.
+/// explicitly; otherwise it could fire after the owner is gone.
 
 class BackgroundJob
 {
 public:
 	explicit BackgroundJob(QObject *owner)
-	    : m_owner(owner)
+		: m_owner(owner)
 	{
 	}
 
 	// MARK: - Lifecycle
 
-	~BackgroundJob()
+	~BackgroundJob() { shutdown(); }
+
+	/// Cancel the current worker and block until it has exited (or been
+	/// terminated). Idempotent.
+	///
+	/// Call this at the *top* of the owner's destructor when the worker
+	/// touches other members of the owner: a plain value `BackgroundJob`
+	/// is destroyed in reverse declaration order, so unless it's the last
+	/// member declared, ~BackgroundJob would otherwise join only after the
+	/// state the worker still reads has already been torn down. Doing the
+	/// join in the destructor body — which runs before any member dies —
+	/// sidesteps that ordering trap entirely.
+	void shutdown()
 	{
 		cancel();
+		if (!m_thread)
+			return;
 		// Kill the identity check lambda's connection to m_owner before
 		// joining. Otherwise a finished event already queued in the
 		// event loop can fire after we return and dereference our
-		// members on a dead object. The thread → thread deleteLater
+		// members on a dead object. The thread's own deleteLater
 		// connection is independent and still cleans up the QThread.
-		if (m_thread)
-			QObject::disconnect(m_thread, &QThread::finished, m_owner, nullptr);
+		QObject::disconnect(m_thread, &QThread::finished, m_owner, nullptr);
 		WorkerThread::joinOrTerminate(m_thread, WorkerThread::kWorkerShutdownTimeoutMs);
+		m_thread = nullptr;
 	}
 
 	BackgroundJob(const BackgroundJob &) = delete;
@@ -64,36 +78,27 @@ public:
 		m_cancel.store(false, std::memory_order_release);
 		auto *thread = QThread::create(std::forward<Fn>(fn));
 		m_thread = thread;
-		QObject::connect(thread, &QThread::finished, thread,
-		                 &QThread::deleteLater);
+		QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 		// Identity check: two rapid start() calls would otherwise let
 		// a stale finished-lambda null the live thread.
 		QObject::connect(thread, &QThread::finished, m_owner,
-		                 [this, thread]
-		                 { if (m_thread == thread) m_thread = nullptr; });
+						 [this, thread]
+						 {
+							 if (m_thread == thread)
+								 m_thread = nullptr;
+						 });
 		thread->start();
 	}
 
-	/// Signal the worker to stop. Cooperative — the worker decides
+	/// Signal the worker to stop. Cooperative; the worker decides
 	/// when to notice (it polls `isCancelled()` from inside its loop).
 	/// `release` on store pairs with `acquire` on the worker's load to
 	/// guarantee the flag becomes visible promptly on ARM as well as x86.
-	void cancel() noexcept
-	{
-		m_cancel.store(true, std::memory_order_release);
-	}
+	void cancel() noexcept { m_cancel.store(true, std::memory_order_release); }
 
 	// MARK: - State
 
-	bool isCancelled() const noexcept
-	{
-		return m_cancel.load(std::memory_order_acquire);
-	}
-
-	bool isRunning() const
-	{
-		return m_thread && m_thread->isRunning();
-	}
+	bool isCancelled() const noexcept { return m_cancel.load(std::memory_order_acquire); }
 
 private:
 	QObject *m_owner;

@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QTimer>
 
+class QStorageInfo;
+
 // MARK: - VolumeManager
 
 /// Detects mounted volumes that might contain Avid media and watches
@@ -19,7 +21,7 @@ public:
 
 	// MARK: - Detection
 
-	/// Synchronous — only call from the UI thread when blocking is
+	/// Synchronous; only call from the UI thread when blocking is
 	/// acceptable (startup, 'Scan All'). The 5 second poll tick runs this
 	/// off-thread via QtConcurrent; see pollVolumes / onPollFinished.
 	QVector<VolumeInfo> detectVolumes() const;
@@ -35,12 +37,11 @@ public:
 
 	// MARK: - Monitoring
 
-	/// Emits volumesChanged only when the mount set (by name + path)
-	/// actually changes — identical polls stay silent.
+	/// Emits volumesChanged only when something the volume list shows changes
+	/// (name, path, Avid presence, or type); identical polls stay silent.
 	void startMonitoring(int intervalMs = 5000);
-	void stopMonitoring();
 
-	/// Skip polling while a scan or file op is in flight — avoids
+	/// Skip polling while a scan or file op is in flight; avoids
 	/// contending with active ops over slow network mutexes.
 	/// Fires an immediate poll on busy/false so changes surface
 	/// promptly.
@@ -54,11 +55,21 @@ public:
 
 	static void openFullDiskAccessSettings();
 
+	// MARK: - Volume type
+
+	/// "Internal", "Network", or "Nexis" for a mount, from its filesystem type
+	/// (with a name/path fallback). Public because Icons::forVolumeType reuses
+	/// it for hand-added paths — one list of network filesystems, so a
+	/// detected volume and the same volume added by hand can't disagree.
+	static QString detectVolumeType(const QString &name, const QString &path,
+									const QStorageInfo &storage);
+
 signals:
 	void volumesChanged(const QVector<VolumeInfo> &volumes);
 
 public:
-	/// Public so dtor can wait for in-flight detection.
+	/// Blocks until any in-flight detection finishes: the pool-thread lambda
+	/// still holds `this`, so racing destruction would be a use-after-free.
 	~VolumeManager() override;
 
 private slots:
@@ -72,7 +83,13 @@ private:
 
 	QFutureWatcher<QVector<VolumeInfo>> m_pollWatcher;
 
-	static QString detectVolumeType(const QString &name, const QString &path);
 	static bool hasAvidMediaFolder(const QString &path);
 	static QStringList knownAvidLocations();
+
+	/// Stamp out a VolumeInfo from a name + path + its QStorageInfo. The
+	/// three detection passes used to fill the same fields by hand; this is
+	/// the one place that mapping lives. Bytes come back as 0 when `storage`
+	/// is invalid (an unreadable /Volumes entry).
+	static VolumeInfo makeVolumeInfo(const QString &name, const QString &path,
+									 const QStorageInfo &storage);
 };

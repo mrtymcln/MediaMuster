@@ -1,4 +1,5 @@
 #include "progressdialog.h"
+#include "formatutil.h"
 
 #include <QCloseEvent>
 #include <QFontMetrics>
@@ -12,17 +13,14 @@
 // MARK: - Construction
 
 ProgressDialog::ProgressDialog(QWidget *parent)
-    : QDialog(parent)
+	: QDialog(parent)
 {
-	setWindowTitle(tr("Progress"));
+	// No window title: the in-dialog labels carry all the text we need.
 
 	// Modal so the user can't kick off a second operation whilst this
-	// one is mid-flight — Cancel is the only way out.
+	// one is mid-flight; Cancel is the only way out.
 	setModal(true);
 	setWindowFlags(Qt::Sheet);
-
-	setMinimumWidth(500);
-	resize(640, 0);
 
 	auto *layout = new QVBoxLayout(this);
 	layout->setContentsMargins(18, 16, 18, 16);
@@ -41,34 +39,36 @@ ProgressDialog::ProgressDialog(QWidget *parent)
 
 	m_detailLabel = new QLabel;
 	m_detailLabel->setTextFormat(Qt::PlainText);
-	m_detailLabel->setMinimumWidth(480);
+	// Fixed width so the dialog's own width is stable: the detail text is
+	// mid-elided to this width in setDetail(), and it's the widest row, so it
+	// determines the fixed dialog size below.
+	m_detailLabel->setFixedWidth(600);
 	layout->addWidget(m_detailLabel);
 
 	// MARK: Progress bar
 
 	m_bar = new QProgressBar;
 	m_bar->setTextVisible(false);
-	m_bar->setRange(0, 0); // Starts indeterminate (no known total yet).
+	m_bar->setRange(0, 0); // Indeterminate.
 	layout->addWidget(m_bar);
 
 	// MARK: Bottom row
 
 	auto *bottomRow = new QHBoxLayout;
 	m_counterLabel = new QLabel;
-	QFont cf = m_counterLabel->font();
-	cf.setPointSize(cf.pointSize() - 1);
-	m_counterLabel->setFont(cf);
-	m_counterLabel->setStyleSheet("color: gray;");
 	bottomRow->addWidget(m_counterLabel);
 
 	bottomRow->addStretch();
 
 	m_cancelBtn = new QPushButton(tr("Cancel"));
-	connect(m_cancelBtn, &QPushButton::clicked, this,
-	        &ProgressDialog::cancelRequested);
+	connect(m_cancelBtn, &QPushButton::clicked, this, &ProgressDialog::requestCancel);
 	bottomRow->addWidget(m_cancelBtn);
 
 	layout->addLayout(bottomRow);
+
+	// Size to content and lock it: the dialog can't be resized, and because the
+	// detail row is fixed-width the size never jitters as the text changes.
+	layout->setSizeConstraint(QLayout::SetFixedSize);
 }
 
 // MARK: - Public lifecycle
@@ -95,7 +95,7 @@ void ProgressDialog::setProgress(int current, int total)
 		m_bar->setValue(current);
 		const int pct = qRound((100.0 * current) / total);
 		m_counterLabel->setText(
-		    tr("%1% — %2 of %3").arg(pct).arg(current).arg(total));
+			tr("%1% — %2 of %3").arg(pct).arg(Format::count(current), Format::count(total)));
 	}
 	else
 	{
@@ -107,11 +107,9 @@ void ProgressDialog::setProgress(int current, int total)
 void ProgressDialog::setDetail(const QString &text)
 {
 	// Mid-elide so long paths still show the head and the tail.
-	const int availWidth = m_detailLabel->width() > 0
-	                           ? m_detailLabel->width()
-	                           : 420;
-	const QString elided = m_detailLabel->fontMetrics().elidedText(
-	    text, Qt::ElideMiddle, availWidth);
+	const int availWidth = m_detailLabel->width() > 0 ? m_detailLabel->width() : 420;
+	const QString elided =
+		m_detailLabel->fontMetrics().elidedText(text, Qt::ElideMiddle, availWidth);
 	m_detailLabel->setText(elided);
 }
 
@@ -120,12 +118,35 @@ void ProgressDialog::finish()
 	hide();
 }
 
-// MARK: - Close button interception
+// MARK: - Cancel funnel
+
+void ProgressDialog::requestCancel()
+{
+	// Already cancelling: don't re-emit for button mashing or Esc.
+	if (!m_cancelBtn->isEnabled())
+		return;
+
+	// Acknowledge immediately. The worker's cooperative cancel can take
+	// seconds on a large copy, and a silent, still-enabled button reads
+	// as broken. begin() re-arms the button for the next run.
+	m_cancelBtn->setEnabled(false);
+	m_cancelBtn->setText(tr("Cancelling..."));
+	emit cancelRequested();
+}
+
+// MARK: - Close/Escape interception
 
 void ProgressDialog::closeEvent(QCloseEvent *event)
 {
-	// Redirect OS close button to our Cancel flow.
+	// Redirect the OS close button to our Cancel flow.
 	event->ignore();
-	if (m_cancelBtn->isEnabled())
-		emit cancelRequested();
+	requestCancel();
+}
+
+void ProgressDialog::reject()
+{
+	// Esc lands here, not in closeEvent — QDialog::reject would hide
+	// the dialog while the operation kept running headless. Treat it
+	// as a cancel request and stay visible until finish().
+	requestCancel();
 }

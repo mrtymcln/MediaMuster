@@ -1,10 +1,11 @@
 #include "binfilterdialog.h"
 #include "dragdroputil.h"
+#include "formatutil.h"
 
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QFileDialog>
-#include <QFileInfo>
 #include <QFrame>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -12,6 +13,9 @@
 #include <QListWidget>
 #include <QMimeData>
 #include <QPushButton>
+#include <QSignalBlocker>
+#include <QStringList>
+#include <QTimer>
 #include <QToolButton>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -20,69 +24,67 @@
 
 namespace
 {
-QString opLabel(BinFilterDialog::Operation op)
-{
-	switch (op)
+	QString opLabel(BinFilterDialog::Operation op)
 	{
-	case BinFilterDialog::Operation::Intersect:
-		return QStringLiteral("Intersect");
-	case BinFilterDialog::Operation::Subtract:
-		return QStringLiteral("Subtract");
-	case BinFilterDialog::Operation::Add:
-		return QStringLiteral("Add");
+		switch (op)
+		{
+		case BinFilterDialog::Operation::Intersect:
+			return BinFilterDialog::tr("Intersect");
+		case BinFilterDialog::Operation::Subtract:
+			return BinFilterDialog::tr("Subtract");
+		case BinFilterDialog::Operation::Add:
+			return BinFilterDialog::tr("Add");
+		}
+		return {};
 	}
-	return {};
-}
 
-// Two strips share styling — parameterise rule selectors by
-// objectName.
-QString segBarStyleSheet(const QString &objectName)
-{
-	return QStringLiteral(
-	           "#%1 {"
-	           "  background: palette(window);"
-	           "  border-top: 1px solid palette(mid);"
-	           "}"
-	           "#%1 QToolButton {"
-	           "  border: none; padding: 2px 10px;"
-	           "  min-width: 24px; min-height: 20px;"
-	           "  color: palette(text);"
-	           "  font-weight: bold;"
-	           "}"
-	           "#%1 QToolButton:hover { background: palette(midlight); }"
-	           "#%1 QToolButton:pressed { background: palette(mid); }"
-	           "#%1 QToolButton:disabled { color: palette(mid); }")
-	    .arg(objectName);
-}
+	// Two strips share styling, so parameterise rule selectors by
+	// objectName.
+	QString segBarStyleSheet(const QString &objectName)
+	{
+		return QStringLiteral("#%1 {"
+							  "  background: palette(window);"
+							  "  border-top: 1px solid palette(mid);"
+							  "}"
+							  "#%1 QToolButton {"
+							  "  border: none; padding: 0px 10px 2px 10px;"
+							  "  min-width: 24px; min-height: 20px;"
+							  "  color: palette(text);"
+							  "  font-weight: bold;"
+							  "  font-size: 18px;"
+							  "}"
+							  "#%1 QToolButton:hover { background: palette(midlight); }"
+							  "#%1 QToolButton:pressed { background: palette(mid); }"
+							  "#%1 QToolButton:disabled { color: palette(mid); }")
+			.arg(objectName);
+	}
 
-// `[ button ] [ help text ]`. Button returned by reference so the
-// caller can wire its clicked signal.
-QWidget *makeOperationRow(const QString &label,
-                          const QString &help,
-                          QPushButton *&buttonOut)
-{
-	auto *row = new QWidget;
-	auto *layout = new QHBoxLayout(row);
-	layout->setContentsMargins(0, 0, 0, 0);
-	layout->setSpacing(12);
+	// `[ button ] [ help text ]`. Button returned by reference so the
+	// caller can wire its clicked signal.
+	QWidget *makeOperationRow(const QString &label, const QString &help, QPushButton *&buttonOut)
+	{
+		auto *row = new QWidget;
+		auto *layout = new QHBoxLayout(row);
+		layout->setContentsMargins(0, 0, 0, 0);
+		layout->setSpacing(12);
 
-	buttonOut = new QPushButton(label);
-	buttonOut->setMinimumWidth(150);
-	buttonOut->setMinimumHeight(44);
-	layout->addWidget(buttonOut);
+		buttonOut = new QPushButton(label);
+		buttonOut->setMinimumWidth(150);
+		buttonOut->setMinimumHeight(44);
+		layout->addWidget(buttonOut);
 
-	auto *helpLabel = new QLabel(help);
-	helpLabel->setWordWrap(true);
-	layout->addWidget(helpLabel, 1);
+		auto *helpLabel = new QLabel(help);
+		helpLabel->setWordWrap(true);
+		layout->addWidget(helpLabel, 1);
 
-	return row;
-}
+		return row;
+	}
 } // namespace
 
 // MARK: - Construction
 
 BinFilterDialog::BinFilterDialog(QWidget *parent)
-    : QDialog(parent)
+	: QDialog(parent)
 {
 	setWindowTitle(tr("Filter by Bin"));
 	setWindowFlags(windowFlags() | Qt::Tool);
@@ -103,11 +105,17 @@ void BinFilterDialog::setupUi()
 	root->setContentsMargins(16, 16, 16, 16);
 	root->setSpacing(12);
 
-	auto *intro = new QLabel(tr(
-	    "Filter your media by Avid Bin files. Add an .AVB below, "
-	    "then apply an operation to narrow or widen your results."));
+	auto *intro = new QLabel(
+		tr("Load your Avid Bin files here and I'll show you only the media they "
+		   "reference.\nTick which bins to include, then refine the filter below."));
+	// Explicit \n keeps the two sentences on their own lines; word wrap still
+	// applies within each line if the dialog is ever narrowed.
 	intro->setWordWrap(true);
 	root->addWidget(intro);
+
+	// Breathing room so the wrapped intro doesn't crowd the Loaded Bins group
+	// heading directly beneath it.
+	root->addSpacing(8);
 
 	// MARK: Loaded Bins group
 
@@ -131,12 +139,15 @@ void BinFilterDialog::setupUi()
 	segLayout->setContentsMargins(0, 0, 0, 0);
 	segLayout->setSpacing(0);
 	auto *btnPlus = new QToolButton;
-	btnPlus->setText(QStringLiteral("➕"));
+	// Text-mode glyphs (not emoji dingbats) so the colour follows
+	// palette(text) and flips with dark mode. The segBar QSS bumps
+	// the font size to keep them visually chunky.
+	btnPlus->setText(QStringLiteral("+"));
 	btnPlus->setToolTip(tr("Add..."));
 	btnPlus->setCursor(Qt::PointingHandCursor);
 	btnPlus->setAutoRaise(true);
 	auto *btnMinus = new QToolButton;
-	btnMinus->setText(QStringLiteral("➖"));
+	btnMinus->setText(QStringLiteral("−"));
 	btnMinus->setToolTip(tr("Remove selected"));
 	btnMinus->setCursor(Qt::PointingHandCursor);
 	btnMinus->setAutoRaise(true);
@@ -154,55 +165,51 @@ void BinFilterDialog::setupUi()
 	segLayout->addWidget(vSep2);
 	segLayout->addStretch(1);
 	m_binListSummary = new QLabel(tr("0 loaded, 0 ticked"));
-	m_binListSummary->setStyleSheet(QStringLiteral(
-	    "QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
+	m_binListSummary->setStyleSheet(
+		QStringLiteral("QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
 	segLayout->addWidget(m_binListSummary);
 
 	framedLayout->addWidget(segBar);
 	binsLayout->addWidget(binsFrame);
 
-	connect(btnPlus, &QToolButton::clicked, this,
-	        &BinFilterDialog::onAddBinsClicked);
-	connect(btnMinus, &QToolButton::clicked, this,
-	        &BinFilterDialog::onRemoveSelectedBinsClicked);
+	connect(btnPlus, &QToolButton::clicked, this, &BinFilterDialog::onAddBinsClicked);
+	connect(btnMinus, &QToolButton::clicked, this, &BinFilterDialog::onRemoveSelectedBinsClicked);
 
 	connect(m_binList, &QListWidget::itemSelectionChanged, this,
-	        [this, btnMinus]()
-	        {
-		        btnMinus->setEnabled(!m_binList->selectedItems().isEmpty());
-	        });
+			[this, btnMinus]()
+			{ btnMinus->setEnabled(!m_binList->selectedItems().isEmpty()); });
 
 	root->addWidget(binsGroup);
 
 	// MARK: Apply Operation group
 
-	auto *opsGroup = new QGroupBox(tr("Apply Operation"));
+	auto *opsGroup = new QGroupBox(tr("Filter Operations"));
 	auto *opsLayout = new QVBoxLayout(opsGroup);
 	opsLayout->setSpacing(8);
 
 	opsLayout->addWidget(makeOperationRow(
-	    tr("Intersect"),
-	    tr("Keep only media that is referenced in the ticked bins. "
-	       "Everything else is filtered out."),
-	    m_btnIntersect));
+		tr("Intersect"),
+		tr("Show only the media referenced in the ticked bins."),
+		m_btnIntersect));
 
 	opsLayout->addWidget(makeOperationRow(
-	    tr("Subtract"),
-	    tr("Hide everything that is referenced in the ticked bins. Useful "
-	       "for protecting media when archiving or deleting."),
-	    m_btnSubtract));
+		tr("Subtract"),
+		tr("Hide media that is referenced in the ticked bins. Useful when archiving or deleting."),
+		m_btnSubtract));
 
 	opsLayout->addWidget(makeOperationRow(
-	    tr("Add"),
-	    tr("Show everything that is referenced in the ticked bins. "
-	       "Even if previously hidden."),
-	    m_btnAdd));
+		tr("Add"),
+		tr("Bring back media referenced in the ticked bins, even if an earlier step hid it."),
+		m_btnAdd));
 
 	root->addWidget(opsGroup);
 
-	// MARK: Current Filter Chain group
+	// MARK: Current Steps group
 
-	auto *chainGroup = new QGroupBox(tr("Current Filter Chain"));
+	// Mirrors the Loaded Bins panel: list inside a sunken frame with
+	// a bottom segBar carrying the remove control and a summary
+	// label. Familiar shape, familiar interactions.
+	auto *chainGroup = new QGroupBox(tr("Filter Steps"));
 	auto *chainLayout = new QVBoxLayout(chainGroup);
 
 	auto *chainFrame = new QFrame;
@@ -225,7 +232,7 @@ void BinFilterDialog::setupUi()
 	chainSegLayout->setSpacing(0);
 
 	auto *btnChainRemove = new QToolButton;
-	btnChainRemove->setText(QStringLiteral("➖"));
+	btnChainRemove->setText(QStringLiteral("−"));
 	btnChainRemove->setToolTip(tr("Remove selected operation"));
 	btnChainRemove->setCursor(Qt::PointingHandCursor);
 	btnChainRemove->setAutoRaise(true);
@@ -239,29 +246,25 @@ void BinFilterDialog::setupUi()
 	chainSegLayout->addWidget(chainSep);
 	chainSegLayout->addStretch(1);
 
-	m_chainSummary = new QLabel(tr("No operations applied"));
-	m_chainSummary->setStyleSheet(QStringLiteral(
-	    "QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
+	m_chainSummary = new QLabel(tr("Add bin files to get started."));
+	m_chainSummary->setStyleSheet(
+		QStringLiteral("QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
 	chainSegLayout->addWidget(m_chainSummary);
 
 	chainFrameLayout->addWidget(chainSegBar);
 	chainLayout->addWidget(chainFrame);
 
-	connect(m_chainList, &QListWidget::itemSelectionChanged, this,
-	        [this, btnChainRemove]()
-	        {
-		        btnChainRemove->setEnabled(
-		            !m_chainList->selectedItems().isEmpty());
-	        });
+	connect(m_chainList, &QListWidget::itemSelectionChanged, this, [this, btnChainRemove]()
+			{ btnChainRemove->setEnabled(!m_chainList->selectedItems().isEmpty()); });
 	connect(btnChainRemove, &QToolButton::clicked, this,
-	        [this]()
-	        {
-		        auto sel = m_chainList->selectedItems();
-		        if (sel.isEmpty())
-			        return;
-		        int idx = sel.first()->data(Qt::UserRole).toInt();
-		        onRemoveStep(idx);
-	        });
+			[this]()
+			{
+				auto sel = m_chainList->selectedItems();
+				if (sel.isEmpty())
+					return;
+				const int idx = sel.first()->data(Qt::UserRole).toInt();
+				onRemoveStep(idx);
+			});
 
 	root->addWidget(chainGroup);
 
@@ -274,39 +277,83 @@ void BinFilterDialog::setupUi()
 	footer->addWidget(m_btnDone);
 	root->addLayout(footer);
 
-	connect(m_btnIntersect, &QPushButton::clicked, this,
-	        &BinFilterDialog::onIntersectClicked);
-	connect(m_btnSubtract, &QPushButton::clicked, this,
-	        &BinFilterDialog::onSubtractClicked);
-	connect(m_btnAdd, &QPushButton::clicked, this,
-	        &BinFilterDialog::onAddClicked);
+	connect(m_btnIntersect, &QPushButton::clicked, this, &BinFilterDialog::onIntersectClicked);
+	connect(m_btnSubtract, &QPushButton::clicked, this, &BinFilterDialog::onSubtractClicked);
+	connect(m_btnAdd, &QPushButton::clicked, this, &BinFilterDialog::onAddClicked);
 	connect(m_btnDone, &QPushButton::clicked, this, &QDialog::hide);
 
-	// Live-update "N loaded, M ticked" whenever a tickbox flips.
-	connect(m_binList, &QListWidget::itemChanged, this, [this](QListWidgetItem *)
-	        {
-                const int loaded = m_bins.size();
-                const int ticked = selectedBinsCount();
-                m_binListSummary->setText(
-                    tr("%1 loaded, %2 ticked").arg(loaded).arg(ticked)); });
+	// Tickbox changes drive the summary text and op-button enable state.
+	connect(m_binList, &QListWidget::itemChanged, this,
+			[this](QListWidgetItem *)
+			{ refreshBinSelectionUi(); });
+
+	// Prime initial state (0 loaded, buttons disabled, placeholder text).
+	refreshBinSelectionUi();
 }
 
-// MARK: - Drag-drop
+// MARK: - UI state
+
+void BinFilterDialog::refreshBinSelectionUi()
+{
+	const int loaded = m_bins.size();
+	const int ready = selectedBinsCount();
+	m_binListSummary->setText(
+		tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready)));
+
+	// Disabled op buttons hard-couple the two halves of the dialog: users can't
+	// click an op without first ticking a bin, so the 'tickbox = arms, button =
+	// fires' model becomes self-evident — which is also why the disabled state
+	// needs no explanatory tooltip.
+	const bool canApply = ready > 0;
+	m_btnIntersect->setEnabled(canApply);
+	m_btnAdd->setEnabled(canApply);
+	// Subtract additionally needs an existing base to act on. As the very first
+	// step it would fall back to the loaded-bin union and hide media that's in
+	// no loaded bin — a surprise. Requiring a prior Intersect/Add step keeps it
+	// predictable, so it stays disabled until the chain has at least one step.
+	m_btnSubtract->setEnabled(canApply && !m_chain.isEmpty());
+
+	// Empty-chain placeholder. Single message; the intro text and
+	// the bin-list summary already guide users into loading + ticking
+	// bins; this slot just describes the next concrete action.
+	if (m_chain.isEmpty())
+		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));
+}
+
+// MARK: - Drag and drop
 
 // Shared between dragEnterEvent, dragMoveEvent, and dropEvent so
 // all three honour the same drop-accept rules.
 static bool dragHasAvb(const QMimeData *mime)
 {
-	return DragDropUtil::hasAnyLocalUrl(mime, [](const QString &path)
-	                                    { return path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive); });
+	return DragDropUtil::hasAnyLocalUrl(
+		mime, [](const QString &path)
+		{ return path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive); });
+}
+
+// Same blue ring + tint the Volumes list draws (VolumeListWidget). Kept as a
+// duplicate string on purpose: two static drop targets, no shared helper.
+void BinFilterDialog::setDropHighlight(bool on)
+{
+	if (on)
+		m_binList->setStyleSheet(QStringLiteral(
+			"QListWidget { border: 2px solid #4A90E2; "
+			"background-color: rgba(74, 144, 226, 0.08); }"));
+	else
+		m_binList->setStyleSheet(QString());
 }
 
 void BinFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 {
 	if (dragHasAvb(event->mimeData()))
+	{
 		event->acceptProposedAction();
+		setDropHighlight(true);
+	}
 	else
+	{
 		event->ignore();
+	}
 }
 
 void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
@@ -317,8 +364,15 @@ void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
 		event->ignore();
 }
 
+void BinFilterDialog::dragLeaveEvent(QDragLeaveEvent *event)
+{
+	setDropHighlight(false);
+	QDialog::dragLeaveEvent(event);
+}
+
 void BinFilterDialog::dropEvent(QDropEvent *event)
 {
+	setDropHighlight(false);
 	if (!event->mimeData()->hasUrls())
 		return;
 	for (const QUrl &url : event->mimeData()->urls())
@@ -336,7 +390,7 @@ void BinFilterDialog::dropEvent(QDropEvent *event)
 
 void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
 {
-	// De-dupe by path — don't want two list entries with the same MOBs.
+	// De-dupe by path to avoid two list entries with the same MOBs.
 	for (const AvbBin &b : m_bins)
 	{
 		if (b.filePath == avbFilePath)
@@ -346,29 +400,43 @@ void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
 	AvbBin bin = AvbParser::parse(avbFilePath);
 	if (!bin.valid)
 	{
-		// Parser already logged a qWarning — surface in the UI.
-		auto *item = new QListWidgetItem(
-		    tr("⚠ %1  (not a valid Avid bin)")
-		        .arg(QFileInfo(avbFilePath).fileName()),
-		    m_binList);
-		item->setData(Qt::UserRole, -1);
-		item->setFlags(item->flags() & ~Qt::ItemIsUserCheckable);
-		item->setForeground(Qt::red);
+		// Both entry points filter to .avb — the picker by file filter, the drag
+		// by extension — so a non-bin normally can't reach here and no error row
+		// is shown. A file with a genuinely renamed .avb extension could still
+		// slip past the extension check; drop it silently (the parser logged why
+		// to the lcAvb category) rather than list it as if it were a real bin.
 		return;
 	}
 	m_bins.append(bin);
 	appendBinItem(m_bins.size() - 1);
+
+	// Convenience: an empty chain + a fresh add means the user hasn't
+	// built any filter yet. Auto-apply Intersect across whatever's
+	// ticked so the most common case (filter to just-loaded bins)
+	// works without a button press. singleShot(0) coalesces drop
+	// bursts and file-picker batches: the first scheduled call applies
+	// the Intersect; subsequent calls see a non-empty chain and skip.
+	if (m_chain.isEmpty())
+		QTimer::singleShot(0, this, &BinFilterDialog::maybeAutoIntersect);
+}
+
+void BinFilterDialog::maybeAutoIntersect()
+{
+	if (!m_chain.isEmpty())
+		return;
+	if (selectedBinsCount() == 0)
+		return;
+	applyOperation(Operation::Intersect);
 }
 
 void BinFilterDialog::appendBinItem(int idx)
 {
 	const AvbBin &bin = m_bins[idx];
 
-	// Avid clips can reference multiple MOBs — one MXF may have
-	// 2+ references.
-	auto *item = new QListWidgetItem(
-	    tr("%1  —  %2").arg(bin.displayName, tr("%n MOB ID(s)", nullptr, bin.mobIds.size())),
-	    m_binList);
+	// Just the bin's display name; the underlying MOB-ID count is
+	// an Avid internal that doesn't map cleanly to clips or files,
+	// so we don't surface it.
+	auto *item = new QListWidgetItem(bin.displayName, m_binList);
 	item->setData(Qt::UserRole, idx);
 	item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
 	item->setCheckState(Qt::Checked);
@@ -377,39 +445,66 @@ void BinFilterDialog::appendBinItem(int idx)
 void BinFilterDialog::onAddBinsClicked()
 {
 	const QStringList paths = QFileDialog::getOpenFileNames(
-	    this, tr("Add Avid Bin files"), QString(),
-	    tr("Avid Bin files (*.avb)"));
+		this, tr("Add Avid Bin files"), QString(),
+		tr("Avid Bin files (*.avb)"));
 	for (const QString &p : paths)
 		addBinFromFile(p);
 }
 
 void BinFilterDialog::onRemoveSelectedBinsClicked()
 {
-	// "Selected" = rows the user clicked, not the tickboxes —
+	// 'Selected' means rows the user clicked, not the tickboxes;
 	// tickboxes control which bins participate in operations.
 	const QList<QListWidgetItem *> selected = m_binList->selectedItems();
 	if (selected.isEmpty())
 		return;
 
-	// Descending order so each removeAt doesn't shift earlier
-	// indices we still need to remove.
-	QList<int> indicesDesc;
-	indicesDesc.reserve(selected.size());
+	// Drop the backing AvbBins. Every row carries its m_bins index in
+	// UserRole — an invalid bin produces no row at all, so there are no
+	// placeholders and the >= 0 check below is belt-and-braces. Descending
+	// so each removeAt doesn't shift indices we still need.
+	QList<int> binIndices;
+	binIndices.reserve(selected.size());
 	for (QListWidgetItem *it : selected)
-		indicesDesc.append(it->data(Qt::UserRole).toInt());
-	std::sort(indicesDesc.begin(), indicesDesc.end(), std::greater<>{});
-	for (int idx : indicesDesc)
 	{
-		if (idx >= 0 && idx < m_bins.size())
+		const int idx = it->data(Qt::UserRole).toInt();
+		if (idx >= 0)
+			binIndices.append(idx);
+	}
+	std::sort(binIndices.begin(), binIndices.end(), std::greater<>{});
+	for (int idx : binIndices)
+	{
+		if (idx < m_bins.size())
 			m_bins.removeAt(idx);
 	}
 
-	m_binList->clear();
-	for (int i = 0; i < m_bins.size(); ++i)
-		appendBinItem(i);
+	// Delete the clicked rows in place instead of clearing and rebuilding the
+	// whole list. The old rebuild re-ran appendBinItem for every survivor,
+	// which forces Qt::Checked — silently re-ticking bins the user had
+	// deliberately unticked. Deleting in place leaves each survivor's tick
+	// state intact.
+	qDeleteAll(selected);
+
+	// Survivors are still in m_bins order, so renumber their UserRole to the
+	// compacted indices. Block itemChanged so the per-row setData doesn't fan
+	// out one UI refresh each.
+	{
+		const QSignalBlocker block(m_binList);
+		int compacted = 0;
+		for (int row = 0; row < m_binList->count(); ++row)
+		{
+			QListWidgetItem *it = m_binList->item(row);
+			if (it->data(Qt::UserRole).toInt() >= 0)
+				it->setData(Qt::UserRole, compacted++);
+		}
+	}
+
+	// Deletes don't fire itemChanged, so refresh the summary and op-button
+	// state ourselves; otherwise they'd stay stale when the last bin goes.
+	refreshBinSelectionUi();
 
 	// Chain steps snapshot MOB IDs at apply time, so removing a
-	// loaded bin doesn't invalidate them — re-emit the cached result.
+	// loaded bin doesn't invalidate them; re-emit the cached result.
 	recomputeAndEmit();
 }
 
@@ -484,12 +579,10 @@ void BinFilterDialog::onAddClicked()
 void BinFilterDialog::applyOperation(Operation op)
 {
 	QSet<QString> mobs = selectedBinsMobs();
+	// The op buttons are disabled when nothing is ticked; this guard
+	// is belt-and-braces in case the path ever opens up programmatically.
 	if (mobs.isEmpty())
-	{
-		m_chainSummary->setText(
-		    tr("Tick at least one Bin above to apply %1.").arg(opLabel(op)));
 		return;
-	}
 	ChainStep step;
 	step.op = op;
 	step.binDisplayNames = selectedBinsDisplayNames();
@@ -497,6 +590,17 @@ void BinFilterDialog::applyOperation(Operation op)
 	m_chain.append(std::move(step));
 	rebuildChainList();
 	recomputeAndEmit();
+	refreshBinSelectionUi(); // re-gate Subtract now the chain has a step
+}
+
+void BinFilterDialog::clearChain()
+{
+	if (m_chain.isEmpty())
+		return;
+	m_chain.clear();
+	rebuildChainList();
+	recomputeAndEmit();
+	refreshBinSelectionUi(); // chain empty again — disable Subtract
 }
 
 void BinFilterDialog::onRemoveStep(int index)
@@ -506,6 +610,7 @@ void BinFilterDialog::onRemoveStep(int index)
 	m_chain.removeAt(index);
 	rebuildChainList();
 	recomputeAndEmit();
+	refreshBinSelectionUi(); // chain may now be empty — re-gate Subtract
 }
 
 void BinFilterDialog::rebuildChainList()
@@ -515,17 +620,13 @@ void BinFilterDialog::rebuildChainList()
 	{
 		const ChainStep &step = m_chain[i];
 		const QString binNames =
-		    step.binDisplayNames.isEmpty()
-		        ? tr("(no bins)")
-		        : QStringList(step.binDisplayNames.cbegin(),
-		                      step.binDisplayNames.cend())
-		              .join(QStringLiteral(", "));
+			step.binDisplayNames.isEmpty()
+				? tr("(no bins)")
+				: QStringList(step.binDisplayNames.cbegin(), step.binDisplayNames.cend())
+					  .join(QStringLiteral(", "));
 
 		auto *item = new QListWidgetItem(
-		    tr("%1.  %2:  %3    (%4)")
-		        .arg(i + 1)
-		        .arg(opLabel(step.op), binNames,
-		             tr("%n MOB ID(s)", nullptr, step.mobIds.size())));
+			QStringLiteral("%1.  %2:  %3").arg(i + 1).arg(opLabel(step.op), binNames));
 		item->setData(Qt::UserRole, i);
 		m_chainList->addItem(item);
 	}
@@ -537,14 +638,14 @@ void BinFilterDialog::recomputeAndEmit()
 {
 	if (m_chain.isEmpty())
 	{
-		m_chainSummary->setText(tr("No filter active — all files shown."));
-		emit filterChainChanged(false, {});
+		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));
+		emit filterChainChanged(false, {}, {});
 		return;
 	}
 
 	// Starting universe depends on the first op:
-	//   Intersect / Add — start from `first.mobIds` directly.
-	//   Subtract        — start from (loaded-bin union) \ `first.mobIds`.
+	//   Intersect / Add: start from `first.mobIds` directly.
+	//   Subtract: start from (loaded-bin union) \ `first.mobIds`.
 	//
 	// Subtract seeds from the loaded-bin union because
 	// 'subtract from accept-everything' isn't expressible as a
@@ -582,11 +683,28 @@ void BinFilterDialog::recomputeAndEmit()
 		}
 	}
 
-	m_chainSummary->setText(
-	    tr("Filter active — %1 MOBs accepted across %2 step%3.")
-	        .arg(accepted.size())
-	        .arg(m_chain.size())
-	        .arg(m_chain.size() == 1 ? "" : "s"));
+	// No summary line here: the step list above already spells out the active
+	// filter, and the main-window chips and the "filtered from N" status-bar
+	// count say it again — a "filter active" label would just be a fourth,
+	// vaguer restatement. Keep it blank while steps exist.
+	m_chainSummary->clear();
 
-	emit filterChainChanged(true, accepted);
+	// Deduped, insertion-ordered bin names for the main-window chip
+	// strip. First appearance wins so the chip ordering is stable
+	// across re-emits.
+	QStringList binNames;
+	QSet<QString> seen;
+	for (const ChainStep &s : m_chain)
+	{
+		for (const QString &name : s.binDisplayNames)
+		{
+			if (!seen.contains(name))
+			{
+				seen.insert(name);
+				binNames.append(name);
+			}
+		}
+	}
+
+	emit filterChainChanged(true, accepted, binNames);
 }

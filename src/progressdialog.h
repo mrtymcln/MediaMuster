@@ -25,10 +25,10 @@ public:
 	void begin(const QString &title);
 
 	/// Update the bar. `total == 0` keeps it indeterminate; any
-	/// positive total flips to determinate and displays "N% — N of N".
+	/// positive total flips to determinate and shows 'N%' and 'N of N'.
 	void setProgress(int current, int total);
 
-	/// Details under the title — usually the current file path,
+	/// Details under the title; usually the current file path,
 	/// mid-elided to fit so head and tail stay visible.
 	void setDetail(const QString &text);
 
@@ -37,16 +37,28 @@ public:
 
 signals:
 	/// The owning operation is expected to set its cancel atomic and
-	/// wind down cooperatively — this dialog stays visible until
+	/// wind down cooperatively; this dialog stays visible until
 	/// `finish()` is called.
 	void cancelRequested();
 
 protected:
 	/// Swallow the OS close button so an unfinished operation can't
-	/// be hidden. The button emits `cancelRequested` instead.
+	/// be hidden. Routed through the same cancel funnel as the button.
 	void closeEvent(QCloseEvent *event) override;
 
+	/// Esc maps to reject(), which skips closeEvent entirely — without
+	/// this override Esc would hide the dialog while the operation kept
+	/// running headless. Treated as a cancel request instead; the
+	/// dialog stays visible until `finish()`.
+	void reject() override;
+
 private:
+	/// One funnel for every cancel entry point (button, Esc, OS close
+	/// button): disables the button, flips it to 'Cancelling...', and
+	/// emits `cancelRequested` exactly once. Further requests are
+	/// no-ops until `begin()` re-arms the button for the next run.
+	void requestCancel();
+
 	QLabel *m_titleLabel;
 	QLabel *m_detailLabel;
 	QLabel *m_counterLabel;

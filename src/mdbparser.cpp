@@ -1,483 +1,501 @@
 #include "mdbparser.h"
+#include "logging.h"
 #include "mobid.h"
 #include <QFile>
 #include <QSet>
-#include <QStringList>
+#include <QtEndian>
 #include <QDebug>
-#include <QLoggingCategory>
-#include <QRegularExpression>
 #include <algorithm>
 #include <cstring>
 
-// Off by default — flood prone on busy projects.
-// Flip on when debugging the MDB format:
-//   QT_LOGGING_RULES="mediamuster.mdb.debug=true" ./MediaMuster
-Q_LOGGING_CATEGORY(lcMdb, "mediamuster.mdb", QtWarningMsg)
-
-// `msmMMOB.mdb` is an AAF property-based structure with named
-// properties (`_ORG_BIN`, `_IMPORTSETTING`, `_COLUMN_START`,
-// `_SRCFILE`, `UNC Path`, ...). The layout may shift between Avid
-// versions, so we can't rely on fixed offsets. Instead:
+// MARK: - The record framing
 //
-//   1. Find every 32-byte MOB pattern by byte signature.
-//   2. Extract every printable-ASCII string in the file.
-//   3. For each unique MOB, build a 'cluster' of strings that sit
-//      within 1 KB of any occurrence of that MOB. Inside the
-//      cluster we look for marker → value pairs and signature
-//      strings (paths, timecodes, container hints).
+// `msmMMOB.mdb` is not a Bento/AObjDoc container (that is what `.avb` bins
+// and `.avr` files are) and not AAF: it is Avid's own flat object stream.
+// Every named object ends with a fixed header, and a 32-byte MOB ID closes it:
 //
-// Bin name is the one exception to the cluster rule: `_ORG_BIN`
-// markers can sit further than 1 KB from their clip's first MOB
-// reference, so we do a file-wide `_ORG_BIN` scan and pick the
-// marker closest by byte offset to each MOB's first occurrence.
+//   <name>\0  <handle>  <u16 count>  <count x handle>  <MOB:32>
 //
-// MARK: - Field sources
+// A handle is eight bytes — a little-endian u32 whose high word is 1, then a
+// u32 zero. Because `count` must equal the number of handles AND the run must
+// land exactly on the MOB, a header is either recognised outright or rejected;
+// there is no distance threshold to tune. That is the whole difference from
+// the old parser, which mined printable strings out of a +/-1 KB window around
+// each MOB and paired them by byte distance.
 //
-//   clipName        — value after an AAF 'Name' column label.
-//                     Fallback: source basename with media extension
-//                     stripped.
-//   bin             — bin name from the `_ORG_BIN` marker closest by
-//                     byte offset to this MOB's first occurrence.
-//   startTimecode   — value after `_COLUMN_START`, or any bare
-//                     HH:MM:SS:FF match in the cluster.
-//   sourceFilePath  — first path-shaped string in the cluster
-//   sourceFileName  — basename of sourceFilePath.
-//   sourceContainer — first QTFF/MXF/MOV/... token in the cluster.
-//   isImported      — true if any `_IMPORTSETTING` marker is in the
-//                     cluster.
+// The name is the TAIL of a record, not its head: an object's attributes are
+// written before it. So a record owns the bytes from the previous record's MOB
+// up to its own name, and within that span each attribute is written as
+//
+//   <value>\0 [<value-utf8>\0] <_KEY>\0 <handle>
+//
+// — value first, key second, and non-ASCII values twice: a MacRoman copy then
+// a UTF-8 one. Taking the copy nearest the key gets UTF-8; the MacRoman twin
+// fails to decode, which is how it stays out of the UI (a name with no clean
+// copy shows blank rather than garbled).
+//
+// MARK: - How this was verified
+//
+// Against a 360-file Avid folder scanned with its own msmMMOB.mdb, using each
+// MXF's MaterialPackage name and _SRCFILE attribute as ground truth (the MOB
+// IDs join after MobId::swapMiddleFields — MXF writes the middle fields
+// little-endian, the MDB big-endian):
+//
+//   clip name    360/360 exact   (the old parser got 0 — see below)
+//   source path  354/354 exact   (every file that has one)
+//   bin          360/360 present
+//
+// The old parser scored zero clip names on that folder because it looked for a
+// literal "Name" marker next to the value. That marker only ever appears in
+// the property dictionary at the very front of the file, so at most one clip
+// in an entire database could match.
 
 namespace
 {
-// MARK: - Constants
+	// MARK: - Constants
 
-constexpr qint64 kClusterWindow = 1024;
+	/// Anything smaller cannot hold a header plus a MOB.
+	constexpr qint64 kMinFileSize = 64;
 
-/// Bin name sits 7–20 bytes before the `_ORG_BIN` marker;
-/// 64 caps off the AAF noise that surrounds it.
-constexpr qint64 kBinAdjacency = 64;
+	constexpr qint64 kHandleSize = 8;
 
-const QStringList kMediaExtensions = {
-    ".mxf", ".wav", ".aif", ".aiff", ".bwf", ".omf", ".aaf",
-    ".mov", ".mp4", ".avi", ".mkv", ".jpeg", ".jpg", ".png", ".tif",
-    ".tiff", ".dpx", ".exr", ".bmp", ".gif", ".heic", ".heif",
-    ".r3d", ".braw", ".arri", ".cin"};
+	/// A record with more referenced handles than this is not something Avid
+	/// writes; the cap stops a corrupt file from walking backwards forever.
+	constexpr int kMaxHandles = 256;
 
-const QString kMarkerImportSetting = QStringLiteral("_IMPORTSETTING");
-const QString kMarkerOrgBin = QStringLiteral("_ORG_BIN");
-const QString kMarkerNameCol = QStringLiteral("Name");
-const QString kMarkerStartCol = QStringLiteral("_COLUMN_START");
+	/// Avid's placeholder MOB. Byte-identical in every database surveyed
+	/// (508 copies in one, 272 in another, 38 in a third, across unrelated
+	/// projects) and present in no MXF, so it names no media. Its label also
+	/// differs from a real MOB's: `..01 01 01 00 | 01 01 0f 00` where real
+	/// ones read `..01 01 01 05 | 01 01 0f 10`. The old parser emitted it as
+	/// a record.
+	const QByteArray kPlaceholderMob = QByteArray::fromHex(
+		"060a2b340101010001010f0013000000bacc8a260647d528e5cd3f5b5f40443f");
 
-const QSet<QString> kContainerHints = {
-    QStringLiteral("QTFF"), QStringLiteral("MXF"), QStringLiteral("MOV"),
-    QStringLiteral("AVI"), QStringLiteral("MP4"), QStringLiteral("WAV"),
-    QStringLiteral("AIFF")};
+	const QSet<QString> kContainerHints = {
+		QStringLiteral("QTFF"), QStringLiteral("MXF"), QStringLiteral("MOV"), QStringLiteral("AVI"),
+		QStringLiteral("MP4"), QStringLiteral("WAV"), QStringLiteral("AIFF")};
 
-const QRegularExpression kTimecodeRe(
-    QStringLiteral("^\\d{2}:\\d{2}:\\d{2}[:;]\\d{2}$"));
+	const QByteArray kKeyOrgBin = QByteArrayLiteral("_ORG_BIN");
+	const QByteArray kKeySrcFile = QByteArrayLiteral("_SRCFILE");
+	const QByteArray kKeyImportSetting = QByteArrayLiteral("_IMPORTSETTING");
 
-// MARK: - String-shape helpers
+	// MARK: - Byte-level helpers
 
-/// Strip the leading `z` (0x7A) that AAF sometimes prepends to
-/// string properties as a type tag. We only strip when the next
-/// char looks like the real start of a value (uppercase, digit,
-/// or `_`) so genuine z-words aren't truncated.
-QString stripZPrefix(const QString &s)
-{
-	if (s.length() > 3 && s[0] == QLatin1Char('z'))
+	/// A byte that can appear inside a name: printable ASCII, or any high byte
+	/// (UTF-8 continuation, or a MacRoman accent in the twin copy). NUL is the
+	/// terminator and therefore the one thing that ends a run.
+	inline bool isNameByte(uchar c)
 	{
-		const QChar next = s[1];
-		if (next.isUpper() || next.isDigit() || next == QLatin1Char('_'))
-			return s.mid(1);
+		return (c >= 0x20 && c != 0x7F);
 	}
-	return s;
-}
 
-/// True if `s` looks like a filepath recorded for an imported source.
-bool looksLikeSourcePath(const QString &s)
-{
-	if (s.startsWith(QStringLiteral("/Users/")) ||
-	    s.startsWith(QStringLiteral("/Volumes/")))
-		return true;
-	if (s.startsWith(QStringLiteral("\\\\")))
-		return true;
-	if (s.length() >= 3 && s[1] == QLatin1Char(':') &&
-	    (s[2] == QLatin1Char('\\') || s[2] == QLatin1Char('/')))
-		return true;
-	return false;
-}
-
-/// True if `s` plausibly is a human-typed label rather than
-/// an internal Avid identifier or property key.
-/// Excludes paths, names starting with markers (`_`, `&`,
-/// `omfi:`, `ATN_`, `0x`), and strings too short/long to be real.
-bool looksLikeHumanLabel(const QString &s)
-{
-	if (s.contains(QLatin1Char('/')) || s.contains(QLatin1Char('\\')))
-		return false;
-	if (s.startsWith(QLatin1Char('_')) || s.startsWith(QLatin1Char('&')))
-		return false;
-	if (s.startsWith(QStringLiteral("omfi:")) ||
-	    s.startsWith(QStringLiteral("OMFI:")))
-		return false;
-	if (s.startsWith(QStringLiteral("ATN_")) ||
-	    s.startsWith(QStringLiteral("0x")))
-		return false;
-	if (s.length() < 2 || s.length() > 128)
-		return false;
-	// Must contain at least one letter — rules out digits
-	// and punctuation strings that pass the length check.
-	for (QChar c : s)
+	inline quint32 readU32(const uchar *p)
 	{
-		if (c.isLetter())
-			return true;
+		return qFromLittleEndian<quint32>(p);
 	}
-	return false;
-}
 
-/// Remove a trailing file extension if present.
-QString stripMediaExtension(const QString &name)
-{
-	const QString lower = name.toLower();
-	for (const QString &ext : kMediaExtensions)
+	/// True when `pos` starts an 8-byte object handle.
+	bool isHandleAt(const uchar *base, qint64 size, qint64 pos)
 	{
-		if (lower.endsWith(ext))
-			return name.left(name.length() - ext.length());
+		if (pos < 0 || pos + kHandleSize > size)
+			return false;
+		return (readU32(base + pos) >> 16) == 1 && readU32(base + pos + 4) == 0;
 	}
-	return name;
-}
 
-/// Basename component of a path, handling both `/` and `\`.
-QString pathBasename(const QString &path)
-{
-	const int slash = qMax(path.lastIndexOf(QLatin1Char('/')),
-	                       path.lastIndexOf(QLatin1Char('\\')));
-	return (slash >= 0) ? path.mid(slash + 1) : path;
-}
-
-// MARK: - String extraction
-
-/// A printable ASCII string in the file plus the byte offset it
-/// started at. Stored offset-sorted so we can binary search a
-/// window in `buildCluster`.
-struct ExtractedString
-{
-	qint64 offset;
-	QString value;
-};
-
-/// Walk the buffer collecting every run of printable ASCII (0x20–
-/// 0x7E) at least `minLen` chars long. Linear and allocation-frugal
-/// as the cluster builder leans on the sorted-by-offset property.
-[[nodiscard]] QVector<ExtractedString> extractAllStrings(const QByteArray &data, int minLen = 3)
-{
-	const auto isPrintable = [](uchar c)
-	{ return c >= 0x20 && c < 0x7F; };
-
-	QVector<ExtractedString> out;
-	out.reserve(2048);
-	const qint64 n = data.size();
-	const char *ptr = data.constData();
-	qint64 i = 0;
-	while (i < n)
+	/// Where a record's name starts and how long it is, for the record whose
+	/// MOB sits at `mobOff`. `valid` is false when the bytes before the MOB
+	/// aren't a header — most MOB occurrences are plain references, not
+	/// records, so this is the common case and must stay cheap.
+	struct RecordHead
 	{
-		if (!isPrintable(static_cast<uchar>(ptr[i])))
+		qint64 nameStart = 0;
+		qint64 nameLen = 0;
+		bool valid = false;
+	};
+
+	[[nodiscard]] RecordHead recordHeadAt(const uchar *base, qint64 size, qint64 mobOff)
+	{
+		// Count the handles immediately before the MOB.
+		int handles = 0;
+		qint64 p = mobOff;
+		while (handles < kMaxHandles && isHandleAt(base, size, p - kHandleSize))
 		{
-			++i;
-			continue;
+			p -= kHandleSize;
+			++handles;
 		}
-		const qint64 start = i;
-		while (i < n && isPrintable(static_cast<uchar>(ptr[i])))
-			++i;
-		if (const int len = int(i - start); len >= minLen)
-			out.append({start, QString::fromLatin1(ptr + start, len)});
-	}
-	return out;
-}
+		if (handles < 1)
+			return {};
 
-// MARK: - _ORG_BIN markers
-
-/// Byte offset of an `_ORG_BIN` marker plus the bin-name string
-/// that sits next to it. Used to map a MOB back to the bin it
-/// was originally imported into.
-struct OrgBinMarker
-{
-	qint64 offset;
-	QString binName;
-};
-
-/// Find every `_ORG_BIN` marker and pair it with the nearest
-/// 'human' string within `kBinAdjacency` bytes. Gate by byte
-/// distance, not list index.
-[[nodiscard]] QVector<OrgBinMarker> findOrgBinMarkers(const QVector<ExtractedString> &strings)
-{
-	QVector<OrgBinMarker> out;
-	for (int i = 0; i < strings.size(); ++i)
-	{
-		if (strings[i].value != kMarkerOrgBin)
-			continue;
-		const qint64 markerOff = strings[i].offset;
-		QString binName;
-		for (int j = i - 1; j >= 0 && j >= i - 20; --j)
+		// The count must name exactly the handles that follow it, and the run
+		// must end exactly on the MOB. Try the longest run first: a shorter one
+		// could coincide with a count-shaped pair of bytes inside the header.
+		for (int take = handles; take >= 1; --take)
 		{
-			const qint64 prevEnd = strings[j].offset + strings[j].value.length();
-			if (markerOff - prevEnd > kBinAdjacency)
-				break;
-			const QString cand = stripZPrefix(strings[j].value);
-			if (!looksLikeHumanLabel(cand))
+			const qint64 countPos = mobOff - qint64(take) * kHandleSize - 2;
+			if (countPos < 0)
 				continue;
-			// Duplicates are fine — key and value carry the same
-			// text in the AAF representation.
-			binName = cand;
+			if (qFromLittleEndian<quint16>(base + countPos) != quint16(take))
+				continue;
+			// The record's own handle sits just before its member count.
+			if (!isHandleAt(base, size, countPos - kHandleSize))
+				continue;
+
+			const qint64 nulPos = countPos - kHandleSize - 1;
+			if (nulPos < 0 || base[nulPos] != 0)
+				continue;
+			qint64 s = nulPos;
+			while (s > 0 && isNameByte(base[s - 1]))
+				--s;
+			if (nulPos - s < 1)
+				continue;
+			return {s, nulPos - s, true};
 		}
-		if (!binName.isEmpty())
-			out.append({markerOff, binName});
+		return {};
 	}
-	return out;
-}
 
-// MARK: - MOB offsets
+	// MARK: - Strings inside a record
 
-/// Find every byte position where a 32-byte MOB pattern starts.
-/// Avid MDB content uses the `06 0a 2b 34` prefix exclusively
-/// (never the SMPTE `06 0e 2b 34` form) so we only scan for the
-/// `0a` variant.
-[[nodiscard]] QVector<qint64> findMobOffsets(const QByteArray &data)
-{
-	QVector<qint64> out;
-	const qint64 n = data.size();
-	if (n < 32)
+	/// One NUL-terminated printable run. Offsets are file-absolute.
+	struct SpanString
+	{
+		qint64 offset;
+		QByteArray value;
+	};
+
+	[[nodiscard]] QVector<SpanString> stringsIn(const uchar *base, qint64 lo, qint64 hi)
+	{
+		QVector<SpanString> out;
+		qint64 i = lo;
+		while (i < hi)
+		{
+			if (!isNameByte(base[i]))
+			{
+				++i;
+				continue;
+			}
+			const qint64 start = i;
+			while (i < hi && isNameByte(base[i]))
+				++i;
+			// Only a NUL-terminated run is a value; a run cut off by the span
+			// edge belongs to the neighbouring record.
+			if (i < hi && base[i] == 0 && i > start)
+				out.append({start, QByteArray(reinterpret_cast<const char *>(base + start),
+											  int(i - start))});
+			++i;
+		}
 		return out;
-
-	const auto *ptr = reinterpret_cast<const uchar *>(data.constData());
-	// `memchr` uses SIMD to skip to the next 0x06 byte.
-	// Cap at n-32 so a 32-byte MOB still fits.
-	const uchar *const end = ptr + (n - 32);
-	const uchar *p = ptr;
-	while (p <= end)
-	{
-		p = static_cast<const uchar *>(std::memchr(p, 0x06, end - p + 1));
-		if (!p)
-			break;
-		if (p[1] == 0x0a && p[2] == 0x2b && p[3] == 0x34)
-		{
-			out.append(p - ptr);
-			p += 32;
-		}
-		else
-		{
-			++p;
-		}
-	}
-	return out;
-}
-
-// MARK: - Cluster building
-
-/// Build the per-MOB cluster: every printable string within
-/// `kClusterWindow` bytes of any MOB occurrence. Strings are
-/// keyed by offset, so duplicates sort adjacent and `std::unique`
-/// collapses them in one pass.
-[[nodiscard]] QVector<ExtractedString> buildCluster(
-    const QVector<qint64> &mobOffsets,
-    const QVector<ExtractedString> &strings)
-{
-	QVector<ExtractedString> cluster;
-	cluster.reserve(64);
-	for (qint64 off : mobOffsets)
-	{
-		const qint64 lo = off - kClusterWindow;
-		const qint64 hi = off + kClusterWindow;
-		// Binary search to jump straight to the window start —
-		// strings is offset-sorted by construction.
-		const auto start = std::lower_bound(strings.cbegin(), strings.cend(), lo,
-		                                    [](const ExtractedString &es, qint64 val)
-		                                    { return es.offset < val; });
-		for (auto it = start; it != strings.cend() && it->offset <= hi; ++it)
-			cluster.append(*it);
-	}
-	std::sort(cluster.begin(), cluster.end(),
-	          [](const ExtractedString &a, const ExtractedString &b)
-	          { return a.offset < b.offset; });
-	cluster.erase(std::unique(cluster.begin(), cluster.end(),
-	                          [](const ExtractedString &a, const ExtractedString &b)
-	                          { return a.offset == b.offset; }),
-	              cluster.end());
-	return cluster;
-}
-
-// MARK: - Per-MOB extraction
-
-/// Build one MdbRecord from one MOB's cluster. Walks the cluster
-/// looking for marker-then-value pairs (Name → clip name,
-/// _COLUMN_START → start timecode), then runs a few standalone
-/// heuristics (path-shape, timecode regex, container token,
-/// import marker presence).
-[[nodiscard]] MdbRecord extractMobRecord(
-    const QByteArray &rawMobId,
-    const QString &mobHex,
-    const QVector<qint64> &mobOccurrences,
-    const QVector<ExtractedString> &allStrings,
-    const QVector<OrgBinMarker> &orgBinMarkers)
-{
-	MdbRecord rec;
-	rec.mobId = rawMobId;
-	rec.mobIdHex = mobHex;
-
-	const QVector<ExtractedString> cluster = buildCluster(mobOccurrences, allStrings);
-
-	// First pass: harvest marker → value pairs (adjacent strings
-	// in AAF; a `Name` marker is followed by the clip name).
-	for (int i = 0; i < cluster.size(); ++i)
-	{
-		const QString &raw = cluster[i].value;
-
-		if (raw == kMarkerImportSetting)
-		{
-			rec.isImported = true;
-		}
-		else if (raw == kMarkerNameCol && rec.clipName.isEmpty() && i + 1 < cluster.size())
-		{
-			const QString nxt = stripZPrefix(cluster[i + 1].value);
-			if (nxt != kMarkerNameCol && !nxt.startsWith(QLatin1Char('_')) && looksLikeHumanLabel(nxt))
-				rec.clipName = nxt;
-		}
-		else if (raw == kMarkerStartCol && rec.startTimecode.isEmpty() && i + 1 < cluster.size())
-		{
-			const QString &nxt = cluster[i + 1].value;
-			if (kTimecodeRe.match(nxt).hasMatch())
-				rec.startTimecode = nxt;
-		}
 	}
 
-	// Start-timecode fallback: any bare HH:MM:SS:FF anywhere in
-	// the cluster. Some Avid versions don't write the
-	// `_COLUMN_START` marker but do leave the timecode string.
-	if (rec.startTimecode.isEmpty())
+	/// Decode a value written by Avid, rejecting the MacRoman twin.
+	///
+	/// Avid writes a non-ASCII value twice — MacRoman first, UTF-8 second — so
+	/// the copy nearest its key is the UTF-8 one. A MacRoman run is almost
+	/// never valid UTF-8, and QString::fromUtf8 marks the failure with
+	/// replacement characters; treating that as "no value" lets the caller
+	/// fall through to the clean copy, and leaves a blank rather than mojibake
+	/// when no clean copy exists.
+	[[nodiscard]] QString decodeUtf8(const QByteArray &raw)
 	{
-		for (const ExtractedString &es : cluster)
+		const QString s = QString::fromUtf8(raw);
+		if (s.contains(QChar(QChar::ReplacementCharacter)))
+			return {};
+		return s;
+	}
+
+	/// The value belonging to the key at index `k`: the nearest preceding run
+	/// that decodes cleanly. Two back is far enough for the MacRoman/UTF-8 pair
+	/// and stops a key with no value of its own from stealing the one before.
+	[[nodiscard]] QString valueBefore(const QVector<SpanString> &strs, int k)
+	{
+		for (int j = k - 1; j >= 0 && j >= k - 2; --j)
 		{
-			if (kTimecodeRe.match(es.value).hasMatch())
+			const QString s = decodeUtf8(strs[j].value);
+			if (!s.isEmpty())
+				return s;
+		}
+		return {};
+	}
+
+	/// Basename component of a path, handling both `/` and `\`.
+	QString pathBasename(const QString &path)
+	{
+		const int slash = qMax(path.lastIndexOf(QLatin1Char('/')), path.lastIndexOf(QLatin1Char('\\')));
+		return (slash >= 0) ? path.mid(slash + 1) : path;
+	}
+
+	/// Read one record's attributes out of the bytes it owns. Walks backwards
+	/// so the attribute nearest the record's own name wins: where a span holds
+	/// two of the same key, the later one is this record's and the earlier
+	/// belongs to an object whose header this parser didn't recognise.
+	[[nodiscard]] MdbRecord attributesIn(const uchar *base, qint64 lo, qint64 hi)
+	{
+		MdbRecord rec;
+		const QVector<SpanString> strs = stringsIn(base, lo, hi);
+		for (int k = strs.size() - 1; k >= 0; --k)
+		{
+			const QByteArray &v = strs[k].value;
+			if (v == kKeyImportSetting)
 			{
-				rec.startTimecode = es.value;
+				rec.isImported = true;
+			}
+			else if (v == kKeyOrgBin && rec.bin.isEmpty())
+			{
+				rec.bin = valueBefore(strs, k);
+			}
+			else if (v == kKeySrcFile && rec.sourceFilePath.isEmpty())
+			{
+				rec.sourceFilePath = valueBefore(strs, k);
+				rec.sourceFileName = pathBasename(rec.sourceFilePath);
+			}
+			else if (rec.sourceContainer.isEmpty())
+			{
+				const QString token = QString::fromLatin1(v);
+				if (kContainerHints.contains(token))
+					rec.sourceContainer = token;
+			}
+		}
+		return rec;
+	}
+
+	/// Fill blanks in `into` from `from`. The same MOB is written several times
+	/// and only some copies carry attributes, so the copies are unioned rather
+	/// than letting the last one win.
+	void mergeInto(MdbRecord &into, const MdbRecord &from)
+	{
+		const auto fill = [](QString &dst, const QString &src)
+		{
+			if (dst.isEmpty())
+				dst = src;
+		};
+		fill(into.clipName, from.clipName);
+		fill(into.bin, from.bin);
+		fill(into.sourceFilePath, from.sourceFilePath);
+		fill(into.sourceFileName, from.sourceFileName);
+		fill(into.sourceContainer, from.sourceContainer);
+		into.isImported = into.isImported || from.isImported;
+	}
+
+	// MARK: - MOB offsets
+
+	/// Find every byte position where a 32-byte MOB starts. Avid MDB
+	/// always uses the `06 0a 2b 34` prefix (never SMPTE `06 0e 2b 34`),
+	/// so only scan for the `0a` form.
+	[[nodiscard]] QVector<qint64> findMobOffsets(const QByteArray &data)
+	{
+		QVector<qint64> out;
+		const qint64 n = data.size();
+		if (n < MobId::kRawSize)
+			return out;
+
+		const auto *ptr = reinterpret_cast<const uchar *>(data.constData());
+		const uchar *const end = ptr + (n - MobId::kRawSize);
+		const uchar *p = ptr;
+		while (p <= end)
+		{
+			p = static_cast<const uchar *>(std::memchr(p, 0x06, end - p + 1));
+			if (!p)
 				break;
-			}
-		}
-	}
-
-	// Source file path: first path-shaped string in offset order.
-	for (const ExtractedString &es : cluster)
-	{
-		const QString s = stripZPrefix(es.value);
-		if (looksLikeSourcePath(s))
-		{
-			rec.sourceFilePath = s;
-			rec.sourceFileName = pathBasename(s);
-			break;
-		}
-	}
-
-	// Clip-name fallback: strip the media extension off the
-	// source filename.
-	if (rec.clipName.isEmpty() && !rec.sourceFileName.isEmpty())
-		rec.clipName = stripMediaExtension(rec.sourceFileName);
-
-	// Bin name: nearest `_ORG_BIN` marker (by file offset) to this
-	// MOB's earliest occurrence. Markers regularly sit >1 KB from
-	// their MOB reference, so cluster membership won't catch them.
-	if (!orgBinMarkers.isEmpty() && !mobOccurrences.isEmpty())
-	{
-		const qint64 firstOcc = *std::min_element(mobOccurrences.cbegin(), mobOccurrences.cend());
-		const OrgBinMarker *best = nullptr;
-		qint64 bestDist = 0;
-		for (const OrgBinMarker &m : orgBinMarkers)
-		{
-			const qint64 d = qAbs(m.offset - firstOcc);
-			if (!best || d < bestDist)
+			if (p[1] == 0x0a && p[2] == 0x2b && p[3] == 0x34)
 			{
-				best = &m;
-				bestDist = d;
+				out.append(p - ptr);
+				p += MobId::kRawSize;
+			}
+			else
+			{
+				++p;
 			}
 		}
-		if (best)
-			rec.bin = best->binName;
+		return out;
 	}
-
-	// Source container: first recognised token (`QTFF`, `MXF`,
-	// `MOV`, ...) in the cluster.
-	for (const ExtractedString &es : cluster)
-	{
-		if (kContainerHints.contains(es.value))
-		{
-			rec.sourceContainer = es.value;
-			break;
-		}
-	}
-
-	return rec;
-}
 
 } // namespace
 
 // MARK: - Public API
 
-QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath)
+QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath, bool *ok)
 {
+	// Pessimistic default: the early failure returns below leave it false;
+	// reaching the record walk flips it. See the header for why ok=true is a
+	// weaker guarantee here than in PmrParser.
+	if (ok)
+		*ok = false;
+
 	QVector<MdbRecord> records;
 
 	QFile file(mdbFilePath);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		qWarning() << "MDB: Cannot open" << mdbFilePath;
+		qCWarning(lcMdb) << "cannot open" << mdbFilePath << file.errorString();
 		return records;
 	}
 	const QByteArray data = file.readAll();
 	file.close();
 
-	// Sanity check — anything under 64 bytes not likely a real MDB.
-	if (data.size() < 64)
+	if (data.size() < kMinFileSize)
+	{
+		qCWarning(lcMdb) << "file too small" << data.size() << mdbFilePath;
 		return records;
+	}
 
 	const QVector<qint64> mobOffsets = findMobOffsets(data);
-	const QVector<ExtractedString> strings = extractAllStrings(data, 3);
-	const QVector<OrgBinMarker> orgBins = findOrgBinMarkers(strings);
 
-	qCDebug(lcMdb) << "MDB:" << mdbFilePath
-	               << "size:" << data.size()
-	               << "mobs:" << mobOffsets.size()
-	               << "strings:" << strings.size()
-	               << "_ORG_BIN markers:" << orgBins.size();
-	for (const OrgBinMarker &m : orgBins)
-		qCDebug(lcMdb) << "  _ORG_BIN @" << m.offset << ":" << m.binName;
+	// Validity gate. Every real MDB surveyed opens with its property
+	// dictionary near the front — "_USER...", or "block NNNN\0_USER..." on
+	// some variants, so the fingerprint is scanned for, never demanded at a
+	// fixed offset. A file with neither the fingerprint nor a single Avid
+	// MOB anywhere is not something this parser can read: without this
+	// check it "parsed" to zero records with ok=true, and the scanner then
+	// stamped the folder's unmatched files a verified "No reference" when
+	// the honest answer is "No database". The MOB escape hatch keeps any
+	// readable file acceptable regardless of its prelude; the failure
+	// direction of a wrong rejection is the safe label ("couldn't check").
+	// Known limit: truncation that preserves the front still passes — a
+	// stream with no length field has nothing to test completeness against.
+	const QByteArray head = data.left(4096);
+	const bool fingerprinted = head.contains("_USER") || head.contains("_VERSION");
+	if (!fingerprinted && mobOffsets.isEmpty())
+	{
+		qCWarning(lcMdb) << "not a recognisable Avid MDB (no property dictionary, no MOB IDs)"
+						 << mdbFilePath;
+		return records;
+	}
 
-	// Group MOB occurrences by hex form — the same MOB typically
-	// appears in multiple places in the file (source / master /
-	// referenced clips) and we want one record per unique MOB.
-	QHash<QString, QVector<qint64>> mobOccurrences;
-	QHash<QString, QByteArray> mobRawBytes;
+	if (ok)
+		*ok = true;
+
+	const auto *base = reinterpret_cast<const uchar *>(data.constData());
+	const qint64 size = data.size();
+
+	// Group occurrences by MOB. The same MOB is written many times over
+	// (source / master / referenced), and one record is emitted per unique one.
+	QHash<QString, QVector<qint64>> occurrences;
+	QHash<QString, QByteArray> rawBytes;
+	int placeholders = 0;
 	for (qint64 off : mobOffsets)
 	{
-		const QByteArray mob = data.mid(qsizetype(off), 32);
+		const QByteArray mob = data.mid(qsizetype(off), MobId::kRawSize);
+		if (mob == kPlaceholderMob)
+		{
+			++placeholders;
+			continue;
+		}
 		const QString hex = MobId::format(mob);
-		mobOccurrences[hex].append(off);
-		if (!mobRawBytes.contains(hex))
-			mobRawBytes.insert(hex, mob);
+		occurrences[hex].append(off);
+		if (!rawBytes.contains(hex))
+			rawBytes.insert(hex, mob);
 	}
 
-	records.reserve(mobOccurrences.size());
-	for (auto it = mobOccurrences.cbegin(); it != mobOccurrences.cend(); ++it)
+	// MARK: Record heads, in file order
+
+	struct Head
 	{
-		records.append(extractMobRecord(
-		    mobRawBytes.value(it.key()), it.key(), it.value(), strings, orgBins));
+		qint64 nameStart;
+		qint64 nameLen;
+		qint64 mobOff;
+		QString hex;
+	};
+	QVector<Head> heads;
+	heads.reserve(mobOffsets.size() / 4);
+	for (qint64 off : mobOffsets)
+	{
+		const RecordHead h = recordHeadAt(base, size, off);
+		if (!h.valid)
+			continue;
+		const QByteArray mob = data.mid(qsizetype(off), MobId::kRawSize);
+		if (mob == kPlaceholderMob)
+			continue;
+		heads.append({h.nameStart, h.nameLen, off, MobId::format(mob)});
+	}
+	// findMobOffsets walks the file forwards, so `heads` is already ascending.
+
+	// MARK: One record per head, then merge duplicates
+
+	QHash<QString, int> indexByHex;
+	// A record owns the bytes from the previous record's MOB to its own name.
+	struct Span
+	{
+		qint64 lo;
+		qint64 hi;
+		int recordIndex;
+	};
+	QVector<Span> spans;
+	spans.reserve(heads.size());
+
+	for (int i = 0; i < heads.size(); ++i)
+	{
+		const qint64 lo = i ? heads[i - 1].mobOff + MobId::kRawSize : 0;
+		MdbRecord rec = attributesIn(base, lo, heads[i].nameStart);
+		rec.clipName = decodeUtf8(QByteArray(
+			reinterpret_cast<const char *>(base + heads[i].nameStart), int(heads[i].nameLen)));
+		rec.mobIdHex = heads[i].hex;
+		rec.mobId = rawBytes.value(heads[i].hex);
+
+		int idx = indexByHex.value(heads[i].hex, -1);
+		if (idx < 0)
+		{
+			idx = records.size();
+			indexByHex.insert(heads[i].hex, idx);
+			records.append(rec);
+		}
+		else
+		{
+			mergeInto(records[idx], rec);
+		}
+		spans.append({lo, heads[i].mobOff + MobId::kRawSize, idx});
 	}
 
-	qCDebug(lcMdb) << "MDB: built" << records.size() << "per-MOB records";
+	// MARK: MOBs with no head of their own
+
+	// A clip's file MOBs sit inside the master's record and carry no header,
+	// but the scanner looks up both mobId and masterMobId — so they inherit
+	// the record whose span they fall in. Anything left over still gets a bare
+	// record: dropping a MOB from the map would read as "not in the database"
+	// and could mislabel a file as unreferenced.
+	for (auto it = occurrences.cbegin(); it != occurrences.cend(); ++it)
+	{
+		if (indexByHex.contains(it.key()))
+			continue;
+
+		int owner = -1;
+		for (qint64 off : it.value())
+		{
+			// Spans are ascending and disjoint, so the first with lo > off ends
+			// the search.
+			const auto at = std::upper_bound(spans.cbegin(), spans.cend(), off,
+											 [](qint64 value, const Span &s)
+											 { return value < s.lo; });
+			if (at != spans.cbegin())
+			{
+				const Span &s = *(at - 1);
+				if (off < s.hi)
+				{
+					owner = s.recordIndex;
+					break;
+				}
+			}
+		}
+
+		MdbRecord rec;
+		if (owner >= 0)
+			rec = records[owner];
+		rec.mobIdHex = it.key();
+		rec.mobId = rawBytes.value(it.key());
+		indexByHex.insert(it.key(), records.size());
+		records.append(rec);
+	}
+
+	qCDebug(lcMdb) << "MDB:" << mdbFilePath << "size:" << data.size()
+				   << "mobs:" << occurrences.size() << "records with a header:" << heads.size()
+				   << "placeholder MOBs skipped:" << placeholders;
+
 	return records;
 }
 
-MdbParser::RecordMap MdbParser::buildMobMap(const QString &mdbFilePath)
+MdbParser::RecordMap MdbParser::buildMobMap(const QString &mdbFilePath, bool *ok)
 {
 	RecordMap map;
-	const auto records = parse(mdbFilePath);
+	const auto records = parse(mdbFilePath, ok);
 	map.reserve(records.size());
 	for (const auto &r : records)
 	{
