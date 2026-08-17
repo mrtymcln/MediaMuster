@@ -263,7 +263,11 @@ void TestMediaManagerPaths::copy_run_writes_its_plan_before_the_first_op()
 	QCOMPARE(live.plan[1].src, b.filePath);
 	QCOMPARE(live.plan[1].policy, QStringLiteral("skip"));
 
-	QVERIFY2(finished.wait(15000), "copy did not finish in time");
+	// Generous: Slow Mode sleeps 250 ms per 4 MB chunk AND 2 s per file
+	// (pauseForMs multiplies by 50), so this run sleeps ~5 s by design
+	// before any real I/O. A deadline close to the expected time is a
+	// flaky test on a slow runner, not a useful assertion.
+	QVERIFY2(finished.wait(60000), "copy did not finish in time");
 	QCOMPARE(readFile(dest + "/a.mxf"), QByteArray(8 * 1024 * 1024, 'A'));
 	QCOMPARE(readFile(dest + "/b.mxf"), QByteArray("OLD"));
 	QVERIFY2(OpJournal::scan(m_oplogDir.path()).isEmpty(),
