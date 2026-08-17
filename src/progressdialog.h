@@ -8,8 +8,9 @@ class QPushButton;
 
 // MARK: - ProgressDialog
 
-/// Modal progress dialog: bar, title, details, counter, Cancel.
-/// Shared by scan, file ops, and rebalance.
+/// Modal progress sheet: detail line, bar, counter, Cancel. No title —
+/// it is a sheet on the main window, and the console narrates the run.
+/// Shared by scan and Manage Media ops (RebalanceDialog draws its own bar).
 /// Cancel routes through our button so the worker always gets shut down.
 class ProgressDialog : public QDialog
 {
@@ -19,17 +20,17 @@ public:
 
 	// MARK: - Lifecycle
 
-	/// Show the dialog with the given title. The bar starts
-	/// indeterminate and flips to determinate the
-	/// moment `setProgress` arrives with a positive total.
-	void begin(const QString &title);
+	/// Show the sheet for a new run. The bar starts indeterminate and
+	/// flips to determinate the moment `setProgress` arrives with a
+	/// positive total.
+	void begin();
 
 	/// Update the bar. `total == 0` keeps it indeterminate; any
 	/// positive total flips to determinate and shows 'N%' and 'N of N'.
 	void setProgress(int current, int total);
 
-	/// Details under the title; usually the current file path,
-	/// mid-elided to fit so head and tail stay visible.
+	/// Detail line; usually the current file path, mid-elided to fit
+	/// so head and tail stay visible.
 	void setDetail(const QString &text);
 
 	/// Hide the dialog. Caller is responsible for any final logging.
@@ -59,7 +60,6 @@ private:
 	/// no-ops until `begin()` re-arms the button for the next run.
 	void requestCancel();
 
-	QLabel *m_titleLabel;
 	QLabel *m_detailLabel;
 	QLabel *m_counterLabel;
 	QProgressBar *m_bar;

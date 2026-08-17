@@ -28,6 +28,11 @@ private slots:
 	void generateRenamePath_returns_nullopt_when_exhausted();
 	void generateRenamePath_handles_extensionless_path();
 
+	// Journal plan: what a run writes so a later launch can resume it, and
+	// how the remainder turns back into rows the engine accepts.
+	void plan_items_round_trip_through_files_and_policies();
+	void copy_run_writes_its_plan_before_the_first_op();
+
 	// Regression: two selected files that flatten onto the same destination
 	// name must both survive — the later one renamed, never overwriting the
 	// first (which on Move would lose it outright).
@@ -163,6 +168,106 @@ void TestMediaManagerPaths::buildDestPath_preserve_true_uses_avid_structure()
 	mf.mxfFolder = "5";
 	QCOMPARE(MediaManager::buildDestPath(mf, "/dest", true),
 			 QStringLiteral("/dest/Avid MediaFiles/MXF/5/clip.mxf"));
+}
+
+void TestMediaManagerPaths::plan_items_round_trip_through_files_and_policies()
+{
+	MediaFile a;
+	a.filePath = "/vol/Avid MediaFiles/MXF/1/a.mxf";
+	a.fileName = "a.mxf";
+	a.mxfFolder = "1";
+	a.sizeBytes = 100;
+	MediaFile b;
+	b.filePath = "/vol/Avid MediaFiles/MXF/host.2/b.mxf";
+	b.fileName = "b.mxf";
+	b.mxfFolder = "host.2";
+	b.sizeBytes = 200;
+	const QHash<QString, MediaManager::ConflictPolicy> pol{
+		{a.filePath, MediaManager::ConflictPolicy::KeepBoth},
+	};
+
+	const auto items = MediaManager::planItems({a, b}, pol);
+	QCOMPARE(items.size(), 2);
+	QCOMPARE(items[0].src, a.filePath);
+	QCOMPARE(items[0].name, a.fileName);
+	QCOMPARE(items[0].folder, a.mxfFolder);
+	QCOMPARE(items[0].bytes, a.sizeBytes);
+	QCOMPARE(items[0].policy, QStringLiteral("keepboth"));
+	QVERIFY(items[1].policy.isEmpty());
+
+	const auto files = MediaManager::filesFromPlan(items);
+	QCOMPARE(files.size(), 2);
+	QCOMPARE(files[1].filePath, b.filePath);
+	QCOMPARE(files[1].fileName, b.fileName);
+	QCOMPARE(files[1].mxfFolder, b.mxfFolder);
+	QCOMPARE(files[1].sizeBytes, b.sizeBytes);
+	// buildDestPath — the only thing the engine derives from a row — agrees.
+	QCOMPARE(MediaManager::buildDestPath(files[1], "/dest", true),
+			 MediaManager::buildDestPath(b, "/dest", true));
+
+	const auto back = MediaManager::policiesFromPlan(items);
+	QCOMPARE(back.size(), 1);
+	QCOMPARE(back.value(a.filePath), MediaManager::ConflictPolicy::KeepBoth);
+
+	// Every policy name round-trips; an unknown name is simply "no policy".
+	for (auto p : {MediaManager::ConflictPolicy::KeepBoth, MediaManager::ConflictPolicy::Skip,
+				   MediaManager::ConflictPolicy::Replace})
+		QCOMPARE(MediaManager::conflictPolicyFromName(MediaManager::conflictPolicyName(p)), p);
+	QVERIFY(!MediaManager::conflictPolicyFromName(QStringLiteral("bogus")).has_value());
+}
+
+void TestMediaManagerPaths::copy_run_writes_its_plan_before_the_first_op()
+{
+	// Force the buffered path and slow it down so the journal can be read
+	// while the run is still in flight (a tiny copy would finish and prune
+	// its journal before a poll could see it).
+	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	DebugSlowdown::setEnabled(true);
+
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString srcDir = tmp.path() + "/src";
+	const QString dest = tmp.path() + "/dest";
+	QDir().mkpath(srcDir);
+	QDir().mkpath(dest);
+	writeFile(srcDir + "/a.mxf", QByteArray(8 * 1024 * 1024, 'A'));
+	writeFile(srcDir + "/b.mxf", "BBBBBB");
+	writeFile(dest + "/b.mxf", "OLD"); // b already exists -> Skip policy
+
+	MediaFile a;
+	a.filePath = srcDir + "/a.mxf";
+	a.fileName = "a.mxf";
+	a.sizeBytes = 8 * 1024 * 1024;
+	MediaFile b;
+	b.filePath = srcDir + "/b.mxf";
+	b.fileName = "b.mxf";
+	b.sizeBytes = 6;
+	const QHash<QString, MediaManager::ConflictPolicy> pol{
+		{b.filePath, MediaManager::ConflictPolicy::Skip}};
+
+	// Read the journal while the first copy is still in flight: the plan
+	// must already be there — written before the first op line, i.e. before
+	// any file was touched.
+	MediaManager mgr;
+	QSignalSpy finished(&mgr, &MediaManager::operationFinished);
+	const quint64 ticks = DebugSlowdown::copyLoopTicks().load();
+	mgr.executeCopy({a, b}, dest, false, pol);
+	QTRY_VERIFY_WITH_TIMEOUT(DebugSlowdown::copyLoopTicks().load() > ticks, 10000);
+	const QVector<OpJournal::Record> recs = OpJournal::scan(m_oplogDir.path());
+	QCOMPARE(recs.size(), 1);
+	const OpJournal::Record live = recs.first();
+	QVERIFY2(live.hasPlan, "the plan line must be written at the start of the run");
+	QCOMPARE(live.plan.size(), 2);
+	QCOMPARE(live.planDest, dest);
+	QCOMPARE(live.planPreserve, false);
+	QCOMPARE(live.plan[1].src, b.filePath);
+	QCOMPARE(live.plan[1].policy, QStringLiteral("skip"));
+
+	QVERIFY2(finished.wait(15000), "copy did not finish in time");
+	QCOMPARE(readFile(dest + "/a.mxf"), QByteArray(8 * 1024 * 1024, 'A'));
+	QCOMPARE(readFile(dest + "/b.mxf"), QByteArray("OLD"));
+	QVERIFY2(OpJournal::scan(m_oplogDir.path()).isEmpty(),
+			 "a finished copy must not leave its journal behind");
 }
 
 void TestMediaManagerPaths::buildDestPath_preserve_false_flattens()

@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QStandardPaths>
 #include <QSysInfo>
@@ -137,6 +138,27 @@ int OpJournal::planOp(const QString &src, const QString &dst, qint64 bytes, cons
 
 	writeLine(o);
 	return id;
+}
+
+void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<PlanItem> &items)
+{
+	QJsonArray files;
+	for (const PlanItem &it : items)
+	{
+		QJsonObject o{{QStringLiteral("src"), it.src},
+					  {QStringLiteral("name"), it.name}};
+		if (!it.folder.isEmpty())
+			o.insert(QStringLiteral("folder"), it.folder);
+		if (it.bytes > 0)
+			o.insert(QStringLiteral("bytes"), QJsonValue(it.bytes));
+		if (!it.policy.isEmpty())
+			o.insert(QStringLiteral("policy"), it.policy);
+		files.append(o);
+	}
+	writeLine({{QStringLiteral("rec"), QStringLiteral("plan")},
+			   {QStringLiteral("dest"), dest},
+			   {QStringLiteral("preserve"), preserve},
+			   {QStringLiteral("files"), files}});
 }
 
 void OpJournal::markDone(int id, const QString &finalPath)
@@ -352,7 +374,8 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 
 		if (r == QStringLiteral("begin"))
 		{
-			rec.kind = kindFromName(o.value(QStringLiteral("kind")).toString());
+			rec.kind = kindFromName(o.value(QStringLiteral("kind")).toString(), &rec.kindKnown);
+			rec.schema = o.value(QStringLiteral("schema")).toInt(0);
 			rec.meta = o.value(QStringLiteral("meta")).toObject();
 			rec.started = o.value(QStringLiteral("started")).toString();
 			rec.pid = o.value(QStringLiteral("pid")).toInteger(0);
@@ -405,6 +428,27 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 		else if (r == QStringLiteral("recovered"))
 		{
 			rec.recovered = true;
+		}
+		else if (r == QStringLiteral("plan"))
+		{
+			rec.hasPlan = true;
+			rec.planDest = o.value(QStringLiteral("dest")).toString();
+			rec.planPreserve = o.value(QStringLiteral("preserve")).toBool(false);
+			rec.plan.clear();
+			const QJsonArray files = o.value(QStringLiteral("files")).toArray();
+			rec.plan.reserve(files.size());
+			for (const QJsonValue &v : files)
+			{
+				const QJsonObject f = v.toObject();
+				PlanItem it;
+				it.src = f.value(QStringLiteral("src")).toString();
+				it.name = f.value(QStringLiteral("name")).toString();
+				it.folder = f.value(QStringLiteral("folder")).toString();
+				it.bytes = f.value(QStringLiteral("bytes")).toInteger(0);
+				it.policy = f.value(QStringLiteral("policy")).toString();
+				if (!it.src.isEmpty())
+					rec.plan.append(it);
+			}
 		}
 	}
 

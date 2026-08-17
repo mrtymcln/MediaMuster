@@ -15,7 +15,8 @@
 ProgressDialog::ProgressDialog(QWidget *parent)
 	: QDialog(parent)
 {
-	// No window title: the in-dialog labels carry all the text we need.
+	// No title of any kind: it is a sheet on the main window, and the
+	// console says what is running. The detail line carries the rest.
 
 	// Modal so the user can't kick off a second operation whilst this
 	// one is mid-flight; Cancel is the only way out.
@@ -25,15 +26,6 @@ ProgressDialog::ProgressDialog(QWidget *parent)
 	auto *layout = new QVBoxLayout(this);
 	layout->setContentsMargins(18, 16, 18, 16);
 	layout->setSpacing(10);
-
-	// MARK: Title row
-
-	m_titleLabel = new QLabel;
-	QFont tf = m_titleLabel->font();
-	tf.setPointSize(tf.pointSize() + 1);
-	tf.setBold(true);
-	m_titleLabel->setFont(tf);
-	layout->addWidget(m_titleLabel);
 
 	// MARK: Detail row
 
@@ -73,9 +65,8 @@ ProgressDialog::ProgressDialog(QWidget *parent)
 
 // MARK: - Public lifecycle
 
-void ProgressDialog::begin(const QString &title)
+void ProgressDialog::begin()
 {
-	m_titleLabel->setText(title);
 	m_detailLabel->clear();
 	m_counterLabel->clear();
 	m_bar->setRange(0, 0); // Reset to indeterminate for the new run.

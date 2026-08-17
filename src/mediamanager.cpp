@@ -192,6 +192,78 @@ std::optional<QString> MediaManager::generateRenamePath(const QString &destPath)
 	return std::nullopt;
 }
 
+// MARK: - Journal plan
+
+QString MediaManager::conflictPolicyName(ConflictPolicy policy)
+{
+	switch (policy)
+	{
+	case ConflictPolicy::KeepBoth:
+		return QStringLiteral("keepboth");
+	case ConflictPolicy::Skip:
+		return QStringLiteral("skip");
+	case ConflictPolicy::Replace:
+		return QStringLiteral("replace");
+	}
+	return {};
+}
+
+std::optional<MediaManager::ConflictPolicy> MediaManager::conflictPolicyFromName(const QString &name)
+{
+	if (name == QStringLiteral("keepboth"))
+		return ConflictPolicy::KeepBoth;
+	if (name == QStringLiteral("skip"))
+		return ConflictPolicy::Skip;
+	if (name == QStringLiteral("replace"))
+		return ConflictPolicy::Replace;
+	return std::nullopt;
+}
+
+QVector<OpJournal::PlanItem> MediaManager::planItems(const QVector<MediaFile> &files,
+													 const QHash<QString, ConflictPolicy> &policies)
+{
+	QVector<OpJournal::PlanItem> out;
+	out.reserve(files.size());
+	for (const MediaFile &mf : files)
+	{
+		OpJournal::PlanItem it;
+		it.src = mf.filePath;
+		it.name = mf.fileName;
+		it.folder = mf.mxfFolder;
+		it.bytes = mf.sizeBytes;
+		if (const auto p = policies.constFind(mf.filePath); p != policies.constEnd())
+			it.policy = conflictPolicyName(p.value());
+		out.append(it);
+	}
+	return out;
+}
+
+QVector<MediaFile> MediaManager::filesFromPlan(const QVector<OpJournal::PlanItem> &items)
+{
+	QVector<MediaFile> out;
+	out.reserve(items.size());
+	for (const OpJournal::PlanItem &it : items)
+	{
+		MediaFile mf;
+		mf.filePath = it.src;
+		mf.fileName = it.name.isEmpty() ? QFileInfo(it.src).fileName() : it.name;
+		mf.mxfFolder = it.folder;
+		mf.sizeBytes = it.bytes;
+		out.append(mf);
+	}
+	return out;
+}
+
+QHash<QString, MediaManager::ConflictPolicy>
+MediaManager::policiesFromPlan(const QVector<OpJournal::PlanItem> &items)
+{
+	QHash<QString, ConflictPolicy> out;
+	for (const OpJournal::PlanItem &it : items)
+		if (const auto p = conflictPolicyFromName(it.policy))
+			out.insert(it.src, *p);
+	return out;
+}
+
 // MARK: - Conflict resolution
 
 MediaManager::ConflictAction
@@ -474,7 +546,10 @@ MediaManager::CopyOutcome MediaManager::copyFileWithProgress(const QString &src,
 
 	if (verify)
 	{
-		emit operationLog(QtInfoMsg, QStringLiteral("Verifying %1").arg(name));
+		// Progress signal, not a log line: the sheet's detail row is
+		// driven by operationProgress, and a console line is not a UI
+		// event. The bar keeps its position (same current/total).
+		emit operationProgress(QStringLiteral("Verifying %1").arg(name), current, total, 100.0);
 		const quint64 expected = srcHash->digest();
 		const HashResult actual = hashFile(dst);
 
@@ -589,6 +664,8 @@ void MediaManager::doCopy(const QVector<MediaFile> &files, const QString &dest, 
 		QJsonObject{{QStringLiteral("dest"), dest}, {QStringLiteral("preserve"), preserve}});
 	if (!journal->isOpen())
 		emit operationLog(QtWarningMsg, OpJournal::openFailedText(OpJournal::Kind::Copy));
+	// The whole to-do list, so an interrupted run can be offered for resume.
+	journal->writePlan(dest, preserve, planItems(files, policies));
 
 	// Destinations already taken this run, so two same-named selections
 	// can't collide on one path. See claimDestination.
@@ -611,7 +688,13 @@ void MediaManager::doCopy(const QVector<MediaFile> &files, const QString &dest, 
 			action != ConflictAction::Proceed)
 		{
 			if (action == ConflictAction::Skip)
+			{
 				++skipped;
+				// Journal the skip so a resumed run knows this file was
+				// concluded, not left undone (skip lines are what
+				// OpRecovery::resumableFrom counts as finished).
+				journal->markSkipped(journal->planOp(mf.filePath, dstPath));
+			}
 			else
 				++failed;
 			continue;
@@ -708,6 +791,8 @@ void MediaManager::doMove(const QVector<MediaFile> &files, const QString &dest, 
 		QJsonObject{{QStringLiteral("dest"), dest}, {QStringLiteral("preserve"), preserve}});
 	if (!journal->isOpen())
 		emit operationLog(QtWarningMsg, OpJournal::openFailedText(OpJournal::Kind::Move));
+	// The whole to-do list, so an interrupted run can be offered for resume.
+	journal->writePlan(dest, preserve, planItems(files, policies));
 
 	// Destinations already taken this run, so two same-named selections
 	// can't collide on one path. Critical for Move: a silent overwrite
@@ -732,7 +817,13 @@ void MediaManager::doMove(const QVector<MediaFile> &files, const QString &dest, 
 			action != ConflictAction::Proceed)
 		{
 			if (action == ConflictAction::Skip)
+			{
 				++skipped;
+				// Journal the skip so a resumed run knows this file was
+				// concluded, not left undone (skip lines are what
+				// OpRecovery::resumableFrom counts as finished).
+				journal->markSkipped(journal->planOp(mf.filePath, dstPath));
+			}
 			else
 				++failed;
 			continue;
@@ -870,6 +961,8 @@ void MediaManager::doDelete(const QVector<MediaFile> &files)
 	auto journal = std::make_unique<OpJournal>(OpJournal::Kind::Delete, QJsonObject{});
 	if (!journal->isOpen())
 		emit operationLog(QtWarningMsg, OpJournal::openFailedText(OpJournal::Kind::Delete));
+	// The whole to-do list, so an interrupted run can be offered for resume.
+	journal->writePlan(QString(), false, planItems(files, {}));
 
 	// Test seams: force the per-volume fallback (the OS trash succeeds on
 	// any local dev volume, so the branch is unreachable otherwise) and
@@ -970,7 +1063,7 @@ void MediaManager::doDelete(const QVector<MediaFile> &files)
 		// volume root already ends in one ("C:/" and "/Volumes/EDIT" alike).
 		const QDir volDir(volRoot);
 		const QString relPath = volDir.relativeFilePath(mf.filePath);
-		const QString binRoot = volDir.filePath(QStringLiteral("_MediaMuster_Trash"));
+		const QString binRoot = volDir.filePath(AvidLayout::kMediaMusterTrashDir);
 		const QString binDest = binRoot + QLatin1Char('/') + relPath;
 
 		if (!QDir().mkpath(QFileInfo(binDest).absolutePath()))

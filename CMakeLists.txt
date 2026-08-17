@@ -68,6 +68,7 @@ configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
+    src/aboutdialog.cpp
     src/foldercard.cpp
     src/icons.cpp
     src/logging.cpp
@@ -100,6 +101,7 @@ set(SOURCES
 
 set(HEADERS
     src/mainwindow.h
+    src/aboutdialog.h
     src/icons.h
     src/mediafilterproxy.h
     src/mediatablemodel.h

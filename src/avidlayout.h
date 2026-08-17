@@ -114,6 +114,13 @@ namespace AvidLayout
 	inline constexpr QLatin1String kMoveReplaceTag(".__movereplace_");
 	inline constexpr QLatin1String kProbeMarker(".__rebalprobe_");
 
+	/// Where Delete puts files on a volume whose OS trash can't be used or
+	/// won't say where a file landed (network shares): a folder at the
+	/// volume root. Defined here with the other names MediaMuster writes,
+	/// so the delete path (mediamanager.cpp) and anything that has to
+	/// recognise the folder afterwards share one spelling.
+	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
+
 	/// The name with a trailing MediaMuster temp suffix removed, so
 	/// "Clip.mxf.__movereplace_ab12" reads as "Clip.mxf".
 	inline QStringView withoutTempSuffix(QStringView fileName)

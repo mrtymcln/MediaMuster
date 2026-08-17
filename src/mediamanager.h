@@ -2,6 +2,7 @@
 
 #include "backgroundjob.h"
 #include "mediafile.h"
+#include "opjournal.h"
 #include "parkedfile.h"
 #include <QByteArray>
 #include <QHash>
@@ -10,7 +11,6 @@
 #include <optional>
 
 class JournalOp;
-class OpJournal;
 
 // MARK: - MediaManager
 
@@ -98,6 +98,26 @@ public:
 	static std::optional<QString> generateRenamePath(const QString &destPath);
 
 	static QString buildDestPath(const MediaFile &mf, const QString &destRoot, bool preserve);
+
+	// MARK: - Journal plan (public for testability)
+
+	/// The on-disk names for ConflictPolicy. Strings, not enum values, so
+	/// a journal written today still means the same thing to a future build.
+	static QString conflictPolicyName(ConflictPolicy policy);
+	static std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name);
+
+	/// The to-do list a run writes to its journal (OpJournal::writePlan):
+	/// only the MediaFile fields the engine reads — filePath, fileName,
+	/// mxfFolder, sizeBytes — plus each file's conflict policy, if any.
+	static QVector<OpJournal::PlanItem> planItems(const QVector<MediaFile> &files,
+												  const QHash<QString, ConflictPolicy> &policies);
+
+	/// The inverse, for resuming an interrupted run: rebuild the rows the
+	/// engine needs from the journal's plan. The stubs carry exactly the
+	/// fields planItems() saved (nothing else is read by the engine); the
+	/// policies come back keyed by source path, as executeCopy/Move expect.
+	static QVector<MediaFile> filesFromPlan(const QVector<OpJournal::PlanItem> &items);
+	static QHash<QString, ConflictPolicy> policiesFromPlan(const QVector<OpJournal::PlanItem> &items);
 
 private:
 	// MARK: - Internal state machine

@@ -32,6 +32,12 @@ private slots:
 	void prune_removes_finished_journal();
 	void prune_is_noop_before_finish();
 
+	// The plan line: the whole to-do list, written once, read back exactly.
+	// Optional fields (folder, bytes, policy) are omitted when empty and
+	// come back empty; a journal with no plan line reads hasPlan=false.
+	void plan_round_trips();
+	void journal_without_plan_reads_has_plan_false();
+
 	// Dirty fails (finding 3): rollback-incomplete ops round-trip through
 	// the read side and pin the journal on disk past finish()+prune().
 	void dirty_fail_round_trips_and_blocks_prune();
@@ -132,6 +138,62 @@ void TestOpJournal::clean_run_round_trips()
 
 	QVERIFY(!r.ops[2].completed);
 	QVERIFY(r.ops[2].skipped);
+}
+
+void TestOpJournal::plan_round_trips()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	{
+		OpJournal j(Kind::Copy, {}, tmp.path());
+		QVERIFY(j.isOpen());
+		OpJournal::PlanItem a;
+		a.src = QStringLiteral("/A/x.mxf");
+		a.name = QStringLiteral("x.mxf");
+		a.folder = QStringLiteral("1");
+		a.bytes = 12345;
+		a.policy = QStringLiteral("skip");
+		OpJournal::PlanItem b;
+		b.src = QStringLiteral("/A/y.mxf");
+		b.name = QStringLiteral("y.mxf");
+		j.writePlan(QStringLiteral("/Volumes/Backup"), true, {a, b});
+		j.planOp(a.src, QStringLiteral("/Volumes/Backup/x.mxf"), a.bytes);
+	}
+
+	const QVector<OpJournal::Record> recs = OpJournal::scan(tmp.path());
+	QCOMPARE(recs.size(), 1);
+	const OpJournal::Record &r = recs.first();
+	QVERIFY(r.hasPlan);
+	QCOMPARE(r.planDest, QStringLiteral("/Volumes/Backup"));
+	QCOMPARE(r.planPreserve, true);
+	QCOMPARE(r.plan.size(), 2);
+	QCOMPARE(r.plan[0].src, QStringLiteral("/A/x.mxf"));
+	QCOMPARE(r.plan[0].name, QStringLiteral("x.mxf"));
+	QCOMPARE(r.plan[0].folder, QStringLiteral("1"));
+	QCOMPARE(r.plan[0].bytes, qint64(12345));
+	QCOMPARE(r.plan[0].policy, QStringLiteral("skip"));
+	QCOMPARE(r.plan[1].src, QStringLiteral("/A/y.mxf"));
+	QVERIFY(r.plan[1].folder.isEmpty());
+	QCOMPARE(r.plan[1].bytes, qint64(0));
+	QVERIFY(r.plan[1].policy.isEmpty());
+	// The plan does not disturb the op stream.
+	QCOMPARE(r.ops.size(), 1);
+	QVERIFY(!r.complete);
+}
+
+void TestOpJournal::journal_without_plan_reads_has_plan_false()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	{
+		OpJournal j(Kind::Delete, {}, tmp.path());
+		QVERIFY(j.isOpen());
+		j.planOp(QStringLiteral("/A/x.mxf"), QString(), 5);
+	}
+	const QVector<OpJournal::Record> recs = OpJournal::scan(tmp.path());
+	QCOMPARE(recs.size(), 1);
+	QVERIFY(!recs.first().hasPlan);
+	QVERIFY(recs.first().plan.isEmpty());
 }
 
 void TestOpJournal::interrupted_run_has_no_end()

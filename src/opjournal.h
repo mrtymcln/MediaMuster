@@ -26,10 +26,12 @@ class QFile;
 // Append-only, each line fsync'd to the drive before the step it records, so an
 // app crash or a drive-acknowledged power loss can't lose it (see syncFile for
 // the deliberate fsync-over-F_FULLFSYNC tradeoff). A 'begin'
-// line opens the run and stamps the owning pid/host; an 'end' line closes
+// line opens the run and stamps the owning pid/host; a 'plan' line (once,
+// right after 'begin') lists every file the run intends to touch, so a
+// later launch can offer to finish an interrupted run; an 'end' line closes
 // a run that finished or was cancelled; a 'recovered' line marks one a
-// previous launch already rolled back. A journal with none of those whose
-// pid is no longer alive on this host is an interrupted run, which is what
+// previous launch already rolled back. A journal with no 'end' whose pid is
+// no longer alive on this host is an interrupted run, which is what
 // recovery looks for.
 //
 // Old journals must stay readable by future builds, so every line carries
@@ -61,6 +63,30 @@ public:
 
 	bool isOpen() const;
 	QString path() const { return m_path; }
+
+	// MARK: - The plan (whole to-do list, written once)
+
+	/// One intended file, as the engine will see it. Only the fields the
+	/// engine actually reads (see MediaManager::planItems), so an old
+	/// journal can be replayed by a future build without a rescan.
+	/// `policy` is the conflict policy by NAME ("keepboth"/"skip"/
+	/// "replace", empty = none was chosen for this file) — a string, not
+	/// the enum value, so the on-disk meaning can't shift if the enum does.
+	struct PlanItem
+	{
+		QString src;
+		QString name;	///< The filename the engine would place.
+		QString folder; ///< The Avid MXF subfolder ("1", "hostname.3"...).
+		qint64 bytes = 0;
+		QString policy;
+	};
+
+	/// Write the whole to-do list, right after the begin line, BEFORE the
+	/// first op. This is what lets a later launch offer to finish the job:
+	/// the per-op lines say what was started and what finished; the plan
+	/// says what was meant to happen at all. Copy/Move pass the
+	/// destination and preserve flag; Delete passes an empty dest.
+	void writePlan(const QString &dest, bool preserve, const QVector<PlanItem> &items);
 
 	/// True once any journal line failed to reach disk (write, flush, or
 	/// fsync). From that moment the on-disk journal is untrustworthy: ops
@@ -153,6 +179,8 @@ public:
 	{
 		QString path;
 		Kind kind = Kind::Move;
+		bool kindKnown = false; ///< The begin line's kind was one this build knows.
+		int schema = 0;			///< The begin line's schema stamp (kSchema when written by this build).
 		QJsonObject meta;
 		QString started;
 		qint64 pid = 0;			///< Owning process from the begin line...
@@ -162,6 +190,15 @@ public:
 		bool recovered = false; ///< Saw a 'recovered' line; already rolled back.
 		bool dirty = false;		///< Any op has rollbackIncomplete set.
 		QVector<Entry> ops;
+
+		/// The to-do list, when the writer recorded one (see writePlan).
+		/// Journals from builds before the plan line have hasPlan=false and
+		/// are rolled back exactly as before; only planned runs can be
+		/// offered for resume.
+		bool hasPlan = false;
+		QString planDest;
+		bool planPreserve = false;
+		QVector<PlanItem> plan;
 	};
 
 	/// Appended by recovery once it has rolled an interrupted journal back.

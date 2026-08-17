@@ -67,7 +67,6 @@ private slots:
 	void onFilterByBins();
 	void onRebalance();
 	void onAbout();
-	void onVomit(); ///< Debug: cascade every dialog with sample data for visual QA.
 	void showMediaMusterTrashDialog(const QString &trashFolderPath, int fileCount);
 	void showTableContextMenu(const QPoint &pos);
 
@@ -101,6 +100,33 @@ private:
 	void runStartupRecovery();
 	void onRecoveryDone(const OpRecovery::Summary &summary);
 
+	// MARK: - Resume an interrupted operation
+
+	/// Re-reads the oplog folder for interrupted runs that can be finished,
+	/// OFF the GUI thread (it stats media paths), then updates the menu
+	/// item. Called after a resume, a discard, or a finished operation; the
+	/// launch sweep supplies the first list for free.
+	void refreshResumable();
+
+	/// Applies the File-menu item's enabled state from the cached list.
+	/// Cheap and synchronous — safe to call from setBusy on every edge.
+	void updateResumeAction();
+
+	/// Ask about the oldest resumable run: Resume (dispatch the unfinished
+	/// files through the ordinary engine, then delete that journal), Resume
+	/// Later (leave it; the menu command stays enabled), Discard (delete it).
+	/// Esc and the close button count as Resume Later — never Discard.
+	void offerResume();
+
+	/// The one dispatch path for Copy/Move/Delete: journal-writable gate,
+	/// engine call, busy state, progress sheet. Used by the Manage Media
+	/// dialog and by Resume, so a resumed run is a normal run.
+	/// Returns false when nothing was started (empty list, or the user
+	/// declined the no-journal warning).
+	bool dispatchOperation(OpJournal::Kind kind, QVector<MediaFile> files,
+						   const QString &dest, bool preserve,
+						   const QHash<QString, MediaManager::ConflictPolicy> &policies);
+
 	/// Collects MacOS crash reports into the logs folder,
 	/// and nudges the user to send them to the developer.
 	void collectCrashReports();
@@ -119,9 +145,8 @@ private:
 	QVector<MediaFile> selectedFiles() const;
 	void addVolumePath(const QString &path);
 
-	/// Build (without showing) the About and Project Summary dialogs so the
-	/// Vomit gallery can position and show them alongside the data-driven ones.
-	QDialog *buildAboutDialog();
+	/// Build (without showing) the Project Summary dialog: its slot guards
+	/// on an empty table first, then shows what this returns.
 	QDialog *buildProjectSummaryDialog(const QVector<MediaFile> &files);
 
 	/// The MediaFile behind a proxy row/index: maps proxy → source, then
@@ -228,7 +253,10 @@ private:
 	bool m_removeAfterOp = false;
 	QSet<QString> m_successfulOpPaths;
 
-	QString m_pendingOpTitle;
+	/// Interrupted runs that can be finished (see OpRecovery::pending),
+	/// oldest first; drives the File > Resume Interrupted Operation item.
+	QVector<OpRecovery::Resumable> m_resumable;
+	class QAction *m_resumeAct = nullptr;
 
 	class BinFilterDialog *m_binFilterDialog = nullptr;
 

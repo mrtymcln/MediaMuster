@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "aboutdialog.h"
 #include "applog.h"
 #include "avidlayout.h"
 #include "binfilterdialog.h"
@@ -12,7 +13,6 @@
 #include "managemediadialog.h"
 #include "mediacsv.h"
 #include "mediamanagerverify.h"
-#include "mxfparser.h"
 #include "opjournal.h"
 #include "oprecovery.h"
 #include "progressdialog.h"
@@ -21,12 +21,12 @@
 #include "rebalancer.h"
 #include "revealinfinder.h"
 #include "theme.h"
-#include "userinfo.h"
 #include "version.h"
 
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QDateTime>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDialog>
@@ -193,11 +193,17 @@ MainWindow::MainWindow(QWidget *parent)
 	}
 #endif // Q_OS_MAC
 
-	// Roll back anything a previous run died partway through. Deferred to
-	// the first event-loop tick so the window shows first; the rollback
-	// itself runs on a pool thread.
-	QTimer::singleShot(0, this, &MainWindow::runStartupRecovery);
-	QTimer::singleShot(0, this, &MainWindow::collectCrashReports);
+	// Deferred to the first event-loop tick so the window shows first. One
+	// sequence, not two racing timers: the crash-report notice (synchronous
+	// box) goes first, THEN the rollback starts on a pool thread and reports
+	// — otherwise its notice and the resume offer would land on top of the
+	// still-open crash box.
+	QTimer::singleShot(0, this,
+					   [this]
+					   {
+						   collectCrashReports();
+						   runStartupRecovery();
+					   });
 }
 
 MainWindow::~MainWindow() = default;
@@ -221,22 +227,28 @@ void MainWindow::runStartupRecovery()
 
 void MainWindow::onRecoveryDone(const OpRecovery::Summary &summary)
 {
-	if (!summary.anything())
-		return;
+	// Tidying up after a crash is housekeeping, not news: the partial file
+	// the interrupted run wrote is MediaMuster's own mess, and removing it
+	// restores the state the user expects. So no dialog for it — but every
+	// note goes to the console and the log, because the one thing that must
+	// never be invisible is a file MediaMuster took off the user's disk.
+	for (const QString &note : summary.notes)
+		addLog(summary.hadTrouble() ? QtWarningMsg : QtInfoMsg, QStringLiteral("app"), note);
 
-	addLog(summary.hadTrouble() ? QtWarningMsg : QtInfoMsg, QStringLiteral("app"),
-		   QStringLiteral("Recovered %1 interrupted operation(s); %2 file(s) put back%3.")
-			   .arg(summary.journalsRecovered)
-			   .arg(summary.opsReversed)
-			   .arg(summary.opsFlagged > 0
-						? QStringLiteral(", %1 couldn't be undone").arg(summary.opsFlagged)
-						: QString()));
-
-	const QString title = tr("Recovered from an interrupted operation");
+	// A dialog only when something needs the user: a file that couldn't be
+	// put back or removed, or an original still sitting under a temp name.
 	if (summary.hadTrouble())
-		QMessageBox::warning(this, title, summary.message());
-	else
-		QMessageBox::information(this, title, summary.message());
+		QMessageBox::warning(this, tr("Some files need a look"), summary.message());
+
+	// The launch sweep already worked this out on the pool thread; no need
+	// to re-read the oplog folder here.
+	m_resumable = summary.resumable;
+	updateResumeAction();
+
+	// Anything left to finish? Ask now; the File menu item stays live for
+	// later if the answer is "Resume Later".
+	if (!m_resumable.isEmpty())
+		offerResume();
 }
 
 void MainWindow::collectCrashReports()
@@ -536,6 +548,14 @@ void MainWindow::buildFileMenu()
 	exportAct->setShortcut(QKeySequence("Ctrl+E"));
 	connect(exportAct, &QAction::triggered, this, &MainWindow::onExportCsv);
 
+	fileMenu->addSeparator();
+
+	// Greyed out unless an interrupted Copy/Move/Delete is waiting to be
+	// finished (see refreshResumable); offered automatically at launch too.
+	m_resumeAct = fileMenu->addAction(tr("Resume Interrupted Operation..."));
+	m_resumeAct->setEnabled(false);
+	connect(m_resumeAct, &QAction::triggered, this, &MainWindow::offerResume);
+
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
 	auto *quitAct = fileMenu->addAction(tr("&Quit"));
@@ -694,9 +714,6 @@ void MainWindow::buildDebugMenu()
 	addDemo(tr("Small"), &RebalanceDemo::small);
 	addDemo(tr("Big"), &RebalanceDemo::big);
 	addDemo(tr("Really big"), &RebalanceDemo::reallyBig);
-
-	auto *vomitAct = debugMenu->addAction(tr("Vomit"));
-	connect(vomitAct, &QAction::triggered, this, &MainWindow::onVomit);
 }
 
 // MARK: Help menu
@@ -722,183 +739,10 @@ void MainWindow::buildHelpMenu()
 
 // MARK: - About dialog
 
-static void tweakFont(QWidget *w, int pointDelta, bool bold = false)
-{
-	QFont f = w->font();
-	if (pointDelta != 0)
-		f.setPointSize(f.pointSize() + pointDelta);
-	if (bold)
-		f.setBold(true);
-	w->setFont(f);
-}
-
-QDialog *MainWindow::buildAboutDialog()
-{
-	auto *dlg = new QDialog(this);
-	dlg->setWindowTitle(tr("About MediaMuster"));
-	dlg->setAttribute(Qt::WA_DeleteOnClose);
-	dlg->setModal(true);
-
-	auto *layout = new QVBoxLayout(dlg);
-	layout->setContentsMargins(40, 28, 40, 24);
-	layout->setSpacing(8);
-
-	auto *icon = new QLabel;
-	const QPixmap appIcon =
-		QApplication::windowIcon().pixmap(QSize(90, 90), dlg->devicePixelRatioF());
-	if (!appIcon.isNull())
-	{
-		icon->setPixmap(appIcon);
-		icon->setAlignment(Qt::AlignHCenter);
-		layout->addWidget(icon, 0, Qt::AlignHCenter);
-		layout->addSpacing(12);
-	}
-
-	auto *name = new QLabel(APP_NAME);
-	tweakFont(name, 10, true);
-	name->setAlignment(Qt::AlignHCenter);
-	layout->addWidget(name);
-
-	auto *version = new QLabel(tr("Version %1").arg(APP_VERSION));
-	tweakFont(version, -1);
-	version->setAlignment(Qt::AlignHCenter);
-	layout->addWidget(version);
-
-	layout->addSpacing(10);
-
-	// MARK: Rolling credits
-
-	constexpr int kRollWidth = 420 - 40 - 40; // dialog width minus side margins
-	constexpr int kRollHeight = 170;
-	constexpr int kRollTickMs = 30; // 1 px per tick ≈ 33 px/s
-	constexpr int kRollStartDelayMs = 1500;
-
-	auto *viewport = new QWidget;
-	viewport->setFixedSize(kRollWidth, kRollHeight);
-	layout->addWidget(viewport, 0, Qt::AlignHCenter);
-
-	auto *content = new QWidget(viewport);
-	auto *roll = new QVBoxLayout(content);
-	roll->setContentsMargins(0, 0, 0, 0);
-	roll->setSpacing(0);
-
-	const auto addCredit = [roll](const QString &role, const QString &name)
-	{
-		auto *roleLabel = new QLabel(role);
-		roleLabel->setAlignment(Qt::AlignHCenter);
-		roll->addWidget(roleLabel);
-
-		auto *nameLabel = new QLabel(name);
-		tweakFont(nameLabel, 0, true);
-		nameLabel->setAlignment(Qt::AlignHCenter);
-		nameLabel->setOpenExternalLinks(true);
-		roll->addWidget(nameLabel);
-		roll->addSpacing(16);
-	};
-
-	addCredit(tr("Executive Producer"), QStringLiteral("Martin McLean"));
-	addCredit(tr("Assistant Producer"), QStringLiteral("Cameron Gregg"));
-	addCredit(tr("Icon Designer"), QStringLiteral("Matthew Skiles"));
-	addCredit(tr("Production Designer"),
-			  QStringLiteral("<a href=\"https://qt.io\">Qt %1</a>, GNU LGPL v3")
-				  .arg(QStringLiteral(QT_VERSION_STR)));
-	addCredit(tr("Continuity"),
-			  QStringLiteral("<a href=\"https://xxhash.com\">xxHash3</a>, BSD 2-Clause"));
-
-	// Easter egg: show the account display name of the user.
-	const QString editor = UserInfo::displayName();
-	if (!editor.isEmpty())
-		addCredit(tr("Editor"), editor);
-
-	addCredit(tr("Assistant Editor"), QStringLiteral("Bella, the Kelpie"));
-
-	// Beta testers, alphabetical by surname.
-	const QStringList betaTesters = {
-		QStringLiteral("Jack Brown"),
-		QStringLiteral("Nathan Katsikaros"),
-		QStringLiteral("John Lynn"),
-		QStringLiteral("Harry B. Miller III"),
-		QStringLiteral("Moritz Poth"),
-		QStringLiteral("Jean-Denis Rouette"),
-		QStringLiteral("Nacho Santana"),
-		QStringLiteral("Lawson Tanner"),
-	};
-	if (!betaTesters.isEmpty())
-		addCredit(tr("Test Audience"), betaTesters.join(QLatin1Char('\n')));
-
-	addCredit(tr("Crafty"), QStringLiteral("Sette Café"));
-
-	auto *provenance = new QLabel(
-		tr("Made with published specifications and examination of files.\n"
-		   "No Avid source code was used in the making of this app."));
-	provenance->setWordWrap(true);
-	provenance->setAlignment(Qt::AlignHCenter);
-	tweakFont(provenance, -1);
-	roll->addWidget(provenance);
-	roll->addSpacing(10);
-
-	auto *copyright =
-		new QLabel(tr("Copyright © 2026 Martin McLean.\nAll rights reserved."));
-	copyright->setAlignment(Qt::AlignHCenter);
-	tweakFont(copyright, -1);
-	roll->addWidget(copyright);
-
-	// Hidden until the credits roll a second time.
-	auto *postCredits =
-		new QLabel(tr("You're still watching!? There's no post-credits scene..."));
-	postCredits->setAlignment(Qt::AlignHCenter);
-	postCredits->setContentsMargins(0, 28, 0, 0);
-	tweakFont(postCredits, -1);
-	postCredits->hide();
-	roll->addWidget(postCredits);
-
-	content->setFixedWidth(kRollWidth);
-	content->adjustSize();
-	content->move(0, 0);
-
-	if (content->height() > viewport->height())
-	{
-		auto *rollTimer = new QTimer(dlg);
-		rollTimer->setInterval(kRollTickMs);
-		connect(rollTimer, &QTimer::timeout, viewport,
-				[viewport, content, postCredits, wraps = 0]() mutable
-				{
-					int y = content->y() - 1;
-					if (y + content->height() < 0)
-					{
-						y = viewport->height();
-						if (++wraps == 1)
-						{
-							postCredits->show();
-							content->adjustSize();
-						}
-					}
-					content->move(0, y);
-				});
-		QTimer::singleShot(kRollStartDelayMs, rollTimer, [rollTimer]
-						   { rollTimer->start(); });
-	}
-
-	layout->addSpacing(12);
-
-	auto *btnRow = new QHBoxLayout;
-	btnRow->addStretch();
-	auto *okBtn = new QPushButton(tr("Sweet as!"));
-	okBtn->setDefault(true);
-	connect(okBtn, &QPushButton::clicked, dlg, &QDialog::accept);
-	btnRow->addWidget(okBtn);
-	btnRow->addStretch();
-	layout->addLayout(btnRow);
-
-	dlg->setFixedWidth(420);
-	dlg->adjustSize();
-	dlg->setFixedSize(dlg->size());
-	return dlg;
-}
-
 void MainWindow::onAbout()
 {
-	buildAboutDialog()->show();
+	// Deletes itself on close; see AboutDialog.
+	(new AboutDialog(this))->show();
 }
 
 // MARK: - Signal wiring
@@ -943,21 +787,19 @@ void MainWindow::setupConnections()
 	connect(
 		m_fileOps, &MediaManager::operationLog, this,
 		[this](QtMsgType level, const QString &message)
-		{
-			addLog(level, QStringLiteral("ops"), message);
-			if (message.startsWith(QStringLiteral("Verifying ")))
-			{
-				if (auto *dlg = progressDialog(); dlg && dlg->isVisible())
-					dlg->setDetail(message);
-			}
-		},
+		{ addLog(level, QStringLiteral("ops"), message); },
 		Qt::QueuedConnection);
 	connect(
 		m_fileOps, &MediaManager::operationItemDone, this,
 		[this](const QString &name, const QString &filePath, bool ok, const QString &err,
 			   bool skipped)
 		{
-			addLog(ok ? QtInfoMsg : QtCriticalMsg, QStringLiteral("ops"), ok ? name + " done" : name + " FAILED: " + err);
+			// Three outcomes, three lines: a skip is neither a failure nor
+			// "done" — the engine's message already reads "Skipped (...)".
+			addLog(ok ? QtInfoMsg : QtCriticalMsg, QStringLiteral("ops"),
+				   !ok		 ? name + " FAILED: " + err
+				   : skipped ? name + ": " + err
+							 : name + " done");
 
 			// Track successful paths so we can drop those rows once
 			// the job finishes. Skipped items left the source alone,
@@ -968,19 +810,22 @@ void MainWindow::setupConnections()
 		Qt::QueuedConnection);
 	connect(
 		m_fileOps, &MediaManager::operationFinished, this,
-		[this](int ok, int fail)
+		[this](int /*succeeded*/, int /*failed*/)
 		{
+			// The engine has already logged its own summary line via
+			// operationLog; nothing to narrate here.
 			setBusy(false);
-			addLog(fail > 0 ? QtWarningMsg : QtInfoMsg, QStringLiteral("ops"),
-				   QStringLiteral("Complete: %1 ok, %2 failed").arg(ok).arg(fail));
 
 			// After Move/Delete, drop the successful files so the table
 			// reflects reality without a re-scan. begin/endRemoveRows
 			// per contiguous range preserves scroll and selection.
 			if (m_removeAfterOp && !m_successfulOpPaths.isEmpty())
 			{
-				const int removedCount = m_successfulOpPaths.size();
+				// Count what actually left the table: a resumed Move/Delete
+				// works from the journal, and its files may not be rows here.
+				const int rowsBefore = m_model->rowCount();
 				m_model->removeFilesByPath(m_successfulOpPaths);
+				const int removedCount = rowsBefore - m_model->rowCount();
 				// Drop the removed paths from the persistent selection
 				// record so the next filter change doesn't try to
 				// re-select rows no longer on disk.
@@ -991,7 +836,10 @@ void MainWindow::setupConnections()
 			}
 			m_removeAfterOp = false;
 			m_successfulOpPaths.clear();
-			m_pendingOpTitle.clear();
+
+			// The run just concluded retired its own journal; re-read the
+			// folder (off-thread) so the Resume item reflects that.
+			refreshResumable();
 		},
 		Qt::QueuedConnection);
 
@@ -1467,7 +1315,7 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	opts.volumePaths = paths;
 
 	setBusy(true);
-	progressDialog()->begin(tr("Scanning media..."));
+	progressDialog()->begin();
 	progressDialog()->setDetail(tr("Starting scan..."));
 	m_scanTimer.start();
 
@@ -1509,6 +1357,8 @@ void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 		if (i > 0)
 			combined += QLatin1Char('\n');
 		combined += formatLogLine(now, batch[i].level, batch[i].module, batch[i].message);
+		// Same tee as addLog(): every console line lands in the log file.
+		AppLog::appendConsoleLine(batch[i].level, batch[i].module, batch[i].message);
 	}
 	m_console->appendPlainText(combined);
 }
@@ -1675,6 +1525,30 @@ void MainWindow::openManageMedia(int initialOp)
 	if (dlg.exec() != QDialog::Accepted)
 		return;
 
+	OpJournal::Kind kind = OpJournal::Kind::Copy;
+	switch (dlg.operation())
+	{
+	case ManageMediaDialog::Operation::Copy:
+		kind = OpJournal::Kind::Copy;
+		break;
+	case ManageMediaDialog::Operation::Move:
+		kind = OpJournal::Kind::Move;
+		break;
+	case ManageMediaDialog::Operation::Delete:
+		kind = OpJournal::Kind::Delete;
+		break;
+	}
+	dispatchOperation(kind, std::move(files), dlg.destination(), dlg.preserveStructure(),
+					  dlg.conflictPolicies());
+}
+
+bool MainWindow::dispatchOperation(OpJournal::Kind kind, QVector<MediaFile> files,
+								   const QString &dest, bool preserve,
+								   const QHash<QString, MediaManager::ConflictPolicy> &policies)
+{
+	if (files.isEmpty())
+		return false;
+
 	// The write-ahead journal is the only thing that can put files back
 	// after a crash. If it can't be written (disk full, permissions),
 	// running anyway is the user's call to make — not a console line to
@@ -1693,38 +1567,29 @@ void MainWindow::openManageMedia(int initialOp)
 		confirm.setDefaultButton(QMessageBox::Cancel);
 		confirm.exec();
 		if (confirm.clickedButton() != goBtn)
-			return;
+			return false;
 	}
-
-	const auto policies = dlg.conflictPolicies();
 
 	// Move/Delete remove the affected rows on completion. Copy leaves
 	// source rows in place.
-	m_removeAfterOp = (dlg.operation() != ManageMediaDialog::Operation::Copy);
+	m_removeAfterOp = (kind != OpJournal::Kind::Copy);
 	m_successfulOpPaths.clear();
 
-	switch (dlg.operation())
+	// The engine narrates the run (start line, per-file lines, summary)
+	// through operationLog; the window only dispatches.
+	switch (kind)
 	{
-	case ManageMediaDialog::Operation::Copy:
-		addLog(QtInfoMsg, QStringLiteral("ops"),
-			   QStringLiteral("Copying %1 files to %2").arg(files.size()).arg(dlg.destination()));
-		m_pendingOpTitle = tr("Copying files...");
-		m_fileOps->executeCopy(std::move(files), dlg.destination(), dlg.preserveStructure(),
-							   policies);
+	case OpJournal::Kind::Copy:
+		m_fileOps->executeCopy(std::move(files), dest, preserve, policies);
 		break;
-
-	case ManageMediaDialog::Operation::Move:
-		addLog(QtInfoMsg, QStringLiteral("ops"), QStringLiteral("Moving %1 files to %2").arg(files.size()).arg(dlg.destination()));
-		m_pendingOpTitle = tr("Moving files...");
-		m_fileOps->executeMove(std::move(files), dlg.destination(), dlg.preserveStructure(),
-							   policies);
+	case OpJournal::Kind::Move:
+		m_fileOps->executeMove(std::move(files), dest, preserve, policies);
 		break;
-
-	case ManageMediaDialog::Operation::Delete:
-		addLog(QtInfoMsg, QStringLiteral("ops"), QStringLiteral("Deleting %1 files").arg(files.size()));
-		m_pendingOpTitle = tr("Deleting files...");
+	case OpJournal::Kind::Delete:
 		m_fileOps->executeDelete(std::move(files));
 		break;
+	case OpJournal::Kind::Rebalance:
+		return false; // Rebalance has its own dialog and engine; never dispatched here.
 	}
 
 	// Lock the UI and raise the modal progress sheet now, at dispatch —
@@ -1732,7 +1597,145 @@ void MainWindow::openManageMedia(int initialOp)
 	// where a second op could be launched (and cancel this one mid-run)
 	// before the sheet goes up. Mirrors how startScanWithPaths does it.
 	setBusy(true);
-	progressDialog()->begin(m_pendingOpTitle);
+	progressDialog()->begin();
+	return true;
+}
+
+// MARK: - Resume an interrupted operation
+
+void MainWindow::updateResumeAction()
+{
+	// The Scan button is disabled exactly while an operation runs (setBusy),
+	// so it doubles as the busy flag: no resuming on top of a live run.
+	if (m_resumeAct)
+		m_resumeAct->setEnabled(!m_resumable.isEmpty() && m_scanButton->isEnabled());
+}
+
+void MainWindow::refreshResumable()
+{
+	// Off the GUI thread: reading the oplog folder means stat()-ing the
+	// media paths in every journal, and a dropped network mount would
+	// freeze the window (the launch sweep runs on a pool thread for the
+	// same reason). The menu item keeps its last state until this lands.
+	auto *watcher = new QFutureWatcher<QVector<OpRecovery::Resumable>>(this);
+	connect(watcher, &QFutureWatcher<QVector<OpRecovery::Resumable>>::finished, this,
+			[this, watcher]
+			{
+				m_resumable = watcher->result();
+				watcher->deleteLater();
+				updateResumeAction();
+			});
+	watcher->setFuture(QtConcurrent::run(&OpRecovery::pending, QString()));
+}
+
+void MainWindow::offerResume()
+{
+	// Works from the cached list (filled by the launch sweep and refreshed
+	// off-thread after every run); the menu command is only enabled when
+	// the journal has something in it.
+	if (m_resumable.isEmpty())
+		return;
+	// Never on top of a running scan or operation (the launch-time call can
+	// land mid-scan if the user was quick); the menu command stays live.
+	if (!m_scanButton->isEnabled())
+		return;
+	const OpRecovery::Resumable r = m_resumable.first();
+
+	QString headline, reassurance;
+	const QString where = QDir::toNativeSeparators(r.dest);
+	switch (r.kind)
+	{
+	case OpJournal::Kind::Copy:
+		headline = tr("I was copying %n file(s) for %1, but didn't get them all in.", nullptr,
+					  r.total)
+					   .arg(where);
+		reassurance = tr("The successfully copied files are at the destination. "
+						 "The remaining files are untouched.");
+		break;
+	case OpJournal::Kind::Move:
+		headline = tr("I was moving %n file(s) over to %1, but didn't get them all in.", nullptr,
+					  r.total)
+					   .arg(where);
+		reassurance = tr("The successfully moved files are at the destination. "
+						 "The remaining files are untouched.");
+		break;
+	case OpJournal::Kind::Delete:
+		headline = tr("I was clearing out %n file(s) but didn't get them all out.", nullptr,
+					  r.total);
+		// Network volumes have no OS trash, so those deletes go to a
+		// MediaMuster Trash folder on the volume itself.
+		reassurance = r.usedMediaMusterTrash
+						  ? tr("The successfully deleted files are in the MediaMuster Trash "
+							   "on that volume. The rest are untouched.")
+						  : tr("The successfully deleted files are in your bin. "
+							   "The rest are untouched.");
+		break;
+	case OpJournal::Kind::Rebalance:
+		return; // never resumable (no plan)
+	}
+
+	const QDateTime started = QDateTime::fromString(r.started, Qt::ISODateWithMs).toLocalTime();
+	QString counts;
+	if (started.isValid())
+		counts = tr("Started %1 • %2 finished • %3 remaining")
+					 .arg(started.toString(QStringLiteral("d MMM, h:mm ap")))
+					 .arg(Format::count(r.finished))
+					 .arg(Format::count(r.remaining.size()));
+	else
+		counts = tr("%1 finished • %2 remaining")
+					 .arg(Format::count(r.finished))
+					 .arg(Format::count(r.remaining.size()));
+
+	QMessageBox box(this);
+	box.setIcon(QMessageBox::Question);
+	box.setWindowTitle(QString());
+	box.setText(headline);
+	box.setInformativeText(
+		tr("%1\n\n%2 Resume to finish, or Resume Later from the File menu.")
+			.arg(counts, reassurance));
+	auto *resumeBtn = box.addButton(tr("Resume"), QMessageBox::AcceptRole);
+	auto *laterBtn = box.addButton(tr("Resume Later"), QMessageBox::RejectRole);
+	auto *discardBtn = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+	box.setDefaultButton(laterBtn);
+	box.setEscapeButton(laterBtn);
+	box.exec();
+
+	if (box.clickedButton() == discardBtn)
+	{
+		if (!QFile::remove(r.journalPath))
+			addLog(QtWarningMsg, QStringLiteral("app"),
+				   QStringLiteral("Couldn't delete the interrupted-run journal %1").arg(r.journalPath));
+		else
+			addLog(QtInfoMsg, QStringLiteral("app"),
+				   QStringLiteral("Discarded an interrupted %1 (%2 of %3 files were not done)")
+					   .arg(OpJournal::kindName(r.kind))
+					   .arg(r.remaining.size())
+					   .arg(r.total));
+		refreshResumable();
+		return;
+	}
+	if (box.clickedButton() != resumeBtn)
+	{
+		refreshResumable(); // Resume Later: journal stays; menu item stays live
+		return;
+	}
+
+	// Resume = the same dispatch as Manage Media, over the unfinished files.
+	// The new run writes its own journal (with its own plan), so the old
+	// one is retired the moment the new run is under way — and kept if the
+	// dispatch was declined (journal-writable gate), so the offer survives.
+	addLog(QtInfoMsg, QStringLiteral("app"),
+		   QStringLiteral("Resuming an interrupted %1: %2 of %3 files still to do")
+			   .arg(OpJournal::kindName(r.kind))
+			   .arg(r.remaining.size())
+			   .arg(r.total));
+	const bool dispatched = dispatchOperation(r.kind, MediaManager::filesFromPlan(r.remaining), r.dest,
+											  r.preserve, MediaManager::policiesFromPlan(r.remaining));
+	if (dispatched && !QFile::remove(r.journalPath))
+		addLog(QtWarningMsg, QStringLiteral("app"),
+			   QStringLiteral("Couldn't delete the interrupted-run journal %1 — it may be offered again")
+				   .arg(r.journalPath));
+	refreshResumable();
 }
 
 // MARK: - MediaMuster Trash dialog
@@ -1758,8 +1761,6 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath, int 
 
 	if (msgBox.clickedButton() == btnOpen)
 	{
-		// "Show this folder in the OS file browser" — Finder or Explorer,
-		// whichever this platform has; no per-platform branch needed.
 		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(trashFolderPath)))
 			addLog(QtWarningMsg, QStringLiteral("ops"),
 				   QStringLiteral("Couldn't open %1 in the file browser").arg(trashFolderPath));
@@ -1784,7 +1785,7 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath, int 
 	// choice. Cancel stays the default so a stray Return doesn't wipe files.
 	QMessageBox confirm(this);
 	confirm.setIcon(QMessageBox::Warning);
-	confirm.setWindowTitle(tr("Empty the MediaMuster Trash"));
+	confirm.setWindowTitle(tr("Empty the MediaMuster Trash?"));
 	confirm.setText(tr("Permanently delete %n file(s) (%1) "
 					   "from:\n\n%2\n\n"
 					   "This cannot be undone.",
@@ -1954,134 +1955,6 @@ void MainWindow::onProjectSummary()
 		return;
 	}
 	buildProjectSummaryDialog(m_model->allFiles())->show();
-}
-
-// MARK: - Vomit
-
-// Synthetic media so the data-driven dialogs show something.
-static QVector<MediaFile> sampleMediaFiles()
-{
-	const auto mk = [](const QString &clip, const QString &file, const QString &project,
-					   MediaFile::Kind kind, const QString &codec, const QString &res,
-					   const QString &fps, qint64 bytes, const QString &folder)
-	{
-		MediaFile f;
-		f.clipName = clip;
-		f.fileName = file;
-		f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/%1/%2").arg(folder, file);
-		f.project = project;
-		f.originalBin = QStringLiteral("Rushes");
-		f.kind = kind;
-		f.codec = codec;
-		f.resolution = res;
-		f.fps = fps;
-		f.durationFrames = 240;
-		f.sizeBytes = bytes;
-		f.volumeName = QStringLiteral("EDIT");
-		f.volumePath = QStringLiteral("/Volumes/EDIT");
-		f.mxfFolder = folder;
-		f.mobId = QStringLiteral("060a2b34.01010105.01010f10.13000000");
-		f.masterMobId = QStringLiteral("060a2b34.01010105.01010f20.44556677");
-		if (kind == MediaFile::Kind::Audio)
-		{
-			f.sampleRate = 48000;
-			f.channels = 2;
-		}
-		return f;
-	};
-
-	QVector<MediaFile> v;
-	v << mk(QStringLiteral("Scene 1 - Take 3"), QStringLiteral("8F2A1B3C4D5E.mxf"),
-			QStringLiteral("MyFilm"), MediaFile::Kind::Video, QStringLiteral("DNxHD 145"),
-			QStringLiteral("1920x1080"), QStringLiteral("25"), 850'000'000, QStringLiteral("1"));
-	v << mk(QStringLiteral("Scene 1 - Take 3"), QStringLiteral("8F2A1B3C4D5F.mxf"),
-			QStringLiteral("MyFilm"), MediaFile::Kind::Audio, QString::fromLatin1(kPcmAudioName),
-			// Resolution and FPS stay blank for audio, exactly as a real scan
-			// leaves them.
-			QString(), QString(), 40'000'000, QStringLiteral("1"));
-	// The setter, not a bare label: this demo row once set the sentinel
-	// string without its flag — exactly the half-set state the setters
-	// were introduced to make impossible.
-	MediaFile noRef = mk(QStringLiteral("Interview A"), QStringLiteral("A11B22C33D44.mxf"),
-						 QString(), MediaFile::Kind::Video, QStringLiteral("Apple ProRes 422"),
-						 QStringLiteral("3840x2160"), QStringLiteral("23.976"), 3'200'000'000,
-						 QStringLiteral("2"));
-	noRef.markNoReference();
-	v << noRef;
-	v << mk(QStringLiteral("Cutaway"), QStringLiteral("B99C88D77E66.mxf"), QStringLiteral("MyFilm"),
-			MediaFile::Kind::Video, QStringLiteral("DNxHR HQ"), QStringLiteral("1920x1080"),
-			QStringLiteral("25"), 1'100'000'000, QStringLiteral("1"));
-	return v;
-}
-
-// Cascade every dialog with synthetic data so they can be eyeballed at once.
-void MainWindow::onVomit()
-{
-	int step = 0;
-	const QPoint base = geometry().topLeft() + QPoint(70, 50);
-	const auto cascade = [&](QWidget *w)
-	{
-		if (!w)
-			return;
-		w->setAttribute(Qt::WA_DeleteOnClose);
-		w->setWindowModality(Qt::NonModal);
-		w->move(base + QPoint(step * 34, step * 30));
-		w->show();
-		w->raise();
-		++step;
-	};
-
-	const QVector<MediaFile> fake = sampleMediaFiles();
-
-	cascade(buildAboutDialog());
-	cascade(buildProjectSummaryDialog(fake));
-	cascade(new ManageMediaDialog(fake, this, ManageMediaDialog::Operation::Copy));
-	cascade(new BinFilterDialog(this));
-	cascade(new RebalanceDialog(RebalanceDemo::small(), this));
-
-	auto *pd = new ProgressDialog(this);
-	pd->setModal(false);
-	pd->setWindowFlags(Qt::Dialog);
-	connect(pd, &ProgressDialog::cancelRequested, pd, &QObject::deleteLater);
-	pd->begin(tr("Some operation happening here…"));
-	pd->setProgress(37, 100);
-	pd->setDetail(QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/8F2A1B3C4D5E.mxf"));
-	cascade(pd);
-
-	const auto infoBox = [this](const QString &title, const QString &text) -> QMessageBox *
-	{
-		auto *box = new QMessageBox(this);
-		box->setIcon(QMessageBox::Information);
-		box->setWindowTitle(title);
-		box->setText(text);
-		box->setModal(false);
-		return box;
-	};
-
-	auto *trash =
-		infoBox(tr("MediaMuster Trash"), tr("<b>3 files moved to the MediaMuster Trash</b>"));
-	trash->setInformativeText(tr("Network volumes only support permanent delete, so "
-								 "MediaMuster has moved the file(s) to:\n\n"
-								 "/Volumes/EDIT/_MediaMuster_Trash\n\n"
-								 "These files can be restored by moving them back."));
-	trash->addButton(QMessageBox::Ok);
-	trash->addButton(tr("Take Me There"), QMessageBox::ActionRole);
-	trash->addButton(tr("Empty Trash"), QMessageBox::DestructiveRole);
-	cascade(trash);
-
-	cascade(infoBox(tr("Recovered from an interrupted operation"),
-					tr("Recovered an interrupted Move — 12 file(s) put back.")));
-	cascade(infoBox(tr("MediaMuster closed unexpectedly"),
-					tr("MediaMuster quit unexpectedly. A crash report has been saved with "
-					   "your logs.\n\nGo to Help > Reveal Logs to send them to the developer.")));
-
-#ifdef Q_OS_MAC
-	cascade(infoBox(tr("Permissions"), tr("Full Disk Access is <b>granted</b>.<br><br>"
-										  "I can muster all volumes and folders on this Mac!")));
-#endif
-
-	addLog(QtInfoMsg, QStringLiteral("app"),
-		   QStringLiteral("Vomited %1 dialog(s)").arg(step));
 }
 
 // MARK: - Reveal in Finder
@@ -2358,6 +2231,7 @@ void MainWindow::setBusy(bool busy)
 		m_tableView->selectionModel() && !m_tableView->selectionModel()->selectedRows().isEmpty();
 	m_btnFileOps->setEnabled(!busy && hasSel);
 	m_btnRebalance->setEnabled(!busy && !m_model->allFiles().isEmpty());
+	updateResumeAction();
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();
