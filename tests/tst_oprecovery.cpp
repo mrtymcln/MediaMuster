@@ -819,6 +819,9 @@ void TestOpRecovery::interrupted_copy_partial_removed_using_live_source_when_jou
 
 void TestOpRecovery::interrupted_copy_partial_flagged_when_it_cannot_be_removed()
 {
+#ifdef Q_OS_WIN
+	QSKIP("Directory write-protection doesn't block deletes the same way on Windows.");
+#endif
 	// The partial sits in a folder we can't write: it must be flagged (with
 	// the path named) and NOT counted as cleaned up.
 	QTemporaryDir tmp;

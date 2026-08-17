@@ -105,6 +105,14 @@ jobs:
       - name: Test (macOS and Windows)
         run: ctest --test-dir build -C Release --output-on-failure
 
+      ### --output-on-failure printed nothing for the failing Windows tests
+      ### (2026-08-17), which left a red build with no way to tell what broke.
+      ### ctest always writes every test's output here, so dump it. ###
+      - name: Test log (on failure)
+        if: failure()
+        shell: bash
+        run: cat build/Testing/Temporary/LastTest.log
+
       ### Code signing certificate (macOS) ###
       - name: Import code-signing cert
         if: runner.os == 'macOS' && env.MAC_CERTS_BASE64 != ''
