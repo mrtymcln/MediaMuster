@@ -318,8 +318,6 @@ QString OpJournal::kindName(Kind k)
 	{
 	case Kind::Move:
 		return QStringLiteral("move");
-	case Kind::Rebalance:
-		return QStringLiteral("rebalance");
 	case Kind::Delete:
 		return QStringLiteral("delete");
 	case Kind::Copy:
@@ -334,8 +332,6 @@ OpJournal::Kind OpJournal::kindFromName(const QString &s, bool *ok)
 		*ok = true;
 	if (s == QStringLiteral("move"))
 		return Kind::Move;
-	if (s == QStringLiteral("rebalance"))
-		return Kind::Rebalance;
 	if (s == QStringLiteral("delete"))
 		return Kind::Delete;
 	if (s == QStringLiteral("copy"))

@@ -116,12 +116,11 @@ void TestAvidLayout::avid_media_extensions()
 
 void TestAvidLayout::temp_renamed_media_is_still_media()
 {
-	// A park or probe file is the user's own media wearing a suffix one
-	// of our operations gave it. If a crash strands it, the table is
-	// where the user finds it — so it must never be filtered out.
+	// A parked file is the user's own media wearing a suffix one of our
+	// operations gave it. If a crash strands it, the table is where the
+	// user finds it — so it must never be filtered out.
 	const QString uuid = QStringLiteral("9f2c1d3e-0000-4000-8000-abcdefabcdef");
-	for (const QLatin1String tag : {AvidLayout::kCopyReplaceTag, AvidLayout::kMoveReplaceTag,
-									AvidLayout::kProbeMarker})
+	for (const QLatin1String tag : {AvidLayout::kCopyReplaceTag, AvidLayout::kMoveReplaceTag})
 	{
 		const QString parked = QStringLiteral("Clip.mxf") + tag + uuid;
 		QVERIFY2(AvidLayout::isAvidMediaName(parked), qPrintable(parked));

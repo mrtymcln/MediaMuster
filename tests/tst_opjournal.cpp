@@ -67,7 +67,7 @@ QByteArray TestOpJournal::firstLine(const QString &path)
 
 void TestOpJournal::kind_names_round_trip()
 {
-	for (Kind k : {Kind::Move, Kind::Rebalance, Kind::Delete})
+	for (Kind k : {Kind::Move, Kind::Delete, Kind::Copy})
 	{
 		bool ok = false;
 		QCOMPARE(OpJournal::kindFromName(OpJournal::kindName(k), &ok), k);
@@ -100,7 +100,7 @@ void TestOpJournal::clean_run_round_trips()
 	const QJsonObject meta{{QStringLiteral("dest"), QStringLiteral("/Volumes/Backup")},
 						   {QStringLiteral("preserve"), true}};
 	{
-		OpJournal j(Kind::Rebalance, meta, tmp.path());
+		OpJournal j(Kind::Move, meta, tmp.path());
 		QVERIFY(j.isOpen());
 
 		const int a = j.planOp(QStringLiteral("/A/x.mxf"), QStringLiteral("/B/x.mxf"), 12345);
@@ -116,7 +116,7 @@ void TestOpJournal::clean_run_round_trips()
 	QCOMPARE(recs.size(), 1);
 
 	const OpJournal::Record &r = recs.first();
-	QCOMPARE(r.kind, Kind::Rebalance);
+	QCOMPARE(r.kind, Kind::Move);
 	QVERIFY(r.complete);
 	QVERIFY(!r.cancelled);
 	QVERIFY(!r.recovered);

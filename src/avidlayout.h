@@ -106,13 +106,12 @@ namespace AvidLayout
 
 	// MARK: - MediaMuster's own temp-rename markers
 
-	/// Copy and Move park an existing destination aside, and rebalance
-	/// renames a pre-flight probe, by appending one of these plus a
-	/// uuid. Defined here, used by mediamanager.cpp (the parking) and
-	/// probesweep.h (the sweep), so writer and reader share one spelling.
+	/// Copy and Move park an existing destination aside by appending one of
+	/// these plus a uuid. Defined here, used by mediamanager.cpp (the
+	/// parking) and by the scanner, which must recognise a stranded park as
+	/// temp-renamed media rather than hiding it.
 	inline constexpr QLatin1String kCopyReplaceTag(".__copyreplace_");
 	inline constexpr QLatin1String kMoveReplaceTag(".__movereplace_");
-	inline constexpr QLatin1String kProbeMarker(".__rebalprobe_");
 
 	/// Where Delete puts files on a volume whose OS trash can't be used or
 	/// won't say where a file landed (network shares): a folder at the
@@ -125,7 +124,7 @@ namespace AvidLayout
 	/// "Clip.mxf.__movereplace_ab12" reads as "Clip.mxf".
 	inline QStringView withoutTempSuffix(QStringView fileName)
 	{
-		for (const QLatin1String tag : {kCopyReplaceTag, kMoveReplaceTag, kProbeMarker})
+		for (const QLatin1String tag : {kCopyReplaceTag, kMoveReplaceTag})
 		{
 			const qsizetype at = fileName.lastIndexOf(tag);
 			if (at > 0)

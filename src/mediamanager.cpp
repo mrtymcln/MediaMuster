@@ -63,9 +63,9 @@ namespace
 
 	// Suffixes for ParkedFile. Distinct per operation so a stray temp names
 	// the job that left it behind.
-	// Defined in AvidLayout beside the probe marker: the scanner has to
-	// recognise these same names as temp-renamed media so a stranded
-	// park never becomes invisible in the table.
+	// Defined in AvidLayout: the scanner has to recognise these same names
+	// as temp-renamed media so a stranded park never becomes invisible in
+	// the table.
 	inline constexpr QLatin1String kCopyReplaceTag = AvidLayout::kCopyReplaceTag;
 	inline constexpr QLatin1String kMoveReplaceTag = AvidLayout::kMoveReplaceTag;
 

@@ -2,7 +2,6 @@
 #include "foldercard.h"
 #include "formatutil.h"
 #include "layoututil.h"
-#include "opjournal.h"
 #include "rebalancer.h"
 
 #include <QComboBox>
@@ -374,26 +373,6 @@ void RebalanceDialog::onRebalanceClicked()
 		if (confirm.clickedButton() != goBtn)
 			return;
 
-		// Same gate as the Manage Media flow: no safety journal means an
-		// interrupted rebalance can't be rolled back — the user decides,
-		// not a console line.
-		if (!OpJournal::standardDirWritable())
-		{
-			QMessageBox noJournal(this);
-			noJournal.setIcon(QMessageBox::Warning);
-			noJournal.setWindowTitle(tr("No crash protection"));
-			noJournal.setText(tr("MediaMuster can't write its safety journal (the record used "
-								 "to undo an interrupted operation). Check free space and "
-								 "permissions on your system disk.\n\nIf this rebalance is "
-								 "interrupted, moves cannot be rolled back automatically. "
-								 "Continue anyway?"));
-			auto *anywayBtn = noJournal.addButton(tr("Continue Anyway"), QMessageBox::DestructiveRole);
-			noJournal.addButton(QMessageBox::Cancel);
-			noJournal.setDefaultButton(QMessageBox::Cancel);
-			noJournal.exec();
-			if (noJournal.clickedButton() != anywayBtn)
-				return;
-		}
 	}
 
 	m_running = true;

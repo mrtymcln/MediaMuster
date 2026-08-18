@@ -12,8 +12,8 @@ class QFile;
 
 // MARK: - OpJournal
 //
-// Write-ahead journal for the destructive jobs (Move, Rebalance, Delete,
-// Copy). Log what we're about to do before doing it, then mark it done
+// Write-ahead journal for the destructive jobs (Move, Delete, Copy). Log
+// what we're about to do before doing it, then mark it done
 // after. If the app dies mid-run, the next launch reads the half-finished
 // journal and walks everything back.
 //
@@ -43,7 +43,6 @@ public:
 	enum class Kind
 	{
 		Move,
-		Rebalance,
 		Delete,
 		Copy
 	};
@@ -231,7 +230,7 @@ public:
 	static Kind kindFromName(const QString &s, bool *ok = nullptr);
 
 	/// The two journal-unavailable warnings, worded once for every flow.
-	/// MediaManager and Rebalancer both surface these; one home so the
+	/// Every destructive flow surfaces these; one home so the
 	/// app's key safety message can't drift between them.
 	static QString openFailedText(Kind k);
 	static QString degradedText();
@@ -279,7 +278,7 @@ public:
 	JournalOp &operator=(const JournalOp &) = delete;
 
 	/// `finalPath` is where it landed: Delete passes the trash path so
-	/// rollback knows what to put back; Move/Rebalance leave it empty.
+	/// rollback knows what to put back; Move leaves it empty.
 	void done(const QString &finalPath = QString())
 	{
 		if (m_journal && !m_settled)
@@ -305,11 +304,10 @@ public:
 		m_settled = true;
 	}
 
-	/// The op concluded with disk unchanged; recovery ignores it. Load-
-	/// bearing for the rebalancer's pre-flight probes: each probe rename is
-	/// journalled ahead (src → probe path) and settled skipped once the
-	/// file is safely back — only a crash between the two renames leaves
-	/// the op live for recovery to rename home.
+	/// The op concluded with disk unchanged; recovery ignores it. Used for
+	/// a file the conflict policy skipped: the plan still lists it, so the
+	/// journal has to say it was dealt with or a resume would offer it
+	/// again.
 	void skipped()
 	{
 		if (m_journal && !m_settled)

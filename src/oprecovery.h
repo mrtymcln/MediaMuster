@@ -19,9 +19,9 @@
 // puts a parked original back) and leaves the rest exactly as it is; what
 // was not done is then offered to the user as a Resumable.
 //
-// Two kinds keep the old wholesale rollback, because neither can be
-// resumed: a Rebalance (no plan, and its pre-flight probes must be renamed
-// home) and any journal whose plan line never reached disk.
+// One case keeps the old wholesale rollback, because nothing can be
+// offered from it: a journal whose plan line never reached disk (or that
+// this build cannot fully read).
 //
 // Per journal: a finished or cancelled one gets deleted (unless it still
 // holds a stranded parked original — a dirty fail — which keeps it alive);
@@ -48,8 +48,7 @@ public:
 	/// the remainder back to the engine — or to delete the journal if the
 	/// user says no. `remaining` is every planned file that did not finish:
 	/// never started, failed, or cut off mid-file (the sweep has already
-	/// tidied that one). Rebalance never writes a plan, so it is never
-	/// offered.
+	/// tidied that one).
 	struct Resumable
 	{
 		QString journalPath;

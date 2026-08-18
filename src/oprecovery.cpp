@@ -3,7 +3,6 @@
 #include "avidlayout.h"
 #include "formatutil.h"
 #include "opjournal.h"
-#include "probesweep.h"
 
 #include <QDir>
 #include <QFile>
@@ -162,7 +161,7 @@ namespace
 		return op.parked.isEmpty() && dstHoldsWholeFile(op);
 	}
 
-	// Undo a Move/Rebalance: move dst back to src, then restore any original
+	// Undo a Move: move dst back to src, then restore any original
 	// a Move-Replace had parked aside.
 	OpResult reverseMoveLike(const OpJournal::Entry &op, QStringList &notes)
 	{
@@ -320,10 +319,6 @@ namespace
 			return sourceLocationReachable(op) && !QFile::exists(op.src) && dstHoldsWholeFile(op);
 		case OpJournal::Kind::Delete:
 			return sourceLocationReachable(op) && !QFile::exists(op.src);
-		case OpJournal::Kind::Rebalance:
-			// Never: a rebalance is always unwound (see run()), and its
-			// pre-flight probes MUST be renamed home.
-			return false;
 		}
 		return false;
 	}
@@ -449,7 +444,6 @@ namespace
 		case OpJournal::Kind::Copy:
 			return reverseCopy(op, notes);
 		case OpJournal::Kind::Move:
-		case OpJournal::Kind::Rebalance:
 			return reverseMoveLike(op, notes);
 		}
 		return OpResult::NothingToDo;
@@ -468,13 +462,6 @@ std::optional<OpRecovery::Resumable> OpRecovery::resumableFrom(const OpJournal::
 	if (!rec.hasPlan || rec.complete || rec.plan.isEmpty())
 		return std::nullopt;
 	if (!rec.kindKnown || rec.schema != 1)
-		return std::nullopt;
-	// A Rebalance is never resumable, and the reader says so rather than
-	// leaning on the writer never having written a plan: run() unwinds it
-	// wholesale, so "what is left to do" is not a question this record can
-	// answer. (Its plan would also be a folder redistribution computed for
-	// a disk layout that no longer exists.)
-	if (rec.kind == OpJournal::Kind::Rebalance)
 		return std::nullopt;
 
 	// A planned file is finished when its op says so (done or skipped) or
@@ -584,18 +571,11 @@ OpRecovery::Summary OpRecovery::run(const QString &dir)
 		// hour of completed moves at launch — only to offer to redo them —
 		// is the opposite of help, and the user never asked for it.
 		//
-		// Two exceptions keep their old wholesale rollback:
-		//   Rebalance — no plan, so it can never be resumed, and its
-		//               pre-flight probes MUST be renamed home.
-		//   A journal with no plan (the write failed before the plan line)
-		//               — nothing can be offered from it, so putting the
-		//               files back is the only help left.
-		// The same gate resumableFrom() applies: a journal this build cannot
-		// fully read (unknown kind, newer schema) is never offered, so it
-		// must get the wholesale rollback instead of being left half-done
-		// with no way to finish it.
-		const bool keepFinishedWork = rec.hasPlan && rec.kindKnown && rec.schema == 1 &&
-									  rec.kind != OpJournal::Kind::Rebalance;
+		// One exception keeps the old wholesale rollback: a journal nothing
+		// can be offered from — no plan line (the write failed before it),
+		// an unknown kind, or a newer schema. resumableFrom() refuses those
+		// too, so putting the files back is the only help left.
+		const bool keepFinishedWork = rec.hasPlan && rec.kindKnown && rec.schema == 1;
 
 		// Undo newest op first so any ordering dependency unwinds the way
 		// it was built.
@@ -627,28 +607,6 @@ OpRecovery::Summary OpRecovery::run(const QString &dir)
 				++reversed;
 			else if (r == OpResult::Flagged)
 				++flagged;
-		}
-
-		// A crashed rebalance may have stranded a probe file the journal
-		// never heard about (older build, or the journal degraded before
-		// the probe's op line landed). The begin line carries the MXF root,
-		// so sweep it. Journalled probes were already renamed home by the
-		// op walk above, leaving nothing here — every step idempotent.
-		if (rec.kind == OpJournal::Kind::Rebalance)
-		{
-			const QString mxfRoot = rec.meta.value(QStringLiteral("mxfRoot")).toString();
-			if (!mxfRoot.isEmpty())
-			{
-				const ProbeSweep::Result swept = ProbeSweep::recoverStranded(mxfRoot);
-				reversed += swept.restored.size();
-				for (const QString &name : swept.stuck)
-				{
-					journalNotes << QStringLiteral("A pre-flight rename is still stranded as "
-												   "'%1' — its original name may be taken.")
-										.arg(name);
-					++flagged;
-				}
-			}
 		}
 
 		// Stamp it recovered last: a crash mid-rollback leaves it unstamped,

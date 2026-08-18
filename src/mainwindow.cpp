@@ -1585,8 +1585,6 @@ bool MainWindow::dispatchOperation(OpJournal::Kind kind, QVector<MediaFile> file
 	case OpJournal::Kind::Delete:
 		m_fileOps->executeDelete(std::move(files));
 		break;
-	case OpJournal::Kind::Rebalance:
-		return false; // Rebalance has its own dialog and engine; never dispatched here.
 	}
 
 	// Lock the UI and raise the modal progress sheet now, at dispatch —
@@ -1667,8 +1665,6 @@ void MainWindow::offerResume()
 						  : tr("The successfully deleted files are in your bin. "
 							   "The rest are untouched.");
 		break;
-	case OpJournal::Kind::Rebalance:
-		return; // never resumable (no plan)
 	}
 
 	const QDateTime started = QDateTime::fromString(r.started, Qt::ISODateWithMs).toLocalTime();

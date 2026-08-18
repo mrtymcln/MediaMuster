@@ -24,10 +24,17 @@
 ///      Nothing touched on disk yet.
 ///
 ///   2. executeAsync: runs the approved plan on a worker thread.
-///      Renames files into their target folders, deletes stale
-///      per-folder .mdb / .pmr so Avid rebuilds them, and bookends
-///      the run with a pre-flight probe rename to abort cleanly if a
-///      donor folder is locked by an open Avid.
+///      Opens with a scratch-file rename check per donor folder, so a
+///      folder that is gone or read-only aborts the run before anything
+///      moves; a single clip another app holds open isn't caught there
+///      and fails its own rename in the loop, where it is counted and
+///      logged. Then renames files into their target folders, deleting
+///      each folder's stale .mdb / .pmr the moment its contents change
+///      so Avid rebuilds them.
+///
+///      No journal: every move is a rename inside one volume, so an
+///      interrupted run leaves each clip at exactly one of its two
+///      paths — a legal layout, and re-running is one button.
 ///
 /// Relatives stay together. Bucket by masterMobId
 /// and treat each bucket as atomic; cancel fires between buckets,

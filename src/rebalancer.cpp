@@ -1,8 +1,6 @@
 #include "rebalancer.h"
 #include "avidlayout.h"
 #include "formatutil.h"
-#include "opjournal.h"
-#include "probesweep.h"
 #include "progressthrottle.h"
 
 #include <QDir>
@@ -11,7 +9,7 @@
 #include <QFileInfo>
 #include <QHash>
 #include <QSet>
-#include <QThread>
+#include <QUuid>
 
 #include <algorithm>
 #include <limits>
@@ -69,6 +67,65 @@ namespace
 	bool countsTowardFolderBudget(const QString &fileName)
 	{
 		return AvidLayout::countsAsEssenceName(fileName);
+	}
+
+	/// What a pre-flight check can conclude about a donor folder.
+	enum class FolderCheck
+	{
+		Ok,		   ///< A scratch file was created and renamed here.
+		Refused,   ///< The folder itself won't have it: gone, or read-only.
+		Unverified ///< Couldn't create a scratch file for some other reason.
+	};
+
+	/// Can this folder accept the renames a rebalance is about to make?
+	/// Proved with a scratch file of our own — create it, rename it, delete
+	/// it — the way the rest of the app tests a location (compare
+	/// OpJournal::standardDirWritable).
+	///
+	/// This check used to rename one of the USER'S clips out and straight
+	/// back. That tested the same folder permission, but if the app died in
+	/// the moment between the two renames it left a real clip under a name
+	/// Avid cannot see — a vanished clip, and a whole write-ahead journal
+	/// plus a recovery sweep existed only to put it back. No pre-flight
+	/// result is worth that.
+	///
+	/// Creating a file needs free space; renaming one does not. So a
+	/// create failure that ISN'T a permissions problem returns Unverified
+	/// rather than Refused: a workspace with no room left is exactly when a
+	/// rebalance is worth running, and every move reports itself if it
+	/// fails. A clip Avid holds open is likewise not caught here — that one
+	/// fails its own rename in the move loop, where it is counted and
+	/// logged.
+	FolderCheck checkFolderRenames(const QString &folderPath, QString &detail)
+	{
+		const QFileInfo info(folderPath);
+		if (!info.isDir())
+		{
+			detail = QStringLiteral("the folder is no longer there");
+			return FolderCheck::Refused;
+		}
+
+		const QString scratch = folderPath + QStringLiteral("/.mm_preflight_") +
+								QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
+		{
+			QFile f(scratch);
+			if (!f.open(QIODevice::WriteOnly))
+			{
+				detail = f.errorString();
+				return info.isWritable() ? FolderCheck::Unverified : FolderCheck::Refused;
+			}
+			f.write("x", 1);
+		}
+
+		const QString renamed = scratch + QStringLiteral(".tmp");
+		const bool ok = QFile::rename(scratch, renamed);
+		QFile::remove(ok ? renamed : scratch);
+		if (!ok)
+		{
+			detail = QStringLiteral("a test rename was refused");
+			return FolderCheck::Refused;
+		}
+		return FolderCheck::Ok;
 	}
 
 	// Prefix for synthetic relatives keys assigned to loose files
@@ -426,108 +483,40 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	QSet<FolderId> touched;
 	const int total = plan.ops.size();
 
-	// MARK: Open the journal before anything touches disk
+	// MARK: Pre-flight — can each donor folder accept renames?
 
-	// The journal used to open after the probes, which left the probe
-	// renames as the one disk mutation the WAL never saw — a crash between
-	// a probe's two renames stranded a real clip with no record. Probes are
-	// ops like any other now, so they open the journal first.
-	auto journal = std::make_unique<OpJournal>(
-		OpJournal::Kind::Rebalance, QJsonObject{{QStringLiteral("mxfRoot"), plan.mxfRoot}});
-	if (!journal->isOpen())
-		emit log(QtWarningMsg, OpJournal::openFailedText(OpJournal::Kind::Rebalance));
-
-	// MARK: Recover stranded probe files from a previous force-quit
-
-	// Journalled probes are restored by startup recovery; this sweep is the
-	// belt to that brace, catching strandings from older builds and from
-	// runs whose journal degraded. Shared with recovery via ProbeSweep.
+	// Every move here is a rename inside one volume, so a half-finished run
+	// is not damage: each clip is either at its old path or its new one,
+	// and which numbered folder it sits in is exactly what a rebalance is
+	// free to change. That is why this operation keeps no journal — there
+	// is nothing a rollback could usefully put back, and re-running is one
+	// button. What CAN go wrong is a folder that won't accept renames at
+	// all, so check that first, with a scratch file rather than a clip.
 	{
-		const ProbeSweep::Result swept = ProbeSweep::recoverStranded(plan.mxfRoot);
-		for (const QString &name : swept.restored)
-			emit log(QtInfoMsg, QStringLiteral("Recovered stranded probe file: %1").arg(name));
-		for (const QString &name : swept.stuck)
-			emit log(QtCriticalMsg,
-					 QStringLiteral("Stranded probe file '%1' couldn't be restored (its original "
-									"name may be taken); left in place.")
-						 .arg(name));
-	}
-
-	// MARK: Pre-flight — probe rename per donor folder
-
-	// Rename one file from each donor folder out and immediately
-	// back. If the folder is locked for any reason, the first
-	// rename fails and we abort cleanly before doing real damage.
-	// The retry on the rename-back handles the rare race where a
-	// watcher picks the file up between the two attempts.
-	//
-	// Each probe is write-ahead journalled (src → probe path) so a crash
-	// between the two renames is just an unfinished op: recovery's
-	// move-reversal renames the probe home at next launch. A clean
-	// out-and-back settles the op as skipped — disk unchanged.
-	{
-		QHash<FolderId, QString> probeFiles;
+		QSet<FolderId> donors;
 		for (const MoveOp &op : plan.ops)
+			if (const auto srcFid = srcFolderOf(op.srcPath))
+				donors.insert(*srcFid);
+
+		for (const FolderId &fid : donors)
 		{
-			auto srcFid = srcFolderOf(op.srcPath);
-			if (srcFid && !probeFiles.contains(*srcFid))
-				probeFiles.insert(*srcFid, op.srcPath);
-		}
-
-		const QString suffix = ProbeSweep::makeProbeSuffix();
-		for (auto it = probeFiles.constBegin(); it != probeFiles.constEnd(); ++it)
-		{
-			const QString src = it.value();
-			const QString probe = src + suffix;
-
-			JournalOp jop(journal.get(), src, probe);
-			if (!QFile::rename(src, probe))
+			QString detail;
+			const FolderCheck check =
+				checkFolderRenames(plan.mxfRoot + QLatin1Char('/') + fid.display(), detail);
+			if (check == FolderCheck::Ok)
+				continue;
+			if (check == FolderCheck::Unverified)
 			{
-				// Nothing moved; settle plain-failed and close the journal
-				// clean so recovery has nothing to chew on.
-				jop.failed(QStringLiteral("probe rename-out refused"));
-				journal->finish(0, 1, 0);
-				journal->prune();
-				emit aborted(tr("Cannot rename files in folder '%1'. "
-								"Quit Avid Media Composer (or any other "
-								"app that has these files open) and try "
-								"again.")
-								 .arg(it.key().display()));
-				return;
+				emit log(QtWarningMsg,
+						 tr("Couldn't pre-check folder '%1' (%2). Carrying on: moving a file "
+							"needs no free space, and any file that can't move is reported.")
+							 .arg(fid.display(), detail));
+				continue;
 			}
-
-			// Short-backoff retries cover a watcher grabbing the file
-			// between the two attempts.
-			constexpr int kRestoreAttempts = 5;
-			constexpr int kRestoreBackoffMs = 100;
-			bool restored = false;
-			for (int attempt = 0; attempt < kRestoreAttempts; ++attempt)
-			{
-				if (QFile::rename(probe, src))
-				{
-					restored = true;
-					break;
-				}
-				QThread::msleep(kRestoreBackoffMs);
-			}
-			if (!restored)
-			{
-				// The clip is stranded under the probe name and we couldn't
-				// put it back. Dirty fail: the journal survives finish() so
-				// next launch's recovery keeps retrying the rename home.
-				jop.failedDirty(QStringLiteral("probe restore failed"));
-				journal->finish(0, 1, 0);
-				journal->prune(); // refuses: dirty
-				emit aborted(tr("Couldn't restore a pre-flight test rename. "
-								"'%1' needs to be renamed back to '%2' — "
-								"Avid or another app probably grabbed it "
-								"between the two attempts. No rebalance "
-								"moves have been made; MediaMuster will keep "
-								"trying to restore it on the next launch.")
-								 .arg(probe, src));
-				return;
-			}
-			jop.skipped(); // out and back: disk unchanged
+			emit aborted(tr("Can't move files out of folder '%1' — %2. If Avid Media Composer "
+							"(or another app) is using these files, quit it and try again.")
+							 .arg(fid.display(), detail));
+			return;
 		}
 	}
 
@@ -562,10 +551,31 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 	// ~30 Hz emit cap, same throttle the scanner/copy loops use.
 	ProgressThrottle throttle;
 
-	// Warn once if the journal degrades mid-run (see OpJournal::degraded()):
-	// the moves continue, but the user must know crash recovery stopped
-	// covering them.
-	bool journalDegradedWarned = false;
+	// Avid's per-folder databases (msmMMOB.mdb / msmFMID.pmr) go stale the
+	// instant a file moves in or out, and Avid rebuilds them when it next
+	// opens the project. Delete them the moment they go stale — NOT at the
+	// end of the run.
+	//
+	// That ordering is what makes running without a journal safe. A crash
+	// partway through leaves a legal folder layout, but if the databases
+	// were still sitting there intact, they would parse cleanly and simply
+	// not mention the clips that had already moved: the scanner reads that
+	// as "No reference", which is the state a user culls from. Deleting
+	// them first means a crash leaves them absent instead — "No database",
+	// an honest unknown that invites a rescan rather than a delete.
+	const auto resetFolderDatabases = [&](const FolderId &fid)
+	{
+		if (touched.contains(fid))
+			return; // already reset by an earlier move
+		touched.insert(fid);
+		const QString folderPath = plan.mxfRoot + QLatin1Char('/') + fid.display();
+		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
+		{
+			QFile f(folderPath + QLatin1String(db));
+			if (f.exists() && !f.remove())
+				emit log(QtWarningMsg, QStringLiteral("Couldn't delete %1").arg(f.fileName()));
+		}
+	};
 
 	// MARK: Execute moves
 
@@ -591,57 +601,27 @@ void Rebalancer::doExecute(const RebalancePlan &plan)
 						 QStringLiteral("Destination already exists, skipping: %1").arg(destPath));
 				++failed;
 			}
+			else if (QFile::rename(op.srcPath, destPath))
+			{
+				++succeeded;
+				resetFolderDatabases(op.dest);
+				if (const auto srcFid = srcFolderOf(op.srcPath))
+					resetFolderDatabases(*srcFid);
+			}
 			else
 			{
-				JournalOp jop(journal.get(), op.srcPath, destPath, op.sizeBytes);
-				if (QFile::rename(op.srcPath, destPath))
-				{
-					jop.done();
-					++succeeded;
-					touched.insert(op.dest);
-					if (const auto srcFid = srcFolderOf(op.srcPath))
-						touched.insert(*srcFid);
-				}
-				else
-				{
-					jop.failed(QStringLiteral("rename failed"));
-					emit log(QtWarningMsg, QStringLiteral("Move failed: %1 → %2").arg(op.srcPath, destPath));
-					++failed;
-				}
+				emit log(QtWarningMsg, QStringLiteral("Move failed: %1 → %2").arg(op.srcPath, destPath));
+				++failed;
 			}
 			++doneCount;
-
-			if (journal->degraded() && !journalDegradedWarned)
-			{
-				journalDegradedWarned = true;
-				emit log(QtCriticalMsg, OpJournal::degradedText());
-			}
 
 			if (doneCount == total || throttle.shouldEmit())
 				emit progress(doneCount, total, QFileInfo(op.srcPath).fileName());
 		}
 	}
 
-	// Cancel means stop and keep: close the journal clean so recovery
-	// leaves the moves that did happen in place, then delete it. The DB
-	// reset below isn't journalled because Avid regenerates those files.
-	journal->finish(succeeded, failed, /*skipped=*/0, cancelled);
-	journal->prune();
-
-	// MARK: Reset per-folder databases
-
-	// Delete msmMMOB.mdb and msmFMID.pmr; Avid regenerates them
-	// on next launch. Stale DBs would show ghost/missing entries.
-	for (const FolderId &fid : touched)
-	{
-		const QString folderPath = plan.mxfRoot + QLatin1Char('/') + fid.display();
-		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
-		{
-			QFile f(folderPath + QLatin1String(db));
-			if (f.exists() && !f.remove())
-				emit log(QtWarningMsg, QStringLiteral("Couldn't delete %1").arg(f.fileName()));
-		}
-	}
+	// Cancel means stop and keep: the moves that did happen stay where they
+	// landed, which is a legal folder layout like any other.
 
 	emit log(
 		QtInfoMsg,

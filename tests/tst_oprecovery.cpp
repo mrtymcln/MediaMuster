@@ -1,6 +1,5 @@
 #include "opjournal.h"
 #include "oprecovery.h"
-#include "probesweep.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -273,25 +272,11 @@ private slots:
 	void plain_fail_in_finished_run_is_pruned_untouched();
 	void dirty_fail_flags_when_destination_occupied();
 
-	// Rebalance pre-flight probes (finding 10, belt and braces): a probe is
-	// journalled like any move, so a crash between its two renames is an
-	// unfinished op recovery renames home; the root sweep additionally
-	// catches probes no journal ever heard about (older builds, degraded
-	// journals), located via the begin line's mxfRoot.
-	// A Rebalance is unwound WHOLESALE even if a plan line ever appears in
-	// its journal: it has no resume path, and its pre-flight probes must be
-	// renamed home. Without this the exception in run()'s keepFinishedWork
-	// is unexercised — every rebalance journal is plan-less today, so the
-	// clause could be deleted and the suite would stay green.
-	void rebalance_with_a_plan_is_still_rolled_back_wholesale();
 	// A stalled rollback outranks "finished work stays": a dirty op is
 	// retried even when the disk says its forward work concluded, and a
 	// finished-but-dirty run still touches nothing else.
 	void dirty_op_that_looks_concluded_is_still_retried();
 	void finished_dirty_run_with_plan_leaves_concluded_ops_silent();
-	void interrupted_rebalance_probe_op_is_renamed_home();
-	void interrupted_rebalance_root_sweep_catches_unjournalled_probe();
-	void probe_suffix_roundtrips_through_the_sweep();
 };
 
 void TestOpRecovery::interrupted_move_without_plan_is_rolled_back_wholesale()
@@ -1691,44 +1676,6 @@ void TestOpRecovery::dirty_fail_flags_when_destination_occupied()
 	QVERIFY(s.hadTrouble());
 }
 
-void TestOpRecovery::rebalance_with_a_plan_is_still_rolled_back_wholesale()
-{
-	// Rebalance never writes a plan today, so this journal is deliberately
-	// impossible — it exists to pin the exception rather than the status
-	// quo. Give Rebalance a plan tomorrow (to make it resumable) and this
-	// test is what stops completed moves silently staying put and probes
-	// stranding under their temp names.
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString oplog = tmp.path() + QStringLiteral("/oplog");
-	const QString root = tmp.path() + QStringLiteral("/MXF");
-	const QString moved = root + QStringLiteral("/1/a.mxf");
-	const QString movedTo = root + QStringLiteral("/2/a.mxf");
-	const QString original = root + QStringLiteral("/1/b.mxf");
-	const QString probe =
-		original + QStringLiteral(".__rebalprobe_00000000-0000-0000-0000-000000000000");
-
-	QVERIFY(QDir().mkpath(root + QStringLiteral("/1"))); // volume mounted
-	writeFile(movedTo, "CLIPDATA"); // op 0: the move completed (src gone)
-	writeFile(probe, "PROBEDATA"); // op 1: crashed between the probe's renames
-
-	writeJournal(oplog, {beginRec("rebalance", deadHost(), 999999,
-								  QJsonObject{{QStringLiteral("mxfRoot"), root}}),
-						 planRec(root, false,
-								 {{moved, "a.mxf", "1", 8, ""}, {original, "b.mxf", "1", 9, ""}}),
-						 opRec(0, moved, movedTo, 8), doneRec(0), opRec(1, original, probe)});
-
-	const OpRecovery::Summary s = OpRecovery::run(oplog);
-
-	QCOMPARE(readFile(moved), QByteArray("CLIPDATA")); // completed move undone
-	QVERIFY(!QFile::exists(movedTo));
-	QCOMPARE(readFile(original), QByteArray("PROBEDATA")); // probe renamed home
-	QVERIFY(!QFile::exists(probe));
-	QCOMPARE(s.opsReversed, 2);
-	QCOMPARE(s.opsFlagged, 0);
-	QVERIFY2(s.resumable.isEmpty(), "a rebalance must never be offered for resume");
-}
-
 void TestOpRecovery::dirty_op_that_looks_concluded_is_still_retried()
 {
 	// The op's forward work concluded by every other measure — source gone,
@@ -1807,78 +1754,6 @@ void TestOpRecovery::finished_dirty_run_with_plan_leaves_concluded_ops_silent()
 			 "a concluded op in a finished run must not be flagged for its park");
 }
 
-void TestOpRecovery::interrupted_rebalance_probe_op_is_renamed_home()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString oplog = tmp.path() + QStringLiteral("/oplog");
-	const QString root = tmp.path() + QStringLiteral("/MXF");
-	const QString original = root + QStringLiteral("/1/a.mxf");
-	const QString probe =
-		original + QStringLiteral(".__rebalprobe_00000000-0000-0000-0000-000000000000");
-
-	// Crash between the probe's two renames: the clip sits under the probe
-	// name, and the journal holds the probe op with no outcome line.
-	writeFile(probe, "CLIPDATA");
-
-	writeJournal(oplog, {beginRec("rebalance", deadHost(), 999999,
-								  QJsonObject{{QStringLiteral("mxfRoot"), root}}),
-						 opRec(0, original, probe)});
-
-	const OpRecovery::Summary s = OpRecovery::run(oplog);
-
-	QCOMPARE(readFile(original), QByteArray("CLIPDATA"));
-	QVERIFY(!QFile::exists(probe));
-	QCOMPARE(s.opsReversed, 1);
-	QCOMPARE(s.opsFlagged, 0);
-}
-
-void TestOpRecovery::interrupted_rebalance_root_sweep_catches_unjournalled_probe()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString oplog = tmp.path() + QStringLiteral("/oplog");
-	const QString root = tmp.path() + QStringLiteral("/MXF");
-	const QString original = root + QStringLiteral("/2/b.mxf");
-	const QString probe =
-		original + QStringLiteral(".__rebalprobe_11111111-1111-1111-1111-111111111111");
-
-	// The stranded probe has NO op line (older build, or the journal
-	// degraded before it landed) — only the begin line's mxfRoot can find
-	// it. The one journalled op is a plain fail the walk ignores.
-	writeFile(probe, "BDATA");
-
-	writeJournal(oplog, {beginRec("rebalance", deadHost(), 999999,
-								  QJsonObject{{QStringLiteral("mxfRoot"), root}}),
-						 opRec(0, QStringLiteral("/x"), QStringLiteral("/y")), failRec(0)});
-
-	const OpRecovery::Summary s = OpRecovery::run(oplog);
-
-	QCOMPARE(readFile(original), QByteArray("BDATA"));
-	QVERIFY(!QFile::exists(probe));
-	QCOMPARE(s.opsReversed, 1); // via the sweep, not the op walk
-	QCOMPARE(s.opsFlagged, 0);
-}
-
-void TestOpRecovery::probe_suffix_roundtrips_through_the_sweep()
-{
-	// Writer/reader protocol check: a probe named by makeProbeSuffix()
-	// must be exactly what recoverStranded recognises. The raw-literal
-	// probe names in the two tests above stay deliberately hardcoded —
-	// they pin on-disk compatibility with probes stranded by older builds.
-	QVERIFY(ProbeSweep::makeProbeSuffix().startsWith(QStringLiteral(".__rebalprobe_")));
-
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString original = tmp.path() + QStringLiteral("/1/clip.mxf");
-	const QString probe = original + ProbeSweep::makeProbeSuffix();
-	writeFile(probe, "MEDIA");
-
-	const ProbeSweep::Result swept = ProbeSweep::recoverStranded(tmp.path());
-	QCOMPARE(swept.restored.size(), 1);
-	QCOMPARE(swept.stuck.size(), 0);
-	QCOMPARE(readFile(original), QByteArray("MEDIA"));
-}
 
 QTEST_APPLESS_MAIN(TestOpRecovery)
 #include "tst_oprecovery.moc"

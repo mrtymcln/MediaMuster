@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QString>
 #include <QTemporaryDir>
+#include <QScopeGuard>
+#include <QSignalSpy>
 #include <QTest>
 
 class TestRebalancerPlan : public QObject
@@ -26,6 +28,19 @@ private slots:
 	void host_prefix_isolates_consolidation();
 	void home_full_falls_back_to_existing_folder();
 	void new_folder_when_all_existing_are_full();
+
+	// Execution. The moves themselves are renames inside one volume, so a
+	// half-finished run is a legal layout and the operation keeps no
+	// journal; what has to hold is that an approved plan actually lands,
+	// and that a folder which won't accept renames stops the run before
+	// anything moves — proved with a scratch file, never by renaming one
+	// of the user's clips (which is what used to strand real media).
+	void execute_moves_the_planned_files();
+	void execute_runs_a_planner_built_plan_and_creates_its_new_folder();
+	void execute_resets_the_avid_databases_of_every_folder_it_touches();
+	void execute_never_clobbers_an_existing_destination();
+	void execute_cancel_keeps_what_already_landed();
+	void execute_aborts_when_a_donor_folder_is_read_only();
 
 private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
@@ -316,6 +331,268 @@ void TestRebalancerPlan::new_folder_when_all_existing_are_full()
 	QCOMPARE(opsBetween(p, "2", "3"), 5);
 }
 
-// computePlan is pure-sync; no event loop required.
-QTEST_APPLESS_MAIN(TestRebalancerPlan)
+void TestRebalancerPlan::execute_moves_the_planned_files()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+
+	// Six under-cap clips in folder 1 and an empty folder 2. The planner
+	// leaves that alone (nothing is over the cap), so the ops below are
+	// hand-built: this test is about execution, not planning. The
+	// planner-built case is the next test.
+	QVector<MediaFile> files;
+	for (int i = 0; i < 6; ++i)
+		files << makeMxf(root, QStringLiteral("1"), QStringLiteral("clip%1.mxf").arg(i),
+						 QStringLiteral("mob%1").arg(i), 1000);
+	makeFillers(root, QStringLiteral("2"), 0);
+
+	RebalancePlan plan = Rebalancer::computePlan(root, QStringLiteral("EDIT"), files);
+	// Force a redistribution the planner would otherwise leave alone: send
+	// half of folder 1 to folder 2 by hand, so this test pins execution,
+	// not planning (which the tests above already cover).
+	plan.ops.clear();
+	for (int i = 0; i < 3; ++i)
+		plan.ops.append({root + QStringLiteral("/1/clip%1.mxf").arg(i),
+						 FolderId{QString(), 2},
+						 QStringLiteral("mob%1").arg(i),
+						 1000});
+
+	Rebalancer r;
+	QSignalSpy finished(&r, &Rebalancer::finished);
+	QSignalSpy aborted(&r, &Rebalancer::aborted);
+	r.executeAsync(plan);
+	// QTRY_*, never QSignalSpy::wait(): the worker can emit before wait()
+	// is even entered, and wait() would then sit out its whole timeout and
+	// report failure for a run that succeeded.
+	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 30000);
+
+	QCOMPARE(aborted.count(), 0);
+	QCOMPARE(finished.first().at(0).toInt(), 3); // succeeded
+	QCOMPARE(finished.first().at(1).toInt(), 0); // failed
+	for (int i = 0; i < 3; ++i)
+	{
+		QVERIFY2(QFile::exists(root + QStringLiteral("/2/clip%1.mxf").arg(i)), "moved file missing");
+		QVERIFY2(!QFile::exists(root + QStringLiteral("/1/clip%1.mxf").arg(i)), "source left behind");
+	}
+	for (int i = 3; i < 6; ++i)
+		QVERIFY2(QFile::exists(root + QStringLiteral("/1/clip%1.mxf").arg(i)), "untouched file moved");
+
+	// The pre-flight scratch file must never survive the run.
+	QVERIFY2(QDir(root + QStringLiteral("/1"))
+				 .entryList({QStringLiteral(".mm_preflight_*")}, QDir::Files | QDir::Hidden)
+				 .isEmpty(),
+			 "pre-flight scratch file left behind");
+}
+
+void TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder()
+{
+	// The other execution tests hand-build their ops, which never exercises
+	// plan.newFolders — so the mkpath loop could be deleted and they would
+	// all still pass. This one runs exactly what the planner returned: both
+	// existing folders are at the cap, so the group has to go to a folder
+	// that does not exist yet.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+
+	makeFillers(root, "1", 4998);
+	makeFillers(root, "2", 4994);
+	const QVector<MediaFile> files{
+		makeMxf(root, "1", "m1.mxf", "C1"), makeMxf(root, "2", "m2.mxf", "C1"),
+		makeMxf(root, "2", "m3.mxf", "C1"), makeMxf(root, "2", "m4.mxf", "C1"),
+		makeMxf(root, "2", "m5.mxf", "C1"), makeMxf(root, "2", "m6.mxf", "C1"),
+	};
+
+	const RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
+	QCOMPARE(plan.newFolders.size(), 1);
+	QVERIFY2(!QDir(root + QStringLiteral("/3")).exists(), "folder 3 must not exist yet");
+
+	Rebalancer r;
+	QSignalSpy finished(&r, &Rebalancer::finished);
+	r.executeAsync(plan);
+	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 30000);
+
+	QCOMPARE(finished.first().at(0).toInt(), 6); // succeeded
+	QCOMPARE(finished.first().at(1).toInt(), 0); // failed
+	QVERIFY2(QDir(root + QStringLiteral("/3")).exists(), "the plan's new folder was never created");
+	for (const char *name : {"m1.mxf", "m2.mxf", "m3.mxf", "m4.mxf", "m5.mxf", "m6.mxf"})
+		QVERIFY2(QFile::exists(root + QStringLiteral("/3/") + QLatin1String(name)),
+				 qPrintable(QString(QLatin1String(name)) + " never reached the new folder"));
+}
+
+void TestRebalancerPlan::execute_resets_the_avid_databases_of_every_folder_it_touches()
+{
+	// Avid's per-folder databases are wrong the moment a file moves in or
+	// out, and they must be gone before the next crash, not after the run:
+	// a database that survives, parses, and doesn't mention the clips now
+	// sitting beside it is what makes the scanner report them as "No
+	// reference" — the state a user culls from.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+
+	const QVector<MediaFile> files{makeMxf(root, "1", "clip.mxf", "mob0", 1000)};
+	makeFillers(root, "2", 0);
+
+	const QStringList dbs{root + QStringLiteral("/1/msmMMOB.mdb"), root + QStringLiteral("/1/msmFMID.pmr"),
+						  root + QStringLiteral("/2/msmMMOB.mdb"), root + QStringLiteral("/2/msmFMID.pmr")};
+	for (const QString &db : dbs)
+	{
+		QFile f(db);
+		QVERIFY(f.open(QIODevice::WriteOnly));
+		f.write("STALE");
+	}
+
+	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
+	plan.ops.clear();
+	plan.ops.append({root + QStringLiteral("/1/clip.mxf"), FolderId{QString(), 2},
+					 QStringLiteral("mob0"), 1000});
+
+	Rebalancer r;
+	QSignalSpy finished(&r, &Rebalancer::finished);
+	r.executeAsync(plan);
+	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 30000);
+
+	QCOMPARE(finished.first().at(0).toInt(), 1);
+	for (const QString &db : dbs)
+		QVERIFY2(!QFile::exists(db), qPrintable(db + QStringLiteral(" survived the rebalance")));
+}
+
+void TestRebalancerPlan::execute_never_clobbers_an_existing_destination()
+{
+	// Two folders can hold same-named essence after a manual copy. With no
+	// journal behind it, this guard is the only thing between a rebalance
+	// and a destroyed clip.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+
+	const QVector<MediaFile> files{makeMxf(root, "1", "clip.mxf", "mob0", 1000)};
+	makeFillers(root, "2", 0);
+	{
+		QFile occupied(root + QStringLiteral("/2/clip.mxf"));
+		QVERIFY(occupied.open(QIODevice::WriteOnly));
+		occupied.write("THE OTHER CLIP");
+	}
+
+	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
+	plan.ops.clear();
+	plan.ops.append({root + QStringLiteral("/1/clip.mxf"), FolderId{QString(), 2},
+					 QStringLiteral("mob0"), 1000});
+
+	Rebalancer r;
+	QSignalSpy finished(&r, &Rebalancer::finished);
+	r.executeAsync(plan);
+	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 30000);
+
+	QCOMPARE(finished.first().at(0).toInt(), 0); // succeeded
+	QCOMPARE(finished.first().at(1).toInt(), 1); // failed
+	QVERIFY2(QFile::exists(root + QStringLiteral("/1/clip.mxf")), "the source must stay put");
+	QFile kept(root + QStringLiteral("/2/clip.mxf"));
+	QVERIFY(kept.open(QIODevice::ReadOnly));
+	QCOMPARE(kept.readAll(), QByteArray("THE OTHER CLIP"));
+}
+
+void TestRebalancerPlan::execute_cancel_keeps_what_already_landed()
+{
+	// "Stop and keep" is the contract the journal-free design rests on: a
+	// cancelled (or crashed) run leaves a legal layout, never a lost file.
+	// Cancel is requested from the first progress signal — the throttle
+	// only emits once 33 ms have passed, so on a fast disk the run can
+	// finish first; the flag is therefore asserted only when it is set,
+	// while the property that matters — every clip at exactly one of its
+	// two paths — is asserted unconditionally.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+
+	constexpr int kFiles = 400;
+	QVector<MediaFile> files;
+	for (int i = 0; i < kFiles; ++i)
+		files << makeMxf(root, "1", QStringLiteral("clip%1.mxf").arg(i),
+						 QStringLiteral("mob%1").arg(i), 100);
+	makeFillers(root, "2", 0);
+
+	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
+	plan.ops.clear();
+	for (int i = 0; i < kFiles; ++i)
+		plan.ops.append({root + QStringLiteral("/1/clip%1.mxf").arg(i), FolderId{QString(), 2},
+						 QStringLiteral("mob%1").arg(i), 100});
+
+	Rebalancer r;
+	QSignalSpy finished(&r, &Rebalancer::finished);
+	// No context object: a direct connection, so the flag is set on the
+	// worker thread the instant the first progress fires.
+	QObject::connect(&r, &Rebalancer::progress, [&r] { r.cancel(); });
+	r.executeAsync(plan);
+	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 60000);
+
+	const int succeeded = finished.first().at(0).toInt();
+	const int failed = finished.first().at(1).toInt();
+	const bool cancelled = finished.first().at(2).toBool();
+
+	int atSource = 0, atDest = 0;
+	for (int i = 0; i < kFiles; ++i)
+	{
+		const bool src = QFile::exists(root + QStringLiteral("/1/clip%1.mxf").arg(i));
+		const bool dst = QFile::exists(root + QStringLiteral("/2/clip%1.mxf").arg(i));
+		QVERIFY2(src != dst, qPrintable(QStringLiteral("clip%1 is in neither folder or both").arg(i)));
+		src ? ++atSource : ++atDest;
+	}
+	QCOMPARE(atDest, succeeded);
+	QCOMPARE(atSource, kFiles - succeeded);
+	QCOMPARE(failed, 0);
+	if (cancelled)
+		QVERIFY2(succeeded < kFiles, "a cancelled run must not have moved everything");
+}
+
+void TestRebalancerPlan::execute_aborts_when_a_donor_folder_is_read_only()
+{
+#ifdef Q_OS_WIN
+	QSKIP("Directory write-protection doesn't block renames the same way on Windows.");
+#endif
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+
+	QVector<MediaFile> files;
+	for (int i = 0; i < 2; ++i)
+		files << makeMxf(root, QStringLiteral("1"), QStringLiteral("clip%1.mxf").arg(i),
+						 QStringLiteral("mob%1").arg(i), 1000);
+
+	RebalancePlan plan = Rebalancer::computePlan(root, QStringLiteral("EDIT"), files);
+	plan.ops.clear();
+	plan.ops.append({root + QStringLiteral("/1/clip0.mxf"), FolderId{QString(), 2},
+					 QStringLiteral("mob0"), 1000});
+
+	makeFillers(root, QStringLiteral("2"), 0); // the target must exist, or
+											   // "nothing arrived" proves nothing
+	const QString donor = root + QStringLiteral("/1");
+	QVERIFY(QFile::setPermissions(donor, QFile::ReadOwner | QFile::ExeOwner));
+	// Put the permissions back even if an assertion below returns early —
+	// otherwise QTemporaryDir can't clean up and every failing run litters
+	// the machine.
+	const auto restore = qScopeGuard(
+		[&donor]
+		{
+			QFile::setPermissions(donor,
+								  QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+		});
+
+	Rebalancer r;
+	QSignalSpy finished(&r, &Rebalancer::finished);
+	QSignalSpy aborted(&r, &Rebalancer::aborted);
+	r.executeAsync(plan);
+	QTRY_VERIFY_WITH_TIMEOUT(!aborted.isEmpty(), 30000);
+
+	QCOMPARE(finished.count(), 0);
+	QVERIFY2(QFile::exists(donor + QStringLiteral("/clip0.mxf")),
+			 "nothing may move once the pre-flight fails");
+	QVERIFY2(!QFile::exists(root + QStringLiteral("/2/clip0.mxf")), "no file may reach the target");
+}
+
+// computePlan is pure-sync, but executeAsync runs on a worker thread and
+// reports through queued signals, so these need a real event loop.
+QTEST_MAIN(TestRebalancerPlan)
 #include "tst_rebalancer_plan.moc"

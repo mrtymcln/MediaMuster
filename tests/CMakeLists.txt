@@ -33,12 +33,9 @@ mediamuster_add_test(tst_avidlayout)
 # reachable from a test at all.
 mediamuster_add_test(tst_mediacsv ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 
-# rebalancer.cpp pulls in parseFolderName (and now OpJournal, used by
-# doExecute — the symbols have to resolve even though parse tests don't
-# run it).
+# parseFolderName and the folder-name rules.
 mediamuster_add_test(tst_rebalancer_parse
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
 )
 
 # Golden tests for Rebalancer::computePlan over synthetic Avid
@@ -46,7 +43,6 @@ mediamuster_add_test(tst_rebalancer_parse
 # for the cap-related tests — runs in well under a second locally.
 mediamuster_add_test(tst_rebalancer_plan
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
 )
 
 # mediamanager.cpp uses xxhash for the verify pass, and now OpJournal
