@@ -10,9 +10,11 @@
 
 // MARK: - The record framing
 //
-// `msmMMOB.mdb` is not a Bento/AObjDoc container (that is what `.avb` bins
-// and `.avr` files are) and not AAF: it is Avid's own flat object stream.
-// Every named object ends with a fixed header, and a 32-byte MOB ID closes it:
+// `msmMMOB.mdb` is written by Avid's omfiHPDomain: a Bento-labelled
+// container (the label sits at the tail, as in `.avb` bins) whose value
+// area this parser walks directly by record framing — it never reads the
+// Bento TOC, and the file is not AAF. Every named object ends with a fixed
+// header, and a 32-byte MOB ID closes it:
 //
 //   <name>\0  <handle>  <u16 count>  <count x handle>  <MOB:32>
 //
@@ -195,6 +197,10 @@ namespace
 	/// replacement characters; treating that as "no value" lets the caller
 	/// fall through to the clean copy, and leaves a blank rather than mojibake
 	/// when no clean copy exists.
+	///
+	/// Deliberately NOT AvidText::decode: that one falls BACK to MacRoman,
+	/// which is exactly the twin this has to reject. The PMR needs the
+	/// fallback (it stores one copy, MacRoman); the MDB must not have it.
 	[[nodiscard]] QString decodeUtf8(const QByteArray &raw)
 	{
 		const QString s = QString::fromUtf8(raw);

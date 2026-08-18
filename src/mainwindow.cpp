@@ -4,7 +4,6 @@
 #include "avidlayout.h"
 #include "binfilterdialog.h"
 #include "crashcollector.h"
-#include "csvutil.h"
 #include "debugslowdown.h"
 #include "enumutil.h"
 #include "formatutil.h"
@@ -51,7 +50,6 @@
 #include <QOperatingSystemVersion>
 #include <QPixmap>
 #include <QPlainTextEdit>
-#include <QProgressBar>
 #include <QPushButton>
 #include <QSet>
 #include <QShortcut>
@@ -66,7 +64,6 @@
 #include <QTabBar>
 #include <QTableView>
 #include <QtConcurrent>
-#include <QTextStream>
 #include <QTime>
 #include <QTimer>
 #include <QUrl>

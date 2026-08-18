@@ -469,6 +469,13 @@ std::optional<OpRecovery::Resumable> OpRecovery::resumableFrom(const OpJournal::
 		return std::nullopt;
 	if (!rec.kindKnown || rec.schema != 1)
 		return std::nullopt;
+	// A Rebalance is never resumable, and the reader says so rather than
+	// leaning on the writer never having written a plan: run() unwinds it
+	// wholesale, so "what is left to do" is not a question this record can
+	// answer. (Its plan would also be a folder redistribution computed for
+	// a disk layout that no longer exists.)
+	if (rec.kind == OpJournal::Kind::Rebalance)
+		return std::nullopt;
 
 	// A planned file is finished when its op says so (done or skipped) or
 	// when the disk says so (opConcluded — the work landed but the 'done'

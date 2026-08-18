@@ -13,6 +13,11 @@
 // and the fastest way to map an essence file to its source/master MOBs
 // without walking the MXF headers. All integers are little-endian:
 //
+// Avid calls the records below the "MBCS pmr records". A second set
+// (VERSION_UNICODE / numUnicodeMobs) follows them in every file surveyed
+// and is NOT read here — the MBCS set carries the same mapping, and
+// AvidText handles the encoding.
+//
 //   Header (12 bytes) — Avid's own field names, from AMSM::LoadPMR:
 //     uint32  MAGIC   (= 0x000007A9)
 //     uint32  VERSION (= 8)

@@ -91,7 +91,8 @@ signals:
 	void mediaMusterTrashUsed(const QString &trashFolderPath, int fileCount);
 
 public:
-	// MARK: - Path helpers (public for testability)
+	// MARK: - Path helpers (public: ManageMediaDialog previews with them,
+	// and the tests pin them)
 
 	/// `std::nullopt` if all 999 `.Copy.NN` slots are taken; at
 	/// that point something is clearly wrong with the folder.

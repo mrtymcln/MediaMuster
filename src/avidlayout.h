@@ -150,9 +150,12 @@ namespace AvidLayout
 		return !isDotHidden(fileName) && hasAvidMediaExtension(withoutTempSuffix(fileName));
 	}
 
-	/// True when a directory entry is Avid essence by name: an .mxf that
-	/// isn't dot-hidden. This is what fills the media table and what
-	/// occupies Avid's per-folder file budget (see AvidLimits).
+	/// True when a directory entry occupies Avid's per-folder file budget
+	/// (see AvidLimits): an .mxf that isn't dot-hidden. Used by the
+	/// rebalancer's packing and the Quarantined tally — NOT by the media
+	/// table, which admits more (isAvidMediaName: non-MXF audio too, and
+	/// it looks through a temp-rename suffix). The two differ on purpose;
+	/// tst_avidlayout pins both.
 	inline bool countsAsEssenceName(QStringView fileName)
 	{
 		return !isDotHidden(fileName) && hasMxfExtension(fileName);

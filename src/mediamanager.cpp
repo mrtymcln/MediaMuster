@@ -8,7 +8,6 @@
 #include "progressthrottle.h"
 #include "third_party/xxhash.h"
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QStorageInfo>

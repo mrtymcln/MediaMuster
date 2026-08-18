@@ -278,6 +278,17 @@ private slots:
 	// unfinished op recovery renames home; the root sweep additionally
 	// catches probes no journal ever heard about (older builds, degraded
 	// journals), located via the begin line's mxfRoot.
+	// A Rebalance is unwound WHOLESALE even if a plan line ever appears in
+	// its journal: it has no resume path, and its pre-flight probes must be
+	// renamed home. Without this the exception in run()'s keepFinishedWork
+	// is unexercised — every rebalance journal is plan-less today, so the
+	// clause could be deleted and the suite would stay green.
+	void rebalance_with_a_plan_is_still_rolled_back_wholesale();
+	// A stalled rollback outranks "finished work stays": a dirty op is
+	// retried even when the disk says its forward work concluded, and a
+	// finished-but-dirty run still touches nothing else.
+	void dirty_op_that_looks_concluded_is_still_retried();
+	void finished_dirty_run_with_plan_leaves_concluded_ops_silent();
 	void interrupted_rebalance_probe_op_is_renamed_home();
 	void interrupted_rebalance_root_sweep_catches_unjournalled_probe();
 	void probe_suffix_roundtrips_through_the_sweep();
@@ -1678,6 +1689,122 @@ void TestOpRecovery::dirty_fail_flags_when_destination_occupied()
 	QCOMPARE(s.opsReversed, 0);
 	QCOMPARE(s.opsFlagged, 1);
 	QVERIFY(s.hadTrouble());
+}
+
+void TestOpRecovery::rebalance_with_a_plan_is_still_rolled_back_wholesale()
+{
+	// Rebalance never writes a plan today, so this journal is deliberately
+	// impossible — it exists to pin the exception rather than the status
+	// quo. Give Rebalance a plan tomorrow (to make it resumable) and this
+	// test is what stops completed moves silently staying put and probes
+	// stranding under their temp names.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString oplog = tmp.path() + QStringLiteral("/oplog");
+	const QString root = tmp.path() + QStringLiteral("/MXF");
+	const QString moved = root + QStringLiteral("/1/a.mxf");
+	const QString movedTo = root + QStringLiteral("/2/a.mxf");
+	const QString original = root + QStringLiteral("/1/b.mxf");
+	const QString probe =
+		original + QStringLiteral(".__rebalprobe_00000000-0000-0000-0000-000000000000");
+
+	QVERIFY(QDir().mkpath(root + QStringLiteral("/1"))); // volume mounted
+	writeFile(movedTo, "CLIPDATA"); // op 0: the move completed (src gone)
+	writeFile(probe, "PROBEDATA"); // op 1: crashed between the probe's renames
+
+	writeJournal(oplog, {beginRec("rebalance", deadHost(), 999999,
+								  QJsonObject{{QStringLiteral("mxfRoot"), root}}),
+						 planRec(root, false,
+								 {{moved, "a.mxf", "1", 8, ""}, {original, "b.mxf", "1", 9, ""}}),
+						 opRec(0, moved, movedTo, 8), doneRec(0), opRec(1, original, probe)});
+
+	const OpRecovery::Summary s = OpRecovery::run(oplog);
+
+	QCOMPARE(readFile(moved), QByteArray("CLIPDATA")); // completed move undone
+	QVERIFY(!QFile::exists(movedTo));
+	QCOMPARE(readFile(original), QByteArray("PROBEDATA")); // probe renamed home
+	QVERIFY(!QFile::exists(probe));
+	QCOMPARE(s.opsReversed, 2);
+	QCOMPARE(s.opsFlagged, 0);
+	QVERIFY2(s.resumable.isEmpty(), "a rebalance must never be offered for resume");
+}
+
+void TestOpRecovery::dirty_op_that_looks_concluded_is_still_retried()
+{
+	// The op's forward work concluded by every other measure — source gone,
+	// destination whole — but its rollback stalled with the replaced
+	// original still parked. "Finished work stays" must not swallow that:
+	// the park is the user's own file and getting it home wins.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString oplog = tmp.path() + QStringLiteral("/oplog");
+	const QString destRoot = tmp.path() + QStringLiteral("/dest");
+	const QString src = tmp.path() + QStringLiteral("/media/A/clip.mxf");
+	const QString dst = destRoot + QStringLiteral("/clip.mxf");
+	const QString parked = dst + QStringLiteral(".__movereplace_abcd1234");
+
+	QVERIFY(QDir().mkpath(QFileInfo(src).absolutePath())); // volume mounted
+	writeFile(dst, "MOVEDDAT");   // the move landed in full: source gone
+	writeFile(parked, "ORIGINAL"); // but the park never made it home
+
+	writeJournal(oplog, {beginRec("move", deadHost(), 999999),
+						 planRec(destRoot, false, {{src, "clip.mxf", "", 8, ""}}),
+						 opRec(0, src, dst, 8, parked), failDirtyRec(0)});
+
+	const OpRecovery::Summary s = OpRecovery::run(oplog);
+
+	QCOMPARE(readFile(src), QByteArray("MOVEDDAT")); // moved file put back
+	QCOMPARE(readFile(dst), QByteArray("ORIGINAL")); // and the park restored
+	QVERIFY(!QFile::exists(parked));
+	QCOMPARE(s.opsReversed, 1);
+	QCOMPARE(s.opsFlagged, 0);
+}
+
+void TestOpRecovery::finished_dirty_run_with_plan_leaves_concluded_ops_silent()
+{
+	// A run the user watched finish (end line) that carries one stalled
+	// rollback. Only that op is retried: the concluded op beside it keeps
+	// its work AND must not produce a stranded-park note, even though its
+	// own park is still on disk — its journal line says it concluded, and
+	// the user already saw the run end.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString oplog = tmp.path() + QStringLiteral("/oplog");
+	const QString destRoot = tmp.path() + QStringLiteral("/dest");
+	const QString srcA = tmp.path() + QStringLiteral("/media/A/a.mxf");
+	const QString dstA = destRoot + QStringLiteral("/a.mxf");
+	const QString parkedA = dstA + QStringLiteral(".__movereplace_aaaa");
+	const QString srcB = tmp.path() + QStringLiteral("/media/A/b.mxf");
+	const QString dstB = destRoot + QStringLiteral("/b.mxf");
+	const QString parkedB = dstB + QStringLiteral(".__movereplace_bbbb");
+
+	QVERIFY(QDir().mkpath(QFileInfo(srcA).absolutePath()));
+	writeFile(dstA, "AAAAAAAA"); // op 0 concluded (done line), park left behind
+	writeFile(parkedA, "OLDA");
+	// op 1 is the engine's real stranded-park state: the op failed before
+	// the source moved, and restore() evicted dst but couldn't rename the
+	// park back into it.
+	writeFile(srcB, "BBBBBBBB");
+	writeFile(parkedB, "OLDB");
+
+	writeJournal(oplog, {beginRec("move", deadHost(), 999999),
+						 planRec(destRoot, false,
+								 {{srcA, "a.mxf", "", 8, ""}, {srcB, "b.mxf", "", 8, ""}}),
+						 opRec(0, srcA, dstA, 8, parkedA), doneRec(0),
+						 opRec(1, srcB, dstB, 8, parkedB), failDirtyRec(1), endRec()});
+
+	const OpRecovery::Summary s = OpRecovery::run(oplog);
+
+	QCOMPARE(readFile(dstB), QByteArray("OLDB")); // only the dirty op is retried
+	QVERIFY(!QFile::exists(parkedB));
+	QCOMPARE(readFile(dstA), QByteArray("AAAAAAAA")); // concluded work untouched
+	QVERIFY2(QFile::exists(parkedA), "and its leftover park is not disturbed either");
+	QCOMPARE(s.opsReversed, 1);
+	QCOMPARE(s.opsFlagged, 0);
+	QVERIFY2(s.notes.join(QLatin1Char('\n')).contains(QStringLiteral("__movereplace_bbbb")) == false,
+			 "a retry that succeeded has nothing to report");
+	QVERIFY2(!s.notes.join(QLatin1Char('\n')).contains(QStringLiteral("__movereplace_aaaa")),
+			 "a concluded op in a finished run must not be flagged for its park");
 }
 
 void TestOpRecovery::interrupted_rebalance_probe_op_is_renamed_home()

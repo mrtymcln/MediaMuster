@@ -20,7 +20,6 @@ class QDialog;
 class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
-class QProgressBar;
 class QPushButton;
 class QSplitter;
 class QStatusBar;

@@ -3,7 +3,6 @@
 #include <QString>
 #include <QDateTime>
 #include <QVector>
-#include <QVariant>
 #include <QMetaType>
 #include <cmath>
 

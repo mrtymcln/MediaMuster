@@ -6,7 +6,6 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGroupBox>
@@ -610,8 +609,9 @@ void ManageMediaDialog::updateSummary()
 	// Block Copy/Move if the destination volume can't fit what actually
 	// lands on it as new data. A same-volume Move is just a rename — zero
 	// new bytes — so for Move we only count files coming from *other*
-	// volumes. (Copy always duplicates, so every byte counts.) Mirrors the
-	// per-file same-volume check MediaManager::doMove uses at execution.
+	// volumes. (Copy always duplicates, so every byte counts.) An estimate
+	// only: doMove has no same-volume test of its own — it tries the rename
+	// and falls back to copy+delete when it fails across a boundary.
 	if (operation() != Operation::Delete && !dest.isEmpty())
 	{
 		const QStorageInfo storage(dest);

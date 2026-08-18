@@ -12,7 +12,6 @@
 #include <QHash>
 #include <QSet>
 #include <QThread>
-#include <QUuid>
 
 #include <algorithm>
 #include <limits>
@@ -64,8 +63,9 @@ namespace
 	/// Avid's own databases, dot-hidden files, shell junk, and stray
 	/// non-MXF files are not media. Counting them inflated the preview's
 	/// per-folder count and stole slots from the kFolderCap packing.
-	/// The name rule itself lives in AvidLayout, shared with the scanner
-	/// so the table and the rebalance preview count the same files.
+	/// The name rule itself lives in AvidLayout. It is the BUDGET rule,
+	/// deliberately narrower than the table's (see isAvidMediaName): the
+	/// preview counts what Avid counts, not what the table shows.
 	bool countsTowardFolderBudget(const QString &fileName)
 	{
 		return AvidLayout::countsAsEssenceName(fileName);

@@ -5,7 +5,8 @@
 #include <QDebug>
 #include <QThread>
 
-/// Shared helper for MediaScanner / MediaManager / Rebalancer worker.
+/// Thread join helper. Sole caller is BackgroundJob, which every engine
+/// (MediaScanner, MediaManager, Rebalancer) runs its worker through.
 
 namespace WorkerThread
 {
@@ -28,8 +29,9 @@ namespace WorkerThread
 	/// `std::atomic<bool>` the worker polls), and this just bounds how
 	/// long we wait for it to notice.
 	///
-	/// `quit()` is a no-op for `QThread::create` workers but required
-	/// for `moveToThread` ones; called unconditionally to cover both.
+	/// `quit()` is a no-op for the `QThread::create` workers used here,
+	/// but harmless and correct for a `moveToThread` worker; called
+	/// unconditionally so this stays right if one ever appears.
 	///
 	/// Returns true on clean shutdown, false on terminate.
 	inline bool joinOrTerminate(QThread *t, int graceMs)

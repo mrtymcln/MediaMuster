@@ -39,8 +39,6 @@ public:
 	/// filterAcceptsRow / lessThan paths; see m_sourceModel.
 	void setSourceModel(QAbstractItemModel *sourceModel) override;
 
-	FilterMode filterMode() const { return m_mode; }
-
 	/// True if `f` matches `mode` on the type/flag axis (the tab filter)
 	/// alone — project, bin, and search are separate axes applied in
 	/// filterAcceptsRow. Static and shared so MainWindow's tab-count

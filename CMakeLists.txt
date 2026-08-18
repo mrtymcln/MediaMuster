@@ -34,7 +34,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 ### Compiler warnings for every target ###
 if(MSVC)
@@ -221,18 +220,8 @@ if(SELF_DESTRUCT)
     message(STATUS "SelfDestruct enabled — expires ${SELF_DESTRUCT_DATE}")
 endif()
 
-if(APPLE)
-    find_library(COREFOUNDATION_LIB CoreFoundation)
-    find_library(DISKARBITRATION_LIB DiskArbitration)
-    find_library(IOKIT_LIB IOKit)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${COREFOUNDATION_LIB}
-        ${DISKARBITRATION_LIB}
-        ${IOKIT_LIB}
-    )
-
-elseif(WIN32)
-    ### GetUserNameEx for the About box ###
+if(WIN32)
+    ### Shell reveal (revealinfinder.cpp) and GetUserNameEx (userinfo.cpp) ###
     target_link_libraries(${PROJECT_NAME} PRIVATE shell32 ole32 secur32)
 endif()
 
