@@ -816,24 +816,6 @@ MediaFile MediaScanner::buildMediaFile(const QString &filePath, const QString &v
 	mf.volumePath = volumePath;
 	mf.mxfFolder = folderNumber;
 
-	// MARK: Volume display string
-
-	// 'Volume/Path/Inside' form; strip the volume prefix so the
-	// UI doesn't repeat the volume root.
-	{
-		const QString containingDir = fi.absolutePath();
-		QString relInsideVolume = containingDir;
-		if (!volumePath.isEmpty() && containingDir.startsWith(volumePath))
-		{
-			relInsideVolume = containingDir.mid(volumePath.length());
-			while (relInsideVolume.startsWith('/') || relInsideVolume.startsWith('\\'))
-				relInsideVolume.remove(0, 1);
-		}
-		mf.volumeDisplay = relInsideVolume.isEmpty()
-							   ? volumeName
-							   : (volumeName + QStringLiteral("/") + relInsideVolume);
-	}
-
 	// MARK: File-level metadata
 
 	mf.sizeBytes = fi.size();

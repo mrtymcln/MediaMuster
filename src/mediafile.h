@@ -111,8 +111,7 @@ struct MediaFile
 	QString extension;
 	QString volumeName;
 	QString volumePath;
-	QString mxfFolder;	   ///< The numbered subfolder under Avid MediaFiles/MXF.
-	QString volumeDisplay; ///< "VolumeName/relative/path" for the Volume column.
+	QString mxfFolder; ///< The numbered subfolder under Avid MediaFiles/MXF.
 	qint64 sizeBytes = 0;
 	/// Filesystem creation (birth) time. Invalid when the file system
 	/// doesn't record one — displayed blank, never substituted.

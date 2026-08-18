@@ -446,7 +446,7 @@ void MainWindow::buildTable()
 	setW(Col::Fps, 50);
 	setW(Col::Duration, 100);
 	setW(Col::SizeMB, 100);
-	setW(Col::Volume, 150);
+	setW(Col::Location, 320);
 	setW(Col::Created, 100);
 	setW(Col::Type, 50);
 }
@@ -2203,13 +2203,17 @@ void MainWindow::addLog(QtMsgType level, const QString &module, const QString &m
 
 void MainWindow::autoFitColumns()
 {
+	// Fit means fit. This used to clamp every column at 300px, which was
+	// invisible while the widest cell was a filename — and then made the
+	// menu item a lie once Location started carrying whole paths, since
+	// they never fit in 300px and the tail is the part worth reading.
+	// A table wider than its window scrolls sideways; that is the normal
+	// way to show wide content, not something to protect the user from.
+	//
+	// Qt measures the first 1000 rows by default (setResizeContentsPrecision)
+	// rather than all of them, which is what keeps this instant on a
+	// 300,000-file Nexis scan.
 	m_tableView->resizeColumnsToContents();
-	// Clamp at 300px so long filenames can't push the table out.
-	for (int i = 0; i < Enum::to_underlying(MediaTableModel::Column::Count_); ++i)
-	{
-		if (m_tableView->columnWidth(i) > 300)
-			m_tableView->setColumnWidth(i, 300);
-	}
 }
 
 // MARK: - Busy state

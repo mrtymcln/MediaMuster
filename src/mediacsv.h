@@ -14,7 +14,7 @@
 
 namespace MediaCsv
 {
-	/// The 22 column headings, in emission order.
+	/// The 21 column headings, in emission order.
 	QString headerLine();
 
 	/// One CSV line for `f`, newline included. Every string column goes

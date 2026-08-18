@@ -45,6 +45,12 @@ private slots:
 	// still order by their real sizes, and no double rounding sits
 	// between the user and the answer.
 	void size_column_sorts_on_exact_bytes();
+
+	// Search covers the path (2026-08-18). The Location column shows the
+	// full path, so the search box has to match it — and because the
+	// filename and the Avid folder are both substrings of the path, they
+	// keep matching without a pass of their own.
+	void search_matches_the_path_shown_in_the_location_column();
 };
 
 void TestMediaFilterProxy::nfc_search_finds_nfd_row()
@@ -101,6 +107,39 @@ void TestMediaFilterProxy::plain_ascii_never_matches_accents()
 	// Sanity: the accented needle still finds both rows.
 	proxy.setSearchText(kCafeNfc);
 	QCOMPARE(proxy.rowCount(), 2);
+}
+
+void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column()
+{
+	MediaTableModel model;
+	MediaFile a = rowNamed(QStringLiteral("Scene 1"));
+	a.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
+	a.fileName = QStringLiteral("V01.abc.mxf");
+	a.mxfFolder = QStringLiteral("8646");
+	a.volumeName = QStringLiteral("EDIT");
+	MediaFile b = rowNamed(QStringLiteral("Scene 2"));
+	b.filePath = QStringLiteral("/Volumes/BACKUP/Avid MediaFiles/MXF/1/V02.def.mxf");
+	b.fileName = QStringLiteral("V02.def.mxf");
+	b.mxfFolder = QStringLiteral("1");
+	b.volumeName = QStringLiteral("BACKUP");
+	model.setMediaFiles({a, b});
+
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+
+	// A folder name, a filename fragment and a whole path segment all live
+	// inside filePath, so one match pass covers them.
+	proxy.setSearchText(QStringLiteral("8646"));
+	QCOMPARE(proxy.rowCount(), 1);
+	proxy.setSearchText(QStringLiteral("V02.def"));
+	QCOMPARE(proxy.rowCount(), 1);
+	proxy.setSearchText(QStringLiteral("Avid MediaFiles/MXF/1/"));
+	QCOMPARE(proxy.rowCount(), 1);
+
+	// The volume name is matched in its own right: a Windows path
+	// ("E:/...") need not contain the label the user knows it by.
+	proxy.setSearchText(QStringLiteral("BACKUP"));
+	QCOMPARE(proxy.rowCount(), 1);
 }
 
 void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()

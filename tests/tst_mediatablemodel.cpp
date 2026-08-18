@@ -3,6 +3,7 @@
 // begin/endRemoveRows pair, so the assertions count signal
 // emissions in addition to the surviving rows.
 
+#include "enumutil.h"
 #include "mediafile.h"
 #include "mediatablemodel.h"
 
@@ -30,6 +31,11 @@ private slots:
 	// removed 2026-07: an unknown coerced to a different fact is a wrong
 	// value wearing a confident face).
 	void unknown_created_date_displays_blank();
+
+	// The Location column shows the whole path; View ▸ Resize Columns to
+	// Fit (Cmd+T) is what makes it readable, so nothing here may quietly
+	// shorten the value.
+	void location_cell_shows_the_full_path();
 
 	// The attribution setters own the flag+label pairing; a half-set
 	// state (label without flag, or stale flags after a transition)
@@ -233,6 +239,26 @@ void TestMediaTableModel::three_blocks_emit_three_ranges()
 
 	QCOMPARE(pathsOf(model), (QStringList{"/fake/row0.mxf", "/fake/row3.mxf", "/fake/row4.mxf",
 										  "/fake/row6.mxf", "/fake/row9.mxf"}));
+}
+
+void TestMediaTableModel::location_cell_shows_the_full_path()
+{
+	MediaFile f;
+	f.fileName = QStringLiteral("V01.abc.mxf");
+	f.volumeName = QStringLiteral("EDIT");
+	f.mxfFolder = QStringLiteral("8646");
+	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
+
+	MediaTableModel model;
+	model.setMediaFiles({f});
+	const QModelIndex idx =
+		model.index(0, Enum::to_underlying(MediaTableModel::Column::Location));
+
+	QCOMPARE(model.data(idx, Qt::DisplayRole).toString(), f.filePath);
+	QCOMPARE(model.headerData(Enum::to_underlying(MediaTableModel::Column::Location),
+							  Qt::Horizontal, Qt::DisplayRole)
+				 .toString(),
+			 QStringLiteral("Location"));
 }
 
 void TestMediaTableModel::unknown_created_date_displays_blank()

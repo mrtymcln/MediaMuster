@@ -53,6 +53,12 @@ private slots:
 	void created_date_carries_time_of_day();
 	void unknown_created_date_is_blank();
 	void size_column_matches_the_table();
+
+	// Location columns (2026-08-18): the export carries the volume by name
+	// and the whole path, and nothing else. The folder the clip sits in is
+	// already inside the path, so a separate column for it only invited
+	// the two to disagree.
+	void volume_and_location_columns_carry_name_and_full_path();
 	void formula_injection_is_neutralised();
 	void write_produces_header_plus_one_line_per_row();
 };
@@ -62,10 +68,31 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
 	const int headerFields = fieldCount(MediaCsv::headerLine().trimmed());
-	QCOMPARE(headerFields, 22);
+	QCOMPARE(headerFields, 21);
 	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow()).trimmed()), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}).trimmed()), headerFields);
+}
+
+void TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()
+{
+	const QStringList headers = MediaCsv::headerLine().trimmed().split(QLatin1Char(','));
+	QCOMPARE(headers.count(QStringLiteral("Volume")), 1);
+	QCOMPARE(headers.count(QStringLiteral("Location")), 1);
+	QVERIFY2(!headers.contains(QStringLiteral("Folder")), "Folder is inside Location now");
+	QVERIFY2(!headers.contains(QStringLiteral("Path")), "Path was renamed to Location");
+
+	MediaFile f = sampleRow();
+	f.volumeName = QStringLiteral("EDIT");
+	f.mxfFolder = QStringLiteral("8646");
+	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/A11B22C33D44.mxf");
+
+	const QStringList fields = MediaCsv::rowLine(f).trimmed().split(QLatin1Char(','));
+	QCOMPARE(fields.size(), headers.size());
+	// Values are CsvUtil::quoted, so they arrive wrapped.
+	QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Volume"))), QStringLiteral("\"EDIT\""));
+	QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))),
+			 QLatin1Char('"') + f.filePath + QLatin1Char('"'));
 }
 
 void TestMediaCsv::created_date_carries_time_of_day()

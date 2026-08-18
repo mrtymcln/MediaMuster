@@ -27,7 +27,7 @@ public:
 		Fps,
 		Duration,
 		SizeMB,
-		Volume,
+		Location,
 		Created,
 		Type,
 		Count_

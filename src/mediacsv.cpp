@@ -10,7 +10,7 @@ namespace MediaCsv
 	{
 		return QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
 							  "Duration,Source File,Source Path,Source Container,"
-							  "Imported,Size (MB),Volume,Folder,Path,MOB ID,Master MOB,"
+							  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
 							  "UMID,Type,Date Created\n");
 	}
 
@@ -26,8 +26,8 @@ namespace MediaCsv
 			<< CsvUtil::quoted(f.sourceFileName) << ','
 			<< CsvUtil::quoted(f.sourceFilePath) << ',' << CsvUtil::quoted(f.sourceContainer) << ','
 			<< (f.isImported ? "yes" : "no") << ',' << f.sizeMBDisplay() << ','
-			<< CsvUtil::quoted(f.volumeName) << ',' << CsvUtil::quoted(f.mxfFolder) << ','
-			<< CsvUtil::quoted(f.filePath) << ',' << CsvUtil::quoted(f.mobId) << ','
+			<< CsvUtil::quoted(f.volumeName) << ',' << CsvUtil::quoted(f.filePath) << ','
+			<< CsvUtil::quoted(f.mobId) << ','
 			<< CsvUtil::quoted(f.masterMobId) << ',' << CsvUtil::quoted(f.umid) << ','
 			<< CsvUtil::quoted(f.typeDisplay()) << ','
 			<< f.createdDisplay()

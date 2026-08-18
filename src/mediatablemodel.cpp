@@ -111,8 +111,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.durationDisplay();
 		case Column::SizeMB:
 			return f.sizeMBDisplay();
-		case Column::Volume:
-			return f.volumeDisplay;
+		case Column::Location:
+			return f.filePath;
 		case Column::Created:
 			return f.createdDisplay();
 		case Column::Type:
@@ -159,7 +159,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 		{
 			return QStringLiteral("The bin this clip was originally imported into.");
 		}
-		if (section == Enum::to_underlying(Column::Volume))
+		if (section == Enum::to_underlying(Column::Location))
 		{
 			return QStringLiteral("The filepath for this clip.");
 		}
@@ -177,7 +177,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	// tooltip above still explains it is the bin the clip was imported into.
 	const char *headers[] = {"Clip Name", "Filename", "Project", "Bin", "Kind",
 							 "Codec", "Resolution", "FPS", "Duration",
-							 "Size (MB)", "Volume", "Date Created", "Type"};
+							 "Size (MB)", "Location", "Date Created", "Type"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "
 				  "add or remove a header string when changing the Column enum");
