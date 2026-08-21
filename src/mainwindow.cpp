@@ -1122,6 +1122,59 @@ void MainWindow::onRebalance()
 
 // MARK: - Volume list management
 
+namespace
+{
+	// Disk Utility-style suffix: a row whose name collides with another gets
+	// its last path component appended to keep the two distinct, falling
+	// back to the full path when that component still echoes the name
+	// (/Volumes/Backup and /Volumes/Backup-1 are both called "Backup").
+	// Shared by the detected-volume rebuild and by manual adds, so two rows
+	// can't end up identically labelled depending on how they arrived.
+	QString volumeNameSuffix(const QString &path, const QString &name)
+	{
+		if (path.isEmpty())
+			return {};
+
+		QString p = path;
+		while (p.endsWith(QLatin1Char('/')) || p.endsWith(QLatin1Char('\\')))
+			p.chop(1);
+
+		QString basename = QFileInfo(p).fileName();
+		if (basename.isEmpty())
+			basename = p;
+
+		if (basename.compare(name, Qt::CaseInsensitive) == 0)
+			return path;
+		return basename;
+	}
+
+	QString disambiguated(const QString &name, const QString &path)
+	{
+		const QString suffix = volumeNameSuffix(path, name);
+		return suffix.isEmpty() ? name : QStringLiteral("%1 - %2").arg(name, suffix);
+	}
+} // namespace
+
+QListWidgetItem *MainWindow::makeVolumeItem(const VolumeInfo &v, const QString &displayName)
+{
+	auto *item = new QListWidgetItem(Icons::forVolumeType(v.volumeType, v.path), displayName);
+	item->setData(Qt::UserRole, v.path);
+
+	QString tooltip = v.path;
+	if (v.totalBytes > 0)
+		tooltip += tr("\n%1 of %2 used (%3)")
+					   .arg(Format::bytes(v.usedBytes), Format::bytes(v.totalBytes), v.volumeType);
+	item->setToolTip(tooltip);
+
+	if (v.hasAvidMedia)
+	{
+		QFont f = item->font();
+		f.setBold(true);
+		item->setFont(f);
+	}
+	return item;
+}
+
 void MainWindow::onPathsDropped(const QStringList &paths)
 {
 	for (const QString &path : paths)
@@ -1143,20 +1196,24 @@ void MainWindow::addVolumePath(const QString &path)
 	if (name.isEmpty())
 		name = path;
 
-	// Manually-added paths have unknown volume type; icon helper
-	// sniffs QStorageInfo.
-	auto *item = new QListWidgetItem(Icons::forVolumeType({}, path), name);
-	item->setData(Qt::UserRole, path);
+	// Through the same factory the detected volumes use, so a folder added
+	// by hand gets its real volume type, its size, and the bold that says
+	// "there is Avid media in here" — all of which it used to go without.
+	const VolumeInfo info = VolumeManager::makeVolumeInfo(name, path, QStorageInfo(path));
 
-	QString tooltip = path;
-	QStorageInfo si(path);
-	if (si.isValid() && si.bytesTotal() > 0)
+	// Disambiguate against whatever is already listed, for the same reason
+	// the rebuild does it among detected volumes: two folders called Media
+	// from different parents must not both read as "Media".
+	QString displayName = info.name;
+	for (int i = 0; i < m_volumeList->count(); ++i)
 	{
-		const qint64 used = si.bytesTotal() - si.bytesAvailable();
-		tooltip +=
-			tr("\n%1 of %2 used").arg(Format::bytes(used), Format::bytes(si.bytesTotal()));
+		if (m_volumeList->item(i)->text().compare(info.name, Qt::CaseInsensitive) != 0)
+			continue;
+		displayName = disambiguated(info.name, info.path);
+		break;
 	}
-	item->setToolTip(tooltip);
+
+	auto *item = makeVolumeItem(info, displayName);
 	item->setSelected(true);
 	m_volumeList->addItem(item);
 	m_manualVolumes.insert(path);
@@ -1189,58 +1246,11 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 	for (const auto &d : volumes)
 		++nameCounts[d.name];
 
-	// Disk Utility-style suffix: a colliding volume gets its last path component
-	// appended to keep rows distinct, falling back to the full path when that
-	// component still matches the volume name.
-	auto suffixForPath = [](const QString &path, const QString &name) -> QString
-	{
-		if (path.isEmpty())
-			return {};
-
-		QString p = path;
-		while (p.endsWith(QLatin1Char('/')) || p.endsWith(QLatin1Char('\\')))
-			p.chop(1);
-
-		QString basename = QFileInfo(p).fileName();
-		if (basename.isEmpty())
-			basename = p;
-
-		// If basename echoes the volume name (e.g. /Volumes/Backup
-		// and /Volumes/Backup-1 both 'Backup'), fall back to the
-		// full path to keep rows distinct.
-		if (basename.compare(name, Qt::CaseInsensitive) == 0)
-			return path;
-		return basename;
-	};
-
 	for (const VolumeInfo &d : volumes)
 	{
-		QString displayName = d.name;
-		if (nameCounts.value(d.name) > 1)
-		{
-			const QString suffix = suffixForPath(d.path, d.name);
-			if (!suffix.isEmpty())
-				displayName = QStringLiteral("%1 - %2").arg(d.name, suffix);
-		}
-
-		auto *item = new QListWidgetItem(Icons::forVolumeType(d.volumeType, d.path), displayName);
-		item->setData(Qt::UserRole, d.path);
-
-		QString tooltip = d.path;
-		if (d.totalBytes > 0)
-		{
-			tooltip +=
-				tr("\n%1 of %2 used (%3)")
-					.arg(Format::bytes(d.usedBytes), Format::bytes(d.totalBytes), d.volumeType);
-		}
-		item->setToolTip(tooltip);
-
-		if (d.hasAvidMedia)
-		{
-			QFont f = item->font();
-			f.setBold(true);
-			item->setFont(f);
-		}
+		const QString displayName =
+			nameCounts.value(d.name) > 1 ? disambiguated(d.name, d.path) : d.name;
+		auto *item = makeVolumeItem(d, displayName);
 
 		// Preserve previous ticks for paths that still exist, and
 		// auto-select newly mounted volumes.

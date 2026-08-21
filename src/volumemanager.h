@@ -86,10 +86,17 @@ private:
 	static bool hasAvidMediaFolder(const QString &path);
 	static QStringList knownAvidLocations();
 
+public:
 	/// Stamp out a VolumeInfo from a name + path + its QStorageInfo. The
 	/// three detection passes used to fill the same fields by hand; this is
 	/// the one place that mapping lives. Bytes come back as 0 when `storage`
 	/// is invalid (an unreadable /Volumes entry).
+	///
+	/// Public because a folder the user adds by hand has to become the same
+	/// kind of row as a detected volume — same type, same size, same "has
+	/// Avid media" bold. MainWindow::addVolumePath stamps one out here
+	/// rather than filling the fields itself, which is how the two rows
+	/// used to drift.
 	static VolumeInfo makeVolumeInfo(const QString &name, const QString &path,
 									 const QStorageInfo &storage);
 };

@@ -144,6 +144,13 @@ private:
 	QVector<MediaFile> selectedFiles() const;
 	void addVolumePath(const QString &path);
 
+	/// The one place a VolumeInfo becomes a row in the volume list: icon,
+	/// path payload, tooltip, and bold for a volume holding Avid media.
+	/// Detected volumes and manually-added folders both come through here,
+	/// so a row can't mean different things depending on how it arrived.
+	/// `displayName` carries any disambiguating suffix the caller applied.
+	class QListWidgetItem *makeVolumeItem(const VolumeInfo &v, const QString &displayName);
+
 	/// Build (without showing) the Project Summary dialog: its slot guards
 	/// on an empty table first, then shows what this returns.
 	QDialog *buildProjectSummaryDialog(const QVector<MediaFile> &files);
