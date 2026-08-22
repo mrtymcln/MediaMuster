@@ -85,6 +85,16 @@ target_compile_definitions(tst_mxfparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
+# BentoFile: the container primitive under msmMMOB.mdb — label, TOC,
+# immediate/offset values, the file's own property dictionary — against
+# builder-made containers (tests/testbento.h) and the real MDB fixtures.
+mediamuster_add_test(tst_bentofile
+    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
+)
+target_compile_definitions(tst_bentofile PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
+
 # PmrParser: fixed-layout msmFMID.pmr, driven by hand-crafted byte buffers.
 mediamuster_add_test(tst_pmrparser
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp

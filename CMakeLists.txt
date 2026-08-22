@@ -81,6 +81,7 @@ set(SOURCES
     src/mxfparser.cpp
     src/pmrparser.cpp
     src/mdbparser.cpp
+    src/bentofile.cpp
     src/mediacsv.cpp
     src/mediamanager.cpp
     src/avbparser.cpp
@@ -111,6 +112,7 @@ set(HEADERS
     src/mxfparser.h
     src/pmrparser.h
     src/mdbparser.h
+    src/bentofile.h
     src/formatutil.h
     src/mediacsv.h
     src/mediafile.h
