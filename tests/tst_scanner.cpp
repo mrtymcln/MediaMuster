@@ -77,6 +77,11 @@ private slots:
 	void folder_without_databases_reads_every_header();
 	void mpeg_audio_falls_back_to_its_header();
 
+	// New facts: the render's effect name/category/sequence (CSV), and the
+	// file's modified time.
+	void precompute_row_gets_effect_fields();
+	void modified_is_the_filesystem_mtime();
+
 private:
 	static QString fixturesDir() { return QStringLiteral(FIXTURES_DIR); }
 	static void copyFixture(const QString &name, const QString &destFolder);
@@ -1015,6 +1020,57 @@ void TestScanner::mpeg_audio_falls_back_to_its_header()
 	QVERIFY2(mf.codec.contains(QStringLiteral("MP2")), qPrintable(mf.codec));
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 	QVERIFY(!mf.originalBin.isEmpty()); // identity still from the MDB
+}
+
+void TestScanner::precompute_row_gets_effect_fields()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	// A real render slice, no databases: the header's usage code says
+	// Precompute, and the catalogue names the effect from the clip name.
+	copyFixture(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QCOMPARE(mf.type, MediaFile::Type::Precompute);
+	QCOMPARE(mf.clipName, QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,1.85_Mask+2"));
+	QCOMPARE(mf.effect, QStringLiteral("1.85 Mask"));
+	QCOMPARE(mf.effectCategory, QStringLiteral("Film"));
+	QCOMPARE(mf.effectSequence, QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq"));
+	QCOMPARE(mf.effectInstance, 2);
+
+	// And a Media row carries none of it.
+	const QString folder2 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/2");
+	QVERIFY(QDir().mkpath(folder2));
+	copyFixture(kToneName, folder2);
+	const auto both = runScan(tmp.path());
+	QCOMPARE(both.size(), 2);
+	for (const MediaFile &f : both)
+		if (f.type == MediaFile::Type::Media)
+		{
+			QVERIFY(f.effect.isEmpty());
+			QVERIFY(f.effectCategory.isEmpty());
+			QCOMPARE(f.effectInstance, 0);
+		}
+}
+
+void TestScanner::modified_is_the_filesystem_mtime()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(kToneName, folder);
+	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	QVERIFY(results.first().modified.isValid());
+	QCOMPARE(results.first().modified.toSecsSinceEpoch(), qint64(kToneModified));
+	QVERIFY(!results.first().modifiedDisplay().isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TestScanner)

@@ -29,7 +29,9 @@ public:
 		SizeMB,
 		Location,
 		Created,
+		Modified,
 		Type,
+		SourceFile,
 		Count_
 	};
 

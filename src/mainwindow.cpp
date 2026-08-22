@@ -116,11 +116,15 @@ namespace
 	// The middle three are the local-database ladder, most-known to
 	// least-known: No Project (in the MDB, project gone) > No Reference
 	// (verified in neither database) > No Database (couldn't check).
-	constexpr std::array<FilterDef, 9> kFilterDefs{{
+	constexpr std::array<FilterDef, 10> kFilterDefs{{
 		// Technical Avid/domain vocabulary — invariant, never translated.
 		{MediaFilterProxy::FilterMode::All, "All"},
 		{MediaFilterProxy::FilterMode::Video, "Video"},
 		{MediaFilterProxy::FilterMode::Audio, "Audio"},
+		{MediaFilterProxy::FilterMode::Precompute, "Precomputes",
+		 "Rendered effects — media Avid generated from a sequence, as its own\n"
+		 "usage code says. Re-rendering recreates them; nothing else can be\n"
+		 "relinked to them."},
 		{MediaFilterProxy::FilterMode::NoProject, "No Project"},
 		{MediaFilterProxy::FilterMode::NoReference, "No Reference",
 		 "No reference in the folder's MDB or PMR databases\n"

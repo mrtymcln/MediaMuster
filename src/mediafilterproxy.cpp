@@ -108,6 +108,9 @@ bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
 	case FilterMode::Quarantined:
 		// Stamped by the scanner, which knows the folder; no path guessing here.
 		return f.isQuarantined;
+	case FilterMode::Precompute:
+		// The usage code's verdict (header or database); never a name shape.
+		return f.type == MediaFile::Type::Precompute;
 	}
 	return true;
 }
@@ -147,7 +150,8 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		// and the two narrower fields need no separate pass. volumeName
 		// stays: a Windows path ("E:/...") need not contain the label.
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
-			   matches(f.codec) || matches(f.volumeName) || matches(f.filePath);
+			   matches(f.codec) || matches(f.volumeName) || matches(f.filePath) ||
+			   matches(f.sourceFileName) || matches(f.effect);
 	}
 	return true;
 }
@@ -176,6 +180,10 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		// documented ordering — so blank rows group together predictably.
 		return l.created < r.created;
 	}
+	case Col::Modified:
+		return l.modified < r.modified;
+	case Col::SourceFile:
+		return QString::compare(l.sourceFileName, r.sourceFileName, Qt::CaseInsensitive) < 0;
 
 	case Col::ClipName:
 		// The exact string the column displays; shared rule, can't drift.

@@ -115,8 +115,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.filePath;
 		case Column::Created:
 			return f.createdDisplay();
+		case Column::Modified:
+			return f.modifiedDisplay();
 		case Column::Type:
 			return f.typeDisplay();
+		case Column::SourceFile:
+			return f.sourceFileName;
 		case Column::Count_:
 			break;
 		}
@@ -135,6 +139,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return QStringLiteral("No reference in the folder's MDB or PMR databases. Expected "
 								  "in Interplay environments — the media may still be in use.");
 	}
+	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourceFile)
+		return f.sourceFilePath; // the full path Avid recorded; the cell shows the name
 	if (role == Qt::TextAlignmentRole && static_cast<Column>(index.column()) == Column::SizeMB)
 		return QVariant(int(Qt::AlignRight | Qt::AlignVCenter));
 	if (role == Qt::UserRole)
@@ -143,6 +149,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sizeBytes;
 		if (static_cast<Column>(index.column()) == Column::Created)
 			return f.created;
+		if (static_cast<Column>(index.column()) == Column::Modified)
+			return f.modified;
 		return data(index, Qt::DisplayRole);
 	}
 	return {};
@@ -167,6 +175,16 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 		{
 			return QStringLiteral("Blank when the file system doesn't record a creation date.");
 		}
+		if (section == Enum::to_underlying(Column::Modified))
+		{
+			return QStringLiteral("The file's modification date, as the file system records it.");
+		}
+		if (section == Enum::to_underlying(Column::SourceFile))
+		{
+			return QStringLiteral("The file this clip was imported from, as Avid recorded it. "
+								  "Blank when Avid recorded none — media it generated itself "
+								  "(renders, tones, mixdowns) or a tape capture.");
+		}
 		return {};
 	}
 
@@ -177,7 +195,8 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	// tooltip above still explains it is the bin the clip was imported into.
 	const char *headers[] = {"Clip Name", "Filename", "Project", "Bin", "Kind",
 							 "Codec", "Resolution", "FPS", "Duration",
-							 "Size (MB)", "Location", "Date Created", "Type"};
+							 "Size (MB)", "Location", "Date Created", "Date Modified",
+							 "Type", "Source File"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "
 				  "add or remove a header string when changing the Column enum");

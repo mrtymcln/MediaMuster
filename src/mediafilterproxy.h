@@ -24,7 +24,8 @@ public:
 		NoDatabase,
 		InvalidUmid,
 		NonPortable,
-		Quarantined
+		Quarantined,
+		Precompute
 	};
 
 	explicit MediaFilterProxy(QObject *parent = nullptr);

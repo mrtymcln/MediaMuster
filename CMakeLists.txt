@@ -82,6 +82,7 @@ set(SOURCES
     src/pmrparser.cpp
     src/mdbparser.cpp
     src/bentofile.cpp
+    src/effectcatalogue.cpp
     src/mediacsv.cpp
     src/mediamanager.cpp
     src/avbparser.cpp
@@ -113,6 +114,7 @@ set(HEADERS
     src/pmrparser.h
     src/mdbparser.h
     src/bentofile.h
+    src/effectcatalogue.h
     src/formatutil.h
     src/mediacsv.h
     src/mediafile.h

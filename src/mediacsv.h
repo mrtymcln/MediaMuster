@@ -7,14 +7,14 @@
 
 // MARK: - MediaCsv
 /// The CSV shape of the media table: one header line, one line per
-/// MediaFile, 20 columns. Lives outside the window class so it can be
+/// MediaFile, 24 columns. Lives outside the window class so it can be
 /// tested — the header string and the field-emission chain are two
 /// parallel lists that must stay column-for-column aligned, and nothing
 /// but a test can see that from the inside.
 
 namespace MediaCsv
 {
-	/// The 20 column headings, in emission order.
+	/// The 24 column headings, in emission order.
 	QString headerLine();
 
 	/// One CSV line for `f`, newline included. Every string column goes

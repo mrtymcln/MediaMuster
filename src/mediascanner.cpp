@@ -1,4 +1,5 @@
 #include "mediascanner.h"
+#include "effectcatalogue.h"
 #include "avidlayout.h"
 #include "avidlimits.h"
 #include "debugslowdown.h"
@@ -332,7 +333,20 @@ void MediaScanner::doScan()
 	// big share can't look like a frozen 100%.
 	emit scanFinalising();
 
-	// MARK: Summary — tally + cleanup
+	// MARK: Summary — name the renders, tally, cleanup
+
+	// Only rows the usage code already proved to be renders are looked up in
+	// the effect catalogue — the name labels, it never decides.
+	for (MediaFile &f : allFiles)
+	{
+		if (f.type != MediaFile::Type::Precompute)
+			continue;
+		const EffectCatalogue::Hit hit = EffectCatalogue::lookup(f.clipName);
+		f.effect = hit.name;
+		f.effectCategory = hit.category;
+		f.effectSequence = hit.sequence;
+		f.effectInstance = hit.instance;
+	}
 
 	int noReference = 0, noDatabase = 0, invalidUmid = 0, noProject = 0, nonPortable = 0;
 	for (const auto &f : allFiles)
@@ -844,6 +858,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// unknown must never be silently coerced to a different fact (the
 	// modified-time fallback used to do exactly that).
 	mf.created = fi.birthTime();
+	mf.modified = fi.lastModified();
 	// No clip-name seed: the filename is not a name Avid gave the clip, and
 	// seeding it here meant an unknown arrived at the table looking like an
 	// answer. The name is filled in by setClipName from the MDB (below) or

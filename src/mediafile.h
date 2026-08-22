@@ -103,6 +103,19 @@ struct MediaFile
 	QString sourceContainer; ///< "QTFF", "MXF", "MOV", etc.
 	bool isImported = false;
 
+	// MARK: Precompute detail (EffectCatalogue; CSV only for now)
+
+	/// For a Precompute row: the effect Avid's catalogue knows the clip name
+	/// by ("Color Correction"), else the raw token; its palette category
+	/// ("Image"; "A / B" when ambiguous; "Not a standard Avid effect" when
+	/// unknown — a user-typed title, an unregistered plug-in, a renamed
+	/// template); the sequence the render belongs to (as Avid wrote it, spaces
+	/// as underscores); and the +N render instance. Empty / 0 on every Media row.
+	QString effect;
+	QString effectCategory;
+	QString effectSequence;
+	int effectInstance = 0;
+
 	// MARK: Filesystem
 
 	QString filePath;
@@ -115,6 +128,10 @@ struct MediaFile
 	/// Filesystem creation (birth) time. Invalid when the file system
 	/// doesn't record one — displayed blank, never substituted.
 	QDateTime created;
+	/// Filesystem modification time — what Finder shows as "Date Modified".
+	/// The "Date Modified" column; also what the scanner's staleness check
+	/// compares against the PMR's recorded mtime (see PmrEntry).
+	QDateTime modified;
 
 	// MARK: Classification
 
@@ -228,6 +245,13 @@ struct MediaFile
 	{
 		return created.isValid() ? created.toString(QStringLiteral("yyyy-MM-dd HH:mm"))
 								 : QString();
+	}
+
+	/// "Date Modified" column AND CSV string, same format as createdDisplay.
+	QString modifiedDisplay() const
+	{
+		return modified.isValid() ? modified.toString(QStringLiteral("yyyy-MM-dd HH:mm"))
+								  : QString();
 	}
 
 	/// "Clip Name" column string. Blank when no clip name is known: the
