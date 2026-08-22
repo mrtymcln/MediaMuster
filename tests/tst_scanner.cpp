@@ -4,6 +4,7 @@
 #include "mediafile.h"
 #include "debugslowdown.h"
 #include "mediascanner.h"
+#include "testbento.h"
 
 #include <QDir>
 #include <QFile>
@@ -208,18 +209,16 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	// No msmFMID.pmr, so Stage 1 can't attribute the file and Stage 3 must.
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	// Hand-built MDB: the tone's MOB (PMR/MDB byte order — what
-	// MobId::toPmrForm(umid) resolves to) followed by a paired
-	// Name marker carrying a WRONG clip name.
-	QByteArray mdb;
-	mdb.append(QByteArray::fromHex("060a2b340101010501010f1013000000"
-								   "d2467dea7411069091901e6a605d3613"));
-	mdb.append('\0');
-	mdb.append("Name", 4);
-	mdb.append('\0');
-	mdb.append("Wrong Neighbour Clip", 20);
-	mdb.append('\0');
-	mdb.append(QByteArray(64, '\0')); // past MdbParser's 64-byte minimum
+	// A one-clip MDB: the tone's MOB (PMR/MDB byte order — what
+	// MobId::toPmrForm(umid) resolves to) as a master mob carrying a WRONG
+	// clip name.
+	BentoBuilder w;
+	const quint32 master = w.addObject("MOBJ");
+	w.set(master, "OMFI:MOBJ:MobID",
+		  QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613"));
+	w.setString(master, "OMFI:CPNT:Name", "Wrong Neighbour Clip");
+	w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
+	const QByteArray mdb = w.build();
 
 	QFile mdbFile(folder + QStringLiteral("/msmMMOB.mdb"));
 	QVERIFY(mdbFile.open(QIODevice::WriteOnly));
@@ -446,32 +445,17 @@ namespace
 		return pmr;
 	}
 
-	/// An MDB holding one real record for kLadderMob. The framing is the one
-	/// MdbParser walks: `<name>\0 <handle> <u16 count> <count x handle> <MOB>`,
-	/// where a handle is a little-endian u32 with high word 1 then a u32 zero.
-	/// (Written out rather than shared with tst_mdbparser so this test still
-	/// says on its own what shape a database has.)
+	/// An MDB holding one master clip for kLadderMob, built to the real
+	/// Bento/OMF shape (tests/testbento.h): a MOBJ with the MobID, the clip
+	/// name and a master-clip usage code.
 	QByteArray ladderMdb(const QByteArray &clipName)
 	{
-		const auto handle = [](quint16 id)
-		{
-			QByteArray h;
-			h.append(char(id & 0xFF));
-			h.append(char(id >> 8));
-			h.append('\x01');
-			h.append(QByteArray(5, '\0'));
-			return h;
-		};
-		QByteArray mdb;
-		mdb.append(clipName);
-		mdb.append('\0');
-		mdb.append(handle(0x0100));
-		mdb.append(char(1)); // one member
-		mdb.append(char(0));
-		mdb.append(handle(0x0200));
-		mdb.append(kLadderMob);
-		mdb.append(QByteArray(64, '\0')); // past the 64-byte minimum
-		return mdb;
+		BentoBuilder w;
+		const quint32 master = w.addObject("MOBJ");
+		w.set(master, "OMFI:MOBJ:MobID", kLadderMob);
+		w.setString(master, "OMFI:CPNT:Name", clipName);
+		w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
+		return w.build();
 	}
 
 	bool writeFile(const QString &path, const QByteArray &bytes)

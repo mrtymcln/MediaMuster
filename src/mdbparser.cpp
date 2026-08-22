@@ -1,512 +1,474 @@
 #include "mdbparser.h"
+#include "bentofile.h"
 #include "logging.h"
 #include "mobid.h"
+
+#include <QByteArrayView>
 #include <QFile>
 #include <QSet>
-#include <QtEndian>
-#include <QDebug>
-#include <algorithm>
-#include <cstring>
+#include <QVector>
 
-// MARK: - The record framing
+// Reads msmMMOB.mdb through its Bento table of contents.
 //
-// `msmMMOB.mdb` is written by Avid's omfiHPDomain: a Bento-labelled
-// container (the label sits at the tail, as in `.avb` bins) whose value
-// area this parser walks directly by record framing — it never reads the
-// Bento TOC, and the file is not AAF. Every named object ends with a fixed
-// header, and a 32-byte MOB ID closes it:
+// MARK: - What the database is
 //
-//   <name>\0  <handle>  <u16 count>  <count x handle>  <MOB:32>
+// `msmMMOB.mdb` is an OMF Interchange 2.x object store (Avid's pre-AAF
+// format; the spec is public) inside an Apple Bento container (BentoFile).
+// Every clip and every essence file is an OMFI:MOBJ object with a 32-byte
+// OMFI:MOBJ:MobID — the same UMID the PMR and the MXF carry, in Avid's byte
+// order (PMR↔MDB join raw; MXF needs MobId::toPmrForm). Properties are named
+// by a dictionary the file itself embeds, so this parser resolves
+// "OMFI:CPNT:Name" per file and hard-codes no ids.
 //
-// A handle is eight bytes — a little-endian u32 whose high word is 1, then a
-// u32 zero. Because `count` must equal the number of handles AND the run must
-// land exactly on the MOB, a header is either recognised outright or rejected;
-// there is no distance threshold to tune. That is the whole difference from
-// the old parser, which mined printable strings out of a +/-1 KB window around
-// each MOB and paired them by byte distance.
+// The objects worth reading, and where their facts live:
 //
-// The name is the TAIL of a record, not its head: an object's attributes are
-// written before it. So a record owns the bytes from the previous record's MOB
-// up to its own name, and within that span each attribute is written as
+//   master mob   (no PhysicalMedia; UsageCode 7, or 1 for a precompute)
+//     OMFI:CPNT:Name                 the clip name Avid displays
+//     OMFI:CPNT:Attributes → ATTR → OMFI:ATTR:AttrRefs → ATTB list, each
+//        OMFI:ATTB:Name + OMFI:ATTB:Kind (1 int, 2 string, 3 object, 4 bob):
+//          _ORG_BIN       (3) → MCBR → OMFI:MCBR:MC:binNameUTF8 (else MC:binName)
+//          _IMPORTSETTING (3) → ATTR → nested _SRCFILE (3) → MACL →
+//                               OMFI:FL:POSIXPathName (else PathNameUTF8, PathName)
+//          _USER          (3) → ATTR → `Video` (2) = container ("QTFF"),
+//                               `UNC Path` (2) = the same path again
+//   file mob     (OMFI:MOBJ:PhysicalMedia → a media descriptor; UsageCode 0,
+//                 or 9 for a precompute)
+//     OMFI:CPNT:EditRate             the clip's frame rate (audio duration maths)
+//     descriptor class               CDCI/MPGI/RGBA/JPED video, PCMA/MPGA/WAVE audio
+//     OMFI:DIDD:EssenceCompression   the 16-byte codec label — in AAF AUID byte
+//                                    order (see auidToUl); or, on legacy DNxHD,
+//     OMFI:DIDD:DIDResolutionID      Avid's numeric resolution id (see ulFromResId)
+//     OMFI:DIDD:StoredWidth/Height   + OMFI:DIDD:FrameLayout (u16): the MDB stores
+//                                    a HALF height for layouts 1 AND 3 (the MXF only
+//                                    for 1) — normalised here, flagged for finalise
+//     OMFI:MDFL:SampleRate           rational; decimal approximations (2997/100),
+//                                    so it goes through MxfParser::applyEditRate
+//     OMFI:MDFL:Length               frames (video) / samples (audio)
+//     OMFI:CDCI:ComponentWidth / OMFI:MDAU:BitsPerSample / OMFI:MDAU:NumChannels
+//     OMFI:TRKG:Tracks → TRAK → TrackComponent → SEQU/SCLP/TCCP: drop frame
+//                                    from OMFI:TCCP:Flags, reached through the
+//                                    source mobs a SCLP points at
+//   source mob   (PhysicalMedia → MDES; the import/tape source) — not needed:
+//                 the master's attributes carry the source path.
 //
-//   <value>\0 [<value-utf8>\0] <_KEY>\0 <handle>
+// Verified 2026-08-19..22 against 360 whole MXF files with their own
+// databases plus 795 archived headers across two database generations: clip
+// name 360/360, project, kind, codec label 119/119 (byte-identical after the
+// AUID reorder), dims, fps, durations 119/119 + 241/241, bits, channels,
+// source path 354/354, usage pairs 1,155/1,155. The one known gap is MPEG
+// audio (MPGA), which carries no codec label in the MDB — such a file is
+// reported essenceComplete=false and the scanner reads its header instead.
 //
-// — value first, key second, and non-ASCII values twice: a MacRoman copy then
-// a UTF-8 one. Taking the copy nearest the key gets UTF-8; the MacRoman twin
-// fails to decode, which is how it stays out of the UI (a name with no clean
-// copy shows blank rather than garbled).
-//
-// MARK: - How this was verified
-//
-// Against a 360-file Avid folder scanned with its own msmMMOB.mdb, using each
-// MXF's MaterialPackage name and _SRCFILE attribute as ground truth (the MOB
-// IDs join after MobId::swapMiddleFields — MXF writes the middle fields
-// little-endian, the MDB big-endian):
-//
-//   clip name    360/360 exact   (the old parser got 0 — see below)
-//   source path  354/354 exact   (every file that has one)
-//   bin          360/360 present
-//
-// The old parser scored zero clip names on that folder because it looked for a
-// literal "Name" marker next to the value. That marker only ever appears in
-// the property dictionary at the very front of the file, so at most one clip
-// in an entire database could match.
+// Three traps that produced confidently wrong "it's not in there" readings
+// before this parser existed, kept here so nobody re-learns them:
+//  - The codec label is stored in GUID order; searched in MXF order it scores
+//    0/41. Un-rotate it (auidToUl) and it is byte-identical on 104/104 files.
+//  - A property NAME appears once in the whole file — in the dictionary.
+//    Presence of values is only visible through the table of contents.
+//  - The same MobID is written on more than one MOBJ object (the TONE clip's
+//    name sits on one, its _ORG_BIN on another). Records must be MERGED across
+//    duplicates, first non-empty per field; first-wins-per-MobID loses the bin.
 
 namespace
 {
-	// MARK: - Constants
+	// MARK: - Property ids, resolved once per file
 
-	/// Anything smaller cannot hold a header plus a MOB.
-	constexpr qint64 kMinFileSize = 64;
-
-	constexpr qint64 kHandleSize = 8;
-
-	/// A record with more referenced handles than this is not something Avid
-	/// writes; the cap stops a corrupt file from walking backwards forever.
-	constexpr int kMaxHandles = 256;
-
-	/// Avid's placeholder MOB. Byte-identical in every database surveyed
-	/// (508 copies in one, 272 in another, 38 in a third, across unrelated
-	/// projects) and present in no MXF, so it names no media. Its label also
-	/// differs from a real MOB's: `..01 01 01 00 | 01 01 0f 00` where real
-	/// ones read `..01 01 01 05 | 01 01 0f 10`. The old parser emitted it as
-	/// a record.
-	const QByteArray kPlaceholderMob = QByteArray::fromHex(
-		"060a2b340101010001010f0013000000bacc8a260647d528e5cd3f5b5f40443f");
-
-	const QSet<QString> kContainerHints = {
-		QStringLiteral("QTFF"), QStringLiteral("MXF"), QStringLiteral("MOV"), QStringLiteral("AVI"),
-		QStringLiteral("MP4"), QStringLiteral("WAV"), QStringLiteral("AIFF")};
-
-	const QByteArray kKeyOrgBin = QByteArrayLiteral("_ORG_BIN");
-	const QByteArray kKeySrcFile = QByteArrayLiteral("_SRCFILE");
-	const QByteArray kKeyImportSetting = QByteArrayLiteral("_IMPORTSETTING");
-
-	// MARK: - Byte-level helpers
-
-	/// A byte that can appear inside a name: printable ASCII, or any high byte
-	/// (UTF-8 continuation, or a MacRoman accent in the twin copy). NUL is the
-	/// terminator and therefore the one thing that ends a run.
-	inline bool isNameByte(uchar c)
+	struct Props
 	{
-		return (c >= 0x20 && c != 0x7F);
-	}
+		int mobId, usage, name, editRate, attrs, physMedia;
+		int attrRefs, attbName, attbKind, attbInt, attbString, attbObj;
+		int binNameUtf8, binName, posixPath, pathUtf8, pathName;
+		int essComp, resId, width, height, layout, sampleRate, length, compWidth, bits, channels;
+		int tracks, trackComp, sequence, sourceId, tcFlags;
 
-	inline quint32 readU32(const uchar *p)
-	{
-		return qFromLittleEndian<quint32>(p);
-	}
-
-	/// True when `pos` starts an 8-byte object handle.
-	bool isHandleAt(const uchar *base, qint64 size, qint64 pos)
-	{
-		if (pos < 0 || pos + kHandleSize > size)
-			return false;
-		return (readU32(base + pos) >> 16) == 1 && readU32(base + pos + 4) == 0;
-	}
-
-	/// Where a record's name starts and how long it is, for the record whose
-	/// MOB sits at `mobOff`. `valid` is false when the bytes before the MOB
-	/// aren't a header — most MOB occurrences are plain references, not
-	/// records, so this is the common case and must stay cheap.
-	struct RecordHead
-	{
-		qint64 nameStart = 0;
-		qint64 nameLen = 0;
-		bool valid = false;
+		explicit Props(const BentoFile &b)
+			: mobId(b.propertyId("OMFI:MOBJ:MobID")), usage(b.propertyId("OMFI:MOBJ:UsageCode")),
+			  name(b.propertyId("OMFI:CPNT:Name")), editRate(b.propertyId("OMFI:CPNT:EditRate")),
+			  attrs(b.propertyId("OMFI:CPNT:Attributes")), physMedia(b.propertyId("OMFI:MOBJ:PhysicalMedia")),
+			  attrRefs(b.propertyId("OMFI:ATTR:AttrRefs")), attbName(b.propertyId("OMFI:ATTB:Name")),
+			  attbKind(b.propertyId("OMFI:ATTB:Kind")), attbInt(b.propertyId("OMFI:ATTB:IntAttribute")),
+			  attbString(b.propertyId("OMFI:ATTB:StringAttribute")),
+			  attbObj(b.propertyId("OMFI:ATTB:ObjAttribute")),
+			  binNameUtf8(b.propertyId("OMFI:MCBR:MC:binNameUTF8")), binName(b.propertyId("OMFI:MCBR:MC:binName")),
+			  posixPath(b.propertyId("OMFI:FL:POSIXPathName")), pathUtf8(b.propertyId("OMFI:FL:PathNameUTF8")),
+			  pathName(b.propertyId("OMFI:FL:PathName")), essComp(b.propertyId("OMFI:DIDD:EssenceCompression")),
+			  resId(b.propertyId("OMFI:DIDD:DIDResolutionID")), width(b.propertyId("OMFI:DIDD:StoredWidth")),
+			  height(b.propertyId("OMFI:DIDD:StoredHeight")), layout(b.propertyId("OMFI:DIDD:FrameLayout")),
+			  sampleRate(b.propertyId("OMFI:MDFL:SampleRate")), length(b.propertyId("OMFI:MDFL:Length")),
+			  compWidth(b.propertyId("OMFI:CDCI:ComponentWidth")), bits(b.propertyId("OMFI:MDAU:BitsPerSample")),
+			  channels(b.propertyId("OMFI:MDAU:NumChannels")), tracks(b.propertyId("OMFI:TRKG:Tracks")),
+			  trackComp(b.propertyId("OMFI:TRAK:TrackComponent")), sequence(b.propertyId("OMFI:SEQU:Sequence")),
+			  sourceId(b.propertyId("OMFI:SCLP:SourceID")), tcFlags(b.propertyId("OMFI:TCCP:Flags"))
+		{
+		}
 	};
 
-	[[nodiscard]] RecordHead recordHeadAt(const uchar *base, qint64 size, qint64 mobOff)
+	/// Avid's placeholder MOB — byte-identical across unrelated projects, in no
+	/// MXF. Never a real clip; skipped on sight.
+	const QByteArray &placeholderMob()
 	{
-		// Count the handles immediately before the MOB.
-		int handles = 0;
-		qint64 p = mobOff;
-		while (handles < kMaxHandles && isHandleAt(base, size, p - kHandleSize))
-		{
-			p -= kHandleSize;
-			++handles;
-		}
-		if (handles < 1)
+		static const QByteArray kMob =
+			QByteArray::fromHex("060a2b340101010001010f0013000000bacc8a260647d528e5cd3f5b5f40443f");
+		return kMob;
+	}
+
+	bool isAudioClass(const QByteArray &cls)
+	{
+		return cls == "PCMA" || cls == "MPGA" || cls == "WAVE";
+	}
+	bool isMediaClass(const QByteArray &cls)
+	{
+		return isAudioClass(cls) || cls == "CDCI" || cls == "MPGI" || cls == "RGBA" || cls == "JPED";
+	}
+
+	// MARK: - Codec label
+
+	/// OMFI:DIDD:EssenceCompression stores the SMPTE label as an AAF AUID: the
+	/// first three GUID fields little-endian (u32, u16, u16) followed by the
+	/// eight remaining bytes — and the eight remaining bytes are the label's
+	/// FIRST half. So UL = bytes[8..16] + rev(bytes[0..4]) + rev(bytes[4..6]) +
+	/// rev(bytes[6..8]). Measured byte-identical to MXF tag 0x3201 on every
+	/// file that carries it.
+	QByteArray auidToUl(QByteArrayView auid)
+	{
+		if (auid.size() != 16)
 			return {};
-
-		// The count must name exactly the handles that follow it, and the run
-		// must end exactly on the MOB. Try the longest run first: a shorter one
-		// could coincide with a count-shaped pair of bytes inside the header.
-		for (int take = handles; take >= 1; --take)
-		{
-			const qint64 countPos = mobOff - qint64(take) * kHandleSize - 2;
-			if (countPos < 0)
-				continue;
-			if (qFromLittleEndian<quint16>(base + countPos) != quint16(take))
-				continue;
-			// The record's own handle sits just before its member count.
-			if (!isHandleAt(base, size, countPos - kHandleSize))
-				continue;
-
-			const qint64 nulPos = countPos - kHandleSize - 1;
-			if (nulPos < 0 || base[nulPos] != 0)
-				continue;
-			qint64 s = nulPos;
-			while (s > 0 && isNameByte(base[s - 1]))
-				--s;
-			if (nulPos - s < 1)
-				continue;
-			return {s, nulPos - s, true};
-		}
-		return {};
+		QByteArray ul;
+		ul.reserve(16);
+		ul.append(auid.data() + 8, 8);
+		for (int i = 3; i >= 0; --i)
+			ul.append(auid[i]);
+		ul.append(auid[5]);
+		ul.append(auid[4]);
+		ul.append(auid[7]);
+		ul.append(auid[6]);
+		return ul;
 	}
 
-	// MARK: - Strings inside a record
-
-	/// One NUL-terminated printable run. Offsets are file-absolute.
-	struct SpanString
+	/// Legacy DNxHD essence carries no EssenceCompression in the MDB, only
+	/// Avid's numeric resolution id. The DNxHD labels are numbered in step
+	/// with it: label byte 13 == id − 1234 (verified on all ten ids in the
+	/// corpus: 1235→01 … 1253→13). Ids outside the DNxHD range (2400, 3416,
+	/// 557…) are other codecs that DO carry a label, so the guard matters.
+	QByteArray ulFromResId(quint32 resId)
 	{
-		qint64 offset;
-		QByteArray value;
-	};
-
-	[[nodiscard]] QVector<SpanString> stringsIn(const uchar *base, qint64 lo, qint64 hi)
-	{
-		QVector<SpanString> out;
-		qint64 i = lo;
-		while (i < hi)
-		{
-			if (!isNameByte(base[i]))
-			{
-				++i;
-				continue;
-			}
-			const qint64 start = i;
-			while (i < hi && isNameByte(base[i]))
-				++i;
-			// Only a NUL-terminated run is a value; a run cut off by the span
-			// edge belongs to the neighbouring record.
-			if (i < hi && base[i] == 0 && i > start)
-				out.append({start, QByteArray(reinterpret_cast<const char *>(base + start),
-											  int(i - start))});
-			++i;
-		}
-		return out;
-	}
-
-	/// Decode a value written by Avid, rejecting the MacRoman twin.
-	///
-	/// Avid writes a non-ASCII value twice — MacRoman first, UTF-8 second — so
-	/// the copy nearest its key is the UTF-8 one. A MacRoman run is almost
-	/// never valid UTF-8, and QString::fromUtf8 marks the failure with
-	/// replacement characters; treating that as "no value" lets the caller
-	/// fall through to the clean copy, and leaves a blank rather than mojibake
-	/// when no clean copy exists.
-	///
-	/// Deliberately NOT AvidText::decode: that one falls BACK to MacRoman,
-	/// which is exactly the twin this has to reject. The PMR needs the
-	/// fallback (it stores one copy, MacRoman); the MDB must not have it.
-	[[nodiscard]] QString decodeUtf8(const QByteArray &raw)
-	{
-		const QString s = QString::fromUtf8(raw);
-		if (s.contains(QChar(QChar::ReplacementCharacter)))
+		if (resId <= 1234 || resId >= 1490)
 			return {};
-		return s;
+		QByteArray ul = QByteArray::fromHex("060e2b340401010a04010202");
+		ul.append(char(0x71));
+		ul.append(char(resId - 1234));
+		ul.append(char(0));
+		ul.append(char(0));
+		return ul;
 	}
 
-	/// The value belonging to the key at index `k`: the nearest preceding run
-	/// that decodes cleanly. Two back is far enough for the MacRoman/UTF-8 pair
-	/// and stops a key with no value of its own from stealing the one before.
-	[[nodiscard]] QString valueBefore(const QVector<SpanString> &strs, int k)
-	{
-		for (int j = k - 1; j >= 0 && j >= k - 2; --j)
-		{
-			const QString s = decodeUtf8(strs[j].value);
-			if (!s.isEmpty())
-				return s;
-		}
-		return {};
-	}
-
-	/// Basename component of a path, handling both `/` and `\`.
-	QString pathBasename(const QString &path)
+	QString baseName(const QString &path)
 	{
 		const int slash = qMax(path.lastIndexOf(QLatin1Char('/')), path.lastIndexOf(QLatin1Char('\\')));
-		return (slash >= 0) ? path.mid(slash + 1) : path;
+		return slash < 0 ? path : path.mid(slash + 1);
 	}
 
-	/// Read one record's attributes out of the bytes it owns. Walks backwards
-	/// so the attribute nearest the record's own name wins: where a span holds
-	/// two of the same key, the later one is this record's and the earlier
-	/// belongs to an object whose header this parser didn't recognise.
-	[[nodiscard]] MdbRecord attributesIn(const uchar *base, qint64 lo, qint64 hi)
+	// MARK: - Attribute trees
+
+	/// ATTR → AttrRefs → ATTB[]; nested ATTRs are followed only where a fact
+	/// we want lives below them (_IMPORTSETTING, _USER). `seen` guards the
+	/// shared nodes Avid writes.
+	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, MdbMaster &m,
+						QSet<quint32> &seen, int depth)
 	{
-		MdbRecord rec;
-		const QVector<SpanString> strs = stringsIn(base, lo, hi);
-		for (int k = strs.size() - 1; k >= 0; --k)
+		if (attrObj == 0 || depth > 4 || seen.contains(attrObj))
+			return;
+		seen.insert(attrObj);
+		const QVector<quint32> attbs = BentoFile::handles(b.value(attrObj, p.attrRefs));
+		for (quint32 attb : attbs)
 		{
-			const QByteArray &v = strs[k].value;
-			if (v == kKeyImportSetting)
+			const QString name = BentoFile::string(b.value(attb, p.attbName));
+			const quint32 kind = BentoFile::uint(b.value(attb, p.attbKind));
+			if (kind == 3)
 			{
-				rec.isImported = true;
+				const quint32 target = BentoFile::handle(b.value(attb, p.attbObj));
+				if (target == 0)
+					continue;
+				const QByteArray cls = b.objectClass(target);
+				if (name == QLatin1String("_ORG_BIN") && cls == "MCBR")
+				{
+					if (m.bin.isEmpty())
+					{
+						m.bin = BentoFile::utf8String(b.value(target, p.binNameUtf8));
+						if (m.bin.isEmpty())
+							m.bin = BentoFile::string(b.value(target, p.binName));
+					}
+				}
+				else if (name == QLatin1String("_IMPORTSETTING"))
+				{
+					m.isImported = true;
+					if (cls == "ATTR")
+						walkAttributes(b, p, target, m, seen, depth + 1);
+				}
+				else if (name == QLatin1String("_SRCFILE") && cls == "MACL")
+				{
+					if (m.sourceFilePath.isEmpty())
+					{
+						m.sourceFilePath = BentoFile::string(b.value(target, p.posixPath));
+						if (m.sourceFilePath.isEmpty())
+							m.sourceFilePath = BentoFile::utf8String(b.value(target, p.pathUtf8));
+						if (m.sourceFilePath.isEmpty())
+							m.sourceFilePath = BentoFile::string(b.value(target, p.pathName));
+					}
+				}
+				else if (name == QLatin1String("_USER") && cls == "ATTR")
+				{
+					walkAttributes(b, p, target, m, seen, depth + 1);
+				}
 			}
-			else if (v == kKeyOrgBin && rec.bin.isEmpty())
+			else if (kind == 2)
 			{
-				rec.bin = valueBefore(strs, k);
-			}
-			else if (v == kKeySrcFile && rec.sourceFilePath.isEmpty())
-			{
-				rec.sourceFilePath = valueBefore(strs, k);
-				rec.sourceFileName = pathBasename(rec.sourceFilePath);
-			}
-			else if (rec.sourceContainer.isEmpty())
-			{
-				const QString token = QString::fromLatin1(v);
-				if (kContainerHints.contains(token))
-					rec.sourceContainer = token;
+				if (name == QLatin1String("Video") || name == QLatin1String("Audio"))
+				{
+					if (m.sourceContainer.isEmpty())
+						m.sourceContainer = BentoFile::string(b.value(attb, p.attbString));
+				}
+				else if (name == QLatin1String("UNC Path"))
+				{
+					if (m.sourceFilePath.isEmpty())
+						m.sourceFilePath = BentoFile::string(b.value(attb, p.attbString));
+				}
 			}
 		}
-		return rec;
 	}
 
-	/// Fill blanks in `into` from `from`. The same MOB is written several times
-	/// and only some copies carry attributes, so the copies are unioned rather
-	/// than letting the last one win.
-	void mergeInto(MdbRecord &into, const MdbRecord &from)
+	// MARK: - Track walk (drop frame)
+
+	/// The first TCCP reachable from `mob`'s tracks: through SEQU components,
+	/// and through SCLP source references into other mobs (the timecode lives
+	/// on the tape/import source mob, not the file mob). 0 if none.
+	quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob,
+								  const QHash<QByteArray, quint32> &objectByMob, QSet<quint32> &seen,
+								  int depth)
 	{
-		const auto fill = [](QString &dst, const QString &src)
+		if (mob == 0 || depth > 6 || seen.contains(mob))
+			return 0;
+		seen.insert(mob);
+		for (quint32 track : BentoFile::handles(b.value(mob, p.tracks)))
 		{
-			if (dst.isEmpty())
-				dst = src;
-		};
-		fill(into.clipName, from.clipName);
-		fill(into.bin, from.bin);
-		fill(into.sourceFilePath, from.sourceFilePath);
-		fill(into.sourceFileName, from.sourceFileName);
-		fill(into.sourceContainer, from.sourceContainer);
-		into.isImported = into.isImported || from.isImported;
-	}
-
-	// MARK: - MOB offsets
-
-	/// Find every byte position where a 32-byte MOB starts. Avid MDB
-	/// always uses the `06 0a 2b 34` prefix (never SMPTE `06 0e 2b 34`),
-	/// so only scan for the `0a` form.
-	[[nodiscard]] QVector<qint64> findMobOffsets(const QByteArray &data)
-	{
-		QVector<qint64> out;
-		const qint64 n = data.size();
-		if (n < MobId::kRawSize)
-			return out;
-
-		const auto *ptr = reinterpret_cast<const uchar *>(data.constData());
-		const uchar *const end = ptr + (n - MobId::kRawSize);
-		const uchar *p = ptr;
-		while (p <= end)
-		{
-			p = static_cast<const uchar *>(std::memchr(p, 0x06, end - p + 1));
-			if (!p)
-				break;
-			if (p[1] == 0x0a && p[2] == 0x2b && p[3] == 0x34)
+			QVector<quint32> stack{BentoFile::handle(b.value(track, p.trackComp))};
+			while (!stack.isEmpty())
 			{
-				out.append(p - ptr);
-				p += MobId::kRawSize;
-			}
-			else
-			{
-				++p;
+				const quint32 c = stack.takeLast();
+				if (c == 0 || seen.contains(c))
+					continue;
+				seen.insert(c);
+				const QByteArray cls = b.objectClass(c);
+				if (cls == "TCCP")
+					return c;
+				if (cls == "SEQU")
+					stack += BentoFile::handles(b.value(c, p.sequence));
+				else if (cls == "SCLP")
+				{
+					const QByteArrayView src = b.value(c, p.sourceId);
+					if (src.size() == MobId::kRawSize)
+					{
+						const quint32 srcMob = objectByMob.value(src.toByteArray(), 0);
+						if (const quint32 t = findTimecodeComponent(b, p, srcMob, objectByMob, seen, depth + 1))
+							return t;
+					}
+				}
 			}
 		}
-		return out;
+		return 0;
 	}
 
+	// MARK: - Essence
+
+	/// Fill `f.essence` from the descriptor the way a header parse would, then
+	/// hand it to MxfParser::finalise so every derived value comes from the
+	/// same code as the header path.
+	void readEssence(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
+					 const QHash<QByteArray, quint32> &objectByMob, MdbFile &f)
+	{
+		MxfMetadata &e = f.essence;
+		const QByteArray cls = b.objectClass(desc);
+		if (!isMediaClass(cls))
+			return;
+		e.isAudio = isAudioClass(cls);
+
+		// Codec label: the stored AUID, else rebuilt from the resolution id.
+		e.essenceContainerLabel = auidToUl(b.value(desc, p.essComp));
+		if (e.essenceContainerLabel.isEmpty())
+			e.essenceContainerLabel = ulFromResId(BentoFile::uint(b.value(desc, p.resId)));
+
+		// Rate. Video goes through the same label matcher as tag 0x3001.
+		qint32 num = 0, den = 0;
+		if (BentoFile::rational(b.value(desc, p.sampleRate), num, den) && den > 0 && num > 0)
+			MxfParser::applyEditRate(e, quint32(num), quint32(den));
+
+		const quint32 length = BentoFile::uint(b.value(desc, p.length));
+		if (e.isAudio)
+		{
+			// Length is samples. The frame count comes from the mob's own edit
+			// rate; finalise then re-derives the timecode base from these two
+			// exactly as it does for a header (frames × rate ÷ samples).
+			e.descriptorDuration = length;
+			qint32 erNum = 0, erDen = 0;
+			if (BentoFile::rational(b.value(mobObj, p.editRate), erNum, erDen) && erDen > 0 && erNum > 0 &&
+				length > 0 && e.sampleRate > 0)
+				e.durationFrames = qRound(double(length) * erNum / erDen / e.sampleRate);
+			if (const quint32 bits = BentoFile::uint(b.value(desc, p.bits)))
+				e.bitDepth = MxfParser::bitDepthLabel(bits);
+			e.channels = int(BentoFile::uint(b.value(desc, p.channels)));
+		}
+		else
+		{
+			e.durationFrames = length;
+			e.width = int(BentoFile::uint(b.value(desc, p.width)));
+			int height = int(BentoFile::uint(b.value(desc, p.height)));
+			const QByteArrayView layoutV = b.value(desc, p.layout);
+			const int layout = layoutV.isEmpty() ? -1 : int(BentoFile::uint(layoutV));
+			// The MDB stores one FIELD height for layouts 1 and 3 (the MXF only
+			// for 1). Normalise here and say so; finalise keeps its own
+			// layout-1 rule for headers and the 1088/544 padding rule for both.
+			if (height > 0 && (layout == 1 || layout == 3))
+				height *= 2;
+			e.height = height;
+			e.frameLayout = layout;
+			e.heightIsFrameHeight = height > 0;
+			if (const quint32 bits = BentoFile::uint(b.value(desc, p.compWidth)))
+				e.bitDepth = MxfParser::bitDepthLabel(bits);
+		}
+
+		// Drop frame: the timecode component is on a source mob, reached
+		// through the file mob's SCLP references.
+		QSet<quint32> seen;
+		if (const quint32 tccp = findTimecodeComponent(b, p, mobObj, objectByMob, seen, 0))
+			e.dropFrame = BentoFile::uint(b.value(tccp, p.tcFlags)) != 0;
+
+		MxfParser::finalise(e);
+
+		// Complete = the scanner may skip the header. Audio needs a codec it
+		// can name (PCM is the no-label default; MPEG audio has no label here
+		// and would wrongly read as PCM), video needs its label.
+		f.essenceComplete = e.valid && (e.isAudio ? cls != "MPGA" : !e.essenceContainerLabel.isEmpty());
+	}
 } // namespace
 
-// MARK: - Public API
+// MARK: - Load
 
-QVector<MdbRecord> MdbParser::parse(const QString &mdbFilePath, bool *ok)
+MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 {
-	// Pessimistic default: the early failure returns below leave it false;
-	// reaching the record walk flips it. See the header for why ok=true is a
-	// weaker guarantee here than in PmrParser.
 	if (ok)
 		*ok = false;
-
-	QVector<MdbRecord> records;
+	MdbDatabase db;
 
 	QFile file(mdbFilePath);
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		qCWarning(lcMdb) << "cannot open" << mdbFilePath << file.errorString();
-		return records;
+		return db;
 	}
 	const QByteArray data = file.readAll();
 	file.close();
 
-	if (data.size() < kMinFileSize)
+	BentoFile b;
+	QString why;
+	if (!b.load(data, &why))
 	{
-		qCWarning(lcMdb) << "file too small" << data.size() << mdbFilePath;
-		return records;
+		qCWarning(lcMdb) << mdbFilePath << "is not a readable Avid MDB:" << why;
+		return db;
 	}
-
-	const QVector<qint64> mobOffsets = findMobOffsets(data);
-
-	// Validity gate. Every real MDB surveyed opens with its property
-	// dictionary near the front — "_USER...", or "block NNNN\0_USER..." on
-	// some variants, so the fingerprint is scanned for, never demanded at a
-	// fixed offset. A file with neither the fingerprint nor a single Avid
-	// MOB anywhere is not something this parser can read: without this
-	// check it "parsed" to zero records with ok=true, and the scanner then
-	// stamped the folder's unmatched files a verified "No reference" when
-	// the honest answer is "No database". The MOB escape hatch keeps any
-	// readable file acceptable regardless of its prelude; the failure
-	// direction of a wrong rejection is the safe label ("couldn't check").
-	// Known limit: truncation that preserves the front still passes — a
-	// stream with no length field has nothing to test completeness against.
-	const QByteArray head = data.left(4096);
-	const bool fingerprinted = head.contains("_USER") || head.contains("_VERSION");
-	if (!fingerprinted && mobOffsets.isEmpty())
-	{
-		qCWarning(lcMdb) << "not a recognisable Avid MDB (no property dictionary, no MOB IDs)"
-						 << mdbFilePath;
-		return records;
-	}
-
 	if (ok)
 		*ok = true;
 
-	const auto *base = reinterpret_cast<const uchar *>(data.constData());
-	const qint64 size = data.size();
-
-	// Group occurrences by MOB. The same MOB is written many times over
-	// (source / master / referenced), and one record is emitted per unique one.
-	QHash<QString, QVector<qint64>> occurrences;
-	QHash<QString, QByteArray> rawBytes;
-	int placeholders = 0;
-	for (qint64 off : mobOffsets)
+	const Props p(b);
+	if (p.mobId < 0)
 	{
-		const QByteArray mob = data.mid(qsizetype(off), MobId::kRawSize);
-		if (mob == kPlaceholderMob)
-		{
-			++placeholders;
-			continue;
-		}
-		const QString hex = MobId::format(mob);
-		occurrences[hex].append(off);
-		if (!rawBytes.contains(hex))
-			rawBytes.insert(hex, mob);
+		qCDebug(lcMdb) << mdbFilePath << "carries no MobID property — an empty database";
+		return db;
 	}
 
-	// MARK: Record heads, in file order
-
-	struct Head
+	// Group every MOBJ object by its MobID. Avid writes the same MobID on
+	// more than one object, so each clip is the union of its objects.
+	QHash<QByteArray, quint32> objectByMob; ///< First object per MobID (for SCLP hops).
+	QHash<QString, QVector<quint32>> objectsByHex;
+	QVector<QString> order;
+	for (quint32 obj : b.objectsWithProperty(p.mobId))
 	{
-		qint64 nameStart;
-		qint64 nameLen;
-		qint64 mobOff;
-		QString hex;
-	};
-	QVector<Head> heads;
-	heads.reserve(mobOffsets.size() / 4);
-	for (qint64 off : mobOffsets)
-	{
-		const RecordHead h = recordHeadAt(base, size, off);
-		if (!h.valid)
+		if (b.objectClass(obj) != "MOBJ")
 			continue;
-		const QByteArray mob = data.mid(qsizetype(off), MobId::kRawSize);
-		if (mob == kPlaceholderMob)
+		const QByteArrayView raw = b.value(obj, p.mobId);
+		if (raw.size() != MobId::kRawSize || raw == QByteArrayView(placeholderMob()))
 			continue;
-		heads.append({h.nameStart, h.nameLen, off, MobId::format(mob)});
-	}
-	// findMobOffsets walks the file forwards, so `heads` is already ascending.
-
-	// MARK: One record per head, then merge duplicates
-
-	QHash<QString, int> indexByHex;
-	// A record owns the bytes from the previous record's MOB to its own name.
-	struct Span
-	{
-		qint64 lo;
-		qint64 hi;
-		int recordIndex;
-	};
-	QVector<Span> spans;
-	spans.reserve(heads.size());
-
-	for (int i = 0; i < heads.size(); ++i)
-	{
-		const qint64 lo = i ? heads[i - 1].mobOff + MobId::kRawSize : 0;
-		MdbRecord rec = attributesIn(base, lo, heads[i].nameStart);
-		rec.clipName = decodeUtf8(QByteArray(
-			reinterpret_cast<const char *>(base + heads[i].nameStart), int(heads[i].nameLen)));
-		rec.mobIdHex = heads[i].hex;
-		rec.mobId = rawBytes.value(heads[i].hex);
-
-		int idx = indexByHex.value(heads[i].hex, -1);
-		if (idx < 0)
+		const QByteArray rawBytes = raw.toByteArray();
+		if (!objectByMob.contains(rawBytes))
+			objectByMob.insert(rawBytes, obj);
+		const QString hex = BentoFile::mobIdHex(raw);
+		auto it = objectsByHex.find(hex);
+		if (it == objectsByHex.end())
 		{
-			idx = records.size();
-			indexByHex.insert(heads[i].hex, idx);
-			records.append(rec);
+			it = objectsByHex.insert(hex, {});
+			order.append(hex);
 		}
-		else
-		{
-			mergeInto(records[idx], rec);
-		}
-		spans.append({lo, heads[i].mobOff + MobId::kRawSize, idx});
+		it->append(obj);
 	}
 
-	// MARK: MOBs with no head of their own
-
-	// A clip's file MOBs sit inside the master's record and carry no header,
-	// but the scanner looks up both mobId and masterMobId — so they inherit
-	// the record whose span they fall in. Anything left over still gets a bare
-	// record: dropping a MOB from the map would read as "not in the database"
-	// and could mislabel a file as unreferenced.
-	for (auto it = occurrences.cbegin(); it != occurrences.cend(); ++it)
+	int complete = 0;
+	for (const QString &hex : order)
 	{
-		if (indexByHex.contains(it.key()))
-			continue;
+		const QVector<quint32> &objs = objectsByHex[hex];
 
-		int owner = -1;
-		for (qint64 off : it.value())
+		// A file mob owns a media descriptor; a source mob owns an MDES (the
+		// import/tape source — not needed); a master mob owns nothing.
+		quint32 mediaObj = 0, mediaDesc = 0;
+		bool anyPhysical = false;
+		for (quint32 obj : objs)
 		{
-			// Spans are ascending and disjoint, so the first with lo > off ends
-			// the search.
-			const auto at = std::upper_bound(spans.cbegin(), spans.cend(), off,
-											 [](qint64 value, const Span &s)
-											 { return value < s.lo; });
-			if (at != spans.cbegin())
+			const quint32 desc = BentoFile::handle(b.value(obj, p.physMedia));
+			if (desc == 0)
+				continue;
+			anyPhysical = true;
+			if (mediaObj == 0 && isMediaClass(b.objectClass(desc)))
 			{
-				const Span &s = *(at - 1);
-				if (off < s.hi)
-				{
-					owner = s.recordIndex;
-					break;
-				}
+				mediaObj = obj;
+				mediaDesc = desc;
 			}
 		}
 
-		MdbRecord rec;
-		if (owner >= 0)
-			rec = records[owner];
-		rec.mobIdHex = it.key();
-		rec.mobId = rawBytes.value(it.key());
-		indexByHex.insert(it.key(), records.size());
-		records.append(rec);
+		if (mediaObj != 0)
+		{
+			MdbFile f;
+			f.mobIdHex = hex;
+			for (quint32 obj : objs)
+			{
+				const QByteArrayView u = b.value(obj, p.usage);
+				if (f.usageCode < 0 && !u.isEmpty())
+					f.usageCode = int(BentoFile::uint(u));
+			}
+			readEssence(b, p, mediaObj, mediaDesc, objectByMob, f);
+			if (f.essenceComplete)
+				++complete;
+			db.files.insert(hex, f);
+			continue;
+		}
+		if (anyPhysical)
+			continue; // a source mob
+
+		MdbMaster m;
+		m.mobIdHex = hex;
+		QSet<quint32> seen;
+		for (quint32 obj : objs)
+		{
+			if (m.clipName.isEmpty())
+				m.clipName = BentoFile::string(b.value(obj, p.name));
+			const QByteArrayView u = b.value(obj, p.usage);
+			if (m.usageCode < 0 && !u.isEmpty())
+				m.usageCode = int(BentoFile::uint(u));
+			walkAttributes(b, p, BentoFile::handle(b.value(obj, p.attrs)), m, seen, 0);
+		}
+		if (!m.sourceFilePath.isEmpty())
+			m.sourceFileName = baseName(m.sourceFilePath);
+		db.masters.insert(hex, m);
 	}
 
-	qCDebug(lcMdb) << "MDB:" << mdbFilePath << "size:" << data.size()
-				   << "mobs:" << occurrences.size() << "records with a header:" << heads.size()
-				   << "placeholder MOBs skipped:" << placeholders;
-
-	return records;
-}
-
-MdbParser::RecordMap MdbParser::buildMobMap(const QString &mdbFilePath, bool *ok)
-{
-	RecordMap map;
-	const auto records = parse(mdbFilePath, ok);
-	map.reserve(records.size());
-	for (const auto &r : records)
-	{
-		if (!r.mobIdHex.isEmpty())
-			map.insert(r.mobIdHex, r);
-	}
-	return map;
+	qCDebug(lcMdb) << mdbFilePath << ":" << b.entryCount() << "TOC entries," << db.masters.size() << "clips,"
+				   << db.files.size() << "files (" << complete << "complete )";
+	return db;
 }

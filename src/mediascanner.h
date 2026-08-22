@@ -125,7 +125,7 @@ private:
 	MediaFile buildMediaFile(const QString &filePath, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
 							 const PmrParser::ProjectMaps &pmrMaps,
-							 const MdbParser::RecordMap &mdbMap,
+							 const MdbDatabase &mdb,
 							 MediaFile::DbIssue folderDbIssue);
 
 	/// Stage 2. Per-folder parallelism alone starves cores on small
@@ -180,5 +180,5 @@ private:
 	/// so Stage 1 (QDir::filePath) and Stage 3 (QFileInfo::absolutePath)
 	/// can't drift on the same folder identity.
 	QMutex m_mdbMapsMutex;
-	QHash<QString, MdbParser::RecordMap> m_mdbMapsByFolder;
+	QHash<QString, QHash<QString, MdbMaster>> m_mdbMapsByFolder;
 };

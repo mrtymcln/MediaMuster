@@ -192,7 +192,7 @@ namespace
 	// The bin has no other source in the app: PmrEntry carries a project but
 	// no bin, and AvbParser yields only MOB IDs for the Bin Filter. Unknown
 	// therefore means blank, never a guess.
-	void applyMdbRecord(MediaFile &mf, const MdbRecord &rec)
+	void applyMdbRecord(MediaFile &mf, const MdbMaster &rec)
 	{
 		setClipName(mf, rec.clipName, MediaFile::ClipNameSource::Mdb);
 		assignIfMissing(mf.originalBin, rec.bin);
@@ -676,16 +676,19 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 	// MARK: Parse the MDB
 
-	MdbParser::RecordMap mdbMap;
+	MdbDatabase mdb;
 	bool mdbOk = true; // vacuously fine when the file doesn't exist
 	const QString mdbPath = task.folderPath + "/msmMMOB.mdb";
 	const bool mdbExists = QFile::exists(mdbPath);
 	if (mdbExists)
 	{
-		mdbMap = MdbParser::buildMobMap(mdbPath, &mdbOk);
+		mdb = MdbParser::load(mdbPath, &mdbOk);
 		if (mdbOk)
 			bufLog(QtInfoMsg, QStringLiteral("mdb"),
-				   QStringLiteral("  MDB: %1 records in /%2").arg(mdbMap.size()).arg(task.folderNumber));
+				   QStringLiteral("  MDB: %1 clips, %2 files in /%3")
+					   .arg(mdb.masters.size())
+					   .arg(mdb.files.size())
+					   .arg(task.folderNumber));
 		else
 			bufLog(QtWarningMsg, QStringLiteral("mdb"),
 				   QStringLiteral("  msmMMOB.mdb in /%1 is unreadable; unmatched files here "
@@ -770,7 +773,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 			continue;
 
 		MediaFile mf = buildMediaFile(entry.filePath(), task.volumeName, task.volumePath,
-									  task.folderNumber, pmrMaps, mdbMap, folderDbIssue);
+									  task.folderNumber, pmrMaps, mdb, folderDbIssue);
 		mf.isQuarantined = isQuarantineFolder;
 
 		result.files.append(mf);
@@ -786,14 +789,15 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 			{task.volumeName + QLatin1Char('/') + task.folderNumber, int(result.files.size())});
 	}
 
-	// Cache the MDB map for Stage 3 (UMID recovery). Move because
-	// this task is done with it. Skip empties as nothing to join.
+	// Cache the clip records for Stage 3 (UMID recovery) — only the masters;
+	// the per-file essence is consumed above and dropped. Move because this
+	// task is done with it. Skip empties as nothing to join.
 	// PathKey::normalise keeps Stages 1 and 3 agreeing on folder
 	// identity across different Qt path APIs.
-	if (!mdbMap.isEmpty())
+	if (!mdb.masters.isEmpty())
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
-		m_mdbMapsByFolder.insert(PathKey::normalise(task.folderPath), std::move(mdbMap));
+		m_mdbMapsByFolder.insert(PathKey::normalise(task.folderPath), std::move(mdb.masters));
 	}
 
 	return result;
@@ -804,7 +808,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 MediaFile MediaScanner::buildMediaFile(const QString &filePath, const QString &volumeName,
 									   const QString &volumePath, const QString &folderNumber,
 									   const PmrParser::ProjectMaps &pmrMaps,
-									   const MdbParser::RecordMap &mdbMap,
+									   const MdbDatabase &mdb,
 									   MediaFile::DbIssue folderDbIssue)
 {
 	MediaFile mf;
@@ -856,20 +860,19 @@ MediaFile MediaScanner::buildMediaFile(const QString &filePath, const QString &v
 			applyPmrHit(pmrIt->first());
 	}
 
-	// MARK: MDB lookup (file MOB + master MOB)
+	// MARK: MDB lookup (the master clip's record)
 
-	// applyMdbRecord is the file-scope helper above; Stage 1 and
-	// Stage 3 both call it so the merge rules can't drift.
-	if (!mf.mobId.isEmpty())
+	// The clip-level facts — name, bin, source, import flag — live on the
+	// MASTER mob, the one the PMR's MASTER record names. The file mob's own
+	// record is not consulted: its CPNT:Name is usually the source filename,
+	// and reading it first used to put "Avid DNx SQ.mov" in the Clip Name
+	// column on 67 of 795 corpus rows whenever the header went unread.
+	// applyMdbRecord is the file-scope helper above; Stage 1 and Stage 3 both
+	// call it so the merge rules can't drift.
+	if (!mf.masterMobId.isEmpty())
 	{
-		auto mdbIt = mdbMap.find(mf.mobId);
-		if (mdbIt != mdbMap.end())
-			applyMdbRecord(mf, mdbIt.value());
-	}
-	if (!mf.masterMobId.isEmpty() && mf.masterMobId != mf.mobId)
-	{
-		auto mdbIt = mdbMap.find(mf.masterMobId);
-		if (mdbIt != mdbMap.end())
+		auto mdbIt = mdb.masters.find(mf.masterMobId);
+		if (mdbIt != mdb.masters.end())
 			applyMdbRecord(mf, mdbIt.value());
 	}
 
@@ -896,7 +899,7 @@ MediaFile MediaScanner::buildMediaFile(const QString &filePath, const QString &v
 	// A MOB ID plus an MDB in the folder means the file IS indexed — the
 	// editor probably deleted the project that owned the essence. 'No
 	// project' outranks both miss states (the setter encodes that rule).
-	if (!mf.mobId.isEmpty() && (mf.isNoReference || mf.isNoDatabase()) && !mdbMap.isEmpty())
+	if (!mf.mobId.isEmpty() && (mf.isNoReference || mf.isNoDatabase()) && !mdb.isEmpty())
 		mf.markNoProject();
 
 	return mf;
@@ -1012,7 +1015,7 @@ void MediaScanner::recoverUnreferencedFromMdb(QVector<MediaFile> &files)
 		if (mapIt == m_mdbMapsByFolder.constEnd() || mapIt->isEmpty())
 			continue;
 
-		const MdbParser::RecordMap &mdbMap = mapIt.value();
+		const QHash<QString, MdbMaster> &mdbMap = mapIt.value();
 
 		// Direct UMID match is rare: MXF stores the middle fields
 		// little-endian, MDB/PMR store them big-endian. Try direct

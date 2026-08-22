@@ -100,14 +100,15 @@ mediamuster_add_test(tst_pmrparser
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
 )
 
-# MdbParser: the msmMMOB.mdb record framing, driven by buffers built to the
-# real on-disk shape, plus the MacRoman-twin guard against a real accented-bin
-# MDB. Links MxfParser too: the join test resolves real MXF headers against
-# the MDB captured from their own folder (fixtures/mdb_join), using each file's
-# MaterialPackage name as ground truth.
+# MdbParser: msmMMOB.mdb read through its Bento table of contents. Links
+# PmrParser and MxfParser too: the corpus databases are joined through their
+# PMRs to the real MXF headers captured from the same folders, with each
+# header as ground truth for every technical field.
 mediamuster_add_test(tst_mdbparser
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
 )
 target_compile_definitions(tst_mdbparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -120,6 +121,7 @@ mediamuster_add_test(tst_scanner
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
 )
 target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent)
 target_compile_definitions(tst_scanner PRIVATE

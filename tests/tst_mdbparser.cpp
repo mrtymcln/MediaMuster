@@ -1,100 +1,26 @@
-// Unit tests for MdbParser::parse over hand-crafted msmMMOB.mdb buffers.
-//
-// The MDB is Avid's own flat object stream, not Bento and not AAF. A named
-// object ends with a self-checking header closed by its MOB ID:
-//
-//   <name>\0 <handle> <u16 count> <count x handle> <MOB:32>
-//
-// and the object's attributes are written BEFORE it, each as
-//
-//   <value>\0 [<value-utf8>\0] <_KEY>\0 <handle>
-//
-// The builders below emit exactly that, so these buffers are the same shape as
-// a real database rather than a guess at one. (They used to lay out a "Name"
-// marker next to its value — a layout that only ever occurs in the property
-// dictionary at the very front of a real file, which is why the old parser
-// scored zero clip names on a real 360-file folder.)
+// MdbParser: msmMMOB.mdb read through its Bento table of contents. The
+// assertions that matter are fixture-driven — the corpus databases joined to
+// the real MXF headers captured from the same folders, with the header as
+// ground truth for every technical field — plus a few builder-made
+// containers for the merge and gate rules.
 
+#include "bentofile.h"
 #include "mdbparser.h"
 #include "mobid.h"
 #include "mxfparser.h"
+#include "pmrparser.h"
+#include "testbento.h"
 
 #include <QByteArray>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QSet>
 #include <QTemporaryDir>
 #include <QTest>
 
 namespace
 {
-	// A 32-byte Avid MOB: the 06 0A 2B 34 signature the parser scans for, then
-	// `tag` and zeros (kept non-printable so they don't leak into any string
-	// scan). Vary `tag` for a second, distinct MOB.
-	QByteArray mob32(char tag = '\0')
-	{
-		return QByteArray::fromHex("060a2b34") + QByteArray(1, tag) + QByteArray(27, '\0');
-	}
-
-	// An 8-byte object handle: a little-endian u32 whose high word is 1, then a
-	// u32 zero. Ids stay below 0x2000 so neither id byte is printable and the
-	// handle can't be mistaken for a string by the value scan.
-	QByteArray handle(quint16 id)
-	{
-		QByteArray b;
-		b.append(char(id & 0xFF));
-		b.append(char(id >> 8));
-		b.append('\x01');
-		b.append(QByteArray(5, '\0'));
-		return b;
-	}
-
-	// One attribute: the value first, then the key that names it. Avid writes
-	// non-ASCII values twice (MacRoman then UTF-8); pass `macRomanTwin` to
-	// reproduce that.
-	void addAttribute(QByteArray &b, const QByteArray &value, const QByteArray &key,
-					  quint16 id = 0x0300, const QByteArray &macRomanTwin = {})
-	{
-		if (!macRomanTwin.isEmpty())
-		{
-			b.append(macRomanTwin);
-			b.append('\0');
-		}
-		if (!value.isEmpty())
-		{
-			b.append(value);
-			b.append('\0');
-		}
-		b.append(key);
-		b.append('\0');
-		b.append(handle(id));
-	}
-
-	// A bare token with no key of its own — how the container hint is written.
-	void addToken(QByteArray &b, const QByteArray &token)
-	{
-		b.append(token);
-		b.append('\0');
-	}
-
-	// The header that closes a named object. `declaredCount` defaults to the
-	// number of members actually written; pass a different value to build the
-	// mismatch the framing check is supposed to reject.
-	void addRecord(QByteArray &b, const QByteArray &name, const QByteArray &mob, int members = 1,
-				   int declaredCount = -1)
-	{
-		if (declaredCount < 0)
-			declaredCount = members;
-		b.append(name);
-		b.append('\0');
-		b.append(handle(0x0100));
-		b.append(char(declaredCount & 0xFF));
-		b.append(char((declaredCount >> 8) & 0xFF));
-		for (int i = 0; i < members; ++i)
-			b.append(handle(quint16(0x0200 + i)));
-		b.append(mob);
-	}
-
 	QString writeMdb(const QString &path, const QByteArray &bytes)
 	{
 		QDir().mkpath(QFileInfo(path).absolutePath());
@@ -106,268 +32,235 @@ namespace
 		}
 		return path;
 	}
+
+	QString fx(const char *rel)
+	{
+		return QStringLiteral(FIXTURES_DIR "/") + QLatin1String(rel);
+	}
+
+	const QByteArray kToneFileMob = QByteArray::fromHex("060a2b340101010501010f1013000000"
+														 "4a507dea741106907a361e6a605d3613");
+	const QByteArray kToneMasterMob = QByteArray::fromHex("060a2b340101010501010f1013000000"
+														   "d2467dea7411069091901e6a605d3613");
 } // namespace
 
 class TestMdbParser : public QObject
 {
 	Q_OBJECT
 private slots:
-	void extracts_full_record_from_one_object();
-	void buildMobMap_keys_by_hex();
-	void no_mob_yields_no_records();
-	void too_small_file_returns_empty();
+	// Gate
+	void missing_or_garbage_file_reports_not_ok();
+	void mob_signature_without_a_bento_label_is_not_an_mdb();
+	void bento_without_mobs_is_ok_and_empty();
+	void real_fixture_mdbs_load();
 
-	// The header is self-checking: the member count must match the handles
-	// that follow it AND the run must land exactly on the MOB. Without both,
-	// any 8 handle-shaped bytes before a MOB would invent a record.
-	void wrong_member_count_is_not_a_record();
-	void handles_without_a_name_are_not_a_record();
+	// Shape and merge rules
+	void tiny_fixture_covers_the_tone_file();
+	void duplicate_mobj_objects_are_merged_first_non_empty_wins();
+	void source_mob_is_neither_file_nor_master();
 
-	// Names come out of the header verbatim, so nothing needs to guess whether
-	// a string "looks like" a clip name. Avid reel/scene names contain '/'
-	// (e.g. "63/5.new.01"), and post-production names things zOLD/zArchive on
-	// purpose (the prefix sorts to the bottom of a bin).
-	void slash_and_z_prefixed_names_are_kept_verbatim();
-	void a_stray_path_in_the_span_is_not_the_clip_name();
-
-	// Avid writes every non-ASCII value twice, MacRoman first then UTF-8 —
-	// Media Composer's 1988 Mac-exclusive heritage. The MacRoman twin decodes
-	// to replacement characters under UTF-8 and must never be elected; a value
-	// with no clean copy shows blank rather than garbled.
-	void utf8_twin_wins_over_macroman_twin();
-	void macroman_only_value_yields_blank_not_mojibake();
-	void multibyte_bin_name_survives_intact();
+	// Strings
 	void real_accented_bin_mdb_never_yields_mojibake();
+	void macroman_only_precompute_names_decode();
 
-	// A clip's file MOBs sit inside the master's record and carry no header of
-	// their own, but the scanner looks up mobId AND masterMobId — so they must
-	// inherit the record. And every MOB must keep a map entry either way:
-	// dropping one would read as "not in the database" and could mislabel a
-	// file as unreferenced.
-	void file_mobs_inherit_the_master_record();
-	void every_mob_keeps_a_map_entry();
-
-	// Avid's placeholder MOB is byte-identical across unrelated projects and
-	// appears in no MXF, so it names no media. The old parser emitted it.
-	void placeholder_mob_is_not_a_record();
-
-	// Validity gate: parse() used to report ok=true for ANY file over 64
-	// bytes, so a corrupt or foreign msmMMOB.mdb "parsed" to zero records
-	// and the scanner labelled the folder's unmatched files a verified
-	// "No reference" instead of the honest "No database". A file must now
-	// carry the Avid property-dictionary fingerprint near the front (the
-	// real preludes vary: "_USER..." and "block NNNN\0_USER...") or contain
-	// at least one Avid MOB before ok can be true.
-	void real_fixture_mdbs_pass_the_validity_gate();
-	void garbage_named_mdb_reports_not_ok();
-	void mob_only_buffer_still_passes_the_gate();
-
-	// End to end against real media: MXF headers resolved against the MDB
-	// captured from their own folder, checked with each file's own
-	// MaterialPackage name so the test can't pass by agreeing with itself.
+	// The joins: PMR pairs → MDB records → MXF truth
 	void mdb_join_resolves_real_mxf_files();
+	void every_pmr_pair_is_described_and_essence_matches_the_header();
+	void mpga_audio_is_not_essence_complete();
 };
 
-void TestMdbParser::extracts_full_record_from_one_object()
+// MARK: - Gate
+
+void TestMdbParser::missing_or_garbage_file_reports_not_ok()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 
-	QByteArray buf;
-	addAttribute(buf, {}, "_IMPORTSETTING", 0x0300);
-	addAttribute(buf, "/Users/marty/Desktop/My Great Clip.mov", "_SRCFILE", 0x0301);
-	addToken(buf, "QTFF");
-	addAttribute(buf, "MyProjectBin", "_ORG_BIN", 0x0302);
-	addRecord(buf, "My Great Clip", mob32());
-	buf.append(QByteArray(16, '\0'));
+	bool ok = true;
+	QVERIFY(MdbParser::load(tmp.path() + QStringLiteral("/nope.mdb"), &ok).isEmpty());
+	QVERIFY(!ok);
 
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	const MdbRecord &r = records.first();
-	QCOMPARE(r.mobIdHex, MobId::format(mob32()));
-	QCOMPARE(r.clipName, QStringLiteral("My Great Clip"));
-	QCOMPARE(r.sourceFilePath, QStringLiteral("/Users/marty/Desktop/My Great Clip.mov"));
-	QCOMPARE(r.sourceFileName, QStringLiteral("My Great Clip.mov"));
-	QCOMPARE(r.sourceContainer, QStringLiteral("QTFF"));
-	QCOMPARE(r.bin, QStringLiteral("MyProjectBin"));
-	QVERIFY(r.isImported);
+	const struct
+	{
+		const char *label;
+		QByteArray bytes;
+	} kGarbage[] = {
+		{"tiny", QByteArray("xx")},
+		{"all_zeros", QByteArray(4096, '\0')},
+		{"repeating_junk", QByteArray(4096, '\xAB')},
+		{"fake_jpeg", QByteArray::fromHex("ffd8ffe000104a464946") + QByteArray(4096, '\x5A')},
+	};
+	for (const auto &g : kGarbage)
+	{
+		ok = true;
+		const MdbDatabase db =
+			MdbParser::load(writeMdb(tmp.path() + QStringLiteral("/%1.mdb").arg(QLatin1String(g.label)), g.bytes), &ok);
+		QVERIFY2(!ok, g.label);
+		QVERIFY2(db.isEmpty(), g.label);
+	}
 }
 
-void TestMdbParser::buildMobMap_keys_by_hex()
+void TestMdbParser::mob_signature_without_a_bento_label_is_not_an_mdb()
+{
+	// The old parser's gate let any buffer with an Avid MOB prefix through.
+	// The TOC reader needs the container: no label, no database.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	QByteArray buf("Gate Clip");
+	buf.append('\0');
+	buf.append(kToneMasterMob);
+	buf.append(QByteArray(64, '\0'));
+	bool ok = true;
+	QVERIFY(MdbParser::load(writeMdb(tmp.path() + "/msmMMOB.mdb", buf), &ok).isEmpty());
+	QVERIFY(!ok);
+}
+
+void TestMdbParser::bento_without_mobs_is_ok_and_empty()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-
-	QByteArray buf;
-	addRecord(buf, "Clip One", mob32());
-	buf.append(QByteArray(32, '\0')); // pad past the 64-byte MDB minimum
-
-	const auto map = MdbParser::buildMobMap(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(map.size(), 1);
-	QVERIFY(map.contains(MobId::format(mob32())));
-	QCOMPARE(map.value(MobId::format(mob32())).clipName, QStringLiteral("Clip One"));
+	BentoBuilder w;
+	const quint32 o = w.addObject("HEAD");
+	w.setString(o, "OMFI:HEAD:Version", "2.1");
+	bool ok = false;
+	const MdbDatabase db = MdbParser::load(writeMdb(tmp.path() + "/msmMMOB.mdb", w.build()), &ok);
+	QVERIFY(ok);
+	QVERIFY(db.isEmpty());
 }
 
-void TestMdbParser::no_mob_yields_no_records()
+void TestMdbParser::real_fixture_mdbs_load()
+{
+	const char *kFixtures[] = {"msmMMOB.mdb", "msmMMOB_macroman.mdb", "corpus_headers/msmMMOB.mdb",
+							   "corpus_headers/msmMMOB_round3.mdb"};
+	for (const char *rel : kFixtures)
+	{
+		bool ok = false;
+		const MdbDatabase db = MdbParser::load(fx(rel), &ok);
+		QVERIFY2(ok, rel);
+		QVERIFY2(!db.masters.isEmpty(), rel);
+		QVERIFY2(!db.files.isEmpty(), rel);
+	}
+}
+
+// MARK: - Shape and merge rules
+
+// The 53 KB fixture describes the TONE clip tst_scanner drives: one file mob
+// with a PCM descriptor, and a master mob whose name sits on one MOBJ object
+// and whose bin sits on a SECOND object carrying the same MobID.
+void TestMdbParser::tiny_fixture_covers_the_tone_file()
+{
+	bool ok = false;
+	const MdbDatabase db = MdbParser::load(fx("msmMMOB.mdb"), &ok);
+	QVERIFY(ok);
+
+	const QString fileHex = MobId::format(kToneFileMob);
+	const QString masterHex = MobId::format(kToneMasterMob);
+	QVERIFY(db.files.contains(fileHex));
+	QVERIFY(db.masters.contains(masterHex));
+
+	const MdbFile &f = db.files[fileHex];
+	QCOMPARE(f.usageCode, 0);
+	QVERIFY(f.essenceComplete);
+	QVERIFY(f.essence.isAudio);
+	QVERIFY(f.essence.valid);
+	QCOMPARE(f.essence.codec, QString::fromLatin1(kPcmAudioName));
+
+	// The technical fields equal what the media file's own header says.
+	const MxfMetadata hdr = MxfParser::parseHeader(fx("TONE_100A01.EA7D504A.611740.mxf"));
+	QVERIFY(hdr.valid);
+	QCOMPARE(f.essence.sampleRate, hdr.sampleRate);
+	QCOMPARE(f.essence.channels, hdr.channels);
+	QCOMPARE(f.essence.bitDepth, hdr.bitDepth);
+	QCOMPARE(f.essence.durationFrames, hdr.durationFrames);
+	QCOMPARE(f.essence.timecodeBase, hdr.timecodeBase);
+	QCOMPARE(f.essence.codec, hdr.codec);
+
+	const MdbMaster &m = db.masters[masterHex];
+	QCOMPARE(m.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
+	QCOMPARE(m.clipName, hdr.clipName);
+	QCOMPARE(m.usageCode, 7);
+	// Multi-script bin name from the UTF-8 twin. Raw bytes so the source
+	// file's encoding can't drift the assertion.
+	const QString expectedBin = QString::fromUtf8("No\xCC\x88n English bin na\xCC\x81me\xE2\x84\xA2"
+												  " \xE4\xBD\xA0\xE5\xA5\xBD \xE6\xBC\xA2");
+	QCOMPARE(m.bin, expectedBin);
+}
+
+void TestMdbParser::duplicate_mobj_objects_are_merged_first_non_empty_wins()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
+	BentoBuilder w;
+	// First object: name + usage. Second object, same MobID: a different
+	// name (must lose) and the bin (must win — nobody else has it).
+	const quint32 a = w.addObject("MOBJ");
+	w.set(a, "OMFI:MOBJ:MobID", kToneMasterMob);
+	w.setString(a, "OMFI:CPNT:Name", "First Name");
+	w.setU32(a, "OMFI:MOBJ:UsageCode", 7);
 
-	// Plenty of strings, but no 06 0A 2B 34 MOB signature anywhere.
-	QByteArray buf;
-	for (int i = 0; i < 10; ++i)
-		addToken(buf, "not a mob just text");
-	QVERIFY(buf.size() >= 64);
+	const quint32 b = w.addObject("MOBJ");
+	w.set(b, "OMFI:MOBJ:MobID", kToneMasterMob);
+	w.setString(b, "OMFI:CPNT:Name", "Second Name");
+	const quint32 attr = w.addObject("ATTR");
+	const quint32 attb = w.addObject("ATTB");
+	const quint32 mcbr = w.addObject("MCBR");
+	w.setHandle(b, "OMFI:CPNT:Attributes", attr);
+	w.setHandles(attr, "OMFI:ATTR:AttrRefs", {attb});
+	w.setString(attb, "OMFI:ATTB:Name", "_ORG_BIN");
+	w.setU16(attb, "OMFI:ATTB:Kind", 3);
+	w.setHandle(attb, "OMFI:ATTB:ObjAttribute", mcbr);
+	w.setString(mcbr, "OMFI:MCBR:MC:binName", QByteArray("Caf\x8e bin", 9)); // MacRoman é
+	w.setString(mcbr, "OMFI:MCBR:MC:binNameUTF8", QByteArray("Caf\xc3\xa9 bin", 10));
 
-	QVERIFY(MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf)).isEmpty());
+	bool ok = false;
+	const MdbDatabase db = MdbParser::load(writeMdb(tmp.path() + "/msmMMOB.mdb", w.build()), &ok);
+	QVERIFY(ok);
+	QCOMPARE(db.masters.size(), 1);
+	QVERIFY(db.files.isEmpty());
+	const MdbMaster &m = db.masters[MobId::format(kToneMasterMob)];
+	QCOMPARE(m.clipName, QStringLiteral("First Name"));
+	QCOMPARE(m.usageCode, 7);
+	QCOMPARE(m.bin, QString::fromUtf8("Café bin"));
 }
 
-void TestMdbParser::too_small_file_returns_empty()
+void TestMdbParser::source_mob_is_neither_file_nor_master()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	QVERIFY(MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", mob32())).isEmpty()); // 32 < 64
+	BentoBuilder w;
+	// A source mob: PhysicalMedia → MDES (the import/tape source). It must not
+	// land in `files` (no media descriptor) nor in `masters` (it has media).
+	const quint32 src = w.addObject("MOBJ");
+	const quint32 mdes = w.addObject("MDES");
+	w.set(src, "OMFI:MOBJ:MobID", kToneFileMob);
+	w.setHandle(src, "OMFI:MOBJ:PhysicalMedia", mdes);
+	// A real file mob beside it, so the database isn't empty.
+	const quint32 file = w.addObject("MOBJ");
+	const quint32 pcma = w.addObject("PCMA");
+	w.set(file, "OMFI:MOBJ:MobID", kToneMasterMob);
+	w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", pcma);
+	w.setRational(pcma, "OMFI:MDFL:SampleRate", 48000, 1);
+	w.setU32(pcma, "OMFI:MDFL:Length", 48000);
+	w.setRational(file, "OMFI:CPNT:EditRate", 25, 1);
+	w.setU16(pcma, "OMFI:MDAU:BitsPerSample", 24);
+	w.setU16(pcma, "OMFI:MDAU:NumChannels", 2);
+
+	bool ok = false;
+	const MdbDatabase db = MdbParser::load(writeMdb(tmp.path() + "/msmMMOB.mdb", w.build()), &ok);
+	QVERIFY(ok);
+	QVERIFY(db.masters.isEmpty());
+	QCOMPARE(db.files.size(), 1);
+	const MdbFile &f = db.files[MobId::format(kToneMasterMob)];
+	QVERIFY(f.essenceComplete);
+	QVERIFY(f.essence.isAudio);
+	QCOMPARE(f.essence.sampleRate, 48000);
+	QCOMPARE(f.essence.channels, 2);
+	QCOMPARE(f.essence.bitDepth, QStringLiteral("24-bit"));
+	QCOMPARE(f.essence.durationFrames, qint64(25)); // 48000 samples × 25/48000
+	QCOMPARE(f.essence.timecodeBase, 25);
 }
 
-void TestMdbParser::wrong_member_count_is_not_a_record()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// One member written, three declared. The MOB still gets a map entry, but
-	// nothing before it may be read as this object's name.
-	QByteArray buf;
-	addRecord(buf, "Not A Record", mob32(), /*members=*/1, /*declaredCount=*/3);
-	buf.append(QByteArray(32, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QVERIFY2(records.first().clipName.isEmpty(),
-			 qPrintable("mismatched count accepted: " + records.first().clipName));
-}
-
-void TestMdbParser::handles_without_a_name_are_not_a_record()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// Handle-shaped bytes and a plausible count, but no NUL-terminated name in
-	// front of them — the run must not be promoted to a record.
-	QByteArray buf(48, '\0');
-	buf.append(handle(0x0100));
-	buf.append(char(1));
-	buf.append(char(0));
-	buf.append(handle(0x0200));
-	buf.append(mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QVERIFY(records.first().clipName.isEmpty());
-}
-
-void TestMdbParser::slash_and_z_prefixed_names_are_kept_verbatim()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	QByteArray buf;
-	addAttribute(buf, "zArchive_2020", "_ORG_BIN", 0x0300);
-	addRecord(buf, "63/5.new.01", mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QCOMPARE(records.first().clipName, QStringLiteral("63/5.new.01"));
-	QCOMPARE(records.first().bin, QStringLiteral("zArchive_2020"));
-}
-
-void TestMdbParser::a_stray_path_in_the_span_is_not_the_clip_name()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// A path sitting loose in the record's attribute span, keyed to nothing.
-	// The name comes from the header, so the path can't displace it — and with
-	// no _SRCFILE key it isn't the source path either.
-	QByteArray buf;
-	addToken(buf, "/Volumes/EDIT/scratch/bar.mxf");
-	addRecord(buf, "Real Clip Name", mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QCOMPARE(records.first().clipName, QStringLiteral("Real Clip Name"));
-	QVERIFY(records.first().sourceFilePath.isEmpty());
-}
-
-void TestMdbParser::utf8_twin_wins_over_macroman_twin()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// The verified on-disk layout: [MacRoman]\0[UTF-8]\0[_ORG_BIN].
-	// "Caf\x8e t\x91st" is MacRoman for "Café tëst"; raw escapes so
-	// source-file encoding can't drift what the bytes actually are.
-	QByteArray buf;
-	addAttribute(buf, QByteArray("Caf\xc3\xa9 t\xc3\xabst"), "_ORG_BIN", 0x0300,
-				 QByteArray("Caf\x8e t\x91st"));
-	addRecord(buf, "Accented Clip", mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QCOMPARE(records.first().bin, QString::fromUtf8("Caf\xc3\xa9 t\xc3\xabst"));
-}
-
-void TestMdbParser::macroman_only_value_yields_blank_not_mojibake()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// No UTF-8 twin — only the MacRoman copy sits before the key. Blank over
-	// garbled: the twin has letters and passed the old label heuristics before
-	// the replacement-character guard existed.
-	QByteArray buf;
-	addAttribute(buf, QByteArray("Caf\x8e t\x91st"), "_ORG_BIN", 0x0300);
-	addRecord(buf, "Accented Clip", mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QVERIFY2(records.first().bin.isEmpty(),
-			 qPrintable("MacRoman twin elected as bin: " + records.first().bin));
-}
-
-void TestMdbParser::multibyte_bin_name_survives_intact()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// "Проект Финал" as raw UTF-8 (hex-escaped so MSVC's source-charset
-	// handling can't garble it): 23 bytes on disk, 12 UTF-16 code units.
-	const QByteArray nameUtf8("\xD0\x9F\xD1\x80\xD0\xBE\xD0\xB5\xD0\xBA\xD1\x82 "
-							  "\xD0\xA4\xD0\xB8\xD0\xBD\xD0\xB0\xD0\xBB");
-	QCOMPARE(nameUtf8.size(), 23);
-
-	QByteArray buf;
-	addAttribute(buf, nameUtf8, "_ORG_BIN", 0x0300);
-	addRecord(buf, "Cyrillic Clip", mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(records.size(), 1);
-	QCOMPARE(records.first().bin, QString::fromUtf8(nameUtf8));
-}
+// MARK: - Strings
 
 void TestMdbParser::real_accented_bin_mdb_never_yields_mojibake()
 {
@@ -375,159 +268,66 @@ void TestMdbParser::real_accented_bin_mdb_never_yields_mojibake()
 	// 2026-07-20). The clip imported into that bin must resolve the UTF-8
 	// form, and no record anywhere in the file may carry a replacement
 	// character in any field.
-	const QString path = QStringLiteral(FIXTURES_DIR "/msmMMOB_macroman.mdb");
-	QVERIFY2(QFile::exists(path), qPrintable(path));
-
 	bool ok = false;
-	const auto records = MdbParser::parse(path, &ok);
+	const MdbDatabase db = MdbParser::load(fx("msmMMOB_macroman.mdb"), &ok);
 	QVERIFY(ok);
-	QVERIFY(!records.isEmpty());
+	QVERIFY(!db.masters.isEmpty());
 
 	const QString expectedBin = QString::fromUtf8("Caf\xc3\xa9 t\xc3\xabst");
 	bool sawAccentedBin = false;
 	const QChar fffd(QChar::ReplacementCharacter);
-	for (const MdbRecord &r : records)
+	for (const MdbMaster &m : db.masters)
 	{
-		if (r.bin == expectedBin)
+		if (m.bin == expectedBin)
 			sawAccentedBin = true;
-		QVERIFY2(!r.bin.contains(fffd), qPrintable("mojibake bin: " + r.bin));
-		QVERIFY2(!r.clipName.contains(fffd), qPrintable("mojibake clip: " + r.clipName));
-		QVERIFY2(!r.sourceFilePath.contains(fffd), qPrintable("mojibake path: " + r.sourceFilePath));
+		QVERIFY2(!m.bin.contains(fffd), qPrintable("mojibake bin: " + m.bin));
+		QVERIFY2(!m.clipName.contains(fffd), qPrintable("mojibake clip: " + m.clipName));
+		QVERIFY2(!m.sourceFilePath.contains(fffd), qPrintable("mojibake path: " + m.sourceFilePath));
 	}
 	QVERIFY2(sawAccentedBin, "no record resolved the UTF-8 'Café tëst' bin name");
 }
 
-void TestMdbParser::file_mobs_inherit_the_master_record()
+// Precompute records store their name ONCE, in MacRoman (media records store
+// it twice, MacRoman then UTF-8). The old parser rejected the MacRoman copy
+// and six renders came out blank; AvidText::decode turns A7 into ß.
+void TestMdbParser::macroman_only_precompute_names_decode()
 {
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// The file MOB sits inside the master's record and carries no header. The
-	// scanner looks it up by MediaFile::mobId, so it must resolve to the same
-	// attributes as the master.
-	QByteArray buf;
-	buf.append(mob32('\x01')); // file MOB, no header of its own
-	addAttribute(buf, "Rushes", "_ORG_BIN", 0x0300);
-	addRecord(buf, "Master Clip", mob32('\x02'));
-	buf.append(QByteArray(16, '\0'));
-
-	const auto map = MdbParser::buildMobMap(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(map.size(), 2);
-	const MdbRecord fileMob = map.value(MobId::format(mob32('\x01')));
-	QCOMPARE(fileMob.clipName, QStringLiteral("Master Clip"));
-	QCOMPARE(fileMob.bin, QStringLiteral("Rushes"));
-	// Each entry still reports its own identity, not the master's.
-	QCOMPARE(fileMob.mobIdHex, MobId::format(mob32('\x01')));
-}
-
-void TestMdbParser::every_mob_keeps_a_map_entry()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// A MOB far past the last record belongs to no span. It still needs an
-	// entry: an absent key reads as "not in the database", which is what makes
-	// the scanner call a file unreferenced.
-	QByteArray buf;
-	addRecord(buf, "Master Clip", mob32('\x02'));
-	buf.append(QByteArray(64, '\0'));
-	buf.append(mob32('\x03'));
-	buf.append(QByteArray(16, '\0'));
-
-	const auto map = MdbParser::buildMobMap(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(map.size(), 2);
-	QVERIFY(map.contains(MobId::format(mob32('\x03'))));
-	QVERIFY(map.value(MobId::format(mob32('\x03'))).clipName.isEmpty());
-}
-
-void TestMdbParser::placeholder_mob_is_not_a_record()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// Avid's constant placeholder: 508 byte-identical copies in one real
-	// database, 272 in another, 38 in a third, and present in no MXF.
-	const QByteArray placeholder = QByteArray::fromHex(
-		"060a2b340101010001010f0013000000bacc8a260647d528e5cd3f5b5f40443f");
-	QCOMPARE(placeholder.size(), MobId::kRawSize);
-
-	QByteArray buf;
-	buf.append(placeholder);
-	buf.append(QByteArray(16, '\0'));
-	addRecord(buf, "Master Clip", mob32());
-	buf.append(QByteArray(16, '\0'));
-
-	const auto map = MdbParser::buildMobMap(writeMdb(tmp.path() + "/msmMMOB.mdb", buf));
-
-	QCOMPARE(map.size(), 1);
-	QVERIFY(map.contains(MobId::format(mob32())));
-	QVERIFY(!map.contains(MobId::format(placeholder)));
-}
-
-void TestMdbParser::real_fixture_mdbs_pass_the_validity_gate()
-{
-	// Two genuine MDBs with different preludes: one opens straight at
-	// "_USER", the other with a "block 1729" prefix before it. The gate
-	// must scan for the fingerprint, not demand it at byte 0.
-	const char *kFixtures[] = {FIXTURES_DIR "/msmMMOB.mdb", FIXTURES_DIR "/msmMMOB_macroman.mdb"};
-	for (const char *path : kFixtures)
-	{
-		QVERIFY2(QFile::exists(QLatin1String(path)), path);
-		bool ok = false;
-		const auto records = MdbParser::parse(QLatin1String(path), &ok);
-		QVERIFY2(ok, path);
-		QVERIFY2(!records.isEmpty(), path);
-	}
-}
-
-void TestMdbParser::garbage_named_mdb_reports_not_ok()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// None of these contain the property-dictionary strings or an Avid MOB
-	// signature; each must fail the gate instead of vouching for a folder.
-	const struct
-	{
-		const char *label;
-		QByteArray bytes;
-	} kGarbage[] = {
-		{"all_zeros", QByteArray(4096, '\0')},
-		{"repeating_junk", QByteArray(4096, '\xAB')},
-		{"fake_jpeg", QByteArray::fromHex("ffd8ffe000104a464946") + QByteArray(4096, '\x5A')},
-	};
-
-	for (const auto &g : kGarbage)
-	{
-		bool ok = true;
-		const auto records = MdbParser::parse(
-			writeMdb(tmp.path() + QStringLiteral("/%1.mdb").arg(QLatin1String(g.label)), g.bytes),
-			&ok);
-		QVERIFY2(!ok, g.label);
-		QVERIFY2(records.isEmpty(), g.label);
-	}
-}
-
-void TestMdbParser::mob_only_buffer_still_passes_the_gate()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-
-	// No property-dictionary fingerprint, but a real MOB signature: the
-	// parser can evidently read this file, so the gate must let it through
-	// (this is also what keeps every synthetic buffer in this suite valid).
-	QByteArray buf;
-	addRecord(buf, "Gate Clip", mob32());
-	buf.append(QByteArray(48, '\0'));
-
 	bool ok = false;
-	const auto records = MdbParser::parse(writeMdb(tmp.path() + "/msmMMOB.mdb", buf), &ok);
+	const MdbDatabase db = MdbParser::load(fx("corpus_headers/msmMMOB.mdb"), &ok);
 	QVERIFY(ok);
-	QCOMPARE(records.size(), 1);
-	QCOMPARE(records.first().clipName, QStringLiteral("Gate Clip"));
+	const QVector<PmrEntry> pmr = PmrParser::parse(fx("corpus_headers/msmFMID.pmr"));
+	QCOMPARE(pmr.size(), 435);
+
+	int renders = 0, withEszett = 0;
+	QSet<QString> names;
+	for (const PmrEntry &e : pmr)
+	{
+		QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
+		QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
+		const MdbFile &f = db.files[e.mobId];
+		const MdbMaster &m = db.masters[e.masterMobId];
+		if (f.usageCode == 9)
+		{
+			QCOMPARE(m.usageCode, 1);
+			++renders;
+			QVERIFY2(!m.clipName.isEmpty(), qPrintable(e.fileName));
+			QVERIFY2(!m.clipName.contains(QChar(QChar::ReplacementCharacter)), qPrintable(m.clipName));
+			if (m.clipName.contains(QChar(0xDF)))
+				++withEszett;
+			names.insert(m.clipName);
+		}
+		else
+		{
+			QCOMPARE(f.usageCode, 0);
+			QCOMPARE(m.usageCode, 7);
+		}
+	}
+	QCOMPARE(renders, 15);
+	QVERIFY2(withEszett >= 6, qPrintable(QString::number(withEszett)));
+	QVERIFY(names.contains(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,1.85_Mask+2")));
 }
+
+// MARK: - Joins
 
 void TestMdbParser::mdb_join_resolves_real_mxf_files()
 {
@@ -538,10 +338,9 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 	// go through MobId::toPmrForm first (0/795 match without it, 795/795 with).
 	// That conversion is the thing this test exists to pin.
 	bool ok = false;
-	const auto map = MdbParser::buildMobMap(
-		QStringLiteral(FIXTURES_DIR "/corpus_headers/msmMMOB_round3.mdb"), &ok);
+	const MdbDatabase db = MdbParser::load(fx("corpus_headers/msmMMOB_round3.mdb"), &ok);
 	QVERIFY(ok);
-	QVERIFY(!map.isEmpty());
+	QVERIFY(!db.masters.isEmpty());
 
 	// One clip's video and audio relatives, twice over. All four were imported
 	// into the same bin, so all four records must agree on it.
@@ -559,7 +358,7 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 
 	for (const char *file : kFiles)
 	{
-		const QString path = QStringLiteral(FIXTURES_DIR "/corpus_headers/") + QLatin1String(file);
+		const QString path = fx("corpus_headers/") + QLatin1String(file);
 		QVERIFY2(QFile::exists(path), qPrintable(path));
 
 		const MxfMetadata meta = MxfParser::parseHeader(path);
@@ -568,20 +367,25 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 
 		// An MXF writes a MobID's middle fields little-endian and the MDB
 		// big-endian; without this conversion every lookup misses.
-		QVERIFY2(!map.contains(meta.umid), "raw MXF UMID must not key the MDB");
+		QVERIFY2(!db.masters.contains(meta.umid), "raw MXF UMID must not key the MDB");
 		const QString key = MobId::toPmrForm(meta.umid);
-		QVERIFY2(map.contains(key), qPrintable(QLatin1String(file) + QStringLiteral(" -> ") + key));
+		QVERIFY2(db.masters.contains(key), qPrintable(QLatin1String(file) + QStringLiteral(" -> ") + key));
 
-		const MdbRecord &rec = map[key];
+		const MdbMaster &rec = db.masters[key];
 
 		// Ground truth: the name the file carries in its own MaterialPackage.
 		QCOMPARE(rec.clipName, meta.clipName);
 		// And the record's source path must be the file this clip was imported
 		// from — which ties the record to the right clip a second way, since
-		// Avid named the import after the clip.
+		// Avid named the import after the clip. The header's own TaggedValues
+		// must agree on path and container.
 		QCOMPARE(rec.sourceFileName, meta.clipName + QStringLiteral(".mov"));
+		QCOMPARE(rec.sourceFilePath, meta.sourceFilePath);
+		QCOMPARE(rec.sourceContainer, QStringLiteral("QTFF"));
+		QCOMPARE(rec.sourceContainer, meta.sourceContainer);
 		QCOMPARE(rec.bin, expectedBin);
 		QVERIFY2(rec.isImported, file);
+		QVERIFY2(meta.hasImportSetting, file);
 
 		// The bin is named after the format its clips are in, so the raster
 		// the MXF reports has to be the one the bin claims.
@@ -591,6 +395,108 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 			QVERIFY2(rec.bin.contains(QStringLiteral("1080")), qPrintable(rec.bin));
 		}
 	}
+}
+
+// The whole point of the database path: for every file the PMR names, the
+// MDB describes the file mob AND the master mob, and every technical field
+// the database yields equals the one the file's own header yields. Both
+// database generations, 795 files. Codec label byte-identical (which covers
+// the AUID reorder and the DIDResolutionID fallback), resolution (which
+// covers the layout-3 half-height rule), fps label, durations, bits,
+// channels, sample rate, kind, clip name.
+void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
+{
+	struct Gen
+	{
+		const char *pmr;
+		const char *mdb;
+		int pairs;
+	};
+	const Gen gens[] = {
+		{"corpus_headers/msmFMID.pmr", "corpus_headers/msmMMOB.mdb", 435},
+		{"corpus_headers/msmFMID_round3.pmr", "corpus_headers/msmMMOB_round3.mdb", 360},
+	};
+	int compared = 0, incomplete = 0;
+	for (const Gen &g : gens)
+	{
+		bool ok = false;
+		const MdbDatabase db = MdbParser::load(fx(g.mdb), &ok);
+		QVERIFY2(ok, g.mdb);
+		const QVector<PmrEntry> pmr = PmrParser::parse(fx(g.pmr), &ok);
+		QVERIFY2(ok, g.pmr);
+		QCOMPARE(pmr.size(), g.pairs);
+
+		for (const PmrEntry &e : pmr)
+		{
+			const QString path = fx("corpus_headers/") + e.fileName;
+			QVERIFY2(QFile::exists(path), qPrintable(path));
+			QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
+			QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
+			const MdbFile &f = db.files[e.mobId];
+			const MdbMaster &m = db.masters[e.masterMobId];
+
+			const MxfMetadata hdr = MxfParser::parseHeader(path);
+			QVERIFY2(hdr.valid, qPrintable(e.fileName));
+			QCOMPARE(m.clipName, hdr.clipName);
+			QCOMPARE(f.essence.isAudio, hdr.isAudio);
+			QCOMPARE(f.usageCode == 9 && m.usageCode == 1, hdr.isPrecompute);
+
+			if (!f.essenceComplete)
+			{
+				++incomplete;
+				continue; // the MPGA case — asserted separately
+			}
+			const MxfMetadata &db_ = f.essence;
+			const char *fn = e.fileName.toUtf8().constData();
+			QVERIFY2(db_.valid, fn);
+			QVERIFY2(db_.essenceContainerLabel == hdr.essenceContainerLabel,
+					 qPrintable(e.fileName + QStringLiteral(": label ") + db_.essenceContainerLabel.toHex() +
+								QStringLiteral(" vs ") + hdr.essenceContainerLabel.toHex()));
+			QVERIFY2(db_.codec == hdr.codec,
+					 qPrintable(e.fileName + QStringLiteral(": codec ") + db_.codec + QStringLiteral(" vs ") + hdr.codec));
+			QVERIFY2(db_.resolution == hdr.resolution,
+					 qPrintable(e.fileName + QStringLiteral(": res ") + db_.resolution + QStringLiteral(" vs ") +
+								hdr.resolution));
+			QVERIFY2(db_.fps == hdr.fps,
+					 qPrintable(e.fileName + QStringLiteral(": fps ") + db_.fps + QStringLiteral(" vs ") + hdr.fps));
+			QVERIFY2(db_.bitDepth == hdr.bitDepth,
+					 qPrintable(e.fileName + QStringLiteral(": bits ") + db_.bitDepth + QStringLiteral(" vs ") +
+								hdr.bitDepth));
+			QVERIFY2(db_.sampleRate == hdr.sampleRate, fn);
+			QVERIFY2(db_.channels == hdr.channels, fn);
+			QVERIFY2(db_.durationFrames == hdr.durationFrames,
+					 qPrintable(e.fileName + QStringLiteral(": dur ") + QString::number(db_.durationFrames) +
+								QStringLiteral(" vs ") + QString::number(hdr.durationFrames)));
+			QVERIFY2(db_.timecodeBase == hdr.timecodeBase, fn);
+			QVERIFY2(db_.dropFrame == hdr.dropFrame, fn);
+			++compared;
+		}
+	}
+	QCOMPARE(compared + incomplete, 795);
+	QCOMPARE(incomplete, 1);
+}
+
+// MPEG audio carries no codec label in the MDB (only MPGA:BitRate etc.), so
+// the database cannot name its codec and the scanner must read the header.
+void TestMdbParser::mpga_audio_is_not_essence_complete()
+{
+	bool ok = false;
+	const MdbDatabase db = MdbParser::load(fx("corpus_headers/msmMMOB.mdb"), &ok);
+	QVERIFY(ok);
+	const QVector<PmrEntry> pmr = PmrParser::parse(fx("corpus_headers/msmFMID.pmr"));
+	QString mob;
+	for (const PmrEntry &e : pmr)
+		if (e.fileName == QLatin1String("A01.E68C35B3_2C34B2C34B61AA.mxf"))
+			mob = e.mobId;
+	QVERIFY(!mob.isEmpty());
+	QVERIFY(db.files.contains(mob));
+	const MdbFile &f = db.files[mob];
+	QVERIFY(f.essence.isAudio);
+	QVERIFY(!f.essenceComplete);
+
+	const MxfMetadata hdr = MxfParser::parseHeader(fx("corpus_headers/A01.E68C35B3_2C34B2C34B61AA.mxf"));
+	QVERIFY(hdr.valid);
+	QVERIFY2(hdr.codec.contains(QStringLiteral("MP2")), qPrintable(hdr.codec));
 }
 
 QTEST_APPLESS_MAIN(TestMdbParser)

@@ -1,63 +1,79 @@
 #pragma once
 
-#include <QString>
+#include "mxfparser.h"
+
 #include <QHash>
-#include <QVector>
-#include <QByteArray>
+#include <QString>
 
-// MARK: - MdbRecord
+// MARK: - Records
 
-/// One record per MOB, built from a parsed `msmMMOB.mdb`. The MDB is
-/// Avid's per-folder bookkeeping for the MXF files in that folder.
-/// We extract what we need then feed it into MediaFile downstream.
-struct MdbRecord
+/// A master clip as `msmMMOB.mdb` describes it: the clip-level facts that
+/// every V01/A01/A02 relative shares. Keyed by the master MOB — the same
+/// id the PMR's MASTER record carries and the MXF's MaterialPackage UID
+/// (after MobId::toPmrForm) resolves to.
+struct MdbMaster
 {
-	QByteArray mobId;		 ///< 32-byte raw MOB ID.
-	QString mobIdHex;		 ///< Same MOB in canonical hex form (see mobid.h).
-	QString clipName;		 ///< The record's own name, read from its header.
-							 ///< Exact: 360/360 against MaterialPackage names on
-							 ///< a real folder. Ranked below the MaterialPackage
-							 ///< name — see MediaFile::ClipNameSource.
-	QString bin;			 ///< Original import bin name (_ORG_BIN).
-							 ///< Mapped to MediaFile::originalBin downstream.
-	QString sourceFilePath;	 ///< Path Avid recorded when the media was first imported,
-							 ///< e.g. '/Users/.../Desktop/my amazing clip 88.mov'.
+	QString mobIdHex;
+	QString clipName;		 ///< OMFI:CPNT:Name — what Avid displays. Equal to the
+							 ///< MXF MaterialPackage name on 360/360 + 795/795 files.
+	QString bin;			 ///< _ORG_BIN → the bin's UTF-8 name. Exists nowhere else.
+	QString sourceFilePath;	 ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
 	QString sourceFileName;	 ///< Basename of sourceFilePath.
-	QString sourceContainer; ///< 'QTFF', 'MXF', 'MOV', etc.
-	bool isImported = false;
+	QString sourceContainer; ///< _USER/Video — "QTFF" for a QuickTime import.
+	bool isImported = false; ///< An _IMPORTSETTING attribute exists.
+	int usageCode = -1;		 ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
+};
+
+/// One essence file as the MDB describes it. Keyed by the file MOB — the
+/// PMR's FILE record. `essence` is filled the way MxfParser fills it from
+/// a header, then run through the same MxfParser::finalise, so a row built
+/// from the database shows the same codec / resolution / fps / duration /
+/// bit depth the header path would. `essenceComplete` is the scanner's
+/// permission to skip the header read — false when the database cannot
+/// name the codec (MPEG audio has no label in the MDB) or the descriptor
+/// isn't a media descriptor.
+struct MdbFile
+{
+	QString mobIdHex;
+	int usageCode = -1; ///< 0 = media, 9 = precompute.
+	MxfMetadata essence;
+	bool essenceComplete = false;
+};
+
+/// Everything one msmMMOB.mdb knows, split the way the scanner consumes it:
+/// `files` is looked up once per row during the folder walk and dropped;
+/// `masters` is kept for the header pass's UMID re-join. Both are keyed by
+/// MediaMuster's dotted MOB hex (MobId::format).
+struct MdbDatabase
+{
+	QHash<QString, MdbMaster> masters;
+	QHash<QString, MdbFile> files;
+	[[nodiscard]] bool isEmpty() const { return masters.isEmpty() && files.isEmpty(); }
 };
 
 // MARK: - MdbParser
 
-/// Reads `msmMMOB.mdb`, the per-folder Avid media database.
+/// Reads `msmMMOB.mdb`, the per-folder Avid clip database — an OMF
+/// Interchange object store in a Bento container (see BentoFile). Walks the
+/// table of contents, not the bytes: every value is reached by its property
+/// name, resolved from the dictionary the file itself carries.
 ///
-/// Not Bento (that is `.avb`) and not AAF: Avid's own flat object stream,
-/// where each named object ends with a fixed header closed by its 32-byte
-/// MOB ID, and an object's attributes are written before it. The framing is
-/// self-checking — a member count that must match its handles and land exactly
-/// on the MOB — so records are recognised outright, never by proximity.
-/// See `mdbparser.cpp` for the byte layout and how it was verified.
+/// What it reads and how it was verified (360 live files + 795 archived
+/// headers, MXF as ground truth — see the decode notes in mdbparser.cpp):
+/// clip name, bin, source path/container, import flag, usage codes; and per
+/// file mob the descriptor class (audio/video), codec label (two spellings),
+/// stored dims + layout, sample rate, length, bits, channels, drop frame.
+///
+/// Two facts about the database the caller must respect: it holds NO
+/// filenames (the PMR is the filename→MOB index; this is MOB→facts), and
+/// it is stale-inclusive (records for media deleted long ago stay in it),
+/// so nothing here says what exists on disk.
 class MdbParser
 {
 public:
-	/// Parse the MDB at `mdbFilePath`. Returns an empty vector on
-	/// any failure (missing, truncated, unreadable).
-	///
-	/// `ok` (optional) is false when the file couldn't be opened, is too
-	/// small to be a real MDB, or isn't recognisably one — no Avid
-	/// property-dictionary fingerprint near the front AND no MOB ID
-	/// anywhere (see the validity gate in the .cpp). Note the weaker
-	/// guarantee than the PMR's: the MDB is mined by marker scanning, so a
-	/// damaged-but-recognisable file may still "parse" to few or zero
-	/// records with ok=true. ok=false is proof of failure; ok=true is not
-	/// proof of integrity.
-	[[nodiscard]] static QVector<MdbRecord> parse(const QString &mdbFilePath, bool *ok = nullptr);
-
-	/// MOB-hex-keyed lookup table, for joining against PMR entries
-	/// and MediaFile rows during the scan.
-	using RecordMap = QHash<QString, MdbRecord>;
-
-	/// Build the lookup map directly. Equivalent to calling `parse`
-	/// and indexing the result by `mobIdHex`. `ok` as in parse().
-	[[nodiscard]] static RecordMap buildMobMap(const QString &mdbFilePath, bool *ok = nullptr);
+	/// Load and index the database. `ok` (optional) is false when the file
+	/// can't be opened or isn't a Bento container whose label and table of
+	/// contents agree — a stronger gate than the old marker scan. ok=true with
+	/// empty maps is a valid, empty database. Never throws.
+	[[nodiscard]] static MdbDatabase load(const QString &mdbFilePath, bool *ok = nullptr);
 };
