@@ -6,31 +6,46 @@
 
 #include <QFile>
 #include <QDebug>
+#include <QHash>
 #include <QtEndian>
 
 // `msmFMID.pmr` is the Persistent Media Record Avid writes into every
-// `Avid MediaFiles/MXF/<n>/` folder. It's a flat filename-to-MOB index
-// and the fastest way to map an essence file to its source/master MOBs
-// without walking the MXF headers. All integers are little-endian:
-//
-// Avid calls the records below the "MBCS pmr records". A second set
-// (VERSION_UNICODE / numUnicodeMobs) follows them in every file surveyed
-// and is NOT read here — the MBCS set carries the same mapping, and
-// AvidText handles the encoding.
+// `Avid MediaFiles/MXF/<n>/` folder: a flat filename-to-MOB index, and the
+// ONLY place an essence file's NAME is tied to its MOBs (msmMMOB.mdb holds
+// no filenames). All integers are little-endian. Layout verified to the
+// last byte on four real PMRs (0 unaccounted bytes each), and matching
+// MDVx's published pmrtool.cpp field for field:
 //
 //   Header (12 bytes) — Avid's own field names, from AMSM::LoadPMR:
 //     uint32  MAGIC   (= 0x000007A9)
-//     uint32  VERSION (= 8)
-//     uint32  numMobs
+//     uint32  VERSION (= 8; 2 is an OMF-era layout with 8-byte MOBs — refused)
+//     uint32  numMobs (pair count)
 //
-//   Body (pairCount × 2 records, alternating FILE then MASTER):
-//     FILE: 32-byte MOB | uint16 nameLen | name (UTF-8)
-//                       | uint16 projLen | project (UTF-8)
-//     MASTER: 32-byte MOB | 4 bytes (flags/refs, purpose unknown)
+//   MBCS record set (numMobs × FILE then MASTER):
+//     FILE:   32-byte MOB | uint16 nameLen | name (MacRoman)
+//                         | uint16 projLen | project (MacRoman)
+//     MASTER: 32-byte MOB | uint32 = the essence file's modification time,
+//                           Unix seconds. Equal to st_mtime on 360/360 real
+//                           files; per FILE, not per clip (relatives of one
+//                           clip differ by a second).
 //
-// A MASTER record's MOB is the master clip's Master MOB. Relative
-// tracks (V01/A01/A02 etc.) all share it, which is how we group
-// relatives in the rebalancer and bin filter.
+//   Unicode record set (every MC 2025 file; older files stop at the MBCS set):
+//     uint32  VERSION_UNICODE (= 16)
+//     uint32  numUnicodeMobs  (== numMobs)
+//     the same records again — the FILE name now UTF-8, prefixed by two NUL
+//     bytes that nameLen counts; MOBs, project (still MacRoman) and trailer
+//     identical to the MBCS set (verified 360/360).
+//
+// Filenames are taken from the Unicode set when it is present and pairs
+// up: a name Avid wrote with a character MacRoman cannot hold (ę) survives
+// only there. The project is MacRoman everywhere Avid stores it, including
+// the MDB — it writes '?' for what MacRoman can't hold, and that is what
+// the table shows.
+//
+// A MASTER record's MOB is the master clip's Master MOB. Relative tracks
+// (V01/A01/A02 etc.) all share it, which is how we group relatives in the
+// rebalancer and bin filter. A FILE record's MOB is the essence file's own
+// (the MXF's file SourcePackage UID, after MobId::toPmrForm).
 
 namespace
 {
@@ -41,6 +56,8 @@ namespace
 	constexpr qint64 kVersionOffset = 4;
 	constexpr qint64 kPairCountOffset = 8;
 	constexpr quint32 kPmrVersion = 8;
+	/// Marks the second record set (UTF-8 filenames), when present.
+	constexpr quint32 kPmrVersionUnicode = 16;
 	constexpr qint64 kMobIdSize = MobId::kRawSize;
 	constexpr qint64 kMasterTrailerSize = 4;
 	constexpr quint16 kMaxStringLen = 1024;
@@ -74,6 +91,75 @@ namespace
 			++begin;
 		const char *terminator = std::find(begin, end, '\0');
 		return AvidText::decode(begin, terminator - begin);
+	}
+
+	// MARK: - Unicode record set
+
+	/// The second record set, when the file has one: the same grammar as the
+	/// MBCS set, FILE names in UTF-8 behind two NUL bytes. Each entry's
+	/// fileName is replaced by FILE-MOB match. Any shape problem — wrong
+	/// count, a record without the MOB prefix, a length past the end — stops
+	/// the walk and leaves the MBCS names in place, which decode correctly for
+	/// everything MacRoman can hold; `ok` is not affected either way.
+	void readUnicodeNames(const QByteArray &data, qint64 pos, quint32 pairCount, QVector<PmrEntry> &entries,
+						  const QString &pmrFilePath)
+	{
+		if (pos + 8 > data.size() || readLE<quint32>(data, pos) != kPmrVersionUnicode)
+			return;
+		const quint32 count = readLE<quint32>(data, pos + 4);
+		pos += 8;
+		if (count != pairCount)
+		{
+			qCDebug(lcPmr) << "unicode record set claims" << count << "pairs, MBCS set has" << pairCount
+						   << "— ignoring it" << pmrFilePath;
+			return;
+		}
+
+		QHash<QString, int> byFileMob;
+		byFileMob.reserve(entries.size());
+		for (int i = 0; i < entries.size(); ++i)
+			byFileMob.insert(entries[i].mobId, i);
+
+		int replaced = 0;
+		const quint32 totalRecords = count * 2;
+		for (quint32 i = 0; i < totalRecords; ++i)
+		{
+			if (pos + kMobIdSize + 2 > data.size())
+				break;
+			const auto *rec = reinterpret_cast<const unsigned char *>(data.constData()) + pos;
+			if (rec[0] != 0x06 || rec[1] != 0x0a || rec[2] != 0x2b || rec[3] != 0x34)
+				break;
+			const QString mobHex = MobId::format(rec);
+			pos += kMobIdSize;
+
+			if ((i % 2) == 0)
+			{
+				const quint16 nameLen = readLE<quint16>(data, pos);
+				pos += 2;
+				if (nameLen == 0 || nameLen >= kMaxStringLen || pos + nameLen + 2 > data.size())
+					break;
+				const QString name = readString(data, pos, nameLen); // skips the NUL prefix
+				pos += nameLen;
+				const quint16 projLen = readLE<quint16>(data, pos);
+				pos += 2;
+				if (projLen >= kMaxStringLen || pos + projLen > data.size())
+					break;
+				pos += projLen;
+
+				const auto it = byFileMob.constFind(mobHex);
+				if (it != byFileMob.constEnd() && !name.isEmpty() && entries[it.value()].fileName != name)
+				{
+					entries[it.value()].fileName = name;
+					++replaced;
+				}
+			}
+			else
+			{
+				pos += kMasterTrailerSize;
+			}
+		}
+		if (replaced > 0)
+			qCDebug(lcPmr) << replaced << "filename(s) taken from the unicode record set" << pmrFilePath;
 	}
 } // namespace
 
@@ -234,12 +320,15 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 		}
 		else
 		{
-			// MASTER record: attach the master clip MOB to the last FILE
-			// record, then drop the index to prevent double-attach.
+			// MASTER record: attach the master clip MOB and the file's modified
+			// time to the last FILE record, then drop the index to prevent
+			// double-attach.
+			const quint32 modified = readLE<quint32>(data, pos);
 			pos += kMasterTrailerSize;
 			if (lastFileIdx >= 0)
 			{
 				entries[lastFileIdx].masterMobId = mobHex;
+				entries[lastFileIdx].fileModifiedSecs = modified;
 				lastFileIdx = -1;
 			}
 		}
@@ -248,6 +337,8 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 	if (truncated)
 		qCWarning(lcPmr) << "body truncated after" << entries.size() << "entries (header claims"
 						 << pairCount << "pairs)" << pmrFilePath;
+	else
+		readUnicodeNames(data, pos, pairCount, entries, pmrFilePath);
 
 	if (ok)
 		*ok = !truncated;

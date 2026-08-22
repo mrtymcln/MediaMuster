@@ -50,10 +50,33 @@ namespace
 		return b;
 	}
 
-	// MASTER record: 32-byte MOB | 4 trailer bytes.
-	QByteArray masterRecord(const QByteArray &mob)
+	// MASTER record: 32-byte MOB | u32 trailer (the file's mtime, Unix seconds).
+	QByteArray masterRecord(const QByteArray &mob, quint32 trailer = 0)
 	{
-		return mob + QByteArray(4, '\0');
+		QByteArray b = mob;
+		u32le(b, trailer);
+		return b;
+	}
+
+	// The Unicode record set MC 2025 appends: u32 16 | u32 count | the pairs
+	// again, FILE names as UTF-8 behind two NUL bytes that nameLen counts.
+	QByteArray unicodeHeader(quint32 pairCount)
+	{
+		QByteArray b;
+		u32le(b, 16);
+		u32le(b, pairCount);
+		return b;
+	}
+	QByteArray unicodeFileRecord(const QByteArray &mob, const QByteArray &utf8Name, const QByteArray &project)
+	{
+		QByteArray b = mob;
+		u16le(b, quint16(utf8Name.size() + 2));
+		b.append(char(0));
+		b.append(char(0));
+		b.append(utf8Name);
+		u16le(b, quint16(project.size()));
+		b.append(project);
+		return b;
 	}
 
 	QByteArray fileMob()
@@ -122,6 +145,15 @@ private slots:
 	// 2026-07-30). Valid UTF-8 must still decode as UTF-8, so a future
 	// Avid that writes UTF-8 keeps working.
 	void macroman_project_names_decode_correctly();
+
+	// The second record set (VERSION_UNICODE = 16) carries the filenames in
+	// UTF-8 — the only place a character MacRoman cannot hold survives. It
+	// replaces names by FILE-MOB match; a malformed set is ignored.
+	void unicode_section_names_take_precedence();
+	void malformed_unicode_section_keeps_mbcs_names();
+	// The 4 bytes after a MASTER MOB are the essence file's mtime.
+	void trailer_is_the_file_modified_time();
+	void real_fixture_pmrs_parse_with_unicode_names();
 };
 
 void TestPmrParser::parses_one_file_comp_pair()
@@ -323,6 +355,112 @@ void TestPmrParser::wrong_magic_is_refused()
 	const QVector<PmrEntry> entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok);
 	QVERIFY2(entries.isEmpty(), "a file with the wrong magic must yield nothing");
 	QVERIFY2(!ok, "and must report failure so the folder degrades to 'No database'");
+}
+
+void TestPmrParser::unicode_section_names_take_precedence()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	// Avid writes '?' where MacRoman has no character (ę); the UTF-8 set has it.
+	const QByteArray macName("zT?t_clip.mxf");
+	const QByteArray utf8Name("zT\xc4\x99t_clip.mxf");
+	QByteArray b = pmrHeader(1) + fileRecord(fileMob(), macName, "proj") + masterRecord(masterMob(), 7);
+	b += unicodeHeader(1) + unicodeFileRecord(fileMob(), utf8Name, "proj") + masterRecord(masterMob(), 7);
+
+	bool ok = false;
+	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", b), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 1);
+	QCOMPARE(entries.first().fileName, QString::fromUtf8("zT\xc4\x99t_clip.mxf"));
+	QCOMPARE(entries.first().project, QStringLiteral("proj"));
+	QCOMPARE(entries.first().mobId, MobId::format(fileMob()));
+	QCOMPARE(entries.first().masterMobId, MobId::format(masterMob()));
+	QCOMPARE(entries.first().fileModifiedSecs, 7u);
+}
+
+void TestPmrParser::malformed_unicode_section_keeps_mbcs_names()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QByteArray mbcs = pmrHeader(1) + fileRecord(fileMob(), "mbcs.mxf", "proj") + masterRecord(masterMob());
+
+	// Count disagrees with the MBCS set: ignored wholesale.
+	QByteArray wrongCount = mbcs + unicodeHeader(2) + unicodeFileRecord(fileMob(), "utf8.mxf", "proj") +
+							masterRecord(masterMob());
+	bool ok = false;
+	auto entries = PmrParser::parse(writePmr(tmp.path() + "/a.pmr", wrongCount), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 1);
+	QCOMPARE(entries.first().fileName, QStringLiteral("mbcs.mxf"));
+
+	// A record without the MOB prefix: the walk stops, MBCS name kept.
+	QByteArray badPrefix = mbcs + unicodeHeader(1);
+	badPrefix += QByteArray(32, '\x11');
+	badPrefix += QByteArray(8, '\0');
+	entries = PmrParser::parse(writePmr(tmp.path() + "/b.pmr", badPrefix), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.first().fileName, QStringLiteral("mbcs.mxf"));
+
+	// A FILE MOB the MBCS set doesn't know: nothing to replace, nothing breaks.
+	QByteArray otherMob = fileMob();
+	otherMob[20] = '\x5a';
+	QByteArray unknownMob = mbcs + unicodeHeader(1) + unicodeFileRecord(otherMob, "utf8.mxf", "proj") +
+							masterRecord(masterMob());
+	entries = PmrParser::parse(writePmr(tmp.path() + "/c.pmr", unknownMob), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.first().fileName, QStringLiteral("mbcs.mxf"));
+
+	// No second set at all (older files): the MBCS names are the names.
+	entries = PmrParser::parse(writePmr(tmp.path() + "/d.pmr", mbcs), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.first().fileName, QStringLiteral("mbcs.mxf"));
+}
+
+void TestPmrParser::trailer_is_the_file_modified_time()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QByteArray b = pmrHeader(1) + fileRecord(fileMob(), "clip.mxf", "proj") + masterRecord(masterMob(), 1778755394u);
+	bool ok = false;
+	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", b), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 1);
+	QCOMPARE(entries.first().fileModifiedSecs, 1778755394u);
+}
+
+void TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
+{
+	bool ok = false;
+	// The one-pair fixture: TONE file, trailer = its mtime when captured.
+	auto tone = PmrParser::parse(QStringLiteral(FIXTURES_DIR "/msmFMID.pmr"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(tone.size(), 1);
+	QCOMPARE(tone.first().fileName, QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
+	QCOMPARE(tone.first().project, QStringLiteral("block 1729"));
+	QCOMPARE(tone.first().fileModifiedSecs, 1778755394u);
+
+	// The corpus PMRs: every pair parses, every entry has both MOBs and a
+	// trailer, and the ß filenames arrive as ß (from the UTF-8 set).
+	struct Gen { const char *path; int pairs; };
+	const Gen gens[] = {{FIXTURES_DIR "/corpus_headers/msmFMID.pmr", 435},
+						{FIXTURES_DIR "/corpus_headers/msmFMID_round3.pmr", 360}};
+	for (const Gen &g : gens)
+	{
+		const auto entries = PmrParser::parse(QLatin1String(g.path), &ok);
+		QVERIFY2(ok, g.path);
+		QCOMPARE(entries.size(), g.pairs);
+		int eszett = 0;
+		for (const PmrEntry &e : entries)
+		{
+			QVERIFY2(!e.mobId.isEmpty() && !e.masterMobId.isEmpty(), qPrintable(e.fileName));
+			QVERIFY2(e.fileModifiedSecs > 1'700'000'000u, qPrintable(e.fileName));
+			QVERIFY2(!e.fileName.contains(QChar(QChar::ReplacementCharacter)), qPrintable(e.fileName));
+			if (e.fileName.contains(QChar(0xDF)))
+				++eszett;
+		}
+		if (g.pairs == 435)
+			QVERIFY2(eszett >= 6, qPrintable(QString::number(eszett)));
+	}
 }
 
 QTEST_APPLESS_MAIN(TestPmrParser)

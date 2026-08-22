@@ -99,6 +99,9 @@ target_compile_definitions(tst_bentofile PRIVATE
 mediamuster_add_test(tst_pmrparser
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
 )
+target_compile_definitions(tst_pmrparser PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
 
 # MdbParser: msmMMOB.mdb read through its Bento table of contents. Links
 # PmrParser and MxfParser too: the corpus databases are joined through their

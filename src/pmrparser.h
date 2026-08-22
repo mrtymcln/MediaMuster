@@ -14,8 +14,16 @@ struct PmrEntry
 	QString masterMobId; ///< Canonical hex form of the master clip MOB
 						 ///< from the paired MASTER record; shared by all
 						 ///< V01/A01/A02 relatives of the same clip.
-	QString fileName;
-	QString project;
+	QString fileName;	 ///< From the UTF-8 record set when the PMR has one (MC 2025
+						 ///< does); else the MacRoman set, decoded.
+	QString project;	 ///< MacRoman in every PMR section — Avid writes '?' for
+						 ///< characters outside it, and no database holds a better copy.
+	/// The essence file's modification time when Avid indexed it, Unix
+	/// seconds (0 when absent). Equals the file's st_mtime on 360/360 real
+	/// files. The scanner's staleness check: a file whose mtime no longer
+	/// matches is the one this record describes only by name, so its header
+	/// is read instead of trusting the database's technical facts.
+	quint32 fileModifiedSecs = 0;
 };
 
 // MARK: - PmrParser
