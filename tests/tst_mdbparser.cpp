@@ -439,7 +439,7 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 			QVERIFY2(hdr.valid, qPrintable(e.fileName));
 			QCOMPARE(m.clipName, hdr.clipName);
 			QCOMPARE(f.essence.isAudio, hdr.isAudio);
-			QCOMPARE(f.usageCode == 9 && m.usageCode == 1, hdr.isPrecompute);
+			QCOMPARE(m.usageCode == 1, hdr.isPrecompute); // the master mob's code is the verdict
 
 			if (!f.essenceComplete)
 			{

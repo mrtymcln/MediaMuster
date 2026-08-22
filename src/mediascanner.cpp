@@ -105,10 +105,12 @@ namespace
 	// UsageCode gets all 823 right, including the mixdown, which carries no
 	// UsageCode and so needs no special case.
 	//
-	// The databases carry the same verdict as integers — OMFI:MOBJ:UsageCode,
-	// 9 on a precompute's file mob and 1 on its master mob (MdbParser reads
-	// them; 1,155 joins against the header's 0x4408, zero exceptions) — so a
-	// row the database covers is classified without a header read.
+	// The databases carry the same verdict as an integer — OMFI:MOBJ:UsageCode
+	// 1 on a precompute's MASTER mob, 7 on a master clip's (MdbParser reads
+	// it; 1,155 corpus joins plus 54 real-drive renders agree with the
+	// header's 0x4408) — so a row the database covers is classified without a
+	// header read. The file mob's code (9 on most renders, 0 on some) is not
+	// part of the rule.
 	//
 	// Consequence worth knowing: a file whose MXF header cannot be read, and
 	// that no database describes, gets no verdict and stays Media. That is
@@ -940,7 +942,11 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		if (current)
 		{
 			MxfMetadata essence = fileIt->essence;
-			essence.isPrecompute = fileIt->usageCode == 9 && masterIt->usageCode == 1;
+			// The master mob's usage code is the verdict, as the MaterialPackage's
+			// is in the header: 1 = precompute. (The file mob usually says 9 too,
+			// but real folders hold renders whose file mob says 0 — 54 on one
+			// drive — so the file code is not required.)
+			essence.isPrecompute = masterIt->usageCode == 1;
 			applyMetadata(mf, essence);
 			++tally.covered;
 		}
