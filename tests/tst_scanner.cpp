@@ -5,6 +5,7 @@
 #include "debugslowdown.h"
 #include "mediascanner.h"
 #include "testbento.h"
+#include "pmrparser.h"
 
 #include <QDir>
 #include <QFile>
@@ -63,9 +64,27 @@ private slots:
 	void mixdown_is_media_not_precompute();
 	void unreadable_header_stays_media();
 
+	// Database-first (2026-08-22). A row the folder's PMR + MDB fully
+	// describe takes every technical fact from them and its file is never
+	// opened; the header pass handles only what they don't cover — no PMR
+	// entry, an incomplete MDB record (MPEG audio), a file changed since
+	// Avid indexed it (mtime ≠ the PMR's trailer), no databases at all, or
+	// the Debug "Force header scan" toggle. Identity (name/bin/source) from
+	// the databases applies either way.
+	void database_described_row_never_reads_its_header();
+	void force_header_scan_reads_every_header();
+	void changed_file_falls_back_to_its_header();
+	void folder_without_databases_reads_every_header();
+	void mpeg_audio_falls_back_to_its_header();
+
 private:
 	static QString fixturesDir() { return QStringLiteral(FIXTURES_DIR); }
 	static void copyFixture(const QString &name, const QString &destFolder);
+	/// Stamp a file's modified time (Unix seconds) — the PMR's trailer for a
+	/// fixture, so the scanner's staleness guard sees "still the file Avid
+	/// indexed" rather than a fresh copy.
+	static void setModified(const QString &path, quint32 secs);
+	static QByteArray writeJunk(const QString &path, int size);
 };
 
 void TestScanner::copyFixture(const QString &name, const QString &destFolder)
@@ -76,6 +95,25 @@ void TestScanner::copyFixture(const QString &name, const QString &destFolder)
 	const QString dst = destFolder + QLatin1Char('/') + QFileInfo(name).fileName();
 	QVERIFY2(QFile::copy(src, dst),
 			 qPrintable(QStringLiteral("failed to copy %1 → %2").arg(src, dst)));
+}
+
+void TestScanner::setModified(const QString &path, quint32 secs)
+{
+	QFile f(path);
+	QVERIFY2(f.open(QIODevice::ReadWrite), qPrintable(path));
+	QVERIFY2(f.setFileTime(QDateTime::fromSecsSinceEpoch(secs), QFileDevice::FileModificationTime), qPrintable(path));
+}
+
+QByteArray TestScanner::writeJunk(const QString &path, int size)
+{
+	const QByteArray bytes(size, '\x11');
+	QFile f(path);
+	if (f.open(QIODevice::WriteOnly))
+	{
+		f.write(bytes);
+		f.close();
+	}
+	return bytes;
 }
 
 void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
@@ -130,7 +168,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QVERIFY(!mf.isNoReference);
 	QVERIFY(!mf.isNoDatabase());
 	QVERIFY(!mf.isNoProject);
-	QVERIFY(!mf.isBadUmid);
+	QVERIFY(!mf.isInvalidUmid);
 	QVERIFY(!mf.isNonPortable);
 
 	// From MXF (Stage 2)
@@ -181,7 +219,7 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	// the MXF MaterialPackage, so it is set with or without the MDB (the no-mdb
 	// partner test confirms that). The genuine signals are the flags, the
 	// sentinel, and the adopted MOB ID, which only the MDB join can supply.
-	QVERIFY(!mf.isBadUmid);		// a good UMID is what the lookup keys on
+	QVERIFY(!mf.isInvalidUmid);		// a good UMID is what the lookup keys on
 	QVERIFY(!mf.isNoReference); // Stage 3 flipped it back
 	QVERIFY(!mf.isNoDatabase());
 	QVERIFY(mf.isNoProject); // found in MDB, but no project association
@@ -816,5 +854,168 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 
 // _GUILESS_ pulls in a QCoreApplication event loop; queued signals
 // and QSignalSpy::wait both need one.
+// MARK: - Database-first
+
+namespace
+{
+	/// The TONE fixture's PMR trailer: its mtime when Avid indexed it.
+	constexpr quint32 kToneModified = 1778755394u;
+	const QString kToneName = QStringLiteral("TONE_100A01.EA7D504A.611740.mxf");
+	const QString kToneClip = QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1");
+
+	QVector<MediaFile> runScan(const QString &root, bool forceHeaderScan = false)
+	{
+		MediaScanner scanner;
+		QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+		MediaScanner::Options opts;
+		opts.volumePaths = QStringList{root};
+		opts.forceHeaderScan = forceHeaderScan;
+		scanner.startScan(opts);
+		if (!finishedSpy.wait(5000))
+			return {};
+		return finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
+	}
+} // namespace
+
+void TestScanner::database_described_row_never_reads_its_header()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	// Junk under the real name, stamped with the PMR's mtime: a header read
+	// would find nothing, so every technical fact below came from the MDB.
+	writeJunk(folder + QLatin1Char('/') + kToneName, 4096);
+	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QCOMPARE(mf.project, QStringLiteral("block 1729"));
+	QCOMPARE(mf.clipName, kToneClip);
+	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
+	QCOMPARE(mf.type, MediaFile::Type::Media);
+	QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+	QCOMPARE(mf.sampleRate, 48000);
+	QVERIFY(mf.channels > 0);
+	QVERIFY(mf.durationFrames > 0);
+	QVERIFY(mf.timecodeBase > 0);
+	QVERIFY(!mf.bitDepth.isEmpty());
+	QVERIFY(mf.resolution.isEmpty());
+	QVERIFY(!mf.isInvalidUmid);
+	QVERIFY(!mf.isNoReference && !mf.isNoDatabase() && !mf.isNoProject);
+}
+
+void TestScanner::force_header_scan_reads_every_header()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(kToneName, folder);
+	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
+
+	// Forced: the header is read (MaterialPackage name outranks the MDB's),
+	// while identity from the databases still applies.
+	const auto forced = runScan(tmp.path(), /*forceHeaderScan=*/true);
+	QCOMPARE(forced.size(), 1);
+	QCOMPARE(forced.first().clipName, kToneClip);
+	QCOMPARE(forced.first().clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(forced.first().project, QStringLiteral("block 1729"));
+	QVERIFY(!forced.first().originalBin.isEmpty());
+	QCOMPARE(forced.first().kind, MediaFile::Kind::Audio);
+
+	// Default: the same file, the same facts, no header read.
+	const auto normal = runScan(tmp.path());
+	QCOMPARE(normal.size(), 1);
+	QCOMPARE(normal.first().clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(normal.first().codec, forced.first().codec);
+	QCOMPARE(normal.first().sampleRate, forced.first().sampleRate);
+	QCOMPARE(normal.first().channels, forced.first().channels);
+	QCOMPARE(normal.first().bitDepth, forced.first().bitDepth);
+	QCOMPARE(normal.first().durationFrames, forced.first().durationFrames);
+	QCOMPARE(normal.first().timecodeBase, forced.first().timecodeBase);
+	QCOMPARE(normal.first().originalBin, forced.first().originalBin);
+	QCOMPARE(normal.first().mobId, forced.first().mobId);
+	QCOMPARE(normal.first().masterMobId, forced.first().masterMobId);
+}
+
+void TestScanner::changed_file_falls_back_to_its_header()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	// Same junk, but a FRESH mtime: the databases describe an older file, so
+	// their technical facts must not be applied. The header says nothing, so
+	// the row shows no codec — and keeps the MDB's name and bin (identity is
+	// a fact about the clip, not the bytes).
+	writeJunk(folder + QLatin1Char('/') + kToneName, 4096);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QVERIFY2(mf.codec.isEmpty(), qPrintable(mf.codec));
+	QCOMPARE(mf.sampleRate, 0);
+	QCOMPARE(mf.clipName, kToneClip);
+	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(mf.project, QStringLiteral("block 1729"));
+}
+
+void TestScanner::folder_without_databases_reads_every_header()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(kToneName, folder);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QVERIFY(mf.isNoDatabase());
+	QCOMPARE(mf.clipName, kToneClip);
+	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
+	QVERIFY(!mf.codec.isEmpty());
+	QVERIFY(mf.sampleRate > 0);
+}
+
+void TestScanner::mpeg_audio_falls_back_to_its_header()
+{
+	// The MDB carries no codec label for MPEG audio, so its record is
+	// incomplete and the header decides — even though the PMR names the file
+	// and the mtime matches.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("corpus_headers/msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("corpus_headers/msmMMOB.mdb"), folder);
+	const QString name = QStringLiteral("A01.E68C35B3_2C34B2C34B61AA.mxf");
+	copyFixture(QStringLiteral("corpus_headers/") + name, folder);
+	quint32 modified = 0;
+	for (const PmrEntry &e : PmrParser::parse(folder + QStringLiteral("/msmFMID.pmr")))
+		if (e.fileName == name)
+			modified = e.fileModifiedSecs;
+	QVERIFY(modified != 0);
+	setModified(folder + QLatin1Char('/') + name, modified);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
+	QVERIFY2(mf.codec.contains(QStringLiteral("MP2")), qPrintable(mf.codec));
+	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(!mf.originalBin.isEmpty()); // identity still from the MDB
+}
+
 QTEST_GUILESS_MAIN(TestScanner)
 #include "tst_scanner.moc"

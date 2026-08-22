@@ -5,6 +5,7 @@
 #include "mediafile.h"
 #include "pmrparser.h"
 #include <QElapsedTimer>
+#include <QFileInfo>
 #include <QHash>
 #include <QMutex>
 #include <QObject>
@@ -51,9 +52,20 @@ struct FolderResult
 
 // MARK: - MediaScanner
 
-/// Walks volumes, finds `Avid MediaFiles/MXF` roots, reads per-folder
-/// `msmFMID.pmr` / `msmMMOB.mdb`, and parses MXF headers.
-/// One MediaFile per essence file.
+/// Walks volumes, finds `Avid MediaFiles/MXF` roots, and builds one
+/// MediaFile per essence file in two passes:
+///
+///   Pass 1 — databases. Per folder: list the files, read `msmFMID.pmr`
+///            (filename → MOBs, project) and `msmMMOB.mdb` (everything
+///            else: clip name, bin, source, codec, dims, rates, duration,
+///            bits, channels, type). A row the databases fully describe is
+///            finished here and its file is never opened.
+///   Pass 2 — headers. Only for the rows pass 1 could not cover — no PMR
+///            entry (Interplay keeps records centrally; a file MediaMuster
+///            just copied in), an incomplete MDB record, a file changed since
+///            Avid indexed it, an unreadable database, or the Debug toggle —
+///            read the MXF header as before, then try the MDB once more by
+///            the header's own UMID to recover name/bin/source.
 ///
 /// Cancellation is cooperative; checked at folder/file boundaries
 /// so work in flight isn't left half-done.
@@ -64,6 +76,12 @@ public:
 	struct Options
 	{
 		QStringList volumePaths;
+		/// Debug ▸ Force header scan. The databases are still read — they
+		/// supply project, MOB ids, clip name, bin and source exactly as
+		/// before — but no row takes its TECHNICAL facts from them, so every
+		/// .mxf goes through the header pass: the pre-database-first
+		/// behaviour, and the tool for comparing the two.
+		bool forceHeaderScan = false;
 	};
 
 	explicit MediaScanner(QObject *parent = nullptr);
@@ -119,25 +137,32 @@ private:
 
 	FolderResult processFolderTask(const ScanTask &task);
 
-	/// `folderDbIssue` is the folder-level database state computed by
-	/// processFolderTask; it decides whether an unmatched file is a verified
-	/// "No reference" or an unverifiable "No database".
-	MediaFile buildMediaFile(const QString &filePath, const QString &volumeName,
+	/// Per-folder counts for the console: rows the databases described,
+	/// rows left for the header pass, and rows whose file changed since Avid
+	/// indexed it (the staleness guard sent them to the header pass).
+	struct CoverageTally
+	{
+		int covered = 0;
+		int header = 0;
+		int stale = 0;
+	};
+
+	/// One row from one directory entry (pass 1). `folderDbIssue` is the
+	/// folder-level database state computed by processFolderTask; it decides
+	/// whether an unmatched file is a verified "No reference" or an
+	/// unverifiable "No database".
+	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
 							 const PmrParser::ProjectMaps &pmrMaps,
 							 const MdbDatabase &mdb,
-							 MediaFile::DbIssue folderDbIssue);
+							 MediaFile::DbIssue folderDbIssue, CoverageTally &tally);
 
-	/// Stage 2. Per-folder parallelism alone starves cores on small
-	/// folders, so parse every MXF in parallel after the walk.
+	/// Pass 2. Reads the header of every .mxf row pass 1 left without
+	/// technical facts, in parallel, then re-joins each against its folder's
+	/// cached clip records by the header's UMID (the file-in-MDB-but-not-PMR
+	/// case). Per-folder parallelism alone starves cores on small folders,
+	/// so this runs over all rows after the walk.
 	void parseMxfHeadersConcurrently(QVector<MediaFile> &files);
-
-	/// Stage 3. Re-join files the local databases couldn't attribute
-	/// ("No reference" and "No database" alike — a readable MDB can still
-	/// vouch for a file whose PMR was corrupt) against their folder's
-	/// cached MDB via the MXF UMID. Mostly no-op outside Interplay or
-	/// database corruption; sparse, so cheap.
-	void recoverUnreferencedFromMdb(QVector<MediaFile> &files);
 
 	// MARK: - Log batching
 
@@ -176,9 +201,12 @@ private:
 	QMutex m_overfullMutex;
 	QVector<QPair<QString, int>> m_overfullFolders;
 
-	/// Cached for Stage 3's UMID join. Keyed through PathKey::normalise
-	/// so Stage 1 (QDir::filePath) and Stage 3 (QFileInfo::absolutePath)
-	/// can't drift on the same folder identity.
+	/// Each folder's clip records (MdbDatabase::masters), cached by pass 1
+	/// for pass 2's UMID re-join and dropped in concludeScan. Keyed through
+	/// PathKey::normalise so pass 1 (QDir::filePath) and pass 2
+	/// (QFileInfo::absolutePath) can't drift on the same folder identity.
+	/// Written under m_mdbMapsMutex by pool threads during pass 1; read
+	/// without it in pass 2, when no writer exists.
 	QMutex m_mdbMapsMutex;
 	QHash<QString, QHash<QString, MdbMaster>> m_mdbMapsByFolder;
 };

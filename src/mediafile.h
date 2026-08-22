@@ -38,7 +38,6 @@ struct MediaFile
 	QString mobId;		 ///< Avid MOB ID for this essence file (from MDB/PMR).
 	QString masterMobId; ///< Master MOB — the master clip's MOB (AAF MasterMob);
 						 ///< V01/A01/A02 relatives share this.
-	QString umid;		 ///< SMPTE UMID embedded in the MXF header.
 
 	// MARK: MDB and PMR metadata
 
@@ -149,7 +148,12 @@ struct MediaFile
 	bool isNoReference = false;		 ///< In none of the folder's databases, and every database
 									 ///< that exists parsed cleanly — a verified miss.
 	DbIssue dbIssue = DbIssue::None; ///< != None: the databases couldn't vouch either way.
-	bool isBadUmid = false;			 ///< UMID null or zeroed — Avid never wrote a real Id.
+	/// The file's or its clip's MOB ID is all zeros — Avid never assigned a
+	/// real identity, so the media can't be tracked or relinked reliably.
+	/// (A UMID is what a MOB ID is; the name keeps the domain word.) Never
+	/// seen in 1,155 Avid-written files; catches third-party MXF. MDVx ships
+	/// the same filter as "Bad UMID".
+	bool isInvalidUmid = false;
 	bool isNonPortable = false;		 ///< Filename has Avid illegal chars.
 	bool isNoProject = false;		 ///< In the MDB but no project's PMR references it.
 	bool isQuarantined = false;		 ///< Lives in Avid's "Quarantined Files" folder. Stamped by

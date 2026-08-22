@@ -101,8 +101,8 @@ bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
 		return f.isNoProject;
 	case FilterMode::NoDatabase:
 		return f.isNoDatabase();
-	case FilterMode::BadUmid:
-		return f.isBadUmid;
+	case FilterMode::InvalidUmid:
+		return f.isInvalidUmid;
 	case FilterMode::NonPortable:
 		return f.isNonPortable;
 	case FilterMode::Quarantined:

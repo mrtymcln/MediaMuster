@@ -239,6 +239,9 @@ private:
 
 	QElapsedTimer m_scanTimer;
 	bool m_showAllFilterTabs = false;
+	/// Debug ▸ Force header scan — snapshotted into MediaScanner::Options at
+	/// scan start, so a toggle mid-scan applies to the next scan, not this one.
+	bool m_forceHeaderScan = false;
 	QSet<QString> m_manualVolumes;
 
 	// MARK: - Selection persistence

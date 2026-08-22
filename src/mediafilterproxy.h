@@ -22,7 +22,7 @@ public:
 		NoReference,
 		NoProject,
 		NoDatabase,
-		BadUmid,
+		InvalidUmid,
 		NonPortable,
 		Quarantined
 	};

@@ -129,7 +129,9 @@ namespace
 		{MediaFilterProxy::FilterMode::NoDatabase, "No Database",
 		 "The folder's Avid databases are missing or unreadable,\n"
 		 "so references could not be checked."},
-		{MediaFilterProxy::FilterMode::BadUmid, "Bad UMID"},
+		{MediaFilterProxy::FilterMode::InvalidUmid, "Invalid UMID",
+		 "The file's MOB ID is all zeros — Avid never assigned a real identity,\n"
+		 "so the media can't be tracked or relinked reliably."},
 		{MediaFilterProxy::FilterMode::NonPortable, "Non-Portable"},
 		{MediaFilterProxy::FilterMode::Quarantined, "Quarantined"},
 	}};
@@ -675,6 +677,22 @@ void MainWindow::buildDebugMenu()
 			{
 				m_model->setShowRawCodecHex(on);
 				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec as Raw Hex enabled" : "Codec as Raw Hex disabled");
+			});
+
+	// Database-first is the default: a row the folder's msmFMID.pmr +
+	// msmMMOB.mdb fully describe never has its header read. This forces the
+	// pre-database-first behaviour — every .mxf header read — which is also
+	// how the two are compared (scan, export, toggle, rescan, export, diff).
+	auto *forceHeaderAct = debugMenu->addAction(tr("&Force header scan"));
+	forceHeaderAct->setCheckable(true);
+	forceHeaderAct->setChecked(m_forceHeaderScan);
+	connect(forceHeaderAct, &QAction::triggered, this,
+			[this](bool on)
+			{
+				m_forceHeaderScan = on;
+				addLog(QtInfoMsg, QStringLiteral("app"),
+					   on ? "Force header scan enabled — every MXF header is read on the next scan"
+						  : "Force header scan disabled — the databases describe rows on the next scan");
 			});
 
 	// Whatever style main.cpp installed at startup is the one to restore.
@@ -1320,6 +1338,7 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 {
 	MediaScanner::Options opts;
 	opts.volumePaths = paths;
+	opts.forceHeaderScan = m_forceHeaderScan;
 
 	setBusy(true);
 	progressDialog()->begin();
