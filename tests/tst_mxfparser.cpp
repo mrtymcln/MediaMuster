@@ -254,6 +254,11 @@ private slots:
 	// parser regression or a dictionary gap, both of which the named-corpus
 	// convention exists to catch.
 	void archived_corpus_all_parses_with_no_unknowns();
+
+	// Shared derivations — the statics the MDB producer reuses.
+	void applyEditRate_labels_fractional_rates();
+	void mdb_style_metadata_finalises_like_a_header();
+	void tagged_values_yield_source_path_and_import_flag();
 };
 
 void TestMxfParser::empty_label_returns_empty()
@@ -980,6 +985,126 @@ void TestMxfParser::drop_frame_durations_render_like_avid()
 	mf.timecodeBase = m.timecodeBase;
 	mf.dropFrame = m.dropFrame;
 	QCOMPARE(mf.durationDisplay(), QStringLiteral("00;10;11;28"));
+}
+
+// MARK: - Shared derivations
+
+// The MDB stores rates as decimal approximations (2997/100) where the MXF
+// stores exact fractions (30000/1001); the label must come out identical
+// whichever spelling arrives, and audio rationals go to sampleRate instead.
+void TestMxfParser::applyEditRate_labels_fractional_rates()
+{
+	struct Case { quint32 num, den; const char *fps; int base; };
+	const Case cases[] = {
+		{24000, 1001, "23.976", 24}, {2997, 100, "29.97", 30}, {60000, 2002, "29.97", 30},
+		{30000, 1001, "29.97", 30},  {25, 1, "25", 25},         {23976, 1000, "23.976", 24},
+		{50, 1, "50", 50},           {60000, 1001, "59.94", 60},
+	};
+	for (const Case &c : cases)
+	{
+		MxfMetadata m;
+		MxfParser::applyEditRate(m, c.num, c.den);
+		QCOMPARE(m.fps, QString::fromLatin1(c.fps));
+		QCOMPARE(m.timecodeBase, c.base);
+		QCOMPARE(m.sampleRate, 0);
+	}
+	MxfMetadata a;
+	a.isAudio = true;
+	MxfParser::applyEditRate(a, 48000, 1);
+	QCOMPARE(a.sampleRate, 48000);
+	QVERIFY(a.fps.isEmpty());
+
+	MxfMetadata z;
+	MxfParser::applyEditRate(z, 25, 0); // zero denominator: ignored, not a crash
+	QVERIFY(z.fps.isEmpty());
+}
+
+// A struct filled from msmMMOB.mdb instead of a header: already full-frame
+// height, real frame layout, label, fps. finalise() must derive exactly what
+// the header path derives — and must NOT double a layout-1 height twice.
+void TestMxfParser::mdb_style_metadata_finalises_like_a_header()
+{
+	const QByteArray sq = ul("060E2B34040101010D01030102060101");
+
+	MxfMetadata db;
+	db.essenceContainerLabel = sq;
+	db.width = 1920;
+	db.height = 1080; // the MDB producer already doubled its 540
+	db.frameLayout = 1;
+	db.heightIsFrameHeight = true;
+	MxfParser::applyEditRate(db, 25, 1);
+	MxfParser::finalise(db);
+	QVERIFY(db.valid);
+	QCOMPARE(db.resolution, QStringLiteral("1920x1080"));
+	QCOMPARE(db.codec, QStringLiteral("Avid DNx SQ (DNxHD 120)"));
+
+	// The same facts as a header presents them: a field height, no flag.
+	MxfMetadata hdr;
+	hdr.essenceContainerLabel = sq;
+	hdr.width = 1920;
+	hdr.height = 540;
+	hdr.frameLayout = 1;
+	MxfParser::applyEditRate(hdr, 25, 1);
+	MxfParser::finalise(hdr);
+	QCOMPARE(hdr.resolution, db.resolution);
+	QCOMPARE(hdr.codec, db.codec);
+	QCOMPARE(hdr.valid, db.valid);
+
+	// Layout 3 is a full height in a header but a half height in the MDB;
+	// the producer normalises and flags, finalise leaves it alone.
+	MxfMetadata l3;
+	l3.essenceContainerLabel = sq;
+	l3.width = 1920;
+	l3.height = 1080;
+	l3.frameLayout = 3;
+	l3.heightIsFrameHeight = true;
+	MxfParser::applyEditRate(l3, 25, 1);
+	MxfParser::finalise(l3);
+	QCOMPARE(l3.resolution, QStringLiteral("1920x1080"));
+
+	// Audio from the database: samples + sample rate + frame count.
+	MxfMetadata au;
+	au.isAudio = true;
+	au.sampleRate = 48000;
+	au.descriptorDuration = 2880002; // samples
+	au.durationFrames = 1500;		  // frames at 25
+	MxfParser::finalise(au);
+	QVERIFY(au.valid);
+	QCOMPARE(au.timecodeBase, 25);
+	QCOMPARE(au.durationFrames, qint64(1500));
+	QCOMPARE(au.codec, QString::fromLatin1(kPcmAudioName));
+	QCOMPARE(MxfParser::bitDepthLabel(24), QStringLiteral("24-bit"));
+	QCOMPARE(MxfParser::bitDepthLabel(254), QStringLiteral("Float"));
+}
+
+// The MaterialPackage's TaggedValues carry the import facts the MDB also
+// holds — `UNC Path`, `Video`, `_IMPORTSETTING` — so an Interplay site (no
+// local databases) still gets Source File and Imported from the header.
+void TestMxfParser::tagged_values_yield_source_path_and_import_flag()
+{
+	const QString imported = QStringLiteral(FIXTURES_DIR "/corpus_headers/V01.E6966CE5_A3C580A3C588BV.mxf");
+	QVERIFY(QFileInfo::exists(imported));
+	const MxfMetadata m = MxfParser::parseHeader(imported);
+	QVERIFY(m.valid);
+	QVERIFY(m.hasImportSetting);
+	QCOMPARE(m.sourceContainer, QStringLiteral("QTFF"));
+	QVERIFY2(m.sourceFilePath.endsWith(QStringLiteral("/Avid DNx SQ.mov")), qPrintable(m.sourceFilePath));
+	QVERIFY2(m.sourceFilePath.startsWith(QLatin1Char('/')), qPrintable(m.sourceFilePath));
+
+	// Avid-generated media carries none of them: a tone and a render.
+	const MxfMetadata tone =
+		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/avid_headers/TONE_100A01.F7C83BB3.612410.mxf"));
+	QVERIFY(tone.valid);
+	QVERIFY(!tone.hasImportSetting);
+	QVERIFY(tone.sourceFilePath.isEmpty());
+	QVERIFY(tone.sourceContainer.isEmpty());
+
+	const MxfMetadata render =
+		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/zT_ßt_1080i_50_seqDD866C6BV.mxf"));
+	QVERIFY(render.valid);
+	QVERIFY(render.isPrecompute);
+	QVERIFY(!render.hasImportSetting);
+	QVERIFY(render.sourceFilePath.isEmpty());
 }
 
 QTEST_APPLESS_MAIN(TestMxfParser)

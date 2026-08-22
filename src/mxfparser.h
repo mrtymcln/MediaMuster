@@ -40,6 +40,17 @@ struct MxfMetadata
 	/// master clip, not a precompute). This is the whole Media-vs-Precompute
 	/// test; see the note above isPrecomputeUsage in mxfparser.cpp.
 	bool isPrecompute = false;
+
+	/// The MaterialPackage's TaggedValues (set 0x3F) as Avid writes them on
+	/// import: `UNC Path` = the imported file's path, `Video` = its container
+	/// ("QTFF"), and whether an `_IMPORTSETTING` attribute exists at all.
+	/// Absent on Avid-generated media (renders, tones, mixdowns). The MDB
+	/// carries the same three facts; this is how the header path — the only
+	/// path an Interplay site has — gets them too.
+	QString sourceFilePath;
+	QString sourceContainer;
+	bool hasImportSetting = false;
+
 	QByteArray essenceContainerLabel; ///< Raw essence-coding UL (usually 16 bytes), looked up against kEntries.
 	int width = 0;
 	int height = 0;		///< Stored value; interlaced files store one field height.
@@ -50,6 +61,13 @@ struct MxfMetadata
 	/// Used to decide whether to double `height` and to pick `i` vs `p`
 	/// for DV codec name formatting.
 	int frameLayout = -1;
+
+	/// Set by a producer whose `height` is already the full frame. The MXF
+	/// header stores one FIELD height for layout 1 (finalise doubles it);
+	/// the MDB stores half heights for layouts 1 AND 3 and normalises them
+	/// itself, then sets this so finalise doesn't double a second time while
+	/// `frameLayout` still carries the real value for the DV i/p suffix.
+	bool heightIsFrameHeight = false;
 
 	/// Duration in frames at the clip's edit rate, for video AND audio —
 	/// the Avid-bin timecode model (see the duration note in
@@ -105,6 +123,27 @@ public:
 	/// even the family is unrecognised.
 	[[nodiscard]] static QString codecFromEssenceLabel(const QByteArray &label, const QString &fps);
 
+	// MARK: - Shared with the MDB producer
+	//
+	// The msmMMOB.mdb database holds the same raw facts the MXF header does
+	// (dims, layout, rates, essence label, durations). These three statics
+	// are the ONE place each derived value is computed, so whichever source
+	// filled the struct, the table shows the same codec name, fps label,
+	// bit-depth label, resolution and audio timecode base.
+
+	/// Raw fields → display facts: resolution + validity, codec name (with the
+	/// DV i/p(PAL/NTSC) suffix), audio duration/timecode base, 1088→1080.
+	/// parseFromBuffer calls it last; MdbParser calls it on database facts.
+	static void finalise(MxfMetadata &meta);
+
+	/// Sample-rate rational (tag 0x3001 / OMFI:MDFL:SampleRate): audio →
+	/// `sampleRate`; video → the `fps` label via the ±0.01 speed matcher
+	/// (30000/1001, 60000/2002 and 2997/100 all read "29.97") + `timecodeBase`.
+	static void applyEditRate(MxfMetadata &out, quint32 num, quint32 den);
+
+	/// Quant-bits display: 254 is Avid's float/2.14 sentinel → "Float".
+	[[nodiscard]] static QString bitDepthLabel(quint32 bits);
+
 private:
 	[[nodiscard]] static MxfMetadata parseFromBuffer(const QByteArray &data);
 	[[nodiscard]] static qint64 readBerLength(const QByteArray &data, qint64 offset,
@@ -122,4 +161,9 @@ private:
 							 MxfMetadata &out, bool isMaterialPackage);
 	static void parseStructuralComponent(const QByteArray &data, qint64 startPos, qint64 length,
 										 MxfMetadata &out);
+	/// AAF TaggedValue set (0x3F): Name (0x5001, UTF-16BE) + Value (0x5003,
+	/// an Indirect: type AUID + payload). Only three names are read —
+	/// `UNC Path`, `Video`, `_IMPORTSETTING` — see MxfMetadata::sourceFilePath.
+	static void parseTaggedValue(const QByteArray &data, qint64 startPos, qint64 length,
+								 MxfMetadata &out);
 };

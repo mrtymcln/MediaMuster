@@ -72,6 +72,9 @@ static constexpr quint8 kSetSrcPkg = 0x37;
 static constexpr quint8 kSetSequence = 0x0F;
 static constexpr quint8 kSetSourceClip = 0x11;
 static constexpr quint8 kSetTimecode = 0x14;
+/// AAF TaggedValue — the MaterialPackage's import attributes (UNC Path,
+/// Video, _IMPORTSETTING, _PJ...). See parseTaggedValue.
+static constexpr quint8 kSetTaggedValue = 0x3F;
 
 // MARK: - UsageCode (Media vs Precompute)
 //
@@ -177,7 +180,7 @@ qint64 MxfParser::readBerLength(const QByteArray &data, qint64 offset, int &byte
 /// DNxUncompressed formats — 32-bit float and 16-bit 2.14 fixed point,
 /// whose descriptors are byte-identical (verified against real files),
 /// so they share one label. "254-bit" is not a bit depth.
-static QString bitDepthLabel(quint32 bits)
+QString MxfParser::bitDepthLabel(quint32 bits)
 {
 	if (bits == 254)
 		return QStringLiteral("Float");
@@ -196,6 +199,23 @@ quint32 MxfParser::readUint32BE(const QByteArray &data, qint64 offset)
 	if (offset + 4 > data.size())
 		return 0;
 	return qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(data.constData() + offset));
+}
+
+/// NUL-terminated UTF-16BE text as MXF/AAF writes package names and
+/// TaggedValue names. Stops at the first NUL inside `len`.
+static QString readUtf16BE(const QByteArray &data, qint64 pos, quint16 len)
+{
+	QString s;
+	s.reserve(len / 2);
+	const auto *p = reinterpret_cast<const uchar *>(data.constData());
+	for (int i = 0; i + 1 < len; i += 2)
+	{
+		const quint16 ch = quint16((p[pos + i] << 8) | p[pos + i + 1]);
+		if (ch == 0)
+			break;
+		s.append(QChar(ch));
+	}
+	return s;
 }
 
 // MARK: - Public parse entry
@@ -315,13 +335,26 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 			case kSetTimecode:
 				parseStructuralComponent(data, valuePos, length, meta);
 				break;
+			case kSetTaggedValue:
+				parseTaggedValue(data, valuePos, length, meta);
+				break;
 			}
 		}
 		pos = valuePos + length;
 	}
 
-	// MARK: - Post-processing
+	finalise(meta);
+	return meta;
+}
 
+// MARK: - Post-processing (shared with the MDB producer)
+
+/// Raw fields → display facts. parseFromBuffer calls this on what the KLV
+/// walk found; MdbParser calls it on what msmMMOB.mdb holds. One function,
+/// so resolution, validity, the codec name (+ DV suffix), the audio
+/// timecode base and the 1088→1080 rule cannot drift between the two.
+void MxfParser::finalise(MxfMetadata &meta)
+{
 	// Audio-ness can be visible in the essence label alone, with no
 	// sound descriptor set in the header. Decide it FIRST — the duration
 	// derivation, the validity rule, and the codec fallback below all
@@ -376,7 +409,10 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 	// the full heights, contradicting its own 1080i filter, and no file in
 	// the corpus uses it. Left alone until a real file settles it.)
 	// Source: SupportingFiles/DynamicRelinkUI/DRUI.xml, cbxRaster filters.
-	if (meta.frameLayout == 1)
+	// A producer that already normalised to the full frame says so with
+	// heightIsFrameHeight (the MDB stores half heights for layouts 1 AND 3
+	// and doubles them itself before handing over).
+	if (meta.frameLayout == 1 && !meta.heightIsFrameHeight)
 		meta.height *= 2;
 
 	// Avid pads these two rasters for macroblock alignment and then treats
@@ -459,11 +495,73 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		if (!standard.isEmpty())
 			meta.codec += QStringLiteral(" %1(%2)").arg(scan, standard);
 	}
-
-	return meta;
 }
 
 // MARK: - Per-set parsers
+
+// MARK: - Shared derivations
+
+void MxfParser::applyEditRate(MxfMetadata &out, quint32 num, quint32 den)
+{
+	if (den == 0)
+		return;
+	if (out.isAudio)
+	{
+		out.sampleRate = static_cast<int>(num / den);
+	}
+	else
+	{
+		// Rates are judged by the SPEED the fraction works
+		// out to, never by its exact digits: the same 29.97
+		// arrives as 30000/1001 (Avid), 60000/2002
+		// (unreduced), or 2997/100 (decimal-approximation
+		// muxers), and an exact-digit whitelist silently
+		// rounded everything but the first to "30". The five
+		// labels are the complete fractional set Media
+		// Composer can produce (47.952 since v8.3, 119.88
+		// since 2018.7). The ±0.01 windows can't collide:
+		// the closest fractional/integer pair (23.976 vs 24)
+		// is 0.024 apart, and any decimal approximation of a
+		// true 1000/1001 rate lands within 0.004 of it.
+		struct FractionalRate
+		{
+			double value;
+			const char *label;
+		};
+		static constexpr FractionalRate kFractional[] = {
+			{24000.0 / 1001.0, "23.976"},
+			{30000.0 / 1001.0, "29.97"},
+			{48000.0 / 1001.0, "47.952"},
+			{60000.0 / 1001.0, "59.94"},
+			{120000.0 / 1001.0, "119.88"},
+		};
+		const double rate = double(num) / double(den);
+		const char *label = nullptr;
+		for (const auto &k : kFractional)
+		{
+			if (qAbs(rate - k.value) < 0.01)
+			{
+				label = k.label;
+				break;
+			}
+		}
+		if (label)
+			out.fps = QLatin1String(label);
+		else if (rate < 1000.0 && qAbs(rate - qRound(rate)) < 0.01)
+			out.fps = QString::number(qRound(rate));
+		else
+			// No known family: show the real value. Rounding
+			// an unrecognised rate to a neighbouring integer
+			// is a wrong answer delivered with no warning.
+			out.fps = QString::number(rate, 'g', 6);
+
+		// Nominal base for timecode duration rendering
+		// (23.976 counts in base 24, 29.97 in base 30...).
+		// Bounds mirrored in MediaFile::effectiveTimecodeBase.
+		if (rate >= 1.0 && rate < 1000.0)
+			out.timecodeBase = qRound(rate);
+	}
+}
 
 void MxfParser::parseDescriptorSet(const QByteArray &data, qint64 startPos, qint64 length,
 								   MxfMetadata &out)
@@ -501,69 +599,7 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, qint64 startPos, qint
 			break;
 		case 0x3001: // sample rate — fps for video, Hz for audio
 			if (len >= 8)
-			{
-				const quint32 num = readUint32BE(data, pos);
-				const quint32 den = readUint32BE(data, pos + 4);
-				if (den > 0)
-				{
-					if (out.isAudio)
-					{
-						out.sampleRate = static_cast<int>(num / den);
-					}
-					else
-					{
-						// Rates are judged by the SPEED the fraction works
-						// out to, never by its exact digits: the same 29.97
-						// arrives as 30000/1001 (Avid), 60000/2002
-						// (unreduced), or 2997/100 (decimal-approximation
-						// muxers), and an exact-digit whitelist silently
-						// rounded everything but the first to "30". The five
-						// labels are the complete fractional set Media
-						// Composer can produce (47.952 since v8.3, 119.88
-						// since 2018.7). The ±0.01 windows can't collide:
-						// the closest fractional/integer pair (23.976 vs 24)
-						// is 0.024 apart, and any decimal approximation of a
-						// true 1000/1001 rate lands within 0.004 of it.
-						struct FractionalRate
-						{
-							double value;
-							const char *label;
-						};
-						static constexpr FractionalRate kFractional[] = {
-							{24000.0 / 1001.0, "23.976"},
-							{30000.0 / 1001.0, "29.97"},
-							{48000.0 / 1001.0, "47.952"},
-							{60000.0 / 1001.0, "59.94"},
-							{120000.0 / 1001.0, "119.88"},
-						};
-						const double rate = double(num) / double(den);
-						const char *label = nullptr;
-						for (const auto &k : kFractional)
-						{
-							if (qAbs(rate - k.value) < 0.01)
-							{
-								label = k.label;
-								break;
-							}
-						}
-						if (label)
-							out.fps = QLatin1String(label);
-						else if (rate < 1000.0 && qAbs(rate - qRound(rate)) < 0.01)
-							out.fps = QString::number(qRound(rate));
-						else
-							// No known family: show the real value. Rounding
-							// an unrecognised rate to a neighbouring integer
-							// is a wrong answer delivered with no warning.
-							out.fps = QString::number(rate, 'g', 6);
-
-						// Nominal base for timecode duration rendering
-						// (23.976 counts in base 24, 29.97 in base 30...).
-						// Bounds mirrored in MediaFile::effectiveTimecodeBase.
-						if (rate >= 1.0 && rate < 1000.0)
-							out.timecodeBase = qRound(rate);
-					}
-				}
-			}
+				applyEditRate(out, readUint32BE(data, pos), readUint32BE(data, pos + 4));
 			break;
 		case 0x3002: // container duration (4 or 8 bytes)
 			// Kept apart from the structural-component durations: this one is
@@ -640,15 +676,7 @@ void MxfParser::parsePackage(const QByteArray &data, qint64 startPos, qint64 len
 		{
 			// Package Name: UTF-16BE string, NUL-terminated within
 			// the recorded length.
-			QString name;
-			name.reserve(len / 2);
-			for (int i = 0; i + 1 < len; i += 2)
-			{
-				const quint16 ch = readUint16BE(data, pos + i);
-				if (ch == 0)
-					break;
-				name.append(QChar(ch));
-			}
+			QString name = readUtf16BE(data, pos, len);
 			// Never clobber a good source name with an empty MaterialPackage name.
 			if (!name.isEmpty())
 			{
@@ -701,6 +729,86 @@ void MxfParser::parseStructuralComponent(const QByteArray &data, qint64 startPos
 		}
 		pos += len;
 	}
+}
+
+/// An AAF TaggedValue set: `Name` (0x5001, UTF-16BE) + `Value` (0x5003, an
+/// AAF Indirect: 1 byte-order byte 'L'/'B', a 16-byte type AUID, then the
+/// payload). Avid writes the MaterialPackage's import attributes this way.
+/// Measured on the 795-file corpus: `UNC Path` holds the imported file's
+/// path, `Video` its container ("QTFF"), `_IMPORTSETTING` exists on every
+/// imported clip (756) and on none of the renders, tones or the mixdown.
+/// (`_SRCFILE` here is an object REFERENCE, "__PortableObject", not the
+/// path — the MDB's `_SRCFILE` is the path; the MXF's is `UNC Path`.)
+/// Every 0x3F set in the corpus ends by ~132 KB, inside the fast read.
+void MxfParser::parseTaggedValue(const QByteArray &data, qint64 startPos, qint64 length,
+								 MxfMetadata &out)
+{
+	// The Indirect's String type, as the 'L' (little-endian) spelling Avid
+	// writes; the 'B' spelling swaps the first three GUID fields.
+	static const QByteArray kStringTypeLE = QByteArray::fromHex("0002100100000000060e2b3401040101");
+	static const QByteArray kStringTypeBE = QByteArray::fromHex("0110020000000000060e2b3401040101");
+
+	QString name;
+	qint64 valuePos = -1;
+	quint16 valueLen = 0;
+
+	qint64 pos = startPos;
+	const qint64 endPos = startPos + length;
+	while (pos + 4 <= endPos)
+	{
+		const quint16 tag = readUint16BE(data, pos);
+		const quint16 len = readUint16BE(data, pos + 2);
+		pos += 4;
+		if (pos + len > endPos)
+			break;
+		if (tag == 0x5001)
+			name = readUtf16BE(data, pos, len);
+		else if (tag == 0x5003)
+		{
+			valuePos = pos;
+			valueLen = len;
+		}
+		pos += len;
+	}
+
+	if (name.isEmpty())
+		return;
+	if (name == QLatin1String("_IMPORTSETTING"))
+	{
+		out.hasImportSetting = true;
+		return;
+	}
+	const bool wantPath = name == QLatin1String("UNC Path");
+	const bool wantContainer = name == QLatin1String("Video");
+	if (!wantPath && !wantContainer)
+		return;
+
+	// Decode the Indirect string: byte-order byte, type AUID, UTF-16 text.
+	if (valuePos < 0 || valueLen < 17)
+		return;
+	const auto *p = reinterpret_cast<const uchar *>(data.constData() + valuePos);
+	const bool little = p[0] == 'L';
+	if (!little && p[0] != 'B')
+		return;
+	const QByteArray type(reinterpret_cast<const char *>(p + 1), 16);
+	if (type != (little ? kStringTypeLE : kStringTypeBE))
+		return; // an Int32 or other payload — not text
+
+	QString text;
+	text.reserve((valueLen - 17) / 2);
+	for (int i = 17; i + 1 < valueLen; i += 2)
+	{
+		const quint16 ch = little ? quint16(p[i] | (p[i + 1] << 8)) : quint16((p[i] << 8) | p[i + 1]);
+		if (ch == 0)
+			break;
+		text.append(QChar(ch));
+	}
+	if (text.isEmpty())
+		return;
+	if (wantPath)
+		out.sourceFilePath = text;
+	else
+		out.sourceContainer = text;
 }
 
 // MARK: - Codec UL lookup
