@@ -914,7 +914,8 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// The database may describe this very file: the PMR names it, the MDB
 	// holds its file mob with a complete essence record AND its master mob,
 	// and the file on disk is still the one Avid indexed — its modified time
-	// matches the PMR's (360/360 on real media). Then the row takes every
+	// matches the PMR's trailer in either of the two spellings Avid has used
+	// (PmrParser::trailerMatchesModified). Then the row takes every
 	// technical fact from the database and the file is never opened.
 	// Anything less — no PMR entry, an incomplete record (MPEG audio has no
 	// codec label in the MDB), a file changed since it was indexed, a
@@ -932,9 +933,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		bool current = described;
 		if (described && pmrHit->fileModifiedSecs != 0)
 		{
-			const QDateTime onDisk = fi.lastModified();
-			current = onDisk.isValid() &&
-					  qAbs(onDisk.toSecsSinceEpoch() - qint64(pmrHit->fileModifiedSecs)) <= 2;
+			current = PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
 			if (!current)
 				++tally.stale;
 		}

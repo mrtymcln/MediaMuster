@@ -24,10 +24,14 @@
 //   MBCS record set (numMobs × FILE then MASTER):
 //     FILE:   32-byte MOB | uint16 nameLen | name (MacRoman)
 //                         | uint16 projLen | project (MacRoman)
-//     MASTER: 32-byte MOB | uint32 = the essence file's modification time,
-//                           Unix seconds. Equal to st_mtime on 360/360 real
-//                           files; per FILE, not per clip (relatives of one
-//                           clip differ by a second).
+//     MASTER: 32-byte MOB | uint32 = the essence file's modification time.
+//                           MC 2025 writes Unix seconds UTC (equal to
+//                           st_mtime on 360/360 real files); a 2018–19 folder
+//                           held Mac 1904-epoch seconds in the writer's LOCAL
+//                           time (every trailer = mtime + 2,082,844,800 + the
+//                           AEST/AEDT offset). Per FILE, not per clip —
+//                           relatives of one clip differ by a second. Compare
+//                           via trailerMatchesModified, never by subtraction.
 //
 //   Unicode record set (every MC 2025 file; older files stop at the MBCS set):
 //     uint32  VERSION_UNICODE (= 16)
@@ -162,6 +166,23 @@ namespace
 			qCDebug(lcPmr) << replaced << "filename(s) taken from the unicode record set" << pmrFilePath;
 	}
 } // namespace
+
+// MARK: - Trailer vs modification time
+
+bool PmrParser::trailerMatchesModified(quint32 trailer, const QDateTime &onDisk)
+{
+	if (trailer == 0 || !onDisk.isValid())
+		return false;
+	const qint64 mtime = onDisk.toSecsSinceEpoch();
+	// Unix seconds, UTC — what MC 2025 writes.
+	if (qAbs(qint64(trailer) - mtime) <= 2)
+		return true;
+	// Mac 1904-epoch seconds in local time — what older MC wrote. Undo
+	// this machine's UTC offset at that instant, then the epoch shift.
+	constexpr qint64 kMacToUnix = 2082844800; // seconds from 1904-01-01 to 1970-01-01
+	const qint64 local = QDateTime::fromSecsSinceEpoch(mtime).offsetFromUtc();
+	return qAbs((qint64(trailer) - kMacToUnix - local) - mtime) <= 2;
+}
 
 // MARK: - Parse
 

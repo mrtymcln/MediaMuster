@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QString>
+#include <QDateTime>
 #include <QHash>
+#include <QString>
 #include <QVector>
 
 // MARK: - PmrEntry
@@ -18,11 +19,14 @@ struct PmrEntry
 						 ///< does); else the MacRoman set, decoded.
 	QString project;	 ///< MacRoman in every PMR section — Avid writes '?' for
 						 ///< characters outside it, and no database holds a better copy.
-	/// The essence file's modification time when Avid indexed it, Unix
-	/// seconds (0 when absent). Equals the file's st_mtime on 360/360 real
-	/// files. The scanner's staleness check: a file whose mtime no longer
-	/// matches is the one this record describes only by name, so its header
-	/// is read instead of trusting the database's technical facts.
+	/// The essence file's modification time when Avid indexed it, as the
+	/// raw u32 Avid wrote (0 when absent). Two spellings exist — MC 2025
+	/// writes Unix seconds UTC; older folders hold Mac 1904-epoch seconds in
+	/// the writing machine's LOCAL time — so compare through
+	/// PmrParser::trailerMatchesModified, never by subtraction. The
+	/// scanner's staleness check: a file whose mtime no longer matches is
+	/// one this record describes only by name, so its header is read instead
+	/// of trusting the database's technical facts.
 	quint32 fileModifiedSecs = 0;
 };
 
@@ -45,6 +49,15 @@ public:
 	/// returns partial entries. Callers use it to tell "readable database,
 	/// entry genuinely absent" from "database can't vouch for anything".
 	[[nodiscard]] static QVector<PmrEntry> parse(const QString &pmrFilePath, bool *ok = nullptr);
+
+	/// Does a PMR trailer name the same instant as a file's modification
+	/// time? True when the trailer reads as Unix UTC seconds within ±2 s of
+	/// `onDisk` (MC 2025), OR as Mac 1904-epoch seconds in this machine's
+	/// local time at that instant (older MC; measured on a 2018–19 folder:
+	/// every trailer = mtime + 2,082,844,800 + the AEST/AEDT offset). A
+	/// trailer of 0 is "unknown" and matches nothing. A PMR written in another
+	/// time zone won't match the second form — which only costs a header read.
+	[[nodiscard]] static bool trailerMatchesModified(quint32 trailer, const QDateTime &onDisk);
 
 	// MARK: - Lookup tables
 

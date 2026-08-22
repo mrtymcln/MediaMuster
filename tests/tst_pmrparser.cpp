@@ -154,6 +154,10 @@ private slots:
 	// The 4 bytes after a MASTER MOB are the essence file's mtime.
 	void trailer_is_the_file_modified_time();
 	void real_fixture_pmrs_parse_with_unicode_names();
+	// Two spellings of the same instant: Unix UTC (MC 2025) and Mac 1904-epoch
+	// local time (older MC, seen on a 2018–19 folder). Both must match; a
+	// different instant, or an unknown trailer, must not.
+	void trailer_matches_modified_in_both_epochs();
 };
 
 void TestPmrParser::parses_one_file_comp_pair()
@@ -461,6 +465,28 @@ void TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
 		if (g.pairs == 435)
 			QVERIFY2(eszett >= 6, qPrintable(QString::number(eszett)));
 	}
+}
+
+void TestPmrParser::trailer_matches_modified_in_both_epochs()
+{
+	// A real pair from /Volumes/EDIT/Avid MediaFiles/MXF/1 (Feb 2019): the
+	// file's mtime, and the trailer Avid wrote = mtime + 2082844800 + 11 h
+	// (AEDT). The test derives the local offset the same way the code does,
+	// so it holds on any machine; on a Sydney machine the literal is 3632750026.
+	const qint64 mtime = 1549865626;
+	const QDateTime onDisk = QDateTime::fromSecsSinceEpoch(mtime);
+	const qint64 macLocal = mtime + 2082844800 + onDisk.offsetFromUtc();
+	QVERIFY(PmrParser::trailerMatchesModified(quint32(macLocal), onDisk));
+	QVERIFY(PmrParser::trailerMatchesModified(quint32(macLocal + 2), onDisk));
+	// Unix UTC, as MC 2025 writes it.
+	QVERIFY(PmrParser::trailerMatchesModified(quint32(mtime), onDisk));
+	QVERIFY(PmrParser::trailerMatchesModified(quint32(mtime - 1), onDisk));
+	// Not the same instant, in either spelling.
+	QVERIFY(!PmrParser::trailerMatchesModified(quint32(mtime + 60), onDisk));
+	QVERIFY(!PmrParser::trailerMatchesModified(quint32(macLocal + 3600), onDisk));
+	// Unknown trailer, invalid date.
+	QVERIFY(!PmrParser::trailerMatchesModified(0, onDisk));
+	QVERIFY(!PmrParser::trailerMatchesModified(quint32(mtime), QDateTime()));
 }
 
 QTEST_APPLESS_MAIN(TestPmrParser)
