@@ -7,7 +7,7 @@ folder's real Avid databases. Captured from
 `msmMMOB.mdb`), round 3 on 2026-08-05 (359 slices, `msmFMID_round3.pmr` /
 `msmMMOB_round3.mdb` — the live folder's media was replaced between
 rounds, so each round keeps its own databases for the PMR/MDB ground-truth
-joins). 794 slices total. The original full-size media may no longer exist
+joins). 795 slices total. The original full-size media may no longer exist
 — these slices ARE the corpus now.
 
 **Why 512 KB is enough:** `MxfParser::parseHeader` never reads more than
@@ -30,6 +30,10 @@ timeline effect renders. Known gap: no drop-frame project.
 per file with the parsed codec/rate/duration/clip fields as of capture
 (format produced by `review/probes/mxfsweep`; regenerate after parser
 changes rather than trusting it blindly).
+
+The two database pairs are also ground truth for `tst_mdbparser`: every PMR
+pair is joined to its MDB records and every technical field compared to the
+slice's own header (795 files, two database generations).
 
 `tst_mxfparser`'s `archived_corpus_all_parses_with_no_unknowns` walks this
 folder and fails if any slice stops parsing or resolves to an

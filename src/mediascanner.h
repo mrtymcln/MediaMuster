@@ -166,8 +166,9 @@ private:
 
 	// MARK: - Log batching
 
-	/// Thread-safe log append. Called from the orchestrator and
-	/// from QtConcurrent pool threads.
+	/// Thread-safe log append. Called from the orchestrator thread; pool
+	/// threads buffer into FolderResult::logs instead, so console order is
+	/// deterministic.
 	void emitLog(QtMsgType level, const QString &module, const QString &msg);
 
 	/// Drain pending logs. Fires when batch fills, age limit hits, or
