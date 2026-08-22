@@ -4,19 +4,23 @@
 #include <QString>
 #include <QStringDecoder>
 
-/// Decode a byte string the way Avid wrote it. Media Composer's 1988
-/// Mac-exclusive heritage means its databases still carry MacRoman text:
-/// every PMR string is MacRoman ("tëst" arrives as 74 91 73 74, ß as A7 —
-/// verified against real corpora 2026-07), and the MDB writes each name
-/// twice, MacRoman first then UTF-8. Strategy: bytes that validate as
-/// UTF-8 decode as UTF-8 (ASCII is a subset, and a future Avid that
-/// switches encodings keeps working); anything else decodes through the
-/// MacRoman table rather than degrading to replacement characters.
+/// Turn a byte string from an Avid database into text.
+///
+/// Avid's databases still carry MacRoman, a legacy of Media Composer's
+/// Mac-only early years. The PMR writes MacRoman in its first record set
+/// and UTF-8 filenames in its second; the MDB writes MacRoman unless the
+/// property has a `…UTF8` twin (bin names, paths) — the parsers read the
+/// twin first, and clip names and attribute values have no twin at all.
+///
+/// decode() takes whatever bytes it is given: valid UTF-8 decodes as
+/// UTF-8 (ASCII is a subset, so plain names go straight through);
+/// anything else goes through the MacRoman table. A MacRoman-only value
+/// is therefore never blanked or shown as replacement characters — the
+/// old MDB reader did exactly that, and six ß-named renders came out empty.
 namespace AvidText
 {
-	/// The upper half of MacRoman (0x80–0xFF) mapped to Unicode, per
-	/// Apple's canonical table. 0xDB is € (Mac OS 8.5+, which every
-	/// MC-era system is); 0xF0 is the Apple logo (private use U+F8FF).
+	/// Apple's MacRoman upper half (0x80–0xFF) to Unicode. 0xDB is €,
+	/// 0xF0 the Apple logo (private use U+F8FF).
 	inline constexpr char16_t kMacRomanHigh[128] = {
 		// 0x80
 		0x00C4, 0x00C5, 0x00C7, 0x00C9, 0x00D1, 0x00D6, 0x00DC, 0x00E1,
@@ -43,18 +47,6 @@ namespace AvidText
 		0xF8FF, 0x00D2, 0x00DA, 0x00DB, 0x00D9, 0x0131, 0x02C6, 0x02DC,
 		0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7};
 
-	inline QString fromMacRoman(const char *bytes, qsizetype len)
-	{
-		QString out;
-		out.reserve(len);
-		for (qsizetype i = 0; i < len; ++i)
-		{
-			const auto b = static_cast<unsigned char>(bytes[i]);
-			out.append(b < 0x80 ? QChar(char16_t(b)) : QChar(kMacRomanHigh[b - 0x80]));
-		}
-		return out;
-	}
-
 	inline QString decode(const char *bytes, qsizetype len)
 	{
 		// Stateless: a truncated multi-byte sequence at the end counts as
@@ -63,6 +55,14 @@ namespace AvidText
 		QString s = utf8.decode(QByteArrayView(bytes, len));
 		if (!utf8.hasError())
 			return s;
-		return fromMacRoman(bytes, len);
+
+		QString out;
+		out.reserve(len);
+		for (qsizetype i = 0; i < len; ++i)
+		{
+			const auto b = static_cast<unsigned char>(bytes[i]);
+			out.append(b < 0x80 ? QChar(char16_t(b)) : QChar(kMacRomanHigh[b - 0x80]));
+		}
+		return out;
 	}
 } // namespace AvidText
