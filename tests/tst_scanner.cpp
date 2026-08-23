@@ -170,9 +170,8 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 												  " \xE4\xBD\xA0\xE5\xA5\xBD \xE6\xBC\xA2");
 	QCOMPARE(mf.originalBin, expectedBin);
 
-	QVERIFY(!mf.isNoReference);
-	QVERIFY(!mf.isNoDatabase());
-	QVERIFY(!mf.isNoProject);
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
+	QVERIFY(!mf.hasNoProject());
 	QVERIFY(!mf.isInvalidUmid);
 	QVERIFY(!mf.isNonPortable);
 
@@ -220,18 +219,20 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	// Recovery discriminators. NB: clipName is NOT one — Stage 2 reads it from
-	// the MXF MaterialPackage, so it is set with or without the MDB (the no-mdb
-	// partner test confirms that). The genuine signals are the flags, the
-	// sentinel, and the adopted MOB ID, which only the MDB join can supply.
-	QVERIFY(!mf.isInvalidUmid);		// a good UMID is what the lookup keys on
-	QVERIFY(!mf.isNoReference); // Stage 3 flipped it back
-	QVERIFY(!mf.isNoDatabase());
-	QVERIFY(mf.isNoProject); // found in MDB, but no project association
-	QCOMPARE(mf.project, QStringLiteral("No project"));
+	// Recovery discriminators. NB: clipName is NOT one — the header pass reads
+	// it from the MXF MaterialPackage, so it is set with or without the MDB
+	// (the no-mdb partner test confirms that). The genuine signal is the
+	// adopted master MOB, which only the MDB re-join can supply. The project
+	// comes from the file's own header (the same `_PJ` Avid reads when it
+	// rebuilds a PMR), and the status stays honest: there is no PMR here, so
+	// the folder has no index to list the file in.
+	QVERIFY(!mf.isInvalidUmid); // a good UMID is what the lookup keys on
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 	const QString adoptedMob =
 		QStringLiteral("060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613");
-	QCOMPARE(mf.mobId, adoptedMob); // canonical MOB ID adopted from the MDB record
+	QCOMPARE(mf.masterMobId, adoptedMob); // the clip, adopted from the MDB record
+	QVERIFY(mf.mobId.isEmpty());		  // the file mob is not guessed from the header
 }
 
 // The clip-name ladder (MediaFile::ClipNameSource), enforced on the Stage 3
@@ -280,11 +281,12 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	// Stage 3 did run — the MDB's identity and flags were adopted...
-	QVERIFY(mf.isNoProject);
-	QCOMPARE(mf.project, QStringLiteral("No project"));
-	QCOMPARE(mf.mobId, QStringLiteral("060a2b3401010105.01010f1013000000."
-									  "d2467dea74110690.91901e6a605d3613"));
+	// The re-join did run — the MDB's master MOB was adopted (no PMR here,
+	// so the status honestly says the folder has no index)...
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+	QCOMPARE(mf.project, QStringLiteral("block 1729")); // from the file's own header
+	QCOMPARE(mf.masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000."
+											"d2467dea74110690.91901e6a605d3613"));
 
 	// ...but the clip name stayed with the media file's own MaterialPackage
 	// name. Before the fix this read "Wrong Neighbour Clip". Still true under
@@ -295,9 +297,10 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 }
 
 // Partner to unreferenced_mxf_recovered_via_mdb, with NO databases in the
-// folder at all. An absent database can't verify a miss, so the app must not
-// claim "No reference" — the honest state is "No database" (never indexed),
-// and Stage 3 has nothing to recover against.
+// folder at all. An absent index can't verify a miss, so the app must not
+// claim "No reference" — the honest state is "No database" (nothing to check
+// against); the project still comes from the file's own header, and the
+// re-join has nothing to recover against.
 void TestScanner::mxf_without_any_database_is_no_database()
 {
 	QTemporaryDir tmp;
@@ -321,11 +324,10 @@ void TestScanner::mxf_without_any_database_is_no_database()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	QVERIFY(!mf.isNoReference); // absent databases can't verify a miss
-	QCOMPARE(int(mf.dbIssue), int(MediaFile::DbIssue::NeverIndexed));
-	QCOMPARE(mf.project, QStringLiteral("No database"));
-	QVERIFY(!mf.isNoProject);	 // recovery never ran
-	QVERIFY(mf.mobId.isEmpty()); // no MOB adopted — the discriminator vs the recovered case
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase); // absent index can't verify a miss
+	QCOMPARE(mf.project, QStringLiteral("block 1729"));		// the file's own header still names it
+	QVERIFY(mf.mobId.isEmpty());							// no MOB adopted — the discriminator vs the recovered case
+	QVERIFY(mf.masterMobId.isEmpty());
 }
 
 // The verified-miss case: the folder HAS readable databases and the file is in
@@ -359,10 +361,9 @@ void TestScanner::wav_with_readable_dbs_is_no_reference()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	QVERIFY(mf.isNoReference); // both databases readable, file in neither: verified
-	QVERIFY(!mf.isNoDatabase());
-	QCOMPARE(mf.project, QStringLiteral("No reference"));
-	QVERIFY(!mf.isNoProject);
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference); // PMR readable, file not in it
+	QVERIFY(mf.hasNoProject()); // a .wav has no header to name one either
+	QCOMPARE(mf.projectDisplay(), QStringLiteral("No project"));
 }
 
 // The live corrupt-PMR case (seen in the field as a PMR whose first record
@@ -410,20 +411,21 @@ void TestScanner::corrupt_pmr_flags_no_database_and_mdb_still_recovers()
 		return nullptr;
 	};
 
-	// The MXF's UMID is in the readable MDB: recovered despite the dead PMR.
+	// The MXF's UMID is in the readable MDB: identity recovered despite the
+	// dead PMR, the project read from the file's own header — and the status
+	// keeps the fact that this folder's index could not be read.
 	const MediaFile *mxf = findByName(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
 	QVERIFY(mxf != nullptr);
-	QVERIFY(mxf->isNoProject);
-	QVERIFY(!mxf->isNoDatabase());
-	QCOMPARE(mxf->project, QStringLiteral("No project"));
+	QCOMPARE(mxf->dbStatus, MediaFile::DbStatus::DbUnreadable);
+	QCOMPARE(mxf->project, QStringLiteral("block 1729"));
+	QVERIFY(!mxf->masterMobId.isEmpty()); // the re-join found the clip
 
-	// The wav has no UMID; nothing can vouch for it while the PMR is dead, so
-	// it must NOT be claimed as a verified miss.
+	// The wav has no UMID and no header; nothing can vouch for it while the
+	// PMR is dead, so it must NOT be claimed as a verified miss.
 	const MediaFile *wavFile = findByName(QStringLiteral("tone.wav"));
 	QVERIFY(wavFile != nullptr);
-	QVERIFY(!wavFile->isNoReference);
-	QCOMPARE(int(wavFile->dbIssue), int(MediaFile::DbIssue::Unreadable));
-	QCOMPARE(wavFile->project, QStringLiteral("No database"));
+	QCOMPARE(wavFile->dbStatus, MediaFile::DbStatus::DbUnreadable);
+	QVERIFY(wavFile->hasNoProject());
 }
 
 void TestScanner::effect_render_names_classify_as_precompute()
@@ -848,12 +850,12 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 		QVERIFY2(spy.wait(20000), "rescan did not finish");
 		const auto results = spy.takeFirst().at(0).value<QVector<MediaFile>>();
 		QCOMPARE(results.size(), 1);
-		// Without the clear, Stage 3 rejoins this file against the
-		// cancelled scan's cached MDB and reports "No project".
-		QVERIFY2(results.first().isNoDatabase(),
-				 qPrintable(QStringLiteral("stale cache leaked; project = ") +
-							results.first().project));
-		QCOMPARE(results.first().project, QStringLiteral("No database"));
+		// Without the clear, the header pass re-joins this file against the
+		// cancelled scan's cached MDB and adopts a master MOB from it.
+		QCOMPARE(results.first().dbStatus, MediaFile::DbStatus::NoDatabase);
+		QVERIFY2(results.first().masterMobId.isEmpty(),
+				 qPrintable(QStringLiteral("stale cache leaked; master MOB = ") +
+							results.first().masterMobId));
 	}
 }
 
@@ -911,7 +913,8 @@ void TestScanner::database_described_row_never_reads_its_header()
 	QVERIFY(!mf.bitDepth.isEmpty());
 	QVERIFY(mf.resolution.isEmpty());
 	QVERIFY(!mf.isInvalidUmid);
-	QVERIFY(!mf.isNoReference && !mf.isNoDatabase() && !mf.isNoProject);
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
+	QVERIFY(!mf.hasNoProject());
 }
 
 void TestScanner::force_header_scan_reads_every_header()

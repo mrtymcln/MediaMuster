@@ -780,7 +780,12 @@ void MxfParser::parseTaggedValue(const QByteArray &data, qint64 startPos, qint64
 	}
 	const bool wantPath = name == QLatin1String("UNC Path");
 	const bool wantContainer = name == QLatin1String("Video");
-	if (!wantPath && !wantContainer)
+	// `_PJ` is the attribute Media Composer's own PMR rebuild asks the mob for
+	// (`PROJNAME` is its legacy spelling). Each package carries its own copy
+	// of the same value; the first one seen wins.
+	const bool wantProject = (name == QLatin1String("_PJ") || name == QLatin1String("PROJNAME")) &&
+							 out.projectName.isEmpty();
+	if (!wantPath && !wantContainer && !wantProject)
 		return;
 
 	// Decode the Indirect string: byte-order byte, type AUID, UTF-16 text.
@@ -807,8 +812,10 @@ void MxfParser::parseTaggedValue(const QByteArray &data, qint64 startPos, qint64
 		return;
 	if (wantPath)
 		out.sourceFilePath = text;
-	else
+	else if (wantContainer)
 		out.sourceContainer = text;
+	else
+		out.projectName = text;
 }
 
 // MARK: - Codec UL lookup

@@ -119,10 +119,9 @@ namespace
 
 	/// The one place a clip name is ever assigned. Takes only when the new
 	/// name comes from a STRICTLY better source, so the rungs of the ladder
-	/// can arrive in any order — which they do: Stage 1 reads the MDB, Stage 2
-	/// the MXF header, Stage 3 the MDB again. Strictly-better also means the
-	/// first of two equal-ranked sources wins, so Stage 1's file-MOB record
-	/// keeps precedence over the master-MOB record read moments later.
+	/// can arrive in any order — which they do: pass 1 reads the MDB, pass 2
+	/// the MXF header and then the MDB again via the UMID re-join.
+	/// Strictly-better also means the first of two equal-ranked sources wins.
 	void setClipName(MediaFile &mf, const QString &name, MediaFile::ClipNameSource src)
 	{
 		if (name.isEmpty() || int(src) <= int(mf.clipNameSource))
@@ -140,10 +139,9 @@ namespace
 			dst = src;
 	}
 
-	// Copy non-empty MDB fields onto the MediaFile. Shared by Stage 1
-	// (file-MOB + master-MOB lookups) and Stage 3 (UMID lookup
-	// after endian swap). assignIfMissing means call order doesn't
-	// matter; first non-empty wins.
+	// Copy non-empty MDB fields onto the MediaFile. Shared by pass 1 (the
+	// master-MOB lookup) and pass 2's UMID re-join. assignIfMissing means
+	// call order doesn't matter; first non-empty wins.
 	//
 	// The clip name is the MDB rung of the ladder (see
 	// MediaFile::ClipNameSource): setClipName ranks it below a
@@ -353,13 +351,13 @@ void MediaScanner::doScan()
 	int noReference = 0, noDatabase = 0, invalidUmid = 0, noProject = 0, nonPortable = 0;
 	for (const auto &f : allFiles)
 	{
-		if (f.isNoReference)
+		if (f.dbStatus == MediaFile::DbStatus::NoReference)
 			++noReference;
 		if (f.isNoDatabase())
 			++noDatabase;
 		if (f.isInvalidUmid)
 			++invalidUmid;
-		if (f.isNoProject)
+		if (f.hasNoProject())
 			++noProject;
 		if (f.isNonPortable)
 			++nonPortable;
@@ -393,7 +391,7 @@ void MediaScanner::doScan()
 				QStringLiteral("%1 file%2 with an invalid (all-zero) UMID").arg(invalidUmid).arg(invalidUmid == 1 ? "" : "s"));
 	if (noProject > 0)
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("%1 file%2 with no project").arg(noProject).arg(noProject == 1 ? "" : "s"));
+				QStringLiteral("%1 file%2 with no project name anywhere").arg(noProject).arg(noProject == 1 ? "" : "s"));
 	if (nonPortable > 0)
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
 				QStringLiteral("%1 non-portable filename%2")
@@ -717,15 +715,16 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 	// MARK: Folder database status
 
-	// What the databases can vouch for. An absent database can't contain any
-	// file (vacuously checkable), but an unreadable one could contain
-	// anything, so nothing unmatched in this folder can be verified. Both
-	// have to be absent before "never indexed" applies.
-	MediaFile::DbIssue folderDbIssue = MediaFile::DbIssue::None;
+	// The status a file gets when this folder's PMR does NOT name it. The PMR
+	// is the index of online files: if it exists and parsed, a file it omits
+	// is a real miss ("No reference"). An unreadable database could have
+	// listed anything, so nothing unmatched here can be called a miss; and
+	// with no PMR at all there is no index to miss from.
+	MediaFile::DbStatus folderStatus = MediaFile::DbStatus::NoReference;
 	if ((pmrExists && !pmrOk) || (mdbExists && !mdbOk))
-		folderDbIssue = MediaFile::DbIssue::Unreadable;
-	else if (!pmrExists && !mdbExists)
-		folderDbIssue = MediaFile::DbIssue::NeverIndexed;
+		folderStatus = MediaFile::DbStatus::DbUnreadable;
+	else if (!pmrExists)
+		folderStatus = MediaFile::DbStatus::NoDatabase;
 
 	// MARK: Enumerate files in this folder
 
@@ -789,7 +788,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 			continue;
 
 		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, pmrMaps, mdb,
-									  folderDbIssue, tally);
+									  folderStatus, tally);
 		mf.isQuarantined = isQuarantineFolder;
 
 		result.files.append(mf);
@@ -820,11 +819,11 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 			{task.volumeName + QLatin1Char('/') + task.folderNumber, int(result.files.size())});
 	}
 
-	// Cache the clip records for Stage 3 (UMID recovery) — only the masters;
+	// Cache the clip records for pass 2's UMID re-join — only the masters;
 	// the per-file essence is consumed above and dropped. Move because this
 	// task is done with it. Skip empties as nothing to join.
-	// PathKey::normalise keeps Stages 1 and 3 agreeing on folder
-	// identity across different Qt path APIs.
+	// PathKey::normalise keeps both passes agreeing on folder identity
+	// across different Qt path APIs.
 	if (!mdb.masters.isEmpty())
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
@@ -840,7 +839,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 									   const QString &volumePath, const QString &folderNumber,
 									   const PmrParser::ProjectMaps &pmrMaps,
 									   const MdbDatabase &mdb,
-									   MediaFile::DbIssue folderDbIssue, CoverageTally &tally)
+									   MediaFile::DbStatus folderStatus, CoverageTally &tally)
 {
 	// `fi` is the directory listing's own entry — its size and times are
 	// already known, so nothing here stats the file again.
@@ -902,8 +901,8 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// record is not consulted: its CPNT:Name is usually the source filename,
 	// and reading it first used to put "Avid DNx SQ.mov" in the Clip Name
 	// column on 67 of 795 corpus rows whenever the header went unread.
-	// applyMdbRecord is the file-scope helper above; Stage 1 and Stage 3 both
-	// call it so the merge rules can't drift.
+	// applyMdbRecord is the file-scope helper above; pass 1 and the pass-2
+	// re-join both call it so the merge rules can't drift.
 	if (!mf.masterMobId.isEmpty())
 	{
 		auto mdbIt = mdb.masters.find(mf.masterMobId);
@@ -964,25 +963,15 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// or its clip; the media can't be tracked or relinked reliably.
 	mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId);
 
-	// MARK: Local-database classification
+	// MARK: Local-database status
 
-	// No PMR project means the local databases never attributed this file.
-	// Claim a verified miss ("No reference") only when every database that
-	// exists in the folder parsed cleanly; otherwise the honest answer is
-	// "couldn't check" ("No database"), with the reason kept for the UI.
-	if (mf.project.isEmpty())
-	{
-		if (folderDbIssue == MediaFile::DbIssue::None)
-			mf.markNoReference();
-		else
-			mf.markNoDatabase(folderDbIssue);
-	}
-
-	// A MOB ID plus an MDB in the folder means the file IS indexed — the
-	// editor probably deleted the project that owned the essence. 'No
-	// project' outranks both miss states (the setter encodes that rule).
-	if (!mf.mobId.isEmpty() && (mf.isNoReference || mf.isNoDatabase()) && !mdb.isEmpty())
-		mf.markNoProject();
+	// The PMR is the folder's index of online files: named there = Listed;
+	// otherwise the row takes the folder's verdict computed above. The
+	// project is a separate fact — whatever the PMR entry said, possibly
+	// nothing — and pass 2 reads the header's own `_PJ` for any row still
+	// without one (the same attribute Media Composer reads when it rebuilds
+	// a PMR), so "No project" ends up meaning exactly that: nothing names one.
+	mf.dbStatus = pmrHit ? MediaFile::DbStatus::Listed : folderStatus;
 
 	return mf;
 }
@@ -1010,7 +999,10 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 	for (int i = 0; i < files.size(); ++i)
 	{
 		const MediaFile &f = files[i];
-		if (!AvidLayout::hasMxfExtension(f.extension) || f.sizeBytes <= 1024 || !f.codec.isEmpty())
+		// A row needs its header when the databases left it without technical
+		// facts — or without a project name, which the header also carries.
+		if (!AvidLayout::hasMxfExtension(f.extension) || f.sizeBytes <= 1024 ||
+			(!f.codec.isEmpty() && !f.project.isEmpty()))
 			continue;
 		const QString rawFolder = QFileInfo(f.filePath).absolutePath();
 		auto cacheIt = folderKeyCache.find(rawFolder);
@@ -1052,15 +1044,24 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			const MxfMetadata mxf = MxfParser::parseHeader(mf.filePath, &bytesRead);
 			applyMetadata(mf, mxf);
 
+			// Pass 1 found no project in the PMR (no entry, or a blank one):
+			// take the one Avid wrote into the file — the very attribute
+			// Media Composer reads back when it rebuilds a folder's PMR.
+			if (mf.project.isEmpty())
+				mf.project = mxf.projectName;
+
 			// Re-join by the header's own UMID (its MaterialPackage UID = the
 			// master MOB in MXF byte order): a file the PMR doesn't name but
-			// the MDB still knows — the Interplay shape, or a PMR that was
-			// corrupt while the MDB read fine. Recovers name/bin/source and
-			// adopts the MOB ids so the bin filter and Select Relatives see
-			// the row like a PMR hit. Media vs Precompute is NOT touched: the
-			// header just said.
-			const bool unattributed = mf.isNoReference || mf.isNoDatabase();
-			if (unattributed && !mxf.umid.isEmpty() && !MobId::isAllZero(mxf.umid))
+			// the MDB still knows — copied in before Avid re-indexed, another
+			// seat's media, or a PMR that was corrupt while the MDB read fine.
+			// Recovers name/bin/source and the master MOB so the bin filter
+			// and Select Relatives see the row; the FILE mob is left empty
+			// (the header can't identify it reliably). The database status is
+			// NOT changed: the folder's PMR still doesn't list the file, and
+			// that is what the status reports. Media vs Precompute is NOT
+			// touched: the header just said.
+			const bool unlisted = mf.dbStatus != MediaFile::DbStatus::Listed;
+			if (unlisted && !mxf.umid.isEmpty() && !MobId::isAllZero(mxf.umid))
 			{
 				const auto mapIt = clipsByFolder.constFind(row.folderKey);
 				if (mapIt != clipsByFolder.constEnd() && !mapIt->isEmpty())
@@ -1079,11 +1080,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 					{
 						applyMdbRecord(mf, recIt.value());
 						if (!recIt->mobIdHex.isEmpty())
-						{
-							mf.mobId = recIt->mobIdHex;
 							mf.masterMobId = recIt->mobIdHex;
-						}
-						mf.markNoProject(); // in the MDB, but no project's PMR names it
 						++recovered;
 					}
 				}

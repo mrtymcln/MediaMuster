@@ -41,7 +41,7 @@ private slots:
 	// state (label without flag, or stale flags after a transition)
 	// must be impossible. Labels asserted as raw literals on purpose —
 	// the rename tripwire.
-	void attribution_setters_pair_flags_with_labels();
+	void status_words_come_from_one_table();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -284,27 +284,52 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 	QVERIFY(!m.index(1, col).data(Qt::UserRole).toDateTime().isValid());
 }
 
-void TestMediaTableModel::attribution_setters_pair_flags_with_labels()
+// The database status is one enum value and its words live in one table; the
+// Project cell, its tooltip, the tab and the CSV all read that table. This
+// pins the table: every status has a label, the two couldn't-check states
+// share the one "No Database" label but explain themselves differently, and
+// "No project" is a separate fact (an empty project) with its own sentence.
+void TestMediaTableModel::status_words_come_from_one_table()
 {
+	using DbStatus = MediaFile::DbStatus;
+	for (DbStatus s : {DbStatus::Listed, DbStatus::NoReference, DbStatus::NoDatabase, DbStatus::DbUnreadable})
+	{
+		const auto text = MediaFile::dbStatusText(s);
+		QVERIFY2(!text.label.isEmpty(), "every status has a label (it is the CSV value)");
+		QCOMPARE(text.why.isEmpty(), s == DbStatus::Listed); // only Listed needs no explanation
+	}
+	QCOMPARE(MediaFile::dbStatusText(DbStatus::NoDatabase).label,
+			 MediaFile::dbStatusText(DbStatus::DbUnreadable).label); // one tab
+	QVERIFY(MediaFile::dbStatusText(DbStatus::NoDatabase).why !=
+			MediaFile::dbStatusText(DbStatus::DbUnreadable).why); // two reasons
+	QCOMPARE(MediaFile::dbStatusText(DbStatus::NoReference).label, QStringLiteral("No Reference"));
+
 	MediaFile f;
-
-	f.markNoReference();
-	QVERIFY(f.isNoReference);
-	QVERIFY(!f.isNoProject);
+	QCOMPARE(f.dbStatus, DbStatus::Listed);
 	QVERIFY(!f.isNoDatabase());
-	QCOMPARE(f.project, QStringLiteral("No reference"));
-
-	f.markNoDatabase(MediaFile::DbIssue::Unreadable);
+	f.dbStatus = DbStatus::DbUnreadable;
 	QVERIFY(f.isNoDatabase());
-	QVERIFY(!f.isNoReference);
-	QCOMPARE(f.project, QStringLiteral("No database"));
+	f.dbStatus = DbStatus::NoDatabase;
+	QVERIFY(f.isNoDatabase());
 
-	// 'No project' outranks both miss states — the setter clears them.
-	f.markNoProject();
-	QVERIFY(f.isNoProject);
-	QVERIFY(!f.isNoReference);
-	QVERIFY(!f.isNoDatabase());
-	QCOMPARE(f.project, QStringLiteral("No project"));
+	// The project is independent of the status: empty means "No project"
+	// wherever it is shown, and a named project never reads as a state.
+	QVERIFY(f.hasNoProject());
+	QCOMPARE(f.projectDisplay(), QStringLiteral("No project"));
+	f.project = QStringLiteral("Tëst");
+	QVERIFY(!f.hasNoProject());
+	QCOMPARE(f.projectDisplay(), QStringLiteral("Tëst"));
+
+	// The model shows projectDisplay() and explains the row in its tooltip.
+	MediaTableModel m;
+	MediaFile unlisted;
+	unlisted.dbStatus = DbStatus::NoReference;
+	m.setMediaFiles({unlisted});
+	const int col = int(MediaTableModel::Column::Project);
+	QCOMPARE(m.index(0, col).data(Qt::DisplayRole).toString(), QStringLiteral("No project"));
+	const QString tip = m.index(0, col).data(Qt::ToolTipRole).toString();
+	QVERIFY(tip.contains(MediaFile::noProjectWhy()));
+	QVERIFY(tip.contains(MediaFile::dbStatusText(DbStatus::NoReference).why));
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

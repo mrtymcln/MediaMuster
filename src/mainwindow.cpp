@@ -125,14 +125,11 @@ namespace
 		 "Rendered effects — media Avid generated from a sequence, as its own\n"
 		 "usage code says. Re-rendering recreates them; nothing else can be\n"
 		 "relinked to them."},
+		// These three take their labels and tooltips from MediaFile at build
+		// time (statusTabText below), so tab, table tooltip and CSV agree.
 		{MediaFilterProxy::FilterMode::NoProject, "No Project"},
-		{MediaFilterProxy::FilterMode::NoReference, "No Reference",
-		 "No reference in the folder's MDB or PMR databases\n"
-		 "(msmMMOB.mdb / msmFMID.pmr). Expected in Interplay\n"
-		 "environments — the media may still be in use."},
-		{MediaFilterProxy::FilterMode::NoDatabase, "No Database",
-		 "The folder's Avid databases are missing or unreadable,\n"
-		 "so references could not be checked."},
+		{MediaFilterProxy::FilterMode::NoReference, "No Reference"},
+		{MediaFilterProxy::FilterMode::NoDatabase, "No Database"},
 		{MediaFilterProxy::FilterMode::InvalidUmid, "Invalid UMID",
 		 "The file's MOB ID is all zeros — Avid never assigned a real identity,\n"
 		 "so the media can't be tracked or relinked reliably."},
@@ -359,10 +356,31 @@ void MainWindow::buildSidePanel()
 QWidget *MainWindow::buildToolbar()
 {
 	m_filterTabs = new QTabBar;
+	// The project/database-status tabs read their words from MediaFile — the
+	// same sentences the table tooltip and the CSV use — so they can't drift.
+	const auto statusTabText = [](MediaFilterProxy::FilterMode mode) -> QString
+	{
+		using DbStatus = MediaFile::DbStatus;
+		switch (mode)
+		{
+		case MediaFilterProxy::FilterMode::NoProject:
+			return MediaFile::noProjectWhy();
+		case MediaFilterProxy::FilterMode::NoReference:
+			return MediaFile::dbStatusText(DbStatus::NoReference).why;
+		case MediaFilterProxy::FilterMode::NoDatabase:
+			return MediaFile::dbStatusText(DbStatus::NoDatabase).why + QStringLiteral("\n\n") +
+				   MediaFile::dbStatusText(DbStatus::DbUnreadable).why;
+		default:
+			return {};
+		}
+	};
 	for (const auto &fd : kFilterDefs)
 	{
 		const int idx = m_filterTabs->addTab(QString::fromLatin1(fd.label));
-		if (fd.tooltip)
+		const QString statusTip = statusTabText(fd.mode);
+		if (!statusTip.isEmpty())
+			m_filterTabs->setTabToolTip(idx, statusTip);
+		else if (fd.tooltip)
 			m_filterTabs->setTabToolTip(idx, QString::fromLatin1(fd.tooltip));
 	}
 	m_filterTabs->setExpanding(false);
@@ -1403,22 +1421,35 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	m_statusScanTime->setText(timeStr);
 
 	m_projectList->clear();
-	QHash<QString, QPair<int, qint64>> projectStats;
+	// Group by the displayed project name: real projects plus, at most, the
+	// one "No project" row. Database status is NOT a project and is never
+	// listed here — the filter tabs are where it lives.
+	struct ProjectStat
+	{
+		int count = 0;
+		qint64 bytes = 0;
+		bool hasProject = true;
+	};
+	QHash<QString, ProjectStat> projectStats;
 	for (const auto &f : results)
 	{
-		auto &stat = projectStats[f.project];
-		stat.first++;
-		stat.second += f.sizeBytes;
+		auto &stat = projectStats[f.projectDisplay()];
+		stat.count++;
+		stat.bytes += f.sizeBytes;
+		stat.hasProject = !f.hasNoProject();
 	}
 
 	QStringList sorted = projectStats.keys();
 	sorted.sort();
 	for (const QString &p : sorted)
 	{
-		auto [count, bytes] = projectStats[p];
-		auto *item = new QListWidgetItem(Icons::forProject(p), p);
+		const ProjectStat &stat = projectStats[p];
+		auto *item = new QListWidgetItem(Icons::forProject(stat.hasProject), p);
 		item->setData(Qt::UserRole, p);
-		item->setToolTip(tr("%1 files, %2").arg(count).arg(Format::bytes(bytes)));
+		QString tip = tr("%1 files, %2").arg(stat.count).arg(Format::bytes(stat.bytes));
+		if (!stat.hasProject)
+			tip += QStringLiteral("\n\n") + MediaFile::noProjectWhy();
+		item->setToolTip(tip);
 		m_projectList->addItem(item);
 	}
 
@@ -1911,8 +1942,9 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 	QMap<QString, ProjectSummary> map;
 	for (const auto &f : files)
 	{
-		auto &s = map[f.project];
-		s.name = f.project;
+		auto &s = map[f.projectDisplay()];
+		s.name = f.projectDisplay();
+		s.hasProject = !f.hasNoProject();
 		if (f.kind == MediaFile::Kind::Video)
 			s.videoCount++;
 		else
@@ -1949,7 +1981,7 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 	for (auto it = map.begin(); it != map.end(); ++it, ++r)
 	{
 		const auto &s = it.value();
-		auto *proj = new QStandardItem(Icons::forProject(s.name), s.name);
+		auto *proj = new QStandardItem(Icons::forProject(s.hasProject), s.name);
 		proj->setData(s.name, Qt::UserRole);
 		sm->setItem(r, 0, proj);
 		sm->setItem(r, 1, numItem(Format::count(s.videoCount), s.videoCount));

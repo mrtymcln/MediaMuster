@@ -41,15 +41,18 @@ struct MxfMetadata
 	/// test; see the note above isPrecomputeUsage in mxfparser.cpp.
 	bool isPrecompute = false;
 
-	/// The MaterialPackage's TaggedValues (set 0x3F) as Avid writes them on
-	/// import: `UNC Path` = the imported file's path, `Video` = its container
-	/// ("QTFF"), and whether an `_IMPORTSETTING` attribute exists at all.
-	/// Absent on Avid-generated media (renders, tones, mixdowns). The MDB
-	/// carries the same three facts; this is how the header path — the only
-	/// path an Interplay site has — gets them too.
+	/// Avid's own TaggedValues (set 0x3F, on the packages' attribute lists):
+	/// `UNC Path` = the imported file's path, `Video` = its container ("QTFF"),
+	/// whether an `_IMPORTSETTING` attribute exists at all (absent on
+	/// Avid-generated media — renders, tones, mixdowns), and `_PJ` (legacy
+	/// `PROJNAME`) = the project the media was created in. The MDB carries the
+	/// same facts; this is how the header path — the only path an Interplay
+	/// site has — gets them too. The project is exactly what Media Composer
+	/// itself reads from the file when it rebuilds a folder's PMR.
 	QString sourceFilePath;
 	QString sourceContainer;
 	bool hasImportSetting = false;
+	QString projectName;
 
 	QByteArray essenceContainerLabel; ///< Raw essence-coding UL (usually 16 bytes), looked up against kEntries.
 	int width = 0;
@@ -162,8 +165,9 @@ private:
 	static void parseStructuralComponent(const QByteArray &data, qint64 startPos, qint64 length,
 										 MxfMetadata &out);
 	/// AAF TaggedValue set (0x3F): Name (0x5001, UTF-16BE) + Value (0x5003,
-	/// an Indirect: type AUID + payload). Only three names are read —
-	/// `UNC Path`, `Video`, `_IMPORTSETTING` — see MxfMetadata::sourceFilePath.
+	/// an Indirect: type AUID + payload). Only four names are read —
+	/// `UNC Path`, `Video`, `_IMPORTSETTING`, `_PJ`/`PROJNAME` — see
+	/// MxfMetadata::sourceFilePath.
 	static void parseTaggedValue(const QByteArray &data, qint64 startPos, qint64 length,
 								 MxfMetadata &out);
 };

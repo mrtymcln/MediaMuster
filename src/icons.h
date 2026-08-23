@@ -12,7 +12,7 @@ namespace Icons
 	/// network icon.
 	QIcon forVolumeType(const QString &volumeType, const QString &path = {});
 
-	/// Project sidebar.
-	QIcon forProject(const QString &projectName);
+	/// Project sidebar / summary: a real project, or the one "No project" row.
+	QIcon forProject(bool hasProject);
 
 } // namespace Icons

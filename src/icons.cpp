@@ -32,19 +32,12 @@ namespace Icons
 		return style->standardIcon(QStyle::SP_DriveHDIcon);
 	}
 
-	QIcon forProject(const QString &projectName)
+	QIcon forProject(bool hasProject)
 	{
 		auto *style = QApplication::style();
-
-		// 'No reference' is the headline cleanup category — warning icon.
-		if (projectName.compare(ProjectLabel::noReference(), Qt::CaseInsensitive) == 0)
-			return style->standardIcon(QStyle::SP_MessageBoxWarning);
-
-		// 'No database' means status unknown, not bad — question icon.
-		if (projectName.compare(ProjectLabel::noDatabase(), Qt::CaseInsensitive) == 0)
-			return style->standardIcon(QStyle::SP_MessageBoxQuestion);
-
-		return style->standardIcon(QStyle::SP_DirIcon);
+		// A project is a folder; the "No project" row is a note, not an
+		// error — nothing about the media is wrong, nothing names a project.
+		return style->standardIcon(hasProject ? QStyle::SP_DirIcon : QStyle::SP_MessageBoxInformation);
 	}
 
 } // namespace Icons

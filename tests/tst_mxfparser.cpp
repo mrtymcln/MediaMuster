@@ -1090,8 +1090,16 @@ void TestMxfParser::tagged_values_yield_source_path_and_import_flag()
 	QCOMPARE(m.sourceContainer, QStringLiteral("QTFF"));
 	QVERIFY2(m.sourceFilePath.endsWith(QStringLiteral("/Avid DNx SQ.mov")), qPrintable(m.sourceFilePath));
 	QVERIFY2(m.sourceFilePath.startsWith(QLatin1Char('/')), qPrintable(m.sourceFilePath));
+	QVERIFY2(!m.projectName.isEmpty(), "the header names the project Avid created the media in");
 
-	// Avid-generated media carries none of them: a tone and a render.
+	// `_PJ` is the attribute Media Composer's own PMR rebuild reads from the
+	// file; the PMR beside this fixture says "block 1729" and so does the file.
+	const MxfMetadata pmrTone =
+		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"));
+	QVERIFY(pmrTone.valid);
+	QCOMPARE(pmrTone.projectName, QStringLiteral("block 1729"));
+
+	// Avid-generated media carries none of the import facts: a tone and a render.
 	const MxfMetadata tone =
 		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/avid_headers/TONE_100A01.F7C83BB3.612410.mxf"));
 	QVERIFY(tone.valid);

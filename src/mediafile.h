@@ -10,21 +10,6 @@
 // couple of derived-display helpers; everything else operates
 // on these as inputs.
 
-// MARK: - Project sentinels
-
-/// Sentinel strings shown in the Project column (and grouped in the project
-/// list) for files without a real project attribution. Deliberately plain
-/// English rather than Avid vocabulary: Avid's own docs define "orphaned" as
-/// indexed media whose references were deleted — not what these states mean —
-/// so the term isn't borrowed. One definition site so the scanner, icons, and
-/// future consumers can't drift.
-namespace ProjectLabel
-{
-	inline QString noReference() { return QStringLiteral("No reference"); }
-	inline QString noDatabase() { return QStringLiteral("No database"); }
-	inline QString noProject() { return QStringLiteral("No project"); }
-} // namespace ProjectLabel
-
 // MARK: - MediaFile
 
 /// One row of the main table. `filePath` is the primary identity;
@@ -45,9 +30,9 @@ struct MediaFile
 
 	/// Where `clipName` came from, ranked. The scanner only ever replaces a
 	/// name with one from a STRICTLY better source, which is what makes the
-	/// ladder hold no matter what order the stages run in: Stage 1 reads the
-	/// MDB, Stage 2 the MXF header, and Stage 3 the MDB again after UMID
-	/// recovery, so a rung can arrive before or after a better one.
+	/// ladder hold no matter what order the passes run in: pass 1 reads the
+	/// MDB, pass 2 the MXF header and then the MDB again after the UMID
+	/// re-join, so a rung can arrive before or after a better one.
 	///
 	///   MaterialPackage — the master-clip name Avid itself displays. Exact,
 	///                     per-file, and present in 1212 of 1212 real files
@@ -75,8 +60,13 @@ struct MediaFile
 	};
 	ClipNameSource clipNameSource = ClipNameSource::None;
 
-	QString project;	 ///< Real project name, or a ProjectLabel sentinel
-						 ///< ("No reference" / "No database" / "No project").
+	/// The project the media was created in. Avid writes it into the PMR entry
+	/// AND the file's own header at creation, and reads it back from the file
+	/// when it rebuilds a folder's databases — so the scanner takes the PMR's
+	/// copy, else the header's, and leaves this EMPTY when neither names one
+	/// (see projectDisplay / hasNoProject). Independent of dbStatus: a file
+	/// can be unlisted in this folder's databases and still name its project.
+	QString project;
 	QString originalBin; ///< MDB _ORG_BIN — frozen at import time.
 
 	// MARK: MXF or MDB technical metadata
@@ -152,67 +142,99 @@ struct MediaFile
 	};
 	Type type = Type::Media;
 
-	/// Why a file's local-database status could not be verified. A folder-level
-	/// fact (the state of that folder's msmFMID.pmr / msmMMOB.mdb), stamped per
-	/// file so each row can explain itself in the UI.
-	enum class DbIssue : int
+	/// Whether this folder's Avid databases (msmFMID.pmr / msmMMOB.mdb) list
+	/// the file — a folder-level fact stamped per row. One enum value, so a
+	/// row is exactly one of these by construction. Kept apart from `project`
+	/// on purpose: Avid treats "which project made this" as a property of the
+	/// media and "is it indexed here" as the state of this folder's databases
+	/// right now, and a file can be unlisted yet still name its project.
+	enum class DbStatus : int
 	{
-		None,		  ///< Folder databases were readable (or the file matched one).
-		NeverIndexed, ///< Folder has no msmFMID.pmr and no msmMMOB.mdb at all.
-		Unreadable	  ///< A database file exists but failed to parse (corrupt/truncated).
+		Listed,		 ///< The folder's PMR names the file.
+		NoReference, ///< Databases present and readable, but no reference to this
+					 ///< file: copied in or created since Avid last indexed the
+					 ///< folder, or its records were removed. Avid re-indexes at launch.
+		NoDatabase,	 ///< No msmFMID.pmr here — no index to check against: other seats'
+					 ///< folders on shared storage, Interplay / MediaCentral, Quarantined
+					 ///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
+		DbUnreadable ///< A database exists but could not be read (corrupt, truncated,
+					 ///< or an unsupported older version); Avid rebuilds it at relaunch.
 	};
+	DbStatus dbStatus = DbStatus::Listed;
 
-	bool isNoReference = false;		 ///< In none of the folder's databases, and every database
-									 ///< that exists parsed cleanly — a verified miss.
-	DbIssue dbIssue = DbIssue::None; ///< != None: the databases couldn't vouch either way.
+	/// The one "No Database" filter tab covers both couldn't-check states;
+	/// the tooltip says which.
+	bool isNoDatabase() const
+	{
+		return dbStatus == DbStatus::NoDatabase || dbStatus == DbStatus::DbUnreadable;
+	}
+	/// Nothing names a project for this file — not the PMR entry, not the
+	/// file's own header. Not a database state: an unlisted file usually still
+	/// knows its project (the header carries it), so the two are independent.
+	bool hasNoProject() const { return project.isEmpty(); }
+
 	/// The file's or its clip's MOB ID is all zeros — Avid never assigned a
 	/// real identity, so the media can't be tracked or relinked reliably.
 	/// (A UMID is what a MOB ID is; the name keeps the domain word.) Never
 	/// seen in 1,155 Avid-written files; catches third-party MXF. MDVx ships
 	/// the same filter as "Bad UMID".
 	bool isInvalidUmid = false;
-	bool isNonPortable = false;		 ///< Filename has Avid illegal chars.
-	bool isNoProject = false;		 ///< In the MDB but no project's PMR references it.
-	bool isQuarantined = false;		 ///< Lives in Avid's "Quarantined Files" folder. Stamped by
-									 ///< the scanner, which knows the folder; the filter only
-									 ///< reads it (it used to re-guess from a path substring).
+	bool isNonPortable = false; ///< Filename has Avid illegal chars.
+	bool isQuarantined = false; ///< Lives in Avid's "Quarantined Files" folder. Stamped by
+								///< the scanner, which knows the folder; the filter only
+								///< reads it (it used to re-guess from a path substring).
 
-	bool isNoDatabase() const { return dbIssue != DbIssue::None; }
+	// MARK: Status words
 
-	// MARK: Attribution transitions
-
-	/// Each attribution state pairs the flags (read by the filter modes
-	/// and tooltips) with the Project-column sentinel (read by the
-	/// display, project list, and CSV). These setters own that pairing —
-	/// Stage 1, Stage 3, and the demo data all press the same button, so
-	/// a half-set state can't exist. The guard conditions for WHEN each
-	/// state applies stay at the call sites.
-
-	void markNoReference()
+	/// The ONE place that says what each database status is called and why
+	/// it happens. The filter tab, the table tooltip, the sidebar, and the CSV
+	/// all read this, so they cannot drift. `label` doubles as the CSV value;
+	/// the two couldn't-check states share a label (one tab) and differ in `why`.
+	struct DbStatusText
 	{
-		isNoReference = true;
-		isNoProject = false;
-		dbIssue = DbIssue::None;
-		project = ProjectLabel::noReference();
+		QString label;
+		QString why;
+	};
+	static DbStatusText dbStatusText(DbStatus s)
+	{
+		switch (s)
+		{
+		case DbStatus::Listed:
+			return {QStringLiteral("Listed"), {}};
+		case DbStatus::NoReference:
+			return {QStringLiteral("No Reference"),
+					QStringLiteral("No reference to this file in the folder's Avid databases "
+								   "(msmFMID.pmr / msmMMOB.mdb) — copied in or created since Avid "
+								   "last indexed the folder, or its records were removed. Media "
+								   "Composer re-indexes it at next launch.")};
+		case DbStatus::NoDatabase:
+			return {QStringLiteral("No Database"),
+					QStringLiteral("This folder has no Avid file index (msmFMID.pmr), so references "
+								   "could not be checked. Normal for other seats' folders on shared "
+								   "storage, for Interplay / MediaCentral, and for Quarantined Files.")};
+		case DbStatus::DbUnreadable:
+			return {QStringLiteral("No Database"),
+					QStringLiteral("A database in this folder exists but could not be read "
+								   "(corrupt, truncated, or an unsupported older version). Media "
+								   "Composer rebuilds it at relaunch.")};
+		}
+		return {};
+	}
+	DbStatusText dbStatusText() const { return dbStatusText(dbStatus); }
+
+	/// Why a row says "No project" — the matching sentence for hasNoProject().
+	static QString noProjectWhy()
+	{
+		return QStringLiteral("Nothing names a project for this file — not the folder's PMR entry, "
+							  "not the file's own header. Avid writes the project into both when it "
+							  "creates media; some ingest tools and older media leave it blank.");
 	}
 
-	void markNoDatabase(DbIssue issue)
+	/// "Project" column / sidebar / CSV string: the project, or "No project"
+	/// when nothing names one. The words live here so every consumer agrees.
+	QString projectDisplay() const
 	{
-		dbIssue = issue;
-		isNoReference = false;
-		isNoProject = false;
-		project = ProjectLabel::noDatabase();
-	}
-
-	/// Clearing the two miss states here IS the precedence rule: a file
-	/// in the MDB has been seen by a database, so neither miss state can
-	/// be true of it ('No project outranks both').
-	void markNoProject()
-	{
-		isNoProject = true;
-		isNoReference = false;
-		dbIssue = DbIssue::None;
-		project = ProjectLabel::noProject();
+		return project.isEmpty() ? QStringLiteral("No project") : project;
 	}
 
 	// MARK: Derived display
@@ -375,7 +397,8 @@ struct VolumeInfo
 
 struct ProjectSummary
 {
-	QString name;
+	QString name;			///< projectDisplay() — real name, or "No project".
+	bool hasProject = true; ///< false for the one "No project" row.
 	int videoCount = 0;
 	int audioCount = 0;
 	qint64 totalBytes = 0;

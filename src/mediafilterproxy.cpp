@@ -96,11 +96,11 @@ bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
 	case FilterMode::Audio:
 		return f.kind == MediaFile::Kind::Audio;
 	case FilterMode::NoReference:
-		return f.isNoReference;
+		return f.dbStatus == MediaFile::DbStatus::NoReference;
 	case FilterMode::NoProject:
-		return f.isNoProject;
+		return f.hasNoProject();
 	case FilterMode::NoDatabase:
-		return f.isNoDatabase();
+		return f.isNoDatabase(); // both couldn't-check states; the tooltip says which
 	case FilterMode::InvalidUmid:
 		return f.isInvalidUmid;
 	case FilterMode::NonPortable:
@@ -125,7 +125,9 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	if (!matchesMode(m_mode, f))
 		return false;
 
-	if (!m_selectedProjects.isEmpty() && !m_selectedProjects.contains(f.project))
+	// The sidebar hands over displayed names, so "No project" selects the
+	// rows whose project is empty.
+	if (!m_selectedProjects.isEmpty() && !m_selectedProjects.contains(f.projectDisplay()))
 		return false;
 
 	if (m_binFilterActive)
@@ -228,7 +230,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::FileName:
 		return QString::compare(l.fileName, r.fileName, Qt::CaseInsensitive) < 0;
 	case Col::Project:
-		return QString::compare(l.project, r.project, Qt::CaseInsensitive) < 0;
+		return QString::compare(l.projectDisplay(), r.projectDisplay(), Qt::CaseInsensitive) < 0;
 	case Col::OriginalBin:
 		return QString::compare(l.originalBin, r.originalBin, Qt::CaseInsensitive) < 0;
 	case Col::Resolution:

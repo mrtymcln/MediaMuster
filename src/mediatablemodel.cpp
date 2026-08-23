@@ -96,7 +96,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::FileName:
 			return f.fileName;
 		case Column::Project:
-			return f.project;
+			return f.projectDisplay();
 		case Column::OriginalBin:
 			return f.originalBin;
 		case Column::Kind:
@@ -127,17 +127,16 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	}
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Project)
 	{
-		// Explain the sentinel states in place, where the user is looking.
-		if (f.dbIssue == MediaFile::DbIssue::Unreadable)
-			return QStringLiteral("This folder's Avid database exists but is unreadable "
-								  "(possibly corrupt), so this file's references could not "
-								  "be checked.");
-		if (f.dbIssue == MediaFile::DbIssue::NeverIndexed)
-			return QStringLiteral("This folder has no Avid databases (msmFMID.pmr / "
-								  "msmMMOB.mdb) — Avid has never indexed it.");
-		if (f.isNoReference)
-			return QStringLiteral("No reference in the folder's MDB or PMR databases. Expected "
-								  "in Interplay environments — the media may still be in use.");
+		// Explain the row where the user is looking: why there is no project
+		// name, and/or why the folder's databases couldn't vouch for the file.
+		// The sentences live on MediaFile so the tabs and CSV say the same.
+		QStringList lines;
+		if (f.hasNoProject())
+			lines << MediaFile::noProjectWhy();
+		if (f.dbStatus != MediaFile::DbStatus::Listed)
+			lines << f.dbStatusText().label + QStringLiteral(": ") + f.dbStatusText().why;
+		if (!lines.isEmpty())
+			return lines.join(QStringLiteral("\n\n"));
 	}
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourceFile)
 		return f.sourceFilePath; // the full path Avid recorded; the cell shows the name

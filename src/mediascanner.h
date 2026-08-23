@@ -147,15 +147,15 @@ private:
 		int stale = 0;
 	};
 
-	/// One row from one directory entry (pass 1). `folderDbIssue` is the
-	/// folder-level database state computed by processFolderTask; it decides
-	/// whether an unmatched file is a verified "No reference" or an
-	/// unverifiable "No database".
+	/// One row from one directory entry (pass 1). `folderStatus` is the
+	/// status computed by processFolderTask for any file the folder's PMR
+	/// does NOT name: a real miss ("No reference") when the databases were
+	/// readable, else the couldn't-check states.
 	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
 							 const PmrParser::ProjectMaps &pmrMaps,
 							 const MdbDatabase &mdb,
-							 MediaFile::DbIssue folderDbIssue, CoverageTally &tally);
+							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
 
 	/// Pass 2. Reads the header of every .mxf row pass 1 left without
 	/// technical facts, in parallel, then re-joins each against its folder's
