@@ -8,9 +8,13 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
-### Grant permission to write to the Releases page ###
 permissions:
-  contents: write
+  contents: read
+
+### Versions. The Check the version step holds these to CMakeLists.txt ###
+env:
+  APP_VERSION: "0.0.2"
+  QT_VERSION: "6.5.3"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,15 +38,22 @@ jobs:
     name: ${{ matrix.name }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      ### Versions come from CMakeLists.txt, the one place they are written:
-      ### the app version from project(), the Qt release from MEDIAMUSTER_QT_VERSION ###
-      - name: Read versions from CMakeLists.txt
+      ### Every version is written out by hand; stop early if any two disagree ###
+      - name: Check the version
         shell: bash
         run: |
-          echo "APP_VERSION=$(sed -nE 's/^project\(MediaMuster VERSION ([0-9.]+).*/\1/p' CMakeLists.txt)" >> "$GITHUB_ENV"
-          echo "QT_VERSION=$(sed -nE 's/^set\(MEDIAMUSTER_QT_VERSION ([0-9.]+)\).*/\1/p' CMakeLists.txt)" >> "$GITHUB_ENV"
+          grep -q "^project(MediaMuster VERSION ${APP_VERSION} " CMakeLists.txt \
+            || { echo "APP_VERSION ${APP_VERSION} is not the project() version in CMakeLists.txt"; exit 1; }
+          grep -q "^find_package(Qt6 ${QT_VERSION} EXACT " CMakeLists.txt \
+            || { echo "QT_VERSION ${QT_VERSION} is not the Qt pin in CMakeLists.txt"; exit 1; }
+          grep -q "^find_package(Qt6 ${QT_VERSION} EXACT " tests/CMakeLists.txt \
+            || { echo "QT_VERSION ${QT_VERSION} is not the Qt pin in tests/CMakeLists.txt"; exit 1; }
+          grep -q "Qt/${QT_VERSION}/macos" CMakeLists.txt \
+            || { echo "QT_VERSION ${QT_VERSION} is not the local Qt path in CMakeLists.txt"; exit 1; }
+          [ "$GITHUB_REF_TYPE" != tag ] || [ "${GITHUB_REF_NAME#v}" = "${APP_VERSION}" ] \
+            || { echo "tag ${GITHUB_REF_NAME} is not APP_VERSION ${APP_VERSION}"; exit 1; }
 
       ### Install Qt ###
       - name: Install Qt (macOS)
@@ -86,7 +97,7 @@ jobs:
           if [[ "$GITHUB_REF_NAME" =~ ^v0\. ]]; then EXTRA="-DSELF_DESTRUCT=ON"; fi
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release \
-                   -DCMAKE_PREFIX_PATH="${Qt6_DIR}" \
+                   -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
                    $EXTRA
           cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
 
@@ -98,18 +109,16 @@ jobs:
           if ($env:GITHUB_REF_NAME -match '^v0\.') { $extra += '-DSELF_DESTRUCT=ON' }
           mkdir build
           cd build
-          cmake .. -DCMAKE_PREFIX_PATH="$env:Qt6_DIR" @extra
+          cmake .. -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" @extra
           cmake --build . --config Release --parallel $env:NUMBER_OF_PROCESSORS
 
       ### Test (macOS and Windows) ###
       - name: Test (macOS and Windows)
         run: ctest --test-dir build -C Release --output-on-failure
 
-      ### --output-on-failure printed nothing for the failing Windows tests
-      ### (2026-08-17), which left a red build with no way to tell what broke.
-      ### ctest always writes every test's output here, so dump it. ###
+      ### --output-on-failure prints nothing for a failing Windows test; ctest always writes this ###
       - name: Test log (on failure)
-        if: failure()
+        if: failure() && hashFiles('build/Testing/Temporary/LastTest.log') != ''
         shell: bash
         run: cat build/Testing/Temporary/LastTest.log
 
@@ -131,7 +140,6 @@ jobs:
           APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: |
-          set -e
           cd build
 
           DMG="MediaMuster-${APP_VERSION}-Mac.dmg"
@@ -141,9 +149,13 @@ jobs:
           APP=MediaMuster.app
           PLUG="$APP/Contents/PlugIns"
           FW="$APP/Contents/Frameworks"
-          rm -rf "$PLUG/imageformats" "$PLUG/iconengines" "$PLUG/generic" \
-                 "$PLUG/tls" "$PLUG/networkinformation"
-          rm -rf "$FW/QtSvg.framework" "$FW/QtNetwork.framework"
+          ### SVG and the image formats are leftovers from the old custom-button UI ###
+          for gone in "$PLUG/imageformats" "$PLUG/iconengines" "$PLUG/generic" \
+                      "$PLUG/tls" "$PLUG/networkinformation" \
+                      "$FW/QtSvg.framework" "$FW/QtNetwork.framework"; do
+            rm -rf "$gone"
+            [ ! -e "$gone" ] || { echo "$gone survived the strip"; exit 1; }
+          done
 
           missing=0
           while IFS= read -r bin; do
@@ -177,9 +189,7 @@ jobs:
 
           if [ -n "$IDENTITY" ] && [ -n "$APPLE_TEAM_ID" ]; then
             echo "── Real Developer ID signing + notarization ──"
-            # Nested-first, no --deep: --deep is deprecated. Sign every
-            # embedded framework and plugin macdeployqt added, then the app.
-            APP=MediaMuster.app
+            ### Nested-first: --deep is deprecated for signing ###
             find "$APP/Contents/Frameworks" -maxdepth 1 -name "*.framework" \
               -exec codesign --force --options runtime --timestamp --sign "$IDENTITY" {} \;
             find "$APP/Contents/PlugIns" -name "*.dylib" \
@@ -194,7 +204,11 @@ jobs:
             xcrun stapler validate "$DMG"
           else
             echo "── No signing identity available — ad-hoc signature ──"
-            codesign --force --deep --sign - MediaMuster.app
+            find "$APP/Contents/Frameworks" -maxdepth 1 -name "*.framework" \
+              -exec codesign --force --sign - {} \;
+            find "$APP/Contents/PlugIns" -name "*.dylib" \
+              -exec codesign --force --sign - {} \;
+            codesign --force --sign - "$APP"
             build_dmg
           fi
 
@@ -203,27 +217,19 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
-
-          $appVersion = $env:APP_VERSION
-          if (-not $appVersion) { throw "APP_VERSION not set" }
-
           cd build
           New-Item -ItemType Directory -Path dist -Force | Out-Null
           Copy-Item -Path Release\MediaMuster.exe -Destination dist\
 
           windeployqt --release --no-translations --no-opengl-sw --no-system-d3d-compiler dist\MediaMuster.exe
 
-          Remove-Item -Force -ErrorAction SilentlyContinue dist\Qt6Network.dll
-          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\tls
-          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\networkinformation
-          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\generic
-          if (Test-Path dist\Qt6Network.dll) { throw "Qt6Network.dll survived the strip" }
-          Remove-Item -Force -ErrorAction SilentlyContinue dist\Qt6Svg.dll
-          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\iconengines
-          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\imageformats
-          if (Test-Path dist\Qt6Svg.dll) { throw "Qt6Svg.dll survived the strip" }
-          if (Test-Path dist\imageformats) { throw "imageformats survived the strip" }
+          ### SVG and the image formats are leftovers from the old custom-button UI ###
+          $strip = @('Qt6Network.dll', 'Qt6Svg.dll', 'tls', 'networkinformation',
+                     'generic', 'iconengines', 'imageformats')
+          foreach ($item in $strip) {
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "dist\$item"
+            if (Test-Path "dist\$item") { throw "$item survived the strip" }
+          }
 
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $vs = & $vswhere -latest -property installationPath
@@ -238,7 +244,7 @@ jobs:
             Copy-Item $src dist\
           }
 
-          Rename-Item dist "MediaMuster-$appVersion-Win"
+          Rename-Item dist "MediaMuster-${env:APP_VERSION}-Win"
 
       ### Upload artefacts ###
       - name: Upload macOS artefact
@@ -261,6 +267,9 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    ### The only job that writes to the Releases page ###
+    permissions:
+      contents: write
     steps:
       - name: Download all artefacts
         uses: actions/download-artifact@v8
@@ -270,9 +279,8 @@ jobs:
       - name: Zip the Windows folder
         run: |
           cd release-assets
-          # Each artefact downloaded into its own subdir; wrap the Windows app
-          # folder into a single versioned zip for the release.
-          zip -r "MediaMuster-${GITHUB_REF_NAME#v}-Win.zip" "MediaMuster-${GITHUB_REF_NAME#v}-Win"
+          ### Each artefact lands in its own subdir; the Windows folder ships as one zip ###
+          zip -r "MediaMuster-${APP_VERSION}-Win.zip" "MediaMuster-${APP_VERSION}-Win"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3

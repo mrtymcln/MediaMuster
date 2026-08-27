@@ -1,7 +1,7 @@
 ### MediaMuster test suite ###
 
-### Same exact Qt release as the app; the number lives in the top-level CMakeLists.txt ###
-find_package(Qt6 ${MEDIAMUSTER_QT_VERSION} EXACT REQUIRED COMPONENTS Test)
+### Same exact Qt release as the app; the Check the version step holds the two together ###
+find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Test)
 
 ### Test target helper ###
 function(mediamuster_add_test name)
