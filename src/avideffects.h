@@ -2,7 +2,7 @@
 
 #include <QString>
 
-// MARK: - EffectCatalogue
+// MARK: - AvidEffects
 
 /// Names a rendered effect from its precompute's clip name.
 ///
@@ -16,12 +16,14 @@
 /// it never decides.
 ///
 /// The catalogue is Avid's own: 887 effects extracted from a Media Composer
-/// 2025.12 install (res/avid-effects.tsv — provenance in its header). Names
-/// are keyed in all five shipped languages, because a German Media Composer
-/// writes "Blende" where an English one writes "Dissolve". 69 keys are
-/// ambiguous across categories ("Bottom to Top" is a Conceal, a Peel, a Push
-/// and a Squeeze); those report every category.
-namespace EffectCatalogue
+/// 2025.12 install and compiled straight into the binary — there is no data
+/// file to find or lose (the table sits in avideffects.cpp, with its
+/// provenance beside it).
+/// Names are keyed in all five shipped languages, because a German Media
+/// Composer writes "Blende" where an English one writes "Dissolve". 68 keys
+/// are ambiguous across categories ("Bottom to Top" is a Conceal, a Peel, a
+/// Push and a Squeeze); those report every category.
+namespace AvidEffects
 {
 	struct Hit
 	{
@@ -43,4 +45,4 @@ namespace EffectCatalogue
 
 	/// Rows loaded from the resource (for tests and the About box).
 	[[nodiscard]] int size();
-} // namespace EffectCatalogue
+} // namespace AvidEffects

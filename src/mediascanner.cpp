@@ -1,5 +1,5 @@
 #include "mediascanner.h"
-#include "effectcatalogue.h"
+#include "avideffects.h"
 #include "avidlayout.h"
 #include "avidlimits.h"
 #include "debugslowdown.h"
@@ -341,7 +341,7 @@ void MediaScanner::doScan()
 	{
 		if (f.type != MediaFile::Type::Precompute)
 			continue;
-		const EffectCatalogue::Hit hit = EffectCatalogue::lookup(f.clipName);
+		const AvidEffects::Hit hit = AvidEffects::lookup(f.clipName);
 		f.effect = hit.name;
 		f.effectCategory = hit.category;
 		f.effectSequence = hit.sequence;

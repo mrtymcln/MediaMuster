@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
     <file>../res/mediamuster.png</file>
-    <file alias="res/avid-effects.tsv">../res/avid-effects.tsv</file>
     </qresource>
 </RCC>

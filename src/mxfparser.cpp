@@ -1,13 +1,14 @@
 #include "mxfparser.h"
 #include "logging.h"
 #include "mobid.h"
+#include <QByteArrayView>
 #include <QFile>
 #include <QHash>
 #include <QtEndian>
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <iterator>
-#include <unordered_map>
 
 // Extracts technical metadata from MXF file headers via direct
 // KLV parsing. Only the header partition is read; we never touch
@@ -103,19 +104,35 @@ static constexpr quint8 kSetTaggedValue = 0x3F;
 // not read the primer at all today. Worth doing if those distinctions ever
 // earn a column; not needed for Media vs Precompute.
 
+/// The two 8-byte halves exchanged. Runs at compile time, so the AUID form
+/// is derived from the UL rather than typed out a second time and left to
+/// drift.
+static constexpr std::array<char, 16> swapHalves(const std::array<char, 16> &in)
+{
+	std::array<char, 16> out{};
+	for (size_t i = 0; i < 8; ++i)
+	{
+		out[i] = in[i + 8];
+		out[i + 8] = in[i];
+	}
+	return out;
+}
+
+static constexpr std::array<char, 16> kUsageLowerLevel = {
+	'\x06', '\x0e', '\x2b', '\x34', '\x04', '\x01', '\x01', '\x01',
+	'\x0d', '\x01', '\x01', '\x02', '\x01', '\x01', '\x08', '\x00'};
+static constexpr std::array<char, 16> kUsageLowerLevelAuid = swapHalves(kUsageLowerLevel);
+
 /// True when a 16-byte UsageCode value is `Usage_LowerLevel` — Avid's mark
 /// for a rendered effect.
 ///
 /// Accepts both byte orders on purpose. 14 of 15 real renders store the UL
 /// as `060e2b34…0d01010201010800`; one stores the two 8-byte halves the other
 /// way round (the AAF AUID form). Checking one ordering silently misses it.
-static bool isPrecomputeUsage(const QByteArray &value)
+static bool isPrecomputeUsage(QByteArrayView value)
 {
-	if (value.size() != 16)
-		return false;
-	static const QByteArray kLowerLevel =
-		QByteArray::fromHex("060e2b34040101010d01010201010800");
-	return value == kLowerLevel || value == kLowerLevel.mid(8) + kLowerLevel.left(8);
+	return value == QByteArrayView(kUsageLowerLevel.data(), 16) ||
+		   value == QByteArrayView(kUsageLowerLevelAuid.data(), 16);
 }
 
 // MARK: - Byte-level helpers
@@ -427,35 +444,15 @@ void MxfParser::finalise(MxfMetadata &meta)
 	else if (meta.height == 544)
 		meta.height = 540;
 
-	// Some Avid MXFs write garbage into width tag 0x3203; zero out
-	// implausible values so height-only inference can run.
-	if (meta.width > 16384)
-		meta.width = 0;
-
+	// Both producers carry the raster in full: the MXF picture descriptor
+	// must hold StoredWidth/StoredHeight (tags 0x3203/0x3202), and the MDB
+	// holds OMFI:DIDD:StoredWidth/StoredHeight. A file with a height and no
+	// usable width therefore reports no resolution rather than a guessed one
+	// - the same rule the bin and the clip name follow.
 	if (meta.width > 0 && meta.height > 0)
 	{
 		meta.resolution = QStringLiteral("%1x%2").arg(meta.width).arg(meta.height);
 		meta.valid = true;
-	}
-	else if (meta.height > 0)
-	{
-		// Width missing or corrupt; infer it from standard frame
-		// sizes. Built once on first call, then reused.
-		static const std::unordered_map<int, int> kHeightToWidth = {
-			{2160, 3840}, // UHD
-			{1080, 1920}, // HD (full)
-			{720, 1280},  // HD (cropped)
-			{576, 720},	  // PAL SD
-			{486, 720},	  // NTSC SD (full)
-			{480, 720},	  // NTSC SD (cropped)
-		};
-		const auto it = kHeightToWidth.find(meta.height);
-		if (it != kHeightToWidth.end())
-		{
-			meta.width = it->second;
-			meta.resolution = QStringLiteral("%1x%2").arg(meta.width).arg(meta.height);
-			meta.valid = true;
-		}
 	}
 	else if (meta.isAudio &&
 			 (meta.sampleRate > 0 || isAudioEssenceLabel(meta.essenceContainerLabel)))
@@ -691,7 +688,7 @@ void MxfParser::parsePackage(const QByteArray &data, qint64 startPos, qint64 len
 			// This is how a precompute is told from media — see
 			// isPrecomputeUsage() and the note above it.
 			out.isPrecompute =
-				isPrecomputeUsage(QByteArray(data.constData() + pos, len));
+				isPrecomputeUsage(QByteArrayView(data.constData() + pos, len));
 		}
 		pos += len;
 	}

@@ -117,11 +117,10 @@ target_compile_definitions(tst_mdbparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# EffectCatalogue: precompute clip name -> Avid effect name + palette
-# category, from the res/avid-effects.tsv resource (linked via the qrc).
-mediamuster_add_test(tst_effectcatalogue
-    ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
-    ${CMAKE_SOURCE_DIR}/src/resources.qrc
+# AvidEffects: precompute clip name -> Avid effect name + palette
+# category, from the catalogue compiled into avideffects.cpp itself.
+mediamuster_add_test(tst_avideffects
+    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
 )
 
 ### Tier 2 — fixture-backed ###
@@ -132,8 +131,7 @@ mediamuster_add_test(tst_scanner
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
     ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
-    ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
-    ${CMAKE_SOURCE_DIR}/src/resources.qrc
+    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
 )
 target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent)
 target_compile_definitions(tst_scanner PRIVATE

@@ -1,17 +1,17 @@
-// EffectCatalogue: precompute clip name → Avid effect name + palette
+// AvidEffects: precompute clip name → Avid effect name + palette
 // category. The 15 real render names in the corpus (14 match; the 15th is a
 // user-typed title), the parse rule (last comma, +N), the mangle rule
 // (space/colon → underscore), ambiguity, and a localised spelling.
 
-#include "effectcatalogue.h"
+#include "avideffects.h"
 
 #include <QTest>
 
-class TestEffectCatalogue : public QObject
+class TestAvidEffects : public QObject
 {
 	Q_OBJECT
 private slots:
-	void catalogue_loads_from_the_resource();
+	void the_whole_catalogue_is_compiled_in();
 	void corpus_render_names_resolve();
 	void user_typed_title_is_not_a_standard_effect();
 	void parse_splits_on_the_last_comma_and_strips_the_instance();
@@ -20,12 +20,14 @@ private slots:
 	void localised_spellings_resolve_to_the_english_name();
 };
 
-void TestEffectCatalogue::catalogue_loads_from_the_resource()
+void TestAvidEffects::the_whole_catalogue_is_compiled_in()
 {
-	QVERIFY2(EffectCatalogue::size() >= 880, qPrintable(QString::number(EffectCatalogue::size())));
+	// 887 rows live in avideffects.cpp itself — there is no file to load, so a
+	// short count means the table itself was truncated, not that it went missing.
+	QCOMPARE(AvidEffects::size(), 887);
 }
 
-void TestEffectCatalogue::corpus_render_names_resolve()
+void TestAvidEffects::corpus_render_names_resolve()
 {
 	struct Case
 	{
@@ -49,7 +51,7 @@ void TestEffectCatalogue::corpus_render_names_resolve()
 	};
 	for (const Case &c : cases)
 	{
-		const EffectCatalogue::Hit h = EffectCatalogue::lookup(QString::fromUtf8(c.clip));
+		const AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8(c.clip));
 		QVERIFY2(h.matched, c.clip);
 		QCOMPARE(h.name, QString::fromUtf8(c.name));
 		QCOMPARE(h.category, QString::fromUtf8(c.category));
@@ -58,10 +60,10 @@ void TestEffectCatalogue::corpus_render_names_resolve()
 	}
 }
 
-void TestEffectCatalogue::user_typed_title_is_not_a_standard_effect()
+void TestAvidEffects::user_typed_title_is_not_a_standard_effect()
 {
 	// The 15th corpus render: a title whose text the user typed.
-	const EffectCatalogue::Hit h = EffectCatalogue::lookup(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,10101010+3"));
+	const AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,10101010+3"));
 	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("10101010"));
 	QCOMPARE(h.category, QStringLiteral("Not a standard Avid effect"));
@@ -69,42 +71,42 @@ void TestEffectCatalogue::user_typed_title_is_not_a_standard_effect()
 	QCOMPARE(h.instance, 3);
 }
 
-void TestEffectCatalogue::parse_splits_on_the_last_comma_and_strips_the_instance()
+void TestAvidEffects::parse_splits_on_the_last_comma_and_strips_the_instance()
 {
 	// A sequence name containing a comma: the separator is the LAST one.
-	EffectCatalogue::Hit h = EffectCatalogue::lookup(QStringLiteral("Act_1,_Scene_2,Dissolve+12"));
+	AvidEffects::Hit h = AvidEffects::lookup(QStringLiteral("Act_1,_Scene_2,Dissolve+12"));
 	QVERIFY(h.matched);
 	QCOMPARE(h.name, QStringLiteral("Dissolve"));
 	QCOMPARE(h.sequence, QStringLiteral("Act_1,_Scene_2"));
 	QCOMPARE(h.instance, 12);
 
 	// No comma and no instance: the whole name is the token, nothing invented.
-	h = EffectCatalogue::lookup(QStringLiteral("Dissolve"));
+	h = AvidEffects::lookup(QStringLiteral("Dissolve"));
 	QVERIFY(h.matched);
 	QVERIFY(h.sequence.isEmpty());
 	QCOMPARE(h.instance, 0);
 
 	// A name that is not a render shape at all comes back verbatim, unmatched.
-	h = EffectCatalogue::lookup(QStringLiteral("Interview Take 3"));
+	h = AvidEffects::lookup(QStringLiteral("Interview Take 3"));
 	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("Interview Take 3"));
 
 	// Empty in, empty-but-safe out.
-	h = EffectCatalogue::lookup(QString());
+	h = AvidEffects::lookup(QString());
 	QVERIFY(!h.matched);
 	QVERIFY(h.name.isEmpty());
 }
 
-void TestEffectCatalogue::mangle_turns_spaces_and_colons_into_underscores()
+void TestAvidEffects::mangle_turns_spaces_and_colons_into_underscores()
 {
-	QCOMPARE(EffectCatalogue::mangle(QStringLiteral("14:9 Letterbox")), QStringLiteral("14_9_Letterbox"));
-	QCOMPARE(EffectCatalogue::mangle(QStringLiteral("1.85 Mask")), QStringLiteral("1.85_Mask")); // the dot survives
-	QCOMPARE(EffectCatalogue::mangle(QStringLiteral("AniMatte")), QStringLiteral("AniMatte"));
+	QCOMPARE(AvidEffects::mangle(QStringLiteral("14:9 Letterbox")), QStringLiteral("14_9_Letterbox"));
+	QCOMPARE(AvidEffects::mangle(QStringLiteral("1.85 Mask")), QStringLiteral("1.85_Mask")); // the dot survives
+	QCOMPARE(AvidEffects::mangle(QStringLiteral("AniMatte")), QStringLiteral("AniMatte"));
 }
 
-void TestEffectCatalogue::ambiguous_names_report_every_category()
+void TestAvidEffects::ambiguous_names_report_every_category()
 {
-	const EffectCatalogue::Hit h = EffectCatalogue::lookup(QStringLiteral("seq,Bottom_to_Top+1"));
+	const AvidEffects::Hit h = AvidEffects::lookup(QStringLiteral("seq,Bottom_to_Top+1"));
 	QVERIFY(h.matched);
 	QCOMPARE(h.name, QStringLiteral("Bottom to Top"));
 	QVERIFY2(h.category.contains(QStringLiteral("Conceal")), qPrintable(h.category));
@@ -112,18 +114,18 @@ void TestEffectCatalogue::ambiguous_names_report_every_category()
 	QVERIFY2(h.category.contains(QStringLiteral(" / ")), qPrintable(h.category));
 }
 
-void TestEffectCatalogue::localised_spellings_resolve_to_the_english_name()
+void TestAvidEffects::localised_spellings_resolve_to_the_english_name()
 {
 	// A German Media Composer writes "Blende" for Dissolve; the catalogue
 	// keys every shipped language so the count stays one effect, not five.
-	const EffectCatalogue::Hit de = EffectCatalogue::lookup(QStringLiteral("Sequenz_1,Blende+2"));
+	const AvidEffects::Hit de = AvidEffects::lookup(QStringLiteral("Sequenz_1,Blende+2"));
 	QVERIFY(de.matched);
 	QCOMPARE(de.name, QStringLiteral("Dissolve"));
 	QCOMPARE(de.category, QStringLiteral("Blend"));
-	const EffectCatalogue::Hit fr = EffectCatalogue::lookup(QStringLiteral("Seq,Correction_colorimétrique+1"));
+	const AvidEffects::Hit fr = AvidEffects::lookup(QStringLiteral("Seq,Correction_colorimétrique+1"));
 	QVERIFY(fr.matched);
 	QCOMPARE(fr.name, QStringLiteral("Color Correction"));
 }
 
-QTEST_APPLESS_MAIN(TestEffectCatalogue)
-#include "tst_effectcatalogue.moc"
+QTEST_APPLESS_MAIN(TestAvidEffects)
+#include "tst_avideffects.moc"

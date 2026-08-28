@@ -29,9 +29,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-### Compiler warnings for every target ###
+### Compiler warnings and source encoding for every target ###
 if(MSVC)
-    add_compile_options(/W4)
+    add_compile_options(/W4 /utf-8)
 else()
     add_compile_options(-Wall -Wextra)
 endif()
@@ -102,7 +102,7 @@ set(SOURCES
     src/pmrparser.cpp
     src/mdbparser.cpp
     src/bentofile.cpp
-    src/effectcatalogue.cpp
+    src/avideffects.cpp
     src/mediacsv.cpp
     src/mediamanager.cpp
     src/avbparser.cpp

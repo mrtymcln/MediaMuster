@@ -93,7 +93,7 @@ struct MediaFile
 	QString sourceContainer; ///< "QTFF", "MXF", "MOV", etc.
 	bool isImported = false;
 
-	// MARK: Precompute detail (EffectCatalogue; CSV only for now)
+	// MARK: Precompute detail (AvidEffects; CSV only for now)
 
 	/// For a Precompute row: the effect Avid's catalogue knows the clip name
 	/// by ("Color Correction"), else the raw token; its palette category
