@@ -153,7 +153,7 @@ private:
 	/// readable, else the couldn't-check states.
 	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
-							 const PmrParser::ProjectMaps &pmrMaps,
+							 const PmrParser::ProjectMap &pmrMap,
 							 const MdbDatabase &mdb,
 							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
 

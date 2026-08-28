@@ -664,17 +664,17 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	// MARK: Parse the PMR
 
 	// Missing PMR/MDB is normal in Interplay environments.
-	PmrParser::ProjectMaps pmrMaps;
+	PmrParser::ProjectMap pmrMap;
 	bool pmrOk = true; // vacuously fine when the file doesn't exist
 	const QString pmrPath = task.folderPath + "/msmFMID.pmr";
 	const bool pmrExists = QFile::exists(pmrPath);
 	if (pmrExists)
 	{
-		pmrMaps = PmrParser::buildFileMapWithFallback(pmrPath, &pmrOk);
+		pmrMap = PmrParser::buildFileMap(pmrPath, &pmrOk);
 		if (pmrOk)
 			bufLog(QtInfoMsg, "pmr",
 				   QStringLiteral("  PMR: %1 file entries in /%2")
-					   .arg(pmrMaps.primary.size())
+					   .arg(pmrMap.size())
 					   .arg(task.folderNumber));
 		else
 			bufLog(QtWarningMsg, "pmr",
@@ -787,7 +787,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		if (!AvidLayout::isAvidMediaName(fileName))
 			continue;
 
-		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, pmrMaps, mdb,
+		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, pmrMap, mdb,
 									  folderStatus, tally);
 		mf.isQuarantined = isQuarantineFolder;
 
@@ -837,7 +837,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 									   const QString &volumePath, const QString &folderNumber,
-									   const PmrParser::ProjectMaps &pmrMaps,
+									   const PmrParser::ProjectMap &pmrMap,
 									   const MdbDatabase &mdb,
 									   MediaFile::DbStatus folderStatus, CoverageTally &tally)
 {
@@ -866,7 +866,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// the MXF header (Stage 2), and stays empty when neither knows.
 	mf.isNonPortable = isNonPortableFilename(mf.fileName);
 
-	// MARK: PMR lookup (primary key + fallback)
+	// MARK: PMR lookup
 
 	const QString primaryKey = PmrKey::primary(mf.fileName);
 
@@ -879,20 +879,11 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		mf.masterMobId = pmr.masterMobId;
 	};
 
-	auto pmrIt = pmrMaps.primary.find(primaryKey);
-	if (pmrIt != pmrMaps.primary.end() && !pmrIt->isEmpty())
-	{
+	// The PMR records the on-disk filename verbatim; an exact match is the
+	// only match there is (see PmrParser::ProjectMap).
+	const auto pmrIt = pmrMap.constFind(primaryKey);
+	if (pmrIt != pmrMap.constEnd() && !pmrIt->isEmpty())
 		applyPmrHit(pmrIt->first());
-	}
-	else
-	{
-		// Fallback key: last extension stripped, remaining dots turned to
-		// underscores (see PmrKey::fallback). Bridges the on-disk name to the
-		// PMR's dotted-vs-undotted spelling of the same clip.
-		pmrIt = pmrMaps.fallback.find(PmrKey::fallback(primaryKey));
-		if (pmrIt != pmrMaps.fallback.end() && !pmrIt->isEmpty())
-			applyPmrHit(pmrIt->first());
-	}
 
 	// MARK: MDB lookup (the master clip's record)
 

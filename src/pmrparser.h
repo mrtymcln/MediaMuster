@@ -61,23 +61,20 @@ public:
 
 	// MARK: - Lookup tables
 
+	/// Filename-keyed lookup: PmrKey::primary (NFC-normalised, lower-cased)
+	/// onto the records carrying that name.
+	///
+	/// ONE key, not two. A looser second key - extension dropped, remaining
+	/// dots turned to underscores - was carried from the prototype on the
+	/// belief that Avid renames files on import. It does not: an import
+	/// produces a NEW file whose name Avid generates from the track and MOB
+	/// (`A01.E6968417_1BD321BD32270A.mxf`), and the source name is kept in a
+	/// separate field, so there is no spelling to reconcile. Measured over
+	/// 2,412 real files in four projects - 2,298 of them imports, and 2,397
+	/// carrying the dotted shape the loose key existed to repair - it matched
+	/// nothing the exact name had missed. Removed 2026-08-28.
 	using ProjectMap = QHash<QString, QVector<PmrEntry>>;
 
-	/// Two filename-keyed lookups built in one pass:
-	///
-	///   `primary`  is the NFC-normalised, lower-cased filename.
-	///   `fallback` is primary minus the extension, dots as underscores.
-	///
-	/// The fallback covers Avid's habit of renaming files on import,
-	/// where `myclip.tail.mxf` on disk shows up as `myclip_tail` in
-	/// the PMR. See `pmrkey.h` for the exact rules.
-	struct ProjectMaps
-	{
-		ProjectMap primary;
-		ProjectMap fallback;
-	};
-
-	/// Builds both lookup maps from a single PMR parse. `ok` as in parse().
-	[[nodiscard]] static ProjectMaps buildFileMapWithFallback(const QString &pmrFilePath,
-															  bool *ok = nullptr);
+	/// Builds the lookup map from a single PMR parse. `ok` as in parse().
+	[[nodiscard]] static ProjectMap buildFileMap(const QString &pmrFilePath, bool *ok = nullptr);
 };

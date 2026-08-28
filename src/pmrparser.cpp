@@ -368,14 +368,10 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 
 // MARK: - Lookup table builder
 
-PmrParser::ProjectMaps PmrParser::buildFileMapWithFallback(const QString &pmrFilePath, bool *ok)
+PmrParser::ProjectMap PmrParser::buildFileMap(const QString &pmrFilePath, bool *ok)
 {
-	ProjectMaps maps;
+	ProjectMap map;
 	for (const auto &entry : parse(pmrFilePath, ok))
-	{
-		const QString key = PmrKey::primary(entry.fileName);
-		maps.primary[key].append(entry);
-		maps.fallback[PmrKey::fallback(key)].append(entry);
-	}
-	return maps;
+		map[PmrKey::primary(entry.fileName)].append(entry);
+	return map;
 }
