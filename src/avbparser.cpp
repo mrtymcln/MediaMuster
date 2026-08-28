@@ -10,19 +10,23 @@
 #include <utility>
 
 // MARK: - Bin file structure
-// An Avid bin is a Bento container. The header looks like:
+// An Avid bin is NOT a Bento container, though its neighbours are: msmMMOB.mdb
+// and msmFMID.pmr carry the Bento label `A4 43 4D A5 48 64 72 D7` in their last
+// 24 bytes, and BentoFile reads them by it. That label appears NOWHERE in a
+// .avb - checked byte by byte across 22 real bins from a 2018 project, 0 hits.
+// A bin is Avid's own AVB object format, which is why nothing below opens a
+// container: this parser scavenges MOB IDs out of the raw byte stream instead,
+// so the container layout never has to be understood.
 //
-//   06 00 "DomainDJBO"  07 00 "AObjDoc"  04 13 00  <YYYY/MM/DD HH:MM:SS>
+// The header is AVB's own, length-prefixed strings and a writer version:
 //
-// MOB IDs show up two ways inside the container:
-//   1. Binary: 32-byte runs in the byte stream:
-//        SMPTE UMID   06 0E 2B 34 04 01 ...   (32 bytes)
-//        Avid MOB     06 0A 2B 34 01 01 0F ... (32 bytes)
+//   06 00 "Domain" "DJBO"  07 00 "AObjDoc"  04 13 00  <YYYY/MM/DD HH:MM:SS>
+//   ... "IIII" ... 1E 00 "Media Composer 18.9.0.4"
 //
-//   2. ASCII hex string: same 32 bytes, written out with dashes at
-//      the field boundaries, e.g.:
-//        "060a2b340101010001010f0013-000000-6b0fb74dc6fa687b-..."
-//      Ends up as 64 hex chars once you strip the dashes.
+// A MOB ID shows up as an ASCII hex string: the 32 bytes written out with
+// dashes at the field boundaries, e.g.:
+//   "060a2b340101010001010f0013-000000-6b0fb74dc6fa687b-..."
+// which is 64 hex chars once the dashes are stripped.
 //
 // MARK: - Endian mismatch
 // Bytes 16..23 hold a (uint32, uint16, uint16) triple. AVB writes
@@ -35,11 +39,6 @@
 // Both variants go into `mobIds` so lookups against MediaFile::mobId
 // and MediaFile::masterMobId hit no matter which source the
 // bytes came from.
-//
-// MARK: - Sentinel filtering
-// Bento sentinels share the `06 0? 2B 34` prefix (e.g. `06 0E 2B 34
-// 7F 7F 2A 80`). The fingerprint-byte checks in the validators below
-// (bytes 4-5 for SMPTE, bytes 4/12/20 for Avid) filter them out.
 
 namespace
 {
@@ -48,22 +47,6 @@ namespace
 	// guard against a mislabelled or corrupt file, not a real-bin limit — set
 	// generously so big-but-legit bins still load.
 	constexpr qint64 kMaxBinBytes = 256LL * 1024 * 1024;
-
-	// MARK: - Pattern validators
-
-	/// Caller already matched `06 0E 2B 34`; these last two bytes tell a
-	/// real UMID from a Bento sentinel.
-	bool isValidSmpteUmid(const uchar *p)
-	{
-		return p[4] == 0x04 && p[5] == 0x01;
-	}
-
-	/// Caller already matched `06 0A 2B 34`; bytes 4, 12, 20 are the
-	/// fingerprint Avid writes and sentinels don't.
-	bool isValidAvidMob(const uchar *p)
-	{
-		return p[4] == 0x01 && p[12] == 0x44 && p[20] == 0x48;
-	}
 
 	// MARK: - Endian conversion
 
@@ -160,36 +143,44 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
 	const QByteArray buf = file.readAll();
 	file.close();
 
-	const auto *data = reinterpret_cast<const uchar *>(buf.constData());
 	const qint64 size = buf.size();
 
-	// MARK: Pass 1 — binary 32-byte MOB IDs
-
-	if (size >= kMobIdLen)
-	{
-		const uchar *const end = data + (size - kMobIdLen);
-		const uchar *p = data;
-		while (p <= end)
-		{
-			p = static_cast<const uchar *>(std::memchr(p, 0x06, end - p + 1));
-			if (!p)
-				break;
-			if (p[2] != 0x2B || p[3] != 0x34)
-			{
-				++p;
-				continue;
-			}
-			if ((p[1] == 0x0E && isValidSmpteUmid(p)) || (p[1] == 0x0A && isValidAvidMob(p)))
-			{
-				insertBothForms(result.mobIds, p);
-				p += kMobIdLen;
-			}
-			else
-			{
-				++p;
-			}
-		}
-	}
+	// Avid writes a MOB into a bin as ASCII hex text. It does NOT write it as
+	// 32 contiguous bytes: the binary form interleaves AVB type tags between
+	// the fields (`44` every second byte, then `48`), so a 32-byte slice is the
+	// id chopped up with framing mixed in and can never match a real MOB.
+	//
+	// A binary scan used to run here for exactly that reason and was removed on
+	// 2026-08-28 after measuring it: across 117 bins from 12 Media Composer
+	// versions (2.6.7 through 25.12.2), joined against 4,353 real MOB ids from
+	// every PMR on the machine, it produced 81,200 ids and matched 0 real MOBs
+	// - both branches, SMPTE 06 0E and Avid 06 0A - while the text pass below
+	// supplied all 1,556 real matches. Removing it left that 1,556 unchanged.
+	// Its "is this a MOB" check was fingerprinting the type tags, which is why
+	// it accepted 100% of candidates and still found nothing.
+	//
+	// TODO — read bins properly, as an object graph rather than by scavenging.
+	//
+	// The prize is NOT the one unreadable bin (1 of 117, a writer version
+	// outside the rest of the sample). It is that a bin holds the clip name
+	// and bin name for media msmMMOB.mdb does not describe: measured on one
+	// real folder, its MDB covered 112 of 389 files while the project's bins
+	// accounted for all 277 of the rest, joined through the master MOB the PMR
+	// already supplies. Those rows show a blank Bin today and need not.
+	//
+	// Cost, honestly: this is a feature, not a cleanup. Every other parser here
+	// reads a known layout at known offsets; a bin is a serialised object graph
+	// with a class hierarchy, so it is the largest single parser in the app.
+	// Reference is pyavb (MIT, so usable with attribution) - ~9,800 lines of
+	// Python, of which 482 are MOB ids alone. NOT the 2012 "Avb Spec" doing the
+	// rounds: that is community reverse engineering of Media Composer 5, its
+	// completeness claim covers settings (.avs) files rather than bins, and it
+	// mentions MobID zero times. And never copy from media-decomposer's source
+	// - the spec text there is Public Domain but the code carries no licence.
+	//
+	// Whatever is built, do NOT reinstate a 32-byte slice: that was the removed
+	// mistake. Symptom that the work has become urgent: a real bin parsing with
+	// valid=true and an empty mobIds set.
 
 	// MARK: Pass 2 — ASCII hex-string MOB IDs
 

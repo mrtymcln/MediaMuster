@@ -73,9 +73,6 @@ class TestAvbParser : public QObject
 private slots:
 	void missing_file_returns_invalid();
 	void non_bento_header_returns_invalid();
-	void binary_avid_mob_found_both_endian_forms();
-	void binary_smpte_umid_found();
-	void bento_sentinel_is_filtered_out();
 	void hex_string_mob_is_decoded();
 
 	// Hex is hex regardless of case: no bin surveyed writes uppercase, but a
@@ -84,8 +81,6 @@ private slots:
 	// bin filter. The decoder itself always accepted either case.
 	void uppercase_hex_string_mob_is_decoded();
 
-	void mob_at_exact_eof_boundary_is_read();
-	void marker_in_tail_is_not_over_read();
 
 	// Bins written by pre-Intel-era Mac Media Composer are BIG-endian:
 	// header `00 06` + "Domain" + unreversed "OBJD" (confirmed by two
@@ -113,47 +108,6 @@ void TestAvbParser::non_bento_header_returns_invalid()
 		writeBin(tmp.path() + "/fake.avb", QByteArray("this is not an Avid bin at all"), false);
 	const AvbBin bin = AvbParser::parse(path);
 	QVERIFY(!bin.valid);
-	QVERIFY(bin.mobIds.isEmpty());
-}
-
-void TestAvbParser::binary_avid_mob_found_both_endian_forms()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QByteArray mob = avidMob();
-	// Leading non-0x06 padding; the MOB sits mid-buffer.
-	const QByteArray body = QByteArray(4, '\x11') + mob + QByteArray(4, '\x22');
-	const AvbBin bin = AvbParser::parse(writeBin(tmp.path() + "/a.avb", body));
-
-	QVERIFY(bin.valid);
-	QVERIFY2(bin.mobIds.contains(formOf(mob)), "canonical form missing");
-	QVERIFY2(bin.mobIds.contains(swappedFormOf(mob)), "byte-swapped twin missing");
-	QCOMPARE(bin.mobIds.size(), 2);
-}
-
-void TestAvbParser::binary_smpte_umid_found()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QByteArray umid = smpteUmid();
-	const AvbBin bin = AvbParser::parse(writeBin(tmp.path() + "/u.avb", umid));
-
-	QVERIFY(bin.valid);
-	QVERIFY(bin.mobIds.contains(formOf(umid)));
-	QVERIFY(bin.mobIds.contains(swappedFormOf(umid)));
-}
-
-void TestAvbParser::bento_sentinel_is_filtered_out()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	// 06 0E 2B 34 prefix, but byte[4]=7F not 04 — a Bento sentinel, not a UMID.
-	const QByteArray sentinel =
-		QByteArray::fromHex("060e2b347f7f2a80111111111111111111111111111111111111111111111111");
-	const AvbBin bin = AvbParser::parse(writeBin(tmp.path() + "/s.avb", sentinel));
-
-	QVERIFY(bin.valid);
-	QVERIFY2(!bin.mobIds.contains(formOf(sentinel)), "sentinel must not be treated as a MOB");
 	QVERIFY(bin.mobIds.isEmpty());
 }
 
@@ -191,34 +145,6 @@ void TestAvbParser::uppercase_hex_string_mob_is_decoded()
 	QVERIFY(bin.mobIds.contains(swappedFormOf(decoded)));
 }
 
-void TestAvbParser::mob_at_exact_eof_boundary_is_read()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	// The MOB is the final 32 bytes: exercises the `end = data + size - 32`
-	// boundary — p == end must still read the full 32 bytes.
-	const QByteArray mob = avidMob();
-	const QByteArray body = QByteArray(4, '\x11') + mob; // no trailing padding
-	const AvbBin bin = AvbParser::parse(writeBin(tmp.path() + "/eof.avb", body));
-
-	QVERIFY(bin.valid);
-	QVERIFY(bin.mobIds.contains(formOf(mob)));
-}
-
-void TestAvbParser::marker_in_tail_is_not_over_read()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	// A 06 0A 2B 34 marker with fewer than 32 bytes after it: can't be a full
-	// MOB, must be ignored without reading past the buffer.
-	const QByteArray body = QByteArray(8, '\x11') + QByteArray::fromHex("060a2b34") +
-							QByteArray(16, '\x11');
-	const AvbBin bin = AvbParser::parse(writeBin(tmp.path() + "/tail.avb", body));
-
-	QVERIFY(bin.valid);
-	QVERIFY(bin.mobIds.isEmpty());
-}
-
 void TestAvbParser::big_endian_legacy_bin_is_parsed()
 {
 	QTemporaryDir tmp;
@@ -229,7 +155,11 @@ void TestAvbParser::big_endian_legacy_bin_is_parsed()
 	const QByteArray beHeader = QByteArray("\x00\x06"
 										   "DomainOBJD",
 										   12);
-	const QByteArray mob = avidMob();
+	// A text-form MOB: what this test proves is that the BE header is
+	// ACCEPTED, so the payload just has to be something the parser can find.
+	const QByteArray hexAscii =
+		"060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613";
+	const QByteArray mob = QByteArray(1, '\x00') + hexAscii + QByteArray(1, '\x00');
 	const QString path = tmp.path() + QStringLiteral("/legacy.avb");
 	QFile f(path);
 	QVERIFY(f.open(QIODevice::WriteOnly));
@@ -240,8 +170,7 @@ void TestAvbParser::big_endian_legacy_bin_is_parsed()
 
 	const AvbBin bin = AvbParser::parse(path);
 	QVERIFY2(bin.valid, "big-endian bin rejected as not-a-bin");
-	QVERIFY(bin.mobIds.contains(formOf(mob)));
-	QVERIFY(bin.mobIds.contains(swappedFormOf(mob)));
+	QVERIFY(bin.mobIds.contains(formOf(QByteArray::fromHex(hexAscii))));
 }
 
 QTEST_APPLESS_MAIN(TestAvbParser)
