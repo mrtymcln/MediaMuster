@@ -1,6 +1,6 @@
 // Windows resources for MediaMuster. Configured by CMake into
 // <build>/mediamuster-win.rc: the version number and copyright
-live there, so they are never duplicated.
+// live there, so they are never duplicated.
 #pragma code_page(65001)
 #include <windows.h>
 
