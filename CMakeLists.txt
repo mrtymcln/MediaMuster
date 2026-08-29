@@ -38,7 +38,7 @@ endif()
 
 ### Beta expiry; the date reaches the target further down ###
 option(SELF_DESTRUCT "Lock the app after the expiry date" OFF)
-set(SELF_DESTRUCT_DATE "2026-12-31" CACHE STRING "Beta expiry date, ISO yyyy-MM-dd")
+set(SELF_DESTRUCT_DATE "2026-12-31" CACHE STRING "Self destruct date")
 if(SELF_DESTRUCT)
     if(NOT SELF_DESTRUCT_DATE MATCHES "^([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$")
         message(FATAL_ERROR
