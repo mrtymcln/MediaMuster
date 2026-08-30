@@ -28,6 +28,21 @@ namespace PathKey
 		while (result.size() > 1 && result.endsWith(QLatin1Char('/')))
 			result.chop(1);
 
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+		// Case-fold on the platforms whose default filesystems are
+		// case-insensitive, because canonicalFilePath does NOT unify
+		// casing everywhere: macOS resolves "clip.mxf" to the on-disk
+		// "CLIP.mxf", but Windows keeps the caller's spelling — so two
+		// spellings of ONE on-disk file produced two different keys, the
+		// claimed-set lookup missed, and a case-variant flatten silently
+		// SKIPPED the second file (first Windows CI run, 2026-08-30).
+		// The fold is safe for every current user of these keys: on a
+		// rare case-SENSITIVE volume it can at worst cause an
+		// unnecessary " (2)" divert name — never an overwrite, which is
+		// prevented by parking and NewOnly, not by this key.
+		result = result.toCaseFolded();
+#endif
+
 		return result;
 	}
 } // namespace PathKey

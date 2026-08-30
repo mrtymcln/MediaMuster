@@ -17,6 +17,7 @@ private slots:
 	void normalise_equates_trailing_slash_variants();
 	void normalise_equates_dot_and_plain_forms();
 	void normalise_non_existent_path_falls_back_to_absolute();
+	void normalise_case_folds_on_case_insensitive_platforms();
 };
 
 void TestPathKey::normalise_empty_input_returns_empty()
@@ -100,6 +101,22 @@ void TestPathKey::normalise_non_existent_path_falls_back_to_absolute()
 	// an already-absolute, dot-free input survives the fallback as-is.
 	const QString nope = QDir::rootPath() + QStringLiteral("this/definitely/does/not/exist");
 	QCOMPARE(PathKey::normalise(nope), nope);
+}
+
+
+// Two spellings of one on-disk name must produce ONE key on the
+// platforms whose default filesystems are case-insensitive — Windows'
+// canonicalFilePath keeps the caller's spelling (unlike macOS, which
+// resolves to the on-disk casing), and that mismatch made a case-variant
+// flatten silently skip a file on the first Windows CI run.
+void TestPathKey::normalise_case_folds_on_case_insensitive_platforms()
+{
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+	QCOMPARE(PathKey::normalise(QStringLiteral("/tmp/nonexistent/CLIP.MXF")),
+			 PathKey::normalise(QStringLiteral("/tmp/nonexistent/clip.mxf")));
+#else
+	QSKIP("Case-sensitive platform: keys keep their casing.");
+#endif
 }
 
 QTEST_APPLESS_MAIN(TestPathKey)
