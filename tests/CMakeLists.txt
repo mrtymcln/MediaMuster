@@ -12,8 +12,10 @@ function(mediamuster_add_test name)
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
     target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-    ### -o -,txt: explicit stdout logger — Windows CI captured nothing without it ###
-    add_test(NAME ${name} COMMAND ${name} -o -,txt)
+    ### Two loggers: stdout for local runs, a file for CI — the Windows ###
+    ### runner captures no test stdout at all, so the file is the only ###
+    ### record the workflow can print after a failure ###
+    add_test(NAME ${name} COMMAND ${name} -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/${name}.result.txt,txt)
 endfunction()
 
 ### Tier 1 ###

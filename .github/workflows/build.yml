@@ -122,6 +122,18 @@ jobs:
         shell: bash
         run: cat build/Testing/Temporary/LastTest.log
 
+      ### The per-test result files are the only reliable record on Windows, ###
+      ### where ctest captures no test stdout at all ###
+      - name: Test results (on failure)
+        if: failure()
+        shell: bash
+        run: |
+          for f in build/tests/*.result.txt build/tests/Release/*.result.txt; do
+            [ -f "$f" ] || continue
+            echo "===== $f ====="
+            cat "$f"
+          done
+
       ### Code signing certificate (macOS) ###
       - name: Import code-signing cert
         if: runner.os == 'macOS' && env.MAC_CERTS_BASE64 != ''
