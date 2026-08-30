@@ -410,9 +410,11 @@ void TestFileIdentity::clone_behaviour_matches_platform()
 
 	// The test seam forces the buffered path.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	const QString dst2 = tmp.path() + QStringLiteral("/dst2.bin");
 	QVERIFY(!NativeFile::clone(src, dst2));
 	qunsetenv("MEDIAMUSTER_DISABLE_CLONEFILE");
+	qunsetenv("MEDIAMUSTER_DISABLE_COPYFILEEX");
 #else
 	// Not a Mac: clone is never available and must say so quietly.
 	QVERIFY(!NativeFile::clone(src, dst));
@@ -440,11 +442,14 @@ void TestFileIdentity::win_copy_behaviour_matches_platform()
 		QCOMPARE(b.readAll(), a.readAll());
 	}
 
-	// FAIL_IF_EXISTS: the no-overwrite guarantee after parking.
+	// FAIL_IF_EXISTS: the no-overwrite guarantee after parking. A
+	// pre-existing destination is the distinct racer outcome (review
+	// finding 7) — NOT a plain failure, and not ours to delete. errorOut
+	// stays untouched on this path; the copier composes its own message.
 	QString err;
 	QCOMPARE(NativeFile::copyWin(src, dst, {}, cancel, &err),
-			 NativeFile::WinCopyOutcome::Failed);
-	QVERIFY(!err.isEmpty());
+			 NativeFile::WinCopyOutcome::RefusedExists);
+	QVERIFY(err.isEmpty());
 
 	// A cancel arriving before the first chunk aborts the copy AND the
 	// OS deletes its own partial — nothing survives to masquerade as

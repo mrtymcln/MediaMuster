@@ -137,6 +137,7 @@ private:
 void TestOpRunner::cleanup()
 {
 	qunsetenv("MEDIAMUSTER_DISABLE_CLONEFILE");
+	qunsetenv("MEDIAMUSTER_DISABLE_COPYFILEEX");
 	qunsetenv("MEDIAMUSTER_FORCE_MOVE_COPY");
 	qunsetenv("MEDIAMUSTER_DISABLE_OS_TRASH");
 	qunsetenv("MEDIAMUSTER_TRASH_ROOT");
@@ -257,6 +258,7 @@ void TestOpRunner::copy_writes_file_and_leaves_source()
 	// Force the buffered path: an APFS clone records no hash (nothing
 	// was rewritten), and this test pins the hash-in-ledger behaviour.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	QTemporaryDir tmp, ledgerDir;
 	QVERIFY(tmp.isValid() && ledgerDir.isValid());
 	const QString src = stageFixtureMxf(tmp.path() + "/src");
@@ -769,6 +771,7 @@ void TestOpRunner::move_copyLeg_movesFileAndRemovesSource()
 	// hashing loop this test pins.
 	qputenv("MEDIAMUSTER_FORCE_MOVE_COPY", "1");
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	QTemporaryDir tmp, ledgerDir;
 	QVERIFY(tmp.isValid() && ledgerDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
@@ -978,6 +981,7 @@ void TestOpRunner::copier_racer_at_destination_survives()
 	writeFile(dst, "ORIGINAL");
 
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 
 	ParkedFile park(dst, AvidLayout::kCopyReplaceTag);
 	QVERIFY(park.park());
@@ -989,6 +993,7 @@ void TestOpRunner::copier_racer_at_destination_survives()
 		copier.copy(src, dst, park, cancel, NativeFile::Durability::Disk, {}, {});
 
 	qunsetenv("MEDIAMUSTER_DISABLE_CLONEFILE");
+	qunsetenv("MEDIAMUSTER_DISABLE_COPYFILEEX");
 
 	QVERIFY(res.outcome == OpCopier::Outcome::Failed);
 	QVERIFY2(res.error.contains(QStringLiteral("left untouched")),

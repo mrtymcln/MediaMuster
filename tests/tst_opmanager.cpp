@@ -60,6 +60,7 @@ void TestOpManager::cleanup()
 {
 	DebugSlowdown::setEnabled(false);
 	qunsetenv("MEDIAMUSTER_DISABLE_CLONEFILE");
+	qunsetenv("MEDIAMUSTER_DISABLE_COPYFILEEX");
 	qunsetenv("MEDIAMUSTER_FORCE_MOVE_COPY");
 	qunsetenv("MEDIAMUSTER_DISABLE_OS_TRASH");
 	qunsetenv("MEDIAMUSTER_TRASH_ROOT");
@@ -124,6 +125,7 @@ void TestOpManager::copy_run_writes_its_plan_before_the_first_op()
 	// Force the buffered path and slow it down so the ledger can be read
 	// while the run is still in flight.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	DebugSlowdown::setEnabled(true);
 
 	QTemporaryDir tmp;
@@ -183,6 +185,7 @@ void TestOpManager::copy_replace_ledgers_parked_path_while_still_in_flight()
 	// during the copy, because that is exactly the window a crash
 	// strands it in.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	DebugSlowdown::setEnabled(true);
 
 	QTemporaryDir tmp;
@@ -236,6 +239,7 @@ void TestOpManager::copy_replace_midCopyFailure_restores_original()
 	// engine detects and rejects) must roll the destination back to the
 	// parked original, count as a failure, and leave the source alone.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	DebugSlowdown::setEnabled(true);
 
 	QTemporaryDir tmp;
@@ -282,6 +286,7 @@ void TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed()
 	// A user cancel mid-copy must roll the destination back to the
 	// parked original AND count as neither a success nor a failure.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	DebugSlowdown::setEnabled(true);
 
 	QTemporaryDir tmp;
@@ -328,6 +333,7 @@ void TestOpManager::copy_replace_strandedRestore_keepsDirtyLedger()
 	// rename then fails as on a yanked volume) and grow the source so
 	// the size-change guard fails the copy.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	DebugSlowdown::setEnabled(true);
 
 	QTemporaryDir tmp;
@@ -386,6 +392,7 @@ void TestOpManager::move_copyLeg_verifyOff_tamperedDestination_keepsSource()
 	MediaManagerVerify::setEnabled(false);
 	qputenv("MEDIAMUSTER_FORCE_MOVE_COPY", "1");
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 	DebugSlowdown::setEnabled(true);
 
 	QTemporaryDir tmp;

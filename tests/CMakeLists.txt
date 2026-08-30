@@ -12,7 +12,8 @@ function(mediamuster_add_test name)
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
     target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-    add_test(NAME ${name} COMMAND ${name})
+    ### -o -,txt: explicit stdout logger — Windows CI captured nothing without it ###
+    add_test(NAME ${name} COMMAND ${name} -o -,txt)
 endfunction()
 
 ### Tier 1 ###
