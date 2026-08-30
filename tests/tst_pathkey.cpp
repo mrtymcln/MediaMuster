@@ -98,9 +98,15 @@ void TestPathKey::normalise_non_existent_path_falls_back_to_absolute()
 	// empty; normalise must fall back to absoluteFilePath rather
 	// than silently dropping the input. Rooted via QDir::rootPath()
 	// ("/" on Unix, "C:/" on Windows) so the expectation is portable:
-	// an already-absolute, dot-free input survives the fallback as-is.
+	// an already-absolute, dot-free input survives the fallback —
+	// modulo the case-fold keys get on Windows/macOS (which lowercases
+	// even the drive letter; that cost this pin its first Windows run).
 	const QString nope = QDir::rootPath() + QStringLiteral("this/definitely/does/not/exist");
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+	QCOMPARE(PathKey::normalise(nope), nope.toCaseFolded());
+#else
 	QCOMPARE(PathKey::normalise(nope), nope);
+#endif
 }
 
 
