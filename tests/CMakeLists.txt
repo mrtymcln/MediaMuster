@@ -33,36 +33,122 @@ mediamuster_add_test(tst_avidlayout)
 # reachable from a test at all.
 mediamuster_add_test(tst_mediacsv ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 
-# parseFolderName and the folder-name rules.
+# parseFolderName and the folder-name rules. Rebalancer executes via
+# the ops engine now, so its tests link the engine too.
 mediamuster_add_test(tst_rebalancer_parse
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
+    ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 
 # Golden tests for Rebalancer::computePlan over synthetic Avid
-# folder trees. Creates a few thousand empty files in QTemporaryDir
-# for the cap-related tests — runs in well under a second locally.
+# folder trees, plus execute_* tests that now drive the engine-backed
+# Rename machine end to end. Creates a few thousand empty files in
+# QTemporaryDir for the cap-related tests — runs in well under a second.
 mediamuster_add_test(tst_rebalancer_plan
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
-)
-
-# mediamanager.cpp uses xxhash for the verify pass, and now OpJournal
-# for the write-ahead log in doMove/doDelete.
-mediamuster_add_test(tst_mediamanager_paths
-    ${CMAKE_SOURCE_DIR}/src/mediamanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
 )
 
-# OpJournal: write-ahead log writer + recovery reader fully isolated.
-mediamuster_add_test(tst_opjournal
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+# Engine v2 value types: the on-disk enum names (header-only).
+mediamuster_add_test(tst_oprequest)
+
+# Engine v2 identity: FileIdentity/VolumeIdentity plus the NativeFile
+# platform primitives, over real temp files and fixture MXF headers.
+mediamuster_add_test(tst_fileidentity
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+)
+target_compile_definitions(tst_fileidentity PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# OpRecovery: the crash-rollback engine. Drives hand-written journals
-# over real files in a QTemporaryDir and checks what gets put back.
-mediamuster_add_test(tst_oprecovery
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprecovery.cpp
+# Engine v2 ledger: WAL writer + reader, retention, undo candidacy.
+mediamuster_add_test(tst_opledger
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+)
+
+# Engine v2 runner: the state machines driven synchronously through a
+# test sink — conflict rules, identity gates, trash tiers, ledger order.
+mediamuster_add_test(tst_oprunner
+    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
+)
+target_compile_definitions(tst_oprunner PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
+
+# Engine v2 facade: signals, worker thread, mid-flight behaviours
+# (ledger readable during a copy, cancel, mutation, stranded park).
+mediamuster_add_test(tst_opmanager
+    ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
+    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
+)
+
+# Engine v2 rescue: the launch sweep over hand-written ledgers — v1's
+# decision tables plus identity guards, volume re-anchoring, undo runs.
+mediamuster_add_test(tst_oprescue
+    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+)
+target_compile_definitions(tst_oprescue PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
+
+# Edit-Undo: forward run through the real runner, then reverse it and
+# check the disk. The whole single-level undo contract lives here.
+mediamuster_add_test(tst_opundo
+    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
+    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 
 # Collect macOS crash reports into the logs folder.

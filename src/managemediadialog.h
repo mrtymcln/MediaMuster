@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mediafile.h"
-#include "mediamanager.h"
+#include "opmanager.h"
 
 #include <QDialog>
 #include <QFutureWatcher>
@@ -22,7 +22,7 @@ class QShowEvent;
 
 // MARK: - ManageMediaDialog
 
-/// Drives MediaManager. Lets the editor pick Copy / Move / Delete,
+/// Drives OpManager. Lets the editor pick Copy / Move / Delete,
 /// choose a destination, decide whether to preserve the Avid folder
 /// structure, and resolve per-file conflicts before the op happens.
 ///
@@ -41,8 +41,10 @@ public:
 		Delete
 	};
 
-	/// Aliased so dialog clients don't need to include mediamanager.h.
-	using ConflictPolicy = MediaManager::ConflictPolicy;
+	/// Aliased so dialog clients don't need to include oprequest.h.
+	/// The engine-wide policy enum (oprequest.h); the alias keeps the
+	/// dialog's call sites reading as before.
+	using ConflictPolicy = ::ConflictPolicy;
 
 	explicit ManageMediaDialog(const QVector<MediaFile> &files, QWidget *parent = nullptr,
 							   Operation initialOp = Operation::Copy);
@@ -55,7 +57,7 @@ public:
 
 	/// Keyed by source file path. Only contains entries for rows
 	/// that actually conflicted with an existing destination. A file absent
-	/// from the map was never flagged as a conflict; MediaManager skips it
+	/// from the map was never flagged as a conflict; the engine skips it
 	/// rather than replace, should one appear. The caller passes this
 	/// straight through.
 	QHash<QString, ConflictPolicy> conflictPolicies() const;
@@ -121,7 +123,7 @@ private:
 	// SMB/Nexis share, thousands of synchronous stats per option change froze
 	// the dialog for seconds. While a sweep is in flight the Execute button is
 	// held disabled (m_checkingDest) so a Copy/Move can't launch against
-	// unknown conflicts; MediaManager still re-checks the disk live at
+	// unknown conflicts; the engine still re-checks the disk live at
 	// execution time, so the preview is advisory either way.
 
 	/// One preview row awaiting sweep results. `item` stays valid for the
@@ -138,7 +140,7 @@ private:
 	};
 
 	/// Sweep output, index-aligned with m_pendingRows. `renamed` is null
-	/// unless the row needed a .Copy.NN preview (on-disk conflict or later
+	/// unless the row needed a rename preview (on-disk conflict or later
 	/// duplicate); null-despite-needing-one means all 999 slots were taken.
 	struct DestCheckResult
 	{

@@ -95,6 +95,34 @@ void ProgressDialog::setProgress(int current, int total)
 	}
 }
 
+void ProgressDialog::setItemProgress(int current, int total, double pct)
+{
+	if (total <= 0)
+	{
+		setProgress(current, total); // indeterminate path, one home
+		return;
+	}
+
+	// 1000 bar ticks per item: fine enough that a multi-GB file's bytes
+	// move the bar visibly, coarse enough to never overflow int for any
+	// plausible selection size.
+	constexpr int kTicksPerItem = 1000;
+	const int clampedCurrent = qBound(1, current, total);
+	const double clampedPct = qBound(0.0, pct, 100.0);
+	const int max = total * kTicksPerItem;
+	if (m_bar->maximum() != max)
+		m_bar->setRange(0, max);
+	m_bar->setValue((clampedCurrent - 1) * kTicksPerItem +
+					int(clampedPct * (kTicksPerItem / 100.0)));
+
+	// The label counts whole items, with the overall percentage folding
+	// the current item's fraction in — "42% — 3 of 7".
+	const double overall = ((clampedCurrent - 1) + clampedPct / 100.0) / total * 100.0;
+	m_counterLabel->setText(tr("%1% — %2 of %3")
+								.arg(qRound(overall))
+								.arg(Format::count(current), Format::count(total)));
+}
+
 void ProgressDialog::setDetail(const QString &text)
 {
 	// Mid-elide so long paths still show the head and the tail.

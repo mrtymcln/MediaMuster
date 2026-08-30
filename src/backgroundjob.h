@@ -100,6 +100,12 @@ public:
 
 	bool isCancelled() const noexcept { return m_cancel.load(std::memory_order_acquire); }
 
+	/// The raw flag, for handing to code that polls cancellation without
+	/// holding a BackgroundJob (the ops engine's runner and copier take a
+	/// `const std::atomic<bool> &` so tests can drive them with a plain
+	/// flag). Read-only; start() still owns the reset.
+	const std::atomic<bool> &cancelFlag() const noexcept { return m_cancel; }
+
 private:
 	QObject *m_owner;
 	QThread *m_thread = nullptr;

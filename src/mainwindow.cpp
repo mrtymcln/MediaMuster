@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+
 #include "aboutdialog.h"
 #include "applog.h"
 #include "avidlayout.h"
@@ -12,8 +13,7 @@
 #include "managemediadialog.h"
 #include "mediacsv.h"
 #include "mediamanagerverify.h"
-#include "opjournal.h"
-#include "oprecovery.h"
+#include "opledger.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
 #include "rebalancedialog_demo.h"
@@ -65,6 +65,9 @@
 #include <QTableView>
 #include <QtConcurrent>
 #include <QTime>
+#include <QKeyEvent>
+#include <QPersistentModelIndex>
+#include <QScrollBar>
 #include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -147,7 +150,7 @@ MainWindow::MainWindow(QWidget *parent)
 	  // gets cranky. Pass `this` as parent and Qt handles cleanup.
 	  m_volumeManager(new VolumeManager(this)),
 	  m_scanner(new MediaScanner(this)),
-	  m_fileOps(new MediaManager(this)),
+	  m_fileOps(new OpManager(this)),
 	  m_model(new MediaTableModel(this)),
 	  m_proxy(new MediaFilterProxy(this))
 {
@@ -212,20 +215,22 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::runStartupRecovery()
 {
-	// OpRecovery::run only touches the filesystem, so it's safe on a pool
-	// thread; the watcher cleans itself up once it fires.
-	auto *watcher = new QFutureWatcher<OpRecovery::Summary>(this);
-	connect(watcher, &QFutureWatcher<OpRecovery::Summary>::finished, this,
+	// OpRescue::run only touches the filesystem, so it's safe on a pool
+	// thread; the watcher cleans itself up once it fires. (A lambda, not
+	// a function pointer: default arguments don't travel through
+	// QtConcurrent's pointer overloads.)
+	auto *watcher = new QFutureWatcher<OpRescue::Summary>(this);
+	connect(watcher, &QFutureWatcher<OpRescue::Summary>::finished, this,
 			[this, watcher]
 			{
-				const OpRecovery::Summary summary = watcher->result();
+				const OpRescue::Summary summary = watcher->result();
 				watcher->deleteLater();
 				onRecoveryDone(summary);
 			});
-	watcher->setFuture(QtConcurrent::run(&OpRecovery::run, QString()));
+	watcher->setFuture(QtConcurrent::run([] { return OpRescue::run(); }));
 }
 
-void MainWindow::onRecoveryDone(const OpRecovery::Summary &summary)
+void MainWindow::onRecoveryDone(const OpRescue::Summary &summary)
 {
 	// Tidying up after a crash is housekeeping, not news: the partial file
 	// the interrupted run wrote is MediaMuster's own mess, and removing it
@@ -434,11 +439,38 @@ QWidget *MainWindow::buildToolbar()
 
 // MARK: - Table
 
+namespace
+{
+	// The default behaviour of QTableView is such that it scrolls to always
+	// keep the 'current cell' visible. autoScroll is off in buildTable; but
+	// that also disables the scroll on arrow keys, so we restore it below.
+	class MediaTableView : public QTableView
+	{
+	public:
+		using QTableView::QTableView;
+
+	protected:
+		void keyPressEvent(QKeyEvent *event) override
+		{
+			const QPersistentModelIndex before = currentIndex();
+			const int horizontal = horizontalScrollBar()->value();
+
+			QTableView::keyPressEvent(event);
+
+			const QModelIndex now = currentIndex();
+			if (now.isValid() && now != before)
+				scrollTo(now); // vertical for arrows/pg up/pg down
+			horizontalScrollBar()->setValue(horizontal); // never sideways
+		}
+	};
+} // namespace
+
 void MainWindow::buildTable()
 {
-	m_tableView = new QTableView;
+	m_tableView = new MediaTableView;
 	m_tableView->setModel(m_proxy);
 	m_tableView->setSortingEnabled(true);
+	m_tableView->setAutoScroll(false);
 	m_tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 	m_tableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	m_tableView->setAlternatingRowColors(true);
@@ -590,6 +622,16 @@ void MainWindow::buildFileMenu()
 void MainWindow::buildEditMenu()
 {
 	auto *editMenu = menuBar()->addMenu(tr("&Edit"));
+
+	// Single-level undo of the last completed file operation. Label and
+	// enabled state follow the newest undoable ledger (refreshResumable);
+	// the engine re-qualifies at run time, so a stale click refuses
+	// cleanly rather than acting on an old belief.
+	m_undoAct = editMenu->addAction(tr("&Undo"));
+	m_undoAct->setShortcut(QKeySequence::Undo);
+	m_undoAct->setEnabled(false);
+	connect(m_undoAct, &QAction::triggered, this, &MainWindow::onUndoLastOperation);
+	editMenu->addSeparator();
 
 	auto *findAct = editMenu->addAction(tr("&Find"));
 	findAct->setShortcut(QKeySequence::Find);
@@ -813,21 +855,24 @@ void MainWindow::setupConnections()
 		Qt::QueuedConnection);
 
 	connect(
-		m_fileOps, &MediaManager::operationProgress, this,
-		[this](const QString &name, int cur, int total, double)
+		m_fileOps, &OpManager::operationProgress, this,
+		[this](const QString &name, int cur, int total, double pct)
 		{
+			// The engine reports per-byte progress within the current
+			// file; fold it into the bar so one 40 GB MXF doesn't look
+			// like a hang (the counter label keeps counting files).
 			auto *dlg = progressDialog();
-			dlg->setProgress(cur, total);
+			dlg->setItemProgress(cur, total, pct);
 			dlg->setDetail(name);
 		},
 		Qt::QueuedConnection);
 	connect(
-		m_fileOps, &MediaManager::operationLog, this,
+		m_fileOps, &OpManager::operationLog, this,
 		[this](QtMsgType level, const QString &message)
 		{ addLog(level, QStringLiteral("ops"), message); },
 		Qt::QueuedConnection);
 	connect(
-		m_fileOps, &MediaManager::operationItemDone, this,
+		m_fileOps, &OpManager::operationItemDone, this,
 		[this](const QString &name, const QString &filePath, bool ok, const QString &err,
 			   bool skipped)
 		{
@@ -846,7 +891,7 @@ void MainWindow::setupConnections()
 		},
 		Qt::QueuedConnection);
 	connect(
-		m_fileOps, &MediaManager::operationFinished, this,
+		m_fileOps, &OpManager::operationFinished, this,
 		[this](int /*succeeded*/, int /*failed*/)
 		{
 			// The engine has already logged its own summary line via
@@ -874,15 +919,16 @@ void MainWindow::setupConnections()
 			m_removeAfterOp = false;
 			m_successfulOpPaths.clear();
 
-			// The run just concluded retired its own journal; re-read the
-			// folder (off-thread) so the Resume item reflects that.
+			// The concluded run's ledger stays behind as the undo
+			// candidate; re-read the folder (off-thread) so the Resume
+			// item reflects the new state.
 			refreshResumable();
 		},
 		Qt::QueuedConnection);
 
 	// Network volumes have no OS recycle bin, so deletes there
 	// land in a per-volume `_MediaMuster_Trash` folder.
-	connect(m_fileOps, &MediaManager::mediaMusterTrashUsed, this,
+	connect(m_fileOps, &OpManager::mediaMusterTrashUsed, this,
 			&MainWindow::showMediaMusterTrashDialog, Qt::QueuedConnection);
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
@@ -1586,70 +1632,132 @@ void MainWindow::openManageMedia(int initialOp)
 	if (dlg.exec() != QDialog::Accepted)
 		return;
 
-	OpJournal::Kind kind = OpJournal::Kind::Copy;
+	OpKind kind = OpKind::Copy;
 	switch (dlg.operation())
 	{
 	case ManageMediaDialog::Operation::Copy:
-		kind = OpJournal::Kind::Copy;
+		kind = OpKind::Copy;
 		break;
 	case ManageMediaDialog::Operation::Move:
-		kind = OpJournal::Kind::Move;
+		kind = OpKind::Move;
 		break;
 	case ManageMediaDialog::Operation::Delete:
-		kind = OpJournal::Kind::Delete;
+		kind = OpKind::Delete;
 		break;
 	}
 	dispatchOperation(kind, std::move(files), dlg.destination(), dlg.preserveStructure(),
 					  dlg.conflictPolicies());
 }
 
-bool MainWindow::dispatchOperation(OpJournal::Kind kind, QVector<MediaFile> files,
-								   const QString &dest, bool preserve,
-								   const QHash<QString, MediaManager::ConflictPolicy> &policies)
+bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const QString &dest,
+								   bool preserve, const QHash<QString, ConflictPolicy> &policies)
 {
-	if (files.isEmpty())
-		return false;
+	// One shape for every dispatch: the selection becomes a request (the
+	// engine's whole read of a MediaFile happens in itemsFromMediaFiles),
+	// and the shared tail below does the gate + engine call.
+	OpRequest req;
+	req.kind = kind;
+	req.destRoot = dest;
+	req.preserve = preserve;
+	req.items = OpManager::itemsFromMediaFiles(files, policies);
+	return dispatchRequest(std::move(req));
+}
 
-	// The write-ahead journal is the only thing that can put files back
-	// after a crash. If it can't be written (disk full, permissions),
-	// running anyway is the user's call to make — not a console line to
-	// miss. Cancel stays default: a stray Return must not waive the net.
-	if (!OpJournal::standardDirWritable())
+// The write-ahead ledger is the only thing that can put files back after
+// a crash. If it can't be written (disk full, permissions), running
+// anyway is the user's call to make — not a console line to miss. Cancel
+// stays default: a stray Return must not waive the net. Shared by every
+// dispatch INCLUDING undo — an undo without its own ledger would itself
+// be unrecoverable if interrupted.
+bool MainWindow::confirmCrashProtection()
+{
+	if (OpLedger::standardDirWritable())
+		return true;
+	QMessageBox confirm(this);
+	confirm.setIcon(QMessageBox::Warning);
+	confirm.setWindowTitle(tr("No crash protection"));
+	confirm.setText(tr("MediaMuster can't write its safety journal (the record used to "
+					   "undo an interrupted operation). Check free space and permissions "
+					   "on your system disk.\n\nIf this operation is interrupted, files "
+					   "cannot be put back automatically. Continue anyway?"));
+	auto *goBtn = confirm.addButton(tr("Continue Anyway"), QMessageBox::DestructiveRole);
+	confirm.addButton(QMessageBox::Cancel);
+	confirm.setDefaultButton(QMessageBox::Cancel);
+	confirm.exec();
+	return confirm.clickedButton() == goBtn;
+}
+
+void MainWindow::updateUndoAction()
+{
+	if (!m_undoAct)
+		return;
+	// Scan button doubles as the busy flag, exactly as for Resume.
+	m_undoAct->setEnabled(!m_undoCandidate.path.isEmpty() && m_scanButton->isEnabled());
+	m_undoAct->setText(m_undoCandidate.label.isEmpty() ? tr("&Undo") : m_undoCandidate.label);
+}
+
+void MainWindow::onUndoLastOperation()
+{
+	if (m_undoCandidate.path.isEmpty() || !m_scanButton->isEnabled())
+		return;
+
+	// Confirm intent first, naming exactly what will be undone and, per
+	// kind, what that means on disk. Deliberately a bog-standard message
+	// box — platform defaults, affirmative button as the default action
+	// (Marty's call: the dialog itself is the guard; no button-role
+	// gymnastics).
 	{
+		QString plainLabel = m_undoCandidate.label;
+		plainLabel.remove(QLatin1Char('&'));
+		if (plainLabel.isEmpty())
+			plainLabel = tr("Undo last operation");
+
 		QMessageBox confirm(this);
-		confirm.setIcon(QMessageBox::Warning);
-		confirm.setWindowTitle(tr("No crash protection"));
-		confirm.setText(tr("MediaMuster can't write its safety journal (the record used to "
-						   "undo an interrupted operation). Check free space and permissions "
-						   "on your system disk.\n\nIf this operation is interrupted, files "
-						   "cannot be put back automatically. Continue anyway?"));
-		auto *goBtn = confirm.addButton(tr("Continue Anyway"), QMessageBox::DestructiveRole);
+		confirm.setIcon(QMessageBox::Question);
+		confirm.setWindowTitle(tr("Undo"));
+		confirm.setText(tr("%1?").arg(plainLabel));
+		confirm.setInformativeText(
+			tr("Files will be put back where they were. Anything removed goes to the Trash."));
+		auto *goBtn = confirm.addButton(plainLabel, QMessageBox::AcceptRole);
 		confirm.addButton(QMessageBox::Cancel);
-		confirm.setDefaultButton(QMessageBox::Cancel);
 		confirm.exec();
 		if (confirm.clickedButton() != goBtn)
-			return false;
+			return;
 	}
 
+	if (!confirmCrashProtection())
+		return;
+
+	// Undo restores files ON DISK; the table can't follow (rows for
+	// moved/deleted files were pruned when the run finished). Say so
+	// once, up front, instead of leaving a silent mismatch.
+	addLog(QtInfoMsg, QStringLiteral("ops"),
+		   tr("Undoing the last operation. Rescan afterwards to refresh the table."));
+
+	m_removeAfterOp = false;
+	m_successfulOpPaths.clear();
+	m_fileOps->executeUndo(m_undoCandidate.path);
+	m_undoCandidate = {}; // spent (or re-offered by the refresh after the run)
+	setBusy(true);
+	progressDialog()->begin();
+}
+
+bool MainWindow::dispatchRequest(OpRequest request)
+{
+	if (request.items.isEmpty())
+		return false;
+
+	if (!confirmCrashProtection())
+		return false;
+
 	// Move/Delete remove the affected rows on completion. Copy leaves
-	// source rows in place.
-	m_removeAfterOp = (kind != OpJournal::Kind::Copy);
+	// source rows in place; a Rename changes paths without removing.
+	m_removeAfterOp = (request.kind == OpKind::Move || request.kind == OpKind::Delete);
 	m_successfulOpPaths.clear();
 
 	// The engine narrates the run (start line, per-file lines, summary)
 	// through operationLog; the window only dispatches.
-	switch (kind)
-	{
-	case OpJournal::Kind::Copy:
-		m_fileOps->executeCopy(std::move(files), dest, preserve, policies);
-		break;
-	case OpJournal::Kind::Move:
-		m_fileOps->executeMove(std::move(files), dest, preserve, policies);
-		break;
-	case OpJournal::Kind::Delete:
-		m_fileOps->executeDelete(std::move(files));
-		break;
-	}
+	m_fileOps->execute(std::move(request));
 
 	// Lock the UI and raise the modal progress sheet now, at dispatch —
 	// not lazily on the first progress signal. That closes the window
@@ -1668,6 +1776,8 @@ void MainWindow::updateResumeAction()
 	// so it doubles as the busy flag: no resuming on top of a live run.
 	if (m_resumeAct)
 		m_resumeAct->setEnabled(!m_resumable.isEmpty() && m_scanButton->isEnabled());
+	// The Undo item rides the same busy flag and the same refresh moments.
+	updateUndoAction();
 }
 
 void MainWindow::refreshResumable()
@@ -1676,15 +1786,39 @@ void MainWindow::refreshResumable()
 	// media paths in every journal, and a dropped network mount would
 	// freeze the window (the launch sweep runs on a pool thread for the
 	// same reason). The menu item keeps its last state until this lands.
-	auto *watcher = new QFutureWatcher<QVector<OpRecovery::Resumable>>(this);
-	connect(watcher, &QFutureWatcher<QVector<OpRecovery::Resumable>>::finished, this,
+	auto *watcher = new QFutureWatcher<QVector<OpRescue::Resumable>>(this);
+	connect(watcher, &QFutureWatcher<QVector<OpRescue::Resumable>>::finished, this,
 			[this, watcher]
 			{
 				m_resumable = watcher->result();
 				watcher->deleteLater();
 				updateResumeAction();
 			});
-	watcher->setFuture(QtConcurrent::run(&OpRecovery::pending, QString()));
+	watcher->setFuture(QtConcurrent::run([] { return OpRescue::pending(); }));
+
+	// The Edit ▸ Undo candidate, computed in the same off-thread sweep
+	// spirit: reading the newest ledger stats media paths and must never
+	// block the GUI on a dead mount.
+	auto *undoWatcher = new QFutureWatcher<UndoCandidate>(this);
+	connect(undoWatcher, &QFutureWatcher<UndoCandidate>::finished, this,
+			[this, undoWatcher]
+			{
+				m_undoCandidate = undoWatcher->result();
+				undoWatcher->deleteLater();
+				updateUndoAction();
+			});
+	undoWatcher->setFuture(QtConcurrent::run(
+		[]() -> UndoCandidate
+		{
+			const auto rec = OpLedger::latestUndoable();
+			if (!rec)
+				return {};
+			QString kind = opKindName(rec->kind);
+			if (!kind.isEmpty())
+				kind[0] = kind[0].toUpper();
+			return {rec->path,
+					tr("&Undo %1 (%2 files)").arg(kind).arg(rec->doneCount())};
+		}));
 }
 
 void MainWindow::offerResume()
@@ -1698,27 +1832,27 @@ void MainWindow::offerResume()
 	// land mid-scan if the user was quick); the menu command stays live.
 	if (!m_scanButton->isEnabled())
 		return;
-	const OpRecovery::Resumable r = m_resumable.first();
+	const OpRescue::Resumable r = m_resumable.first();
 
 	QString headline, reassurance;
 	const QString where = QDir::toNativeSeparators(r.dest);
 	switch (r.kind)
 	{
-	case OpJournal::Kind::Copy:
+	case OpKind::Copy:
 		headline = tr("I was copying %n file(s) for %1, but didn't get them all in.", nullptr,
 					  r.total)
 					   .arg(where);
 		reassurance = tr("The successfully copied files are at the destination. "
 						 "The remaining files are untouched.");
 		break;
-	case OpJournal::Kind::Move:
+	case OpKind::Move:
 		headline = tr("I was moving %n file(s) over to %1, but didn't get them all in.", nullptr,
 					  r.total)
 					   .arg(where);
 		reassurance = tr("The successfully moved files are at the destination. "
 						 "The remaining files are untouched.");
 		break;
-	case OpJournal::Kind::Delete:
+	case OpKind::Delete:
 		headline = tr("I was clearing out %n file(s) but didn't get them all out.", nullptr,
 					  r.total);
 		// Network volumes have no OS trash, so those deletes go to a
@@ -1728,6 +1862,17 @@ void MainWindow::offerResume()
 							   "on that volume. The rest are untouched.")
 						  : tr("The successfully deleted files are in your bin. "
 							   "The rest are untouched.");
+		break;
+	case OpKind::Rename:
+		headline = tr("I was reorganising %n file(s) between media folders, but didn't finish.",
+					  nullptr, r.total)
+					   .arg(where);
+		reassurance = tr("The files already moved are in their new folders. "
+						 "The rest are untouched.");
+		break;
+	case OpKind::Undo:
+		// Never offered (resumableFrom refuses undo runs); listed only
+		// so the switch stays exhaustive.
 		break;
 	}
 
@@ -1759,13 +1904,13 @@ void MainWindow::offerResume()
 
 	if (box.clickedButton() == discardBtn)
 	{
-		if (!QFile::remove(r.journalPath))
+		if (!QFile::remove(r.ledgerPath))
 			addLog(QtWarningMsg, QStringLiteral("app"),
-				   QStringLiteral("Couldn't delete the interrupted-run journal %1").arg(r.journalPath));
+				   QStringLiteral("Couldn't delete the interrupted-run journal %1").arg(r.ledgerPath));
 		else
 			addLog(QtInfoMsg, QStringLiteral("app"),
 				   QStringLiteral("Discarded an interrupted %1 (%2 of %3 files were not done)")
-					   .arg(OpJournal::kindName(r.kind))
+					   .arg(opKindName(r.kind))
 					   .arg(r.remaining.size())
 					   .arg(r.total));
 		refreshResumable();
@@ -1777,21 +1922,27 @@ void MainWindow::offerResume()
 		return;
 	}
 
-	// Resume = the same dispatch as Manage Media, over the unfinished files.
-	// The new run writes its own journal (with its own plan), so the old
-	// one is retired the moment the new run is under way — and kept if the
-	// dispatch was declined (journal-writable gate), so the offer survives.
+	// Resume = the same dispatch as Manage Media, over the unfinished
+	// files — dispatched STRAIGHT from the ledger's own plan items, with
+	// their identities and clip names intact (no reconstituted rows).
+	// The new run writes its own ledger, so the old one is retired the
+	// moment the new run is under way — and kept if the dispatch was
+	// declined (ledger-writable gate), so the offer survives.
 	addLog(QtInfoMsg, QStringLiteral("app"),
 		   QStringLiteral("Resuming an interrupted %1: %2 of %3 files still to do")
-			   .arg(OpJournal::kindName(r.kind))
+			   .arg(opKindName(r.kind))
 			   .arg(r.remaining.size())
 			   .arg(r.total));
-	const bool dispatched = dispatchOperation(r.kind, MediaManager::filesFromPlan(r.remaining), r.dest,
-											  r.preserve, MediaManager::policiesFromPlan(r.remaining));
-	if (dispatched && !QFile::remove(r.journalPath))
+	OpRequest req;
+	req.kind = r.kind;
+	req.destRoot = r.dest;
+	req.preserve = r.preserve;
+	req.items = r.remaining;
+	const bool dispatched = dispatchRequest(std::move(req));
+	if (dispatched && !QFile::remove(r.ledgerPath))
 		addLog(QtWarningMsg, QStringLiteral("app"),
 			   QStringLiteral("Couldn't delete the interrupted-run journal %1 — it may be offered again")
-				   .arg(r.journalPath));
+				   .arg(r.ledgerPath));
 	refreshResumable();
 }
 

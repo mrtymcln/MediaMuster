@@ -104,14 +104,20 @@ set(SOURCES
     src/bentofile.cpp
     src/avideffects.cpp
     src/mediacsv.cpp
-    src/mediamanager.cpp
+    src/fileidentity.cpp
+    src/nativefile.cpp
+    src/opledger.cpp
+    src/opcopier.cpp
+    src/oprunner.cpp
+    src/opundo.cpp
+    src/trashrouter.cpp
+    src/opmanager.cpp
+    src/oprescue.cpp
     src/avbparser.cpp
     src/binfilterdialog.cpp
     src/managemediadialog.cpp
     src/progressdialog.cpp
     src/rebalancer.cpp
-    src/opjournal.cpp
-    src/oprecovery.cpp
     src/crashcollector.cpp
     src/userinfo.cpp
     src/rebalancedialog.cpp

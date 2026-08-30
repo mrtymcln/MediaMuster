@@ -19,6 +19,44 @@
 Rebalancer::Rebalancer(QObject *parent)
 	: QObject(parent)
 {
+	m_engine = new OpManager(this);
+
+	// The Avid per-folder database reset itself lives in the ENGINE's
+	// Rename machine (so an undo of a rebalance resets them too, and the
+	// honest-absence ordering is enforced in one place — see
+	// oprunner.cpp's touchFolder). This hook only counts the folders for
+	// the summary line. (Runs on the engine's worker thread.)
+	m_engine->renameFolderTouched = [this](const QString &)
+	{ m_foldersReset.fetch_add(1, std::memory_order_relaxed); };
+
+	// Signal adaptation, once: the engine speaks OpManager, the dialog
+	// speaks Rebalancer, and RebalanceDialog's four connects stay
+	// exactly as they were.
+	connect(m_engine, &OpManager::operationProgress, this,
+			[this](const QString &name, int current, int total, double)
+			{ emit progress(current, total, name); });
+	connect(m_engine, &OpManager::operationLog, this,
+			[this](QtMsgType level, const QString &message) { emit log(level, message); });
+	connect(m_engine, &OpManager::operationItemDone, this,
+			[this](const QString &name, const QString &, bool ok, const QString &error, bool)
+			{
+				// Successes stay quiet (the progress line already moves);
+				// every refusal or failure is worth a console line.
+				if (!ok)
+					emit log(QtWarningMsg, QStringLiteral("%1: %2").arg(name, error));
+			});
+	connect(m_engine, &OpManager::operationFinished, this,
+			[this](int succeeded, int failed)
+			{
+				const int reset = m_foldersReset.load(std::memory_order_relaxed);
+				if (reset > 0)
+					emit log(QtInfoMsg,
+							 QStringLiteral("Avid databases reset in %1 folder(s); Avid "
+											"rebuilds them on next launch.")
+								 .arg(Format::count(reset)));
+				emit finished(succeeded, failed,
+							  m_cancelRequested.load(std::memory_order_acquire));
+			});
 }
 
 // MARK: - Folder name parsing
@@ -80,7 +118,7 @@ namespace
 	/// Can this folder accept the renames a rebalance is about to make?
 	/// Proved with a scratch file of our own — create it, rename it, delete
 	/// it — the way the rest of the app tests a location (compare
-	/// OpJournal::standardDirWritable).
+	/// OpLedger::standardDirWritable).
 	///
 	/// This check used to rename one of the USER'S clips out and straight
 	/// back. That tested the same folder permission, but if the app died in
@@ -471,166 +509,122 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 void Rebalancer::executeAsync(const RebalancePlan &plan)
 {
-	m_job.start([this, plan]
-				{ doExecute(plan); });
+	m_cancelRequested.store(false, std::memory_order_release);
+	m_foldersReset.store(0, std::memory_order_relaxed);
+
+	// Phase 1, on our own short-lived worker (a dead network mount must
+	// not freeze the GUI): the donor pre-flight and folder creation,
+	// unchanged from v1, then the plan becomes an engine request.
+	m_preflight.start(
+		[this, plan]
+		{
+			// MARK: Pre-flight — can each donor folder accept renames?
+			//
+			// A folder that is gone or read-only aborts the run before
+			// anything moves, with a scratch file paying for the answer
+			// rather than a clip. A single clip another app holds open
+			// isn't caught here; it fails its own rename in the engine,
+			// where it is counted and logged.
+			{
+				QSet<FolderId> donors;
+				for (const MoveOp &op : plan.ops)
+					if (const auto srcFid = srcFolderOf(op.srcPath))
+						donors.insert(*srcFid);
+
+				for (const FolderId &fid : donors)
+				{
+					QString detail;
+					const FolderCheck check = checkFolderRenames(
+						plan.mxfRoot + QLatin1Char('/') + fid.display(), detail);
+					if (check == FolderCheck::Ok)
+						continue;
+					if (check == FolderCheck::Unverified)
+					{
+						emit log(QtWarningMsg,
+								 tr("Couldn't pre-check folder '%1' (%2). Carrying on: moving "
+									"a file needs no free space, and any file that can't move "
+									"is reported.")
+									 .arg(fid.display(), detail));
+						continue;
+					}
+					emit aborted(tr("Can't move files out of folder '%1' — %2. If Avid Media "
+									"Composer (or another app) is using these files, quit it "
+									"and try again.")
+									 .arg(fid.display(), detail));
+					return; // no moves performed; no finished will follow
+				}
+			}
+
+			// MARK: Pre-create new folders
+			//
+			// Per-move failures are handled by the engine; if one of
+			// these mkpaths fails the corresponding renames fail
+			// naturally and log themselves.
+			for (const FolderId &fid : plan.newFolders)
+			{
+				const QString path = plan.mxfRoot + QLatin1Char('/') + fid.display();
+				if (!QDir().mkpath(path))
+					emit log(QtCriticalMsg,
+							 QStringLiteral("Failed to create folder: %1").arg(path));
+			}
+
+			// MARK: Build the engine request, group-contiguously
+			//
+			// Relatives (one master clip's video + audio essence) are
+			// contiguous in the item order and share a groupKey, and the
+			// engine's Rename machine only honours cancel at group
+			// boundaries — so relatives stay atomic, exactly as before.
+			QHash<QString, QVector<int>> opsByComp;
+			QStringList compOrder;
+			for (int i = 0; i < plan.ops.size(); ++i)
+			{
+				const QString key = relativesKey(plan.ops[i]);
+				if (!opsByComp.contains(key))
+					compOrder.append(key);
+				opsByComp[key].append(i);
+			}
+
+			OpRequest req;
+			req.kind = OpKind::Rename;
+			req.items.reserve(plan.ops.size());
+			for (const QString &compKey : compOrder)
+			{
+				for (int idx : opsByComp[compKey])
+				{
+					const MoveOp &op = plan.ops[idx];
+					const QString fileName = QFileInfo(op.srcPath).fileName();
+					OpItem it;
+					it.src = op.srcPath;
+					it.name = fileName;
+					it.bytes = op.sizeBytes;
+					it.masterMobId = op.masterMobId;
+					it.renameDst = plan.mxfRoot + QLatin1Char('/') + op.dest.display() +
+								   QLatin1Char('/') + fileName;
+					it.groupKey = compKey;
+					req.items.append(it);
+				}
+			}
+
+			// A cancel that raced the pre-flight: stop before dispatch.
+			if (m_preflight.isCancelled())
+			{
+				emit finished(0, 0, /*cancelled=*/true);
+				return;
+			}
+
+			// Phase 2 must start from the GUI thread — BackgroundJob's
+			// start() manages its worker from its owner's thread — so
+			// hop back queued. This worker then exits.
+			QMetaObject::invokeMethod(
+				this, [this, req = std::move(req)]() mutable { startEngineRun(std::move(req)); },
+				Qt::QueuedConnection);
+		});
 }
 
-void Rebalancer::doExecute(const RebalancePlan &plan)
+void Rebalancer::startEngineRun(OpRequest request)
 {
-	int succeeded = 0;
-	int failed = 0;
-	bool cancelled = false;
-	QSet<FolderId> touched;
-	const int total = plan.ops.size();
-
-	// MARK: Pre-flight — can each donor folder accept renames?
-
-	// Every move here is a rename inside one volume, so a half-finished run
-	// is not damage: each clip is either at its old path or its new one,
-	// and which numbered folder it sits in is exactly what a rebalance is
-	// free to change. That is why this operation keeps no journal — there
-	// is nothing a rollback could usefully put back, and re-running is one
-	// button. What CAN go wrong is a folder that won't accept renames at
-	// all, so check that first, with a scratch file rather than a clip.
-	{
-		QSet<FolderId> donors;
-		for (const MoveOp &op : plan.ops)
-			if (const auto srcFid = srcFolderOf(op.srcPath))
-				donors.insert(*srcFid);
-
-		for (const FolderId &fid : donors)
-		{
-			QString detail;
-			const FolderCheck check =
-				checkFolderRenames(plan.mxfRoot + QLatin1Char('/') + fid.display(), detail);
-			if (check == FolderCheck::Ok)
-				continue;
-			if (check == FolderCheck::Unverified)
-			{
-				emit log(QtWarningMsg,
-						 tr("Couldn't pre-check folder '%1' (%2). Carrying on: moving a file "
-							"needs no free space, and any file that can't move is reported.")
-							 .arg(fid.display(), detail));
-				continue;
-			}
-			emit aborted(tr("Can't move files out of folder '%1' — %2. If Avid Media Composer "
-							"(or another app) is using these files, quit it and try again.")
-							 .arg(fid.display(), detail));
-			return;
-		}
-	}
-
-	// MARK: Pre-create new folders
-
-	// Per-move failures are handled inside the move loop; if one
-	// of these mkpaths fails the corresponding moves will fail
-	// naturally and log themselves.
-	for (const FolderId &fid : plan.newFolders)
-	{
-		const QString path = plan.mxfRoot + QLatin1Char('/') + fid.display();
-		if (!QDir().mkpath(path))
-			emit log(QtCriticalMsg, QStringLiteral("Failed to create folder: %1").arg(path));
-	}
-
-	// MARK: Group ops for atomic cancel boundaries
-
-	// Cancel only fires between relatives groups, never within
-	// one. Lone files become one-op groups, so this is effectively
-	// per-file cancel for them.
-	QHash<QString, QVector<int>> opsByComp;
-	QStringList compOrder;
-	for (int i = 0; i < plan.ops.size(); ++i)
-	{
-		const QString key = relativesKey(plan.ops[i]);
-		if (!opsByComp.contains(key))
-			compOrder.append(key);
-		opsByComp[key].append(i);
-	}
-
-	int doneCount = 0;
-	// ~30 Hz emit cap, same throttle the scanner/copy loops use.
-	ProgressThrottle throttle;
-
-	// Avid's per-folder databases (msmMMOB.mdb / msmFMID.pmr) go stale the
-	// instant a file moves in or out, and Avid rebuilds them when it next
-	// opens the project. Delete them the moment they go stale — NOT at the
-	// end of the run.
-	//
-	// That ordering is what makes running without a journal safe. A crash
-	// partway through leaves a legal folder layout, but if the databases
-	// were still sitting there intact, they would parse cleanly and simply
-	// not mention the clips that had already moved: the scanner reads that
-	// as "No reference", which is the state a user culls from. Deleting
-	// them first means a crash leaves them absent instead — "No database",
-	// an honest unknown that invites a rescan rather than a delete.
-	const auto resetFolderDatabases = [&](const FolderId &fid)
-	{
-		if (touched.contains(fid))
-			return; // already reset by an earlier move
-		touched.insert(fid);
-		const QString folderPath = plan.mxfRoot + QLatin1Char('/') + fid.display();
-		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
-		{
-			QFile f(folderPath + QLatin1String(db));
-			if (f.exists() && !f.remove())
-				emit log(QtWarningMsg, QStringLiteral("Couldn't delete %1").arg(f.fileName()));
-		}
-	};
-
-	// MARK: Execute moves
-
-	for (const QString &compKey : compOrder)
-	{
-		// Cancel only at the top of each group; once we start a
-		// group we finish it, so relatives stay atomic.
-		if (m_job.isCancelled())
-		{
-			cancelled = true;
-			break;
-		}
-
-		for (int idx : opsByComp[compKey])
-		{
-			const MoveOp &op = plan.ops[idx];
-			const QString destPath = plan.mxfRoot + QLatin1Char('/') + op.dest.display() +
-									 QLatin1Char('/') + QFileInfo(op.srcPath).fileName();
-
-			if (QFile::exists(destPath))
-			{
-				emit log(QtCriticalMsg,
-						 QStringLiteral("Destination already exists, skipping: %1").arg(destPath));
-				++failed;
-			}
-			else if (QFile::rename(op.srcPath, destPath))
-			{
-				++succeeded;
-				resetFolderDatabases(op.dest);
-				if (const auto srcFid = srcFolderOf(op.srcPath))
-					resetFolderDatabases(*srcFid);
-			}
-			else
-			{
-				emit log(QtWarningMsg, QStringLiteral("Move failed: %1 → %2").arg(op.srcPath, destPath));
-				++failed;
-			}
-			++doneCount;
-
-			if (doneCount == total || throttle.shouldEmit())
-				emit progress(doneCount, total, QFileInfo(op.srcPath).fileName());
-		}
-	}
-
-	// Cancel means stop and keep: the moves that did happen stay where they
-	// landed, which is a legal folder layout like any other.
-
-	emit log(
-		QtInfoMsg,
-		QStringLiteral("Rebalance %1: %2 moved, %3 failed%4")
-			.arg(cancelled ? QStringLiteral("cancelled") : QStringLiteral("complete"),
-				 Format::count(succeeded), Format::count(failed),
-				 touched.isEmpty()
-					 ? QString()
-					 : QStringLiteral(", databases reset in %1 folders")
-						   .arg(Format::count(touched.size()))));
-	emit finished(succeeded, failed, cancelled);
+	// The engine takes it from here: write-ahead ledger, identity gates,
+	// per-rename recovery coverage, undo candidacy. Its signals were
+	// adapted onto ours in the constructor.
+	m_engine->execute(std::move(request));
 }

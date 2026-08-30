@@ -2,10 +2,10 @@
 
 #include "mediafile.h"
 #include "mediafilterproxy.h"
-#include "mediamanager.h"
 #include "mediascanner.h"
 #include "mediatablemodel.h"
-#include "oprecovery.h"
+#include "opmanager.h"
+#include "oprescue.h"
 #include "volumelistwidget.h"
 #include "volumemanager.h"
 
@@ -29,7 +29,7 @@ class QTimer;
 
 // MARK: - MainWindow
 
-/// Composes VolumeManager, MediaScanner, MediaManager,
+/// Composes VolumeManager, MediaScanner, OpManager,
 /// MediaTableModel + MediaFilterProxy, and on-demand dialogs.
 /// Most of the work happens in the slot handlers; this class is
 /// mostly wiring and UI assembly.
@@ -97,7 +97,7 @@ private:
 	/// previous run died partway through, deletes the clean journals, then
 	/// reports via onRecoveryDone.
 	void runStartupRecovery();
-	void onRecoveryDone(const OpRecovery::Summary &summary);
+	void onRecoveryDone(const OpRescue::Summary &summary);
 
 	// MARK: - Resume an interrupted operation
 
@@ -106,6 +106,15 @@ private:
 	/// item. Called after a resume, a discard, or a finished operation; the
 	/// launch sweep supplies the first list for free.
 	void refreshResumable();
+
+	/// Enable/label Edit ▸ Undo from the cached candidate; disabled while
+	/// an operation runs (same busy flag as Resume).
+	void updateUndoAction();
+	void onUndoLastOperation();
+
+	/// The shared "no crash protection" gate: true = go ahead (ledger
+	/// writable, or the user explicitly chose to continue without it).
+	bool confirmCrashProtection();
 
 	/// Applies the File-menu item's enabled state from the cached list.
 	/// Cheap and synchronous — safe to call from setBusy on every edge.
@@ -122,9 +131,15 @@ private:
 	/// dialog and by Resume, so a resumed run is a normal run.
 	/// Returns false when nothing was started (empty list, or the user
 	/// declined the no-journal warning).
-	bool dispatchOperation(OpJournal::Kind kind, QVector<MediaFile> files,
+	bool dispatchOperation(OpKind kind, QVector<MediaFile> files,
 						   const QString &dest, bool preserve,
-						   const QHash<QString, MediaManager::ConflictPolicy> &policies);
+						   const QHash<QString, ConflictPolicy> &policies);
+
+	/// The shared tail of every dispatch: the ledger-writable gate, the
+	/// row-pruning flag, the engine call, and the busy/progress raise.
+	/// Resume comes through here with a request built straight from the
+	/// interrupted ledger's own plan items.
+	bool dispatchRequest(OpRequest request);
 
 	/// Collects MacOS crash reports into the logs folder,
 	/// and nudges the user to send them to the developer.
@@ -198,7 +213,7 @@ private:
 
 	VolumeManager *m_volumeManager;
 	MediaScanner *m_scanner;
-	MediaManager *m_fileOps;
+	OpManager *m_fileOps;
 
 	MediaTableModel *m_model;
 	MediaFilterProxy *m_proxy;
@@ -262,10 +277,20 @@ private:
 	bool m_removeAfterOp = false;
 	QSet<QString> m_successfulOpPaths;
 
-	/// Interrupted runs that can be finished (see OpRecovery::pending),
+	/// Interrupted runs that can be finished (see OpRescue::pending),
 	/// oldest first; drives the File > Resume Interrupted Operation item.
-	QVector<OpRecovery::Resumable> m_resumable;
+	QVector<OpRescue::Resumable> m_resumable;
 	class QAction *m_resumeAct = nullptr;
+	class QAction *m_undoAct = nullptr;
+	/// Edit ▸ Undo candidate, refreshed off-thread with the resumables:
+	/// the newest finished ledger's path and the menu label naming it.
+	/// Empty path = nothing to undo.
+	struct UndoCandidate
+	{
+		QString path;
+		QString label;
+	};
+	UndoCandidate m_undoCandidate;
 
 	class BinFilterDialog *m_binFilterDialog = nullptr;
 

@@ -107,8 +107,8 @@ namespace AvidLayout
 	// MARK: - MediaMuster's own temp-rename markers
 
 	/// Copy and Move park an existing destination aside by appending one of
-	/// these plus a uuid. Defined here, used by mediamanager.cpp (the
-	/// parking) and by the scanner, which must recognise a stranded park as
+	/// these plus a uuid. Defined here, used by the ops engine (the
+	/// parking, in oprunner.cpp) and by the scanner, which must recognise a stranded park as
 	/// temp-renamed media rather than hiding it.
 	inline constexpr QLatin1String kCopyReplaceTag(".__copyreplace_");
 	inline constexpr QLatin1String kMoveReplaceTag(".__movereplace_");
@@ -116,7 +116,7 @@ namespace AvidLayout
 	/// Where Delete puts files on a volume whose OS trash can't be used or
 	/// won't say where a file landed (network shares): a folder at the
 	/// volume root. Defined here with the other names MediaMuster writes,
-	/// so the delete path (mediamanager.cpp) and anything that has to
+	/// so the delete path (oprunner.cpp's TrashRouter) and anything that has to
 	/// recognise the folder afterwards share one spelling.
 	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
 

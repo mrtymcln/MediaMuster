@@ -3,11 +3,14 @@
 #include "avidlimits.h"
 #include "backgroundjob.h"
 #include "mediafile.h"
+#include "opmanager.h"
 #include "rebalanceplan.h"
 
 #include <QObject>
 #include <QString>
 #include <QVector>
+
+#include <atomic>
 #include <optional>
 
 // MARK: - Rebalancer
@@ -23,22 +26,31 @@
 ///      describing every move, every new folder, every warning.
 ///      Nothing touched on disk yet.
 ///
-///   2. executeAsync: runs the approved plan on a worker thread.
-///      Opens with a scratch-file rename check per donor folder, so a
-///      folder that is gone or read-only aborts the run before anything
-///      moves; a single clip another app holds open isn't caught there
-///      and fails its own rename in the loop, where it is counted and
-///      logged. Then renames files into their target folders, deleting
-///      each folder's stale .mdb / .pmr the moment its contents change
-///      so Avid rebuilds them.
+///   2. executeAsync: runs the approved plan through the file-
+///      operations engine. It opens with the scratch-file rename check
+///      per donor folder (on its own short-lived worker), so a folder
+///      that is gone or read-only aborts the run before anything moves;
+///      then the plan becomes an OpRequest of Rename items and the
+///      engine does the rest — which is the v2 upgrade: every rename is
+///      now WRITE-AHEAD LEDGERED, identity-checked, recoverable after a
+///      crash from the next launch's sweep, and undoable from Edit ▸
+///      Undo. (v1 ran bare QFile::rename with none of that — the one
+///      feature outside the safety net.)
 ///
-///      No journal: every move is a rename inside one volume, so an
-///      interrupted run leaves each clip at exactly one of its two
-///      paths — a legal layout, and re-running is one button.
+///      Each folder's stale .mdb / .pmr is still deleted the moment its
+///      contents change, via the engine's folder-touched hook, so Avid
+///      rebuilds them.
 ///
-/// Relatives stay together. Bucket by masterMobId
-/// and treat each bucket as atomic; cancel fires between buckets,
-/// never mid-bucket.
+/// Relatives stay together. Bucket by masterMobId, order the request
+/// group-contiguously, and the engine's Rename machine only honours
+/// cancel at group boundaries — never mid-bucket.
+///
+/// This adapter owns a PRIVATE OpManager rather than sharing
+/// MainWindow's: the main window's signal handlers (row pruning, busy
+/// state, the modal progress sheet) are wired to ITS engine instance
+/// and must not fire for a rebalance, whose dialog has its own progress
+/// UI. The modal dialogs remain what prevents two operations running at
+/// once, exactly as before.
 class Rebalancer : public QObject
 {
 	Q_OBJECT
@@ -67,13 +79,18 @@ public:
 	// MARK: - Execution
 
 	/// Only one execute is in flight per instance; a second call
-	/// cancels and joins the previous worker before starting the new one.
+	/// cancels and joins the previous pre-flight before starting anew.
 	void executeAsync(const RebalancePlan &plan);
 
 	/// Checked at relatives-group boundaries so relatives stay
 	/// together; never leave half a master clip's essence split
 	/// across folders.
-	void cancel() { m_job.cancel(); }
+	void cancel()
+	{
+		m_cancelRequested.store(true, std::memory_order_release);
+		m_preflight.cancel();
+		m_engine->cancel();
+	}
 
 signals:
 
@@ -88,7 +105,23 @@ signals:
 	void aborted(const QString &reason);
 
 private:
-	void doExecute(const RebalancePlan &plan);
+	/// GUI-thread tail of executeAsync: the pre-flight worker hops back
+	/// here (queued) to hand the built request to the engine.
+	void startEngineRun(OpRequest request);
 
-	BackgroundJob m_job{this};
+	/// The private engine instance (see the class comment for why it is
+	/// not MainWindow's). Signal adaptation happens once, in the ctor.
+	OpManager *m_engine = nullptr;
+
+	/// Folders whose Avid databases this run has reset, for the summary
+	/// line. Written from the engine's worker thread via the
+	/// folder-touched hook; read on the GUI thread after finished.
+	std::atomic<int> m_foldersReset{0};
+
+	std::atomic<bool> m_cancelRequested{false};
+
+	/// Pre-flight only: the scratch-file donor checks and the request
+	/// build run here so a dead network mount can't freeze the GUI. The
+	/// renames themselves run on the engine's own worker.
+	BackgroundJob m_preflight{this};
 };

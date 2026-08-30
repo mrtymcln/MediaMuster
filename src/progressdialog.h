@@ -29,6 +29,14 @@ public:
 	/// positive total flips to determinate and shows 'N%' and 'N of N'.
 	void setProgress(int current, int total);
 
+	/// Like setProgress, but folds the CURRENT item's own progress
+	/// (`pct`, 0–100) into the bar, so one 40 GB file visibly advances
+	/// instead of looking like a hang. The bar runs at 1000 ticks per
+	/// item; the counter label keeps counting whole items and shows the
+	/// overall percentage. The ops engine feeds this; scans (no per-item
+	/// byte progress) keep using setProgress.
+	void setItemProgress(int current, int total, double pct);
+
 	/// Detail line; usually the current file path, mid-elided to fit
 	/// so head and tail stay visible.
 	void setDetail(const QString &text);

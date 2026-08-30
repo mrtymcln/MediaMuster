@@ -29,12 +29,14 @@ private slots:
 	void home_full_falls_back_to_existing_folder();
 	void new_folder_when_all_existing_are_full();
 
-	// Execution. The moves themselves are renames inside one volume, so a
-	// half-finished run is a legal layout and the operation keeps no
-	// journal; what has to hold is that an approved plan actually lands,
-	// and that a folder which won't accept renames stops the run before
-	// anything moves — proved with a scratch file, never by renaming one
-	// of the user's clips (which is what used to strand real media).
+	// Execution — now through the ops engine, so every rename is
+	// write-ahead ledgered and recoverable. What has to hold is that an
+	// approved plan actually lands, and that a folder which won't accept
+	// renames stops the run before anything moves — proved with a
+	// scratch file, never by renaming one of the user's clips (which is
+	// what used to strand real media).
+	void initTestCase();
+	void cleanupTestCase();
 	void execute_moves_the_planned_files();
 	void execute_runs_a_planner_built_plan_and_creates_its_new_folder();
 	void execute_resets_the_avid_databases_of_every_folder_it_touches();
@@ -45,6 +47,11 @@ private slots:
 private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
 	static QString stageMxfRoot(const QTemporaryDir &tmp);
+
+	/// Sandbox for the engine's ledgers: outlives every test so the env
+	/// var keeps pointing at a real directory, and the real AppData
+	/// oplog (with a user's live undo candidate) is never touched.
+	QTemporaryDir m_oplogDir;
 
 	/// Fills <mxfRoot>/<folderName>/ with `fillerCount` empty .mxf-named
 	/// files. Bumps the on-disk count without producing MediaFiles —
@@ -62,6 +69,17 @@ private:
 	static int opsBetween(const RebalancePlan &p, const QString &srcFolder,
 						  const QString &destFolder);
 };
+
+void TestRebalancerPlan::initTestCase()
+{
+	QVERIFY(m_oplogDir.isValid());
+	qputenv("MEDIAMUSTER_OPLOG_DIR", m_oplogDir.path().toUtf8());
+}
+
+void TestRebalancerPlan::cleanupTestCase()
+{
+	qunsetenv("MEDIAMUSTER_OPLOG_DIR");
+}
 
 QString TestRebalancerPlan::stageMxfRoot(const QTemporaryDir &tmp)
 {
@@ -95,6 +113,17 @@ MediaFile TestRebalancerPlan::makeMxf(const QString &mxfRoot, const QString &fol
 	QFile f(path);
 	[[maybe_unused]] const bool opened = f.open(QIODevice::WriteOnly);
 	Q_ASSERT(opened);
+	// The on-disk size must MATCH the claimed sizeBytes: the engine's
+	// identity gate refuses to touch a file whose real size differs from
+	// what the scan recorded (that is the point of the gate), so a
+	// fixture that claims 1000 bytes over an empty file would be refused
+	// as a swapped file. resize() gives any size as a sparse file for
+	// free — honest metadata without writing the bytes.
+	if (sizeBytes > 0)
+	{
+		[[maybe_unused]] const bool sized = f.resize(sizeBytes);
+		Q_ASSERT(sized);
+	}
 	f.close();
 
 	MediaFile mf;

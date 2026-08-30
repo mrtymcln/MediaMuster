@@ -1,7 +1,7 @@
 #include "managemediadialog.h"
 #include "enumutil.h"
 #include "formatutil.h"
-#include "mediamanager.h"
+#include "opmanager.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -26,10 +26,10 @@
 
 // MARK: - Row repaint helper
 
-// 'Keep Both' renders the .Copy.NN destination; 'Replace'/'Skip'
+// 'Keep Both' renders the renamed \"name (2)\" destination; 'Replace'/'Skip'
 // keep the original path, painted red.
 //
-// `renamedHint` is the pool sweep's precomputed .Copy.NN preview: non-null
+// `renamedHint` is the pool sweep's precomputed rename preview: non-null
 // means "use this", null-but-present means the sweep found no free slot.
 // Passing nullptr (interactive combo changes) probes the disk live — one
 // row per click, which is fine even on a network share; the hint exists so
@@ -44,7 +44,7 @@ static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseD
 		QString renamed;
 		if (renamedHint)
 			renamed = *renamedHint;
-		else if (const auto probed = MediaManager::generateRenamePath(baseDest))
+		else if (const auto probed = OpManager::generateRenamePath(baseDest))
 			renamed = *probed;
 		if (!renamed.isNull())
 		{
@@ -58,7 +58,7 @@ static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseD
 	item->setForeground(1, Qt::red);
 	item->setToolTip(
 		1, policy == ManageMediaDialog::ConflictPolicy::KeepBoth
-			   ? ManageMediaDialog::tr("No unique name available (999 .Copy.NN slots already used)")
+			   ? ManageMediaDialog::tr("No unique name available (999 duplicate names already used)")
 			   : ManageMediaDialog::tr("File already exists at destination"));
 }
 
@@ -383,14 +383,14 @@ void ManageMediaDialog::updatePreview()
 			QHash<QString, int> destCounts;
 			for (const MediaFile &mf : m_files)
 			{
-				const QString dp = MediaManager::buildDestPath(mf, dest, preserve);
+				const QString dp = OpManager::buildDestPath(mf, dest, preserve);
 				destPaths.append(dp);
 				++destCounts[dp];
 			}
 
-			// Duplicate ordinals in m_files order — the order MediaManager
+			// Duplicate ordinals in m_files order — the order the engine
 			// processes them. The first file to claim a clashing name keeps
-			// it; later ones are renamed. Mirrors MediaManager::claimDestination
+			// it; later ones are renamed. Mirrors the runner's claimDestination
 			// so the preview shows what actually happens.
 			QHash<QString, int> seenSoFar;
 			m_pendingRows.reserve(m_files.size());
@@ -438,7 +438,7 @@ void ManageMediaDialog::updatePreview()
 					res.renamed.resize(paths.size());
 					for (const QString &p : paths)
 						res.exists.append(QFileInfo::exists(p));
-					// .Copy.NN previews only where a row will show one: an
+					// Rename previews only where a row will show one: an
 					// on-disk conflict (Keep Both preview) or a later same-run
 					// duplicate. An entry left null despite needing one means
 					// every rename slot was taken.
@@ -446,7 +446,7 @@ void ManageMediaDialog::updatePreview()
 					{
 						if (!res.exists[i] && !dupLater[i])
 							continue;
-						if (const auto renamed = MediaManager::generateRenamePath(paths[i]))
+						if (const auto renamed = OpManager::generateRenamePath(paths[i]))
 							res.renamed[i] = *renamed;
 					}
 					return res;
@@ -502,7 +502,7 @@ void ManageMediaDialog::onDestCheckFinished()
 		else if (row.dupLater)
 		{
 			// Clashes only with another *selected* file, not with disk.
-			// MediaManager always keeps both here (the later file is renamed)
+			// The engine always keeps both here (the later file is renamed)
 			// — 'Replace' can't be honoured because there's nothing on disk
 			// to replace, so no choice is offered; show the real outcome.
 			// With 3+ identical names the preview can repeat a suffix (it
@@ -512,7 +512,7 @@ void ManageMediaDialog::onDestCheckFinished()
 			row.item->setText(1, renamed.isNull() ? row.destPath : renamed);
 			row.item->setToolTip(1, renamed.isNull()
 										? tr("Another selected file targets this name "
-											 "and all .Copy.NN slots are taken.")
+											 "and all duplicate names are taken.")
 										: tr("Renamed to keep both — another selected "
 											 "file already targets this name."));
 		}

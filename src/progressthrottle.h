@@ -4,7 +4,7 @@
 #include <atomic>
 
 /// Caps progress-signal emit frequency to ~one per `minIntervalMs`.
-/// Stops MediaManager's copy loop and MediaScanner's folder walk /
+/// Stops the ops engine's copy loop and MediaScanner's folder walk /
 /// MXF parser passes from flooding the event loop.
 ///
 /// `shouldEmit()` is thread-safe: an atomic timestamp plus CAS means

@@ -1,0 +1,1056 @@
+#include "oprunner.h"
+
+#include "avidlayout.h"
+#include "debugslowdown.h"
+#include "formatutil.h"
+#include "mobid.h"
+#include "parkedfile.h"
+#include "pathkey.h"
+#include "progressthrottle.h"
+#include "trashrouter.h"
+
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QHash>
+#include <QStorageInfo>
+#include <QUuid>
+
+namespace
+{
+	// Progress emit cap for the byte loop: ~30 Hz via ProgressThrottle
+	// plus a 32 MB byte threshold so large single-file copies still tick
+	// visibly.
+	constexpr qint64 kProgressIntervalBytes = 32 * 1024 * 1024;
+
+	// Suffixes for ParkedFile. Distinct per operation so a stray temp
+	// names the job that left it behind. Defined in AvidLayout: the
+	// scanner must recognise these same names as temp-renamed media so a
+	// stranded park never becomes invisible in the table.
+	inline constexpr QLatin1String kCopyReplaceTag = AvidLayout::kCopyReplaceTag;
+	inline constexpr QLatin1String kMoveReplaceTag = AvidLayout::kMoveReplaceTag;
+
+	// Skipped count is suppressed when 0 so Delete (no skip path)
+	// doesn't trail a `, 0 skipped`.
+	QString formatOperationSummary(const QString &verb, int succeeded, int failed, int skipped = 0)
+	{
+		QString s = QStringLiteral("%1 complete: %2 succeeded, %3 failed")
+						.arg(verb)
+						.arg(succeeded)
+						.arg(failed);
+		if (skipped > 0)
+			s += QStringLiteral(", %1 skipped").arg(skipped);
+		return s;
+	}
+
+	// Move a parked original into the trash and disarm the park.
+	//
+	// True: *parkedFinal names where it went (empty when nothing was
+	// parked) and the park is disarmed. False: the parked file is STILL
+	// AT park.path() and the park is still armed — the caller chooses
+	// between rolling the whole item back (park.restore()) and flagging
+	// a stranded park. Note the disarm mechanics: the file was MOVED,
+	// not deleted, so ParkedFile::commit()'s remove is a harmless no-op
+	// and only the disarm matters.
+	bool trashParkedOriginal(TrashRouter &router, ParkedFile &park, QString *parkedFinal)
+	{
+		parkedFinal->clear();
+		if (park.path().isEmpty() || !QFile::exists(park.path()))
+		{
+			park.commit();
+			return true;
+		}
+		const TrashRouter::Landing landing = router.trash(park.path());
+		if (!landing.ok)
+			return false;
+		*parkedFinal = landing.finalPath;
+		park.commit();
+		return true;
+	}
+
+} // namespace
+
+// MARK: - Construction
+
+OpRunner::OpRunner(OpSink &sink, const std::atomic<bool> &cancel)
+	: m_sink(sink)
+	, m_cancel(cancel)
+{
+}
+
+// MARK: - Path helpers
+
+QString OpRunner::buildDestPath(const QString &fileName, const QString &mxfFolder,
+								const QString &destRoot, bool preserve)
+{
+	if (preserve)
+		return AvidLayout::mxfRootUnder(destRoot) + QLatin1Char('/') + mxfFolder +
+			   QLatin1Char('/') + fileName;
+	return destRoot + QLatin1Char('/') + fileName;
+}
+
+// QStorageInfo's device() is the filesystem's own identity (dev_t on
+// POSIX, the volume GUID on Windows); requiring BOTH ends valid, ready
+// and equal means "don't know" fails safe. The destination file doesn't
+// exist yet, so its PARENT answers for it. See the header for why this
+// gate is safety-critical, not an optimisation.
+bool OpRunner::sameVolumeForRename(const QString &src, const QString &dstPath)
+{
+	const QStorageInfo srcVol(QFileInfo(src).absolutePath());
+	const QStorageInfo dstVol(QFileInfo(dstPath).absolutePath());
+	return srcVol.isValid() && srcVol.isReady() && dstVol.isValid() && dstVol.isReady() &&
+		   !srcVol.device().isEmpty() && srcVol.device() == dstVol.device();
+}
+
+// Naming style for Keep-Both duplicates: `name (2).mxf`, `name (3).mxf` —
+// the Windows/Chrome convention (Marty's pick, 2026-08-30). Two reasons:
+// everyone recognises it instantly, and it is deliberately NOT what Media
+// Composer does (Avid appends `.Copy.01` in bins), so a user can tell at
+// a glance the duplicate came from MediaMuster, not from Avid.
+//
+// Alternatives considered and parked for a possible revisit (the naming
+// question may become moot — see the last one):
+//   .Copy.NN            what MC does; shipped in v1; indistinguishable
+//                       from Avid's own bin duplicates — replaced.
+//   name copy 2         Finder style; spaces read fine but scripts hate them.
+//   name.dup01          compact and explicit; less universally recognised.
+//   name.B / name.C     camera-roll lettering; only 25 slots.
+//   name.<date>         says WHEN the duplicate arrived; needs a counter too.
+//   name.from-<volume>  says WHERE it came from; long, label chars risky.
+//   name.<hash>         collision-proof, no counter cap; opaque to humans.
+//   _Duplicates/ folder original names preserved (Avid DBs key by name);
+//                       collects conflicts in one reviewable place.
+//   next numbered folder (preserve-structure only) Avid's OWN answer:
+//                       same names in different MXF/<n> folders are normal.
+//   decide, don't name  the engine reads the Mob ID during its identity
+//                       check, so it can PROVE a same-named destination is
+//                       the same media — then Keep Both should become
+//                       "Skip (identical file already there)", and only a
+//                       same-name DIFFERENT-media file (alarming, rare)
+//                       needs a loud name. The best long-term direction.
+std::optional<QString> OpRunner::generateRenamePath(const QString &destPath)
+{
+	const QFileInfo fi(destPath);
+	const QString dir = fi.absolutePath();
+	const QString base = fi.completeBaseName();
+	const QString ext = fi.suffix();
+
+	// (2) is the first duplicate — the original implicitly being copy 1,
+	// exactly as Windows Explorer and Chrome downloads count.
+	for (int n = 2; n <= 999; ++n)
+	{
+		const QString suffix = QStringLiteral(" (%1)").arg(n);
+		const QString candidate =
+			ext.isEmpty() ? dir + QLatin1Char('/') + base + suffix
+						  : dir + QLatin1Char('/') + base + suffix + QLatin1Char('.') + ext;
+		if (!QFile::exists(candidate))
+			return candidate;
+	}
+	return std::nullopt;
+}
+
+QVector<VolumeIdentity> OpRunner::volumesFor(const OpRequest &request)
+{
+	// One capture per distinct FOLDER first (items overwhelmingly share
+	// their Avid MXF folders), then dedupe by volume root — so a
+	// 10,000-file run costs a handful of captures, not 10,000.
+	QSet<QString> folders;
+	for (const OpItem &it : request.items)
+	{
+		folders.insert(QFileInfo(it.src).absolutePath());
+		if (!it.renameDst.isEmpty())
+			folders.insert(QFileInfo(it.renameDst).absolutePath());
+	}
+	if (!request.destRoot.isEmpty())
+		folders.insert(request.destRoot);
+
+	QSet<QString> roots;
+	QVector<VolumeIdentity> out;
+	for (const QString &folder : folders)
+	{
+		const VolumeIdentity v = VolumeIdentity::capture(folder);
+		if (v.strength == VolumeIdentity::Strength::None)
+			continue;
+		if (roots.contains(v.rootPath))
+			continue;
+		roots.insert(v.rootPath);
+		out.append(v);
+	}
+	return out;
+}
+
+// MARK: - Shared per-item helpers
+
+QString OpRunner::displayName(const OpItem &it)
+{
+	return it.clipName.isEmpty() ? it.name : it.clipName;
+}
+
+std::optional<FileIdentity> OpRunner::captureAndCheckSource(const OpItem &it)
+{
+	// Beat 1 of every machine: never operate on a guess. The scan (or
+	// the resumed plan) CLAIMED a size and an Avid identity for this
+	// path; the file actually sitting there now must agree, because the
+	// dialog can sit open for minutes while a shared volume changes
+	// underneath it.
+	const FileIdentity id = FileIdentity::capture(it.src);
+
+	if (id.strength == FileIdentity::Strength::None)
+	{
+		const bool stillThere = QFileInfo::exists(it.src);
+		m_sink.itemDone(it.name, it.src, false,
+						stillThere
+							? QStringLiteral("Couldn't examine '%1' at %2 — the drive may be "
+											 "failing or disconnected. Nothing was touched.")
+								  .arg(displayName(it), it.src)
+							: QStringLiteral("'%1' is no longer at %2 — it may have been moved "
+											 "or its drive disconnected. Nothing was touched.")
+								  .arg(displayName(it), it.src),
+						false);
+		return std::nullopt;
+	}
+
+	if (it.bytes > 0 && id.size != it.bytes)
+	{
+		m_sink.itemDone(it.name, it.src, false,
+						QStringLiteral("'%1' at %2 is not the file that was scanned — its size "
+									   "changed from %3 to %4. Rescan and try again. Nothing "
+									   "was touched.")
+							.arg(displayName(it), it.src, Format::bytes(it.bytes),
+								 Format::bytes(id.size)),
+						false);
+		return std::nullopt;
+	}
+
+	// The content check: the Avid UMID inside the file vs the scan's
+	// claims. Match-any — the header's UMID is the MaterialPackage's
+	// (usually the master clip's), with a SourcePackage fallback, so
+	// either claim can be the one in the header. All-zero UMIDs are
+	// Avid's "no id was assigned" and prove nothing either way.
+	//
+	// CRITICAL: the claims come from the PMR/MDB world, whose byte order
+	// for the ID's middle fields DIFFERS from the MXF header's — the same
+	// identity renders as two different hex strings (the codebase already
+	// owns this split: MobId::toPmrForm is how the scanner joins header
+	// UMIDs to database rows). The gate must compare in BOTH dialects;
+	// comparing raw strings here refused every healthy database-described
+	// file (found on real media, 2026-08-30).
+	if (!id.contentUmid.isEmpty() && !MobId::isAllZero(id.contentUmid))
+	{
+		const QString headerAsPmr = MobId::toPmrForm(id.contentUmid);
+		const auto matchesHeader = [&](const QString &claim)
+		{ return claim == id.contentUmid || claim == headerAsPmr; };
+
+		const bool haveClaim = (!it.mobId.isEmpty() && !MobId::isAllZero(it.mobId)) ||
+							   (!it.masterMobId.isEmpty() && !MobId::isAllZero(it.masterMobId));
+		if (haveClaim && !matchesHeader(it.mobId) && !matchesHeader(it.masterMobId))
+		{
+			m_sink.itemDone(it.name, it.src, false,
+							QStringLiteral("'%1' at %2 is not the file that was selected — the "
+										   "Avid media ID inside it doesn't match the clip from "
+										   "the scan. Rescan and try again. Nothing was "
+										   "touched.")
+								.arg(displayName(it), it.src),
+							false);
+			return std::nullopt;
+		}
+	}
+
+	return id;
+}
+
+OpRunner::ConflictAction OpRunner::resolveConflict(const OpItem &it, QString &dstPath,
+												   const QSet<QString> &claimed)
+{
+	if (!QFile::exists(dstPath))
+		return ConflictAction::Proceed;
+
+	const std::optional<ConflictPolicy> policy = conflictPolicyFromName(it.policy);
+	if (!policy)
+	{
+		// No policy entry means the dialog never showed this conflict.
+		// Two ways in:
+		//
+		//   1. A file earlier in THIS run created the destination
+		//      (flatten duplicates). Expected; proceed and let
+		//      claimDestination redirect this one to a " (2)" sibling.
+		//
+		//   2. A foreign file appeared after the dialog's conflict sweep
+		//      — a race on a shared volume, or a case/normalisation
+		//      alias of a selected name that string keys can't see.
+		//      Replacing would destroy a file the user was never asked
+		//      about; skip instead. (CI proved the stakes: on NTFS a
+		//      case-variant sailed past every string comparison, and an
+		//      old Replace fallback destroyed the first file's bytes.)
+		if (claimed.contains(PathKey::normalise(dstPath)))
+			return ConflictAction::Proceed;
+
+		m_sink.itemDone(it.name, it.src, true,
+						QStringLiteral("Skipped: a file appeared at this destination after the "
+									   "preview. Run the operation again to choose Replace or "
+									   "Keep Both."),
+						true);
+		return ConflictAction::Skip;
+	}
+
+	if (*policy == ConflictPolicy::Skip)
+	{
+		m_sink.itemDone(it.name, it.src, true, QStringLiteral("Skipped (already exists)"), true);
+		return ConflictAction::Skip;
+	}
+
+	if (*policy == ConflictPolicy::KeepBoth)
+	{
+		const auto renamed = generateRenamePath(dstPath);
+		if (!renamed)
+		{
+			m_sink.itemDone(it.name, it.src, false,
+							QStringLiteral("There are already 999 copies! Did somebody mean to "
+										   "delete some of these?"),
+							false);
+			return ConflictAction::Fail;
+		}
+		dstPath = *renamed;
+		m_sink.log(QtInfoMsg,
+				   QStringLiteral("Renaming to %1").arg(QFileInfo(*renamed).fileName()));
+	}
+
+	// Replace falls through: the machine parks the live destination
+	// aside (ParkedFile) before writing, so the slot is cleared without
+	// the original ever being unrecoverable.
+	return ConflictAction::Proceed;
+}
+
+bool OpRunner::claimDestination(const OpItem &it, QString &dstPath, QSet<QString> &claimed)
+{
+	const QString key = PathKey::normalise(dstPath);
+	if (!claimed.contains(key))
+	{
+		claimed.insert(key);
+		return true;
+	}
+
+	// A file earlier in this run already took this exact path. Never
+	// clobber it; carve out a unique sibling instead. generateRenamePath
+	// probes the disk, where that earlier file already sits, so it skips
+	// straight past the taken slot.
+	const auto renamed = generateRenamePath(dstPath);
+	if (!renamed)
+	{
+		m_sink.itemDone(it.name, it.src, false,
+						QStringLiteral("Another selected file already maps to this destination, "
+									   "and all duplicate names are taken."),
+						false);
+		return false;
+	}
+	m_sink.log(QtInfoMsg,
+			   QStringLiteral("Renaming to %1 (another selected file already targets %2)")
+				   .arg(QFileInfo(*renamed).fileName(), QFileInfo(dstPath).fileName()));
+	dstPath = *renamed;
+	claimed.insert(PathKey::normalise(dstPath));
+	return true;
+}
+
+void OpRunner::warnLedgerDegradedOnce(const OpLedger &ledger, bool &warned)
+{
+	if (warned || !ledger.degraded())
+		return;
+	warned = true;
+	m_sink.log(QtCriticalMsg, OpLedger::degradedText());
+}
+
+void OpRunner::flagStrandedPark(LedgerOp &lop, ParkedFile &park, const OpItem &it)
+{
+	lop.failedDirty(QStringLiteral("restore failed; original still parked"));
+	m_sink.log(
+		QtCriticalMsg,
+		QStringLiteral("Couldn't put the original '%1' back — it's still in the destination "
+					   "folder, named '%2'. MediaMuster will finish restoring it automatically "
+					   "on the next launch.")
+			.arg(it.name, QFileInfo(park.path()).fileName()));
+
+	// The dirty line above is the LAST word on this item's disk state:
+	// recovery will read it next launch and act on exactly what it
+	// describes. Disarm so the ParkedFile destructor cannot retry renames
+	// AFTER the line is final — a retry that succeeded post-ledger is how
+	// recovery once came to delete a restored original as a "partial"
+	// (adversarial review 2026-08-30, finding 2).
+	park.disarm();
+}
+
+// MARK: - Dispatch
+
+OpRunner::Totals OpRunner::run(const OpRequest &request, const QString &ledgerDir)
+{
+	switch (request.kind)
+	{
+	case OpKind::Copy:
+	case OpKind::Move:
+		return runCopyMove(request, ledgerDir);
+	case OpKind::Delete:
+		return runDelete(request, ledgerDir);
+	case OpKind::Rename:
+		return runRename(request, ledgerDir);
+	case OpKind::Undo:
+		// Undo runs are built and executed by OpUndo (it reads the
+		// original ledger and drives the inverse steps itself).
+		m_sink.log(QtCriticalMsg,
+				   QStringLiteral("Internal error: an undo request reached the runner."));
+		return {};
+	}
+	return {};
+}
+
+// MARK: - Copy / Move
+
+OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledgerDir)
+{
+	Totals t;
+	const bool isMove = (req.kind == OpKind::Move);
+	const int total = req.items.size();
+
+	m_sink.log(QtInfoMsg, QStringLiteral("%1 %2 files to %3")
+							  .arg(isMove ? QStringLiteral("Moving") : QStringLiteral("Copying"))
+							  .arg(total)
+							  .arg(req.destRoot));
+
+	// The write-ahead ledger. Copy earns one despite never removing its
+	// source: replacing a live destination parks the original aside, and
+	// a crash inside that window would otherwise leave the user with
+	// neither file and a temp nothing knows about.
+	OpLedger ledger(req.kind,
+					QJsonObject{{QStringLiteral("dest"), req.destRoot},
+								{QStringLiteral("preserve"), req.preserve}},
+					ledgerDir);
+	if (!ledger.isOpen())
+		m_sink.log(QtWarningMsg, OpLedger::openFailedText(req.kind));
+	// The whole to-do list + volume fingerprints, before the first op.
+	ledger.writePlan(req.destRoot, req.preserve, req.items, volumesFor(req));
+
+	// Destinations already taken this run, so two same-named selections
+	// can't collide on one path. Critical for Move: a silent overwrite
+	// loses the first file outright (its source is already gone).
+	QSet<QString> claimedDests;
+
+	TrashRouter router(m_sink);
+	bool ledgerDegradedWarned = false;
+	bool durabilityNoteLogged = false;
+
+	// Test seam: skip the rename so the cross-volume copy+delete leg is
+	// reachable on a single-volume test machine. Never set in production.
+	const bool forceCopyLeg = qEnvironmentVariableIsSet("MEDIAMUSTER_FORCE_MOVE_COPY");
+	const QLatin1String parkTag = isMove ? kMoveReplaceTag : kCopyReplaceTag;
+	const NativeFile::Durability durability =
+		isMove ? NativeFile::Durability::Platter : NativeFile::Durability::Disk;
+
+	ProgressThrottle throttle;
+
+	for (int i = 0; i < total && !m_cancel.load(std::memory_order_acquire); ++i)
+	{
+		const OpItem &it = req.items[i];
+		QString dstPath = buildDestPath(it.name, it.folder, req.destRoot, req.preserve);
+
+		m_sink.progress(it.name, i + 1, total, 0);
+		warnLedgerDegradedOnce(ledger, ledgerDegradedWarned);
+		DebugSlowdown::pauseForMs(40);
+
+		if (const auto action = resolveConflict(it, dstPath, claimedDests);
+			action != ConflictAction::Proceed)
+		{
+			if (action == ConflictAction::Skip)
+			{
+				++t.skipped;
+				// Ledger the skip so a resumed run knows this file was
+				// concluded, not left undone.
+				ledger.markSkipped(ledger.planOp(it.src, dstPath, it.bytes, QString(), {}));
+			}
+			else
+				++t.failed;
+			continue;
+		}
+
+		// Disambiguate before the park-aside below, so a redirected
+		// dstPath isn't mistaken for a live destination to move aside.
+		if (!claimDestination(it, dstPath, claimedDests))
+		{
+			++t.failed;
+			continue;
+		}
+
+		// Beat 1: identity.
+		const std::optional<FileIdentity> srcId = captureAndCheckSource(it);
+		if (!srcId)
+		{
+			++t.failed;
+			continue;
+		}
+
+		if (!QDir().mkpath(QFileInfo(dstPath).absolutePath()))
+		{
+			m_sink.itemDone(it.name, it.src, false,
+							QStringLiteral("Couldn't create the destination folder. Nothing "
+										   "was touched — check your write permissions."),
+							false);
+			++t.failed;
+			continue;
+		}
+
+		// Replace: capture the identity of the file about to be parked,
+		// so the ledger knows exactly which file was set aside and undo
+		// can later restore exactly it.
+		FileIdentity parkedOriginalId;
+		if (QFile::exists(dstPath))
+			parkedOriginalId = FileIdentity::capture(dstPath);
+
+		// Beat 2: the park path reaches the ledger BEFORE the rename it
+		// describes; recovery needs it to put a replaced file back.
+		ParkedFile park(dstPath, parkTag);
+		LedgerOp lop(&ledger, it.src, dstPath, srcId->size, park.path(), *srcId,
+					 parkedOriginalId);
+
+		if (!park.park())
+		{
+			m_sink.itemDone(
+				it.name, it.src, false,
+				QStringLiteral("Couldn't move the existing destination aside. Nothing changed."),
+				false);
+			lop.failed(QStringLiteral("park failed"));
+			++t.failed;
+			continue;
+		}
+
+		// MOVE, same volume: pure rename — the fast path. The volume check
+		// is NOT an optimisation (adversarial review finding 5): Qt's
+		// QFile::rename silently falls back to a copy-then-DELETE when the
+		// paths cross volumes — an unverified 4 KB-buffered copy whose
+		// destination can still be entirely in the page cache when the
+		// source is already unlinked. Every guarantee this engine makes
+		// (checksum, durability barrier, trash-not-unlink) would be
+		// bypassed in one line. Provably same volume → rename is a pure
+		// directory-entry swap; anything else → the verified copy leg.
+		if (isMove && !forceCopyLeg && sameVolumeForRename(it.src, dstPath) &&
+			QFile::rename(it.src, dstPath))
+		{
+			// The moved file kept its content byte-for-byte (same file
+			// object), so its identity is the source's with a fresh
+			// filesystem capture at the new path.
+			FileIdentity landed = FileIdentity::capture(dstPath, /*readContent=*/false);
+			landed.contentUmid = srcId->contentUmid;
+
+			// Beat 4: dispose of the replaced original — to the trash,
+			// never a hard delete. If the trash refuses, ROLL THE MOVE
+			// BACK (rename home, original back in its slot) rather than
+			// leave the replaced file in limbo.
+			QString parkedFinal;
+			if (!trashParkedOriginal(router, park, &parkedFinal))
+			{
+				// Roll the move back: the file goes home first, then the
+				// original returns to its slot.
+				const bool renamedHome = QFile::rename(dstPath, it.src);
+				if (renamedHome && park.restore())
+				{
+					m_sink.itemDone(it.name, it.src, false,
+									QStringLiteral("The file that would be replaced couldn't be "
+												   "moved to the trash, so this move was rolled "
+												   "back. Nothing changed."),
+									false);
+					lop.failed(QStringLiteral("replaced-original trash failed; rolled back"));
+				}
+				else if (!renamedHome)
+				{
+					// The moved file could not go home (something new sits
+					// at the source path, or its folder is gone). It stays
+					// at the destination: it is the user's ONLY copy of
+					// that clip and nothing may displace it — which is
+					// exactly what ParkedFile's ownership rule now
+					// enforces (review finding 1: the old restore() here
+					// unlinked the moved file to make room for the parked
+					// original). flagStrandedPark freezes this state into
+					// the ledger and disarms; recovery sorts it out with
+					// the user's file intact.
+					flagStrandedPark(lop, park, it);
+					m_sink.itemDone(
+						it.name, it.src, false,
+						QStringLiteral("The file that would be replaced couldn't be moved to "
+									   "the trash, and the move couldn't be rolled back "
+									   "either. Your file is safe at the destination (%1); "
+									   "the file it replaced is set aside next to it. "
+									   "MediaMuster will sort this out on the next launch.")
+							.arg(dstPath),
+						false);
+				}
+				else
+				{
+					// The file is home; only the original's rename-back
+					// failed. The dirty fail keeps the ledger alive;
+					// next-launch recovery knows the parked path and
+					// finishes the job.
+					flagStrandedPark(lop, park, it);
+					m_sink.itemDone(it.name, it.src, false,
+									QStringLiteral("The file that would be replaced couldn't be "
+												   "moved to the trash, and the rollback "
+												   "stalled. MediaMuster will finish putting "
+												   "things back on the next launch."),
+									false);
+				}
+				++t.failed;
+				continue;
+			}
+
+			OpLedger::DoneInfo info;
+			info.landedId = landed;
+			info.parkedFinal = parkedFinal;
+			lop.done(info);
+			m_sink.itemDone(it.name, it.src, true, {}, false);
+			++t.succeeded;
+			continue;
+		}
+
+		// COPY — and MOVE's cross-volume leg. For a move, the outer
+		// `park` above already emptied the destination slot and still
+		// holds the replaced original; it must keep holding it until the
+		// source is gone. So the copy gets its own inner park over the
+		// (now empty) slot, whose only job is discarding a partial
+		// write. For a plain copy the outer park plays both roles.
+		ParkedFile partial(dstPath, parkTag);
+		if (isMove)
+			partial.park(); // slot is empty, so this only arms the discard
+
+		ParkedFile &copyPark = isMove ? partial : park;
+
+		qint64 lastEmitBytes = 0;
+		const auto onBytes = [&](qint64 copied, qint64 totalBytes)
+		{
+			if (copied >= totalBytes || throttle.shouldEmit() ||
+				(copied - lastEmitBytes) >= kProgressIntervalBytes)
+			{
+				const double pct = totalBytes > 0 ? (100.0 * copied / totalBytes) : 100.0;
+				m_sink.progress(it.name, i + 1, total, pct);
+				lastEmitBytes = copied;
+			}
+		};
+		// Progress signal, not a log line: the sheet's detail row is
+		// driven by progress, and a console line is not a UI event.
+		const auto onVerify = [&]
+		{ m_sink.progress(QStringLiteral("Verifying %1").arg(it.name), i + 1, total, 100.0); };
+
+		const OpCopier::Result copyRes =
+			m_copier.copy(it.src, dstPath, copyPark, m_cancel, durability, onBytes, onVerify);
+
+		if (copyRes.outcome == OpCopier::Outcome::Cancelled)
+		{
+			// Stop the run; the in-flight file is neither succeeded nor
+			// failed. The copier already discarded its partial write and
+			// (for a copy) restored any parked original; a move's outer
+			// park still holds the replaced original — put it back.
+			if (isMove)
+				park.restore();
+			if (park.isStranded())
+				flagStrandedPark(lop, park, it);
+			break;
+		}
+
+		if (copyRes.outcome == OpCopier::Outcome::Failed)
+		{
+			m_sink.itemDone(it.name, it.src, false, copyRes.error, false);
+			if (isMove)
+				park.restore();
+			if (park.isStranded())
+				flagStrandedPark(lop, park, it);
+			else
+				lop.failed(QStringLiteral("copy failed"));
+			++t.failed;
+			continue;
+		}
+
+		if (copyRes.usedClone)
+			m_sink.log(QtInfoMsg, QStringLiteral("Cloned %1").arg(it.name));
+
+		// A network destination couldn't give the full durability
+		// barrier: record it honestly, in the ledger and once in the log.
+		if (copyRes.durabilityDegraded)
+		{
+			ledger.writeNote(
+				QStringLiteral("'%1': the destination volume couldn't confirm a full flush to "
+							   "disk; relying on the server's write acknowledgement.")
+					.arg(it.name));
+			if (!durabilityNoteLogged)
+			{
+				durabilityNoteLogged = true;
+				m_sink.log(QtWarningMsg,
+						   QStringLiteral("The destination volume can't confirm writes reached "
+										  "its physical disks (network storage). Copies are "
+										  "verified by checksum; durability rests on the "
+										  "server."));
+			}
+		}
+
+		// Beat 4, first half: the source must STILL be the file we
+		// verified at the start — a same-size swap during a long copy is
+		// exactly the attack window identity exists to close.
+		FileIdentity actualSrc;
+		if (FileIdentity::verify(it.src, *srcId, &actualSrc) != FileIdentity::Verdict::Match)
+		{
+			// Discard the copy we made of who-knows-what and put any
+			// replaced original back.
+			copyPark.restore();
+			if (isMove)
+				park.restore();
+			m_sink.itemDone(it.name, it.src, false,
+							QStringLiteral("'%1' changed while it was being copied — %2. The "
+										   "destination has been left unchanged.")
+								.arg(displayName(it),
+									 FileIdentity::explainDifference(*srcId, actualSrc)),
+							false);
+			if (park.isStranded())
+				flagStrandedPark(lop, park, it);
+			else
+				lop.failed(QStringLiteral("source identity changed during copy"));
+			++t.failed;
+			continue;
+		}
+
+		// The landed file's identity, for the ledger and for undo. The
+		// bytes are checksum-verified identical, so the content identity
+		// carries over without re-reading the header.
+		FileIdentity landed = FileIdentity::capture(dstPath, /*readContent=*/false);
+		landed.contentUmid = srcId->contentUmid;
+
+		if (isMove)
+		{
+			// The copy's BYTES are platter-durable, but the directory
+			// ENTRY naming the new file can still be in-memory filesystem
+			// metadata (review finding 4): a power cut after the source
+			// remove would then leave a volume holding the bytes with no
+			// name pointing at them — fewer complete copies from a single
+			// fault, at exactly the instant the Platter barrier was bought
+			// for. So the destination FOLDER gets its own barrier before
+			// anything irreversible happens. A destination that already
+			// degraded the file barrier (network storage) may refuse this
+			// too — same honest note, the server's semantics govern; a
+			// LOCAL destination refusing it is a hard failure: roll back,
+			// keep the source.
+			if (!NativeFile::syncDirectory(QFileInfo(dstPath).absolutePath()))
+			{
+				if (copyRes.durabilityDegraded)
+				{
+					ledger.writeNote(
+						QStringLiteral("'%1': the destination couldn't confirm its folder "
+									   "update either; relying on the server's write "
+									   "acknowledgement.")
+							.arg(it.name));
+				}
+				else
+				{
+					partial.restore(); // discard the new copy (ours)
+					park.restore();	   // replaced original back in its slot
+					m_sink.itemDone(
+						it.name, it.src, false,
+						QStringLiteral("The destination couldn't confirm the new file was "
+									   "recorded in its folder, so this move was rolled back. "
+									   "Nothing changed — check the drive and try again."),
+						false);
+					if (park.isStranded())
+						flagStrandedPark(lop, park, it);
+					else
+						lop.failed(QStringLiteral("destination directory sync failed"));
+					++t.failed;
+					continue;
+				}
+			}
+
+			// Dispose of the replaced original BEFORE removing the
+			// source: if the trash refuses, the whole item can still
+			// roll back cleanly (restore removes the new copy and puts
+			// the original back — the source was never touched).
+			QString parkedFinal;
+			if (!trashParkedOriginal(router, park, &parkedFinal))
+			{
+				partial.restore(); // discard the new copy
+				park.restore();	   // replaced original back in its slot
+				m_sink.itemDone(it.name, it.src, false,
+								QStringLiteral("The file that would be replaced couldn't be "
+											   "moved to the trash, so this move was rolled "
+											   "back. Nothing changed."),
+								false);
+				if (park.isStranded())
+					flagStrandedPark(lop, park, it);
+				else
+					lop.failed(QStringLiteral("replaced-original trash failed; rolled back"));
+				++t.failed;
+				continue;
+			}
+
+			// THE point of no return for a move — and the whole reason
+			// the copy above ran with the Platter barrier: the moment
+			// this remove succeeds, the destination is the only copy.
+			// Direct removal (not trash) after triple verification is
+			// Marty's confirmed decision — moving media off a full
+			// volume must actually free its space.
+			if (!QFile::remove(it.src))
+			{
+				// Both copies exist; the replaced original (if any) is
+				// already in the trash. Nothing is lost — say exactly
+				// what the state is.
+				partial.commit(); // keep the verified copy
+				lop.failed(QStringLiteral("source remove failed"));
+				m_sink.itemDone(it.name, it.src, false,
+								QStringLiteral("The new copy at the destination is verified, "
+											   "but the original couldn't be removed (it may "
+											   "be open in another application). The file now "
+											   "exists in both places."),
+								false);
+				++t.failed;
+				continue;
+			}
+			partial.commit();
+
+			OpLedger::DoneInfo info;
+			info.hash = copyRes.hashHex;
+			info.landedId = landed;
+			info.parkedFinal = parkedFinal;
+			lop.done(info);
+			m_sink.itemDone(it.name, it.src, true, {}, false);
+			++t.succeeded;
+		}
+		else
+		{
+			// Copy: dispose of the replaced original now that the new
+			// file is verified. If the trash refuses, roll back — the
+			// restore discards the new copy and puts the original back,
+			// and the user's source is untouched either way.
+			QString parkedFinal;
+			if (!trashParkedOriginal(router, park, &parkedFinal))
+			{
+				park.restore();
+				m_sink.itemDone(it.name, it.src, false,
+								QStringLiteral("The file that would be replaced couldn't be "
+											   "moved to the trash, so this copy was rolled "
+											   "back. Nothing changed."),
+								false);
+				if (park.isStranded())
+					flagStrandedPark(lop, park, it);
+				else
+					lop.failed(QStringLiteral("replaced-original trash failed; rolled back"));
+				++t.failed;
+				continue;
+			}
+
+			OpLedger::DoneInfo info;
+			info.hash = copyRes.hashHex;
+			info.landedId = landed;
+			info.parkedFinal = parkedFinal;
+			lop.done(info);
+			m_sink.itemDone(it.name, it.src, true, {}, false);
+			++t.succeeded;
+		}
+	}
+
+	// Cancel means stop and keep: close the ledger clean so recovery
+	// won't undo what already landed. The ledger STAYS on disk — it is
+	// now the undo candidate (the next operation prunes it).
+	ledger.finish(t.succeeded, t.failed, t.skipped, m_cancel.load(std::memory_order_acquire));
+
+	if (router.mediaMusterCount() > 0)
+		m_sink.trashUsed(router.mediaMusterFolder(), router.mediaMusterCount());
+
+	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
+			   formatOperationSummary(isMove ? QStringLiteral("Move") : QStringLiteral("Copy"),
+									  t.succeeded, t.failed, t.skipped));
+	return t;
+}
+
+// MARK: - Delete
+
+OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &ledgerDir)
+{
+	Totals t;
+	const int total = req.items.size();
+
+	m_sink.log(QtInfoMsg, QStringLiteral("Deleting %1 files").arg(total));
+
+	OpLedger ledger(OpKind::Delete, QJsonObject{}, ledgerDir);
+	if (!ledger.isOpen())
+		m_sink.log(QtWarningMsg, OpLedger::openFailedText(OpKind::Delete));
+	ledger.writePlan(QString(), false, req.items, volumesFor(req));
+
+	TrashRouter router(m_sink);
+	bool ledgerDegradedWarned = false;
+
+	for (int i = 0; i < total && !m_cancel.load(std::memory_order_acquire); ++i)
+	{
+		const OpItem &it = req.items[i];
+		m_sink.progress(it.name, i + 1, total, 0);
+		warnLedgerDegradedOnce(ledger, ledgerDegradedWarned);
+		DebugSlowdown::pauseForMs(40);
+
+		// Beat 1: a delete is the easiest place to destroy the wrong
+		// file, so it gets the same identity gate as everything else.
+		const std::optional<FileIdentity> srcId = captureAndCheckSource(it);
+		if (!srcId)
+		{
+			++t.failed;
+			continue;
+		}
+
+		// Beat 2: the intent line, before the file moves anywhere.
+		LedgerOp lop(&ledger, it.src, QString(), srcId->size, QString(), *srcId);
+
+		// Beat 3: the trash tiers. Never a hard delete.
+		const TrashRouter::Landing landing = router.trash(it.src);
+		if (!landing.ok)
+		{
+			m_sink.itemDone(it.name, it.src, false, landing.error, false);
+			lop.failed(QStringLiteral("trash failed"));
+			++t.failed;
+			continue;
+		}
+
+		OpLedger::DoneInfo info;
+		info.finalPath = landing.finalPath;
+		lop.done(info);
+		m_sink.itemDone(it.name, it.src, true, {}, false);
+		++t.succeeded;
+	}
+
+	ledger.finish(t.succeeded, t.failed, /*skipped=*/0,
+				  m_cancel.load(std::memory_order_acquire));
+
+	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
+			   formatOperationSummary(QStringLiteral("Delete"), t.succeeded, t.failed));
+
+	if (router.mediaMusterCount() > 0)
+	{
+		m_sink.log(QtInfoMsg, QStringLiteral("%1 file(s) moved to MediaMuster Trash at %2")
+								  .arg(router.mediaMusterCount())
+								  .arg(router.mediaMusterFolder()));
+		m_sink.trashUsed(router.mediaMusterFolder(), router.mediaMusterCount());
+	}
+
+	return t;
+}
+
+// MARK: - Rename (Rebalance)
+
+OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledgerDir)
+{
+	Totals t;
+	const int total = req.items.size();
+
+	m_sink.log(QtInfoMsg, QStringLiteral("Moving %1 files between folders").arg(total));
+
+	OpLedger ledger(OpKind::Rename, QJsonObject{}, ledgerDir);
+	if (!ledger.isOpen())
+		m_sink.log(QtWarningMsg, OpLedger::openFailedText(OpKind::Rename));
+	ledger.writePlan(QString(), false, req.items, volumesFor(req));
+
+	bool ledgerDegradedWarned = false;
+	QSet<QString> touchedFolders;
+	QString currentGroup;
+
+	const auto touchFolder = [&](const QString &folder)
+	{
+		if (touchedFolders.contains(folder))
+			return;
+		touchedFolders.insert(folder);
+
+		// Avid's per-folder databases (msmMMOB.mdb / msmFMID.pmr) go
+		// stale the instant a file moves in or out; Avid rebuilds them
+		// on next launch. Delete them the moment the folder's contents
+		// change — NOT at the end of the run. The ordering is
+		// load-bearing: a crash partway through leaves a legal folder
+		// layout, but databases still sitting there intact would parse
+		// cleanly and simply not mention the clips that already moved —
+		// the scanner reads that as "No reference", the state a user
+		// culls from. Absent databases read as "No database", an honest
+		// unknown that invites a rescan instead of a delete. Living in
+		// the ENGINE (not the Rebalance adapter) means an undo of a
+		// rename run resets them too.
+		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
+		{
+			QFile f(folder + QLatin1String(db));
+			if (f.exists() && !f.remove())
+				m_sink.log(QtWarningMsg,
+						   QStringLiteral("Couldn't delete %1").arg(f.fileName()));
+		}
+
+		if (onRenameFolderTouched)
+			onRenameFolderTouched(folder);
+	};
+
+	for (int i = 0; i < total; ++i)
+	{
+		const OpItem &it = req.items[i];
+
+		// Cancel only lands BETWEEN groups: a clip's relatives (its
+		// video and audio files) move as one or not at all, so a
+		// half-moved clip can't dangle across two folders. An item with
+		// no group is its own boundary — otherwise a run of ungrouped
+		// items ("" == "") would never see the cancel at all.
+		if (it.groupKey.isEmpty() || it.groupKey != currentGroup)
+		{
+			currentGroup = it.groupKey;
+			if (m_cancel.load(std::memory_order_acquire))
+				break;
+		}
+
+		m_sink.progress(it.name, i + 1, total, 0);
+		warnLedgerDegradedOnce(ledger, ledgerDegradedWarned);
+		DebugSlowdown::pauseForMs(40);
+
+		const std::optional<FileIdentity> srcId = captureAndCheckSource(it);
+		if (!srcId)
+		{
+			++t.failed;
+			continue;
+		}
+
+		// Never clobber: an occupied destination fails the item, loudly.
+		if (QFile::exists(it.renameDst))
+		{
+			m_sink.itemDone(it.name, it.src, false,
+							QStringLiteral("Couldn't move %1 — a file already exists at the "
+										   "destination. Nothing was touched.")
+								.arg(it.name),
+							false);
+			++t.failed;
+			continue;
+		}
+
+		LedgerOp lop(&ledger, it.src, it.renameDst, srcId->size, QString(), *srcId);
+
+		if (!QFile::rename(it.src, it.renameDst))
+		{
+			m_sink.itemDone(it.name, it.src, false,
+							QStringLiteral("Couldn't move %1 — it may be open in another "
+										   "application. Nothing was touched.")
+								.arg(it.name),
+							false);
+			lop.failed(QStringLiteral("rename failed"));
+			++t.failed;
+			continue;
+		}
+
+		FileIdentity landed = FileIdentity::capture(it.renameDst, /*readContent=*/false);
+		landed.contentUmid = srcId->contentUmid;
+		OpLedger::DoneInfo info;
+		info.landedId = landed;
+		lop.done(info);
+		m_sink.itemDone(it.name, it.src, true, {}, false);
+		++t.succeeded;
+
+		// Both folders' Avid databases are now stale; the hook (the
+		// Rebalance adapter's database reset) runs after the FIRST
+		// successful rename touching each folder, matching the v1
+		// rebalancer's honest-absence ordering.
+		touchFolder(QFileInfo(it.src).absolutePath());
+		touchFolder(QFileInfo(it.renameDst).absolutePath());
+	}
+
+	ledger.finish(t.succeeded, t.failed, /*skipped=*/0,
+				  m_cancel.load(std::memory_order_acquire));
+
+	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
+			   formatOperationSummary(QStringLiteral("Rename"), t.succeeded, t.failed));
+	return t;
+}
