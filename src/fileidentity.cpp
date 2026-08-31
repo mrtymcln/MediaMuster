@@ -38,7 +38,7 @@ FileIdentity FileIdentity::capture(const QString &path, bool readContent)
 					  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
 					  OPEN_EXISTING, 0, nullptr);
 	if (h == INVALID_HANDLE_VALUE)
-		return id; // strength stays None: "couldn't examine it"
+		return id; // confidence stays None: "couldn't examine it"
 
 	BY_HANDLE_FILE_INFORMATION info{};
 	if (!::GetFileInformationByHandle(h, &info))
@@ -77,10 +77,10 @@ FileIdentity FileIdentity::capture(const QString &path, bool readContent)
 	{
 	};
 	if (::stat(QFile::encodeName(path).constData(), &st) != 0)
-		return id; // strength stays None: "couldn't examine it"
+		return id; // confidence stays None: "couldn't examine it"
 	id.size = qint64(st.st_size);
 	// Full-precision mtime: QFileInfo::lastModified() rounds to
-	// milliseconds, which would blunt the SizeTime tier for no reason.
+	// milliseconds, which would blunt the Med tier for no reason.
 #ifdef Q_OS_MAC
 	id.mtimeNs = qint64(st.st_mtimespec.tv_sec) * Q_INT64_C(1000000000) + st.st_mtimespec.tv_nsec;
 #else
@@ -90,21 +90,21 @@ FileIdentity FileIdentity::capture(const QString &path, bool readContent)
 	id.volumeId = quint64(st.st_dev);
 #endif
 
-	// The strength rule: file IDs are only trusted on volumes proven to
+	// The confidence rule: file IDs are only trusted on volumes proven to
 	// keep them stable (the allowlist). On everything else — network,
 	// FAT, unknown — the IDs may be synthesized per-mount, and trusting
 	// them would produce false "different file!" refusals after every
-	// remount. SizeTime is the honest tier there; the content half below
+	// remount. Med is the honest tier there; the content half below
 	// is what actually carries the weight on those volumes.
 	const bool idsOk = id.fileId != 0;
-	id.strength = (idsOk && NativeFile::isProvenLocalVolume(path)) ? Strength::Full
-																   : Strength::SizeTime;
+	id.confidence = (idsOk && NativeFile::isProvenLocalVolume(path)) ? Confidence::High
+																   : Confidence::Med;
 
 	// Content half: the Avid UMID baked into the MXF header — a bounded
 	// read of a few hundred KB, never the essence. Only attempted for
 	// .mxf names; a .wav/.aif/.omf simply has no UMID to offer, and a
 	// corrupt MXF header comes back empty. Empty is recorded honestly
-	// (the journal's strength field plus the empty umid say exactly what
+	// (the journal's confidence field plus the empty umid say exactly what
 	// was checkable).
 	if (readContent && Conventions::hasMxfExtension(path))
 		id.contentUmid = MxfParser::parseHeader(path).umid;
@@ -124,29 +124,29 @@ FileIdentity::Verdict FileIdentity::verify(const QString &path, const FileIdenti
 	if (actualOut)
 		*actualOut = now;
 
-	if (now.strength == Strength::None)
+	if (now.confidence == Confidence::Low)
 		return QFileInfo::exists(path) ? Verdict::Unreadable : Verdict::Missing;
 
-	// Size always has to agree, at every strength: a size change means the
+	// Size always has to agree, at every confidence: a size change means the
 	// bytes are not the bytes that were recorded, whatever else matches.
 	if (expected.size >= 0 && now.size != expected.size)
 		return Verdict::Changed;
 
-	if (expected.strength == Strength::Full)
+	if (expected.confidence == Confidence::High)
 	{
-		// The expectation was recorded at full strength; verifying it at
+		// The expectation was recorded at full confidence; verifying it at
 		// anything less would be claiming a check we didn't make. (This
 		// happens if the volume somehow stopped being proven-local — a
 		// state odd enough that refusing with "couldn't re-check" is the
 		// only honest answer.)
-		if (now.strength != Strength::Full)
+		if (now.confidence != Confidence::High)
 			return Verdict::Unreadable;
 		if (now.fileId != expected.fileId || now.volumeId != expected.volumeId)
 			return Verdict::Changed;
 		// mtime is informational at Full: an in-place edit keeps the file
 		// ID (same object), and a media swap is caught by the UMID below.
 	}
-	else if (expected.strength == Strength::SizeTime)
+	else if (expected.confidence == Confidence::Med)
 	{
 		// Both captures read the same filesystem, so any server-side
 		// truncation of timestamps cancels out and exact equality is the
@@ -173,7 +173,7 @@ FileIdentity::Verdict FileIdentity::verifyRelocated(const QString &path,
 	if (actualOut)
 		*actualOut = now;
 
-	if (now.strength == Strength::None)
+	if (now.confidence == Confidence::Low)
 		return QFileInfo::exists(path) ? Verdict::Unreadable : Verdict::Missing;
 
 	// Only what survives a move: the byte count and the media's own id.
@@ -190,7 +190,7 @@ QString FileIdentity::explainDifference(const FileIdentity &expected, const File
 	if (expected.size >= 0 && actual.size >= 0 && actual.size != expected.size)
 		return QStringLiteral("its size changed from %1 to %2")
 			.arg(Format::bytes(expected.size), Format::bytes(actual.size));
-	if (expected.strength == Strength::Full && actual.strength == Strength::Full &&
+	if (expected.confidence == Confidence::High && actual.confidence == Confidence::High &&
 		(actual.fileId != expected.fileId || actual.volumeId != expected.volumeId))
 		return QStringLiteral("the disk reports it is a different file than the one recorded");
 	if (!expected.contentUmid.isEmpty() && actual.contentUmid.isEmpty())
@@ -210,17 +210,17 @@ QJsonObject FileIdentity::toJson() const
 	if (size >= 0)
 		o.insert(QStringLiteral("size"), size);
 	if (mtimeNs != 0)
-		o.insert(QStringLiteral("mtime"), mtimeNs);
+		o.insert(QStringLiteral("modifiedTime"), mtimeNs);
 	// Hex strings, not JSON numbers: these are unsigned 64-bit values and
 	// a JSON number can't round-trip the full range exactly.
-	if (strength == Strength::Full)
+	if (confidence == Confidence::High)
 	{
 		o.insert(QStringLiteral("fileId"), QString::number(fileId, 16));
-		o.insert(QStringLiteral("volId"), QString::number(volumeId, 16));
+		o.insert(QStringLiteral("volumeId"), QString::number(volumeId, 16));
 	}
 	if (!contentUmid.isEmpty())
 		o.insert(QStringLiteral("umid"), contentUmid);
-	o.insert(QStringLiteral("str"), int(strength));
+	o.insert(QStringLiteral("confidence"), int(confidence));
 	return o;
 }
 
@@ -228,12 +228,12 @@ FileIdentity FileIdentity::fromJson(const QJsonObject &o)
 {
 	FileIdentity id;
 	id.size = o.value(QStringLiteral("size")).toInteger(-1);
-	id.mtimeNs = o.value(QStringLiteral("mtime")).toInteger(0);
+	id.mtimeNs = o.value(QStringLiteral("modifiedTime")).toInteger(0);
 	id.fileId = o.value(QStringLiteral("fileId")).toString().toULongLong(nullptr, 16);
-	id.volumeId = o.value(QStringLiteral("volId")).toString().toULongLong(nullptr, 16);
+	id.volumeId = o.value(QStringLiteral("volumeId")).toString().toULongLong(nullptr, 16);
 	id.contentUmid = o.value(QStringLiteral("umid")).toString();
-	const int s = o.value(QStringLiteral("str")).toInt(0);
-	id.strength = (s >= 0 && s <= 2) ? Strength(s) : Strength::None;
+	const int s = o.value(QStringLiteral("confidence")).toInt(0);
+	id.confidence = (s >= 0 && s <= 2) ? Confidence(s) : Confidence::Low;
 	return id;
 }
 
@@ -244,13 +244,13 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 	VolumeIdentity v;
 	const QStorageInfo info(anyPathOnVolume);
 	if (!info.isValid() || !info.isReady())
-		return v; // strength None: nothing mounted there to identify
+		return v; // confidence None: nothing mounted there to identify
 
 	v.rootPath = info.rootPath();
 	v.label = info.name();
 	v.fsType = QString::fromLatin1(info.fileSystemType());
 	v.capacityBytes = info.bytesTotal();
-	v.strength = Strength::Weak;
+	v.confidence = Confidence::Med;
 
 #ifdef Q_OS_MAC
 	// The volume's own UUID, read via getattrlist on the mount point.
@@ -281,7 +281,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 			uuid_string_t s;
 			uuid_unparse_upper(reply.uuid, s);
 			v.uuid = QString::fromLatin1(s);
-			v.strength = Strength::Full;
+			v.confidence = Confidence::High;
 		}
 	}
 #elif defined(Q_OS_WIN)
@@ -291,7 +291,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 
 	// The \\?\Volume{GUID}\ path is the volume's permanent address — it
 	// survives drive-letter changes, which is the whole point. Network
-	// shares have none and the call fails, leaving strength at Weak.
+	// shares have none and the call fails, leaving confidence at Weak.
 	wchar_t guidPath[64] = {};
 	if (::GetVolumeNameForVolumeMountPointW(reinterpret_cast<const wchar_t *>(root.utf16()),
 											guidPath, 64))
@@ -303,7 +303,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 		v.serial = serial;
 
 	if (!v.uuid.isEmpty() || v.serial != 0)
-		v.strength = Strength::Full;
+		v.confidence = Confidence::High;
 #endif
 
 	return v;
@@ -315,7 +315,7 @@ bool VolumeIdentity::matches(const VolumeIdentity &other) const
 {
 	// Nothing captured is nothing to compare — never a match. Callers
 	// treat "can't tell" as "don't touch".
-	if (strength == Strength::None || other.strength == Strength::None)
+	if (confidence == Confidence::Low || other.confidence == Confidence::Low)
 		return false;
 
 	// OS identities decide when both sides have one. Case-insensitive:
@@ -327,7 +327,7 @@ bool VolumeIdentity::matches(const VolumeIdentity &other) const
 		return serial == other.serial;
 
 	// Weak fingerprint: label + filesystem type + capacity. Honest best
-	// for volumes with no OS identity; the journal's strength field lets
+	// for volumes with no OS identity; the journal's confidence field lets
 	// recovery narrate that the match was weak.
 	return label == other.label && fsType.compare(other.fsType, Qt::CaseInsensitive) == 0 &&
 		   capacityBytes == other.capacityBytes;
@@ -345,12 +345,12 @@ QJsonObject VolumeIdentity::toJson() const
 	if (!label.isEmpty())
 		o.insert(QStringLiteral("label"), label);
 	if (!fsType.isEmpty())
-		o.insert(QStringLiteral("fs"), fsType);
+		o.insert(QStringLiteral("filesystem"), fsType);
 	if (capacityBytes > 0)
 		o.insert(QStringLiteral("bytes"), capacityBytes);
 	if (!rootPath.isEmpty())
-		o.insert(QStringLiteral("root"), rootPath);
-	o.insert(QStringLiteral("str"), int(strength));
+		o.insert(QStringLiteral("rootPath"), rootPath);
+	o.insert(QStringLiteral("confidence"), int(confidence));
 	return o;
 }
 
@@ -360,10 +360,10 @@ VolumeIdentity VolumeIdentity::fromJson(const QJsonObject &o)
 	v.uuid = o.value(QStringLiteral("uuid")).toString();
 	v.serial = o.value(QStringLiteral("serial")).toString().toUInt(nullptr, 16);
 	v.label = o.value(QStringLiteral("label")).toString();
-	v.fsType = o.value(QStringLiteral("fs")).toString();
+	v.fsType = o.value(QStringLiteral("filesystem")).toString();
 	v.capacityBytes = o.value(QStringLiteral("bytes")).toInteger(0);
-	v.rootPath = o.value(QStringLiteral("root")).toString();
-	const int s = o.value(QStringLiteral("str")).toInt(0);
-	v.strength = (s >= 0 && s <= 2) ? Strength(s) : Strength::None;
+	v.rootPath = o.value(QStringLiteral("rootPath")).toString();
+	const int s = o.value(QStringLiteral("confidence")).toInt(0);
+	v.confidence = (s >= 0 && s <= 2) ? Confidence(s) : Confidence::Low;
 	return v;
 }

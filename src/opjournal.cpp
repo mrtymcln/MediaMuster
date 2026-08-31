@@ -82,13 +82,13 @@ OpJournal::OpJournal(OpKind kind, const QJsonObject &meta, const QString &dir,
 	}
 
 	writeLine({{QStringLiteral("schema"), kSchema},
-			   {QStringLiteral("rec"), QStringLiteral("begin")},
+			   {QStringLiteral("record"), QStringLiteral("begin")},
 			   {QStringLiteral("kind"), opKindName(kind)},
 			   {QStringLiteral("started"), nowIso()},
-			   {QStringLiteral("app"), QCoreApplication::applicationVersion()},
-			   {QStringLiteral("pid"), QCoreApplication::applicationPid()},
+			   {QStringLiteral("appVersion"), QCoreApplication::applicationVersion()},
+			   {QStringLiteral("processId"), QCoreApplication::applicationPid()},
 			   {QStringLiteral("host"), QSysInfo::machineHostName()},
-			   {QStringLiteral("meta"), meta}});
+			   {QStringLiteral("metadata"), meta}});
 
 	// Make the journal's EXISTENCE durable, not just its first line's
 	// bytes: a file whose directory entry is lost to a power cut protects
@@ -111,7 +111,7 @@ void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpIt
 	QJsonArray files;
 	for (const OpItem &it : items)
 	{
-		QJsonObject o{{QStringLiteral("src"), it.src}, {QStringLiteral("name"), it.name}};
+		QJsonObject o{{QStringLiteral("source"), it.src}, {QStringLiteral("name"), it.name}};
 		if (!it.folder.isEmpty())
 			o.insert(QStringLiteral("folder"), it.folder);
 		if (it.bytes > 0)
@@ -129,7 +129,7 @@ void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpIt
 		// Rename (Rebalance) items carry their own full destination and
 		// their relatives-atomic group.
 		if (!it.renameDst.isEmpty())
-			o.insert(QStringLiteral("dst"), it.renameDst);
+			o.insert(QStringLiteral("destination"), it.renameDst);
 		if (!it.groupKey.isEmpty())
 			o.insert(QStringLiteral("group"), it.groupKey);
 		files.append(o);
@@ -142,8 +142,8 @@ void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpIt
 	for (const VolumeIdentity &v : volumes)
 		vols.append(v.toJson());
 
-	writeLine({{QStringLiteral("rec"), QStringLiteral("plan")},
-			   {QStringLiteral("dest"), dest},
+	writeLine({{QStringLiteral("record"), QStringLiteral("plan")},
+			   {QStringLiteral("destination"), dest},
 			   {QStringLiteral("preserve"), preserve},
 			   {QStringLiteral("files"), files},
 			   {QStringLiteral("volumes"), vols}});
@@ -156,20 +156,20 @@ int OpJournal::planOp(const QString &src, const QString &dst, qint64 bytes, cons
 {
 	const int id = m_nextId++;
 
-	QJsonObject o{{QStringLiteral("rec"), QStringLiteral("op")},
+	QJsonObject o{{QStringLiteral("record"), QStringLiteral("op")},
 				  {QStringLiteral("id"), id},
-				  {QStringLiteral("src"), src},
-				  {QStringLiteral("dst"), dst}};
+				  {QStringLiteral("source"), src},
+				  {QStringLiteral("destination"), dst}};
 	if (bytes > 0)
 		o.insert(QStringLiteral("bytes"), QJsonValue(bytes));
 	if (!parked.isEmpty())
 		o.insert(QStringLiteral("parked"), parked);
 	// The identities this op was verified against. Recovery and undo
 	// re-verify against THESE, not against fresh guesses.
-	if (srcId.strength != FileIdentity::Strength::None)
-		o.insert(QStringLiteral("srcId"), srcId.toJson());
-	if (parkedOriginalId.strength != FileIdentity::Strength::None)
-		o.insert(QStringLiteral("dstId"), parkedOriginalId.toJson());
+	if (srcId.confidence != FileIdentity::Confidence::Low)
+		o.insert(QStringLiteral("sourceId"), srcId.toJson());
+	if (parkedOriginalId.confidence != FileIdentity::Confidence::Low)
+		o.insert(QStringLiteral("destinationId"), parkedOriginalId.toJson());
 
 	writeLine(o);
 	return id;
@@ -177,13 +177,13 @@ int OpJournal::planOp(const QString &src, const QString &dst, qint64 bytes, cons
 
 void OpJournal::markDone(int id, const DoneInfo &info)
 {
-	QJsonObject o{{QStringLiteral("rec"), QStringLiteral("done")}, {QStringLiteral("id"), id}};
+	QJsonObject o{{QStringLiteral("record"), QStringLiteral("done")}, {QStringLiteral("id"), id}};
 	if (!info.finalPath.isEmpty())
 		o.insert(QStringLiteral("final"), info.finalPath);
 	if (!info.hash.isEmpty())
 		o.insert(QStringLiteral("hash"), info.hash);
-	if (info.landedId.strength != FileIdentity::Strength::None)
-		o.insert(QStringLiteral("dstId"), info.landedId.toJson());
+	if (info.landedId.confidence != FileIdentity::Confidence::Low)
+		o.insert(QStringLiteral("destinationId"), info.landedId.toJson());
 	if (!info.parkedFinal.isEmpty())
 		o.insert(QStringLiteral("parkedFinal"), info.parkedFinal);
 	writeLine(o);
@@ -191,9 +191,9 @@ void OpJournal::markDone(int id, const DoneInfo &info)
 
 void OpJournal::markFailed(int id, const QString &error, bool rollbackIncomplete)
 {
-	QJsonObject o{{QStringLiteral("rec"), QStringLiteral("fail")},
+	QJsonObject o{{QStringLiteral("record"), QStringLiteral("fail")},
 				  {QStringLiteral("id"), id},
-				  {QStringLiteral("err"), error}};
+				  {QStringLiteral("error"), error}};
 	if (rollbackIncomplete)
 	{
 		o.insert(QStringLiteral("dirty"), true);
@@ -204,14 +204,14 @@ void OpJournal::markFailed(int id, const QString &error, bool rollbackIncomplete
 
 void OpJournal::markSkipped(int id)
 {
-	writeLine({{QStringLiteral("rec"), QStringLiteral("skip")}, {QStringLiteral("id"), id}});
+	writeLine({{QStringLiteral("record"), QStringLiteral("skip")}, {QStringLiteral("id"), id}});
 }
 
 void OpJournal::writeNote(const QString &text)
 {
-	writeLine({{QStringLiteral("rec"), QStringLiteral("note")},
+	writeLine({{QStringLiteral("record"), QStringLiteral("note")},
 			   {QStringLiteral("text"), text},
-			   {QStringLiteral("ts"), nowIso()}});
+			   {QStringLiteral("timestamp"), nowIso()}});
 }
 
 // MARK: - Finish
@@ -221,10 +221,10 @@ void OpJournal::finish(int succeeded, int failed, int skipped, bool cancelled)
 	if (!isOpen())
 		return;
 
-	QJsonObject o{{QStringLiteral("rec"), QStringLiteral("end")},
-				  {QStringLiteral("ok"), succeeded},
-				  {QStringLiteral("fail"), failed},
-				  {QStringLiteral("skip"), skipped},
+	QJsonObject o{{QStringLiteral("record"), QStringLiteral("end")},
+				  {QStringLiteral("succeeded"), succeeded},
+				  {QStringLiteral("failed"), failed},
+				  {QStringLiteral("skipped"), skipped},
 				  {QStringLiteral("ended"), nowIso()}};
 	if (cancelled)
 		o.insert(QStringLiteral("cancelled"), true);
@@ -364,7 +364,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 		if (!doc.isObject())
 			continue;
 		const QJsonObject o = doc.object();
-		const QString r = o.value(QStringLiteral("rec")).toString();
+		const QString r = o.value(QStringLiteral("record")).toString();
 
 		if (r == QStringLiteral("begin"))
 		{
@@ -372,9 +372,9 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 			const auto kind = opKindFromName(o.value(QStringLiteral("kind")).toString());
 			rec.kindKnown = kind.has_value();
 			rec.kind = kind.value_or(OpKind::Copy);
-			rec.meta = o.value(QStringLiteral("meta")).toObject();
+			rec.meta = o.value(QStringLiteral("metadata")).toObject();
 			rec.started = o.value(QStringLiteral("started")).toString();
-			rec.pid = o.value(QStringLiteral("pid")).toInteger(0);
+			rec.pid = o.value(QStringLiteral("processId")).toInteger(0);
 			rec.host = o.value(QStringLiteral("host")).toString();
 			rec.undoes = rec.meta.value(QStringLiteral("undoes")).toString();
 			rec.effective =
@@ -384,13 +384,13 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 		{
 			Entry e;
 			e.id = o.value(QStringLiteral("id")).toInt(-1);
-			e.src = o.value(QStringLiteral("src")).toString();
-			e.dst = o.value(QStringLiteral("dst")).toString();
+			e.src = o.value(QStringLiteral("source")).toString();
+			e.dst = o.value(QStringLiteral("destination")).toString();
 			e.bytes = o.value(QStringLiteral("bytes")).toInteger(0);
 			e.parked = o.value(QStringLiteral("parked")).toString();
-			e.srcId = FileIdentity::fromJson(o.value(QStringLiteral("srcId")).toObject());
+			e.srcId = FileIdentity::fromJson(o.value(QStringLiteral("sourceId")).toObject());
 			e.parkedOriginalId =
-				FileIdentity::fromJson(o.value(QStringLiteral("dstId")).toObject());
+				FileIdentity::fromJson(o.value(QStringLiteral("destinationId")).toObject());
 			idToIdx.insert(e.id, rec.ops.size());
 			rec.ops.append(e);
 		}
@@ -403,7 +403,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 				rec.ops[idx].finalPath = o.value(QStringLiteral("final")).toString();
 				rec.ops[idx].hash = o.value(QStringLiteral("hash")).toString();
 				rec.ops[idx].landedId =
-					FileIdentity::fromJson(o.value(QStringLiteral("dstId")).toObject());
+					FileIdentity::fromJson(o.value(QStringLiteral("destinationId")).toObject());
 				rec.ops[idx].parkedFinal = o.value(QStringLiteral("parkedFinal")).toString();
 			}
 		}
@@ -448,7 +448,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 		else if (r == QStringLiteral("plan"))
 		{
 			rec.hasPlan = true;
-			rec.planDest = o.value(QStringLiteral("dest")).toString();
+			rec.planDest = o.value(QStringLiteral("destination")).toString();
 			rec.planPreserve = o.value(QStringLiteral("preserve")).toBool(false);
 			rec.plan.clear();
 			const QJsonArray files = o.value(QStringLiteral("files")).toArray();
@@ -457,7 +457,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 			{
 				const QJsonObject fo = v.toObject();
 				OpItem it;
-				it.src = fo.value(QStringLiteral("src")).toString();
+				it.src = fo.value(QStringLiteral("source")).toString();
 				it.name = fo.value(QStringLiteral("name")).toString();
 				it.folder = fo.value(QStringLiteral("folder")).toString();
 				it.bytes = fo.value(QStringLiteral("bytes")).toInteger(0);
@@ -465,7 +465,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 				it.mobId = fo.value(QStringLiteral("mobId")).toString();
 				it.masterMobId = fo.value(QStringLiteral("masterMobId")).toString();
 				it.clipName = fo.value(QStringLiteral("clipName")).toString();
-				it.renameDst = fo.value(QStringLiteral("dst")).toString();
+				it.renameDst = fo.value(QStringLiteral("destination")).toString();
 				it.groupKey = fo.value(QStringLiteral("group")).toString();
 				if (!it.src.isEmpty())
 					rec.plan.append(it);
@@ -546,10 +546,10 @@ bool OpJournal::markRecovered(const QString &journalPath, int reversed, int fail
 	if (!f.open(QIODevice::Append))
 		return false;
 
-	const QJsonObject o{{QStringLiteral("rec"), QStringLiteral("recovered")},
+	const QJsonObject o{{QStringLiteral("record"), QStringLiteral("recovered")},
 						{QStringLiteral("reversed"), reversed},
 						{QStringLiteral("failed"), failed},
-						{QStringLiteral("ts"), nowIso()}};
+						{QStringLiteral("timestamp"), nowIso()}};
 	f.write(QJsonDocument(o).toJson(QJsonDocument::Compact));
 	f.write("\n", 1);
 	syncLine(f);
@@ -563,9 +563,9 @@ bool OpJournal::markUndone(const QString &journalPath, const QString &by)
 	if (!f.open(QIODevice::Append))
 		return false;
 
-	const QJsonObject o{{QStringLiteral("rec"), QStringLiteral("undone")},
-						{QStringLiteral("by"), by},
-						{QStringLiteral("ts"), nowIso()}};
+	const QJsonObject o{{QStringLiteral("record"), QStringLiteral("undone")},
+						{QStringLiteral("byJournal"), by},
+						{QStringLiteral("timestamp"), nowIso()}};
 	f.write(QJsonDocument(o).toJson(QJsonDocument::Compact));
 	f.write("\n", 1);
 	syncLine(f);

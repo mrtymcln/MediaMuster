@@ -35,9 +35,9 @@ namespace
 	// changed address, so filesystem ids prove nothing).
 	FileIdentity::Verdict verifyLanded(const QString &path, const OpJournal::Entry &op)
 	{
-		if (op.landedId.strength != FileIdentity::Strength::None)
+		if (op.landedId.confidence != FileIdentity::Confidence::Low)
 			return FileIdentity::verify(path, op.landedId);
-		if (op.srcId.strength != FileIdentity::Strength::None)
+		if (op.srcId.confidence != FileIdentity::Confidence::Low)
 			return FileIdentity::verifyRelocated(path, op.srcId);
 		// No identity in the journal (shouldn't happen for v2-written
 		// runs) — no check to apply, same stance recovery takes.
@@ -228,7 +228,7 @@ bool OpUndo::restoreReplacedOriginal(const OpJournal::Entry &op, QString *why)
 	}
 	// The catch went to the trash by RENAME, so its identity survives
 	// intact — but it has changed address, so compare as relocated.
-	if (op.parkedOriginalId.strength != FileIdentity::Strength::None &&
+	if (op.parkedOriginalId.confidence != FileIdentity::Confidence::Low &&
 		FileIdentity::verifyRelocated(op.parkedFinal, op.parkedOriginalId) !=
 			FileIdentity::Verdict::Match)
 	{
@@ -335,7 +335,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &jo
 	// Already undone? The file is back at its original address.
 	if (QFile::exists(op.src))
 	{
-		if (op.srcId.strength == FileIdentity::Strength::None ||
+		if (op.srcId.confidence == FileIdentity::Confidence::Low ||
 			FileIdentity::verifyRelocated(op.src, op.srcId) == FileIdentity::Verdict::Match)
 		{
 			m_sink.itemDone(name, op.src, true,
@@ -375,7 +375,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &jo
 	// line means a crash between here and done is recovered with the
 	// Move machinery over this exact src/dst pair.
 	JournalOp lop(&journal, op.dst, op.src, op.srcId.size, QString(),
-				 op.landedId.strength != FileIdentity::Strength::None ? op.landedId : op.srcId);
+				 op.landedId.confidence != FileIdentity::Confidence::Low ? op.landedId : op.srcId);
 
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
 
@@ -408,7 +408,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &jo
 				lop.failed(QStringLiteral("cancelled"));
 				return out;
 			}
-			if (now.status != OpCopier::HashOutcome::Status::Ok ||
+			if (now.status != OpCopier::HashOutcome::Status::Succeeded ||
 				QStringLiteral("%1").arg(now.digest, 16, 16, QLatin1Char('0')) != op.hash)
 			{
 				lop.failed(QStringLiteral("far copy failed checksum"));
@@ -523,7 +523,7 @@ OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpJournal::Entry &op, OpJournal &
 
 	if (QFile::exists(op.src))
 	{
-		if (op.srcId.strength == FileIdentity::Strength::None ||
+		if (op.srcId.confidence == FileIdentity::Confidence::Low ||
 			FileIdentity::verifyRelocated(op.src, op.srcId) == FileIdentity::Verdict::Match)
 		{
 			m_sink.itemDone(name, op.src, true,
@@ -551,7 +551,7 @@ OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpJournal::Entry &op, OpJournal &
 
 	// A trashed file moved by RENAME keeps its identity; compare as
 	// relocated (the address changed, the file didn't).
-	if (op.srcId.strength != FileIdentity::Strength::None &&
+	if (op.srcId.confidence != FileIdentity::Confidence::Low &&
 		FileIdentity::verifyRelocated(op.finalPath, op.srcId) != FileIdentity::Verdict::Match)
 	{
 		m_sink.itemDone(name, op.src, false,
@@ -591,7 +591,7 @@ OpUndo::ItemOutcome OpUndo::undoRenameOp(const OpJournal::Entry &op, OpJournal &
 
 	if (QFile::exists(op.src))
 	{
-		if (op.srcId.strength == FileIdentity::Strength::None ||
+		if (op.srcId.confidence == FileIdentity::Confidence::Low ||
 			FileIdentity::verifyRelocated(op.src, op.srcId) == FileIdentity::Verdict::Match)
 		{
 			m_sink.itemDone(name, op.src, true,

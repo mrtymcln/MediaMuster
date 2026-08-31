@@ -18,7 +18,7 @@
 // Identity has two halves, deliberately independent:
 //
 //   Filesystem half — size, modification time, and (where the volume is
-//   trusted, see strength below) the disk's own file ID (inode /
+//   trusted, see confidence below) the disk's own file ID (inode /
 //   NTFS file index) plus its volume ID. Answers "same file OBJECT?".
 //
 //   Content half — the Avid UMID parsed out of the MXF header itself
@@ -27,29 +27,39 @@
 //   the strongest check exactly where the filesystem half is weakest:
 //   network volumes.
 //
-// Strength records how much the filesystem half is worth, and it is
+// Confidence records how much the filesystem half is worth, and it is
 // written into the journal so recovery and undo can narrate honestly
 // when a check was weak:
 //
-//   Full     — proven-local volume (see NativeFile::isProvenLocalVolume)
-//              and the file ID was captured. IDs decide; mtime is
-//              informational only (editing a file in place keeps its ID —
-//              same object, and the content half catches media swaps).
-//   SizeTime — everything else: network/Nexis, FAT sticks, unknown
-//              filesystems. SMB synthesizes file IDs that are not stable
-//              across remounts, and a false "this is a different file!"
-//              storm during recovery would be its own failure mode — so
-//              on those volumes we honestly compare only size + mtime
-//              (+ the content half, which IS reliable there).
-//   None     — the file couldn't be examined at all.
+//   High — proven-local volume (see NativeFile::isProvenLocalVolume) and
+//          the file ID was captured. IDs decide; mtime is informational
+//          only (editing a file in place keeps its ID — same object, and
+//          the content half catches media swaps).
+//   Med  — size + mtime only. Everything else: network/Nexis, FAT sticks,
+//          unknown filesystems. SMB synthesizes file IDs that are not
+//          stable across remounts, and a false "this is a different
+//          file!" storm during recovery would be its own failure mode —
+//          so on those volumes we honestly compare only size + mtime
+//          (+ the content half, which IS reliable there).
+//   Low  — the file couldn't be examined at all. Not a weak yes: callers
+//          refuse rather than proceed, because unverifiable is not
+//          verified.
 
 struct FileIdentity
 {
-	enum class Strength : int
+	enum class Confidence : int
 	{
-		None = 0,
-		SizeTime = 1,
-		Full = 2
+		/// Nothing was captured — the file could not be examined at all.
+		/// NOT "a weak yes": callers treat this as "don't touch", because
+		/// unverifiable is not verified.
+		Low = 0,
+		/// Size + modification time only. Everything that isn't a proven-
+		/// local volume: network/Nexis, FAT sticks, unknown filesystems.
+		/// The content half (the Avid UMID) is what carries the weight here.
+		Med = 1,
+		/// The disk's own file ID and volume ID, on a proven-local volume.
+		/// IDs decide; mtime is informational.
+		High = 2
 	};
 
 	qint64 size = -1;	 ///< -1 = never captured.
@@ -57,11 +67,11 @@ struct FileIdentity
 						 ///< against another capture from the same
 						 ///< filesystem, so the platform epoch difference
 						 ///< (Unix vs Windows 1601) never matters.
-	quint64 fileId = 0;	 ///< st_ino / NTFS file index. Full strength only.
-	quint64 volumeId = 0; ///< st_dev / volume serial. Full strength only.
+	quint64 fileId = 0;	 ///< st_ino / NTFS file index. Full confidence only.
+	quint64 volumeId = 0; ///< st_dev / volume serial. Full confidence only.
 	QString contentUmid; ///< Avid UMID from the MXF header; empty = not an
 						 ///< MXF, or its header couldn't be parsed.
-	Strength strength = Strength::None;
+	Confidence confidence = Confidence::Low;
 
 	// MARK: - Capture
 
@@ -73,14 +83,14 @@ struct FileIdentity
 
 	// MARK: - Verify
 
-	/// Match      — every field the expected identity's strength vouches
+	/// Match      — every field the expected identity's confidence vouches
 	///              for agrees. Proceed.
 	/// Changed    — something disagrees: the file is not (or no longer)
 	///              the one recorded. REFUSE the operation and explain.
 	/// Missing    — nothing at the path.
 	/// Unreadable — something is there but couldn't be examined, or a
-	///              Full-strength expectation couldn't be re-checked at
-	///              full strength. Unverifiable is not verified: refuse,
+	///              Full-confidence expectation couldn't be re-checked at
+	///              full confidence. Unverifiable is not verified: refuse,
 	///              with different words (a failing drive or dropped
 	///              mount needs a different action than a swapped file).
 	enum class Verdict : int
@@ -92,7 +102,7 @@ struct FileIdentity
 	};
 
 	/// Re-capture the identity at `path` and compare it against
-	/// `expected`, applying the strength rules above. The re-parse of the
+	/// `expected`, applying the confidence rules above. The re-parse of the
 	/// MXF header only happens when `expected` carries a UMID. Pass
 	/// `actualOut` to get the fresh capture back for message-building.
 	static Verdict verify(const QString &path, const FileIdentity &expected,
@@ -120,7 +130,7 @@ struct FileIdentity
 	/// Compact JSON for a journal line. File and volume IDs are stored as
 	/// hex STRINGS, not JSON numbers: they are unsigned 64-bit values
 	/// that can exceed what a JSON number round-trips exactly. Fields the
-	/// strength doesn't vouch for are omitted.
+	/// confidence doesn't vouch for are omitted.
 	QJsonObject toJson() const;
 	static FileIdentity fromJson(const QJsonObject &o);
 };
@@ -142,15 +152,19 @@ struct FileIdentity
 // (APFS/HFS+ volume UUID on the Mac; volume serial + permanent
 // \\?\Volume{GUID}\ path on Windows). Nothing is ever written onto the
 // user's drives. Network volumes typically expose no OS identity and get
-// Weak strength: label + filesystem type + capacity, recorded as such.
+// Weak confidence: label + filesystem type + capacity, recorded as such.
 
 struct VolumeIdentity
 {
-	enum class Strength : int
+	enum class Confidence : int
 	{
-		None = 0,
-		Weak = 1, ///< No OS id; label+type+capacity is the honest best.
-		Full = 2  ///< OS-issued UUID / GUID+serial captured.
+		/// Nothing was captured — as with a file, "don't touch".
+		Low = 0,
+		/// No OS identity available: label + filesystem type + capacity is
+		/// the honest best. Typical of network volumes.
+		Med = 1,
+		/// OS-issued UUID (macOS) or GUID + serial (Windows).
+		High = 2
 	};
 
 	QString uuid;	///< macOS volume UUID, or Windows \\?\Volume{GUID}\ path.
@@ -159,14 +173,14 @@ struct VolumeIdentity
 	QString fsType; ///< As QStorageInfo reports it ("apfs", "NTFS"…).
 	qint64 capacityBytes = 0;
 	QString rootPath; ///< Where it was mounted at capture time.
-	Strength strength = Strength::None;
+	Confidence confidence = Confidence::Low;
 
 	/// Identity of the volume holding `anyPathOnVolume`.
 	static VolumeIdentity capture(const QString &anyPathOnVolume);
 
 	/// Are these the same physical volume? OS ids decide when both sides
 	/// have one; otherwise the Weak triple (label + type + capacity) is
-	/// compared — honest best, and the journal's strength field lets the
+	/// compared — honest best, and the journal's confidence field lets the
 	/// caller say so.
 	bool matches(const VolumeIdentity &other) const;
 

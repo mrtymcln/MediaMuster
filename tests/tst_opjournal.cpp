@@ -34,7 +34,7 @@ namespace
 	QString beginLine(const QString &kind, int schema = 2)
 	{
 		return QStringLiteral(
-				   R"({"schema":%1,"rec":"begin","kind":"%2","started":"2026-01-01T00:00:00.000Z","pid":999999,"host":"deadhost"})")
+				   R"({"schema":%1,"record":"begin","kind":"%2","started":"2026-01-01T00:00:00.000Z","processId":999999,"host":"deadhost"})")
 			.arg(schema)
 			.arg(kind);
 	}
@@ -47,7 +47,7 @@ namespace
 		id.fileId = Q_UINT64_C(0xABCDEF0123456789);
 		id.volumeId = Q_UINT64_C(0x42);
 		id.contentUmid = QStringLiteral("060A2B340101010101010F00130000001234");
-		id.strength = FileIdentity::Strength::Full;
+		id.confidence = FileIdentity::Confidence::High;
 		return id;
 	}
 } // namespace
@@ -150,7 +150,7 @@ void TestOpJournal::clean_run_round_trips()
 	QCOMPARE(rec->ops[0].srcId.size, srcId.size);
 	QCOMPARE(rec->ops[0].srcId.fileId, srcId.fileId);
 	QCOMPARE(rec->ops[0].srcId.contentUmid, srcId.contentUmid);
-	QCOMPARE(rec->ops[0].srcId.strength, srcId.strength);
+	QCOMPARE(rec->ops[0].srcId.confidence, srcId.confidence);
 	// …and the done line carried the hash and the landed file's identity.
 	QVERIFY(rec->ops[0].completed);
 	QCOMPARE(rec->ops[0].hash, QStringLiteral("1a2b3c4d5e6f7788"));
@@ -184,7 +184,7 @@ void TestOpJournal::plan_round_trips_items_and_volumes()
 	vol.fsType = QStringLiteral("apfs");
 	vol.capacityBytes = Q_INT64_C(4'000'000'000'000);
 	vol.rootPath = QStringLiteral("/Volumes/EDIT 1");
-	vol.strength = VolumeIdentity::Strength::Full;
+	vol.confidence = VolumeIdentity::Confidence::High;
 
 	QString path;
 	{
@@ -312,7 +312,7 @@ void TestOpJournal::zero_bytes_omitted_from_line()
 		journal.finish(0, 0, 0);
 	}
 	for (const QString &line : readLines(path))
-		if (line.contains(QStringLiteral("\"rec\":\"op\"")))
+		if (line.contains(QStringLiteral("\"record\":\"op\"")))
 			QVERIFY(!line.contains(QStringLiteral("bytes")));
 }
 
@@ -445,7 +445,7 @@ void TestOpJournal::torn_final_line_is_tolerated()
 	{
 		QFile f(path);
 		QVERIFY(f.open(QIODevice::Append));
-		f.write("{\"rec\":\"end\",\"ok\":1,");
+		f.write("{\"record\":\"end\",\"succeeded\":1,");
 	}
 	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
@@ -490,9 +490,9 @@ void TestOpJournal::legacy_schema_is_invisible_and_untouched()
 	const QString legacy = writeJournal(
 		tmp.path(), QStringLiteral("journal-20250101T000000000-old1.jsonl"),
 		{beginLine(QStringLiteral("move"), /*schema=*/1),
-		 QStringLiteral(R"({"rec":"op","id":0,"src":"/old/a.mxf","dst":"/old/b.mxf"})"),
-		 QStringLiteral(R"({"rec":"done","id":0})"),
-		 QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})")});
+		 QStringLiteral(R"({"record":"op","id":0,"source":"/old/a.mxf","destination":"/old/b.mxf"})"),
+		 QStringLiteral(R"({"record":"done","id":0})"),
+		 QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})")});
 	QVERIFY(!legacy.isEmpty());
 
 	QVERIFY(!OpJournal::readOne(legacy).has_value());
@@ -659,11 +659,11 @@ void TestOpJournal::latest_undoable_picks_newest_qualifying()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString opLine =
-		QStringLiteral(R"({"rec":"op","id":0,"src":"/v/a.mxf","dst":"/w/a.mxf"})");
-	const QString doneLine = QStringLiteral(R"({"rec":"done","id":0})");
-	const QString endLine = QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})");
+		QStringLiteral(R"({"record":"op","id":0,"source":"/v/a.mxf","destination":"/w/a.mxf"})");
+	const QString doneLine = QStringLiteral(R"({"record":"done","id":0})");
+	const QString endLine = QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})");
 	const QString endCancelled =
-		QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0,"cancelled":true})");
+		QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0,"cancelled":true})");
 
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000001000-a1.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine, doneLine, endLine});
@@ -684,28 +684,28 @@ void TestOpJournal::latest_undoable_refuses_disqualified()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString opLine =
-		QStringLiteral(R"({"rec":"op","id":0,"src":"/v/a.mxf","dst":"/w/a.mxf"})");
-	const QString endLine = QStringLiteral(R"({"rec":"end","ok":0,"fail":0,"skip":1})");
+		QStringLiteral(R"({"record":"op","id":0,"source":"/v/a.mxf","destination":"/w/a.mxf"})");
+	const QString endLine = QStringLiteral(R"({"record":"end","ok":0,"fail":0,"skip":1})");
 
 	// Interrupted (no end line): recovery's, not undo's.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000001000-c1.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine,
-				 QStringLiteral(R"({"rec":"done","id":0})")});
+				 QStringLiteral(R"({"record":"done","id":0})")});
 	// Finished but nothing landed (all skipped): nothing to reverse.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000002000-c2.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine,
-				 QStringLiteral(R"({"rec":"skip","id":0})"), endLine});
+				 QStringLiteral(R"({"record":"skip","id":0})"), endLine});
 	// An undo run itself: no undo-of-undo, by design.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000003000-c3.jsonl"),
 				{beginLine(QStringLiteral("undo")), opLine,
-				 QStringLiteral(R"({"rec":"done","id":0})"),
-				 QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})")});
+				 QStringLiteral(R"({"record":"done","id":0})"),
+				 QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})")});
 	// Swept by recovery already.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000004000-c4.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine,
-				 QStringLiteral(R"({"rec":"done","id":0})"),
-				 QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})"),
-				 QStringLiteral(R"({"rec":"recovered","reversed":1,"failed":0})")});
+				 QStringLiteral(R"({"record":"done","id":0})"),
+				 QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})"),
+				 QStringLiteral(R"({"record":"recovered","reversed":1,"failed":0})")});
 
 	QVERIFY(!OpJournal::latestUndoable(tmp.path()).has_value());
 }

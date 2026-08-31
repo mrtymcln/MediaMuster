@@ -1107,9 +1107,9 @@ void TestOpRunner::journal_survives_run_and_plan_precedes_ops()
 	while (!f.atEnd())
 	{
 		const QByteArray l = f.readLine();
-		if (planLine < 0 && l.contains("\"rec\":\"plan\""))
+		if (planLine < 0 && l.contains("\"record\":\"plan\""))
 			planLine = line;
-		if (firstOpLine < 0 && l.contains("\"rec\":\"op\""))
+		if (firstOpLine < 0 && l.contains("\"record\":\"op\""))
 			firstOpLine = line;
 		++line;
 	}

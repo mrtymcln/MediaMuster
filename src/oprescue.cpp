@@ -73,7 +73,7 @@ namespace
 
 	bool identityBlocks(const QString &path, const FileIdentity &expected)
 	{
-		if (expected.strength == FileIdentity::Strength::None)
+		if (expected.confidence == FileIdentity::Confidence::Low)
 			return false;
 		return FileIdentity::verifyRelocated(path, expected) != FileIdentity::Verdict::Match;
 	}
@@ -235,7 +235,7 @@ namespace
 				// size test above reads it as "partial". If the file at
 				// dst matches the identity of the file this op parked,
 				// the rollback is already complete — keep it.
-				if (op.parkedOriginalId.strength != FileIdentity::Strength::None &&
+				if (op.parkedOriginalId.confidence != FileIdentity::Confidence::Low &&
 					FileIdentity::verifyRelocated(op.dst, op.parkedOriginalId) ==
 						FileIdentity::Verdict::Match)
 				{
@@ -715,7 +715,7 @@ QVector<VolumeIdentity> OpRescue::mountedVolumes()
 		if (!m.isValid() || !m.isReady())
 			continue;
 		const VolumeIdentity v = VolumeIdentity::capture(m.rootPath());
-		if (v.strength != VolumeIdentity::Strength::None)
+		if (v.confidence != VolumeIdentity::Confidence::Low)
 			out.append(v);
 	}
 	return out;

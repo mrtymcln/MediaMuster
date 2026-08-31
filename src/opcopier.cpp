@@ -541,5 +541,5 @@ OpCopier::HashOutcome OpCopier::hashFile(const QString &path, const std::atomic<
 
 	if (cancel.load(std::memory_order_acquire))
 		return {HashOutcome::Status::Cancelled, 0};
-	return {HashOutcome::Status::Ok, h.digest()};
+	return {HashOutcome::Status::Succeeded, h.digest()};
 }

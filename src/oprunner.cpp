@@ -190,7 +190,7 @@ QVector<VolumeIdentity> OpRunner::volumesFor(const OpRequest &request)
 	for (const QString &folder : folders)
 	{
 		const VolumeIdentity v = VolumeIdentity::capture(folder);
-		if (v.strength == VolumeIdentity::Strength::None)
+		if (v.confidence == VolumeIdentity::Confidence::Low)
 			continue;
 		if (roots.contains(v.rootPath))
 			continue;
@@ -216,7 +216,7 @@ std::optional<FileIdentity> OpRunner::captureAndCheckSource(const OpItem &it)
 	// underneath it.
 	const FileIdentity id = FileIdentity::capture(it.src);
 
-	if (id.strength == FileIdentity::Strength::None)
+	if (id.confidence == FileIdentity::Confidence::Low)
 	{
 		const bool stillThere = QFileInfo::exists(it.src);
 		m_sink.itemDone(it.name, it.src, false,
@@ -440,7 +440,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 	// a crash inside that window would otherwise leave the user with
 	// neither file and a temp nothing knows about.
 	OpJournal journal(req.kind,
-					QJsonObject{{QStringLiteral("dest"), req.destRoot},
+					QJsonObject{{QStringLiteral("destination"), req.destRoot},
 								{QStringLiteral("preserve"), req.preserve}},
 					journalDir);
 	if (!journal.isOpen())

@@ -500,7 +500,7 @@ QVector<MediaFile> MediaScanner::scanVolume(const QString &volumePath, const QSt
 	{
 		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found database files in folder"));
 
-		ScanTask t;
+		MediaScanner::ScanTask t;
 		t.folderPath = volumePath;
 		t.folderNumber = dir.dirName();
 		t.volumeName = volumeName;
@@ -577,7 +577,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 
 	QStringList subFolders = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 
-	QList<ScanTask> tasks;
+	QList<MediaScanner::ScanTask> tasks;
 	for (const QString &folder : subFolders)
 	{
 		if (m_job.isCancelled())
@@ -591,7 +591,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 			continue;
 		}
 
-		ScanTask t;
+		MediaScanner::ScanTask t;
 		t.folderPath = folderPath;
 		t.folderNumber = folder;
 		t.volumeName = volumeName;
@@ -610,9 +610,9 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 
 	// QtConcurrent::mapped preserves input order, so buffered logs
 	// replay in scan order.
-	QFuture<FolderResult> future =
+	QFuture<MediaScanner::FolderResult> future =
 		QtConcurrent::mapped(tasks,
-							 [this, &completedFolders, totalFolders, &throttle](const ScanTask &t)
+							 [this, &completedFolders, totalFolders, &throttle](const MediaScanner::ScanTask &t)
 							 {
 								 auto res = this->processFolderTask(t);
 								 int done = ++completedFolders;
@@ -647,7 +647,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 
 // MARK: - Per-folder task
 
-FolderResult MediaScanner::processFolderTask(const ScanTask &task)
+MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 {
 	FolderResult result;
 

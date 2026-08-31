@@ -98,8 +98,10 @@ public:
 	{
 		enum class Status
 		{
-			Ok,
-			ReadFailed,
+			Succeeded,  ///< Same three words as Outcome above, deliberately.
+			ReadFailed, ///< Deliberately NOT "Failed": a drive that can't be
+						///< read needs different words to the user than a
+						///< copy that came out wrong.
 			Cancelled
 		};
 		Status status = Status::ReadFailed;

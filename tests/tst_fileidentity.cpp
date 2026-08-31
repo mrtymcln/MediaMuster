@@ -78,7 +78,7 @@ void TestFileIdentity::capture_regular_file_is_full_strength_on_local_volume()
 	QVERIFY(id.mtimeNs != 0);
 	// Temp dirs on the CI platforms sit on APFS/NTFS — allowlisted, so
 	// the disk's own file ID must have been captured and trusted.
-	QCOMPARE(id.strength, FileIdentity::Strength::Full);
+	QCOMPARE(id.confidence, FileIdentity::Confidence::High);
 	QVERIFY(id.fileId != 0);
 	// Not an .mxf, so the content half must be honestly absent.
 	QVERIFY(id.contentUmid.isEmpty());
@@ -89,7 +89,7 @@ void TestFileIdentity::capture_missing_file_has_no_strength()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const FileIdentity id = FileIdentity::capture(tmp.path() + QStringLiteral("/nope.bin"));
-	QCOMPARE(id.strength, FileIdentity::Strength::None);
+	QCOMPARE(id.confidence, FileIdentity::Confidence::Low);
 	QCOMPARE(id.size, qint64(-1));
 }
 
@@ -132,7 +132,7 @@ void TestFileIdentity::verify_swapped_same_size_file_is_changed_on_full()
 	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	const QString other = writeFileIn(tmp.path(), QStringLiteral("b.bin"), QByteArray(64, 'y'));
 	const FileIdentity id = FileIdentity::capture(path);
-	QCOMPARE(id.strength, FileIdentity::Strength::Full);
+	QCOMPARE(id.confidence, FileIdentity::Confidence::High);
 
 	QVERIFY(QFile::remove(path));
 	QVERIFY(QFile::rename(other, path));
@@ -153,7 +153,7 @@ void TestFileIdentity::verify_in_place_edit_same_size_matches_on_full()
 	QVERIFY(tmp.isValid());
 	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	const FileIdentity id = FileIdentity::capture(path);
-	QCOMPARE(id.strength, FileIdentity::Strength::Full);
+	QCOMPARE(id.confidence, FileIdentity::Confidence::High);
 
 	QThread::msleep(15); // ensure the mtime actually moves
 	{
@@ -178,13 +178,13 @@ void TestFileIdentity::verify_missing_file_is_missing()
 void TestFileIdentity::sizetime_tier_uses_mtime()
 {
 	// On a weak volume only size+mtime carry the filesystem half. Force
-	// the tier by hand (the temp dir is really Full-strength) and check
+	// the tier by hand (the temp dir is really Full-confidence) and check
 	// an mtime change alone flips the verdict.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	FileIdentity id = FileIdentity::capture(path);
-	id.strength = FileIdentity::Strength::SizeTime;
+	id.confidence = FileIdentity::Confidence::Med;
 
 	QThread::msleep(15);
 	{
@@ -256,7 +256,7 @@ void TestFileIdentity::identity_json_round_trip_preserves_large_ids()
 	id.fileId = Q_UINT64_C(0xFFFFFFFFFFFFFFFF);
 	id.volumeId = Q_UINT64_C(0x8000000000000001);
 	id.contentUmid = QStringLiteral("060A2B340101010101010F0013000000");
-	id.strength = FileIdentity::Strength::Full;
+	id.confidence = FileIdentity::Confidence::High;
 
 	const FileIdentity back = FileIdentity::fromJson(id.toJson());
 	QCOMPARE(back.size, id.size);
@@ -264,7 +264,7 @@ void TestFileIdentity::identity_json_round_trip_preserves_large_ids()
 	QCOMPARE(back.fileId, id.fileId);
 	QCOMPARE(back.volumeId, id.volumeId);
 	QCOMPARE(back.contentUmid, id.contentUmid);
-	QCOMPARE(back.strength, id.strength);
+	QCOMPARE(back.confidence, id.confidence);
 }
 
 // MARK: - VolumeIdentity
@@ -274,7 +274,7 @@ void TestFileIdentity::volume_capture_local_has_full_identity()
 	const VolumeIdentity v = VolumeIdentity::capture(QDir::tempPath());
 	// CI temp volumes are APFS / local NTFS: the OS mints them a real
 	// identity, and capture must have found it.
-	QCOMPARE(v.strength, VolumeIdentity::Strength::Full);
+	QCOMPARE(v.confidence, VolumeIdentity::Confidence::High);
 	QVERIFY(!v.rootPath.isEmpty());
 	QVERIFY(!v.fsType.isEmpty());
 	QVERIFY(v.capacityBytes > 0);
@@ -295,7 +295,7 @@ void TestFileIdentity::volume_weak_fingerprints_compare_by_triple()
 	a.label = QStringLiteral("NEXIS_WS1");
 	a.fsType = QStringLiteral("smbfs");
 	a.capacityBytes = Q_INT64_C(64'000'000'000'000);
-	a.strength = VolumeIdentity::Strength::Weak;
+	a.confidence = VolumeIdentity::Confidence::Med;
 
 	VolumeIdentity same = a;
 	QVERIFY(a.matches(same));
@@ -313,7 +313,7 @@ void TestFileIdentity::volume_none_never_matches()
 {
 	const VolumeIdentity none =
 		VolumeIdentity::capture(QStringLiteral("/definitely/not/a/mount/zzz"));
-	QCOMPARE(none.strength, VolumeIdentity::Strength::None);
+	QCOMPARE(none.confidence, VolumeIdentity::Confidence::Low);
 	// "Can't tell" must read as "don't touch", even against itself.
 	QVERIFY(!none.matches(none));
 }
@@ -327,7 +327,7 @@ void TestFileIdentity::volume_json_round_trip()
 	v.fsType = QStringLiteral("apfs");
 	v.capacityBytes = Q_INT64_C(4'000'000'000'000);
 	v.rootPath = QStringLiteral("/Volumes/EDIT 1");
-	v.strength = VolumeIdentity::Strength::Full;
+	v.confidence = VolumeIdentity::Confidence::High;
 
 	const VolumeIdentity back = VolumeIdentity::fromJson(v.toJson());
 	QCOMPARE(back.uuid, v.uuid);
@@ -336,7 +336,7 @@ void TestFileIdentity::volume_json_round_trip()
 	QCOMPARE(back.fsType, v.fsType);
 	QCOMPARE(back.capacityBytes, v.capacityBytes);
 	QCOMPARE(back.rootPath, v.rootPath);
-	QCOMPARE(back.strength, v.strength);
+	QCOMPARE(back.confidence, v.confidence);
 	QVERIFY(v.matches(back));
 }
 

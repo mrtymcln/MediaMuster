@@ -24,14 +24,14 @@ namespace
 	QString beginRec(const QString &kind)
 	{
 		return QStringLiteral(
-				   R"({"schema":2,"rec":"begin","kind":"%1","started":"2026-08-29T10:00:00.000Z","pid":999999,"host":"deadhost"})")
+				   R"({"schema":2,"record":"begin","kind":"%1","started":"2026-08-29T10:00:00.000Z","processId":999999,"host":"deadhost"})")
 			.arg(kind);
 	}
 
 	QString beginUndoRec(const QString &effective, const QString &undoes)
 	{
 		return QStringLiteral(
-				   R"({"schema":2,"rec":"begin","kind":"undo","started":"2026-08-29T10:00:00.000Z","pid":999999,"host":"deadhost","meta":{"undoes":"%1","effective":"%2"}})")
+				   R"({"schema":2,"record":"begin","kind":"undo","started":"2026-08-29T10:00:00.000Z","processId":999999,"host":"deadhost","metadata":{"undoes":"%1","effective":"%2"}})")
 			.arg(undoes, effective);
 	}
 
@@ -39,9 +39,9 @@ namespace
 	{
 		QStringList files;
 		for (const QString &s : srcs)
-			files << QStringLiteral(R"({"src":"%1","name":"%2"})")
+			files << QStringLiteral(R"({"source":"%1","name":"%2"})")
 						 .arg(s, QFileInfo(s).fileName());
-		return QStringLiteral(R"({"rec":"plan","dest":"%1","preserve":false,"files":[%2]})")
+		return QStringLiteral(R"({"record":"plan","destination":"%1","preserve":false,"files":[%2]})")
 			.arg(dest, files.join(QLatin1Char(',')));
 	}
 
@@ -50,10 +50,10 @@ namespace
 	{
 		QStringList files;
 		for (const QString &s : srcs)
-			files << QStringLiteral(R"({"src":"%1","name":"%2"})")
+			files << QStringLiteral(R"({"source":"%1","name":"%2"})")
 						 .arg(s, QFileInfo(s).fileName());
 		return QStringLiteral(
-				   R"({"rec":"plan","dest":"%1","preserve":false,"files":[%2],"volumes":[%3]})")
+				   R"({"record":"plan","destination":"%1","preserve":false,"files":[%2],"volumes":[%3]})")
 			.arg(dest, files.join(QLatin1Char(',')), volumesJson);
 	}
 
@@ -61,7 +61,7 @@ namespace
 				  const QString &parked = QString(), const QString &srcIdJson = QString(),
 				  const QString &dstIdJson = QString())
 	{
-		QString o = QStringLiteral(R"({"rec":"op","id":%1,"src":"%2","dst":"%3")")
+		QString o = QStringLiteral(R"({"record":"op","id":%1,"source":"%2","destination":"%3")")
 						.arg(id)
 						.arg(src, dst);
 		if (bytes > 0)
@@ -69,49 +69,49 @@ namespace
 		if (!parked.isEmpty())
 			o += QStringLiteral(R"(,"parked":"%1")").arg(parked);
 		if (!srcIdJson.isEmpty())
-			o += QStringLiteral(R"(,"srcId":%1)").arg(srcIdJson);
+			o += QStringLiteral(R"(,"sourceId":%1)").arg(srcIdJson);
 		if (!dstIdJson.isEmpty())
-			o += QStringLiteral(R"(,"dstId":%1)").arg(dstIdJson);
+			o += QStringLiteral(R"(,"destinationId":%1)").arg(dstIdJson);
 		return o + QLatin1Char('}');
 	}
 
 	QString doneRec(int id, const QString &finalPath = QString())
 	{
 		if (finalPath.isEmpty())
-			return QStringLiteral(R"({"rec":"done","id":%1})").arg(id);
-		return QStringLiteral(R"({"rec":"done","id":%1,"final":"%2"})").arg(id).arg(finalPath);
+			return QStringLiteral(R"({"record":"done","id":%1})").arg(id);
+		return QStringLiteral(R"({"record":"done","id":%1,"final":"%2"})").arg(id).arg(finalPath);
 	}
 
-	QString failRec(int id) { return QStringLiteral(R"({"rec":"fail","id":%1,"err":"x"})").arg(id); }
+	QString failRec(int id) { return QStringLiteral(R"({"record":"fail","id":%1,"error":"x"})").arg(id); }
 	QString failDirtyRec(int id)
 	{
-		return QStringLiteral(R"({"rec":"fail","id":%1,"err":"x","dirty":true})").arg(id);
+		return QStringLiteral(R"({"record":"fail","id":%1,"error":"x","dirty":true})").arg(id);
 	}
-	QString skipRec(int id) { return QStringLiteral(R"({"rec":"skip","id":%1})").arg(id); }
+	QString skipRec(int id) { return QStringLiteral(R"({"record":"skip","id":%1})").arg(id); }
 	QString endRec(bool cancelled = false)
 	{
 		return cancelled
-				   ? QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0,"cancelled":true})")
-				   : QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})");
+				   ? QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0,"cancelled":true})")
+				   : QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})");
 	}
 	QString recoveredRec()
 	{
-		return QStringLiteral(R"({"rec":"recovered","reversed":0,"failed":0})");
+		return QStringLiteral(R"({"record":"recovered","reversed":0,"failed":0})");
 	}
 
 	/// The filesystem-free identity fragment: size (+ optional UMID) at
-	/// SizeTime strength, which is exactly what identity checks can
+	/// SizeTime confidence, which is exactly what identity checks can
 	/// vouch for in a hand-built scenario.
 	QString idJson(qint64 size, const QString &umid = QString())
 	{
 		if (umid.isEmpty())
-			return QStringLiteral(R"({"size":%1,"str":1})").arg(size);
-		return QStringLiteral(R"({"size":%1,"umid":"%2","str":1})").arg(size).arg(umid);
+			return QStringLiteral(R"({"size":%1,"confidence":1})").arg(size);
+		return QStringLiteral(R"({"size":%1,"umid":"%2","confidence":1})").arg(size).arg(umid);
 	}
 
 	QString volJson(const QString &uuid, const QString &label, const QString &root)
 	{
-		return QStringLiteral(R"({"uuid":"%1","label":"%2","fs":"apfs","root":"%3","str":2})")
+		return QStringLiteral(R"({"uuid":"%1","label":"%2","filesystem":"apfs","rootPath":"%3","confidence":2})")
 			.arg(uuid, label, root);
 	}
 
@@ -122,7 +122,7 @@ namespace
 		v.label = label;
 		v.fsType = QStringLiteral("apfs");
 		v.rootPath = root;
-		v.strength = VolumeIdentity::Strength::Full;
+		v.confidence = VolumeIdentity::Confidence::High;
 		return v;
 	}
 } // namespace
@@ -262,7 +262,7 @@ void TestOpRescue::aged_undo_candidate_is_pruned()
 	const QString stale = writeJournal(
 		tmp.path(),
 		{QStringLiteral(
-			 R"({"schema":2,"rec":"begin","kind":"move","started":"2020-01-01T00:00:00.000Z","pid":999999,"host":"deadhost"})"),
+			 R"({"schema":2,"record":"begin","kind":"move","started":"2020-01-01T00:00:00.000Z","processId":999999,"host":"deadhost"})"),
 		 opRec(0, "/v/a.mxf", "/w/a.mxf"), doneRec(0), endRec()});
 
 	OpRescue::run(tmp.path());
@@ -309,7 +309,7 @@ void TestOpRescue::live_owner_is_left_alone()
 	// This very process is the owner: alive by definition.
 	const QString line =
 		QStringLiteral(
-			R"({"schema":2,"rec":"begin","kind":"move","started":"2026-08-29T10:00:00.000Z","pid":%1,"host":"%2"})")
+			R"({"schema":2,"record":"begin","kind":"move","started":"2026-08-29T10:00:00.000Z","processId":%1,"host":"%2"})")
 			.arg(QCoreApplication::applicationPid())
 			.arg(QSysInfo::machineHostName());
 	const QString path =
@@ -319,7 +319,7 @@ void TestOpRescue::live_owner_is_left_alone()
 	QVERIFY(!sum.anything());
 	QVERIFY(QFile::exists(dst));
 	// And not stamped: the live run owns it.
-	QVERIFY(!readFile(path).contains("\"rec\":\"recovered\""));
+	QVERIFY(!readFile(path).contains("\"record\":\"recovered\""));
 }
 
 void TestOpRescue::unknown_kind_is_left_untouched_but_stamped()
@@ -340,7 +340,7 @@ void TestOpRescue::unknown_kind_is_left_untouched_but_stamped()
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 0);
 	QVERIFY(QFile::exists(dst));
-	QVERIFY(readFile(path).contains("\"rec\":\"recovered\""));
+	QVERIFY(readFile(path).contains("\"record\":\"recovered\""));
 }
 
 void TestOpRescue::rerun_is_idempotent()
@@ -906,7 +906,7 @@ void TestOpRescue::impostor_volume_defers_recovery_untouched()
 
 	QCOMPARE(sum.opsReversed, 0);
 	QCOMPARE(readFile(root + "/dst/a.mxf"), QByteArray("SOMEBODY ELSES FILE"));
-	QVERIFY(!readFile(path).contains("\"rec\":\"recovered\""));
+	QVERIFY(!readFile(path).contains("\"record\":\"recovered\""));
 	QVERIFY(sum.message().contains(QStringLiteral("different volume")));
 }
 
@@ -931,7 +931,7 @@ void TestOpRescue::missing_volume_defers_recovery_untouched()
 
 	QCOMPARE(sum.opsReversed, 0);
 	QVERIFY(QFile::exists(root + "/dst/a.mxf"));
-	QVERIFY(!readFile(path).contains("\"rec\":\"recovered\""));
+	QVERIFY(!readFile(path).contains("\"record\":\"recovered\""));
 	QVERIFY(sum.message().contains(QStringLiteral("isn't connected")));
 }
 
@@ -986,7 +986,7 @@ void TestOpRescue::journal_notes_resurface_in_summary()
 	writeJournal(tmp.path(),
 				{beginRec("move"), opRec(0, src, dst, 5),
 				 QStringLiteral(
-					 R"({"rec":"note","text":"a.mxf: the destination volume could not confirm a full flush to disk."})")});
+					 R"({"record":"note","text":"a.mxf: the destination volume could not confirm a full flush to disk."})")});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);

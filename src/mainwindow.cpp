@@ -78,6 +78,14 @@
 
 namespace
 {
+	// Edit ▸ Undo. Disabled until a future release.
+	//
+	// The gate is the menu action alone: nothing else can reach OpUndo, and
+	// the Cmd-Z shortcut belongs to the action, so an ungated build never
+	// registers it. Engine, journal and tests are untouched and still run,
+	// so the feature can't rot while it waits. Flip to true to ship it.
+	constexpr bool kUndoEnabled = false;
+
 	/// The fixed-pitch face the table and console share. Lived in theme.h
 	/// until 2026-08-31; folded in here as its only consumer (a real theme
 	/// can move it back out the day one exists).
@@ -637,11 +645,19 @@ void MainWindow::buildEditMenu()
 	// enabled state follow the newest undoable journal (refreshResumable);
 	// the engine re-qualifies at run time, so a stale click refuses
 	// cleanly rather than acting on an old belief.
-	m_undoAct = editMenu->addAction(tr("&Undo"));
-	m_undoAct->setShortcut(QKeySequence::Undo);
-	m_undoAct->setEnabled(false);
-	connect(m_undoAct, &QAction::triggered, this, &MainWindow::onUndoLastOperation);
-	editMenu->addSeparator();
+	//
+	// Disabled until a future release. With the action absent, Cmd-Z falls
+	// through to the focused widget — which is what the search field wants
+	// for undoing typing, and what it does not get while this action holds
+	// the shortcut.
+	if (kUndoEnabled)
+	{
+		m_undoAct = editMenu->addAction(tr("&Undo"));
+		m_undoAct->setShortcut(QKeySequence::Undo);
+		m_undoAct->setEnabled(false);
+		connect(m_undoAct, &QAction::triggered, this, &MainWindow::onUndoLastOperation);
+		editMenu->addSeparator();
+	}
 
 	auto *findAct = editMenu->addAction(tr("&Find"));
 	findAct->setShortcut(QKeySequence::Find);
@@ -1809,7 +1825,12 @@ void MainWindow::refreshResumable()
 
 	// The Edit ▸ Undo candidate, computed in the same off-thread sweep
 	// spirit: reading the newest journal stats media paths and must never
-	// block the GUI on a dead mount.
+	// block the GUI on a dead mount. Skipped while Undo is disabled — with
+	// no menu item to label there is nothing to compute, and this is a real
+	// journal read plus a stat per refresh.
+	if (!kUndoEnabled)
+		return;
+
 	auto *undoWatcher = new QFutureWatcher<UndoCandidate>(this);
 	connect(undoWatcher, &QFutureWatcher<UndoCandidate>::finished, this,
 			[this, undoWatcher]

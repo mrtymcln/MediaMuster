@@ -16,9 +16,11 @@
 
 // MARK: - LogMsg
 
-/// One coalesced log line. File-scope because
-/// MediaScanner::scanLogBatch takes a QVector<LogMsg> and moc needs
-/// the full type at signal-declaration time.
+/// One coalesced log line. The ONE scanner type that has to sit at file
+/// scope: MediaScanner::scanLogBatch takes a QVector<LogMsg>, and moc
+/// needs the complete type when it processes that signal declaration.
+/// (ScanTask and FolderResult have no such constraint and are nested
+/// inside MediaScanner, where their only users are.)
 ///
 /// `module` is the console tag ('scanner', 'mxf', 'pmr', 'mdb').
 struct LogMsg
@@ -26,28 +28,6 @@ struct LogMsg
 	QtMsgType level = QtInfoMsg;
 	QString module;
 	QString message;
-};
-
-// MARK: - ScanTask
-
-/// One unit of folder-level work submitted to QtConcurrent::mapped.
-/// Self-contained so the parser doesn't reach back into the scanner.
-struct ScanTask
-{
-	QString folderPath;
-	QString folderNumber;
-	QString volumeName;
-	QString volumePath;
-};
-
-// MARK: - FolderResult
-
-/// What a per-folder task produces. Logs are buffered here
-/// so the orchestrator can drain them in input order.
-struct FolderResult
-{
-	QVector<MediaFile> files;
-	QVector<LogMsg> logs;
 };
 
 // MARK: - MediaScanner
@@ -134,6 +114,28 @@ private:
 	QVector<MediaFile> scanVolume(const QString &volumePath, const QString &volumeName);
 	QVector<MediaFile> scanMxfRoot(const QString &mxfRootPath, const QString &volumeName,
 								   const QString &volumePath);
+
+	// MARK: - Per-folder work
+	//
+	// Nested: nothing outside this class names either type.
+
+	/// One unit of folder-level work submitted to QtConcurrent::mapped.
+	/// Self-contained so the parser doesn't reach back into the scanner.
+	struct ScanTask
+	{
+		QString folderPath;
+		QString folderNumber;
+		QString volumeName;
+		QString volumePath;
+	};
+
+	/// What a per-folder task produces. Logs are buffered here
+	/// so the orchestrator can drain them in input order.
+	struct FolderResult
+	{
+		QVector<MediaFile> files;
+		QVector<LogMsg> logs;
+	};
 
 	FolderResult processFolderTask(const ScanTask &task);
 
