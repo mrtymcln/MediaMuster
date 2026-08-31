@@ -88,7 +88,6 @@ set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
     src/aboutdialog.cpp
-    src/foldercard.cpp
     src/icons.cpp
     src/logging.cpp
     src/applog.cpp
@@ -106,7 +105,7 @@ set(SOURCES
     src/mediacsv.cpp
     src/fileidentity.cpp
     src/nativefile.cpp
-    src/opledger.cpp
+    src/opjournal.cpp
     src/opcopier.cpp
     src/oprunner.cpp
     src/opundo.cpp
@@ -119,9 +118,7 @@ set(SOURCES
     src/progressdialog.cpp
     src/rebalancer.cpp
     src/crashcollector.cpp
-    src/userinfo.cpp
     src/rebalancedialog.cpp
-    src/rebalancedialog_demo.cpp
     src/resources.qrc
     src/third_party/xxhash.c
 )
@@ -180,7 +177,7 @@ target_link_libraries(MediaMuster PRIVATE
 )
 
 if(WIN32)
-    ### Shell reveal (revealinfinder.cpp) and GetUserNameEx (userinfo.cpp) ###
+    ### Shell reveal (revealinfinder.cpp) and GetUserNameEx (aboutdialog.cpp) ###
     target_link_libraries(MediaMuster PRIVATE shell32 ole32 secur32)
 endif()
 

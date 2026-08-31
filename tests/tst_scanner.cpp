@@ -7,6 +7,8 @@
 #include "testbento.h"
 #include "pmrparser.h"
 
+#include "testutil.h"
+
 #include <QDir>
 #include <QFile>
 #include <QSignalSpy>
@@ -503,16 +505,6 @@ namespace
 		return w.build();
 	}
 
-	bool writeFile(const QString &path, const QByteArray &bytes)
-	{
-		QFile f(path);
-		if (!f.open(QIODevice::WriteOnly))
-			return false;
-		const bool ok = f.write(bytes) == bytes.size();
-		f.close();
-		return ok;
-	}
-
 	/// One MXF metadata set: `setType` 0x36 = MaterialPackage, 0x37 =
 	/// SourcePackage. Local tag 0x4401 is the package UMID, 0x4402 the name
 	/// (UTF-16BE). Mirrors the builder in tst_mxfparser.cpp.
@@ -584,12 +576,12 @@ void TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	QVERIFY(writeFile(folder + QStringLiteral("/msmFMID.pmr"), ladderPmr("garbage.mxf")));
-	QVERIFY(writeFile(folder + QStringLiteral("/msmMMOB.mdb"), ladderMdb("Interview Take 3")));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), ladderPmr("garbage.mxf")));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), ladderMdb("Interview Take 3")));
 
 	// The media file itself is unparseable, so no MaterialPackage name will
 	// ever arrive — the case that used to fall back to the filename.
-	QVERIFY(writeFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
 
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
@@ -620,12 +612,12 @@ void TestScanner::unknown_clip_name_is_blank_not_the_filename()
 	// Same unparseable file, and a PMR so the row is still attributed — but
 	// an MDB whose only record names a DIFFERENT MOB, so nothing knows this
 	// file's name.
-	QVERIFY(writeFile(folder + QStringLiteral("/msmFMID.pmr"), ladderPmr("garbage.mxf")));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), ladderPmr("garbage.mxf")));
 	QByteArray otherMdb = ladderMdb("Some Other Clip");
 	otherMdb.replace(kLadderMob, QByteArray::fromHex("060a2b340101010501010f1013000000"
 													 "aaaaaaaaaaaaaaaabbbbbbbbbbbbbbbb"));
-	QVERIFY(writeFile(folder + QStringLiteral("/msmMMOB.mdb"), otherMdb));
-	QVERIFY(writeFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), otherMdb));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
 
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
@@ -667,7 +659,7 @@ void TestScanner::source_package_name_is_not_a_clip_name()
 	QByteArray mxf = cdciSet(1920, 1080);
 	mxf += packageSet(0x37, srcUmid, QStringLiteral("7302108SL"));
 	mxf.append(QByteArray(2048 - mxf.size(), '\0'));
-	QVERIFY(writeFile(folder + QStringLiteral("/tape.mxf"), mxf));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/tape.mxf"), mxf));
 
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
@@ -725,7 +717,7 @@ void TestScanner::unreadable_header_stays_media()
 	// A render-shaped FILENAME on a file whose header is unreadable. Only the
 	// UsageCode can classify, and there isn't one to read — so the row stays
 	// Media rather than being guessed at from its name.
-	QVERIFY(writeFile(folder + QStringLiteral("/Untitled_Sequence.0B4A3F9FV.mxf"),
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/Untitled_Sequence.0B4A3F9FV.mxf"),
 					  QByteArray(2048, '\x11')));
 
 	MediaScanner scanner;
@@ -748,7 +740,7 @@ void TestScanner::appledouble_sibling_is_never_media()
 	// macOS writing to SMB leaves an AppleDouble "._clip.mxf" beside every
 	// real clip. Unix enumeration hides dotfiles, so this is trivially
 	// green on macOS — its teeth are on Windows CI, where the sibling IS
-	// enumerated and only the scanner's AvidLayout::isDotHidden skip keeps
+	// enumerated and only the scanner's Conventions::isDotHidden skip keeps
 	// it out of the table, the counts, and Stage 2's MXF parse.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());

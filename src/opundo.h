@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opledger.h"
+#include "opjournal.h"
 #include "oprunner.h"
 
 #include <QString>
@@ -10,17 +10,17 @@
 // MARK: - OpUndo
 //
 // Edit ▸ Undo for the file-operations engine: reverses the most recent
-// completed run, using the ledger that run left behind as the exact
+// completed run, using the journal that run left behind as the exact
 // record of what to put back where.
 //
-// What qualifies is decided by OpLedger::latestUndoable (newest finished,
-// clean, not-yet-undone ledger) — and re-checked here at run time, since
+// What qualifies is decided by OpJournal::latestUndoable (newest finished,
+// clean, not-yet-undone journal) — and re-checked here at run time, since
 // the menu's answer may be minutes old.
 //
 // The ground rules, same as everywhere in the engine:
 //
 //   IDENTITY BEFORE ACTION — every file about to be moved, trashed or
-//   restored is verified against the identity the ledger recorded for it
+//   restored is verified against the identity the journal recorded for it
 //   (size + Avid UMID for files that have legitimately moved; the full
 //   filesystem identity for files expected to be untouched). A file that
 //   doesn't match is refused with a plain sentence naming the clip;
@@ -30,8 +30,8 @@
 //   undoing a cross-volume Move moves the far copy to the trash after
 //   the file is verifiably back home. Nothing is ever hard-deleted.
 //
-//   THE UNDO IS ITSELF A LEDGERED RUN — every inverse step is write-
-//   ahead ledgered (kind Undo, with `undoes` naming the original and
+//   THE UNDO IS ITSELF A JOURNALED RUN — every inverse step is write-
+//   ahead journaled (kind Undo, with `undoes` naming the original and
 //   `effective` naming its kind), so a crash MID-UNDO is recovered by
 //   the same launch sweep as any other run, with finished-work-stays.
 //
@@ -46,18 +46,18 @@
 //             had REPLACED a file (parkedFinal), restore that file from
 //             the trash back into the slot. Replace round-trips.
 //   Move    → same volume: verify and rename the file home. Across
-//             volumes: verify the far copy against the ledgered checksum,
+//             volumes: verify the far copy against the journaled checksum,
 //             copy it back with full verification and the Platter
 //             barrier, then trash the far copy — at every instant at
 //             least one complete verified copy exists. Then restore any
 //             replaced original from the trash.
 //   Delete  → verify the trash catch and rename it back to where it
 //             lived (works for both the OS trash and _MediaMuster_Trash,
-//             because the ledger recorded the exact landing path).
+//             because the journal recorded the exact landing path).
 //   Rename  → rename back and reset the Avid folder databases, exactly
 //             as the forward run did.
 //
-// On a clean finish (nothing failed, not cancelled) the ORIGINAL ledger
+// On a clean finish (nothing failed, not cancelled) the ORIGINAL journal
 // is stamped `undone`, which takes it out of undo candidacy — single-
 // level undo, no redo. A cancelled or partly-failed undo leaves the
 // original unstamped so Undo can be pressed again to finish the job.
@@ -68,11 +68,11 @@ public:
 	/// forward run; `cancel` is polled between items and inside copies.
 	OpUndo(OpSink &sink, const std::atomic<bool> &cancel);
 
-	/// Reverse the run recorded at `originalLedgerPath`. The undo's own
-	/// ledger is written into `ledgerDir` (standard oplog dir when
+	/// Reverse the run recorded at `originalJournalPath`. The undo's own
+	/// journal is written into `journalDir` (standard journal dir when
 	/// empty — tests pass a temp dir). `mountedOverride` substitutes the
 	/// live volume table for tests, as in OpRescue::run.
-	OpRunner::Totals run(const QString &originalLedgerPath, const QString &ledgerDir = {},
+	OpRunner::Totals run(const QString &originalJournalPath, const QString &journalDir = {},
 						 const QVector<VolumeIdentity> &mountedOverride = {});
 
 private:
@@ -82,19 +82,19 @@ private:
 		bool skipped = false;
 	};
 
-	ItemOutcome undoCopyOp(const OpLedger::Entry &op, OpLedger &ledger, class TrashRouter &router,
+	ItemOutcome undoCopyOp(const OpJournal::Entry &op, OpJournal &journal, class TrashRouter &router,
 						   const QString &name, int index, int total);
-	ItemOutcome undoMoveOp(const OpLedger::Entry &op, OpLedger &ledger, class TrashRouter &router,
+	ItemOutcome undoMoveOp(const OpJournal::Entry &op, OpJournal &journal, class TrashRouter &router,
 						   const QString &name, int index, int total);
-	ItemOutcome undoDeleteOp(const OpLedger::Entry &op, OpLedger &ledger, const QString &name);
-	ItemOutcome undoRenameOp(const OpLedger::Entry &op, OpLedger &ledger, const QString &name,
+	ItemOutcome undoDeleteOp(const OpJournal::Entry &op, OpJournal &journal, const QString &name);
+	ItemOutcome undoRenameOp(const OpJournal::Entry &op, OpJournal &journal, const QString &name,
 							 QSet<QString> &touchedFolders);
 
 	/// Restore a replaced original from its trash address back into the
 	/// now-free destination slot (the tail step of Copy and Move undo).
 	/// True on success or nothing-to-do; false → the caller's item fails
 	/// with `*why` filled in plain words.
-	bool restoreReplacedOriginal(const OpLedger::Entry &op, QString *why);
+	bool restoreReplacedOriginal(const OpJournal::Entry &op, QString *why);
 
 	OpSink &m_sink;
 	const std::atomic<bool> &m_cancel;

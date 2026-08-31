@@ -2,7 +2,7 @@
 
 #include <QTest>
 
-// The on-disk names are a contract: a ledger written today must mean the
+// The on-disk names are a contract: a journal written today must mean the
 // same thing to every future build, so the name<->enum mapping is pinned
 // here in both directions, and unknown names must come back empty rather
 // than guessed (a guessed kind is how recovery turns a crash into loss).
@@ -26,7 +26,7 @@ void TestOpRequest::kind_names_round_trip()
 		QVERIFY(back.has_value());
 		QCOMPARE(*back, k);
 	}
-	// The exact spellings are load-bearing (they live in ledger files).
+	// The exact spellings are load-bearing (they live in journal files).
 	QCOMPARE(opKindName(OpKind::Copy), QStringLiteral("copy"));
 	QCOMPARE(opKindName(OpKind::Move), QStringLiteral("move"));
 	QCOMPARE(opKindName(OpKind::Delete), QStringLiteral("delete"));

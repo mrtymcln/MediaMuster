@@ -1,7 +1,8 @@
 #pragma once
 
-#include "workerthread.h"
+#include "logging.h"
 
+#include <QDebug>
 #include <QObject>
 #include <QThread>
 #include <atomic>
@@ -52,7 +53,7 @@ public:
 		// members on a dead object. The thread's own deleteLater
 		// connection is independent and still cleans up the QThread.
 		QObject::disconnect(m_thread, &QThread::finished, m_owner, nullptr);
-		WorkerThread::joinOrTerminate(m_thread, WorkerThread::kWorkerShutdownTimeoutMs);
+		joinOrTerminate(m_thread, kWorkerShutdownTimeoutMs);
 		m_thread = nullptr;
 	}
 
@@ -73,7 +74,7 @@ public:
 		if (m_thread && m_thread->isRunning())
 		{
 			cancel();
-			WorkerThread::joinOrTerminate(m_thread, WorkerThread::kWorkerCancelTimeoutMs);
+			joinOrTerminate(m_thread, kWorkerCancelTimeoutMs);
 		}
 		m_cancel.store(false, std::memory_order_release);
 		auto *thread = QThread::create(std::forward<Fn>(fn));
@@ -107,6 +108,42 @@ public:
 	const std::atomic<bool> &cancelFlag() const noexcept { return m_cancel; }
 
 private:
+	// MARK: - Join timeouts
+
+	/// Grace window before terminating a worker on shutdown.
+	/// 10 s lets a stuttering Nexis/SMB share finish a mid-read
+	/// folder without making Cmd-Q feel hung.
+	static constexpr int kWorkerShutdownTimeoutMs = 10000;
+
+	/// Cancel grace when restarting a worker. Shorter than shutdown
+	/// because the user is waiting on the new run; 5 s covers any
+	/// genuine mid-read syscall.
+	static constexpr int kWorkerCancelTimeoutMs = 5000;
+
+	// MARK: - Join helper
+
+	/// Wait for the thread to finish, falling back to `terminate()` after
+	/// `graceMs`. The caller signals cancel first; this just bounds how
+	/// long we wait for the worker to notice.
+	///
+	/// `quit()` is a no-op for the `QThread::create` workers used here,
+	/// but harmless and correct for a `moveToThread` worker; called
+	/// unconditionally so this stays right if one ever appears.
+	///
+	/// Returns true on clean shutdown, false on terminate.
+	static bool joinOrTerminate(QThread *t, int graceMs)
+	{
+		if (!t)
+			return true;
+		t->quit();
+		if (t->wait(graceMs))
+			return true;
+		qCWarning(lcWorker, "did not quit within %d ms; terminating.", graceMs);
+		t->terminate();
+		t->wait(1000);
+		return false;
+	}
+
 	QObject *m_owner;
 	QThread *m_thread = nullptr;
 	std::atomic<bool> m_cancel{false};

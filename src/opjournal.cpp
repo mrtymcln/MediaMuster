@@ -1,4 +1,4 @@
-#include "opledger.h"
+#include "opjournal.h"
 
 #include "nativefile.h"
 
@@ -19,15 +19,15 @@ namespace
 	// Bump only when the on-disk shape changes in a way readers can't
 	// cope with. The reader REFUSES anything that isn't this exact value:
 	// no backwards compatibility during the beta (Marty's decision), and
-	// forwards a newer build's ledgers are simply not ours to interpret.
+	// forwards a newer build's journals are simply not ours to interpret.
 	constexpr int kSchema = 2;
 
 	// Push a just-written line down to the drive. The Disk barrier
-	// (fsync/_commit) is the deliberate choice for ledger LINES — it
+	// (fsync/_commit) is the deliberate choice for journal LINES — it
 	// survives an app crash and a drive-acknowledged power loss, which
 	// covers the realistic failure modes at a per-line cost the run can
 	// afford. The MEDIA files get the harder Platter barrier at the one
-	// instant that matters (see the copier); the ledger doesn't need it:
+	// instant that matters (see the copier); the journal doesn't need it:
 	// losing the very last line to a heroic power cut leaves an
 	// interrupted-looking run whose recovery pass reads the DISK for
 	// evidence anyway.
@@ -45,18 +45,18 @@ namespace
 
 // MARK: - Construction
 
-OpLedger::OpLedger(OpKind kind, const QJsonObject &meta, const QString &dir,
+OpJournal::OpJournal(OpKind kind, const QJsonObject &meta, const QString &dir,
 				   const QString &sparePath)
 {
-	const QString base = dir.isEmpty() ? standardOplogDir() : dir;
+	const QString base = dir.isEmpty() ? standardJournalDir() : dir;
 	if (!QDir().mkpath(base))
 		return;
 
 	// THE undo-invalidation choke point: a new operation supersedes the
-	// previous run's undo candidate, so every finished, non-dirty ledger
+	// previous run's undo candidate, so every finished, non-dirty journal
 	// dies here — before this run writes its first line. One place is
 	// both the retention policy and the invalidation rule, so the two
-	// can never disagree. (An Undo run spares the ledger it reverses.)
+	// can never disagree. (An Undo run spares the journal it reverses.)
 	pruneSuperseded(base, sparePath);
 
 	// Timestamp orders the files chronologically. Two runs in the SAME
@@ -71,7 +71,7 @@ OpLedger::OpLedger(OpKind kind, const QJsonObject &meta, const QString &dir,
 	const QString seq = QStringLiteral("%1").arg(s_sequence.fetch_add(1) % 10000, 4,
 												 10, QLatin1Char('0'));
 	const QString tag = QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
-	m_path = base + QStringLiteral("/oplog-%1-%2-%3.jsonl").arg(stamp, seq, tag);
+	m_path = base + QStringLiteral("/journal-%1-%2-%3.jsonl").arg(stamp, seq, tag);
 
 	m_file = std::make_unique<QFile>(m_path);
 	if (!m_file->open(QIODevice::WriteOnly))
@@ -90,22 +90,22 @@ OpLedger::OpLedger(OpKind kind, const QJsonObject &meta, const QString &dir,
 			   {QStringLiteral("host"), QSysInfo::machineHostName()},
 			   {QStringLiteral("meta"), meta}});
 
-	// Make the ledger's EXISTENCE durable, not just its first line's
+	// Make the journal's EXISTENCE durable, not just its first line's
 	// bytes: a file whose directory entry is lost to a power cut protects
 	// nothing. Real on both platforms now (NativeFile::syncDirectory).
 	NativeFile::syncDirectory(base);
 }
 
-OpLedger::~OpLedger() = default;
+OpJournal::~OpJournal() = default;
 
-bool OpLedger::isOpen() const
+bool OpJournal::isOpen() const
 {
 	return m_file && m_file->isOpen();
 }
 
 // MARK: - Plan
 
-void OpLedger::writePlan(const QString &dest, bool preserve, const QVector<OpItem> &items,
+void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpItem> &items,
 						 const QVector<VolumeIdentity> &volumes)
 {
 	QJsonArray files;
@@ -151,7 +151,7 @@ void OpLedger::writePlan(const QString &dest, bool preserve, const QVector<OpIte
 
 // MARK: - Per-op records
 
-int OpLedger::planOp(const QString &src, const QString &dst, qint64 bytes, const QString &parked,
+int OpJournal::planOp(const QString &src, const QString &dst, qint64 bytes, const QString &parked,
 					 const FileIdentity &srcId, const FileIdentity &parkedOriginalId)
 {
 	const int id = m_nextId++;
@@ -175,7 +175,7 @@ int OpLedger::planOp(const QString &src, const QString &dst, qint64 bytes, const
 	return id;
 }
 
-void OpLedger::markDone(int id, const DoneInfo &info)
+void OpJournal::markDone(int id, const DoneInfo &info)
 {
 	QJsonObject o{{QStringLiteral("rec"), QStringLiteral("done")}, {QStringLiteral("id"), id}};
 	if (!info.finalPath.isEmpty())
@@ -189,7 +189,7 @@ void OpLedger::markDone(int id, const DoneInfo &info)
 	writeLine(o);
 }
 
-void OpLedger::markFailed(int id, const QString &error, bool rollbackIncomplete)
+void OpJournal::markFailed(int id, const QString &error, bool rollbackIncomplete)
 {
 	QJsonObject o{{QStringLiteral("rec"), QStringLiteral("fail")},
 				  {QStringLiteral("id"), id},
@@ -202,12 +202,12 @@ void OpLedger::markFailed(int id, const QString &error, bool rollbackIncomplete)
 	writeLine(o);
 }
 
-void OpLedger::markSkipped(int id)
+void OpJournal::markSkipped(int id)
 {
 	writeLine({{QStringLiteral("rec"), QStringLiteral("skip")}, {QStringLiteral("id"), id}});
 }
 
-void OpLedger::writeNote(const QString &text)
+void OpJournal::writeNote(const QString &text)
 {
 	writeLine({{QStringLiteral("rec"), QStringLiteral("note")},
 			   {QStringLiteral("text"), text},
@@ -216,7 +216,7 @@ void OpLedger::writeNote(const QString &text)
 
 // MARK: - Finish
 
-void OpLedger::finish(int succeeded, int failed, int skipped, bool cancelled)
+void OpJournal::finish(int succeeded, int failed, int skipped, bool cancelled)
 {
 	if (!isOpen())
 		return;
@@ -237,7 +237,7 @@ void OpLedger::finish(int succeeded, int failed, int skipped, bool cancelled)
 	m_finished = true;
 	m_file->close();
 
-	// A finished ledger normally STAYS — it is the undo candidate (the
+	// A finished journal normally STAYS — it is the undo candidate (the
 	// v2 retention change). The one exception: degraded. With lines
 	// missing, the on-disk file no longer tells the truth — recovery
 	// could read a finished run as interrupted and "roll back" work that
@@ -250,16 +250,16 @@ void OpLedger::finish(int succeeded, int failed, int skipped, bool cancelled)
 
 // MARK: - Retention
 
-void OpLedger::pruneSuperseded(const QString &dir, const QString &sparePath)
+void OpJournal::pruneSuperseded(const QString &dir, const QString &sparePath)
 {
 	// scan() only ever returns schema-2 records, so legacy files are
 	// structurally safe from this sweep — invisible, untouched.
 	for (const Record &rec : scan(dir))
 	{
 		if (!sparePath.isEmpty() && rec.path == sparePath)
-			continue; // the ledger an undo is reversing; see the ctor
+			continue; // the journal an undo is reversing; see the ctor
 		// Finished and clean = a superseded undo candidate. Interrupted
-		// ledgers (no end line) and dirty ones belong to recovery.
+		// journals (no end line) and dirty ones belong to recovery.
 		if (rec.complete && !rec.dirty)
 			QFile::remove(rec.path);
 	}
@@ -267,25 +267,25 @@ void OpLedger::pruneSuperseded(const QString &dir, const QString &sparePath)
 
 // MARK: - Locations
 
-QString OpLedger::standardOplogDir()
+QString OpJournal::standardJournalDir()
 {
-	// Escape hatch for tests, and for moving the ledger off a full
-	// system disk. Points straight at the oplog dir, no /oplog suffix.
-	const QString override = qEnvironmentVariable("MEDIAMUSTER_OPLOG_DIR");
+	// Escape hatch for tests, and for moving the journal off a full
+	// system disk. Points straight at the journal dir, no /journal suffix.
+	const QString override = qEnvironmentVariable("MEDIAMUSTER_JOURNAL_DIR");
 	if (!override.isEmpty())
 		return override;
 
 	QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 	// AppDataLocation can come back empty on a misconfigured box; fall
-	// back to the dotfolder so we never silently lose the ledger.
+	// back to the dotfolder so we never silently lose the journal.
 	if (base.isEmpty())
 		base = QDir::homePath() + QStringLiteral("/.mediamuster");
-	return base + QStringLiteral("/oplog");
+	return base + QStringLiteral("/journal");
 }
 
-bool OpLedger::standardDirWritable()
+bool OpJournal::standardDirWritable()
 {
-	const QString dir = standardOplogDir();
+	const QString dir = standardJournalDir();
 	if (!QDir().mkpath(dir))
 		return false;
 	QFile probe(dir + QStringLiteral("/.write-probe-") +
@@ -298,14 +298,14 @@ bool OpLedger::standardDirWritable()
 	return ok;
 }
 
-QString OpLedger::openFailedText(OpKind k)
+QString OpJournal::openFailedText(OpKind k)
 {
 	return QStringLiteral("Couldn't open the operations journal — this %1 runs "
 						  "without crash recovery.")
 		.arg(opKindName(k));
 }
 
-QString OpLedger::degradedText()
+QString OpJournal::degradedText()
 {
 	return QStringLiteral("The operations journal stopped accepting writes (disk "
 						  "full?). The run continues, but crash recovery can't "
@@ -314,7 +314,7 @@ QString OpLedger::degradedText()
 
 // MARK: - Line writer
 
-void OpLedger::writeLine(const QJsonObject &obj)
+void OpJournal::writeLine(const QJsonObject &obj)
 {
 	if (!m_file || !m_file->isOpen())
 		return;
@@ -332,7 +332,7 @@ void OpLedger::writeLine(const QJsonObject &obj)
 
 // MARK: - Read side
 
-int OpLedger::Record::doneCount() const
+int OpJournal::Record::doneCount() const
 {
 	int n = 0;
 	for (const Entry &op : ops)
@@ -341,14 +341,14 @@ int OpLedger::Record::doneCount() const
 	return n;
 }
 
-std::optional<OpLedger::Record> OpLedger::readOne(const QString &ledgerPath)
+std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 {
-	QFile f(ledgerPath);
+	QFile f(journalPath);
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
 		return std::nullopt;
 
 	Record rec;
-	rec.path = ledgerPath;
+	rec.path = journalPath;
 
 	// op id to its index in rec.ops, so outcome lines can find their op.
 	QHash<int, int> idToIdx;
@@ -488,9 +488,9 @@ std::optional<OpLedger::Record> OpLedger::readOne(const QString &ledgerPath)
 	return rec;
 }
 
-QVector<OpLedger::Record> OpLedger::scan(const QString &dir)
+QVector<OpJournal::Record> OpJournal::scan(const QString &dir)
 {
-	const QString base = dir.isEmpty() ? standardOplogDir() : dir;
+	const QString base = dir.isEmpty() ? standardJournalDir() : dir;
 	QVector<Record> out;
 
 	QDir d(base);
@@ -500,7 +500,7 @@ QVector<OpLedger::Record> OpLedger::scan(const QString &dir)
 	// Name sort == chronological, since the filename leads with a
 	// zero-padded UTC timestamp.
 	const QStringList files =
-		d.entryList({QStringLiteral("oplog-*.jsonl")}, QDir::Files, QDir::Name);
+		d.entryList({QStringLiteral("journal-*.jsonl")}, QDir::Files, QDir::Name);
 
 	for (const QString &name : files)
 	{
@@ -516,7 +516,7 @@ QVector<OpLedger::Record> OpLedger::scan(const QString &dir)
 
 // MARK: - Undo bookkeeping
 
-std::optional<OpLedger::Record> OpLedger::latestUndoable(const QString &dir)
+std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &dir)
 {
 	const QVector<Record> records = scan(dir);
 	// Newest first: scan is oldest-first by name.
@@ -540,9 +540,9 @@ std::optional<OpLedger::Record> OpLedger::latestUndoable(const QString &dir)
 	return std::nullopt;
 }
 
-bool OpLedger::markRecovered(const QString &ledgerPath, int reversed, int failed)
+bool OpJournal::markRecovered(const QString &journalPath, int reversed, int failed)
 {
-	QFile f(ledgerPath);
+	QFile f(journalPath);
 	if (!f.open(QIODevice::Append))
 		return false;
 
@@ -557,9 +557,9 @@ bool OpLedger::markRecovered(const QString &ledgerPath, int reversed, int failed
 	return true;
 }
 
-bool OpLedger::markUndone(const QString &ledgerPath, const QString &by)
+bool OpJournal::markUndone(const QString &journalPath, const QString &by)
 {
-	QFile f(ledgerPath);
+	QFile f(journalPath);
 	if (!f.open(QIODevice::Append))
 		return false;
 

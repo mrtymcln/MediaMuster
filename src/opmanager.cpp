@@ -50,7 +50,7 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 			it.policy = conflictPolicyName(p.value());
 		// The scan's Avid identity claims. The runner cross-checks the
 		// file on disk against these before touching it, and every
-		// ledger/undo/recovery message can then name the clip the
+		// journal/undo/recovery message can then name the clip the
 		// editor knows rather than a cryptic MXF filename.
 		it.mobId = mf.mobId;
 		it.masterMobId = mf.masterMobId;
@@ -67,59 +67,22 @@ QString OpManager::buildDestPath(const MediaFile &mf, const QString &destRoot, b
 	return OpRunner::buildDestPath(mf.fileName, mf.mxfFolder, destRoot, preserve);
 }
 
-std::optional<QString> OpManager::generateRenamePath(const QString &destPath)
-{
-	return OpRunner::generateRenamePath(destPath);
-}
-
 // MARK: - Job entry points
-
-void OpManager::executeCopy(QVector<MediaFile> files, const QString &destRoot,
-							bool preserveStructure,
-							const QHash<QString, ConflictPolicy> &conflictPolicies)
-{
-	OpRequest req;
-	req.kind = OpKind::Copy;
-	req.destRoot = destRoot;
-	req.preserve = preserveStructure;
-	req.items = itemsFromMediaFiles(files, conflictPolicies);
-	startRun(std::move(req));
-}
-
-void OpManager::executeMove(QVector<MediaFile> files, const QString &destRoot,
-							bool preserveStructure,
-							const QHash<QString, ConflictPolicy> &conflictPolicies)
-{
-	OpRequest req;
-	req.kind = OpKind::Move;
-	req.destRoot = destRoot;
-	req.preserve = preserveStructure;
-	req.items = itemsFromMediaFiles(files, conflictPolicies);
-	startRun(std::move(req));
-}
-
-void OpManager::executeDelete(QVector<MediaFile> files)
-{
-	OpRequest req;
-	req.kind = OpKind::Delete;
-	req.items = itemsFromMediaFiles(files, {});
-	startRun(std::move(req));
-}
 
 void OpManager::execute(OpRequest request)
 {
 	startRun(std::move(request));
 }
 
-void OpManager::executeUndo(const QString &ledgerPath)
+void OpManager::executeUndo(const QString &journalPath)
 {
 	// Same worker discipline as every run: one BackgroundJob, cancel
 	// token polled inside; exactly one operationFinished at the end.
 	m_job.start(
-		[this, ledgerPath]
+		[this, journalPath]
 		{
 			OpUndo undo(*this, m_job.cancelFlag());
-			const OpRunner::Totals totals = undo.run(ledgerPath);
+			const OpRunner::Totals totals = undo.run(journalPath);
 			emit operationFinished(totals.succeeded, totals.failed);
 		});
 }

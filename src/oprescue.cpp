@@ -1,6 +1,6 @@
 #include "oprescue.h"
 
-#include "avidlayout.h"
+#include "conventions.h"
 #include "formatutil.h"
 
 #include <QDateTime>
@@ -22,9 +22,9 @@
 
 namespace
 {
-	// How long a finished ledger may sit as the undo candidate before
+	// How long a finished journal may sit as the undo candidate before
 	// the sweep ages it out — a machine where MediaMuster crashed and
-	// was never used again shouldn't hoard ledgers forever.
+	// was never used again shouldn't hoard journals forever.
 	constexpr qint64 kUndoCandidateMaxAgeDays = 7;
 
 	enum class OpResult
@@ -34,8 +34,8 @@ namespace
 		Flagged		 ///< Couldn't undo it; the user needs to know.
 	};
 
-	// Is the ledger's owner still running? Only meaningful on this host;
-	// a ledger from another machine isn't a live process here. We bias
+	// Is the journal's owner still running? Only meaningful on this host;
+	// a journal from another machine isn't a live process here. We bias
 	// toward 'alive': a wrong 'dead' would fight a running instance,
 	// which we must never do, whilst a wrong 'alive' only delays
 	// recovery. That's why EPERM (process exists, just not ours to
@@ -65,10 +65,10 @@ namespace
 	// MARK: - Identity guards
 	//
 	// v2's addition to every reversal: before a file is renamed home or
-	// restored, it must still be the MEDIA the ledger recorded. The
+	// restored, it must still be the MEDIA the journal recorded. The
 	// relocated comparison (size + Avid UMID) is used because the file
-	// has legitimately moved since capture. An op ledgered without an
-	// identity (hand-written test ledgers, non-identity paths) simply
+	// has legitimately moved since capture. An op journaled without an
+	// identity (hand-written test journals, non-identity paths) simply
 	// has no check to apply — v1 behaviour.
 
 	bool identityBlocks(const QString &path, const FileIdentity &expected)
@@ -83,10 +83,10 @@ namespace
 	// The one user-facing sentence for a parked original that could not
 	// be returned to its slot. One builder so the walks can't drift
 	// apart on the app's most important recovery message.
-	QString strandedParkNote(const OpLedger::Entry &op, bool afterCopy)
+	QString strandedParkNote(const OpJournal::Entry &op, bool afterCopy)
 	{
 		// %1 is the FULL destination path on purpose: this note is the
-		// user's only surviving pointer once the ledger is pruned, and a
+		// user's only surviving pointer once the journal is pruned, and a
 		// bare filename can't be found across a 300-folder Nexis.
 		return QStringLiteral("Couldn't put the original %1 back%2 — it's still in "
 							  "the same folder, named '%3'.")
@@ -100,10 +100,10 @@ namespace
 	/// removal) and result mapping. A false return must never be
 	/// swallowed: an unreported failure strands the user's original
 	/// under a temp name with no surviving record.
-	bool restoreParked(const OpLedger::Entry &op, QStringList &notes, bool afterCopy)
+	bool restoreParked(const OpJournal::Entry &op, QStringList &notes, bool afterCopy)
 	{
 		// The file at the park path must still be the file that was
-		// parked — the ledger recorded its identity for exactly this.
+		// parked — the journal recorded its identity for exactly this.
 		if (identityBlocks(op.parked, op.parkedOriginalId))
 		{
 			notes << QStringLiteral("Couldn't put the original %1 back — the parked file at "
@@ -154,7 +154,7 @@ namespace
 	// only proves the run removed it if the folder it lived in still
 	// exists. Used as evidence only, never to decide whether a restore
 	// may proceed.
-	bool sourceLocationReachable(const OpLedger::Entry &op)
+	bool sourceLocationReachable(const OpJournal::Entry &op)
 	{
 		const QString parent = QFileInfo(op.src).absolutePath();
 		return !parent.isEmpty() && QFileInfo::exists(parent);
@@ -168,7 +168,7 @@ namespace
 	// review finding 3, met at recovery time instead of copy time).
 	// Unparseable (tiny partial, non-MXF) or no recorded content id → no
 	// evidence either way → treated as ours, as v1 did.
-	bool partialLooksLikeOurs(const OpLedger::Entry &op)
+	bool partialLooksLikeOurs(const OpJournal::Entry &op)
 	{
 		if (op.srcId.contentUmid.isEmpty())
 			return true;
@@ -178,10 +178,10 @@ namespace
 
 	// Does the destination hold a WHOLE file rather than a fragment?
 	// The live source is the authority whenever it can be read; the
-	// ledgered size is only the fallback for a source that is gone.
-	// Order matters: reading the stale ledgered size first would call a
+	// journaled size is only the fallback for a source that is gone.
+	// Order matters: reading the stale journaled size first would call a
 	// 2 GB fragment of a grown 5 GB file "whole".
-	bool dstHoldsWholeFile(const OpLedger::Entry &op)
+	bool dstHoldsWholeFile(const OpJournal::Entry &op)
 	{
 		const QFileInfo dstInfo(op.dst);
 		if (!dstInfo.exists())
@@ -195,7 +195,7 @@ namespace
 	// An empty-slot Copy op (nothing parked) whose destination holds a
 	// whole file. Only meaningful with no parked original: with one,
 	// dst may hold the RESTORED original, whose size says nothing.
-	bool emptySlotCopyLandedWhole(const OpLedger::Entry &op)
+	bool emptySlotCopyLandedWhole(const OpJournal::Entry &op)
 	{
 		return op.parked.isEmpty() && dstHoldsWholeFile(op);
 	}
@@ -205,7 +205,7 @@ namespace
 	// Undo a Move-like op (Move, Rename, and an interrupted undo whose
 	// effective work was moving files): move dst back to src, then
 	// restore any original a Replace had parked aside.
-	OpResult reverseMoveLike(const OpLedger::Entry &op, QStringList &notes)
+	OpResult reverseMoveLike(const OpJournal::Entry &op, QStringList &notes)
 	{
 		// A plain failed or skipped op never touched disk. A dirty fail
 		// is the exception: its rollback stalled with the original still
@@ -320,7 +320,7 @@ namespace
 		}
 
 		// v2: the file about to be renamed home must still be the media
-		// the ledger recorded — never rename a stranger into the user's
+		// the journal recorded — never rename a stranger into the user's
 		// folder.
 		if (identityBlocks(op.dst, op.srcId))
 		{
@@ -338,7 +338,7 @@ namespace
 		}
 
 		// Put the parked original back. A failed restore must flag, not
-		// count as Reversed — the ledger (the only record of the park
+		// count as Reversed — the journal (the only record of the park
 		// path) is deleted after recovery concludes.
 		if (!op.parked.isEmpty() && QFile::exists(op.parked) &&
 			!restoreParked(op, notes, false))
@@ -361,7 +361,7 @@ namespace
 	// re-copies at most that one file. Wasting one copy is the cheap
 	// mistake; calling an unverified file "finished" is the expensive
 	// one.
-	bool opConcluded(OpKind kind, const OpLedger::Entry &op)
+	bool opConcluded(OpKind kind, const OpJournal::Entry &op)
 	{
 		if (op.completed)
 			return true;
@@ -389,7 +389,7 @@ namespace
 	// rule says nothing here. The signal Copy leaves instead is
 	// `parked`: it still being on disk is exact proof the copy never
 	// committed, and the destination slot is ours to roll back.
-	OpResult reverseCopy(const OpLedger::Entry &op, QStringList &notes)
+	OpResult reverseCopy(const OpJournal::Entry &op, QStringList &notes)
 	{
 		if (op.skipped || op.completed)
 			return OpResult::NothingToDo;
@@ -429,7 +429,7 @@ namespace
 		const qint64 dstSize = dstInfo.size();
 		const QFileInfo srcInfo(op.src);
 		const qint64 srcSize = srcInfo.exists() ? srcInfo.size() : -1;
-		// Unknowable when the ledger has no size and the source is gone:
+		// Unknowable when the journal has no size and the source is gone:
 		// keep rather than guess.
 		if (op.bytes <= 0 && srcSize < 0)
 			return OpResult::NothingToDo;
@@ -467,7 +467,7 @@ namespace
 	}
 
 	// Undo a Delete: move it from the trash (finalPath) back to src.
-	OpResult reverseDelete(const OpLedger::Entry &op, QStringList &notes)
+	OpResult reverseDelete(const OpJournal::Entry &op, QStringList &notes)
 	{
 		if (op.failed || op.skipped)
 			return OpResult::NothingToDo;
@@ -509,7 +509,7 @@ namespace
 
 	// One place to map a kind to its reverser, so nothing can drift on
 	// the dispatch. An unknown kind does nothing rather than guessing.
-	OpResult reverseOp(OpKind kind, const OpLedger::Entry &op, QStringList &notes)
+	OpResult reverseOp(OpKind kind, const OpJournal::Entry &op, QStringList &notes)
 	{
 		switch (kind)
 		{
@@ -533,7 +533,7 @@ namespace
 	// undoing a copy meant trashing the copies (Delete semantics, with
 	// finalPath), undoing a delete meant restoring (Move semantics).
 	// Unknown effective = nullopt = touch nothing.
-	std::optional<OpKind> reverserKindFor(const OpLedger::Record &rec)
+	std::optional<OpKind> reverserKindFor(const OpJournal::Record &rec)
 	{
 		if (rec.kind != OpKind::Undo)
 			return rec.kindKnown ? std::optional<OpKind>(rec.kind) : std::nullopt;
@@ -648,7 +648,7 @@ namespace
 // fingerprints. True = the record may be acted on (paths possibly
 // rewritten in place); false = leave it entirely for a later launch (no
 // recovered stamp, so it is retried).
-bool OpRescue::resolveRecord(OpLedger::Record &rec, const QVector<VolumeIdentity> &mounted,
+bool OpRescue::resolveRecord(OpJournal::Record &rec, const QVector<VolumeIdentity> &mounted,
 							 QStringList &notes)
 {
 		if (rec.volumes.isEmpty())
@@ -686,7 +686,7 @@ bool OpRescue::resolveRecord(OpLedger::Record &rec, const QVector<VolumeIdentity
 			}
 		};
 
-		for (OpLedger::Entry &op : rec.ops)
+		for (OpJournal::Entry &op : rec.ops)
 		{
 			fix(op.src);
 			fix(op.dst);
@@ -721,18 +721,18 @@ QVector<VolumeIdentity> OpRescue::mountedVolumes()
 	return out;
 }
 
-OpRescue::ResolvedPath OpRescue::resolvePath(const QString &ledgeredPath,
+OpRescue::ResolvedPath OpRescue::resolvePath(const QString &journaledPath,
 											 const QVector<VolumeIdentity> &recorded,
 											 const QVector<VolumeIdentity> &mounted)
 {
 	ResolvedPath out;
-	out.path = ledgeredPath;
+	out.path = journaledPath;
 
 	// Longest matching recorded root wins ("/" would otherwise shadow
 	// every real mount under it).
 	const VolumeIdentity *owner = nullptr;
 	for (const VolumeIdentity &vol : recorded)
-		if (rootPrefixes(vol.rootPath, ledgeredPath))
+		if (rootPrefixes(vol.rootPath, journaledPath))
 			if (!owner || vol.rootPath.size() > owner->rootPath.size())
 				owner = &vol;
 	if (!owner)
@@ -745,7 +745,7 @@ OpRescue::ResolvedPath OpRescue::resolvePath(const QString &ledgeredPath,
 		return out;
 	case VolumeDisposition::State::Reanchored:
 		out.state = ResolvedPath::State::Reanchored;
-		out.path = reanchor(ledgeredPath, owner->rootPath, d.newRoot);
+		out.path = reanchor(journaledPath, owner->rootPath, d.newRoot);
 		out.note = d.note;
 		return out;
 	case VolumeDisposition::State::Missing:
@@ -758,7 +758,7 @@ OpRescue::ResolvedPath OpRescue::resolvePath(const QString &ledgeredPath,
 
 // MARK: - Resumable classification
 
-std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpLedger::Record &rec)
+std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpJournal::Record &rec)
 {
 	// Only an interrupted run is resumable: a finished or cancelled run
 	// concluded on the user's watch, and a run with no plan can't say
@@ -775,17 +775,17 @@ std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpLedger::Recor
 	// alone, so the offer and the sweep can never disagree.
 	QSet<QString> finished;
 	bool sawMediaMusterTrash = false;
-	for (const OpLedger::Entry &op : rec.ops)
+	for (const OpJournal::Entry &op : rec.ops)
 	{
 		if (!(op.skipped || opConcluded(rec.kind, op)))
 			continue;
 		finished.insert(op.src);
-		if (op.finalPath.contains(AvidLayout::kMediaMusterTrashDir))
+		if (op.finalPath.contains(Conventions::kMediaMusterTrashDir))
 			sawMediaMusterTrash = true;
 	}
 
 	Resumable r;
-	r.ledgerPath = rec.path;
+	r.journalPath = rec.path;
 	r.kind = rec.kind;
 	r.dest = rec.planDest;
 	r.preserve = rec.planPreserve;
@@ -807,9 +807,9 @@ std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpLedger::Recor
 QVector<OpRescue::Resumable> OpRescue::pending(const QString &dir)
 {
 	QVector<Resumable> out;
-	for (const OpLedger::Record &rec : OpLedger::scan(dir))
+	for (const OpJournal::Record &rec : OpJournal::scan(dir))
 	{
-		// Only ledgers the launch sweep has already tidied and stamped.
+		// Only journals the launch sweep has already tidied and stamped.
 		// Resuming an unswept one could dispatch over a stranded parked
 		// original and then supersede the only record of it.
 		if (!rec.recovered)
@@ -825,18 +825,18 @@ QVector<OpRescue::Resumable> OpRescue::pending(const QString &dir)
 OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity> &mountedOverride)
 {
 	Summary sum;
-	const QVector<OpLedger::Record> records = OpLedger::scan(dir);
+	const QVector<OpJournal::Record> records = OpJournal::scan(dir);
 	if (records.isEmpty())
 		return sum;
 
 	const QVector<VolumeIdentity> mounted =
 		mountedOverride.isEmpty() ? mountedVolumes() : mountedOverride;
 
-	// The one finished ledger worth keeping: the undo candidate.
-	const auto undoCandidate = OpLedger::latestUndoable(dir);
+	// The one finished journal worth keeping: the undo candidate.
+	const auto undoCandidate = OpJournal::latestUndoable(dir);
 	const QString undoCandidatePath = undoCandidate ? undoCandidate->path : QString();
 
-	for (OpLedger::Record rec : records)
+	for (OpJournal::Record rec : records)
 	{
 		// Already rolled back on an earlier launch. If it still has
 		// files the user never got to, it stays and is offered again;
@@ -855,7 +855,7 @@ OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity
 		// Finished and clean: the v2 retention rule. The newest
 		// undoable run stays (it is what Edit ▸ Undo acts on) until a
 		// new operation supersedes it or it ages out; every other
-		// finished ledger is spent.
+		// finished journal is spent.
 		if (rec.complete && !rec.dirty)
 		{
 			bool keep = (rec.path == undoCandidatePath);
@@ -891,23 +891,23 @@ OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity
 		// rollback stalled get retried.
 		const bool dirtyOnly = rec.complete;
 
-		// Finished work stays, except for a ledger nothing can be
+		// Finished work stays, except for a journal nothing can be
 		// offered from — no plan, or a kind this build can't read —
 		// where putting files back is the only help left.
 		const bool keepFinishedWork = rec.hasPlan && reverser.has_value();
 
 		int reversed = 0;
 		int flagged = 0;
-		QStringList ledgerNotes;
+		QStringList journalNotes;
 		// The run's own notes (durability degrades, reroutes) resurface
 		// with the recovery report — they were written to be read.
-		ledgerNotes += rec.notes;
+		journalNotes += rec.notes;
 
 		// Undo newest op first so any ordering dependency unwinds the
 		// way it was built.
 		for (int i = rec.ops.size() - 1; i >= 0; --i)
 		{
-			const OpLedger::Entry &op = rec.ops[i];
+			const OpJournal::Entry &op = rec.ops[i];
 			if (dirtyOnly && !op.rollbackIncomplete)
 				continue;
 
@@ -922,13 +922,13 @@ OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity
 				if (!op.parked.isEmpty() && QFile::exists(op.parked) &&
 					op.parkedFinal.isEmpty())
 				{
-					ledgerNotes << strandedParkNote(op, rec.kind == OpKind::Copy);
+					journalNotes << strandedParkNote(op, rec.kind == OpKind::Copy);
 					++flagged;
 				}
 				continue;
 			}
 
-			const OpResult r = reverser ? reverseOp(*reverser, op, ledgerNotes)
+			const OpResult r = reverser ? reverseOp(*reverser, op, journalNotes)
 										: OpResult::NothingToDo;
 			if (r == OpResult::Reversed)
 				++reversed;
@@ -939,16 +939,16 @@ OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity
 		// Stamp it recovered LAST: a crash mid-rollback leaves it
 		// unstamped, so the next launch retries. Every step above is
 		// idempotent.
-		OpLedger::markRecovered(rec.path, reversed, flagged);
+		OpJournal::markRecovered(rec.path, reversed, flagged);
 
 		if (const auto r = resumableFrom(rec))
 			sum.resumable.append(*r);
 
-		// Only narrate ledgers whose rollback did something.
+		// Only narrate journals whose rollback did something.
 		if (reversed == 0 && flagged == 0)
 			continue;
 
-		++sum.ledgersRecovered;
+		++sum.journalsRecovered;
 		sum.opsReversed += reversed;
 		sum.opsFlagged += flagged;
 
@@ -964,7 +964,7 @@ OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity
 										   .arg(flagged)
 										   .arg(flagged == 1 ? QString() : QStringLiteral("s"));
 		sum.notes << head;
-		sum.notes += ledgerNotes;
+		sum.notes += journalNotes;
 	}
 
 	return sum;

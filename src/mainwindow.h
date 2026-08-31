@@ -101,7 +101,7 @@ private:
 
 	// MARK: - Resume an interrupted operation
 
-	/// Re-reads the oplog folder for interrupted runs that can be finished,
+	/// Re-reads the journal folder for interrupted runs that can be finished,
 	/// OFF the GUI thread (it stats media paths), then updates the menu
 	/// item. Called after a resume, a discard, or a finished operation; the
 	/// launch sweep supplies the first list for free.
@@ -112,7 +112,7 @@ private:
 	void updateUndoAction();
 	void onUndoLastOperation();
 
-	/// The shared "no crash protection" gate: true = go ahead (ledger
+	/// The shared "no crash protection" gate: true = go ahead (journal
 	/// writable, or the user explicitly chose to continue without it).
 	bool confirmCrashProtection();
 
@@ -135,10 +135,10 @@ private:
 						   const QString &dest, bool preserve,
 						   const QHash<QString, ConflictPolicy> &policies);
 
-	/// The shared tail of every dispatch: the ledger-writable gate, the
+	/// The shared tail of every dispatch: the journal-writable gate, the
 	/// row-pruning flag, the engine call, and the busy/progress raise.
 	/// Resume comes through here with a request built straight from the
-	/// interrupted ledger's own plan items.
+	/// interrupted journal's own plan items.
 	bool dispatchRequest(OpRequest request);
 
 	/// Collects MacOS crash reports into the logs folder,
@@ -283,7 +283,7 @@ private:
 	class QAction *m_resumeAct = nullptr;
 	class QAction *m_undoAct = nullptr;
 	/// Edit ▸ Undo candidate, refreshed off-thread with the resumables:
-	/// the newest finished ledger's path and the menu label naming it.
+	/// the newest finished journal's path and the menu label naming it.
 	/// Empty path = nothing to undo.
 	struct UndoCandidate
 	{

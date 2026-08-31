@@ -16,7 +16,7 @@
 ///
 /// Deliberately split in two steps. The constructor only *computes* the park
 /// path; nothing touches disk until `park()`. That gap is the point: it lets
-/// the caller write the path to the write-ahead ledger before any rename
+/// the caller write the path to the write-ahead journal before any rename
 /// happens, and recovery keys off the parked file still existing (see
 /// `reverseCopy` / `reverseMoveLike` in oprescue.cpp).
 ///
@@ -29,7 +29,7 @@
 /// racing the same folder, the user in Finder — and restore() must not
 /// unlink it. In that state a parked original cannot go home either
 /// (the slot is occupied), so restore() reports stranded and the caller
-/// flags a dirty ledger line; the occupying file survives untouched.
+/// flags a dirty journal line; the occupying file survives untouched.
 ///
 /// Destruction restores, so a stray early return can't strand the original.
 /// `commit()` disarms that once the new file has landed — and note its
@@ -44,10 +44,10 @@
 /// rename landed but whose rollback rename-home failed — the destination
 /// now holds the user's MOVED FILE (their only copy), so neither
 /// restore() (which would try to displace it) nor commit() (which would
-/// delete the parked original) may run. The caller writes a dirty ledger
+/// delete the parked original) may run. The caller writes a dirty journal
 /// line naming both files and disarms; recovery reads the truth at next
-/// launch. It is also called after ANY dirty ledger line is written: the
-/// ledger must be the LAST word on disk state, so the destructor must
+/// launch. It is also called after ANY dirty journal line is written: the
+/// journal must be the LAST word on disk state, so the destructor must
 /// not keep retrying renames after it (a retry that succeeded after the
 /// line was final is how recovery came to delete a restored original as
 /// a "partial" — review finding 2).
@@ -55,7 +55,7 @@
 /// Usage:
 /// ```
 ///     ParkedFile park(dstPath, kCopyReplaceTag);
-///     LedgerOp lop(ledger, src, dstPath, bytes, park.path());  // WAL first
+///     JournalOp lop(journal, src, dstPath, bytes, park.path());  // WAL first
 ///     if (!park.park())
 ///         return;                       // nothing touched; bail
 ///     ... open dstPath for writing → park.noteDestinationWritten() ...
@@ -85,14 +85,14 @@ public:
 	// MARK: - Query
 
 	/// Where the original is being held. Empty when the destination slot was
-	/// already free. Ledger this before calling `park()`.
+	/// already free. Journal this before calling `park()`.
 	const QString &path() const noexcept { return m_parked; }
 
 	/// True when the last `restore()` attempt could not put the parked
 	/// original back (rename-home failed, or the slot is occupied by a file
 	/// the engine didn't write). The caller must record a dirty fail in the
-	/// ledger so recovery finishes the job at next launch — and then call
-	/// `disarm()`, so nothing changes on disk after the ledger's last word.
+	/// journal so recovery finishes the job at next launch — and then call
+	/// `disarm()`, so nothing changes on disk after the journal's last word.
 	bool isStranded() const noexcept { return m_restoreFailed; }
 
 	// MARK: - Lifecycle
@@ -131,7 +131,7 @@ public:
 	}
 
 	/// Stand down without touching the disk — no removal, no rename, no
-	/// destructor action later. For the branches where the ledger has
+	/// destructor action later. For the branches where the journal has
 	/// recorded a state that must remain exactly as written (a dirty fail),
 	/// or where the destination holds a file that must survive (the user's
 	/// moved file after a failed rollback). The parked original, if any,
@@ -150,7 +150,7 @@ public:
 	/// failed, or because the slot is occupied by a file the engine never
 	/// wrote (another process raced in; that file is not ours to delete).
 	/// The object stays armed and `isStranded()` reports true so the caller
-	/// can write the dirty ledger line — and must then `disarm()`.
+	/// can write the dirty journal line — and must then `disarm()`.
 	bool restore()
 	{
 		if (!m_armed)

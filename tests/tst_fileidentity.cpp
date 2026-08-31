@@ -2,6 +2,8 @@
 #include "mxfparser.h"
 #include "nativefile.h"
 
+#include "testutil.h"
+
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>
@@ -15,16 +17,6 @@
 
 namespace
 {
-	QString writeFile(const QString &dir, const QString &name, const QByteArray &content)
-	{
-		const QString path = dir + QLatin1Char('/') + name;
-		QFile f(path);
-		if (!f.open(QIODevice::WriteOnly))
-			return {};
-		f.write(content);
-		f.close();
-		return path;
-	}
 
 	QByteArray readFixture(const char *relative)
 	{
@@ -53,7 +45,7 @@ private slots:
 	void capture_fixture_mxf_reads_umid();
 	void verify_media_swap_same_object_is_changed_by_umid();
 
-	// MARK: - FileIdentity, ledger round-trip
+	// MARK: - FileIdentity, journal round-trip
 	void identity_json_round_trip_preserves_large_ids();
 
 	// MARK: - VolumeIdentity
@@ -78,7 +70,7 @@ void TestFileIdentity::capture_regular_file_is_full_strength_on_local_volume()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(1234, 'x'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(1234, 'x'));
 	QVERIFY(!path.isEmpty());
 
 	const FileIdentity id = FileIdentity::capture(path);
@@ -105,7 +97,7 @@ void TestFileIdentity::verify_unchanged_file_matches()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	const FileIdentity id = FileIdentity::capture(path);
 	QCOMPARE(FileIdentity::verify(path, id), FileIdentity::Verdict::Match);
 }
@@ -114,7 +106,7 @@ void TestFileIdentity::verify_size_change_is_changed()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	const FileIdentity id = FileIdentity::capture(path);
 
 	{
@@ -137,8 +129,8 @@ void TestFileIdentity::verify_swapped_same_size_file_is_changed_on_full()
 	// volume that must be enough to refuse.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
-	const QString other = writeFile(tmp.path(), QStringLiteral("b.bin"), QByteArray(64, 'y'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
+	const QString other = writeFileIn(tmp.path(), QStringLiteral("b.bin"), QByteArray(64, 'y'));
 	const FileIdentity id = FileIdentity::capture(path);
 	QCOMPARE(id.strength, FileIdentity::Strength::Full);
 
@@ -159,7 +151,7 @@ void TestFileIdentity::verify_in_place_edit_same_size_matches_on_full()
 	// are the content half's job, not the filesystem half's.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	const FileIdentity id = FileIdentity::capture(path);
 	QCOMPARE(id.strength, FileIdentity::Strength::Full);
 
@@ -177,7 +169,7 @@ void TestFileIdentity::verify_missing_file_is_missing()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(8, 'x'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(8, 'x'));
 	const FileIdentity id = FileIdentity::capture(path);
 	QVERIFY(QFile::remove(path));
 	QCOMPARE(FileIdentity::verify(path, id), FileIdentity::Verdict::Missing);
@@ -190,7 +182,7 @@ void TestFileIdentity::sizetime_tier_uses_mtime()
 	// an mtime change alone flips the verdict.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("a.bin"), QByteArray(64, 'x'));
 	FileIdentity id = FileIdentity::capture(path);
 	id.strength = FileIdentity::Strength::SizeTime;
 
@@ -239,7 +231,7 @@ void TestFileIdentity::verify_media_swap_same_object_is_changed_by_umid()
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeFile(tmp.path(), QStringLiteral("clip.mxf"), headerA);
+	const QString path = writeFileIn(tmp.path(), QStringLiteral("clip.mxf"), headerA);
 	const FileIdentity id = FileIdentity::capture(path);
 	QVERIFY(!id.contentUmid.isEmpty());
 
@@ -252,7 +244,7 @@ void TestFileIdentity::verify_media_swap_same_object_is_changed_by_umid()
 	QCOMPARE(FileIdentity::verify(path, id), FileIdentity::Verdict::Changed);
 }
 
-// MARK: - FileIdentity, ledger round-trip
+// MARK: - FileIdentity, journal round-trip
 
 void TestFileIdentity::identity_json_round_trip_preserves_large_ids()
 {
@@ -394,7 +386,7 @@ void TestFileIdentity::clone_behaviour_matches_platform()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString src = writeFile(tmp.path(), QStringLiteral("src.bin"), QByteArray(8192, 'c'));
+	const QString src = writeFileIn(tmp.path(), QStringLiteral("src.bin"), QByteArray(8192, 'c'));
 	const QString dst = tmp.path() + QStringLiteral("/dst.bin");
 
 #ifdef Q_OS_MAC
@@ -425,7 +417,7 @@ void TestFileIdentity::win_copy_behaviour_matches_platform()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString src = writeFile(tmp.path(), QStringLiteral("src.bin"), QByteArray(65536, 'w'));
+	const QString src = writeFileIn(tmp.path(), QStringLiteral("src.bin"), QByteArray(65536, 'w'));
 	const QString dst = tmp.path() + QStringLiteral("/dst.bin");
 	std::atomic<bool> cancel{false};
 

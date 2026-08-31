@@ -2,7 +2,7 @@
 
 #include "aboutdialog.h"
 #include "applog.h"
-#include "avidlayout.h"
+#include "conventions.h"
 #include "binfilterdialog.h"
 #include "crashcollector.h"
 #include "debugslowdown.h"
@@ -13,13 +13,11 @@
 #include "managemediadialog.h"
 #include "mediacsv.h"
 #include "mediamanagerverify.h"
-#include "opledger.h"
+#include "opjournal.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
-#include "rebalancedialog_demo.h"
 #include "rebalancer.h"
 #include "revealinfinder.h"
-#include "theme.h"
 #include "version.h"
 
 #include <QAction>
@@ -80,6 +78,18 @@
 
 namespace
 {
+	/// The fixed-pitch face the table and console share. Lived in theme.h
+	/// until 2026-08-31; folded in here as its only consumer (a real theme
+	/// can move it back out the day one exists).
+	QFont monoFont()
+	{
+#ifdef Q_OS_MAC
+		return QFont(QStringLiteral("Menlo"), 12);
+#else // Q_OS_WIN
+		return QFont(QStringLiteral("Consolas"), 12);
+#endif
+	}
+
 	// Fixed-width tags so the console's [ ] column stays aligned. QtFatalMsg
 	// is never emitted by us; it folds to the error tag defensively.
 	const char *logPfx(QtMsgType level)
@@ -246,7 +256,7 @@ void MainWindow::onRecoveryDone(const OpRescue::Summary &summary)
 		QMessageBox::warning(this, tr("Some files need a look"), summary.message());
 
 	// The launch sweep already worked this out on the pool thread; no need
-	// to re-read the oplog folder here.
+	// to re-read the journal folder here.
 	m_resumable = summary.resumable;
 	updateResumeAction();
 
@@ -485,7 +495,7 @@ void MainWindow::buildTable()
 	m_tableView->horizontalHeader()->setSectionsMovable(true);
 	m_tableView->horizontalHeader()->setHighlightSections(false);
 	m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_tableView->setFont(QFont(Theme::monoFont(), Theme::monoFontSize()));
+	m_tableView->setFont(monoFont());
 
 	// Starting widths. autoFitColumns runs once after the
 	// first scan to size them to actual content.
@@ -515,7 +525,7 @@ void MainWindow::buildConsole()
 	m_console->setReadOnly(true);
 	m_console->setMaximumBlockCount(2000);
 	m_console->setMinimumHeight(80);
-	m_console->setFont(QFont(Theme::monoFont(), Theme::monoFontSize()));
+	m_console->setFont(monoFont());
 }
 
 // MARK: - Status bar
@@ -624,7 +634,7 @@ void MainWindow::buildEditMenu()
 	auto *editMenu = menuBar()->addMenu(tr("&Edit"));
 
 	// Single-level undo of the last completed file operation. Label and
-	// enabled state follow the newest undoable ledger (refreshResumable);
+	// enabled state follow the newest undoable journal (refreshResumable);
 	// the engine re-qualifies at run time, so a stale click refuses
 	// cleanly rather than acting on an old belief.
 	m_undoAct = editMenu->addAction(tr("&Undo"));
@@ -779,20 +789,21 @@ void MainWindow::buildDebugMenu()
 	// clicking Rebalance runs a simulated progress sweep, not real
 	// disk moves.
 	auto *demosMenu = debugMenu->addMenu(tr("Rebalance demos"));
-	const auto addDemo = [this, demosMenu](const QString &label, RebalancePlan (*factory)())
+	const auto addDemo = [this, demosMenu](const QString &label,
+										   RebalanceDialog::DemoScenario scenario)
 	{
 		auto *act = demosMenu->addAction(label);
 		connect(act, &QAction::triggered, this,
-				[this, factory]
+				[this, scenario]
 				{
-					auto *dlg = new RebalanceDialog(factory(), this);
+					auto *dlg = RebalanceDialog::createDemo(scenario, this);
 					dlg->setAttribute(Qt::WA_DeleteOnClose);
 					dlg->show();
 				});
 	};
-	addDemo(tr("Small"), &RebalanceDemo::small);
-	addDemo(tr("Big"), &RebalanceDemo::big);
-	addDemo(tr("Really big"), &RebalanceDemo::reallyBig);
+	addDemo(tr("Small"), RebalanceDialog::DemoScenario::Small);
+	addDemo(tr("Big"), RebalanceDialog::DemoScenario::Big);
+	addDemo(tr("Really big"), RebalanceDialog::DemoScenario::ReallyBig);
 }
 
 // MARK: Help menu
@@ -919,7 +930,7 @@ void MainWindow::setupConnections()
 			m_removeAfterOp = false;
 			m_successfulOpPaths.clear();
 
-			// The concluded run's ledger stays behind as the undo
+			// The concluded run's journal stays behind as the undo
 			// candidate; re-read the folder (off-thread) so the Resume
 			// item reflects the new state.
 			refreshResumable();
@@ -1130,8 +1141,8 @@ void MainWindow::onRebalance()
 		// Grandparent must be the MXF folder — any case, matching the
 		// scanner's rule, so a share spelled 'mxf' that scans fine can
 		// also rebalance. OMF roots stay excluded (scan-only; see
-		// AvidLayout::isOmfRootName).
-		if (!AvidLayout::isMxfRootName(QFileInfo(mxfRoot).fileName()))
+		// Conventions::isOmfRootName).
+		if (!Conventions::isMxfRootName(QFileInfo(mxfRoot).fileName()))
 			continue;
 
 		QString label = labelByRoot.value(mxfRoot);
@@ -1663,15 +1674,15 @@ bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const 
 	return dispatchRequest(std::move(req));
 }
 
-// The write-ahead ledger is the only thing that can put files back after
+// The write-ahead journal is the only thing that can put files back after
 // a crash. If it can't be written (disk full, permissions), running
 // anyway is the user's call to make — not a console line to miss. Cancel
 // stays default: a stray Return must not waive the net. Shared by every
-// dispatch INCLUDING undo — an undo without its own ledger would itself
+// dispatch INCLUDING undo — an undo without its own journal would itself
 // be unrecoverable if interrupted.
 bool MainWindow::confirmCrashProtection()
 {
-	if (OpLedger::standardDirWritable())
+	if (OpJournal::standardDirWritable())
 		return true;
 	QMessageBox confirm(this);
 	confirm.setIcon(QMessageBox::Warning);
@@ -1782,7 +1793,7 @@ void MainWindow::updateResumeAction()
 
 void MainWindow::refreshResumable()
 {
-	// Off the GUI thread: reading the oplog folder means stat()-ing the
+	// Off the GUI thread: reading the journal folder means stat()-ing the
 	// media paths in every journal, and a dropped network mount would
 	// freeze the window (the launch sweep runs on a pool thread for the
 	// same reason). The menu item keeps its last state until this lands.
@@ -1797,7 +1808,7 @@ void MainWindow::refreshResumable()
 	watcher->setFuture(QtConcurrent::run([] { return OpRescue::pending(); }));
 
 	// The Edit ▸ Undo candidate, computed in the same off-thread sweep
-	// spirit: reading the newest ledger stats media paths and must never
+	// spirit: reading the newest journal stats media paths and must never
 	// block the GUI on a dead mount.
 	auto *undoWatcher = new QFutureWatcher<UndoCandidate>(this);
 	connect(undoWatcher, &QFutureWatcher<UndoCandidate>::finished, this,
@@ -1810,7 +1821,7 @@ void MainWindow::refreshResumable()
 	undoWatcher->setFuture(QtConcurrent::run(
 		[]() -> UndoCandidate
 		{
-			const auto rec = OpLedger::latestUndoable();
+			const auto rec = OpJournal::latestUndoable();
 			if (!rec)
 				return {};
 			QString kind = opKindName(rec->kind);
@@ -1904,9 +1915,9 @@ void MainWindow::offerResume()
 
 	if (box.clickedButton() == discardBtn)
 	{
-		if (!QFile::remove(r.ledgerPath))
+		if (!QFile::remove(r.journalPath))
 			addLog(QtWarningMsg, QStringLiteral("app"),
-				   QStringLiteral("Couldn't delete the interrupted-run journal %1").arg(r.ledgerPath));
+				   QStringLiteral("Couldn't delete the interrupted-run journal %1").arg(r.journalPath));
 		else
 			addLog(QtInfoMsg, QStringLiteral("app"),
 				   QStringLiteral("Discarded an interrupted %1 (%2 of %3 files were not done)")
@@ -1923,11 +1934,11 @@ void MainWindow::offerResume()
 	}
 
 	// Resume = the same dispatch as Manage Media, over the unfinished
-	// files — dispatched STRAIGHT from the ledger's own plan items, with
+	// files — dispatched STRAIGHT from the journal's own plan items, with
 	// their identities and clip names intact (no reconstituted rows).
-	// The new run writes its own ledger, so the old one is retired the
+	// The new run writes its own journal, so the old one is retired the
 	// moment the new run is under way — and kept if the dispatch was
-	// declined (ledger-writable gate), so the offer survives.
+	// declined (journal-writable gate), so the offer survives.
 	addLog(QtInfoMsg, QStringLiteral("app"),
 		   QStringLiteral("Resuming an interrupted %1: %2 of %3 files still to do")
 			   .arg(opKindName(r.kind))
@@ -1939,10 +1950,10 @@ void MainWindow::offerResume()
 	req.preserve = r.preserve;
 	req.items = r.remaining;
 	const bool dispatched = dispatchRequest(std::move(req));
-	if (dispatched && !QFile::remove(r.ledgerPath))
+	if (dispatched && !QFile::remove(r.journalPath))
 		addLog(QtWarningMsg, QStringLiteral("app"),
 			   QStringLiteral("Couldn't delete the interrupted-run journal %1 — it may be offered again")
-				   .arg(r.ledgerPath));
+				   .arg(r.journalPath));
 	refreshResumable();
 }
 

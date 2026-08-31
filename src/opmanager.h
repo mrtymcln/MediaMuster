@@ -16,7 +16,7 @@
 //
 // The engine's front door — the only part of the file-operations engine
 // that is a QObject. MainWindow (and the Rebalance adapter) talk to
-// this; everything behind it (OpRunner, OpCopier, OpLedger) is plain
+// this; everything behind it (OpRunner, OpCopier, OpJournal) is plain
 // C++ driven synchronously on one worker thread.
 //
 // The signal and entry-point contract is MediaManager's, kept on
@@ -30,7 +30,7 @@
 //     it), and a skip is success=true + skipped=true, or Move/Delete
 //     would prune rows for files still on disk.
 //   - cancel is stop-and-keep: landed work stays, the summary says
-//     cancelled, and the finished ledger becomes the undo candidate.
+//     cancelled, and the finished journal becomes the undo candidate.
 /// Privately an OpSink: the runner reports through the interface, and
 /// the overrides below simply re-emit as this object's signals (only a
 /// member can emit its own protected signals). The overrides run on the
@@ -45,46 +45,38 @@ public:
 
 	// MARK: - Job entry points
 
-	/// `preserveStructure=true` mirrors Avid's
-	/// `Avid MediaFiles/MXF/<n>/<filename>` layout under destRoot;
-	/// false flattens everything directly into destRoot.
-	void executeCopy(QVector<MediaFile> files, const QString &destRoot,
-					 bool preserveStructure = false,
-					 const QHash<QString, ConflictPolicy> &conflictPolicies = {});
-
-	void executeMove(QVector<MediaFile> files, const QString &destRoot,
-					 bool preserveStructure = false,
-					 const QHash<QString, ConflictPolicy> &conflictPolicies = {});
-
-	/// Never a hard delete: OS trash preferred, the per-volume
-	/// `_MediaMuster_Trash` where it can't be used (see TrashRouter).
-	void executeDelete(QVector<MediaFile> files);
-
-	/// Run a fully built request — the resume flow dispatches the
-	/// ledger's own plan items through here (no reconstituted
-	/// MediaFiles), and the Rebalance adapter dispatches Rename
-	/// requests.
+	/// THE entry point: run a fully built request. MainWindow's dispatch
+	/// builds Copy/Move/Delete requests from the selection (via
+	/// itemsFromMediaFiles), the resume flow dispatches the journal's own
+	/// plan items, and the Rebalance adapter dispatches Rename requests.
+	/// (Per-kind convenience wrappers used to sit beside this; they were
+	/// dead code once MainWindow switched to request-building, and were
+	/// removed 2026-08-31. Delete is never a hard delete either way —
+	/// see TrashRouter.)
 	void execute(OpRequest request);
 
-	/// Edit ▸ Undo: reverse the completed run recorded at `ledgerPath`
-	/// (found via OpLedger::latestUndoable). Fire-and-forget like every
+	/// Edit ▸ Undo: reverse the completed run recorded at `journalPath`
+	/// (found via OpJournal::latestUndoable). Fire-and-forget like every
 	/// other entry point; progress/itemDone/operationFinished flow
-	/// through the same signals, and the undo writes its own ledger so
+	/// through the same signals, and the undo writes its own journal so
 	/// a crash mid-undo is recovered at next launch.
-	void executeUndo(const QString &ledgerPath);
+	void executeUndo(const QString &journalPath);
 
 	void cancel() { m_job.cancel(); }
 
 	// MARK: - Path helpers (public: ManageMediaDialog previews with
 	// them, and the tests pin them)
 
+	/// Where `mf` lands under destRoot — the MediaFile-shaped face of
+	/// OpRunner::buildDestPath. (The rename-path probe has no such
+	/// unpacking to do; callers use OpRunner::generateRenamePath
+	/// directly.)
 	static QString buildDestPath(const MediaFile &mf, const QString &destRoot, bool preserve);
-	static std::optional<QString> generateRenamePath(const QString &destPath);
 
 	/// The engine's entire read of a MediaFile, in one place: path,
 	/// name, folder, size, the per-file conflict policy, and the scan's
 	/// Avid identity claims (mob ids + clip name) that the runner
-	/// cross-checks and the ledger records.
+	/// cross-checks and the journal records.
 	static QVector<OpItem> itemsFromMediaFiles(const QVector<MediaFile> &files,
 											   const QHash<QString, ConflictPolicy> &policies);
 

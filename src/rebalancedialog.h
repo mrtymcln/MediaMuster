@@ -50,12 +50,18 @@ public:
 					const QHash<QString, QVector<MediaFile>> &filesByMxfRoot,
 					const QString &initialLabel, QWidget *parent = nullptr);
 
-	/// Demo-mode constructor: shows the provided plan directly,
-	/// skipping the disk scan. Clicking Rebalance runs a fake
-	/// QTimer-driven progress sequence instead of touching disk.
-	/// Used by the Debug menu to show different visual states to
-	/// beta testers without a real Avid project.
-	explicit RebalanceDialog(const RebalancePlan &precomputedPlan, QWidget *parent = nullptr);
+	/// Debug ▸ Rebalance demos: a dialog over a synthetic plan, skipping
+	/// the disk scan. Clicking Rebalance runs a fake QTimer-driven
+	/// progress sequence instead of touching disk. Shows the visual
+	/// states to beta testers without a real Avid project.
+	enum class DemoScenario
+	{
+		Small,	  ///< ~50 files between 4 folders.
+		Big,	  ///< ~7,500 files, red/amber bars, 3 new folders.
+		ReallyBig ///< 666,666 files across hundreds of folders — a
+				  ///< rendering-path stress test; also fun to watch.
+	};
+	static RebalanceDialog *createDemo(DemoScenario scenario, QWidget *parent = nullptr);
 
 	// MARK: - Result accessors
 
@@ -97,6 +103,10 @@ private slots:
 	void onDemoTick();
 
 private:
+	/// Demo-mode constructor behind createDemo(): shows `precomputedPlan`
+	/// directly, no Rebalancer wired.
+	explicit RebalanceDialog(const RebalancePlan &precomputedPlan, QWidget *parent = nullptr);
+
 	void setupUi();
 	void recomputePlan();
 	void renderPlan();

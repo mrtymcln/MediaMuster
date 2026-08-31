@@ -1,5 +1,5 @@
 #include "volumemanager.h"
-#include "avidlayout.h"
+#include "conventions.h"
 #include "logging.h"
 #include <QDir>
 #include <QFile>
@@ -346,5 +346,5 @@ bool VolumeManager::hasAvidMediaFolder(const QString &path)
 	// The system root's own `<root>/Avid MediaFiles` case is gone now that the
 	// boot volume is skipped; the known Avid locations are surfaced directly by
 	// detectVolumes' pass 3, each of which matches here on its own path.
-	return QDir(path).exists(AvidLayout::kAvidMediaFilesDir);
+	return QDir(path).exists(Conventions::kAvidMediaFilesDir);
 }

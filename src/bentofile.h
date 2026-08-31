@@ -10,7 +10,9 @@
 
 /// A read-only view of an Apple Bento container — the 1990s OpenDoc format
 /// that OMF Interchange adopted, and therefore the shape of Avid's
-/// `msmMMOB.mdb` (the label also closes every `.avb` bin). Three parts:
+/// `msmMMOB.mdb`. That database is the only thing in the tree stored this way:
+/// a `.avb` bin and an `msmFMID.pmr` are each their own flat format and carry
+/// no label (checked byte by byte across 66 bins and 3 PMRs). Three parts:
 ///
 ///   label   the LAST 24 bytes: magic A4 43 4D A5 48 64 72 D7 | u16 flags |
 ///           'II' | u32 version | u32 tocOffset | u32 tocLength

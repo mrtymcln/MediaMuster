@@ -104,9 +104,7 @@ private:
 	void setupUi();
 
 	/// Blue ring + tint on the bin list while a valid .avb drag hovers,
-	/// matching the Volumes list (VolumeListWidget::setDropHighlight). Two
-	/// static, independent drop targets, so the style string is duplicated
-	/// rather than shared — it isn't expected to change.
+	/// matching the Volumes list (VolumeListWidget::setDropHighlight).
 	void setDropHighlight(bool on);
 
 	void appendBinItem(int idx);

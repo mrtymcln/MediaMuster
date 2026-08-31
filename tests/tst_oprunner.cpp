@@ -1,10 +1,12 @@
-#include "avidlayout.h"
+#include "conventions.h"
 #include "mediamanagerverify.h"
 #include "mobid.h"
 #include "mxfparser.h"
 #include "opcopier.h"
 #include "oprunner.h"
 #include "parkedfile.h"
+
+#include "testutil.h"
 
 #include <QDir>
 #include <QFile>
@@ -19,7 +21,7 @@
 // purpose, and this suite is the payoff). Re-pins the v1 engine's
 // behaviour contract — conflict rules, park-aside Replace, keep-both,
 // claim collisions, trash tiers — and pins the v2 additions: identity
-// gates, replaced-originals-to-trash, ledger retention, and the Rename
+// gates, replaced-originals-to-trash, journal retention, and the Rename
 // machine. Mid-flight behaviours (cancel, mutation during a copy) live
 // in tst_opmanager, which drives the threaded facade.
 
@@ -122,16 +124,14 @@ private slots:
 	void rename_refuses_occupied_destination();
 	void rename_precancelled_runs_nothing();
 
-	// MARK: - Ledger integration
-	void ledger_survives_run_and_plan_precedes_ops();
+	// MARK: - Journal integration
+	void journal_survives_run_and_plan_precedes_ops();
 	void plan_records_volume_fingerprints();
 
 private:
-	void writeFile(const QString &path, const QByteArray &contents);
-	QByteArray readFile(const QString &path);
 	QString stageFixtureMxf(const QString &dir);
 
-	OpRunner::Totals runRequest(const OpRequest &req, TestSink &sink, const QString &ledgerDir);
+	OpRunner::Totals runRequest(const OpRequest &req, TestSink &sink, const QString &journalDir);
 };
 
 void TestOpRunner::cleanup()
@@ -144,23 +144,6 @@ void TestOpRunner::cleanup()
 	// Verification is a process-wide toggle; a test that turns it off
 	// must not leak that state into the next test.
 	MediaManagerVerify::setEnabled(true);
-}
-
-void TestOpRunner::writeFile(const QString &path, const QByteArray &contents)
-{
-	QDir().mkpath(QFileInfo(path).absolutePath());
-	QFile f(path);
-	QVERIFY2(f.open(QIODevice::WriteOnly),
-			 qPrintable(QStringLiteral("failed to create %1: %2").arg(path, f.errorString())));
-	QCOMPARE(f.write(contents), qint64(contents.size()));
-}
-
-QByteArray TestOpRunner::readFile(const QString &path)
-{
-	QFile f(path);
-	if (!f.open(QIODevice::ReadOnly))
-		return {};
-	return f.readAll();
 }
 
 QString TestOpRunner::stageFixtureMxf(const QString &dir)
@@ -177,10 +160,10 @@ QString TestOpRunner::stageFixtureMxf(const QString &dir)
 }
 
 OpRunner::Totals TestOpRunner::runRequest(const OpRequest &req, TestSink &sink,
-										  const QString &ledgerDir)
+										  const QString &journalDir)
 {
 	OpRunner runner(sink, kNoCancel);
-	const auto totals = runner.run(req, ledgerDir);
+	const auto totals = runner.run(req, journalDir);
 	// Surface per-item failures in the test log — a bare "succeeded==0"
 	// assertion failure is undebuggable without the sentence the runner
 	// actually produced.
@@ -256,11 +239,11 @@ void TestOpRunner::generateRenamePath_handles_extensionless_path()
 void TestOpRunner::copy_writes_file_and_leaves_source()
 {
 	// Force the buffered path: an APFS clone records no hash (nothing
-	// was rewritten), and this test pins the hash-in-ledger behaviour.
+	// was rewritten), and this test pins the hash-in-journal behaviour.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = stageFixtureMxf(tmp.path() + "/src");
 	QVERIFY(!src.isEmpty());
 	const QString dest = tmp.path() + "/dest";
@@ -278,7 +261,7 @@ void TestOpRunner::copy_writes_file_and_leaves_source()
 	req.items = {it};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(totals.failed, 0);
 
@@ -288,9 +271,9 @@ void TestOpRunner::copy_writes_file_and_leaves_source()
 	QVERIFY(sink.items[0].ok);
 	QCOMPARE(sink.items[0].path, src);
 
-	// The ledger recorded the full story: source identity on the op
+	// The journal recorded the full story: source identity on the op
 	// line, hash + landed identity on the done line.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	QCOMPARE(recs[0].ops.size(), 1);
 	QCOMPARE(recs[0].ops[0].srcId.contentUmid, umid);
@@ -303,8 +286,8 @@ void TestOpRunner::copy_writes_file_and_leaves_source()
 
 void TestOpRunner::copy_skip_policy_leaves_existing_destination()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "NEW");
@@ -316,7 +299,7 @@ void TestOpRunner::copy_skip_policy_leaves_existing_destination()
 	req.items = {makeItem(src, 3, QStringLiteral("skip"))};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.skipped, 1);
 	QCOMPARE(totals.succeeded, 0);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("OLD"));
@@ -326,9 +309,9 @@ void TestOpRunner::copy_skip_policy_leaves_existing_destination()
 	QVERIFY(sink.items[0].ok);
 	QVERIFY(sink.items[0].skipped);
 
-	// And the ledger says the file was CONCLUDED, or a resume would
+	// And the journal says the file was CONCLUDED, or a resume would
 	// offer it again.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	QCOMPARE(recs[0].ops.size(), 1);
 	QVERIFY(recs[0].ops[0].skipped);
@@ -336,8 +319,8 @@ void TestOpRunner::copy_skip_policy_leaves_existing_destination()
 
 void TestOpRunner::copy_replace_sends_replaced_original_to_trash()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	qputenv("MEDIAMUSTER_DISABLE_OS_TRASH", "1");
 	// The seam stands in for the volume root, so it must be an ancestor
 	// of the media — exactly like the real volume root is.
@@ -354,7 +337,7 @@ void TestOpRunner::copy_replace_sends_replaced_original_to_trash()
 	req.items = {makeItem(src, 11, QStringLiteral("replace"))};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("NEW CONTENT"));
 	QVERIFY2(QDir(dest).entryList({"*__copyreplace*"}, QDir::Files).isEmpty(),
@@ -362,8 +345,8 @@ void TestOpRunner::copy_replace_sends_replaced_original_to_trash()
 
 	// THE v2 change of heart: the replaced original is not hard-deleted
 	// (v1's ParkedFile::commit did exactly that) — it went to the trash,
-	// and the ledger says where, so undo can bring it back.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	// and the journal says where, so undo can bring it back.
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	const QString parkedFinal = recs[0].ops[0].parkedFinal;
 	QVERIFY2(!parkedFinal.isEmpty(), "the done line must record where the original went");
@@ -374,8 +357,8 @@ void TestOpRunner::copy_replace_sends_replaced_original_to_trash()
 
 void TestOpRunner::copy_keepboth_policy_keeps_both()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "NEW");
@@ -387,7 +370,7 @@ void TestOpRunner::copy_keepboth_policy_keeps_both()
 	req.items = {makeItem(src, 3, QStringLiteral("keepboth"))};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("OLD"));
 	QCOMPARE(readFile(dest + "/clip (2).mxf"), QByteArray("NEW"));
@@ -398,8 +381,8 @@ void TestOpRunner::copy_flatten_sameName_keepsBothFiles()
 	// Two selected files from different folders, same leaf name,
 	// flattened into one destination: the second must divert to a
 	// " (2)" sibling, never silently overwrite the first.
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString srcA = tmp.path() + "/1/clip.mxf";
 	const QString srcB = tmp.path() + "/2/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
@@ -413,7 +396,7 @@ void TestOpRunner::copy_flatten_sameName_keepsBothFiles()
 	req.items = {makeItem(srcA, 5), makeItem(srcB, 6)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 2);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("FIRST"));
 	QCOMPARE(readFile(dest + "/clip (2).mxf"), QByteArray("SECOND"));
@@ -424,8 +407,8 @@ void TestOpRunner::copy_flatten_caseVariantNames_noSilentOverwrite()
 	// On the case-insensitive filesystems macOS and Windows default to,
 	// "CLIP.mxf" and "clip.mxf" are the same destination even though
 	// every string comparison says otherwise. Both files must survive.
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString srcA = tmp.path() + "/1/CLIP.mxf";
 	const QString srcB = tmp.path() + "/2/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
@@ -439,7 +422,7 @@ void TestOpRunner::copy_flatten_caseVariantNames_noSilentOverwrite()
 	req.items = {makeItem(srcA, 5), makeItem(srcB, 5)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 
 	// Both byte streams must exist at the destination, whatever names
 	// they ended up under.
@@ -457,8 +440,8 @@ void TestOpRunner::copy_conflictNotInPolicyMap_isSkippedNotReplaced()
 {
 	// A conflict the dialog never showed the user must NEVER fall
 	// through to Replace (the NTFS case-variant incident).
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "NEW");
@@ -470,7 +453,7 @@ void TestOpRunner::copy_conflictNotInPolicyMap_isSkippedNotReplaced()
 	req.items = {makeItem(src, 3)}; // no policy on purpose
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.skipped, 1);
 	QCOMPARE(totals.failed, 0);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("FOREIGN"));
@@ -480,8 +463,8 @@ void TestOpRunner::copy_conflictNotInPolicyMap_isSkippedNotReplaced()
 void TestOpRunner::copy_verifyOff_stillSucceeds()
 {
 	MediaManagerVerify::setEnabled(false);
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, QByteArray(1024, 'V'));
@@ -493,7 +476,7 @@ void TestOpRunner::copy_verifyOff_stillSucceeds()
 	req.items = {makeItem(src, 1024)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray(1024, 'V'));
 }
@@ -505,8 +488,8 @@ void TestOpRunner::copy_refuses_source_with_wrong_size()
 	// The scan said 100 bytes; the file on disk is 3. Whatever is at
 	// that path now, it is not what the user selected: refuse, explain,
 	// touch nothing.
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "NEW");
@@ -520,7 +503,7 @@ void TestOpRunner::copy_refuses_source_with_wrong_size()
 	req.items = {it};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.failed, 1);
 	QCOMPARE(totals.succeeded, 0);
 	QVERIFY(!QFile::exists(dest + "/clip.mxf"));
@@ -536,8 +519,8 @@ void TestOpRunner::copy_refuses_source_with_wrong_umid()
 	// Size matches, but the Avid ID inside the file belongs to a
 	// different clip than the scan recorded — the same-size-swap case
 	// only content identity can catch.
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = stageFixtureMxf(tmp.path() + "/src");
 	QVERIFY(!src.isEmpty());
 	const QString dest = tmp.path() + "/dest";
@@ -554,7 +537,7 @@ void TestOpRunner::copy_refuses_source_with_wrong_umid()
 	req.items = {it};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.failed, 1);
 	QVERIFY(!QFile::exists(dest + "/clip.mxf"));
 	QVERIFY(sink.items[0].error.contains(QStringLiteral("Avid media ID")));
@@ -601,7 +584,7 @@ void TestOpRunner::copy_accepts_database_byte_order_mob_claims()
 	TestSink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	const OpRunner::Totals t = runner.run(req, tmp.path() + "/oplog");
+	const OpRunner::Totals t = runner.run(req, tmp.path() + "/journal");
 
 	QVERIFY2(t.succeeded == 1,
 			 qPrintable(sink.items.isEmpty() ? QString() : sink.items.first().error));
@@ -610,8 +593,8 @@ void TestOpRunner::copy_accepts_database_byte_order_mob_claims()
 
 void TestOpRunner::copy_missing_source_fails_cleanly()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString dest = tmp.path() + "/dest";
 	QDir().mkpath(dest);
 
@@ -621,7 +604,7 @@ void TestOpRunner::copy_missing_source_fails_cleanly()
 	req.items = {makeItem(tmp.path() + "/src/gone.mxf", 100)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.failed, 1);
 	QVERIFY(sink.items[0].error.contains(QStringLiteral("no longer")));
 }
@@ -631,8 +614,8 @@ void TestOpRunner::delete_refuses_identity_mismatch()
 	// The most important gate of all: a delete pointed at a file that
 	// is not what the scan recorded must refuse — this is the "never
 	// guess what file is being operated on" rule at the sharpest edge.
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	qputenv("MEDIAMUSTER_DISABLE_OS_TRASH", "1");
 	qputenv("MEDIAMUSTER_TRASH_ROOT", tmp.path().toUtf8());
 	const QString src = tmp.path() + "/media/clip.mxf";
@@ -643,7 +626,7 @@ void TestOpRunner::delete_refuses_identity_mismatch()
 	req.items = {makeItem(src, 4)}; // scan said 4 bytes; disk says 17
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.failed, 1);
 	QCOMPARE(totals.succeeded, 0);
 	QVERIFY2(QFile::exists(src), "a refused delete must leave the file exactly where it was");
@@ -653,8 +636,8 @@ void TestOpRunner::delete_refuses_identity_mismatch()
 
 void TestOpRunner::move_happy_sameVolume_removesSource()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "MOVING");
@@ -666,13 +649,13 @@ void TestOpRunner::move_happy_sameVolume_removesSource()
 	req.items = {makeItem(src, 6)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("MOVING"));
 	QVERIFY2(!QFile::exists(src), "a move must remove its source");
 
-	// The ledger's done line captured where (and what) landed.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	// The journal's done line captured where (and what) landed.
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	QVERIFY(recs[0].ops[0].completed);
 	QCOMPARE(recs[0].ops[0].landedId.size, qint64(6));
@@ -680,8 +663,8 @@ void TestOpRunner::move_happy_sameVolume_removesSource()
 
 void TestOpRunner::move_replace_sends_replaced_original_to_trash()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	qputenv("MEDIAMUSTER_DISABLE_OS_TRASH", "1");
 	// The seam stands in for the volume root, so it must be an ancestor
 	// of the media — exactly like the real volume root is.
@@ -698,15 +681,15 @@ void TestOpRunner::move_replace_sends_replaced_original_to_trash()
 	req.items = {makeItem(src, 11, QStringLiteral("replace"))};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("NEW CONTENT"));
 	QVERIFY(!QFile::exists(src));
 	QVERIFY(QDir(dest).entryList({"*__movereplace*"}, QDir::Files).isEmpty());
 
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	const QString parkedFinal = recs[0].ops[0].parkedFinal;
-	QVERIFY2(!parkedFinal.isEmpty(), "the replaced original's trash address must be ledgered");
+	QVERIFY2(!parkedFinal.isEmpty(), "the replaced original's trash address must be journaled");
 	QCOMPARE(readFile(parkedFinal), QByteArray("PRECIOUS ORIGINAL"));
 }
 
@@ -715,8 +698,8 @@ void TestOpRunner::move_flatten_caseVariantNames_nothingLost()
 	// The stakes are higher than Copy's variant: a silently overwritten
 	// moved file is GONE (its source was already removed). Nothing may
 	// be lost, whatever names things land under.
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString srcA = tmp.path() + "/1/CLIP.mxf";
 	const QString srcB = tmp.path() + "/2/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
@@ -730,7 +713,7 @@ void TestOpRunner::move_flatten_caseVariantNames_nothingLost()
 	req.items = {makeItem(srcA, 5), makeItem(srcB, 5)};
 
 	TestSink sink;
-	runRequest(req, sink, ledgerDir.path());
+	runRequest(req, sink, journalDir.path());
 
 	// Count every surviving byte stream across sources and destination:
 	// both must exist somewhere.
@@ -745,8 +728,8 @@ void TestOpRunner::move_flatten_caseVariantNames_nothingLost()
 
 void TestOpRunner::move_conflictNotInPolicyMap_isSkippedNotReplaced()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "NEW");
@@ -758,7 +741,7 @@ void TestOpRunner::move_conflictNotInPolicyMap_isSkippedNotReplaced()
 	req.items = {makeItem(src, 3)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.skipped, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("FOREIGN"));
 	QVERIFY2(QFile::exists(src), "a skipped move must leave its source alone");
@@ -772,8 +755,8 @@ void TestOpRunner::move_copyLeg_movesFileAndRemovesSource()
 	qputenv("MEDIAMUSTER_FORCE_MOVE_COPY", "1");
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, QByteArray(1024, 'M'));
@@ -785,21 +768,21 @@ void TestOpRunner::move_copyLeg_movesFileAndRemovesSource()
 	req.items = {makeItem(src, 1024)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray(1024, 'M'));
 	QVERIFY(!QFile::exists(src));
 
-	// The copy leg hashes; the ledger keeps the evidence.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	// The copy leg hashes; the journal keeps the evidence.
+	const auto recs = OpJournal::scan(journalDir.path());
 	QVERIFY(!recs[0].ops[0].hash.isEmpty());
 }
 
 void TestOpRunner::move_copyLeg_replace_trashesParkedAndRemovesSource()
 {
 	qputenv("MEDIAMUSTER_FORCE_MOVE_COPY", "1");
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	qputenv("MEDIAMUSTER_DISABLE_OS_TRASH", "1");
 	// The seam stands in for the volume root, so it must be an ancestor
 	// of the media — exactly like the real volume root is.
@@ -816,12 +799,12 @@ void TestOpRunner::move_copyLeg_replace_trashesParkedAndRemovesSource()
 	req.items = {makeItem(src, 11, QStringLiteral("replace"))};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("NEW CONTENT"));
 	QVERIFY(!QFile::exists(src));
 
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(readFile(recs[0].ops[0].parkedFinal), QByteArray("PRECIOUS ORIGINAL"));
 }
 
@@ -829,8 +812,8 @@ void TestOpRunner::move_copyLeg_replace_trashesParkedAndRemovesSource()
 
 void TestOpRunner::delete_moves_file_to_trash_and_records_final()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	qputenv("MEDIAMUSTER_DISABLE_OS_TRASH", "1");
 	qputenv("MEDIAMUSTER_TRASH_ROOT", tmp.path().toUtf8());
 
@@ -842,13 +825,13 @@ void TestOpRunner::delete_moves_file_to_trash_and_records_final()
 	req.items = {makeItem(src, 15)};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.succeeded, 1);
 	QVERIFY2(!QFile::exists(src), "the file must leave its original location");
 
 	// Never a hard delete: the bytes are in the MediaMuster Trash, at
-	// the address the ledger recorded.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	// the address the journal recorded.
+	const auto recs = OpJournal::scan(journalDir.path());
 	const QString finalPath = recs[0].ops[0].finalPath;
 	QVERIFY(finalPath.contains(QStringLiteral("_MediaMuster_Trash")));
 	QCOMPARE(readFile(finalPath), QByteArray("DELETED CONTENT"));
@@ -858,8 +841,8 @@ void TestOpRunner::delete_moves_file_to_trash_and_records_final()
 
 void TestOpRunner::delete_fallbackTrash_neverOverwritesPriorCatch()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	qputenv("MEDIAMUSTER_DISABLE_OS_TRASH", "1");
 	qputenv("MEDIAMUSTER_TRASH_ROOT", tmp.path().toUtf8());
 
@@ -873,14 +856,14 @@ void TestOpRunner::delete_fallbackTrash_neverOverwritesPriorCatch()
 	req1.kind = OpKind::Delete;
 	req1.items = {makeItem(src, 11)};
 	TestSink sink1;
-	QCOMPARE(runRequest(req1, sink1, ledgerDir.path()).succeeded, 1);
+	QCOMPARE(runRequest(req1, sink1, journalDir.path()).succeeded, 1);
 
 	writeFile(src, "SECOND CATCH");
 	OpRequest req2;
 	req2.kind = OpKind::Delete;
 	req2.items = {makeItem(src, 12)};
 	TestSink sink2;
-	QCOMPARE(runRequest(req2, sink2, ledgerDir.path()).succeeded, 1);
+	QCOMPARE(runRequest(req2, sink2, journalDir.path()).succeeded, 1);
 
 	// Both catches survive, under distinct names.
 	const QString binDir = tmp.path() + QStringLiteral("/_MediaMuster_Trash/media");
@@ -891,7 +874,6 @@ void TestOpRunner::delete_fallbackTrash_neverOverwritesPriorCatch()
 		all += readFile(binDir + QLatin1Char('/') + name);
 	QVERIFY(all.contains("FIRST CATCH") && all.contains("SECOND CATCH"));
 }
-
 
 // MARK: - Ownership guards (adversarial review 2026-08-30)
 
@@ -910,7 +892,7 @@ void TestOpRunner::parkedfile_never_deletes_a_file_it_did_not_write()
 
 	QString parkedPath;
 	{
-		ParkedFile park(dst, AvidLayout::kCopyReplaceTag);
+		ParkedFile park(dst, Conventions::kCopyReplaceTag);
 		QVERIFY(park.park());
 		parkedPath = park.path();
 
@@ -923,7 +905,7 @@ void TestOpRunner::parkedfile_never_deletes_a_file_it_did_not_write()
 		QCOMPARE(readFile(parkedPath), QByteArray("ORIGINAL"));
 
 		// The caller's contract after a stranded flag: disarm so the
-		// destructor can't change disk after the ledger's last word.
+		// destructor can't change disk after the journal's last word.
 		park.disarm();
 	}
 	// Destructor ran; nothing may have changed.
@@ -938,7 +920,7 @@ void TestOpRunner::parkedfile_discards_only_its_own_write()
 	const QString dst = tmp.path() + "/clip.mxf";
 	writeFile(dst, "ORIGINAL");
 
-	ParkedFile park(dst, AvidLayout::kCopyReplaceTag);
+	ParkedFile park(dst, Conventions::kCopyReplaceTag);
 	QVERIFY(park.park());
 	writeFile(dst, "OUR-PARTIAL");
 	park.noteDestinationWritten();
@@ -957,7 +939,7 @@ void TestOpRunner::parkedfile_disarm_freezes_disk_state()
 
 	QString parkedPath;
 	{
-		ParkedFile park(dst, AvidLayout::kMoveReplaceTag);
+		ParkedFile park(dst, Conventions::kMoveReplaceTag);
 		QVERIFY(park.park());
 		parkedPath = park.path();
 		park.disarm();
@@ -983,7 +965,7 @@ void TestOpRunner::copier_racer_at_destination_survives()
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
 
-	ParkedFile park(dst, AvidLayout::kCopyReplaceTag);
+	ParkedFile park(dst, Conventions::kCopyReplaceTag);
 	QVERIFY(park.park());
 	writeFile(dst, "RACER"); // lands after the park, before the open
 
@@ -1001,15 +983,15 @@ void TestOpRunner::copier_racer_at_destination_survives()
 	QCOMPARE(readFile(dst), QByteArray("RACER"));
 	QCOMPARE(readFile(park.path()), QByteArray("ORIGINAL"));
 	QVERIFY(park.isStranded());
-	park.disarm(); // the runner would ledger a dirty fail here
+	park.disarm(); // the runner would journal a dirty fail here
 }
 
 // MARK: - Rename
 
 void TestOpRunner::rename_moves_file_and_fires_folder_hook()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString srcDir = tmp.path() + "/MXF/1";
 	const QString dstDir = tmp.path() + "/MXF/2";
 	const QString src = srcDir + "/clip.mxf";
@@ -1027,7 +1009,7 @@ void TestOpRunner::rename_moves_file_and_fires_folder_hook()
 	QStringList touched;
 	OpRunner runner(sink, kNoCancel);
 	runner.onRenameFolderTouched = [&touched](const QString &folder) { touched << folder; };
-	const auto totals = runner.run(req, ledgerDir.path());
+	const auto totals = runner.run(req, journalDir.path());
 
 	QCOMPARE(totals.succeeded, 1);
 	QCOMPARE(readFile(dstDir + "/clip.mxf"), QByteArray("REBALANCED"));
@@ -1038,9 +1020,9 @@ void TestOpRunner::rename_moves_file_and_fires_folder_hook()
 			touched.contains(srcDir));
 	QCOMPARE(touched.size(), 2);
 
-	// And the rename is a first-class ledgered op: write-ahead line,
+	// And the rename is a first-class journaled op: write-ahead line,
 	// done line, recoverable like everything else.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	QCOMPARE(recs[0].kind, OpKind::Rename);
 	QVERIFY(recs[0].ops[0].completed);
@@ -1048,8 +1030,8 @@ void TestOpRunner::rename_moves_file_and_fires_folder_hook()
 
 void TestOpRunner::rename_refuses_occupied_destination()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/MXF/1/clip.mxf";
 	const QString dst = tmp.path() + "/MXF/2/clip.mxf";
 	writeFile(src, "MINE");
@@ -1062,7 +1044,7 @@ void TestOpRunner::rename_refuses_occupied_destination()
 	req.items = {it};
 
 	TestSink sink;
-	const auto totals = runRequest(req, sink, ledgerDir.path());
+	const auto totals = runRequest(req, sink, journalDir.path());
 	QCOMPARE(totals.failed, 1);
 	QCOMPARE(readFile(src), QByteArray("MINE"));
 	QCOMPARE(readFile(dst), QByteArray("THEIRS"));
@@ -1070,8 +1052,8 @@ void TestOpRunner::rename_refuses_occupied_destination()
 
 void TestOpRunner::rename_precancelled_runs_nothing()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/MXF/1/clip.mxf";
 	writeFile(src, "STAY");
 
@@ -1084,36 +1066,38 @@ void TestOpRunner::rename_precancelled_runs_nothing()
 	TestSink sink;
 	std::atomic<bool> cancelled{true};
 	OpRunner runner(sink, cancelled);
-	const auto totals = runner.run(req, ledgerDir.path());
+	const auto totals = runner.run(req, journalDir.path());
 	QCOMPARE(totals.succeeded, 0);
 	QVERIFY2(QFile::exists(src), "a pre-cancelled run must touch nothing");
 }
 
-// MARK: - Ledger integration
+// MARK: - Journal integration
 
-void TestOpRunner::ledger_survives_run_and_plan_precedes_ops()
+void TestOpRunner::journal_survives_run_and_plan_precedes_ops()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
-	writeFile(src, "LEDGERED");
+	writeFile(src, "JOURNALED");
 	QDir().mkpath(dest);
 
 	OpRequest req;
 	req.kind = OpKind::Copy;
 	req.destRoot = dest;
-	req.items = {makeItem(src, 8)};
+	// Size must match the payload byte-for-byte, or captureAndCheckSource
+	// refuses the item before it is ever copied.
+	req.items = {makeItem(src, 9)};
 
 	TestSink sink;
-	runRequest(req, sink, ledgerDir.path());
+	runRequest(req, sink, journalDir.path());
 
-	// v2 retention: the finished ledger STAYS (it is the undo
+	// v2 retention: the finished journal STAYS (it is the undo
 	// candidate). v1 pruned it here — which is why undo never worked.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	QVERIFY(recs[0].complete);
-	QVERIFY(OpLedger::latestUndoable(ledgerDir.path()).has_value());
+	QVERIFY(OpJournal::latestUndoable(journalDir.path()).has_value());
 
 	// The write-ahead property, checked structurally: in the file's
 	// actual line order, the plan precedes every op line.
@@ -1135,8 +1119,8 @@ void TestOpRunner::ledger_survives_run_and_plan_precedes_ops()
 
 void TestOpRunner::plan_records_volume_fingerprints()
 {
-	QTemporaryDir tmp, ledgerDir;
-	QVERIFY(tmp.isValid() && ledgerDir.isValid());
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";
 	const QString dest = tmp.path() + "/dest";
 	writeFile(src, "VOLUMED");
@@ -1148,12 +1132,12 @@ void TestOpRunner::plan_records_volume_fingerprints()
 	req.items = {makeItem(src, 7)};
 
 	TestSink sink;
-	runRequest(req, sink, ledgerDir.path());
+	runRequest(req, sink, journalDir.path());
 
 	// Everything here is one temp volume, but its fingerprint must be
 	// in the plan — that is what lets recovery re-find a drive that
 	// came back under another name, and refuse an impostor.
-	const auto recs = OpLedger::scan(ledgerDir.path());
+	const auto recs = OpJournal::scan(journalDir.path());
 	QCOMPARE(recs.size(), 1);
 	QVERIFY(!recs[0].volumes.isEmpty());
 	QVERIFY(recs[0].volumes[0].matches(VolumeIdentity::capture(tmp.path())));

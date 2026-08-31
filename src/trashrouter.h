@@ -27,7 +27,7 @@ public:
 	struct Landing
 	{
 		bool ok = false;
-		QString finalPath; ///< Where the file now lives; ledgered so
+		QString finalPath; ///< Where the file now lives; journaled so
 						   ///< undo and recovery can bring it back.
 		bool usedMediaMusterTrash = false;
 		QString error; ///< User-facing sentence when !ok.

@@ -1,13 +1,23 @@
 #include "rebalancedialog.h"
-#include "foldercard.h"
+#include "conventions.h"
 #include "formatutil.h"
 #include "layoututil.h"
 #include "rebalancer.h"
 
+#include <QBrush>
+#include <QColor>
 #include <QComboBox>
 #include <QFont>
+#include <QFontMetrics>
 #include <QFrame>
 #include <QGridLayout>
+#include <QLinearGradient>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPalette>
+#include <QPen>
+#include <QPixmap>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
@@ -40,7 +50,412 @@ namespace
 	// reflow on dialog resize, but the dialog is narrow-ish anyway.
 	constexpr int kCardColumns = 3;
 
+	// MARK: - Card painting helpers (folded in from foldercard.* 2026-08-31)
+
+	QColor capColor(int fileCount)
+	{
+		if (fileCount >= Conventions::kFolderCritical)
+			return QColor(0xff, 0x3b, 0x30);
+		if (fileCount >= Conventions::kFolderWarn)
+			return QColor(0xff, 0x95, 0x00);
+		return QColor(0x34, 0xc7, 0x59);
+	}
+
+	QBrush makeStripeBrush(const QColor &color)
+	{
+		constexpr int kTile = 8;
+		QPixmap tile(kTile, kTile);
+		tile.fill(Qt::transparent);
+
+		QPainter p(&tile);
+		p.setRenderHint(QPainter::Antialiasing);
+		QPen pen(color, 3.0);
+		pen.setCapStyle(Qt::FlatCap);
+		p.setPen(pen);
+		p.drawLine(0, kTile, kTile, 0);
+		p.end();
+
+		return QBrush(tile);
+	}
+
+	QBrush makeAquaBrush(const QColor &base, const QRect &rect)
+	{
+		QLinearGradient grad(rect.topLeft(), rect.bottomLeft());
+		grad.setColorAt(0.00, base.lighter(140));
+		grad.setColorAt(0.45, base);
+		grad.setColorAt(1.00, base.darker(115));
+		return QBrush(grad);
+	}
+
+	void paintAquaGloss(QPainter &p, const QRect &rect, int radius)
+	{
+		QRect top = rect;
+		top.setHeight(rect.height() / 2);
+		QLinearGradient grad(top.topLeft(), top.bottomLeft());
+		grad.setColorAt(0.0, QColor(255, 255, 255, 110));
+		grad.setColorAt(1.0, QColor(255, 255, 255, 0));
+		p.setBrush(grad);
+		p.setPen(Qt::NoPen);
+		p.drawRoundedRect(top, radius, radius);
+	}
+
+	// Cards have a fixed height, but fluid width.
+	constexpr int kCardMinWidth = 200;
+	constexpr int kCardHeight = 100;
+	constexpr int kPad = 12;
+	constexpr int kBarHeight = 14;
+	constexpr int kBarRadius = 4;
+
+	// MARK: - Demo plans (Debug ▸ Rebalance demos)
+	//
+	// Synthetic plans for visual QA, reachable only through createDemo().
+	// One generator behind all three sizes (it replaced three hand-built
+	// scenarios — a bespoke cohort table and a two-phase greedy matcher —
+	// that painted the same three pictures).
+
+	constexpr qint64 kDemoFileBytes = qint64(10) * 1024 * 1024; // 10 MB per file
+
+	FolderState demoFolder(const FolderId &id, int count, bool isNew = false)
+	{
+		FolderState fs;
+		fs.id = id;
+		fs.name = id.display();
+		fs.count = count;
+		fs.bytes = qint64(count) * kDemoFileBytes;
+		fs.isNew = isNew;
+		return fs;
+	}
+
+	/// Append `count` MoveOps src → dest and keep the folder tallies in
+	/// step. One shared srcPath QString per call: implicit sharing makes
+	/// appending the same path 666K times nearly free.
+	void demoMoves(RebalancePlan &plan, const FolderId &src, const FolderId &dest, int count)
+	{
+		if (count <= 0)
+			return;
+		const QString sharedSrcPath =
+			QStringLiteral("/demo/Avid MediaFiles/MXF/%1/clip.mxf").arg(src.display());
+		for (int i = 0; i < count; ++i)
+		{
+			MoveOp op;
+			op.srcPath = sharedSrcPath;
+			op.dest = dest;
+			op.sizeBytes = kDemoFileBytes;
+			plan.ops.append(op);
+		}
+		for (FolderState &fs : plan.folders)
+		{
+			if (!fs.inScope)
+				continue;
+			if (fs.id == src)
+			{
+				fs.filesOut += count;
+				fs.bytesOut += qint64(count) * kDemoFileBytes;
+			}
+			else if (fs.id == dest)
+			{
+				fs.filesIn += count;
+				fs.bytesIn += qint64(count) * kDemoFileBytes;
+			}
+		}
+	}
+
+	/// Existing folders get a fullness ramp from `maxCount` down to
+	/// `minCount` (deterministic jitter keeps the bars off a perfect
+	/// staircase; the top of a tall ramp deliberately overshoots the Avid
+	/// cap so the ⚠️ state shows). New folders start empty. Ops then level
+	/// every folder toward the mean — above-mean drains into below-mean,
+	/// two cursors, in folder order — and if levelling runs dry before
+	/// `opCount`, net-zero neighbour swaps (A→B then B→A) make up the
+	/// difference: the run feels as big as opCount says without bending
+	/// any folder's final count.
+	RebalancePlan demoPlan(const QString &label, const QString &prefix, int folderCount,
+						   int newFolderCount, int minCount, int maxCount, int opCount)
+	{
+		RebalancePlan plan;
+		plan.mxfRoot = QStringLiteral("/demo/Avid MediaFiles/MXF");
+		plan.volumeLabel = label;
+
+		plan.folders.reserve(folderCount + newFolderCount + 1);
+		for (int i = 0; i < folderCount; ++i)
+		{
+			const double t = folderCount > 1 ? double(i) / (folderCount - 1) : 0.0;
+			const int jitter = (i * 97) % 241 - 120;
+			const int count = qMax(0, int(maxCount - t * (maxCount - minCount)) + jitter);
+			plan.folders.append(demoFolder({prefix, i + 1}, count));
+		}
+		for (int n = folderCount + 1; n <= folderCount + newFolderCount; ++n)
+		{
+			plan.folders.append(demoFolder({prefix, n}, 0, /*isNew=*/true));
+			plan.newFolders.append({prefix, n});
+		}
+		if (folderCount >= 100)
+		{
+			// The stress scenario keeps its out-of-scope cameo.
+			FolderState q;
+			q.name = QStringLiteral("Quarantined Files");
+			q.count = 47;
+			q.bytes = 47 * kDemoFileBytes;
+			q.inScope = false;
+			plan.folders.append(q);
+		}
+
+		// Per-folder surplus/deficit against the mean.
+		qint64 total = 0;
+		for (const FolderState &fs : plan.folders)
+			if (fs.inScope)
+				total += fs.count;
+		const int mean = int(total / qMax(1, folderCount + newFolderCount));
+
+		QVector<QPair<FolderId, int>> sources, dests;
+		for (const FolderState &fs : plan.folders)
+		{
+			if (!fs.inScope)
+				continue;
+			if (fs.count > mean)
+				sources.append({fs.id, fs.count - mean});
+			else if (fs.count < mean)
+				dests.append({fs.id, mean - fs.count});
+		}
+
+		plan.ops.reserve(opCount);
+		int remaining = opCount;
+		auto srcIt = sources.begin();
+		auto destIt = dests.begin();
+		while (remaining > 0 && srcIt != sources.end() && destIt != dests.end())
+		{
+			const int amount = qMin(qMin(srcIt->second, destIt->second), remaining);
+			demoMoves(plan, srcIt->first, destIt->first, amount);
+			remaining -= amount;
+			if ((srcIt->second -= amount) == 0)
+				++srcIt;
+			if ((destIt->second -= amount) == 0)
+				++destIt;
+		}
+
+		int slot = 0;
+		while (remaining > 0 && folderCount > 1)
+		{
+			const FolderId a{prefix, slot + 1};
+			const FolderId b{prefix, slot + 2};
+			const int out = qMin((remaining + 1) / 2, 500);
+			const int back = qMin(remaining - out, out);
+			demoMoves(plan, a, b, out);
+			demoMoves(plan, b, a, back);
+			remaining -= out + back;
+			slot = (slot + 1) % (folderCount - 1);
+		}
+
+		return plan;
+	}
+
 } // namespace
+
+// MARK: - FolderCard
+//
+// The per-folder before/after card in the plan grid: name, capacity bar
+// against the Avid limits, count and delta captions. Folded in from
+// foldercard.* (2026-08-31) as this dialog's only consumer. No signals,
+// slots or properties, so no Q_OBJECT — the header's forward declaration
+// stays valid and moc never needs to see this file.
+
+class FolderCard : public QFrame
+{
+public:
+	explicit FolderCard(QWidget *parent = nullptr);
+	void setFolder(const FolderState &fs);
+	void setCurrentCount(int current);
+	void markFinished();
+	QSize sizeHint() const override;
+	QSize minimumSizeHint() const override;
+
+protected:
+	void paintEvent(QPaintEvent *event) override;
+
+private:
+	QString m_folderName;
+	bool m_inScope = true;
+	bool m_isNew = false;
+	bool m_finished = false;
+	int m_currentCount = 0;
+	int m_projectedCount = 0;
+	int m_initialCount = 0;
+};
+
+FolderCard::FolderCard(QWidget *parent)
+	: QFrame(parent)
+{
+	setObjectName(QStringLiteral("folderCard"));
+	setFrameShape(QFrame::StyledPanel);
+	setStyleSheet(QStringLiteral("QFrame#folderCard { border: 1px solid palette(mid); "
+								 "border-radius: 6px; background: palette(base); }"));
+	setFixedHeight(kCardHeight);
+	setMinimumWidth(kCardMinWidth);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+}
+
+void FolderCard::setFolder(const FolderState &fs)
+{
+	m_folderName = fs.name;
+	m_inScope = fs.inScope;
+	m_isNew = fs.isNew;
+	m_finished = false;
+	m_currentCount = fs.count;
+	m_initialCount = fs.count;
+	m_projectedCount = fs.count + fs.filesIn - fs.filesOut;
+	update();
+}
+
+void FolderCard::setCurrentCount(int current)
+{
+	if (current == m_currentCount)
+		return;
+	m_currentCount = current;
+	update();
+}
+
+void FolderCard::markFinished()
+{
+	m_currentCount = m_projectedCount;
+	m_finished = true;
+	update();
+}
+
+QSize FolderCard::sizeHint() const
+{
+	return {kCardMinWidth, kCardHeight};
+}
+
+QSize FolderCard::minimumSizeHint() const
+{
+	return {kCardMinWidth, kCardHeight};
+}
+
+void FolderCard::paintEvent(QPaintEvent *event)
+{
+	QFrame::paintEvent(event);
+
+	QPainter p(this);
+	p.setRenderHint(QPainter::Antialiasing);
+	p.setRenderHint(QPainter::TextAntialiasing);
+
+	const QRect content = rect().adjusted(kPad, kPad - 2, -kPad, -kPad + 2);
+	int y = content.top();
+
+	// MARK: Folder name
+
+	QFont nameFont = font();
+	nameFont.setBold(true);
+	nameFont.setPointSize(nameFont.pointSize() + 1);
+	const QFontMetrics fmName(nameFont);
+	p.setFont(nameFont);
+	p.setPen(palette().color(QPalette::WindowText));
+	// ⚠️ for bloated folders.
+	// 🆕 for new folders.
+	QString displayName = m_folderName;
+	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderRecommend)
+		displayName = QStringLiteral("⚠️ ") + displayName;
+	if (m_isNew)
+		displayName = QStringLiteral("🆕 ") + displayName;
+	p.drawText(QRect(content.left(), y, content.width(), fmName.height()),
+			   Qt::AlignLeft | Qt::AlignVCenter,
+			   fmName.elidedText(displayName, Qt::ElideRight, content.width()));
+	y += fmName.height() + 6;
+
+	// MARK: Capacity bar
+
+	const QRect track(content.left(), y, content.width(), kBarHeight);
+	if (m_inScope)
+	{
+		// `barFrac` maps file counts onto the visual scale.
+		const auto barFrac = [](int n)
+		{ return qBound(0.0, double(n) / Conventions::kFolderMax, 1.0); };
+
+		// Track shade derived from the theme's text colour: dark on
+		// light backgrounds, light on dark backgrounds.
+		p.setPen(Qt::NoPen);
+		QColor trackColor = palette().color(QPalette::WindowText);
+		trackColor.setAlpha(70);
+		p.setBrush(trackColor);
+		p.drawRoundedRect(track, kBarRadius, kBarRadius);
+
+		const int settledEnd = int(track.width() * barFrac(qMin(m_currentCount, m_projectedCount)));
+		const int outerEnd = int(track.width() * barFrac(qMax(m_currentCount, m_projectedCount)));
+		const QColor fillColor = capColor(qMax(m_currentCount, m_projectedCount));
+		p.save();
+		QPainterPath barClip;
+		barClip.addRoundedRect(track, kBarRadius, kBarRadius);
+		p.setClipPath(barClip);
+
+		if (settledEnd > 0)
+		{
+			QRect solid(track.x(), track.y(), settledEnd, track.height());
+			p.fillRect(solid, makeAquaBrush(fillColor, solid));
+			paintAquaGloss(p, solid, 0);
+		}
+
+		if (outerEnd > settledEnd)
+		{
+			QRect ghost(track.x() + settledEnd, track.y(), outerEnd - settledEnd, track.height());
+			p.fillRect(ghost, makeStripeBrush(fillColor));
+		}
+
+		p.restore();
+	}
+	y += kBarHeight + 8;
+
+	// MARK: Count caption
+
+	QFont countFont = font();
+	const QFontMetrics fmCount(countFont);
+	p.setFont(countFont);
+	p.setPen(palette().color(QPalette::WindowText));
+
+	QString countText;
+	if (!m_inScope || m_currentCount == m_projectedCount)
+		countText = Format::count(m_currentCount);
+	else
+		countText = QStringLiteral("%1 → %2").arg(Format::count(m_currentCount),
+												  Format::count(m_projectedCount));
+	p.drawText(QRect(content.left(), y, content.width(), fmCount.height()),
+			   Qt::AlignLeft | Qt::AlignVCenter, countText);
+	y += fmCount.height() + 2;
+
+	// MARK: Delta caption
+
+	QFont deltaFont = font();
+	deltaFont.setPointSize(qMax(8, deltaFont.pointSize() - 1));
+	const QFontMetrics fmDelta(deltaFont);
+	p.setFont(deltaFont);
+	QColor secondaryText = palette().color(QPalette::WindowText);
+	secondaryText.setAlpha(160);
+	p.setPen(secondaryText);
+
+	QString deltaText;
+	if (m_finished)
+	{
+		// Suppress the delta caption after rebalancing.
+	}
+	else if (!m_inScope)
+	{
+		deltaText = tr("out of scope");
+	}
+	else
+	{
+		const int df = m_projectedCount - m_initialCount;
+		if (df == 0)
+			deltaText = tr("no change");
+		else
+			// %n drives the plural; the leading sign is a symbol, not translatable.
+			deltaText = df > 0 ? tr("+%n file(s)", nullptr, df) : tr("−%n file(s)", nullptr, -df);
+	}
+	if (!deltaText.isEmpty())
+	{
+		p.drawText(QRect(content.left(), y, content.width(), fmDelta.height()),
+				   Qt::AlignLeft | Qt::AlignVCenter,
+				   fmDelta.elidedText(deltaText, Qt::ElideRight, content.width()));
+	}
+}
 
 // MARK: - Construction
 
@@ -86,6 +501,28 @@ RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
 }
 
 // MARK: - Demo-mode construction
+
+RebalanceDialog *RebalanceDialog::createDemo(DemoScenario scenario, QWidget *parent)
+{
+	RebalancePlan plan;
+	switch (scenario)
+	{
+	case DemoScenario::Small:
+		// A modest, healthy volume with one small migration.
+		plan = demoPlan(QStringLiteral("Demo · Small"), QString(), 4, 0, 60, 3500, 47);
+		break;
+	case DemoScenario::Big:
+		// Three over-stuffed folders draining into three new ones.
+		plan = demoPlan(QStringLiteral("Demo · Big"), QStringLiteral("Edit14"), 3, 3, 4200, 4990,
+						7490);
+		break;
+	case DemoScenario::ReallyBig:
+		plan = demoPlan(QStringLiteral("Demo · Really Big"), QStringLiteral("MartysiMac"), 200, 60,
+						200, 5600, 666666);
+		break;
+	}
+	return new RebalanceDialog(plan, parent);
+}
 
 RebalanceDialog::RebalanceDialog(const RebalancePlan &precomputedPlan, QWidget *parent)
 	: QDialog(parent),

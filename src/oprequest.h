@@ -11,12 +11,12 @@
 // The value types every part of the file-operations engine v2 speaks:
 // what the user asked for (OpRequest), one file's line item (OpItem),
 // and the on-disk names for the enums. Pure data — no I/O, no Qt beyond
-// containers — so the ledger, runner, recovery and undo can all include
+// containers — so the journal, runner, recovery and undo can all include
 // this without dragging each other in.
 //
 // The engine deliberately does NOT pass MediaFile around: an OpItem
 // carries only what an operation needs, which is also exactly what the
-// ledger's plan record can reconstruct for a resumed run. Anything a
+// journal's plan record can reconstruct for a resumed run. Anything a
 // MediaFile knows that isn't here (codec, project, duration…) is scanner
 // business the engine must never depend on.
 
@@ -50,7 +50,7 @@ enum class ConflictPolicy : int
 
 // MARK: - On-disk names
 //
-// The ledger stores kinds and policies by NAME, not enum value, so a
+// The journal stores kinds and policies by NAME, not enum value, so a
 // journal written today still means the same thing to a future build
 // even if someone reorders the enums. Never rename a string here; add
 // new ones instead.
@@ -119,12 +119,12 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 // MARK: - OpItem
 
 /// One file's line item in a request — and, verbatim, one entry in the
-/// ledger's plan record, which is what makes an interrupted run
+/// journal's plan record, which is what makes an interrupted run
 /// resumable without a rescan.
 ///
 /// The mob fields are the SCAN'S CLAIMS about the file's Avid identity,
 /// recorded so (a) the runner can cross-check the file it finds on disk
-/// against what the user actually selected, and (b) ledger, undo and
+/// against what the user actually selected, and (b) journal, undo and
 /// recovery messages can name clips ("A001_C002"), not just cryptic MXF
 /// filenames. They are claims, not captures: the runner re-reads the
 /// real identity from the file itself immediately before touching it
@@ -153,7 +153,7 @@ struct OpItem
 
 /// Everything the engine needs to run one operation. Built by the
 /// OpManager facade from the UI's selection, by the resume flow from a
-/// ledger's plan record, or by OpUndo as the inverse of a previous run.
+/// journal's plan record, or by OpUndo as the inverse of a previous run.
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
@@ -161,8 +161,8 @@ struct OpRequest
 	bool preserve = false; ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
 	QVector<OpItem> items;
 
-	/// Undo only: the ledger file this run reverses. The undo run writes
-	/// its own ledger; on clean finish the original gets an 'undone'
+	/// Undo only: the journal file this run reverses. The undo run writes
+	/// its own journal; on clean finish the original gets an 'undone'
 	/// marker so it can never be undone twice.
-	QString undoesLedgerPath;
+	QString undoesJournalPath;
 };

@@ -2,7 +2,7 @@
 
 #include "fileidentity.h"
 #include "opcopier.h"
-#include "opledger.h"
+#include "opjournal.h"
 #include "oprequest.h"
 
 #include <QSet>
@@ -44,25 +44,34 @@ public:
 	virtual void trashUsed(const QString &trashFolderPath, int fileCount) = 0;
 };
 
+// MARK: - Folder database reset
+
+/// Delete `folderPath`'s Avid databases (msmMMOB.mdb / msmFMID.pmr) so
+/// Media Composer rebuilds them at next launch; failures are warned
+/// through `sink`. The one implementation of the reset both the forward
+/// Rename machine and its undo perform — see the ordering rationale at
+/// the definition.
+void resetAvidDatabases(const QString &folderPath, OpSink &sink);
+
 // MARK: - OpRunner
 //
 // The state machines: one run() call executes one OpRequest start to
 // finish on the calling thread, writing every step ahead into an
-// OpLedger and reporting through the OpSink. The safety order inside
+// OpJournal and reporting through the OpSink. The safety order inside
 // every machine is the same four beats, and their sequence is the whole
 // point:
 //
 //   1. IDENTIFY  — capture the file's identity and check it against
 //                  what the scan claimed. Wrong file = refuse, explain,
 //                  move on. We never operate on a guess.
-//   2. WRITE IT  — the ledger line describing the step, fsync'd, BEFORE
+//   2. WRITE IT  — the journal line describing the step, fsync'd, BEFORE
 //      DOWN        the step. A crash at any instant leaves a record
 //                  that recovery can act on.
 //   3. ACT       — park aside, copy/rename/trash, verify, apply the
 //                  durability barrier.
 //   4. RE-CHECK  — verify the source again after the bytes moved (a
 //                  same-size swap during a long copy is real), capture
-//                  the landed file's identity for the ledger, and only
+//                  the landed file's identity for the journal, and only
 //                  then dispose of anything (replaced originals go to
 //                  the trash, never a hard delete; a Move's source is
 //                  removed only after its copy is verified AND durable).
@@ -76,7 +85,7 @@ class OpRunner
 public:
 	/// `cancel` is polled at file boundaries and inside the byte loops.
 	/// Cancel means STOP AND KEEP: work already landed stays landed, the
-	/// ledger closes clean (and remains the undo candidate).
+	/// journal closes clean (and remains the undo candidate).
 	OpRunner(OpSink &sink, const std::atomic<bool> &cancel);
 
 	struct Totals
@@ -86,9 +95,9 @@ public:
 		int skipped = 0;
 	};
 
-	/// Execute one request. `ledgerDir` overrides the ledger location
-	/// (tests); empty means the standard oplog dir.
-	Totals run(const OpRequest &request, const QString &ledgerDir = QString());
+	/// Execute one request. `journalDir` overrides the journal location
+	/// (tests); empty means the standard journal dir.
+	Totals run(const OpRequest &request, const QString &journalDir = QString());
 
 	// MARK: - Path helpers (public: dialog previews and tests pin them)
 
@@ -134,9 +143,9 @@ private:
 		Fail
 	};
 
-	Totals runCopyMove(const OpRequest &req, const QString &ledgerDir);
-	Totals runDelete(const OpRequest &req, const QString &ledgerDir);
-	Totals runRename(const OpRequest &req, const QString &ledgerDir);
+	Totals runCopyMove(const OpRequest &req, const QString &journalDir);
+	Totals runDelete(const OpRequest &req, const QString &journalDir);
+	Totals runRename(const OpRequest &req, const QString &journalDir);
 
 	ConflictAction resolveConflict(const OpItem &it, QString &dstPath,
 								   const QSet<QString> &claimed);
@@ -148,12 +157,12 @@ private:
 	/// and the first difference).
 	std::optional<FileIdentity> captureAndCheckSource(const OpItem &it);
 
-	void warnLedgerDegradedOnce(const OpLedger &ledger, bool &warned);
-	/// Writes the dirty ledger line for a park that could not be restored,
-	/// tells the user, and DISARMS the park — the ledger line must be the
+	void warnJournalDegradedOnce(const OpJournal &journal, bool &warned);
+	/// Writes the dirty journal line for a park that could not be restored,
+	/// tells the user, and DISARMS the park — the journal line must be the
 	/// last word on this item's disk state, so no destructor retry may
 	/// change it afterwards.
-	void flagStrandedPark(LedgerOp &lop, class ParkedFile &park, const OpItem &it);
+	void flagStrandedPark(JournalOp &lop, class ParkedFile &park, const OpItem &it);
 
 	/// The display name for messages: the clip name the editor knows
 	/// when the scan recorded one, else the file name.

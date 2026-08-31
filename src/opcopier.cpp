@@ -48,7 +48,7 @@ namespace
 
 	QString hexDigest(quint64 digest)
 	{
-		// Fixed width so ledger lines are grep-able and two digests are
+		// Fixed width so journal lines are grep-able and two digests are
 		// always comparable as strings.
 		return QStringLiteral("%1").arg(digest, 16, 16, QLatin1Char('0'));
 	}

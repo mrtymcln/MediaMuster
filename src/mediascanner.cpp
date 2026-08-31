@@ -1,7 +1,6 @@
 #include "mediascanner.h"
 #include "avideffects.h"
-#include "avidlayout.h"
-#include "avidlimits.h"
+#include "conventions.h"
 #include "debugslowdown.h"
 #include "logging.h"
 #include "mobid.h"
@@ -424,8 +423,8 @@ void MediaScanner::concludeScan(const QVector<MediaFile> &files, bool cancelled)
 			QString msg = QStringLiteral("%1 folder(s) over %2 files "
 										 "(Avid recommends staying under %3):")
 							  .arg(m_overfullFolders.size())
-							  .arg(AvidLimits::kFolderWarn)
-							  .arg(AvidLimits::kFolderMax);
+							  .arg(Conventions::kFolderWarn)
+							  .arg(Conventions::kFolderMax);
 			for (const auto &p : m_overfullFolders)
 				msg += QStringLiteral("\n  %1 — %2 files").arg(p.first).arg(p.second);
 			emitLog(QtWarningMsg, QStringLiteral("scanner"), msg);
@@ -456,7 +455,7 @@ QVector<MediaFile> MediaScanner::scanVolume(const QString &volumePath, const QSt
 
 	// MARK: Case 1 — Volume root contains Avid MediaFiles/MXF
 
-	const QString mxfViaRoot = AvidLayout::mxfRootUnder(volumePath);
+	const QString mxfViaRoot = Conventions::mxfRootUnder(volumePath);
 	if (QDir(mxfViaRoot).exists())
 	{
 		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found Avid MediaFiles/MXF"));
@@ -465,10 +464,10 @@ QVector<MediaFile> MediaScanner::scanVolume(const QString &volumePath, const QSt
 
 	// MARK: Case 2 — Path is somewhere inside an Avid MediaFiles directory
 
-	const int avidIdx = volumePath.indexOf(AvidLayout::kAvidMediaFilesDir, 0, Qt::CaseInsensitive);
+	const int avidIdx = volumePath.indexOf(Conventions::kAvidMediaFilesDir, 0, Qt::CaseInsensitive);
 	if (avidIdx >= 0)
 	{
-		const QString avidPart = volumePath.left(avidIdx + AvidLayout::kAvidMediaFilesDir.size());
+		const QString avidPart = volumePath.left(avidIdx + Conventions::kAvidMediaFilesDir.size());
 		const QString mxfInside = avidPart + "/MXF";
 		if (QDir(mxfInside).exists())
 		{
@@ -476,7 +475,7 @@ QVector<MediaFile> MediaScanner::scanVolume(const QString &volumePath, const QSt
 			return scanMxfRoot(mxfInside, volumeName, avidPart);
 		}
 
-		if (AvidLayout::isMxfRootName(dirName))
+		if (Conventions::isMxfRootName(dirName))
 		{
 			emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Pointed directly at MXF folder"));
 			return scanMxfRoot(volumePath, volumeName, QFileInfo(volumePath).absolutePath());
@@ -485,7 +484,7 @@ QVector<MediaFile> MediaScanner::scanVolume(const QString &volumePath, const QSt
 
 	// MARK: Case 3 — Path itself is an MXF or OMF root
 
-	if (AvidLayout::isMxfRootName(dirName) || AvidLayout::isOmfRootName(dirName))
+	if (Conventions::isMxfRootName(dirName) || Conventions::isOmfRootName(dirName))
 	{
 		const QStringList subs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 		if (!subs.isEmpty())
@@ -545,7 +544,7 @@ QVector<MediaFile> MediaScanner::scanVolume(const QString &volumePath, const QSt
 	{
 		if (m_job.isCancelled())
 			break;
-		QString candidate = AvidLayout::mxfRootUnder(searchDir);
+		QString candidate = Conventions::mxfRootUnder(searchDir);
 		if (QDir(candidate).exists())
 		{
 			emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found Avid media at %1").arg(candidate));
@@ -746,7 +745,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		{
 			it.next();
 			const QFileInfo fi = it.fileInfo();
-			if (AvidLayout::countsAsEssenceName(fi.fileName()))
+			if (Conventions::countsAsEssenceName(fi.fileName()))
 				++mxfCount;
 			entries.append(fi);
 		}
@@ -784,7 +783,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		// era's .aif/.wav audio. Everything else — the msm databases, OS
 		// junk, stray exports, AppleDouble "._clip.mxf" twins — is
 		// invisible to the table, the counts, and every media operation.
-		if (!AvidLayout::isAvidMediaName(fileName))
+		if (!Conventions::isAvidMediaName(fileName))
 			continue;
 
 		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, pmrMap, mdb,
@@ -809,7 +808,7 @@ FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		bufLog(QtInfoMsg, QStringLiteral("scanner"), line);
 	}
 
-	if (result.files.size() > AvidLimits::kFolderWarn)
+	if (result.files.size() > Conventions::kFolderWarn)
 	{
 		// Don't warn per-folder; N pool threads firing would bury
 		// the progress logs. Stash the (folder, count) and let
@@ -915,7 +914,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// row for the header pass, which is exactly the pre-database-first path.
 	// A row the database covered has a codec (finalise always names one);
 	// pass 2 picks up the .mxf rows that don't.
-	const bool isMxf = AvidLayout::hasMxfExtension(mf.extension) && mf.sizeBytes > 1024;
+	const bool isMxf = Conventions::hasMxfExtension(mf.extension) && mf.sizeBytes > 1024;
 	if (isMxf && pmrHit && !m_options.forceHeaderScan && !mdb.isEmpty())
 	{
 		const auto fileIt = mdb.files.constFind(mf.mobId);
@@ -992,7 +991,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 		const MediaFile &f = files[i];
 		// A row needs its header when the databases left it without technical
 		// facts — or without a project name, which the header also carries.
-		if (!AvidLayout::hasMxfExtension(f.extension) || f.sizeBytes <= 1024 ||
+		if (!Conventions::hasMxfExtension(f.extension) || f.sizeBytes <= 1024 ||
 			(!f.codec.isEmpty() && !f.project.isEmpty()))
 			continue;
 		const QString rawFolder = QFileInfo(f.filePath).absolutePath();

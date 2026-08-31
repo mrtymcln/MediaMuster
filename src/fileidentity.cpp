@@ -1,6 +1,6 @@
 #include "fileidentity.h"
 
-#include "avidlayout.h"
+#include "conventions.h"
 #include "formatutil.h"
 #include "mxfparser.h"
 #include "nativefile.h"
@@ -104,9 +104,9 @@ FileIdentity FileIdentity::capture(const QString &path, bool readContent)
 	// read of a few hundred KB, never the essence. Only attempted for
 	// .mxf names; a .wav/.aif/.omf simply has no UMID to offer, and a
 	// corrupt MXF header comes back empty. Empty is recorded honestly
-	// (the ledger's strength field plus the empty umid say exactly what
+	// (the journal's strength field plus the empty umid say exactly what
 	// was checkable).
-	if (readContent && AvidLayout::hasMxfExtension(path))
+	if (readContent && Conventions::hasMxfExtension(path))
 		id.contentUmid = MxfParser::parseHeader(path).umid;
 
 	return id;
@@ -202,7 +202,7 @@ QString FileIdentity::explainDifference(const FileIdentity &expected, const File
 	return QStringLiteral("it no longer matches what was recorded");
 }
 
-// MARK: - FileIdentity ledger round-trip
+// MARK: - FileIdentity journal round-trip
 
 QJsonObject FileIdentity::toJson() const
 {
@@ -327,13 +327,13 @@ bool VolumeIdentity::matches(const VolumeIdentity &other) const
 		return serial == other.serial;
 
 	// Weak fingerprint: label + filesystem type + capacity. Honest best
-	// for volumes with no OS identity; the ledger's strength field lets
+	// for volumes with no OS identity; the journal's strength field lets
 	// recovery narrate that the match was weak.
 	return label == other.label && fsType.compare(other.fsType, Qt::CaseInsensitive) == 0 &&
 		   capacityBytes == other.capacityBytes;
 }
 
-// MARK: - VolumeIdentity ledger round-trip
+// MARK: - VolumeIdentity journal round-trip
 
 QJsonObject VolumeIdentity::toJson() const
 {

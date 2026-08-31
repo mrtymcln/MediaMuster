@@ -30,7 +30,7 @@ private slots:
 	void new_folder_when_all_existing_are_full();
 
 	// Execution — now through the ops engine, so every rename is
-	// write-ahead ledgered and recoverable. What has to hold is that an
+	// write-ahead journaled and recoverable. What has to hold is that an
 	// approved plan actually lands, and that a folder which won't accept
 	// renames stops the run before anything moves — proved with a
 	// scratch file, never by renaming one of the user's clips (which is
@@ -48,10 +48,10 @@ private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
 	static QString stageMxfRoot(const QTemporaryDir &tmp);
 
-	/// Sandbox for the engine's ledgers: outlives every test so the env
+	/// Sandbox for the engine's journals: outlives every test so the env
 	/// var keeps pointing at a real directory, and the real AppData
-	/// oplog (with a user's live undo candidate) is never touched.
-	QTemporaryDir m_oplogDir;
+	/// journal (with a user's live undo candidate) is never touched.
+	QTemporaryDir m_journalDir;
 
 	/// Fills <mxfRoot>/<folderName>/ with `fillerCount` empty .mxf-named
 	/// files. Bumps the on-disk count without producing MediaFiles —
@@ -72,13 +72,13 @@ private:
 
 void TestRebalancerPlan::initTestCase()
 {
-	QVERIFY(m_oplogDir.isValid());
-	qputenv("MEDIAMUSTER_OPLOG_DIR", m_oplogDir.path().toUtf8());
+	QVERIFY(m_journalDir.isValid());
+	qputenv("MEDIAMUSTER_JOURNAL_DIR", m_journalDir.path().toUtf8());
 }
 
 void TestRebalancerPlan::cleanupTestCase()
 {
-	qunsetenv("MEDIAMUSTER_OPLOG_DIR");
+	qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
 }
 
 QString TestRebalancerPlan::stageMxfRoot(const QTemporaryDir &tmp)

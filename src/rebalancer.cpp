@@ -1,5 +1,5 @@
 #include "rebalancer.h"
-#include "avidlayout.h"
+#include "conventions.h"
 #include "formatutil.h"
 #include "progressthrottle.h"
 
@@ -98,13 +98,13 @@ namespace
 	/// In an `Avid MediaFiles/MXF/<n>` folder only MXF essence counts:
 	/// Avid's own databases, dot-hidden files, shell junk, and stray
 	/// non-MXF files are not media. Counting them inflated the preview's
-	/// per-folder count and stole slots from the kFolderCap packing.
-	/// The name rule itself lives in AvidLayout. It is the BUDGET rule,
+	/// per-folder count and stole slots from the Conventions::kFolderRecommend packing.
+	/// The name rule itself lives in Conventions. It is the BUDGET rule,
 	/// deliberately narrower than the table's (see isAvidMediaName): the
 	/// preview counts what Avid counts, not what the table shows.
 	bool countsTowardFolderBudget(const QString &fileName)
 	{
-		return AvidLayout::countsAsEssenceName(fileName);
+		return Conventions::countsAsEssenceName(fileName);
 	}
 
 	/// What a pre-flight check can conclude about a donor folder.
@@ -118,7 +118,7 @@ namespace
 	/// Can this folder accept the renames a rebalance is about to make?
 	/// Proved with a scratch file of our own — create it, rename it, delete
 	/// it — the way the rest of the app tests a location (compare
-	/// OpLedger::standardDirWritable).
+	/// OpJournal::standardDirWritable).
 	///
 	/// This check used to rename one of the USER'S clips out and straight
 	/// back. That tested the same folder permission, but if the app died in
@@ -347,7 +347,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 	// One host (one prefix) at a time. `projected` tracks the
 	// running per-folder count as we plan moves into it, so we can
-	// check kFolderCap against future state, not on-disk state.
+	// check Conventions::kFolderRecommend against future state, not on-disk state.
 	QHash<FolderId, int> projected = realCount;
 	QHash<QString, QSet<int>> newByPrefix;
 
@@ -399,20 +399,20 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		const FolderId home{prefix, g.homeN};
 		const int size = static_cast<int>(g.members.size());
 
-		// Edge case: relatives group >= kFolderCap. Deterministic split
+		// Edge case: relatives group >= Conventions::kFolderRecommend. Deterministic split
 		// across new folders.
-		if (size >= kFolderCap)
+		if (size >= Conventions::kFolderRecommend)
 		{
 			int idx = 0;
 			while (idx < size)
 			{
 				FolderId target;
-				const int slackHome = kFolderCap - projected.value(home, 0);
+				const int slackHome = Conventions::kFolderRecommend - projected.value(home, 0);
 				if (idx == 0 && slackHome >= (size - idx))
 					target = home;
 				else
 					target = allocateNewFolder(prefix);
-				const int slack = kFolderCap - projected.value(target, 0);
+				const int slack = Conventions::kFolderRecommend - projected.value(target, 0);
 				const int chunk = qMin(slack, size - idx);
 				for (int i = 0; i < chunk; ++i, ++idx)
 					pushOp(g.members[idx], target);
@@ -428,13 +428,13 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		}
 		const int neededAtHome = size - membersAtHome;
 
-		// Already entirely at home and home isn't over kFolderCap, so
+		// Already entirely at home and home isn't over Conventions::kFolderRecommend, so
 		// leave it. Common case for a mildly fragmented project.
-		if (membersAtHome == size && projected.value(home, 0) <= kFolderCap)
+		if (membersAtHome == size && projected.value(home, 0) <= Conventions::kFolderRecommend)
 			continue;
 
 		// Strays fit in home? Pull them in.
-		if (projected.value(home, 0) + neededAtHome <= kFolderCap)
+		if (projected.value(home, 0) + neededAtHome <= Conventions::kFolderRecommend)
 		{
 			for (const auto &m : g.members)
 			{
@@ -456,7 +456,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		for (int n : sortedNs)
 		{
 			FolderId cand{prefix, n};
-			if (projected.value(cand, 0) + size <= kFolderCap)
+			if (projected.value(cand, 0) + size <= Conventions::kFolderRecommend)
 			{
 				dest = cand;
 				found = true;
@@ -623,7 +623,7 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 
 void Rebalancer::startEngineRun(OpRequest request)
 {
-	// The engine takes it from here: write-ahead ledger, identity gates,
+	// The engine takes it from here: write-ahead journal, identity gates,
 	// per-rename recovery coverage, undo candidacy. Its signals were
 	// adapted onto ours in the constructor.
 	m_engine->execute(std::move(request));

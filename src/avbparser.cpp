@@ -10,13 +10,13 @@
 #include <utility>
 
 // MARK: - Bin file structure
-// An Avid bin is NOT a Bento container, though its neighbours are: msmMMOB.mdb
-// and msmFMID.pmr carry the Bento label `A4 43 4D A5 48 64 72 D7` in their last
-// 24 bytes, and BentoFile reads them by it. That label appears NOWHERE in a
-// .avb - checked byte by byte across 22 real bins from a 2018 project, 0 hits.
-// A bin is Avid's own AVB object format, which is why nothing below opens a
-// container: this parser scavenges MOB IDs out of the raw byte stream instead,
-// so the container layout never has to be understood.
+// A bin is Avid's own AVB object format: a header, then a flat front-to-back
+// stream of chunks, each a four-character class code plus a u32 size plus its
+// payload. There is no index and no random access, which is why nothing below
+// opens a container - this parser scavenges MOB IDs out of the raw byte stream
+// instead, so the chunk layout never has to be understood. Verified against 66
+// real bins written by MC 2.6.7 through 25.12 (1997-2026), and independently by
+// the pyavb and libavid reverse-engineering projects.
 //
 // The header is AVB's own, length-prefixed strings and a writer version:
 //
@@ -106,7 +106,7 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
 		return result;
 	}
 
-	// Peek the Bento header on the first 12 bytes before committing to a full
+	// Peek the bin header on the first 12 bytes before committing to a full
 	// readAll. A mislabelled multi-GB file never lands in memory — which is what
 	// the size cap below is really there to guard against.
 	//

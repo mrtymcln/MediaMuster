@@ -12,7 +12,7 @@
 // shared Nexis changes underneath it; a crash can strand a journal for
 // days before recovery reads it; an undo can run long after the drive
 // was unplugged and replugged. Identity is what keeps all of those
-// honest: capture it, write it to the ledger, and re-verify it before
+// honest: capture it, write it to the journal, and re-verify it before
 // acting. Mismatch means refuse and explain, never proceed.
 //
 // Identity has two halves, deliberately independent:
@@ -28,7 +28,7 @@
 //   network volumes.
 //
 // Strength records how much the filesystem half is worth, and it is
-// written into the ledger so recovery and undo can narrate honestly
+// written into the journal so recovery and undo can narrate honestly
 // when a check was weak:
 //
 //   Full     — proven-local volume (see NativeFile::isProvenLocalVolume)
@@ -99,7 +99,7 @@ struct FileIdentity
 						  FileIdentity *actualOut = nullptr);
 
 	/// The relocated flavour, for recovery and undo: "is the file at
-	/// this path the same MEDIA the ledger recorded?" — asked of a file
+	/// this path the same MEDIA the journal recorded?" — asked of a file
 	/// that has legitimately MOVED since capture (a moved copy about to
 	/// be renamed home, a trash catch about to be restored). File IDs
 	/// change across volumes and mtimes change on copy, so only the
@@ -115,9 +115,9 @@ struct FileIdentity
 	/// selected", "the Avid media ID inside the file is different".
 	static QString explainDifference(const FileIdentity &expected, const FileIdentity &actual);
 
-	// MARK: - Ledger round-trip
+	// MARK: - Journal round-trip
 
-	/// Compact JSON for a ledger line. File and volume IDs are stored as
+	/// Compact JSON for a journal line. File and volume IDs are stored as
 	/// hex STRINGS, not JSON numbers: they are unsigned 64-bit values
 	/// that can exceed what a JSON number round-trips exactly. Fields the
 	/// strength doesn't vouch for are omitted.
@@ -166,7 +166,7 @@ struct VolumeIdentity
 
 	/// Are these the same physical volume? OS ids decide when both sides
 	/// have one; otherwise the Weak triple (label + type + capacity) is
-	/// compared — honest best, and the ledger's strength field lets the
+	/// compared — honest best, and the journal's strength field lets the
 	/// caller say so.
 	bool matches(const VolumeIdentity &other) const;
 

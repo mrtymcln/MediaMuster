@@ -27,9 +27,9 @@ mediamuster_add_test(tst_pathkey)
 mediamuster_add_test(tst_pmrkey)
 mediamuster_add_test(tst_format)
 
-# AvidLayout: the shared folder-name and essence-name facts the scanner,
-# rebalancer, and copy-path builder all key on (header-only).
-mediamuster_add_test(tst_avidlayout)
+# Conventions: the agreed folder names, essence-name rules and folder
+# limits every feature keys on (header-only).
+mediamuster_add_test(tst_conventions)
 
 # MediaCsv: the export's header/field alignment and the display columns
 # it shares with the table. Lifted out of mainwindow.cpp so it is
@@ -46,7 +46,7 @@ mediamuster_add_test(tst_rebalancer_parse
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
@@ -65,7 +65,7 @@ mediamuster_add_test(tst_rebalancer_plan
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
@@ -86,21 +86,21 @@ target_compile_definitions(tst_fileidentity PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# Engine v2 ledger: WAL writer + reader, retention, undo candidacy.
-mediamuster_add_test(tst_opledger
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+# Engine v2 journal: WAL writer + reader, retention, undo candidacy.
+mediamuster_add_test(tst_opjournal
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
 )
 
 # Engine v2 runner: the state machines driven synchronously through a
-# test sink — conflict rules, identity gates, trash tiers, ledger order.
+# test sink — conflict rules, identity gates, trash tiers, journal order.
 mediamuster_add_test(tst_oprunner
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
@@ -111,7 +111,7 @@ target_compile_definitions(tst_oprunner PRIVATE
 )
 
 # Engine v2 facade: signals, worker thread, mid-flight behaviours
-# (ledger readable during a copy, cancel, mutation, stranded park).
+# (journal readable during a copy, cancel, mutation, stranded park).
 mediamuster_add_test(tst_opmanager
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
     ${CMAKE_SOURCE_DIR}/src/opundo.cpp
@@ -119,18 +119,18 @@ mediamuster_add_test(tst_opmanager
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 
-# Engine v2 rescue: the launch sweep over hand-written ledgers — v1's
+# Engine v2 rescue: the launch sweep over hand-written journals — v1's
 # decision tables plus identity guards, volume re-anchoring, undo runs.
 mediamuster_add_test(tst_oprescue
     ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
@@ -146,7 +146,7 @@ mediamuster_add_test(tst_opundo
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opledger.cpp
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
@@ -159,7 +159,7 @@ mediamuster_add_test(tst_crashcollector
     ${CMAKE_SOURCE_DIR}/src/crashcollector.cpp
 )
 
-# AvbParser: Bento-bin MOB extraction, driven by hand-crafted byte buffers.
+# AvbParser: MOB extraction from a bin, driven by hand-crafted byte buffers.
 mediamuster_add_test(tst_avbparser
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
 )

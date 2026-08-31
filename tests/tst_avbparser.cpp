@@ -1,7 +1,7 @@
-// Drives AvbParser over hand-crafted Bento buffers. Every byte is
+// Drives AvbParser over hand-crafted bin buffers. Every byte is
 // controlled, so we can hit the exact edges: valid SMPTE UMID vs valid Avid
-// MOB, Bento sentinels that must be filtered, ASCII hex-string MOBs, boundary
-// reads at EOF, and truncation. No binary fixture to maintain.
+// MOB, all-zero sentinels that must be filtered, ASCII hex-string MOBs,
+// boundary reads at EOF, and truncation. No binary fixture to maintain.
 
 #include "avbparser.h"
 #include "mobid.h"
@@ -20,7 +20,7 @@ namespace
 	// The 12-byte header every real Avid bin starts with. The literal is split so
 	// `\x00` can't swallow the following 'D' as a hex digit — the same trick
 	// avbparser.cpp uses.
-	QByteArray bentoHeader()
+	QByteArray avbHeader()
 	{
 		return QByteArray("\x06\x00"
 						  "DomainDJBO",
@@ -34,7 +34,7 @@ namespace
 		if (f.open(QIODevice::WriteOnly))
 		{
 			if (withHeader)
-				f.write(bentoHeader());
+				f.write(avbHeader());
 			f.write(body);
 			f.close();
 		}
@@ -72,7 +72,7 @@ class TestAvbParser : public QObject
 	Q_OBJECT
 private slots:
 	void missing_file_returns_invalid();
-	void non_bento_header_returns_invalid();
+	void non_avb_header_returns_invalid();
 	void hex_string_mob_is_decoded();
 
 	// Hex is hex regardless of case: no bin surveyed writes uppercase, but a
@@ -100,7 +100,7 @@ void TestAvbParser::missing_file_returns_invalid()
 	QVERIFY(bin.mobIds.isEmpty());
 }
 
-void TestAvbParser::non_bento_header_returns_invalid()
+void TestAvbParser::non_avb_header_returns_invalid()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -150,7 +150,7 @@ void TestAvbParser::big_endian_legacy_bin_is_parsed()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 
-	// Big-endian Bento header: byte-order mark 00 06, "Domain", fourcc
+	// Big-endian bin header: byte-order mark 00 06, "Domain", fourcc
 	// UNreversed. Body carries one valid Avid MOB.
 	const QByteArray beHeader = QByteArray("\x00\x06"
 										   "DomainOBJD",

@@ -2,6 +2,7 @@
 #include "enumutil.h"
 #include "formatutil.h"
 #include "opmanager.h"
+#include "oprunner.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -44,7 +45,7 @@ static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseD
 		QString renamed;
 		if (renamedHint)
 			renamed = *renamedHint;
-		else if (const auto probed = OpManager::generateRenamePath(baseDest))
+		else if (const auto probed = OpRunner::generateRenamePath(baseDest))
 			renamed = *probed;
 		if (!renamed.isNull())
 		{
@@ -446,7 +447,7 @@ void ManageMediaDialog::updatePreview()
 					{
 						if (!res.exists[i] && !dupLater[i])
 							continue;
-						if (const auto renamed = OpManager::generateRenamePath(paths[i]))
+						if (const auto renamed = OpRunner::generateRenamePath(paths[i]))
 							res.renamed[i] = *renamed;
 					}
 					return res;

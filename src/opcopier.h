@@ -72,7 +72,7 @@ public:
 		bool usedClone = false;
 		bool usedNativeCopy = false;
 		/// Platter was requested but the volume only delivered Disk
-		/// (network mounts). The caller must say so — ledger note + log —
+		/// (network mounts). The caller must say so — journal note + log —
 		/// never silently claim more than the volume gave.
 		bool durabilityDegraded = false;
 	};
@@ -107,7 +107,7 @@ public:
 	};
 
 	/// XXH3-64 of a whole file. Public because Undo re-checks a landed
-	/// copy against the ledger's recorded hash before acting on it.
+	/// copy against the journal's recorded hash before acting on it.
 	HashOutcome hashFile(const QString &path, const std::atomic<bool> &cancel);
 
 private:

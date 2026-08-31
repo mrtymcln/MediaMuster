@@ -1,5 +1,7 @@
 #include "oprescue.h"
 
+#include "testutil.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -7,17 +9,17 @@
 #include <QTest>
 
 // OpRescue — the launch sweep, driven over HAND-WRITTEN schema-2
-// ledgers and real files in temp dirs, the way tst_oprecovery drove the
+// journals and real files in temp dirs, the way tst_oprecovery drove the
 // v1 engine. The v1 decision tables are re-pinned (finished work stays,
 // src-back never clobbered, partials removed and narrated, dirty
 // retries, resumable classification), and the v2 rules get their own
 // sections: identity blocking wrong-file reversals, volume re-anchoring
-// and the impostor refusal, undo-run recovery, and ledger retention for
+// and the impostor refusal, undo-run recovery, and journal retention for
 // the undo candidate.
 
 namespace
 {
-	// Every hand-written ledger belongs to a dead owner: pid 999999 on a
+	// Every hand-written journal belongs to a dead owner: pid 999999 on a
 	// host that isn't this machine, so the live-owner guard never trips.
 	QString beginRec(const QString &kind)
 	{
@@ -131,11 +133,11 @@ class TestOpRescue : public QObject
 private slots:
 	// MARK: - Sweep hygiene
 	void interrupted_move_without_plan_is_rolled_back_wholesale();
-	void clean_ledger_is_kept_as_undo_candidate();
-	void superseded_finished_ledgers_are_pruned();
+	void clean_journal_is_kept_as_undo_candidate();
+	void superseded_finished_journals_are_pruned();
 	void aged_undo_candidate_is_pruned();
-	void recovered_ledger_with_nothing_left_is_pruned();
-	void failed_op_ledger_makes_no_noise();
+	void recovered_journal_with_nothing_left_is_pruned();
+	void failed_op_journal_makes_no_noise();
 	void live_owner_is_left_alone();
 	void unknown_kind_is_left_untouched_but_stamped();
 	void rerun_is_idempotent();
@@ -165,7 +167,7 @@ private slots:
 
 	// MARK: - Resumable classification
 	void interrupted_run_with_plan_is_listed_resumable();
-	void resumable_ledger_survives_second_launch_without_rerolling();
+	void resumable_journal_survives_second_launch_without_rerolling();
 	void cancelled_run_is_not_resumable_but_is_undo_candidate();
 	void pending_agrees_with_run();
 	void unreachable_source_volume_is_never_read_as_finished();
@@ -186,46 +188,18 @@ private slots:
 
 	// MARK: - v2: undo runs and notes
 	void interrupted_undo_of_move_recovers_with_move_semantics();
-	void ledger_notes_resurface_in_summary();
+	void journal_notes_resurface_in_summary();
 
 private:
-	QString writeLedger(const QString &dir, const QStringList &lines, int seq = 1);
-	void writeFile(const QString &path, const QByteArray &contents);
-	QByteArray readFile(const QString &path);
+	QString writeJournal(const QString &dir, const QStringList &lines, int seq = 1);
 };
 
-QString TestOpRescue::writeLedger(const QString &dir, const QStringList &lines, int seq)
+QString TestOpRescue::writeJournal(const QString &dir, const QStringList &lines, int seq)
 {
-	// Sequence number in the timestamp position keeps multi-ledger
+	// Sequence number in the timestamp position keeps multi-journal
 	// scenarios in a deterministic (chronological) scan order.
-	const QString path =
-		dir + QStringLiteral("/oplog-20260829T%1-test.jsonl").arg(seq, 9, 10, QLatin1Char('0'));
-	QFile f(path);
-	if (!f.open(QIODevice::WriteOnly))
-		return {};
-	for (const QString &line : lines)
-	{
-		f.write(line.toUtf8());
-		f.write("\n");
-	}
-	return path;
-}
-
-void TestOpRescue::writeFile(const QString &path, const QByteArray &contents)
-{
-	QDir().mkpath(QFileInfo(path).absolutePath());
-	QFile f(path);
-	QVERIFY2(f.open(QIODevice::WriteOnly),
-			 qPrintable(QStringLiteral("failed to create %1: %2").arg(path, f.errorString())));
-	QCOMPARE(f.write(contents), qint64(contents.size()));
-}
-
-QByteArray TestOpRescue::readFile(const QString &path)
-{
-	QFile f(path);
-	if (!f.open(QIODevice::ReadOnly))
-		return {};
-	return f.readAll();
+	return ::writeJournal(
+		dir, QStringLiteral("journal-20260829T%1-test.jsonl").arg(seq, 9, 10, QLatin1Char('0')), lines);
 }
 
 // MARK: - Sweep hygiene
@@ -240,7 +214,7 @@ void TestOpRescue::interrupted_move_without_plan_is_rolled_back_wholesale()
 	const QString dst = tmp.path() + "/dst/a.mxf";
 	writeFile(dst, "MOVED");
 
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, src, dst, 5), doneRec(0)});
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, src, dst, 5), doneRec(0)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -248,35 +222,35 @@ void TestOpRescue::interrupted_move_without_plan_is_rolled_back_wholesale()
 	QVERIFY(!QFile::exists(dst));
 }
 
-void TestOpRescue::clean_ledger_is_kept_as_undo_candidate()
+void TestOpRescue::clean_journal_is_kept_as_undo_candidate()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeLedger(
+	const QString path = writeJournal(
 		tmp.path(),
 		{beginRec("move"), opRec(0, "/v/a.mxf", "/w/a.mxf"), doneRec(0), endRec()});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QVERIFY(!sum.anything());
-	// The v2 retention rule: the newest finished, clean ledger IS the
+	// The v2 retention rule: the newest finished, clean journal IS the
 	// undo candidate — the sweep must not eat it.
 	QVERIFY2(QFile::exists(path), "the undo candidate must survive the sweep");
-	QVERIFY(OpLedger::latestUndoable(tmp.path()).has_value());
+	QVERIFY(OpJournal::latestUndoable(tmp.path()).has_value());
 }
 
-void TestOpRescue::superseded_finished_ledgers_are_pruned()
+void TestOpRescue::superseded_finished_journals_are_pruned()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString older = writeLedger(
+	const QString older = writeJournal(
 		tmp.path(),
 		{beginRec("move"), opRec(0, "/v/a.mxf", "/w/a.mxf"), doneRec(0), endRec()}, 1);
-	const QString newest = writeLedger(
+	const QString newest = writeJournal(
 		tmp.path(),
 		{beginRec("copy"), opRec(0, "/v/b.mxf", "/w/b.mxf"), doneRec(0), endRec()}, 2);
 
 	OpRescue::run(tmp.path());
-	QVERIFY2(!QFile::exists(older), "only the NEWEST finished ledger is the undo candidate");
+	QVERIFY2(!QFile::exists(older), "only the NEWEST finished journal is the undo candidate");
 	QVERIFY(QFile::exists(newest));
 }
 
@@ -285,21 +259,21 @@ void TestOpRescue::aged_undo_candidate_is_pruned()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	// Started in 2020: far past the 7-day undo window.
-	const QString stale = writeLedger(
+	const QString stale = writeJournal(
 		tmp.path(),
 		{QStringLiteral(
 			 R"({"schema":2,"rec":"begin","kind":"move","started":"2020-01-01T00:00:00.000Z","pid":999999,"host":"deadhost"})"),
 		 opRec(0, "/v/a.mxf", "/w/a.mxf"), doneRec(0), endRec()});
 
 	OpRescue::run(tmp.path());
-	QVERIFY2(!QFile::exists(stale), "a finished ledger past the undo window must be aged out");
+	QVERIFY2(!QFile::exists(stale), "a finished journal past the undo window must be aged out");
 }
 
-void TestOpRescue::recovered_ledger_with_nothing_left_is_pruned()
+void TestOpRescue::recovered_journal_with_nothing_left_is_pruned()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString path = writeLedger(
+	const QString path = writeJournal(
 		tmp.path(), {beginRec("move"), opRec(0, "/v/a.mxf", "/w/a.mxf"), recoveredRec()});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -307,7 +281,7 @@ void TestOpRescue::recovered_ledger_with_nothing_left_is_pruned()
 	QVERIFY(!QFile::exists(path));
 }
 
-void TestOpRescue::failed_op_ledger_makes_no_noise()
+void TestOpRescue::failed_op_journal_makes_no_noise()
 {
 	// A plain fail is the run's own statement that disk is as if the op
 	// never ran; recovery must not "put back" anything.
@@ -316,7 +290,7 @@ void TestOpRescue::failed_op_ledger_makes_no_noise()
 	const QString src = tmp.path() + "/src/a.mxf";
 	writeFile(src, "STILL HERE");
 
-	writeLedger(tmp.path(),
+	writeJournal(tmp.path(),
 				{beginRec("move"), opRec(0, src, tmp.path() + "/dst/a.mxf", 10), failRec(0)});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -339,7 +313,7 @@ void TestOpRescue::live_owner_is_left_alone()
 			.arg(QCoreApplication::applicationPid())
 			.arg(QSysInfo::machineHostName());
 	const QString path =
-		writeLedger(tmp.path(), {line, opRec(0, tmp.path() + "/src/a.mxf", dst, 7)});
+		writeJournal(tmp.path(), {line, opRec(0, tmp.path() + "/src/a.mxf", dst, 7)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QVERIFY(!sum.anything());
@@ -359,7 +333,7 @@ void TestOpRescue::unknown_kind_is_left_untouched_but_stamped()
 	const QString dst = tmp.path() + "/dst/a.mxf";
 	writeFile(dst, "MYSTERY");
 
-	const QString path = writeLedger(
+	const QString path = writeJournal(
 		tmp.path(),
 		{beginRec("teleport"), opRec(0, tmp.path() + "/src/a.mxf", dst, 7), doneRec(0)});
 
@@ -377,7 +351,7 @@ void TestOpRescue::rerun_is_idempotent()
 	const QString dst = tmp.path() + "/dst/a.mxf";
 	writeFile(dst, "MOVED");
 
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, src, dst, 5), doneRec(0)});
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, src, dst, 5), doneRec(0)});
 
 	const auto first = OpRescue::run(tmp.path());
 	QCOMPARE(first.opsReversed, 1);
@@ -402,7 +376,7 @@ void TestOpRescue::completed_but_src_back_is_not_clobbered()
 	writeFile(src, "THE REAL ONE");
 	writeFile(dst, "THE MOVED ONE");
 
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, src, dst, 13), doneRec(0)});
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, src, dst, 13), doneRec(0)});
 
 	OpRescue::run(tmp.path());
 	QCOMPARE(readFile(src), QByteArray("THE REAL ONE"));
@@ -419,7 +393,7 @@ void TestOpRescue::inflight_move_with_full_dst_is_reversed()
 
 	// No done line — cut off after the copy, before the record. bytes
 	// says 5 and dst is 5: whole, safe to bring home.
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, src, dst, 5)});
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, src, dst, 5)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -434,7 +408,7 @@ void TestOpRescue::inflight_move_with_partial_dst_is_flagged()
 	const QString dst = tmp.path() + "/dst/a.mxf";
 	writeFile(dst, "PAR"); // 3 of 10 bytes: a fragment
 
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, src, dst, 10)});
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, src, dst, 10)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsFlagged, 1);
@@ -453,7 +427,7 @@ void TestOpRescue::move_replace_restores_parked_original()
 	writeFile(dst, "MOVED IN");
 	writeFile(parked, "THE REPLACED ORIGINAL");
 
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, src, dst, 8, parked)});
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, src, dst, 8, parked)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -477,7 +451,7 @@ void TestOpRescue::interrupted_move_with_plan_keeps_finished_work()
 	writeFile(srcB, QByteArray(10, 'B'));
 	writeFile(srcC, "C NEVER STARTED");
 
-	writeLedger(tmp.path(), {beginRec("move"), planRec(tmp.path() + "/dst", {srcA, srcB, srcC}),
+	writeJournal(tmp.path(), {beginRec("move"), planRec(tmp.path() + "/dst", {srcA, srcB, srcC}),
 							 opRec(0, srcA, dstA, 6), doneRec(0),
 							 opRec(1, srcB, tmp.path() + "/dst/b.mxf", 10)});
 
@@ -507,7 +481,7 @@ void TestOpRescue::interrupted_copy_replace_restores_parked_original()
 	writeFile(dst, "HALFCOPY");
 	writeFile(parked, "THE ORIGINAL");
 
-	writeLedger(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 6, parked)});
+	writeJournal(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 6, parked)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -527,7 +501,7 @@ void TestOpRescue::copy_committed_before_done_line_keeps_the_finished_copy()
 	writeFile(src, "WHOLE");
 	writeFile(dst, "WHOLE");
 
-	writeLedger(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 5)});
+	writeJournal(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 5)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 0);
@@ -543,7 +517,7 @@ void TestOpRescue::interrupted_copy_into_empty_slot_removes_the_partial()
 	writeFile(src, QByteArray(10, 'S'));
 	writeFile(dst, "PAR"); // 3 of 10
 
-	writeLedger(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 10)});
+	writeJournal(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 10)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -563,7 +537,7 @@ void TestOpRescue::interrupted_copy_full_size_into_empty_slot_is_kept()
 	writeFile(src, QByteArray(10, 'S'));
 	writeFile(dst, QByteArray(10, 'S'));
 
-	writeLedger(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 10)});
+	writeJournal(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 10)});
 
 	OpRescue::run(tmp.path());
 	QVERIFY(QFile::exists(dst));
@@ -581,7 +555,7 @@ void TestOpRescue::copy_replace_with_park_gone_never_touches_dst()
 	writeFile(src, QByteArray(100, 'S'));
 	writeFile(dst, "SMALL"); // way short of 100 — still untouchable
 
-	writeLedger(tmp.path(),
+	writeJournal(tmp.path(),
 				{beginRec("copy"), opRec(0, src, dst, 100, dst + ".__copyreplace_gone1")});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -599,7 +573,7 @@ void TestOpRescue::delete_is_restored_from_trash()
 	const QString trash = tmp.path() + "/_MediaMuster_Trash/media/a.mxf";
 	writeFile(trash, "DELETED");
 
-	writeLedger(tmp.path(), {beginRec("delete"), opRec(0, src, QString(), 7), doneRec(0, trash)});
+	writeJournal(tmp.path(), {beginRec("delete"), opRec(0, src, QString(), 7), doneRec(0, trash)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -614,7 +588,7 @@ void TestOpRescue::delete_flagged_when_trash_emptied()
 	const QString src = tmp.path() + "/media/a.mxf";
 	const QString trash = tmp.path() + "/_MediaMuster_Trash/media/a.mxf"; // never written
 
-	writeLedger(tmp.path(), {beginRec("delete"), opRec(0, src, QString(), 7), doneRec(0, trash)});
+	writeJournal(tmp.path(), {beginRec("delete"), opRec(0, src, QString(), 7), doneRec(0, trash)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsFlagged, 1);
@@ -633,7 +607,7 @@ void TestOpRescue::interrupted_delete_with_plan_leaves_deleted_files_deleted()
 	writeFile(trashA, "A DELETED");
 	writeFile(srcB, "B WAITING");
 
-	writeLedger(tmp.path(), {beginRec("delete"), planRec(QString(), {srcA, srcB}),
+	writeJournal(tmp.path(), {beginRec("delete"), planRec(QString(), {srcA, srcB}),
 							 opRec(0, srcA, QString(), 9), doneRec(0, trashA)});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -660,7 +634,7 @@ void TestOpRescue::dirty_fail_in_finished_copy_run_restores_parked_original()
 	writeFile(src, "SOURCE");
 	writeFile(parked, "STRANDED ORIGINAL");
 
-	writeLedger(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 6, parked), failDirtyRec(0),
+	writeJournal(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 6, parked), failDirtyRec(0),
 							 endRec()});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -684,7 +658,7 @@ void TestOpRescue::finished_dirty_run_leaves_completed_ops_alone()
 	writeFile(srcB, "B SRC");
 	writeFile(parkedB, "B ORIGINAL");
 
-	writeLedger(tmp.path(), {beginRec("move"), opRec(0, srcA, dstA, 7), doneRec(0),
+	writeJournal(tmp.path(), {beginRec("move"), opRec(0, srcA, dstA, 7), doneRec(0),
 							 opRec(1, srcB, dstB, 5, parkedB), failDirtyRec(1), endRec()});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -708,7 +682,7 @@ void TestOpRescue::interrupted_run_with_plan_is_listed_resumable()
 	writeFile(srcB, "BBBB");
 
 	const QString dest = tmp.path() + "/dst";
-	writeLedger(tmp.path(), {beginRec("copy"), planRec(dest, {srcA, srcB})});
+	writeJournal(tmp.path(), {beginRec("copy"), planRec(dest, {srcA, srcB})});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.resumable.size(), 1);
@@ -718,7 +692,7 @@ void TestOpRescue::interrupted_run_with_plan_is_listed_resumable()
 	QCOMPARE(sum.resumable[0].remaining.size(), 2);
 }
 
-void TestOpRescue::resumable_ledger_survives_second_launch_without_rerolling()
+void TestOpRescue::resumable_journal_survives_second_launch_without_rerolling()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -726,11 +700,11 @@ void TestOpRescue::resumable_ledger_survives_second_launch_without_rerolling()
 	writeFile(src, "WAITING");
 
 	const QString path =
-		writeLedger(tmp.path(), {beginRec("copy"), planRec(tmp.path() + "/dst", {src})});
+		writeJournal(tmp.path(), {beginRec("copy"), planRec(tmp.path() + "/dst", {src})});
 
 	QCOMPARE(OpRescue::run(tmp.path()).resumable.size(), 1);
 	QVERIFY(QFile::exists(path));
-	// Second launch: same offer, no re-rolling, ledger still there
+	// Second launch: same offer, no re-rolling, journal still there
 	// until the user resumes or discards.
 	QCOMPARE(OpRescue::run(tmp.path()).resumable.size(), 1);
 	QVERIFY(QFile::exists(path));
@@ -743,7 +717,7 @@ void TestOpRescue::cancelled_run_is_not_resumable_but_is_undo_candidate()
 	const QString src = tmp.path() + "/src/a.mxf";
 	writeFile(src, "WAS CANCELLED");
 
-	writeLedger(tmp.path(), {beginRec("move"), planRec(tmp.path() + "/dst", {src}),
+	writeJournal(tmp.path(), {beginRec("move"), planRec(tmp.path() + "/dst", {src}),
 							 opRec(0, src, tmp.path() + "/dst/a.mxf", 13), doneRec(0),
 							 endRec(/*cancelled=*/true)});
 
@@ -751,7 +725,7 @@ void TestOpRescue::cancelled_run_is_not_resumable_but_is_undo_candidate()
 	// Concluded on the user's watch: not offered again…
 	QVERIFY(sum.resumable.isEmpty());
 	// …but stop-and-keep means its landed work is UNDOABLE.
-	QVERIFY(OpLedger::latestUndoable(tmp.path()).has_value());
+	QVERIFY(OpJournal::latestUndoable(tmp.path()).has_value());
 }
 
 void TestOpRescue::pending_agrees_with_run()
@@ -761,9 +735,9 @@ void TestOpRescue::pending_agrees_with_run()
 	const QString src = tmp.path() + "/src/a.mxf";
 	writeFile(src, "PENDING");
 
-	writeLedger(tmp.path(), {beginRec("copy"), planRec(tmp.path() + "/dst", {src})});
+	writeJournal(tmp.path(), {beginRec("copy"), planRec(tmp.path() + "/dst", {src})});
 
-	// Before the sweep: pending() must NOT offer an unswept ledger.
+	// Before the sweep: pending() must NOT offer an unswept journal.
 	QVERIFY(OpRescue::pending(tmp.path()).isEmpty());
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.resumable.size(), 1);
@@ -783,7 +757,7 @@ void TestOpRescue::unreachable_source_volume_is_never_read_as_finished()
 	qputenv("MEDIAMUSTER_MOUNT_ROOT", (tmp.path() + "/mounts/").toUtf8());
 	const QString src = tmp.path() + "/mounts/EDIT/media/a.mxf"; // volume absent
 
-	writeLedger(tmp.path(), {beginRec("delete"), planRec(QString(), {src}),
+	writeJournal(tmp.path(), {beginRec("delete"), planRec(QString(), {src}),
 							 opRec(0, src, QString(), 5)});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -796,7 +770,7 @@ void TestOpRescue::unreachable_source_volume_is_never_read_as_finished()
 
 void TestOpRescue::identity_mismatch_blocks_move_reversal()
 {
-	// The ledger recorded a 5-byte a.mxf; the file now at dst is 5
+	// The journal recorded a 5-byte a.mxf; the file now at dst is 5
 	// bytes of SOMETHING ELSE at the byte level we can't see — but here
 	// the size itself differs from the identity record. Never rename a
 	// stranger into the user's folder.
@@ -808,7 +782,7 @@ void TestOpRescue::identity_mismatch_blocks_move_reversal()
 
 	// bytes matches what's on disk (so the whole-file gate passes), but
 	// the IDENTITY the run captured says the real file was 5 bytes.
-	writeLedger(tmp.path(),
+	writeJournal(tmp.path(),
 				{beginRec("move"), opRec(0, src, dst, 16, QString(), idJson(5)), doneRec(0)});
 
 	const auto sum = OpRescue::run(tmp.path());
@@ -826,7 +800,7 @@ void TestOpRescue::identity_mismatch_blocks_trash_restore()
 	const QString trash = tmp.path() + "/_MediaMuster_Trash/media/a.mxf";
 	writeFile(trash, "NOT THE DELETED FILE"); // 20 bytes; identity says 7
 
-	writeLedger(tmp.path(), {beginRec("delete"),
+	writeJournal(tmp.path(), {beginRec("delete"),
 							 opRec(0, src, QString(), 7, QString(), idJson(7)),
 							 doneRec(0, trash)});
 
@@ -894,7 +868,7 @@ void TestOpRescue::run_reanchors_paths_when_volume_moved()
 	const QString newRoot = tmp.path() + "/newroot";
 	writeFile(newRoot + "/dst/a.mxf", "MOVED");
 
-	writeLedger(tmp.path(),
+	writeJournal(tmp.path(),
 				{beginRec("move"),
 				 planRecWithVolumes(oldRoot + "/dst", {oldRoot + "/src/a.mxf"},
 									volJson(QStringLiteral("AAAA-1111"),
@@ -913,13 +887,13 @@ void TestOpRescue::run_reanchors_paths_when_volume_moved()
 void TestOpRescue::impostor_volume_defers_recovery_untouched()
 {
 	// A different drive sits at the recorded address. NOTHING on it may
-	// be touched, and the ledger stays unstamped for a later launch.
+	// be touched, and the journal stays unstamped for a later launch.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString root = tmp.path() + "/root";
 	writeFile(root + "/dst/a.mxf", "SOMEBODY ELSES FILE");
 
-	const QString path = writeLedger(
+	const QString path = writeJournal(
 		tmp.path(),
 		{beginRec("move"),
 		 planRecWithVolumes(root + "/dst", {root + "/src/a.mxf"},
@@ -943,7 +917,7 @@ void TestOpRescue::missing_volume_defers_recovery_untouched()
 	const QString root = tmp.path() + "/root";
 	writeFile(root + "/dst/a.mxf", "WAITING FOR ITS DRIVE");
 
-	const QString path = writeLedger(
+	const QString path = writeJournal(
 		tmp.path(),
 		{beginRec("move"),
 		 planRecWithVolumes(root + "/dst", {root + "/src/a.mxf"},
@@ -979,8 +953,8 @@ void TestOpRescue::interrupted_undo_of_move_recovers_with_move_semantics()
 	writeFile(homeA, "A HOME"); // op 0 concluded
 	writeFile(homeB, "B HOME"); // op 1 in flight, dst whole
 
-	writeLedger(tmp.path(),
-				{beginUndoRec(QStringLiteral("move"), QStringLiteral("oplog-orig.jsonl")),
+	writeJournal(tmp.path(),
+				{beginUndoRec(QStringLiteral("move"), QStringLiteral("journal-orig.jsonl")),
 				 planRec(QString(), {awayA, awayB}), opRec(0, awayA, homeA, 6), doneRec(0),
 				 opRec(1, awayB, homeB, 6)});
 
@@ -997,7 +971,7 @@ void TestOpRescue::interrupted_undo_of_move_recovers_with_move_semantics()
 	QVERIFY(sum.message().contains(QStringLiteral("undo")));
 }
 
-void TestOpRescue::ledger_notes_resurface_in_summary()
+void TestOpRescue::journal_notes_resurface_in_summary()
 {
 	// Notes were written to be read: a durability degrade recorded
 	// mid-run must reach the user's recovery report.
@@ -1009,7 +983,7 @@ void TestOpRescue::ledger_notes_resurface_in_summary()
 
 	// No apostrophes in this raw string: moc's simplified lexer reads a
 	// lone ' as the start of a char literal and falls over at EOF.
-	writeLedger(tmp.path(),
+	writeJournal(tmp.path(),
 				{beginRec("move"), opRec(0, src, dst, 5),
 				 QStringLiteral(
 					 R"({"rec":"note","text":"a.mxf: the destination volume could not confirm a full flush to disk."})")});
@@ -1019,14 +993,13 @@ void TestOpRescue::ledger_notes_resurface_in_summary()
 	QVERIFY(sum.message().contains(QStringLiteral("full flush")));
 }
 
-
 // MARK: - Removal guards (adversarial review 2026-08-30)
 
 // Finding 2: a rollback that stalled (dirty flag written) and then
 // completed leaves the REPLACED ORIGINAL back at the destination. It is a
 // different size from the source, so the sweep's size test reads it as a
 // "partial" — and used to hard-delete the user's original as tidying.
-// The identity of the parked file is in the ledger for exactly this:
+// The identity of the parked file is in the journal for exactly this:
 // match ⇒ the rollback is already done, keep the file.
 void TestOpRescue::dirty_move_leaves_restored_original_alone()
 {
@@ -1037,7 +1010,7 @@ void TestOpRescue::dirty_move_leaves_restored_original_alone()
 	writeFile(src, QByteArray(1000, 'S'));
 	writeFile(dst, QByteArray(600, 'O')); // the restored replaced-original
 
-	writeLedger(tmp.path(),
+	writeJournal(tmp.path(),
 				{beginRec("move"),
 				 opRec(0, src, dst, 1000, dst + ".__movereplace_gone", idJson(1000),
 					   idJson(600)),
@@ -1093,7 +1066,7 @@ void TestOpRescue::partial_cleanup_refuses_stranger_mxf()
 	QVERIFY2(srcNow.contentUmid != dstNow.contentUmid,
 			 "fixtures must be different clips for this test to mean anything");
 
-	writeLedger(tmp.path(), {beginRec("copy"),
+	writeJournal(tmp.path(), {beginRec("copy"),
 							 opRec(0, src, dst, srcNow.size, QString(),
 								   idJson(srcNow.size, srcNow.contentUmid))});
 

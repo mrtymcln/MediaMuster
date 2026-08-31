@@ -4,20 +4,43 @@
 #include <QString>
 #include <QStringView>
 
-// MARK: - AvidLayout
-/// Facts about Avid's on-disk media layout: the folder names Avid uses
-/// and how essence files are recognised by name. One home so the
-/// scanner, rebalancer, copy-path builder, and volume detection can't
-/// drift apart on what counts as Avid media. They already had: the
-/// rebalance picker matched 'MXF' case-sensitively while the scanner
-/// didn't (a lowercase 'mxf' share scanned fine, then Rebalance said
-/// nothing was found), and only the rebalancer knew that dot-hidden
+// MARK: - Conventions
+/// The one home for the agreed spellings and numbers that more than one
+/// feature has to read the same way: what Avid calls its folders, what
+/// counts as media, how full a folder may get, and the names MediaMuster
+/// writes onto a user's drive. One home because they have already drifted
+/// once — the rebalance picker matched 'MXF' case-sensitively while the
+/// scanner didn't (a lowercase 'mxf' share scanned fine, then Rebalance
+/// said nothing was found), and only the rebalancer knew that dot-hidden
 /// "._*.mxf" AppleDouble siblings aren't media.
+///
+/// TWO KINDS LIVE HERE, and the difference matters more than it looks:
+///
+///   [AVID — DO NOT CHANGE]  Facts about someone else's software. Editing
+///                           one doesn't change a policy, it tells a lie:
+///                           the value stops describing what Media
+///                           Composer actually does. Change these only to
+///                           correct a mistake, with evidence.
+///
+///   [OURS — SAFE TO CHANGE] Choices MediaMuster made. Changing one is a
+///                           real decision with real consequences (older
+///                           files on disk keep the old spelling), but it
+///                           breaks nothing outside this app.
+///
+/// Membership test, so this stays a reference and not a junk drawer:
+/// something belongs here only if it is (a) a DECISION rather than a
+/// computation, and (b) read by two or more unrelated places. Logic that
+/// derives an answer belongs with its algorithm; a value only one file
+/// reads belongs in that file.
 
-namespace AvidLayout
+namespace Conventions
 {
-	// MARK: - Folder names
+	// ═══════════════════════════════════════════════════════════════
+	// MARK: - Avid's folder names
+	// ═══════════════════════════════════════════════════════════════
 
+	/// [AVID — DO NOT CHANGE] The folder Media Composer creates at a
+	/// volume root, and the essence folder inside it.
 	inline constexpr QLatin1String kAvidMediaFilesDir("Avid MediaFiles");
 	inline constexpr QLatin1String kMxfDir("MXF");
 
@@ -58,9 +81,11 @@ namespace AvidLayout
 	///      header, then per record 8-byte ID, u16 nameLen + name,
 	///      u16 projLen + project, 12-byte trailer. A specimen ships at
 	///      Avid's SupportingFiles/Avid_MediaFiles/msmFMID.pmr (80 records).
-	///   3. Essence — no .omf parser exists. OMF is a Bento container (the
-	///      same family avbparser.cpp already opens), not an MXF variant,
-	///      so rows would show name/size/date and no metadata at all.
+	///   3. Essence — no .omf parser exists. An OMF file is an object store in
+	///      an Apple Bento container, not an MXF variant, so BentoFile (which
+	///      already reads msmMMOB.mdb) would be the way in rather than
+	///      anything in avbparser.cpp — a bin is a different format entirely.
+	///      Until then rows show name/size/date and no metadata at all.
 	/// Doing 1 and 2 alone would list OMF media WITH project and bin names
 	/// and never touch the media files — most of the value, least of the
 	/// work. Item 3 is only worth it for genuine archive customers.
@@ -76,7 +101,9 @@ namespace AvidLayout
 		return base + QLatin1Char('/') + kAvidMediaFilesDir + QLatin1Char('/') + kMxfDir;
 	}
 
-	// MARK: - Essence-file names
+	// ═══════════════════════════════════════════════════════════════
+	// MARK: - Avid's essence-file names
+	// ═══════════════════════════════════════════════════════════════
 
 	/// Leading-dot names are never Avid media: macOS metadata and the
 	/// AppleDouble "._clip.mxf" resource-fork siblings macOS writes onto
@@ -104,20 +131,43 @@ namespace AvidLayout
 			   fileName.endsWith(QLatin1String(".wav"), Qt::CaseInsensitive);
 	}
 
-	// MARK: - MediaMuster's own temp-rename markers
+	// ═══════════════════════════════════════════════════════════════
+	// MARK: - Avid's per-folder file budget
+	// ═══════════════════════════════════════════════════════════════
 
-	/// Copy and Move park an existing destination aside by appending one of
-	/// these plus a uuid. Defined here, used by the ops engine (the
-	/// parking, in oprunner.cpp) and by the scanner, which must recognise a stranded park as
-	/// temp-renamed media rather than hiding it.
+	/// [AVID — DO NOT CHANGE] Media Composer's own ceiling. A folder
+	/// should never reach this; past it, MC slows down badly.
+	inline constexpr int kFolderMax = 5000;
+
+	/// [OURS — SAFE TO CHANGE] What the Rebalancer packs folders up to.
+	/// One below Avid's ceiling, sourced from it so the two can't drift.
+	/// (The name predates this file and reads like Avid guidance — it is
+	/// not; it's our packing target. Renaming it is still on the list.)
+	inline constexpr int kFolderRecommend = kFolderMax - 1; // 4999
+
+	/// [OURS — SAFE TO CHANGE] Where the folder-card bar turns red.
+	inline constexpr int kFolderCritical = 4800;
+
+	/// [OURS — SAFE TO CHANGE] Where it turns amber.
+	inline constexpr int kFolderWarn = 4500;
+
+	// ═══════════════════════════════════════════════════════════════
+	// MARK: - Names MediaMuster writes to disk
+	// ═══════════════════════════════════════════════════════════════
+
+	/// [OURS — SAFE TO CHANGE] Copy and Move park an existing destination
+	/// aside by appending one of these plus a uuid. Used by the ops engine
+	/// (the parking, in oprunner.cpp) and by the scanner, which must
+	/// recognise a stranded park as temp-renamed media rather than hiding
+	/// it. Changing these leaves any park already on disk unrecognised.
 	inline constexpr QLatin1String kCopyReplaceTag(".__copyreplace_");
 	inline constexpr QLatin1String kMoveReplaceTag(".__movereplace_");
 
-	/// Where Delete puts files on a volume whose OS trash can't be used or
-	/// won't say where a file landed (network shares): a folder at the
-	/// volume root. Defined here with the other names MediaMuster writes,
-	/// so the delete path (oprunner.cpp's TrashRouter) and anything that has to
-	/// recognise the folder afterwards share one spelling.
+	/// [OURS — SAFE TO CHANGE] Where Delete puts files on a volume whose
+	/// OS trash can't be used or won't say where a file landed (network
+	/// shares): a folder at the volume root. The delete path (TrashRouter)
+	/// and anything that has to recognise the folder afterwards share this
+	/// one spelling.
 	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
 
 	/// The name with a trailing MediaMuster temp suffix removed, so
@@ -132,6 +182,10 @@ namespace AvidLayout
 		}
 		return fileName;
 	}
+
+	// ═══════════════════════════════════════════════════════════════
+	// MARK: - What counts as media
+	// ═══════════════════════════════════════════════════════════════
 
 	/// What the media table shows: Avid media by extension, minus
 	/// dot-hidden AppleDouble twins ("._clip.mxf"). No junk denylist
@@ -150,13 +204,13 @@ namespace AvidLayout
 	}
 
 	/// True when a directory entry occupies Avid's per-folder file budget
-	/// (see AvidLimits): an .mxf that isn't dot-hidden. Used by the
+	/// (kFolderMax above): an .mxf that isn't dot-hidden. Used by the
 	/// rebalancer's packing and the Quarantined tally — NOT by the media
 	/// table, which admits more (isAvidMediaName: non-MXF audio too, and
 	/// it looks through a temp-rename suffix). The two differ on purpose;
-	/// tst_avidlayout pins both.
+	/// tst_conventions pins both.
 	inline bool countsAsEssenceName(QStringView fileName)
 	{
 		return !isDotHidden(fileName) && hasMxfExtension(fileName);
 	}
-} // namespace AvidLayout
+} // namespace Conventions

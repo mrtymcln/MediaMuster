@@ -1,9 +1,9 @@
 #include "aboutdialog.h"
 
-#include "userinfo.h"
 #include "version.h"
 
 #include <QApplication>
+#include <QDir>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -13,10 +13,50 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#if defined(Q_OS_UNIX)
+#include <pwd.h>
+#include <unistd.h>
+#elif defined(Q_OS_WIN)
+// Lean-and-mean keeps windows.h from dragging in rpcndr.h and friends,
+// whose macros (`small`, `interface`, ...) stomp on ordinary identifiers.
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define SECURITY_WIN32
+#include <windows.h>
+#include <security.h>
+#endif
+
 // MARK: - Layout constants
 
 namespace
 {
+	/// The account's human display name, for the credits-roll easter egg —
+	/// this dialog is its only consumer (folded in from userinfo.* 2026-08-31).
+	QString userDisplayName()
+	{
+#if defined(Q_OS_UNIX)
+		if (const struct passwd *pw = ::getpwuid(::getuid()))
+		{
+			// GECOS can carry comma-separated sub-fields; the full name is first.
+			const QString full = QString::fromLocal8Bit(pw->pw_gecos)
+									 .section(QLatin1Char(','), 0, 0)
+									 .trimmed();
+			if (!full.isEmpty())
+				return full;
+		}
+#elif defined(Q_OS_WIN)
+		wchar_t buf[256];
+		ULONG len = 256;
+		if (::GetUserNameExW(NameDisplay, buf, &len) && len > 0)
+			return QString::fromWCharArray(buf, int(len));
+#endif
+		QString user = qEnvironmentVariable("USER");
+		if (user.isEmpty())
+			user = qEnvironmentVariable("USERNAME");
+		if (user.isEmpty())
+			user = QDir::home().dirName();
+		return user;
+	}
 	// The dialog is fixed-width, and the credits viewport is exactly the
 	// space left between the side margins — derived here rather than
 	// hand-computed, so widening the box can't leave the roll behind.
@@ -108,7 +148,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 			  QStringLiteral("<a href=\"https://xxhash.com\">xxHash3</a>, BSD 2-Clause"));
 
 	// Easter egg: show the account display name of the user.
-	const QString editor = UserInfo::displayName();
+	const QString editor = userDisplayName();
 	if (!editor.isEmpty())
 		addCredit(tr("Editor"), editor);
 

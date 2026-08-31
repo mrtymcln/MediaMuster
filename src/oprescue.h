@@ -1,7 +1,7 @@
 #pragma once
 
 #include "fileidentity.h"
-#include "opledger.h"
+#include "opjournal.h"
 #include "oprequest.h"
 
 #include <QString>
@@ -12,7 +12,7 @@
 
 // MARK: - OpRescue
 //
-// Crash recovery for the OpLedger write-ahead ledgers. Run once at
+// Crash recovery for the OpJournal write-ahead journals. Run once at
 // launch, off the GUI thread.
 //
 // The rule everything else follows: FINISHED WORK STAYS. A run that was
@@ -27,37 +27,37 @@
 // they encode two years of reviewed edge cases):
 //
 //   Identity before reversal — a file about to be renamed back or
-//   restored from the trash must still be the media the ledger
+//   restored from the trash must still be the media the journal
 //   recorded (size + Avid UMID; see FileIdentity::verifyRelocated).
 //   Mismatch = flag and explain, never rename.
 //
-//   Volume resolution — every ledgered path is resolved through the
+//   Volume resolution — every journaled path is resolved through the
 //   run's recorded volume fingerprints first: same volume at the
 //   recorded root → proceed; the volume found mounted under a NEW root
 //   → re-anchor the paths there (narrated); nothing trustworthy →
-//   leave the ledger for a later launch, and NEVER touch a different
+//   leave the journal for a later launch, and NEVER touch a different
 //   volume squatting at the recorded address.
 //
-//   Retention — a finished, clean ledger is the undo candidate now, so
+//   Retention — a finished, clean journal is the undo candidate now, so
 //   the sweep keeps the newest one (for up to 7 days) instead of
-//   deleting every finished ledger on sight.
+//   deleting every finished journal on sight.
 //
 //   Undo runs — an interrupted undo is itself recovered: its ops are
 //   already written in inverse orientation, so the sweep reverses them
 //   with the machinery matching what the undo was DOING (its
 //   `effective` kind), and finished-work-stays applies as everywhere.
 //
-//   Legacy — anything that is not schema 2 is invisible (OpLedger's
+//   Legacy — anything that is not schema 2 is invisible (OpJournal's
 //   readers skip it) and stays untouched on disk, by decision.
 class OpRescue
 {
 public:
 	/// An interrupted run that wrote a plan and still has files it never
 	/// finished. Everything a caller needs to hand the remainder back to
-	/// the engine — or to delete the ledger if the user says no.
+	/// the engine — or to delete the journal if the user says no.
 	struct Resumable
 	{
-		QString ledgerPath;
+		QString journalPath;
 		OpKind kind = OpKind::Copy;
 		QString dest;		   ///< Copy/Move destination root; empty otherwise.
 		bool preserve = false;
@@ -73,7 +73,7 @@ public:
 
 	struct Summary
 	{
-		int ledgersRecovered = 0; ///< Interrupted runs that put something back.
+		int journalsRecovered = 0; ///< Interrupted runs that put something back.
 		int opsReversed = 0;	  ///< Files put back or partials cleaned up.
 		int opsFlagged = 0;		  ///< Couldn't undo; needs the user to look.
 		QStringList notes;		  ///< Lines ready to drop into a dialog.
@@ -81,14 +81,14 @@ public:
 
 		bool anything() const
 		{
-			return ledgersRecovered > 0 || opsFlagged > 0 || !resumable.isEmpty();
+			return journalsRecovered > 0 || opsFlagged > 0 || !resumable.isEmpty();
 		}
 		bool hadTrouble() const { return opsFlagged > 0; }
 		QString message() const { return notes.join(QLatin1Char('\n')); }
 	};
 
-	/// Scan `dir` (standard oplog dir when empty), roll back interrupted
-	/// ledgers, prune the superseded ones, keep the undo candidate.
+	/// Scan `dir` (standard journal dir when empty), roll back interrupted
+	/// journals, prune the superseded ones, keep the undo candidate.
 	/// Idempotent: a crash mid-rollback re-runs safely next launch.
 	///
 	/// `mountedOverride` replaces the live mounted-volume table — tests
@@ -106,7 +106,7 @@ public:
 	/// The shared classifier. Empty optional when the record has no
 	/// plan, has finished (end line), is an undo run, or has nothing
 	/// left to do.
-	static std::optional<Resumable> resumableFrom(const OpLedger::Record &rec);
+	static std::optional<Resumable> resumableFrom(const OpJournal::Record &rec);
 
 	// MARK: - Volume resolution (public: tests drive it with tables)
 
@@ -124,9 +124,9 @@ public:
 		QString note; ///< Plain-words narration for Reanchored / Wait.
 	};
 
-	/// Resolve one ledgered path through the run's recorded volume
+	/// Resolve one journaled path through the run's recorded volume
 	/// fingerprints against what is mounted NOW.
-	static ResolvedPath resolvePath(const QString &ledgeredPath,
+	static ResolvedPath resolvePath(const QString &journaledPath,
 									const QVector<VolumeIdentity> &recorded,
 									const QVector<VolumeIdentity> &mounted);
 
@@ -136,7 +136,7 @@ public:
 	/// leave it entirely alone this launch (a volume is missing, or an
 	/// impostor sits at its address). Shared by the sweep and by Undo,
 	/// so the two can never disagree about a drive.
-	static bool resolveRecord(OpLedger::Record &rec, const QVector<VolumeIdentity> &mounted,
+	static bool resolveRecord(OpJournal::Record &rec, const QVector<VolumeIdentity> &mounted,
 							  QStringList &notes);
 
 	/// The live mounted-volume table (one VolumeIdentity per mount).

@@ -1,6 +1,8 @@
-#include "opledger.h"
+#include "opjournal.h"
 #include "oprunner.h"
 #include "opundo.h"
+
+#include "testutil.h"
 
 #include <QDir>
 #include <QFile>
@@ -12,7 +14,7 @@
 #include <memory>
 
 // OpUndo — Edit ▸ Undo, driven synchronously: a REAL forward run (through
-// OpRunner) writes a real ledger, then OpUndo reverses it and the disk is
+// OpRunner) writes a real journal, then OpUndo reverses it and the disk is
 // checked. That round-trip is the contract: whatever the engine does, one
 // press of Undo puts back.
 //
@@ -70,24 +72,22 @@ private slots:
 	void undo_rename_renames_back_and_resets_avid_dbs();
 	void undo_skips_already_undone_items();
 	void undo_refuses_identity_drift_and_keeps_candidacy();
-	void undo_writes_its_own_ledger();
+	void undo_writes_its_own_journal();
 
 private:
 	// One FRESH sandbox per test (init() recreates it): media tree,
-	// oplog dir, and a trash root the env seams point every disposal at.
+	// journal dir, and a trash root the env seams point every disposal at.
 	std::unique_ptr<QTemporaryDir> m_tmp;
-	QString m_oplog;
+	QString m_journal;
 	QString m_trashRoot;
 
 	QString path(const char *rel) const { return m_tmp->path() + QLatin1Char('/') + rel; }
-	void writeFile(const QString &p, const QByteArray &contents);
-	QByteArray readFile(const QString &p);
 
-	/// Run one forward request through the real runner, into m_oplog.
+	/// Run one forward request through the real runner, into m_journal.
 	OpRunner::Totals runForward(const OpRequest &req);
-	/// The newest undoable ledger in m_oplog — must exist.
+	/// The newest undoable journal in m_journal — must exist.
 	QString undoablePath();
-	/// Run OpUndo on the newest undoable ledger, returning its totals.
+	/// Run OpUndo on the newest undoable journal, returning its totals.
 	OpRunner::Totals runUndo(TestSink &sink);
 
 	OpItem item(const QString &src, const QString &policy = QString());
@@ -97,7 +97,7 @@ void TestOpUndo::init()
 {
 	m_tmp = std::make_unique<QTemporaryDir>();
 	QVERIFY(m_tmp->isValid());
-	m_oplog = path("oplog");
+	m_journal = path("journal");
 	// The trash root must be an ANCESTOR of the files being trashed (the
 	// router mirrors each file's path relative to it, exactly as the
 	// real volume root is an ancestor of everything on the volume) — so
@@ -112,22 +112,6 @@ void TestOpUndo::cleanup()
 	qunsetenv("MEDIAMUSTER_DISABLE_OS_TRASH");
 	qunsetenv("MEDIAMUSTER_TRASH_ROOT");
 	qunsetenv("MEDIAMUSTER_FORCE_MOVE_COPY");
-}
-
-void TestOpUndo::writeFile(const QString &p, const QByteArray &contents)
-{
-	QDir().mkpath(QFileInfo(p).absolutePath());
-	QFile f(p);
-	QVERIFY(f.open(QIODevice::WriteOnly));
-	QCOMPARE(f.write(contents), qint64(contents.size()));
-}
-
-QByteArray TestOpUndo::readFile(const QString &p)
-{
-	QFile f(p);
-	if (!f.open(QIODevice::ReadOnly))
-		return {};
-	return f.readAll();
 }
 
 OpItem TestOpUndo::item(const QString &src, const QString &policy)
@@ -145,23 +129,23 @@ OpRunner::Totals TestOpUndo::runForward(const OpRequest &req)
 	TestSink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	return runner.run(req, m_oplog);
+	return runner.run(req, m_journal);
 }
 
 QString TestOpUndo::undoablePath()
 {
-	const auto rec = OpLedger::latestUndoable(m_oplog);
+	const auto rec = OpJournal::latestUndoable(m_journal);
 	return rec ? rec->path : QString();
 }
 
 OpRunner::Totals TestOpUndo::runUndo(TestSink &sink)
 {
-	const QString ledger = undoablePath();
-	if (ledger.isEmpty())
+	const QString journal = undoablePath();
+	if (journal.isEmpty())
 		return {};
 	std::atomic<bool> cancel{false};
 	OpUndo undo(sink, cancel);
-	return undo.run(ledger, m_oplog);
+	return undo.run(journal, m_journal);
 }
 
 // MARK: - Copy
@@ -383,7 +367,7 @@ void TestOpUndo::undo_refuses_identity_drift_and_keeps_candidacy()
 	QVERIFY(!undoablePath().isEmpty());
 }
 
-void TestOpUndo::undo_writes_its_own_ledger()
+void TestOpUndo::undo_writes_its_own_journal()
 {
 	const QString src = path("src/clip.mxf");
 	writeFile(src, "BYTES");
@@ -396,20 +380,20 @@ void TestOpUndo::undo_writes_its_own_ledger()
 	TestSink sink;
 	QCOMPARE(runUndo(sink).succeeded, 1);
 
-	// The undo run left its own finished ledger behind (kind undo,
+	// The undo run left its own finished journal behind (kind undo,
 	// naming what it reversed), and the original carries the undone
 	// stamp — so a crash mid-undo would have been recoverable, and a
 	// double-undo is structurally impossible.
-	bool sawUndoLedger = false;
+	bool sawUndoJournal = false;
 	bool sawUndoneOriginal = false;
-	for (const OpLedger::Record &rec : OpLedger::scan(m_oplog))
+	for (const OpJournal::Record &rec : OpJournal::scan(m_journal))
 	{
 		if (rec.kind == OpKind::Undo && rec.complete && rec.effective == OpKind::Copy)
-			sawUndoLedger = true;
+			sawUndoJournal = true;
 		if (rec.kind == OpKind::Copy && rec.undone)
 			sawUndoneOriginal = true;
 	}
-	QVERIFY(sawUndoLedger);
+	QVERIFY(sawUndoJournal);
 	QVERIFY(sawUndoneOriginal);
 }
 

@@ -1,6 +1,6 @@
 #include "opundo.h"
 
-#include "avidlayout.h"
+#include "conventions.h"
 #include "formatutil.h"
 #include "oprescue.h"
 #include "parkedfile.h"
@@ -14,10 +14,10 @@
 namespace
 {
 	// The display name for messages, mirroring the runner's rule: the
-	// clip name the editor knows when the ledger recorded one, else the
+	// clip name the editor knows when the journal recorded one, else the
 	// file name. Undo works from the ORIGINAL run's plan, so look the op
 	// up there by source path.
-	QString displayNameFor(const OpLedger::Record &rec, const OpLedger::Entry &op)
+	QString displayNameFor(const OpJournal::Record &rec, const OpJournal::Entry &op)
 	{
 		for (const OpItem &it : rec.plan)
 		{
@@ -33,13 +33,13 @@ namespace
 	// Either way, prefer the landed capture and fall back to the source
 	// identity RELOCATED (size + UMID only — the file has legitimately
 	// changed address, so filesystem ids prove nothing).
-	FileIdentity::Verdict verifyLanded(const QString &path, const OpLedger::Entry &op)
+	FileIdentity::Verdict verifyLanded(const QString &path, const OpJournal::Entry &op)
 	{
 		if (op.landedId.strength != FileIdentity::Strength::None)
 			return FileIdentity::verify(path, op.landedId);
 		if (op.srcId.strength != FileIdentity::Strength::None)
 			return FileIdentity::verifyRelocated(path, op.srcId);
-		// No identity in the ledger (shouldn't happen for v2-written
+		// No identity in the journal (shouldn't happen for v2-written
 		// runs) — no check to apply, same stance recovery takes.
 		return FileIdentity::Verdict::Match;
 	}
@@ -55,7 +55,7 @@ OpUndo::OpUndo(OpSink &sink, const std::atomic<bool> &cancel)
 
 // MARK: - The run
 
-OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &ledgerDir,
+OpRunner::Totals OpUndo::run(const QString &originalJournalPath, const QString &journalDir,
 							 const QVector<VolumeIdentity> &mountedOverride)
 {
 	OpRunner::Totals t;
@@ -64,7 +64,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 	// minutes old; anything that disqualifies now (another undo finished,
 	// the sweep stamped it, the file vanished) must refuse cleanly rather
 	// than act on a stale belief.
-	std::optional<OpLedger::Record> maybe = OpLedger::readOne(originalLedgerPath);
+	std::optional<OpJournal::Record> maybe = OpJournal::readOne(originalJournalPath);
 	if (!maybe || !maybe->complete || maybe->dirty || maybe->undone || maybe->recovered ||
 		!maybe->kindKnown || maybe->kind == OpKind::Undo || maybe->doneCount() == 0)
 	{
@@ -74,7 +74,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 								  "operation replaced it)."));
 		return t;
 	}
-	OpLedger::Record rec = *maybe;
+	OpJournal::Record rec = *maybe;
 
 	// Volume resolution, shared with the launch sweep so the two can
 	// never disagree about a drive: paths are re-anchored when a volume
@@ -97,7 +97,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 
 	// The ops that actually landed, newest first — undoing in reverse
 	// order unwinds any ordering dependency the way it was built.
-	QVector<OpLedger::Entry> undoable;
+	QVector<OpJournal::Entry> undoable;
 	for (int i = rec.ops.size() - 1; i >= 0; --i)
 	{
 		if (rec.ops[i].completed)
@@ -109,17 +109,17 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 							  .arg(opKindName(rec.kind))
 							  .arg(total));
 
-	// The undo is itself a write-ahead-ledgered run: kind Undo, naming
+	// The undo is itself a write-ahead-journaled run: kind Undo, naming
 	// what it reverses and the original's kind, so a CRASHED undo is
 	// recovered by the same launch sweep as any other run. The original
-	// ledger is passed as the prune's spare — deleting it here would
+	// journal is passed as the prune's spare — deleting it here would
 	// destroy the very record being read.
-	OpLedger ledger(OpKind::Undo,
+	OpJournal journal(OpKind::Undo,
 					QJsonObject{{QStringLiteral("undoes"), QFileInfo(rec.path).fileName()},
 								{QStringLiteral("effective"), opKindName(rec.kind)}},
-					ledgerDir, rec.path);
-	if (!ledger.isOpen())
-		m_sink.log(QtWarningMsg, OpLedger::openFailedText(OpKind::Undo));
+					journalDir, rec.path);
+	if (!journal.isOpen())
+		m_sink.log(QtWarningMsg, OpJournal::openFailedText(OpKind::Undo));
 
 	// The undo's plan: one item per inverse step, at the file's CURRENT
 	// location, so an interrupted undo classifies and narrates like any
@@ -127,7 +127,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 	{
 		OpRequest inverse;
 		inverse.kind = OpKind::Undo;
-		for (const OpLedger::Entry &op : undoable)
+		for (const OpJournal::Entry &op : undoable)
 		{
 			OpItem it;
 			it.src = rec.kind == OpKind::Delete ? op.finalPath : op.dst;
@@ -135,7 +135,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 			it.bytes = op.srcId.size >= 0 ? op.srcId.size : op.bytes;
 			inverse.items.append(it);
 		}
-		ledger.writePlan(QString(), false, inverse.items, OpRunner::volumesFor(inverse));
+		journal.writePlan(QString(), false, inverse.items, OpRunner::volumesFor(inverse));
 	}
 
 	TrashRouter router(m_sink);
@@ -150,7 +150,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 			break;
 		}
 
-		const OpLedger::Entry &op = undoable[i];
+		const OpJournal::Entry &op = undoable[i];
 		const QString name = displayNameFor(rec, op);
 		m_sink.progress(name, i + 1, total, 0);
 
@@ -158,16 +158,16 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 		switch (rec.kind)
 		{
 		case OpKind::Copy:
-			out = undoCopyOp(op, ledger, router, name, i + 1, total);
+			out = undoCopyOp(op, journal, router, name, i + 1, total);
 			break;
 		case OpKind::Move:
-			out = undoMoveOp(op, ledger, router, name, i + 1, total);
+			out = undoMoveOp(op, journal, router, name, i + 1, total);
 			break;
 		case OpKind::Delete:
-			out = undoDeleteOp(op, ledger, name);
+			out = undoDeleteOp(op, journal, name);
 			break;
 		case OpKind::Rename:
-			out = undoRenameOp(op, ledger, name, touchedFolders);
+			out = undoRenameOp(op, journal, name, touchedFolders);
 			break;
 		case OpKind::Undo:
 			break; // unreachable: qualification refuses undo-of-undo
@@ -191,7 +191,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 	}
 
 	// Same stop-and-keep close as every run: landed inverse work stays.
-	ledger.finish(t.succeeded, t.failed, t.skipped, cancelled);
+	journal.finish(t.succeeded, t.failed, t.skipped, cancelled);
 
 	if (router.mediaMusterCount() > 0)
 		m_sink.trashUsed(router.mediaMusterFolder(), router.mediaMusterCount());
@@ -201,7 +201,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 	// undo leaves it unstamped, so Undo can be pressed again: items whose
 	// inverse already holds skip quietly, and only the leftovers retry.
 	if (!cancelled && t.failed == 0)
-		OpLedger::markUndone(rec.path, QFileInfo(ledger.path()).fileName());
+		OpJournal::markUndone(rec.path, QFileInfo(journal.path()).fileName());
 
 	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
 			   QStringLiteral("Undo %1: %2 put back, %3 couldn't be undone%4")
@@ -216,7 +216,7 @@ OpRunner::Totals OpUndo::run(const QString &originalLedgerPath, const QString &l
 
 // MARK: - Replaced-original restore (shared tail of Copy and Move undo)
 
-bool OpUndo::restoreReplacedOriginal(const OpLedger::Entry &op, QString *why)
+bool OpUndo::restoreReplacedOriginal(const OpJournal::Entry &op, QString *why)
 {
 	if (op.parkedFinal.isEmpty())
 		return true; // this op replaced nothing
@@ -246,7 +246,7 @@ bool OpUndo::restoreReplacedOriginal(const OpLedger::Entry &op, QString *why)
 
 // MARK: - Copy undo
 
-OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpLedger::Entry &op, OpLedger &ledger,
+OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpJournal::Entry &op, OpJournal &journal,
 									   TrashRouter &router, const QString &name, int index,
 									   int total)
 {
@@ -294,7 +294,7 @@ OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpLedger::Entry &op, OpLedger &ledg
 
 	// Write-ahead, then act: the copy goes to the TRASH (undo of a copy
 	// is a delete in disguise, and deletes never hard-unlink).
-	LedgerOp lop(&ledger, op.dst, QString(), op.landedId.size, QString(), op.landedId);
+	JournalOp lop(&journal, op.dst, QString(), op.landedId.size, QString(), op.landedId);
 	const TrashRouter::Landing landing = router.trash(op.dst);
 	if (!landing.ok)
 	{
@@ -307,7 +307,7 @@ OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpLedger::Entry &op, OpLedger &ledg
 	QString why;
 	if (!restoreReplacedOriginal(op, &why))
 	{
-		OpLedger::DoneInfo info;
+		OpJournal::DoneInfo info;
 		info.finalPath = landing.finalPath;
 		lop.done(info);
 		m_sink.itemDone(name, op.src, false,
@@ -316,7 +316,7 @@ OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpLedger::Entry &op, OpLedger &ledg
 		return out;
 	}
 
-	OpLedger::DoneInfo info;
+	OpJournal::DoneInfo info;
 	info.finalPath = landing.finalPath;
 	lop.done(info);
 	m_sink.itemDone(name, op.src, true, {}, false);
@@ -326,7 +326,7 @@ OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpLedger::Entry &op, OpLedger &ledg
 
 // MARK: - Move undo
 
-OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpLedger::Entry &op, OpLedger &ledger,
+OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &journal,
 									   TrashRouter &router, const QString &name, int index,
 									   int total)
 {
@@ -374,7 +374,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpLedger::Entry &op, OpLedger &ledg
 	// Write-ahead for the journey home. `effective: move` in the begin
 	// line means a crash between here and done is recovered with the
 	// Move machinery over this exact src/dst pair.
-	LedgerOp lop(&ledger, op.dst, op.src, op.srcId.size, QString(),
+	JournalOp lop(&journal, op.dst, op.src, op.srcId.size, QString(),
 				 op.landedId.strength != FileIdentity::Strength::None ? op.landedId : op.srcId);
 
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
@@ -422,7 +422,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpLedger::Entry &op, OpLedger &ledg
 			}
 		}
 
-		ParkedFile homePark(op.src, AvidLayout::kMoveReplaceTag);
+		ParkedFile homePark(op.src, Conventions::kMoveReplaceTag);
 		homePark.park(); // slot is empty (checked above); arms the partial discard
 
 		qint64 lastPct = -1;
@@ -496,7 +496,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpLedger::Entry &op, OpLedger &ledg
 	QString why;
 	const bool restored = restoreReplacedOriginal(op, &why);
 
-	OpLedger::DoneInfo info;
+	OpJournal::DoneInfo info;
 	info.landedId = FileIdentity::capture(op.src, /*readContent=*/false);
 	info.landedId.contentUmid = op.srcId.contentUmid;
 	lop.done(info);
@@ -516,7 +516,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpLedger::Entry &op, OpLedger &ledg
 
 // MARK: - Delete undo
 
-OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpLedger::Entry &op, OpLedger &ledger,
+OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpJournal::Entry &op, OpJournal &journal,
 										 const QString &name)
 {
 	ItemOutcome out;
@@ -562,7 +562,7 @@ OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpLedger::Entry &op, OpLedger &le
 		return out;
 	}
 
-	LedgerOp lop(&ledger, op.finalPath, op.src, op.srcId.size, QString(), op.srcId);
+	JournalOp lop(&journal, op.finalPath, op.src, op.srcId.size, QString(), op.srcId);
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
 	if (!QFile::rename(op.finalPath, op.src))
 	{
@@ -573,7 +573,7 @@ OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpLedger::Entry &op, OpLedger &le
 		return out;
 	}
 
-	OpLedger::DoneInfo info;
+	OpJournal::DoneInfo info;
 	info.landedId = FileIdentity::capture(op.src, /*readContent=*/false);
 	info.landedId.contentUmid = op.srcId.contentUmid;
 	lop.done(info);
@@ -584,7 +584,7 @@ OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpLedger::Entry &op, OpLedger &le
 
 // MARK: - Rename undo
 
-OpUndo::ItemOutcome OpUndo::undoRenameOp(const OpLedger::Entry &op, OpLedger &ledger,
+OpUndo::ItemOutcome OpUndo::undoRenameOp(const OpJournal::Entry &op, OpJournal &journal,
 										 const QString &name, QSet<QString> &touchedFolders)
 {
 	ItemOutcome out;
@@ -617,7 +617,7 @@ OpUndo::ItemOutcome OpUndo::undoRenameOp(const OpLedger::Entry &op, OpLedger &le
 		return out;
 	}
 
-	LedgerOp lop(&ledger, op.dst, op.src, op.srcId.size, QString(), op.srcId);
+	JournalOp lop(&journal, op.dst, op.src, op.srcId.size, QString(), op.srcId);
 	if (!QFile::rename(op.dst, op.src))
 	{
 		lop.failed(QStringLiteral("rename back failed"));
@@ -626,26 +626,19 @@ OpUndo::ItemOutcome OpUndo::undoRenameOp(const OpLedger::Entry &op, OpLedger &le
 		return out;
 	}
 
-	// The folders' Avid databases go stale the moment contents change —
-	// delete them so Avid rebuilds, exactly as the forward run did (and
-	// with the same honest-absence rationale; see oprunner.cpp's
-	// touchFolder).
+	// Reset the folders' Avid databases exactly as the forward run did
+	// (one implementation; the honest-absence rationale lives at its
+	// definition in oprunner.cpp).
 	for (const QString &folder : {QFileInfo(op.src).absolutePath(),
 								  QFileInfo(op.dst).absolutePath()})
 	{
 		if (touchedFolders.contains(folder))
 			continue;
 		touchedFolders.insert(folder);
-		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
-		{
-			QFile f(folder + QLatin1String(db));
-			if (f.exists() && !f.remove())
-				m_sink.log(QtWarningMsg,
-						   QStringLiteral("Couldn't delete %1").arg(f.fileName()));
-		}
+		resetAvidDatabases(folder, m_sink);
 	}
 
-	OpLedger::DoneInfo info;
+	OpJournal::DoneInfo info;
 	info.landedId = FileIdentity::capture(op.src, /*readContent=*/false);
 	info.landedId.contentUmid = op.srcId.contentUmid;
 	lop.done(info);

@@ -1,6 +1,6 @@
 #include "trashrouter.h"
 
-#include "avidlayout.h"
+#include "conventions.h"
 #include "oprunner.h" // OpSink, OpRunner::generateRenamePath
 
 #include <QDir>
@@ -94,7 +94,7 @@ TrashRouter::Landing TrashRouter::trash(const QString &filePath)
 	// alike).
 	const QDir volDir(volRoot);
 	const QString relPath = volDir.relativeFilePath(filePath);
-	const QString binRoot = volDir.filePath(AvidLayout::kMediaMusterTrashDir);
+	const QString binRoot = volDir.filePath(Conventions::kMediaMusterTrashDir);
 	const QString binDest = binRoot + QLatin1Char('/') + relPath;
 
 	if (!QDir().mkpath(QFileInfo(binDest).absolutePath()))
@@ -106,7 +106,7 @@ TrashRouter::Landing TrashRouter::trash(const QString &filePath)
 
 	// A prior catch at this path is an earlier operation's safety copy;
 	// never destroy it to make room. Divert the new arrival to a
-	// " (2)"-style sibling and ledger wherever it actually lands.
+	// " (2)"-style sibling and journal wherever it actually lands.
 	QString finalDest = binDest;
 	if (QFile::exists(finalDest))
 	{

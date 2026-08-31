@@ -1,6 +1,6 @@
 #pragma once
 
-#include "avidlimits.h"
+#include "conventions.h"
 #include "backgroundjob.h"
 #include "mediafile.h"
 #include "opmanager.h"
@@ -32,7 +32,7 @@
 ///      that is gone or read-only aborts the run before anything moves;
 ///      then the plan becomes an OpRequest of Rename items and the
 ///      engine does the rest — which is the v2 upgrade: every rename is
-///      now WRITE-AHEAD LEDGERED, identity-checked, recoverable after a
+///      now WRITE-AHEAD JOURNALED, identity-checked, recoverable after a
 ///      crash from the next launch's sweep, and undoable from Edit ▸
 ///      Undo. (v1 ran bare QFile::rename with none of that — the one
 ///      feature outside the safety net.)
@@ -55,11 +55,6 @@ class Rebalancer : public QObject
 {
 	Q_OBJECT
 public:
-	/// Pack folders up to (not past) this; one file below Avid's hard
-	/// ceiling. Sourced from AvidLimits so the cap and the ceiling can't
-	/// drift apart.
-	static constexpr int kFolderCap = AvidLimits::kFolderRecommend;
-
 	explicit Rebalancer(QObject *parent = nullptr);
 
 	~Rebalancer() override = default;

@@ -1,6 +1,6 @@
 #include "oprunner.h"
 
-#include "avidlayout.h"
+#include "conventions.h"
 #include "debugslowdown.h"
 #include "formatutil.h"
 #include "mobid.h"
@@ -24,11 +24,11 @@ namespace
 	constexpr qint64 kProgressIntervalBytes = 32 * 1024 * 1024;
 
 	// Suffixes for ParkedFile. Distinct per operation so a stray temp
-	// names the job that left it behind. Defined in AvidLayout: the
+	// names the job that left it behind. Defined in Conventions: the
 	// scanner must recognise these same names as temp-renamed media so a
 	// stranded park never becomes invisible in the table.
-	inline constexpr QLatin1String kCopyReplaceTag = AvidLayout::kCopyReplaceTag;
-	inline constexpr QLatin1String kMoveReplaceTag = AvidLayout::kMoveReplaceTag;
+	inline constexpr QLatin1String kCopyReplaceTag = Conventions::kCopyReplaceTag;
+	inline constexpr QLatin1String kMoveReplaceTag = Conventions::kMoveReplaceTag;
 
 	// Skipped count is suppressed when 0 so Delete (no skip path)
 	// doesn't trail a `, 0 skipped`.
@@ -70,6 +70,27 @@ namespace
 
 } // namespace
 
+// MARK: - Folder database reset
+
+// Avid's per-folder databases (msmMMOB.mdb / msmFMID.pmr) go stale the
+// instant a file moves in or out; Avid rebuilds them on next launch.
+// Callers delete them the moment a folder's contents change — NOT at
+// the end of the run. The ordering is load-bearing: a crash partway
+// through leaves a legal folder layout, but databases still sitting
+// there intact would parse cleanly and simply not mention the clips
+// that already moved — the scanner reads that as "No reference", the
+// state a user culls from. Absent databases read as "No database", an
+// honest unknown that invites a rescan instead of a delete.
+void resetAvidDatabases(const QString &folderPath, OpSink &sink)
+{
+	for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
+	{
+		QFile f(folderPath + QLatin1String(db));
+		if (f.exists() && !f.remove())
+			sink.log(QtWarningMsg, QStringLiteral("Couldn't delete %1").arg(f.fileName()));
+	}
+}
+
 // MARK: - Construction
 
 OpRunner::OpRunner(OpSink &sink, const std::atomic<bool> &cancel)
@@ -84,7 +105,7 @@ QString OpRunner::buildDestPath(const QString &fileName, const QString &mxfFolde
 								const QString &destRoot, bool preserve)
 {
 	if (preserve)
-		return AvidLayout::mxfRootUnder(destRoot) + QLatin1Char('/') + mxfFolder +
+		return Conventions::mxfRootUnder(destRoot) + QLatin1Char('/') + mxfFolder +
 			   QLatin1Char('/') + fileName;
 	return destRoot + QLatin1Char('/') + fileName;
 }
@@ -351,15 +372,15 @@ bool OpRunner::claimDestination(const OpItem &it, QString &dstPath, QSet<QString
 	return true;
 }
 
-void OpRunner::warnLedgerDegradedOnce(const OpLedger &ledger, bool &warned)
+void OpRunner::warnJournalDegradedOnce(const OpJournal &journal, bool &warned)
 {
-	if (warned || !ledger.degraded())
+	if (warned || !journal.degraded())
 		return;
 	warned = true;
-	m_sink.log(QtCriticalMsg, OpLedger::degradedText());
+	m_sink.log(QtCriticalMsg, OpJournal::degradedText());
 }
 
-void OpRunner::flagStrandedPark(LedgerOp &lop, ParkedFile &park, const OpItem &it)
+void OpRunner::flagStrandedPark(JournalOp &lop, ParkedFile &park, const OpItem &it)
 {
 	lop.failedDirty(QStringLiteral("restore failed; original still parked"));
 	m_sink.log(
@@ -372,7 +393,7 @@ void OpRunner::flagStrandedPark(LedgerOp &lop, ParkedFile &park, const OpItem &i
 	// The dirty line above is the LAST word on this item's disk state:
 	// recovery will read it next launch and act on exactly what it
 	// describes. Disarm so the ParkedFile destructor cannot retry renames
-	// AFTER the line is final — a retry that succeeded post-ledger is how
+	// AFTER the line is final — a retry that succeeded post-journal is how
 	// recovery once came to delete a restored original as a "partial"
 	// (adversarial review 2026-08-30, finding 2).
 	park.disarm();
@@ -380,20 +401,20 @@ void OpRunner::flagStrandedPark(LedgerOp &lop, ParkedFile &park, const OpItem &i
 
 // MARK: - Dispatch
 
-OpRunner::Totals OpRunner::run(const OpRequest &request, const QString &ledgerDir)
+OpRunner::Totals OpRunner::run(const OpRequest &request, const QString &journalDir)
 {
 	switch (request.kind)
 	{
 	case OpKind::Copy:
 	case OpKind::Move:
-		return runCopyMove(request, ledgerDir);
+		return runCopyMove(request, journalDir);
 	case OpKind::Delete:
-		return runDelete(request, ledgerDir);
+		return runDelete(request, journalDir);
 	case OpKind::Rename:
-		return runRename(request, ledgerDir);
+		return runRename(request, journalDir);
 	case OpKind::Undo:
 		// Undo runs are built and executed by OpUndo (it reads the
-		// original ledger and drives the inverse steps itself).
+		// original journal and drives the inverse steps itself).
 		m_sink.log(QtCriticalMsg,
 				   QStringLiteral("Internal error: an undo request reached the runner."));
 		return {};
@@ -403,7 +424,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &request, const QString &ledgerDi
 
 // MARK: - Copy / Move
 
-OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledgerDir)
+OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &journalDir)
 {
 	Totals t;
 	const bool isMove = (req.kind == OpKind::Move);
@@ -414,18 +435,18 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 							  .arg(total)
 							  .arg(req.destRoot));
 
-	// The write-ahead ledger. Copy earns one despite never removing its
+	// The write-ahead journal. Copy earns one despite never removing its
 	// source: replacing a live destination parks the original aside, and
 	// a crash inside that window would otherwise leave the user with
 	// neither file and a temp nothing knows about.
-	OpLedger ledger(req.kind,
+	OpJournal journal(req.kind,
 					QJsonObject{{QStringLiteral("dest"), req.destRoot},
 								{QStringLiteral("preserve"), req.preserve}},
-					ledgerDir);
-	if (!ledger.isOpen())
-		m_sink.log(QtWarningMsg, OpLedger::openFailedText(req.kind));
+					journalDir);
+	if (!journal.isOpen())
+		m_sink.log(QtWarningMsg, OpJournal::openFailedText(req.kind));
 	// The whole to-do list + volume fingerprints, before the first op.
-	ledger.writePlan(req.destRoot, req.preserve, req.items, volumesFor(req));
+	journal.writePlan(req.destRoot, req.preserve, req.items, volumesFor(req));
 
 	// Destinations already taken this run, so two same-named selections
 	// can't collide on one path. Critical for Move: a silent overwrite
@@ -433,7 +454,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 	QSet<QString> claimedDests;
 
 	TrashRouter router(m_sink);
-	bool ledgerDegradedWarned = false;
+	bool journalDegradedWarned = false;
 	bool durabilityNoteLogged = false;
 
 	// Test seam: skip the rename so the cross-volume copy+delete leg is
@@ -451,7 +472,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 		QString dstPath = buildDestPath(it.name, it.folder, req.destRoot, req.preserve);
 
 		m_sink.progress(it.name, i + 1, total, 0);
-		warnLedgerDegradedOnce(ledger, ledgerDegradedWarned);
+		warnJournalDegradedOnce(journal, journalDegradedWarned);
 		DebugSlowdown::pauseForMs(40);
 
 		if (const auto action = resolveConflict(it, dstPath, claimedDests);
@@ -460,9 +481,9 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 			if (action == ConflictAction::Skip)
 			{
 				++t.skipped;
-				// Ledger the skip so a resumed run knows this file was
+				// Journal the skip so a resumed run knows this file was
 				// concluded, not left undone.
-				ledger.markSkipped(ledger.planOp(it.src, dstPath, it.bytes, QString(), {}));
+				journal.markSkipped(journal.planOp(it.src, dstPath, it.bytes, QString(), {}));
 			}
 			else
 				++t.failed;
@@ -496,16 +517,16 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 		}
 
 		// Replace: capture the identity of the file about to be parked,
-		// so the ledger knows exactly which file was set aside and undo
+		// so the journal knows exactly which file was set aside and undo
 		// can later restore exactly it.
 		FileIdentity parkedOriginalId;
 		if (QFile::exists(dstPath))
 			parkedOriginalId = FileIdentity::capture(dstPath);
 
-		// Beat 2: the park path reaches the ledger BEFORE the rename it
+		// Beat 2: the park path reaches the journal BEFORE the rename it
 		// describes; recovery needs it to put a replaced file back.
 		ParkedFile park(dstPath, parkTag);
-		LedgerOp lop(&ledger, it.src, dstPath, srcId->size, park.path(), *srcId,
+		JournalOp lop(&journal, it.src, dstPath, srcId->size, park.path(), *srcId,
 					 parkedOriginalId);
 
 		if (!park.park())
@@ -566,7 +587,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 					// enforces (review finding 1: the old restore() here
 					// unlinked the moved file to make room for the parked
 					// original). flagStrandedPark freezes this state into
-					// the ledger and disarms; recovery sorts it out with
+					// the journal and disarms; recovery sorts it out with
 					// the user's file intact.
 					flagStrandedPark(lop, park, it);
 					m_sink.itemDone(
@@ -582,7 +603,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 				else
 				{
 					// The file is home; only the original's rename-back
-					// failed. The dirty fail keeps the ledger alive;
+					// failed. The dirty fail keeps the journal alive;
 					// next-launch recovery knows the parked path and
 					// finishes the job.
 					flagStrandedPark(lop, park, it);
@@ -597,7 +618,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 				continue;
 			}
 
-			OpLedger::DoneInfo info;
+			OpJournal::DoneInfo info;
 			info.landedId = landed;
 			info.parkedFinal = parkedFinal;
 			lop.done(info);
@@ -667,10 +688,10 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 			m_sink.log(QtInfoMsg, QStringLiteral("Cloned %1").arg(it.name));
 
 		// A network destination couldn't give the full durability
-		// barrier: record it honestly, in the ledger and once in the log.
+		// barrier: record it honestly, in the journal and once in the log.
 		if (copyRes.durabilityDegraded)
 		{
-			ledger.writeNote(
+			journal.writeNote(
 				QStringLiteral("'%1': the destination volume couldn't confirm a full flush to "
 							   "disk; relying on the server's write acknowledgement.")
 					.arg(it.name));
@@ -710,7 +731,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 			continue;
 		}
 
-		// The landed file's identity, for the ledger and for undo. The
+		// The landed file's identity, for the journal and for undo. The
 		// bytes are checksum-verified identical, so the content identity
 		// carries over without re-reading the header.
 		FileIdentity landed = FileIdentity::capture(dstPath, /*readContent=*/false);
@@ -734,7 +755,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 			{
 				if (copyRes.durabilityDegraded)
 				{
-					ledger.writeNote(
+					journal.writeNote(
 						QStringLiteral("'%1': the destination couldn't confirm its folder "
 									   "update either; relying on the server's write "
 									   "acknowledgement.")
@@ -805,7 +826,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 			}
 			partial.commit();
 
-			OpLedger::DoneInfo info;
+			OpJournal::DoneInfo info;
 			info.hash = copyRes.hashHex;
 			info.landedId = landed;
 			info.parkedFinal = parkedFinal;
@@ -836,7 +857,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 				continue;
 			}
 
-			OpLedger::DoneInfo info;
+			OpJournal::DoneInfo info;
 			info.hash = copyRes.hashHex;
 			info.landedId = landed;
 			info.parkedFinal = parkedFinal;
@@ -846,10 +867,10 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 		}
 	}
 
-	// Cancel means stop and keep: close the ledger clean so recovery
-	// won't undo what already landed. The ledger STAYS on disk — it is
+	// Cancel means stop and keep: close the journal clean so recovery
+	// won't undo what already landed. The journal STAYS on disk — it is
 	// now the undo candidate (the next operation prunes it).
-	ledger.finish(t.succeeded, t.failed, t.skipped, m_cancel.load(std::memory_order_acquire));
+	journal.finish(t.succeeded, t.failed, t.skipped, m_cancel.load(std::memory_order_acquire));
 
 	if (router.mediaMusterCount() > 0)
 		m_sink.trashUsed(router.mediaMusterFolder(), router.mediaMusterCount());
@@ -862,26 +883,26 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &ledg
 
 // MARK: - Delete
 
-OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &ledgerDir)
+OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &journalDir)
 {
 	Totals t;
 	const int total = req.items.size();
 
 	m_sink.log(QtInfoMsg, QStringLiteral("Deleting %1 files").arg(total));
 
-	OpLedger ledger(OpKind::Delete, QJsonObject{}, ledgerDir);
-	if (!ledger.isOpen())
-		m_sink.log(QtWarningMsg, OpLedger::openFailedText(OpKind::Delete));
-	ledger.writePlan(QString(), false, req.items, volumesFor(req));
+	OpJournal journal(OpKind::Delete, QJsonObject{}, journalDir);
+	if (!journal.isOpen())
+		m_sink.log(QtWarningMsg, OpJournal::openFailedText(OpKind::Delete));
+	journal.writePlan(QString(), false, req.items, volumesFor(req));
 
 	TrashRouter router(m_sink);
-	bool ledgerDegradedWarned = false;
+	bool journalDegradedWarned = false;
 
 	for (int i = 0; i < total && !m_cancel.load(std::memory_order_acquire); ++i)
 	{
 		const OpItem &it = req.items[i];
 		m_sink.progress(it.name, i + 1, total, 0);
-		warnLedgerDegradedOnce(ledger, ledgerDegradedWarned);
+		warnJournalDegradedOnce(journal, journalDegradedWarned);
 		DebugSlowdown::pauseForMs(40);
 
 		// Beat 1: a delete is the easiest place to destroy the wrong
@@ -894,7 +915,7 @@ OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &ledger
 		}
 
 		// Beat 2: the intent line, before the file moves anywhere.
-		LedgerOp lop(&ledger, it.src, QString(), srcId->size, QString(), *srcId);
+		JournalOp lop(&journal, it.src, QString(), srcId->size, QString(), *srcId);
 
 		// Beat 3: the trash tiers. Never a hard delete.
 		const TrashRouter::Landing landing = router.trash(it.src);
@@ -906,14 +927,14 @@ OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &ledger
 			continue;
 		}
 
-		OpLedger::DoneInfo info;
+		OpJournal::DoneInfo info;
 		info.finalPath = landing.finalPath;
 		lop.done(info);
 		m_sink.itemDone(it.name, it.src, true, {}, false);
 		++t.succeeded;
 	}
 
-	ledger.finish(t.succeeded, t.failed, /*skipped=*/0,
+	journal.finish(t.succeeded, t.failed, /*skipped=*/0,
 				  m_cancel.load(std::memory_order_acquire));
 
 	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
@@ -932,19 +953,19 @@ OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &ledger
 
 // MARK: - Rename (Rebalance)
 
-OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledgerDir)
+OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &journalDir)
 {
 	Totals t;
 	const int total = req.items.size();
 
 	m_sink.log(QtInfoMsg, QStringLiteral("Moving %1 files between folders").arg(total));
 
-	OpLedger ledger(OpKind::Rename, QJsonObject{}, ledgerDir);
-	if (!ledger.isOpen())
-		m_sink.log(QtWarningMsg, OpLedger::openFailedText(OpKind::Rename));
-	ledger.writePlan(QString(), false, req.items, volumesFor(req));
+	OpJournal journal(OpKind::Rename, QJsonObject{}, journalDir);
+	if (!journal.isOpen())
+		m_sink.log(QtWarningMsg, OpJournal::openFailedText(OpKind::Rename));
+	journal.writePlan(QString(), false, req.items, volumesFor(req));
 
-	bool ledgerDegradedWarned = false;
+	bool journalDegradedWarned = false;
 	QSet<QString> touchedFolders;
 	QString currentGroup;
 
@@ -954,25 +975,11 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledger
 			return;
 		touchedFolders.insert(folder);
 
-		// Avid's per-folder databases (msmMMOB.mdb / msmFMID.pmr) go
-		// stale the instant a file moves in or out; Avid rebuilds them
-		// on next launch. Delete them the moment the folder's contents
-		// change — NOT at the end of the run. The ordering is
-		// load-bearing: a crash partway through leaves a legal folder
-		// layout, but databases still sitting there intact would parse
-		// cleanly and simply not mention the clips that already moved —
-		// the scanner reads that as "No reference", the state a user
-		// culls from. Absent databases read as "No database", an honest
-		// unknown that invites a rescan instead of a delete. Living in
-		// the ENGINE (not the Rebalance adapter) means an undo of a
-		// rename run resets them too.
-		for (const char *db : {"/msmMMOB.mdb", "/msmFMID.pmr"})
-		{
-			QFile f(folder + QLatin1String(db));
-			if (f.exists() && !f.remove())
-				m_sink.log(QtWarningMsg,
-						   QStringLiteral("Couldn't delete %1").arg(f.fileName()));
-		}
+		// Delete the folder's Avid databases the moment its contents
+		// change — NOT at the end of the run; see the ordering rationale
+		// at resetAvidDatabases. Living in the ENGINE (not the
+		// Rebalance adapter) means an undo of a rename run resets them too.
+		resetAvidDatabases(folder, m_sink);
 
 		if (onRenameFolderTouched)
 			onRenameFolderTouched(folder);
@@ -995,7 +1002,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledger
 		}
 
 		m_sink.progress(it.name, i + 1, total, 0);
-		warnLedgerDegradedOnce(ledger, ledgerDegradedWarned);
+		warnJournalDegradedOnce(journal, journalDegradedWarned);
 		DebugSlowdown::pauseForMs(40);
 
 		const std::optional<FileIdentity> srcId = captureAndCheckSource(it);
@@ -1017,7 +1024,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledger
 			continue;
 		}
 
-		LedgerOp lop(&ledger, it.src, it.renameDst, srcId->size, QString(), *srcId);
+		JournalOp lop(&journal, it.src, it.renameDst, srcId->size, QString(), *srcId);
 
 		if (!QFile::rename(it.src, it.renameDst))
 		{
@@ -1033,7 +1040,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledger
 
 		FileIdentity landed = FileIdentity::capture(it.renameDst, /*readContent=*/false);
 		landed.contentUmid = srcId->contentUmid;
-		OpLedger::DoneInfo info;
+		OpJournal::DoneInfo info;
 		info.landedId = landed;
 		lop.done(info);
 		m_sink.itemDone(it.name, it.src, true, {}, false);
@@ -1047,7 +1054,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &ledger
 		touchFolder(QFileInfo(it.renameDst).absolutePath());
 	}
 
-	ledger.finish(t.succeeded, t.failed, /*skipped=*/0,
+	journal.finish(t.succeeded, t.failed, /*skipped=*/0,
 				  m_cancel.load(std::memory_order_acquire));
 
 	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,

@@ -1,14 +1,16 @@
-#include "opledger.h"
+#include "opjournal.h"
+
+#include "testutil.h"
 
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
 
-// OpLedger — the engine v2 write-ahead ledger. Re-pins every behaviour
+// OpJournal — the engine v2 write-ahead journal. Re-pins every behaviour
 // the v1 OpJournal tests held (round-trips, torn lines, degraded
 // semantics) at schema 2, plus the v2 additions: identities and volume
-// fingerprints in the records, retention (a finished ledger SURVIVES so
+// fingerprints in the records, retention (a finished journal SURVIVES so
 // undo can use it; the NEXT run's constructor prunes it), the undone
 // marker, notes, and the latestUndoable qualification rules.
 
@@ -27,22 +29,6 @@ namespace
 				out << line;
 		}
 		return out;
-	}
-
-	/// Hand-write a ledger file, the same way the recovery tests do:
-	/// scenario-building without depending on the writer under test.
-	QString writeLedger(const QString &dir, const QString &name, const QStringList &lines)
-	{
-		const QString path = dir + QLatin1Char('/') + name;
-		QFile f(path);
-		if (!f.open(QIODevice::WriteOnly))
-			return {};
-		for (const QString &line : lines)
-		{
-			f.write(line.toUtf8());
-			f.write("\n");
-		}
-		return path;
 	}
 
 	QString beginLine(const QString &kind, int schema = 2)
@@ -66,7 +52,7 @@ namespace
 	}
 } // namespace
 
-class TestOpLedger : public QObject
+class TestOpJournal : public QObject
 {
 	Q_OBJECT
 private slots:
@@ -74,7 +60,7 @@ private slots:
 	void opens_into_given_dir();
 	void clean_run_round_trips();
 	void plan_round_trips_items_and_volumes();
-	void ledger_without_plan_reads_has_plan_false();
+	void journal_without_plan_reads_has_plan_false();
 	void interrupted_run_has_no_end();
 	void delete_final_path_round_trips();
 	void replace_park_and_parked_final_round_trip();
@@ -89,7 +75,7 @@ private slots:
 	// MARK: - Reader robustness
 	void torn_final_line_is_tolerated();
 	void scan_empty_dir_is_empty();
-	void scans_every_ledger_in_dir();
+	void scans_every_journal_in_dir();
 	void legacy_schema_is_invisible_and_untouched();
 
 	// MARK: - Markers
@@ -97,10 +83,10 @@ private slots:
 	void undone_marker_round_trips();
 
 	// MARK: - Retention
-	void finished_ledger_survives_finish();
-	void next_run_prunes_superseded_ledgers();
-	void interrupted_and_dirty_ledgers_survive_pruning();
-	void degraded_ledger_self_destructs_on_finish_even_when_dirty();
+	void finished_journal_survives_finish();
+	void next_run_prunes_superseded_journals();
+	void interrupted_and_dirty_journals_survive_pruning();
+	void degraded_journal_self_destructs_on_finish_even_when_dirty();
 
 	// MARK: - Undo candidacy
 	void latest_undoable_picks_newest_qualifying();
@@ -112,18 +98,18 @@ private slots:
 
 // MARK: - Writer round-trips
 
-void TestOpLedger::opens_into_given_dir()
+void TestOpJournal::opens_into_given_dir()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	OpLedger ledger(OpKind::Copy, {}, tmp.path());
-	QVERIFY(ledger.isOpen());
-	QVERIFY(ledger.path().startsWith(tmp.path()));
-	QVERIFY(ledger.path().contains(QStringLiteral("oplog-")));
-	QVERIFY(ledger.path().endsWith(QStringLiteral(".jsonl")));
+	OpJournal journal(OpKind::Copy, {}, tmp.path());
+	QVERIFY(journal.isOpen());
+	QVERIFY(journal.path().startsWith(tmp.path()));
+	QVERIFY(journal.path().contains(QStringLiteral("journal-")));
+	QVERIFY(journal.path().endsWith(QStringLiteral(".jsonl")));
 }
 
-void TestOpLedger::clean_run_round_trips()
+void TestOpJournal::clean_run_round_trips()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -131,26 +117,26 @@ void TestOpLedger::clean_run_round_trips()
 
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {{QStringLiteral("dest"), QStringLiteral("/dst")}},
+		OpJournal journal(OpKind::Move, {{QStringLiteral("dest"), QStringLiteral("/dst")}},
 						tmp.path());
-		QVERIFY(ledger.isOpen());
-		path = ledger.path();
+		QVERIFY(journal.isOpen());
+		path = journal.path();
 
-		const int a = ledger.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+		const int a = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
 									4096, QString(), srcId);
-		OpLedger::DoneInfo info;
+		OpJournal::DoneInfo info;
 		info.hash = QStringLiteral("1a2b3c4d5e6f7788");
 		info.landedId = srcId;
-		ledger.markDone(a, info);
+		journal.markDone(a, info);
 
-		const int b = ledger.planOp(QStringLiteral("/src/b.mxf"), QStringLiteral("/dst/b.mxf"),
+		const int b = journal.planOp(QStringLiteral("/src/b.mxf"), QStringLiteral("/dst/b.mxf"),
 									8192, QString(), srcId);
-		ledger.markFailed(b, QStringLiteral("copy failed"));
+		journal.markFailed(b, QStringLiteral("copy failed"));
 
-		ledger.finish(1, 1, 0);
+		journal.finish(1, 1, 0);
 	}
 
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->schema, 2);
 	QVERIFY(rec->kindKnown);
@@ -175,7 +161,7 @@ void TestOpLedger::clean_run_round_trips()
 	QCOMPARE(rec->doneCount(), 1);
 }
 
-void TestOpLedger::plan_round_trips_items_and_volumes()
+void TestOpJournal::plan_round_trips_items_and_volumes()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -202,13 +188,13 @@ void TestOpLedger::plan_round_trips_items_and_volumes()
 
 	QString path;
 	{
-		OpLedger ledger(OpKind::Rename, {}, tmp.path());
-		path = ledger.path();
-		ledger.writePlan(QString(), false, {it}, {vol});
-		ledger.finish(0, 0, 0);
+		OpJournal journal(OpKind::Rename, {}, tmp.path());
+		path = journal.path();
+		journal.writePlan(QString(), false, {it}, {vol});
+		journal.finish(0, 0, 0);
 	}
 
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QVERIFY(rec->hasPlan);
 	QCOMPARE(rec->plan.size(), 1);
@@ -229,62 +215,62 @@ void TestOpLedger::plan_round_trips_items_and_volumes()
 	QCOMPARE(rec->volumes[0].rootPath, vol.rootPath);
 }
 
-void TestOpLedger::ledger_without_plan_reads_has_plan_false()
+void TestOpJournal::journal_without_plan_reads_has_plan_false()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Copy, {}, tmp.path());
-		path = ledger.path();
-		ledger.finish(0, 0, 0);
+		OpJournal journal(OpKind::Copy, {}, tmp.path());
+		path = journal.path();
+		journal.finish(0, 0, 0);
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QVERIFY(!rec->hasPlan);
 	QVERIFY(rec->plan.isEmpty());
 }
 
-void TestOpLedger::interrupted_run_has_no_end()
+void TestOpJournal::interrupted_run_has_no_end()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Delete, {}, tmp.path());
-		path = ledger.path();
-		ledger.planOp(QStringLiteral("/src/a.mxf"), QString(), 0, QString(), {});
+		OpJournal journal(OpKind::Delete, {}, tmp.path());
+		path = journal.path();
+		journal.planOp(QStringLiteral("/src/a.mxf"), QString(), 0, QString(), {});
 		// No finish(): simulates the process dying. The destructor must
 		// leave the file exactly as-is — that half-open state is what
 		// recovery looks for.
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QVERIFY(!rec->complete);
 	QCOMPARE(rec->ops.size(), 1);
 }
 
-void TestOpLedger::delete_final_path_round_trips()
+void TestOpJournal::delete_final_path_round_trips()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Delete, {}, tmp.path());
-		path = ledger.path();
+		OpJournal journal(OpKind::Delete, {}, tmp.path());
+		path = journal.path();
 		const int id =
-			ledger.planOp(QStringLiteral("/vol/clip.mxf"), QString(), 1000, QString(), {});
-		OpLedger::DoneInfo info;
+			journal.planOp(QStringLiteral("/vol/clip.mxf"), QString(), 1000, QString(), {});
+		OpJournal::DoneInfo info;
 		info.finalPath = QStringLiteral("/vol/.Trash/clip.mxf");
-		ledger.markDone(id, info);
-		ledger.finish(1, 0, 0);
+		journal.markDone(id, info);
+		journal.finish(1, 0, 0);
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->ops[0].finalPath, QStringLiteral("/vol/.Trash/clip.mxf"));
 }
 
-void TestOpLedger::replace_park_and_parked_final_round_trip()
+void TestOpJournal::replace_park_and_parked_final_round_trip()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -293,18 +279,18 @@ void TestOpLedger::replace_park_and_parked_final_round_trip()
 
 	QString path;
 	{
-		OpLedger ledger(OpKind::Copy, {}, tmp.path());
-		path = ledger.path();
-		const int id = ledger.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+		OpJournal journal(OpKind::Copy, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
 									 2048, QStringLiteral("/dst/a.mxf.__copyreplace_x1"),
 									 sampleIdentity(), parkedId);
-		OpLedger::DoneInfo info;
+		OpJournal::DoneInfo info;
 		info.parkedFinal = QStringLiteral("/dst/_MediaMuster_Trash/a.mxf");
-		ledger.markDone(id, info);
-		ledger.finish(1, 0, 0);
+		journal.markDone(id, info);
+		journal.finish(1, 0, 0);
 	}
 
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	// The park path was written ahead of the rename it describes…
 	QCOMPARE(rec->ops[0].parked, QStringLiteral("/dst/a.mxf.__copyreplace_x1"));
@@ -314,63 +300,63 @@ void TestOpLedger::replace_park_and_parked_final_round_trip()
 	QCOMPARE(rec->ops[0].parkedFinal, QStringLiteral("/dst/_MediaMuster_Trash/a.mxf"));
 }
 
-void TestOpLedger::zero_bytes_omitted_from_line()
+void TestOpJournal::zero_bytes_omitted_from_line()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Delete, {}, tmp.path());
-		path = ledger.path();
-		ledger.planOp(QStringLiteral("/src/a.mxf"), QString(), 0, QString(), {});
-		ledger.finish(0, 0, 0);
+		OpJournal journal(OpKind::Delete, {}, tmp.path());
+		path = journal.path();
+		journal.planOp(QStringLiteral("/src/a.mxf"), QString(), 0, QString(), {});
+		journal.finish(0, 0, 0);
 	}
 	for (const QString &line : readLines(path))
 		if (line.contains(QStringLiteral("\"rec\":\"op\"")))
 			QVERIFY(!line.contains(QStringLiteral("bytes")));
 }
 
-void TestOpLedger::begin_line_stamps_schema_two()
+void TestOpJournal::begin_line_stamps_schema_two()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Copy, {}, tmp.path());
-		path = ledger.path();
+		OpJournal journal(OpKind::Copy, {}, tmp.path());
+		path = journal.path();
 	}
 	const QStringList lines = readLines(path);
 	QVERIFY(!lines.isEmpty());
 	QVERIFY(lines.first().contains(QStringLiteral("\"schema\":2")));
 }
 
-void TestOpLedger::begin_records_owner_pid_host()
+void TestOpJournal::begin_records_owner_pid_host()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Copy, {}, tmp.path());
-		path = ledger.path();
+		OpJournal journal(OpKind::Copy, {}, tmp.path());
+		path = journal.path();
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->pid, QCoreApplication::applicationPid());
 	QVERIFY(!rec->host.isEmpty());
 	QVERIFY(!rec->started.isEmpty());
 }
 
-void TestOpLedger::cancelled_run_is_complete_but_flagged()
+void TestOpJournal::cancelled_run_is_complete_but_flagged()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
-		ledger.finish(3, 0, 0, /*cancelled=*/true);
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		journal.finish(3, 0, 0, /*cancelled=*/true);
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	// Stop-and-keep: a cancelled run is CLEAN for recovery (complete),
 	// and the flag is forensics.
@@ -378,45 +364,45 @@ void TestOpLedger::cancelled_run_is_complete_but_flagged()
 	QVERIFY(rec->cancelled);
 }
 
-void TestOpLedger::undo_meta_round_trips()
+void TestOpJournal::undo_meta_round_trips()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Undo,
-						{{QStringLiteral("undoes"), QStringLiteral("oplog-x.jsonl")},
+		OpJournal journal(OpKind::Undo,
+						{{QStringLiteral("undoes"), QStringLiteral("journal-x.jsonl")},
 						 {QStringLiteral("effective"), QStringLiteral("move")}},
 						tmp.path());
-		path = ledger.path();
-		ledger.finish(0, 0, 0);
+		path = journal.path();
+		journal.finish(0, 0, 0);
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->kind, OpKind::Undo);
-	QCOMPARE(rec->undoes, QStringLiteral("oplog-x.jsonl"));
+	QCOMPARE(rec->undoes, QStringLiteral("journal-x.jsonl"));
 	QVERIFY(rec->effective.has_value());
 	QCOMPARE(*rec->effective, OpKind::Move);
 }
 
-void TestOpLedger::note_round_trips()
+void TestOpJournal::note_round_trips()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
-		ledger.writeNote(QStringLiteral("The destination volume couldn't confirm a full flush."));
-		ledger.finish(1, 0, 0);
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		journal.writeNote(QStringLiteral("The destination volume couldn't confirm a full flush."));
+		journal.finish(1, 0, 0);
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->notes.size(), 1);
 	QVERIFY(rec->notes.first().contains(QStringLiteral("full flush")));
 }
 
-void TestOpLedger::weird_paths_stay_one_record()
+void TestOpJournal::weird_paths_stay_one_record()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -426,15 +412,15 @@ void TestOpLedger::weird_paths_stay_one_record()
 		QStringLiteral("/vol/Cé \"quoted\"\nnewline \U0001F3AC clip.mxf");
 	QString path;
 	{
-		OpLedger ledger(OpKind::Delete, {}, tmp.path());
-		path = ledger.path();
-		const int id = ledger.planOp(weird, QString(), 12, QString(), {});
-		OpLedger::DoneInfo info;
+		OpJournal journal(OpKind::Delete, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(weird, QString(), 12, QString(), {});
+		OpJournal::DoneInfo info;
 		info.finalPath = weird + QStringLiteral(".trashed");
-		ledger.markDone(id, info);
-		ledger.finish(1, 0, 0);
+		journal.markDone(id, info);
+		journal.finish(1, 0, 0);
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->ops.size(), 1);
 	QCOMPARE(rec->ops[0].src, weird);
@@ -443,17 +429,17 @@ void TestOpLedger::weird_paths_stay_one_record()
 
 // MARK: - Reader robustness
 
-void TestOpLedger::torn_final_line_is_tolerated()
+void TestOpJournal::torn_final_line_is_tolerated()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
-		const int id = ledger.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
 									 100, QString(), {});
-		ledger.markDone(id);
+		journal.markDone(id);
 	}
 	// Simulate a crash mid-write: append half a JSON object, no newline.
 	{
@@ -461,137 +447,137 @@ void TestOpLedger::torn_final_line_is_tolerated()
 		QVERIFY(f.open(QIODevice::Append));
 		f.write("{\"rec\":\"end\",\"ok\":1,");
 	}
-	const auto rec = OpLedger::readOne(path);
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QVERIFY(!rec->complete); // the torn end line never counted
 	QVERIFY(rec->ops[0].completed);
 }
 
-void TestOpLedger::scan_empty_dir_is_empty()
+void TestOpJournal::scan_empty_dir_is_empty()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	QVERIFY(OpLedger::scan(tmp.path()).isEmpty());
+	QVERIFY(OpJournal::scan(tmp.path()).isEmpty());
 	// A directory that doesn't exist at all is also just empty.
-	QVERIFY(OpLedger::scan(tmp.path() + QStringLiteral("/nope")).isEmpty());
+	QVERIFY(OpJournal::scan(tmp.path() + QStringLiteral("/nope")).isEmpty());
 }
 
-void TestOpLedger::scans_every_ledger_in_dir()
+void TestOpJournal::scans_every_journal_in_dir()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	{
-		OpLedger a(OpKind::Copy, {}, tmp.path());
+		OpJournal a(OpKind::Copy, {}, tmp.path());
 		// Not finished — otherwise the next constructor would prune it.
 	}
 	{
-		OpLedger b(OpKind::Move, {}, tmp.path());
+		OpJournal b(OpKind::Move, {}, tmp.path());
 	}
-	const auto records = OpLedger::scan(tmp.path());
+	const auto records = OpJournal::scan(tmp.path());
 	QCOMPARE(records.size(), 2);
 	// Oldest first: name sort == chronological.
 	QCOMPARE(records[0].kind, OpKind::Copy);
 	QCOMPARE(records[1].kind, OpKind::Move);
 }
 
-void TestOpLedger::legacy_schema_is_invisible_and_untouched()
+void TestOpJournal::legacy_schema_is_invisible_and_untouched()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	// An old-beta journal: schema 1, finished clean. The v2 reader must
 	// not interpret it, the pruner must not delete it, and undo must not
 	// offer it — ignored, left exactly where it is (Marty's call).
-	const QString legacy = writeLedger(
-		tmp.path(), QStringLiteral("oplog-20250101T000000000-old1.jsonl"),
+	const QString legacy = writeJournal(
+		tmp.path(), QStringLiteral("journal-20250101T000000000-old1.jsonl"),
 		{beginLine(QStringLiteral("move"), /*schema=*/1),
 		 QStringLiteral(R"({"rec":"op","id":0,"src":"/old/a.mxf","dst":"/old/b.mxf"})"),
 		 QStringLiteral(R"({"rec":"done","id":0})"),
 		 QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})")});
 	QVERIFY(!legacy.isEmpty());
 
-	QVERIFY(!OpLedger::readOne(legacy).has_value());
-	QVERIFY(OpLedger::scan(tmp.path()).isEmpty());
-	QVERIFY(!OpLedger::latestUndoable(tmp.path()).has_value());
+	QVERIFY(!OpJournal::readOne(legacy).has_value());
+	QVERIFY(OpJournal::scan(tmp.path()).isEmpty());
+	QVERIFY(!OpJournal::latestUndoable(tmp.path()).has_value());
 
-	OpLedger::pruneSuperseded(tmp.path());
+	OpJournal::pruneSuperseded(tmp.path());
 	QVERIFY(QFile::exists(legacy));
 
 	// Even a new run starting in the same directory leaves it alone.
 	{
-		OpLedger fresh(OpKind::Copy, {}, tmp.path());
+		OpJournal fresh(OpKind::Copy, {}, tmp.path());
 	}
 	QVERIFY(QFile::exists(legacy));
 }
 
 // MARK: - Markers
 
-void TestOpLedger::recovered_marker_round_trips()
+void TestOpJournal::recovered_marker_round_trips()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
 	}
-	QVERIFY(OpLedger::markRecovered(path, 2, 1));
-	const auto rec = OpLedger::readOne(path);
+	QVERIFY(OpJournal::markRecovered(path, 2, 1));
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QVERIFY(rec->recovered);
 }
 
-void TestOpLedger::undone_marker_round_trips()
+void TestOpJournal::undone_marker_round_trips()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
-		const int id = ledger.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
 									 10, QString(), {});
-		ledger.markDone(id);
-		ledger.finish(1, 0, 0);
+		journal.markDone(id);
+		journal.finish(1, 0, 0);
 	}
-	QVERIFY(OpLedger::markUndone(path, QStringLiteral("oplog-undo-run.jsonl")));
-	const auto rec = OpLedger::readOne(path);
+	QVERIFY(OpJournal::markUndone(path, QStringLiteral("journal-undo-run.jsonl")));
+	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value());
 	QVERIFY(rec->undone);
-	// Spent is spent: an undone ledger is no longer an undo candidate.
-	QVERIFY(!OpLedger::latestUndoable(tmp.path()).has_value());
+	// Spent is spent: an undone journal is no longer an undo candidate.
+	QVERIFY(!OpJournal::latestUndoable(tmp.path()).has_value());
 }
 
 // MARK: - Retention
 
-void TestOpLedger::finished_ledger_survives_finish()
+void TestOpJournal::finished_journal_survives_finish()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
-		const int id = ledger.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
 									 10, QString(), {});
-		ledger.markDone(id);
-		ledger.finish(1, 0, 0);
+		journal.markDone(id);
+		journal.finish(1, 0, 0);
 	}
-	// The v2 change of heart: a clean finish KEEPS the ledger — it is
+	// The v2 change of heart: a clean finish KEEPS the journal — it is
 	// the undo candidate. (v1 pruned it here, which is why undo never
 	// had anything to act on.)
 	QVERIFY(QFile::exists(path));
-	const auto undoable = OpLedger::latestUndoable(tmp.path());
+	const auto undoable = OpJournal::latestUndoable(tmp.path());
 	QVERIFY(undoable.has_value());
 	QCOMPARE(undoable->path, path);
 }
 
-void TestOpLedger::next_run_prunes_superseded_ledgers()
+void TestOpJournal::next_run_prunes_superseded_journals()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString first;
 	{
-		OpLedger a(OpKind::Move, {}, tmp.path());
+		OpJournal a(OpKind::Move, {}, tmp.path());
 		first = a.path();
 		const int id =
 			a.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"), 10, QString(), {});
@@ -605,7 +591,7 @@ void TestOpLedger::next_run_prunes_superseded_ledgers()
 	// the new run writes its first line.
 	QString second;
 	{
-		OpLedger b(OpKind::Copy, {}, tmp.path());
+		OpJournal b(OpKind::Copy, {}, tmp.path());
 		second = b.path();
 		QVERIFY(b.isOpen());
 		QVERIFY(!QFile::exists(first));
@@ -613,7 +599,7 @@ void TestOpLedger::next_run_prunes_superseded_ledgers()
 	QVERIFY(QFile::exists(second));
 }
 
-void TestOpLedger::interrupted_and_dirty_ledgers_survive_pruning()
+void TestOpJournal::interrupted_and_dirty_journals_survive_pruning()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -621,7 +607,7 @@ void TestOpLedger::interrupted_and_dirty_ledgers_survive_pruning()
 	// An interrupted run (no end line) is recovery's business.
 	QString interrupted;
 	{
-		OpLedger a(OpKind::Move, {}, tmp.path());
+		OpJournal a(OpKind::Move, {}, tmp.path());
 		interrupted = a.path();
 		a.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"), 10, QString(), {});
 	}
@@ -629,7 +615,7 @@ void TestOpLedger::interrupted_and_dirty_ledgers_survive_pruning()
 	// A finished-but-dirty run holds the only record of a stranded park.
 	QString dirty;
 	{
-		OpLedger b(OpKind::Copy, {}, tmp.path());
+		OpJournal b(OpKind::Copy, {}, tmp.path());
 		dirty = b.path();
 		const int id = b.planOp(QStringLiteral("/src/b.mxf"), QStringLiteral("/dst/b.mxf"), 10,
 								QStringLiteral("/dst/b.mxf.__copyreplace_z9"), {});
@@ -637,38 +623,38 @@ void TestOpLedger::interrupted_and_dirty_ledgers_survive_pruning()
 		b.finish(0, 1, 0);
 	}
 
-	OpLedger::pruneSuperseded(tmp.path());
+	OpJournal::pruneSuperseded(tmp.path());
 	QVERIFY(QFile::exists(interrupted));
 	QVERIFY(QFile::exists(dirty));
 
 	// Dirty is also not an undo candidate — recovery owns it.
-	QVERIFY(!OpLedger::latestUndoable(tmp.path()).has_value());
+	QVERIFY(!OpJournal::latestUndoable(tmp.path()).has_value());
 }
 
-void TestOpLedger::degraded_ledger_self_destructs_on_finish_even_when_dirty()
+void TestOpJournal::degraded_journal_self_destructs_on_finish_even_when_dirty()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QString path;
 	{
-		OpLedger ledger(OpKind::Move, {}, tmp.path());
-		path = ledger.path();
-		const int id = ledger.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
 									 10, QStringLiteral("/dst/a.mxf.__movereplace_q2"), {});
-		ledger.markFailed(id, QStringLiteral("restore failed"), /*rollbackIncomplete=*/true);
+		journal.markFailed(id, QStringLiteral("restore failed"), /*rollbackIncomplete=*/true);
 		// A line write failed mid-run: with lines missing, the file no
 		// longer tells the truth, and recovery reading it could roll
 		// back work that finished. Degraded overrides dirty.
-		ledger.debugForceWriteFailure();
-		QVERIFY(ledger.degraded());
-		ledger.finish(0, 1, 0);
+		journal.debugForceWriteFailure();
+		QVERIFY(journal.degraded());
+		journal.finish(0, 1, 0);
 	}
 	QVERIFY(!QFile::exists(path));
 }
 
 // MARK: - Undo candidacy
 
-void TestOpLedger::latest_undoable_picks_newest_qualifying()
+void TestOpJournal::latest_undoable_picks_newest_qualifying()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -679,21 +665,21 @@ void TestOpLedger::latest_undoable_picks_newest_qualifying()
 	const QString endCancelled =
 		QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0,"cancelled":true})");
 
-	writeLedger(tmp.path(), QStringLiteral("oplog-20260101T000001000-a1.jsonl"),
+	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000001000-a1.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine, doneLine, endLine});
 	// Newest, CANCELLED — still qualifies: stop-and-keep means the file
 	// it landed is real work the user may want back.
 	const QString newest =
-		writeLedger(tmp.path(), QStringLiteral("oplog-20260101T000002000-b2.jsonl"),
+		writeJournal(tmp.path(), QStringLiteral("journal-20260101T000002000-b2.jsonl"),
 					{beginLine(QStringLiteral("copy")), opLine, doneLine, endCancelled});
 
-	const auto undoable = OpLedger::latestUndoable(tmp.path());
+	const auto undoable = OpJournal::latestUndoable(tmp.path());
 	QVERIFY(undoable.has_value());
 	QCOMPARE(undoable->path, newest);
 	QCOMPARE(undoable->kind, OpKind::Copy);
 }
 
-void TestOpLedger::latest_undoable_refuses_disqualified()
+void TestOpJournal::latest_undoable_refuses_disqualified()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -702,39 +688,39 @@ void TestOpLedger::latest_undoable_refuses_disqualified()
 	const QString endLine = QStringLiteral(R"({"rec":"end","ok":0,"fail":0,"skip":1})");
 
 	// Interrupted (no end line): recovery's, not undo's.
-	writeLedger(tmp.path(), QStringLiteral("oplog-20260101T000001000-c1.jsonl"),
+	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000001000-c1.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine,
 				 QStringLiteral(R"({"rec":"done","id":0})")});
 	// Finished but nothing landed (all skipped): nothing to reverse.
-	writeLedger(tmp.path(), QStringLiteral("oplog-20260101T000002000-c2.jsonl"),
+	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000002000-c2.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine,
 				 QStringLiteral(R"({"rec":"skip","id":0})"), endLine});
 	// An undo run itself: no undo-of-undo, by design.
-	writeLedger(tmp.path(), QStringLiteral("oplog-20260101T000003000-c3.jsonl"),
+	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000003000-c3.jsonl"),
 				{beginLine(QStringLiteral("undo")), opLine,
 				 QStringLiteral(R"({"rec":"done","id":0})"),
 				 QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})")});
 	// Swept by recovery already.
-	writeLedger(tmp.path(), QStringLiteral("oplog-20260101T000004000-c4.jsonl"),
+	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000004000-c4.jsonl"),
 				{beginLine(QStringLiteral("move")), opLine,
 				 QStringLiteral(R"({"rec":"done","id":0})"),
 				 QStringLiteral(R"({"rec":"end","ok":1,"fail":0,"skip":0})"),
 				 QStringLiteral(R"({"rec":"recovered","reversed":1,"failed":0})")});
 
-	QVERIFY(!OpLedger::latestUndoable(tmp.path()).has_value());
+	QVERIFY(!OpJournal::latestUndoable(tmp.path()).has_value());
 }
 
 // MARK: - Locations
 
-void TestOpLedger::standardDirWritable_reflects_env_dir()
+void TestOpJournal::standardDirWritable_reflects_env_dir()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	qputenv("MEDIAMUSTER_OPLOG_DIR", tmp.path().toUtf8());
-	QCOMPARE(OpLedger::standardOplogDir(), tmp.path());
-	QVERIFY(OpLedger::standardDirWritable());
-	qunsetenv("MEDIAMUSTER_OPLOG_DIR");
+	qputenv("MEDIAMUSTER_JOURNAL_DIR", tmp.path().toUtf8());
+	QCOMPARE(OpJournal::standardJournalDir(), tmp.path());
+	QVERIFY(OpJournal::standardDirWritable());
+	qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
 }
 
-QTEST_APPLESS_MAIN(TestOpLedger)
-#include "tst_opledger.moc"
+QTEST_APPLESS_MAIN(TestOpJournal)
+#include "tst_opjournal.moc"
