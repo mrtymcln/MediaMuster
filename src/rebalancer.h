@@ -64,12 +64,12 @@ public:
 	static RebalancePlan computePlan(const QString &mxfRoot, const QString &volumeLabel,
 									 const QVector<MediaFile> &files);
 
-	static std::optional<FolderId> parseFolderName(const QString &name);
+	static std::optional<FolderName> parseFolderName(const QString &name);
 
-	/// The source folder a MoveOp came from, recomputed from its srcPath
-	/// (MoveOp doesn't store the FolderId). nullopt when the parent dir
+	/// The source folder a RenameOp came from, recomputed from its srcPath
+	/// (RenameOp doesn't store the FolderName). nullopt when the parent dir
 	/// isn't a conforming Avid folder name.
-	static std::optional<FolderId> srcFolderOf(const QString &srcPath);
+	static std::optional<FolderName> srcFolderOf(const QString &srcPath);
 
 	// MARK: - Execution
 

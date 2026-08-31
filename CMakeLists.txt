@@ -89,8 +89,8 @@ set(SOURCES
     src/mainwindow.cpp
     src/aboutdialog.cpp
     src/icons.cpp
-    src/logging.cpp
-    src/applog.cpp
+    src/logcategories.cpp
+    src/logfile.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
     src/revealinfinder.cpp

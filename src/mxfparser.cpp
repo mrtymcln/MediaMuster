@@ -1,5 +1,5 @@
 #include "mxfparser.h"
-#include "logging.h"
+#include "logcategories.h"
 #include "mobid.h"
 #include <QByteArrayView>
 #include <QFile>

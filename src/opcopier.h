@@ -96,12 +96,14 @@ public:
 	/// user — so they never collapse into one "no value" case.
 	struct HashOutcome
 	{
+		/// Succeeded and Cancelled match Outcome's words on purpose; the
+		/// failure word deliberately does not.
 		enum class Status
 		{
-			Succeeded,  ///< Same three words as Outcome above, deliberately.
-			ReadFailed, ///< Deliberately NOT "Failed": a drive that can't be
-						///< read needs different words to the user than a
-						///< copy that came out wrong.
+			Succeeded,
+			ReadFailed, ///< NOT "Failed": a drive that can't be read needs
+						///< different words to the user than a copy that
+						///< came out wrong.
 			Cancelled
 		};
 		Status status = Status::ReadFailed;
@@ -111,6 +113,24 @@ public:
 	/// XXH3-64 of a whole file. Public because Undo re-checks a landed
 	/// copy against the journal's recorded hash before acting on it.
 	HashOutcome hashFile(const QString &path, const std::atomic<bool> &cancel);
+
+	// MARK: - Test seam
+
+	/// Ticks once per buffered-copy iteration, so a test can wait for hard
+	/// evidence that the byte loop is underway — source size captured,
+	/// first buffer written — instead of guessing with a wall-clock wait.
+	/// The guess lost on Windows CI: the worker hadn't reached the loop
+	/// when the wait expired, so a mid-copy mutation landed before the
+	/// size capture it was meant to trip.
+	///
+	/// Counts in every build, armed or not: it observes the loop, it
+	/// does not alter it. Lives here rather than with the debug toggle
+	/// because it is a fact about THIS loop.
+	static std::atomic<quint64> &loopTicks()
+	{
+		static std::atomic<quint64> g{0};
+		return g;
+	}
 
 private:
 	Result copyBuffered(const QString &src, const QString &dst, ParkedFile &park,

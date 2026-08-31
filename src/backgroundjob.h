@@ -1,6 +1,6 @@
 #pragma once
 
-#include "logging.h"
+#include "logcategories.h"
 
 #include <QDebug>
 #include <QObject>

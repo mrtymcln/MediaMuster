@@ -156,9 +156,9 @@ void TestConventions::folder_budget_thresholds_stay_ordered()
 	// the amber line above the red one, or lets the packing target reach
 	// Avid's limit, fails here rather than in a user's project.
 	static_assert(Conventions::kFolderMax == 5000, "Avid's own ceiling");
-	static_assert(Conventions::kFolderRecommend < Conventions::kFolderMax,
+	static_assert(Conventions::kFolderTarget < Conventions::kFolderMax,
 				  "packing must stop below Avid's ceiling");
-	static_assert(Conventions::kFolderCritical < Conventions::kFolderRecommend,
+	static_assert(Conventions::kFolderCritical < Conventions::kFolderTarget,
 				  "red must come before the packing target");
 	static_assert(Conventions::kFolderWarn < Conventions::kFolderCritical,
 				  "amber must come before red");

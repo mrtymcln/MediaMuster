@@ -43,9 +43,12 @@
 //   deleting every finished journal on sight.
 //
 //   Undo runs — an interrupted undo is itself recovered: its ops are
-//   already written in inverse orientation, so the sweep reverses them
-//   with the machinery matching what the undo was DOING (its
-//   `effective` kind), and finished-work-stays applies as everywhere.
+//   already written in inverse orientation, so the sweep picks its
+//   machinery from the ORIGINAL run's kind (`originalKind`), not from
+//   the undo's own. Note the two are not the same thing and not always
+//   the same machinery: undoing a Copy is done with delete machinery,
+//   undoing a Delete with move machinery (see reverserKindFor).
+//   Finished-work-stays applies as everywhere.
 //
 //   Legacy — anything that is not schema 2 is invisible (OpJournal's
 //   readers skip it) and stays untouched on disk, by decision.

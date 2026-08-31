@@ -1,8 +1,8 @@
 #include "opcopier.h"
 
-#include "debugslowdown.h"
+#include "testpause.h"
 #include "formatutil.h"
-#include "mediamanagerverify.h"
+#include "opverify.h"
 #include "parkedfile.h"
 #include "third_party/xxhash.h"
 
@@ -231,7 +231,7 @@ OpCopier::Result OpCopier::verifyNativeCopy(const QString &src, const QString &d
 		return res;
 	}
 
-	if (MediaManagerVerify::enabled())
+	if (OpVerify::enabled())
 	{
 		if (verifyStarting)
 			verifyStarting();
@@ -341,7 +341,7 @@ OpCopier::Result OpCopier::copyBuffered(const QString &src, const QString &dst, 
 
 	// Hash during the existing read pass; no extra source-side disk
 	// traffic when verification is on.
-	const bool verify = MediaManagerVerify::enabled();
+	const bool verify = OpVerify::enabled();
 	std::optional<XxhStream> srcHash;
 	if (verify)
 	{
@@ -387,8 +387,8 @@ OpCopier::Result OpCopier::copyBuffered(const QString &src, const QString &dst, 
 		if (verify)
 			srcHash->update(m_buffer.constData(), bytesWritten);
 
-		++DebugSlowdown::copyLoopTicks();
-		DebugSlowdown::pauseForMs(5);
+		++OpCopier::loopTicks();
+		TestPause::sleepMs(TestPause::kPerCopyChunkMs);
 
 		if (progress)
 			progress(copied, totalSize);

@@ -115,7 +115,7 @@ namespace
 
 	constexpr qint64 kDemoFileBytes = qint64(10) * 1024 * 1024; // 10 MB per file
 
-	FolderState demoFolder(const FolderId &id, int count, bool isNew = false)
+	FolderState demoFolder(const FolderName &id, int count, bool isNew = false)
 	{
 		FolderState fs;
 		fs.id = id;
@@ -126,10 +126,10 @@ namespace
 		return fs;
 	}
 
-	/// Append `count` MoveOps src → dest and keep the folder tallies in
+	/// Append `count` RenameOps src → dest and keep the folder tallies in
 	/// step. One shared srcPath QString per call: implicit sharing makes
 	/// appending the same path 666K times nearly free.
-	void demoMoves(RebalancePlan &plan, const FolderId &src, const FolderId &dest, int count)
+	void demoMoves(RebalancePlan &plan, const FolderName &src, const FolderName &dest, int count)
 	{
 		if (count <= 0)
 			return;
@@ -137,7 +137,7 @@ namespace
 			QStringLiteral("/demo/Avid MediaFiles/MXF/%1/clip.mxf").arg(src.display());
 		for (int i = 0; i < count; ++i)
 		{
-			MoveOp op;
+			RenameOp op;
 			op.srcPath = sharedSrcPath;
 			op.dest = dest;
 			op.sizeBytes = kDemoFileBytes;
@@ -207,7 +207,7 @@ namespace
 				total += fs.count;
 		const int mean = int(total / qMax(1, folderCount + newFolderCount));
 
-		QVector<QPair<FolderId, int>> sources, dests;
+		QVector<QPair<FolderName, int>> sources, dests;
 		for (const FolderState &fs : plan.folders)
 		{
 			if (!fs.inScope)
@@ -236,8 +236,8 @@ namespace
 		int slot = 0;
 		while (remaining > 0 && folderCount > 1)
 		{
-			const FolderId a{prefix, slot + 1};
-			const FolderId b{prefix, slot + 2};
+			const FolderName a{prefix, slot + 1};
+			const FolderName b{prefix, slot + 2};
 			const int out = qMin((remaining + 1) / 2, 500);
 			const int back = qMin(remaining - out, out);
 			demoMoves(plan, a, b, out);
@@ -353,7 +353,7 @@ void FolderCard::paintEvent(QPaintEvent *event)
 	// ⚠️ for bloated folders.
 	// 🆕 for new folders.
 	QString displayName = m_folderName;
-	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderRecommend)
+	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderTarget)
 		displayName = QStringLiteral("⚠️ ") + displayName;
 	if (m_isNew)
 		displayName = QStringLiteral("🆕 ") + displayName;
@@ -718,12 +718,12 @@ void RebalanceDialog::onPlanReady()
 void RebalanceDialog::renderPlan()
 {
 	QStringList newFolderNames;
-	for (const FolderId &fid : m_currentPlan.newFolders)
+	for (const FolderName &fid : m_currentPlan.newFolders)
 		newFolderNames << fid.display();
 
 	// MARK: Compute affected-folder set
 
-	const QSet<FolderId> affected = affectedFolders();
+	const QSet<FolderName> affected = affectedFolders();
 
 	// MARK: Summary line
 
@@ -745,7 +745,7 @@ void RebalanceDialog::renderPlan()
 	LayoutUtil::clearLayout(m_cardGrid);
 	m_cards.clear();
 
-	// In-scope first (sorted by FolderId), out-of-scope after
+	// In-scope first (sorted by FolderName), out-of-scope after
 	// (sorted by name).
 	QVector<FolderState> sorted = m_currentPlan.folders;
 	std::sort(sorted.begin(), sorted.end(),
@@ -926,7 +926,7 @@ void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 
 	// Repaint the cards in past tense with the actual succeeded
 	// count.
-	const QSet<FolderId> affected = affectedFolders();
+	const QSet<FolderName> affected = affectedFolders();
 	buildSummaryLine(succeeded, affected.size(), m_currentPlan.newFolders.size(), /*past=*/true);
 
 	// Snap every card to its final projected state and drop the
@@ -991,16 +991,16 @@ void RebalanceDialog::primeLiveState()
 			m_runningCount.insert(fs.id, fs.count);
 	}
 
-	// Pre-parse each op's source FolderId once. The hot path (live
+	// Pre-parse each op's source FolderName once. The hot path (live
 	// updates) reuses this without re-parsing srcPath.
 	for (const auto &op : m_currentPlan.ops)
-		m_srcFolderByOp.append(Rebalancer::srcFolderOf(op.srcPath).value_or(FolderId{}));
+		m_srcFolderByOp.append(Rebalancer::srcFolderOf(op.srcPath).value_or(FolderName{}));
 }
 
-QSet<FolderId> RebalanceDialog::affectedFolders() const
+QSet<FolderName> RebalanceDialog::affectedFolders() const
 {
-	QSet<FolderId> affected;
-	for (const MoveOp &op : m_currentPlan.ops)
+	QSet<FolderName> affected;
+	for (const RenameOp &op : m_currentPlan.ops)
 	{
 		affected.insert(op.dest);
 		if (const auto src = Rebalancer::srcFolderOf(op.srcPath))
@@ -1018,13 +1018,13 @@ void RebalanceDialog::applyOpsUpTo(int upTo)
 	// Walk just the new ops, accumulate per-folder deltas, then push
 	// final counts to the cards in one pass. Avoids touching the same
 	// card N times when many ops on the same folder arrive together.
-	QSet<FolderId> touched;
+	QSet<FolderName> touched;
 	for (int i = m_lastProcessedOp; i < upTo; ++i)
 	{
-		const FolderId &src = m_srcFolderByOp[i];
-		const FolderId &dest = m_currentPlan.ops[i].dest;
+		const FolderName &src = m_srcFolderByOp[i];
+		const FolderName &dest = m_currentPlan.ops[i].dest;
 		// n == 0 is the unparsed-source sentinel from primeLiveState's
-		// value_or(FolderId{}); real Avid folders are numbered from 1, so a
+		// value_or(FolderName{}); real Avid folders are numbered from 1, so a
 		// parsed source always has n >= 1. Skip the sentinel so an unparseable
 		// source can't decrement a stray running-count entry.
 		if (src.n > 0)
@@ -1037,7 +1037,7 @@ void RebalanceDialog::applyOpsUpTo(int upTo)
 	}
 	m_lastProcessedOp = upTo;
 
-	for (const FolderId &fid : touched)
+	for (const FolderName &fid : touched)
 	{
 		if (auto *card = m_cards.value(fid))
 			card->setCurrentCount(m_runningCount.value(fid));

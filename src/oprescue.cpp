@@ -203,7 +203,7 @@ namespace
 	// MARK: - Reversers (the v1 decision tables, with identity guards)
 
 	// Undo a Move-like op (Move, Rename, and an interrupted undo whose
-	// effective work was moving files): move dst back to src, then
+	// original run was moving files): move dst back to src, then
 	// restore any original a Replace had parked aside.
 	OpResult reverseMoveLike(const OpJournal::Entry &op, QStringList &notes)
 	{
@@ -378,7 +378,7 @@ namespace
 		case OpKind::Delete:
 			return sourceLocationReachable(op) && !QFile::exists(op.src);
 		case OpKind::Undo:
-			// Undo records are reversed under their effective kind and
+			// Undo records are reversed under the original run.s kind and
 			// never reach here with Undo itself.
 			return false;
 		}
@@ -532,14 +532,14 @@ namespace
 	// what the undo was DOING: undoing a move meant moving files (Move),
 	// undoing a copy meant trashing the copies (Delete semantics, with
 	// finalPath), undoing a delete meant restoring (Move semantics).
-	// Unknown effective = nullopt = touch nothing.
+	// Unknown originalKind = nullopt = touch nothing.
 	std::optional<OpKind> reverserKindFor(const OpJournal::Record &rec)
 	{
 		if (rec.kind != OpKind::Undo)
 			return rec.kindKnown ? std::optional<OpKind>(rec.kind) : std::nullopt;
-		if (!rec.effective)
+		if (!rec.originalKind)
 			return std::nullopt;
-		switch (*rec.effective)
+		switch (*rec.originalKind)
 		{
 		case OpKind::Move:
 		case OpKind::Rename:
@@ -883,7 +883,7 @@ OpRescue::Summary OpRescue::run(const QString &dir, const QVector<VolumeIdentity
 			continue;
 
 		// What machinery reverses these ops (undo runs map to their
-		// effective kind). Nothing trustworthy = reverse nothing, but
+		// original kind). Nothing trustworthy = reverse nothing, but
 		// still stamp: an unreadable record must not haunt every launch.
 		const std::optional<OpKind> reverser = reverserKindFor(rec);
 

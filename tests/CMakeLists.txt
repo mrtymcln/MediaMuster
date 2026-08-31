@@ -7,7 +7,7 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Test)
 function(mediamuster_add_test name)
     add_executable(${name}
         ${name}.cpp
-        ${CMAKE_SOURCE_DIR}/src/logging.cpp
+        ${CMAKE_SOURCE_DIR}/src/logcategories.cpp
         ${ARGN}
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
@@ -22,7 +22,7 @@ endfunction()
 
 # Header-only namespaces.
 mediamuster_add_test(tst_mobid)
-mediamuster_add_test(tst_applog ${CMAKE_SOURCE_DIR}/src/applog.cpp)
+mediamuster_add_test(tst_logfile ${CMAKE_SOURCE_DIR}/src/logfile.cpp)
 mediamuster_add_test(tst_pathkey)
 mediamuster_add_test(tst_pmrkey)
 mediamuster_add_test(tst_format)

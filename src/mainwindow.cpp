@@ -1,18 +1,17 @@
 #include "mainwindow.h"
 
 #include "aboutdialog.h"
-#include "applog.h"
+#include "logfile.h"
 #include "conventions.h"
 #include "binfilterdialog.h"
 #include "crashcollector.h"
-#include "debugslowdown.h"
 #include "enumutil.h"
 #include "formatutil.h"
 #include "icons.h"
 #include "layoututil.h"
 #include "managemediadialog.h"
 #include "mediacsv.h"
-#include "mediamanagerverify.h"
+#include "opverify.h"
 #include "opjournal.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
@@ -738,23 +737,13 @@ void MainWindow::buildDebugMenu()
 {
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 
-	auto *slowAct = debugMenu->addAction(tr("&Slow mode"));
-	slowAct->setCheckable(true);
-	slowAct->setChecked(false);
-	connect(slowAct, &QAction::triggered, this,
-			[this](bool on)
-			{
-				DebugSlowdown::setEnabled(on);
-				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Slow Mode enabled (1/50th speed)" : "Slow Mode disabled");
-			});
-
 	auto *verifyAct = debugMenu->addAction(tr("&Verification checks"));
 	verifyAct->setCheckable(true);
-	verifyAct->setChecked(MediaManagerVerify::enabled());
+	verifyAct->setChecked(OpVerify::enabled());
 	connect(verifyAct, &QAction::triggered, this,
 			[this](bool on)
 			{
-				MediaManagerVerify::setEnabled(on);
+				OpVerify::setEnabled(on);
 				addLog(QtInfoMsg, QStringLiteral("app"),
 					   on ? "Verification checks enabled" : "Verification checks disabled");
 			});

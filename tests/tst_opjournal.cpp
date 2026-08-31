@@ -372,7 +372,7 @@ void TestOpJournal::undo_meta_round_trips()
 	{
 		OpJournal journal(OpKind::Undo,
 						{{QStringLiteral("undoes"), QStringLiteral("journal-x.jsonl")},
-						 {QStringLiteral("effective"), QStringLiteral("move")}},
+						 {QStringLiteral("originalKind"), QStringLiteral("move")}},
 						tmp.path());
 		path = journal.path();
 		journal.finish(0, 0, 0);
@@ -381,8 +381,8 @@ void TestOpJournal::undo_meta_round_trips()
 	QVERIFY(rec.has_value());
 	QCOMPARE(rec->kind, OpKind::Undo);
 	QCOMPARE(rec->undoes, QStringLiteral("journal-x.jsonl"));
-	QVERIFY(rec->effective.has_value());
-	QCOMPARE(*rec->effective, OpKind::Move);
+	QVERIFY(rec->originalKind.has_value());
+	QCOMPARE(*rec->originalKind, OpKind::Move);
 }
 
 void TestOpJournal::note_round_trips()

@@ -4,7 +4,7 @@
 
 /// Toggle for xxHash3 verification.
 
-namespace MediaManagerVerify
+namespace OpVerify
 {
 	inline std::atomic<bool> &flag()
 	{
@@ -20,4 +20,4 @@ namespace MediaManagerVerify
 	{
 		return flag().load(std::memory_order_relaxed);
 	}
-} // namespace MediaManagerVerify
+} // namespace OpVerify

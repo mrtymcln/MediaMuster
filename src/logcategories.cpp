@@ -1,4 +1,4 @@
-#include "logging.h"
+#include "logcategories.h"
 
 Q_LOGGING_CATEGORY(lcAvb, "mediamuster.avb", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcMdb, "mediamuster.mdb", QtWarningMsg)

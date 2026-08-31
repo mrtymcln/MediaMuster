@@ -1,5 +1,5 @@
 #include "conventions.h"
-#include "mediamanagerverify.h"
+#include "opverify.h"
 #include "mobid.h"
 #include "mxfparser.h"
 #include "opcopier.h"
@@ -143,7 +143,7 @@ void TestOpRunner::cleanup()
 	qunsetenv("MEDIAMUSTER_TRASH_ROOT");
 	// Verification is a process-wide toggle; a test that turns it off
 	// must not leak that state into the next test.
-	MediaManagerVerify::setEnabled(true);
+	OpVerify::setEnabled(true);
 }
 
 QString TestOpRunner::stageFixtureMxf(const QString &dir)
@@ -462,7 +462,7 @@ void TestOpRunner::copy_conflictNotInPolicyMap_isSkippedNotReplaced()
 
 void TestOpRunner::copy_verifyOff_stillSucceeds()
 {
-	MediaManagerVerify::setEnabled(false);
+	OpVerify::setEnabled(false);
 	QTemporaryDir tmp, journalDir;
 	QVERIFY(tmp.isValid() && journalDir.isValid());
 	const QString src = tmp.path() + "/src/clip.mxf";

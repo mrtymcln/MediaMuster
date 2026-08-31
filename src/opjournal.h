@@ -33,7 +33,7 @@ class QFile;
 //
 //   begin     schema:2, kind, started, app, pid, host, meta.
 //             An Undo run's meta names the journal it reverses
-//             (`undoes`) and the original's kind (`effective`), so a
+//             (`undoes`) and the original's kind (`originalKind`), so a
 //             CRASHED undo can itself be recovered.
 //   plan      The whole to-do list (one OpItem each, with the scan's
 //             mob-id/clip-name claims) plus the identity of every
@@ -85,7 +85,7 @@ public:
 	/// finished, non-dirty journal in the directory — see the retention
 	/// note above; this is the one place undo is invalidated. `meta` goes
 	/// in the begin line (dest root, preserve flag; undo: `undoes` +
-	/// `effective`). `dir` defaults to the standard journal location; tests
+	/// `originalKind`). `dir` defaults to the standard journal location; tests
 	/// pass a temp dir. Always check isOpen() before trusting protection.
 	///
 	/// `sparePath`: a journal the prune must NOT touch. An Undo run passes
@@ -98,6 +98,14 @@ public:
 
 	/// Leaves the file as-is when finish() was never called; that
 	/// half-open state is exactly what recovery looks for.
+	///
+	/// This is HALF of why the per-op handle below is a separate class:
+	/// the two destructors are deliberate opposites. An abandoned journal
+	/// must stay open and unfinished (the signal a run was interrupted);
+	/// an abandoned JournalOpGuard must close itself and stamp 'interrupted'
+	/// (so a stray early return can't leave a phantom op in a journal that
+	/// then closes clean). One type cannot do both. The other half is
+	/// lifetime: one journal per run, one JournalOpGuard per file.
 	~OpJournal();
 
 	OpJournal(const OpJournal &) = delete;
@@ -232,9 +240,13 @@ public:
 		QVector<OpItem> plan;
 		QVector<VolumeIdentity> volumes;
 
-		/// Undo runs only: what they reverse.
-		QString undoes;					   ///< The original journal's file path... name.
-		std::optional<OpKind> effective;   ///< The original run's kind.
+		/// Undo runs only: what they reverse. The pair answers "which run"
+		/// and "what kind of run" — and `originalKind` is deliberately NOT
+		/// this record's own `kind` (always Undo here), nor the machinery
+		/// recovery ends up using (undoing a Copy uses delete machinery;
+		/// see OpRescue's reverserKindFor).
+		QString undoes;						///< The original journal's file name.
+		std::optional<OpKind> originalKind; ///< The kind of the run being reversed.
 
 		/// Count of ops that concluded with a 'done' line.
 		int doneCount() const;
@@ -279,7 +291,7 @@ private:
 	bool m_degraded = false;
 };
 
-// MARK: - JournalOp
+// MARK: - JournalOpGuard
 //
 // RAII handle for one journaled op. Build it right before touching disk
 // (it writes the 'op' line), then settle it exactly once with done() /
@@ -290,10 +302,10 @@ private:
 //
 // A null journal (open failed) makes every call a no-op, so callers
 // don't have to branch.
-class JournalOp
+class JournalOpGuard
 {
 public:
-	JournalOp(OpJournal *journal, const QString &src, const QString &dst, qint64 bytes,
+	JournalOpGuard(OpJournal *journal, const QString &src, const QString &dst, qint64 bytes,
 			 const QString &parked, const FileIdentity &srcId,
 			 const FileIdentity &parkedOriginalId = {})
 		: m_journal(journal)
@@ -302,14 +314,14 @@ public:
 			m_id = m_journal->planOp(src, dst, bytes, parked, srcId, parkedOriginalId);
 	}
 
-	~JournalOp()
+	~JournalOpGuard()
 	{
 		if (m_journal && !m_settled)
 			m_journal->markFailed(m_id, QStringLiteral("interrupted"));
 	}
 
-	JournalOp(const JournalOp &) = delete;
-	JournalOp &operator=(const JournalOp &) = delete;
+	JournalOpGuard(const JournalOpGuard &) = delete;
+	JournalOpGuard &operator=(const JournalOpGuard &) = delete;
 
 	void done(const OpJournal::DoneInfo &info = {})
 	{

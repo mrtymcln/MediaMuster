@@ -388,7 +388,7 @@ void TestOpUndo::undo_writes_its_own_journal()
 	bool sawUndoneOriginal = false;
 	for (const OpJournal::Record &rec : OpJournal::scan(m_journal))
 	{
-		if (rec.kind == OpKind::Undo && rec.complete && rec.effective == OpKind::Copy)
+		if (rec.kind == OpKind::Undo && rec.complete && rec.originalKind == OpKind::Copy)
 			sawUndoJournal = true;
 		if (rec.kind == OpKind::Copy && rec.undone)
 			sawUndoneOriginal = true;

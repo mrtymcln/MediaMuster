@@ -1,6 +1,6 @@
 #include "volumemanager.h"
 #include "conventions.h"
-#include "logging.h"
+#include "logcategories.h"
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>

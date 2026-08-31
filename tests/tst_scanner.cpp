@@ -2,7 +2,7 @@
 // PMR/MDB/MXF fixtures. Covers Stage 1 + 2 + the join.
 
 #include "mediafile.h"
-#include "debugslowdown.h"
+#include "testpause.h"
 #include "mediascanner.h"
 #include "testbento.h"
 #include "pmrparser.h"
@@ -805,7 +805,7 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 	// normal exit always cleared — so this test cancels.
 	//
 	// Timing: processFolderTask inserts the folder's parsed MDB into the
-	// cache and THEN hits DebugSlowdown's 4-second pause, so cancelling
+	// cache and THEN hits TestPause's 4-second pause, so cancelling
 	// anywhere inside that window is what we need. 500 ms sits deep
 	// inside 4000 ms; the only work that has to finish first is reading
 	// three small fixture files.
@@ -823,13 +823,13 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 	opts.volumePaths = QStringList{tmp.path()};
 
 	{
-		DebugSlowdown::setEnabled(true);
+		TestPause::setEnabled(true);
 		QSignalSpy spy(&scanner, &MediaScanner::scanFinished);
 		scanner.startScan(opts);
 		QTest::qWait(500);
 		scanner.cancelScan();
 		QVERIFY2(spy.wait(20000), "cancelled scan did not finish");
-		DebugSlowdown::setEnabled(false);
+		TestPause::setEnabled(false);
 	}
 
 	// The databases are gone by the time the user rescans.

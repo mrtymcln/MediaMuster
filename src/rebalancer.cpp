@@ -61,7 +61,7 @@ Rebalancer::Rebalancer(QObject *parent)
 
 // MARK: - Folder name parsing
 
-std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
+std::optional<FolderName> Rebalancer::parseFolderName(const QString &name)
 {
 	const int lastDot = name.lastIndexOf('.');
 	const QString prefix = lastDot < 0 ? QString() : name.left(lastDot);
@@ -72,7 +72,7 @@ std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
 	if (!ok || n <= 0)
 		return std::nullopt;
 
-	FolderId fid{prefix, n};
+	FolderName fid{prefix, n};
 
 	// Round-trip guard. `.5`, `01`, `MartysiMac.005` all parse as
 	// `n=5` but don't survive a canonical re-render; rejecting
@@ -83,7 +83,7 @@ std::optional<FolderId> Rebalancer::parseFolderName(const QString &name)
 	return fid;
 }
 
-std::optional<FolderId> Rebalancer::srcFolderOf(const QString &srcPath)
+std::optional<FolderName> Rebalancer::srcFolderOf(const QString &srcPath)
 {
 	// dir().dirName() pulls the parent folder name straight off, no second
 	// QFileInfo allocation.
@@ -98,7 +98,7 @@ namespace
 	/// In an `Avid MediaFiles/MXF/<n>` folder only MXF essence counts:
 	/// Avid's own databases, dot-hidden files, shell junk, and stray
 	/// non-MXF files are not media. Counting them inflated the preview's
-	/// per-folder count and stole slots from the Conventions::kFolderRecommend packing.
+	/// per-folder count and stole slots from the Conventions::kFolderTarget packing.
 	/// The name rule itself lives in Conventions. It is the BUDGET rule,
 	/// deliberately narrower than the table's (see isAvidMediaName): the
 	/// preview counts what Avid counts, not what the table shows.
@@ -185,7 +185,7 @@ namespace
 		return relativesKey(mf.masterMobId, mf.filePath);
 	}
 
-	QString relativesKey(const MoveOp &op)
+	QString relativesKey(const RenameOp &op)
 	{
 		return relativesKey(op.masterMobId, op.srcPath);
 	}
@@ -208,7 +208,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 	// MARK: Snapshot current folder state on disk
 
 	QHash<QString, QSet<int>> existingByPrefix; // prefix → {n}
-	QHash<FolderId, int> realCount;
+	QHash<FolderName, int> realCount;
 
 	const QStringList subdirs = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 	for (const QString &name : subdirs)
@@ -251,14 +251,14 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 	struct IndexedMedia
 	{
 		const MediaFile *file;
-		FolderId folder;
+		FolderName folder;
 	};
 
 	// MARK: Tally bytes + bucket files into relatives groups
 
 	// One pass over `files` does both: tallies bytes per source folder,
 	// and groups files by master MOB so relatives stay together.
-	QHash<FolderId, qint64> realBytes;
+	QHash<FolderName, qint64> realBytes;
 	QHash<QString, QVector<IndexedMedia>> bucketed;
 	for (const auto &mf : files)
 	{
@@ -278,7 +278,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 	// One relatives group (or one lone file) plus the `<prefix, n>` we
 	// want to consolidate it into. Members carry their pre-parsed
-	// FolderId so all downstream loops are re-parse-free.
+	// FolderName so all downstream loops are re-parse-free.
 	struct Group
 	{
 		QString homePrefix;
@@ -347,8 +347,8 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 	// One host (one prefix) at a time. `projected` tracks the
 	// running per-folder count as we plan moves into it, so we can
-	// check Conventions::kFolderRecommend against future state, not on-disk state.
-	QHash<FolderId, int> projected = realCount;
+	// check Conventions::kFolderTarget against future state, not on-disk state.
+	QHash<FolderName, int> projected = realCount;
 	QHash<QString, QSet<int>> newByPrefix;
 
 	auto allFoldersForPrefix = [&](const QString &prefix)
@@ -361,7 +361,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 	// Pick the smallest free N and register it in all the per-pass
 	// state so subsequent passes see it as if already on disk.
-	auto allocateNewFolder = [&](const QString &prefix) -> FolderId
+	auto allocateNewFolder = [&](const QString &prefix) -> FolderName
 	{
 		QSet<int> all = allFoldersForPrefix(prefix);
 		int next = 1;
@@ -369,7 +369,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 			if (n >= next)
 				next = n + 1;
 		newByPrefix[prefix].insert(next);
-		FolderId id{prefix, next};
+		FolderName id{prefix, next};
 		projected[id] = 0;
 		plan.newFolders.append(id);
 
@@ -384,7 +384,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 	// No-op when src == dest (already where we want it). Takes
 	// IndexedMedia so the source folder is free; no re-parse.
-	auto pushOp = [&](const IndexedMedia &m, FolderId dest)
+	auto pushOp = [&](const IndexedMedia &m, FolderName dest)
 	{
 		if (m.folder == dest)
 			return;
@@ -396,23 +396,23 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 	for (const Group &g : groups)
 	{
 		const QString &prefix = g.homePrefix;
-		const FolderId home{prefix, g.homeN};
+		const FolderName home{prefix, g.homeN};
 		const int size = static_cast<int>(g.members.size());
 
-		// Edge case: relatives group >= Conventions::kFolderRecommend. Deterministic split
+		// Edge case: relatives group >= Conventions::kFolderTarget. Deterministic split
 		// across new folders.
-		if (size >= Conventions::kFolderRecommend)
+		if (size >= Conventions::kFolderTarget)
 		{
 			int idx = 0;
 			while (idx < size)
 			{
-				FolderId target;
-				const int slackHome = Conventions::kFolderRecommend - projected.value(home, 0);
+				FolderName target;
+				const int slackHome = Conventions::kFolderTarget - projected.value(home, 0);
 				if (idx == 0 && slackHome >= (size - idx))
 					target = home;
 				else
 					target = allocateNewFolder(prefix);
-				const int slack = Conventions::kFolderRecommend - projected.value(target, 0);
+				const int slack = Conventions::kFolderTarget - projected.value(target, 0);
 				const int chunk = qMin(slack, size - idx);
 				for (int i = 0; i < chunk; ++i, ++idx)
 					pushOp(g.members[idx], target);
@@ -428,13 +428,13 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		}
 		const int neededAtHome = size - membersAtHome;
 
-		// Already entirely at home and home isn't over Conventions::kFolderRecommend, so
+		// Already entirely at home and home isn't over Conventions::kFolderTarget, so
 		// leave it. Common case for a mildly fragmented project.
-		if (membersAtHome == size && projected.value(home, 0) <= Conventions::kFolderRecommend)
+		if (membersAtHome == size && projected.value(home, 0) <= Conventions::kFolderTarget)
 			continue;
 
 		// Strays fit in home? Pull them in.
-		if (projected.value(home, 0) + neededAtHome <= Conventions::kFolderRecommend)
+		if (projected.value(home, 0) + neededAtHome <= Conventions::kFolderTarget)
 		{
 			for (const auto &m : g.members)
 			{
@@ -448,15 +448,15 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		// nothing existing has room, allocate a new folder.
 		// First-fit (not best-fit) keeps low Ns denser, matching
 		// editor intuition that "1" is the busiest folder.
-		FolderId dest;
+		FolderName dest;
 		bool found = false;
 		QSet<int> all = allFoldersForPrefix(prefix);
 		QList<int> sortedNs(all.constBegin(), all.constEnd());
 		std::sort(sortedNs.begin(), sortedNs.end());
 		for (int n : sortedNs)
 		{
-			FolderId cand{prefix, n};
-			if (projected.value(cand, 0) + size <= Conventions::kFolderRecommend)
+			FolderName cand{prefix, n};
+			if (projected.value(cand, 0) + size <= Conventions::kFolderTarget)
 			{
 				dest = cand;
 				found = true;
@@ -479,7 +479,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 	// plan.folders (via allocateNewFolder or similar) would silently
 	// invalidate every pointer in this hash; indices survive
 	// QVector reallocations.
-	QHash<FolderId, int> stateByFid;
+	QHash<FolderName, int> stateByFid;
 	for (int i = 0; i < plan.folders.size(); ++i)
 	{
 		if (plan.folders[i].inScope)
@@ -526,12 +526,12 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 			// isn't caught here; it fails its own rename in the engine,
 			// where it is counted and logged.
 			{
-				QSet<FolderId> donors;
-				for (const MoveOp &op : plan.ops)
+				QSet<FolderName> donors;
+				for (const RenameOp &op : plan.ops)
 					if (const auto srcFid = srcFolderOf(op.srcPath))
 						donors.insert(*srcFid);
 
-				for (const FolderId &fid : donors)
+				for (const FolderName &fid : donors)
 				{
 					QString detail;
 					const FolderCheck check = checkFolderRenames(
@@ -560,7 +560,7 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 			// Per-move failures are handled by the engine; if one of
 			// these mkpaths fails the corresponding renames fail
 			// naturally and log themselves.
-			for (const FolderId &fid : plan.newFolders)
+			for (const FolderName &fid : plan.newFolders)
 			{
 				const QString path = plan.mxfRoot + QLatin1Char('/') + fid.display();
 				if (!QDir().mkpath(path))
@@ -591,7 +591,7 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 			{
 				for (int idx : opsByComp[compKey])
 				{
-					const MoveOp &op = plan.ops[idx];
+					const RenameOp &op = plan.ops[idx];
 					const QString fileName = QFileInfo(op.srcPath).fileName();
 					OpItem it;
 					it.src = op.srcPath;

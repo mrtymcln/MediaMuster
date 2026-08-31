@@ -120,7 +120,7 @@ private:
 	/// Every folder that's a source or destination of a planned move in
 	/// `m_currentPlan` — the "folders affected" headline count, shared by
 	/// the plan render and the post-run summary.
-	QSet<FolderId> affectedFolders() const;
+	QSet<FolderName> affectedFolders() const;
 
 	QHash<QString, QString> m_mxfRootsByLabel;
 	QHash<QString, QVector<MediaFile>> m_filesByMxfRoot;
@@ -157,11 +157,11 @@ private:
 
 	/// Scrollable container for the folder cards. renderPlan() wipes
 	/// the grid and rebuilds it; live updates touch only the affected
-	/// cards by FolderId lookup.
+	/// cards by FolderName lookup.
 	QScrollArea *m_cardScroll = nullptr;
 	QWidget *m_cardContainer = nullptr;
 	QGridLayout *m_cardGrid = nullptr;
-	QHash<FolderId, FolderCard *> m_cards;
+	QHash<FolderName, FolderCard *> m_cards;
 
 	QProgressBar *m_progressBar = nullptr;
 	QLabel *m_progressLabel = nullptr;
@@ -172,12 +172,12 @@ private:
 
 	/// Running per-folder counts. Initialised from FolderState.count
 	/// at rebalance start; decremented/incremented as ops complete.
-	QHash<FolderId, int> m_runningCount;
+	QHash<FolderName, int> m_runningCount;
 
-	/// Source FolderId for each op in `m_currentPlan.ops`, computed
+	/// Source FolderName for each op in `m_currentPlan.ops`, computed
 	/// once on plan ingestion. Saves re-parsing srcPath thousands of
 	/// times per second during live updates.
-	QVector<FolderId> m_srcFolderByOp;
+	QVector<FolderName> m_srcFolderByOp;
 
 	/// Index of the next op whose effect hasn't yet been applied to
 	/// `m_runningCount`. Bumped forward on each onProgress.

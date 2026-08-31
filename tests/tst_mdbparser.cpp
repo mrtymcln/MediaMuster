@@ -158,7 +158,7 @@ void TestMdbParser::tiny_fixture_covers_the_tone_file()
 	QVERIFY(db.files.contains(fileHex));
 	QVERIFY(db.masters.contains(masterHex));
 
-	const MdbFile &f = db.files[fileHex];
+	const MdbFileMob &f = db.files[fileHex];
 	QCOMPARE(f.usageCode, 0);
 	QVERIFY(f.essenceComplete);
 	QVERIFY(f.essence.isAudio);
@@ -175,7 +175,7 @@ void TestMdbParser::tiny_fixture_covers_the_tone_file()
 	QCOMPARE(f.essence.timecodeBase, hdr.timecodeBase);
 	QCOMPARE(f.essence.codec, hdr.codec);
 
-	const MdbMaster &m = db.masters[masterHex];
+	const MdbMasterMob &m = db.masters[masterHex];
 	QCOMPARE(m.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
 	QCOMPARE(m.clipName, hdr.clipName);
 	QCOMPARE(m.usageCode, 7);
@@ -217,7 +217,7 @@ void TestMdbParser::duplicate_mobj_objects_are_merged_first_non_empty_wins()
 	QVERIFY(ok);
 	QCOMPARE(db.masters.size(), 1);
 	QVERIFY(db.files.isEmpty());
-	const MdbMaster &m = db.masters[MobId::format(kToneMasterMob)];
+	const MdbMasterMob &m = db.masters[MobId::format(kToneMasterMob)];
 	QCOMPARE(m.clipName, QStringLiteral("First Name"));
 	QCOMPARE(m.usageCode, 7);
 	QCOMPARE(m.bin, QString::fromUtf8("Café bin"));
@@ -250,7 +250,7 @@ void TestMdbParser::source_mob_is_neither_file_nor_master()
 	QVERIFY(ok);
 	QVERIFY(db.masters.isEmpty());
 	QCOMPARE(db.files.size(), 1);
-	const MdbFile &f = db.files[MobId::format(kToneMasterMob)];
+	const MdbFileMob &f = db.files[MobId::format(kToneMasterMob)];
 	QVERIFY(f.essenceComplete);
 	QVERIFY(f.essence.isAudio);
 	QCOMPARE(f.essence.sampleRate, 48000);
@@ -276,7 +276,7 @@ void TestMdbParser::real_accented_bin_mdb_never_yields_mojibake()
 	const QString expectedBin = QString::fromUtf8("Caf\xc3\xa9 t\xc3\xabst");
 	bool sawAccentedBin = false;
 	const QChar fffd(QChar::ReplacementCharacter);
-	for (const MdbMaster &m : db.masters)
+	for (const MdbMasterMob &m : db.masters)
 	{
 		if (m.bin == expectedBin)
 			sawAccentedBin = true;
@@ -304,8 +304,8 @@ void TestMdbParser::macroman_only_precompute_names_decode()
 	{
 		QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
 		QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
-		const MdbFile &f = db.files[e.mobId];
-		const MdbMaster &m = db.masters[e.masterMobId];
+		const MdbFileMob &f = db.files[e.mobId];
+		const MdbMasterMob &m = db.masters[e.masterMobId];
 		if (f.usageCode == 9)
 		{
 			QCOMPARE(m.usageCode, 1);
@@ -371,7 +371,7 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 		const QString key = MobId::toPmrForm(meta.umid);
 		QVERIFY2(db.masters.contains(key), qPrintable(QLatin1String(file) + QStringLiteral(" -> ") + key));
 
-		const MdbMaster &rec = db.masters[key];
+		const MdbMasterMob &rec = db.masters[key];
 
 		// Ground truth: the name the file carries in its own MaterialPackage.
 		QCOMPARE(rec.clipName, meta.clipName);
@@ -432,8 +432,8 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 			QVERIFY2(QFile::exists(path), qPrintable(path));
 			QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
 			QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
-			const MdbFile &f = db.files[e.mobId];
-			const MdbMaster &m = db.masters[e.masterMobId];
+			const MdbFileMob &f = db.files[e.mobId];
+			const MdbMasterMob &m = db.masters[e.masterMobId];
 
 			const MxfMetadata hdr = MxfParser::parseHeader(path);
 			QVERIFY2(hdr.valid, qPrintable(e.fileName));
@@ -490,7 +490,7 @@ void TestMdbParser::mpga_audio_is_not_essence_complete()
 			mob = e.mobId;
 	QVERIFY(!mob.isEmpty());
 	QVERIFY(db.files.contains(mob));
-	const MdbFile &f = db.files[mob];
+	const MdbFileMob &f = db.files[mob];
 	QVERIFY(f.essence.isAudio);
 	QVERIFY(!f.essenceComplete);
 

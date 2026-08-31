@@ -155,7 +155,7 @@ private:
 	/// readable, else the couldn't-check states.
 	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
-							 const PmrParser::ProjectMap &pmrMap,
+							 const PmrIndex &pmrMap,
 							 const MdbDatabase &mdb,
 							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
 
@@ -211,5 +211,5 @@ private:
 	/// Written under m_mdbMapsMutex by pool threads during pass 1; read
 	/// without it in pass 2, when no writer exists.
 	QMutex m_mdbMapsMutex;
-	QHash<QString, QHash<QString, MdbMaster>> m_mdbMapsByFolder;
+	QHash<QString, QHash<QString, MdbMasterMob>> m_mdbMapsByFolder;
 };

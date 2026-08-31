@@ -1,6 +1,6 @@
 #include "pmrparser.h"
 #include "avidtext.h"
-#include "logging.h"
+#include "logcategories.h"
 #include "mobid.h"
 #include "pmrkey.h"
 
@@ -368,9 +368,9 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 
 // MARK: - Lookup table builder
 
-PmrParser::ProjectMap PmrParser::buildFileMap(const QString &pmrFilePath, bool *ok)
+PmrIndex PmrParser::buildFileMap(const QString &pmrFilePath, bool *ok)
 {
-	ProjectMap map;
+	PmrIndex map;
 	for (const auto &entry : parse(pmrFilePath, ok))
 		map[PmrKey::primary(entry.fileName)].append(entry);
 	return map;

@@ -141,9 +141,7 @@ namespace Conventions
 
 	/// [OURS — SAFE TO CHANGE] What the Rebalancer packs folders up to.
 	/// One below Avid's ceiling, sourced from it so the two can't drift.
-	/// (The name predates this file and reads like Avid guidance — it is
-	/// not; it's our packing target. Renaming it is still on the list.)
-	inline constexpr int kFolderRecommend = kFolderMax - 1; // 4999
+	inline constexpr int kFolderTarget = kFolderMax - 1; // 4999
 
 	/// [OURS — SAFE TO CHANGE] Where the folder-card bar turns red.
 	inline constexpr int kFolderCritical = 4800;

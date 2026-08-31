@@ -8,9 +8,18 @@
 // and a complete plan. Separate header so the dialog can include
 // the types without Rebalancer's signal/slot logic.
 
-// MARK: - FolderId
+// MARK: - FolderName
 
-/// Parsed identity of an Avid MXF subfolder.
+/// An Avid MXF subfolder's name, kept in its two parts so the rebalancer
+/// can do arithmetic on it — "how full is 42?", "what is the next free
+/// number in MartysiMac's range?". You cannot add one to the text
+/// "MartysiMac.42"; you can to the number beside the prefix. display()
+/// puts the two halves back together whenever a real path is needed.
+///
+/// Not unique across the machine — two volumes can each hold a folder
+/// "3" — which is safe because a rebalance runs over one volume at a
+/// time (Marty's ruling 2026-08-31). That is also why it is a Name and
+/// not an Id: nothing issues it, the app reads it off the disk.
 ///
 /// Standalone Avid setups name folders just `1`, `2`, `3`, ...; prefix
 /// empty, n is the trailing integer.
@@ -21,7 +30,7 @@
 /// Anything that doesn't round-trip through `display()` (e.g.
 /// `Quarantined Files`, `.5`, `01`) gets rejected by
 /// `Rebalancer::parseFolderName` and falls back to `std::nullopt`.
-struct FolderId
+struct FolderName
 {
 	QString prefix;
 	int n = 0;
@@ -31,14 +40,14 @@ struct FolderId
 		return prefix.isEmpty() ? QString::number(n) : QStringLiteral("%1.%2").arg(prefix).arg(n);
 	}
 
-	bool operator==(const FolderId &o) const { return prefix == o.prefix && n == o.n; }
+	bool operator==(const FolderName &o) const { return prefix == o.prefix && n == o.n; }
 
-	bool operator!=(const FolderId &o) const { return !(*this == o); }
+	bool operator!=(const FolderName &o) const { return !(*this == o); }
 
 	/// Prefix first, then n; gives the preview a stable order:
 	/// `MartysiMac.*` together in numeric order, then `Edit14.*`, then
 	/// unprefixed local folders.
-	bool operator<(const FolderId &o) const
+	bool operator<(const FolderName &o) const
 	{
 		if (prefix != o.prefix)
 			return prefix < o.prefix;
@@ -48,19 +57,19 @@ struct FolderId
 
 /// qHashMulti mixes both fields through the hash state; XOR-ing
 /// two qHash results would collide for every n on matching prefixes.
-inline size_t qHash(const FolderId &id, size_t seed = 0) noexcept
+inline size_t qHash(const FolderName &id, size_t seed = 0) noexcept
 {
 	return qHashMulti(seed, id.prefix, id.n);
 }
 
-// MARK: - MoveOp
+// MARK: - RenameOp
 
 /// One file-move planned by the rebalancer. Relatives are
 /// grouped so they always land in the same destination folder.
-struct MoveOp
+struct RenameOp
 {
 	QString srcPath;
-	FolderId dest;
+	FolderName dest;
 	QString masterMobId; ///< Empty for files with no relatives group.
 	qint64 sizeBytes = 0;
 };
@@ -74,8 +83,8 @@ struct MoveOp
 /// (e.g. `Quarantined Files`); shown read-only; never touched.
 struct FolderState
 {
-	QString name; ///< Matches FolderId::display() when in scope.
-	FolderId id;  ///< Valid only when `inScope` is true.
+	QString name; ///< Matches FolderName::display() when in scope.
+	FolderName id;  ///< Valid only when `inScope` is true.
 	int count = 0;
 	qint64 bytes = 0;
 	int filesIn = 0;
@@ -96,8 +105,8 @@ struct RebalancePlan
 	QString volumeLabel; ///< Volume display name, for dialog headings.
 
 	QVector<FolderState> folders;
-	QVector<MoveOp> ops;
-	QVector<FolderId> newFolders;
+	QVector<RenameOp> ops;
+	QVector<FolderName> newFolders;
 
 	int totalFiles() const { return static_cast<int>(ops.size()); }
 };

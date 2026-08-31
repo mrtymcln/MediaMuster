@@ -1,8 +1,8 @@
 #include "mediascanner.h"
 #include "avideffects.h"
 #include "conventions.h"
-#include "debugslowdown.h"
-#include "logging.h"
+#include "testpause.h"
+#include "logcategories.h"
 #include "mobid.h"
 #include "mxfparser.h"
 #include "pathkey.h"
@@ -150,7 +150,7 @@ namespace
 	// The bin has no other source in the app: PmrEntry carries a project but
 	// no bin, and AvbParser yields only MOB IDs for the Bin Filter. Unknown
 	// therefore means blank, never a guess.
-	void applyMdbRecord(MediaFile &mf, const MdbMaster &rec)
+	void applyMdbRecord(MediaFile &mf, const MdbMasterMob &rec)
 	{
 		setClipName(mf, rec.clipName, MediaFile::ClipNameSource::Mdb);
 		assignIfMissing(mf.originalBin, rec.bin);
@@ -617,8 +617,8 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 								 auto res = this->processFolderTask(t);
 								 int done = ++completedFolders;
 
-								 // No-op when slow mode is off.
-								 DebugSlowdown::pauseForMs(80);
+								 // No-op unless a test armed the seam.
+								 TestPause::sleepMs(TestPause::kPerScannedFolderMs);
 
 								 // Always emit the last folder so the bar hits 100%;
 								 // gate the rest.
@@ -663,7 +663,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	// MARK: Parse the PMR
 
 	// Missing PMR/MDB is normal in Interplay environments.
-	PmrParser::ProjectMap pmrMap;
+	PmrIndex pmrMap;
 	bool pmrOk = true; // vacuously fine when the file doesn't exist
 	const QString pmrPath = task.folderPath + "/msmFMID.pmr";
 	const bool pmrExists = QFile::exists(pmrPath);
@@ -836,7 +836,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 									   const QString &volumePath, const QString &folderNumber,
-									   const PmrParser::ProjectMap &pmrMap,
+									   const PmrIndex &pmrMap,
 									   const MdbDatabase &mdb,
 									   MediaFile::DbStatus folderStatus, CoverageTally &tally)
 {
@@ -879,7 +879,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	};
 
 	// The PMR records the on-disk filename verbatim; an exact match is the
-	// only match there is (see PmrParser::ProjectMap).
+	// only match there is (see PmrIndex).
 	const auto pmrIt = pmrMap.constFind(primaryKey);
 	if (pmrIt != pmrMap.constEnd() && !pmrIt->isEmpty())
 		applyPmrHit(pmrIt->first());
@@ -1016,7 +1016,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 
 	// Pass 1 has joined, so nobody writes the cache any more: plain
 	// concurrent reads below, no lock.
-	const QHash<QString, QHash<QString, MdbMaster>> &clipsByFolder = m_mdbMapsByFolder;
+	const QHash<QString, QHash<QString, MdbMasterMob>> &clipsByFolder = m_mdbMapsByFolder;
 
 	// Detach once before workers touch the vector. QVector::data()
 	// fires the CoW detach if shared; pool threads then write to

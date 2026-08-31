@@ -28,11 +28,11 @@ namespace
 			.arg(kind);
 	}
 
-	QString beginUndoRec(const QString &effective, const QString &undoes)
+	QString beginUndoRec(const QString &originalKind, const QString &undoes)
 	{
 		return QStringLiteral(
-				   R"({"schema":2,"record":"begin","kind":"undo","started":"2026-08-29T10:00:00.000Z","processId":999999,"host":"deadhost","metadata":{"undoes":"%1","effective":"%2"}})")
-			.arg(undoes, effective);
+				   R"({"schema":2,"record":"begin","kind":"undo","started":"2026-08-29T10:00:00.000Z","processId":999999,"host":"deadhost","metadata":{"undoes":"%1","originalKind":"%2"}})")
+			.arg(undoes, originalKind);
 	}
 
 	QString planRec(const QString &dest, const QStringList &srcs)

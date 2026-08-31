@@ -162,7 +162,7 @@ private:
 	/// tells the user, and DISARMS the park — the journal line must be the
 	/// last word on this item's disk state, so no destructor retry may
 	/// change it afterwards.
-	void flagStrandedPark(JournalOp &lop, class ParkedFile &park, const OpItem &it);
+	void flagStrandedPark(JournalOpGuard &lop, class ParkedFile &park, const OpItem &it);
 
 	/// The display name for messages: the clip name the editor knows
 	/// when the scan recorded one, else the file name.

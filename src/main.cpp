@@ -1,4 +1,4 @@
-#include "applog.h"
+#include "logfile.h"
 #include "mainwindow.h"
 #include "version.h"
 #include <QApplication>

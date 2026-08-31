@@ -1,5 +1,6 @@
-#include "debugslowdown.h"
-#include "mediamanagerverify.h"
+#include "testpause.h"
+#include "opverify.h"
+#include "opcopier.h"
 #include "opjournal.h"
 #include "opmanager.h"
 
@@ -77,13 +78,13 @@ void TestOpManager::cleanupTestCase()
 
 void TestOpManager::cleanup()
 {
-	DebugSlowdown::setEnabled(false);
+	TestPause::setEnabled(false);
 	qunsetenv("MEDIAMUSTER_DISABLE_CLONEFILE");
 	qunsetenv("MEDIAMUSTER_DISABLE_COPYFILEEX");
 	qunsetenv("MEDIAMUSTER_FORCE_MOVE_COPY");
 	qunsetenv("MEDIAMUSTER_DISABLE_OS_TRASH");
 	qunsetenv("MEDIAMUSTER_TRASH_ROOT");
-	MediaManagerVerify::setEnabled(true);
+	OpVerify::setEnabled(true);
 	// v2 retention keeps finished journals around — wipe them between
 	// tests or every scan-based assertion sees its predecessors' runs.
 	const QDir journal(m_journalDir.path());
@@ -128,7 +129,7 @@ void TestOpManager::copy_run_writes_its_plan_before_the_first_op()
 	// while the run is still in flight.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	DebugSlowdown::setEnabled(true);
+	TestPause::setEnabled(true);
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -152,9 +153,9 @@ void TestOpManager::copy_run_writes_its_plan_before_the_first_op()
 
 	OpManager mgr;
 	QSignalSpy finished(&mgr, &OpManager::operationFinished);
-	const quint64 ticks = DebugSlowdown::copyLoopTicks().load();
+	const quint64 ticks = OpCopier::loopTicks().load();
 	dispatch(mgr, OpKind::Copy, {a, b}, dest, false, pol);
-	QTRY_VERIFY_WITH_TIMEOUT(DebugSlowdown::copyLoopTicks().load() > ticks, 20000);
+	QTRY_VERIFY_WITH_TIMEOUT(OpCopier::loopTicks().load() > ticks, 20000);
 
 	// Mid-flight: the plan must already be on disk — written before the
 	// first op line, i.e. before any file was touched.
@@ -188,7 +189,7 @@ void TestOpManager::copy_replace_journals_parked_path_while_still_in_flight()
 	// strands it in.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	DebugSlowdown::setEnabled(true);
+	TestPause::setEnabled(true);
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -205,10 +206,10 @@ void TestOpManager::copy_replace_journals_parked_path_while_still_in_flight()
 
 	OpManager mgr;
 	QSignalSpy finished(&mgr, &OpManager::operationFinished);
-	const quint64 ticks = DebugSlowdown::copyLoopTicks().load();
+	const quint64 ticks = OpCopier::loopTicks().load();
 	dispatch(mgr, OpKind::Copy, {mf}, dest, false, pol);
 
-	QTRY_VERIFY_WITH_TIMEOUT(DebugSlowdown::copyLoopTicks().load() > ticks, 20000);
+	QTRY_VERIFY_WITH_TIMEOUT(OpCopier::loopTicks().load() > ticks, 20000);
 	const QVector<OpJournal::Record> live = OpJournal::scan(m_journalDir.path());
 	QCOMPARE(live.size(), 1);
 	QCOMPARE(live.first().kind, OpKind::Copy);
@@ -242,7 +243,7 @@ void TestOpManager::copy_replace_midCopyFailure_restores_original()
 	// parked original, count as a failure, and leave the source alone.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	DebugSlowdown::setEnabled(true);
+	TestPause::setEnabled(true);
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -259,13 +260,13 @@ void TestOpManager::copy_replace_midCopyFailure_restores_original()
 
 	OpManager mgr;
 	QSignalSpy finished(&mgr, &OpManager::operationFinished);
-	const quint64 ticks = DebugSlowdown::copyLoopTicks().load();
+	const quint64 ticks = OpCopier::loopTicks().load();
 	dispatch(mgr, OpKind::Copy, {mf}, dest, false, pol);
 
 	// Grow the source after the copy has captured its starting size but
 	// before it stats it again at the end. The loop's own tick makes
 	// that deterministic on any runner.
-	QTRY_VERIFY_WITH_TIMEOUT(DebugSlowdown::copyLoopTicks().load() > ticks, 20000);
+	QTRY_VERIFY_WITH_TIMEOUT(OpCopier::loopTicks().load() > ticks, 20000);
 	{
 		QFile grow(src);
 		QVERIFY(grow.open(QIODevice::Append));
@@ -289,7 +290,7 @@ void TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed()
 	// parked original AND count as neither a success nor a failure.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	DebugSlowdown::setEnabled(true);
+	TestPause::setEnabled(true);
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -306,12 +307,12 @@ void TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed()
 
 	OpManager mgr;
 	QSignalSpy finished(&mgr, &OpManager::operationFinished);
-	const quint64 ticks = DebugSlowdown::copyLoopTicks().load();
+	const quint64 ticks = OpCopier::loopTicks().load();
 	dispatch(mgr, OpKind::Copy, {mf}, dest, false, pol);
 
 	// Cancel only *after* the copy is underway, so it lands inside the
 	// byte loop rather than at the run loop's guard.
-	QTRY_VERIFY_WITH_TIMEOUT(DebugSlowdown::copyLoopTicks().load() > ticks, 20000);
+	QTRY_VERIFY_WITH_TIMEOUT(OpCopier::loopTicks().load() > ticks, 20000);
 	mgr.cancel();
 	QVERIFY2(finished.wait(60000), "copy did not finish in time");
 
@@ -336,7 +337,7 @@ void TestOpManager::copy_replace_strandedRestore_keepsDirtyJournal()
 	// the size-change guard fails the copy.
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	DebugSlowdown::setEnabled(true);
+	TestPause::setEnabled(true);
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -353,12 +354,12 @@ void TestOpManager::copy_replace_strandedRestore_keepsDirtyJournal()
 
 	OpManager mgr;
 	QSignalSpy finished(&mgr, &OpManager::operationFinished);
-	const quint64 ticks = DebugSlowdown::copyLoopTicks().load();
+	const quint64 ticks = OpCopier::loopTicks().load();
 	dispatch(mgr, OpKind::Copy, {mf}, dest, false, pol);
 
 	// By the first tick the original is parked; steal it, then break
 	// the copy.
-	QTRY_VERIFY_WITH_TIMEOUT(DebugSlowdown::copyLoopTicks().load() > ticks, 20000);
+	QTRY_VERIFY_WITH_TIMEOUT(OpCopier::loopTicks().load() > ticks, 20000);
 	const QStringList parkedNames = QDir(dest).entryList({"*__copyreplace*"}, QDir::Files);
 	QVERIFY2(!parkedNames.isEmpty(), "expected the original to be parked by now");
 	QVERIFY(QFile::remove(dest + "/" + parkedNames.first()));
@@ -391,11 +392,11 @@ void TestOpManager::move_copyLeg_verifyOff_tamperedDestination_keepsSource()
 	// something interferes with the destination mid-copy, and Move must
 	// STILL refuse to delete the source — the unconditional floors are
 	// what stand between this and destroying the only real copy.
-	MediaManagerVerify::setEnabled(false);
+	OpVerify::setEnabled(false);
 	qputenv("MEDIAMUSTER_FORCE_MOVE_COPY", "1");
 	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
 	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1"); // both native paths, or Windows stays native
-	DebugSlowdown::setEnabled(true);
+	TestPause::setEnabled(true);
 
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());

@@ -32,7 +32,7 @@
 //
 //   THE UNDO IS ITSELF A JOURNALED RUN — every inverse step is write-
 //   ahead journaled (kind Undo, with `undoes` naming the original and
-//   `effective` naming its kind), so a crash MID-UNDO is recovered by
+//   `originalKind` naming its kind), so a crash MID-UNDO is recovered by
 //   the same launch sweep as any other run, with finished-work-stays.
 //
 //   ALREADY-UNDONE IS A SKIP, NOT AN ERROR — a cancelled or partially

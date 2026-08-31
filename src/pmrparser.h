@@ -30,6 +30,25 @@ struct PmrEntry
 	quint32 fileModifiedSecs = 0;
 };
 
+// MARK: - PmrIndex
+
+/// What a parsed `msmFMID.pmr` is, in one type: a filename-keyed lookup —
+/// PmrKey::primary (NFC-normalised, lower-cased) onto the records carrying
+/// that name. "Index" is the right word and belongs to the PMR specifically:
+/// this is the ONLY Avid file in a media folder that ties a filename to its
+/// MOBs. Its neighbour msmMMOB.mdb holds no filenames at all (see MdbParser).
+///
+/// ONE key, not two. A looser second key - extension dropped, remaining
+/// dots turned to underscores - was carried from the prototype on the
+/// belief that Avid renames files on import. It does not: an import
+/// produces a NEW file whose name Avid generates from the track and MOB
+/// (`A01.E6968417_1BD321BD32270A.mxf`), and the source name is kept in a
+/// separate field, so there is no spelling to reconcile. Measured over
+/// 2,412 real files in four projects - 2,298 of them imports, and 2,397
+/// carrying the dotted shape the loose key existed to repair - it matched
+/// nothing the exact name had missed. Removed 2026-08-28.
+using PmrIndex = QHash<QString, QVector<PmrEntry>>;
+
 // MARK: - PmrParser
 
 /// Reads the Persistent Media Record which Avid writes alongside
@@ -59,22 +78,6 @@ public:
 	/// time zone won't match the second form — which only costs a header read.
 	[[nodiscard]] static bool trailerMatchesModified(quint32 trailer, const QDateTime &onDisk);
 
-	// MARK: - Lookup tables
-
-	/// Filename-keyed lookup: PmrKey::primary (NFC-normalised, lower-cased)
-	/// onto the records carrying that name.
-	///
-	/// ONE key, not two. A looser second key - extension dropped, remaining
-	/// dots turned to underscores - was carried from the prototype on the
-	/// belief that Avid renames files on import. It does not: an import
-	/// produces a NEW file whose name Avid generates from the track and MOB
-	/// (`A01.E6968417_1BD321BD32270A.mxf`), and the source name is kept in a
-	/// separate field, so there is no spelling to reconcile. Measured over
-	/// 2,412 real files in four projects - 2,298 of them imports, and 2,397
-	/// carrying the dotted shape the loose key existed to repair - it matched
-	/// nothing the exact name had missed. Removed 2026-08-28.
-	using ProjectMap = QHash<QString, QVector<PmrEntry>>;
-
-	/// Builds the lookup map from a single PMR parse. `ok` as in parse().
-	[[nodiscard]] static ProjectMap buildFileMap(const QString &pmrFilePath, bool *ok = nullptr);
+	/// Builds the index from a single PMR parse. `ok` as in parse().
+	[[nodiscard]] static PmrIndex buildFileMap(const QString &pmrFilePath, bool *ok = nullptr);
 };

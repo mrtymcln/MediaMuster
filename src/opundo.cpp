@@ -116,7 +116,7 @@ OpRunner::Totals OpUndo::run(const QString &originalJournalPath, const QString &
 	// destroy the very record being read.
 	OpJournal journal(OpKind::Undo,
 					QJsonObject{{QStringLiteral("undoes"), QFileInfo(rec.path).fileName()},
-								{QStringLiteral("effective"), opKindName(rec.kind)}},
+								{QStringLiteral("originalKind"), opKindName(rec.kind)}},
 					journalDir, rec.path);
 	if (!journal.isOpen())
 		m_sink.log(QtWarningMsg, OpJournal::openFailedText(OpKind::Undo));
@@ -294,7 +294,7 @@ OpUndo::ItemOutcome OpUndo::undoCopyOp(const OpJournal::Entry &op, OpJournal &jo
 
 	// Write-ahead, then act: the copy goes to the TRASH (undo of a copy
 	// is a delete in disguise, and deletes never hard-unlink).
-	JournalOp lop(&journal, op.dst, QString(), op.landedId.size, QString(), op.landedId);
+	JournalOpGuard lop(&journal, op.dst, QString(), op.landedId.size, QString(), op.landedId);
 	const TrashRouter::Landing landing = router.trash(op.dst);
 	if (!landing.ok)
 	{
@@ -371,10 +371,10 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &jo
 		return out;
 	}
 
-	// Write-ahead for the journey home. `effective: move` in the begin
+	// Write-ahead for the journey home. `originalKind: move` in the begin
 	// line means a crash between here and done is recovered with the
 	// Move machinery over this exact src/dst pair.
-	JournalOp lop(&journal, op.dst, op.src, op.srcId.size, QString(),
+	JournalOpGuard lop(&journal, op.dst, op.src, op.srcId.size, QString(),
 				 op.landedId.confidence != FileIdentity::Confidence::Low ? op.landedId : op.srcId);
 
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
@@ -562,7 +562,7 @@ OpUndo::ItemOutcome OpUndo::undoDeleteOp(const OpJournal::Entry &op, OpJournal &
 		return out;
 	}
 
-	JournalOp lop(&journal, op.finalPath, op.src, op.srcId.size, QString(), op.srcId);
+	JournalOpGuard lop(&journal, op.finalPath, op.src, op.srcId.size, QString(), op.srcId);
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
 	if (!QFile::rename(op.finalPath, op.src))
 	{
@@ -617,7 +617,7 @@ OpUndo::ItemOutcome OpUndo::undoRenameOp(const OpJournal::Entry &op, OpJournal &
 		return out;
 	}
 
-	JournalOp lop(&journal, op.dst, op.src, op.srcId.size, QString(), op.srcId);
+	JournalOpGuard lop(&journal, op.dst, op.src, op.srcId.size, QString(), op.srcId);
 	if (!QFile::rename(op.dst, op.src))
 	{
 		lop.failed(QStringLiteral("rename back failed"));

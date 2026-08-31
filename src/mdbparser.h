@@ -11,7 +11,7 @@
 /// every V01/A01/A02 relative shares. Keyed by the master MOB — the same
 /// id the PMR's MASTER record carries and the MXF's MaterialPackage UID
 /// (after MobId::toPmrForm) resolves to.
-struct MdbMaster
+struct MdbMasterMob
 {
 	QString mobIdHex;
 	QString clipName;		 ///< OMFI:CPNT:Name — what Avid displays. Equal to the
@@ -32,7 +32,7 @@ struct MdbMaster
 /// permission to skip the header read — false when the database cannot
 /// name the codec (MPEG audio has no label in the MDB) or the descriptor
 /// isn't a media descriptor.
-struct MdbFile
+struct MdbFileMob
 {
 	QString mobIdHex;
 	int usageCode = -1; ///< 0 = media, 9 = precompute.
@@ -40,14 +40,19 @@ struct MdbFile
 	bool essenceComplete = false;
 };
 
-/// Everything one msmMMOB.mdb knows, split the way the scanner consumes it:
+/// The parsed contents of ONE msmMMOB.mdb — this is the database itself,
+/// which is why it keeps the plain name. Its two members hold many records
+/// each: MdbMasterMob for master clips, MdbFileMob for essence files, named
+/// after Avid's own master mob / file mob (see the walk in mdbparser.cpp).
+///
+/// Split the way the scanner consumes it:
 /// `files` is looked up once per row during the folder walk and dropped;
 /// `masters` is kept for the header pass's UMID re-join. Both are keyed by
 /// MediaMuster's dotted MOB hex (MobId::format).
 struct MdbDatabase
 {
-	QHash<QString, MdbMaster> masters;
-	QHash<QString, MdbFile> files;
+	QHash<QString, MdbMasterMob> masters;
+	QHash<QString, MdbFileMob> files;
 	[[nodiscard]] bool isEmpty() const { return masters.isEmpty() && files.isEmpty(); }
 };
 

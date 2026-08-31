@@ -383,7 +383,7 @@ void TestRebalancerPlan::execute_moves_the_planned_files()
 	plan.ops.clear();
 	for (int i = 0; i < 3; ++i)
 		plan.ops.append({root + QStringLiteral("/1/clip%1.mxf").arg(i),
-						 FolderId{QString(), 2},
+						 FolderName{QString(), 2},
 						 QStringLiteral("mob%1").arg(i),
 						 1000});
 
@@ -475,7 +475,7 @@ void TestRebalancerPlan::execute_resets_the_avid_databases_of_every_folder_it_to
 
 	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
 	plan.ops.clear();
-	plan.ops.append({root + QStringLiteral("/1/clip.mxf"), FolderId{QString(), 2},
+	plan.ops.append({root + QStringLiteral("/1/clip.mxf"), FolderName{QString(), 2},
 					 QStringLiteral("mob0"), 1000});
 
 	Rebalancer r;
@@ -507,7 +507,7 @@ void TestRebalancerPlan::execute_never_clobbers_an_existing_destination()
 
 	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
 	plan.ops.clear();
-	plan.ops.append({root + QStringLiteral("/1/clip.mxf"), FolderId{QString(), 2},
+	plan.ops.append({root + QStringLiteral("/1/clip.mxf"), FolderName{QString(), 2},
 					 QStringLiteral("mob0"), 1000});
 
 	Rebalancer r;
@@ -546,7 +546,7 @@ void TestRebalancerPlan::execute_cancel_keeps_what_already_landed()
 	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
 	plan.ops.clear();
 	for (int i = 0; i < kFiles; ++i)
-		plan.ops.append({root + QStringLiteral("/1/clip%1.mxf").arg(i), FolderId{QString(), 2},
+		plan.ops.append({root + QStringLiteral("/1/clip%1.mxf").arg(i), FolderName{QString(), 2},
 						 QStringLiteral("mob%1").arg(i), 100});
 
 	Rebalancer r;
@@ -592,7 +592,7 @@ void TestRebalancerPlan::execute_aborts_when_a_donor_folder_is_read_only()
 
 	RebalancePlan plan = Rebalancer::computePlan(root, QStringLiteral("EDIT"), files);
 	plan.ops.clear();
-	plan.ops.append({root + QStringLiteral("/1/clip0.mxf"), FolderId{QString(), 2},
+	plan.ops.append({root + QStringLiteral("/1/clip0.mxf"), FolderName{QString(), 2},
 					 QStringLiteral("mob0"), 1000});
 
 	makeFillers(root, QStringLiteral("2"), 0); // the target must exist, or

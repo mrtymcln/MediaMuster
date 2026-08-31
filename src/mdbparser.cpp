@@ -1,6 +1,6 @@
 #include "mdbparser.h"
 #include "bentofile.h"
-#include "logging.h"
+#include "logcategories.h"
 #include "mobid.h"
 
 #include <QByteArrayView>
@@ -173,7 +173,7 @@ namespace
 	/// ATTR → AttrRefs → ATTB[]; nested ATTRs are followed only where a fact
 	/// we want lives below them (_IMPORTSETTING, _USER). `seen` guards the
 	/// shared nodes Avid writes.
-	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, MdbMaster &m,
+	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, MdbMasterMob &m,
 						QSet<quint32> &seen, int depth)
 	{
 		if (attrObj == 0 || depth > 4 || seen.contains(attrObj))
@@ -284,7 +284,7 @@ namespace
 	/// hand it to MxfParser::finalise so every derived value comes from the
 	/// same code as the header path.
 	void readEssence(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
-					 const QHash<QByteArray, quint32> &objectByMob, MdbFile &f)
+					 const QHash<QByteArray, quint32> &objectByMob, MdbFileMob &f)
 	{
 		MxfMetadata &e = f.essence;
 		const QByteArray cls = b.objectClass(desc);
@@ -434,7 +434,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 
 		if (mediaObj != 0)
 		{
-			MdbFile f;
+			MdbFileMob f;
 			f.mobIdHex = hex;
 			for (quint32 obj : objs)
 			{
@@ -451,7 +451,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		if (anyPhysical)
 			continue; // a source mob
 
-		MdbMaster m;
+		MdbMasterMob m;
 		m.mobIdHex = hex;
 		QSet<quint32> seen;
 		for (quint32 obj : objs)

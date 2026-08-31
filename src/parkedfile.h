@@ -55,7 +55,7 @@
 /// Usage:
 /// ```
 ///     ParkedFile park(dstPath, kCopyReplaceTag);
-///     JournalOp lop(journal, src, dstPath, bytes, park.path());  // WAL first
+///     JournalOpGuard lop(journal, src, dstPath, bytes, park.path());  // WAL first
 ///     if (!park.park())
 ///         return;                       // nothing touched; bail
 ///     ... open dstPath for writing → park.noteDestinationWritten() ...

@@ -377,8 +377,8 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 			rec.pid = o.value(QStringLiteral("processId")).toInteger(0);
 			rec.host = o.value(QStringLiteral("host")).toString();
 			rec.undoes = rec.meta.value(QStringLiteral("undoes")).toString();
-			rec.effective =
-				opKindFromName(rec.meta.value(QStringLiteral("effective")).toString());
+			rec.originalKind =
+				opKindFromName(rec.meta.value(QStringLiteral("originalKind")).toString());
 		}
 		else if (r == QStringLiteral("op"))
 		{

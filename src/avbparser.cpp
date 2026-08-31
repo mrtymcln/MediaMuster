@@ -1,5 +1,5 @@
 #include "avbparser.h"
-#include "logging.h"
+#include "logcategories.h"
 #include "mobid.h"
 
 #include <QByteArray>

@@ -1,7 +1,7 @@
 #include "oprunner.h"
 
 #include "conventions.h"
-#include "debugslowdown.h"
+#include "testpause.h"
 #include "formatutil.h"
 #include "mobid.h"
 #include "parkedfile.h"
@@ -380,7 +380,7 @@ void OpRunner::warnJournalDegradedOnce(const OpJournal &journal, bool &warned)
 	m_sink.log(QtCriticalMsg, OpJournal::degradedText());
 }
 
-void OpRunner::flagStrandedPark(JournalOp &lop, ParkedFile &park, const OpItem &it)
+void OpRunner::flagStrandedPark(JournalOpGuard &lop, ParkedFile &park, const OpItem &it)
 {
 	lop.failedDirty(QStringLiteral("restore failed; original still parked"));
 	m_sink.log(
@@ -473,7 +473,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 
 		m_sink.progress(it.name, i + 1, total, 0);
 		warnJournalDegradedOnce(journal, journalDegradedWarned);
-		DebugSlowdown::pauseForMs(40);
+		TestPause::sleepMs(TestPause::kPerItemMs);
 
 		if (const auto action = resolveConflict(it, dstPath, claimedDests);
 			action != ConflictAction::Proceed)
@@ -526,7 +526,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 		// Beat 2: the park path reaches the journal BEFORE the rename it
 		// describes; recovery needs it to put a replaced file back.
 		ParkedFile park(dstPath, parkTag);
-		JournalOp lop(&journal, it.src, dstPath, srcId->size, park.path(), *srcId,
+		JournalOpGuard lop(&journal, it.src, dstPath, srcId->size, park.path(), *srcId,
 					 parkedOriginalId);
 
 		if (!park.park())
@@ -684,8 +684,13 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 			continue;
 		}
 
+		// Which of the three copy paths ran, in the console. The clone line
+		// has always been here; the native one was collected by the copier
+		// and then read by nobody, so the Windows fast path was invisible.
 		if (copyRes.usedClone)
 			m_sink.log(QtInfoMsg, QStringLiteral("Cloned %1").arg(it.name));
+		else if (copyRes.usedNativeCopy)
+			m_sink.log(QtInfoMsg, QStringLiteral("Copied %1 (native)").arg(it.name));
 
 		// A network destination couldn't give the full durability
 		// barrier: record it honestly, in the journal and once in the log.
@@ -903,7 +908,7 @@ OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &journa
 		const OpItem &it = req.items[i];
 		m_sink.progress(it.name, i + 1, total, 0);
 		warnJournalDegradedOnce(journal, journalDegradedWarned);
-		DebugSlowdown::pauseForMs(40);
+		TestPause::sleepMs(TestPause::kPerItemMs);
 
 		// Beat 1: a delete is the easiest place to destroy the wrong
 		// file, so it gets the same identity gate as everything else.
@@ -915,7 +920,7 @@ OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &journa
 		}
 
 		// Beat 2: the intent line, before the file moves anywhere.
-		JournalOp lop(&journal, it.src, QString(), srcId->size, QString(), *srcId);
+		JournalOpGuard lop(&journal, it.src, QString(), srcId->size, QString(), *srcId);
 
 		// Beat 3: the trash tiers. Never a hard delete.
 		const TrashRouter::Landing landing = router.trash(it.src);
@@ -1003,7 +1008,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &journa
 
 		m_sink.progress(it.name, i + 1, total, 0);
 		warnJournalDegradedOnce(journal, journalDegradedWarned);
-		DebugSlowdown::pauseForMs(40);
+		TestPause::sleepMs(TestPause::kPerItemMs);
 
 		const std::optional<FileIdentity> srcId = captureAndCheckSource(it);
 		if (!srcId)
@@ -1024,7 +1029,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &journa
 			continue;
 		}
 
-		JournalOp lop(&journal, it.src, it.renameDst, srcId->size, QString(), *srcId);
+		JournalOpGuard lop(&journal, it.src, it.renameDst, srcId->size, QString(), *srcId);
 
 		if (!QFile::rename(it.src, it.renameDst))
 		{

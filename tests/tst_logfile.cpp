@@ -1,4 +1,4 @@
-#include "applog.h"
+#include "logfile.h"
 
 #include <QTest>
 
@@ -39,4 +39,4 @@ void TestAppLog::unknown_category_falls_back_to_default()
 }
 
 QTEST_APPLESS_MAIN(TestAppLog)
-#include "tst_applog.moc"
+#include "tst_logfile.moc"
