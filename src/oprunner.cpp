@@ -382,13 +382,37 @@ void OpRunner::warnJournalDegradedOnce(const OpJournal &journal, bool &warned)
 
 void OpRunner::flagStrandedPark(JournalOpGuard &lop, ParkedFile &park, const OpItem &it)
 {
-	lop.failedDirty(QStringLiteral("restore failed; original still parked"));
-	m_sink.log(
-		QtCriticalMsg,
-		QStringLiteral("Couldn't put the original '%1' back — it's still in the destination "
-					   "folder, named '%2'. MediaMuster will finish restoring it automatically "
-					   "on the next launch.")
-			.arg(it.name, QFileInfo(park.path()).fileName()));
+	// Two shapes of stranding, and they need different words. The first is
+	// our OWN unfinished write refusing to delete (a file another program
+	// still holds open, the everyday Windows case): there may be no parked
+	// original at all, so there is no temp name to point the user at — what
+	// they need is the full path of the fragment sitting under a real media
+	// name. The second is the original itself refusing to go home.
+	if (park.destinationLeftBehind())
+	{
+		lop.failedDirty(QStringLiteral("destination write could not be removed"));
+		QString msg =
+			QStringLiteral("Couldn't delete the unfinished copy of '%1' at %2 — it may be open "
+						   "in another application. That file is NOT complete media, but "
+						   "anything reading the folder will treat it as if it were.")
+				.arg(displayName(it), park.destinationPath());
+		if (!park.path().isEmpty())
+			msg += QStringLiteral(" The file it was replacing is set aside beside it, named "
+								  "'%1'.")
+					   .arg(QFileInfo(park.path()).fileName());
+		msg += QStringLiteral(" MediaMuster will clear it up on the next launch.");
+		m_sink.log(QtCriticalMsg, msg);
+	}
+	else
+	{
+		lop.failedDirty(QStringLiteral("restore failed; original still parked"));
+		m_sink.log(
+			QtCriticalMsg,
+			QStringLiteral("Couldn't put the original '%1' back — it's still in the destination "
+						   "folder, named '%2'. MediaMuster will finish restoring it automatically "
+						   "on the next launch.")
+				.arg(it.name, QFileInfo(park.path()).fileName()));
+	}
 
 	// The dirty line above is the LAST word on this item's disk state:
 	// recovery will read it next launch and act on exactly what it
@@ -819,13 +843,19 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 				// already in the trash. Nothing is lost — say exactly
 				// what the state is.
 				partial.commit(); // keep the verified copy
-				lop.failed(QStringLiteral("source remove failed"));
-				m_sink.itemDone(it.name, it.src, false,
-								QStringLiteral("The new copy at the destination is verified, "
-											   "but the original couldn't be removed (it may "
-											   "be open in another application). The file now "
-											   "exists in both places."),
-								false);
+				// The fail line carries `parkedFinal` because the disposal
+				// ALREADY happened: without it, the trash address of a file
+				// the engine moved dies with this run, and nothing could
+				// ever put that file back.
+				lop.failed(QStringLiteral("source remove failed"), parkedFinal);
+				QString why =
+					QStringLiteral("The new copy at the destination is verified, but the "
+								   "original couldn't be removed (it may be open in another "
+								   "application). The file now exists in both places.");
+				if (!parkedFinal.isEmpty())
+					why += QStringLiteral(" The file it replaced is in the trash, at %1.")
+							   .arg(parkedFinal);
+				m_sink.itemDone(it.name, it.src, false, why, false);
 				++t.failed;
 				continue;
 			}

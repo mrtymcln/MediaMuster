@@ -5,6 +5,16 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+namespace
+{
+	void writeProbe(const QString &path)
+	{
+		QFile f(path);
+		QVERIFY2(f.open(QIODevice::WriteOnly), qPrintable(f.errorString()));
+		f.write("x", 1);
+	}
+} // namespace
+
 class TestPathKey : public QObject
 {
 	Q_OBJECT
@@ -18,6 +28,8 @@ private slots:
 	void normalise_equates_dot_and_plain_forms();
 	void normalise_non_existent_path_falls_back_to_absolute();
 	void normalise_case_folds_on_case_insensitive_platforms();
+	void normalise_key_is_stable_when_the_file_appears();
+	void normalise_key_is_stable_through_a_symlinked_parent();
 };
 
 void TestPathKey::normalise_empty_input_returns_empty()
@@ -122,6 +134,63 @@ void TestPathKey::normalise_case_folds_on_case_insensitive_platforms()
 			 PathKey::normalise(QStringLiteral("/tmp/nonexistent/clip.mxf")));
 #else
 	QSKIP("Case-sensitive platform: keys keep their casing.");
+#endif
+}
+
+// THE invariant these keys exist for: the answer must not change the
+// instant the file turns up. The runner inserts a destination's key
+// before it writes the file and looks the same path up again after, so a
+// key that moves under it means the lookup misses — which is how the
+// second of two same-named files came to be silently skipped instead of
+// diverted to "name (2)".
+void TestPathKey::normalise_key_is_stable_when_the_file_appears()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString dst = tmp.path() + QStringLiteral("/clip.mxf");
+
+	const QString beforeCreate = PathKey::normalise(dst);
+	writeProbe(dst);
+	const QString afterCreate = PathKey::normalise(dst);
+
+	QCOMPARE(afterCreate, beforeCreate);
+
+	// And the same for a whole missing branch, which is what a Copy into a
+	// destination folder that does not exist yet looks like: the folder is
+	// created between the two calls.
+	const QString deep = tmp.path() + QStringLiteral("/made/later/clip.mxf");
+	const QString beforeMkdir = PathKey::normalise(deep);
+	QVERIFY(QDir().mkpath(QFileInfo(deep).absolutePath()));
+	writeProbe(deep);
+	QCOMPARE(PathKey::normalise(deep), beforeMkdir);
+}
+
+// The same invariant where it actually broke: any symlink in the path
+// ("/tmp" -> "/private/tmp" on macOS, or a user's own symlink to a
+// project drive) makes the canonical and absolute spellings differ, so a
+// key computed on one side of the file's creation did not match the other.
+void TestPathKey::normalise_key_is_stable_through_a_symlinked_parent()
+{
+#ifdef Q_OS_WIN
+	QSKIP("Windows has no POSIX symlink to build the fixture from.");
+#else
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString real = tmp.path() + QStringLiteral("/real");
+	const QString link = tmp.path() + QStringLiteral("/link");
+	QVERIFY(QDir().mkpath(real));
+	QVERIFY2(QFile::link(real, link), "could not create the symlink fixture");
+
+	const QString viaLink = link + QStringLiteral("/clip.mxf");
+	const QString beforeCreate = PathKey::normalise(viaLink);
+	writeProbe(viaLink);
+	const QString afterCreate = PathKey::normalise(viaLink);
+	QCOMPARE(afterCreate, beforeCreate);
+
+	// Both spellings of the one folder still key the same, which is the
+	// property canonicalisation was there for in the first place.
+	QCOMPARE(PathKey::normalise(viaLink),
+			 PathKey::normalise(real + QStringLiteral("/clip.mxf")));
 #endif
 }
 

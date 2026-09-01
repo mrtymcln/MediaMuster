@@ -164,6 +164,7 @@ private slots:
 	// MARK: - Dirty retries
 	void dirty_fail_in_finished_copy_run_restores_parked_original();
 	void finished_dirty_run_leaves_completed_ops_alone();
+	void dirty_copy_with_full_size_leftover_is_never_read_as_finished();
 
 	// MARK: - Resumable classification
 	void interrupted_run_with_plan_is_listed_resumable();
@@ -641,6 +642,36 @@ void TestOpRescue::dirty_fail_in_finished_copy_run_restores_parked_original()
 	QCOMPARE(sum.opsReversed, 1);
 	QCOMPARE(readFile(dst), QByteArray("STRANDED ORIGINAL"));
 	QVERIFY(!QFile::exists(parked));
+}
+
+// A copy that failed VERIFICATION comes out exactly the same size as its
+// source. If its rollback also stalled — the engine could not delete its
+// own unfinished write — the fail line is dirty and the destination holds
+// a full-size file that is nonetheless not the media. Size alone must not
+// be allowed to read that as finished work, or the file would be dropped
+// from the resume offer having never been copied.
+void TestOpRescue::dirty_copy_with_full_size_leftover_is_never_read_as_finished()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString src = tmp.path() + "/src/a.mxf";
+	const QString dst = tmp.path() + "/dst/a.mxf";
+	writeFile(src, QByteArray(10, 'S'));
+	writeFile(dst, QByteArray(10, 'X')); // same size, wrong bytes
+
+	// Interrupted after the dirty fail — the state in which the remainder
+	// of a run is offered back to the user.
+	writeJournal(tmp.path(), {beginRec("copy"), planRec(tmp.path() + "/dst", {src}),
+							  opRec(0, src, dst, 10), failDirtyRec(0)});
+
+	const auto sum = OpRescue::run(tmp.path());
+	QCOMPARE(sum.resumable.size(), 1);
+	QCOMPARE(sum.resumable[0].finished, 0);
+	QCOMPARE(sum.resumable[0].remaining.size(), 1);
+	// Conservative on disk: recovery will not delete a full-size file it
+	// cannot prove is a fragment. The run said so at the time; resume will
+	// offer the file again and the user picks Replace or Keep Both.
+	QVERIFY(QFile::exists(dst));
 }
 
 void TestOpRescue::finished_dirty_run_leaves_completed_ops_alone()

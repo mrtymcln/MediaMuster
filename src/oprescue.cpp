@@ -370,7 +370,13 @@ namespace
 		switch (kind)
 		{
 		case OpKind::Copy:
-			return emptySlotCopyLandedWhole(op);
+			// A DIRTY copy is one whose rollback stalled: the destination
+			// holds an unfinished write the engine could not remove. It is
+			// never finished work, whatever size the fragment came out —
+			// a copy that failed verification is exactly the same size as
+			// its source, and calling that "concluded" would drop the file
+			// from the resume offer without ever having copied it.
+			return !op.rollbackIncomplete && emptySlotCopyLandedWhole(op);
 		case OpKind::Move:
 		case OpKind::Rename:
 			return sourceLocationReachable(op) && !QFile::exists(op.src) &&
@@ -378,7 +384,7 @@ namespace
 		case OpKind::Delete:
 			return sourceLocationReachable(op) && !QFile::exists(op.src);
 		case OpKind::Undo:
-			// Undo records are reversed under the original run.s kind and
+			// Undo records are reversed under the original run's kind and
 			// never reach here with Undo itself.
 			return false;
 		}

@@ -64,6 +64,7 @@ private slots:
 	void interrupted_run_has_no_end();
 	void delete_final_path_round_trips();
 	void replace_park_and_parked_final_round_trip();
+	void fail_line_carries_parked_final_when_the_disposal_already_happened();
 	void zero_bytes_omitted_from_line();
 	void begin_line_stamps_schema_two();
 	void begin_records_owner_pid_host();
@@ -298,6 +299,50 @@ void TestOpJournal::replace_park_and_parked_final_round_trip()
 	QCOMPARE(rec->ops[0].parkedOriginalId.fileId, Q_UINT64_C(0x777));
 	// …and the done line says where the replaced original was trashed to.
 	QCOMPARE(rec->ops[0].parkedFinal, QStringLiteral("/dst/_MediaMuster_Trash/a.mxf"));
+}
+
+// A Move can get all the way to "the new copy is verified and the file it
+// replaced is in the trash" and only THEN fail, because the source refuses
+// to be removed. The step failed, so it is a fail line — but the disposal
+// already happened, and without the address on that line the only record
+// of a file the engine moved dies with the run.
+void TestOpJournal::fail_line_carries_parked_final_when_the_disposal_already_happened()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+
+	QString path;
+	{
+		OpJournal journal(OpKind::Move, {}, tmp.path());
+		path = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
+									 2048, QStringLiteral("/dst/a.mxf.__movereplace_x1"),
+									 sampleIdentity(), sampleIdentity());
+		journal.markFailed(id, QStringLiteral("source remove failed"),
+						   /*rollbackIncomplete=*/false,
+						   QStringLiteral("/dst/_MediaMuster_Trash/a.mxf"));
+		journal.finish(0, 1, 0);
+	}
+
+	const auto rec = OpJournal::readOne(path);
+	QVERIFY(rec.has_value());
+	QVERIFY(rec->ops[0].failed);
+	QVERIFY(!rec->ops[0].rollbackIncomplete);
+	QCOMPARE(rec->ops[0].parkedFinal, QStringLiteral("/dst/_MediaMuster_Trash/a.mxf"));
+
+	// An ordinary failure carries no address, and must not invent one.
+	QString plain;
+	{
+		OpJournal journal(OpKind::Copy, {}, tmp.path());
+		plain = journal.path();
+		const int id = journal.planOp(QStringLiteral("/src/b.mxf"), QStringLiteral("/dst/b.mxf"),
+									 1, QString(), sampleIdentity());
+		journal.markFailed(id, QStringLiteral("copy failed"));
+		journal.finish(0, 1, 0);
+	}
+	const auto plainRec = OpJournal::readOne(plain);
+	QVERIFY(plainRec.has_value());
+	QVERIFY(plainRec->ops[0].parkedFinal.isEmpty());
 }
 
 void TestOpJournal::zero_bytes_omitted_from_line()

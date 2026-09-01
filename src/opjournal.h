@@ -138,7 +138,13 @@ public:
 	};
 
 	void markDone(int id, const DoneInfo &info = {});
-	void markFailed(int id, const QString &error, bool rollbackIncomplete = false);
+
+	/// `parkedFinal` is where a replaced original ended up in the trash, for
+	/// the rare failure that happens AFTER that disposal has already
+	/// succeeded (a Move whose source removal is refused). Without it the
+	/// only record of a file the engine moved would be lost with the run.
+	void markFailed(int id, const QString &error, bool rollbackIncomplete = false,
+					const QString &parkedFinal = QString());
 	void markSkipped(int id);
 
 	/// A plain sentence worth keeping with the run (durability degrades,
@@ -205,7 +211,8 @@ public:
 		FileIdentity parkedOriginalId; ///< Replace: the parked file's identity.
 		FileIdentity landedId;		  ///< From 'done': the landed file's identity.
 		QString hash;				  ///< From 'done': XXH3 hex, when a hashing path ran.
-		QString parkedFinal;		  ///< From 'done': trash path of the committed park.
+		QString parkedFinal;		  ///< Trash path of the committed park — from 'done',
+									  ///< or from a 'fail' that happened after the disposal.
 		bool completed = false;
 		bool failed = false;
 		bool skipped = false;
@@ -330,10 +337,12 @@ public:
 		m_settled = true;
 	}
 
-	void failed(const QString &error = QString())
+	/// `parkedFinal` names where a replaced original was trashed, for the
+	/// failures that happen after that disposal has already gone through.
+	void failed(const QString &error = QString(), const QString &parkedFinal = QString())
 	{
 		if (m_journal && !m_settled)
-			m_journal->markFailed(m_id, error);
+			m_journal->markFailed(m_id, error, /*rollbackIncomplete=*/false, parkedFinal);
 		m_settled = true;
 	}
 
@@ -341,10 +350,10 @@ public:
 	/// still sitting at the parked path this op's record carries. Keeps
 	/// the journal alive past finish() so next-launch recovery can finish
 	/// the job. Call when ParkedFile::isStranded() reports true.
-	void failedDirty(const QString &error = QString())
+	void failedDirty(const QString &error = QString(), const QString &parkedFinal = QString())
 	{
 		if (m_journal && !m_settled)
-			m_journal->markFailed(m_id, error, /*rollbackIncomplete=*/true);
+			m_journal->markFailed(m_id, error, /*rollbackIncomplete=*/true, parkedFinal);
 		m_settled = true;
 	}
 

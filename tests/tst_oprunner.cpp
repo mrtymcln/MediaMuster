@@ -16,6 +16,10 @@
 
 #include <atomic>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 // OpRunner — the engine v2 state machines, driven SYNCHRONOUSLY through
 // a test sink (no threads, no signals: the runner is plain C++ on
 // purpose, and this suite is the payoff). Re-pins the v1 engine's
@@ -90,6 +94,7 @@ private slots:
 	void copy_replace_sends_replaced_original_to_trash();
 	void copy_keepboth_policy_keeps_both();
 	void copy_flatten_sameName_keepsBothFiles();
+	void copy_flatten_sameName_keepsBothFiles_throughASymlinkedDestination();
 	void copy_flatten_caseVariantNames_noSilentOverwrite();
 	void copy_conflictNotInPolicyMap_isSkippedNotReplaced();
 	void copy_verifyOff_stillSucceeds();
@@ -117,6 +122,7 @@ private slots:
 	void parkedfile_never_deletes_a_file_it_did_not_write();
 	void parkedfile_discards_only_its_own_write();
 	void parkedfile_disarm_freezes_disk_state();
+	void parkedfile_reports_a_partial_it_could_not_delete();
 	void copier_racer_at_destination_survives();
 
 	// MARK: - Rename
@@ -400,6 +406,46 @@ void TestOpRunner::copy_flatten_sameName_keepsBothFiles()
 	QCOMPARE(totals.succeeded, 2);
 	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("FIRST"));
 	QCOMPARE(readFile(dest + "/clip (2).mxf"), QByteArray("SECOND"));
+}
+
+// The same promise, with a symlink somewhere in the destination path —
+// "/tmp" -> "/private/tmp", or a user's own symlink to a project drive.
+// The claimed-destination key used to be computed from the canonical path
+// once the first file existed and from the plain absolute path before it
+// did; through a symlink those two disagree, the lookup missed, and the
+// second file was reported "a file appeared at this destination after the
+// preview" and silently skipped. The preview had already promised the user
+// "clip (2).mxf".
+void TestOpRunner::copy_flatten_sameName_keepsBothFiles_throughASymlinkedDestination()
+{
+#ifdef Q_OS_WIN
+	QSKIP("Windows has no POSIX symlink to build the fixture from; "
+		  "tst_pathkey pins the key invariant on every platform.");
+#else
+	QTemporaryDir tmp, journalDir;
+	QVERIFY(tmp.isValid() && journalDir.isValid());
+	const QString srcA = tmp.path() + "/1/clip.mxf";
+	const QString srcB = tmp.path() + "/2/clip.mxf";
+	const QString realDest = tmp.path() + "/dest";
+	const QString linkedDest = tmp.path() + "/via-link";
+	writeFile(srcA, "FIRST");
+	writeFile(srcB, "SECOND");
+	QVERIFY(QDir().mkpath(realDest));
+	QVERIFY2(QFile::link(realDest, linkedDest), "could not create the symlink fixture");
+
+	OpRequest req;
+	req.kind = OpKind::Copy;
+	req.destRoot = linkedDest; // the user picked the symlinked spelling
+	req.items = {makeItem(srcA, 5), makeItem(srcB, 6)};
+
+	TestSink sink;
+	const auto totals = runRequest(req, sink, journalDir.path());
+
+	QCOMPARE(totals.skipped, 0);
+	QCOMPARE(totals.succeeded, 2);
+	QCOMPARE(readFile(realDest + "/clip.mxf"), QByteArray("FIRST"));
+	QCOMPARE(readFile(realDest + "/clip (2).mxf"), QByteArray("SECOND"));
+#endif
 }
 
 void TestOpRunner::copy_flatten_caseVariantNames_noSilentOverwrite()
@@ -947,6 +993,62 @@ void TestOpRunner::parkedfile_disarm_freezes_disk_state()
 	// Disarmed: the destructor put nothing back and deleted nothing.
 	QVERIFY(!QFile::exists(dst));
 	QCOMPARE(readFile(parkedPath), QByteArray("ORIGINAL"));
+}
+
+// restore() must never claim a clean rollback it did not achieve. When the
+// engine's OWN unfinished write will not delete — a file another program
+// still holds open is the everyday Windows case — a truncated file is left
+// sitting under a real media name. Swallowing that had the caller journal
+// an ordinary failure, recovery read it as "nothing happened", and the
+// fragment stayed on disk for good: media to Avid, "already exists" to the
+// next run.
+void TestOpRunner::parkedfile_reports_a_partial_it_could_not_delete()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString dir = tmp.path() + "/dest";
+	QVERIFY(QDir().mkpath(dir));
+	const QString dst = dir + "/clip.mxf";
+
+	// An EMPTY destination slot: nothing to park, so the only thing
+	// restore() has to undo is our own partial write.
+	ParkedFile park(dst, Conventions::kCopyReplaceTag);
+	QVERIFY(park.path().isEmpty());
+	QVERIFY(park.park());
+	writeFile(dst, "OUR-PARTIAL");
+	park.noteDestinationWritten();
+
+	// Block the removal the way the real world does.
+#ifdef Q_OS_WIN
+	// No FILE_SHARE_DELETE: DeleteFile fails with a sharing violation,
+	// exactly as when Media Composer or a scanner has the file open.
+	const QString native = QDir::toNativeSeparators(dst);
+	HANDLE hold = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()), GENERIC_READ,
+								FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+	QVERIFY2(hold != INVALID_HANDLE_VALUE, "could not hold the file open");
+#else
+	// Removing a file needs write permission on its FOLDER, not the file.
+	QVERIFY(QFile::setPermissions(dir, QFile::ReadOwner | QFile::ExeOwner));
+#endif
+
+	const bool restored = park.restore();
+
+#ifdef Q_OS_WIN
+	::CloseHandle(hold);
+#else
+	QVERIFY(QFile::setPermissions(dir, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+#endif
+
+	QVERIFY2(!restored, "restore() must not report success while its partial is still there");
+	QVERIFY(park.isStranded());
+	QVERIFY2(park.destinationLeftBehind(),
+			 "the caller needs to tell this apart from a stranded parked original");
+	QCOMPARE(park.destinationPath(), dst);
+	QCOMPARE(readFile(dst), QByteArray("OUR-PARTIAL"));
+
+	park.disarm(); // the runner's contract after any stranded flag
+	QVERIFY(!park.isStranded());
+	QVERIFY(!park.destinationLeftBehind());
 }
 
 // Finding 3 end-to-end at the copier: between parking the old

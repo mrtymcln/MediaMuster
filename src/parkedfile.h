@@ -88,12 +88,24 @@ public:
 	/// already free. Journal this before calling `park()`.
 	const QString &path() const noexcept { return m_parked; }
 
+	/// The destination this object guards. Callers name it in the message
+	/// they show when `destinationLeftBehind()` reports a stuck partial.
+	const QString &destinationPath() const noexcept { return m_dst; }
+
 	/// True when the last `restore()` attempt could not put the parked
 	/// original back (rename-home failed, or the slot is occupied by a file
 	/// the engine didn't write). The caller must record a dirty fail in the
 	/// journal so recovery finishes the job at next launch — and then call
 	/// `disarm()`, so nothing changes on disk after the journal's last word.
 	bool isStranded() const noexcept { return m_restoreFailed; }
+
+	/// Which KIND of stranding the last `restore()` hit: true when the
+	/// engine's OWN unfinished write could not be removed from the
+	/// destination slot, so a partial file is still sitting there under a
+	/// real media name. Distinct from the parked-original case because the
+	/// two need different words to the user — and because with no parked
+	/// original there is no temp name to point at.
+	bool destinationLeftBehind() const noexcept { return m_dstLeftBehind; }
 
 	// MARK: - Lifecycle
 
@@ -141,12 +153,14 @@ public:
 	{
 		m_armed = false;
 		m_restoreFailed = false;
+		m_dstLeftBehind = false;
 	}
 
 	/// Discard the engine's own partial write (only if noteDestinationWritten
 	/// was called) and put the original back. Idempotent; a no-op before
-	/// `park()` or after `commit()`/`disarm()`. Returns false when the parked
-	/// original could NOT be returned to its slot — because the rename home
+	/// `park()` or after `commit()`/`disarm()`. Returns false when the slot
+	/// could not be left as it was found — because our own partial write
+	/// would not delete (`destinationLeftBehind()`), because the rename home
 	/// failed, or because the slot is occupied by a file the engine never
 	/// wrote (another process raced in; that file is not ours to delete).
 	/// The object stays armed and `isStranded()` reports true so the caller
@@ -155,8 +169,19 @@ public:
 	{
 		if (!m_armed)
 			return true;
-		if (m_dstWritten)
-			QFile::remove(m_dst);
+		// Discarding OUR partial has to be checked, not assumed. A removal
+		// can fail — a file another process still holds open is the everyday
+		// Windows case — and swallowing that left a truncated file sitting at
+		// the real media name while this returned "clean rollback": the
+		// caller then journalled an ordinary failure, recovery read it as
+		// "nothing happened", and the fragment stayed on disk for good,
+		// reading as media to Avid and as "already exists" to the next run.
+		if (m_dstWritten && QFile::exists(m_dst) && !QFile::remove(m_dst))
+		{
+			m_restoreFailed = true;
+			m_dstLeftBehind = true;
+			return false;
+		}
 		if (m_parkedOnDisk)
 		{
 			// A slot still occupied here means a file the engine didn't
@@ -178,6 +203,7 @@ public:
 		}
 		m_armed = false;
 		m_restoreFailed = false;
+		m_dstLeftBehind = false;
 		return true;
 	}
 
@@ -188,4 +214,5 @@ private:
 	bool m_armed = false;
 	bool m_dstWritten = false;
 	bool m_restoreFailed = false;
+	bool m_dstLeftBehind = false;
 };

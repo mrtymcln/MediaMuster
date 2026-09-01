@@ -189,11 +189,17 @@ void OpJournal::markDone(int id, const DoneInfo &info)
 	writeLine(o);
 }
 
-void OpJournal::markFailed(int id, const QString &error, bool rollbackIncomplete)
+void OpJournal::markFailed(int id, const QString &error, bool rollbackIncomplete,
+						   const QString &parkedFinal)
 {
 	QJsonObject o{{QStringLiteral("record"), QStringLiteral("fail")},
 				  {QStringLiteral("id"), id},
 				  {QStringLiteral("error"), error}};
+	// Present only when the disposal of a replaced original had already
+	// succeeded before the step failed; otherwise the address of a file the
+	// engine moved to the trash would die with the run.
+	if (!parkedFinal.isEmpty())
+		o.insert(QStringLiteral("parkedFinal"), parkedFinal);
 	if (rollbackIncomplete)
 	{
 		o.insert(QStringLiteral("dirty"), true);
@@ -418,6 +424,12 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 					rec.ops[idx].rollbackIncomplete = true;
 					rec.dirty = true;
 				}
+				// A fail that landed AFTER a replaced original had already
+				// gone to the trash carries that address too, so the only
+				// record of a file the engine moved isn't lost with the run.
+				const QString parkedFinal = o.value(QStringLiteral("parkedFinal")).toString();
+				if (!parkedFinal.isEmpty())
+					rec.ops[idx].parkedFinal = parkedFinal;
 			}
 		}
 		else if (r == QStringLiteral("skip"))
