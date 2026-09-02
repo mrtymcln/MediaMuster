@@ -7,7 +7,6 @@
 #include <QOperatingSystemVersion>
 #include <QProcess>
 #include <QSet>
-#include <QStandardPaths>
 #include <QStorageInfo>
 #include <QtConcurrent>
 
@@ -108,23 +107,12 @@ void VolumeManager::onPollFinished()
 
 QStringList VolumeManager::knownAvidLocations()
 {
-	QStringList paths;
-
-#ifdef Q_OS_MAC
-	paths << "/Users/Shared/AvidMediaComposer"
-		  << "/Users/Shared/Avid MediaComposer" << QDir::homePath() + "/AvidMediaComposer"
-		  << QDir::homePath() + "/Avid MediaComposer"
-		  << QDir::homePath() + "/Documents/Avid MediaComposer";
-#endif
-
-#ifdef Q_OS_WIN
-	paths << "C:/Users/Public/Documents/Avid Media Composer"
-		  << "C:/Users/Public/AvidMediaComposer"
-		  << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
-				 "/Avid MediaComposer";
-#endif
-
-	return paths;
+	// Avid's placement rule and nothing else (user ruling 2026-09-02): the
+	// fixed system-drive bases Media Composer hard-codes, under which either
+	// media root may sit. The home-directory guesses this list used to carry
+	// matched nothing Avid writes; a user with media there adds the folder
+	// by hand, which is the path the deep search survives on.
+	return Conventions::systemDriveMediaBases();
 }
 
 // MARK: - VolumeInfo factory
@@ -224,16 +212,29 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 
 	// MARK: Pass 3 — Avid directories on existing mounts
 
+	// Guarded against the LISTED volumes, not seenPaths: the Windows legacy
+	// base is the system drive's own root ("C:/"), which pass 1 marked seen
+	// and then skipped as the boot volume. It still has to be probed here,
+	// because older Media Composers wrote "C:\Avid MediaFiles" directly.
+	const auto alreadyListed = [&volumes](const QString &path)
+	{
+		return std::any_of(volumes.cbegin(), volumes.cend(),
+						   [&path](const VolumeInfo &v) { return v.path == path; });
+	};
 	for (const QString &avidPath : knownAvidLocations())
 	{
 		QDir avidDir(avidPath);
-		if (!avidDir.exists() || seenPaths.contains(avidPath) || !hasAvidMediaFolder(avidPath))
+		if (!avidDir.exists() || alreadyListed(avidPath) || !hasAvidMediaFolder(avidPath))
 			continue;
 
 		seenPaths.insert(avidPath);
 		// Path is a known Avid location (loop guard above), so hasAvidMedia
 		// resolves true via hasAvidMediaFolder — no need to force it here.
-		volumes.append(makeVolumeInfo(avidDir.dirName(), avidPath, QStorageInfo(avidPath)));
+		// A drive root has no dirName; show the path itself.
+		QString name = avidDir.dirName();
+		if (name.isEmpty())
+			name = avidPath;
+		volumes.append(makeVolumeInfo(name, avidPath, QStorageInfo(avidPath)));
 	}
 
 	// MARK: Sort — Avid-bearing volumes first, then alphabetical
@@ -346,5 +347,7 @@ bool VolumeManager::hasAvidMediaFolder(const QString &path)
 	// The system root's own `<root>/Avid MediaFiles` case is gone now that the
 	// boot volume is skipped; the known Avid locations are surfaced directly by
 	// detectVolumes' pass 3, each of which matches here on its own path.
-	return QDir(path).exists(Conventions::kAvidMediaFilesDir);
+	const QDir dir(path);
+	// OMF-era: an OMF-only drive is still an Avid drive.
+	return dir.exists(Conventions::kAvidMediaFilesDir) || dir.exists(Conventions::kOmfMediaFilesDir);
 }

@@ -54,6 +54,11 @@ using PmrIndex = QHash<QString, QVector<PmrEntry>>;
 /// Reads the Persistent Media Record which Avid writes alongside
 /// MXF files. A flat filename-to-MobId index, consulted instead of
 /// walking every MXF header.
+///
+/// OMF-era: the version-2 PMR Avid writes into `OMFI MediaFiles` is the
+/// same grammar with 8-byte MOBs; parse() accepts it and widens each MOB
+/// through OmfUid, so a PmrEntry from either era carries the same 32-byte
+/// canonical hex and no caller can tell which version produced it.
 class PmrParser
 {
 public:

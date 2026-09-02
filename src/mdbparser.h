@@ -20,6 +20,7 @@ struct MdbMasterMob
 	QString sourceFilePath;	 ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
 	QString sourceFileName;	 ///< Basename of sourceFilePath.
 	QString sourceContainer; ///< _USER/Video — "QTFF" for a QuickTime import.
+	QString project;		 ///< OMF-era: _PJ on the master mob, for when the PMR has no project. Usually empty.
 	bool isImported = false; ///< An _IMPORTSETTING attribute exists.
 	int usageCode = -1;		 ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
 };
@@ -38,6 +39,11 @@ struct MdbFileMob
 	int usageCode = -1; ///< 0 = media, 9 = precompute.
 	MxfMetadata essence;
 	bool essenceComplete = false;
+	/// OMF-era: _PJ from the file mob, else from the source mob its SCLP
+	/// points at — the two places OMF files keep the project (MC 2026 and
+	/// the 2021 slates respectively). An OMF-era PMR has no project of its
+	/// own, so this is where the scanner gets it. Empty on MXF-era rows.
+	QString project;
 };
 
 /// The parsed contents of ONE msmMMOB.mdb — this is the database itself,
@@ -48,7 +54,9 @@ struct MdbFileMob
 /// Split the way the scanner consumes it:
 /// `files` is looked up once per row during the folder walk and dropped;
 /// `masters` is kept for the header pass's UMID re-join. Both are keyed by
-/// MediaMuster's dotted MOB hex (MobId::format).
+/// MediaMuster's dotted MOB hex (MobId::format). OMF-era: a 12-byte
+/// omfi:UID is keyed by its wrapped 32-byte form (OmfUid::canonicalHex),
+/// the same string the v2 PMR yields, so the join needs no second form.
 struct MdbDatabase
 {
 	QHash<QString, MdbMasterMob> masters;

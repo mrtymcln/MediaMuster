@@ -2,7 +2,10 @@
 
 #include <QLatin1String>
 #include <QString>
+#include <QStringList>
 #include <QStringView>
+#include <QtGlobal>
+#include <array>
 
 // MARK: - Conventions
 /// The one home for the agreed spellings and numbers that more than one
@@ -52,46 +55,47 @@ namespace Conventions
 		return name.compare(kMxfDir, Qt::CaseInsensitive) == 0;
 	}
 
-	/// An OMF root is deliberately NOT an MXF root: the scanner accepts
-	/// OMF folders for scanning, but rebalancing an OMF root into
-	/// MXF-numbered folders would be wrong. Keep the two distinct.
-	/// The folder is "OMFI MediaFiles", and it is a TOP-LEVEL folder beside
-	/// "Avid MediaFiles" — NOT a subfolder of it. Verified against Media
-	/// Composer 25.12: it references "/Shared/AvidMediaComposer/OMFI
-	/// MediaFiles", while no string of the form "Avid MediaFiles/OMF..."
-	/// exists anywhere in its binaries, and the only subfolders it knows
-	/// under "Avid MediaFiles" are Proxy and UME. (A bare "OMF" was accepted
-	/// here until 2026-08-14; it came from prototyping, matched nothing Avid
-	/// ever writes, and is gone.)
+	// MARK: - OMF-era folder
+
+	/// OMF-era: [AVID — DO NOT CHANGE] The legacy (pre-MXF) media folder.
+	/// It is a TOP-LEVEL folder beside "Avid MediaFiles" — NOT a subfolder
+	/// of it — and it is FLAT: media sits directly inside it with ONE
+	/// msmFMID.pmr / msmMMOB.mdb pair at the same level, no numbered
+	/// subfolders. Verified against Media Composer 25.12 and 26.8: the
+	/// binary references "/Shared/AvidMediaComposer/OMFI MediaFiles", no
+	/// string of the form "Avid MediaFiles/OMF..." exists in it, and Avid
+	/// KB en273303 names the two folders as siblings at a volume root. (A
+	/// bare "OMF" was accepted here until 2026-08-14; it came from
+	/// prototyping, matched nothing Avid ever writes, and is gone.)
 	///
-	/// TODO — OMF support is deliberately PARTIAL (decided 2026-08-14: no
-	/// OMF media in the field, so not worth building yet). What works: this
-	/// name check, so a user who points MediaMuster straight at the folder
-	/// gets it scanned; .omf passes hasAvidMediaExtension, so files list;
-	/// and every copy/move/delete works, since those never read the file.
-	/// What is missing, smallest first:
-	///   1. Discovery — scanVolume Cases 1, 2 and 5 all look for
-	///      kAvidMediaFilesDir only, so a volume scan never FINDS an
-	///      "OMFI MediaFiles" folder at a volume root. Small fix, and
-	///      without it the feature is invisible unless the user navigates
-	///      to the folder themselves.
-	///   2. Databases — OMF-era msmFMID.pmr is version 2 and PmrParser
-	///      requires 8, so every OMF folder reports "No database" and gets
-	///      no project/bin attribution. Layout is already known: 12-byte
-	///      header, then per record 8-byte ID, u16 nameLen + name,
-	///      u16 projLen + project, 12-byte trailer. A specimen ships at
-	///      Avid's SupportingFiles/Avid_MediaFiles/msmFMID.pmr (80 records).
-	///   3. Essence — no .omf parser exists. An OMF file is an object store in
-	///      an Apple Bento container, not an MXF variant, so BentoFile (which
-	///      already reads msmMMOB.mdb) would be the way in rather than
-	///      anything in avbparser.cpp — a bin is a different format entirely.
-	///      Until then rows show name/size/date and no metadata at all.
-	/// Doing 1 and 2 alone would list OMF media WITH project and bin names
-	/// and never touch the media files — most of the value, least of the
-	/// work. Item 3 is only worth it for genuine archive customers.
+	/// What makes the era different, so nobody re-derives it from MXF
+	/// assumptions (facts corrected 2026-09-02 against real MC 26.8 output):
+	///   - msmFMID.pmr is VERSION 2 — the version-8 grammar with 8-byte
+	///     MOBs, the same optional Unicode set (which carries the MOB in
+	///     Avid's wrapped 32-byte form — see OmfUid), a 4-byte MASTER
+	///     trailer, and a file trailer that is the file's mtime in Unix
+	///     seconds. Avid ships an 80-PAIR specimen in
+	///     SupportingFiles/Avid_MediaFiles/msmFMID.pmr.
+	///   - msmMMOB.mdb keys its mobs by a 12-byte omfi:UID, not a 32-byte
+	///     UMID (MC 2026 also writes a UMID on the physical mob).
+	///   - The essence (.omf video; .aif/.wav/.sd2 audio) is an object store
+	///     in an Apple Bento container — essence first, TOC at the tail —
+	///     the same container msmMMOB.mdb uses, and nothing like a bin.
+	/// The readers for all three landed 2026-09-02 (PmrParser's version-2
+	/// path, MdbParser through OmfObjects, and OmfParser for the essence),
+	/// so an OMF folder now scans exactly like an MXF one — databases
+	/// first, the Bento tail only for rows they leave undescribed.
+	///
+	/// An OMF root is deliberately NOT an MXF root: the scanner scans one,
+	/// but rebalancing an OMF root into MXF-numbered folders would be
+	/// wrong, and Rebalancer::parseFolderName rejects it. Keep the two
+	/// distinct; tst_conventions pins that they never collide.
+	inline constexpr QLatin1String kOmfMediaFilesDir("OMFI MediaFiles");
+
+	/// OMF-era: case-insensitive like isMxfRootName, for the same reasons.
 	inline bool isOmfRootName(QStringView name)
 	{
-		return name.compare(QLatin1String("OMFI MediaFiles"), Qt::CaseInsensitive) == 0;
+		return name.compare(kOmfMediaFilesDir, Qt::CaseInsensitive) == 0;
 	}
 
 	/// "<base>/Avid MediaFiles/MXF" — the canonical media root under a
@@ -100,6 +104,68 @@ namespace Conventions
 	{
 		return base + QLatin1Char('/') + kAvidMediaFilesDir + QLatin1Char('/') + kMxfDir;
 	}
+
+	/// OMF-era: "<base>/OMFI MediaFiles" — one level, not two, because the
+	/// OMF folder is the media root itself; there is no "MXF" inside it.
+	inline QString omfRootUnder(const QString &base)
+	{
+		return base + QLatin1Char('/') + kOmfMediaFilesDir;
+	}
+
+	// MARK: - Avid's transient capture folder
+
+	/// [AVID — DO NOT CHANGE] The staging subfolder Media Composer makes
+	/// inside a media root while it is writing new media, in BOTH eras
+	/// (under "Avid MediaFiles/MXF" and under "OMFI MediaFiles"). Its
+	/// contents are half-written files that will be renamed into a real
+	/// folder when capture finishes, so nothing here counts as media, fits
+	/// a folder budget, or should be copied.
+	inline constexpr QLatin1String kCreatingDir("Creating");
+
+	/// Case-insensitive, for the same reasons as isMxfRootName.
+	inline bool isCreatingFolderName(QStringView name)
+	{
+		return name.compare(kCreatingDir, Qt::CaseInsensitive) == 0;
+	}
+
+	// MARK: - Where Avid puts media on the system drive
+
+	/// [AVID — DO NOT CHANGE] Avid's placement rule (user ruling
+	/// 2026-09-02, matching what the MC binary hard-codes): media lives at
+	/// the ROOT of an external drive, or in one fixed place on the system
+	/// drive. These are the fixed places — the bases under which BOTH
+	/// kAvidMediaFilesDir and kOmfMediaFilesDir are probed. A volume scan
+	/// looks exactly here and at drive roots and nowhere deeper; the
+	/// two-level search survives only for folders a user adds by hand.
+	///
+	/// Windows keeps the legacy root "C:/" as a base because older Media
+	/// Composers wrote "C:\Avid MediaFiles" directly, and the scanner's
+	/// boot-volume skip would otherwise never look there.
+	inline QStringList systemDriveMediaBases()
+	{
+		QStringList bases;
+#if defined(Q_OS_MAC)
+		bases << QStringLiteral("/Users/Shared/AvidMediaComposer");
+#elif defined(Q_OS_WIN)
+		bases << QStringLiteral("C:/Users/Public/Documents/Avid Media Composer")
+			  << QStringLiteral("C:/");
+#endif
+		return bases;
+	}
+
+	// ═══════════════════════════════════════════════════════════════
+	// MARK: - Avid's database file names
+	// ═══════════════════════════════════════════════════════════════
+
+	/// [AVID — DO NOT CHANGE] The per-folder index and clip database, in
+	/// both spellings Media Composer writes: msm* for media it manages,
+	/// ama* for AMA-linked folders. A folder may hold either or both; the
+	/// scanner reads every one present and merges. Same names in both eras
+	/// (the OMF root holds its single pair at the top level).
+	inline constexpr std::array<QLatin1String, 2> kPmrFileNames = {
+		QLatin1String("msmFMID.pmr"), QLatin1String("amaFMID.pmr")};
+	inline constexpr std::array<QLatin1String, 2> kMdbFileNames = {
+		QLatin1String("msmMMOB.mdb"), QLatin1String("amaMMOB.mdb")};
 
 	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Avid's essence-file names
@@ -120,15 +186,26 @@ namespace Conventions
 		return fileName.endsWith(QLatin1String(".mxf"), Qt::CaseInsensitive);
 	}
 
+	/// OMF-era: the legacy essence extensions — .omf video, with audio
+	/// living beside it as .aif/.wav, and .sd2 (Sound Designer II, the
+	/// third audio container Media Composer's binary still names; no
+	/// specimen exists). Kept as its own predicate because the scanner
+	/// dispatches these to the OMF-era reader, never to MxfParser.
+	inline bool hasOmfEraExtension(QStringView fileName)
+	{
+		return fileName.endsWith(QLatin1String(".omf"), Qt::CaseInsensitive) ||
+			   fileName.endsWith(QLatin1String(".aif"), Qt::CaseInsensitive) ||
+			   fileName.endsWith(QLatin1String(".wav"), Qt::CaseInsensitive) ||
+			   fileName.endsWith(QLatin1String(".sd2"), Qt::CaseInsensitive);
+	}
+
 	/// Extensions that are Avid media (user ruling 2026-08-12): MXF-era
-	/// essence, plus the OMF era — .omf video, with its audio living
-	/// beside it as .aif/.wav files.
+	/// essence, plus the OMF era.
 	inline bool hasAvidMediaExtension(QStringView fileName)
 	{
-		return hasMxfExtension(fileName) ||
-			   fileName.endsWith(QLatin1String(".omf"), Qt::CaseInsensitive) ||
-			   fileName.endsWith(QLatin1String(".aif"), Qt::CaseInsensitive) ||
-			   fileName.endsWith(QLatin1String(".wav"), Qt::CaseInsensitive);
+		// OMF-era: the legacy set is admitted here; this is the one gate
+		// that lets an OMF row into the table at all.
+		return hasMxfExtension(fileName) || hasOmfEraExtension(fileName);
 	}
 
 	// ═══════════════════════════════════════════════════════════════

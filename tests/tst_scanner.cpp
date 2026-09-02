@@ -1,9 +1,11 @@
 // Drives MediaScanner against a fake Avid layout built from real
 // PMR/MDB/MXF fixtures. Covers Stage 1 + 2 + the join.
 
+#include "conventions.h"
 #include "mediafile.h"
 #include "testpause.h"
 #include "mediascanner.h"
+#include "omfuid.h"
 #include "testbento.h"
 #include "pmrparser.h"
 
@@ -83,6 +85,28 @@ private slots:
 	// file's modified time.
 	void precompute_row_gets_effect_fields();
 	void modified_is_the_filesystem_mtime();
+
+	// OMF-era (2026-09-02). The legacy "OMFI MediaFiles" root is a FLAT
+	// sibling of Avid MediaFiles with one database pair beside the media,
+	// and volume scans follow Avid's placement rule (drive root + the fixed
+	// system-drive bases) and look nowhere deeper; the two-level search
+	// survives only for folders added by hand (Options::manualPaths).
+	void omf_volume_root_scans_both_folders();
+	void omf_volume_scan_stops_at_the_root_but_a_manual_path_goes_deeper();
+	void omf_root_pointed_at_directly_never_scans_as_mxf_folders();
+	void omf_root_without_a_pmr_gets_identity_from_its_header();
+	void omf_video_rows_show_avid_short_names();
+	void creating_folder_is_skipped_under_mxf_and_omfi();
+	void ama_databases_are_read();
+
+	// What the OMF-era rework must NOT have changed for MXF-era media: a
+	// hand-added path of any shape still resolves to its MXF root (and a
+	// derived ".../Avid MediaFiles" is a folder, never a drive); stray
+	// audio in a numbered folder is listed and never opened; an unreadable
+	// ama* twin beside a readable msm* pair does not fail the folder.
+	void manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root();
+	void stray_audio_in_an_mxf_folder_is_listed_but_never_opened();
+	void unreadable_ama_twin_does_not_mark_the_folder_unreadable();
 
 private:
 	static QString fixturesDir() { return QStringLiteral(FIXTURES_DIR); }
@@ -1066,6 +1090,492 @@ void TestScanner::modified_is_the_filesystem_mtime()
 	QVERIFY(results.first().modified.isValid());
 	QCOMPARE(results.first().modified.toSecsSinceEpoch(), qint64(kToneModified));
 	QVERIFY(!results.first().modifiedDisplay().isEmpty());
+}
+
+// MARK: - OMF-era
+
+namespace
+{
+	/// The MC 2026 audio pair in fixtures/omf/mc2026_audio and what the
+	/// v2 PMR / MDB say about each (pinned by tst_pmrparser, tst_mdbparser
+	/// and tst_omfparser; repeated here so a scanner row can be checked
+	/// end to end).
+	const QString kOmfWav = QStringLiteral("TONE_100A01.6A972974.039700.wav");
+	const QString kOmfAif = QStringLiteral("TONE_100A01.6A972997.0C53E0.aif");
+	constexpr quint32 kOmfWavModified = 1788291444u;
+	constexpr quint32 kOmfAifModified = 1788291480u;
+	const QString kOmfWavClip = QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1");
+	const QString kOmfAifClip = QStringLiteral("TONE: 1000 Hz @ -20.0 dB.2");
+	const QString kOmfWavBin = QStringLiteral("WAVE(OMF)");
+	const QString kOmfAifBin = QStringLiteral("AIFF-C(OMF)");
+	const QString kOmfWavFileMob =
+		QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80");
+	const QString kOmfWavMasterMob =
+		QStringLiteral("060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80");
+	const QString kOmfAifFileMob =
+		QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80");
+	const QString kOmfAifMasterMob =
+		QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80");
+	const QString kOmfProject = QString::fromUtf8("zTe\xc3\x9ft_PAL_25p");
+	const QString kOmfFolder = QString(Conventions::kOmfMediaFilesDir);
+	/// Every trailer in the shipped 80-pair PMR.
+	constexpr quint32 kSlateModified = 1626810310u;
+
+	QVector<MediaFile> runScanWith(const MediaScanner::Options &opts)
+	{
+		MediaScanner scanner;
+		QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+		scanner.startScan(opts);
+		if (!finishedSpy.wait(10000))
+			return {};
+		return finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
+	}
+
+	QVector<MediaFile> runManualScan(const QString &folder)
+	{
+		MediaScanner::Options opts;
+		opts.manualPaths = QStringList{folder};
+		return runScanWith(opts);
+	}
+
+	const MediaFile *rowNamed(const QVector<MediaFile> &rows, const QString &name)
+	{
+		for (const MediaFile &f : rows)
+			if (f.fileName == name)
+				return &f;
+		return nullptr;
+	}
+
+	/// What every OMF audio row must say whichever way it was described —
+	/// the database (no header read) or the file's own tail.
+	void checkOmfAudioRow(const MediaFile &mf, const QString &clip, const QString &bin, const QString &fileMob,
+						  const QString &masterMob)
+	{
+		QCOMPARE(mf.mxfFolder, kOmfFolder);
+		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
+		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
+		QCOMPARE(mf.type, MediaFile::Type::Media);
+		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		QCOMPARE(mf.clipName, clip);
+		QCOMPARE(mf.project, kOmfProject);
+		QCOMPARE(mf.originalBin, bin);
+		QCOMPARE(mf.mobId, fileMob);
+		QCOMPARE(mf.masterMobId, masterMob);
+		QVERIFY(OmfUid::isOmfForm(mf.mobId));
+		QVERIFY(OmfUid::isOmfForm(mf.masterMobId));
+		QVERIFY(!mf.isInvalidUmid);
+		QVERIFY(!mf.hasNoProject());
+		QCOMPARE(mf.sampleRate, 48000);
+		QCOMPARE(mf.channels, 1);
+		QCOMPARE(mf.bitDepth, QStringLiteral("24-bit"));
+		QCOMPARE(mf.durationFrames, qint64(1500));
+		QCOMPARE(mf.timecodeBase, 25);
+		QVERIFY2(mf.resolution.isEmpty(), qPrintable(mf.resolution));
+		QVERIFY2(mf.fps.isEmpty(), qPrintable(mf.fps));
+	}
+} // namespace
+
+void TestScanner::omf_volume_root_scans_both_folders()
+{
+	// A drive with both roots at its top level: the MXF tree exactly as
+	// every test above builds it, and the flat OMF root beside it.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString mxfFolder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(mxfFolder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), mxfFolder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), mxfFolder);
+	copyFixture(kToneName, mxfFolder);
+
+	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(omfRoot));
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), omfRoot);
+	// The real .wav, stamped with its PMR trailer; and JUNK under the .aif's
+	// name, stamped likewise — a tail read of it would find no Bento label,
+	// so every technical fact on that row can only have come from the MDB.
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
+	setModified(omfRoot + QLatin1Char('/') + kOmfWav, kOmfWavModified);
+	writeJunk(omfRoot + QLatin1Char('/') + kOmfAif, 4096);
+	setModified(omfRoot + QLatin1Char('/') + kOmfAif, kOmfAifModified);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 3);
+
+	const MediaFile *mxf = rowNamed(results, kToneName);
+	QVERIFY(mxf != nullptr);
+	QCOMPARE(mxf->mxfFolder, QStringLiteral("1"));
+	QCOMPARE(mxf->clipName, kToneClip);
+
+	const MediaFile *wav = rowNamed(results, kOmfWav);
+	QVERIFY(wav != nullptr);
+	checkOmfAudioRow(*wav, kOmfWavClip, kOmfWavBin, kOmfWavFileMob, kOmfWavMasterMob);
+	// Database-covered: the file was never opened, so the name is the MDB's
+	// rung, not the master mob's own (which OmfParser would rank higher).
+	QCOMPARE(wav->clipNameSource, MediaFile::ClipNameSource::Mdb);
+
+	const MediaFile *aif = rowNamed(results, kOmfAif);
+	QVERIFY(aif != nullptr);
+	checkOmfAudioRow(*aif, kOmfAifClip, kOmfAifBin, kOmfAifFileMob, kOmfAifMasterMob);
+	QCOMPARE(aif->clipNameSource, MediaFile::ClipNameSource::Mdb);
+}
+
+void TestScanner::omf_volume_scan_stops_at_the_root_but_a_manual_path_goes_deeper()
+{
+	// Media two levels down — the `~/Documents/Project/...` layout. Avid
+	// never writes that on a drive, so a VOLUME scan does not look for it
+	// (user ruling 2026-09-02); the same path added by hand still finds it,
+	// in both eras.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString project = tmp.path() + QStringLiteral("/Project");
+	const QString mxfFolder = Conventions::mxfRootUnder(project) + QStringLiteral("/1");
+	QVERIFY(QDir().mkpath(mxfFolder));
+	copyFixture(kToneName, mxfFolder);
+	const QString omfRoot = Conventions::omfRootUnder(project);
+	QVERIFY(QDir().mkpath(omfRoot));
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
+
+	QVERIFY(runScan(tmp.path()).isEmpty());
+
+	const auto manual = runManualScan(tmp.path());
+	QCOMPARE(manual.size(), 2);
+	QVERIFY(rowNamed(manual, kToneName) != nullptr);
+	const MediaFile *wav = rowNamed(manual, kOmfWav);
+	QVERIFY(wav != nullptr);
+	QCOMPARE(wav->mxfFolder, kOmfFolder);
+	QCOMPARE(wav->volumePath, project);
+
+	// The project folder itself, added by hand, is found at depth 0 too.
+	QCOMPARE(runManualScan(project).size(), 2);
+}
+
+void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
+{
+	// The OMF root, with the subfolders a real one can carry — Avid's
+	// transient `Creating`, and here a stray numbered folder as well. It
+	// used to pass "MXF-or-OMF root with subfolders" and be walked as an
+	// MXF root: subfolder rows, the flat media skipped. The name decides now.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(omfRoot + QStringLiteral("/Creating")));
+	QVERIFY(QDir().mkpath(omfRoot + QStringLiteral("/1")));
+	writeJunk(omfRoot + QStringLiteral("/Creating/half.omf"), 2048);
+	writeJunk(omfRoot + QStringLiteral("/1/stray.mxf"), 2048);
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfAif, omfRoot);
+	// Fresh mtimes: the databases describe an older file, so both rows go
+	// through OmfParser — the header path — and must say the same things.
+
+	const auto results = runManualScan(omfRoot);
+	QCOMPARE(results.size(), 2);
+	QVERIFY(rowNamed(results, QStringLiteral("half.omf")) == nullptr);
+	QVERIFY(rowNamed(results, QStringLiteral("stray.mxf")) == nullptr);
+
+	const MediaFile *wav = rowNamed(results, kOmfWav);
+	QVERIFY(wav != nullptr);
+	checkOmfAudioRow(*wav, kOmfWavClip, kOmfWavBin, kOmfWavFileMob, kOmfWavMasterMob);
+	QCOMPARE(wav->clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(wav->volumePath, tmp.path());
+
+	const MediaFile *aif = rowNamed(results, kOmfAif);
+	QVERIFY(aif != nullptr);
+	checkOmfAudioRow(*aif, kOmfAifClip, kOmfAifBin, kOmfAifFileMob, kOmfAifMasterMob);
+	QCOMPARE(aif->clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+}
+
+void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
+{
+	// No index, so nothing lists the file: the tail supplies the clip name,
+	// the project and the FILE mob, and the re-join through the MDB by the
+	// master's id recovers the bin and the master mob — the OMF twin of
+	// unreferenced_mxf_recovered_via_mdb.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(omfRoot));
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), omfRoot);
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
+
+	{
+		const auto results = runScan(tmp.path());
+		QCOMPARE(results.size(), 1);
+		const MediaFile &mf = results.first();
+		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+		QCOMPARE(mf.mxfFolder, kOmfFolder);
+		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
+		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		QCOMPARE(mf.clipName, kOmfWavClip);
+		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+		QCOMPARE(mf.project, kOmfProject);
+		QCOMPARE(mf.mobId, kOmfWavFileMob);		  // the file's own identity
+		QCOMPARE(mf.masterMobId, kOmfWavMasterMob); // adopted from the MDB record
+		QCOMPARE(mf.originalBin, kOmfWavBin);		  // which is the only place a bin lives
+		QVERIFY(!mf.isInvalidUmid);
+	}
+
+	// With no database at all the tail still names the clip, the project and
+	// the file mob; the master and the bin have no source and stay blank.
+	QVERIFY(QFile::remove(omfRoot + QStringLiteral("/msmMMOB.mdb")));
+	{
+		const auto results = runScan(tmp.path());
+		QCOMPARE(results.size(), 1);
+		const MediaFile &mf = results.first();
+		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+		QCOMPARE(mf.clipName, kOmfWavClip);
+		QCOMPARE(mf.project, kOmfProject);
+		QCOMPARE(mf.mobId, kOmfWavFileMob);
+		QVERIFY(mf.masterMobId.isEmpty());
+		QVERIFY(mf.originalBin.isEmpty());
+		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+	}
+}
+
+void TestScanner::omf_video_rows_show_avid_short_names()
+{
+	// Three of the shipped slates under their own databases: the codec is
+	// the bare Avid short name (user ruling 2026-09-02) whether the MDB
+	// described the row or the file's tail did — pins from tst_omfparser.
+	struct Pin
+	{
+		const char *file;
+		const char *codec;
+		const char *resolution;
+		const char *fps;
+		bool stamp; ///< true: mtime = PMR trailer, database-covered; false: fresh, header path
+	};
+	const Pin kPins[] = {
+		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x496", "29.97", true},
+		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
+		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ (DNxHD 220)", "1920x1080", "29.97", false},
+	};
+
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(omfRoot));
+	copyFixture(QStringLiteral("omf/avid_supporting/msmFMID.pmr"), omfRoot);
+	copyFixture(QStringLiteral("omf/avid_supporting/msmMMOB.mdb"), omfRoot);
+	for (const Pin &pin : kPins)
+	{
+		copyFixture(QStringLiteral("omf/avid_supporting/") + QLatin1String(pin.file), omfRoot);
+		if (pin.stamp)
+			setModified(omfRoot + QLatin1Char('/') + QLatin1String(pin.file), kSlateModified);
+	}
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 3);
+	for (const Pin &pin : kPins)
+	{
+		const MediaFile *mf = rowNamed(results, QLatin1String(pin.file));
+		QVERIFY2(mf != nullptr, pin.file);
+		QCOMPARE(mf->mxfFolder, kOmfFolder);
+		QCOMPARE(mf->dbStatus, MediaFile::DbStatus::Listed);
+		QCOMPARE(mf->kind, MediaFile::Kind::Video);
+		QCOMPARE(mf->type, MediaFile::Type::Media);
+		QCOMPARE(mf->codec, QLatin1String(pin.codec));
+		QCOMPARE(mf->resolution, QLatin1String(pin.resolution));
+		QCOMPARE(mf->fps, QLatin1String(pin.fps));
+		QCOMPARE(mf->durationFrames, qint64(1));
+		QCOMPARE(mf->bitDepth, QStringLiteral("8-bit"));
+		QVERIFY2(!mf->clipName.isEmpty(), pin.file);
+		QVERIFY2(!mf->project.isEmpty(), pin.file); // the v2 PMR has none; the MDB's _PJ fills it
+		QVERIFY(OmfUid::isOmfForm(mf->mobId));
+		QVERIFY(OmfUid::isOmfForm(mf->masterMobId));
+		QCOMPARE(mf->clipNameSource,
+				 pin.stamp ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	}
+}
+
+void TestScanner::creating_folder_is_skipped_under_mxf_and_omfi()
+{
+	// Avid's staging folder holds half-written captures. Under MXF it is a
+	// sibling of the numbered folders and used to be listed as one; under
+	// the flat OMF root it is the only subfolder there ever is.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString mxfRoot = Conventions::mxfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(mxfRoot + QStringLiteral("/1")));
+	QVERIFY(QDir().mkpath(mxfRoot + QStringLiteral("/Creating")));
+	copyFixture(kToneName, mxfRoot + QStringLiteral("/1"));
+	writeJunk(mxfRoot + QStringLiteral("/Creating/half.mxf"), 2048);
+
+	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(omfRoot + QStringLiteral("/Creating")));
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
+	writeJunk(omfRoot + QStringLiteral("/Creating/half.omf"), 2048);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 2);
+	QVERIFY(rowNamed(results, kToneName) != nullptr);
+	QVERIFY(rowNamed(results, kOmfWav) != nullptr);
+	for (const MediaFile &f : results)
+		QVERIFY2(!Conventions::isCreatingFolderName(f.mxfFolder), qPrintable(f.filePath));
+}
+
+void TestScanner::ama_databases_are_read()
+{
+	// The AMA-linked spelling of the same two files. Folder 1 carries only
+	// the ama* pair; folder 2 both spellings of each (the same database
+	// twice, so the merge has to cope with duplicate keys). Junk under the
+	// real name, stamped: every fact below is the database's.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder1 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	const QString folder2 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/2");
+	QVERIFY(QDir().mkpath(folder1));
+	QVERIFY(QDir().mkpath(folder2));
+	QVERIFY(QFile::copy(fixturesDir() + QStringLiteral("/msmFMID.pmr"), folder1 + QStringLiteral("/amaFMID.pmr")));
+	QVERIFY(QFile::copy(fixturesDir() + QStringLiteral("/msmMMOB.mdb"), folder1 + QStringLiteral("/amaMMOB.mdb")));
+	QVERIFY(QFile::copy(fixturesDir() + QStringLiteral("/msmFMID.pmr"), folder2 + QStringLiteral("/amaFMID.pmr")));
+	QVERIFY(QFile::copy(fixturesDir() + QStringLiteral("/msmMMOB.mdb"), folder2 + QStringLiteral("/amaMMOB.mdb")));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder2);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder2);
+	for (const QString &folder : {folder1, folder2})
+	{
+		writeJunk(folder + QLatin1Char('/') + kToneName, 4096);
+		setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
+	}
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 2);
+	for (const MediaFile &mf : results)
+	{
+		QCOMPARE(mf.fileName, kToneName);
+		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
+		QCOMPARE(mf.project, QStringLiteral("block 1729"));
+		QCOMPARE(mf.clipName, kToneClip);
+		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		QCOMPARE(mf.sampleRate, 48000);
+		QVERIFY(!mf.originalBin.isEmpty());
+	}
+}
+
+// MARK: - MXF-era behaviour pinned across the OMF-era rework
+
+void TestScanner::manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root()
+{
+	// One MXF root at the top, and a second one nested a level down that
+	// the top-level short-circuit (Case 1, as before) must NOT pick up.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(kToneName, folder);
+	const QString nested = tmp.path() + QStringLiteral("/Deeper/Avid MediaFiles/MXF/2");
+	QVERIFY(QDir().mkpath(nested));
+	copyFixture(kToneName, nested);
+
+	// Every shape a user drags in — the drive root, "Avid MediaFiles", its
+	// "MXF" folder, a numbered folder — scans the same one root: exactly
+	// the row set the ticked volume yields.
+	const QStringList shapes = {
+		tmp.path(),
+		tmp.path() + QStringLiteral("/Avid MediaFiles"),
+		tmp.path() + QStringLiteral("/Avid MediaFiles/MXF"),
+		folder,
+	};
+	for (const QString &shape : shapes)
+	{
+		const auto rows = runManualScan(shape);
+		QVERIFY2(rows.size() == 1, qPrintable(shape + QStringLiteral(": ") + QString::number(rows.size())));
+		QCOMPARE(rows.first().fileName, kToneName);
+		QCOMPARE(rows.first().mxfFolder, QStringLiteral("1"));
+		QCOMPARE(rows.first().clipName, kToneClip);
+	}
+	QCOMPARE(runScan(tmp.path()).size(), 1);
+
+	// The derived root of a hand-added numbered folder is ".../Avid
+	// MediaFiles" — a folder shape, not a drive. As a VOLUME path it is
+	// probed for "<path>/Avid MediaFiles/MXF" and misses; the post-rebalance
+	// rescan therefore has to hand it over as a manual path (pinned above).
+	MediaScanner::Options asVolume;
+	asVolume.volumePaths = QStringList{tmp.path() + QStringLiteral("/Avid MediaFiles")};
+	QVERIFY(runScanWith(asVolume).isEmpty());
+}
+
+void TestScanner::stray_audio_in_an_mxf_folder_is_listed_but_never_opened()
+{
+	// A real OMF-written .wav dropped into an MXF-era numbered folder. It
+	// is admitted to the table (name, size, date) as it always was, but it
+	// is NOT legacy essence in the scanner's eyes — only an OMFI MediaFiles
+	// root is — so its tail is never read: no codec, no clip name, no MOB,
+	// and the folder's PMR (which does not list it) makes it a real miss.
+	// Had OmfParser opened it, the row would say PCM and name the tone.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QCOMPARE(mf.fileName, kOmfWav);
+	QCOMPARE(mf.mxfFolder, QStringLiteral("1"));
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference);
+	QVERIFY2(mf.codec.isEmpty(), qPrintable(mf.codec));
+	QVERIFY2(mf.clipName.isEmpty(), qPrintable(mf.clipName));
+	QVERIFY(mf.mobId.isEmpty());
+	QVERIFY(mf.masterMobId.isEmpty());
+	QVERIFY(mf.hasNoProject());
+	QCOMPARE(mf.sampleRate, 0);
+}
+
+void TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable()
+{
+	// Folder 1: a readable msm* pair plus junk under both ama* names. The
+	// msm* index stands, so the tone stays database-covered and the stray
+	// .wav is a verified miss — what the folder said before the twins were
+	// read at all. Folder 2: junk ama* files ALONE; with nothing else of
+	// their kind to read, the folder's verdict is unreadable, as any lone
+	// junk database makes it.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder1 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	const QString folder2 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/2");
+	QVERIFY(QDir().mkpath(folder1));
+	QVERIFY(QDir().mkpath(folder2));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder1);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder1);
+	writeJunk(folder1 + QLatin1Char('/') + kToneName, 4096);
+	setModified(folder1 + QLatin1Char('/') + kToneName, kToneModified);
+	for (const QString &folder : {folder1, folder2})
+	{
+		writeJunk(folder + QStringLiteral("/amaFMID.pmr"), 16);
+		writeJunk(folder + QStringLiteral("/amaMMOB.mdb"), 16);
+		QFile wav(folder + QStringLiteral("/tone.wav"));
+		QVERIFY(wav.open(QIODevice::WriteOnly));
+		wav.write("RIFF----WAVEfmt ");
+		wav.close();
+	}
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 3);
+	for (const MediaFile &mf : results)
+	{
+		if (mf.fileName == kToneName)
+		{
+			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
+			QCOMPARE(mf.clipName, kToneClip);
+			QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+			QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		}
+		else if (mf.mxfFolder == QStringLiteral("1"))
+			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference);
+		else
+			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::DbUnreadable);
+	}
 }
 
 QTEST_GUILESS_MAIN(TestScanner)

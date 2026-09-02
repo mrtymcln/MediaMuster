@@ -24,6 +24,13 @@ private slots:
 	void avid_media_name_is_the_table_rule();
 	void temp_renamed_media_is_still_media();
 	void folder_budget_thresholds_stay_ordered();
+
+	// MARK: - OMF-era
+	void omf_root_constant_and_omf_root_under();
+	void omf_era_extension_set();
+	void creating_folder_name_is_case_insensitive();
+	void system_drive_media_bases_per_platform();
+	void database_file_names_cover_both_spellings();
 };
 
 void TestConventions::mxf_root_name_is_case_insensitive()
@@ -168,6 +175,101 @@ void TestConventions::folder_budget_thresholds_stay_ordered()
 	QVERIFY(Conventions::countsAsEssenceName(QStringLiteral("clip.mxf")));
 	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("track.wav")));
 	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("track.wav")));
+}
+
+// MARK: - OMF-era
+
+void TestConventions::omf_root_constant_and_omf_root_under()
+{
+	// The name is Avid's, spelled once; the predicate reads the constant.
+	QCOMPARE(QString(Conventions::kOmfMediaFilesDir), QStringLiteral("OMFI MediaFiles"));
+	QVERIFY(Conventions::isOmfRootName(QString(Conventions::kOmfMediaFilesDir)));
+
+	// One level, not two: the OMF folder IS the media root. Beside the
+	// MXF root, never inside it.
+	QCOMPARE(Conventions::omfRootUnder(QStringLiteral("/Volumes/Archive")),
+			 QStringLiteral("/Volumes/Archive/OMFI MediaFiles"));
+	QVERIFY(!Conventions::omfRootUnder(QStringLiteral("/v")).contains(Conventions::kAvidMediaFilesDir));
+	QVERIFY(!Conventions::omfRootUnder(QStringLiteral("/v")).contains(Conventions::kMxfDir));
+	QVERIFY(Conventions::mxfRootUnder(QStringLiteral("/v")) != Conventions::omfRootUnder(QStringLiteral("/v")));
+}
+
+void TestConventions::omf_era_extension_set()
+{
+	// The legacy set: .omf video, .aif/.wav/.sd2 audio. Case-insensitive
+	// like every other extension test here.
+	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("slate.omf")));
+	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("SLATE.OMF")));
+	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.aif")));
+	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.wav")));
+	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.sd2")));
+	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.SD2")));
+	// .mxf is the OTHER era; the scanner dispatches on this split.
+	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("clip.mxf")));
+	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("tone.aiff")));
+	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("export.mov")));
+	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("msmMMOB.mdb")));
+
+	// And the umbrella admits the whole legacy set, .sd2 included, while
+	// the folder budget still counts .mxf only.
+	QVERIFY(Conventions::hasAvidMediaExtension(QStringLiteral("tone.sd2")));
+	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("tone.sd2")));
+	QVERIFY(!Conventions::isAvidMediaName(QStringLiteral("._tone.sd2")));
+	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("tone.sd2")));
+	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("slate.omf")));
+}
+
+void TestConventions::creating_folder_name_is_case_insensitive()
+{
+	// Avid's transient capture folder, in both eras; never media.
+	QCOMPARE(QString(Conventions::kCreatingDir), QStringLiteral("Creating"));
+	QVERIFY(Conventions::isCreatingFolderName(QStringLiteral("Creating")));
+	QVERIFY(Conventions::isCreatingFolderName(QStringLiteral("creating")));
+	QVERIFY(Conventions::isCreatingFolderName(QStringLiteral("CREATING")));
+	QVERIFY(!Conventions::isCreatingFolderName(QStringLiteral("Creating2")));
+	QVERIFY(!Conventions::isCreatingFolderName(QStringLiteral("1")));
+	QVERIFY(!Conventions::isCreatingFolderName(QString()));
+	// It is neither media root.
+	QVERIFY(!Conventions::isMxfRootName(QString(Conventions::kCreatingDir)));
+	QVERIFY(!Conventions::isOmfRootName(QString(Conventions::kCreatingDir)));
+}
+
+void TestConventions::system_drive_media_bases_per_platform()
+{
+	// Avid's fixed system-drive placement, per platform. Every entry is a
+	// base under which BOTH folder names are probed, so none of them may
+	// already end in a media folder name.
+	const QStringList bases = Conventions::systemDriveMediaBases();
+#if defined(Q_OS_MAC)
+	QCOMPARE(bases, QStringList{QStringLiteral("/Users/Shared/AvidMediaComposer")});
+#elif defined(Q_OS_WIN)
+	QCOMPARE(bases, (QStringList{QStringLiteral("C:/Users/Public/Documents/Avid Media Composer"),
+								 QStringLiteral("C:/")}));
+#else
+	QVERIFY(bases.isEmpty());
+#endif
+	for (const QString &base : bases)
+	{
+		QVERIFY2(!base.endsWith(Conventions::kAvidMediaFilesDir), qPrintable(base));
+		QVERIFY2(!base.endsWith(Conventions::kOmfMediaFilesDir), qPrintable(base));
+		QVERIFY2(!base.contains(QLatin1Char('\\')), qPrintable(base));
+	}
+}
+
+void TestConventions::database_file_names_cover_both_spellings()
+{
+	// msm* for managed media, ama* for AMA-linked folders; the scanner
+	// reads whichever are present. None of them is media.
+	QCOMPARE(int(Conventions::kPmrFileNames.size()), 2);
+	QCOMPARE(int(Conventions::kMdbFileNames.size()), 2);
+	QCOMPARE(QString(Conventions::kPmrFileNames[0]), QStringLiteral("msmFMID.pmr"));
+	QCOMPARE(QString(Conventions::kPmrFileNames[1]), QStringLiteral("amaFMID.pmr"));
+	QCOMPARE(QString(Conventions::kMdbFileNames[0]), QStringLiteral("msmMMOB.mdb"));
+	QCOMPARE(QString(Conventions::kMdbFileNames[1]), QStringLiteral("amaMMOB.mdb"));
+	for (const QLatin1String name : Conventions::kPmrFileNames)
+		QVERIFY2(!Conventions::isAvidMediaName(QString(name)), name.data());
+	for (const QLatin1String name : Conventions::kMdbFileNames)
+		QVERIFY2(!Conventions::isAvidMediaName(QString(name)), name.data());
 }
 
 QTEST_APPLESS_MAIN(TestConventions)

@@ -1,6 +1,7 @@
 #include "avbparser.h"
 #include "logcategories.h"
 #include "mobid.h"
+#include "omfuid.h" // OMF-era: the wrapped-MOB frame pass 3 scans for.
 
 #include <QByteArray>
 #include <QDebug>
@@ -181,6 +182,16 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
 	// Whatever is built, do NOT reinstate a 32-byte slice: that was the removed
 	// mistake. Symptom that the work has become urgent: a real bin parsing with
 	// valid=true and an empty mobIds set.
+	//
+	// OMF-era: pass 3 below is NOT that slice. An OMF-era bin stores the FILE
+	// mob's wrapped 32-byte id (OmfUid: a fixed 16-byte prefix, the 8-byte
+	// core, a fixed 8-byte suffix) as contiguous raw bytes, never as hex text
+	// — the framing that chops up an MXF-era MOB is, here, PART of the
+	// pattern: 16 fixed bytes + 8 variable + 8 fixed, which the removed scan's
+	// "starts with 06 0A 2B 34" fingerprint never was. Measured on the two OMF
+	// bins in tests/fixtures/omf/mc2026_audio/bins: exactly one hit each, at
+	// 1068 and 1072, equal to the file mob the version-2 PMR pairs with that
+	// bin's clip; the master mob appears only as hex text (the pass-2 form).
 
 	// MARK: Pass 2 — ASCII hex-string MOB IDs
 
@@ -233,6 +244,33 @@ AvbBin AvbParser::parse(const QString &avbFilePath)
 		else
 		{
 			++i;
+		}
+	}
+
+	// MARK: - OMF-era — Pass 3 — wrapped MOBs as raw bytes
+
+	// OMF-era: bins store the wrapped 32-byte MOB as raw bytes, never as hex
+	// text. The frame is exact — OmfUid::kPrefix, 8 core bytes, OmfUid::kSuffix
+	// — and a hit is accepted only when both fixed parts match, so a stray
+	// prefix in unrelated bytes can never mint an id (see the note above on
+	// why this is not the removed 32-byte slice).
+	static const QByteArray kOmfPrefix =
+		QByteArray::fromRawData(reinterpret_cast<const char *>(OmfUid::kPrefix), sizeof OmfUid::kPrefix);
+	constexpr qint64 kCoreEnd = sizeof OmfUid::kPrefix + OmfUid::kPmrSize;
+	qint64 k = 0;
+	while (k + kMobIdLen <= size)
+	{
+		k = buf.indexOf(kOmfPrefix, k);
+		if (k < 0 || k + kMobIdLen > size)
+			break;
+		if (std::memcmp(bytes + k + kCoreEnd, OmfUid::kSuffix, sizeof OmfUid::kSuffix) == 0)
+		{
+			insertBothForms(result.mobIds, reinterpret_cast<const uchar *>(bytes + k));
+			k += kMobIdLen;
+		}
+		else
+		{
+			++k;
 		}
 	}
 

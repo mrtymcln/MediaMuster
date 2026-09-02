@@ -100,6 +100,9 @@ set(SOURCES
     src/mxfparser.cpp
     src/pmrparser.cpp
     src/mdbparser.cpp
+    src/omfparser.cpp
+    src/omfobjects.cpp
+    src/omfresolutions.cpp
     src/bentofile.cpp
     src/avideffects.cpp
     src/mediacsv.cpp

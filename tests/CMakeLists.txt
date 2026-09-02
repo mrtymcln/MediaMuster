@@ -31,6 +31,13 @@ mediamuster_add_test(tst_format)
 # limits every feature keys on (header-only).
 mediamuster_add_test(tst_conventions)
 
+# OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
+# against the real version-2 PMRs in fixtures/omf.
+mediamuster_add_test(tst_omfuid)
+target_compile_definitions(tst_omfuid PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
+
 # MediaCsv: the export's header/field alignment and the display columns
 # it shares with the table. Lifted out of mainwindow.cpp so it is
 # reachable from a test at all.
@@ -159,9 +166,13 @@ mediamuster_add_test(tst_crashcollector
     ${CMAKE_SOURCE_DIR}/src/crashcollector.cpp
 )
 
-# AvbParser: MOB extraction from a bin, driven by hand-crafted byte buffers.
+# AvbParser: MOB extraction from a bin, driven by hand-crafted byte buffers,
+# plus the two real OMF-era bins in fixtures/omf (raw wrapped MOBs).
 mediamuster_add_test(tst_avbparser
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
+)
+target_compile_definitions(tst_avbparser PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
 # MxfParser: codec-UL lookup table + DNxHD bitrate/fps + family fallback,
@@ -198,11 +209,30 @@ target_compile_definitions(tst_pmrparser PRIVATE
 # header as ground truth for every technical field.
 mediamuster_add_test(tst_mdbparser
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfobjects.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
     ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
 )
 target_compile_definitions(tst_mdbparser PRIVATE
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
+
+# OmfParser: one OMF-era essence file read tail-first, pinned against all
+# 80 shipped slates and the two MC 2026 audio files. Links PmrParser and
+# MdbParser too: each file's facts are joined through the version-2 PMR
+# to the msmMMOB.mdb row for the same file, which must agree.
+mediamuster_add_test(tst_omfparser
+    ${CMAKE_SOURCE_DIR}/src/omfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfobjects.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
+    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+)
+target_compile_definitions(tst_omfparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
@@ -219,6 +249,9 @@ mediamuster_add_test(tst_scanner
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfobjects.cpp
+    ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
     ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
 )

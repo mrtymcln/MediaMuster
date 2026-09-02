@@ -2,14 +2,18 @@
 // The PMR is a fixed little-endian layout, so we can assemble exact bytes and
 // hit the guards precisely: a normal FILE+MASTER pair, implausible pair counts,
 // the FILE/MASTER desync bail, truncation, and the too-small-file reject.
+// The omf_v2_* cases cover the OMF-era version-2 layout (8-byte MOBs) the
+// same way, plus the two real version-2 files under fixtures/omf.
 
 #include "mobid.h"
+#include "omfuid.h"
 #include "pmrparser.h"
 
 #include <QByteArray>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QSet>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QtGlobal>
@@ -94,6 +98,36 @@ namespace
 								   "91901e6a605d3613");
 	}
 
+	// MARK: - OMF-era (version 2) helpers
+
+	// A version-2 record is the same grammar with an 8-byte MOB in the MBCS
+	// set, so fileRecord/masterRecord serve both widths; what changes is the
+	// header's version and the MOB bytes. These start with arbitrary bytes
+	// (no 06 0a 2b 34 prefix), exactly as the real files do.
+	QByteArray pmrHeaderOmf(quint32 pairCount)
+	{
+		return pmrHeader(pairCount, /*version=*/2);
+	}
+	QByteArray fileMob8()
+	{
+		return QByteArray::fromHex("7429976a70397047");
+	}
+	QByteArray masterMob8()
+	{
+		return QByteArray::fromHex("7429976a4e397047");
+	}
+	// The 32-byte form Avid writes into a version-2 file's Unicode set: the
+	// 8 bytes inside its fixed prefix and suffix.
+	QByteArray wrapped(const QByteArray &eight)
+	{
+		const auto raw = OmfUid::wrap8(reinterpret_cast<const unsigned char *>(eight.constData()));
+		return QByteArray(reinterpret_cast<const char *>(raw.data()), int(raw.size()));
+	}
+	QString canonical8(const QByteArray &eight)
+	{
+		return OmfUid::canonicalFromPmr8(reinterpret_cast<const unsigned char *>(eight.constData()));
+	}
+
 	QString writePmr(const QString &path, const QByteArray &bytes)
 	{
 		QDir().mkpath(QFileInfo(path).absolutePath());
@@ -158,6 +192,16 @@ private slots:
 	// local time (older MC, seen on a 2018–19 folder). Both must match; a
 	// different instant, or an unknown trailer, must not.
 	void trailer_matches_modified_in_both_epochs();
+
+	// OMF-era: the version-2 layout under `OMFI MediaFiles`. Same grammar,
+	// 8-byte MOBs with no fixed prefix, widened to the 32-byte form Avid's
+	// own Unicode set uses — so an entry from either era carries one id
+	// spelling. The version-8 path is pinned unchanged by every case above.
+	void omf_v2_pair_parses_with_wrapped_mobs();
+	void omf_v2_unicode_set_replaces_names();
+	void omf_v2_file_desync_bails_with_what_it_has();
+	void omf_v2_real_avid_supporting_fixture();
+	void omf_v2_real_mc2026_audio_fixture();
 };
 
 void TestPmrParser::parses_one_file_comp_pair()
@@ -487,6 +531,139 @@ void TestPmrParser::trailer_matches_modified_in_both_epochs()
 	// Unknown trailer, invalid date.
 	QVERIFY(!PmrParser::trailerMatchesModified(0, onDisk));
 	QVERIFY(!PmrParser::trailerMatchesModified(quint32(mtime), QDateTime()));
+}
+
+void TestPmrParser::omf_v2_pair_parses_with_wrapped_mobs()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	// Neither MOB starts with the Avid prefix — the version-8 guard would
+	// bail on record 0; version 2 must read it as a normal pair.
+	const QByteArray buf = pmrHeaderOmf(1) + fileRecord(fileMob8(), "TONE.wav", "proj") +
+						   masterRecord(masterMob8(), 1788291444u);
+	bool ok = false;
+	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok);
+
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 1);
+	QCOMPARE(entries[0].fileName, QStringLiteral("TONE.wav"));
+	QCOMPARE(entries[0].project, QStringLiteral("proj"));
+	QCOMPARE(entries[0].mobId, canonical8(fileMob8()));
+	QCOMPARE(entries[0].masterMobId, canonical8(masterMob8()));
+	QCOMPARE(entries[0].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
+	QVERIFY(OmfUid::isOmfForm(entries[0].mobId));
+	QVERIFY(OmfUid::isOmfForm(entries[0].masterMobId));
+	QCOMPARE(entries[0].fileModifiedSecs, 1788291444u);
+
+	// A one-pair version-2 file is 37 bytes — under the 44 the version-8
+	// minimum-size guard demands. It must not be refused as "too small".
+	const QByteArray tiny = pmrHeaderOmf(1) + fileRecord(fileMob8(), "a", "") + masterRecord(masterMob8());
+	QCOMPARE(tiny.size(), 37);
+	QCOMPARE(PmrParser::parse(writePmr(tmp.path() + "/tiny.pmr", tiny), &ok).size(), 1);
+	QVERIFY(ok);
+}
+
+void TestPmrParser::omf_v2_unicode_set_replaces_names()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	// The Unicode set of a version-2 file carries the MOBs already in the
+	// 32-byte wrapped form (verified on both real files), which is how the
+	// FILE-MOB match lines up with the widened MBCS entry.
+	const QByteArray macName("zT?t_clip.omf");
+	const QByteArray utf8Name("zT\xc4\x99t_clip.omf");
+	QByteArray b = pmrHeaderOmf(1) + fileRecord(fileMob8(), macName, "proj") + masterRecord(masterMob8(), 7);
+	b += unicodeHeader(1) + unicodeFileRecord(wrapped(fileMob8()), utf8Name, "proj") +
+		 masterRecord(wrapped(masterMob8()), 7);
+
+	bool ok = false;
+	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", b), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 1);
+	QCOMPARE(entries.first().fileName, QString::fromUtf8("zT\xc4\x99t_clip.omf"));
+	QCOMPARE(entries.first().project, QStringLiteral("proj"));
+	QCOMPARE(entries.first().mobId, canonical8(fileMob8()));
+	QCOMPARE(entries.first().masterMobId, canonical8(masterMob8()));
+	QCOMPARE(entries.first().fileModifiedSecs, 7u);
+}
+
+void TestPmrParser::omf_v2_file_desync_bails_with_what_it_has()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	// With no MOB prefix to check in version 2, the FILE record's nameLen is
+	// the desync detector: two pairs claimed, and where the 3rd record's
+	// FILE should be, the leading u16 is 0 — MASTER-shaped. Keep pair 0,
+	// report ok=false.
+	QByteArray buf = pmrHeaderOmf(2) + fileRecord(fileMob8(), "GOOD.omf", "proj") + masterRecord(masterMob8());
+	buf += fileMob8(); // stray 8-byte MOB
+	u16le(buf, 0);	   // nameLen 0 → desync signal
+	bool ok = true;
+	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok);
+
+	QVERIFY(!ok);
+	QCOMPARE(entries.size(), 1);
+	QCOMPARE(entries[0].fileName, QStringLiteral("GOOD.omf"));
+	QCOMPARE(entries[0].masterMobId, canonical8(masterMob8()));
+}
+
+void TestPmrParser::omf_v2_real_avid_supporting_fixture()
+{
+	// Avid's shipped SupportingFiles database: 80 pairs, no project names,
+	// trailers of 1626810310 (73 pairs) or 1626810312 (7 pairs) — the
+	// install's write time, two seconds apart — and a Unicode set that
+	// repeats every name unchanged.
+	bool ok = false;
+	const auto entries = PmrParser::parse(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/msmFMID.pmr"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 80);
+	QSet<QString> fileMobs;
+	for (const PmrEntry &e : entries)
+	{
+		QVERIFY2(OmfUid::isOmfForm(e.mobId), qPrintable(e.fileName + ' ' + e.mobId));
+		QVERIFY2(OmfUid::isOmfForm(e.masterMobId), qPrintable(e.fileName + ' ' + e.masterMobId));
+		QVERIFY2(e.mobId != e.masterMobId, qPrintable(e.fileName));
+		QVERIFY2(e.project.isEmpty(), qPrintable(e.project));
+		QVERIFY2(e.fileName.endsWith(QLatin1String(".omf")), qPrintable(e.fileName));
+		QVERIFY2(e.fileModifiedSecs == 1626810310u || e.fileModifiedSecs == 1626810312u,
+				 qPrintable(e.fileName + QLatin1Char(' ') + QString::number(e.fileModifiedSecs)));
+		fileMobs.insert(e.mobId);
+	}
+	QCOMPARE(fileMobs.size(), 80);
+	QCOMPARE(entries.first().fileName, QStringLiteral("BLACK_720x576x1_DV420.omf"));
+	QCOMPARE(entries.first().mobId, QStringLiteral("060a2b3401010101.01010f0013000000.5f489d3ab16ff300.060e2b347f7f2a80"));
+	QCOMPARE(entries.first().masterMobId, QStringLiteral("060a2b3401010101.01010f0013000000.5f489d3ab06ff300.060e2b347f7f2a80"));
+	QCOMPARE(entries.first().fileModifiedSecs, 1626810310u);
+	QCOMPARE(entries.last().fileName, QStringLiteral("OFFLINE_288x243x1_JFIF20mP.omf"));
+}
+
+void TestPmrParser::omf_v2_real_mc2026_audio_fixture()
+{
+	// MC 26.8 wrote this beside two fresh audio files: 2 pairs, the ß project
+	// in MacRoman (0xA7) everywhere, and trailers equal to each file's mtime
+	// at capture. The four canonical hexes are the wrapped 8-byte MOBs.
+	bool ok = false;
+	const auto entries = PmrParser::parse(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/msmFMID.pmr"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), 2);
+	const QString project = QString::fromUtf8("zTe\xc3\x9ft_PAL_25p");
+
+	QCOMPARE(entries[0].fileName, QStringLiteral("TONE_100A01.6A972974.039700.wav"));
+	QCOMPARE(entries[0].project, project);
+	QCOMPARE(entries[0].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
+	QCOMPARE(entries[0].masterMobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80"));
+	QCOMPARE(entries[0].fileModifiedSecs, 1788291444u);
+
+	QCOMPARE(entries[1].fileName, QStringLiteral("TONE_100A01.6A972997.0C53E0.aif"));
+	QCOMPARE(entries[1].project, project);
+	QCOMPARE(entries[1].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80"));
+	QCOMPARE(entries[1].masterMobId, QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80"));
+	QCOMPARE(entries[1].fileModifiedSecs, 1788291480u);
+
+	// The index keys on the same names, so a lookup by filename finds each.
+	const PmrIndex index = PmrParser::buildFileMap(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/msmFMID.pmr"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(index.size(), 2);
 }
 
 QTEST_APPLESS_MAIN(TestPmrParser)

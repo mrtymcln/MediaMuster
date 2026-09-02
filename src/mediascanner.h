@@ -22,7 +22,8 @@
 /// (ScanTask and FolderResult have no such constraint and are nested
 /// inside MediaScanner, where their only users are.)
 ///
-/// `module` is the console tag ('scanner', 'mxf', 'pmr', 'mdb').
+/// `module` is the console tag ('scanner', 'mxf', 'pmr', 'mdb', and
+/// 'omf' for the OMF-era reader).
 struct LogMsg
 {
 	QtMsgType level = QtInfoMsg;
@@ -32,20 +33,34 @@ struct LogMsg
 
 // MARK: - MediaScanner
 
-/// Walks volumes, finds `Avid MediaFiles/MXF` roots, and builds one
-/// MediaFile per essence file in two passes:
+/// Walks volumes, finds `Avid MediaFiles/MXF` roots (and, OMF-era, the
+/// flat `OMFI MediaFiles` root beside them), and builds one MediaFile per
+/// essence file in two passes:
 ///
 ///   Pass 1 — databases. Per folder: list the files, read `msmFMID.pmr`
 ///            (filename → MOBs, project) and `msmMMOB.mdb` (everything
 ///            else: clip name, bin, source, codec, dims, rates, duration,
-///            bits, channels, type). A row the databases fully describe is
-///            finished here and its file is never opened.
+///            bits, channels, type) — plus their `ama*` twins where an
+///            AMA-linked folder wrote them. A row the databases fully
+///            describe is finished here and its file is never opened.
 ///   Pass 2 — headers. Only for the rows pass 1 could not cover — no PMR
 ///            entry (Interplay keeps records centrally; a file MediaMuster
 ///            just copied in), an incomplete MDB record, a file changed since
 ///            Avid indexed it, an unreadable database, or the Debug toggle —
-///            read the MXF header as before, then try the MDB once more by
-///            the header's own UMID to recover name/bin/source.
+///            read the MXF header as before (OMF-era: the Bento tail via
+///            OmfParser), then try the MDB once more by the header's own
+///            UMID to recover name/bin/source.
+///
+/// Where it looks (user ruling 2026-09-02, Avid's own placement rule): a
+/// VOLUME path is probed for exactly the two roots at its top level and
+/// nothing deeper — Media Composer only ever writes media at a drive root
+/// or in the fixed system-drive bases VolumeManager hands over as their
+/// own entries. A MANUAL path (File ▸ Add Folder, drag-and-drop) may be
+/// anything — a root, an MXF folder, a numbered subfolder, a project
+/// folder — so it keeps the older shape-guessing cases (the root shape
+/// first, then inside-Avid-MediaFiles, the root folder itself, a single
+/// database folder) and the two-level search. The two never mix, which is
+/// why Options carries them apart.
 ///
 /// Cancellation is cooperative; checked at folder/file boundaries
 /// so work in flight isn't left half-done.
@@ -55,7 +70,12 @@ class MediaScanner : public QObject
 public:
 	struct Options
 	{
+		/// Drive roots and the system-drive bases: scanned by
+		/// scanVolumeRoot, top level only.
 		QStringList volumePaths;
+		/// Folders the user added by hand: scanned by scanAddedFolder, which
+		/// keeps the shape cases and the two-level search.
+		QStringList manualPaths;
 		/// Debug ▸ Force header scan. The databases are still read — they
 		/// supply project, MOB ids, clip name, bin and source exactly as
 		/// before — but no row takes its TECHNICAL facts from them, so every
@@ -111,8 +131,25 @@ private:
 	/// cached MDB maps) can't leak into the next scan.
 	void concludeScan(const QVector<MediaFile> &files, bool cancelled);
 
-	QVector<MediaFile> scanVolume(const QString &volumePath, const QString &volumeName);
+	/// A volume path: probe `<path>/Avid MediaFiles/MXF` and, OMF-era,
+	/// `<path>/OMFI MediaFiles`; scan whichever exist; never look deeper.
+	QVector<MediaFile> scanVolumeRoot(const QString &volumePath, const QString &volumeName);
+
+	/// A hand-added folder: the path may be inside an Avid MediaFiles tree,
+	/// may itself be an MXF root or an OMF root, may be one numbered folder
+	/// with its own databases, or may hold media roots up to two levels
+	/// down. Tried in that order; the first shape that fits wins.
+	QVector<MediaFile> scanAddedFolder(const QString &folderPath, const QString &volumeName);
+
 	QVector<MediaFile> scanMxfRoot(const QString &mxfRootPath, const QString &volumeName,
+								   const QString &volumePath);
+
+	/// OMF-era: the flat root is ONE folder task — media and its single
+	/// database pair sit at the same level, and the enumeration takes files
+	/// only, so Avid's transient `Creating` subfolder is invisible here.
+	/// Rows carry `mxfFolder == "OMFI MediaFiles"`, which the rebalancer's
+	/// folder-name rule rejects, keeping OMF media out of its scope.
+	QVector<MediaFile> scanOmfRoot(const QString &omfRootPath, const QString &volumeName,
 								   const QString &volumePath);
 
 	// MARK: - Per-folder work
@@ -139,6 +176,29 @@ private:
 
 	FolderResult processFolderTask(const ScanTask &task);
 
+	/// What one folder's databases said, merged across every spelling
+	/// present (Conventions::kPmrFileNames / kMdbFileNames). `pmrExists` /
+	/// `mdbExists` mean "at least one file of that kind was there";
+	/// `pmrOk` / `mdbOk` mean "and the msm* one parsed (or, with no msm*,
+	/// some file of that kind did)" — an ama* twin that fails beside a
+	/// readable msm* sibling is ignored, so the folder's verdict is exactly
+	/// what the msm* pair alone would have given.
+	struct FolderDatabases
+	{
+		PmrIndex pmr;
+		MdbDatabase mdb;
+		bool pmrExists = false;
+		bool pmrOk = true;
+		bool mdbExists = false;
+		bool mdbOk = true;
+	};
+
+	/// Reads and merges the folder's PMR/MDB files, logging into `logs`
+	/// (pool threads buffer; see FolderResult). PMR entries append per
+	/// filename; MDB records insert only when the key is new, so the msm*
+	/// pair — read first — wins over an ama* twin describing the same mob.
+	static FolderDatabases readFolderDatabases(const ScanTask &task, QVector<LogMsg> &logs);
+
 	/// Per-folder counts for the console: rows the databases described,
 	/// rows left for the header pass, and rows whose file changed since Avid
 	/// indexed it (the staleness guard sent them to the header pass).
@@ -160,10 +220,12 @@ private:
 							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
 
 	/// Pass 2. Reads the header of every .mxf row pass 1 left without
-	/// technical facts, in parallel, then re-joins each against its folder's
-	/// cached clip records by the header's UMID (the file-in-MDB-but-not-PMR
-	/// case). Per-folder parallelism alone starves cores on small folders,
-	/// so this runs over all rows after the walk.
+	/// technical facts (OMF-era: the Bento tail of every .omf/.aif/.wav/.sd2
+	/// row inside an OMFI MediaFiles root likewise, through OmfParser), in
+	/// parallel, then re-joins each
+	/// against its folder's cached clip records by the header's UMID (the
+	/// file-in-MDB-but-not-PMR case). Per-folder parallelism alone starves
+	/// cores on small folders, so this runs over all rows after the walk.
 	void parseMxfHeadersConcurrently(QVector<MediaFile> &files);
 
 	// MARK: - Log batching

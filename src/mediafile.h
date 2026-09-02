@@ -113,7 +113,11 @@ struct MediaFile
 	QString extension;
 	QString volumeName;
 	QString volumePath;
-	QString mxfFolder; ///< The numbered subfolder under Avid MediaFiles/MXF.
+	/// The numbered subfolder under Avid MediaFiles/MXF. OMF-era: the flat
+	/// legacy root has no numbered folders, so its rows carry the root's own
+	/// name, "OMFI MediaFiles" — which the rebalancer's folder-name rule
+	/// rejects, keeping OMF media out of its scope.
+	QString mxfFolder;
 	qint64 sizeBytes = 0;
 	/// Filesystem creation (birth) time. Invalid when the file system
 	/// doesn't record one — displayed blank, never substituted.

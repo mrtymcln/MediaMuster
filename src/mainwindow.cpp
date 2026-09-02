@@ -1420,8 +1420,28 @@ void MainWindow::onScanAllClicked()
 
 void MainWindow::startScanWithPaths(const QStringList &paths)
 {
+	// Detected volumes and hand-added folders scan differently (see
+	// MediaScanner::Options): a volume is probed at its root only, a folder
+	// keeps the shape cases and the two-level search. Every caller hands in
+	// one merged list — the ticked rows, Scan All, the post-rebalance
+	// rescan — so the split is made here, once. A path is a volume only
+	// when VolumeManager detected it (a mount, or a system-drive base);
+	// everything else is scanned as a folder — including the rescan after a
+	// rebalance, whose path is the scanned root the rows derived (".../Avid
+	// MediaFiles" for a hand-added ".../MXF/3"), which is not the string
+	// the user added and would otherwise be probed as a drive and miss.
+	// OMF-era: the split landed with the OMF-era discovery rework (the
+	// volume-vs-manual placement rule), but it is not itself OMF handling —
+	// a future OMF gate leaves it alone.
+	const QStringList detected = m_volumeManager->allScannablePaths();
 	MediaScanner::Options opts;
-	opts.volumePaths = paths;
+	for (const QString &path : paths)
+	{
+		if (detected.contains(path) && !m_manualVolumes.contains(path))
+			opts.volumePaths.append(path);
+		else
+			opts.manualPaths.append(path);
+	}
 	opts.forceHeaderScan = m_forceHeaderScan;
 
 	setBusy(true);

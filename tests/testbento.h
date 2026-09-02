@@ -23,16 +23,18 @@ public:
 	}
 
 	/// `bytes` stored in the value area. Strings must include their NUL.
-	void set(quint32 object, const char *property, const QByteArray &bytes)
+	/// `flags` overrides the TOC entry's flag word (bit 1 = "continued") —
+	/// only for tests that want the reader to refuse the entry.
+	void set(quint32 object, const char *property, const QByteArray &bytes, quint16 flags = 0)
 	{
-		m_entries.append({object, propertyId(property), bytes, false});
+		m_entries.append({object, propertyId(property), bytes, flags});
 	}
 
 	/// `bytes` (≤ 4) stored in the TOC entry's value field, file order.
 	void setImmediate(quint32 object, const char *property, const QByteArray &bytes)
 	{
 		Q_ASSERT(bytes.size() <= 4);
-		m_entries.append({object, propertyId(property), bytes, true});
+		m_entries.append({object, propertyId(property), bytes, kImmediate});
 	}
 
 	void setU32(quint32 object, const char *property, quint32 v) { setImmediate(object, property, le32(v)); }
@@ -62,37 +64,38 @@ public:
 
 	/// Serialise. `tocTrailer` appends raw bytes after the TOC but before the
 	/// label — never valid, used only to break the arithmetic on purpose.
-	QByteArray build(const QByteArray &tocTrailer = {}) const
+	/// `labelVersion` other than 1 is likewise only for the refusal test.
+	QByteArray build(const QByteArray &tocTrailer = {}, quint32 labelVersion = 1) const
 	{
 		QByteArray values;
 		struct Toc
 		{
 			quint32 obj, prop, value, len;
-			bool imm;
+			quint16 flags;
 		};
 		QVector<Toc> toc;
 
 		// Value area, in entry order (file order = first-wins order).
 		for (const auto &e : m_entries)
 		{
-			if (e.immediate)
+			if (e.flags & kImmediate)
 			{
 				QByteArray v = e.bytes;
 				v.resize(4); // zero-pad the value field
 				toc.append({e.object, e.property, qFromLittleEndian<quint32>(
 														reinterpret_cast<const uchar *>(v.constData())),
-							quint32(e.bytes.size()), true});
+							quint32(e.bytes.size()), e.flags});
 			}
 			else
 			{
-				toc.append({e.object, e.property, quint32(values.size()), quint32(e.bytes.size()), false});
+				toc.append({e.object, e.property, quint32(values.size()), quint32(e.bytes.size()), e.flags});
 				values += e.bytes;
 			}
 		}
 		// The dictionary: one name entry per property, objectID = the id.
 		for (auto it = m_propIds.cbegin(); it != m_propIds.cend(); ++it)
 		{
-			toc.append({it.value(), 24, quint32(values.size()), quint32(it.key().size() + 1), false});
+			toc.append({it.value(), 24, quint32(values.size()), quint32(it.key().size() + 1), 0});
 			values += it.key() + '\0';
 		}
 
@@ -102,20 +105,20 @@ public:
 		{
 			out += le32(t.obj) + le32(t.prop) + le32(0) + le32(t.value) + le32(t.len);
 			out += le32(1).left(2);						  // generation
-			out += le32(t.imm ? 1u : 0u).left(2);		  // flags
+			out += le32(t.flags).left(2);				  // flags
 		}
 		const quint32 tocLen = quint32(out.size()) - tocOff;
 		out += tocTrailer;
-		out += label(tocOff, tocLen);
+		out += label(tocOff, tocLen, labelVersion);
 		return out;
 	}
 
-	static QByteArray label(quint32 tocOff, quint32 tocLen)
+	static QByteArray label(quint32 tocOff, quint32 tocLen, quint32 version = 1)
 	{
 		QByteArray l = QByteArray::fromHex("a4434da5486472d7");
 		l += le32(0).left(2); // flags
 		l += "II";
-		l += le32(1);		  // version
+		l += le32(version);
 		l += le32(tocOff) + le32(tocLen);
 		return l;
 	}
@@ -128,12 +131,14 @@ public:
 	}
 
 private:
+	static constexpr quint16 kImmediate = 1; ///< TOC flag bit 0, as BentoFile reads it.
+
 	struct Pending
 	{
 		quint32 object;
 		quint32 property;
 		QByteArray bytes;
-		bool immediate;
+		quint16 flags; ///< The TOC entry's flag word verbatim.
 	};
 
 	quint32 propertyId(const char *name)

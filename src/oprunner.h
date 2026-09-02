@@ -103,6 +103,8 @@ public:
 
 	/// Where an item lands under destRoot. preserve=true mirrors Avid's
 	/// `Avid MediaFiles/MXF/<n>/<filename>` layout; false flattens.
+	/// OMF-era: an mxfFolder naming the OMFI root preserves to
+	/// `OMFI MediaFiles/<filename>` instead — that folder is flat.
 	static QString buildDestPath(const QString &fileName, const QString &mxfFolder,
 								 const QString &destRoot, bool preserve);
 

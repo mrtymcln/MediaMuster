@@ -2,6 +2,7 @@
 #include "avidtext.h"
 #include "logcategories.h"
 #include "mobid.h"
+#include "omfuid.h" // OMF-era: wraps a version-2 record's 8-byte MOB to the 32-byte form.
 #include "pmrkey.h"
 
 #include <QFile>
@@ -18,27 +19,38 @@
 //
 //   Header (12 bytes) — Avid's own field names, from AMSM::LoadPMR:
 //     uint32  MAGIC   (= 0x000007A9)
-//     uint32  VERSION (= 8; 2 is an OMF-era layout with 8-byte MOBs — refused)
+//     uint32  VERSION (= 8 in every MXF-era folder; = 2 in an OMF-era one)
 //     uint32  numMobs (pair count)
 //
 //   MBCS record set (numMobs × FILE then MASTER):
-//     FILE:   32-byte MOB | uint16 nameLen | name (MacRoman)
-//                         | uint16 projLen | project (MacRoman)
-//     MASTER: 32-byte MOB | uint32 = the essence file's modification time.
-//                           MC 2025 writes Unix seconds UTC (equal to
-//                           st_mtime on 360/360 real files); a 2018–19 folder
-//                           held Mac 1904-epoch seconds in the writer's LOCAL
-//                           time (every trailer = mtime + 2,082,844,800 + the
-//                           AEST/AEDT offset). Per FILE, not per clip —
-//                           relatives of one clip differ by a second. Compare
-//                           via trailerMatchesModified, never by subtraction.
+//     FILE:   MOB | uint16 nameLen | name (MacRoman)
+//                 | uint16 projLen | project (MacRoman)
+//     MASTER: MOB | uint32 = the essence file's modification time.
+//
+//     The MOB is 32 bytes in version 8. OMF-era: in version 2 it is 8 bytes
+//     with arbitrary leading bytes — bytes [4:12] of the file's 12-byte
+//     omfi:UID — and is widened through OmfUid::wrap8 so an OMF row's id is
+//     the same 32-byte string Avid itself writes into the Unicode set below
+//     and into its bins. Verified to the last byte on the two real version-2
+//     files under tests/fixtures/omf (0 unaccounted bytes each).
+//
+//     The MASTER trailer is the same 4 bytes in both versions: MC 2025 and
+//     MC 2026 write Unix seconds UTC (equal to st_mtime on 360/360 real MXF
+//     files and on both OMF-era audio files at capture); a 2018–19 folder held Mac
+//     1904-epoch seconds in the writer's LOCAL time (every trailer = mtime +
+//     2,082,844,800 + the AEST/AEDT offset). Per FILE, not per clip —
+//     relatives of one clip differ by a second. Compare via
+//     trailerMatchesModified, never by subtraction.
 //
 //   Unicode record set (every MC 2025 file; older files stop at the MBCS set):
 //     uint32  VERSION_UNICODE (= 16)
 //     uint32  numUnicodeMobs  (== numMobs)
 //     the same records again — the FILE name now UTF-8, prefixed by two NUL
 //     bytes that nameLen counts; MOBs, project (still MacRoman) and trailer
-//     identical to the MBCS set (verified 360/360).
+//     identical to the MBCS set (verified 360/360). OMF-era: a version-2 file
+//     written by MC 2026 carries this set too, and its MOBs are ALREADY the
+//     32-byte wrapped form (82/82 verified), which is why the set is read by
+//     one unchanged routine for both versions.
 //
 // Filenames are taken from the Unicode set when it is present and pairs
 // up: a name Avid wrote with a character MacRoman cannot hold (ę) survives
@@ -59,7 +71,11 @@ namespace
 	constexpr quint32 kPmrMagic = 0x000007A9;
 	constexpr qint64 kVersionOffset = 4;
 	constexpr qint64 kPairCountOffset = 8;
-	constexpr quint32 kPmrVersion = 8;
+	/// The MXF-era layout: every PMR under `Avid MediaFiles/MXF/<n>/`.
+	constexpr quint32 kPmrVersionMxf = 8;
+	/// OMF-era: the version-2 layout under `OMFI MediaFiles`, identical to
+	/// version 8 except that the MBCS record set's MOBs are 8 bytes.
+	constexpr quint32 kPmrVersionOmf = 2;
 	/// Marks the second record set (UTF-8 filenames), when present.
 	constexpr quint32 kPmrVersionUnicode = 16;
 	constexpr qint64 kMobIdSize = MobId::kRawSize;
@@ -202,7 +218,15 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 	}
 	const QByteArray data = file.readAll();
 
-	if (data.size() < kHeaderSize + kMobIdSize)
+	// OMF-era: the version is peeked (bounds-checked; 0 on a short file)
+	// before the size guard only so the guard can use the 8-byte MOB width
+	// of a version-2 file — a real one-pair version-2 file is 37 bytes, under
+	// the 44 the MXF-era width demands. Every other version keeps the
+	// 32-byte width and so takes exactly the checks it always did.
+	const quint32 version = readLE<quint32>(data, kVersionOffset);
+	const qint64 mobSize = version == kPmrVersionOmf ? OmfUid::kPmrSize : kMobIdSize;
+
+	if (data.size() < kHeaderSize + mobSize)
 	{
 		qCWarning(lcPmr) << "file too small" << data.size() << pmrFilePath;
 		return {};
@@ -211,9 +235,9 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 	// An unknown layout version walked with this record layout returns
 	// partial garbage as good data — the FILE desync check only trips
 	// probabilistically, after damage is committed. Every PMR surveyed in
-	// the wild is version 8; anything else is refused outright. Failure
-	// mode is safe: the folder's files surface as "No database", and
-	// Stage-3 UMID/MDB recovery can still claim them.
+	// the wild is version 8 (MXF-era) or version 2 (OMF-era); anything else
+	// is refused outright. Failure mode is safe: the folder's files surface
+	// as "No database", and Stage-3 UMID/MDB recovery can still claim them.
 	// Avid checks a magic word before anything else, and so do we: it
 	// rejects a mislabelled or truncated file before the version gate has
 	// to interpret arbitrary bytes as a version number.
@@ -224,8 +248,9 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 		return {};
 	}
 
-	const quint32 version = readLE<quint32>(data, kVersionOffset);
-	if (version != kPmrVersion)
+	// OMF-era: version 2 is accepted beside 8; the only layout difference
+	// is the MOB width chosen above.
+	if (version != kPmrVersionMxf && version != kPmrVersionOmf)
 	{
 		qCWarning(lcPmr) << "unsupported PMR version" << version << pmrFilePath;
 		return {};
@@ -242,12 +267,12 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 
 	QVector<PmrEntry> entries;
 	// Reserve for what the header claims, but never beyond what the file
-	// could physically hold: each record needs at least kMobIdSize + 2
+	// could physically hold: each record needs at least mobSize + 2
 	// bytes (the MOB plus its leading u16), so a truncated or hostile file
 	// claiming a near-max pairCount can't make us speculatively allocate
 	// hundreds of MB for entries that will never materialise.
 	const qint64 bodyBytes = data.size() - kHeaderSize;
-	const qint64 maxRecordsBySize = bodyBytes > 0 ? bodyBytes / (kMobIdSize + 2) : 0;
+	const qint64 maxRecordsBySize = bodyBytes > 0 ? bodyBytes / (mobSize + 2) : 0;
 	entries.reserve(static_cast<qsizetype>(qMin<qint64>(pairCount, maxRecordsBySize)));
 
 	qint64 pos = kHeaderSize;
@@ -267,7 +292,7 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 
 	for (quint32 i = 0; i < totalRecords; ++i)
 	{
-		if (pos + kMobIdSize + 2 > data.size())
+		if (pos + mobSize + 2 > data.size())
 		{
 			truncated = true;
 			break;
@@ -279,16 +304,24 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 		// bail with what we have rather than commit garbage. MASTER slots
 		// previously had no check at all and would silently attach random
 		// bytes to the last FILE entry as its masterMobId.
+		// OMF-era: a version-2 MOB is 8 bytes of raw identity with no fixed
+		// prefix (164/164 fixture records start with arbitrary bytes), so
+		// the guard applies to version 8 only; the FILE record's nameLen
+		// check below stays the desync detector for both.
 		const auto *rec = reinterpret_cast<const unsigned char *>(data.constData()) + pos;
-		if (rec[0] != 0x06 || rec[1] != 0x0a || rec[2] != 0x2b || rec[3] != 0x34)
+		if (version == kPmrVersionMxf &&
+			(rec[0] != 0x06 || rec[1] != 0x0a || rec[2] != 0x2b || rec[3] != 0x34))
 		{
 			qCWarning(lcPmr) << "record" << i << "lacks the Avid MOB prefix; bailing on"
 							 << pmrFilePath;
 			return entries;
 		}
 
-		const QString mobHex = MobId::format(rec);
-		pos += kMobIdSize;
+		// OMF-era: the 8-byte MOB is widened to the same 32-byte form Avid
+		// writes into this file's own Unicode set, so the set's FILE-MOB
+		// match and every downstream consumer see one id spelling.
+		const QString mobHex = version == kPmrVersionOmf ? OmfUid::canonicalFromPmr8(rec) : MobId::format(rec);
+		pos += mobSize;
 
 		const quint16 firstWord = readLE<quint16>(data, pos);
 

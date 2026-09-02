@@ -89,6 +89,15 @@ private slots:
 	// selves are endian-agnostic: insertBothForms records both middle-
 	// field byte orders for every MOB found.
 	void big_endian_legacy_bin_is_parsed();
+
+	// OMF-era: an OMF bin writes the FILE mob's wrapped 32-byte id as raw
+	// bytes (pass 3) and the master as hex text (pass 2). The two real
+	// bins MC 26.8 wrote yield exactly those two MOBs, each in both forms.
+	void omf_bins_yield_their_file_mob();
+
+	// OMF-era: the raw frame is prefix + core + suffix; a prefix whose
+	// suffix does not follow mints nothing.
+	void omf_wrapped_frame_needs_both_fixed_parts();
 };
 
 void TestAvbParser::missing_file_returns_invalid()
@@ -171,6 +180,71 @@ void TestAvbParser::big_endian_legacy_bin_is_parsed()
 	const AvbBin bin = AvbParser::parse(path);
 	QVERIFY2(bin.valid, "big-endian bin rejected as not-a-bin");
 	QVERIFY(bin.mobIds.contains(formOf(QByteArray::fromHex(hexAscii))));
+}
+
+// MARK: - OMF-era
+
+void TestAvbParser::omf_bins_yield_their_file_mob()
+{
+	struct Pin
+	{
+		const char *bin;
+		const char *fileMob;   ///< The raw wrapped bytes at one offset in the bin (pass 3).
+		const char *masterMob; ///< Present only as dash-formatted hex text (pass 2).
+	};
+	// The cores are the version-2 PMR's 8-byte MOBs for each tone
+	// (tst_pmrparser pins the same four ids from msmFMID.pmr).
+	const Pin kPins[] = {
+		{"WAVE(OMF).avb", "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+		 "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80"},
+		{"AIFF-C(OMF).avb", "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+		 "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80"},
+	};
+	for (const Pin &pin : kPins)
+	{
+		const AvbBin bin =
+			AvbParser::parse(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/bins/") + QLatin1String(pin.bin));
+		QVERIFY2(bin.valid, pin.bin);
+		const QByteArray fileMob = QByteArray::fromHex(pin.fileMob);
+		const QByteArray masterMob = QByteArray::fromHex(pin.masterMob);
+		QVERIFY2(bin.mobIds.contains(formOf(fileMob)), pin.bin);
+		QVERIFY2(bin.mobIds.contains(swappedFormOf(fileMob)), pin.bin);
+		QVERIFY2(bin.mobIds.contains(formOf(masterMob)), pin.bin);
+		QVERIFY2(bin.mobIds.contains(swappedFormOf(masterMob)), pin.bin);
+		// Nothing spurious: two MOBs, two forms each.
+		QCOMPARE(bin.mobIds.size(), 4);
+	}
+}
+
+void TestAvbParser::omf_wrapped_frame_needs_both_fixed_parts()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QByteArray prefix = QByteArray::fromHex("060a2b340101010101010f0013000000");
+	const QByteArray core = QByteArray::fromHex("0102030405060708");
+	const QByteArray suffix = QByteArray::fromHex("060e2b347f7f2a80");
+
+	// Prefix + core + a suffix that is one byte off: no MOB.
+	QByteArray wrongSuffix = suffix;
+	wrongSuffix[7] = '\x81';
+	const AvbBin none =
+		AvbParser::parse(writeBin(tmp.path() + "/nosuffix.avb", QByteArray(3, '\0') + prefix + core + wrongSuffix));
+	QVERIFY(none.valid);
+	QVERIFY(none.mobIds.isEmpty());
+
+	// The exact frame, twice, straddling unrelated bytes: one MOB, both forms.
+	const QByteArray frame = prefix + core + suffix;
+	const AvbBin one =
+		AvbParser::parse(writeBin(tmp.path() + "/framed.avb", QByteArray(3, '\0') + frame + QByteArray(5, '\x44') + frame));
+	QVERIFY(one.valid);
+	QCOMPARE(one.mobIds.size(), 2);
+	QVERIFY(one.mobIds.contains(formOf(frame)));
+	QVERIFY(one.mobIds.contains(swappedFormOf(frame)));
+
+	// A frame cut off at the end of the file is not a MOB.
+	const AvbBin cut = AvbParser::parse(writeBin(tmp.path() + "/cut.avb", QByteArray(3, '\0') + prefix + core + suffix.left(7)));
+	QVERIFY(cut.valid);
+	QVERIFY(cut.mobIds.isEmpty());
 }
 
 QTEST_APPLESS_MAIN(TestAvbParser)

@@ -83,6 +83,7 @@ private slots:
 	// MARK: - Path helpers
 	void buildDestPath_preserve_true_uses_avid_structure();
 	void buildDestPath_preserve_false_flattens();
+	void buildDestPath_omf_row_preserves_to_omfi_root();
 	void generateRenamePath_first_slot_when_no_copies();
 	void generateRenamePath_skips_existing_slots();
 	void generateRenamePath_returns_nullopt_when_exhausted();
@@ -193,6 +194,24 @@ void TestOpRunner::buildDestPath_preserve_false_flattens()
 	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("clip.mxf"), QStringLiteral("5"),
 									 QStringLiteral("/dest"), false),
 			 QStringLiteral("/dest/clip.mxf"));
+}
+
+void TestOpRunner::buildDestPath_omf_row_preserves_to_omfi_root()
+{
+	// OMF-era: an OMF row's mxfFolder is the flat "OMFI MediaFiles" root,
+	// so preserve must rebuild that folder beside Avid MediaFiles — never
+	// "Avid MediaFiles/MXF/OMFI MediaFiles/". Any spelling, like the
+	// scanner accepts; flatten is unchanged.
+	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("slate.omf"), Conventions::kOmfMediaFilesDir,
+									 QStringLiteral("/dest"), true),
+			 QStringLiteral("/dest/OMFI MediaFiles/slate.omf"));
+	// A lowercase source spelling still lands in Avid's own spelling.
+	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("tone.wav"), QStringLiteral("omfi mediafiles"),
+									 QStringLiteral("/dest"), true),
+			 QStringLiteral("/dest/OMFI MediaFiles/tone.wav"));
+	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("slate.omf"), Conventions::kOmfMediaFilesDir,
+									 QStringLiteral("/dest"), false),
+			 QStringLiteral("/dest/slate.omf"));
 }
 
 void TestOpRunner::generateRenamePath_first_slot_when_no_copies()

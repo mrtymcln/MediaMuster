@@ -1,7 +1,8 @@
 #include "mdbparser.h"
 #include "bentofile.h"
 #include "logcategories.h"
-#include "mobid.h"
+#include "omfobjects.h"
+#include "omfuid.h" // OMF-era: widens the 12-byte omfi:UID to the 32-byte key form.
 
 #include <QByteArrayView>
 #include <QFile>
@@ -59,6 +60,23 @@
 // audio (MPGA), which carries no codec label in the MDB — such a file is
 // reported essenceComplete=false and the scanner reads its header instead.
 //
+// The object walks themselves (attribute tree, descriptor, timecode hop)
+// live in OmfObjects (omfobjects.{h,cpp}) since 2026-09-02: an OMF-era
+// essence file is the same object store, so one walker serves both. This
+// file keeps what is database-specific — the load, the MobID grouping and
+// the master/file/source triage — and the decode notes above, which is
+// where every rule the walker applies was verified.
+//
+// OMF-era: the msmMMOB.mdb inside an "OMFI MediaFiles" folder is the same
+// store with three differences, all handled below or in OmfObjects:
+// OMFI:MOBJ:MobID is a 12-byte omfi:UID (MC 2026 additionally writes a
+// 32-byte UMID on the physical mob of the same file, so both widths are
+// accepted and keyed by OmfUid::canonicalHex); the audio descriptors are
+// WAVD/AIFD/SD2D; the codec is a 4CC + resolution id rather than a label;
+// and the project name is a _PJ attribute on the file or source mob, since
+// a version-2 PMR carries no project. A 32-byte physical mob owns an MDES
+// and therefore falls out of the triage as a source mob, as before.
+//
 // Three traps that produced confidently wrong "it's not in there" readings
 // before this parser existed, kept here so nobody re-learns them:
 //  - The codec label is stored in GUID order; searched in MXF order it scores
@@ -71,38 +89,6 @@
 
 namespace
 {
-	// MARK: - Property ids, resolved once per file
-
-	struct Props
-	{
-		int mobId, usage, name, editRate, attrs, physMedia;
-		int attrRefs, attbName, attbKind, attbInt, attbString, attbObj;
-		int binNameUtf8, binName, posixPath, pathUtf8, pathName;
-		int essComp, resId, width, height, layout, sampleRate, length, compWidth, bits, channels;
-		int tracks, trackComp, sequence, sourceId, tcFlags;
-
-		explicit Props(const BentoFile &b)
-			: mobId(b.propertyId("OMFI:MOBJ:MobID")), usage(b.propertyId("OMFI:MOBJ:UsageCode")),
-			  name(b.propertyId("OMFI:CPNT:Name")), editRate(b.propertyId("OMFI:CPNT:EditRate")),
-			  attrs(b.propertyId("OMFI:CPNT:Attributes")), physMedia(b.propertyId("OMFI:MOBJ:PhysicalMedia")),
-			  attrRefs(b.propertyId("OMFI:ATTR:AttrRefs")), attbName(b.propertyId("OMFI:ATTB:Name")),
-			  attbKind(b.propertyId("OMFI:ATTB:Kind")), attbInt(b.propertyId("OMFI:ATTB:IntAttribute")),
-			  attbString(b.propertyId("OMFI:ATTB:StringAttribute")),
-			  attbObj(b.propertyId("OMFI:ATTB:ObjAttribute")),
-			  binNameUtf8(b.propertyId("OMFI:MCBR:MC:binNameUTF8")), binName(b.propertyId("OMFI:MCBR:MC:binName")),
-			  posixPath(b.propertyId("OMFI:FL:POSIXPathName")), pathUtf8(b.propertyId("OMFI:FL:PathNameUTF8")),
-			  pathName(b.propertyId("OMFI:FL:PathName")), essComp(b.propertyId("OMFI:DIDD:EssenceCompression")),
-			  resId(b.propertyId("OMFI:DIDD:DIDResolutionID")), width(b.propertyId("OMFI:DIDD:StoredWidth")),
-			  height(b.propertyId("OMFI:DIDD:StoredHeight")), layout(b.propertyId("OMFI:DIDD:FrameLayout")),
-			  sampleRate(b.propertyId("OMFI:MDFL:SampleRate")), length(b.propertyId("OMFI:MDFL:Length")),
-			  compWidth(b.propertyId("OMFI:CDCI:ComponentWidth")), bits(b.propertyId("OMFI:MDAU:BitsPerSample")),
-			  channels(b.propertyId("OMFI:MDAU:NumChannels")), tracks(b.propertyId("OMFI:TRKG:Tracks")),
-			  trackComp(b.propertyId("OMFI:TRAK:TrackComponent")), sequence(b.propertyId("OMFI:SEQU:Sequence")),
-			  sourceId(b.propertyId("OMFI:SCLP:SourceID")), tcFlags(b.propertyId("OMFI:TCCP:Flags"))
-		{
-		}
-	};
-
 	/// Avid's placeholder MOB — byte-identical across unrelated projects, in no
 	/// MXF. Never a real clip; skipped on sight.
 	const QByteArray &placeholderMob()
@@ -112,242 +98,10 @@ namespace
 		return kMob;
 	}
 
-	bool isAudioClass(const QByteArray &cls)
-	{
-		return cls == "PCMA" || cls == "MPGA" || cls == "WAVE";
-	}
-	bool isMediaClass(const QByteArray &cls)
-	{
-		return isAudioClass(cls) || cls == "CDCI" || cls == "MPGI" || cls == "RGBA" || cls == "JPED";
-	}
-
-	// MARK: - Codec label
-
-	/// OMFI:DIDD:EssenceCompression stores the SMPTE label as an AAF AUID: the
-	/// first three GUID fields little-endian (u32, u16, u16) followed by the
-	/// eight remaining bytes — and the eight remaining bytes are the label's
-	/// FIRST half. So UL = bytes[8..16] + rev(bytes[0..4]) + rev(bytes[4..6]) +
-	/// rev(bytes[6..8]). Measured byte-identical to MXF tag 0x3201 on every
-	/// file that carries it.
-	QByteArray auidToUl(QByteArrayView auid)
-	{
-		if (auid.size() != 16)
-			return {};
-		QByteArray ul;
-		ul.reserve(16);
-		ul.append(auid.data() + 8, 8);
-		for (int i = 3; i >= 0; --i)
-			ul.append(auid[i]);
-		ul.append(auid[5]);
-		ul.append(auid[4]);
-		ul.append(auid[7]);
-		ul.append(auid[6]);
-		return ul;
-	}
-
-	/// Legacy DNxHD essence carries no EssenceCompression in the MDB, only
-	/// Avid's numeric resolution id. The DNxHD labels are numbered in step
-	/// with it: label byte 13 == id − 1234 (verified on all ten ids in the
-	/// corpus: 1235→01 … 1253→13). Ids outside the DNxHD range (2400, 3416,
-	/// 557…) are other codecs that DO carry a label, so the guard matters.
-	QByteArray ulFromResId(quint32 resId)
-	{
-		if (resId <= 1234 || resId >= 1490)
-			return {};
-		QByteArray ul = QByteArray::fromHex("060e2b340401010a04010202");
-		ul.append(char(0x71));
-		ul.append(char(resId - 1234));
-		ul.append(char(0));
-		ul.append(char(0));
-		return ul;
-	}
-
 	QString baseName(const QString &path)
 	{
 		const int slash = qMax(path.lastIndexOf(QLatin1Char('/')), path.lastIndexOf(QLatin1Char('\\')));
 		return slash < 0 ? path : path.mid(slash + 1);
-	}
-
-	// MARK: - Attribute trees
-
-	/// ATTR → AttrRefs → ATTB[]; nested ATTRs are followed only where a fact
-	/// we want lives below them (_IMPORTSETTING, _USER). `seen` guards the
-	/// shared nodes Avid writes.
-	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, MdbMasterMob &m,
-						QSet<quint32> &seen, int depth)
-	{
-		if (attrObj == 0 || depth > 4 || seen.contains(attrObj))
-			return;
-		seen.insert(attrObj);
-		const QVector<quint32> attbs = BentoFile::handles(b.value(attrObj, p.attrRefs));
-		for (quint32 attb : attbs)
-		{
-			const QString name = BentoFile::string(b.value(attb, p.attbName));
-			const quint32 kind = BentoFile::uint(b.value(attb, p.attbKind));
-			if (kind == 3)
-			{
-				const quint32 target = BentoFile::handle(b.value(attb, p.attbObj));
-				if (target == 0)
-					continue;
-				const QByteArray cls = b.objectClass(target);
-				if (name == QLatin1String("_ORG_BIN") && cls == "MCBR")
-				{
-					if (m.bin.isEmpty())
-					{
-						m.bin = BentoFile::utf8String(b.value(target, p.binNameUtf8));
-						if (m.bin.isEmpty())
-							m.bin = BentoFile::string(b.value(target, p.binName));
-					}
-				}
-				else if (name == QLatin1String("_IMPORTSETTING"))
-				{
-					m.isImported = true;
-					if (cls == "ATTR")
-						walkAttributes(b, p, target, m, seen, depth + 1);
-				}
-				else if (name == QLatin1String("_SRCFILE") && cls == "MACL")
-				{
-					if (m.sourceFilePath.isEmpty())
-					{
-						m.sourceFilePath = BentoFile::string(b.value(target, p.posixPath));
-						if (m.sourceFilePath.isEmpty())
-							m.sourceFilePath = BentoFile::utf8String(b.value(target, p.pathUtf8));
-						if (m.sourceFilePath.isEmpty())
-							m.sourceFilePath = BentoFile::string(b.value(target, p.pathName));
-					}
-				}
-				else if (name == QLatin1String("_USER") && cls == "ATTR")
-				{
-					walkAttributes(b, p, target, m, seen, depth + 1);
-				}
-			}
-			else if (kind == 2)
-			{
-				if (name == QLatin1String("Video") || name == QLatin1String("Audio"))
-				{
-					if (m.sourceContainer.isEmpty())
-						m.sourceContainer = BentoFile::string(b.value(attb, p.attbString));
-				}
-				else if (name == QLatin1String("UNC Path"))
-				{
-					if (m.sourceFilePath.isEmpty())
-						m.sourceFilePath = BentoFile::string(b.value(attb, p.attbString));
-				}
-			}
-		}
-	}
-
-	// MARK: - Track walk (drop frame)
-
-	/// The first TCCP reachable from `mob`'s tracks: through SEQU components,
-	/// and through SCLP source references into other mobs (the timecode lives
-	/// on the tape/import source mob, not the file mob). 0 if none.
-	quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob,
-								  const QHash<QByteArray, quint32> &objectByMob, QSet<quint32> &seen,
-								  int depth)
-	{
-		if (mob == 0 || depth > 6 || seen.contains(mob))
-			return 0;
-		seen.insert(mob);
-		for (quint32 track : BentoFile::handles(b.value(mob, p.tracks)))
-		{
-			QVector<quint32> stack{BentoFile::handle(b.value(track, p.trackComp))};
-			while (!stack.isEmpty())
-			{
-				const quint32 c = stack.takeLast();
-				if (c == 0 || seen.contains(c))
-					continue;
-				seen.insert(c);
-				const QByteArray cls = b.objectClass(c);
-				if (cls == "TCCP")
-					return c;
-				if (cls == "SEQU")
-					stack += BentoFile::handles(b.value(c, p.sequence));
-				else if (cls == "SCLP")
-				{
-					const QByteArrayView src = b.value(c, p.sourceId);
-					if (src.size() == MobId::kRawSize)
-					{
-						const quint32 srcMob = objectByMob.value(src.toByteArray(), 0);
-						if (const quint32 t = findTimecodeComponent(b, p, srcMob, objectByMob, seen, depth + 1))
-							return t;
-					}
-				}
-			}
-		}
-		return 0;
-	}
-
-	// MARK: - Essence
-
-	/// Fill `f.essence` from the descriptor the way a header parse would, then
-	/// hand it to MxfParser::finalise so every derived value comes from the
-	/// same code as the header path.
-	void readEssence(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
-					 const QHash<QByteArray, quint32> &objectByMob, MdbFileMob &f)
-	{
-		MxfMetadata &e = f.essence;
-		const QByteArray cls = b.objectClass(desc);
-		if (!isMediaClass(cls))
-			return;
-		e.isAudio = isAudioClass(cls);
-
-		// Codec label: the stored AUID, else rebuilt from the resolution id.
-		e.essenceContainerLabel = auidToUl(b.value(desc, p.essComp));
-		if (e.essenceContainerLabel.isEmpty())
-			e.essenceContainerLabel = ulFromResId(BentoFile::uint(b.value(desc, p.resId)));
-
-		// Rate. Video goes through the same label matcher as tag 0x3001.
-		qint32 num = 0, den = 0;
-		if (BentoFile::rational(b.value(desc, p.sampleRate), num, den) && den > 0 && num > 0)
-			MxfParser::applyEditRate(e, quint32(num), quint32(den));
-
-		const quint32 length = BentoFile::uint(b.value(desc, p.length));
-		if (e.isAudio)
-		{
-			// Length is samples. The frame count comes from the mob's own edit
-			// rate; finalise then re-derives the timecode base from these two
-			// exactly as it does for a header (frames × rate ÷ samples).
-			e.descriptorDuration = length;
-			qint32 erNum = 0, erDen = 0;
-			if (BentoFile::rational(b.value(mobObj, p.editRate), erNum, erDen) && erDen > 0 && erNum > 0 &&
-				length > 0 && e.sampleRate > 0)
-				e.durationFrames = qRound(double(length) * erNum / erDen / e.sampleRate);
-			if (const quint32 bits = BentoFile::uint(b.value(desc, p.bits)))
-				e.bitDepth = MxfParser::bitDepthLabel(bits);
-			e.channels = int(BentoFile::uint(b.value(desc, p.channels)));
-		}
-		else
-		{
-			e.durationFrames = length;
-			e.width = int(BentoFile::uint(b.value(desc, p.width)));
-			int height = int(BentoFile::uint(b.value(desc, p.height)));
-			const QByteArrayView layoutV = b.value(desc, p.layout);
-			const int layout = layoutV.isEmpty() ? -1 : int(BentoFile::uint(layoutV));
-			// The MDB stores one FIELD height for layouts 1 and 3 (the MXF only
-			// for 1). Normalise here and say so; finalise keeps its own
-			// layout-1 rule for headers and the 1088/544 padding rule for both.
-			if (height > 0 && (layout == 1 || layout == 3))
-				height *= 2;
-			e.height = height;
-			e.frameLayout = layout;
-			e.heightIsFrameHeight = height > 0;
-			if (const quint32 bits = BentoFile::uint(b.value(desc, p.compWidth)))
-				e.bitDepth = MxfParser::bitDepthLabel(bits);
-		}
-
-		// Drop frame: the timecode component is on a source mob, reached
-		// through the file mob's SCLP references.
-		QSet<quint32> seen;
-		if (const quint32 tccp = findTimecodeComponent(b, p, mobObj, objectByMob, seen, 0))
-			e.dropFrame = BentoFile::uint(b.value(tccp, p.tcFlags)) != 0;
-
-		MxfParser::finalise(e);
-
-		// Complete = the scanner may skip the header. Audio needs a codec it
-		// can name (PCM is the no-label default; MPEG audio has no label here
-		// and would wrongly read as PCM), video needs its label.
-		f.essenceComplete = e.valid && (e.isAudio ? cls != "MPGA" : !e.essenceContainerLabel.isEmpty());
 	}
 } // namespace
 
@@ -378,7 +132,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 	if (ok)
 		*ok = true;
 
-	const Props p(b);
+	const OmfObjects::Props p(b);
 	if (p.mobId < 0)
 	{
 		qCDebug(lcMdb) << mdbFilePath << "carries no MobID property — an empty database";
@@ -387,7 +141,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 
 	// Group every MOBJ object by its MobID. Avid writes the same MobID on
 	// more than one object, so each clip is the union of its objects.
-	QHash<QByteArray, quint32> objectByMob; ///< First object per MobID (for SCLP hops).
+	OmfObjects::ObjectByMob objectByMob; ///< First object per MobID (for SCLP hops).
 	QHash<QString, QVector<quint32>> objectsByHex;
 	QVector<QString> order;
 	for (quint32 obj : b.objectsWithProperty(p.mobId))
@@ -395,12 +149,15 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		if (b.objectClass(obj) != "MOBJ")
 			continue;
 		const QByteArrayView raw = b.value(obj, p.mobId);
-		if (raw.size() != MobId::kRawSize || raw == QByteArrayView(placeholderMob()))
+		// OMF-era: canonicalHex accepts a 12-byte omfi:UID (wrapped to the
+		// 32-byte form the v2 PMR yields) beside the 32-byte UMID, and reads
+		// empty for any other width; a 32-byte id formats exactly as before.
+		const QString hex = OmfUid::canonicalHex(raw);
+		if (hex.isEmpty() || raw == QByteArrayView(placeholderMob()))
 			continue;
 		const QByteArray rawBytes = raw.toByteArray();
 		if (!objectByMob.contains(rawBytes))
 			objectByMob.insert(rawBytes, obj);
-		const QString hex = BentoFile::mobIdHex(raw);
 		auto it = objectsByHex.find(hex);
 		if (it == objectsByHex.end())
 		{
@@ -425,7 +182,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 			if (desc == 0)
 				continue;
 			anyPhysical = true;
-			if (mediaObj == 0 && isMediaClass(b.objectClass(desc)))
+			if (mediaObj == 0 && OmfObjects::isMediaClass(b.objectClass(desc)))
 			{
 				mediaObj = obj;
 				mediaDesc = desc;
@@ -442,9 +199,48 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				if (f.usageCode < 0 && !u.isEmpty())
 					f.usageCode = int(BentoFile::uint(u));
 			}
-			readEssence(b, p, mediaObj, mediaDesc, objectByMob, f);
+			// Complete = the scanner may skip the header. Audio needs a codec it
+			// can name (PCM is the no-label default; MPEG audio has no label here
+			// and would wrongly read as PCM), video needs its label.
+			bool codecKnown = false;
+			if (OmfObjects::readDescriptor(b, p, mediaObj, mediaDesc, objectByMob, f.essence, &codecKnown))
+				f.essenceComplete =
+					f.essence.valid && (f.essence.isAudio ? b.objectClass(mediaDesc) != "MPGA" : codecKnown);
 			if (f.essenceComplete)
 				++complete;
+
+			// OMF-era: the project lives on the file mob (MC 2026) or on the
+			// source mob its SCLP names (the 2021 slates); the file mob wins.
+			// An MXF-era file mob carries neither, so this reads empty there.
+			{
+				OmfObjects::Attributes a;
+				a.omfEra = b.value(mediaObj, p.mobId).size() == OmfUid::kUidSize; // OMF-era: 12-byte mob
+				QSet<quint32> seen;
+				for (quint32 obj : objs)
+					OmfObjects::walkAttributes(b, p, BentoFile::handle(b.value(obj, p.attrs)), a, seen, 0);
+				if (a.project.isEmpty())
+				{
+					const quint32 src = OmfObjects::findSourceMob(b, p, mediaObj, objectByMob);
+					OmfObjects::walkAttributes(b, p, BentoFile::handle(b.value(src, p.attrs)), a, seen, 0);
+				}
+				f.project = a.project;
+			}
+
+			// OMF-era: the descriptor's locator list may name the volume the
+			// file was last seen on (MSML). Diagnostic only — never a fact.
+			if (lcMdb().isDebugEnabled())
+			{
+				for (quint32 loc : BentoFile::handles(b.value(mediaDesc, p.locator)))
+				{
+					if (b.objectClass(loc) != "MSML")
+						continue;
+					QString volume = BentoFile::utf8String(b.value(loc, p.lastKnownVolumeUtf8));
+					if (volume.isEmpty())
+						volume = BentoFile::string(b.value(loc, p.lastKnownVolume));
+					if (!volume.isEmpty())
+						qCDebug(lcMdb) << hex << "last known volume" << volume;
+				}
+			}
 			db.files.insert(hex, f);
 			continue;
 		}
@@ -453,6 +249,11 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 
 		MdbMasterMob m;
 		m.mobIdHex = hex;
+		OmfObjects::Attributes a;
+		// OMF-era: a 12-byte mob may point _SRCFILE at a WINL/UNXL; a 32-byte
+		// (MXF-era) mob keeps the MACL-only rule, so its Source File is
+		// exactly what it was before the walker learned the other locators.
+		a.omfEra = b.value(objs.first(), p.mobId).size() == OmfUid::kUidSize;
 		QSet<quint32> seen;
 		for (quint32 obj : objs)
 		{
@@ -461,8 +262,13 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 			const QByteArrayView u = b.value(obj, p.usage);
 			if (m.usageCode < 0 && !u.isEmpty())
 				m.usageCode = int(BentoFile::uint(u));
-			walkAttributes(b, p, BentoFile::handle(b.value(obj, p.attrs)), m, seen, 0);
+			OmfObjects::walkAttributes(b, p, BentoFile::handle(b.value(obj, p.attrs)), a, seen, 0);
 		}
+		m.bin = a.bin;
+		m.sourceFilePath = a.sourceFilePath;
+		m.sourceContainer = a.sourceContainer;
+		m.project = a.project; // OMF-era: _PJ on a master mob, when a file keeps it there.
+		m.isImported = a.isImported;
 		if (!m.sourceFilePath.isEmpty())
 			m.sourceFileName = baseName(m.sourceFilePath);
 		db.masters.insert(hex, m);

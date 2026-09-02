@@ -104,6 +104,10 @@ OpRunner::OpRunner(OpSink &sink, const std::atomic<bool> &cancel)
 QString OpRunner::buildDestPath(const QString &fileName, const QString &mxfFolder,
 								const QString &destRoot, bool preserve)
 {
+	// OMF-era: an OMF row's "folder" is the flat OMFI root itself, so a
+	// preserved copy goes to <dest>/OMFI MediaFiles/, never under MXF.
+	if (preserve && Conventions::isOmfRootName(mxfFolder))
+		return Conventions::omfRootUnder(destRoot) + QLatin1Char('/') + fileName;
 	if (preserve)
 		return Conventions::mxfRootUnder(destRoot) + QLatin1Char('/') + mxfFolder +
 			   QLatin1Char('/') + fileName;
