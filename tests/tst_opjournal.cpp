@@ -1,4 +1,5 @@
 #include "opjournal.h"
+#include "conventions.h" // OMF-era: kOmfMediaFilesDir for the pre-key journal case
 
 #include "testutil.h"
 
@@ -60,6 +61,7 @@ private slots:
 	void opens_into_given_dir();
 	void clean_run_round_trips();
 	void plan_round_trips_items_and_volumes();
+	void plan_without_omf_key_is_routed_by_folder_name();
 	void journal_without_plan_reads_has_plan_false();
 	void interrupted_run_has_no_end();
 	void delete_final_path_round_trips();
@@ -171,6 +173,7 @@ void TestOpJournal::plan_round_trips_items_and_volumes()
 	it.src = QStringLiteral("/vol/Avid MediaFiles/MXF/1/clip.mxf");
 	it.name = QStringLiteral("clip.mxf");
 	it.folder = QStringLiteral("1");
+	it.omfEra = true; // OMF-era: the verdict must survive a resume
 	it.bytes = 123456789;
 	it.policy = QStringLiteral("replace");
 	it.mobId = QStringLiteral("060A2B34...4321");
@@ -203,6 +206,7 @@ void TestOpJournal::plan_round_trips_items_and_volumes()
 	QCOMPARE(back.src, it.src);
 	QCOMPARE(back.name, it.name);
 	QCOMPARE(back.folder, it.folder);
+	QCOMPARE(back.omfEra, it.omfEra);
 	QCOMPARE(back.bytes, it.bytes);
 	QCOMPARE(back.policy, it.policy);
 	QCOMPARE(back.mobId, it.mobId);
@@ -214,6 +218,57 @@ void TestOpJournal::plan_round_trips_items_and_volumes()
 	QCOMPARE(rec->volumes.size(), 1);
 	QVERIFY(rec->volumes[0].matches(vol));
 	QCOMPARE(rec->volumes[0].rootPath, vol.rootPath);
+}
+
+void TestOpJournal::plan_without_omf_key_is_routed_by_folder_name()
+{
+	// OMF-era: a journal written before the verdict was journaled
+	// (2026-09-03) routed a preserved copy by the folder's name — an
+	// "OMFI MediaFiles" item to the OMFI root. Reading it back must say the
+	// same, or a resumed remainder lands somewhere its finished part did
+	// not. With the key present the folder's name means nothing.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	OpItem omfRow;
+	omfRow.src = QStringLiteral("/vol/OMFI MediaFiles/slate.omf");
+	omfRow.name = QStringLiteral("slate.omf");
+	omfRow.folder = QString(Conventions::kOmfMediaFilesDir);
+	omfRow.omfEra = false; // deliberately wrong, to prove the key wins over the name
+	OpItem mxfRow;
+	mxfRow.src = QStringLiteral("/vol/Avid MediaFiles/MXF/1/clip.mxf");
+	mxfRow.name = QStringLiteral("clip.mxf");
+	mxfRow.folder = QStringLiteral("1");
+
+	QString path;
+	{
+		OpJournal journal(OpKind::Copy, {}, tmp.path());
+		path = journal.path();
+		journal.writePlan(QStringLiteral("/dest"), true, {omfRow, mxfRow}, {});
+	}
+
+	// Key present: the verdict as written, whatever the folder is called.
+	{
+		const auto rec = OpJournal::readOne(path);
+		QVERIFY(rec.has_value() && rec->plan.size() == 2);
+		QVERIFY(!rec->plan[0].omfEra);
+		QVERIFY(!rec->plan[1].omfEra);
+	}
+
+	// Strip the key: the shape a pre-2026-09-03 build wrote.
+	{
+		QFile f(path);
+		QVERIFY(f.open(QIODevice::ReadOnly));
+		QByteArray text = f.readAll();
+		f.close();
+		QVERIFY2(text.contains(",\"omfEra\":false"), text.constData());
+		text.replace(",\"omfEra\":false", "");
+		QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Truncate));
+		f.write(text);
+	}
+	const auto rec = OpJournal::readOne(path);
+	QVERIFY(rec.has_value() && rec->plan.size() == 2);
+	QVERIFY(rec->plan[0].omfEra);	// the OMFI-named folder, as the old rule routed it
+	QVERIFY(!rec->plan[1].omfEra); // a numbered MXF folder
 }
 
 void TestOpJournal::journal_without_plan_reads_has_plan_false()

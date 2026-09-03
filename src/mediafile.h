@@ -118,6 +118,13 @@ struct MediaFile
 	/// name, "OMFI MediaFiles" — which the rebalancer's folder-name rule
 	/// rejects, keeping OMF media out of its scope.
 	QString mxfFolder;
+	/// OMF-era: legacy media — read by OmfParser, preserved by the copy
+	/// engine to "OMFI MediaFiles". Decided once, in the scanner
+	/// (isOmfEraRow): an .omf extension, Avid's OMFI root, or a folder
+	/// whose own databases carry 12-byte omfi:UIDs. The folder's name is
+	/// not the rule — Avid's bundled slate folder is "Avid_MediaFiles",
+	/// and an archive added by hand can be called anything.
+	bool omfEra = false;
 	qint64 sizeBytes = 0;
 	/// Filesystem creation (birth) time. Invalid when the file system
 	/// doesn't record one — displayed blank, never substituted.

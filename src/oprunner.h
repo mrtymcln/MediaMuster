@@ -103,10 +103,11 @@ public:
 
 	/// Where an item lands under destRoot. preserve=true mirrors Avid's
 	/// `Avid MediaFiles/MXF/<n>/<filename>` layout; false flattens.
-	/// OMF-era: an mxfFolder naming the OMFI root preserves to
-	/// `OMFI MediaFiles/<filename>` instead — that folder is flat.
+	/// OMF-era: a legacy row (`omfEra`, the scanner's verdict carried on the
+	/// item) preserves to `OMFI MediaFiles/<filename>` instead — Avid's own
+	/// placement for flat legacy media, whatever its source folder was called.
 	static QString buildDestPath(const QString &fileName, const QString &mxfFolder,
-								 const QString &destRoot, bool preserve);
+								 const QString &destRoot, bool preserve, bool omfEra = false);
 
 	/// First free `name (2)`-style sibling of destPath (Windows/Chrome
 	/// convention — see the naming catalogue above the definition);

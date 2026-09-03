@@ -96,6 +96,8 @@ private slots:
 	void omf_root_pointed_at_directly_never_scans_as_mxf_folders();
 	void omf_root_without_a_pmr_gets_identity_from_its_header();
 	void omf_video_rows_show_avid_short_names();
+	void omf_folder_with_any_name_is_recognised_by_its_databases();
+	void omf_folder_is_recognised_by_its_mdb_alone();
 	void creating_folder_is_skipped_under_mxf_and_omfi();
 	void ama_databases_are_read();
 
@@ -106,6 +108,7 @@ private slots:
 	// ama* twin beside a readable msm* pair does not fail the folder.
 	void manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root();
 	void stray_audio_in_an_mxf_folder_is_listed_but_never_opened();
+	void stray_omf_in_an_mxf_folder_is_opened();
 	void unreadable_ama_twin_does_not_mark_the_folder_unreadable();
 
 private:
@@ -1118,7 +1121,9 @@ namespace
 		QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80");
 	const QString kOmfProject = QString::fromUtf8("zTe\xc3\x9ft_PAL_25p");
 	const QString kOmfFolder = QString(Conventions::kOmfMediaFilesDir);
-	/// Every trailer in the shipped 80-pair PMR.
+	/// The trailer of 73 of the shipped PMR's 80 pairs — every slate pinned
+	/// below among them; the other 7 read 1626810312, still inside
+	/// PmrParser::trailerMatchesModified's ±2 s (tst_pmrparser has the split).
 	constexpr quint32 kSlateModified = 1626810310u;
 
 	QVector<MediaFile> runScanWith(const MediaScanner::Options &opts)
@@ -1155,7 +1160,9 @@ namespace
 		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 		QCOMPARE(mf.type, MediaFile::Type::Media);
-		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		// OMF-era: Avid's container label, never "PCM" (that is MXF-era audio).
+		QCOMPARE(mf.codec, mf.fileName.endsWith(QLatin1String(".wav")) ? QStringLiteral("WAVE (OMF)")
+																	   : QStringLiteral("AIFF-C (OMF)"));
 		QCOMPARE(mf.clipName, clip);
 		QCOMPARE(mf.project, kOmfProject);
 		QCOMPARE(mf.originalBin, bin);
@@ -1309,7 +1316,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
 		QCOMPARE(mf.mxfFolder, kOmfFolder);
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		QCOMPARE(mf.codec, QStringLiteral("WAVE (OMF)")); // OMF-era: Avid's container label
 		QCOMPARE(mf.clipName, kOmfWavClip);
 		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 		QCOMPARE(mf.project, kOmfProject);
@@ -1332,7 +1339,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.mobId, kOmfWavFileMob);
 		QVERIFY(mf.masterMobId.isEmpty());
 		QVERIFY(mf.originalBin.isEmpty());
-		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		QCOMPARE(mf.codec, QStringLiteral("WAVE (OMF)")); // OMF-era: Avid's container label
 	}
 }
 
@@ -1390,6 +1397,116 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 		QCOMPARE(mf->clipNameSource,
 				 pin.stamp ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	}
+}
+
+void TestScanner::omf_folder_with_any_name_is_recognised_by_its_databases()
+{
+	// Avid's own bundled slate folder is "Avid_MediaFiles" (underscore),
+	// and an archive folder added by hand can be called anything. The era
+	// is not the folder's name: a folder whose databases carry 12-byte
+	// omfi:UIDs is an OMF folder, and every legacy-extension file in it is
+	// legacy media — described by those databases when they cover it, read
+	// from its own tail when they don't. Dragging the bundled folder in
+	// used to list 80 rows with no codec, resolution, fps, duration or
+	// project (2026-09-02): neither era claimed them.
+	struct Pin
+	{
+		const char *file;
+		const char *codec;
+		const char *resolution;
+		const char *fps;
+		bool stamp; ///< true: mtime = PMR trailer, database-covered; false: fresh, header path
+	};
+	const Pin kPins[] = {
+		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x496", "29.97", true},
+		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
+		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ (DNxHD 220)", "1920x1080", "29.97", false},
+	};
+
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid_MediaFiles");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("omf/avid_supporting/msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("omf/avid_supporting/msmMMOB.mdb"), folder);
+	for (const Pin &pin : kPins)
+	{
+		copyFixture(QStringLiteral("omf/avid_supporting/") + QLatin1String(pin.file), folder);
+		if (pin.stamp)
+			setModified(folder + QLatin1Char('/') + QLatin1String(pin.file), kSlateModified);
+	}
+	// A legacy .wav these databases do not list: the folder's era still
+	// admits it to the header pass, so its own tail names it.
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
+
+	const auto results = runManualScan(folder);
+	QCOMPARE(results.size(), 4);
+	for (const Pin &pin : kPins)
+	{
+		const MediaFile *mf = rowNamed(results, QLatin1String(pin.file));
+		QVERIFY2(mf != nullptr, pin.file);
+		QVERIFY2(mf->omfEra, pin.file);
+		QCOMPARE(mf->mxfFolder, QStringLiteral("Avid_MediaFiles")); // the real name, never a stand-in
+		QCOMPARE(mf->dbStatus, MediaFile::DbStatus::Listed);
+		QCOMPARE(mf->kind, MediaFile::Kind::Video);
+		QCOMPARE(mf->codec, QLatin1String(pin.codec));
+		QCOMPARE(mf->resolution, QLatin1String(pin.resolution));
+		QCOMPARE(mf->fps, QLatin1String(pin.fps));
+		QCOMPARE(mf->durationFrames, qint64(1));
+		QVERIFY2(!mf->clipName.isEmpty(), pin.file);
+		QVERIFY2(!mf->project.isEmpty(), pin.file);
+		QVERIFY(OmfUid::isOmfForm(mf->mobId));
+		QVERIFY(OmfUid::isOmfForm(mf->masterMobId));
+		QCOMPARE(mf->type, MediaFile::Type::Media);
+		QCOMPARE(mf->bitDepth, QStringLiteral("8-bit"));
+		QCOMPARE(mf->clipNameSource,
+				 pin.stamp ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	}
+	const MediaFile *wav = rowNamed(results, kOmfWav);
+	QVERIFY(wav != nullptr);
+	QVERIFY(wav->omfEra);
+	QCOMPARE(wav->dbStatus, MediaFile::DbStatus::NoReference);
+	QCOMPARE(wav->kind, MediaFile::Kind::Audio);
+	QCOMPARE(wav->codec, QStringLiteral("WAVE (OMF)"));
+	QCOMPARE(wav->clipName, kOmfWavClip);
+	QCOMPARE(wav->mobId, kOmfWavFileMob);
+	// A master mob comes from a database only (the PMR's MASTER record, or
+	// the MDB re-join) — this folder's has never heard of the file, and no
+	// record is ever swapped in for an OMF-era row.
+	QVERIFY(wav->masterMobId.isEmpty());
+}
+
+void TestScanner::omf_folder_is_recognised_by_its_mdb_alone()
+{
+	// The same folder with only the clip database. No PMR means no index
+	// to be listed in and nothing the databases can vouch for — but the
+	// MDB's keys still say OMF-era, so both files are opened and read from
+	// their own tails, and the slate's MDB record joins by identity.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid_MediaFiles");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("omf/avid_supporting/msmMMOB.mdb"), folder);
+	copyFixture(QStringLiteral("omf/avid_supporting/BLACK_720x243x2_JFIF35.omf"), folder);
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
+
+	const auto results = runManualScan(folder);
+	QCOMPARE(results.size(), 2);
+	for (const MediaFile &mf : results)
+	{
+		QVERIFY2(mf.omfEra, qPrintable(mf.fileName));
+		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+		QVERIFY(OmfUid::isOmfForm(mf.mobId));
+	}
+	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
+	QVERIFY(slate != nullptr);
+	QCOMPARE(slate->codec, QStringLiteral("20:1"));
+	QCOMPARE(slate->originalBin, QStringLiteral("NTSC slides")); // the MDB's record, joined by identity
+	const MediaFile *wav = rowNamed(results, kOmfWav);
+	QVERIFY(wav != nullptr);
+	QCOMPARE(wav->codec, QStringLiteral("WAVE (OMF)"));
+	QVERIFY(wav->originalBin.isEmpty()); // this folder's MDB has never heard of it
 }
 
 void TestScanner::creating_folder_is_skipped_under_mxf_and_omfi()
@@ -1506,10 +1623,11 @@ void TestScanner::stray_audio_in_an_mxf_folder_is_listed_but_never_opened()
 {
 	// A real OMF-written .wav dropped into an MXF-era numbered folder. It
 	// is admitted to the table (name, size, date) as it always was, but it
-	// is NOT legacy essence in the scanner's eyes — only an OMFI MediaFiles
-	// root is — so its tail is never read: no codec, no clip name, no MOB,
+	// is NOT legacy essence in the scanner's eyes — a .wav could be anything,
+	// this is no OMFI MediaFiles root, and the folder's own databases are
+	// MXF-era — so its tail is never read: no codec, no clip name, no MOB,
 	// and the folder's PMR (which does not list it) makes it a real miss.
-	// Had OmfParser opened it, the row would say PCM and name the tone.
+	// Had OmfParser opened it, the row would say "WAVE (OMF)" and name the tone.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -1530,6 +1648,38 @@ void TestScanner::stray_audio_in_an_mxf_folder_is_listed_but_never_opened()
 	QVERIFY(mf.masterMobId.isEmpty());
 	QVERIFY(mf.hasNoProject());
 	QCOMPARE(mf.sampleRate, 0);
+}
+
+void TestScanner::stray_omf_in_an_mxf_folder_is_opened()
+{
+	// The twin of the stray-audio rule. An .omf can only be OMF media, so
+	// even dropped into an MXF-era numbered folder — whose PMR does not
+	// list it — its tail is read: codec, clip name and MOB from the file.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(QStringLiteral("omf/avid_supporting/BLACK_720x243x2_JFIF35.omf"), folder);
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 1);
+	const MediaFile &mf = results.first();
+	QVERIFY(mf.omfEra);
+	QCOMPARE(mf.mxfFolder, QStringLiteral("1"));
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference);
+	QCOMPARE(mf.kind, MediaFile::Kind::Video);
+	QCOMPARE(mf.codec, QStringLiteral("20:1"));
+	QCOMPARE(mf.clipName, QStringLiteral("Black 720x486.PICT"));
+	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(OmfUid::isOmfForm(mf.mobId));
+	// Its own attributes from the file; no master mob, because that comes
+	// from a database only and this folder's MXF-era MDB must never have a
+	// record swapped in for an OMF-era row (pass 2 skips the swap).
+	QVERIFY(mf.masterMobId.isEmpty());
+	QCOMPARE(mf.project, QStringLiteral("NTSC slides"));
+	QCOMPARE(mf.originalBin, QStringLiteral("NTSC slides"));
 }
 
 void TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable()

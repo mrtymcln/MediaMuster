@@ -433,6 +433,14 @@ namespace OmfObjects
 		const quint32 length = BentoFile::uint(b.bytes(desc, p.length));
 		if (e.isAudio)
 		{
+			// OMF-era: the codec column shows Avid's own label for legacy
+			// audio — "WAVE (OMF)", "AIFF-C (OMF)", "SDII" (see
+			// OmfResolutions::audioName). Pre-filled here because finalise
+			// only names a codec that is still empty, which is also what
+			// keeps MXF-era audio (PCMA / WAVE / MPGA descriptors) on "PCM".
+			if (e.codec.isEmpty())
+				e.codec = OmfResolutions::audioName(cls);
+
 			// OMF-era: WAVD / AIFD keep channels, bits and rate in a header
 			// blob; SD2D in two properties of its own. Read them up front so
 			// a missing MDFL:SampleRate can still fall back to the blob's

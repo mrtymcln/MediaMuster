@@ -45,6 +45,7 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 		it.src = mf.filePath;
 		it.name = mf.fileName;
 		it.folder = mf.mxfFolder;
+		it.omfEra = mf.omfEra; // OMF-era: travels with the item, and through the journal
 		it.bytes = mf.sizeBytes;
 		if (const auto p = policies.constFind(mf.filePath); p != policies.constEnd())
 			it.policy = conflictPolicyName(p.value());
@@ -64,7 +65,8 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 
 QString OpManager::buildDestPath(const MediaFile &mf, const QString &destRoot, bool preserve)
 {
-	return OpRunner::buildDestPath(mf.fileName, mf.mxfFolder, destRoot, preserve);
+	return OpRunner::buildDestPath(mf.fileName, mf.mxfFolder, destRoot, preserve,
+								   mf.omfEra); // OMF-era: the scanner's verdict routes preserve
 }
 
 // MARK: - Job entry points

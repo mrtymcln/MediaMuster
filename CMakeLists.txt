@@ -91,6 +91,7 @@ set(SOURCES
     src/icons.cpp
     src/logcategories.cpp
     src/logfile.cpp
+    src/macaccessibilityguard.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
     src/revealinfinder.cpp

@@ -135,6 +135,10 @@ struct OpItem
 	QString src;	///< Absolute source path; the item's identity key.
 	QString name;	///< Destination leaf name (usually the source's).
 	QString folder; ///< Avid MXF subfolder ("1", "hostname.3"…); preserve mode only.
+	/// OMF-era: the scanner's verdict (MediaFile::omfEra). Preserve mode
+	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `folder`
+	/// says; journaled so a resumed run lands it in the same place.
+	bool omfEra = false;
 	qint64 bytes = 0;
 	QString policy; ///< Conflict policy by name; empty = none chosen.
 

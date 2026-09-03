@@ -1,4 +1,5 @@
 #include "logfile.h"
+#include "macaccessibilityguard.h"
 #include "mainwindow.h"
 #include "version.h"
 #include <QApplication>
@@ -21,6 +22,10 @@ int main(int argc, char *argv[])
 
 	// Start the diagnostic log first, which needes the above info.
 	AppLog::install();
+
+	// Before any window exists: the macOS accessibility bridge builds its
+	// element tree from the first view it sees (see the header).
+	MacAccessibilityGuard::install();
 
 #ifdef Q_OS_MAC
 	app.setStyle(QStyleFactory::create("macos"));

@@ -45,13 +45,19 @@ namespace OmfUid
 	// MARK: - Avid's wrapper
 
 	/// [AVID — DO NOT CHANGE] The 16 bytes Avid puts before the 8-byte core
-	/// when it writes a 32-byte form. Note byte 7 is 0x01, where a real
-	/// SMPTE UMID (MXF-era) has 0x05 — that one byte is why the two forms
-	/// can never collide.
+	/// when it writes a 32-byte form. NOT a discriminator on its own: a
+	/// SMPTE UMID has 0x05 at byte 7 and 0x0f10 at bytes 10-11, but Avid's
+	/// own MXF-era writer also mints MobIDs with exactly these 16 bytes
+	/// (four in the corpus MDB msmMMOB_round3.mdb, four in a live MC 2026
+	/// MXF folder, 2026-09-03) — they differ only in the suffix below.
 	inline constexpr unsigned char kPrefix[16] = {0x06, 0x0a, 0x2b, 0x34, 0x01, 0x01, 0x01, 0x01,
 												  0x01, 0x01, 0x0f, 0x00, 0x13, 0x00, 0x00, 0x00};
 
-	/// [AVID — DO NOT CHANGE] The 8 bytes Avid puts after the core.
+	/// [AVID — DO NOT CHANGE] The 8 bytes Avid puts after the core — the
+	/// AAF SDK's "prefix 42" material marker (7f7f2a80 is 42 padded). This
+	/// is what keeps the two forms apart: an MXF-era MobID carries a per-host
+	/// random here (8e40da9649f531f4 in every specimen above), never this.
+	/// isOmfForm therefore requires prefix AND suffix.
 	inline constexpr unsigned char kSuffix[8] = {0x06, 0x0e, 0x2b, 0x34, 0x7f, 0x7f, 0x2a, 0x80};
 
 	/// kPrefix + eight + kSuffix. Deliberately NO middle-field swap: the

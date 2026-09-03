@@ -1,4 +1,5 @@
 #include "opjournal.h"
+#include "conventions.h" // OMF-era: the folder-name rule pre-2026-09-03 journals were routed by
 
 #include "nativefile.h"
 
@@ -114,6 +115,9 @@ void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpIt
 		QJsonObject o{{QStringLiteral("source"), it.src}, {QStringLiteral("name"), it.name}};
 		if (!it.folder.isEmpty())
 			o.insert(QStringLiteral("folder"), it.folder);
+		// OMF-era: written for every item, true or false, so the reader never
+		// has to guess a new journal's verdict from the folder's name.
+		o.insert(QStringLiteral("omfEra"), it.omfEra);
 		if (it.bytes > 0)
 			o.insert(QStringLiteral("bytes"), QJsonValue(it.bytes));
 		if (!it.policy.isEmpty())
@@ -472,6 +476,13 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
 				it.src = fo.value(QStringLiteral("source")).toString();
 				it.name = fo.value(QStringLiteral("name")).toString();
 				it.folder = fo.value(QStringLiteral("folder")).toString();
+				// OMF-era: journals written before 2026-09-03 carry no key; their
+				// items were routed by the folder's name (an OMFI MediaFiles
+				// folder preserved to the OMFI root), so a resumed remainder is
+				// read the way its finished part was written. A present key is
+				// the verdict, whatever the folder is called.
+				const QJsonValue omfEra = fo.value(QStringLiteral("omfEra"));
+				it.omfEra = omfEra.isBool() ? omfEra.toBool() : Conventions::isOmfRootName(it.folder);
 				it.bytes = fo.value(QStringLiteral("bytes")).toInteger(0);
 				it.policy = fo.value(QStringLiteral("policy")).toString();
 				it.mobId = fo.value(QStringLiteral("mobId")).toString();

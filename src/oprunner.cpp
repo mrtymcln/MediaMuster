@@ -102,11 +102,13 @@ OpRunner::OpRunner(OpSink &sink, const std::atomic<bool> &cancel)
 // MARK: - Path helpers
 
 QString OpRunner::buildDestPath(const QString &fileName, const QString &mxfFolder,
-								const QString &destRoot, bool preserve)
+								const QString &destRoot, bool preserve, bool omfEra)
 {
-	// OMF-era: an OMF row's "folder" is the flat OMFI root itself, so a
-	// preserved copy goes to <dest>/OMFI MediaFiles/, never under MXF.
-	if (preserve && Conventions::isOmfRootName(mxfFolder))
+	// OMF-era: a legacy row's "folder" is a flat root — Avid's own "OMFI
+	// MediaFiles", or whatever an archive folder added by hand is called —
+	// so a preserved copy goes to Avid's placement, <dest>/OMFI MediaFiles/,
+	// never under MXF. The scanner's verdict decides, not the folder's name.
+	if (preserve && omfEra)
 		return Conventions::omfRootUnder(destRoot) + QLatin1Char('/') + fileName;
 	if (preserve)
 		return Conventions::mxfRootUnder(destRoot) + QLatin1Char('/') + mxfFolder +
@@ -497,7 +499,8 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 	for (int i = 0; i < total && !m_cancel.load(std::memory_order_acquire); ++i)
 	{
 		const OpItem &it = req.items[i];
-		QString dstPath = buildDestPath(it.name, it.folder, req.destRoot, req.preserve);
+		QString dstPath = buildDestPath(it.name, it.folder, req.destRoot, req.preserve,
+										it.omfEra); // OMF-era: the item's journaled verdict
 
 		m_sink.progress(it.name, i + 1, total, 0);
 		warnJournalDegradedOnce(journal, journalDegradedWarned);

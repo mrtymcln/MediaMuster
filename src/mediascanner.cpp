@@ -6,6 +6,7 @@
 #include "mobid.h"
 #include "mxfparser.h"
 #include "omfparser.h" // OMF-era: the Bento-tail twin of MxfParser for legacy essence
+#include "omfuid.h"	   // OMF-era: tells a folder's databases' era from their MOB form
 #include "pathkey.h"
 #include "pmrkey.h"
 #include "progressthrottle.h"
@@ -83,17 +84,24 @@ void MediaScanner::cancelScan()
 
 namespace
 {
-	/// OMF-era: a row is legacy essence — worth a Bento-tail read, and
-	/// counted as header-readable — only when it sits where Avid writes
-	/// legacy essence: the flat OMFI MediaFiles root (the scanner names
-	/// that folder Conventions::kOmfMediaFilesDir whichever way it was
-	/// reached). A stray .wav/.aif in an MXF-era numbered folder is listed
-	/// and never opened, exactly as before OMF support: no per-scan tail
-	/// read on a share, and the folder's coverage and pass-2 console lines
-	/// stay byte-identical for MXF-era folders.
-	bool isOmfEraRow(QStringView extension, QStringView folderName)
+	/// OMF-era: is this row legacy essence — worth a Bento-tail read, and
+	/// counted as header-readable? Three ways to be sure, any one enough:
+	///   - the extension is .omf, which nothing but OMF media ever uses;
+	///   - the folder is Avid's flat OMFI MediaFiles root (the scanner names
+	///     it Conventions::kOmfMediaFilesDir whichever way it was reached);
+	///   - the folder's own databases are OMF-era (FolderDatabases::omfEra):
+	///     Avid's bundled slate folder is "Avid_MediaFiles", and an archive
+	///     added by hand can be called anything.
+	/// A stray .wav/.aif in an MXF-era numbered folder meets none of them and
+	/// is listed, never opened, exactly as before OMF support: no per-scan
+	/// tail read on a share, and the folder's coverage and pass-2 console
+	/// lines stay byte-identical for MXF-era folders.
+	bool isOmfEraRow(QStringView extension, QStringView folderName, bool folderOmfEra)
 	{
-		return Conventions::hasOmfEraExtension(extension) && Conventions::isOmfRootName(folderName);
+		if (!Conventions::hasOmfEraExtension(extension))
+			return false;
+		return extension.compare(QLatin1String(".omf"), Qt::CaseInsensitive) == 0 ||
+			   Conventions::isOmfRootName(folderName) || folderOmfEra;
 	}
 
 	constexpr int kLogBatchMaxSize = 50;
@@ -893,7 +901,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		if (!Conventions::isAvidMediaName(fileName))
 			continue;
 
-		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, pmrMap, mdb,
+		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, dbs.omfEra, pmrMap, mdb,
 									  folderStatus, tally);
 		mf.isQuarantined = isQuarantineFolder;
 
@@ -1061,6 +1069,40 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 	if (!dbs.mdbExists)
 		bufLog(QtInfoMsg, QStringLiteral("mdb"), QStringLiteral("  No msmMMOB.mdb in /%1").arg(task.folderNumber));
 
+	// OMF-era: the databases say which era the folder is. A version-2 PMR
+	// wraps EVERY MOB into the 32-byte form OmfUid::isOmfForm recognises,
+	// and an OMF-era MDB keys every master and file mob the same way — so
+	// the folder is legacy only when all of its keys are. "Any" would not
+	// do: an MXF-era database may carry a key in that form (a legacy clip
+	// carried across keeps its MobID), and one such key must not flip a
+	// numbered folder. Empty databases decide nothing. An MXF-era folder
+	// costs one compare: its first key ends the search.
+	{
+		bool sawKey = false;
+		bool allOmf = true;
+		for (auto it = dbs.pmr.constBegin(); it != dbs.pmr.constEnd() && allOmf; ++it)
+			for (const PmrEntry &entry : it.value())
+			{
+				sawKey = true;
+				if (!OmfUid::isOmfForm(entry.mobId))
+				{
+					allOmf = false;
+					break;
+				}
+			}
+		for (auto it = dbs.mdb.files.constBegin(); it != dbs.mdb.files.constEnd() && allOmf; ++it)
+		{
+			sawKey = true;
+			allOmf = OmfUid::isOmfForm(it.key());
+		}
+		for (auto it = dbs.mdb.masters.constBegin(); it != dbs.mdb.masters.constEnd() && allOmf; ++it)
+		{
+			sawKey = true;
+			allOmf = OmfUid::isOmfForm(it.key());
+		}
+		dbs.omfEra = sawKey && allOmf;
+	}
+
 	return dbs;
 }
 
@@ -1068,6 +1110,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 
 MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 									   const QString &volumePath, const QString &folderNumber,
+									   bool folderOmfEra,
 									   const PmrIndex &pmrMap,
 									   const MdbDatabase &mdb,
 									   MediaFile::DbStatus folderStatus, CoverageTally &tally)
@@ -1081,6 +1124,8 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	mf.volumeName = volumeName;
 	mf.volumePath = volumePath;
 	mf.mxfFolder = folderNumber;
+	// OMF-era: settled here, once; pass 2 and the copy engine read the flag.
+	mf.omfEra = isOmfEraRow(mf.extension, folderNumber, folderOmfEra);
 
 	// MARK: File-level metadata
 
@@ -1135,7 +1180,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// keeps a database-covered row out of the header pass. MXF-era rows are
 	// left exactly as before: their PMR names the project, and the header
 	// pass reads `_PJ` for any row still without one.
-	const bool isOmfEra = isOmfEraRow(mf.extension, folderNumber);
+	const bool isOmfEra = mf.omfEra;
 	const auto fileIt = mf.mobId.isEmpty() ? mdb.files.constEnd() : mdb.files.constFind(mf.mobId);
 	if (isOmfEra && fileIt != mdb.files.constEnd())
 	{
@@ -1244,7 +1289,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 		const MediaFile &f = files[i];
 		// A row needs its header when the databases left it without technical
 		// facts — or without a project name, which the header also carries.
-		const bool omfEra = isOmfEraRow(f.extension, f.mxfFolder); // OMF-era: admitted beside .mxf
+		const bool omfEra = f.omfEra; // OMF-era: pass 1's verdict (isOmfEraRow); admitted beside .mxf
 		if ((!Conventions::hasMxfExtension(f.extension) && !omfEra) || f.sizeBytes <= 1024 ||
 			(!f.codec.isEmpty() && !f.project.isEmpty()))
 			continue;

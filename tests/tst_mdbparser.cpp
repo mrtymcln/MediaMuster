@@ -898,7 +898,12 @@ void TestMdbParser::omf_era_audio_mdb_describes_both_tone_files()
 		QCOMPARE(f.essence.bitDepth, QStringLiteral("24-bit"));
 		QCOMPARE(f.essence.durationFrames, qint64(1500)); // 2,880,002 samples × 25 ÷ 48000
 		QCOMPARE(f.essence.timecodeBase, 25);
-		QCOMPARE(f.essence.codec, QString::fromLatin1(kPcmAudioName));
+		// OMF-era: the database names legacy audio the way Avid's own menus
+		// do ("WAVE (OMF)" / "AIFF-C (OMF)"); "PCM" is the MXF-era name.
+		const QString avidLabel = QString::fromLatin1(pin.file).endsWith(QLatin1String(".wav"))
+									  ? QStringLiteral("WAVE (OMF)")
+									  : QStringLiteral("AIFF-C (OMF)");
+		QCOMPARE(f.essence.codec, avidLabel);
 		QVERIFY2(f.essence.resolution.isEmpty(), pin.file);
 		QVERIFY2(!f.essence.dropFrame, pin.file);
 		QCOMPARE(f.usageCode, 0);
@@ -1010,7 +1015,8 @@ void TestMdbParser::omf_sd2d_descriptor_reads_its_two_properties()
 	QCOMPARE(f.essence.bitDepth, QStringLiteral("16-bit"));
 	QCOMPARE(f.essence.durationFrames, qint64(50)); // 96000 samples × 25/48000
 	QCOMPARE(f.essence.timecodeBase, 25);
-	QCOMPARE(f.essence.codec, QString::fromLatin1(kPcmAudioName));
+	// OMF-era: Avid's own label for Sound Designer II media, no wrapper tag.
+	QCOMPARE(f.essence.codec, QStringLiteral("SDII"));
 }
 
 // OMF files written on Windows or UNIX point _SRCFILE at a WINL / UNXL

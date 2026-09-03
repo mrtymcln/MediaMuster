@@ -117,3 +117,23 @@ QString OmfResolutions::name(quint32 resolutionId, const QByteArray &compression
 	}
 	return {};
 }
+
+// MARK: - Audio
+
+// Source: Media Composer 26.8.0.58987's own format-menu strings, read from
+// its binary on 2026-09-02 — "AIFF-C  (OMF)", "WAVE  (OMF)", "SDII", beside
+// "PCM  (Avid OP-Atom)" and "PCM  (MXF OP1a)" for the MXF era (the double
+// space is Media Composer's menu alignment and is collapsed here). The bins
+// it wrote the fixture audio into are named the same way: "WAVE(OMF)" and
+// "AIFF-C(OMF)". SDII carries no wrapper tag in Avid's own list, so none is
+// added; no SDII specimen exists (see the SD2D note in omfobjects.cpp).
+QString OmfResolutions::audioName(const QByteArray &descriptorClass)
+{
+	if (descriptorClass == "WAVD")
+		return QStringLiteral("WAVE (OMF)");
+	if (descriptorClass == "AIFD")
+		return QStringLiteral("AIFF-C (OMF)");
+	if (descriptorClass == "SD2D")
+		return QStringLiteral("SDII");
+	return {};
+}

@@ -51,8 +51,34 @@ namespace
 		g_file->flush();
 	}
 
+	/// The two lines Qt prints on every click in an item view while the
+	/// macOS accessibility guard is on (macaccessibilityguard.h): the view
+	/// still announces "row N changed", and the row-less interface the guard
+	/// hands out cannot resolve it. Benign by design, and they would land in
+	/// the user's log on every click, so they are dropped here — and only
+	/// here: they still reach Qt's own handler for anyone debugging with
+	/// QT_LOGGING_RULES. Compiles away with the guard.
+	bool isGuardedAccessibilityNoise(const QMessageLogContext &ctx, const QString &msg)
+	{
+#if defined(Q_OS_MAC) && QT_VERSION < QT_VERSION_CHECK(6, 6, 2)
+		if (ctx.category && qstrcmp(ctx.category, "qt.accessibility.core") == 0)
+			return true;
+		return msg.startsWith(QLatin1String("QCocoaAccessibility::notifyAccessibilityUpdate: invalid element"));
+#else
+		Q_UNUSED(ctx);
+		Q_UNUSED(msg);
+		return false;
+#endif
+	}
+
 	void messageHandler(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
 	{
+		if (isGuardedAccessibilityNoise(ctx, msg))
+		{
+			if (g_prevHandler)
+				g_prevHandler(type, ctx, msg);
+			return;
+		}
 		const QByteArray line = AppLog::formatMessage(type, ctx, msg).toUtf8();
 		{
 			QMutexLocker lock(g_mutex);

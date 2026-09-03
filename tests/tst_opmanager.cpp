@@ -116,11 +116,26 @@ void TestOpManager::items_from_mediafiles_carry_scan_claims()
 	QCOMPARE(items[0].mobId, mf.mobId);
 	QCOMPARE(items[0].masterMobId, mf.masterMobId);
 	QCOMPARE(items[0].clipName, mf.clipName);
+	QVERIFY(!items[0].omfEra);
 
 	// The dialog's preview static keeps MediaManager's shape.
 	QCOMPARE(OpManager::buildDestPath(mf, "/dest", true),
 			 QStringLiteral("/dest/Avid MediaFiles/MXF/1/a.mxf"));
 	QCOMPARE(OpManager::buildDestPath(mf, "/dest", false), QStringLiteral("/dest/a.mxf"));
+
+	// OMF-era: the scanner's verdict rides on the item — this is the only
+	// production seam — and routes the preview and the run to the OMFI
+	// root whatever the source folder was called.
+	MediaFile omf;
+	omf.filePath = "/vol/Avid_MediaFiles/slate.omf";
+	omf.fileName = "slate.omf";
+	omf.mxfFolder = "Avid_MediaFiles";
+	omf.omfEra = true;
+	const auto omfItems = OpManager::itemsFromMediaFiles({omf}, {});
+	QCOMPARE(omfItems.size(), 1);
+	QVERIFY(omfItems[0].omfEra);
+	QCOMPARE(OpManager::buildDestPath(omf, "/dest", true), QStringLiteral("/dest/OMFI MediaFiles/slate.omf"));
+	QCOMPARE(OpManager::buildDestPath(omf, "/dest", false), QStringLiteral("/dest/slate.omf"));
 }
 
 void TestOpManager::copy_run_writes_its_plan_before_the_first_op()

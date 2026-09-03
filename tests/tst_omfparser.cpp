@@ -350,7 +350,13 @@ void TestOmfParser::omf_audio_files_describe_the_tones()
 		QCOMPARE(e.bitDepth, QStringLiteral("24-bit"));
 		QCOMPARE(e.durationFrames, qint64(1500)); // 2,880,002 samples × 25 ÷ 48000
 		QCOMPARE(e.timecodeBase, 25);
-		QCOMPARE(e.codec, QString::fromLatin1(kPcmAudioName));
+		// OMF-era: Avid labels legacy audio by container (its format menus:
+		// "WAVE (OMF)", "AIFF-C (OMF)"), never "PCM" — that name stays with
+		// MXF-era audio.
+		const QString avidLabel = QString::fromLatin1(pin.file).endsWith(QLatin1String(".wav"))
+									  ? QStringLiteral("WAVE (OMF)")
+									  : QStringLiteral("AIFF-C (OMF)");
+		QCOMPARE(e.codec, avidLabel);
 		QVERIFY2(e.resolution.isEmpty(), pin.file);
 		QVERIFY2(e.fps.isEmpty(), pin.file);
 		QCOMPARE(e.clipName, QString::fromLatin1(pin.clipName));

@@ -153,16 +153,22 @@ void TestOmfUid::isOmfForm_recognises_only_the_wrap()
 
 void TestOmfUid::omf_form_never_collides_with_mxf_form()
 {
-	// Byte 7 of a SMPTE UMID is 0x05; Avid's wrap has 0x01 there. So no
-	// MXF-era key — in either byte order, since toPmrForm only touches
-	// bytes 16..23 — can ever read as OMF form, and the wrap of any core
-	// can never read as a UMID.
-	QCOMPARE(int(OmfUid::kPrefix[7]), 0x01);
-
+	// The suffix is the discriminator, not the prefix. A SMPTE UMID (most
+	// MXF-era keys) differs in the prefix too, but Avid's MXF-era writer
+	// also mints MobIDs carrying the wrap's exact 16-byte prefix — the
+	// second key below is one of four in tests/fixtures/corpus_headers/
+	// msmMMOB_round3.mdb — with a per-host random where the wrap has the
+	// AAF "prefix 42" marker. Neither reads as OMF form in either byte
+	// order (toPmrForm only touches bytes 16..23), and the wrap of any
+	// core never reads as a UMID.
 	const QString mxf =
 		QStringLiteral("060a2b3401010105.01010f1013000000.a4bb7f1311399006.6d01ce4ff0f5d57a");
 	QVERIFY(!OmfUid::isOmfForm(mxf));
 	QVERIFY(!OmfUid::isOmfForm(MobId::toPmrForm(mxf)));
+	const QString mxfSharedPrefix =
+		QStringLiteral("060a2b3401010101.01010f0013000000.38d60dbefb6d163b.8e40da9649f531f4");
+	QVERIFY(!OmfUid::isOmfForm(mxfSharedPrefix));
+	QVERIFY(!OmfUid::isOmfForm(MobId::toPmrForm(mxfSharedPrefix)));
 
 	const unsigned char core[OmfUid::kPmrSize] = {0xa4, 0xbb, 0x7f, 0x13, 0x11, 0x39, 0x90, 0x06};
 	const QString omf = OmfUid::canonicalFromPmr8(core);

@@ -191,6 +191,14 @@ private:
 		bool pmrOk = true;
 		bool mdbExists = false;
 		bool mdbOk = true;
+		/// OMF-era: every key — PMR entries, MDB masters and files — is a
+		/// wrapped 12-byte omfi:UID (OmfUid::isOmfForm), as a version-2 PMR
+		/// and an OMF-era MDB always write them. Then the databases are
+		/// legacy and every legacy-extension file in this folder is OMF
+		/// media, whatever the folder is called. A lone key in that form
+		/// inside an MXF-era database (a legacy clip carried across) does
+		/// not count; empty databases decide nothing.
+		bool omfEra = false;
 	};
 
 	/// Reads and merges the folder's PMR/MDB files, logging into `logs`
@@ -212,9 +220,12 @@ private:
 	/// One row from one directory entry (pass 1). `folderStatus` is the
 	/// status computed by processFolderTask for any file the folder's PMR
 	/// does NOT name: a real miss ("No reference") when the databases were
-	/// readable, else the couldn't-check states.
+	/// readable, else the couldn't-check states. `folderOmfEra` is the
+	/// databases' verdict (FolderDatabases::omfEra); with the extension and
+	/// the folder name it settles MediaFile::omfEra for the row.
 	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
+							 bool folderOmfEra,
 							 const PmrIndex &pmrMap,
 							 const MdbDatabase &mdb,
 							 MediaFile::DbStatus folderStatus, CoverageTally &tally);

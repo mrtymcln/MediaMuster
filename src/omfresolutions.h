@@ -25,4 +25,12 @@ namespace OmfResolutions
 	/// "JFIF\0" and "JFIF" both match. The 4CC is part of the key on
 	/// purpose: a reused id under another family must never mislabel.
 	[[nodiscard]] QString name(quint32 resolutionId, const QByteArray &compression);
+
+	/// Avid's own label for an OMF-era AUDIO descriptor class, or empty for
+	/// anything else. Media Composer names its legacy audio by container,
+	/// not by coding: its format menus read "WAVE (OMF)", "AIFF-C (OMF)" and
+	/// "SDII" — and, for the MXF era, "PCM (Avid OP-Atom)", which is why
+	/// MXF-era audio keeps finalise's "PCM" and never comes through here.
+	/// `descriptorClass` is the OMFI:ObjID FourCC ("WAVD", "AIFD", "SD2D").
+	[[nodiscard]] QString audioName(const QByteArray &descriptorClass);
 } // namespace OmfResolutions

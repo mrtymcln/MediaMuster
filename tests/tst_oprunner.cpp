@@ -198,20 +198,28 @@ void TestOpRunner::buildDestPath_preserve_false_flattens()
 
 void TestOpRunner::buildDestPath_omf_row_preserves_to_omfi_root()
 {
-	// OMF-era: an OMF row's mxfFolder is the flat "OMFI MediaFiles" root,
-	// so preserve must rebuild that folder beside Avid MediaFiles — never
-	// "Avid MediaFiles/MXF/OMFI MediaFiles/". Any spelling, like the
-	// scanner accepts; flatten is unchanged.
+	// OMF-era: a legacy row's folder is a flat root — Avid's "OMFI
+	// MediaFiles", or whatever an archive folder added by hand is called
+	// (Avid's own bundled slates live in "Avid_MediaFiles") — so preserve
+	// rebuilds Avid's placement, <dest>/OMFI MediaFiles/, never
+	// "Avid MediaFiles/MXF/<folder>/". The scanner's verdict (omfEra)
+	// decides, not the folder's name; flatten is unchanged.
 	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("slate.omf"), Conventions::kOmfMediaFilesDir,
-									 QStringLiteral("/dest"), true),
+									 QStringLiteral("/dest"), true, /*omfEra=*/true),
 			 QStringLiteral("/dest/OMFI MediaFiles/slate.omf"));
-	// A lowercase source spelling still lands in Avid's own spelling.
+	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("slate.omf"), QStringLiteral("Avid_MediaFiles"),
+									 QStringLiteral("/dest"), true, /*omfEra=*/true),
+			 QStringLiteral("/dest/OMFI MediaFiles/slate.omf"));
 	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("tone.wav"), QStringLiteral("omfi mediafiles"),
-									 QStringLiteral("/dest"), true),
+									 QStringLiteral("/dest"), true, /*omfEra=*/true),
 			 QStringLiteral("/dest/OMFI MediaFiles/tone.wav"));
 	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("slate.omf"), Conventions::kOmfMediaFilesDir,
-									 QStringLiteral("/dest"), false),
+									 QStringLiteral("/dest"), false, /*omfEra=*/true),
 			 QStringLiteral("/dest/slate.omf"));
+	// Without the verdict the folder name means nothing: the MXF-era rule.
+	QCOMPARE(OpRunner::buildDestPath(QStringLiteral("clip.mxf"), QStringLiteral("Avid_MediaFiles"),
+									 QStringLiteral("/dest"), true),
+			 QStringLiteral("/dest/Avid MediaFiles/MXF/Avid_MediaFiles/clip.mxf"));
 }
 
 void TestOpRunner::generateRenamePath_first_slot_when_no_copies()
