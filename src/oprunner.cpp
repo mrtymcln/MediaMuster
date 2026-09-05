@@ -94,8 +94,7 @@ void resetAvidDatabases(const QString &folderPath, OpSink &sink)
 // MARK: - Construction
 
 OpRunner::OpRunner(OpSink &sink, const std::atomic<bool> &cancel)
-	: m_sink(sink)
-	, m_cancel(cancel)
+	: m_sink(sink), m_cancel(cancel)
 {
 }
 
@@ -470,9 +469,9 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 	// a crash inside that window would otherwise leave the user with
 	// neither file and a temp nothing knows about.
 	OpJournal journal(req.kind,
-					QJsonObject{{QStringLiteral("destination"), req.destRoot},
-								{QStringLiteral("preserve"), req.preserve}},
-					journalDir);
+					  QJsonObject{{QStringLiteral("destination"), req.destRoot},
+								  {QStringLiteral("preserve"), req.preserve}},
+					  journalDir);
 	if (!journal.isOpen())
 		m_sink.log(QtWarningMsg, OpJournal::openFailedText(req.kind));
 	// The whole to-do list + volume fingerprints, before the first op.
@@ -558,7 +557,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 		// describes; recovery needs it to put a replaced file back.
 		ParkedFile park(dstPath, parkTag);
 		JournalOpGuard lop(&journal, it.src, dstPath, srcId->size, park.path(), *srcId,
-					 parkedOriginalId);
+						   parkedOriginalId);
 
 		if (!park.park())
 		{
@@ -977,7 +976,7 @@ OpRunner::Totals OpRunner::runDelete(const OpRequest &req, const QString &journa
 	}
 
 	journal.finish(t.succeeded, t.failed, /*skipped=*/0,
-				  m_cancel.load(std::memory_order_acquire));
+				   m_cancel.load(std::memory_order_acquire));
 
 	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
 			   formatOperationSummary(QStringLiteral("Delete"), t.succeeded, t.failed));
@@ -1097,7 +1096,7 @@ OpRunner::Totals OpRunner::runRename(const OpRequest &req, const QString &journa
 	}
 
 	journal.finish(t.succeeded, t.failed, /*skipped=*/0,
-				  m_cancel.load(std::memory_order_acquire));
+				   m_cancel.load(std::memory_order_acquire));
 
 	m_sink.log(t.failed > 0 ? QtWarningMsg : QtInfoMsg,
 			   formatOperationSummary(QStringLiteral("Rename"), t.succeeded, t.failed));

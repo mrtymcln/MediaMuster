@@ -170,9 +170,7 @@ void TestOpUndo::undo_copy_trashes_the_copy_and_stamps_undone()
 	// sits in the sandboxed trash.
 	QVERIFY(!QFile::exists(path("dest/clip.mxf")));
 	QCOMPARE(readFile(src), QByteArray("CLIP BYTES"));
-	QVERIFY(!QDir(m_trashRoot + "/_MediaMuster_Trash").entryList(QDir::Files | QDir::Dirs |
-																 QDir::NoDotAndDotDot)
-				 .isEmpty());
+	QVERIFY(!QDir(m_trashRoot + "/_MediaMuster_Trash").entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot).isEmpty());
 
 	// Single-level undo: the candidate is spent.
 	QVERIFY(undoablePath().isEmpty());
@@ -251,9 +249,7 @@ void TestOpUndo::undo_move_copyleg_copies_back_and_trashes_far_copy()
 	// Home again, verified; the far copy went to the trash, not unlink.
 	QCOMPARE(readFile(src), QByteArray("FAR BYTES"));
 	QVERIFY(!QFile::exists(path("dest/clip.mxf")));
-	QVERIFY(!QDir(m_trashRoot + "/_MediaMuster_Trash").entryList(QDir::Files | QDir::Dirs |
-																 QDir::NoDotAndDotDot)
-				 .isEmpty());
+	QVERIFY(!QDir(m_trashRoot + "/_MediaMuster_Trash").entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot).isEmpty());
 }
 
 // MARK: - Delete

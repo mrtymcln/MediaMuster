@@ -36,7 +36,8 @@ Rebalancer::Rebalancer(QObject *parent)
 			[this](const QString &name, int current, int total, double)
 			{ emit progress(current, total, name); });
 	connect(m_engine, &OpManager::operationLog, this,
-			[this](QtMsgType level, const QString &message) { emit log(level, message); });
+			[this](QtMsgType level, const QString &message)
+			{ emit log(level, message); });
 	connect(m_engine, &OpManager::operationItemDone, this,
 			[this](const QString &name, const QString &, bool ok, const QString &error, bool)
 			{
@@ -627,7 +628,8 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 			// start() manages its worker from its owner's thread — so
 			// hop back queued. This worker then exits.
 			QMetaObject::invokeMethod(
-				this, [this, req = std::move(req)]() mutable { startEngineRun(std::move(req)); },
+				this, [this, req = std::move(req)]() mutable
+				{ startEngineRun(std::move(req)); },
 				Qt::QueuedConnection);
 		});
 }

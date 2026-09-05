@@ -490,8 +490,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	const PrecomputeFilterPath warpPath{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")};
 	proxy.setPrecomputeTreeFilter({true, {warpPath}});
 	QCOMPARE(proxy.rowCount(), 1); // same effect text in another branch does not match
-	proxy.setPrecomputeTreeFilter({true, {
-		{QStringLiteral("Titles and Matte Keys"), {}, {}}, warpPath}});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), {}, {}}, warpPath}});
 	QCOMPARE(proxy.rowCount(), 4); // all title/matte branches OR this rendered effect
 	proxy.setEffectVolumeFilter(warp.volumePath);
 	QCOMPARE(proxy.rowCount(), 3);

@@ -1,0 +1,608 @@
+{
+  "populations": {
+    "attached": {
+      "files": 14,
+      "objects": 4239,
+      "non_nil_id_bin_pairs": 212,
+      "missed_non_nil_id_bin_pairs": 134,
+      "extra_text_ids_without_structural_owner": 0,
+      "missed_CMPO_role_counts": {
+        "SourceMob / CDCI / usage 0": 65,
+        "SourceMob / MDES / usage 0": 65,
+        "MasterMob / no descriptor / usage 1": 1,
+        "SourceMob / RGBA / usage 0": 1,
+        "SourceMob / PCMA / usage 0": 2
+      }
+    },
+    "repo_OMF": {
+      "files": 2,
+      "objects": 44,
+      "non_nil_id_bin_pairs": 6,
+      "missed_non_nil_id_bin_pairs": 2,
+      "extra_text_ids_without_structural_owner": 0,
+      "missed_CMPO_role_counts": {
+        "SourceMob / MDES / usage 0": 2
+      }
+    },
+    "local_Media_Composer": {
+      "files": 26,
+      "objects": 18711,
+      "non_nil_id_bin_pairs": 1404,
+      "missed_non_nil_id_bin_pairs": 1096,
+      "extra_text_ids_without_structural_owner": 5,
+      "missed_CMPO_role_counts": {
+        "SourceMob / CDCI / usage 0": 242,
+        "SourceMob / CDCI / usage 9": 15,
+        "MasterMob / no descriptor / usage 1": 15,
+        "SourceMob / PCMA / usage 0": 526,
+        "SourceMob / MDES / usage 0": 269,
+        "SourceMob / MDES / usage 14": 15,
+        "SourceMob / MPGI / usage 0": 12,
+        "SourceMob / MPGA / usage 0": 2
+      }
+    },
+    "total": {
+      "files": 42,
+      "objects": 22994,
+      "non_nil_id_bin_pairs": 1622,
+      "missed_non_nil_id_bin_pairs": 1232,
+      "extra_text_ids_without_structural_owner": 5,
+      "missed_CMPO_role_counts": {
+        "SourceMob / CDCI / usage 0": 307,
+        "SourceMob / MDES / usage 0": 336,
+        "MasterMob / no descriptor / usage 1": 16,
+        "SourceMob / RGBA / usage 0": 1,
+        "SourceMob / PCMA / usage 0": 528,
+        "SourceMob / CDCI / usage 9": 15,
+        "SourceMob / MDES / usage 14": 15,
+        "SourceMob / MPGI / usage 0": 12,
+        "SourceMob / MPGA / usage 0": 2
+      }
+    }
+  },
+  "counting": "Counts are (ID,bin) pairs, not deduplicated IDs across bins and not media files. Exclude 32-byte zero and Avid OMF-wrapped 8-byte zero source sentinel. Two repo OMF fixture bins duplicate two local bins and are deliberately distinct provenance populations.",
+  "checks": {
+    "cpp_scan_matches_python_mirror_all": true,
+    "chunk_confined_49_byte_decoder_equals_pyavb_non_nil_ids_all": true,
+    "cpp_returns_valid_all": true,
+    "pyavb_header_or_bin_failures": 0,
+    "pyavb_object_failures": [
+      {
+        "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_NTSC_30i/zTe\u00dft_NTSC_30i Bin.avb",
+        "failures": [
+          {
+            "object_index": 373,
+            "chunk": "CDCI",
+            "error": "b'CDCI': unknown ext tag 0x11 17"
+          },
+          {
+            "object_index": 448,
+            "chunk": "CDCI",
+            "error": "b'CDCI': unknown ext tag 0x11 17"
+          },
+          {
+            "object_index": 479,
+            "chunk": "CDCI",
+            "error": "b'CDCI': unknown ext tag 0x11 17"
+          },
+          {
+            "object_index": 482,
+            "chunk": "CDCI",
+            "error": "b'CDCI': unknown ext tag 0x11 17"
+          },
+          {
+            "object_index": 497,
+            "chunk": "CDCI",
+            "error": "b'CDCI': unknown ext tag 0x11 17"
+          }
+        ]
+      }
+    ]
+  },
+  "pyavb_limitation": "Five CDCI descriptor objects in one MC bin reject extension 0x11. They are skipped by index; all CMPO/SCLP/other ID owners parse, and tag decoder differential still agrees. No claim pyavb fully supports every modern object.",
+  "media_join": {
+    "source": "/tmp/mediamuster-audit/usage-identity-export-after.json",
+    "source_rows": 2493,
+    "bin_media_pairs": 363,
+    "missed_by_current_scavenger": 0,
+    "caveat": "A prior export snapshot, not a fresh media scan. It joins structured CMPO file/master IDs against MXF header file/master and MDB file/inferred-master, accepting both endian forms. Missing raw structured IDs do not prove missed media rows; all 363 matched pairs also join IDs current scan already finds. Five extra history text IDs match no row in this snapshot."
+  },
+  "extra_text_id_provenance": [
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_23.976P/te\u0308st_uhd_23.976P Bin.avb",
+      "offset": 366,
+      "kind": "text",
+      "id_le": "060a2b340101010501010f101300000001075cc512479006b1924a963681a3eb",
+      "chunk": "ATTR",
+      "object_index": 6,
+      "payload_offset": 351,
+      "attribute_parents": [
+        {
+          "object_index": 17,
+          "attribute": "NewlyArrivedMobList"
+        }
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_720p_23.976/zTe\u00dft_720p_23.976 Bin.avb",
+      "offset": 63902,
+      "kind": "text",
+      "id_le": "060a2b340101010501010f10130000002d1624111259900641cc46fc807fda72",
+      "chunk": "ATTR",
+      "object_index": 684,
+      "payload_offset": 63810,
+      "attribute_parents": [
+        {
+          "object_index": 1132,
+          "attribute": "NewlyArrivedMobList"
+        }
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin.avb",
+      "offset": 361,
+      "kind": "text",
+      "id_le": "060a2b340101010001010f0013000000268accba470628d5e5cd3f5b5f40443f",
+      "chunk": "ATTR",
+      "object_index": 6,
+      "payload_offset": 346,
+      "attribute_parents": [
+        {
+          "object_index": 17,
+          "attribute": "NewlyArrivedMobList"
+        }
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin1.avb",
+      "offset": 38724,
+      "kind": "text",
+      "id_le": "060a2b340101010501010f1013000000d9ae907812499006938cc22704e88b34",
+      "chunk": "ATTR",
+      "object_index": 425,
+      "payload_offset": 38170,
+      "attribute_parents": [
+        {
+          "object_index": 760,
+          "attribute": "NewlyArrivedMobList"
+        }
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin1.avb",
+      "offset": 39346,
+      "kind": "text",
+      "id_le": "060a2b340101010501010f1013000000d268d4fc1249900689c04a963681a3eb",
+      "chunk": "ATTR",
+      "object_index": 425,
+      "payload_offset": 38170,
+      "attribute_parents": [
+        {
+          "object_index": 760,
+          "attribute": "NewlyArrivedMobList"
+        }
+      ]
+    }
+  ],
+  "minimal_fixtures": [
+    {
+      "path": "/tmp/mediamuster-avb-review/corpus/fixtures/binary_only_le.avb",
+      "size": 738,
+      "sha256": "4b878ea9017f29eb5d0ad620aede7e579a9fea24dbe540eb2c753d0e24fbfd3e",
+      "pyavb_error": null,
+      "structured_ids": [
+        "060a2b340101010501010f1013000000443322116655887799aabbccddeeff00"
+      ],
+      "cpp_valid": true,
+      "cpp_forms": 0,
+      "scan_hits": [],
+      "object_failures": []
+    },
+    {
+      "path": "/tmp/mediamuster-avb-review/corpus/fixtures/binary_only_be.avb",
+      "size": 738,
+      "sha256": "10b9e42040ae015f2347c30ac4fb3fc394fc4bf70ac1b67d59ee219768126644",
+      "pyavb_error": null,
+      "structured_ids": [
+        "060a2b340101010501010f1013000000443322116655887799aabbccddeeff00"
+      ],
+      "cpp_valid": true,
+      "cpp_forms": 0,
+      "scan_hits": [],
+      "object_failures": []
+    },
+    {
+      "path": "/tmp/mediamuster-avb-review/corpus/fixtures/unrelated_comment_le.avb",
+      "size": 843,
+      "sha256": "075f91894f1a49c732a87f2126a798d8c311ae845ec8db557a3725316fa0a038",
+      "pyavb_error": null,
+      "structured_ids": [
+        "060a2b340101010501010f1013000000443322116655887799aabbccddeeff00"
+      ],
+      "cpp_valid": true,
+      "cpp_forms": 2,
+      "scan_hits": [
+        {
+          "offset": 464,
+          "kind": "text",
+          "id_le": "060a2b340101010501010f1013000000efbeaddeaddeefbe0123456789abcdef",
+          "chunk": "ATTR",
+          "object_index": 3,
+          "payload_offset": 417
+        }
+      ],
+      "object_failures": []
+    },
+    {
+      "path": "/tmp/mediamuster-avb-review/corpus/fixtures/header_only.avb",
+      "size": 12,
+      "sha256": "03ab2444ed208fb335783d040445e32d881efefc42c0498f01eb611b5943271f",
+      "pyavb_error": "unpack requires a buffer of 2 bytes",
+      "structured_ids": [],
+      "cpp_valid": true,
+      "cpp_forms": 0,
+      "scan_hits": [],
+      "object_failures": []
+    }
+  ],
+  "fixture_caveat": "Three structured synthetic bins reopen with attached pyavb; not tested by opening/saving in Media Composer. header_only is intentionally invalid/truncated.",
+  "binary_decoder_scope": "Prototype scans exact 49-byte tagged envelopes only inside indexed chunks. This is feasibility evidence, not a production parser. Production should read known CMPO/SCLP fields, resolve ABIN item refs, normalize typed integers by file endian, explicitly exclude nil, and use class bounds to skip unrelated unknown classes. Of 1622 non-nil ID/bin pairs, 1609 are owned by CMPO; remaining 13 are MCMR references. Every missed ID has a CMPO owner.",
+  "source_fingerprints": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/avbparser.cpp",
+      "sha256": "37df3123484656feb21e959c6fbf9e001f20644af8117898215118ff6cd7dc10"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/avbparser.h",
+      "sha256": "b5c0564c8d48a21698caedc7598bbdd1a896bfd198aa563bf4f84a4fa2cbc337"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mobid.h",
+      "sha256": "98f4435f9bdfa48ebc35ce9e7a95139073d55d9b51dd12d867de2040e2b3e410"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+      "sha256": "89f4b46a476e907dcd864623fd29223be680addda582b9cf35c9ad4a0c6b1c39"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avbparser.cpp",
+      "sha256": "ed786195f913a86c19f5419fe158aacccbf59a3725bd0bc53ea7347cd577d3c1"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/file.py",
+      "sha256": "378f6f1f1f82039424c107451ddb22b53cc3a0cf312b8c92263bd325f6e4c62e"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/ioctx.py",
+      "sha256": "b1276988819cc73bf7d9349206e3ec2a8aa1ad636413d6e6d57605370bc5270d"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/mobid.py",
+      "sha256": "48aab90483e20a33807d0d7be77af4f12ca9050888ecb36aaf41798c06b977c0"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/core.py",
+      "sha256": "6743107860d3fb410ec9ee20a12d29a1eab06d4208959a9d2cca646c1e267503"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/bin.py",
+      "sha256": "2de7fce35c3a32fffceee9f53dd58d951b8ecd7d6aeaea86fc4634a3b92cab63"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/components.py",
+      "sha256": "6b3aaf37b7bcdeea0fa7411063a0d35c562aa69453f5e0d70346f2d6bc04b52a"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/trackgroups.py",
+      "sha256": "4b9a4a393b7f2fdf346bea138b5ee2f6086700ebd7f3928443eb33f410a80020"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/misc.py",
+      "sha256": "aa82d9c30b28118169a6f5f7f6437044793e17827fc939a5d4bc453e90f40343"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/essence.py",
+      "sha256": "9171acff4a6b39823bd5a4ededa03cc191a15b664a849bceaf2d79b5d31462c8"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/attributes.py",
+      "sha256": "877f4c0dc52fc7fa790f2d1f2646fcb478119d770ac40e19f2a14974ea6b3ccd"
+    }
+  ],
+  "corpus_manifest": [
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier01.avb",
+      "sha256": "f4c2ff95e01d14bb01f360c137f2207f68c86cb3be9ee4146bd0cb0d73657f9e",
+      "size": 25873,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier02.avb",
+      "sha256": "f7f07818bd6631a314c936186a29cbc52071790f8b8fe2b70beaa741a24c1374",
+      "size": 25847,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier03.avb",
+      "sha256": "cf3dfc73aaba6973e32a076600c71d2ab7a9061b744dc069c8269f1a547a61d4",
+      "size": 25847,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear01.avb",
+      "sha256": "6c7a1982c4196d43d205a9145fa78d1cea4a125d537a5c213464ea3c6b8de0a9",
+      "size": 25733,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear02.avb",
+      "sha256": "86fecfe49fe826cf5baca2780778806263306abb0ca918abb427dc513d98a34f",
+      "size": 24839,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear03.avb",
+      "sha256": "86fe9b9ae5679db0bf3f940e412da2af6ae9b7b488898cbd6d842d635f31ea5f",
+      "size": 24839,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline01.avb",
+      "sha256": "5dff0e9faf6d35ba41e8b0b15b7f3af69a4884ee5c8554558a9b3b23e28defac",
+      "size": 25847,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline02.avb",
+      "sha256": "fe8183d266020dfa47e4cdd421dc9a5e83d960307467de2aea97222d99321386",
+      "size": 24851,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline03.avb",
+      "sha256": "70c53d53dc9f4a30e8ea4f3a221ff0ad7c2014ebb32f7da4301f99c6c1cd096f",
+      "size": 24839,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline04.avb",
+      "sha256": "4b421c65092c1da1b8de5cebf34ba30374038b48e95050b312f0c464751d008d",
+      "size": 24851,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step01.avb",
+      "sha256": "8f3080dee606242ea157d8ee162965cee9d7d45fbc2944150c0a90d549dd918c",
+      "size": 25725,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step02.avb",
+      "sha256": "9a8ffb81b387797da1d04db94a5c2c37aee0a14b319a1f400aeef0766e1644e8",
+      "size": 24831,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step03.avb",
+      "sha256": "9f89928379677fc305234146c3f2f9f8bb635a28d10c08612046ca7433a33865",
+      "size": 24847,
+      "writer": "Media Composer 18.12.15       ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+      "sha256": "f58ecf7e95f85df46909dff423193e8b7de54fe18b909a61cfe844fe58262606",
+      "size": 1004295,
+      "writer": "Media Composer 18.9.0.49510   ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/AIFF-C(OMF).avb",
+      "sha256": "ba9f7d4beb9798f258e0aa6b65468be97c20c17b5a6324ae2f06b61c02bde4c2",
+      "size": 31125,
+      "writer": "Media Composer 26.8.0.58987   ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/WAVE(OMF).avb",
+      "sha256": "04ff9cf1ba654c0b169ee6423d262c7022c8aed72fedc77af91fa65baa003426",
+      "size": 34540,
+      "writer": "Media Composer 26.8.0.58987   ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_23.976P/te\u0308st_import.avb",
+      "sha256": "2cbf68bb50cbf2758fd3a2a1a13e19cf3ba91326686ed8ca8751cf94bad86b19",
+      "size": 325170,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_23.976P/te\u0308st_uhd_23.976P Bin.avb",
+      "sha256": "088aa156c2a1c25ea08b1a86fa730380fc5625ba044fa324e9151f412ec8ef16",
+      "size": 176554,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_24P/te\u0308st_uhd_24P Bin.avb",
+      "sha256": "2089d32083d10ec58af01aae6bae23c40f04fed9faf066d0ed592cf3222afe63",
+      "size": 134039,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_24P/te\u0308st_uhd_24P Bin1.avb",
+      "sha256": "c04dc7ddde38f8fa3f3fa26cfde48ccd715c7a3343717a9ac720e8149ec2c5bd",
+      "size": 248131,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_25P/te\u0308st_uhd_25P Bin.avb",
+      "sha256": "6385208185a4b9351aa47eb2fc28ce826e59bce1fe8be191f7fc864e684c5f30",
+      "size": 186135,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_25P/te\u0308st_uhd_25P Bin1.avb",
+      "sha256": "3358ecdd8dade05095b90a80f5c3c80735dbb953422e14a9bd9404a61a511a24",
+      "size": 333187,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080i_59.94/zTe\u00dft_1080i_59.94 Bin.avb",
+      "sha256": "9090bc6fc80a20d9f893c6c2ba96aea034b28ca6e394be141690d631308f14a5",
+      "size": 64370,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080i_59.94/zTe\u00dft_1080i_59.94 Bin1.avb",
+      "sha256": "016adf030d0f7a4d6493e1cd4b9c2712b433153277861dadace4cbee3fd24811",
+      "size": 264265,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080p_23.976/zTe\u00dft_1080p_23.976 Bin.avb",
+      "sha256": "532e98ad55a0a4814356af14d74cea4cac8ee1db667759c254ee9f34aff3aa7d",
+      "size": 60380,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080p_23.976/zTe\u00dft_1080p_23.976 Bin1.avb",
+      "sha256": "d7f759ab9ef56a4d32bd2b428fc68e7438496bf4f9aa5a7510fccea85f6de3e7",
+      "size": 269093,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080p_29.97/zTe\u00dft_1080p_29.97 Bin.avb",
+      "sha256": "5e81fb6cda3d5b72103abb60b20cd52bcabd83040c193a1e0d11ac326279758b",
+      "size": 300526,
+      "writer": "Media Composer 25.12.2.59112  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_720p_23.976/zTe\u00dft_720p_23.976 Bin.avb",
+      "sha256": "ac0fff896d6ba22fbd268b71963ddbb9c44cd6affb46b69b45db85b97ce57112",
+      "size": 190300,
+      "writer": "Media Composer 25.12.2.59112  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_NTSC_30i/zTe\u00dft_NTSC_30i Bin.avb",
+      "sha256": "1bfca71f1dda1b78f95f6ac9a7846c196eecf7c89585e69fe4afc0ab720f7e90",
+      "size": 87644,
+      "writer": "Media Composer 25.12.2.59112  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_PAL_25p/AIFF-C(OMF).avb",
+      "sha256": "ba9f7d4beb9798f258e0aa6b65468be97c20c17b5a6324ae2f06b61c02bde4c2",
+      "size": 31125,
+      "writer": "Media Composer 26.8.0.58987   ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_PAL_25p/WAVE(OMF).avb",
+      "sha256": "04ff9cf1ba654c0b169ee6423d262c7022c8aed72fedc77af91fa65baa003426",
+      "size": 34540,
+      "writer": "Media Composer 26.8.0.58987   ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_PAL_25p/zTe\u00dft_PAL_25p Bin.avb",
+      "sha256": "2367c667995b6cde225b3b66849bf15fa877e7b283704000b9c9e595615746fc",
+      "size": 89826,
+      "writer": "Media Composer 25.12.2.59112  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_1080i_50/zTe\u0308st_1080i_50 Bin.avb",
+      "sha256": "267c7f53f82219a44e5bce17fc953ebd94bc7893ca2571bbe989d20754463e87",
+      "size": 64033,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_1080i_50/zTe\u0308st_1080i_50 Bin1.avb",
+      "sha256": "0781441898246419c7f4c5f0b5362f239b45d7f839a3f8f12eb436d7b8417a8e",
+      "size": 203415,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_29.97P/zTe\u0308st_uhd_29.97P Bin.avb",
+      "sha256": "7fab3c4a916ca27b458afcf89224d4f38691e52b765fa075d568bebe6c838348",
+      "size": 199403,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_29.97P/zTe\u0308st_uhd_29.97P Bin1.avb",
+      "sha256": "b80583f3a497e4ce7a6743e78199b29a1feeef3fa840dbcee24ab3baaafd325f",
+      "size": 442084,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin.avb",
+      "sha256": "41a7080ffb9c993e7741fc052594cff2745f0bbd1a17654af4232acfc3709c56",
+      "size": 122265,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin1.avb",
+      "sha256": "2aa8c0db202ac94b6176740365911f8dae7616ed2d8f8c8cb2749a788486b8db",
+      "size": 209480,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_50P/zTe\u0308st_uhd_50P Bin.avb",
+      "sha256": "9a031bd5bc13bc4897fcf7181ef5b08a6689855e94f637bca9ae94570b875bd1",
+      "size": 172538,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_50P/zTe\u0308st_uhd_50P Bin1.avb",
+      "sha256": "43622970612a0b0569075425134c32a09f6f314cb4cfe8d78c094c84a017c8d0",
+      "size": 213269,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0328\u00dft_1080i_50/zTe\u0328\u00dft_1080i_50 Bin.avb",
+      "sha256": "12249181ad1173aef7d1678eddf620338ac7f1c2872e0171943684dda7c78653",
+      "size": 64035,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0328\u00dft_1080i_50/zTe\u0328\u00dft_1080i_50 Bin1.avb",
+      "sha256": "55ce6f8189e8484abe84629bdd3ec13ab1eff999b5907d18c9c053bf2e6ff6a1",
+      "size": 272022,
+      "writer": "Media Composer 25.12.1.58982  ",
+      "byte_order": "little"
+    }
+  ]
+}

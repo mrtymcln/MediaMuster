@@ -1,0 +1,37 @@
+[
+    {
+        "active": false,
+        "case": "header-only.avb",
+        "ids": 0,
+        "loadedBins": 1,
+        "parserValid": true,
+        "signals": 0,
+        "visibleRows": 1
+    },
+    {
+        "active": false,
+        "case": "empty-real.avb",
+        "ids": 0,
+        "loadedBins": 1,
+        "parserValid": true,
+        "signals": 0,
+        "visibleRows": 1
+    },
+    {
+        "case": "intersection",
+        "expectedAfter": 1,
+        "visibleAfter": 0,
+        "visibleBefore": 1
+    },
+    {
+        "case": "subtraction",
+        "expectedAfter": 0,
+        "visibleAfter": 1,
+        "visibleBefore": 1
+    },
+    {
+        "case": "leading-subtract-universe-after-removing-first-step",
+        "visibleAfterRemovingLoadedBin": 0,
+        "visibleBeforeRemovingLoadedBin": 1
+    }
+]

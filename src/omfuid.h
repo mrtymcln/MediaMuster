@@ -114,7 +114,8 @@ namespace OmfUid
 	/// byte constants above so the two can't drift.
 	inline bool isOmfForm(const QString &canonicalHex)
 	{
-		static const QString zeroWrap = [] {
+		static const QString zeroWrap = []
+		{
 			const unsigned char zeros[kPmrSize] = {};
 			return canonicalFromPmr8(zeros);
 		}();

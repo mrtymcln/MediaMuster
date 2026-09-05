@@ -121,19 +121,19 @@ void TestOpJournal::clean_run_round_trips()
 	QString path;
 	{
 		OpJournal journal(OpKind::Move, {{QStringLiteral("dest"), QStringLiteral("/dst")}},
-						tmp.path());
+						  tmp.path());
 		QVERIFY(journal.isOpen());
 		path = journal.path();
 
 		const int a = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									4096, QString(), srcId);
+									 4096, QString(), srcId);
 		OpJournal::DoneInfo info;
 		info.hash = QStringLiteral("1a2b3c4d5e6f7788");
 		info.landedId = srcId;
 		journal.markDone(a, info);
 
 		const int b = journal.planOp(QStringLiteral("/src/b.mxf"), QStringLiteral("/dst/b.mxf"),
-									8192, QString(), srcId);
+									 8192, QString(), srcId);
 		journal.markFailed(b, QStringLiteral("copy failed"));
 
 		journal.finish(1, 1, 0);
@@ -267,7 +267,7 @@ void TestOpJournal::plan_without_omf_key_is_routed_by_folder_name()
 	}
 	const auto rec = OpJournal::readOne(path);
 	QVERIFY(rec.has_value() && rec->plan.size() == 2);
-	QVERIFY(rec->plan[0].omfEra);	// the OMFI-named folder, as the old rule routed it
+	QVERIFY(rec->plan[0].omfEra);  // the OMFI-named folder, as the old rule routed it
 	QVERIFY(!rec->plan[1].omfEra); // a numbered MXF folder
 }
 
@@ -338,8 +338,8 @@ void TestOpJournal::replace_park_and_parked_final_round_trip()
 		OpJournal journal(OpKind::Copy, {}, tmp.path());
 		path = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									 2048, QStringLiteral("/dst/a.mxf.__copyreplace_x1"),
-									 sampleIdentity(), parkedId);
+									  2048, QStringLiteral("/dst/a.mxf.__copyreplace_x1"),
+									  sampleIdentity(), parkedId);
 		OpJournal::DoneInfo info;
 		info.parkedFinal = QStringLiteral("/dst/_MediaMuster_Trash/a.mxf");
 		journal.markDone(id, info);
@@ -371,8 +371,8 @@ void TestOpJournal::fail_line_carries_parked_final_when_the_disposal_already_hap
 		OpJournal journal(OpKind::Move, {}, tmp.path());
 		path = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									 2048, QStringLiteral("/dst/a.mxf.__movereplace_x1"),
-									 sampleIdentity(), sampleIdentity());
+									  2048, QStringLiteral("/dst/a.mxf.__movereplace_x1"),
+									  sampleIdentity(), sampleIdentity());
 		journal.markFailed(id, QStringLiteral("source remove failed"),
 						   /*rollbackIncomplete=*/false,
 						   QStringLiteral("/dst/_MediaMuster_Trash/a.mxf"));
@@ -391,7 +391,7 @@ void TestOpJournal::fail_line_carries_parked_final_when_the_disposal_already_hap
 		OpJournal journal(OpKind::Copy, {}, tmp.path());
 		plain = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/b.mxf"), QStringLiteral("/dst/b.mxf"),
-									 1, QString(), sampleIdentity());
+									  1, QString(), sampleIdentity());
 		journal.markFailed(id, QStringLiteral("copy failed"));
 		journal.finish(0, 1, 0);
 	}
@@ -471,9 +471,9 @@ void TestOpJournal::undo_meta_round_trips()
 	QString path;
 	{
 		OpJournal journal(OpKind::Undo,
-						{{QStringLiteral("undoes"), QStringLiteral("journal-x.jsonl")},
-						 {QStringLiteral("originalKind"), QStringLiteral("move")}},
-						tmp.path());
+						  {{QStringLiteral("undoes"), QStringLiteral("journal-x.jsonl")},
+						   {QStringLiteral("originalKind"), QStringLiteral("move")}},
+						  tmp.path());
 		path = journal.path();
 		journal.finish(0, 0, 0);
 	}
@@ -538,7 +538,7 @@ void TestOpJournal::torn_final_line_is_tolerated()
 		OpJournal journal(OpKind::Move, {}, tmp.path());
 		path = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									 100, QString(), {});
+									  100, QString(), {});
 		journal.markDone(id);
 	}
 	// Simulate a crash mid-write: append half a JSON object, no newline.
@@ -635,7 +635,7 @@ void TestOpJournal::undone_marker_round_trips()
 		OpJournal journal(OpKind::Move, {}, tmp.path());
 		path = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									 10, QString(), {});
+									  10, QString(), {});
 		journal.markDone(id);
 		journal.finish(1, 0, 0);
 	}
@@ -658,7 +658,7 @@ void TestOpJournal::finished_journal_survives_finish()
 		OpJournal journal(OpKind::Move, {}, tmp.path());
 		path = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									 10, QString(), {});
+									  10, QString(), {});
 		journal.markDone(id);
 		journal.finish(1, 0, 0);
 	}
@@ -740,7 +740,7 @@ void TestOpJournal::degraded_journal_self_destructs_on_finish_even_when_dirty()
 		OpJournal journal(OpKind::Move, {}, tmp.path());
 		path = journal.path();
 		const int id = journal.planOp(QStringLiteral("/src/a.mxf"), QStringLiteral("/dst/a.mxf"),
-									 10, QStringLiteral("/dst/a.mxf.__movereplace_q2"), {});
+									  10, QStringLiteral("/dst/a.mxf.__movereplace_q2"), {});
 		journal.markFailed(id, QStringLiteral("restore failed"), /*rollbackIncomplete=*/true);
 		// A line write failed mid-run: with lines missing, the file no
 		// longer tells the truth, and recovery reading it could roll
@@ -766,12 +766,12 @@ void TestOpJournal::latest_undoable_picks_newest_qualifying()
 		QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0,"cancelled":true})");
 
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000001000-a1.jsonl"),
-				{beginLine(QStringLiteral("move")), opLine, doneLine, endLine});
+				 {beginLine(QStringLiteral("move")), opLine, doneLine, endLine});
 	// Newest, CANCELLED — still qualifies: stop-and-keep means the file
 	// it landed is real work the user may want back.
 	const QString newest =
 		writeJournal(tmp.path(), QStringLiteral("journal-20260101T000002000-b2.jsonl"),
-					{beginLine(QStringLiteral("copy")), opLine, doneLine, endCancelled});
+					 {beginLine(QStringLiteral("copy")), opLine, doneLine, endCancelled});
 
 	const auto undoable = OpJournal::latestUndoable(tmp.path());
 	QVERIFY(undoable.has_value());
@@ -789,23 +789,23 @@ void TestOpJournal::latest_undoable_refuses_disqualified()
 
 	// Interrupted (no end line): recovery's, not undo's.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000001000-c1.jsonl"),
-				{beginLine(QStringLiteral("move")), opLine,
-				 QStringLiteral(R"({"record":"done","id":0})")});
+				 {beginLine(QStringLiteral("move")), opLine,
+				  QStringLiteral(R"({"record":"done","id":0})")});
 	// Finished but nothing landed (all skipped): nothing to reverse.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000002000-c2.jsonl"),
-				{beginLine(QStringLiteral("move")), opLine,
-				 QStringLiteral(R"({"record":"skip","id":0})"), endLine});
+				 {beginLine(QStringLiteral("move")), opLine,
+				  QStringLiteral(R"({"record":"skip","id":0})"), endLine});
 	// An undo run itself: no undo-of-undo, by design.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000003000-c3.jsonl"),
-				{beginLine(QStringLiteral("undo")), opLine,
-				 QStringLiteral(R"({"record":"done","id":0})"),
-				 QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})")});
+				 {beginLine(QStringLiteral("undo")), opLine,
+				  QStringLiteral(R"({"record":"done","id":0})"),
+				  QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})")});
 	// Swept by recovery already.
 	writeJournal(tmp.path(), QStringLiteral("journal-20260101T000004000-c4.jsonl"),
-				{beginLine(QStringLiteral("move")), opLine,
-				 QStringLiteral(R"({"record":"done","id":0})"),
-				 QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})"),
-				 QStringLiteral(R"({"record":"recovered","reversed":1,"failed":0})")});
+				 {beginLine(QStringLiteral("move")), opLine,
+				  QStringLiteral(R"({"record":"done","id":0})"),
+				  QStringLiteral(R"({"record":"end","ok":1,"fail":0,"skip":0})"),
+				  QStringLiteral(R"({"record":"recovered","reversed":1,"failed":0})")});
 
 	QVERIFY(!OpJournal::latestUndoable(tmp.path()).has_value());
 }

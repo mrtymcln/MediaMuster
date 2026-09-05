@@ -198,7 +198,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QCOMPARE(mf.mobId, QStringLiteral("060a2b3401010105.01010f1013000000."
 									  "4a507dea74110690.7a361e6a605d3613"));
 	QCOMPARE(mf.masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000."
-												 "d2467dea74110690.91901e6a605d3613"));
+											"d2467dea74110690.91901e6a605d3613"));
 
 	// From the MXF MaterialPackage (it outranks the MDB's name on the ladder)
 	QCOMPARE(mf.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
@@ -403,7 +403,7 @@ void TestScanner::wav_with_readable_dbs_is_no_reference()
 	const MediaFile &mf = results.first();
 
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference); // PMR readable, file not in it
-	QVERIFY(mf.hasNoProject()); // a .wav has no header to name one either
+	QVERIFY(mf.hasNoProject());								 // a .wav has no header to name one either
 	QCOMPARE(mf.projectDisplay(), QStringLiteral("No project"));
 }
 
@@ -566,9 +566,9 @@ namespace
 		value += QByteArray::fromHex("4402") + u16be(quint16(nameBytes.size())) + nameBytes;
 
 		QByteArray key = QByteArray::fromHex("060e2b34025301010d01010101");
-		key.append(char(0x01));		 // byte[13]
-		key.append(char(setType));	 // byte[14] — the set type
-		key.append(char(0x00));		 // byte[15]
+		key.append(char(0x01));	   // byte[13]
+		key.append(char(setType)); // byte[14] — the set type
+		key.append(char(0x00));	   // byte[15]
 		QByteArray out = key;
 		out.append(char(value.size())); // BER short form
 		out += value;
@@ -756,7 +756,7 @@ void TestScanner::unreadable_header_stays_unknown()
 	// A render-shaped FILENAME on a file whose header is unreadable. Only the
 	// metadata can classify, and there is none to read.
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/Untitled_Sequence.0B4A3F9FV.mxf"),
-					  QByteArray(2048, '\x11')));
+						 QByteArray(2048, '\x11')));
 
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
@@ -906,12 +906,12 @@ namespace
 						 const QByteArray &project, quint32 modified)
 	{
 		return BentoBuilder::le32(0x7a9) + BentoBuilder::le32(8) + BentoBuilder::le32(1) + fileId +
-			BentoBuilder::le32(quint32(name.size())).left(2) + name +
-			BentoBuilder::le32(quint32(project.size())).left(2) + project + masterId + BentoBuilder::le32(modified);
+			   BentoBuilder::le32(quint32(name.size())).left(2) + name +
+			   BentoBuilder::le32(quint32(project.size())).left(2) + project + masterId + BentoBuilder::le32(modified);
 	}
 
 	QByteArray categoryDatabase(const QByteArray &masterId, const QByteArray &fileId,
-							   bool importObject, int videoTracks, bool malformedAttribute = false)
+								bool importObject, int videoTracks, bool malformedAttribute = false)
 	{
 		BentoBuilder w;
 		const quint32 head = w.addObject("HEAD");
@@ -926,8 +926,10 @@ namespace
 			w.setHandle(master, "OMFI:CPNT:Attributes", attrs);
 			w.setHandles(attrs, "OMFI:ATTR:AttrRefs", {attr});
 			w.setString(attr, "OMFI:ATTB:Name", "_IMPORTSETTING");
-			if (malformedAttribute) w.setU32(attr, "OMFI:ATTB:Kind", 3);
-			else w.setU16(attr, "OMFI:ATTB:Kind", 3);
+			if (malformedAttribute)
+				w.setU32(attr, "OMFI:ATTB:Kind", 3);
+			else
+				w.setU16(attr, "OMFI:ATTB:Kind", 3);
 			w.setHandle(attr, "OMFI:ATTB:ObjAttribute", 0); // Avid tests the found kind, not the payload.
 		}
 		QVector<quint32> tracks;
@@ -1066,7 +1068,7 @@ void TestScanner::zero_pmr_timestamp_forces_header_and_keeps_kind_and_type_unkno
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
-		 singlePmr(kToneName.toUtf8(), kToneFileId, kLadderMob, "block 1729", 0)));
+						 singlePmr(kToneName.toUtf8(), kToneFileId, kLadderMob, "block 1729", 0)));
 	writeJunk(folder + QLatin1Char('/') + kToneName, 4096);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 
@@ -1107,7 +1109,7 @@ void TestScanner::current_render_with_missing_project_survives_failed_header_rea
 	QVERIFY(db.files.value(MobId::format(kToneFileId)).essenceComplete);
 	QVERIFY(db.masters.value(MobId::format(kLadderMob)).classificationKnown);
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
-		 singlePmr("render.mxf", kToneFileId, kLadderMob, {}, kToneModified)));
+						 singlePmr("render.mxf", kToneFileId, kLadderMob, {}, kToneModified)));
 	writeJunk(folder + QStringLiteral("/render.mxf"), 4096);
 	setModified(folder + QStringLiteral("/render.mxf"), kToneModified);
 
@@ -1121,7 +1123,6 @@ void TestScanner::current_render_with_missing_project_survives_failed_header_rea
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.sampleRate, 48000);
 	QCOMPARE(mf.clipName, QStringLiteral("Sequence,Audio Effect+1"));
-
 }
 
 void TestScanner::reused_filename_clears_old_editorial_details()
@@ -1185,9 +1186,9 @@ void TestScanner::precompute_category_from_current_database()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"),
-		categoryDatabase(kLadderMob, kToneFileId, importObject, videoTracks, malformedAttribute)));
+						 categoryDatabase(kLadderMob, kToneFileId, importObject, videoTracks, malformedAttribute)));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
-		singlePmr("render.mxf", kToneFileId, kLadderMob, {}, kToneModified)));
+						 singlePmr("render.mxf", kToneFileId, kLadderMob, {}, kToneModified)));
 	writeJunk(folder + QStringLiteral("/render.mxf"), 4096);
 	setModified(folder + QStringLiteral("/render.mxf"), kToneModified);
 	const auto rows = runScan(tmp.path());
@@ -1237,8 +1238,8 @@ void TestScanner::pmr_v1_recovers_unique_master_from_mdb()
 	const QByteArray name("sample.omf");
 	// ReadPmrRec version1 grammar: file UID8, name length/name, DTM.
 	const QByteArray pmr = BentoBuilder::le32(0x7a9) + BentoBuilder::le32(1) + BentoBuilder::le32(1) +
-		TestOmf::uid(2).mid(4) + BentoBuilder::le32(quint32(name.size())).left(2) + name +
-		BentoBuilder::le32(kToneModified);
+						   TestOmf::uid(2).mid(4) + BentoBuilder::le32(quint32(name.size())).left(2) + name +
+						   BentoBuilder::le32(kToneModified);
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), pmr));
 	writeJunk(folder + QStringLiteral("/sample.omf"), 4096);
 	setModified(folder + QStringLiteral("/sample.omf"), kToneModified);
@@ -1277,21 +1278,26 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
-	const auto set = [](quint8 type, const QByteArray &value) {
+	const auto set = [](quint8 type, const QByteArray &value)
+	{
 		QByteArray key = QByteArray::fromHex("060e2b34025301010d01010101010000");
 		key[14] = char(type);
 		return key + QByteArray(1, char(value.size())) + value;
 	};
 	QByteArray name;
-	for (char c : QByteArray("Sequence,3D_Warp+1")) { name.append('\0'); name.append(c); }
+	for (char c : QByteArray("Sequence,3D_Warp+1"))
+	{
+		name.append('\0');
+		name.append(c);
+	}
 	QByteArray material = QByteArray::fromHex("44010020") + kLadderMob +
-		QByteArray::fromHex("44080010060e2b34040101010d01010201010800") +
-		QByteArray::fromHex("4402") + QByteArray(1, '\0') + QByteArray(1, char(name.size())) + name;
+						  QByteArray::fromHex("44080010060e2b34040101010d01010201010800") +
+						  QByteArray::fromHex("4402") + QByteArray(1, '\0') + QByteArray(1, char(name.size())) + name;
 	const QByteArray descriptorId(16, '\x42');
 	const QByteArray bytes = set(0x36, material) +
-		set(0x37, QByteArray::fromHex("44010020") + kToneFileId + QByteArray::fromHex("47010010") + descriptorId) +
-		set(0x28, QByteArray::fromHex("3c0a0010") + descriptorId +
-			QByteArray::fromHex("32030004000007803202000400000438300100080000001900000001"));
+							 set(0x37, QByteArray::fromHex("44010020") + kToneFileId + QByteArray::fromHex("47010010") + descriptorId) +
+							 set(0x28, QByteArray::fromHex("3c0a0010") + descriptorId +
+										   QByteArray::fromHex("32030004000007803202000400000438300100080000001900000001"));
 	const QString path = folder + QStringLiteral("/unknown-usage.mxf");
 	QVERIFY(tryWriteFile(path, bytes));
 	const MxfMetadata parsed = MxfParser::parseHeader(path);
@@ -1329,7 +1335,7 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	db.setU16(pcm, "OMFI:MDAU:NumChannels", 1);
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), db.build()));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
-		singlePmr("unknown-usage.mxf", fileId, masterId, {}, kToneModified)));
+						 singlePmr("unknown-usage.mxf", fileId, masterId, {}, kToneModified)));
 	setModified(path, kToneModified);
 	const auto withDatabase = runScan(tmp.path());
 	QCOMPARE(withDatabase.size(), 1);
@@ -1664,9 +1670,9 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.clipName, kOmfWavClip);
 		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 		QCOMPARE(mf.project, kOmfProject);
-		QCOMPARE(mf.mobId, kOmfWavFileMob);		  // the file's own identity
+		QCOMPARE(mf.mobId, kOmfWavFileMob);			// the file's own identity
 		QCOMPARE(mf.masterMobId, kOmfWavMasterMob); // verified by the file's graph
-		QCOMPARE(mf.originalBin, kOmfWavBin);		  // which is the only place a bin lives
+		QCOMPARE(mf.originalBin, kOmfWavBin);		// which is the only place a bin lives
 		QVERIFY(!mf.isInvalidUmid);
 	}
 

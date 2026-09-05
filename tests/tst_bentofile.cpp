@@ -558,7 +558,8 @@ void TestBentoFile::bento2_endian_references_and_status()
 			QCOMPARE(status, BentoFile::ReadStatus::Ok);
 			qint32 num = 0, den = 0;
 			QVERIFY(b->rationalValue(b->bytes(descriptor, b->propertyId("OMFI:MDFL:SampleRate")), num, den));
-			QCOMPARE(num, 48000); QCOMPARE(den, 1);
+			QCOMPARE(num, 48000);
+			QCOMPARE(den, 1);
 			QCOMPARE(b->read(descriptor, b->propertyId("OMFI:Zero")).status, BentoFile::ReadStatus::Ok);
 			QCOMPARE(b->read(source, -1).status, BentoFile::ReadStatus::Missing);
 			QCOMPARE(b->read(source, b->propertyId("OMFI:MOBJ:Name"), 2).status, BentoFile::ReadStatus::TooLarge);
@@ -580,8 +581,7 @@ void TestBentoFile::bento2_opcode_boundaries()
 	Bento2Builder w;
 	auto raw = [&](const QByteArray &values, const QByteArray &toc, quint16 blocks = 1)
 	{
-		return values + toc + QByteArray::fromHex("a4434da5486472d7") + w.half(0x0101) + w.half(blocks)
-			+ w.half(2) + w.half(0) + w.word(quint32(values.size())) + w.word(quint32(toc.size()));
+		return values + toc + QByteArray::fromHex("a4434da5486472d7") + w.half(0x0101) + w.half(blocks) + w.half(2) + w.half(0) + w.word(quint32(values.size())) + w.word(quint32(toc.size()));
 	};
 	const QByteArray prefix = QByteArray(1, char(1)) + w.word(20) + w.word(40) + w.word(0);
 	BentoFile b;
@@ -597,8 +597,8 @@ void TestBentoFile::bento2_opcode_boundaries()
 	QVERIFY(b.hasProperty(20, 40));
 	// Headers, generation, reference list and payload must follow grammar.
 	for (const QByteArray &toc : {prefix, prefix + char(4), prefix + char(0), prefix + char(16),
-		prefix + char(13) + "x", prefix + char(4) + w.word(1) + char(4) + w.word(2),
-		prefix + char(6) + w.word(0) + w.word(1)})
+								  prefix + char(13) + "x", prefix + char(4) + w.word(1) + char(4) + w.word(2),
+								  prefix + char(6) + w.word(0) + w.word(1)})
 		QVERIFY2(!b.load(raw("abc", toc), &why), qPrintable(toc.toHex()));
 	// A compact opcode payload cannot cross the advertised buffer edge.
 	QByteArray crossing(1010, char(255));
@@ -647,7 +647,8 @@ void TestBentoFile::riff_embedded_label_uses_file_relative_offsets()
 				qToLittleEndian(old + base + extra, raw.data() + pos + 12);
 			}
 		qToLittleEndian(oldToc + base + extra, raw.data() + raw.size() - 8);
-		if (extra) raw.prepend('\0');
+		if (extra)
+			raw.prepend('\0');
 		return raw;
 	};
 	for (bool rf64 : {false, true})
@@ -660,11 +661,14 @@ void TestBentoFile::riff_embedded_label_uses_file_relative_offsets()
 			qToLittleEndian<quint64>(4, prefix.data() + 28);
 			prefix += QByteArray("data") + BentoBuilder::le32(0xffffffffu) + "abcd";
 		}
-		else prefix = QByteArray("RIFF") + BentoBuilder::le32(0) + "WAVEJUNK" + BentoBuilder::le32(3) + QByteArray("abc\0", 4);
+		else
+			prefix = QByteArray("RIFF") + BentoBuilder::le32(0) + "WAVEJUNK" + BentoBuilder::le32(3) + QByteArray("abc\0", 4);
 		const QByteArray inner = relocate(quint32(prefix.size() + 8));
 		QByteArray file = prefix + "omfi" + BentoBuilder::le32(quint32(inner.size())) + inner + "JUNK" + BentoBuilder::le32(2) + "zz";
-		if (rf64) qToLittleEndian<quint64>(quint64(file.size() - 8), file.data() + 20);
-		else qToLittleEndian<quint32>(quint32(file.size() - 8), file.data() + 4);
+		if (rf64)
+			qToLittleEndian<quint64>(quint64(file.size() - 8), file.data() + 20);
+		else
+			qToLittleEndian<quint32>(quint32(file.size() - 8), file.data() + 4);
 		BentoFile loaded, opened;
 		QString why;
 		QTemporaryDir tmp;
@@ -685,7 +689,8 @@ void TestBentoFile::toolkit_corpus()
 	// The toolkit's license does not grant fixture redistribution. Point to
 	// a separately obtained public LWKS-Software/omfkt22 checkout to run it.
 	const QString root = qEnvironmentVariable("MEDIAMUSTER_OMFKT22");
-	if (root.isEmpty()) QSKIP("Set MEDIAMUSTER_OMFKT22 to exercise genuine public toolkit files");
+	if (root.isEmpty())
+		QSKIP("Set MEDIAMUSTER_OMFKT22 to exercise genuine public toolkit files");
 	const QDir corpus(QDir(root).filePath(QStringLiteral("NTProjects_VS10")));
 	const QStringList files = corpus.entryList({QStringLiteral("*.omf")}, QDir::Files);
 	QVERIFY(files.size() >= 7);

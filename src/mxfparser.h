@@ -23,21 +23,29 @@ inline constexpr char kPcmAudioName[] = "PCM"; // was: PCM Audio
 /// HeaderStatus distinguishes malformed/incomplete data from a completed read.
 struct MxfMetadata
 {
-	enum class HeaderStatus { NotRead, Complete, Incomplete, Malformed, IoError, LimitExceeded };
+	enum class HeaderStatus
+	{
+		NotRead,
+		Complete,
+		Incomplete,
+		Malformed,
+		IoError,
+		LimitExceeded
+	};
 	HeaderStatus headerStatus = HeaderStatus::NotRead;
-	QString fileMobId; ///< Owning file SourcePackage, distinct from the material/master UMID.
-	bool pcmDescriptor = false; ///< A Wave/AES3/legacy PCM descriptor establishes PCM when coding is absent.
-	bool rgbaDescriptor = false; ///< The selected essence descriptor is RGBA, not another picture class.
-	bool rgbaAlpha8 = false; ///< Its complete pixel layout describes only an 8-bit alpha component.
+	QString fileMobId;				   ///< Owning file SourcePackage, distinct from the material/master UMID.
+	bool pcmDescriptor = false;		   ///< A Wave/AES3/legacy PCM descriptor establishes PCM when coding is absent.
+	bool rgbaDescriptor = false;	   ///< The selected essence descriptor is RGBA, not another picture class.
+	bool rgbaAlpha8 = false;		   ///< Its complete pixel layout describes only an 8-bit alpha component.
 	bool pictureCodingPresent = false; ///< A present but unusable coding property must not become an absent-property fallback.
-	bool hasMaterialPackage = false; ///< A completed header selected a logical master identity (MaterialPackage in MXF), independently of usage classification.
-	bool classificationKnown = false; ///< An identified material/master package supplied a usage verdict.
-	QString codec;		///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
-	QString resolution; ///< '1920x1080', or empty for audio.
-	QString fps;		///< '23.976', '25', '29.97', etc.
-	QString bitDepth;	///< '8-bit', '10-bit', '24-bit'.
-	QString umid;		///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
-	QString clipName;	///< Clip name from tag 0x4402 in the material package.
+	bool hasMaterialPackage = false;   ///< A completed header selected a logical master identity (MaterialPackage in MXF), independently of usage classification.
+	bool classificationKnown = false;  ///< An identified material/master package supplied a usage verdict.
+	QString codec;					   ///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
+	QString resolution;				   ///< '1920x1080', or empty for audio.
+	QString fps;					   ///< '23.976', '25', '29.97', etc.
+	QString bitDepth;				   ///< '8-bit', '10-bit', '24-bit'.
+	QString umid;					   ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
+	QString clipName;				   ///< Clip name from tag 0x4402 in the material package.
 
 	/// True when clipName came from the MaterialPackage (the master clip —
 	/// what Avid/MediaInfo display) rather than a SourcePackage fallback
@@ -65,7 +73,7 @@ struct MxfMetadata
 	QString projectName;
 
 	QByteArray essenceContainerLabel; ///< Compatibility name: this is the COMPRESSION/coding UL, not wrapping.
-	QByteArray wrappingLabel; ///< FileDescriptor EssenceContainer (0x3004); separate from compression.
+	QByteArray wrappingLabel;		  ///< FileDescriptor EssenceContainer (0x3004); separate from compression.
 	int width = 0;
 	int height = 0;		///< Stored value; interlaced files store one field height.
 	int channels = 0;	///< Audio only.

@@ -140,8 +140,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		const auto usage = b.read(obj, p.usage);
 		if (usage.status != BentoFile::ReadStatus::Missing)
 		{
-			const qint32 code = usage.ok() && usage.data.size() == 4 ?
-				AvidUsage::integerCode(b.uintValue(usage.data)) : AvidUsage::kInvalidOrConflicting;
+			const qint32 code = usage.ok() && usage.data.size() == 4 ? AvidUsage::integerCode(b.uintValue(usage.data)) : AvidUsage::kInvalidOrConflicting;
 			it->legacyMaster |= AvidUsage::isMasterCode(code);
 			it->usageCode = AvidUsage::merge(it->usageCode, code);
 		}
@@ -187,8 +186,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	for (const QString &hex : order)
 	{
 		const MobGroup &g = groups[hex];
-		if (p.omf2 ? !g.masterClass :
-			(g.anyPhysical || (p.revision == OmfObjects::Revision::Omf1 && !g.legacyMaster)))
+		if (p.omf2 ? !g.masterClass : (g.anyPhysical || (p.revision == OmfObjects::Revision::Omf1 && !g.legacyMaster)))
 			continue;
 		bool referencesFile = false;
 		for (quint32 obj : g.objects)
@@ -310,7 +308,8 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	if (bytesRead)
 		*bytesRead = b.bytesRead();
 	e.headerStatus = e.valid && !out.fileMobId.isEmpty() && master
-		? MxfMetadata::HeaderStatus::Complete : MxfMetadata::HeaderStatus::Incomplete;
+						 ? MxfMetadata::HeaderStatus::Complete
+						 : MxfMetadata::HeaderStatus::Incomplete;
 	if (!e.valid)
 		qCWarning(lcOmf) << "no usable OMF metadata in" << filePath << "(read" << b.bytesRead() << "bytes)";
 	else

@@ -47,7 +47,7 @@ namespace
 // MARK: - Construction
 
 OpJournal::OpJournal(OpKind kind, const QJsonObject &meta, const QString &dir,
-				   const QString &sparePath)
+					 const QString &sparePath)
 {
 	const QString base = dir.isEmpty() ? standardJournalDir() : dir;
 	if (!QDir().mkpath(base))
@@ -107,7 +107,7 @@ bool OpJournal::isOpen() const
 // MARK: - Plan
 
 void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpItem> &items,
-						 const QVector<VolumeIdentity> &volumes)
+						  const QVector<VolumeIdentity> &volumes)
 {
 	QJsonArray files;
 	for (const OpItem &it : items)
@@ -156,7 +156,7 @@ void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpIt
 // MARK: - Per-op records
 
 int OpJournal::planOp(const QString &src, const QString &dst, qint64 bytes, const QString &parked,
-					 const FileIdentity &srcId, const FileIdentity &parkedOriginalId)
+					  const FileIdentity &srcId, const FileIdentity &parkedOriginalId)
 {
 	const int id = m_nextId++;
 

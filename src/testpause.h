@@ -63,7 +63,7 @@ namespace TestPause
 	/// pause has to be short enough that a file still completes, an item
 	/// pause long enough to click Cancel, a folder pause long enough to
 	/// watch a scan advance folder by folder.
-	inline constexpr unsigned long kPerCopyChunkMs = 250;  ///< per 4 MB written
-	inline constexpr unsigned long kPerItemMs = 2000;	   ///< per file in a run
+	inline constexpr unsigned long kPerCopyChunkMs = 250;	   ///< per 4 MB written
+	inline constexpr unsigned long kPerItemMs = 2000;		   ///< per file in a run
 	inline constexpr unsigned long kPerScannedFolderMs = 4000; ///< per media folder
 } // namespace TestPause

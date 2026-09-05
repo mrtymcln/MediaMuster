@@ -28,14 +28,16 @@ namespace
 					field += c;
 					++i;
 				}
-				else quoted = !quoted;
+				else
+					quoted = !quoted;
 			}
 			else if (c == QLatin1Char(',') && !quoted)
 			{
 				fields.append(field);
 				field.clear();
 			}
-			else field += c;
+			else
+				field += c;
 		}
 		fields.append(field);
 		return fields;
@@ -184,7 +186,8 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 		// UTF-8 BOM keeps Excel on Windows from mojibaking non-Latin names.
 		QVERIFY(raw.startsWith("\xEF\xBB\xBF"));
 		QCOMPARE(raw.mid(3), (MediaCsv::headerLine(options) +
-			MediaCsv::rowLine(sampleRow(), options) + MediaCsv::rowLine(sampleRow(), options)).toUtf8());
+							  MediaCsv::rowLine(sampleRow(), options) + MediaCsv::rowLine(sampleRow(), options))
+								 .toUtf8());
 		QCOMPARE(QString::fromUtf8(raw).count(QLatin1Char('\n')), 3);
 	}
 }
@@ -261,7 +264,7 @@ void TestMediaCsv::precompute_categories_preserve_unknown_details()
 	const QStringList expected{QStringLiteral("Rendered Effects"), QStringLiteral("Titles and Matte Keys"), QStringLiteral("unknown")};
 	int row = 0;
 	for (auto category : {MediaFile::PrecomputeCategory::RenderedEffects,
-		MediaFile::PrecomputeCategory::TitlesAndMatteKeys, MediaFile::PrecomputeCategory::Unknown})
+						  MediaFile::PrecomputeCategory::TitlesAndMatteKeys, MediaFile::PrecomputeCategory::Unknown})
 	{
 		MediaFile file;
 		file.type = MediaFile::Type::Precompute;

@@ -1194,23 +1194,23 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// are unknown freshness, not permission to skip checking the actual file.
 	const bool headerReadable = (Conventions::hasMxfExtension(mf.extension) || isOmfEra) && mf.sizeBytes > 0;
 	const bool described = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
-		masterIt != mdb.masters.constEnd();
+						   masterIt != mdb.masters.constEnd();
 	mf.databaseMetadataCurrent = described && pmrHit && pmrHit->fileModifiedSecs != 0 &&
-		PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
+								 PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
 	if (described && pmrHit && !mf.databaseMetadataCurrent)
 		++tally.stale;
 	if (headerReadable && mf.databaseMetadataCurrent)
 	{
 		MxfMetadata essence = fileIt->essence;
 		essence.isPrecompute = AvidUsage::masterClassification(masterIt->usageCode) ==
-			AvidUsage::Classification::Precompute;
+							   AvidUsage::Classification::Precompute;
 		essence.classificationKnown = masterIt->classificationKnown;
 		essence.precomputeCategory = masterIt->precomputeCategory;
 		applyMetadata(mf, essence);
 	}
 	mf.needsHeaderRead = headerReadable && (!mf.databaseMetadataCurrent ||
-		mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
-		(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
+											mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
+											(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
 	if (mf.needsHeaderRead)
 		++tally.header;
 	else if (headerReadable)
@@ -1325,28 +1325,46 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 				mxf = MxfParser::parseHeader(mf.filePath, &bytesRead);
 			}
 			const bool headerUsable = mxf.valid || mxf.classificationKnown;
-			const auto canonicalHeaderId = [&](const QString &id) {
-				if (row.omfEra || id.isEmpty()) return id;
+			const auto canonicalHeaderId = [&](const QString &id)
+			{
+				if (row.omfEra || id.isEmpty())
+					return id;
 				const QString canonical = MobId::toPmrForm(id);
 				return canonical.isEmpty() ? id : canonical;
 			};
 			const QString headerFileId = headerUsable ? canonicalHeaderId(mxf.fileMobId) : QString{};
 			const bool headerMasterKnown = row.omfEra || mxf.hasMaterialPackage;
 			const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(mxf.umid) : QString{};
-			const auto contradicts = [](const QString &oldId, const QString &actualId) {
+			const auto contradicts = [](const QString &oldId, const QString &actualId)
+			{
 				return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
 			};
 			if (contradicts(mf.mobId, headerFileId) || contradicts(mf.masterMobId, headerMasterId))
 			{
 				// The name was reused for different media. None of the old
 				// clip's editorial/technical fields belongs to the replacement.
-				mf.project.clear(); mf.mobId.clear(); mf.masterMobId.clear();
-				mf.clipName.clear(); mf.clipNameSource = MediaFile::ClipNameSource::None;
-				mf.originalBin.clear(); mf.sourceFilePath.clear(); mf.sourceFileName.clear();
-				mf.sourceContainer.clear(); mf.isImported = false;
-				mf.codec.clear(); mf.codecHex.clear(); mf.resolution.clear(); mf.fps.clear(); mf.bitDepth.clear();
-				mf.sampleRate = 0; mf.channels = 0; mf.durationFrames = 0; mf.timecodeBase = 0; mf.dropFrame = false;
-				mf.kind = MediaFile::Kind::Unknown; mf.type = MediaFile::Type::Unknown;
+				mf.project.clear();
+				mf.mobId.clear();
+				mf.masterMobId.clear();
+				mf.clipName.clear();
+				mf.clipNameSource = MediaFile::ClipNameSource::None;
+				mf.originalBin.clear();
+				mf.sourceFilePath.clear();
+				mf.sourceFileName.clear();
+				mf.sourceContainer.clear();
+				mf.isImported = false;
+				mf.codec.clear();
+				mf.codecHex.clear();
+				mf.resolution.clear();
+				mf.fps.clear();
+				mf.bitDepth.clear();
+				mf.sampleRate = 0;
+				mf.channels = 0;
+				mf.durationFrames = 0;
+				mf.timecodeBase = 0;
+				mf.dropFrame = false;
+				mf.kind = MediaFile::Kind::Unknown;
+				mf.type = MediaFile::Type::Unknown;
 				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 				mf.databaseMetadataCurrent = false;
 			}
@@ -1408,7 +1426,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			}
 			// The header's own identity can be the zero one too.
 			mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
-				(headerUsable && (MobId::isAllZero(mxf.umid) || MobId::isAllZero(mxf.fileMobId)));
+							   (headerUsable && (MobId::isAllZero(mxf.umid) || MobId::isAllZero(mxf.fileMobId)));
 
 			// OMF-era: separate counters, see above.
 			std::atomic<qint64> &sumCounter = row.omfEra ? omfBytesRead : totalBytesRead;

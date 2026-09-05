@@ -176,9 +176,9 @@ struct MediaFile
 		NoReference, ///< Databases present and readable, but no reference to this
 					 ///< file: copied in or created since Avid last indexed the
 					 ///< folder, or its records were removed. Avid re-indexes at launch.
-		NoDatabase,	 ///< No msmFMID.pmr here — no index to check against: other seats'
-					 ///< folders on shared storage, Interplay / MediaCentral, Quarantined
-					 ///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
+		NoDatabase, ///< No msmFMID.pmr here — no index to check against: other seats'
+					///< folders on shared storage, Interplay / MediaCentral, Quarantined
+					///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
 		DbUnreadable ///< A database exists but could not be read (corrupt, truncated,
 					 ///< or an unsupported older version); Avid rebuilds it at relaunch.
 	};
@@ -265,13 +265,15 @@ struct MediaFile
 	// stay selectable even when a renamed clip no longer carries a token.
 	QString effectDisplay() const
 	{
-		if (type != Type::Precompute) return {};
+		if (type != Type::Precompute)
+			return {};
 		return effect.isEmpty() ? QStringLiteral("unknown") : effect;
 	}
 
 	QString effectCategoryDisplay() const
 	{
-		if (type != Type::Precompute) return {};
+		if (type != Type::Precompute)
+			return {};
 		return effectCategory.isEmpty() ? QStringLiteral("unknown") : effectCategory;
 	}
 
@@ -281,9 +283,12 @@ struct MediaFile
 			return {};
 		switch (precomputeCategory)
 		{
-		case PrecomputeCategory::RenderedEffects: return QStringLiteral("Rendered Effects");
-		case PrecomputeCategory::TitlesAndMatteKeys: return QStringLiteral("Titles and Matte Keys");
-		case PrecomputeCategory::Unknown: return QStringLiteral("unknown");
+		case PrecomputeCategory::RenderedEffects:
+			return QStringLiteral("Rendered Effects");
+		case PrecomputeCategory::TitlesAndMatteKeys:
+			return QStringLiteral("Titles and Matte Keys");
+		case PrecomputeCategory::Unknown:
+			return QStringLiteral("unknown");
 		}
 		return QStringLiteral("unknown");
 	}
@@ -294,9 +299,12 @@ struct MediaFile
 	{
 		switch (kind)
 		{
-		case Kind::Audio: return QStringLiteral("Audio");
-		case Kind::Video: return QStringLiteral("Video");
-		case Kind::Unknown: return QStringLiteral("\u2014");
+		case Kind::Audio:
+			return QStringLiteral("Audio");
+		case Kind::Video:
+			return QStringLiteral("Video");
+		case Kind::Unknown:
+			return QStringLiteral("\u2014");
 		}
 		return QStringLiteral("\u2014");
 	}
@@ -306,9 +314,12 @@ struct MediaFile
 	{
 		switch (type)
 		{
-		case Type::Media: return QStringLiteral("Media");
-		case Type::Precompute: return QStringLiteral("Precompute");
-		case Type::Unknown: return QStringLiteral("\u2014");
+		case Type::Media:
+			return QStringLiteral("Media");
+		case Type::Precompute:
+			return QStringLiteral("Precompute");
+		case Type::Unknown:
+			return QStringLiteral("\u2014");
 		}
 		return QStringLiteral("\u2014");
 	}

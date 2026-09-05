@@ -6,8 +6,19 @@
 // A failed read is not evidence that the attribute is absent.
 namespace AvidPrecompute
 {
-	enum class Category { Unknown, RenderedEffects, TitlesAndMatteKeys };
-	enum class ImportAttribute { Unknown, Absent, Present, Conflicting };
+	enum class Category
+	{
+		Unknown,
+		RenderedEffects,
+		TitlesAndMatteKeys
+	};
+	enum class ImportAttribute
+	{
+		Unknown,
+		Absent,
+		Present,
+		Conflicting
+	};
 	struct Evidence
 	{
 		ImportAttribute importAttribute = ImportAttribute::Unknown;

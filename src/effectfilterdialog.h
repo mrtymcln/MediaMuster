@@ -19,8 +19,8 @@ class EffectFilterDialog : public QDialog
 	Q_OBJECT
 public:
 	explicit EffectFilterDialog(const QVector<MediaFile> &files,
-		const PrecomputeFilter &selection, const QString &selectedVolume,
-		QWidget *parent = nullptr);
+								const PrecomputeFilter &selection, const QString &selectedVolume,
+								QWidget *parent = nullptr);
 
 	PrecomputeFilter precomputeFilter() const;
 	QString selectedVolume() const;
@@ -34,7 +34,7 @@ private:
 
 	void buildTree(const QVector<MediaFile> &files);
 	QTreeWidgetItem *addChoice(QTreeWidgetItem *parent, const QString &label,
-		const PrecomputeFilterPath &path);
+							   const PrecomputeFilterPath &path);
 	void applySelection(const PrecomputeFilter &selection);
 	void setSubtreeChecked(QTreeWidgetItem *item, Qt::CheckState state);
 	void updateParentChecks(QTreeWidgetItem *item);

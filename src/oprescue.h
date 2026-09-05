@@ -62,11 +62,11 @@ public:
 	{
 		QString journalPath;
 		OpKind kind = OpKind::Copy;
-		QString dest;		   ///< Copy/Move destination root; empty otherwise.
+		QString dest; ///< Copy/Move destination root; empty otherwise.
 		bool preserve = false;
-		QString started;	   ///< ISO timestamp from the begin line, for the message.
-		int total = 0;		   ///< Files in the plan.
-		int finished = 0;	   ///< Concluded (done/skipped/evidenced) before the cut.
+		QString started;  ///< ISO timestamp from the begin line, for the message.
+		int total = 0;	  ///< Files in the plan.
+		int finished = 0; ///< Concluded (done/skipped/evidenced) before the cut.
 		/// Delete only: at least one finished file went to a per-volume
 		/// MediaMuster Trash rather than the system one. The message
 		/// must not send the user to a Trash that hasn't got their files.
@@ -77,9 +77,9 @@ public:
 	struct Summary
 	{
 		int journalsRecovered = 0; ///< Interrupted runs that put something back.
-		int opsReversed = 0;	  ///< Files put back or partials cleaned up.
-		int opsFlagged = 0;		  ///< Couldn't undo; needs the user to look.
-		QStringList notes;		  ///< Lines ready to drop into a dialog.
+		int opsReversed = 0;	   ///< Files put back or partials cleaned up.
+		int opsFlagged = 0;		   ///< Couldn't undo; needs the user to look.
+		QStringList notes;		   ///< Lines ready to drop into a dialog.
 		QVector<Resumable> resumable;
 
 		bool anything() const
@@ -120,7 +120,7 @@ public:
 			Proceed,	///< The recorded volume is where it was; use the path.
 			Reanchored, ///< Volume found under a new root; `path` is rewritten.
 			Wait,		///< Volume absent (or an impostor at its address, with
-						///< the real one nowhere) — touch nothing this launch.
+				  ///< the real one nowhere) — touch nothing this launch.
 		};
 		State state = State::Proceed;
 		QString path;

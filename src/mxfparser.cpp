@@ -84,17 +84,35 @@ static constexpr quint8 kSetTaggedValue = 0x3F;
 static bool isMetadataSetKey(const char *key)
 {
 	return std::memcmp(key, kUlSetPrefix, 7) == 0 &&
-		std::memcmp(key + 8, kUlSetPrefix + 8, 5) == 0;
+		   std::memcmp(key + 8, kUlSetPrefix + 8, 5) == 0;
 }
 
 static bool isUsefulMetadataSet(quint8 type)
 {
 	switch (type)
 	{
-	case 0x0f: case 0x11: case 0x14: case 0x18: case 0x23: case 0x27:
-	case 0x28: case 0x29: case 0x2f: case 0x32: case 0x36: case 0x37:
-	case 0x39: case 0x3a: case 0x3b: case 0x3f: case 0x42: case 0x44:
-	case 0x47: case 0x48: case 0x51: case 0x5e:
+	case 0x0f:
+	case 0x11:
+	case 0x14:
+	case 0x18:
+	case 0x23:
+	case 0x27:
+	case 0x28:
+	case 0x29:
+	case 0x2f:
+	case 0x32:
+	case 0x36:
+	case 0x37:
+	case 0x39:
+	case 0x3a:
+	case 0x3b:
+	case 0x3f:
+	case 0x42:
+	case 0x44:
+	case 0x47:
+	case 0x48:
+	case 0x51:
+	case 0x5e:
 		return true;
 	default:
 		return false;
@@ -237,7 +255,8 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		qCWarning(lcMxf) << "cannot open" << filePath << file.errorString();
 		return result;
 	}
-	auto read = [&](qint64 count) {
+	auto read = [&](qint64 count)
+	{
 		QByteArray result = file.read(count);
 		readCount += result.size();
 		return result;
@@ -263,7 +282,7 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	}
 	Status status = Status::Complete;
 	if (partition > kRunInLimit || (partition < 0 &&
-		(search.size() < 16 || !isMetadataSetKey(search.constData()))))
+									(search.size() < 16 || !isMetadataSetKey(search.constData()))))
 		status = Status::Malformed;
 	if (!file.seek(partition >= 0 ? partition : 0))
 		status = Status::IoError;
@@ -292,8 +311,8 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		}
 		const bool isSet = isMetadataSetKey(key.constData()) && isUsefulMetadataSet(quint8(key[14]));
 		const bool isPartition = key.startsWith(QByteArray::fromHex("060e2b34020501010d0102010102")) ||
-			key.startsWith(QByteArray::fromHex("060e2b34020501010d0102010103")) ||
-			key.startsWith(QByteArray::fromHex("060e2b34020501010d0102010104"));
+								 key.startsWith(QByteArray::fromHex("060e2b34020501010d0102010103")) ||
+								 key.startsWith(QByteArray::fromHex("060e2b34020501010d0102010104"));
 		// GC essence elements and subsequent body/footer partitions end this
 		// header. Their payload may be gigabytes; do not read or allocate it.
 		const bool isEssence = key.startsWith(QByteArray::fromHex("060e2b34010201010d010301"));
@@ -390,7 +409,8 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 			if (count == 1)
 			{
 				partitionEssenceContainer = read(16);
-				if (partitionEssenceContainer.size() != 16) status = Status::Incomplete;
+				if (partitionEssenceContainer.size() != 16)
+					status = Status::Incomplete;
 			}
 			else if (!file.seek(file.pos() + length - 88))
 				status = Status::IoError;
@@ -440,7 +460,7 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	}
 	if (!result.valid)
 		qCWarning(lcMxf) << "no complete usable MXF metadata in" << filePath
-			<< "status" << int(status) << "read" << readCount << "bytes";
+						 << "status" << int(status) << "read" << readCount << "bytes";
 	if (bytesRead)
 		*bytesRead = readCount;
 	return result;
@@ -462,7 +482,8 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 	QHash<quint16, quint16> primer;
 	QVector<QPair<quint8, QByteArray>> rawSets;
 	const QByteArray primerKey = QByteArray::fromHex("060e2b34020501010d01020101050100");
-	static const QHash<QByteArray, quint16> properties = [] {
+	static const QHash<QByteArray, quint16> properties = []
+	{
 		QHash<QByteArray, quint16> result;
 		for (const auto &entry : kMxfProperties)
 		{
@@ -473,7 +494,8 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		}
 		return result;
 	}();
-	auto fail = [&] {
+	auto fail = [&]
+	{
 		MxfMetadata result;
 		result.headerStatus = MxfMetadata::HeaderStatus::Malformed;
 		return result;
@@ -515,9 +537,10 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 	QHash<QByteArray, int> byInstance;
 	QHash<QByteArray, int> byPackage;
 	QVector<int> materials, files, descriptors;
-	auto isDescriptor = [](quint8 type) {
+	auto isDescriptor = [](quint8 type)
+	{
 		return type == kSetCdci || type == kSetRgba || type == kSetWave ||
-			type == kSetAes3 || type == kSetSoundMpeg || type == 0x27 || type == 0x42 || type == 0x51;
+			   type == kSetAes3 || type == kSetSoundMpeg || type == 0x27 || type == 0x42 || type == 0x51;
 	};
 	for (const auto &raw : rawSets)
 	{
@@ -532,8 +555,7 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 			p += 4;
 			if (size > raw.second.size() - p)
 				return fail();
-			const quint16 tag = localTag == AvidUsage::kPrivateMxfTag && !primer.contains(localTag) ?
-				0 : primer.value(localTag, localTag);
+			const quint16 tag = localTag == AvidUsage::kPrivateMxfTag && !primer.contains(localTag) ? 0 : primer.value(localTag, localTag);
 			if (tag != 0)
 			{
 				const QByteArray value = raw.second.mid(p, size);
@@ -545,7 +567,8 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 				if (set.fields.contains(tag) && set.fields.value(tag) != value)
 					return fail();
 				set.fields.insert(tag, value);
-				if (primer.contains(localTag)) set.identifiedProperties.insert(tag);
+				if (primer.contains(localTag))
+					set.identifiedProperties.insert(tag);
 				set.local += char(tag >> 8);
 				set.local += char(tag & 0xff);
 				set.local += char(size >> 8);
@@ -574,12 +597,14 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 	}
 	// Decode references only when their shape is valid. Bounded traversal also
 	// handles cycles and shared objects without recursive stack growth.
-	auto refs = [&](const QByteArray &value) {
+	auto refs = [&](const QByteArray &value)
+	{
 		QVector<int> result;
 		if (value.size() == 16)
 		{
 			const auto found = byInstance.constFind(value);
-			if (found != byInstance.constEnd()) result.append(found.value());
+			if (found != byInstance.constEnd())
+				result.append(found.value());
 		}
 		else if (value.size() >= 8)
 		{
@@ -588,25 +613,31 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 				for (quint32 n = 0; n < count; ++n)
 				{
 					const auto found = byInstance.constFind(value.mid(8 + qsizetype(n) * 16, 16));
-					if (found != byInstance.constEnd()) result.append(found.value());
+					if (found != byInstance.constEnd())
+						result.append(found.value());
 				}
 		}
 		return result;
 	};
-	auto descendants = [&](int root, bool followSource) {
+	auto descendants = [&](int root, bool followSource)
+	{
 		QSet<int> visited;
 		QVector<int> queue{root};
 		for (qsizetype n = 0; n < queue.size(); ++n)
 		{
 			const int index = queue[n];
-			if (index < 0 || visited.contains(index)) continue;
+			if (index < 0 || visited.contains(index))
+				continue;
 			visited.insert(index);
 			for (const auto &value : sets[index].fields)
-				for (int target : refs(value)) if (!visited.contains(target)) queue.append(target);
+				for (int target : refs(value))
+					if (!visited.contains(target))
+						queue.append(target);
 			if (followSource && sets[index].type == kSetSourceClip)
 			{
 				const auto target = byPackage.constFind(sets[index].fields.value(0x1101));
-				if (target != byPackage.constEnd() && !visited.contains(target.value())) queue.append(target.value());
+				if (target != byPackage.constEnd() && !visited.contains(target.value()))
+					queue.append(target.value());
 			}
 		}
 		return visited;
@@ -619,10 +650,13 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		if (set.type == 0x23)
 		{
 			const int candidate = byPackage.value(set.fields.value(0x2701), -1);
-			if (files.contains(candidate)) linkedFiles.insert(candidate);
+			if (files.contains(candidate))
+				linkedFiles.insert(candidate);
 		}
-	if (linkedFiles.size() == 1) filePackage = *linkedFiles.constBegin();
-	else if (linkedFiles.isEmpty() && files.size() == 1) filePackage = files.first();
+	if (linkedFiles.size() == 1)
+		filePackage = *linkedFiles.constBegin();
+	else if (linkedFiles.isEmpty() && files.size() == 1)
+		filePackage = files.first();
 	int material = -1;
 	if (filePackage >= 0)
 	{
@@ -632,11 +666,16 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		for (int candidate : materials)
 			if (descendants(candidate, true).contains(filePackage))
 			{
-				if (material >= 0) { material = -2; break; }
+				if (material >= 0)
+				{
+					material = -2;
+					break;
+				}
 				material = candidate;
 			}
 	}
-	if (material == -1 && materials.size() == 1) material = materials.first();
+	if (material == -1 && materials.size() == 1)
+		material = materials.first();
 	// An explicit Preface primary-package reference resolves otherwise
 	// ambiguous connected material packages.
 	QSet<int> primaryMaterials;
@@ -645,19 +684,19 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 			for (int candidate : refs(set.fields.value(0x3b08)))
 				if (materials.contains(candidate) && (filePackage < 0 || descendants(candidate, true).contains(filePackage)))
 					primaryMaterials.insert(candidate);
-	if (primaryMaterials.size() == 1) material = *primaryMaterials.constBegin();
+	if (primaryMaterials.size() == 1)
+		material = *primaryMaterials.constBegin();
 	if (material >= 0)
 	{
 		const auto &set = sets[material];
 		parsePackage(set.local, 0, set.local.size(), meta, true);
 		const auto privateUsage = set.fields.constFind(AvidUsage::kPrivateMxfTag);
-		const qint32 code = privateUsage == set.fields.cend() ? AvidUsage::kMissing :
-			AvidUsage::integerCode(readUint32BE(privateUsage.value(), 0));
+		const qint32 code = privateUsage == set.fields.cend() ? AvidUsage::kMissing : AvidUsage::integerCode(readUint32BE(privateUsage.value(), 0));
 		const auto classification = AvidUsage::materialClassification(
 			code, AvidUsage::standardUsage(set.fields.value(0x4408)));
 		meta.hasMaterialPackage = set.fields.value(0x4401).size() == MobId::kRawSize;
 		meta.classificationKnown = meta.hasMaterialPackage &&
-			classification != AvidUsage::Classification::Unknown;
+								   classification != AvidUsage::Classification::Unknown;
 		meta.isPrecompute = classification == AvidUsage::Classification::Precompute;
 		if (meta.classificationKnown && meta.isPrecompute)
 		{
@@ -667,38 +706,50 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 			// by GetImportSettingAttrList. A recursively found tag NAME is
 			// insufficient: inspect only this master's direct MobAttributeList.
 			// Unlike the recovery graph walker, decisive lists must be complete.
-			const auto strictReferences = [&](const QByteArray &value, QVector<int> &targets) {
-				if (value.size() < 8 || readUint32BE(value, 4) != 16) return false;
+			const auto strictReferences = [&](const QByteArray &value, QVector<int> &targets)
+			{
+				if (value.size() < 8 || readUint32BE(value, 4) != 16)
+					return false;
 				const quint32 count = readUint32BE(value, 0);
-				if (quint64(count) * 16 != quint64(value.size() - 8)) return false;
+				if (quint64(count) * 16 != quint64(value.size() - 8))
+					return false;
 				QSet<int> unique;
 				for (quint32 i = 0; i < count; ++i)
 				{
 					const int target = byInstance.value(value.mid(8 + qsizetype(i) * 16, 16), -1);
-					if (target < 0 || unique.contains(target)) return false;
+					if (target < 0 || unique.contains(target))
+						return false;
 					unique.insert(target);
 					targets.append(target);
 				}
 				return true;
 			};
-			const auto exactText = [](const QByteArray &value, bool little, QString &text) {
-				if (value.size() < 2 || value.size() % 2 != 0) return false;
+			const auto exactText = [](const QByteArray &value, bool little, QString &text)
+			{
+				if (value.size() < 2 || value.size() % 2 != 0)
+					return false;
 				for (qsizetype i = 0; i < value.size(); i += 2)
 				{
 					const auto *p = reinterpret_cast<const uchar *>(value.constData() + i);
 					const quint16 c = little ? qFromLittleEndian<quint16>(p) : qFromBigEndian<quint16>(p);
-					if (c == 0) return i + 2 == value.size();
-					if (QChar(c).isSurrogate()) return false;
+					if (c == 0)
+						return i + 2 == value.size();
+					if (QChar(c).isSurrogate())
+						return false;
 					text.append(QChar(c));
 				}
 				return true;
 			};
-			const auto importEvidence = [&] {
+			const auto importEvidence = [&]
+			{
 				using Attribute = AvidPrecompute::ImportAttribute;
-				if (!set.fields.contains(0xf001)) return Attribute::Absent;
-				if (!set.identifiedProperties.contains(0xf001)) return Attribute::Unknown;
+				if (!set.fields.contains(0xf001))
+					return Attribute::Absent;
+				if (!set.identifiedProperties.contains(0xf001))
+					return Attribute::Unknown;
 				QVector<int> attributes;
-				if (!strictReferences(set.fields.value(0xf001), attributes)) return Attribute::Unknown;
+				if (!strictReferences(set.fields.value(0xf001), attributes))
+					return Attribute::Unknown;
 				bool found = false;
 				Attribute verdict = Attribute::Absent;
 				for (int index : attributes)
@@ -706,26 +757,35 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 					const auto &attribute = sets[index];
 					QString name;
 					if (attribute.type != kSetTaggedValue ||
-						!exactText(attribute.fields.value(0x5001), false, name)) return Attribute::Unknown;
-					if (name != QLatin1String("_IMPORTSETTING")) continue;
-					if (found) return Attribute::Conflicting; // Do not choose among duplicate definitions.
+						!exactText(attribute.fields.value(0x5001), false, name))
+						return Attribute::Unknown;
+					if (name != QLatin1String("_IMPORTSETTING"))
+						continue;
+					if (found)
+						return Attribute::Conflicting; // Do not choose among duplicate definitions.
 					found = true;
 					const QByteArray value = attribute.fields.value(0x5003);
-					if (value.size() < 17 || (value[0] != 'L' && value[0] != 'B')) return Attribute::Unknown;
+					if (value.size() < 17 || (value[0] != 'L' && value[0] != 'B'))
+						return Attribute::Unknown;
 					const bool little = value[0] == 'L';
 					const QByteArray type = value.mid(1, 16);
-					const QByteArray stringType = QByteArray::fromHex(little ?
-						"0002100100000000060e2b3401040101" : "0110020000000000060e2b3401040101");
-					if (type != stringType) return Attribute::Unknown;
+					const QByteArray stringType = QByteArray::fromHex(little ? "0002100100000000060e2b3401040101" : "0110020000000000060e2b3401040101");
+					if (type != stringType)
+						return Attribute::Unknown;
 					QString payload;
-					if (!exactText(value.mid(17), little, payload)) return Attribute::Unknown;
-					if (payload == QLatin1String("__PortableObject")) return Attribute::Unknown;
-					if (payload != QLatin1String("__AttributeList")) continue; // An ordinary string is not kind3.
+					if (!exactText(value.mid(17), little, payload))
+						return Attribute::Unknown;
+					if (payload == QLatin1String("__PortableObject"))
+						return Attribute::Unknown;
+					if (payload != QLatin1String("__AttributeList"))
+						continue; // An ordinary string is not kind3.
 					QVector<int> children;
 					if (!attribute.identifiedProperties.contains(0xf002) ||
-						!strictReferences(attribute.fields.value(0xf002), children)) return Attribute::Unknown;
+						!strictReferences(attribute.fields.value(0xf002), children))
+						return Attribute::Unknown;
 					for (int child : children)
-						if (sets[child].type != kSetTaggedValue) return Attribute::Unknown;
+						if (sets[child].type != kSetTaggedValue)
+							return Attribute::Unknown;
 					verdict = Attribute::Present;
 				}
 				return verdict;
@@ -744,8 +804,8 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 					QByteArray::fromHex("060e2b34040101010103020201000000"),
 					QByteArray::fromHex("807d006008143e6f6f3c8ce16cef11d2")};
 				static const QSet<QByteArray> nonPicture = {
-					QByteArray::fromHex("060e2b34040101010103020202000000"), // Sound
-					QByteArray::fromHex("807d006008143e6f78e1ebe16cef11d2"), // Legacy Sound
+					QByteArray::fromHex("060e2b34040101010103020202000000"),  // Sound
+					QByteArray::fromHex("807d006008143e6f78e1ebe16cef11d2"),  // Legacy Sound
 					QByteArray::fromHex("060e2b34040101010103020101000000")}; // Timecode
 				for (int track : tracks)
 				{
@@ -764,10 +824,13 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 						break;
 					}
 					const QByteArray kind = sets[component].fields.value(0x0201);
-					if (picture.contains(kind)) ++videos;
-					else if (!nonPicture.contains(kind)) complete = false;
+					if (picture.contains(kind))
+						++videos;
+					else if (!nonPicture.contains(kind))
+						complete = false;
 				}
-				if (complete) evidence.videoTrackCount = videos;
+				if (complete)
+					evidence.videoTrackCount = videos;
 			}
 			meta.precomputeCategory = AvidPrecompute::classify(evidence);
 		}
@@ -780,17 +843,23 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 	else if (materials.isEmpty())
 	{
 		for (const auto &set : sets)
-			if (set.type == kSetSrcPkg) { parsePackage(set.local, 0, set.local.size(), meta, false); break; }
+			if (set.type == kSetSrcPkg)
+			{
+				parsePackage(set.local, 0, set.local.size(), meta, false);
+				break;
+			}
 	}
 	QVector<int> chosenDescriptors;
 	if (filePackage >= 0)
 	{
 		for (int descriptor : refs(sets[filePackage].fields.value(0x4701)))
 		{
-			if (isDescriptor(sets[descriptor].type)) chosenDescriptors.append(descriptor);
+			if (isDescriptor(sets[descriptor].type))
+				chosenDescriptors.append(descriptor);
 			else if (sets[descriptor].type == 0x44)
 				for (int child : refs(sets[descriptor].fields.value(0x3f01)))
-					if (isDescriptor(sets[child].type)) chosenDescriptors.append(child);
+					if (isDescriptor(sets[child].type))
+						chosenDescriptors.append(child);
 		}
 	}
 	else if (files.isEmpty() && descriptors.size() == 1)
@@ -804,7 +873,11 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		for (int candidate : chosenDescriptors)
 			if (sets[candidate].type == kSetCdci || sets[candidate].type == kSetRgba || sets[candidate].type == 0x51)
 			{
-				if (chosen >= 0) { chosen = -1; break; }
+				if (chosen >= 0)
+				{
+					chosen = -1;
+					break;
+				}
 				chosen = candidate;
 			}
 	}
@@ -817,17 +890,21 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		parseDescriptorSet(set.local, 0, set.local.size(), meta);
 	}
 	QSet<int> scope;
-	if (material >= 0) scope = descendants(material, true);
-	else if (filePackage >= 0) scope = descendants(filePackage, true);
+	if (material >= 0)
+		scope = descendants(material, true);
+	else if (filePackage >= 0)
+		scope = descendants(filePackage, true);
 	// Standalone metadata lacks graph edges. Retain recovery only when no
 	// package declares an object graph, rather than pooling unrelated tracks.
 	const bool graphDeclared = (material >= 0 && sets[material].fields.contains(0x4403)) ||
-		(filePackage >= 0 && sets[filePackage].fields.contains(0x4403));
+							   (filePackage >= 0 && sets[filePackage].fields.contains(0x4403));
 	if (!graphDeclared)
-		for (int n = 0; n < sets.size(); ++n) scope.insert(n);
+		for (int n = 0; n < sets.size(); ++n)
+			scope.insert(n);
 	for (int n = 0; n < sets.size(); ++n)
 	{
-		if (!scope.contains(n)) continue;
+		if (!scope.contains(n))
+			continue;
 		const auto &set = sets[n];
 		if (!graphDeclared && (set.type == kSetSequence || set.type == kSetSourceClip || set.type == kSetTimecode))
 			parseStructuralComponent(set.local, 0, set.local.size(), meta);
@@ -840,35 +917,44 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 	// the file's own attributes, the material's own attributes, or its linked
 	// source ancestry. A set of conflicting candidates remains unknown.
 	meta.projectName.clear();
-	auto projectsIn = [&](const QSet<int> &indices) {
+	auto projectsIn = [&](const QSet<int> &indices)
+	{
 		QSet<QString> projects;
 		for (int index : indices)
 		{
 			const auto &set = sets[index];
-			if (set.type != kSetTaggedValue) continue;
+			if (set.type != kSetTaggedValue)
+				continue;
 			MxfMetadata attribute;
 			parseTaggedValue(set.local, 0, set.local.size(), attribute);
-			if (!attribute.projectName.isEmpty()) projects.insert(attribute.projectName);
+			if (!attribute.projectName.isEmpty())
+				projects.insert(attribute.projectName);
 		}
 		return projects;
 	};
-	auto ownProjects = [&](int package) {
+	auto ownProjects = [&](int package)
+	{
 		QSet<int> attributes;
-		if (package < 0) return QSet<QString>{};
+		if (package < 0)
+			return QSet<QString>{};
 		QVector<int> queue;
 		for (quint16 tag : {quint16(0x4406), quint16(0xf001)})
-			for (int index : refs(sets[package].fields.value(tag))) queue.append(index);
+			for (int index : refs(sets[package].fields.value(tag)))
+				queue.append(index);
 		for (qsizetype n = 0; n < queue.size(); ++n)
 		{
 			const int index = queue[n];
-			if (attributes.contains(index) || sets[index].type != kSetTaggedValue) continue;
+			if (attributes.contains(index) || sets[index].type != kSetTaggedValue)
+				continue;
 			attributes.insert(index);
-			for (int child : refs(sets[index].fields.value(0xf002))) queue.append(child);
+			for (int child : refs(sets[index].fields.value(0xf002)))
+				queue.append(child);
 		}
 		return projectsIn(attributes);
 	};
 	QSet<QString> projects = ownProjects(filePackage);
-	if (projects.isEmpty()) projects = ownProjects(material);
+	if (projects.isEmpty())
+		projects = ownProjects(material);
 	if (projects.isEmpty())
 	{
 		const int root = filePackage >= 0 ? filePackage : material;
@@ -883,16 +969,24 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		// traverse. Recover a project only if every readable _PJ/PROJNAME in
 		// this header agrees; never choose an arbitrary unrelated package.
 		QSet<int> all;
-		for (int n = 0; n < sets.size(); ++n) all.insert(n);
+		for (int n = 0; n < sets.size(); ++n)
+			all.insert(n);
 		projects = projectsIn(all);
 	}
-	if (projects.size() == 1) meta.projectName = *projects.constBegin();
+	if (projects.size() == 1)
+		meta.projectName = *projects.constBegin();
 	// Durations belong to tracks, not to arbitrary descendant components.
 	// In particular a Sequence(250) containing two SourceClips(125) is250,
 	// and an audio track's sample units must be converted to display frames.
 	if (material >= 0 && graphDeclared)
 	{
-		struct TrackTime { int component; double rate; qint64 duration; bool ownsFile; };
+		struct TrackTime
+		{
+			int component;
+			double rate;
+			qint64 duration;
+			bool ownsFile;
+		};
 		QVector<TrackTime> timing;
 		const QByteArray fileId = filePackage >= 0 ? sets[filePackage].fields.value(0x4401) : QByteArray{};
 		const QByteArray linkedTrack = chosen >= 0 ? sets[chosen].fields.value(0x3006) : QByteArray{};
@@ -900,9 +994,11 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		{
 			const QByteArray rate = sets[track].fields.value(0x4b01);
 			const auto components = refs(sets[track].fields.value(0x4803));
-			if (rate.size() != 8 || components.size() != 1) continue;
+			if (rate.size() != 8 || components.size() != 1)
+				continue;
 			const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-			if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX)) continue;
+			if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
+				continue;
 			const int component = components.first();
 			const QByteArray duration = sets[component].fields.value(0x0202);
 			const qint64 length = readDuration(duration, 0, quint16(qMin<qsizetype>(duration.size(), 65535)));
@@ -922,16 +1018,25 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		for (const auto &track : timing)
 			if (track.ownsFile)
 			{
-				if (owning) { owning = nullptr; break; }
+				if (owning)
+				{
+					owning = nullptr;
+					break;
+				}
 				owning = &track;
 			}
-		if (!owning && filePackage < 0 && timing.size() == 1) owning = &timing.first();
+		if (!owning && filePackage < 0 && timing.size() == 1)
+			owning = &timing.first();
 		double displayRate = owning && owning->rate < 1000.0 ? owning->rate : 0.0;
 		if (displayRate == 0.0)
 			for (const auto &track : timing)
 				if (track.rate >= 1.0 && track.rate < 1000.0)
 				{
-					if (displayRate > 0 && qAbs(displayRate - track.rate) > 0.00001) { displayRate = 0; break; }
+					if (displayRate > 0 && qAbs(displayRate - track.rate) > 0.00001)
+					{
+						displayRate = 0;
+						break;
+					}
 					displayRate = track.rate;
 				}
 		// Audio-only material packages can have sample-rate tracks only.
@@ -942,12 +1047,19 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 			for (int index : scope)
 			{
 				const QByteArray rate = sets[index].fields.value(0x4b01);
-				if (rate.size() != 8) continue;
+				if (rate.size() != 8)
+					continue;
 				const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX)) continue;
+				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
+					continue;
 				const double candidate = double(num) / den;
-				if (candidate < 1.0 || candidate >= 1000.0) continue;
-				if (displayRate > 0 && qAbs(displayRate - candidate) > 0.00001) { displayRate = 0; break; }
+				if (candidate < 1.0 || candidate >= 1000.0)
+					continue;
+				if (displayRate > 0 && qAbs(displayRate - candidate) > 0.00001)
+				{
+					displayRate = 0;
+					break;
+				}
 				displayRate = candidate;
 			}
 		}
@@ -956,7 +1068,8 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		// Avid can put the timecode track on the linked source package.
 		// Prefer the material package's timecode; consult its ancestry only
 		// when absent, and require a consistent drop-frame flag at this base.
-		const auto readDropFrame = [&](const QSet<int> &candidates) {
+		const auto readDropFrame = [&](const QSet<int> &candidates)
+		{
 			int flag = -1;
 			for (int index : candidates)
 			{
@@ -964,15 +1077,18 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 				const QByteArray base = set.fields.value(0x1502);
 				const QByteArray drop = set.fields.value(0x1503);
 				if (set.type != kSetTimecode || base.size() != 2 || drop.size() != 1 ||
-					readUint16BE(base, 0) != meta.timecodeBase) continue;
+					readUint16BE(base, 0) != meta.timecodeBase)
+					continue;
 				const int next = drop[0] != 0;
-				if (flag >= 0 && flag != next) return -2;
+				if (flag >= 0 && flag != next)
+					return -2;
 				flag = next;
 			}
 			return flag;
 		};
 		int drop = readDropFrame(descendants(material, false));
-		if (drop == -1) drop = readDropFrame(scope);
+		if (drop == -1)
+			drop = readDropFrame(scope);
 		meta.dropFrame = drop == 1;
 
 		// The MaterialPackage can concatenate several physical files. Its
@@ -1001,20 +1117,32 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 			bool ambiguous = false;
 			for (int track : refs(sets[filePackage].fields.value(0x4403)))
 			{
-				if (!linkedTrack.isEmpty() && sets[track].fields.value(0x4801) != linkedTrack) continue;
+				if (!linkedTrack.isEmpty() && sets[track].fields.value(0x4801) != linkedTrack)
+					continue;
 				const QByteArray rate = sets[track].fields.value(0x4b01);
 				const auto components = refs(sets[track].fields.value(0x4803));
-				if (rate.size() != 8 || components.size() != 1 || sets[components.first()].type == kSetTimecode) continue;
+				if (rate.size() != 8 || components.size() != 1 || sets[components.first()].type == kSetTimecode)
+					continue;
 				const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX)) continue;
+				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
+					continue;
 				const QByteArray duration = sets[components.first()].fields.value(0x0202);
 				const qint64 length = readDuration(duration, 0, quint16(qMin<qsizetype>(duration.size(), 65535)));
-				if (length <= 0) continue;
-				if (fileDuration > 0) { ambiguous = true; break; }
+				if (length <= 0)
+					continue;
+				if (fileDuration > 0)
+				{
+					ambiguous = true;
+					break;
+				}
 				fileDuration = length;
 				fileRate = double(num) / den;
 			}
-			if (ambiguous) { fileDuration = 0; fileRate = 0; }
+			if (ambiguous)
+			{
+				fileDuration = 0;
+				fileRate = 0;
+			}
 		}
 		bool materialDescribesOnlyThisFile = owning != nullptr;
 		if (owning && filePackage >= 0)
@@ -1264,7 +1392,8 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, qint64 startPos, qint
 					if ((data[pos + i] != '\0' && data[pos + i] != '0') || data[pos + i + 1] != '\0')
 						alphaOnly = false;
 				out.rgbaAlpha8 = alphaOnly;
-				if (alphaOnly) out.bitDepth = QStringLiteral("8-bit");
+				if (alphaOnly)
+					out.bitDepth = QStringLiteral("8-bit");
 			}
 			break;
 		case 0x3203: // stored width

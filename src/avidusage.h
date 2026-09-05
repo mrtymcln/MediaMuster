@@ -31,23 +31,40 @@ namespace AvidUsage
 	inline constexpr quint16 kPrivateMxfTag = 0xf003; // Internal canonical tag; requires a Primer mapping.
 	inline constexpr char kPrivateMxfPropertyHex[] = "a022006094eb75cb96c469924f6211d3";
 
-	enum class Classification { Unknown, Media, Precompute };
+	enum class Classification
+	{
+		Unknown,
+		Media,
+		Precompute
+	};
 	constexpr Classification masterClassification(qint32 code)
 	{
-		return code == qint32(Code::PrecomputeMaster) ? Classification::Precompute :
-			code == qint32(Code::MasterMob) ? Classification::Media : Classification::Unknown;
+		return code == qint32(Code::PrecomputeMaster) ? Classification::Precompute : code == qint32(Code::MasterMob) ? Classification::Media
+																													 : Classification::Unknown;
 	}
 	constexpr bool isMasterCode(qint32 code) { return masterClassification(code) != Classification::Unknown; }
 	constexpr qint32 merge(qint32 current, qint32 next)
 	{
-		return current == kMissing ? next : next == kMissing || current == next ? current : kInvalidOrConflicting;
+		return current == kMissing ? next : next == kMissing || current == next ? current
+																				: kInvalidOrConflicting;
 	}
 
-	enum class StandardUsage { Absent, Subclip, AdjustedClip, TopLevel, LowerLevel, Template, Unknown };
+	enum class StandardUsage
+	{
+		Absent,
+		Subclip,
+		AdjustedClip,
+		TopLevel,
+		LowerLevel,
+		Template,
+		Unknown
+	};
 	inline StandardUsage standardUsage(QByteArrayView value)
 	{
-		if (value.isEmpty()) return StandardUsage::Absent;
-		if (value.size() != 16) return StandardUsage::Unknown;
+		if (value.isEmpty())
+			return StandardUsage::Absent;
+		if (value.size() != 16)
+			return StandardUsage::Unknown;
 		// Both serializations occur in Avid MXF: SMPTE UL and exchanged 8-byte halves.
 		std::array<unsigned char, 16> normalized{};
 		const bool swapped = static_cast<unsigned char>(value[0]) == 0x0d;
@@ -56,16 +73,23 @@ namespace AvidUsage
 		const unsigned char kind = normalized[14];
 		normalized[14] = 0;
 		constexpr std::array<unsigned char, 16> family = {
-			0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0d,0x01,0x01,0x02,0x01,0x01,0x00,0x00};
-		if (normalized != family) return StandardUsage::Unknown;
+			0x06, 0x0e, 0x2b, 0x34, 0x04, 0x01, 0x01, 0x01, 0x0d, 0x01, 0x01, 0x02, 0x01, 0x01, 0x00, 0x00};
+		if (normalized != family)
+			return StandardUsage::Unknown;
 		switch (kind)
 		{
-		case 5: return StandardUsage::Subclip;
-		case 6: return StandardUsage::AdjustedClip;
-		case 7: return StandardUsage::TopLevel;
-		case 8: return StandardUsage::LowerLevel;
-		case 9: return StandardUsage::Template;
-		default: return StandardUsage::Unknown;
+		case 5:
+			return StandardUsage::Subclip;
+		case 6:
+			return StandardUsage::AdjustedClip;
+		case 7:
+			return StandardUsage::TopLevel;
+		case 8:
+			return StandardUsage::LowerLevel;
+		case 9:
+			return StandardUsage::Template;
+		default:
+			return StandardUsage::Unknown;
 		}
 	}
 
@@ -77,11 +101,9 @@ namespace AvidUsage
 		if (code == kMissing)
 			return standard == StandardUsage::Absent ? Classification::Media : Classification::Unknown;
 		if (code == qint32(Code::PrecomputeMaster))
-			return standard == StandardUsage::Absent || standard == StandardUsage::LowerLevel ?
-				Classification::Precompute : Classification::Unknown;
+			return standard == StandardUsage::Absent || standard == StandardUsage::LowerLevel ? Classification::Precompute : Classification::Unknown;
 		if (code == qint32(Code::MasterMob))
-			return standard == StandardUsage::Absent || standard == StandardUsage::AdjustedClip ?
-				Classification::Media : Classification::Unknown;
+			return standard == StandardUsage::Absent || standard == StandardUsage::AdjustedClip ? Classification::Media : Classification::Unknown;
 		return Classification::Unknown;
 	}
 }

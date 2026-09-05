@@ -184,7 +184,8 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 
 	setWindowTitle("MediaMuster");
 	resize(1200, 750);
-	if (startup == StartupMode::UiOnly) return;
+	if (startup == StartupMode::UiOnly)
+		return;
 
 	QString platform;
 #ifdef Q_OS_MAC
@@ -249,7 +250,8 @@ void MainWindow::runStartupRecovery()
 				watcher->deleteLater();
 				onRecoveryDone(summary);
 			});
-	watcher->setFuture(QtConcurrent::run([] { return OpRescue::run(); }));
+	watcher->setFuture(QtConcurrent::run([]
+										 { return OpRescue::run(); }));
 }
 
 void MainWindow::onRecoveryDone(const OpRescue::Summary &summary)
@@ -486,7 +488,7 @@ namespace
 
 			const QModelIndex now = currentIndex();
 			if (now.isValid() && now != before)
-				scrollTo(now); // vertical for arrows/pg up/pg down
+				scrollTo(now);							 // vertical for arrows/pg up/pg down
 			horizontalScrollBar()->setValue(horizontal); // never sideways
 		}
 	};
@@ -1064,16 +1066,17 @@ void MainWindow::onCheckPermissions()
 
 void MainWindow::setEffectDetailsEnabled(bool enabled)
 {
-	if (m_effectDetailsEnabled == enabled) return;
+	if (m_effectDetailsEnabled == enabled)
+		return;
 	m_effectDetailsEnabled = enabled;
-	applyFilterPreservingSelection([this, enabled]() {
+	applyFilterPreservingSelection([this, enabled]()
+								   {
 		// A sort column that is about to disappear must not keep controlling
 		// the rows while its heading is no longer available to the editor.
 		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory))
 			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
 		m_proxy->setEffectDetailsEnabled(enabled);
-		m_model->setEffectDetailsEnabled(enabled);
-	});
+		m_model->setEffectDetailsEnabled(enabled); });
 	m_effectDetailsAct->setChecked(enabled);
 	m_btnEffectFilter->setVisible(enabled);
 	m_effectFilterAct->setVisible(enabled);
@@ -1087,7 +1090,7 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 		auto *header = m_tableView->horizontalHeader();
 		int position = header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Type)) + 1;
 		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
-			MediaTableModel::Column::Effect, MediaTableModel::Column::EffectSequence})
+							MediaTableModel::Column::Effect, MediaTableModel::Column::EffectSequence})
 		{
 			const int logical = Enum::to_underlying(column);
 			header->moveSection(header->visualIndex(logical), position++);
@@ -1096,22 +1099,22 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 	}
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("effects"), enabled
-		? QStringLiteral("Effect details and filtering enabled for this session")
-		: QStringLiteral("Effect details and filtering disabled; effect filter cleared"));
+	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Effect details and filtering enabled for this session") : QStringLiteral("Effect details and filtering disabled; effect filter cleared"));
 }
 
 void MainWindow::onFilterByEffects()
 {
-	if (!m_effectDetailsEnabled || !m_scanButton->isEnabled() || m_model->allFiles().isEmpty()) return;
+	if (!m_effectDetailsEnabled || !m_scanButton->isEnabled() || m_model->allFiles().isEmpty())
+		return;
 	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
-	if (dialog.exec() != QDialog::Accepted) return;
+	if (dialog.exec() != QDialog::Accepted)
+		return;
 	const PrecomputeFilter filter = dialog.precomputeFilter();
 	const QString volume = dialog.selectedVolume();
-	applyFilterPreservingSelection([this, &filter, &volume]() {
+	applyFilterPreservingSelection([this, &filter, &volume]()
+								   {
 		m_proxy->setPrecomputeTreeFilter(filter);
-		m_proxy->setEffectVolumeFilter(volume);
-	});
+		m_proxy->setEffectVolumeFilter(volume); });
 	rebuildFilterChips();
 	updateStatusBar();
 	QStringList checkedPaths;
@@ -1119,15 +1122,13 @@ void MainWindow::onFilterByEffects()
 	{
 		QStringList names;
 		for (const auto &name : {path.precomputeCategory, path.effectCategory, path.effect})
-			if (!name.isEmpty()) names.append(name);
+			if (!name.isEmpty())
+				names.append(name);
 		checkedPaths.append(names.isEmpty() ? QStringLiteral("all precomputes") : names.join(QStringLiteral(" / ")));
 	}
-	addLog(QtInfoMsg, QStringLiteral("effects"), !filter.active && volume.isEmpty()
-		? QStringLiteral("Precompute filter cleared")
-		: QStringLiteral("Precompute filter: %1; volume: %2")
-			.arg(!filter.active ? QStringLiteral("all precomputes") : checkedPaths.isEmpty()
-					? QStringLiteral("no checked branches") : checkedPaths.join(QStringLiteral("; ")),
-				volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume));
+	addLog(QtInfoMsg, QStringLiteral("effects"), !filter.active && volume.isEmpty() ? QStringLiteral("Precompute filter cleared") : QStringLiteral("Precompute filter: %1; volume: %2").arg(!filter.active ? QStringLiteral("all precomputes") : checkedPaths.isEmpty() ? QStringLiteral("no checked branches")
+																																																																		: checkedPaths.join(QStringLiteral("; ")),
+																																															volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume));
 }
 
 // MARK: - Bin filter
@@ -1906,7 +1907,8 @@ void MainWindow::refreshResumable()
 				watcher->deleteLater();
 				updateResumeAction();
 			});
-	watcher->setFuture(QtConcurrent::run([] { return OpRescue::pending(); }));
+	watcher->setFuture(QtConcurrent::run([]
+										 { return OpRescue::pending(); }));
 
 	// The Edit ▸ Undo candidate, computed in the same off-thread sweep
 	// spirit: reading the newest journal stats media paths and must never
@@ -2688,13 +2690,13 @@ void MainWindow::rebuildFilterChips()
 
 	const int tabIdx = m_filterTabs->currentIndex();
 	const bool hasPrecomputeSelection = m_effectDetailsEnabled &&
-		(m_proxy->precomputeTreeFilter().active || !m_proxy->precomputeCategoryFilter().isEmpty() ||
-		 !m_proxy->effectCategoryFilter().isEmpty() || !m_proxy->effectFilter().isEmpty());
+										(m_proxy->precomputeTreeFilter().active || !m_proxy->precomputeCategoryFilter().isEmpty() ||
+										 !m_proxy->effectCategoryFilter().isEmpty() || !m_proxy->effectFilter().isEmpty());
 	// The detail selection already restricts the table to precomputes. When
 	// that tab is also selected, one chip represents both restrictions.
 	const bool combinedPrecomputeChip = hasPrecomputeSelection && tabIdx >= 0 &&
-		tabIdx < static_cast<int>(kFilterDefs.size()) &&
-		kFilterDefs[tabIdx].mode == MediaFilterProxy::FilterMode::Precompute;
+										tabIdx < static_cast<int>(kFilterDefs.size()) &&
+										kFilterDefs[tabIdx].mode == MediaFilterProxy::FilterMode::Precompute;
 	if (tabIdx > 0 && !combinedPrecomputeChip)
 	{
 		QString label = m_filterTabs->tabText(tabIdx);
@@ -2737,9 +2739,10 @@ void MainWindow::rebuildFilterChips()
 				const auto &path = filter.paths.first();
 				QStringList names;
 				for (const auto &name : {path.precomputeCategory, path.effectCategory, path.effect})
-					if (!name.isEmpty()) names.append(name);
+					if (!name.isEmpty())
+						names.append(name);
 				selectionLabel = names.isEmpty() ? tr("Precompute: all")
-					: tr("Precompute: %1").arg(names.join(QStringLiteral(" / ")));
+												 : tr("Precompute: %1").arg(names.join(QStringLiteral(" / ")));
 			}
 			else
 				selectionLabel = tr("%1 precompute selections").arg(filter.paths.size());
@@ -2754,18 +2757,19 @@ void MainWindow::rebuildFilterChips()
 			QStringList parts;
 			if (!types.isEmpty())
 				parts.append(types.size() == 1 ? tr("Type: %1").arg(types.first())
-					: tr("%1 precompute types").arg(types.size()));
+											   : tr("%1 precompute types").arg(types.size()));
 			if (!categories.isEmpty())
 				parts.append(categories.size() == 1 ? tr("Category: %1").arg(categories.first())
-					: tr("%1 effect categories").arg(categories.size()));
+													: tr("%1 effect categories").arg(categories.size()));
 			if (!effects.isEmpty())
 				parts.append(effects.size() == 1 ? tr("Effect: %1").arg(effects.first())
-					: tr("%1 effects").arg(effects.size()));
+												 : tr("%1 effects").arg(effects.size()));
 			if (!parts.isEmpty())
 				selectionLabel = tr("Precompute: %1").arg(parts.join(QStringLiteral("; ")));
 		}
 		if (!selectionLabel.isEmpty())
-			addChip(selectionLabel, [this, combinedPrecomputeChip]() {
+			addChip(selectionLabel, [this, combinedPrecomputeChip]()
+					{
 				applyFilterPreservingSelection([this, combinedPrecomputeChip]() {
 					m_proxy->setPrecomputeTreeFilter({});
 					if (combinedPrecomputeChip)
@@ -2776,8 +2780,7 @@ void MainWindow::rebuildFilterChips()
 					}
 				});
 				rebuildFilterChips();
-				updateStatusBar();
-			});
+				updateStatusBar(); });
 
 		const QString volumePath = m_proxy->effectVolumeFilter();
 		if (!volumePath.isEmpty())
@@ -2794,13 +2797,13 @@ void MainWindow::rebuildFilterChips()
 						volumeLabel = tr("%1 (%2)").arg(volumeLabel, volumePath);
 						break;
 					}
-			addChip(tr("Precompute volume: %1").arg(volumeLabel), [this]() {
+			addChip(tr("Precompute volume: %1").arg(volumeLabel), [this]()
+					{
 				applyFilterPreservingSelection([this]() {
 					m_proxy->setEffectVolumeFilter({});
 				});
 				rebuildFilterChips();
-				updateStatusBar();
-			});
+				updateStatusBar(); });
 		}
 	}
 

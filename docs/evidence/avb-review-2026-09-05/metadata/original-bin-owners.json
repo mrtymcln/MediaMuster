@@ -1,0 +1,1282 @@
+[
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier01.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655565,
+      "uid_low": 635209406,
+      "name": "bezier01",
+      "name_utf8": "bezier01"
+    },
+    "current_bin": "bezier01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier01.avb",
+    "object_index": 152,
+    "name": "spline01.Exported.02",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f101300000012e6505a619705881ff90a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655565,
+      "uid_low": 635209406,
+      "name": "bezier01",
+      "name_utf8": "bezier01"
+    },
+    "current_bin": "bezier01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier02.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655572,
+      "uid_low": 635216890,
+      "name": "bezier02",
+      "name_utf8": "bezier02"
+    },
+    "current_bin": "bezier02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier02.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.02",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f1013000000c4ec2b5a61970588facb0a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655572,
+      "uid_low": 635216890,
+      "name": "bezier02",
+      "name_utf8": "bezier02"
+    },
+    "current_bin": "bezier02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier03.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655576,
+      "uid_low": 635220859,
+      "name": "bezier03",
+      "name_utf8": "bezier03"
+    },
+    "current_bin": "bezier03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier03.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.06",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f10130000006a4a335a6197058823cc0a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655576,
+      "uid_low": 635220859,
+      "name": "bezier03",
+      "name_utf8": "bezier03"
+    },
+    "current_bin": "bezier03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear01.avb",
+    "object_index": 170,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 117,
+    "bin_ref": {
+      "uid_high": 1656655608,
+      "uid_low": 635253125,
+      "name": "linear01",
+      "name_utf8": "linear01"
+    },
+    "current_bin": "linear01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear01.avb",
+    "object_index": 169,
+    "name": "spline01.Exported.03",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f10130000009f59885a6197058897310a0027000011",
+    "original_bin_object_index": 114,
+    "bin_ref": {
+      "uid_high": 1656655608,
+      "uid_low": 635253125,
+      "name": "linear01",
+      "name_utf8": "linear01"
+    },
+    "current_bin": "linear01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear02.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655612,
+      "uid_low": 635257062,
+      "name": "linear02",
+      "name_utf8": "linear02"
+    },
+    "current_bin": "linear02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear02.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.03",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f101300000005db8d5a619705882bc80a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655612,
+      "uid_low": 635257062,
+      "name": "linear02",
+      "name_utf8": "linear02"
+    },
+    "current_bin": "linear02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear03.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655620,
+      "uid_low": 635265296,
+      "name": "linear03",
+      "name_utf8": "linear03"
+    },
+    "current_bin": "linear03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear03.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.07",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f10130000008173b75a619705889a530a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655620,
+      "uid_low": 635265296,
+      "name": "linear03",
+      "name_utf8": "linear03"
+    },
+    "current_bin": "linear03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline01.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655791,
+      "uid_low": 635436296,
+      "name": "spline01",
+      "name_utf8": "spline01"
+    },
+    "current_bin": "spline01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline01.avb",
+    "object_index": 152,
+    "name": "spline01.Exported.01",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f101300000084b1cb5a6197058844dc0a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655791,
+      "uid_low": 635436296,
+      "name": "spline01",
+      "name_utf8": "spline01"
+    },
+    "current_bin": "spline01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline02.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655836,
+      "uid_low": 635480562,
+      "name": "spline02",
+      "name_utf8": "spline02"
+    },
+    "current_bin": "spline02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline02.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.01.Exported.01",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f1013000000c890f45a619705881ff00a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655836,
+      "uid_low": 635480562,
+      "name": "spline02",
+      "name_utf8": "spline02"
+    },
+    "current_bin": "spline02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline03.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655809,
+      "uid_low": 635454000,
+      "name": "spline03",
+      "name_utf8": "spline03"
+    },
+    "current_bin": "spline03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline03.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.05",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f1013000000eeeffb5a6197058812ff0a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655809,
+      "uid_low": 635454000,
+      "name": "spline03",
+      "name_utf8": "spline03"
+    },
+    "current_bin": "spline03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline04.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655868,
+      "uid_low": 635513000,
+      "name": "spline04",
+      "name_utf8": "spline04"
+    },
+    "current_bin": "spline04"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline04.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.01.Exported.02",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f101300000059c4095b61970588c2e30a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655868,
+      "uid_low": 635513000,
+      "name": "spline04",
+      "name_utf8": "spline04"
+    },
+    "current_bin": "spline04"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step01.avb",
+    "object_index": 170,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 117,
+    "bin_ref": {
+      "uid_high": 1656655034,
+      "uid_low": 634679171,
+      "name": "step01",
+      "name_utf8": "step01"
+    },
+    "current_bin": "step01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step01.avb",
+    "object_index": 169,
+    "name": "spline01.Exported.04",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f101300000017f6ce59619705889d760a0027000011",
+    "original_bin_object_index": 114,
+    "bin_ref": {
+      "uid_high": 1656655034,
+      "uid_low": 634679171,
+      "name": "step01",
+      "name_utf8": "step01"
+    },
+    "current_bin": "step01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step02.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655471,
+      "uid_low": 635115859,
+      "name": "step02",
+      "name_utf8": "step02"
+    },
+    "current_bin": "step02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step02.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.04",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f1013000000fb2eea5961970588bfec0a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655471,
+      "uid_low": 635115859,
+      "name": "step02",
+      "name_utf8": "step02"
+    },
+    "current_bin": "step02"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step03.avb",
+    "object_index": 153,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 100,
+    "bin_ref": {
+      "uid_high": 1656655505,
+      "uid_low": 635149406,
+      "name": "step03",
+      "name_utf8": "step03"
+    },
+    "current_bin": "step03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step03.avb",
+    "object_index": 152,
+    "name": "spline02.Exported.08",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010501010f10130000000274f459619705885b880a0027000011",
+    "original_bin_object_index": 97,
+    "bin_ref": {
+      "uid_high": 1656655505,
+      "uid_low": 635149406,
+      "name": "step03",
+      "name_utf8": "step03"
+    },
+    "current_bin": "step03"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2188,
+    "name": "646x01_02_dustbust.0001.tif",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000ff57d54fe5a4d004060e2b347f7f2a80",
+    "original_bin_object_index": 1135,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2187,
+    "name": "96_116_20_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f4f1c948ba2a8401060e2b347f7f2a80",
+    "original_bin_object_index": 1131,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2186,
+    "name": "WR_068_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f1c49d4ff19a2000060e2b347f7f2a80",
+    "original_bin_object_index": 1127,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2185,
+    "name": "sc02_03_02.0001.tif",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000edc2a54f47af531e060e2b347f7f2a80",
+    "original_bin_object_index": 1123,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2184,
+    "name": "sc02_04_01.0001.tif",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000e5c1a54f66a84f1e060e2b347f7f2a80",
+    "original_bin_object_index": 1119,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2183,
+    "name": "buggers_08_06_lig_14_02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000e0d7c948114e1e01060e2b347f7f2a80",
+    "original_bin_object_index": 1115,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2182,
+    "name": "BA_022_002_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000d8db9d4f7f107a00060e2b347f7f2a80",
+    "original_bin_object_index": 1111,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2181,
+    "name": "047x40_01_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000bd04ca48658bcd01060e2b347f7f2a80",
+    "original_bin_object_index": 1107,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2180,
+    "name": "GB_030_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000b0e19d4fa7e29000060e2b347f7f2a80",
+    "original_bin_object_index": 1103,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2179,
+    "name": "047x36_02_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000b004ca48b05acd01060e2b347f7f2a80",
+    "original_bin_object_index": 1099,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2178,
+    "name": "a30x01b_01_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000a1c6c94872eeda00060e2b347f7f2a80",
+    "original_bin_object_index": 1095,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2177,
+    "name": "a30x01a_01_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000a0c6c948d8eada00060e2b347f7f2a80",
+    "original_bin_object_index": 1091,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2176,
+    "name": "RT_008_002_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000009ec49d4fc3571f00060e2b347f7f2a80",
+    "original_bin_object_index": 1087,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2175,
+    "name": "BA_040_001_v0002_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000009acc9d4f0e863e00060e2b347f7f2a80",
+    "original_bin_object_index": 1083,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2174,
+    "name": "HT_003_001_v0004_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000092ed9d4fd6651400060e2b347f7f2a80",
+    "original_bin_object_index": 1079,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2173,
+    "name": "01x01_09_v0001.0002.tif",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000008dc0a54f61684a1e060e2b347f7f2a80",
+    "original_bin_object_index": 1075,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2172,
+    "name": "RT_009_002_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000086c49d4f04fa1e00060e2b347f7f2a80",
+    "original_bin_object_index": 1071,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2171,
+    "name": "FX_061_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000007eed9d4f681a1400060e2b347f7f2a80",
+    "original_bin_object_index": 1067,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2170,
+    "name": "CS_034_001_v0002_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000078dc9d4f3b817c00060e2b347f7f2a80",
+    "original_bin_object_index": 1063,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2169,
+    "name": "RT_011_001_v0002_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000076c49d4fbbba1e00060e2b347f7f2a80",
+    "original_bin_object_index": 1059,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2168,
+    "name": "041x03_02_04.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000007602ca48a3a7c401060e2b347f7f2a80",
+    "original_bin_object_index": 1055,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2167,
+    "name": "SL_033_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000074de9d4fbf418400060e2b347f7f2a80",
+    "original_bin_object_index": 1051,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2166,
+    "name": "Beverly",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000007135a74f59f2fa23060e2b347f7f2a80",
+    "original_bin_object_index": 1047,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2165,
+    "name": "037x01_02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000670bca48e892e701060e2b347f7f2a80",
+    "original_bin_object_index": 1042,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2164,
+    "name": "BA_028_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000005ee39d4ff3719700060e2b347f7f2a80",
+    "original_bin_object_index": 1038,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2163,
+    "name": "SL_018_001_v0002_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000005ede9d4ff1ec8300060e2b347f7f2a80",
+    "original_bin_object_index": 1034,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2162,
+    "name": "BA_046_001_v0001_r0003.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000058cc9d4f2b833d00060e2b347f7f2a80",
+    "original_bin_object_index": 1030,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2161,
+    "name": "022x01_02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000550bca481f4ee701060e2b347f7f2a80",
+    "original_bin_object_index": 1026,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2160,
+    "name": "998x02.0001.tga",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000052ada54feb4cff1d060e2b347f7f2a80",
+    "original_bin_object_index": 1022,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2159,
+    "name": "spaceship_crash_space.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000048d1874e6a6dcf04060e2b347f7f2a80",
+    "original_bin_object_index": 1018,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2158,
+    "name": "SL_017_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000044de9d4f85878300060e2b347f7f2a80",
+    "original_bin_object_index": 1014,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2157,
+    "name": "rogers_spot1_24fps.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000003ed7c94818d41b01060e2b347f7f2a80",
+    "original_bin_object_index": 1010,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2156,
+    "name": "shepard_002.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000003bd1874efe3bcf04060e2b347f7f2a80",
+    "original_bin_object_index": 1006,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2155,
+    "name": "030x01_02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000003901ca4832d0bf01060e2b347f7f2a80",
+    "original_bin_object_index": 1002,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2154,
+    "name": "CA_003_001_v0001_r0002.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000035dc9d4fc87b7b00060e2b347f7f2a80",
+    "original_bin_object_index": 998,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2153,
+    "name": "GB_010_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000002fdd9d4fa24a7f00060e2b347f7f2a80",
+    "original_bin_object_index": 994,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2152,
+    "name": "morrwind_jump.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000002ed1874ec107cf04060e2b347f7f2a80",
+    "original_bin_object_index": 990,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2151,
+    "name": "re-entry.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000002ed1874e750bcf04060e2b347f7f2a80",
+    "original_bin_object_index": 986,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2150,
+    "name": "CS_040_001_v0003_r0001.0001.tif",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000002ecea64f34986722060e2b347f7f2a80",
+    "original_bin_object_index": 982,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2149,
+    "name": "DD_109_001_v0002_r0002.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000002e059e4f74e41600060e2b347f7f2a80",
+    "original_bin_object_index": 978,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2148,
+    "name": "morrwind_001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000027d1874e01f0ce04060e2b347f7f2a80",
+    "original_bin_object_index": 974,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2147,
+    "name": "megablast_part_02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000024d1874ec4e3ce04060e2b347f7f2a80",
+    "original_bin_object_index": 970,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2146,
+    "name": "SL_006_001_v0003_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000022de9d4f32008300060e2b347f7f2a80",
+    "original_bin_object_index": 966,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2145,
+    "name": "006x02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000021d5c948e9931301060e2b347f7f2a80",
+    "original_bin_object_index": 962,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2144,
+    "name": "006x01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000001fd5c94879891301060e2b347f7f2a80",
+    "original_bin_object_index": 958,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2143,
+    "name": "vfx_11_03_01.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000001ce7c94880d05901060e2b347f7f2a80",
+    "original_bin_object_index": 954,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2142,
+    "name": "004x02.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000001cd5c948d17d1301060e2b347f7f2a80",
+    "original_bin_object_index": 950,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2141,
+    "name": "halldoors_track.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000014d1874e13a3ce04060e2b347f7f2a80",
+    "original_bin_object_index": 946,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2140,
+    "name": "SL_004_001_v0001_r0001.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000012de9d4f71c48200060e2b347f7f2a80",
+    "original_bin_object_index": 942,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2139,
+    "name": "sc01_06_01_03.0001.tif",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000000fc2a54f304e501e060e2b347f7f2a80",
+    "original_bin_object_index": 938,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2138,
+    "name": "52_64_2_03_05.mov",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f001300000000f2c948945a8401060e2b347f7f2a80",
+    "original_bin_object_index": 934,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "object_index": 2137,
+    "name": "Demo_2012_v0002.Exported.01",
+    "mob_type": "CompositionMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f0013000000f40ce95b7eb15c03060e2b347f7f2a80",
+    "original_bin_object_index": 931,
+    "bin_ref": {
+      "uid_high": 1541999830,
+      "uid_low": 56376243,
+      "name": "Demo",
+      "name_utf8": "Demo"
+    },
+    "current_bin": "test_file_01"
+  },
+  {
+    "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/AIFF-C(OMF).avb",
+    "object_index": 20,
+    "name": "TONE: 1000 Hz @ -20.0 dB.2",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80",
+    "original_bin_object_index": 4,
+    "bin_ref": {
+      "uid_high": 1788291465,
+      "uid_low": 1198558308,
+      "name": "AIFF-C(OMF)",
+      "name_utf8": "AIFF-C(OMF)"
+    },
+    "current_bin": "AIFF-C(OMF)"
+  },
+  {
+    "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/WAVE(OMF).avb",
+    "object_index": 20,
+    "name": "TONE: 1000 Hz @ -14.0 dB.1",
+    "mob_type": "MasterMob",
+    "usage_code": 0,
+    "mob_id": "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80",
+    "original_bin_object_index": 4,
+    "bin_ref": {
+      "uid_high": 1788291423,
+      "uid_low": 1198516557,
+      "name": "WAVE(OMF)",
+      "name_utf8": "WAVE(OMF)"
+    },
+    "current_bin": "WAVE(OMF)"
+  }
+]

@@ -1137,7 +1137,8 @@ void TestOpRunner::rename_moves_file_and_fires_folder_hook()
 	TestSink sink;
 	QStringList touched;
 	OpRunner runner(sink, kNoCancel);
-	runner.onRenameFolderTouched = [&touched](const QString &folder) { touched << folder; };
+	runner.onRenameFolderTouched = [&touched](const QString &folder)
+	{ touched << folder; };
 	const auto totals = runner.run(req, journalDir.path());
 
 	QCOMPARE(totals.succeeded, 1);

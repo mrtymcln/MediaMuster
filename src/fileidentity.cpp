@@ -73,9 +73,7 @@ FileIdentity FileIdentity::capture(const QString &path, bool readContent)
 	}
 	::CloseHandle(h);
 #else
-	struct stat st
-	{
-	};
+	struct stat st{};
 	if (::stat(QFile::encodeName(path).constData(), &st) != 0)
 		return id; // confidence stays None: "couldn't examine it"
 	id.size = qint64(st.st_size);
@@ -98,7 +96,7 @@ FileIdentity FileIdentity::capture(const QString &path, bool readContent)
 	// is what actually carries the weight on those volumes.
 	const bool idsOk = id.fileId != 0;
 	id.confidence = (idsOk && NativeFile::isProvenLocalVolume(path)) ? Confidence::High
-																   : Confidence::Med;
+																	 : Confidence::Med;
 
 	// Content half: the Avid UMID baked into the MXF header — a bounded
 	// read of a few hundred KB, never the essence. Only attempted for
@@ -256,9 +254,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 	// The volume's own UUID, read via getattrlist on the mount point.
 	// Read-only — nothing is ever written onto the user's drives; the OS
 	// minted this identity when the volume was formatted.
-	struct attrlist al
-	{
-	};
+	struct attrlist al{};
 	al.bitmapcount = ATTR_BIT_MAP_COUNT;
 	al.volattr = ATTR_VOL_INFO | ATTR_VOL_UUID;
 	// getattrlist's reply layout: a u32 total length, then the requested

@@ -15,7 +15,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAvb)
 Q_DECLARE_LOGGING_CATEGORY(lcBento)
 Q_DECLARE_LOGGING_CATEGORY(lcMdb)
 Q_DECLARE_LOGGING_CATEGORY(lcMxf)
-Q_DECLARE_LOGGING_CATEGORY(lcOmf) // OMF-era: the legacy essence reader logs here, apart from lcMxf
+Q_DECLARE_LOGGING_CATEGORY(lcOmf) // the legacy essence reader logs here, apart from lcMxf
 Q_DECLARE_LOGGING_CATEGORY(lcPmr)
 Q_DECLARE_LOGGING_CATEGORY(lcScanner)
 Q_DECLARE_LOGGING_CATEGORY(lcVolume)

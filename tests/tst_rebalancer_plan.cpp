@@ -434,9 +434,12 @@ void TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_f
 	makeFillers(root, "1", 4998);
 	makeFillers(root, "2", 4994);
 	const QVector<MediaFile> files{
-		makeMxf(root, "1", "m1.mxf", "C1"), makeMxf(root, "2", "m2.mxf", "C1"),
-		makeMxf(root, "2", "m3.mxf", "C1"), makeMxf(root, "2", "m4.mxf", "C1"),
-		makeMxf(root, "2", "m5.mxf", "C1"), makeMxf(root, "2", "m6.mxf", "C1"),
+		makeMxf(root, "1", "m1.mxf", "C1"),
+		makeMxf(root, "2", "m2.mxf", "C1"),
+		makeMxf(root, "2", "m3.mxf", "C1"),
+		makeMxf(root, "2", "m4.mxf", "C1"),
+		makeMxf(root, "2", "m5.mxf", "C1"),
+		makeMxf(root, "2", "m6.mxf", "C1"),
 	};
 
 	const RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
@@ -559,7 +562,8 @@ void TestRebalancerPlan::execute_cancel_keeps_what_already_landed()
 	QSignalSpy finished(&r, &Rebalancer::finished);
 	// No context object: a direct connection, so the flag is set on the
 	// worker thread the instant the first progress fires.
-	QObject::connect(&r, &Rebalancer::progress, [&r] { r.cancel(); });
+	QObject::connect(&r, &Rebalancer::progress, [&r]
+					 { r.cancel(); });
 	r.executeAsync(plan);
 	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 60000);
 
@@ -603,7 +607,8 @@ void TestRebalancerPlan::destruction_during_execution_joins_the_engine()
 						 file.masterMobId, file.sizeBytes});
 
 	TestPause::setEnabled(true);
-	const auto restorePause = qScopeGuard([] { TestPause::setEnabled(false); });
+	const auto restorePause = qScopeGuard([]
+										  { TestPause::setEnabled(false); });
 	auto rebalancer = std::make_unique<Rebalancer>();
 	QSignalSpy progress(rebalancer.get(), &Rebalancer::progress);
 	rebalancer->executeAsync(plan);

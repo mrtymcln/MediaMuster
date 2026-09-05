@@ -39,7 +39,11 @@ class MainWindow : public QMainWindow
 public:
 	/// UiOnly supports interface tests/previews without volume discovery,
 	/// monitoring, crash collection or journal recovery against the host.
-	enum class StartupMode { Normal, UiOnly };
+	enum class StartupMode
+	{
+		Normal,
+		UiOnly
+	};
 	explicit MainWindow(QWidget *parent = nullptr, StartupMode startup = StartupMode::Normal);
 	~MainWindow();
 

@@ -208,8 +208,10 @@ namespace OmfObjects
 			if (raw.size() < 8 || (raw.first(2) != QByteArrayView("II") && raw.first(2) != QByteArrayView("MM")))
 				return result;
 			const bool big = raw.first(2) == QByteArrayView("MM");
-			auto u16 = [&](qsizetype p) { return big ? qFromBigEndian<quint16>(raw.data() + p) : qFromLittleEndian<quint16>(raw.data() + p); };
-			auto u32 = [&](qsizetype p) { return big ? qFromBigEndian<quint32>(raw.data() + p) : qFromLittleEndian<quint32>(raw.data() + p); };
+			auto u16 = [&](qsizetype p)
+			{ return big ? qFromBigEndian<quint16>(raw.data() + p) : qFromLittleEndian<quint16>(raw.data() + p); };
+			auto u32 = [&](qsizetype p)
+			{ return big ? qFromBigEndian<quint32>(raw.data() + p) : qFromLittleEndian<quint32>(raw.data() + p); };
 			if (u16(2) != 42)
 				return result;
 			const qsizetype ifd = u32(4);
@@ -238,8 +240,10 @@ namespace OmfObjects
 					{
 						const int bits = items == 1 && avid ? int(value) : int(u16(start));
 						bool uniform = true;
-						for (quint32 i = 1; i < items; ++i) uniform &= u16(start + i * 2) == bits;
-						if (uniform) result.bits = bits;
+						for (quint32 i = 1; i < items; ++i)
+							uniform &= u16(start + i * 2) == bits;
+						if (uniform)
+							result.bits = bits;
 					}
 				}
 				if (items != 1 || (type != 3 && type != 4))
@@ -247,11 +251,18 @@ namespace OmfObjects
 				const quint32 scalar = type == 3 && !avid ? u16(e + 8) : value;
 				if (scalar > quint32(std::numeric_limits<int>::max()))
 					continue;
-				if (tag == 256) result.width = int(scalar);
-				else if (tag == 257) result.height = int(scalar);
-				else if (tag == 259 && scalar == 1) result.codec = QStringLiteral("Uncompressed (TIFF)");
-				else if (tag == 259 && scalar == 6) result.codec = QStringLiteral("JPEG (TIFF)");
-				else if (tag == 34434) result.layout = scalar == 4 ? 1 : scalar == 1 ? 0 : scalar == 2 || scalar == 3 ? 2 : -1;
+				if (tag == 256)
+					result.width = int(scalar);
+				else if (tag == 257)
+					result.height = int(scalar);
+				else if (tag == 259 && scalar == 1)
+					result.codec = QStringLiteral("Uncompressed (TIFF)");
+				else if (tag == 259 && scalar == 6)
+					result.codec = QStringLiteral("JPEG (TIFF)");
+				else if (tag == 34434)
+					result.layout = scalar == 4 ? 1 : scalar == 1			   ? 0
+												  : scalar == 2 || scalar == 3 ? 2
+																			   : -1;
 			}
 			return result;
 		}
@@ -294,7 +305,7 @@ namespace OmfObjects
 				return s;
 			}
 			if (id == QByteArrayView("data"))
-				return s; // the essence — nothing useful lies past it
+				return s;							 // the essence — nothing useful lies past it
 			pos += 8 + qsizetype(size) + (size & 1); // RIFF pads odd chunks
 		}
 		return s;
@@ -441,7 +452,7 @@ namespace OmfObjects
 				return false;
 			const auto raw = b.read(object, property);
 			return raw.ok() && raw.data.size() >= 2 &&
-				out.size() == b.uintValue(QByteArrayView(raw.data).first(2));
+				   out.size() == b.uintValue(QByteArrayView(raw.data).first(2));
 		}
 
 		AvidPrecompute::ImportAttribute directImportAttribute(const BentoFile &b, const Props &p, quint32 master)
@@ -707,7 +718,8 @@ namespace OmfObjects
 			const auto compression = b.read(desc, p.compression);
 			const auto pixels = b.read(desc, p.rgbaLayout, 16);
 			const auto depths = b.read(desc, p.rgbaStructure, 16);
-			const auto oneComponent = [](const QByteArray &value, char expected) {
+			const auto oneComponent = [](const QByteArray &value, char expected)
+			{
 				return value == QByteArray(1, expected) || value == QByteArray(1, expected) + '\0';
 			};
 			if (compression.ok() && BentoFile::string(compression.data) == QLatin1String("NONE") &&
@@ -820,8 +832,10 @@ namespace OmfObjects
 				e.width = tiff.width;
 				height = tiff.height;
 				e.codec = tiff.codec;
-				if (tiff.bits > 0) e.bitDepth = MxfParser::bitDepthLabel(quint32(tiff.bits));
-				if (codecKnown) *codecKnown = !e.codec.isEmpty();
+				if (tiff.bits > 0)
+					e.bitDepth = MxfParser::bitDepthLabel(quint32(tiff.bits));
+				if (codecKnown)
+					*codecKnown = !e.codec.isEmpty();
 			}
 			// Captured Avid OMF1 MDBs store half heights for layouts1 and3.
 			// Standard OMF2 only separates fields for layout1; mixed fields

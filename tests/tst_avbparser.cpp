@@ -81,7 +81,6 @@ private slots:
 	// bin filter. The decoder itself always accepted either case.
 	void uppercase_hex_string_mob_is_decoded();
 
-
 	// Bins written by pre-Intel-era Mac Media Composer are BIG-endian:
 	// header `00 06` + "Domain" + unreversed "OBJD" (confirmed by two
 	// independent reverse-engineering projects, pyavb and libavid). The

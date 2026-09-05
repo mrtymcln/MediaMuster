@@ -83,8 +83,8 @@ struct RenameOp
 /// (e.g. `Quarantined Files`); shown read-only; never touched.
 struct FolderState
 {
-	QString name; ///< Matches FolderName::display() when in scope.
-	FolderName id;  ///< Valid only when `inScope` is true.
+	QString name;  ///< Matches FolderName::display() when in scope.
+	FolderName id; ///< Valid only when `inScope` is true.
 	int count = 0;
 	qint64 bytes = 0;
 	int filesIn = 0;

@@ -189,8 +189,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 			const auto usage = b.read(obj, p.usage);
 			if (usage.status != BentoFile::ReadStatus::Missing)
 			{
-				const qint32 code = usage.ok() && usage.data.size() == 4 ?
-					AvidUsage::integerCode(b.uintValue(usage.data)) : AvidUsage::kInvalidOrConflicting;
+				const qint32 code = usage.ok() && usage.data.size() == 4 ? AvidUsage::integerCode(b.uintValue(usage.data)) : AvidUsage::kInvalidOrConflicting;
 				legacyMaster |= AvidUsage::isMasterCode(code);
 				usageCode = AvidUsage::merge(usageCode, code);
 			}

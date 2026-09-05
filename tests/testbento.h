@@ -82,8 +82,7 @@ public:
 			{
 				QByteArray v = e.bytes;
 				v.resize(4); // zero-pad the value field
-				toc.append({e.object, e.property, qFromLittleEndian<quint32>(
-														reinterpret_cast<const uchar *>(v.constData())),
+				toc.append({e.object, e.property, qFromLittleEndian<quint32>(reinterpret_cast<const uchar *>(v.constData())),
 							quint32(e.bytes.size()), e.flags});
 			}
 			else
@@ -104,8 +103,8 @@ public:
 		for (const Toc &t : toc)
 		{
 			out += le32(t.obj) + le32(t.prop) + le32(0) + le32(t.value) + le32(t.len);
-			out += le32(1).left(2);						  // generation
-			out += le32(t.flags).left(2);				  // flags
+			out += le32(1).left(2);		  // generation
+			out += le32(t.flags).left(2); // flags
 		}
 		const quint32 tocLen = quint32(out.size()) - tocOff;
 		out += tocTrailer;

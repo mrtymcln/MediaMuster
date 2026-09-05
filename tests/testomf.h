@@ -16,8 +16,20 @@ namespace TestOmf
 		QByteArray word(quint32 v) const { return two.word(v); }
 		QByteArray half(quint16 v) const { return two.half(v); }
 		QByteArray wide(quint64 v) const { return big ? word(quint32(v >> 32)) + word(quint32(v)) : word(quint32(v)) + word(quint32(v >> 32)); }
-		void set(quint32 o, const char *p, const QByteArray &v) { if (compact) two.set(o, p, v); else one.set(o, p, v); }
-		void setImmediate(quint32 o, const char *p, const QByteArray &v) { if (compact) two.set(o, p, v, true); else one.setImmediate(o, p, v); }
+		void set(quint32 o, const char *p, const QByteArray &v)
+		{
+			if (compact)
+				two.set(o, p, v);
+			else
+				one.set(o, p, v);
+		}
+		void setImmediate(quint32 o, const char *p, const QByteArray &v)
+		{
+			if (compact)
+				two.set(o, p, v, true);
+			else
+				one.setImmediate(o, p, v);
+		}
 		void setU32(quint32 o, const char *p, quint32 v) { setImmediate(o, p, word(v)); }
 		void setU16(quint32 o, const char *p, quint16 v) { setImmediate(o, p, half(v)); }
 		void setString(quint32 o, const char *p, const QByteArray &v) { set(o, p, v + '\0'); }
@@ -26,10 +38,12 @@ namespace TestOmf
 		void setHandles(quint32 o, const char *p, const QVector<quint32> &targets)
 		{
 			QByteArray raw = half(quint16(targets.size()));
-			for (quint32 target : targets) raw += word(target) + word(0);
+			for (quint32 target : targets)
+				raw += word(target) + word(0);
 			set(o, p, raw);
 		}
 		QByteArray build() const { return compact ? two.build() : one.build(); }
+
 	private:
 		BentoBuilder one;
 		Bento2Builder two;
@@ -47,20 +61,24 @@ namespace TestOmf
 						   bool compact = false, bool big = false)
 	{
 		Writer w(compact, big);
-		auto encodedUid = [&](quint32 n) { return w.word(42) + w.word(n) + w.word(7); };
-		auto object = [&](const char *cls) {
+		auto encodedUid = [&](quint32 n)
+		{ return w.word(42) + w.word(n) + w.word(7); };
+		auto object = [&](const char *cls)
+		{
 			const quint32 obj = w.addObject(cls);
 			if (omf2)
 				w.setImmediate(obj, "OMFI:OOBJ:ObjClass", QByteArray(cls, 4));
 			return obj;
 		};
-		auto ref = [&](quint32 obj, const char *prop, quint32 target) {
+		auto ref = [&](quint32 obj, const char *prop, quint32 target)
+		{
 			if (omf2)
 				w.set(obj, prop, w.word(target));
 			else
 				w.setHandle(obj, prop, target);
 		};
-		auto refs = [&](quint32 obj, const char *prop, quint32 target) {
+		auto refs = [&](quint32 obj, const char *prop, quint32 target)
+		{
 			if (omf2)
 				w.set(obj, prop, w.half(1) + w.word(target));
 			else
@@ -100,13 +118,15 @@ namespace TestOmf
 		w.set(desc, "OMFI:MDFL:Length", omf2 ? w.wide(96000) : w.word(96000));
 		const quint32 data = object("SD2D");
 		w.set(data, omf2 ? "OMFI:MDAT:MobID" : "OMFI:SD2D:MobID", encodedUid(2));
-		auto track = [&](quint32 mob, quint32 component) {
+		auto track = [&](quint32 mob, quint32 component)
+		{
 			const quint32 slot = object(omf2 ? "MSLT" : "TRAK");
 			refs(mob, omf2 ? "OMFI:MOBJ:Slots" : "OMFI:TRKG:Tracks", slot);
 			ref(slot, omf2 ? "OMFI:MSLT:Segment" : "OMFI:TRAK:TrackComponent", component);
 			w.setRational(omf2 ? slot : mob, omf2 ? "OMFI:MSLT:EditRate" : "OMFI:CPNT:EditRate", 25, 1);
 		};
-		auto link = [&](quint32 mob, quint32 target) {
+		auto link = [&](quint32 mob, quint32 target)
+		{
 			const quint32 clip = object("SCLP"), seq = object("SEQU");
 			w.set(clip, "OMFI:SCLP:SourceID", encodedUid(target));
 			refs(seq, omf2 ? "OMFI:SEQU:Components" : "OMFI:SEQU:Sequence", clip);

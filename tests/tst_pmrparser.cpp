@@ -168,8 +168,8 @@ namespace
 			return master ? masterMob() : fileMob();
 		// AAF ID: label/instance bytes, BE Data1/2/3, then raw Data4 bytes.
 		return QByteArray::fromHex(master
-			? "060a2b340101010501010f1013000000ea7d46d21174900691901e6a605d3613"
-			: "060a2b340101010501010f1013000000ea7d504a117490067a361e6a605d3613");
+									   ? "060a2b340101010501010f1013000000ea7d46d21174900691901e6a605d3613"
+									   : "060a2b340101010501010f1013000000ea7d504a117490067a361e6a605d3613");
 	}
 	QByteArray orderedRecord(qint32 version, bool bigEndian, const QByteArray &name,
 							 const QByteArray &project = "project", quint32 modified = 0x12345678)
@@ -374,8 +374,7 @@ void TestPmrParser::unsupported_version_is_rejected()
 	for (qint32 version : {9, 15, 16, 17, std::numeric_limits<qint32>::max()})
 		for (bool bigEndian : {false, true})
 		{
-			const QByteArray buf = orderedHeader(version, 1, bigEndian)
-				+ orderedRecord(8, bigEndian, "CLIP.A01.mxf", "block 1729");
+			const QByteArray buf = orderedHeader(version, 1, bigEndian) + orderedRecord(8, bigEndian, "CLIP.A01.mxf", "block 1729");
 			bool ok = true;
 			QVERIFY(PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok).isEmpty());
 			QVERIFY(!ok);
@@ -390,7 +389,7 @@ void TestPmrParser::non_smpte_master_identity_is_preserved()
 	// semantics cannot be substituted for record framing.
 	const QByteArray unusualMaster(32, 'X');
 	const QByteArray buf = pmrHeader(1) + fileRecord(fileMob(), "CLIP.A01.mxf", "proj") +
-		masterRecord(unusualMaster, 123);
+						   masterRecord(unusualMaster, 123);
 	bool ok = false;
 	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok);
 	QVERIFY(ok);
@@ -405,7 +404,7 @@ void TestPmrParser::non_smpte_file_identity_is_preserved()
 	QVERIFY(tmp.isValid());
 	const QByteArray unusualFile(32, 'Z');
 	const QByteArray buf = pmrHeader(2) + fileRecord(fileMob(), "ONE.mxf", "proj") +
-		masterRecord(masterMob()) + fileRecord(unusualFile, "TWO.mxf", "proj") + masterRecord(masterMob());
+						   masterRecord(masterMob()) + fileRecord(unusualFile, "TWO.mxf", "proj") + masterRecord(masterMob());
 	bool ok = false;
 	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok);
 	QVERIFY(ok);
@@ -465,7 +464,7 @@ void TestPmrParser::macroman_project_names_decode_correctly()
 
 	QCOMPARE(entries.size(), 2);
 	QCOMPARE(entries[0].project, QString::fromUtf8("t\xc3\xabst_25P")); // tëst_25P
-	QCOMPARE(entries[1].project, QString::fromUtf8("caf\xc3\xa9"));	   // café
+	QCOMPARE(entries[1].project, QString::fromUtf8("caf\xc3\xa9"));		// café
 }
 
 void TestPmrParser::wrong_magic_is_refused()
@@ -510,7 +509,7 @@ void TestPmrParser::malformed_unicode_section_keeps_mbcs_names()
 	// A different count is valid, but claiming two and storing only one is
 	// truncated. Keep MBCS recovery rows without authorizing index misses.
 	const QByteArray truncated = mbcs + unicodeHeader(2) + unicodeFileRecord(fileMob(), "utf8.mxf", "proj") +
-		masterRecord(masterMob());
+								 masterRecord(masterMob());
 	bool ok = true;
 	auto entries = PmrParser::parse(writePmr(tmp.path() + "/a.pmr", truncated), &ok);
 	QVERIFY(!ok);
@@ -554,7 +553,11 @@ void TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
 
 	// The corpus PMRs: every pair parses, every entry has both MOBs and a
 	// trailer, and the ß filenames arrive as ß (from the UTF-8 set).
-	struct Gen { const char *path; int pairs; };
+	struct Gen
+	{
+		const char *path;
+		int pairs;
+	};
 	const Gen gens[] = {{FIXTURES_DIR "/corpus_headers/msmFMID.pmr", 435},
 						{FIXTURES_DIR "/corpus_headers/msmFMID_round3.pmr", 360}};
 	for (const Gen &g : gens)
@@ -605,7 +608,7 @@ void TestPmrParser::exact_one_hour_clock_exception_data()
 	QTest::addColumn<bool>("expected");
 	for (const bool legacy : {false, true})
 		for (const int delta : {-7200, -3602, -3601, -3600, -3599, -3598, -3, -2, 0,
-								  2, 3, 3598, 3599, 3600, 3601, 3602, 7200})
+								2, 3, 3598, 3599, 3600, 3601, 3602, 7200})
 			QTest::newRow(qPrintable(QString("%1-%2").arg(legacy ? "Mac-local" : "Unix").arg(delta)))
 				<< legacy << delta << (qAbs(delta) <= 2 || qAbs(delta) == 3600);
 }
@@ -776,9 +779,7 @@ void TestPmrParser::accepted_versions_and_byte_orders()
 	QFETCH(bool, bigEndian);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	QByteArray bytes = orderedHeader(version, 2, bigEndian)
-		+ orderedRecord(version, bigEndian, "ONE.media", "one", 0x12345678)
-		+ orderedRecord(version, bigEndian, "TWO.media", "two", 0x87654321);
+	QByteArray bytes = orderedHeader(version, 2, bigEndian) + orderedRecord(version, bigEndian, "ONE.media", "one", 0x12345678) + orderedRecord(version, bigEndian, "TWO.media", "two", 0x87654321);
 	bool ok = false;
 	auto entries = PmrParser::parse(writePmr(tmp.path() + "/versions.pmr", bytes), &ok);
 	QVERIFY(ok);
@@ -801,8 +802,7 @@ void TestPmrParser::accepted_versions_and_byte_orders()
 		QCOMPARE(entries[0].project, QStringLiteral("one"));
 	}
 
-	bytes += orderedUnicodeHeader(1, bigEndian)
-		+ orderedRecord(16, bigEndian, QString::fromUtf8("東京.media").toUtf8(), "unicode", 0xa1b2c3d4);
+	bytes += orderedUnicodeHeader(1, bigEndian) + orderedRecord(16, bigEndian, QString::fromUtf8("東京.media").toUtf8(), "unicode", 0xa1b2c3d4);
 	entries = PmrParser::parse(writePmr(tmp.path() + "/versions.pmr", bytes), &ok);
 	QVERIFY(ok);
 	QCOMPARE(entries.size(), 1);
@@ -881,10 +881,8 @@ void TestPmrParser::every_truncated_boundary_reports_failure()
 	QFETCH(bool, bigEndian);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QByteArray base = orderedHeader(version, 1, bigEndian)
-		+ orderedRecord(version, bigEndian, "record.media", "project", 0x12345678);
-	const QByteArray complete = base + orderedUnicodeHeader(1, bigEndian)
-		+ orderedRecord(16, bigEndian, QString::fromUtf8("日本.media").toUtf8(), "unicode", 0x87654321);
+	const QByteArray base = orderedHeader(version, 1, bigEndian) + orderedRecord(version, bigEndian, "record.media", "project", 0x12345678);
+	const QByteArray complete = base + orderedUnicodeHeader(1, bigEndian) + orderedRecord(16, bigEndian, QString::fromUtf8("日本.media").toUtf8(), "unicode", 0x87654321);
 	for (qsizetype length = 0; length < complete.size(); ++length)
 	{
 		// An old-style PMR ending exactly after the first complete set is valid.
@@ -914,8 +912,7 @@ void TestPmrParser::project_lengths_are_checked()
 	{
 		for (int length : {0, 63, 64, 1023, 1024, 65534})
 		{
-			const QByteArray bytes = orderedHeader(8, 1, bigEndian)
-				+ orderedRecord(8, bigEndian, "file.media", QByteArray(length, 'p'));
+			const QByteArray bytes = orderedHeader(8, 1, bigEndian) + orderedRecord(8, bigEndian, "file.media", QByteArray(length, 'p'));
 			bool ok = true;
 			const auto entries = PmrParser::parse(writePmr(tmp.path() + "/project.pmr", bytes), &ok);
 			QCOMPARE(ok, length < 64);
@@ -979,9 +976,7 @@ void TestPmrParser::filename_limits_and_null_strings()
 	for (const qint32 version : {1, 2, 8, 16})
 	{
 		const QByteArray header = version == 16 ? pmrHeader(0) + unicodeHeader(3) : pmrHeader(3, version);
-		const QByteArray bytes = header + orderedRecord(version, false, QByteArray(255, 'a'))
-			+ orderedRecord(version, false, QByteArray(256, 'b'))
-			+ orderedRecord(version, false, "next.media");
+		const QByteArray bytes = header + orderedRecord(version, false, QByteArray(255, 'a')) + orderedRecord(version, false, QByteArray(256, 'b')) + orderedRecord(version, false, "next.media");
 		bool ok = false;
 		auto entries = PmrParser::parse(writePmr(tmp.path() + "/names.pmr", bytes), &ok);
 		QVERIFY(ok);
@@ -999,7 +994,8 @@ void TestPmrParser::filename_limits_and_null_strings()
 		u32le(nullName, 1);
 		const QByteArray nullHeader = version == 16 ? pmrHeader(0) + unicodeHeader(2) : pmrHeader(2, version);
 		entries = PmrParser::parse(writePmr(tmp.path() + "/null-name.pmr",
-			nullHeader + nullName + orderedRecord(version, false, "next.media")), &ok);
+											nullHeader + nullName + orderedRecord(version, false, "next.media")),
+								   &ok);
 		QVERIFY(ok);
 		QCOMPARE(entries.size(), 1);
 		QCOMPARE(entries[0].fileName, QStringLiteral("next.media"));
@@ -1025,11 +1021,7 @@ void TestPmrParser::unicode_filename_limit_counts_utf16_units()
 	const QString emoji = QString::fromUtf8("😀");
 	const QString astralName = emoji.repeated(127) + QLatin1Char('x');
 	QCOMPARE(astralName.size(), 255);
-	QByteArray bytes = pmrHeader(0) + unicodeHeader(4)
-		+ orderedRecord(16, false, bmpName.toUtf8())
-		+ orderedRecord(16, false, astralName.toUtf8())
-		+ orderedRecord(16, false, QString(256, QChar(0x65e5)).toUtf8())
-		+ orderedRecord(16, false, emoji.repeated(128).toUtf8());
+	QByteArray bytes = pmrHeader(0) + unicodeHeader(4) + orderedRecord(16, false, bmpName.toUtf8()) + orderedRecord(16, false, astralName.toUtf8()) + orderedRecord(16, false, QString(256, QChar(0x65e5)).toUtf8()) + orderedRecord(16, false, emoji.repeated(128).toUtf8());
 	bool ok = false;
 	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/unicode-length.pmr", bytes), &ok);
 	QVERIFY(ok);
@@ -1046,16 +1038,14 @@ void TestPmrParser::null_identities_are_explicit()
 	{
 		const QByteArray nullId(version == 2 ? 8 : 32, '\0');
 		bool ok = false;
-		const QByteArray nullMaster = pmrHeader(1, version)
-			+ fileRecord(orderedMob(version, false), "file.media", "project") + masterRecord(nullId, 99);
+		const QByteArray nullMaster = pmrHeader(1, version) + fileRecord(orderedMob(version, false), "file.media", "project") + masterRecord(nullId, 99);
 		const auto entries = PmrParser::parse(writePmr(tmp.path() + "/null-master.pmr", nullMaster), &ok);
 		QVERIFY(ok);
 		QCOMPARE(entries.size(), 1);
 		QVERIFY(entries[0].masterMobId.isEmpty());
 		QCOMPARE(entries[0].fileModifiedSecs, 99u);
 
-		const QByteArray nullFile = pmrHeader(1, version) + fileRecord(nullId, "file.media", "project")
-			+ masterRecord(orderedMob(version, false, true), 99);
+		const QByteArray nullFile = pmrHeader(1, version) + fileRecord(nullId, "file.media", "project") + masterRecord(orderedMob(version, false, true), 99);
 		QVERIFY(PmrParser::parse(writePmr(tmp.path() + "/null-file.pmr", nullFile), &ok).isEmpty());
 		QVERIFY(!ok);
 	}

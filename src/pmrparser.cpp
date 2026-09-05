@@ -125,7 +125,8 @@ namespace
 		QByteArrayView bytes;
 		if (!cursor.bytes(omf ? OmfUid::kPmrSize : MobId::kRawSize, bytes))
 			return false;
-		const bool nullId = std::all_of(bytes.begin(), bytes.end(), [](char b) { return b == 0; });
+		const bool nullId = std::all_of(bytes.begin(), bytes.end(), [](char b)
+										{ return b == 0; });
 		if (nullId)
 		{
 			value.clear();
@@ -169,8 +170,8 @@ namespace
 			if (!readMob(cursor, version, false, entry.mobId))
 				return false;
 			const bool nameRead = version == kUnicodeVersion
-				? readUnicodeName(cursor, entry.fileName)
-				: readMbcs(cursor, kMbcsNameCapacity, entry.fileName);
+									  ? readUnicodeName(cursor, entry.fileName)
+									  : readMbcs(cursor, kMbcsNameCapacity, entry.fileName);
 			if (!nameRead || (version != 1 && !readMbcs(cursor, kProjectCapacity, entry.project)))
 				return false;
 
@@ -207,9 +208,10 @@ bool PmrParser::trailerMatchesModified(quint32 trailer, const QDateTime &onDisk)
 	// ScanDirectoryCache 0x44c738–4c), not an hour-sized tolerance window.
 	// Bounded candidate comparisons also avoid subtraction/abs overflow for
 	// extreme QDateTimes. Do not infer any other writing-machine UTC offset.
-	const auto matches = [mtime](qint64 candidate) {
+	const auto matches = [mtime](qint64 candidate)
+	{
 		return (mtime >= candidate - 2 && mtime <= candidate + 2) ||
-			mtime == candidate - 3600 || mtime == candidate + 3600;
+			   mtime == candidate - 3600 || mtime == candidate + 3600;
 	};
 	if (matches(trailer))
 		return true;

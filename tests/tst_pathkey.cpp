@@ -121,7 +121,6 @@ void TestPathKey::normalise_non_existent_path_falls_back_to_absolute()
 #endif
 }
 
-
 // Two spellings of one on-disk name must produce ONE key on the
 // platforms whose default filesystems are case-insensitive — Windows'
 // canonicalFilePath keeps the caller's spelling (unlike macOS, which

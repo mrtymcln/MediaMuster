@@ -657,56 +657,56 @@ namespace
 bool OpRescue::resolveRecord(OpJournal::Record &rec, const QVector<VolumeIdentity> &mounted,
 							 QStringList &notes)
 {
-		if (rec.volumes.isEmpty())
-			return true; // nothing recorded; v1 per-op guards still apply
+	if (rec.volumes.isEmpty())
+		return true; // nothing recorded; v1 per-op guards still apply
 
-		QVector<QPair<QString, QString>> rewrites; // oldRoot -> newRoot
-		for (const VolumeIdentity &vol : rec.volumes)
+	QVector<QPair<QString, QString>> rewrites; // oldRoot -> newRoot
+	for (const VolumeIdentity &vol : rec.volumes)
+	{
+		const VolumeDisposition d = disposeVolume(vol, mounted);
+		if (d.state == VolumeDisposition::State::Missing)
 		{
-			const VolumeDisposition d = disposeVolume(vol, mounted);
-			if (d.state == VolumeDisposition::State::Missing)
-			{
-				notes << d.note;
-				return false;
-			}
-			if (d.state == VolumeDisposition::State::Reanchored)
-			{
-				notes << d.note;
-				rewrites.append({vol.rootPath, d.newRoot});
-			}
+			notes << d.note;
+			return false;
 		}
-		if (rewrites.isEmpty())
-			return true;
-
-		const auto fix = [&rewrites](QString &path)
+		if (d.state == VolumeDisposition::State::Reanchored)
 		{
-			if (path.isEmpty())
-				return;
-			for (const auto &[oldRoot, newRoot] : rewrites)
-			{
-				if (rootPrefixes(oldRoot, path))
-				{
-					path = reanchor(path, oldRoot, newRoot);
-					return;
-				}
-			}
-		};
-
-		for (OpJournal::Entry &op : rec.ops)
-		{
-			fix(op.src);
-			fix(op.dst);
-			fix(op.parked);
-			fix(op.finalPath);
-			fix(op.parkedFinal);
+			notes << d.note;
+			rewrites.append({vol.rootPath, d.newRoot});
 		}
-		for (OpItem &it : rec.plan)
-		{
-			fix(it.src);
-			fix(it.renameDst);
-		}
-		fix(rec.planDest);
+	}
+	if (rewrites.isEmpty())
 		return true;
+
+	const auto fix = [&rewrites](QString &path)
+	{
+		if (path.isEmpty())
+			return;
+		for (const auto &[oldRoot, newRoot] : rewrites)
+		{
+			if (rootPrefixes(oldRoot, path))
+			{
+				path = reanchor(path, oldRoot, newRoot);
+				return;
+			}
+		}
+	};
+
+	for (OpJournal::Entry &op : rec.ops)
+	{
+		fix(op.src);
+		fix(op.dst);
+		fix(op.parked);
+		fix(op.finalPath);
+		fix(op.parkedFinal);
+	}
+	for (OpItem &it : rec.plan)
+	{
+		fix(it.src);
+		fix(it.renameDst);
+	}
+	fix(rec.planDest);
+	return true;
 }
 
 // MARK: - Mounted volumes

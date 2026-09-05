@@ -1,0 +1,10 @@
+{
+  "version": "26.8.0.58987",
+  "architecture": "arm64",
+  "files": {
+    "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+    "/tmp/mediamuster-avb-review/binary/libameLibrary-arm64.dylib": "70b6f2810f53dc044a9b6b2d3f9d3e3c50df40c91fcc263e21a2678752566f9e",
+    "/tmp/mediamuster-avb-review/binary/AvidCore-arm64": "59a51c7b3583b13bb816237b3058c58a10d155a8a6a2bcc519fff8865c556902"
+  }
+}

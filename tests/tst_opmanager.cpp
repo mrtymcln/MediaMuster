@@ -62,7 +62,6 @@ private slots:
 	void delete_osTrashProbe_leavesNoResidue();
 
 private:
-
 	/// Outlives every test function, so the env var stays pointing at a
 	/// real directory for the whole run.
 	QTemporaryDir m_journalDir;

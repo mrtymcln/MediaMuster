@@ -250,7 +250,7 @@ void TestEffectFilterDialog::standard_qt_layout_and_preview()
 	QVERIFY(dialog.findChildren<QLineEdit *>().isEmpty());
 	QVERIFY(volumes->geometry().bottom() < tree->geometry().top());
 	QCOMPARE(volumes->minimumWidth(), 220);
-	QCOMPARE(dialog.width(), 430);
+	QCOMPARE(dialog.width(), 380);
 	QCOMPARE(dialog.minimumWidth(), 380);
 	QVERIFY(tree->isHeaderHidden());
 	QCOMPARE(tree->columnCount(), 1);

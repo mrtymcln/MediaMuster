@@ -15,16 +15,16 @@
 struct MdbMasterMob
 {
 	QString mobIdHex;
-	QString clipName;		 ///< OMFI:CPNT:Name — what Avid displays. Equal to the
-							 ///< MXF MaterialPackage name on 360/360 + 795/795 files.
-	QString bin;			 ///< _ORG_BIN → the bin's UTF-8 name. Exists nowhere else.
-	QString sourceFilePath;	 ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
-	QString sourceFileName;	 ///< Basename of sourceFilePath.
-	QString sourceContainer; ///< _USER/Video — "QTFF" for a QuickTime import.
-	QString project;		 ///< OMF-era: _PJ on the master mob, for when the PMR has no project. Usually empty.
-	bool isImported = false; ///< An _IMPORTSETTING attribute exists.
+	QString clipName;				  ///< OMFI:CPNT:Name — what Avid displays. Equal to the
+									  ///< MXF MaterialPackage name on 360/360 + 795/795 files.
+	QString bin;					  ///< _ORG_BIN → the bin's UTF-8 name. Exists nowhere else.
+	QString sourceFilePath;			  ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
+	QString sourceFileName;			  ///< Basename of sourceFilePath.
+	QString sourceContainer;		  ///< _USER/Video — "QTFF" for a QuickTime import.
+	QString project;				  ///< OMF-era: _PJ on the master mob, for when the PMR has no project. Usually empty.
+	bool isImported = false;		  ///< An _IMPORTSETTING attribute exists.
 	bool classificationKnown = false; ///< Avid usage1/7 establishes precompute/media; absent OMF2 usage stays unknown.
-	int usageCode = -1;		 ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
+	int usageCode = -1;				  ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
 	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
 };
 
@@ -40,7 +40,7 @@ struct MdbFileMob
 {
 	QString mobIdHex;
 	QString masterMobId; ///< Unique master whose source-clip graph references this file; empty if ambiguous.
-	int usageCode = -1; ///< 0 = media, 9 = precompute.
+	int usageCode = -1;	 ///< 0 = media, 9 = precompute.
 	MxfMetadata essence;
 	bool essenceComplete = false;
 	/// OMF-era: _PJ from the file mob, else from the source mob its SCLP

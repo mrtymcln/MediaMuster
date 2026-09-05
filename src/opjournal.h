@@ -94,7 +94,7 @@ public:
 	/// original is retired via markUndone at clean finish instead, and
 	/// the NEXT ordinary operation's prune takes it off disk.
 	OpJournal(OpKind kind, const QJsonObject &meta, const QString &dir = QString(),
-			 const QString &sparePath = QString());
+			  const QString &sparePath = QString());
 
 	/// Leaves the file as-is when finish() was never called; that
 	/// half-open state is exactly what recovery looks for.
@@ -131,10 +131,10 @@ public:
 	/// finalPath, copies fill hash + landedId, Replace fills parkedFinal.
 	struct DoneInfo
 	{
-		QString finalPath;	 ///< Delete: where the file landed (trash path).
-		QString hash;		 ///< XXH3 hex when a hashing path ran; empty for clone/rename.
+		QString finalPath;	   ///< Delete: where the file landed (trash path).
+		QString hash;		   ///< XXH3 hex when a hashing path ran; empty for clone/rename.
 		FileIdentity landedId; ///< Identity of the landed file, captured after completion.
-		QString parkedFinal; ///< Replace: the trash path the parked original went to.
+		QString parkedFinal;   ///< Replace: the trash path the parked original went to.
 	};
 
 	void markDone(int id, const DoneInfo &info = {});
@@ -207,12 +207,12 @@ public:
 		QString finalPath; ///< Delete: where it landed (trash path).
 		QString parked;	   ///< Replace: the parked-aside path.
 		qint64 bytes = 0;
-		FileIdentity srcId;			  ///< Source identity at op time.
+		FileIdentity srcId;			   ///< Source identity at op time.
 		FileIdentity parkedOriginalId; ///< Replace: the parked file's identity.
-		FileIdentity landedId;		  ///< From 'done': the landed file's identity.
-		QString hash;				  ///< From 'done': XXH3 hex, when a hashing path ran.
-		QString parkedFinal;		  ///< Trash path of the committed park — from 'done',
-									  ///< or from a 'fail' that happened after the disposal.
+		FileIdentity landedId;		   ///< From 'done': the landed file's identity.
+		QString hash;				   ///< From 'done': XXH3 hex, when a hashing path ran.
+		QString parkedFinal;		   ///< Trash path of the committed park — from 'done',
+									   ///< or from a 'fail' that happened after the disposal.
 		bool completed = false;
 		bool failed = false;
 		bool skipped = false;
@@ -233,7 +233,7 @@ public:
 		QString started;
 		qint64 pid = 0;
 		QString host;
-		bool complete = false;	///< Saw an 'end' line (finished or cancelled).
+		bool complete = false; ///< Saw an 'end' line (finished or cancelled).
 		bool cancelled = false;
 		bool recovered = false; ///< The launch sweep already tidied it.
 		bool undone = false;	///< An undo of this run finished clean.
@@ -313,8 +313,8 @@ class JournalOpGuard
 {
 public:
 	JournalOpGuard(OpJournal *journal, const QString &src, const QString &dst, qint64 bytes,
-			 const QString &parked, const FileIdentity &srcId,
-			 const FileIdentity &parkedOriginalId = {})
+				   const QString &parked, const FileIdentity &srcId,
+				   const FileIdentity &parkedOriginalId = {})
 		: m_journal(journal)
 	{
 		if (m_journal)

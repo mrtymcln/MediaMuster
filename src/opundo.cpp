@@ -48,8 +48,7 @@ namespace
 // MARK: - Construction
 
 OpUndo::OpUndo(OpSink &sink, const std::atomic<bool> &cancel)
-	: m_sink(sink)
-	, m_cancel(cancel)
+	: m_sink(sink), m_cancel(cancel)
 {
 }
 
@@ -115,9 +114,9 @@ OpRunner::Totals OpUndo::run(const QString &originalJournalPath, const QString &
 	// journal is passed as the prune's spare — deleting it here would
 	// destroy the very record being read.
 	OpJournal journal(OpKind::Undo,
-					QJsonObject{{QStringLiteral("undoes"), QFileInfo(rec.path).fileName()},
-								{QStringLiteral("originalKind"), opKindName(rec.kind)}},
-					journalDir, rec.path);
+					  QJsonObject{{QStringLiteral("undoes"), QFileInfo(rec.path).fileName()},
+								  {QStringLiteral("originalKind"), opKindName(rec.kind)}},
+					  journalDir, rec.path);
 	if (!journal.isOpen())
 		m_sink.log(QtWarningMsg, OpJournal::openFailedText(OpKind::Undo));
 
@@ -375,7 +374,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &jo
 	// line means a crash between here and done is recovered with the
 	// Move machinery over this exact src/dst pair.
 	JournalOpGuard lop(&journal, op.dst, op.src, op.srcId.size, QString(),
-				 op.landedId.confidence != FileIdentity::Confidence::Low ? op.landedId : op.srcId);
+					   op.landedId.confidence != FileIdentity::Confidence::Low ? op.landedId : op.srcId);
 
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
 

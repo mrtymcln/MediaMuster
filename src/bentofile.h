@@ -24,7 +24,15 @@ public:
 		int nextSegment = -1; ///< Index after sorting; only a continued segment links onward.
 	};
 	static constexpr qint64 kMaxValueBytes = 1024 * 1024;
-	enum class ReadStatus { Ok, Missing, Malformed, TooLarge, IoError, Unsupported };
+	enum class ReadStatus
+	{
+		Ok,
+		Missing,
+		Malformed,
+		TooLarge,
+		IoError,
+		Unsupported
+	};
 	struct ReadResult
 	{
 		QByteArray data;
@@ -68,7 +76,11 @@ public:
 	[[nodiscard]] static QString string(QByteArrayView v);
 	[[nodiscard]] static QString utf8String(QByteArrayView v);
 	[[nodiscard]] static QString mobIdHex(QByteArrayView v);
-	struct MobIndexEntry { QByteArray uid; quint32 object = 0; };
+	struct MobIndexEntry
+	{
+		QByteArray uid;
+		quint32 object = 0;
+	};
 	[[nodiscard]] static QVector<MobIndexEntry> mobIndex(QByteArrayView v);
 
 	[[nodiscard]] int entryCount() const { return m_entries.size(); }

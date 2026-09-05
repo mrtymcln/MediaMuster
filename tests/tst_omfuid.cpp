@@ -101,14 +101,16 @@ void TestOmfUid::wrap8_does_not_swap_middle_fields()
 void TestOmfUid::canonicalHex_12_bytes_wraps_the_core()
 {
 	// The captured Avid prefix-42 spelling has the exact PMR bridge.
-	const QByteArray uid = QByteArray::fromHex("2a000000" "7429976a70397047");
+	const QByteArray uid = QByteArray::fromHex("2a000000"
+											   "7429976a70397047");
 	QCOMPARE(uid.size(), OmfUid::kUidSize);
 	QCOMPARE(OmfUid::canonicalHex(uid),
 			 QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
 
 	// A different prefix is a different UID. General OMF writers use all
 	// three words; dropping the first word merges unrelated clips.
-	const QByteArray uid2 = QByteArray::fromHex("00000000" "7429976a70397047");
+	const QByteArray uid2 = QByteArray::fromHex("00000000"
+												"7429976a70397047");
 	QCOMPARE(OmfUid::canonicalHex(uid2), QStringLiteral("omf:000000007429976a70397047"));
 	QVERIFY(OmfUid::canonicalHex(uid2) != OmfUid::canonicalHex(uid));
 	QVERIFY(OmfUid::canonicalHex(QByteArray::fromHex("010000007429976a70397047")) != OmfUid::canonicalHex(uid2));
@@ -118,8 +120,10 @@ void TestOmfUid::canonicalHex_32_bytes_formats_unchanged()
 {
 	// MC 2026 writes a real UMID on the physical mob of an OMF file; it
 	// must come out exactly as MobId::format would render it.
-	const QByteArray umid = QByteArray::fromHex("060a2b3401010105" "01010f1013000000"
-											   "a4bb7f1311399006" "6d01ce4ff0f5d57a");
+	const QByteArray umid = QByteArray::fromHex("060a2b3401010105"
+												"01010f1013000000"
+												"a4bb7f1311399006"
+												"6d01ce4ff0f5d57a");
 	QCOMPARE(umid.size(), MobId::kRawSize);
 	QCOMPARE(OmfUid::canonicalHex(umid), MobId::format(umid));
 	QCOMPARE(OmfUid::canonicalHex(umid),

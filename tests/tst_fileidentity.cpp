@@ -425,7 +425,8 @@ void TestFileIdentity::win_copy_behaviour_matches_platform()
 	bool progressed = false;
 	const auto outcome = NativeFile::copyWin(
 		src, dst,
-		[&progressed](qint64, qint64) { progressed = true; }, cancel);
+		[&progressed](qint64, qint64)
+		{ progressed = true; }, cancel);
 	QCOMPARE(outcome, NativeFile::WinCopyOutcome::Succeeded);
 	QVERIFY(progressed);
 	{

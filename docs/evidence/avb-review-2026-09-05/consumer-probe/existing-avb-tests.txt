@@ -1,0 +1,15 @@
+********* Start testing of TestAvbParser *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestAvbParser::initTestCase()
+QWARN  : TestAvbParser::missing_file_returns_invalid() mediamuster.avb: cannot open "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Zcjvcg/does-not-exist.avb" "No such file or directory"
+PASS   : TestAvbParser::missing_file_returns_invalid()
+QWARN  : TestAvbParser::non_avb_header_returns_invalid() mediamuster.avb: not an Avid bin (header mismatch) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-BkghnP/fake.avb"
+PASS   : TestAvbParser::non_avb_header_returns_invalid()
+PASS   : TestAvbParser::hex_string_mob_is_decoded()
+PASS   : TestAvbParser::uppercase_hex_string_mob_is_decoded()
+PASS   : TestAvbParser::big_endian_legacy_bin_is_parsed()
+PASS   : TestAvbParser::omf_bins_yield_their_file_mob()
+PASS   : TestAvbParser::omf_wrapped_frame_needs_both_fixed_parts()
+PASS   : TestAvbParser::cleanupTestCase()
+Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted, 4ms
+********* Finished testing of TestAvbParser *********

@@ -68,7 +68,12 @@ void TestAvidEffects::corpus_render_names_resolve()
 
 void TestAvidEffects::current_registration_variants_and_render_names()
 {
-	struct Case { const char *token; const char *name; const char *category; };
+	struct Case
+	{
+		const char *token;
+		const char *name;
+		const char *category;
+	};
 	const Case cases[] = {
 		// The observed compatibility spelling and both current AlphaFlex states.
 		{"3DWarp", "3D Warp", "Blend"},
@@ -86,7 +91,7 @@ void TestAvidEffects::current_registration_variants_and_render_names()
 	for (const Case &c : cases)
 	{
 		const auto hit = AvidEffects::lookup(QStringLiteral("Act_1,_Scene_2,") +
-			QString::fromUtf8(c.token) + QStringLiteral(",79.new.01"));
+											 QString::fromUtf8(c.token) + QStringLiteral(",79.new.01"));
 		QVERIFY2(hit.matched, c.token);
 		QCOMPARE(hit.name, QString::fromUtf8(c.name));
 		QCOMPARE(hit.category, QString::fromUtf8(c.category));
@@ -98,9 +103,9 @@ void TestAvidEffects::current_registration_variants_and_render_names()
 void TestAvidEffects::aliases_do_not_guess_arbitrary_names()
 {
 	for (const QString &token : {QStringLiteral("TITLE"), QStringLiteral("SLATE"),
-			QStringLiteral("3dwarp"), QStringLiteral("AudioDissolve"),
-			QStringLiteral("MotionEffect"), QStringLiteral("DVerb"),
-			QStringLiteral("3DWarp_custom"), QStringLiteral("FXBaseProxyRegistration")})
+								 QStringLiteral("3dwarp"), QStringLiteral("AudioDissolve"),
+								 QStringLiteral("MotionEffect"), QStringLiteral("DVerb"),
+								 QStringLiteral("3DWarp_custom"), QStringLiteral("FXBaseProxyRegistration")})
 	{
 		const auto hit = AvidEffects::lookup(QStringLiteral("Seq,") + token + QStringLiteral("+2"));
 		QVERIFY2(!hit.matched, qPrintable(token));

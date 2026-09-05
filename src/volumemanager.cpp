@@ -219,7 +219,8 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 	const auto alreadyListed = [&volumes](const QString &path)
 	{
 		return std::any_of(volumes.cbegin(), volumes.cend(),
-						   [&path](const VolumeInfo &v) { return v.path == path; });
+						   [&path](const VolumeInfo &v)
+						   { return v.path == path; });
 	};
 	for (const QString &avidPath : knownAvidLocations())
 	{

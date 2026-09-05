@@ -44,9 +44,9 @@ namespace
 	}
 
 	const QByteArray kToneFileMob = QByteArray::fromHex("060a2b340101010501010f1013000000"
-														 "4a507dea741106907a361e6a605d3613");
+														"4a507dea741106907a361e6a605d3613");
 	const QByteArray kToneMasterMob = QByteArray::fromHex("060a2b340101010501010f1013000000"
-														   "d2467dea7411069091901e6a605d3613");
+														  "d2467dea7411069091901e6a605d3613");
 
 	// OMF-era: a 12-byte omfi:UID as MC writes it — "2a000000" then the 8
 	// identity bytes the v2 PMR stores.
@@ -1221,7 +1221,7 @@ void TestMdbParser::omf2_roles_and_file_master_ancestry()
 		QCOMPARE(db.files.size(), 1);
 		QCOMPARE(db.masters.size(), ambiguous ? 2 : 1);
 		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(99)))); // CMOB
-		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(3)))); // physical SMOB
+		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(3))));  // physical SMOB
 		QVERIFY(!db.masters.value(OmfUid::canonicalHex(TestOmf::uid(1))).classificationKnown);
 		const auto file = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
 		QVERIFY(file.essenceComplete);
@@ -1245,10 +1245,13 @@ void TestMdbParser::master_usage_conflicts_and_widths_stay_unknown()
 				for (int value : {7, next})
 				{
 					const quint32 mob = w.addObject(omf2 ? "MMOB" : "MOBJ");
-					if (omf2) w.setImmediate(mob, "OMFI:OOBJ:ObjClass", QByteArray("MMOB", 4));
+					if (omf2)
+						w.setImmediate(mob, "OMFI:OOBJ:ObjClass", QByteArray("MMOB", 4));
 					w.set(mob, "OMFI:MOBJ:MobID", id);
-					if (value == -2) w.set(mob, "OMFI:MOBJ:UsageCode", w.half(1)); // wrong width
-					else if (value != -1) w.setU32(mob, "OMFI:MOBJ:UsageCode", value == -3 ? 0xffffffffu : quint32(value));
+					if (value == -2)
+						w.set(mob, "OMFI:MOBJ:UsageCode", w.half(1)); // wrong width
+					else if (value != -1)
+						w.setU32(mob, "OMFI:MOBJ:UsageCode", value == -3 ? 0xffffffffu : quint32(value));
 				}
 				const auto db = MdbParser::load(writeMdb(temp.filePath("usage.mdb"), w.build()));
 				QCOMPARE(db.masters.size(), 1); // role/identity survive a conflicting verdict
@@ -1374,7 +1377,8 @@ void TestMdbParser::tiff_summary_respects_own_byte_order_and_avid_short_values()
 			const auto mob = w.addObject("SMOB"), desc = w.addObject("TIFD");
 			w.set(mob, "OMFI:MOBJ:MobID", w.word(42) + w.word(12) + w.word(7));
 			QByteArray tiff = QByteArray(big ? "MM" : "II") + w.half(42) + w.word(8) + w.half(avid ? 5 : 4);
-			auto entry = [&](quint16 tag, quint16 type, quint32 value) {
+			auto entry = [&](quint16 tag, quint16 type, quint32 value)
+			{
 				tiff += w.half(tag) + w.half(type) + w.word(1);
 				tiff += type == 3 && !avid ? w.half(quint16(value)) + w.half(0) : w.word(value);
 			};
@@ -1382,7 +1386,8 @@ void TestMdbParser::tiff_summary_respects_own_byte_order_and_avid_short_values()
 			entry(257, 4, 240);
 			entry(258, 3, 8);
 			entry(259, 3, 6);
-			if (avid) entry(34434, 3, 4); // TIFF mixed-fields means two separate image fields
+			if (avid)
+				entry(34434, 3, 4); // TIFF mixed-fields means two separate image fields
 			tiff += w.word(0);
 			w.set(desc, "OMFI:TIFD:Summary", tiff);
 			w.setRational(desc, "OMFI:MDFL:SampleRate", 25, 1);
@@ -1434,10 +1439,14 @@ void TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arra
 				w.setU32(desc, "OMFI:DIDD:StoredHeight", 1080);
 				w.setRational(desc, "OMFI:MDFL:SampleRate", 24, 1);
 				w.set(desc, "OMFI:MDFL:Length", w.word(1));
-				if (!test.compression.isNull()) w.setString(desc, "OMFI:DIDD:Compression", test.compression);
-				if (!test.layout.isNull()) w.set(desc, "OMFI:RGBA:PixelLayout", test.layout);
-				if (!test.depths.isNull()) w.set(desc, "OMFI:RGBA:PixelStructure", test.depths);
-				if (!test.coding.isNull()) w.set(desc, "OMFI:DIDD:EssenceCompression", test.coding);
+				if (!test.compression.isNull())
+					w.setString(desc, "OMFI:DIDD:Compression", test.compression);
+				if (!test.layout.isNull())
+					w.set(desc, "OMFI:RGBA:PixelLayout", test.layout);
+				if (!test.depths.isNull())
+					w.set(desc, "OMFI:RGBA:PixelStructure", test.depths);
+				if (!test.coding.isNull())
+					w.set(desc, "OMFI:DIDD:EssenceCompression", test.coding);
 				BentoFile b;
 				QVERIFY2(b.load(w.build()), test.name);
 				MxfMetadata meta;
@@ -1488,8 +1497,8 @@ namespace
 				else if (mode == "null-attribute-entry")
 					w.setHandles(attrs, "OMFI:ATTR:AttrRefs", {attr, 0});
 				else if (mode != "missing-attribute-list")
-					w.setHandles(attrs, "OMFI:ATTR:AttrRefs", mode == "empty-attributes" ? QVector<quint32>{} :
-						conflicting ? QVector<quint32>{attr, conflicting} : QVector<quint32>{attr});
+					w.setHandles(attrs, "OMFI:ATTR:AttrRefs", mode == "empty-attributes" ? QVector<quint32>{} : conflicting ? QVector<quint32>{attr, conflicting}
+																															: QVector<quint32>{attr});
 			}
 			if (conflicting)
 			{
@@ -1499,11 +1508,13 @@ namespace
 			if (mode == "unterminated-name")
 				w.set(attr, "OMFI:ATTB:Name", "_IMPORTSETTING");
 			else if (mode != "missing-name")
-				w.setString(attr, "OMFI:ATTB:Name", mode == "nested" ? "_USER" : mode == "prefix" ? "_IMPORTSETTING_EXTRA" : "_IMPORTSETTING");
+				w.setString(attr, "OMFI:ATTB:Name", mode == "nested" ? "_USER" : mode == "prefix" ? "_IMPORTSETTING_EXTRA"
+																								  : "_IMPORTSETTING");
 			if (mode == "wide-kind")
 				w.setU32(attr, "OMFI:ATTB:Kind", 3);
 			else if (mode != "missing-kind")
-				w.setU16(attr, "OMFI:ATTB:Kind", mode == "wrong-kind" ? 2 : mode == "zero-kind" ? 0 : 3);
+				w.setU16(attr, "OMFI:ATTB:Kind", mode == "wrong-kind" ? 2 : mode == "zero-kind" ? 0
+																								: 3);
 			if (mode != "nested")
 				w.setHandle(attr, "OMFI:ATTB:ObjAttribute", 0); // MC tests found, even for a null payload.
 			if (mode == "nested")
@@ -1557,7 +1568,8 @@ void TestMdbParser::precompute_categories_use_direct_complete_master_evidence_da
 	QTest::addColumn<int>("videoTracks");
 	QTest::addColumn<int>("expected");
 	using Category = AvidPrecompute::Category;
-	auto row = [](const char *mode, int tracks, Category expected) {
+	auto row = [](const char *mode, int tracks, Category expected)
+	{
 		const QByteArray name = QByteArray(mode) + '-' + QByteArray::number(tracks);
 		QTest::newRow(name.constData()) << QByteArray(mode) << tracks << int(expected);
 	};
@@ -1570,8 +1582,8 @@ void TestMdbParser::precompute_categories_use_direct_complete_master_evidence_da
 	row("nested-tracks", 1, Category::RenderedEffects);
 	row("present", -1, Category::Unknown);
 	for (const char *mode : {"dangling-attributes", "malformed-attributes", "malformed-attribute-list",
-		"missing-attribute-list", "null-attribute-entry", "unterminated-name", "missing-name", "wide-kind",
-		"missing-kind", "zero-kind", "conflicting-import-kinds", "dangling-track", "wide-track-kind", "missing-track-kind", "null-track-entry", "ordinary"})
+							 "missing-attribute-list", "null-attribute-entry", "unterminated-name", "missing-name", "wide-kind",
+							 "missing-kind", "zero-kind", "conflicting-import-kinds", "dangling-track", "wide-track-kind", "missing-track-kind", "null-track-entry", "ordinary"})
 		row(mode, 2, Category::Unknown);
 }
 
@@ -1607,15 +1619,21 @@ void TestMdbParser::duplicate_precompute_categories_do_not_combine_evidence()
 {
 	QTemporaryDir temp;
 	using Category = AvidPrecompute::Category;
-	struct Case { QByteArray firstMode; int firstTracks; QByteArray secondMode; int secondTracks; Category expected; };
+	struct Case
+	{
+		QByteArray firstMode;
+		int firstTracks;
+		QByteArray secondMode;
+		int secondTracks;
+		Category expected;
+	};
 	const Case cases[] = {
 		{"present", 2, "present", 2, Category::TitlesAndMatteKeys},
 		{"absent", -1, "wrong-kind", 2, Category::RenderedEffects},
 		{"present", 2, "absent", 2, Category::Unknown},
 		{"present", -1, "absent", 2, Category::Unknown},
 		{"present", 1, "present", 1, Category::RenderedEffects},
-		{"present", 2, "missing-kind", 2, Category::Unknown}
-	};
+		{"present", 2, "missing-kind", 2, Category::Unknown}};
 	for (const Case &c : cases)
 	{
 		TestOmf::Writer w(false, false);

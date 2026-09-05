@@ -20,15 +20,15 @@ struct PrecomputeFilterPath
 	bool operator==(const PrecomputeFilterPath &other) const
 	{
 		return precomputeCategory == other.precomputeCategory &&
-			effectCategory == other.effectCategory && effect == other.effect;
+			   effectCategory == other.effectCategory && effect == other.effect;
 	}
 
 	bool matches(const MediaFile &file) const
 	{
 		return file.type == MediaFile::Type::Precompute &&
-			(precomputeCategory.isEmpty() || precomputeCategory == file.precomputeCategoryDisplay()) &&
-			(effectCategory.isEmpty() || effectCategory == file.effectCategoryDisplay()) &&
-			(effect.isEmpty() || effect == file.effectDisplay());
+			   (precomputeCategory.isEmpty() || precomputeCategory == file.precomputeCategoryDisplay()) &&
+			   (effectCategory.isEmpty() || effectCategory == file.effectCategoryDisplay()) &&
+			   (effect.isEmpty() || effect == file.effectDisplay());
 	}
 };
 
@@ -48,6 +48,7 @@ struct PrecomputeFilter
 	bool matches(const MediaFile &file) const
 	{
 		return !active || std::any_of(paths.cbegin(), paths.cend(),
-			[&file](const PrecomputeFilterPath &path) { return path.matches(file); });
+									  [&file](const PrecomputeFilterPath &path)
+									  { return path.matches(file); });
 	}
 };

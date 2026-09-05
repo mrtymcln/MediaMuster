@@ -17,9 +17,12 @@ namespace
 	{
 		switch (kind)
 		{
-		case MediaFile::Kind::Audio: return 0;
-		case MediaFile::Kind::Video: return 1;
-		case MediaFile::Kind::Unknown: return 2;
+		case MediaFile::Kind::Audio:
+			return 0;
+		case MediaFile::Kind::Video:
+			return 1;
+		case MediaFile::Kind::Unknown:
+			return 2;
 		}
 		return 2;
 	}
@@ -27,9 +30,12 @@ namespace
 	{
 		switch (type)
 		{
-		case MediaFile::Type::Media: return 0;
-		case MediaFile::Type::Precompute: return 1;
-		case MediaFile::Type::Unknown: return 2;
+		case MediaFile::Type::Media:
+			return 0;
+		case MediaFile::Type::Precompute:
+			return 1;
+		case MediaFile::Type::Unknown:
+			return 2;
 		}
 		return 2;
 	}
@@ -158,10 +164,12 @@ QStringList MediaFilterProxy::effectFilter() const
 
 void MediaFilterProxy::setPrecomputeCategoryFilter(const QStringList &categories)
 {
-	if (!m_effectDetailsEnabled) return;
+	if (!m_effectDetailsEnabled)
+		return;
 	QSet<QString> selected(categories.cbegin(), categories.cend());
 	selected.remove(QString());
-	if (m_selectedPrecomputeCategories == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active)) return;
+	if (m_selectedPrecomputeCategories == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active))
+		return;
 	m_precomputeTreeFilter = {};
 	m_selectedPrecomputeCategories = std::move(selected);
 	invalidateRowsFilter();
@@ -176,10 +184,12 @@ QStringList MediaFilterProxy::precomputeCategoryFilter() const
 
 void MediaFilterProxy::setEffectCategoryFilter(const QStringList &categories)
 {
-	if (!m_effectDetailsEnabled) return;
+	if (!m_effectDetailsEnabled)
+		return;
 	QSet<QString> selected(categories.cbegin(), categories.cend());
 	selected.remove(QString());
-	if (m_selectedEffectCategories == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active)) return;
+	if (m_selectedEffectCategories == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active))
+		return;
 	m_precomputeTreeFilter = {};
 	m_selectedEffectCategories = std::move(selected);
 	invalidateRowsFilter();
@@ -256,7 +266,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		return false;
 
 	if (m_effectDetailsEnabled && (!m_selectedEffects.isEmpty() || !m_effectVolumePath.isEmpty() ||
-		!m_selectedPrecomputeCategories.isEmpty() || !m_selectedEffectCategories.isEmpty()))
+								   !m_selectedPrecomputeCategories.isEmpty() || !m_selectedEffectCategories.isEmpty()))
 	{
 		// Names never establish classification. Even stale detail strings on
 		// ordinary/unknown rows must not make them match an effect selection.

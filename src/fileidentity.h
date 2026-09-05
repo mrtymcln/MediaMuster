@@ -62,15 +62,15 @@ struct FileIdentity
 		High = 2
 	};
 
-	qint64 size = -1;	 ///< -1 = never captured.
-	qint64 mtimeNs = 0;	 ///< Native-epoch nanoseconds. Only ever compared
-						 ///< against another capture from the same
-						 ///< filesystem, so the platform epoch difference
-						 ///< (Unix vs Windows 1601) never matters.
-	quint64 fileId = 0;	 ///< st_ino / NTFS file index. Full confidence only.
+	qint64 size = -1;	  ///< -1 = never captured.
+	qint64 mtimeNs = 0;	  ///< Native-epoch nanoseconds. Only ever compared
+						  ///< against another capture from the same
+						  ///< filesystem, so the platform epoch difference
+						  ///< (Unix vs Windows 1601) never matters.
+	quint64 fileId = 0;	  ///< st_ino / NTFS file index. Full confidence only.
 	quint64 volumeId = 0; ///< st_dev / volume serial. Full confidence only.
-	QString contentUmid; ///< Avid UMID from the MXF header; empty = not an
-						 ///< MXF, or its header couldn't be parsed.
+	QString contentUmid;  ///< Avid UMID from the MXF header; empty = not an
+						  ///< MXF, or its header couldn't be parsed.
 	Confidence confidence = Confidence::Low;
 
 	// MARK: - Capture
@@ -167,10 +167,10 @@ struct VolumeIdentity
 		High = 2
 	};
 
-	QString uuid;	///< macOS volume UUID, or Windows \\?\Volume{GUID}\ path.
+	QString uuid;		///< macOS volume UUID, or Windows \\?\Volume{GUID}\ path.
 	quint32 serial = 0; ///< Windows volume serial number; 0 elsewhere.
-	QString label;	///< The volume's display name.
-	QString fsType; ///< As QStorageInfo reports it ("apfs", "NTFS"…).
+	QString label;		///< The volume's display name.
+	QString fsType;		///< As QStorageInfo reports it ("apfs", "NTFS"…).
 	qint64 capacityBytes = 0;
 	QString rootPath; ///< Where it was mounted at capture time.
 	Confidence confidence = Confidence::Low;

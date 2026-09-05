@@ -292,7 +292,7 @@ void TestOpRescue::failed_op_journal_makes_no_noise()
 	writeFile(src, "STILL HERE");
 
 	writeJournal(tmp.path(),
-				{beginRec("move"), opRec(0, src, tmp.path() + "/dst/a.mxf", 10), failRec(0)});
+				 {beginRec("move"), opRec(0, src, tmp.path() + "/dst/a.mxf", 10), failRec(0)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 0);
@@ -453,8 +453,8 @@ void TestOpRescue::interrupted_move_with_plan_keeps_finished_work()
 	writeFile(srcC, "C NEVER STARTED");
 
 	writeJournal(tmp.path(), {beginRec("move"), planRec(tmp.path() + "/dst", {srcA, srcB, srcC}),
-							 opRec(0, srcA, dstA, 6), doneRec(0),
-							 opRec(1, srcB, tmp.path() + "/dst/b.mxf", 10)});
+							  opRec(0, srcA, dstA, 6), doneRec(0),
+							  opRec(1, srcB, tmp.path() + "/dst/b.mxf", 10)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	// A's move stands.
@@ -557,7 +557,7 @@ void TestOpRescue::copy_replace_with_park_gone_never_touches_dst()
 	writeFile(dst, "SMALL"); // way short of 100 — still untouchable
 
 	writeJournal(tmp.path(),
-				{beginRec("copy"), opRec(0, src, dst, 100, dst + ".__copyreplace_gone1")});
+				 {beginRec("copy"), opRec(0, src, dst, 100, dst + ".__copyreplace_gone1")});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 0);
@@ -609,7 +609,7 @@ void TestOpRescue::interrupted_delete_with_plan_leaves_deleted_files_deleted()
 	writeFile(srcB, "B WAITING");
 
 	writeJournal(tmp.path(), {beginRec("delete"), planRec(QString(), {srcA, srcB}),
-							 opRec(0, srcA, QString(), 9), doneRec(0, trashA)});
+							  opRec(0, srcA, QString(), 9), doneRec(0, trashA)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QVERIFY(!QFile::exists(srcA));
@@ -636,7 +636,7 @@ void TestOpRescue::dirty_fail_in_finished_copy_run_restores_parked_original()
 	writeFile(parked, "STRANDED ORIGINAL");
 
 	writeJournal(tmp.path(), {beginRec("copy"), opRec(0, src, dst, 6, parked), failDirtyRec(0),
-							 endRec()});
+							  endRec()});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -690,7 +690,7 @@ void TestOpRescue::finished_dirty_run_leaves_completed_ops_alone()
 	writeFile(parkedB, "B ORIGINAL");
 
 	writeJournal(tmp.path(), {beginRec("move"), opRec(0, srcA, dstA, 7), doneRec(0),
-							 opRec(1, srcB, dstB, 5, parkedB), failDirtyRec(1), endRec()});
+							  opRec(1, srcB, dstB, 5, parkedB), failDirtyRec(1), endRec()});
 
 	const auto sum = OpRescue::run(tmp.path());
 	// Only the dirty op was touched: A's move stands, B's original is
@@ -749,8 +749,8 @@ void TestOpRescue::cancelled_run_is_not_resumable_but_is_undo_candidate()
 	writeFile(src, "WAS CANCELLED");
 
 	writeJournal(tmp.path(), {beginRec("move"), planRec(tmp.path() + "/dst", {src}),
-							 opRec(0, src, tmp.path() + "/dst/a.mxf", 13), doneRec(0),
-							 endRec(/*cancelled=*/true)});
+							  opRec(0, src, tmp.path() + "/dst/a.mxf", 13), doneRec(0),
+							  endRec(/*cancelled=*/true)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	// Concluded on the user's watch: not offered again…
@@ -789,7 +789,7 @@ void TestOpRescue::unreachable_source_volume_is_never_read_as_finished()
 	const QString src = tmp.path() + "/mounts/EDIT/media/a.mxf"; // volume absent
 
 	writeJournal(tmp.path(), {beginRec("delete"), planRec(QString(), {src}),
-							 opRec(0, src, QString(), 5)});
+							  opRec(0, src, QString(), 5)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.resumable.size(), 1);
@@ -814,7 +814,7 @@ void TestOpRescue::identity_mismatch_blocks_move_reversal()
 	// bytes matches what's on disk (so the whole-file gate passes), but
 	// the IDENTITY the run captured says the real file was 5 bytes.
 	writeJournal(tmp.path(),
-				{beginRec("move"), opRec(0, src, dst, 16, QString(), idJson(5)), doneRec(0)});
+				 {beginRec("move"), opRec(0, src, dst, 16, QString(), idJson(5)), doneRec(0)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsFlagged, 1);
@@ -832,8 +832,8 @@ void TestOpRescue::identity_mismatch_blocks_trash_restore()
 	writeFile(trash, "NOT THE DELETED FILE"); // 20 bytes; identity says 7
 
 	writeJournal(tmp.path(), {beginRec("delete"),
-							 opRec(0, src, QString(), 7, QString(), idJson(7)),
-							 doneRec(0, trash)});
+							  opRec(0, src, QString(), 7, QString(), idJson(7)),
+							  doneRec(0, trash)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsFlagged, 1);
@@ -900,11 +900,11 @@ void TestOpRescue::run_reanchors_paths_when_volume_moved()
 	writeFile(newRoot + "/dst/a.mxf", "MOVED");
 
 	writeJournal(tmp.path(),
-				{beginRec("move"),
-				 planRecWithVolumes(oldRoot + "/dst", {oldRoot + "/src/a.mxf"},
-									volJson(QStringLiteral("AAAA-1111"),
-											QStringLiteral("EDIT"), oldRoot)),
-				 opRec(0, oldRoot + "/src/a.mxf", oldRoot + "/dst/a.mxf", 5)});
+				 {beginRec("move"),
+				  planRecWithVolumes(oldRoot + "/dst", {oldRoot + "/src/a.mxf"},
+									 volJson(QStringLiteral("AAAA-1111"),
+											 QStringLiteral("EDIT"), oldRoot)),
+				  opRec(0, oldRoot + "/src/a.mxf", oldRoot + "/dst/a.mxf", 5)});
 
 	const QVector<VolumeIdentity> mounted = {
 		makeVol(QStringLiteral("AAAA-1111"), QStringLiteral("EDIT"), newRoot)};
@@ -985,9 +985,9 @@ void TestOpRescue::interrupted_undo_of_move_recovers_with_move_semantics()
 	writeFile(homeB, "B HOME"); // op 1 in flight, dst whole
 
 	writeJournal(tmp.path(),
-				{beginUndoRec(QStringLiteral("move"), QStringLiteral("journal-orig.jsonl")),
-				 planRec(QString(), {awayA, awayB}), opRec(0, awayA, homeA, 6), doneRec(0),
-				 opRec(1, awayB, homeB, 6)});
+				 {beginUndoRec(QStringLiteral("move"), QStringLiteral("journal-orig.jsonl")),
+				  planRec(QString(), {awayA, awayB}), opRec(0, awayA, homeA, 6), doneRec(0),
+				  opRec(1, awayB, homeB, 6)});
 
 	const auto sum = OpRescue::run(tmp.path());
 	// A stays undone (home).
@@ -1015,9 +1015,9 @@ void TestOpRescue::journal_notes_resurface_in_summary()
 	// No apostrophes in this raw string: moc's simplified lexer reads a
 	// lone ' as the start of a char literal and falls over at EOF.
 	writeJournal(tmp.path(),
-				{beginRec("move"), opRec(0, src, dst, 5),
-				 QStringLiteral(
-					 R"({"record":"note","text":"a.mxf: the destination volume could not confirm a full flush to disk."})")});
+				 {beginRec("move"), opRec(0, src, dst, 5),
+				  QStringLiteral(
+					  R"({"record":"note","text":"a.mxf: the destination volume could not confirm a full flush to disk."})")});
 
 	const auto sum = OpRescue::run(tmp.path());
 	QCOMPARE(sum.opsReversed, 1);
@@ -1042,10 +1042,10 @@ void TestOpRescue::dirty_move_leaves_restored_original_alone()
 	writeFile(dst, QByteArray(600, 'O')); // the restored replaced-original
 
 	writeJournal(tmp.path(),
-				{beginRec("move"),
-				 opRec(0, src, dst, 1000, dst + ".__movereplace_gone", idJson(1000),
-					   idJson(600)),
-				 failDirtyRec(0), endRec()});
+				 {beginRec("move"),
+				  opRec(0, src, dst, 1000, dst + ".__movereplace_gone", idJson(1000),
+						idJson(600)),
+				  failDirtyRec(0), endRec()});
 
 	const OpRescue::Summary sum = OpRescue::run(tmp.path());
 
@@ -1098,8 +1098,8 @@ void TestOpRescue::partial_cleanup_refuses_stranger_mxf()
 			 "fixtures must be different clips for this test to mean anything");
 
 	writeJournal(tmp.path(), {beginRec("copy"),
-							 opRec(0, src, dst, srcNow.size, QString(),
-								   idJson(srcNow.size, srcNow.contentUmid))});
+							  opRec(0, src, dst, srcNow.size, QString(),
+									idJson(srcNow.size, srcNow.contentUmid))});
 
 	const OpRescue::Summary sum = OpRescue::run(tmp.path());
 

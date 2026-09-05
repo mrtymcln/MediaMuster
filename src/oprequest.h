@@ -161,7 +161,7 @@ struct OpItem
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
-	QString destRoot; ///< Copy/Move destination root; empty for Delete/Rename/Undo.
+	QString destRoot;	   ///< Copy/Move destination root; empty for Delete/Rename/Undo.
 	bool preserve = false; ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
 	QVector<OpItem> items;
 

@@ -40,7 +40,12 @@ namespace OmfObjects
 {
 	// OMF semantic version, independent of the Bento label's version.
 	// OMF1 objects may also be stored in Bento2 (the toolkit's IMA mode).
-	enum class Revision { Unknown, Omf1, Omf2 };
+	enum class Revision
+	{
+		Unknown,
+		Omf1,
+		Omf2
+	};
 	[[nodiscard]] Revision revision(const BentoFile &b);
 	[[nodiscard]] QByteArray normalizedMobId(const BentoFile &b, QByteArrayView raw);
 	[[nodiscard]] bool isMobClass(const QByteArray &cls);
@@ -85,7 +90,7 @@ namespace OmfObjects
 	// Direct source-mob references in a mob's segment graph; no ancestry hop.
 	// Returning all targets lets callers reject ambiguous file/master matches.
 	[[nodiscard]] QVector<quint32> sourceMobs(const BentoFile &b, const Props &p, quint32 mob,
-										const ObjectByMob &objectByMob);
+											  const ObjectByMob &objectByMob);
 	[[nodiscard]] bool mobEditRate(const BentoFile &b, const Props &p, quint32 mob, qint32 &num, qint32 &den);
 
 	// MARK: - Descriptor classes
@@ -201,7 +206,7 @@ namespace OmfObjects
 	/// one duplicate's import marker with another duplicate's video tracks.
 	/// Unsupported schemas, incomplete evidence and disagreements stay unknown.
 	[[nodiscard]] AvidPrecompute::Category precomputeCategory(const BentoFile &b, const Props &p,
-															const QVector<quint32> &masters);
+															  const QVector<quint32> &masters);
 
 	// MARK: - Track walk (timecode, source mob)
 
