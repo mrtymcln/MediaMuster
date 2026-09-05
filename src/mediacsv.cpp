@@ -84,7 +84,11 @@ namespace MediaCsv
 	bool write(const QString &path, const QVector<MediaFile> &rows, Options options)
 	{
 		QFile file(path);
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		// Binary, deliberately: headerLine()/rowLine() already end every
+		// line with '\n', and QIODevice::Text would rewrite those to CRLF
+		// on Windows — including the newlines inside quoted effect fields.
+		// Without it the export is byte-identical on every platform.
+		if (!file.open(QIODevice::WriteOnly))
 			return false;
 		QTextStream out(&file);
 		out.setGenerateByteOrderMark(true);
