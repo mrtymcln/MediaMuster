@@ -32,8 +32,9 @@ public:
 		Modified,
 		Type,
 		SourceFile,
-		Effect,
+		PrecomputeCategory,
 		EffectCategory,
+		Effect,
 		EffectSequence,
 		Count_
 	};

@@ -4,13 +4,10 @@
 
 #include <QApplication>
 #include <QDir>
-#include <QDialogButtonBox>
-#include <QFile>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPixmap>
-#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QStringList>
 #include <QTimer>
@@ -136,37 +133,32 @@ AboutDialog::AboutDialog(QWidget *parent)
 		auto *nameLabel = new QLabel(name);
 		tweakFont(nameLabel, 0, true);
 		nameLabel->setAlignment(Qt::AlignHCenter);
-		nameLabel->setOpenExternalLinks(true);
+		nameLabel->setTextFormat(Qt::PlainText);
 		roll->addWidget(nameLabel);
 		roll->addSpacing(16);
 	};
 
-	addCredit(tr("Executive Producer"), QStringLiteral("Martin McLean"));
-	addCredit(tr("Assistant Producer"), QStringLiteral("Cameron Gregg"));
+	addCredit(tr("Writer and Director"), QStringLiteral("Martin McLean"));
+	addCredit(tr("Script Editor"), QStringLiteral("Cameron Gregg"));
 	addCredit(tr("Icon Designer"), QStringLiteral("Matthew Skiles"));
-	addCredit(tr("Production Designer"),
-			  QStringLiteral("<a href=\"https://qt.io\">Qt %1</a>, GNU LGPL v3")
-				  .arg(QStringLiteral(QT_VERSION_STR)));
-	addCredit(tr("Continuity"),
-			  QStringLiteral("<a href=\"https://xxhash.com\">xxHash3</a>, BSD 2-Clause"));
+	addCredit(tr("Production Designer"), QStringLiteral("Qt 6.5.3"));
+	addCredit(tr("Continuity"), QStringLiteral("xxHash"));
 
-	// Easter egg: show the account display name of the user.
+	// Show the account display name of the user.
 	const QString editor = userDisplayName();
 	if (!editor.isEmpty())
 		addCredit(tr("Editor"), editor);
 
 	addCredit(tr("Assistant Editor"), QStringLiteral("Bella, the Kelpie"));
 
-	// Beta testers, alphabetical by surname.
 	const QStringList betaTesters = {
 		QStringLiteral("Jack Brown"),
 		QStringLiteral("Nathan Katsikaros"),
 		QStringLiteral("John Lynn"),
 		QStringLiteral("Harry B. Miller III"),
-		QStringLiteral("Moritz Poth"),
 		QStringLiteral("Jean-Denis Rouette"),
 		QStringLiteral("Nacho Santana"),
-		QStringLiteral("Lawson Tanner"),
+		QStringLiteral("Ben Gold"),
 	};
 	if (!betaTesters.isEmpty())
 		addCredit(tr("Test Audience"), betaTesters.join(QLatin1Char('\n')));
@@ -182,7 +174,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 	roll->addWidget(provenance);
 	roll->addSpacing(10);
 
-	auto *copyright = new QLabel(tr("Copyright © 2026 Martin McLean.\nAll rights reserved."));
+	auto *copyright = new QLabel(tr("© 2026 Martin McLean. All rights reserved."));
 	copyright->setAlignment(Qt::AlignHCenter);
 	tweakFont(copyright, -1);
 	roll->addWidget(copyright);
@@ -225,29 +217,6 @@ AboutDialog::AboutDialog(QWidget *parent)
 	layout->addSpacing(12);
 
 	auto *btnRow = new QHBoxLayout;
-	auto *licensesBtn = new QPushButton(tr("Licenses"));
-	licensesBtn->setAutoDefault(false);
-	connect(licensesBtn, &QPushButton::clicked, this, [this]
-	{
-		auto *dialog = new QDialog(this);
-		dialog->setAttribute(Qt::WA_DeleteOnClose);
-		dialog->setWindowTitle(tr("Third-party licenses"));
-		dialog->setWindowModality(Qt::WindowModal);
-		auto *licenseLayout = new QVBoxLayout(dialog);
-		auto *text = new QPlainTextEdit(dialog);
-		text->setReadOnly(true);
-		QFile notices(QStringLiteral(":/licenses/third-party-notices.txt"));
-		text->setPlainText(notices.open(QIODevice::ReadOnly)
-			? QString::fromUtf8(notices.readAll())
-			: tr("The license notices could not be loaded."));
-		licenseLayout->addWidget(text);
-		auto *close = new QDialogButtonBox(QDialogButtonBox::Close, dialog);
-		connect(close, &QDialogButtonBox::rejected, dialog, &QDialog::close);
-		licenseLayout->addWidget(close);
-		dialog->resize(680, 500);
-		dialog->show();
-	});
-	btnRow->addWidget(licensesBtn);
 	btnRow->addStretch();
 	auto *okBtn = new QPushButton(tr("Sweet as!"));
 	okBtn->setDefault(true);

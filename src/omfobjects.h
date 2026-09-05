@@ -27,6 +27,7 @@
 // works in both the load (MDB) and the tail-first (essence file) modes.
 
 #include "bentofile.h"
+#include "avidprecompute.h"
 #include "mxfparser.h"
 
 #include <QByteArray>
@@ -194,6 +195,13 @@ namespace OmfObjects
 	/// OMFI:CPNT:Attributes; 0 is a no-op.
 	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen,
 						int depth);
+
+	/// Media Composer 26.8's precompute display predicate, evaluated on each
+	/// logical master separately. No recursive import search or combining
+	/// one duplicate's import marker with another duplicate's video tracks.
+	/// Unsupported schemas, incomplete evidence and disagreements stay unknown.
+	[[nodiscard]] AvidPrecompute::Category precomputeCategory(const BentoFile &b, const Props &p,
+															const QVector<quint32> &masters);
 
 	// MARK: - Track walk (timecode, source mob)
 

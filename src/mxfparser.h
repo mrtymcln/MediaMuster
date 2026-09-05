@@ -1,5 +1,7 @@
 #pragma once
 
+#include "avidprecompute.h"
+
 #include <QByteArray>
 #include <QString>
 
@@ -28,7 +30,7 @@ struct MxfMetadata
 	bool rgbaDescriptor = false; ///< The selected essence descriptor is RGBA, not another picture class.
 	bool rgbaAlpha8 = false; ///< Its complete pixel layout describes only an 8-bit alpha component.
 	bool pictureCodingPresent = false; ///< A present but unusable coding property must not become an absent-property fallback.
-	bool hasMaterialPackage = false; ///< A completed header selected a MaterialPackage with a 32-byte UID, independently of usage classification.
+	bool hasMaterialPackage = false; ///< A completed header selected a logical master identity (MaterialPackage in MXF), independently of usage classification.
 	bool classificationKnown = false; ///< An identified material/master package supplied a usage verdict.
 	QString codec;		///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
 	QString resolution; ///< '1920x1080', or empty for audio.
@@ -47,6 +49,7 @@ struct MxfMetadata
 	/// alone is ambiguous (Avid also uses it for group/motion clips). Consult
 	/// classificationKnown before interpreting false as ordinary media.
 	bool isPrecompute = false;
+	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
 
 	/// Avid's own TaggedValues (set 0x3F, on the packages' attribute lists):
 	/// `UNC Path` = the imported file's path, `Video` = its container ("QTFF"),

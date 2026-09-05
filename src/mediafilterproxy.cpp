@@ -110,9 +110,29 @@ void MediaFilterProxy::setEffectDetailsEnabled(bool enabled)
 	m_effectDetailsEnabled = enabled;
 	if (!enabled)
 	{
+		m_precomputeTreeFilter = {};
 		m_selectedEffects.clear();
+		m_selectedPrecomputeCategories.clear();
+		m_selectedEffectCategories.clear();
 		m_effectVolumePath.clear();
 	}
+	invalidateRowsFilter();
+}
+
+void MediaFilterProxy::setPrecomputeTreeFilter(const PrecomputeFilter &filter)
+{
+	if (!m_effectDetailsEnabled)
+		return;
+	const PrecomputeFilter selected = filter.active ? filter : PrecomputeFilter{};
+	if (m_precomputeTreeFilter == selected && m_selectedEffects.isEmpty() &&
+		m_selectedPrecomputeCategories.isEmpty() && m_selectedEffectCategories.isEmpty())
+		return;
+	m_precomputeTreeFilter = selected;
+	// There is one visible selection model. A prior flat filter must never
+	// remain hidden underneath the choices made in the outline.
+	m_selectedEffects.clear();
+	m_selectedPrecomputeCategories.clear();
+	m_selectedEffectCategories.clear();
 	invalidateRowsFilter();
 }
 
@@ -122,8 +142,9 @@ void MediaFilterProxy::setEffectFilter(const QStringList &effects)
 		return;
 	QSet<QString> selected(effects.cbegin(), effects.cend());
 	selected.remove(QString()); // an empty value is not an effect name
-	if (m_selectedEffects == selected)
+	if (m_selectedEffects == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active))
 		return;
+	m_precomputeTreeFilter = {};
 	m_selectedEffects = std::move(selected);
 	invalidateRowsFilter();
 }
@@ -133,6 +154,42 @@ QStringList MediaFilterProxy::effectFilter() const
 	QStringList names = m_selectedEffects.values();
 	names.sort();
 	return names;
+}
+
+void MediaFilterProxy::setPrecomputeCategoryFilter(const QStringList &categories)
+{
+	if (!m_effectDetailsEnabled) return;
+	QSet<QString> selected(categories.cbegin(), categories.cend());
+	selected.remove(QString());
+	if (m_selectedPrecomputeCategories == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active)) return;
+	m_precomputeTreeFilter = {};
+	m_selectedPrecomputeCategories = std::move(selected);
+	invalidateRowsFilter();
+}
+
+QStringList MediaFilterProxy::precomputeCategoryFilter() const
+{
+	QStringList categories = m_selectedPrecomputeCategories.values();
+	categories.sort();
+	return categories;
+}
+
+void MediaFilterProxy::setEffectCategoryFilter(const QStringList &categories)
+{
+	if (!m_effectDetailsEnabled) return;
+	QSet<QString> selected(categories.cbegin(), categories.cend());
+	selected.remove(QString());
+	if (m_selectedEffectCategories == selected && (selected.isEmpty() || !m_precomputeTreeFilter.active)) return;
+	m_precomputeTreeFilter = {};
+	m_selectedEffectCategories = std::move(selected);
+	invalidateRowsFilter();
+}
+
+QStringList MediaFilterProxy::effectCategoryFilter() const
+{
+	QStringList categories = m_selectedEffectCategories.values();
+	categories.sort();
+	return categories;
 }
 
 void MediaFilterProxy::setEffectVolumeFilter(const QString &volumePath)
@@ -195,13 +252,19 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	if (!m_selectedProjects.isEmpty() && !m_selectedProjects.contains(f.projectDisplay()))
 		return false;
 
-	if (m_effectDetailsEnabled && (!m_selectedEffects.isEmpty() || !m_effectVolumePath.isEmpty()))
+	if (m_effectDetailsEnabled && !m_precomputeTreeFilter.matches(f))
+		return false;
+
+	if (m_effectDetailsEnabled && (!m_selectedEffects.isEmpty() || !m_effectVolumePath.isEmpty() ||
+		!m_selectedPrecomputeCategories.isEmpty() || !m_selectedEffectCategories.isEmpty()))
 	{
 		// Names never establish classification. Even stale detail strings on
 		// ordinary/unknown rows must not make them match an effect selection.
 		if (f.type != MediaFile::Type::Precompute ||
 			(!m_effectVolumePath.isEmpty() && f.volumePath != m_effectVolumePath) ||
-			(!m_selectedEffects.isEmpty() && !m_selectedEffects.contains(f.effect)))
+			(!m_selectedPrecomputeCategories.isEmpty() && !m_selectedPrecomputeCategories.contains(f.precomputeCategoryDisplay())) ||
+			(!m_selectedEffectCategories.isEmpty() && !m_selectedEffectCategories.contains(f.effectCategoryDisplay())) ||
+			(!m_selectedEffects.isEmpty() && !m_selectedEffects.contains(f.effectDisplay())))
 			return false;
 	}
 
@@ -230,7 +293,8 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 			   matches(f.codec) || matches(f.volumeName) || matches(f.filePath) ||
 			   matches(f.sourceFileName) ||
 			   (m_effectDetailsEnabled && f.type == MediaFile::Type::Precompute &&
-				(matches(f.effect) || matches(f.effectCategory) || matches(f.effectSequence)));
+				(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||
+				 matches(f.effectCategoryDisplay()) || matches(f.effectSequence)));
 	}
 	return true;
 }
@@ -331,6 +395,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
 		return typeSortRank(l.type) < typeSortRank(r.type);
+	case Col::PrecomputeCategory:
 	case Col::Effect:
 	case Col::EffectCategory:
 	case Col::EffectSequence:

@@ -65,6 +65,7 @@ private slots:
 	void avid_legacy_version_alias();
 	void avid_legacy_version_excludes_compositions();
 	void omf_master_usage_is_role_specific_and_width_checked();
+	void omf_precompute_category_follows_the_embedded_master();
 };
 
 void TestOmfParser::avid_legacy_version_alias_data()
@@ -197,6 +198,7 @@ void TestOmfParser::sdii_omf1_and_omf2_semantics()
 		QCOMPARE(m.essence.projectName, QStringLiteral("SDII project"));
 		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.sd2"));
 		QCOMPARE(m.essence.classificationKnown, !omf2); // no Avid UsageCode in standard OMF2
+		QVERIFY(m.essence.hasMaterialPackage); // known master identity survives unknown UsageCode.
 		QCOMPARE(m.essence.umid, OmfUid::canonicalHex(TestOmf::uid(1)));
 		QCOMPARE(m.fileMobId, OmfUid::canonicalHex(TestOmf::uid(2)));
 		QCOMPARE(m.startTimecode, omf2 ? qint64(0x10000002aULL) : qint64(90000));
@@ -694,6 +696,60 @@ void TestOmfParser::omf_finalise_parity_with_a_header()
 		QCOMPARE(hdr.codec, m.essence.codec);
 		QCOMPARE(hdr.codec, QStringLiteral("DV 25 420 i(PAL)"));
 	}
+}
+
+void TestOmfParser::omf_precompute_category_follows_the_embedded_master()
+{
+	QTemporaryDir temp;
+	using Category = AvidPrecompute::Category;
+	for (int videoTracks : {0, 1, 2})
+		for (bool imported : {false, true})
+		{
+			BentoBuilder w;
+			w.setImmediate(1, "OMFI:ObjID", "HEAD");
+			w.setImmediate(1, "OMFI:Version", QByteArray::fromHex("0100"));
+			const quint32 master = w.addObject("MOBJ"), file = w.addObject("MOBJ"), desc = w.addObject("SD2D");
+			w.set(master, "OMFI:MOBJ:MobID", TestOmf::uid(1));
+			w.set(file, "OMFI:MOBJ:MobID", TestOmf::uid(2));
+			w.setU32(master, "OMFI:MOBJ:UsageCode", 1);
+			w.setU32(file, "OMFI:MOBJ:UsageCode", 0); // physical code does not choose the subtype.
+			w.setString(master, "OMFI:CPNT:Name", "Use this shot for ending");
+			w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", desc);
+			w.setU16(desc, "OMFI:SD2D:BitsPerSample", 24);
+			w.setU16(desc, "OMFI:SD2D:NumChannels", 1);
+			w.setRational(desc, "OMFI:MDFL:SampleRate", 48000, 1);
+			w.setU32(desc, "OMFI:MDFL:Length", 48000);
+			QVector<quint32> tracks;
+			// Retain an audio source link for the 0-video case so this is
+			// still a uniquely identified master for the embedded essence.
+			for (int n = 0; n < qMax(1, videoTracks); ++n)
+			{
+				const quint32 track = w.addObject("TRAK"), clip = w.addObject("SCLP");
+				tracks.append(track);
+				w.setHandle(track, "OMFI:TRAK:TrackComponent", clip);
+				w.setU16(clip, "OMFI:CPNT:TrackKind", videoTracks == 0 ? 2 : 1);
+				w.set(clip, "OMFI:SCLP:SourceID", TestOmf::uid(2));
+			}
+			w.setHandles(master, "OMFI:TRKG:Tracks", tracks);
+			if (imported)
+			{
+				const quint32 attrs = w.addObject("ATTR"), attr = w.addObject("ATTB");
+				w.setHandle(master, "OMFI:CPNT:Attributes", attrs);
+				w.setHandles(attrs, "OMFI:ATTR:AttrRefs", {attr});
+				w.setString(attr, "OMFI:ATTB:Name", "_IMPORTSETTING");
+				w.setU16(attr, "OMFI:ATTB:Kind", 3);
+				w.setHandle(attr, "OMFI:ATTB:ObjAttribute", 0);
+			}
+			const QString path = temp.filePath("category.omf");
+			QVERIFY(tryWriteFile(path, w.build()));
+			const auto parsed = OmfParser::parseHeader(path);
+			QVERIFY(parsed.essence.valid);
+			QVERIFY(parsed.essence.hasMaterialPackage);
+			QVERIFY(parsed.essence.classificationKnown);
+			QVERIFY(parsed.essence.isPrecompute);
+			QCOMPARE(parsed.essence.precomputeCategory,
+				imported && videoTracks >= 2 ? Category::TitlesAndMatteKeys : Category::RenderedEffects);
+		}
 }
 
 QTEST_APPLESS_MAIN(TestOmfParser)

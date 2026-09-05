@@ -111,6 +111,9 @@ class TestMdbParser : public QObject
 {
 	Q_OBJECT
 private slots:
+	void precompute_categories_use_direct_complete_master_evidence_data();
+	void precompute_categories_use_direct_complete_master_evidence();
+	void duplicate_precompute_categories_do_not_combine_evidence();
 	void uncompressed_alpha_requires_explicit_none_and_component_arrays();
 	void omf2_roles_and_file_master_ancestry();
 	void master_usage_conflicts_and_widths_stay_unknown();
@@ -1449,6 +1452,180 @@ void TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arra
 					QCOMPARE(meta.fps, QStringLiteral("24"));
 				}
 			}
+}
+
+namespace
+{
+	quint32 categoryMaster(TestOmf::Writer &w, const QByteArray &mode, int videoTracks, bool omf2 = false)
+	{
+		const quint32 master = w.addObject(omf2 ? "MMOB" : "MOBJ");
+		if (omf2)
+			w.setImmediate(master, "OMFI:OOBJ:ObjClass", "MMOB");
+		w.set(master, "OMFI:MOBJ:MobID", w.word(42) + w.word(800) + w.word(7));
+		w.setU32(master, "OMFI:MOBJ:UsageCode", mode == "ordinary" ? 7 : 1);
+		w.setString(master, omf2 ? "OMFI:MOBJ:Name" : "OMFI:CPNT:Name", "Renamed clip without an effect name");
+		const char *attributeProperty = omf2 ? "OMFI:MOBJ:UserAttributes" : "OMFI:CPNT:Attributes";
+		if (mode == "null-attributes")
+			w.setHandle(master, attributeProperty, 0);
+		else if (mode == "dangling-attributes")
+			w.setHandle(master, attributeProperty, 0xfefefefe);
+		else if (mode == "malformed-attributes")
+			w.set(master, attributeProperty, w.word(0));
+		else if (mode != "absent" && mode != "ordinary")
+		{
+			const quint32 attrs = w.addObject("ATTR"), attr = w.addObject("ATTB");
+			const quint32 conflicting = mode == "conflicting-import-kinds" ? w.addObject("ATTB") : 0;
+			if (omf2)
+			{
+				w.set(master, attributeProperty, w.word(attrs));
+				w.set(attrs, "OMFI:ATTR:AttrRefs", w.half(1) + w.word(attr));
+			}
+			else
+			{
+				w.setHandle(master, attributeProperty, attrs);
+				if (mode == "malformed-attribute-list")
+					w.set(attrs, "OMFI:ATTR:AttrRefs", w.half(2) + w.word(attr) + w.word(0));
+				else if (mode == "null-attribute-entry")
+					w.setHandles(attrs, "OMFI:ATTR:AttrRefs", {attr, 0});
+				else if (mode != "missing-attribute-list")
+					w.setHandles(attrs, "OMFI:ATTR:AttrRefs", mode == "empty-attributes" ? QVector<quint32>{} :
+						conflicting ? QVector<quint32>{attr, conflicting} : QVector<quint32>{attr});
+			}
+			if (conflicting)
+			{
+				w.setString(conflicting, "OMFI:ATTB:Name", "_IMPORTSETTING");
+				w.setU16(conflicting, "OMFI:ATTB:Kind", 2);
+			}
+			if (mode == "unterminated-name")
+				w.set(attr, "OMFI:ATTB:Name", "_IMPORTSETTING");
+			else if (mode != "missing-name")
+				w.setString(attr, "OMFI:ATTB:Name", mode == "nested" ? "_USER" : mode == "prefix" ? "_IMPORTSETTING_EXTRA" : "_IMPORTSETTING");
+			if (mode == "wide-kind")
+				w.setU32(attr, "OMFI:ATTB:Kind", 3);
+			else if (mode != "missing-kind")
+				w.setU16(attr, "OMFI:ATTB:Kind", mode == "wrong-kind" ? 2 : mode == "zero-kind" ? 0 : 3);
+			if (mode != "nested")
+				w.setHandle(attr, "OMFI:ATTB:ObjAttribute", 0); // MC tests found, even for a null payload.
+			if (mode == "nested")
+			{
+				const quint32 nested = w.addObject("ATTR"), imported = w.addObject("ATTB");
+				w.setHandles(nested, "OMFI:ATTR:AttrRefs", {imported});
+				w.setString(imported, "OMFI:ATTB:Name", "_IMPORTSETTING");
+				w.setU16(imported, "OMFI:ATTB:Kind", 3);
+				w.setHandle(imported, "OMFI:ATTB:ObjAttribute", 0);
+				// A recursive import walker sees this nested marker; MC's
+				// precompute display predicate only searches the direct list.
+				w.setHandle(attr, "OMFI:ATTB:ObjAttribute", nested);
+			}
+		}
+		QVector<quint32> tracks;
+		for (int n = 0; n < videoTracks; ++n)
+		{
+			const quint32 track = w.addObject("TRAK"), segment = w.addObject(mode == "nested-tracks" ? "SEQU" : "SCLP");
+			tracks.append(track);
+			w.setHandle(track, "OMFI:TRAK:TrackComponent", mode == "dangling-track" ? 0xfefefefe : segment);
+			if (mode == "wide-track-kind")
+				w.setU32(segment, "OMFI:CPNT:TrackKind", 1);
+			else if (mode != "missing-track-kind")
+				w.setU16(segment, "OMFI:CPNT:TrackKind", mode == "audio" || mode == "nested-tracks" ? 2 : 1);
+			if (mode == "nested-tracks")
+			{
+				const quint32 childA = w.addObject("SCLP"), childB = w.addObject("SCLP");
+				w.setU16(childA, "OMFI:CPNT:TrackKind", 1);
+				w.setU16(childB, "OMFI:CPNT:TrackKind", 1);
+				w.setHandles(segment, "OMFI:SEQU:Sequence", {childA, childB});
+			}
+		}
+		if (mode == "null-track-entry")
+			tracks.append(0);
+		if (videoTracks >= 0)
+			w.setHandles(master, "OMFI:TRKG:Tracks", tracks);
+		return master;
+	}
+
+	void categoryHead(TestOmf::Writer &w, bool big, bool omf2 = false)
+	{
+		w.setImmediate(1, omf2 ? "OMFI:OOBJ:ObjClass" : "OMFI:ObjID", "HEAD");
+		w.setImmediate(1, omf2 ? "OMFI:HEAD:Version" : "OMFI:Version", QByteArray::fromHex(omf2 ? "0200" : "0100"));
+		w.setImmediate(1, omf2 ? "OMFI:HEAD:ByteOrder" : "OMFI:ByteOrder", big ? "MM" : "II");
+	}
+}
+
+void TestMdbParser::precompute_categories_use_direct_complete_master_evidence_data()
+{
+	QTest::addColumn<QByteArray>("mode");
+	QTest::addColumn<int>("videoTracks");
+	QTest::addColumn<int>("expected");
+	using Category = AvidPrecompute::Category;
+	auto row = [](const char *mode, int tracks, Category expected) {
+		const QByteArray name = QByteArray(mode) + '-' + QByteArray::number(tracks);
+		QTest::newRow(name.constData()) << QByteArray(mode) << tracks << int(expected);
+	};
+	for (const char *mode : {"absent", "null-attributes", "empty-attributes", "nested", "prefix", "wrong-kind"})
+		row(mode, 2, Category::RenderedEffects);
+	row("absent", -1, Category::RenderedEffects); // Avid short-circuits before reading tracks.
+	for (int tracks : {0, 1, 2, 3})
+		row("present", tracks, tracks >= 2 ? Category::TitlesAndMatteKeys : Category::RenderedEffects);
+	row("audio", 2, Category::RenderedEffects);
+	row("nested-tracks", 1, Category::RenderedEffects);
+	row("present", -1, Category::Unknown);
+	for (const char *mode : {"dangling-attributes", "malformed-attributes", "malformed-attribute-list",
+		"missing-attribute-list", "null-attribute-entry", "unterminated-name", "missing-name", "wide-kind",
+		"missing-kind", "zero-kind", "conflicting-import-kinds", "dangling-track", "wide-track-kind", "missing-track-kind", "null-track-entry", "ordinary"})
+		row(mode, 2, Category::Unknown);
+}
+
+void TestMdbParser::precompute_categories_use_direct_complete_master_evidence()
+{
+	QFETCH(QByteArray, mode);
+	QFETCH(int, videoTracks);
+	QFETCH(int, expected);
+	QTemporaryDir temp;
+	for (int variant : {0, 1, 2})
+	{
+		const bool compact = variant > 0, big = variant == 2;
+		TestOmf::Writer w(compact, big);
+		categoryHead(w, big);
+		categoryMaster(w, mode, videoTracks);
+		const auto db = MdbParser::load(writeMdb(temp.filePath("category.mdb"), w.build()));
+		QCOMPARE(db.masters.size(), 1);
+		const auto &master = *db.masters.cbegin();
+		QVERIFY(master.classificationKnown);
+		QCOMPARE(int(master.precomputeCategory), expected);
+	}
+	// OMF2 MOBJ:UserAttributes is not assumed equivalent to the direct
+	// CPNT attribute list. Toolkit comment conversion maps it from _USER.
+	TestOmf::Writer w(true, false);
+	categoryHead(w, false, true);
+	categoryMaster(w, "present", 2, true);
+	const auto omf2 = MdbParser::load(writeMdb(temp.filePath("category-2.mdb"), w.build()));
+	QCOMPARE(omf2.masters.size(), 1);
+	QCOMPARE(omf2.masters.cbegin()->precomputeCategory, AvidPrecompute::Category::Unknown);
+}
+
+void TestMdbParser::duplicate_precompute_categories_do_not_combine_evidence()
+{
+	QTemporaryDir temp;
+	using Category = AvidPrecompute::Category;
+	struct Case { QByteArray firstMode; int firstTracks; QByteArray secondMode; int secondTracks; Category expected; };
+	const Case cases[] = {
+		{"present", 2, "present", 2, Category::TitlesAndMatteKeys},
+		{"absent", -1, "wrong-kind", 2, Category::RenderedEffects},
+		{"present", 2, "absent", 2, Category::Unknown},
+		{"present", -1, "absent", 2, Category::Unknown},
+		{"present", 1, "present", 1, Category::RenderedEffects},
+		{"present", 2, "missing-kind", 2, Category::Unknown}
+	};
+	for (const Case &c : cases)
+	{
+		TestOmf::Writer w(false, false);
+		categoryHead(w, false);
+		categoryMaster(w, c.firstMode, c.firstTracks);
+		categoryMaster(w, c.secondMode, c.secondTracks);
+		const auto db = MdbParser::load(writeMdb(temp.filePath("duplicates.mdb"), w.build()));
+		QCOMPARE(db.masters.size(), 1);
+		QCOMPARE(db.masters.cbegin()->precomputeCategory, c.expected);
+	}
 }
 
 QTEST_APPLESS_MAIN(TestMdbParser)

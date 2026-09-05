@@ -96,6 +96,7 @@ private slots:
 	void unknown_classification_is_exported_without_guessing();
 	void effect_details_are_explicit_and_quoted();
 	void non_precompute_effect_fields_stay_blank();
+	void precompute_categories_preserve_unknown_details();
 };
 
 void TestMediaCsv::header_and_row_have_the_same_field_count()
@@ -108,9 +109,9 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}).trimmed()), headerFields);
 	const MediaCsv::Options enabled{true};
-	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 25);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 25);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 25);
+	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 26);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 26);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 26);
 }
 
 void TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()
@@ -204,6 +205,7 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 {
 	MediaFile f = sampleRow();
 	f.type = MediaFile::Type::Precompute;
+	f.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 	f.effect = QStringLiteral("=Custom,\"Quoted\"\nEffect");
 	f.effectCategory = QStringLiteral("@Category,\"Quoted\"");
 	f.effectSequence = QStringLiteral("+Sequence,\"Quoted\"\nNext");
@@ -221,12 +223,14 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Date Modified"))], f.modifiedDisplay());
 		if (enabled)
 		{
+			QCOMPARE(fields[headers.indexOf(QStringLiteral("Precompute Category"))], QStringLiteral("Rendered Effects"));
 			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect"))], QLatin1Char('\'') + f.effect);
 			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Category"))], QLatin1Char('\'') + f.effectCategory);
 			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Sequence"))], QLatin1Char('\'') + f.effectSequence);
 		}
 		else
 		{
+			QVERIFY(!headers.contains(QStringLiteral("Precompute Category")));
 			QVERIFY(!headers.contains(QStringLiteral("Effect")));
 			QVERIFY(!headers.contains(QStringLiteral("Effect Category")));
 			QVERIFY(!headers.contains(QStringLiteral("Effect Sequence")));
@@ -245,8 +249,28 @@ void TestMediaCsv::non_precompute_effect_fields_stay_blank()
 		f.type = type;
 		f.effect = f.effectCategory = f.effectSequence = QStringLiteral("stale detail");
 		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
-		for (const auto &header : {QStringLiteral("Effect"), QStringLiteral("Effect Category"), QStringLiteral("Effect Sequence")})
+		for (const auto &header : {QStringLiteral("Precompute Category"), QStringLiteral("Effect"), QStringLiteral("Effect Category"), QStringLiteral("Effect Sequence")})
 			QVERIFY(fields[headers.indexOf(header)].isEmpty());
+	}
+}
+
+void TestMediaCsv::precompute_categories_preserve_unknown_details()
+{
+	const MediaCsv::Options options{true};
+	const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+	const QStringList expected{QStringLiteral("Rendered Effects"), QStringLiteral("Titles and Matte Keys"), QStringLiteral("unknown")};
+	int row = 0;
+	for (auto category : {MediaFile::PrecomputeCategory::RenderedEffects,
+		MediaFile::PrecomputeCategory::TitlesAndMatteKeys, MediaFile::PrecomputeCategory::Unknown})
+	{
+		MediaFile file;
+		file.type = MediaFile::Type::Precompute;
+		file.precomputeCategory = category;
+		const auto fields = readCsvRecord(MediaCsv::rowLine(file, options));
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Type"))], QStringLiteral("Precompute"));
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Precompute Category"))], expected[row++]);
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Category"))], QStringLiteral("unknown"));
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect"))], QStringLiteral("unknown"));
 	}
 }
 

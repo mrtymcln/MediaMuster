@@ -83,12 +83,16 @@ int AvidEffects::size()
 
 AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 {
+	// Effect names and categories come only from the clip name, not an effect ID.
+	// If a rename removes the effect name, this lookup cannot recover it:
+	// unmatched text is kept with category "unknown". A name that
+	// happens to match another effect can also give a misleading label.
+	// This does not change the media type established separately from metadata.
 	Hit hit;
 	// Both observed render names keep the effect at the right-hand end:
 	// `<sequence>,<Effect>+<N>` and `<sequence>,<Effect>,<N>[.new.<N>...]`.
 	// Validate the latter's entire numeric suffix before using the preceding
-	// comma; earlier commas still belong to the sequence. This labels only
-	// already-classified precomputes and does not identify media by name.
+	// comma; earlier commas still belong to the sequence.
 	QString token = clipName;
 	const int comma = clipName.lastIndexOf(QLatin1Char(','));
 	if (comma >= 0)
@@ -148,7 +152,7 @@ AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 	if (it == t.byKey.constEnd() || it->isEmpty())
 	{
 		hit.name = token;
-		hit.category = QStringLiteral("Unrecognized effect");
+		hit.category = QStringLiteral("unknown");
 		return hit;
 	}
 	hit.matched = true;

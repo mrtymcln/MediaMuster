@@ -25,6 +25,7 @@ struct MdbMasterMob
 	bool isImported = false; ///< An _IMPORTSETTING attribute exists.
 	bool classificationKnown = false; ///< Avid usage1/7 establishes precompute/media; absent OMF2 usage stays unknown.
 	int usageCode = -1;		 ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
+	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
 };
 
 /// One essence file as the MDB describes it. Keyed by the file MOB — the

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "avidprecompute.h"
+
 #include <QString>
 #include <QDateTime>
 #include <QVector>
@@ -97,7 +99,7 @@ struct MediaFile
 
 	/// For a Precompute row: the effect Avid's catalogue knows the clip name
 	/// by ("Color Correction"), else the raw token; its palette category
-	/// ("Image"; "A / B" when ambiguous; "Unrecognized effect" when
+	/// ("Image"; "A / B" when ambiguous; "unknown" when
 	/// unknown — a user-typed title, an unregistered plug-in, a renamed
 	/// template); the sequence the render belongs to (as Avid wrote it, spaces
 	/// as underscores); and the +N render instance. Empty / 0 on every Media row.
@@ -105,6 +107,8 @@ struct MediaFile
 	QString effectCategory;
 	QString effectSequence;
 	int effectInstance = 0;
+	using PrecomputeCategory = AvidPrecompute::Category;
+	PrecomputeCategory precomputeCategory = PrecomputeCategory::Unknown;
 
 	// MARK: Filesystem
 
@@ -150,7 +154,7 @@ struct MediaFile
 	};
 	Kind kind = Kind::Unknown;
 
-	/// Master-clip media or a rendered precompute — the "Type" column.
+	/// Master-clip media or a precompute — the "Type" column.
 	/// Unknown when the usage metadata has not established either value.
 	enum class Type : int
 	{
@@ -256,6 +260,33 @@ struct MediaFile
 	}
 
 	// MARK: Derived display
+
+	// The table, CSV and filters share these labels. Unknown effect names
+	// stay selectable even when a renamed clip no longer carries a token.
+	QString effectDisplay() const
+	{
+		if (type != Type::Precompute) return {};
+		return effect.isEmpty() ? QStringLiteral("unknown") : effect;
+	}
+
+	QString effectCategoryDisplay() const
+	{
+		if (type != Type::Precompute) return {};
+		return effectCategory.isEmpty() ? QStringLiteral("unknown") : effectCategory;
+	}
+
+	QString precomputeCategoryDisplay() const
+	{
+		if (type != Type::Precompute)
+			return {};
+		switch (precomputeCategory)
+		{
+		case PrecomputeCategory::RenderedEffects: return QStringLiteral("Rendered Effects");
+		case PrecomputeCategory::TitlesAndMatteKeys: return QStringLiteral("Titles and Matte Keys");
+		case PrecomputeCategory::Unknown: return QStringLiteral("unknown");
+		}
+		return QStringLiteral("unknown");
+	}
 
 	/// "Kind" column / CSV string. One definition site so the table,
 	/// the sort, and the export can't drift apart.

@@ -2,7 +2,4 @@
     <qresource prefix="/">
     <file>../res/mediamuster.png</file>
     </qresource>
-    <qresource prefix="/licenses">
-        <file alias="third-party-notices.txt">../res/licenses/third-party-notices.txt</file>
-    </qresource>
 </RCC>

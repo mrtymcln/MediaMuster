@@ -2,36 +2,49 @@
 
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
-#include <QLineEdit>
 #include <QMap>
 #include <QPushButton>
+#include <QShortcut>
 #include <QSignalBlocker>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
-EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
-	const QStringList &selectedEffects, const QString &selectedVolume, QWidget *parent)
-	: QDialog(parent), m_files(files),
-	  m_selectedEffects(selectedEffects.cbegin(), selectedEffects.cend())
-{
-	setWindowTitle(tr("Filter by Effect"));
-	resize(600, 500);
-	auto *layout = new QVBoxLayout(this);
-	auto *explanation = new QLabel(tr("Choose effects and a volume to show matching precomputes. "
-		"Counts refer to the scanned volume; other table filters still apply."), this);
-	explanation->setWordWrap(true);
-	layout->addWidget(explanation);
+#include <algorithm>
 
-	auto *volumeLabel = new QLabel(tr("&Volume:"), this);
+namespace
+{
+	bool covers(const PrecomputeFilterPath &parent, const PrecomputeFilterPath &child)
+	{
+		return (parent.precomputeCategory.isEmpty() || parent.precomputeCategory == child.precomputeCategory) &&
+			(parent.effectCategory.isEmpty() || parent.effectCategory == child.effectCategory) &&
+			(parent.effect.isEmpty() || parent.effect == child.effect);
+	}
+}
+
+EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
+	const PrecomputeFilter &selection, const QString &selectedVolume, QWidget *parent)
+	: QDialog(parent)
+{
+	setWindowTitle(tr("Filter Precomputes"));
+	setMinimumSize(380, 330);
+
+	auto *layout = new QVBoxLayout(this);
+	layout->setContentsMargins(16, 16, 16, 16);
+	layout->setSpacing(12);
+
 	m_volumes = new QComboBox(this);
 	m_volumes->setObjectName(QStringLiteral("effectVolume"));
-	volumeLabel->setBuddy(m_volumes);
-	m_volumes->addItem(tr("All scanned volumes"), QString{});
+	m_volumes->setMinimumWidth(220);
+	m_volumes->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+	m_volumes->setMinimumContentsLength(14);
+	m_volumes->setAccessibleName(tr("Volume"));
+	m_volumes->addItem(tr("all"), QString{});
 	QMap<QString, QString> volumes;
 	QMap<QString, int> nameCounts;
-	for (const auto &file : m_files)
+	for (const auto &file : files)
 		if (!file.volumePath.isEmpty() && !volumes.contains(file.volumePath))
 		{
 			const QString name = file.volumeName.isEmpty() ? file.volumePath : file.volumeName;
@@ -45,65 +58,188 @@ EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
 		m_volumes->addItem(label, it.key());
 		m_volumes->setItemData(m_volumes->count() - 1, it.key(), Qt::ToolTipRole);
 	}
-	const int volumeIndex = m_volumes->findData(selectedVolume);
-	m_volumes->setCurrentIndex(volumeIndex >= 0 ? volumeIndex : 0);
-	layout->addWidget(volumeLabel);
-	layout->addWidget(m_volumes);
-
-	m_search = new QLineEdit(this);
-	m_search->setObjectName(QStringLiteral("effectSearch"));
-	m_search->setPlaceholderText(tr("Search effects or categories"));
-	m_search->setClearButtonEnabled(true);
-	layout->addWidget(m_search);
+	// Keep a previously selected, disconnected volume explicit. Replacing it
+	// with All volumes would silently widen the editor's filter.
+	if (!selectedVolume.isEmpty() && m_volumes->findData(selectedVolume) < 0)
+		m_volumes->addItem(selectedVolume, selectedVolume);
+	m_volumes->setCurrentIndex(std::max(0, m_volumes->findData(selectedVolume)));
+	auto *volumeLabel = new QLabel(tr("Volume:"), this);
+	volumeLabel->setBuddy(m_volumes);
+	auto *volumeRow = new QHBoxLayout;
+	volumeRow->setSpacing(8);
+	volumeRow->addWidget(volumeLabel);
+	volumeRow->addWidget(m_volumes);
+	volumeRow->addStretch();
+	layout->addLayout(volumeRow);
 
 	m_effects = new QTreeWidget(this);
 	m_effects->setObjectName(QStringLiteral("effectChoices"));
-	m_effects->setHeaderLabels({tr("Effect"), tr("Category"), tr("Files")});
-	m_effects->setRootIsDecorated(false);
-	m_effects->setAlternatingRowColors(true);
-	m_effects->setSelectionMode(QAbstractItemView::NoSelection);
+	m_effects->setAccessibleName(tr("Precompute hierarchy"));
+	m_effects->setColumnCount(1);
+	m_effects->setHeaderHidden(true);
+	m_effects->setRootIsDecorated(true);
+	m_effects->setAlternatingRowColors(false);
+	m_effects->setUniformRowHeights(true);
+	m_effects->setIndentation(18);
+	m_effects->setSelectionMode(QAbstractItemView::SingleSelection);
+	m_effects->setAllColumnsShowFocus(true);
 	m_effects->header()->setStretchLastSection(false);
 	m_effects->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-	m_effects->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-	m_effects->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 	layout->addWidget(m_effects, 1);
 
-	m_summary = new QLabel(this);
-	m_summary->setObjectName(QStringLiteral("effectSelectionSummary"));
-	layout->addWidget(m_summary);
+	auto *footer = new QHBoxLayout;
+	m_matchCount = new QLabel(this);
+	m_matchCount->setObjectName(QStringLiteral("effectMatchingCount"));
+	footer->addWidget(m_matchCount);
+	footer->addStretch();
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 	buttons->button(QDialogButtonBox::Ok)->setText(tr("Apply"));
-	auto *clear = buttons->addButton(tr("Clear Filter"), QDialogButtonBox::ResetRole);
-	clear->setObjectName(QStringLiteral("clearEffectFilter"));
-	connect(clear, &QPushButton::clicked, this, [this]() {
-		m_selectedEffects.clear();
-		m_volumes->setCurrentIndex(0);
-		accept();
-	});
+	buttons->button(QDialogButtonBox::Ok)->setObjectName(QStringLiteral("applyEffectFilter"));
+	buttons->button(QDialogButtonBox::Ok)->setDefault(true);
+	buttons->button(QDialogButtonBox::Cancel)->setObjectName(QStringLiteral("cancelEffectFilter"));
 	connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
 	connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-	layout->addWidget(buttons);
+	footer->addWidget(buttons);
+	layout->addLayout(footer);
 
-	connect(m_volumes, qOverload<int>(&QComboBox::currentIndexChanged), this,
-		[this](int) { rebuildEffects(); });
-	connect(m_search, &QLineEdit::textChanged, this,
-		[this](const QString &) { filterChoices(); });
-	connect(m_effects, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem *item, int column) {
+	buildTree(files);
+	applySelection(selection);
+	connect(m_volumes, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int) { updateMatchingCount(); });
+	connect(m_effects, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem *item, int column)
+	{
 		if (column != 0) return;
-		const QString name = item->data(0, Qt::UserRole).toString();
-		if (item->checkState(0) == Qt::Checked) m_selectedEffects.insert(name);
-		else m_selectedEffects.remove(name);
-		updateSelectionCount();
+		const QSignalBlocker blocker(m_effects);
+		setSubtreeChecked(item, item->checkState(0) == Qt::Unchecked ? Qt::Unchecked : Qt::Checked);
+		for (auto *parentItem = item->parent(); parentItem; parentItem = parentItem->parent())
+			updateParentChecks(parentItem);
+		updateMatchingCount();
 	});
-	rebuildEffects();
-	m_search->setFocus();
+	for (const bool expand : {false, true})
+	{
+		auto *shortcut = new QShortcut(QKeySequence(expand ? Qt::CTRL | Qt::Key_Right : Qt::CTRL | Qt::Key_Left), m_effects);
+		shortcut->setContext(Qt::WidgetShortcut);
+		connect(shortcut, &QShortcut::activated, this, [this, expand]
+		{
+			if (auto *item = m_effects->currentItem()) item->setExpanded(expand);
+		});
+	}
+	auto *cancelShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Period), this);
+	connect(cancelShortcut, &QShortcut::activated, this, &QDialog::reject);
+	updateMatchingCount();
+	m_volumes->setFocus();
 }
 
-QStringList EffectFilterDialog::selectedEffects() const
+QTreeWidgetItem *EffectFilterDialog::addChoice(QTreeWidgetItem *parent, const QString &label,
+	const PrecomputeFilterPath &path)
 {
-	QStringList names = m_selectedEffects.values();
-	names.sort();
-	return names;
+	auto *item = parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(m_effects);
+	item->setText(0, label);
+	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+	item->setCheckState(0, Qt::Unchecked);
+	m_paths.insert(item, path);
+	m_counts.insert(item, {});
+	return item;
+}
+
+void EffectFilterDialog::buildTree(const QVector<MediaFile> &files)
+{
+	const QSignalBlocker blocker(m_effects);
+	auto *root = addChoice(nullptr, tr("Precomputes"), {});
+	const QString rendered = QStringLiteral("Rendered Effects");
+	const QString titles = QStringLiteral("Titles and Matte Keys");
+	const QString unknown = QStringLiteral("unknown");
+	QMap<QString, QTreeWidgetItem *> typeItems;
+	for (const auto &type : {rendered, titles, unknown})
+		typeItems.insert(type, addChoice(root, type, {type, {}, {}}));
+	QMap<QString, QMap<QString, QTreeWidgetItem *>> categories;
+	QMap<QString, QMap<QString, QMap<QString, QTreeWidgetItem *>>> effects;
+	for (const auto &file : files)
+	{
+		if (file.type != MediaFile::Type::Precompute) continue;
+		const QString type = file.precomputeCategoryDisplay();
+		const QString category = type == rendered ? file.effectCategoryDisplay() : QString{};
+		const QString effect = file.effectDisplay();
+		auto *parent = typeItems.value(type);
+		if (!parent) continue;
+		if (!category.isEmpty())
+		{
+			auto *&categoryItem = categories[type][category];
+			if (!categoryItem) categoryItem = addChoice(parent, category, {type, category, {}});
+			parent = categoryItem;
+		}
+		auto *&effectItem = effects[type][category][effect];
+		if (!effectItem) effectItem = addChoice(parent, effect, {type, category, effect});
+		for (auto *item = effectItem; item; item = item->parent())
+		{
+			auto &counts = m_counts[item];
+			++counts.total;
+			++counts.volumes[file.volumePath];
+		}
+	}
+	for (auto *typeItem : typeItems)
+	{
+		typeItem->sortChildren(0, Qt::AscendingOrder);
+		for (int i = 0; i < typeItem->childCount(); ++i)
+			typeItem->child(i)->sortChildren(0, Qt::AscendingOrder);
+	}
+	root->setExpanded(true);
+	typeItems.value(rendered)->setExpanded(true);
+}
+
+void EffectFilterDialog::applySelection(const PrecomputeFilter &selection)
+{
+	const QSignalBlocker blocker(m_effects);
+	const QVector<PrecomputeFilterPath> paths = selection.active ? selection.paths : QVector<PrecomputeFilterPath>{{}};
+	for (auto it = m_paths.cbegin(); it != m_paths.cend(); ++it)
+	{
+		const bool checked = std::any_of(paths.cbegin(), paths.cend(), [&it](const auto &path) { return covers(path, it.value()); });
+		it.key()->setCheckState(0, checked ? Qt::Checked : Qt::Unchecked);
+		if (checked && selection.active)
+			for (auto *parent = it.key()->parent(); parent; parent = parent->parent()) parent->setExpanded(true);
+	}
+	// Children determine mixed states. Work from leaves towards the root.
+	const auto update = [this](auto &&self, QTreeWidgetItem *item) -> void
+	{
+		for (int i = 0; i < item->childCount(); ++i) self(self, item->child(i));
+		updateParentChecks(item);
+	};
+	update(update, m_effects->topLevelItem(0));
+}
+
+void EffectFilterDialog::setSubtreeChecked(QTreeWidgetItem *item, Qt::CheckState state)
+{
+	item->setCheckState(0, state);
+	for (int i = 0; i < item->childCount(); ++i) setSubtreeChecked(item->child(i), state);
+}
+
+void EffectFilterDialog::updateParentChecks(QTreeWidgetItem *item)
+{
+	if (item->childCount() == 0) return;
+	bool all = true;
+	bool any = false;
+	for (int i = 0; i < item->childCount(); ++i)
+	{
+		const auto state = item->child(i)->checkState(0);
+		all = all && state == Qt::Checked;
+		any = any || state != Qt::Unchecked;
+	}
+	item->setCheckState(0, all ? Qt::Checked : any ? Qt::PartiallyChecked : Qt::Unchecked);
+}
+
+void EffectFilterDialog::collectSelection(QTreeWidgetItem *item, QVector<PrecomputeFilterPath> &paths) const
+{
+	if (item->checkState(0) == Qt::Checked)
+		paths.append(m_paths.value(item));
+	else
+		for (int i = 0; i < item->childCount(); ++i) collectSelection(item->child(i), paths);
+}
+
+PrecomputeFilter EffectFilterDialog::precomputeFilter() const
+{
+	PrecomputeFilter filter;
+	filter.active = true;
+	collectSelection(m_effects->topLevelItem(0), filter.paths);
+	return filter;
 }
 
 QString EffectFilterDialog::selectedVolume() const
@@ -111,60 +247,20 @@ QString EffectFilterDialog::selectedVolume() const
 	return m_volumes->currentData().toString();
 }
 
-void EffectFilterDialog::rebuildEffects()
+qint64 EffectFilterDialog::matchingCount(QTreeWidgetItem *item) const
 {
-	struct Count { int files = 0; QSet<QString> categories; };
-	QMap<QString, Count> counts;
-	const QString volume = selectedVolume();
-	for (const auto &file : m_files)
+	if (item->checkState(0) == Qt::Checked)
 	{
-		if (file.type != MediaFile::Type::Precompute || file.effect.isEmpty() ||
-			(!volume.isEmpty() && file.volumePath != volume)) continue;
-		auto &count = counts[file.effect];
-		++count.files;
-		if (!file.effectCategory.isEmpty()) count.categories.insert(file.effectCategory);
+		const auto counts = m_counts.value(item);
+		return selectedVolume().isEmpty() ? counts.total : counts.volumes.value(selectedVolume());
 	}
-	const auto names = counts.keys();
-	m_selectedEffects.intersect(QSet<QString>(names.cbegin(), names.cend()));
-	const QSignalBlocker block(m_effects);
-	m_effects->clear();
-	for (auto it = counts.cbegin(); it != counts.cend(); ++it)
-	{
-		QStringList categories = it->categories.values();
-		categories.sort();
-		auto *item = new QTreeWidgetItem(m_effects,
-			{it.key(), categories.join(QStringLiteral(" / ")), QString::number(it->files)});
-		item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
-		item->setData(0, Qt::UserRole, it.key());
-		item->setCheckState(0, m_selectedEffects.contains(it.key()) ? Qt::Checked : Qt::Unchecked);
-		item->setTextAlignment(2, Qt::AlignRight | Qt::AlignVCenter);
-		item->setToolTip(0, it.key());
-		item->setToolTip(1, item->text(1));
-	}
-	filterChoices();
+	qint64 count = 0;
+	for (int i = 0; i < item->childCount(); ++i) count += matchingCount(item->child(i));
+	return count;
 }
 
-void EffectFilterDialog::filterChoices()
+void EffectFilterDialog::updateMatchingCount()
 {
-	const QString query = m_search->text().normalized(QString::NormalizationForm_C);
-	for (int i = 0; i < m_effects->topLevelItemCount(); ++i)
-	{
-		auto *item = m_effects->topLevelItem(i);
-		const bool matches = item->text(0).normalized(QString::NormalizationForm_C).contains(query, Qt::CaseInsensitive) ||
-			item->text(1).normalized(QString::NormalizationForm_C).contains(query, Qt::CaseInsensitive);
-		item->setHidden(!matches);
-	}
-	updateSelectionCount();
-}
-
-void EffectFilterDialog::updateSelectionCount()
-{
-	if (m_effects->topLevelItemCount() == 0)
-		m_summary->setText(tr("No named precomputes in this volume."));
-	else if (m_selectedEffects.isEmpty())
-		m_summary->setText(selectedVolume().isEmpty()
-			? tr("No effects selected — Apply clears this filter.")
-			: tr("No effects selected — Apply shows all precomputes on this volume."));
-	else
-		m_summary->setText(tr("%n effect(s) selected", nullptr, m_selectedEffects.size()));
+	const qint64 count = matchingCount(m_effects->topLevelItem(0));
+	m_matchCount->setText(count == 1 ? tr("1 matching file") : tr("%1 matching files").arg(count));
 }

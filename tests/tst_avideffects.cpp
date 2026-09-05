@@ -105,7 +105,7 @@ void TestAvidEffects::aliases_do_not_guess_arbitrary_names()
 		const auto hit = AvidEffects::lookup(QStringLiteral("Seq,") + token + QStringLiteral("+2"));
 		QVERIFY2(!hit.matched, qPrintable(token));
 		QCOMPARE(hit.name, token);
-		QCOMPARE(hit.category, QStringLiteral("Unrecognized effect"));
+		QCOMPARE(hit.category, QStringLiteral("unknown"));
 	}
 }
 
@@ -115,7 +115,7 @@ void TestAvidEffects::user_typed_title_is_not_a_standard_effect()
 	const AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,10101010+3"));
 	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("10101010"));
-	QCOMPARE(h.category, QStringLiteral("Unrecognized effect"));
+	QCOMPARE(h.category, QStringLiteral("unknown"));
 	QCOMPARE(h.sequence, QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq"));
 	QCOMPARE(h.instance, 3);
 }
@@ -247,7 +247,7 @@ void TestAvidEffects::invalid_suffixes_stay_visible()
 	QCOMPARE(hit.sequence, sequence);
 	QCOMPARE(hit.instance, 0);
 	QVERIFY(!hit.matched);
-	QCOMPARE(hit.category, QStringLiteral("Unrecognized effect"));
+	QCOMPARE(hit.category, QStringLiteral("unknown"));
 }
 
 void TestAvidEffects::mangle_turns_spaces_and_colons_into_underscores()

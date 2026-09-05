@@ -46,6 +46,7 @@ private slots:
 	void unknown_classification_displays_without_guessing();
 	void effect_gate_preserves_rows_and_existing_indexes();
 	void effect_columns_only_display_precompute_details();
+	void precompute_categories_and_unknown_effects_display_consistently();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -381,10 +382,10 @@ void TestMediaTableModel::effect_gate_preserves_rows_and_existing_indexes()
 	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
 	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
 	model.setEffectDetailsEnabled(true);
-	QCOMPARE(model.columnCount(), 18);
+	QCOMPARE(model.columnCount(), 19);
 	QCOMPARE(inserted.size(), 1);
 	QCOMPARE(inserted.first().at(1).toInt(), 15);
-	QCOMPARE(inserted.first().at(2).toInt(), 17);
+	QCOMPARE(inserted.first().at(2).toInt(), 18);
 	QVERIFY(row.isValid());
 	QCOMPARE(row.data().toString(), path);
 	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
@@ -415,11 +416,11 @@ void TestMediaTableModel::effect_columns_only_display_precompute_details()
 	MediaTableModel model;
 	model.setMediaFiles({precompute, media, unknown});
 	model.setEffectDetailsEnabled(true);
-	const QStringList headers{QStringLiteral("Effect"), QStringLiteral("Effect Category"), QStringLiteral("Effect Sequence")};
-	const QStringList values{precompute.effect, precompute.effectCategory, precompute.effectSequence};
+	const QStringList headers{QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"), QStringLiteral("Effect"), QStringLiteral("Effect Sequence")};
+	const QStringList values{QStringLiteral("unknown"), precompute.effectCategory, precompute.effect, precompute.effectSequence};
 	for (int i = 0; i < values.size(); ++i)
 	{
-		const int column = int(MediaTableModel::Column::Effect) + i;
+		const int column = int(MediaTableModel::Column::PrecomputeCategory) + i;
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), headers[i]);
 		QCOMPARE(model.index(0, column).data().toString(), values[i]);
 		QVERIFY(model.index(1, column).data().toString().isEmpty());
@@ -427,6 +428,25 @@ void TestMediaTableModel::effect_columns_only_display_precompute_details()
 	}
 	model.setEffectDetailsEnabled(false);
 	QCOMPARE(model.index(0, int(MediaTableModel::Column::Type)).data().toString(), QStringLiteral("Precompute"));
+}
+
+void TestMediaTableModel::precompute_categories_and_unknown_effects_display_consistently()
+{
+	MediaFile rendered, title, unknown;
+	rendered.type = title.type = unknown.type = MediaFile::Type::Precompute;
+	rendered.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
+	MediaTableModel model;
+	model.setMediaFiles({rendered, title, unknown, MediaFile{}});
+	model.setEffectDetailsEnabled(true);
+	const int category = int(MediaTableModel::Column::PrecomputeCategory);
+	QCOMPARE(model.index(0, category).data().toString(), QStringLiteral("Rendered Effects"));
+	QCOMPARE(model.index(1, category).data().toString(), QStringLiteral("Titles and Matte Keys"));
+	QCOMPARE(model.index(2, category).data().toString(), QStringLiteral("unknown"));
+	for (auto column : {MediaTableModel::Column::Effect, MediaTableModel::Column::EffectCategory})
+		for (int row = 0; row < 3; ++row)
+			QCOMPARE(model.index(row, int(column)).data().toString(), QStringLiteral("unknown"));
+	QVERIFY(model.index(3, category).data().toString().isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

@@ -21,7 +21,7 @@ namespace AvidEffects
 	{
 		QString name;	  ///< Avid's display name ("Color Correction"), or the raw token when unknown.
 		QString category; ///< Avid category/group ("Image", "Timewarp"...), "A / B" when ambiguous,
-						  ///< "Unrecognized effect" when unknown (a user-typed title,
+						  ///< "unknown" when unknown (a user-typed title,
 						  ///< an unregistered plug-in, or a renamed template).
 		QString sequence; ///< The text preceding the effect token, as Avid wrote it (mangled).
 		int instance = 0; ///< The +N or comma-N instance; 0 when absent or invalid.

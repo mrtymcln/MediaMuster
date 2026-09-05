@@ -146,9 +146,8 @@ namespace
 		{MediaFilterProxy::FilterMode::Video, "Video"},
 		{MediaFilterProxy::FilterMode::Audio, "Audio"},
 		{MediaFilterProxy::FilterMode::Precompute, "Precomputes",
-		 "Rendered effects — media Avid generated from a sequence, as its own\n"
-		 "usage code says. Re-rendering recreates them; nothing else can be\n"
-		 "relinked to them."},
+		 "Media whose metadata identifies a precompute master: rendered effects,\n"
+		 "titles and matte keys, or a precompute with an unknown category."},
 		// These three take their labels and tooltips from MediaFile at build
 		// time (statusTabText below), so tab, table tooltip and CSV agree.
 		{MediaFilterProxy::FilterMode::NoProject, "No Project"},
@@ -422,7 +421,7 @@ QWidget *MainWindow::buildToolbar()
 
 	m_btnFileOps = new QPushButton(tr("Manage Media..."));
 	m_btnBinFilter = new QPushButton(tr("Filter by Bin..."));
-	m_btnEffectFilter = new QPushButton(tr("Filter by Effect..."));
+	m_btnEffectFilter = new QPushButton(tr("Filter Precomputes..."));
 	m_btnEffectFilter->setObjectName(QStringLiteral("filterByEffectButton"));
 	m_btnEffectFilter->setVisible(false);
 	m_btnEffectFilter->setEnabled(false);
@@ -730,7 +729,7 @@ void MainWindow::buildSpecialMenu()
 	auto *binFilterAct = specialMenu->addAction(tr("Filter by &Bin..."));
 	binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
 	connect(binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
-	m_effectFilterAct = specialMenu->addAction(tr("Filter by &Effect..."));
+	m_effectFilterAct = specialMenu->addAction(tr("Filter &Precomputes..."));
 	m_effectFilterAct->setObjectName(QStringLiteral("filterByEffectAction"));
 	m_effectFilterAct->setVisible(false);
 	m_effectFilterAct->setEnabled(false);
@@ -752,14 +751,7 @@ void MainWindow::buildSpecialMenu()
 void MainWindow::buildDebugMenu()
 {
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
-	m_effectDetailsAct = debugMenu->addAction(tr("&Effect Details and Filtering"));
-	m_effectDetailsAct->setObjectName(QStringLiteral("effectDetailsDebugAction"));
-	m_effectDetailsAct->setCheckable(true);
-	m_effectDetailsAct->setChecked(false);
-	connect(m_effectDetailsAct, &QAction::triggered, this, &MainWindow::setEffectDetailsEnabled);
-	debugMenu->addSeparator();
-
-	auto *verifyAct = debugMenu->addAction(tr("&Verification checks"));
+	auto *verifyAct = debugMenu->addAction(tr("Verify each file op"));
 	verifyAct->setCheckable(true);
 	verifyAct->setChecked(OpVerify::enabled());
 	connect(verifyAct, &QAction::triggered, this,
@@ -767,24 +759,32 @@ void MainWindow::buildDebugMenu()
 			{
 				OpVerify::setEnabled(on);
 				addLog(QtInfoMsg, QStringLiteral("app"),
-					   on ? "Verification checks enabled" : "Verification checks disabled");
+					   on ? "Verify each file op enabled" : "Verify each file op disabled");
 			});
 
-	auto *rawHexAct = debugMenu->addAction(tr("&Raw hex"));
-	rawHexAct->setCheckable(true);
-	rawHexAct->setChecked(false);
-	connect(rawHexAct, &QAction::triggered, this,
+	auto *codecHexAct = debugMenu->addAction(tr("Codec hex details"));
+	codecHexAct->setCheckable(true);
+	codecHexAct->setChecked(false);
+	connect(codecHexAct, &QAction::triggered, this,
 			[this](bool on)
 			{
 				m_model->setShowRawCodecHex(on);
-				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec as Raw Hex enabled" : "Codec as Raw Hex disabled");
+				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec hex details enabled" : "Codec hex details disabled");
 			});
+
+	// Labelled for what it reveals — the effect metadata only precomputes
+	// carry. The gate itself is named for the columns it opens.
+	m_effectDetailsAct = debugMenu->addAction(tr("Precompute details"));
+	m_effectDetailsAct->setObjectName(QStringLiteral("effectDetailsDebugAction"));
+	m_effectDetailsAct->setCheckable(true);
+	m_effectDetailsAct->setChecked(false);
+	connect(m_effectDetailsAct, &QAction::triggered, this, &MainWindow::setEffectDetailsEnabled);
 
 	// Whatever style main.cpp installed at startup is the one to restore.
 	// Read it here, before the toggle below can change it — main.cpp stays
 	// the single authority on the platform's native style.
 	const QString nativeStyleName = QApplication::style()->name();
-	auto *fusionAct = debugMenu->addAction(tr("&Fusion"));
+	auto *fusionAct = debugMenu->addAction(tr("Fusion style"));
 	fusionAct->setCheckable(true);
 	fusionAct->setChecked(false);
 	connect(fusionAct, &QAction::triggered, this,
@@ -1069,7 +1069,7 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 	applyFilterPreservingSelection([this, enabled]() {
 		// A sort column that is about to disappear must not keep controlling
 		// the rows while its heading is no longer available to the editor.
-		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::Effect))
+		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory))
 			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
 		m_proxy->setEffectDetailsEnabled(enabled);
 		m_model->setEffectDetailsEnabled(enabled);
@@ -1086,8 +1086,8 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 		// File, without moving or resetting the existing columns.
 		auto *header = m_tableView->horizontalHeader();
 		int position = header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Type)) + 1;
-		for (auto column : {MediaTableModel::Column::Effect, MediaTableModel::Column::EffectCategory,
-			MediaTableModel::Column::EffectSequence})
+		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
+			MediaTableModel::Column::Effect, MediaTableModel::Column::EffectSequence})
 		{
 			const int logical = Enum::to_underlying(column);
 			header->moveSection(header->visualIndex(logical), position++);
@@ -1104,21 +1104,29 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 void MainWindow::onFilterByEffects()
 {
 	if (!m_effectDetailsEnabled || !m_scanButton->isEnabled() || m_model->allFiles().isEmpty()) return;
-	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->effectFilter(),
-		m_proxy->effectVolumeFilter(), this);
+	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
 	if (dialog.exec() != QDialog::Accepted) return;
-	const QStringList effects = dialog.selectedEffects();
+	const PrecomputeFilter filter = dialog.precomputeFilter();
 	const QString volume = dialog.selectedVolume();
-	applyFilterPreservingSelection([this, &effects, &volume]() {
-		m_proxy->setEffectFilter(effects);
+	applyFilterPreservingSelection([this, &filter, &volume]() {
+		m_proxy->setPrecomputeTreeFilter(filter);
 		m_proxy->setEffectVolumeFilter(volume);
 	});
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("effects"), effects.isEmpty() && volume.isEmpty()
-		? QStringLiteral("Effect filter cleared")
-		: QStringLiteral("Effect filter: %1; volume: %2")
-			.arg(effects.isEmpty() ? QStringLiteral("all precomputes") : effects.join(QStringLiteral(", ")),
+	QStringList checkedPaths;
+	for (const auto &path : filter.paths)
+	{
+		QStringList names;
+		for (const auto &name : {path.precomputeCategory, path.effectCategory, path.effect})
+			if (!name.isEmpty()) names.append(name);
+		checkedPaths.append(names.isEmpty() ? QStringLiteral("all precomputes") : names.join(QStringLiteral(" / ")));
+	}
+	addLog(QtInfoMsg, QStringLiteral("effects"), !filter.active && volume.isEmpty()
+		? QStringLiteral("Precompute filter cleared")
+		: QStringLiteral("Precompute filter: %1; volume: %2")
+			.arg(!filter.active ? QStringLiteral("all precomputes") : checkedPaths.isEmpty()
+					? QStringLiteral("no checked branches") : checkedPaths.join(QStringLiteral("; ")),
 				volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume));
 }
 
@@ -2679,7 +2687,15 @@ void MainWindow::rebuildFilterChips()
 	};
 
 	const int tabIdx = m_filterTabs->currentIndex();
-	if (tabIdx > 0)
+	const bool hasPrecomputeSelection = m_effectDetailsEnabled &&
+		(m_proxy->precomputeTreeFilter().active || !m_proxy->precomputeCategoryFilter().isEmpty() ||
+		 !m_proxy->effectCategoryFilter().isEmpty() || !m_proxy->effectFilter().isEmpty());
+	// The detail selection already restricts the table to precomputes. When
+	// that tab is also selected, one chip represents both restrictions.
+	const bool combinedPrecomputeChip = hasPrecomputeSelection && tabIdx >= 0 &&
+		tabIdx < static_cast<int>(kFilterDefs.size()) &&
+		kFilterDefs[tabIdx].mode == MediaFilterProxy::FilterMode::Precompute;
+	if (tabIdx > 0 && !combinedPrecomputeChip)
 	{
 		QString label = m_filterTabs->tabText(tabIdx);
 		const int paren = label.indexOf(QLatin1String(" ("));
@@ -2708,22 +2724,80 @@ void MainWindow::rebuildFilterChips()
 
 	if (m_effectDetailsEnabled)
 	{
-		const QStringList effects = m_proxy->effectFilter();
-		if (!effects.isEmpty())
-			addChip(effects.size() == 1 ? tr("Effect: %1").arg(effects.first())
-				: tr("%n effects", nullptr, effects.size()), [this]() {
-				applyFilterPreservingSelection([this]() { m_proxy->setEffectFilter({}); });
+		// Keep complete checked paths together: splitting category/name chips
+		// would change their OR semantics. Volume is an independent filter.
+		const PrecomputeFilter filter = m_proxy->precomputeTreeFilter();
+		QString selectionLabel;
+		if (filter.active)
+		{
+			if (filter.paths.isEmpty())
+				selectionLabel = tr("Precompute: none");
+			else if (filter.paths.size() == 1)
+			{
+				const auto &path = filter.paths.first();
+				QStringList names;
+				for (const auto &name : {path.precomputeCategory, path.effectCategory, path.effect})
+					if (!name.isEmpty()) names.append(name);
+				selectionLabel = names.isEmpty() ? tr("Precompute: all")
+					: tr("Precompute: %1").arg(names.join(QStringLiteral(" / ")));
+			}
+			else
+				selectionLabel = tr("%1 precompute selections").arg(filter.paths.size());
+		}
+		else
+		{
+			// Legacy callers can still set independent category/name filters.
+			// Describe each active dimension without implying a single tree path.
+			const QStringList types = m_proxy->precomputeCategoryFilter();
+			const QStringList categories = m_proxy->effectCategoryFilter();
+			const QStringList effects = m_proxy->effectFilter();
+			QStringList parts;
+			if (!types.isEmpty())
+				parts.append(types.size() == 1 ? tr("Type: %1").arg(types.first())
+					: tr("%1 precompute types").arg(types.size()));
+			if (!categories.isEmpty())
+				parts.append(categories.size() == 1 ? tr("Category: %1").arg(categories.first())
+					: tr("%1 effect categories").arg(categories.size()));
+			if (!effects.isEmpty())
+				parts.append(effects.size() == 1 ? tr("Effect: %1").arg(effects.first())
+					: tr("%1 effects").arg(effects.size()));
+			if (!parts.isEmpty())
+				selectionLabel = tr("Precompute: %1").arg(parts.join(QStringLiteral("; ")));
+		}
+		if (!selectionLabel.isEmpty())
+			addChip(selectionLabel, [this, combinedPrecomputeChip]() {
+				applyFilterPreservingSelection([this, combinedPrecomputeChip]() {
+					m_proxy->setPrecomputeTreeFilter({});
+					if (combinedPrecomputeChip)
+					{
+						const QSignalBlocker blocker(m_filterTabs);
+						m_filterTabs->setCurrentIndex(0);
+						m_proxy->setFilterMode(MediaFilterProxy::FilterMode::All);
+					}
+				});
 				rebuildFilterChips();
 				updateStatusBar();
 			});
-		const QString volume = m_proxy->effectVolumeFilter();
-		if (!volume.isEmpty())
+
+		const QString volumePath = m_proxy->effectVolumeFilter();
+		if (!volumePath.isEmpty())
 		{
-			QString name = volume;
+			QHash<QString, QString> volumeNames;
 			for (const auto &file : m_model->allFiles())
-				if (file.volumePath == volume && !file.volumeName.isEmpty()) { name = file.volumeName; break; }
-			addChip(tr("Effect volume: %1").arg(name), [this]() {
-				applyFilterPreservingSelection([this]() { m_proxy->setEffectVolumeFilter({}); });
+				if (!file.volumePath.isEmpty() && !volumeNames.contains(file.volumePath))
+					volumeNames.insert(file.volumePath, file.volumeName.isEmpty() ? file.volumePath : file.volumeName);
+			QString volumeLabel = volumeNames.value(volumePath, volumePath);
+			if (volumeLabel != volumePath)
+				for (auto it = volumeNames.cbegin(); it != volumeNames.cend(); ++it)
+					if (it.key() != volumePath && it.value() == volumeLabel)
+					{
+						volumeLabel = tr("%1 (%2)").arg(volumeLabel, volumePath);
+						break;
+					}
+			addChip(tr("Precompute volume: %1").arg(volumeLabel), [this]() {
+				applyFilterPreservingSelection([this]() {
+					m_proxy->setEffectVolumeFilter({});
+				});
 				rebuildFilterChips();
 				updateStatusBar();
 			});
@@ -2801,7 +2875,7 @@ void MainWindow::resetFiltersForNewScan()
 	m_proxy->setSearchText({});
 	m_proxy->setProjectFilter({});
 	m_proxy->setBinFilterMobs(false, {});
-	m_proxy->setEffectFilter({});
+	m_proxy->setPrecomputeTreeFilter({});
 	m_proxy->setEffectVolumeFilter({});
 
 	rebuildFilterChips();

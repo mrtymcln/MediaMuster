@@ -233,11 +233,17 @@ namespace
 		// The one place a file is classified. Apply a producer's supported
 		// verdict; absence of a verdict cannot stand in for ordinary media.
 		if (mxf.classificationKnown)
+		{
 			mf.type = mxf.isPrecompute ? MediaFile::Type::Precompute : MediaFile::Type::Media;
+			mf.precomputeCategory = mxf.isPrecompute ? mxf.precomputeCategory : MediaFile::PrecomputeCategory::Unknown;
+		}
 		else if (mxf.valid && mxf.hasMaterialPackage)
+		{
 			// A fully read material package with unsupported/conflicting usage
 			// cannot retain an earlier database's positive classification.
 			mf.type = MediaFile::Type::Unknown;
+			mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
+		}
 	}
 } // namespace
 
@@ -377,8 +383,8 @@ void MediaScanner::doScan()
 
 	// MARK: Summary — name the renders, tally, cleanup
 
-	// Only rows the usage code already proved to be renders are looked up in
-	// the effect catalogue — the name labels, it never decides.
+	// Only metadata-confirmed precomputes receive name-derived effect details.
+	// The name never decides their media type or precompute category.
 	for (MediaFile &f : allFiles)
 	{
 		if (f.type != MediaFile::Type::Precompute)
@@ -1199,10 +1205,12 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		essence.isPrecompute = AvidUsage::masterClassification(masterIt->usageCode) ==
 			AvidUsage::Classification::Precompute;
 		essence.classificationKnown = masterIt->classificationKnown;
+		essence.precomputeCategory = masterIt->precomputeCategory;
 		applyMetadata(mf, essence);
 	}
 	mf.needsHeaderRead = headerReadable && (!mf.databaseMetadataCurrent ||
-		mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown);
+		mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
+		(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
 	if (mf.needsHeaderRead)
 		++tally.header;
 	else if (headerReadable)
@@ -1299,6 +1307,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			if (m_job.isCancelled())
 				return;
 			MediaFile &mf = base[row.index];
+			const auto databaseCategory = mf.precomputeCategory;
 			qint64 bytesRead = 0;
 			MxfMetadata mxf;
 			QString headerBin;
@@ -1338,6 +1347,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 				mf.codec.clear(); mf.codecHex.clear(); mf.resolution.clear(); mf.fps.clear(); mf.bitDepth.clear();
 				mf.sampleRate = 0; mf.channels = 0; mf.durationFrames = 0; mf.timecodeBase = 0; mf.dropFrame = false;
 				mf.kind = MediaFile::Kind::Unknown; mf.type = MediaFile::Type::Unknown;
+				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 				mf.databaseMetadataCurrent = false;
 			}
 			if (headerUsable)
@@ -1347,6 +1357,14 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 				assignIfMissing(mf.originalBin, headerBin);
 			}
 			applyMetadata(mf, mxf);
+			// Current sources for the same identity must agree. Do not let the
+			// later MDB name/bin re-join restore a disputed category. A stale
+			// database (or one for replaced media) has no say in this decision.
+			if (mf.databaseMetadataCurrent && mxf.classificationKnown && mxf.isPrecompute &&
+				databaseCategory != MediaFile::PrecomputeCategory::Unknown &&
+				mxf.precomputeCategory != MediaFile::PrecomputeCategory::Unknown &&
+				databaseCategory != mxf.precomputeCategory)
+				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 
 			// Pass 1 found no project in the PMR (no entry, or a blank one):
 			// take the one Avid wrote into the file — the very attribute

@@ -283,6 +283,8 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		}
 		m.bin = a.bin;
 		m.classificationKnown = AvidUsage::isMasterCode(m.usageCode);
+		if (AvidUsage::masterClassification(m.usageCode) == AvidUsage::Classification::Precompute)
+			m.precomputeCategory = OmfObjects::precomputeCategory(b, p, objs);
 		m.sourceFilePath = a.sourceFilePath;
 		m.sourceContainer = a.sourceContainer;
 		m.project = a.project; // OMF-era: _PJ on a master mob, when a file keeps it there.

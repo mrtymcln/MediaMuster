@@ -1,5 +1,7 @@
 #pragma once
 
+#include "precomputefilter.h"
+
 #include <QSet>
 #include <QSortFilterProxyModel>
 #include <QString>
@@ -9,7 +11,7 @@ class MediaTableModel;
 struct MediaFile;
 
 /// Independent filters all have to pass: tab, projects, bin MOBs,
-/// optional effect names/volume, and free text in visible string fields.
+/// optional precompute categories/effect categories/effect names/volume, and free text in visible string fields.
 class MediaFilterProxy : public QSortFilterProxyModel
 {
 	Q_OBJECT
@@ -37,13 +39,22 @@ public:
 	void setProjectFilter(const QSet<QString> &projects);
 
 	/// Experimental effect details are off by default. Turning them off
-	/// clears both effect selections; setters cannot activate them while off.
+	/// clears every precompute detail selection; setters cannot activate them while off.
 	void setEffectDetailsEnabled(bool enabled);
 	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
+	/// Whole checked paths are ORed; the other filters still have to pass.
+	/// This replaces the legacy independent category/name selections.
+	void setPrecomputeTreeFilter(const PrecomputeFilter &filter);
+	PrecomputeFilter precomputeTreeFilter() const { return m_precomputeTreeFilter; }
 	/// Exact names are ORed; any name or volume selection first requires a
 	/// proven Precompute. Empty names means all names on the chosen volume.
 	void setEffectFilter(const QStringList &effects);
 	QStringList effectFilter() const;
+	/// Each dimension is ORed internally, and ANDed with the other filters.
+	void setPrecomputeCategoryFilter(const QStringList &categories);
+	QStringList precomputeCategoryFilter() const;
+	void setEffectCategoryFilter(const QStringList &categories);
+	QStringList effectCategoryFilter() const;
 	/// The row's stored volumePath, not its display label. Empty means all.
 	void setEffectVolumeFilter(const QString &volumePath);
 	QString effectVolumeFilter() const { return m_effectVolumePath; }
@@ -82,7 +93,10 @@ private:
 	QString m_searchNfc;
 	QSet<QString> m_selectedProjects;
 	bool m_effectDetailsEnabled = false;
+	PrecomputeFilter m_precomputeTreeFilter;
 	QSet<QString> m_selectedEffects;
+	QSet<QString> m_selectedPrecomputeCategories;
+	QSet<QString> m_selectedEffectCategories;
 	QString m_effectVolumePath;
 	bool m_binFilterActive = false;
 	QSet<QString> m_binFilterAcceptedMobs;

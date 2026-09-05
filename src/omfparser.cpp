@@ -214,6 +214,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	// no MaterialPackage does.
 	if (master)
 	{
+		e.hasMaterialPackage = true;
 		e.umid = master->hex;
 		for (quint32 obj : master->objects)
 		{
@@ -224,6 +225,8 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		const auto classification = AvidUsage::masterClassification(master->usageCode);
 		e.isPrecompute = classification == AvidUsage::Classification::Precompute;
 		e.classificationKnown = classification != AvidUsage::Classification::Unknown;
+		if (e.isPrecompute)
+			e.precomputeCategory = OmfObjects::precomputeCategory(b, p, master->objects);
 	}
 
 	// Attributes, first-non-empty in the order the facts are trusted:

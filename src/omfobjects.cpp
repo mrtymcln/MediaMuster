@@ -429,6 +429,121 @@ namespace OmfObjects
 		}
 	}
 
+	namespace
+	{
+		// Unlike the permissive metadata walkers, a classification cannot turn
+		// unreadable or null array entries into evidence that an item is absent.
+		bool completeRefs(const BentoFile &b, quint32 object, int property, QVector<quint32> &out)
+		{
+			BentoFile::ReadStatus status;
+			out = b.refs(object, property, &status);
+			if (status != BentoFile::ReadStatus::Ok)
+				return false;
+			const auto raw = b.read(object, property);
+			return raw.ok() && raw.data.size() >= 2 &&
+				out.size() == b.uintValue(QByteArrayView(raw.data).first(2));
+		}
+
+		AvidPrecompute::ImportAttribute directImportAttribute(const BentoFile &b, const Props &p, quint32 master)
+		{
+			using Import = AvidPrecompute::ImportAttribute;
+			BentoFile::ReadStatus status;
+			const quint32 attrs = b.ref(master, p.attrs, &status);
+			if (status == BentoFile::ReadStatus::Missing || (status == BentoFile::ReadStatus::Ok && attrs == 0))
+				return Import::Absent;
+			if (status != BentoFile::ReadStatus::Ok || b.objectClass(attrs) != "ATTR")
+				return Import::Unknown;
+			QVector<quint32> references;
+			if (!completeRefs(b, attrs, p.attrRefs, references))
+				return Import::Unknown;
+			Import result = Import::Absent;
+			bool foundName = false;
+			for (quint32 attr : references)
+			{
+				if (b.objectClass(attr) != "ATTB")
+					return Import::Unknown;
+				const auto name = b.read(attr, p.attbName);
+				if (!name.ok() || name.data.isEmpty() || name.data.indexOf('\0') != name.data.size() - 1)
+					return Import::Unknown;
+				if (name.data != QByteArray("_IMPORTSETTING\0", 15))
+					continue;
+				const auto kind = b.read(attr, p.attbKind);
+				if (!kind.ok() || kind.data.size() != 2)
+					return Import::Unknown;
+				// Old toolkit readers sometimes infer a zero kind from its
+				// payload. That legacy conversion is not verified for MC26.8.
+				if (b.uintValue(kind.data) == 0)
+					return Import::Unknown;
+				const Import current = b.uintValue(kind.data) == 3 ? Import::Present : Import::Absent;
+				if (foundName && result != current)
+					return Import::Conflicting;
+				foundName = true;
+				result = current;
+				// MC's FindObject returns its found byte for exact name + kind 3;
+				// the object payload may be null. Neither it nor nested _USER
+				// attributes enter the Media Tool subdivision predicate.
+			}
+			return result;
+		}
+
+		int directVideoTrackCount(const BentoFile &b, const Props &p, quint32 master)
+		{
+			QVector<quint32> tracks;
+			if (!completeRefs(b, master, p.tracks, tracks))
+				return -1;
+			const int trackKind = b.propertyId("OMFI:CPNT:TrackKind");
+			int count = 0;
+			for (quint32 track : tracks)
+			{
+				if (b.objectClass(track) != "TRAK")
+					return -1;
+				BentoFile::ReadStatus status;
+				const quint32 component = b.ref(track, p.trackComp, &status);
+				if (status != BentoFile::ReadStatus::Ok || component == 0 || b.objectClass(component).isEmpty())
+					return -1;
+				const auto kind = b.read(component, trackKind);
+				if (!kind.ok() || kind.data.size() != 2)
+					return -1;
+				if (b.uintValue(kind.data) == 1)
+					++count;
+			}
+			return count;
+		}
+	} // namespace
+
+	AvidPrecompute::Category precomputeCategory(const BentoFile &b, const Props &p,
+												const QVector<quint32> &masters)
+	{
+		using Category = AvidPrecompute::Category;
+		// The verified binary mapping is CPNT:TrackKind -> AComponent::GetType.
+		// OMF2 MOBJ:UserAttributes is not proven equivalent to this direct
+		// list: toolkit omfiMobAppendComment maps it from OMF1's nested _USER
+		// attributes. Do not infer the import-marker predicate from that alias.
+		if (p.revision != Revision::Omf1 || p.omf2 || masters.isEmpty())
+			return Category::Unknown;
+		Category result = Category::Unknown;
+		bool first = true;
+		for (quint32 master : masters)
+		{
+			const auto usage = b.read(master, p.usage);
+			if (b.objectClass(master) != "MOBJ" || b.hasProperty(master, p.physMedia) ||
+				!usage.ok() || usage.data.size() != 4 || b.uintValue(usage.data) != 1)
+				return Category::Unknown;
+			AvidPrecompute::Evidence evidence;
+			evidence.importAttribute = directImportAttribute(b, p, master);
+			// Match MC's short circuit: confirmed absence settles Rendered
+			// Effects even when the video-track count is not available.
+			if (evidence.importAttribute == AvidPrecompute::ImportAttribute::Present)
+				evidence.videoTrackCount = directVideoTrackCount(b, p, master);
+			const Category current = AvidPrecompute::classify(evidence);
+			if (current == Category::Unknown || (!first && result != current))
+				return Category::Unknown;
+			result = current;
+			first = false;
+		}
+		return result;
+	}
+
 	// MARK: - Track walk (timecode, source mob)
 
 	namespace

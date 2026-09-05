@@ -274,6 +274,9 @@ private slots:
 	void usage_requires_unambiguous_master_evidence_data();
 	void usage_requires_unambiguous_master_evidence();
 	void private_usage_requires_primer_and_exact_integer();
+	void precompute_categories_require_direct_typed_evidence_data();
+	void precompute_categories_require_direct_typed_evidence();
+	void precompute_categories_scope_and_incomplete_headers();
 	void owning_package_selects_descriptor();
 	void split_master_uses_individual_file_duration();
 	void malformed_local_property_invalidates_header();
@@ -1610,6 +1613,143 @@ void TestMxfParser::project_leaves_conflicting_fallbacks_unknown()
 			QVERIFY(result.valid);
 			QVERIFY(result.projectName.isEmpty());
 		}
+}
+
+namespace
+{
+QByteArray precomputePrimer()
+{
+	return klv(ul("060e2b34020501010d01020101050100"), u32be(3) + u32be(18) +
+		u16be(0x9107) + ul(AvidUsage::kPrivateMxfPropertyHex) +
+		u16be(0x9108) + ul("a01c0004ac969f506095818347b111d4") +
+		u16be(0x9109) + ul("a01c0004ac969f506095818547b111d4"));
+}
+QByteArray importObject(char instance = 'a', const QString &payload = QStringLiteral("__AttributeList"),
+	const QByteArray &children = u32be(0) + u32be(16))
+{
+	return objectSet(0x3f, instance, localProperty(0x5001, utf16be(QStringLiteral("_IMPORTSETTING"))) +
+		localProperty(0x5003, QByteArray(1, 'B') + ul("0110020000000000060e2b3401040101") + utf16be(payload)) +
+		localProperty(0x9109, children));
+}
+QByteArray precomputeGraph(const QList<QByteArray> &kinds, const QByteArray &attributes, int usage = 1,
+	const QByteArray &extraMasterFields = {})
+{
+	QByteArray trackRefs = u32be(quint32(kinds.size())) + u32be(16), components;
+	for (qsizetype i = 0; i < kinds.size(); ++i)
+	{
+		const char track = char('b' + i), component = char('s' + i);
+		trackRefs += QByteArray(16, track);
+		components += objectSet(0x3b, track, localProperty(0x4803, QByteArray(16, component))) +
+			objectSet(0x0f, component, localProperty(0x0201, kinds[i]));
+	}
+	return partitionPack() + precomputePrimer() +
+		objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) +
+			localProperty(0x9107, u32be(quint32(usage))) + localProperty(0x4403, trackRefs) +
+			attributes + extraMasterFields) + components + cdciSet(1920, 1080, 25);
+}
+}
+
+void TestMxfParser::precompute_categories_require_direct_typed_evidence_data()
+{
+	using Category = AvidPrecompute::Category;
+	QTest::addColumn<QByteArray>("content");
+	QTest::addColumn<Category>("expected");
+	const QByteArray video = ul("060e2b34040101010103020201000000");
+	const QByteArray legacyVideo = ul("807d006008143e6f6f3c8ce16cef11d2");
+	const QByteArray audio = ul("807d006008143e6f78e1ebe16cef11d2");
+	const QByteArray directImport = localProperty(0x9108, references('a'));
+	QTest::newRow("direct-import-two-video") << precomputeGraph({video, legacyVideo}, directImport) + importObject()
+		<< Category::TitlesAndMatteKeys;
+	QTest::newRow("direct-import-one-video") << precomputeGraph({video}, directImport) + importObject()
+		<< Category::RenderedEffects;
+	QTest::newRow("audio-is-not-a-second-video") << precomputeGraph({video, audio}, directImport) + importObject()
+		<< Category::RenderedEffects;
+	QTest::newRow("direct-import-no-tracks") << precomputeGraph({}, directImport) + importObject()
+		<< Category::RenderedEffects;
+	QTest::newRow("no-import-even-with-two-video") << precomputeGraph({video, video}, {}) << Category::RenderedEffects;
+	QTest::newRow("absent-import-short-circuits-unknown-track") << precomputeGraph({QByteArray()}, {})
+		<< Category::RenderedEffects;
+	QTest::newRow("ordinary-master-is-not-title") << precomputeGraph({video, video}, directImport, 7) + importObject()
+		<< Category::Unknown;
+	QTest::newRow("unknown-master-usage") << precomputeGraph({video, video}, directImport, 4) + importObject()
+		<< Category::Unknown;
+	QTest::newRow("same-name-string-is-not-an-object") << precomputeGraph({video, video}, directImport) +
+		importObject('a', QStringLiteral("ordinary text")) << Category::RenderedEffects;
+	QTest::newRow("unverified-portable-object") << precomputeGraph({video, video}, directImport) +
+		importObject('a', QStringLiteral("__PortableObject")) << Category::Unknown;
+	QTest::newRow("unresolved-attribute-reference") << precomputeGraph({video, video}, directImport)
+		<< Category::Unknown;
+	QTest::newRow("incomplete-import-list") << precomputeGraph({video, video}, directImport) +
+		importObject('a', QStringLiteral("__AttributeList"), references('z')) << Category::Unknown;
+	QTest::newRow("malformed-master-attribute-list") << precomputeGraph({video, video},
+		localProperty(0x9108, u32be(2) + u32be(16) + QByteArray(16, 'a'))) + importObject() << Category::Unknown;
+	QTest::newRow("malformed-attribute-name") << precomputeGraph({video, video}, directImport) +
+		objectSet(0x3f, 'a', localProperty(0x5001, QByteArray(1, 'x'))) << Category::Unknown;
+	QTest::newRow("missing-attribute-value") << precomputeGraph({video, video}, directImport) +
+		objectSet(0x3f, 'a', localProperty(0x5001, utf16be(QStringLiteral("_IMPORTSETTING")))) << Category::Unknown;
+	QTest::newRow("unidentified-private-local-tag") << precomputeGraph({video, video},
+		localProperty(0xf001, references('a'))) + importObject() << Category::Unknown;
+	QTest::newRow("unknown-track-kind") << precomputeGraph({video, QByteArray(16, 'x')}, directImport) + importObject()
+		<< Category::Unknown;
+	QTest::newRow("missing-track-kind") << precomputeGraph({video, QByteArray()}, directImport) + importObject()
+		<< Category::Unknown;
+	QByteArray missingSegment = precomputeGraph({video, video}, directImport) + importObject();
+	missingSegment.replace(localProperty(0x4803, QByteArray(16, 't')), localProperty(0x4803, QByteArray(16, 'z')));
+	QTest::newRow("unresolved-direct-track-segment") << missingSegment << Category::Unknown;
+	QByteArray wrongSegment = precomputeGraph({video, video}, directImport) + importObject();
+	wrongSegment.replace(objectSet(0x0f, 't', localProperty(0x0201, video)),
+		objectSet(0x3f, 't', localProperty(0x0201, video)));
+	QTest::newRow("tagged-value-cannot-be-a-video-segment") << wrongSegment << Category::Unknown;
+	QTest::newRow("conflicting-import-definitions") << precomputeGraph({video, video},
+		localProperty(0x9108, u32be(2) + u32be(16) + QByteArray(16, 'a') + QByteArray(16, 'q'))) +
+		importObject() + importObject('q', QStringLiteral("ordinary text")) << Category::Unknown;
+}
+
+void TestMxfParser::precompute_categories_require_direct_typed_evidence()
+{
+	QFETCH(QByteArray, content);
+	QFETCH(AvidPrecompute::Category, expected);
+	QTemporaryDir temp;
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("category.mxf"), content));
+	QVERIFY(result.valid);
+	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.precomputeCategory, expected);
+}
+
+void TestMxfParser::precompute_categories_scope_and_incomplete_headers()
+{
+	using Category = AvidPrecompute::Category;
+	QTemporaryDir temp;
+	const QByteArray video = ul("060e2b34040101010103020201000000");
+	const QByteArray directImport = localProperty(0x9108, references('a'));
+	// The current broad imported flag sees this nested marker, but Avid's
+	// category test reads only direct attributes on the selected master.
+	const QByteArray nested = precomputeGraph({video, video}, localProperty(0x9108, references('q'))) +
+		objectSet(0x3f, 'q', localProperty(0x5001, utf16be(QStringLiteral("_USER"))) +
+			localProperty(0x9109, references('a'))) + importObject();
+	const auto nestedResult = MxfParser::parseHeader(writeMxf(temp.filePath("nested.mxf"), nested));
+	QVERIFY(nestedResult.hasImportSetting);
+	QCOMPARE(nestedResult.precomputeCategory, Category::RenderedEffects);
+
+	QByteArray selected = precomputeGraph({video, video}, {}, 1) + importObject() +
+		objectSet(0x36, 'o', localProperty(0x4401, QByteArray(32, 'o')) + localProperty(0x9107, u32be(1)) + directImport) +
+		objectSet(0x2f, 'p', localProperty(0x3b08, QByteArray(16, 'm')));
+	QCOMPARE(MxfParser::parseHeader(writeMxf(temp.filePath("selected.mxf"), selected)).precomputeCategory,
+		Category::RenderedEffects);
+	// Two nested pictures do not make two direct video tracks.
+	QByteArray nestedTracks = precomputeGraph({video}, directImport) + importObject() +
+		objectSet(0x0f, 'q', localProperty(0x0201, video)) + objectSet(0x0f, 'r', localProperty(0x0201, video));
+	nestedTracks.replace(objectSet(0x0f, 's', localProperty(0x0201, video)),
+		objectSet(0x0f, 's', localProperty(0x0201, video) +
+			localProperty(0x1001, u32be(2) + u32be(16) + QByteArray(16, 'q') + QByteArray(16, 'r'))));
+	QCOMPARE(MxfParser::parseHeader(writeMxf(temp.filePath("tracks.mxf"), nestedTracks)).precomputeCategory,
+		Category::RenderedEffects);
+	QByteArray complete = precomputeGraph({video, video}, directImport) + importObject();
+	complete += klv(ul("060e2b34010101020301021001000000"), QByteArray(100, 'x')).chopped(20);
+	const auto incomplete = MxfParser::parseHeader(writeMxf(temp.filePath("incomplete.mxf"), complete));
+	QVERIFY(incomplete.headerStatus != MxfMetadata::HeaderStatus::Complete);
+	QVERIFY(!incomplete.classificationKnown);
+	QCOMPARE(incomplete.precomputeCategory, Category::Unknown);
 }
 
 QTEST_APPLESS_MAIN(TestMxfParser)

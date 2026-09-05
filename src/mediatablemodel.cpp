@@ -12,7 +12,7 @@ int MediaTableModel::rowCount(const QModelIndex &) const
 }
 int MediaTableModel::columnCount(const QModelIndex &) const
 {
-	return Enum::to_underlying(m_effectDetailsEnabled ? Column::Count_ : Column::Effect);
+	return Enum::to_underlying(m_effectDetailsEnabled ? Column::Count_ : Column::PrecomputeCategory);
 }
 
 void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
@@ -85,7 +85,7 @@ void MediaTableModel::setEffectDetailsEnabled(bool enabled)
 {
 	if (m_effectDetailsEnabled == enabled)
 		return;
-	const int first = Enum::to_underlying(Column::Effect);
+	const int first = Enum::to_underlying(Column::PrecomputeCategory);
 	const int last = Enum::to_underlying(Column::Count_) - 1;
 	if (enabled)
 	{
@@ -141,10 +141,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.typeDisplay();
 		case Column::SourceFile:
 			return f.sourceFileName;
+		case Column::PrecomputeCategory:
+			return f.precomputeCategoryDisplay();
 		case Column::Effect:
-			return f.type == MediaFile::Type::Precompute ? f.effect : QString();
+			return f.effectDisplay();
 		case Column::EffectCategory:
-			return f.type == MediaFile::Type::Precompute ? f.effectCategory : QString();
+			return f.effectCategoryDisplay();
 		case Column::EffectSequence:
 			return f.type == MediaFile::Type::Precompute ? f.effectSequence : QString();
 		case Column::Count_:
@@ -227,7 +229,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	const char *headers[] = {"Clip Name", "Filename", "Project", "Bin", "Kind",
 							 "Codec", "Resolution", "FPS", "Duration",
 							 "Size (MB)", "Location", "Date Created", "Date Modified",
-							 "Type", "Source File", "Effect", "Effect Category", "Effect Sequence"};
+							 "Type", "Source File", "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "
 				  "add or remove a header string when changing the Column enum");

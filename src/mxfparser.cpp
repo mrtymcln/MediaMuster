@@ -436,6 +436,7 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		result.valid = false;
 		result.hasMaterialPackage = false;
 		result.classificationKnown = false;
+		result.precomputeCategory = AvidPrecompute::Category::Unknown;
 	}
 	if (!result.valid)
 		qCWarning(lcMxf) << "no complete usable MXF metadata in" << filePath
@@ -454,6 +455,7 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		quint8 type = 0;
 		QByteArray local;
 		QHash<quint16, QByteArray> fields;
+		QSet<quint16> identifiedProperties; // Primer-confirmed private property identity.
 	};
 	MxfMetadata meta;
 	QVector<Set> sets;
@@ -543,6 +545,7 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 				if (set.fields.contains(tag) && set.fields.value(tag) != value)
 					return fail();
 				set.fields.insert(tag, value);
+				if (primer.contains(localTag)) set.identifiedProperties.insert(tag);
 				set.local += char(tag >> 8);
 				set.local += char(tag & 0xff);
 				set.local += char(size >> 8);
@@ -656,6 +659,118 @@ MxfMetadata MxfParser::parseFromBuffer(const QByteArray &data)
 		meta.classificationKnown = meta.hasMaterialPackage &&
 			classification != AvidUsage::Classification::Unknown;
 		meta.isPrecompute = classification == AvidUsage::Classification::Precompute;
+		if (meta.classificationKnown && meta.isPrecompute)
+		{
+			// MC26.8 AAttrList::ConvertAttributesFromAAF (0x17a2e0,
+			// 0x17a464) turns the exact string __AttributeList plus its
+			// TaggedValueAttributeList into AddObject, i.e. the kind3 tested
+			// by GetImportSettingAttrList. A recursively found tag NAME is
+			// insufficient: inspect only this master's direct MobAttributeList.
+			// Unlike the recovery graph walker, decisive lists must be complete.
+			const auto strictReferences = [&](const QByteArray &value, QVector<int> &targets) {
+				if (value.size() < 8 || readUint32BE(value, 4) != 16) return false;
+				const quint32 count = readUint32BE(value, 0);
+				if (quint64(count) * 16 != quint64(value.size() - 8)) return false;
+				QSet<int> unique;
+				for (quint32 i = 0; i < count; ++i)
+				{
+					const int target = byInstance.value(value.mid(8 + qsizetype(i) * 16, 16), -1);
+					if (target < 0 || unique.contains(target)) return false;
+					unique.insert(target);
+					targets.append(target);
+				}
+				return true;
+			};
+			const auto exactText = [](const QByteArray &value, bool little, QString &text) {
+				if (value.size() < 2 || value.size() % 2 != 0) return false;
+				for (qsizetype i = 0; i < value.size(); i += 2)
+				{
+					const auto *p = reinterpret_cast<const uchar *>(value.constData() + i);
+					const quint16 c = little ? qFromLittleEndian<quint16>(p) : qFromBigEndian<quint16>(p);
+					if (c == 0) return i + 2 == value.size();
+					if (QChar(c).isSurrogate()) return false;
+					text.append(QChar(c));
+				}
+				return true;
+			};
+			const auto importEvidence = [&] {
+				using Attribute = AvidPrecompute::ImportAttribute;
+				if (!set.fields.contains(0xf001)) return Attribute::Absent;
+				if (!set.identifiedProperties.contains(0xf001)) return Attribute::Unknown;
+				QVector<int> attributes;
+				if (!strictReferences(set.fields.value(0xf001), attributes)) return Attribute::Unknown;
+				bool found = false;
+				Attribute verdict = Attribute::Absent;
+				for (int index : attributes)
+				{
+					const auto &attribute = sets[index];
+					QString name;
+					if (attribute.type != kSetTaggedValue ||
+						!exactText(attribute.fields.value(0x5001), false, name)) return Attribute::Unknown;
+					if (name != QLatin1String("_IMPORTSETTING")) continue;
+					if (found) return Attribute::Conflicting; // Do not choose among duplicate definitions.
+					found = true;
+					const QByteArray value = attribute.fields.value(0x5003);
+					if (value.size() < 17 || (value[0] != 'L' && value[0] != 'B')) return Attribute::Unknown;
+					const bool little = value[0] == 'L';
+					const QByteArray type = value.mid(1, 16);
+					const QByteArray stringType = QByteArray::fromHex(little ?
+						"0002100100000000060e2b3401040101" : "0110020000000000060e2b3401040101");
+					if (type != stringType) return Attribute::Unknown;
+					QString payload;
+					if (!exactText(value.mid(17), little, payload)) return Attribute::Unknown;
+					if (payload == QLatin1String("__PortableObject")) return Attribute::Unknown;
+					if (payload != QLatin1String("__AttributeList")) continue; // An ordinary string is not kind3.
+					QVector<int> children;
+					if (!attribute.identifiedProperties.contains(0xf002) ||
+						!strictReferences(attribute.fields.value(0xf002), children)) return Attribute::Unknown;
+					for (int child : children)
+						if (sets[child].type != kSetTaggedValue) return Attribute::Unknown;
+					verdict = Attribute::Present;
+				}
+				return verdict;
+			};
+			AvidPrecompute::Evidence evidence;
+			evidence.importAttribute = importEvidence();
+			if (evidence.importAttribute == AvidPrecompute::ImportAttribute::Present)
+			{
+				QVector<int> tracks;
+				bool complete = strictReferences(set.fields.value(0x4403), tracks);
+				int videos = 0;
+				// MC GetTrackTypeFromDDEF (0x2265c) maps both registered and
+				// legacy Picture IDs to GetType()==1. Count the immediate slot
+				// segment, never its nested sources or the physical essence kind.
+				static const QSet<QByteArray> picture = {
+					QByteArray::fromHex("060e2b34040101010103020201000000"),
+					QByteArray::fromHex("807d006008143e6f6f3c8ce16cef11d2")};
+				static const QSet<QByteArray> nonPicture = {
+					QByteArray::fromHex("060e2b34040101010103020202000000"), // Sound
+					QByteArray::fromHex("807d006008143e6f78e1ebe16cef11d2"), // Legacy Sound
+					QByteArray::fromHex("060e2b34040101010103020101000000")}; // Timecode
+				for (int track : tracks)
+				{
+					const auto &slot = sets[track];
+					const QByteArray reference = slot.fields.value(0x4803);
+					const int component = reference.size() == 16 ? byInstance.value(reference, -1) : -1;
+					if ((slot.type != 0x39 && slot.type != 0x3a && slot.type != 0x3b) || component < 0)
+					{
+						complete = false;
+						break;
+					}
+					const auto componentType = sets[component].type;
+					if (componentType != kSetSequence && componentType != kSetSourceClip && componentType != kSetTimecode)
+					{
+						complete = false; // An unsupported segment cannot supply a verified track kind.
+						break;
+					}
+					const QByteArray kind = sets[component].fields.value(0x0201);
+					if (picture.contains(kind)) ++videos;
+					else if (!nonPicture.contains(kind)) complete = false;
+				}
+				if (complete) evidence.videoTrackCount = videos;
+			}
+			meta.precomputeCategory = AvidPrecompute::classify(evidence);
+		}
 	}
 	else if (filePackage >= 0)
 	{

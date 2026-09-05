@@ -79,6 +79,9 @@ private slots:
 	void changed_file_falls_back_to_its_header();
 	void zero_pmr_timestamp_forces_header_and_keeps_kind_and_type_unknown();
 	void current_render_with_missing_project_survives_failed_header_read();
+	void precompute_category_from_current_database_data();
+	void precompute_category_from_current_database();
+	void precompute_category_conflict_and_stale_database();
 	void reused_filename_clears_old_editorial_details();
 	void pmr_v1_recovers_unique_master_from_mdb();
 	void omf2_header_keeps_master_identity_with_unknown_classification();
@@ -907,6 +910,45 @@ namespace
 			BentoBuilder::le32(quint32(project.size())).left(2) + project + masterId + BentoBuilder::le32(modified);
 	}
 
+	QByteArray categoryDatabase(const QByteArray &masterId, const QByteArray &fileId,
+							   bool importObject, int videoTracks, bool malformedAttribute = false)
+	{
+		BentoBuilder w;
+		const quint32 head = w.addObject("HEAD");
+		w.setImmediate(head, "OMFI:Version", QByteArray::fromHex("0100"));
+		const quint32 master = w.addObject("MOBJ"), file = w.addObject("MOBJ"), pcm = w.addObject("PCMA");
+		w.set(master, "OMFI:MOBJ:MobID", masterId);
+		w.setU32(master, "OMFI:MOBJ:UsageCode", 1);
+		w.setString(master, "OMFI:CPNT:Name", "Sequence,Resize+1");
+		if (importObject)
+		{
+			const quint32 attrs = w.addObject("ATTR"), attr = w.addObject("ATTB");
+			w.setHandle(master, "OMFI:CPNT:Attributes", attrs);
+			w.setHandles(attrs, "OMFI:ATTR:AttrRefs", {attr});
+			w.setString(attr, "OMFI:ATTB:Name", "_IMPORTSETTING");
+			if (malformedAttribute) w.setU32(attr, "OMFI:ATTB:Kind", 3);
+			else w.setU16(attr, "OMFI:ATTB:Kind", 3);
+			w.setHandle(attr, "OMFI:ATTB:ObjAttribute", 0); // Avid tests the found kind, not the payload.
+		}
+		QVector<quint32> tracks;
+		for (int n = 0; n < videoTracks; ++n)
+		{
+			const quint32 track = w.addObject("TRAK"), component = w.addObject("SCLP");
+			w.setHandle(track, "OMFI:TRAK:TrackComponent", component);
+			w.setU16(component, "OMFI:CPNT:TrackKind", 1);
+			tracks.append(track);
+		}
+		w.setHandles(master, "OMFI:TRKG:Tracks", tracks);
+		w.set(file, "OMFI:MOBJ:MobID", fileId);
+		w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", pcm);
+		w.setRational(file, "OMFI:CPNT:EditRate", 25, 1);
+		w.setRational(pcm, "OMFI:MDFL:SampleRate", 48000, 1);
+		w.setU32(pcm, "OMFI:MDFL:Length", 96000);
+		w.setU16(pcm, "OMFI:MDAU:BitsPerSample", 24);
+		w.setU16(pcm, "OMFI:MDAU:NumChannels", 1);
+		return w.build();
+	}
+
 	QVector<MediaFile> runScan(const QString &root)
 	{
 		MediaScanner scanner;
@@ -1115,8 +1157,74 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	QCOMPARE(mf.isImported, header.hasImportSetting);
 	QCOMPARE(mf.kind, MediaFile::Kind::Video);
 	QCOMPARE(mf.type, MediaFile::Type::Precompute);
+	QCOMPARE(mf.precomputeCategory, header.precomputeCategory);
 	QCOMPARE(mf.sampleRate, 0);
 	QCOMPARE(mf.codec, header.codec);
+}
+
+void TestScanner::precompute_category_from_current_database_data()
+{
+	QTest::addColumn<bool>("importObject");
+	QTest::addColumn<int>("videoTracks");
+	QTest::addColumn<bool>("malformedAttribute");
+	QTest::addColumn<QString>("expected");
+	QTest::newRow("render-no-import") << false << 0 << false << QStringLiteral("Rendered Effects");
+	QTest::newRow("two-track-import-null-payload") << true << 2 << false << QStringLiteral("Titles and Matte Keys");
+	QTest::newRow("one-track-import") << true << 1 << false << QStringLiteral("Rendered Effects");
+	QTest::newRow("unreadable-kind") << true << 2 << true << QStringLiteral("unknown");
+}
+
+void TestScanner::precompute_category_from_current_database()
+{
+	QFETCH(bool, importObject);
+	QFETCH(int, videoTracks);
+	QFETCH(bool, malformedAttribute);
+	QFETCH(QString, expected);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"),
+		categoryDatabase(kLadderMob, kToneFileId, importObject, videoTracks, malformedAttribute)));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
+		singlePmr("render.mxf", kToneFileId, kLadderMob, {}, kToneModified)));
+	writeJunk(folder + QStringLiteral("/render.mxf"), 4096);
+	setModified(folder + QStringLiteral("/render.mxf"), kToneModified);
+	const auto rows = runScan(tmp.path());
+	QCOMPARE(rows.size(), 1);
+	const auto &mf = rows.first();
+	QVERIFY(mf.databaseMetadataCurrent);
+	QVERIFY(mf.needsHeaderRead); // Missing project; failed read must preserve current database evidence.
+	QCOMPARE(mf.type, MediaFile::Type::Precompute);
+	QCOMPARE(mf.precomputeCategoryDisplay(), expected);
+	QCOMPARE(mf.effect, QStringLiteral("Resize")); // Name-derived details never decide the parent.
+}
+
+void TestScanner::precompute_category_conflict_and_stale_database()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	const QString fixture = QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
+	const auto header = MxfParser::parseHeader(fixturesDir() + QLatin1Char('/') + fixture);
+	QCOMPARE(header.precomputeCategory, MediaFile::PrecomputeCategory::RenderedEffects);
+	const QByteArray fileId = QByteArray::fromHex(MobId::toPmrForm(header.fileMobId).toLatin1());
+	const QByteArray masterId = QByteArray::fromHex(MobId::toPmrForm(header.umid).toLatin1());
+	QVERIFY(QFile::copy(fixturesDir() + QLatin1Char('/') + fixture, folder + QStringLiteral("/render.mxf")));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), categoryDatabase(masterId, fileId, true, 2)));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), singlePmr("render.mxf", fileId, masterId, {}, kToneModified)));
+	setModified(folder + QStringLiteral("/render.mxf"), kToneModified);
+	const auto current = runScan(tmp.path());
+	QCOMPARE(current.size(), 1);
+	QVERIFY(current.first().databaseMetadataCurrent);
+	QCOMPARE(current.first().type, MediaFile::Type::Precompute);
+	QCOMPARE(current.first().precomputeCategoryDisplay(), QStringLiteral("unknown"));
+	setModified(folder + QStringLiteral("/render.mxf"), kToneModified + 10);
+	const auto stale = runScan(tmp.path());
+	QCOMPARE(stale.size(), 1);
+	QVERIFY(!stale.first().databaseMetadataCurrent);
+	QCOMPARE(stale.first().precomputeCategory, MediaFile::PrecomputeCategory::RenderedEffects);
 }
 
 void TestScanner::pmr_v1_recovers_unique_master_from_mdb()
