@@ -41,16 +41,18 @@ namespace CsvUtil
 
 namespace MediaCsv
 {
-	QString headerLine()
+	QString headerLine(Options options)
 	{
-		return QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
+		QString line = QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
 							  "Duration,Source File,Source Path,Source Container,"
 							  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
-							  "Database Status,Type,Effect,Effect Category,Effect Sequence,"
-							  "Date Created,Date Modified\n");
+							  "Database Status,Type,");
+		if (options.includeEffectDetails)
+			line += QStringLiteral("Effect,Effect Category,Effect Sequence,");
+		return line + QStringLiteral("Date Created,Date Modified\n");
 	}
 
-	QString rowLine(const MediaFile &f)
+	QString rowLine(const MediaFile &f, Options options)
 	{
 		QString line;
 		QTextStream out(&line);
@@ -66,15 +68,20 @@ namespace MediaCsv
 			<< CsvUtil::quoted(f.mobId) << ','
 			<< CsvUtil::quoted(f.masterMobId) << ','
 			<< CsvUtil::quoted(f.dbStatusText().label) << ','
-			<< CsvUtil::quoted(f.typeDisplay()) << ','
-			<< CsvUtil::quoted(f.effect) << ',' << CsvUtil::quoted(f.effectCategory) << ','
-			<< CsvUtil::quoted(f.effectSequence) << ','
-			<< f.createdDisplay() << ',' << f.modifiedDisplay()
+			<< CsvUtil::quoted(f.typeDisplay()) << ',';
+		if (options.includeEffectDetails)
+		{
+			const bool precompute = f.type == MediaFile::Type::Precompute;
+			out << CsvUtil::quoted(precompute ? f.effect : QString()) << ','
+				<< CsvUtil::quoted(precompute ? f.effectCategory : QString()) << ','
+				<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';
+		}
+		out << f.createdDisplay() << ',' << f.modifiedDisplay()
 			<< '\n';
 		return line;
 	}
 
-	bool write(const QString &path, const QVector<MediaFile> &rows)
+	bool write(const QString &path, const QVector<MediaFile> &rows, Options options)
 	{
 		QFile file(path);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -82,9 +89,9 @@ namespace MediaCsv
 		QTextStream out(&file);
 		out.setGenerateByteOrderMark(true);
 
-		out << headerLine();
+		out << headerLine(options);
 		for (const MediaFile &f : rows)
-			out << rowLine(f);
+			out << rowLine(f, options);
 		return out.status() == QTextStream::Ok;
 	}
 } // namespace MediaCsv

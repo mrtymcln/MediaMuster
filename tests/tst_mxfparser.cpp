@@ -6,6 +6,7 @@
 #include "mediafile.h"
 #include "mobid.h"
 #include "mxfparser.h"
+#include "avidusage.h"
 
 #include <QByteArray>
 #include <QDir>
@@ -14,6 +15,8 @@
 #include <QString>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QtEndian>
+#include <limits>
 
 namespace
 {
@@ -141,6 +144,13 @@ class TestMxfParser : public QObject
 {
 	Q_OBJECT
 private slots:
+	void avid_alpha_requires_positive_container_and_layout_data();
+	void avid_alpha_requires_positive_container_and_layout();
+	void avid_alpha_respects_descriptor_selection_and_primer();
+	void partition_container_batch_is_bounded();
+	void project_prefers_owning_file_then_material_then_linked_source();
+	void project_recovers_unique_orphan_attribute();
+	void project_leaves_conflicting_fallbacks_unknown();
 	void empty_label_returns_empty();
 	void pcm_audio_ul_resolves();
 	void prores_422_ul_resolves();
@@ -259,6 +269,15 @@ private slots:
 	void applyEditRate_labels_fractional_rates();
 	void mdb_style_metadata_finalises_like_a_header();
 	void tagged_values_yield_source_path_and_import_flag();
+	void metadata_beyond_512k_and_essence_are_not_bulk_read();
+	void dynamic_primer_tags_are_resolved_by_property();
+	void usage_requires_unambiguous_master_evidence_data();
+	void usage_requires_unambiguous_master_evidence();
+	void private_usage_requires_primer_and_exact_integer();
+	void owning_package_selects_descriptor();
+	void split_master_uses_individual_file_duration();
+	void malformed_local_property_invalidates_header();
+	void finalise_is_idempotent_and_does_not_guess();
 };
 
 void TestMxfParser::empty_label_returns_empty()
@@ -287,9 +306,9 @@ void TestMxfParser::dnxhd_bitrate_follows_fps()
 			 QStringLiteral("Avid DNx SQ (DNxHD 120)"));
 	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, QStringLiteral("29.97")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 145)"));
-	// Unknown fps falls back to the default column.
+	// Unsupported or absent fps retains the known tier without a guessed bitrate.
 	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, QStringLiteral("48")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 115)"));
+			 QStringLiteral("Avid DNx SQ"));
 }
 
 void TestMxfParser::dnxhd_hqx_carries_x_suffix()
@@ -311,10 +330,9 @@ void TestMxfParser::vc3_720p_sq_keeps_its_own_name()
 			 QStringLiteral("Avid DNx SQ (DNxHD 60)"));
 	QCOMPARE(MxfParser::codecFromEssenceLabel(sq720, QStringLiteral("23.976")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 60)"));
-	// The whitepaper's 720p table doesn't cover 50/59.94; show the brand
-	// bare rather than invent a number.
+	// The 720p 50/59.94 rows are at the bottom of p9, before p10.
 	QCOMPARE(MxfParser::codecFromEssenceLabel(sq720, QStringLiteral("59.94")),
-			 QStringLiteral("Avid DNx SQ"));
+			 QStringLiteral("Avid DNx SQ (DNxHD 145)"));
 
 	// Sibling 720p tiers (CIDs 1251/1250), same whitepaper table.
 	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B340401010A0401020271110000"),
@@ -1066,6 +1084,7 @@ void TestMxfParser::mdb_style_metadata_finalises_like_a_header()
 	MxfMetadata au;
 	au.isAudio = true;
 	au.sampleRate = 48000;
+	au.pcmDescriptor = true;
 	au.descriptorDuration = 2880002; // samples
 	au.durationFrames = 1500;		  // frames at 25
 	MxfParser::finalise(au);
@@ -1113,6 +1132,484 @@ void TestMxfParser::tagged_values_yield_source_path_and_import_flag()
 	QVERIFY(render.isPrecompute);
 	QVERIFY(!render.hasImportSetting);
 	QVERIFY(render.sourceFilePath.isEmpty());
+}
+
+namespace
+{
+QByteArray localProperty(quint16 tag, const QByteArray &value)
+{
+	return u16be(tag) + u16be(quint16(value.size())) + value;
+}
+QByteArray klv(const QByteArray &key, const QByteArray &value)
+{
+	return key + QByteArray(1, char(0x84)) + u32be(quint32(value.size())) + value;
+}
+QByteArray objectSet(quint8 type, char instance, const QByteArray &fields)
+{
+	QByteArray key = ul("060e2b34025301010d01010101010000");
+	key[14] = char(type);
+	return klv(key, localProperty(0x3c0a, QByteArray(16, instance)) + fields);
+}
+QByteArray references(char instance)
+{
+	return u32be(1) + u32be(16) + QByteArray(16, instance);
+}
+QByteArray partitionPack()
+{
+	return klv(ul("060e2b34020501010d01020101020400"), QByteArray(88, '\0'));
+}
+}
+
+void TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read()
+{
+	QTemporaryDir temp;
+	QByteArray header = partitionPack() + cdciSet(1920, 1080, 25);
+	for (int n = 0; n < 20; ++n) header += fillerItem(60000);
+	header += packageSet(0x36, QByteArray(32, 'm'), QStringLiteral("Late material"));
+	// Declare a 16 MiB essence payload but keep the test file sparse.
+	header += ul("060e2b34010201010d01030115010501");
+	header += char(0x84);
+	header += u32be(16 * 1024 * 1024);
+	const QString path = writeMxf(temp.filePath("late.mxf"), header);
+	QFile file(path);
+	QVERIFY(file.open(QIODevice::ReadWrite));
+	QVERIFY(file.resize(header.size() + 16 * 1024 * 1024));
+	file.close();
+	qint64 bytes = 0;
+	const auto result = MxfParser::parseHeader(path, &bytes);
+	QVERIFY(result.valid);
+	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.clipName, QStringLiteral("Late material"));
+	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+	QVERIFY2(bytes < 64 * 1024, qPrintable(QString::number(bytes)));
+}
+
+void TestMxfParser::dynamic_primer_tags_are_resolved_by_property()
+{
+	QTemporaryDir temp;
+	QByteArray entries;
+	entries += u16be(0x9001) + ul("060e2b34010101010401050202000000"); // width
+	entries += u16be(0x9002) + ul("060e2b34010101010401050201000000"); // height
+	entries += u16be(0x3203) + QByteArray(16, 'x'); // same numeric tag now means something else
+	const QByteArray primer = klv(ul("060e2b34020501010d01020101050100"), u32be(3) + u32be(18) + entries);
+	const QByteArray descriptor = objectSet(0x28, 'd', localProperty(0x9001, u32be(1920)) +
+		localProperty(0x9002, u32be(1080)) + localProperty(0x3203, u32be(9999)));
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("primer.mxf"), partitionPack() + primer + descriptor));
+	QVERIFY(result.valid);
+	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+}
+
+void TestMxfParser::usage_requires_unambiguous_master_evidence_data()
+{
+	QTest::addColumn<int>("code");
+	QTest::addColumn<QByteArray>("standard");
+	QTest::addColumn<bool>("known");
+	QTest::addColumn<bool>("precompute");
+	const QByteArray lower = ul("060e2b34040101010d01010201010800");
+	const QByteArray adjusted = ul("060e2b34040101010d01010201010600");
+	QTest::newRow("ordinary-material-no-usage") << -1 << QByteArray() << true << false;
+	QTest::newRow("lowerlevel-alone-is-ambiguous") << -1 << lower << false << false;
+	QTest::newRow("private-precompute") << 1 << QByteArray() << true << true;
+	QTest::newRow("precompute-corroborated") << 1 << lower << true << true;
+	QTest::newRow("precompute-swapped-standard") << 1 << (lower.mid(8) + lower.left(8)) << true << true;
+	QTest::newRow("master-explicit") << 7 << QByteArray() << true << false;
+	QTest::newRow("master-adjusted") << 7 << adjusted << true << false;
+	QTest::newRow("master-conflicts-with-lowerlevel") << 7 << lower << false << false;
+	QTest::newRow("precompute-conflicts-with-adjusted") << 1 << adjusted << false << false;
+	QTest::newRow("precompute-unknown-standard") << 1 << QByteArray(16, 'x') << false << false;
+	QTest::newRow("unknown-standard") << -1 << QByteArray(16, 'x') << false << false;
+	for (int code : {0, 2, 3, 4, 5, 6, 8, 9, 10, 99})
+		QTest::newRow(qPrintable(QStringLiteral("other-code-%1").arg(code)))
+			<< code << QByteArray() << false << false;
+	// The installed binary maps group4 and motion6 to this SAME standard UID.
+	QTest::newRow("group-is-not-precompute") << 4 << lower << false << false;
+	QTest::newRow("motion-is-not-precompute") << 6 << lower << false << false;
+}
+
+void TestMxfParser::usage_requires_unambiguous_master_evidence()
+{
+	QFETCH(int, code);
+	QFETCH(QByteArray, standard);
+	QFETCH(bool, known);
+	QFETCH(bool, precompute);
+	QTemporaryDir temp;
+	const QByteArray primer = klv(ul("060e2b34020501010d01020101050100"),
+		u32be(1) + u32be(18) + u16be(0x9107) + ul(AvidUsage::kPrivateMxfPropertyHex));
+	QByteArray fields = localProperty(0x4401, QByteArray(32, 'm'));
+	if (code >= 0) fields += localProperty(0x9107, u32be(quint32(code)));
+	if (!standard.isEmpty()) fields += localProperty(0x4408, standard);
+	// A source/file code must never override the material/master verdict.
+	const QByteArray source = objectSet(0x37, 'f', localProperty(0x4401, QByteArray(32, 'f')) +
+		localProperty(0x9107, u32be(9)) + localProperty(0x4408, ul("060e2b34040101010d01010201010800")));
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("usage.mxf"),
+		partitionPack() + primer + source + objectSet(0x36, 'm', fields) + cdciSet(1920, 1080, 25)));
+	QVERIFY(result.valid);
+	QCOMPARE(result.umid, MobId::format(QByteArray(32, 'm')));
+	QVERIFY(result.hasMaterialPackage); // The master identity survives an unknown usage verdict.
+	QCOMPARE(result.classificationKnown, known);
+	QCOMPARE(result.isPrecompute, precompute);
+}
+
+void TestMxfParser::private_usage_requires_primer_and_exact_integer()
+{
+	QTemporaryDir temp;
+	const auto material = [](quint16 tag, const QByteArray &value) {
+		return objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) +
+			localProperty(0x4408, ul("060e2b34040101010d01010201010800")) + localProperty(tag, value));
+	};
+	for (quint16 tag : {quint16(0xfffa), AvidUsage::kPrivateMxfTag})
+	{
+		const auto unregistered = MxfParser::parseHeader(writeMxf(temp.filePath("unregistered.mxf"),
+			partitionPack() + material(tag, u32be(1)) + cdciSet(1920, 1080, 25)));
+		QVERIFY(unregistered.valid);
+		QVERIFY(!unregistered.classificationKnown);
+		QVERIFY(!unregistered.isPrecompute);
+	}
+	const QByteArray primer = klv(ul("060e2b34020501010d01020101050100"),
+		u32be(1) + u32be(18) + u16be(0x9009) + ul(AvidUsage::kPrivateMxfPropertyHex));
+	const auto negative = MxfParser::parseHeader(writeMxf(temp.filePath("negative.mxf"),
+		partitionPack() + primer + objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) +
+			localProperty(0x9009, u32be(0xffffffffu))) + cdciSet(1920, 1080, 25)));
+	QVERIFY(negative.valid);
+	QVERIFY(!negative.classificationKnown); // Explicit -1 is not an absent property.
+	QVERIFY(!negative.isPrecompute);
+	for (const QByteArray &value : {QByteArray(), QByteArray::fromHex("0001"), QByteArray::fromHex("0000000000000001")})
+	{
+		const auto malformed = MxfParser::parseHeader(writeMxf(temp.filePath("bad-width.mxf"),
+			partitionPack() + primer + material(0x9009, value) + cdciSet(1920, 1080, 25)));
+		QCOMPARE(malformed.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+		QVERIFY(!malformed.hasMaterialPackage);
+		QVERIFY(!malformed.classificationKnown);
+	}
+}
+
+void TestMxfParser::owning_package_selects_descriptor()
+{
+	QTemporaryDir temp;
+	const QByteArray fileId(32, 'f'), masterId(32, 'm');
+	const auto descriptor = [](char id, quint32 width, quint32 rate) {
+		return objectSet(0x28, id, localProperty(0x3203, u32be(width)) + localProperty(0x3202, u32be(1080)) +
+			localProperty(0x3001, u32be(rate) + u32be(1)));
+	};
+	QByteArray content = partitionPack();
+	content += objectSet(0x36, 'm', localProperty(0x4401, masterId) + localProperty(0x4402, utf16be("Selected master")) + localProperty(0x4403, references('t')));
+	content += objectSet(0x3b, 't', localProperty(0x4803, QByteArray(16, 's')) + localProperty(0x4b01, u32be(25) + u32be(1)));
+	content += objectSet(0x0f, 's', localProperty(0x1001, u32be(2) + u32be(16) + QByteArray(16, 'c') + QByteArray(16, 'C')) + localProperty(0x0202, u32be(250)));
+	content += objectSet(0x11, 'c', localProperty(0x1101, fileId) + localProperty(0x0202, u32be(125)));
+	content += objectSet(0x11, 'C', localProperty(0x1101, fileId) + localProperty(0x0202, u32be(125)));
+	content += objectSet(0x37, 'f', localProperty(0x4401, fileId) + localProperty(0x4701, QByteArray(16, 'd')));
+	content += descriptor('d', 1920, 25);
+	content += objectSet(0x37, 'u', localProperty(0x4401, QByteArray(32, 'u')) + localProperty(0x4701, QByteArray(16, 'x')));
+	content += descriptor('x', 9999, 60); // unrelated descriptor placed last
+	content += objectSet(0x23, 'e', localProperty(0x2701, fileId));
+	content += objectSet(0x36, 'a', localProperty(0x4401, QByteArray(32, 'a')) + localProperty(0x4402, utf16be("Other master")) + localProperty(0x4403, references('t')));
+	content += objectSet(0x2f, 'p', localProperty(0x3b08, QByteArray(16, 'm')));
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("graph.mxf"), content));
+	QVERIFY(result.valid);
+	QCOMPARE(result.fileMobId, MobId::format(fileId));
+	QCOMPARE(result.umid, MobId::format(masterId));
+	QCOMPARE(result.clipName, QStringLiteral("Selected master"));
+	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+	QCOMPARE(result.fps, QStringLiteral("25"));
+	QCOMPARE(result.durationFrames, qint64(250));
+	QVERIFY(result.classificationKnown);
+}
+
+void TestMxfParser::split_master_uses_individual_file_duration()
+{
+	QTemporaryDir temp;
+	// One master combines 19 and 325 frames from different files. Each
+	// file's own Sequence/ContainerDuration describes only its portion.
+	for (const bool audio : {false, true})
+		for (const bool fileTrack : {false, true})
+		for (const bool descriptorDuration : {false, true})
+		{
+			if (!fileTrack && !descriptorDuration) continue;
+			const quint32 rate = audio ? 48000 : 25;
+			const quint32 units = audio ? 1920 : 1;
+			const QByteArray fileId(32, 'f');
+			QByteArray content = partitionPack();
+			content += objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) + localProperty(0x4403, references('t')));
+			content += objectSet(0x3b, 't', localProperty(0x4803, QByteArray(16, 's')) + localProperty(0x4b01, u32be(rate) + u32be(1)));
+			content += objectSet(0x0f, 's', localProperty(0x0202, u32be(344 * units)) +
+				localProperty(0x1001, u32be(2) + u32be(16) + QByteArray(16, 'c') + QByteArray(16, 'C')));
+			content += objectSet(0x11, 'c', localProperty(0x1101, fileId) + localProperty(0x0202, u32be(19 * units)));
+			content += objectSet(0x11, 'C', localProperty(0x1101, QByteArray(32, 'g')) + localProperty(0x0202, u32be(325 * units)));
+			content += objectSet(0x37, 'f', localProperty(0x4401, fileId) + localProperty(0x4701, QByteArray(16, 'd')) +
+				(fileTrack ? localProperty(0x4403, references('v')) : QByteArray{}));
+			QByteArray descriptor = localProperty(0x3001, u32be(rate) + u32be(1));
+			if (descriptorDuration) descriptor += localProperty(0x3002, u32be(19 * units));
+			if (audio) descriptor += localProperty(0x3d03, u32be(48000) + u32be(1)) + localProperty(0x3d07, u32be(1));
+			else descriptor += localProperty(0x3203, u32be(1920)) + localProperty(0x3202, u32be(1080));
+			content += objectSet(audio ? 0x48 : 0x28, 'd', descriptor);
+			if (fileTrack)
+			{
+				content += objectSet(0x3b, 'v', localProperty(0x4803, QByteArray(16, 'q')) + localProperty(0x4b01, u32be(rate) + u32be(1)));
+				// A longer hold/track never overrides the stored essence length.
+				content += objectSet(0x0f, 'q', localProperty(0x0202, u32be((descriptorDuration ? 2880 : 19) * units)));
+			}
+			// A source/timecode track supplies the frame rate for sample units.
+			content += objectSet(0x37, 'g', localProperty(0x4401, QByteArray(32, 'g')) + localProperty(0x4403, references('r')));
+			content += objectSet(0x3b, 'r', localProperty(0x4b01, u32be(25) + u32be(1)));
+			content += objectSet(0x23, 'e', localProperty(0x2701, fileId));
+			const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("split.mxf"), content));
+			QVERIFY(result.valid);
+			QCOMPARE(result.durationFrames, qint64(19));
+			QCOMPARE(result.timecodeBase, 25);
+		}
+}
+
+void TestMxfParser::malformed_local_property_invalidates_header()
+{
+	QTemporaryDir temp;
+	const QByteArray bad = objectSet(0x36, 'm', u16be(0x4401) + u16be(32) + QByteArray(2, 'x'));
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("broken.mxf"), partitionPack() + cdciSet(1920, 1080) + bad));
+	QVERIFY(!result.valid);
+	QVERIFY(!result.classificationKnown);
+	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+	const QByteArray badUsage = objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) + localProperty(0x4408, QByteArray(1, '\0')));
+	const auto usage = MxfParser::parseHeader(writeMxf(temp.filePath("usage.mxf"), partitionPack() + cdciSet(1920, 1080) + badUsage));
+	QVERIFY(!usage.classificationKnown);
+	QVERIFY(!usage.valid);
+	const QByteArray fill = klv(ul("060e2b34010101010301021001000000"), QByteArray(100, '\0'));
+	const auto shortFill = MxfParser::parseHeader(writeMxf(temp.filePath("fill.mxf"), partitionPack() + cdciSet(1920, 1080) + fill.left(fill.size() - 50)));
+	QCOMPARE(shortFill.headerStatus, MxfMetadata::HeaderStatus::Incomplete);
+	QVERIFY(!shortFill.valid);
+	const QByteArray descriptor = cdciSet(1920, 1080);
+	QByteArray pack(88, '\0');
+	// A KLV crossing HeaderByteCount is not a complete metadata region.
+	qToBigEndian<quint64>(quint64(descriptor.size() - 1), pack.data() + 32);
+	const auto crossing = MxfParser::parseHeader(writeMxf(temp.filePath("crossing.mxf"),
+		klv(ul("060e2b34020501010d01020101020400"), pack) + descriptor));
+	QCOMPARE(crossing.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+	QVERIFY(!crossing.valid);
+	// The file may be long enough while essence starts too early for the
+	// declared metadata extent. Do not certify that header as complete.
+	qToBigEndian<quint64>(quint64(descriptor.size() + 50), pack.data() + 32);
+	const auto earlyEssence = MxfParser::parseHeader(writeMxf(temp.filePath("early.mxf"),
+		klv(ul("060e2b34020501010d01020101020400"), pack) + descriptor +
+		klv(ul("060e2b34010201010d01030115010501"), QByteArray(100, '\0'))));
+	QCOMPARE(earlyEssence.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+	QVERIFY(!earlyEssence.valid);
+}
+
+void TestMxfParser::finalise_is_idempotent_and_does_not_guess()
+{
+	MxfMetadata picture;
+	picture.width = 1920;
+	picture.height = 540;
+	picture.frameLayout = 1;
+	MxfParser::finalise(picture);
+	MxfParser::finalise(picture);
+	QCOMPARE(picture.height, 1080);
+	QVERIFY(picture.codec.isEmpty());
+	MxfMetadata corrupt;
+	corrupt.width = 1920;
+	corrupt.height = std::numeric_limits<int>::min();
+	corrupt.frameLayout = 1;
+	MxfParser::finalise(corrupt);
+	QCOMPARE(corrupt.height, 0);
+	QVERIFY(!corrupt.valid);
+	MxfMetadata sound;
+	sound.isAudio = true;
+	sound.sampleRate = 48000;
+	MxfParser::finalise(sound);
+	QVERIFY(sound.valid);
+	QVERIFY(sound.codec.isEmpty());
+	sound.pcmDescriptor = true;
+	MxfParser::finalise(sound);
+	QCOMPARE(sound.codec, QString::fromLatin1(kPcmAudioName));
+	const QByteArray sq = ul("060E2B34040101010D01030102060101");
+	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, {}), QStringLiteral("Avid DNx SQ"));
+	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, "50"), QStringLiteral("Avid DNx SQ (DNxHD 240)"));
+	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, "59.94"), QStringLiteral("Avid DNx SQ (DNxHD 290)"));
+	QVERIFY(!MxfParser::codecFromEssenceLabel(ul("060e2b34040101010d99111111111111"), {}).startsWith("Avid"));
+}
+
+void TestMxfParser::avid_alpha_requires_positive_container_and_layout_data()
+{
+	QTest::addColumn<QByteArray>("containers");
+	QTest::addColumn<int>("descriptorType");
+	QTest::addColumn<QByteArray>("layout");
+	QTest::addColumn<QByteArray>("codingField");
+	QTest::addColumn<bool>("alpha");
+	const QByteArray unc = ul("060e2b34040101010e04030102080100");
+	const QByteArray a8 = ul("41080000300030003000300030003000");
+	const QByteArray other = ul("060e2b34040101010e04030102010100");
+	QTest::newRow("Avid-alpha-padding") << unc << 0x29 << a8 << QByteArray{} << true;
+	QTest::newRow("zero-padding") << unc << 0x29 << (QByteArray::fromHex("4108") + QByteArray(14, '\0')) << QByteArray{} << true;
+	QTest::newRow("no-container") << QByteArray{} << 0x29 << a8 << QByteArray{} << false;
+	QTest::newRow("different-container") << other << 0x29 << a8 << QByteArray{} << false;
+	QTest::newRow("ambiguous-containers") << (unc + other) << 0x29 << a8 << QByteArray{} << false;
+	QTest::newRow("wrong-class") << unc << 0x28 << a8 << QByteArray{} << false;
+	QTest::newRow("missing-layout") << unc << 0x29 << QByteArray{} << QByteArray{} << false;
+	QTest::newRow("short-layout") << unc << 0x29 << a8.left(2) << QByteArray{} << false;
+	QTest::newRow("different-depth") << unc << 0x29 << ul("41100000300030003000300030003000") << QByteArray{} << false;
+	QTest::newRow("RGB-not-alpha") << unc << 0x29 << ul("52084708420800000000000000000000") << QByteArray{} << false;
+	QTest::newRow("alpha-and-color") << unc << 0x29 << ul("41085208000000000000000000000000") << QByteArray{} << false;
+	QTest::newRow("unknown-explicit-coding") << unc << 0x29 << a8 << localProperty(0x3201, QByteArray(16, 'x')) << false;
+	QTest::newRow("empty-explicit-coding") << unc << 0x29 << a8 << localProperty(0x3201, {}) << false;
+}
+
+void TestMxfParser::avid_alpha_requires_positive_container_and_layout()
+{
+	QFETCH(QByteArray, containers);
+	QFETCH(int, descriptorType);
+	QFETCH(QByteArray, layout);
+	QFETCH(QByteArray, codingField);
+	QFETCH(bool, alpha);
+	QTemporaryDir temp;
+	QByteArray pack(80, '\0');
+	pack += u32be(quint32(containers.size() / 16)) + u32be(16) + containers;
+	const QByteArray fields = localProperty(0x3203, u32be(1920)) + localProperty(0x3202, u32be(1080)) +
+		localProperty(0x3001, u32be(24) + u32be(1)) + localProperty(0x3401, layout) + codingField;
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("alpha.mxf"),
+		klv(ul("060e2b34020501010d01020101020400"), pack) + objectSet(quint8(descriptorType), 'd', fields)));
+	QVERIFY(result.valid);
+	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.codec == QStringLiteral("Uncompressed alpha"), alpha);
+	if (alpha)
+	{
+		QCOMPARE(result.bitDepth, QStringLiteral("8-bit"));
+		QCOMPARE(result.fps, QStringLiteral("24"));
+	}
+}
+
+void TestMxfParser::avid_alpha_respects_descriptor_selection_and_primer()
+{
+	QTemporaryDir temp;
+	const QByteArray pack = klv(ul("060e2b34020501010d01020101020400"),
+		QByteArray(80, '\0') + u32be(1) + u32be(16) + ul("060e2b34040101010e04030102080100"));
+	const QByteArray dimensions = localProperty(0x3203, u32be(1920)) + localProperty(0x3202, u32be(1080));
+	const QByteArray alpha = objectSet(0x29, 'a', dimensions + localProperty(0x3401, ul("41080000300030003000300030003000")));
+	const QByteArray sourceId(32, 'f');
+	const QByteArray graph = objectSet(0x37, 'f', localProperty(0x4401, sourceId) + localProperty(0x4701, QByteArray(16, 'd'))) +
+		objectSet(0x23, 'e', localProperty(0x2701, sourceId));
+	// The unreferenced RGBA descriptor cannot name the selected CDCI essence.
+	const auto selected = MxfParser::parseHeader(writeMxf(temp.filePath("selected.mxf"),
+		pack + graph + alpha + objectSet(0x28, 'd', dimensions)));
+	QVERIFY(selected.valid);
+	QVERIFY(selected.codec.isEmpty());
+	QVERIFY(!selected.rgbaDescriptor);
+	// Two standalone descriptors have no unambiguous selection.
+	const auto ambiguous = MxfParser::parseHeader(writeMxf(temp.filePath("ambiguous.mxf"),
+		pack + alpha + objectSet(0x28, 'd', dimensions)));
+	QVERIFY(!ambiguous.valid);
+	QVERIFY(ambiguous.codec.isEmpty());
+	// PixelLayout can use a dynamic tag; the primer establishes its identity.
+	QByteArray entries;
+	const struct { quint16 tag; const char *property; } mappings[] = {
+		{0x3203, "060e2b34010101010401050202000000"},
+		{0x3202, "060e2b34010101010401050201000000"},
+		{0x9101, "060e2b34010101020401050306000000"},
+	};
+	for (const auto &mapping : mappings) entries += u16be(mapping.tag) + ul(mapping.property);
+	const QByteArray primer = klv(ul("060e2b34020501010d01020101050100"), u32be(3) + u32be(18) + entries);
+	const auto remapped = MxfParser::parseHeader(writeMxf(temp.filePath("remapped.mxf"), pack + primer +
+		objectSet(0x29, 'd', dimensions + localProperty(0x9101, ul("41080000300030003000300030003000")))));
+	QVERIFY(remapped.valid);
+	QCOMPARE(remapped.codec, QStringLiteral("Uncompressed alpha"));
+	QCOMPARE(remapped.bitDepth, QStringLiteral("8-bit"));
+}
+
+void TestMxfParser::partition_container_batch_is_bounded()
+{
+	QTemporaryDir temp;
+	const struct { quint32 count; quint32 stride; int bytes; } malformed[] = {
+		{1, 15, 16}, {2, 16, 16}, {0, 16, 16}, {0xffffffffU, 16, 16}, {0, 1, 0}
+	};
+	for (const auto &row : malformed)
+	{
+		const QByteArray pack = QByteArray(80, '\0') + u32be(row.count) + u32be(row.stride) + QByteArray(row.bytes, '\0');
+		const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("malformed.mxf"),
+			klv(ul("060e2b34020501010d01020101020400"), pack) + cdciSet(1920, 1080)));
+		QVERIFY(!result.valid);
+		QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+		QVERIFY(result.codec.isEmpty());
+	}
+}
+
+namespace
+{
+QByteArray projectAttribute(char instance, const QString &value)
+{
+	// AAF Indirect UTF-16BE string, referenced through the package's Avid
+	// attribute list. This is a real tagged-value shape, not a parser seam.
+	const QByteArray indirect = QByteArray(1, 'B') + ul("0110020000000000060e2b3401040101") + utf16be(value);
+	return objectSet(0x3f, instance, localProperty(0x5001, utf16be(QStringLiteral("_PJ"))) +
+		localProperty(0x5003, indirect));
+}
+QByteArray projectFileGraph(const QByteArray &fileAttributes = {}, const QByteArray &materialAttributes = {})
+{
+	const QByteArray fileId(32, 'f');
+	return partitionPack() +
+		objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) + localProperty(0x4403, references('t')) + materialAttributes) +
+		objectSet(0x3b, 't', localProperty(0x4803, QByteArray(16, 'c'))) +
+		objectSet(0x11, 'c', localProperty(0x1101, fileId)) +
+		objectSet(0x37, 'f', localProperty(0x4401, fileId) + localProperty(0x4701, QByteArray(16, 'd')) +
+			localProperty(0x4403, references('r')) + fileAttributes) +
+		objectSet(0x3b, 'r', localProperty(0x4803, QByteArray(16, 's'))) +
+		objectSet(0x11, 's', localProperty(0x1101, QByteArray(32, 'o'))) +
+		objectSet(0x37, 'o', localProperty(0x4401, QByteArray(32, 'o')) + localProperty(0xf001, references('a'))) +
+		objectSet(0x28, 'd', localProperty(0x3203, u32be(1920)) + localProperty(0x3202, u32be(1080)) +
+			localProperty(0x3001, u32be(25) + u32be(1))) +
+		objectSet(0x23, 'e', localProperty(0x2701, fileId));
+}
+}
+
+void TestMxfParser::project_prefers_owning_file_then_material_then_linked_source()
+{
+	QTemporaryDir temp;
+	for (int tier = 0; tier < 3; ++tier)
+	{
+		const QByteArray own = tier == 0 ? localProperty(0xf001, references('b')) : QByteArray{};
+		const QByteArray material = tier < 2 ? localProperty(0x4406, references('h')) : QByteArray{};
+		QByteArray content = projectFileGraph(own, material);
+		// The older imported source is deliberately serialized first, just as
+		// in export row104: HAA_PROGRAMME_BUILD versus BLOCK_1729_PS_DG.
+		content += projectAttribute('a', QStringLiteral("HAA_PROGRAMME_BUILD"));
+		if (tier == 0) content += projectAttribute('b', QStringLiteral("BLOCK_1729_PS_DG"));
+		if (tier < 2) content += projectAttribute('h', QStringLiteral("MATERIAL_PROJECT"));
+		const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("project.mxf"), content));
+		QVERIFY(result.valid);
+		QCOMPARE(result.fileMobId, MobId::format(QByteArray(32, 'f')));
+		QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+		QCOMPARE(result.projectName, tier == 0 ? QStringLiteral("BLOCK_1729_PS_DG") :
+			tier == 1 ? QStringLiteral("MATERIAL_PROJECT") : QStringLiteral("HAA_PROGRAMME_BUILD"));
+	}
+}
+
+void TestMxfParser::project_recovers_unique_orphan_attribute()
+{
+	QTemporaryDir temp;
+	const QByteArray content = projectFileGraph() +
+		projectAttribute('u', QStringLiteral("RECOVERABLE_PROJECT")) +
+		projectAttribute('v', QStringLiteral("RECOVERABLE_PROJECT"));
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("orphan.mxf"), content));
+	QVERIFY(result.valid);
+	QCOMPARE(result.projectName, QStringLiteral("RECOVERABLE_PROJECT"));
+}
+
+void TestMxfParser::project_leaves_conflicting_fallbacks_unknown()
+{
+	QTemporaryDir temp;
+	// Neither unrelated project has a stronger claim; serialization order
+	// must never settle it. A conflict within the owning attribute list must
+	// not fall through to a convenient but older source project either.
+	for (const bool ownConflict : {false, true})
+		for (const bool reverse : {false, true})
+		{
+			const QByteArray own = ownConflict ? localProperty(0xf001,
+				u32be(2) + u32be(16) + QByteArray(16, 'u') + QByteArray(16, 'v')) : QByteArray{};
+			QByteArray content = projectFileGraph(own);
+			const QByteArray first = projectAttribute('u', QStringLiteral("PROJECT_ONE"));
+			const QByteArray second = projectAttribute('v', QStringLiteral("PROJECT_TWO"));
+			content += reverse ? second + first : first + second;
+			if (ownConflict) content += projectAttribute('a', QStringLiteral("OLDER_SOURCE"));
+			const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("ambiguous.mxf"), content));
+			QVERIFY(result.valid);
+			QVERIFY(result.projectName.isEmpty());
+		}
 }
 
 QTEST_APPLESS_MAIN(TestMxfParser)

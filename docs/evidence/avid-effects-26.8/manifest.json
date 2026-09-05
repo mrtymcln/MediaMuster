@@ -1,0 +1,75 @@
+{
+  "version": "26.8.0.58987",
+  "files": [
+    {
+      "path": "AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "arm64Sha256": "70b6f2810f53dc044a9b6b2d3f9d3e3c50df40c91fcc263e21a2678752566f9e"
+    },
+    {
+      "path": "AvidMediaComposer.app/Contents/SharedSupport/AVX2_Plug-ins/MCEffects.avx/Contents/MacOS/MCEffects",
+      "sha256": "4afe7684bd808a4bea1b690d763557a7324468193333dc76b2941780e5b2cd74",
+      "arm64Sha256": "4e9de133828e4eb36c57f7ead856ae7715d957e79ace45ab4662ddfaab1a51f4"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_de_DE.xml",
+      "sha256": "bd818cf900554377d4701f8578713df593fc3fb82f75475f006d0f5e096c6c4f"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_es_ES.xml",
+      "sha256": "e63182ceeb1fe079636683070a0ea246068bc4a8965e639d0cf2b37e2ed91460"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_fr_FR.xml",
+      "sha256": "59b569fdc0431199a9126a26a7e1514a2d3d2d8f7ae0a5e4d1911aea6411f137"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_it_IT.xml",
+      "sha256": "6efaad9087780a0b7612831bf14bf5e417451f787ed75c88831b10a909b36f81"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_ja_JA.xml",
+      "sha256": "f957dbf1f7dd0f250632d6a4a77c8c6f6532748c81bf115d8b1c461f54924907"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_zh-cn.xml",
+      "sha256": "01985789b91705eaf59fc8aace5100a66711c4faee4f586bb8f6fd611ec7c4f8"
+    },
+    {
+      "path": "SupportingFiles/International/xml/MCStrings_ru-ru.xml",
+      "sha256": "3e274264a1cc413f2b5f10d5d186899337d0bc8aae3690f7a49841a9aead98c3"
+    },
+    {
+      "path": "Help/Content/Editing_Guide/D_Verb__Audio_Track_Effect_and_AudioSuit.htm",
+      "sha256": "e621459bffa570485e2f3a87268b92240176f87edd3dfe981c531c73a8d6f45c"
+    },
+    {
+      "path": "AvidMediaComposer.app/Contents/Resources/Default_ExternalDynamicAVX2.xml",
+      "sha256": "1b5b5d7696b4810307f93af4e119704840c52c3325d8d94cf87d3dcac830024a"
+    }
+  ],
+  "architecture": "arm64",
+  "mcFirst": false,
+  "alphaFlex": [
+    false,
+    true
+  ],
+  "otherFeatureToggles": [
+    false,
+    true
+  ],
+  "counts": {
+    "builtinRegistrationIds": 174,
+    "builtinNameCategoryPairs": 178,
+    "MCEffectsRecordsPerGateState": 162,
+    "thirdPartyRegistryRecords": 667,
+    "compiledNameCategoryPairs": 887
+  },
+  "functions": {
+    "__ZN7AEffect27SetEffectInfoFromIdentifierEii": "0x7467e0",
+    "__ZN14AAudioDissolve13GetAllEffectsEi": "0x755de0",
+    "__ZN22EffectComponentVisitor18GenerateEffectInfoEP10AComponent": "0xa86d48",
+    "__GLOBAL__sub_I_MCEffects.cpp": "0x411e0",
+    "MCEffects::_ACFRegisterComponent": "0xb694"
+  }
+}

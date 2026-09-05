@@ -1,0 +1,2594 @@
+[
+  {
+    "index": 0,
+    "id": 14655,
+    "identifier": "FXBaseProxyRegistration",
+    "name": "FXBaseProxyRegistration",
+    "category": "FXBaseProxyRegistration",
+    "alphaFlex": 0
+  },
+  {
+    "index": 1,
+    "id": 14650,
+    "identifier": "FXBaseProxyRegistration",
+    "name": "FXBaseProxyRegistration",
+    "category": "FXBaseProxyRegistration",
+    "alphaFlex": 0
+  },
+  {
+    "index": 2,
+    "id": 14301,
+    "identifier": "EFF2_BLEND_SUPER",
+    "name": "Superimpose",
+    "category": "Blend",
+    "alphaFlex": 0
+  },
+  {
+    "index": 3,
+    "id": 14300,
+    "identifier": "EFF2_BLEND_DISSOLVE",
+    "name": "Dissolve",
+    "category": "Blend",
+    "alphaFlex": 0
+  },
+  {
+    "index": 4,
+    "id": 14318,
+    "identifier": "EFF2_BLEND_FADE_DOWN",
+    "name": "Fade to Color",
+    "category": "Blend",
+    "alphaFlex": 0
+  },
+  {
+    "index": 5,
+    "id": 14319,
+    "identifier": "EFF2_BLEND_FADE_UP",
+    "name": "Fade from Color",
+    "category": "Blend",
+    "alphaFlex": 0
+  },
+  {
+    "index": 6,
+    "id": 14320,
+    "identifier": "EFF2_BLEND_DIP",
+    "name": "Dip to Color",
+    "category": "Blend",
+    "alphaFlex": 0
+  },
+  {
+    "index": 7,
+    "id": 14104,
+    "identifier": "EFF2_BLEND_WIPE_RBOX",
+    "name": "Right Box",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 8,
+    "id": 14105,
+    "identifier": "EFF2_BLEND_WIPE_TBOX",
+    "name": "Top Box",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 9,
+    "id": 14101,
+    "identifier": "EFF2_BLEND_WIPE_LBOX",
+    "name": "Left Box",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 10,
+    "id": 14100,
+    "identifier": "EFF2_BLEND_WIPE_BBOX",
+    "name": "Bottom Box",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 11,
+    "id": 14103,
+    "identifier": "EFF2_BLEND_WIPE_LR",
+    "name": "Bottom Right to Top Left",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 12,
+    "id": 14102,
+    "identifier": "EFF2_BLEND_WIPE_LL",
+    "name": "Bottom Left to Top Right",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 13,
+    "id": 14107,
+    "identifier": "EFF2_BLEND_WIPE_UR",
+    "name": "Top Right to Bottom Left",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 14,
+    "id": 14106,
+    "identifier": "EFF2_BLEND_WIPE_UL",
+    "name": "Top Left to Bottom Right",
+    "category": "Box Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 15,
+    "id": 14123,
+    "identifier": "EFF2_BLEND_WIPE_VOPEN",
+    "name": "Vert Open",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 16,
+    "id": 14121,
+    "identifier": "EFF2_BLEND_WIPE_HOPEN",
+    "name": "Horz Open",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 17,
+    "id": 14122,
+    "identifier": "EFF2_BLEND_WIPE_VERT",
+    "name": "Vertical",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 18,
+    "id": 14120,
+    "identifier": "EFF2_BLEND_WIPE_HORZ",
+    "name": "Horizontal",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 19,
+    "id": 14125,
+    "identifier": "EFF2_BLEND_WIPE_LRLDIAG",
+    "name": "Lower Right Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 20,
+    "id": 14124,
+    "identifier": "EFF2_BLEND_WIPE_LLRDIAG",
+    "name": "Lower Left Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 21,
+    "id": 14127,
+    "identifier": "EFF2_BLEND_WIPE_URLDIAG",
+    "name": "Upper Right Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 22,
+    "id": 14126,
+    "identifier": "EFF2_BLEND_WIPE_ULRDIAG",
+    "name": "Upper Left Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 23,
+    "id": 14140,
+    "identifier": "EFF2_BLEND_WIPE_SPIRAL",
+    "name": "Spiral",
+    "category": "Matrix Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 24,
+    "id": 14141,
+    "identifier": "EFF2_BLEND_WIPE_GRID",
+    "name": "Grid",
+    "category": "Matrix Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 25,
+    "id": 14142,
+    "identifier": "EFF2_BLEND_WIPE_1ROW",
+    "name": "One-Way Row",
+    "category": "Matrix Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 26,
+    "id": 14143,
+    "identifier": "EFF2_BLEND_WIPE_SPECKLE",
+    "name": "Speckle",
+    "category": "Matrix Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 27,
+    "id": 14144,
+    "identifier": "EFF2_BLEND_WIPE_ZIG_ZAG",
+    "name": "Zig Zag",
+    "category": "Matrix Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 28,
+    "id": 14162,
+    "identifier": "EFF2_BLEND_WIPE_VOPEN_SAW",
+    "name": "Vert Open Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 29,
+    "id": 14160,
+    "identifier": "EFF2_BLEND_WIPE_HOPEN_SAW",
+    "name": "Horz Open Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 30,
+    "id": 14163,
+    "identifier": "EFF2_BLEND_WIPE_VSAW",
+    "name": "Vertical Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 31,
+    "id": 14161,
+    "identifier": "EFF2_BLEND_WIPE_HSAW",
+    "name": "Horizontal Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 32,
+    "id": 14186,
+    "identifier": "EFF2_BLEND_WIPE_2ROW",
+    "name": "Horizontal Bands",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 33,
+    "id": 14188,
+    "identifier": "EFF2_BLEND_WIPE_HBLIND",
+    "name": "Horizontal Blinds",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 34,
+    "id": 14187,
+    "identifier": "EFF2_BLEND_WIPE_VBLIND",
+    "name": "Vertical Blinds",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 35,
+    "id": 14180,
+    "identifier": "EFF2_BLEND_WIPE_4CORNER",
+    "name": "4 Corners",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 36,
+    "id": 14181,
+    "identifier": "EFF2_BLEND_WIPE_BOX",
+    "name": "Center Box",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 37,
+    "id": 14182,
+    "identifier": "EFF2_BLEND_WIPE_CIRCLE",
+    "name": "Circle",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 38,
+    "id": 14183,
+    "identifier": "EFF2_BLEND_WIPE_RADAR",
+    "name": "Clock",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 39,
+    "id": 14184,
+    "identifier": "EFF2_BLEND_WIPE_DIAMOND",
+    "name": "Diamond",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 40,
+    "id": 14185,
+    "identifier": "EFF2_BLEND_WIPE_ELLIPSE",
+    "name": "Ellipse",
+    "category": "Shape Wipe",
+    "alphaFlex": 0
+  },
+  {
+    "index": 41,
+    "id": 14800,
+    "identifier": "EFF2_BLEND_MASK_166",
+    "name": "1.66 Mask",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 42,
+    "id": 14801,
+    "identifier": "EFF2_BLEND_MASK_185",
+    "name": "1.85 Mask",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 43,
+    "id": 14802,
+    "identifier": "EFF2_BLEND_MASK_235",
+    "name": "Anamorphic Mask",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 44,
+    "id": 14803,
+    "identifier": "EFF2_BLEND_MASK_177",
+    "name": "16:9 Mask",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 45,
+    "id": 14303,
+    "identifier": "EFF2_BLEND_DISSOLVE_LIN",
+    "name": "Film Fade",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 46,
+    "id": 14302,
+    "identifier": "EFF2_BLEND_DISSOLVE_LOG",
+    "name": "Film Dissolve",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 47,
+    "id": 14821,
+    "identifier": "EFF2_BLOW_UP",
+    "name": "Blowup",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 48,
+    "id": 14804,
+    "identifier": "EFF2_BLEND_MASK",
+    "name": "Mask",
+    "category": "Film",
+    "alphaFlex": 0
+  },
+  {
+    "index": 49,
+    "id": 14650,
+    "identifier": "EFF2_COLORCORRECT",
+    "name": "Color Effect",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 50,
+    "id": 14751,
+    "identifier": "EFF2_LUTSFX",
+    "name": "Color Adapter",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 51,
+    "id": 14752,
+    "identifier": "EFF2_COLOR_SPACE",
+    "name": "Color LUT",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 52,
+    "id": 14753,
+    "identifier": "EFF2_TARGET_COLOR_SPACE",
+    "name": "Target Color Space",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 53,
+    "id": 14760,
+    "identifier": "EFF2_WORKING_COLOR_SPACE",
+    "name": "Working Color Space",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 54,
+    "id": 14840,
+    "identifier": "EFF2_BLEND_FLIP_VERT",
+    "name": "Flip",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 55,
+    "id": 14841,
+    "identifier": "EFF2_BLEND_FLIP_BOTH",
+    "name": "Flip-Flop",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 56,
+    "id": 14842,
+    "identifier": "EFF2_BLEND_FLIP_HORZ",
+    "name": "Flop",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 57,
+    "id": 14805,
+    "identifier": "EFF2_BLEND_MASK_IMAGE",
+    "name": "Mask",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 58,
+    "id": 14724,
+    "identifier": "EFF2_STABILIZE",
+    "name": "Stabilize",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 59,
+    "id": 14823,
+    "identifier": "EFF2_PAN_SCAN",
+    "name": "Pan and Scan",
+    "category": "Reformat",
+    "alphaFlex": 0
+  },
+  {
+    "index": 60,
+    "id": 14824,
+    "identifier": "EFF2_16x9_LETTERBOX",
+    "name": "16:9 Letterbox",
+    "category": "Reformat",
+    "alphaFlex": 0
+  },
+  {
+    "index": 61,
+    "id": 14825,
+    "identifier": "EFF2_14x9_LETTERBOX",
+    "name": "14:9 Letterbox",
+    "category": "Reformat",
+    "alphaFlex": 0
+  },
+  {
+    "index": 62,
+    "id": 14826,
+    "identifier": "EFF2_4x3_SIDEBAR",
+    "name": "4:3 Sidebar",
+    "category": "Reformat",
+    "alphaFlex": 0
+  },
+  {
+    "index": 63,
+    "id": 14201,
+    "identifier": "EFF2_BLEND_LUMAKEY",
+    "name": "Luma Key",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 64,
+    "id": 14205,
+    "identifier": "EFF2_BLEND_MATTE_KEY",
+    "name": "Matte Key",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 65,
+    "id": 14200,
+    "identifier": "EFF2_BLEND_YUV_CHROMAKEY",
+    "name": "Chroma Key",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 66,
+    "id": 14206,
+    "identifier": "EFF2_2DMATTE",
+    "name": "Matte Key",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 67,
+    "id": 14860,
+    "identifier": "EFF2_BLEND_CONCEAL_BOTTOMLEFT",
+    "name": "Bottom Left to Top Right",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 68,
+    "id": 14861,
+    "identifier": "EFF2_BLEND_CONCEAL_BOTTOMRIGHT",
+    "name": "Bottom Right to Top Left",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 69,
+    "id": 14866,
+    "identifier": "EFF2_BLEND_CONCEAL_TOPRIGHT",
+    "name": "Top Right to Bottom Left",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 70,
+    "id": 14865,
+    "identifier": "EFF2_BLEND_CONCEAL_TOPLEFT",
+    "name": "Top Left to Bottom Right",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 71,
+    "id": 14862,
+    "identifier": "EFF2_BLEND_CONCEAL_UP",
+    "name": "Bottom to Top",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 72,
+    "id": 14867,
+    "identifier": "EFF2_BLEND_CONCEAL_DOWN",
+    "name": "Top to Bottom",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 73,
+    "id": 14863,
+    "identifier": "EFF2_BLEND_CONCEAL_LEFT",
+    "name": "Left to Right",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 74,
+    "id": 14864,
+    "identifier": "EFF2_BLEND_CONCEAL_RIGHT",
+    "name": "Right to Left",
+    "category": "Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 75,
+    "id": 14880,
+    "identifier": "EFF2_BLEND_LCONCEAL_BOTTOMLEFT",
+    "name": "Bottom Left",
+    "category": "L-Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 76,
+    "id": 14881,
+    "identifier": "EFF2_BLEND_LCONCEAL_BOTTOMRIGHT",
+    "name": "Bottom Right",
+    "category": "L-Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 77,
+    "id": 14883,
+    "identifier": "EFF2_BLEND_LCONCEAL_TOPRIGHT",
+    "name": "Top Right",
+    "category": "L-Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 78,
+    "id": 14882,
+    "identifier": "EFF2_BLEND_LCONCEAL_TOPLEFT",
+    "name": "Top Left",
+    "category": "L-Conceal",
+    "alphaFlex": 0
+  },
+  {
+    "index": 79,
+    "id": 14900,
+    "identifier": "EFF2_BLEND_PEEL_BOTTOMLEFT",
+    "name": "Bottom Left Corner",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 80,
+    "id": 14901,
+    "identifier": "EFF2_BLEND_PEEL_BOTTOMRIGHT",
+    "name": "Bottom Right Corner",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 81,
+    "id": 14906,
+    "identifier": "EFF2_BLEND_PEEL_TOPRIGHT",
+    "name": "Top Right Corner",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 82,
+    "id": 14905,
+    "identifier": "EFF2_BLEND_PEEL_TOPLEFT",
+    "name": "Top Left Corner",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 83,
+    "id": 14907,
+    "identifier": "EFF2_BLEND_PEEL_TOP",
+    "name": "Top to Bottom",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 84,
+    "id": 14902,
+    "identifier": "EFF2_BLEND_PEEL_BOTTOM",
+    "name": "Bottom to Top",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 85,
+    "id": 14903,
+    "identifier": "EFF2_BLEND_PEEL_LEFT",
+    "name": "Left to Right",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 86,
+    "id": 14904,
+    "identifier": "EFF2_BLEND_PEEL_RIGHT",
+    "name": "Right to Left",
+    "category": "Peel",
+    "alphaFlex": 0
+  },
+  {
+    "index": 87,
+    "id": 14920,
+    "identifier": "EFF2_BLEND_PUSH_BOTTOMLEFT",
+    "name": "Bottom Left to Top Right",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 88,
+    "id": 14921,
+    "identifier": "EFF2_BLEND_PUSH_BOTTOMRIGHT",
+    "name": "Bottom Right to Top Left",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 89,
+    "id": 14926,
+    "identifier": "EFF2_BLEND_PUSH_TOPRIGHT",
+    "name": "Top Right to Bottom Left",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 90,
+    "id": 14925,
+    "identifier": "EFF2_BLEND_PUSH_TOPLEFT",
+    "name": "Top Left to Bottom Right",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 91,
+    "id": 14927,
+    "identifier": "EFF2_BLEND_PUSH_TOP",
+    "name": "Top to Bottom",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 92,
+    "id": 14922,
+    "identifier": "EFF2_BLEND_PUSH_BOTTOM",
+    "name": "Bottom to Top",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 93,
+    "id": 14923,
+    "identifier": "EFF2_BLEND_PUSH_LEFT",
+    "name": "Left to Right",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 94,
+    "id": 14924,
+    "identifier": "EFF2_BLEND_PUSH_RIGHT",
+    "name": "Right to Left",
+    "category": "Push",
+    "alphaFlex": 0
+  },
+  {
+    "index": 95,
+    "id": 14940,
+    "identifier": "EFF2_BLEND_ROTATE_XROTATE",
+    "name": "X Spin",
+    "category": "Spin",
+    "alphaFlex": 0
+  },
+  {
+    "index": 96,
+    "id": 14941,
+    "identifier": "EFF2_BLEND_ROTATE_YROTATE",
+    "name": "Y Spin",
+    "category": "Spin",
+    "alphaFlex": 0
+  },
+  {
+    "index": 97,
+    "id": 14942,
+    "identifier": "EFF2_BLEND_ROTATE_ZROTATE",
+    "name": "Z Spin",
+    "category": "Spin",
+    "alphaFlex": 0
+  },
+  {
+    "index": 98,
+    "id": 14964,
+    "identifier": "EFF2_BLEND_SQUEEZE_ZOOM",
+    "name": "Centered Zoom",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 99,
+    "id": 14965,
+    "identifier": "EFF2_BLEND_SQUEEZE_HORZ",
+    "name": "Horizontal Centered",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 100,
+    "id": 14974,
+    "identifier": "EFF2_BLEND_SQUEEZE_VERT",
+    "name": "Vertical Centered",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 101,
+    "id": 14960,
+    "identifier": "EFF2_BLEND_SQUEEZE_BOTTOMCENTER",
+    "name": "Bottom Centered",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 102,
+    "id": 14968,
+    "identifier": "EFF2_BLEND_SQUEEZE_RIGHTCENTER",
+    "name": "Right Centered",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 103,
+    "id": 14970,
+    "identifier": "EFF2_BLEND_SQUEEZE_TOPCENTER",
+    "name": "Top Centered",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 104,
+    "id": 14966,
+    "identifier": "EFF2_BLEND_SQUEEZE_LEFTCENTER",
+    "name": "Left Centered",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 105,
+    "id": 14973,
+    "identifier": "EFF2_BLEND_SQUEEZETOP",
+    "name": "Top to Bottom",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 106,
+    "id": 14963,
+    "identifier": "EFF2_BLEND_SQUEEZEBOTTOM",
+    "name": "Bottom to Top",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 107,
+    "id": 14967,
+    "identifier": "EFF2_BLEND_SQUEEZELEFT",
+    "name": "Left to Right",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 108,
+    "id": 14969,
+    "identifier": "EFF2_BLEND_SQUEEZERIGHT",
+    "name": "Right to Left",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 109,
+    "id": 14961,
+    "identifier": "EFF2_BLEND_SQUEEZE_BOTTOMLEFT",
+    "name": "Bottom Left",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 110,
+    "id": 14972,
+    "identifier": "EFF2_BLEND_SQUEEZE_TOPRIGHT",
+    "name": "Top Right",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 111,
+    "id": 14962,
+    "identifier": "EFF2_BLEND_SQUEEZE_BOTTOMRIGHT",
+    "name": "Bottom Right",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 112,
+    "id": 14971,
+    "identifier": "EFF2_BLEND_SQUEEZE_TOPLEFT",
+    "name": "Top Left",
+    "category": "Squeeze",
+    "alphaFlex": 0
+  },
+  {
+    "index": 113,
+    "id": 4294967295,
+    "identifier": "FLUID_MORPH",
+    "name": "FluidMorph",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 114,
+    "id": 4294967295,
+    "identifier": "FLUID_COLORMAP",
+    "name": "FluidColorMap",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 115,
+    "id": 4294967295,
+    "identifier": "FLUID_BLUR",
+    "name": "FluidBlur",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 116,
+    "id": 4294967295,
+    "identifier": "REGION_STABILIZE",
+    "name": "Region Stabilize",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 117,
+    "id": 4294967295,
+    "identifier": "YC_KEY",
+    "name": "SpectraMatte",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 118,
+    "id": 4551,
+    "identifier": "4F1887D2-D124-4272-AAEE-19A4A2CE47CA",
+    "name": "SpectraMatte A",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 119,
+    "id": 4552,
+    "identifier": "A68A5D6C-EBFC-442D-92D7-3A8D8D9C3A5E",
+    "name": "Luma Key A",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 120,
+    "id": 14400,
+    "identifier": "EFF2_BLEND_GRAPHIC",
+    "name": "Title",
+    "category": "Title",
+    "alphaFlex": 0
+  },
+  {
+    "index": 121,
+    "id": 4294967295,
+    "identifier": "SAFE_COLOR_LIMITER",
+    "name": "Safe Color Limiter",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 122,
+    "id": 4294967295,
+    "identifier": "AI_OBJECT_DETECT",
+    "name": "Object Detection",
+    "category": "Avid Debug",
+    "alphaFlex": 0
+  },
+  {
+    "index": 123,
+    "id": 4294967295,
+    "identifier": "YC_SWATCH",
+    "name": "SpectraGraph",
+    "category": "Avid Debug",
+    "alphaFlex": 0
+  },
+  {
+    "index": 124,
+    "id": 4294967295,
+    "identifier": "FRAME_OFFSET",
+    "name": "Frame Offset",
+    "category": "Avid Debug",
+    "alphaFlex": 0
+  },
+  {
+    "index": 125,
+    "id": 4294967295,
+    "identifier": "DIFFERENCE",
+    "name": "Difference",
+    "category": "Avid Debug",
+    "alphaFlex": 0
+  },
+  {
+    "index": 126,
+    "id": 4294967295,
+    "identifier": "STRESS_TEST",
+    "name": "Stress Test",
+    "category": "Avid Debug",
+    "alphaFlex": 0
+  },
+  {
+    "index": 127,
+    "id": 4294967295,
+    "identifier": "FIELD_SWAP",
+    "name": "Field Swap",
+    "category": "Image",
+    "alphaFlex": 0
+  },
+  {
+    "index": 128,
+    "id": 4294967295,
+    "identifier": "DIFFERENCE KEY",
+    "name": "Difference Key",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 129,
+    "id": 4294967295,
+    "identifier": "PSNR",
+    "name": "PSNR Generator",
+    "category": "Avid Debug",
+    "alphaFlex": 0
+  },
+  {
+    "index": 130,
+    "id": 4294967295,
+    "identifier": "Flare",
+    "name": "Flare",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 131,
+    "id": 4294967295,
+    "identifier": "CRYSTAL",
+    "name": "Crystal",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 132,
+    "id": 4294967295,
+    "identifier": "PINCH",
+    "name": "Pinch",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 133,
+    "id": 4294967295,
+    "identifier": "IRIS",
+    "name": "Iris",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 134,
+    "id": 4294967295,
+    "identifier": "SPHERE",
+    "name": "Sphere",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 135,
+    "id": 4294967295,
+    "identifier": "SWIRL",
+    "name": "Swirl",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 136,
+    "id": 4294967295,
+    "identifier": "WAVE",
+    "name": "Wave",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 137,
+    "id": 4294967295,
+    "identifier": "MOTIONBLUR",
+    "name": "Motion Blur",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 138,
+    "id": 4294967295,
+    "identifier": "FILMGRAIN",
+    "name": "Film Grain",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 139,
+    "id": 4294967295,
+    "identifier": "COLORMIX",
+    "name": "Color Mix",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 140,
+    "id": 4294967295,
+    "identifier": "PAGECURL",
+    "name": "Pagecurl",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 141,
+    "id": 4294967295,
+    "identifier": "MIX",
+    "name": "Random Blend",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 142,
+    "id": 4294967295,
+    "identifier": "Twist",
+    "name": "Twist",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 143,
+    "id": 4294967295,
+    "identifier": "Shear",
+    "name": "Shear",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 144,
+    "id": 4294967295,
+    "identifier": "Kaleidoscope",
+    "name": "Kaleidoscope",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 145,
+    "id": 4294967295,
+    "identifier": "MELT",
+    "name": "Melt",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 146,
+    "id": 4294967295,
+    "identifier": "ROLLUP",
+    "name": "Rollup",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 147,
+    "id": 4294967295,
+    "identifier": "RIPPLE",
+    "name": "Ripple",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 148,
+    "id": 4294967295,
+    "identifier": "RADIALBLUR",
+    "name": "Radial Blur",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 149,
+    "id": 4294967295,
+    "identifier": "LIGHTNING",
+    "name": "Lightning",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 150,
+    "id": 4294967295,
+    "identifier": "PARTICLEORBIT",
+    "name": "Particle Orbit",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 151,
+    "id": 4294967295,
+    "identifier": "PARTICLEBLAST",
+    "name": "Particle Blast",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 152,
+    "id": 4294967295,
+    "identifier": "PARTICLEWIND",
+    "name": "Particle Wind",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 153,
+    "id": 4294967295,
+    "identifier": "Sparkler",
+    "name": "Sparkler",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 154,
+    "id": 4294967295,
+    "identifier": "PATTERNGENERATOR",
+    "name": "Pattern Generator",
+    "category": "Illusion FX",
+    "alphaFlex": 0
+  },
+  {
+    "index": 155,
+    "id": 4294967295,
+    "identifier": "EFF2_RGBKEYER",
+    "name": "RGBKeyer",
+    "category": "Key",
+    "alphaFlex": 0
+  },
+  {
+    "index": 156,
+    "id": 14754,
+    "identifier": "EFF2_COMPOSITE",
+    "name": "Composite",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 157,
+    "id": 14766,
+    "identifier": "EFF2_COMPOSITE_ADAPTER",
+    "name": "Composite Adapter",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 158,
+    "id": 14761,
+    "identifier": "EFF2_TRACK_COMPOSITE",
+    "name": "TrackComposite",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 159,
+    "id": 14757,
+    "identifier": "EFF2_3TRACK_COMBINER",
+    "name": "3-track Combiner",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 160,
+    "id": 14759,
+    "identifier": "EFF2_2TRACK_COMBINER",
+    "name": "Combiner",
+    "category": "Alpha",
+    "alphaFlex": 0
+  },
+  {
+    "index": 161,
+    "id": 20202,
+    "identifier": "INT_EFF_SPATIAL_ADAPTER",
+    "name": "FrameFlex",
+    "category": "Reformat",
+    "alphaFlex": 0
+  },
+  {
+    "index": 0,
+    "id": 14655,
+    "identifier": "FXBaseProxyRegistration",
+    "name": "FXBaseProxyRegistration",
+    "category": "FXBaseProxyRegistration",
+    "alphaFlex": 1
+  },
+  {
+    "index": 1,
+    "id": 14650,
+    "identifier": "FXBaseProxyRegistration",
+    "name": "FXBaseProxyRegistration",
+    "category": "FXBaseProxyRegistration",
+    "alphaFlex": 1
+  },
+  {
+    "index": 2,
+    "id": 14301,
+    "identifier": "EFF2_BLEND_SUPER",
+    "name": "Superimpose",
+    "category": "Blend",
+    "alphaFlex": 1
+  },
+  {
+    "index": 3,
+    "id": 14300,
+    "identifier": "EFF2_BLEND_DISSOLVE",
+    "name": "Dissolve",
+    "category": "Blend",
+    "alphaFlex": 1
+  },
+  {
+    "index": 4,
+    "id": 14318,
+    "identifier": "EFF2_BLEND_FADE_DOWN",
+    "name": "Fade to Color",
+    "category": "Blend",
+    "alphaFlex": 1
+  },
+  {
+    "index": 5,
+    "id": 14319,
+    "identifier": "EFF2_BLEND_FADE_UP",
+    "name": "Fade from Color",
+    "category": "Blend",
+    "alphaFlex": 1
+  },
+  {
+    "index": 6,
+    "id": 14320,
+    "identifier": "EFF2_BLEND_DIP",
+    "name": "Dip to Color",
+    "category": "Blend",
+    "alphaFlex": 1
+  },
+  {
+    "index": 7,
+    "id": 14104,
+    "identifier": "EFF2_BLEND_WIPE_RBOX",
+    "name": "Right Box",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 8,
+    "id": 14105,
+    "identifier": "EFF2_BLEND_WIPE_TBOX",
+    "name": "Top Box",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 9,
+    "id": 14101,
+    "identifier": "EFF2_BLEND_WIPE_LBOX",
+    "name": "Left Box",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 10,
+    "id": 14100,
+    "identifier": "EFF2_BLEND_WIPE_BBOX",
+    "name": "Bottom Box",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 11,
+    "id": 14103,
+    "identifier": "EFF2_BLEND_WIPE_LR",
+    "name": "Bottom Right to Top Left",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 12,
+    "id": 14102,
+    "identifier": "EFF2_BLEND_WIPE_LL",
+    "name": "Bottom Left to Top Right",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 13,
+    "id": 14107,
+    "identifier": "EFF2_BLEND_WIPE_UR",
+    "name": "Top Right to Bottom Left",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 14,
+    "id": 14106,
+    "identifier": "EFF2_BLEND_WIPE_UL",
+    "name": "Top Left to Bottom Right",
+    "category": "Box Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 15,
+    "id": 14123,
+    "identifier": "EFF2_BLEND_WIPE_VOPEN",
+    "name": "Vert Open",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 16,
+    "id": 14121,
+    "identifier": "EFF2_BLEND_WIPE_HOPEN",
+    "name": "Horz Open",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 17,
+    "id": 14122,
+    "identifier": "EFF2_BLEND_WIPE_VERT",
+    "name": "Vertical",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 18,
+    "id": 14120,
+    "identifier": "EFF2_BLEND_WIPE_HORZ",
+    "name": "Horizontal",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 19,
+    "id": 14125,
+    "identifier": "EFF2_BLEND_WIPE_LRLDIAG",
+    "name": "Lower Right Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 20,
+    "id": 14124,
+    "identifier": "EFF2_BLEND_WIPE_LLRDIAG",
+    "name": "Lower Left Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 21,
+    "id": 14127,
+    "identifier": "EFF2_BLEND_WIPE_URLDIAG",
+    "name": "Upper Right Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 22,
+    "id": 14126,
+    "identifier": "EFF2_BLEND_WIPE_ULRDIAG",
+    "name": "Upper Left Diagonal",
+    "category": "Edge Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 23,
+    "id": 14140,
+    "identifier": "EFF2_BLEND_WIPE_SPIRAL",
+    "name": "Spiral",
+    "category": "Matrix Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 24,
+    "id": 14141,
+    "identifier": "EFF2_BLEND_WIPE_GRID",
+    "name": "Grid",
+    "category": "Matrix Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 25,
+    "id": 14142,
+    "identifier": "EFF2_BLEND_WIPE_1ROW",
+    "name": "One-Way Row",
+    "category": "Matrix Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 26,
+    "id": 14143,
+    "identifier": "EFF2_BLEND_WIPE_SPECKLE",
+    "name": "Speckle",
+    "category": "Matrix Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 27,
+    "id": 14144,
+    "identifier": "EFF2_BLEND_WIPE_ZIG_ZAG",
+    "name": "Zig Zag",
+    "category": "Matrix Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 28,
+    "id": 14162,
+    "identifier": "EFF2_BLEND_WIPE_VOPEN_SAW",
+    "name": "Vert Open Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 29,
+    "id": 14160,
+    "identifier": "EFF2_BLEND_WIPE_HOPEN_SAW",
+    "name": "Horz Open Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 30,
+    "id": 14163,
+    "identifier": "EFF2_BLEND_WIPE_VSAW",
+    "name": "Vertical Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 31,
+    "id": 14161,
+    "identifier": "EFF2_BLEND_WIPE_HSAW",
+    "name": "Horizontal Sawtooth",
+    "category": "Sawtooth Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 32,
+    "id": 14186,
+    "identifier": "EFF2_BLEND_WIPE_2ROW",
+    "name": "Horizontal Bands",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 33,
+    "id": 14188,
+    "identifier": "EFF2_BLEND_WIPE_HBLIND",
+    "name": "Horizontal Blinds",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 34,
+    "id": 14187,
+    "identifier": "EFF2_BLEND_WIPE_VBLIND",
+    "name": "Vertical Blinds",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 35,
+    "id": 14180,
+    "identifier": "EFF2_BLEND_WIPE_4CORNER",
+    "name": "4 Corners",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 36,
+    "id": 14181,
+    "identifier": "EFF2_BLEND_WIPE_BOX",
+    "name": "Center Box",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 37,
+    "id": 14182,
+    "identifier": "EFF2_BLEND_WIPE_CIRCLE",
+    "name": "Circle",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 38,
+    "id": 14183,
+    "identifier": "EFF2_BLEND_WIPE_RADAR",
+    "name": "Clock",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 39,
+    "id": 14184,
+    "identifier": "EFF2_BLEND_WIPE_DIAMOND",
+    "name": "Diamond",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 40,
+    "id": 14185,
+    "identifier": "EFF2_BLEND_WIPE_ELLIPSE",
+    "name": "Ellipse",
+    "category": "Shape Wipe",
+    "alphaFlex": 1
+  },
+  {
+    "index": 41,
+    "id": 14800,
+    "identifier": "EFF2_BLEND_MASK_166",
+    "name": "1.66 Mask",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 42,
+    "id": 14801,
+    "identifier": "EFF2_BLEND_MASK_185",
+    "name": "1.85 Mask",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 43,
+    "id": 14802,
+    "identifier": "EFF2_BLEND_MASK_235",
+    "name": "Anamorphic Mask",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 44,
+    "id": 14803,
+    "identifier": "EFF2_BLEND_MASK_177",
+    "name": "16:9 Mask",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 45,
+    "id": 14303,
+    "identifier": "EFF2_BLEND_DISSOLVE_LIN",
+    "name": "Film Fade",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 46,
+    "id": 14302,
+    "identifier": "EFF2_BLEND_DISSOLVE_LOG",
+    "name": "Film Dissolve",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 47,
+    "id": 14821,
+    "identifier": "EFF2_BLOW_UP",
+    "name": "Blowup",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 48,
+    "id": 14804,
+    "identifier": "EFF2_BLEND_MASK",
+    "name": "Mask",
+    "category": "Film",
+    "alphaFlex": 1
+  },
+  {
+    "index": 49,
+    "id": 14650,
+    "identifier": "EFF2_COLORCORRECT",
+    "name": "Color Effect",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 50,
+    "id": 14751,
+    "identifier": "EFF2_LUTSFX",
+    "name": "Color Adapter",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 51,
+    "id": 14752,
+    "identifier": "EFF2_COLOR_SPACE",
+    "name": "Color LUT",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 52,
+    "id": 14753,
+    "identifier": "EFF2_TARGET_COLOR_SPACE",
+    "name": "Target Color Space",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 53,
+    "id": 14760,
+    "identifier": "EFF2_WORKING_COLOR_SPACE",
+    "name": "Working Color Space",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 54,
+    "id": 14840,
+    "identifier": "EFF2_BLEND_FLIP_VERT",
+    "name": "Flip",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 55,
+    "id": 14841,
+    "identifier": "EFF2_BLEND_FLIP_BOTH",
+    "name": "Flip-Flop",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 56,
+    "id": 14842,
+    "identifier": "EFF2_BLEND_FLIP_HORZ",
+    "name": "Flop",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 57,
+    "id": 14805,
+    "identifier": "EFF2_BLEND_MASK_IMAGE",
+    "name": "Mask",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 58,
+    "id": 14724,
+    "identifier": "EFF2_STABILIZE",
+    "name": "Stabilize",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 59,
+    "id": 14823,
+    "identifier": "EFF2_PAN_SCAN",
+    "name": "Pan and Scan",
+    "category": "Reformat",
+    "alphaFlex": 1
+  },
+  {
+    "index": 60,
+    "id": 14824,
+    "identifier": "EFF2_16x9_LETTERBOX",
+    "name": "16:9 Letterbox",
+    "category": "Reformat",
+    "alphaFlex": 1
+  },
+  {
+    "index": 61,
+    "id": 14825,
+    "identifier": "EFF2_14x9_LETTERBOX",
+    "name": "14:9 Letterbox",
+    "category": "Reformat",
+    "alphaFlex": 1
+  },
+  {
+    "index": 62,
+    "id": 14826,
+    "identifier": "EFF2_4x3_SIDEBAR",
+    "name": "4:3 Sidebar",
+    "category": "Reformat",
+    "alphaFlex": 1
+  },
+  {
+    "index": 63,
+    "id": 14201,
+    "identifier": "EFF2_BLEND_LUMAKEY",
+    "name": "Luma Key",
+    "category": "Key",
+    "alphaFlex": 1
+  },
+  {
+    "index": 64,
+    "id": 14205,
+    "identifier": "EFF2_BLEND_MATTE_KEY",
+    "name": "Matte Key",
+    "category": "Key",
+    "alphaFlex": 1
+  },
+  {
+    "index": 65,
+    "id": 14200,
+    "identifier": "EFF2_BLEND_YUV_CHROMAKEY",
+    "name": "Chroma Key",
+    "category": "Key",
+    "alphaFlex": 1
+  },
+  {
+    "index": 66,
+    "id": 14206,
+    "identifier": "EFF2_2DMATTE",
+    "name": "Matte Key",
+    "category": "Key",
+    "alphaFlex": 1
+  },
+  {
+    "index": 67,
+    "id": 14860,
+    "identifier": "EFF2_BLEND_CONCEAL_BOTTOMLEFT",
+    "name": "Bottom Left to Top Right",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 68,
+    "id": 14861,
+    "identifier": "EFF2_BLEND_CONCEAL_BOTTOMRIGHT",
+    "name": "Bottom Right to Top Left",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 69,
+    "id": 14866,
+    "identifier": "EFF2_BLEND_CONCEAL_TOPRIGHT",
+    "name": "Top Right to Bottom Left",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 70,
+    "id": 14865,
+    "identifier": "EFF2_BLEND_CONCEAL_TOPLEFT",
+    "name": "Top Left to Bottom Right",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 71,
+    "id": 14862,
+    "identifier": "EFF2_BLEND_CONCEAL_UP",
+    "name": "Bottom to Top",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 72,
+    "id": 14867,
+    "identifier": "EFF2_BLEND_CONCEAL_DOWN",
+    "name": "Top to Bottom",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 73,
+    "id": 14863,
+    "identifier": "EFF2_BLEND_CONCEAL_LEFT",
+    "name": "Left to Right",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 74,
+    "id": 14864,
+    "identifier": "EFF2_BLEND_CONCEAL_RIGHT",
+    "name": "Right to Left",
+    "category": "Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 75,
+    "id": 14880,
+    "identifier": "EFF2_BLEND_LCONCEAL_BOTTOMLEFT",
+    "name": "Bottom Left",
+    "category": "L-Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 76,
+    "id": 14881,
+    "identifier": "EFF2_BLEND_LCONCEAL_BOTTOMRIGHT",
+    "name": "Bottom Right",
+    "category": "L-Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 77,
+    "id": 14883,
+    "identifier": "EFF2_BLEND_LCONCEAL_TOPRIGHT",
+    "name": "Top Right",
+    "category": "L-Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 78,
+    "id": 14882,
+    "identifier": "EFF2_BLEND_LCONCEAL_TOPLEFT",
+    "name": "Top Left",
+    "category": "L-Conceal",
+    "alphaFlex": 1
+  },
+  {
+    "index": 79,
+    "id": 14900,
+    "identifier": "EFF2_BLEND_PEEL_BOTTOMLEFT",
+    "name": "Bottom Left Corner",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 80,
+    "id": 14901,
+    "identifier": "EFF2_BLEND_PEEL_BOTTOMRIGHT",
+    "name": "Bottom Right Corner",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 81,
+    "id": 14906,
+    "identifier": "EFF2_BLEND_PEEL_TOPRIGHT",
+    "name": "Top Right Corner",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 82,
+    "id": 14905,
+    "identifier": "EFF2_BLEND_PEEL_TOPLEFT",
+    "name": "Top Left Corner",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 83,
+    "id": 14907,
+    "identifier": "EFF2_BLEND_PEEL_TOP",
+    "name": "Top to Bottom",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 84,
+    "id": 14902,
+    "identifier": "EFF2_BLEND_PEEL_BOTTOM",
+    "name": "Bottom to Top",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 85,
+    "id": 14903,
+    "identifier": "EFF2_BLEND_PEEL_LEFT",
+    "name": "Left to Right",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 86,
+    "id": 14904,
+    "identifier": "EFF2_BLEND_PEEL_RIGHT",
+    "name": "Right to Left",
+    "category": "Peel",
+    "alphaFlex": 1
+  },
+  {
+    "index": 87,
+    "id": 14920,
+    "identifier": "EFF2_BLEND_PUSH_BOTTOMLEFT",
+    "name": "Bottom Left to Top Right",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 88,
+    "id": 14921,
+    "identifier": "EFF2_BLEND_PUSH_BOTTOMRIGHT",
+    "name": "Bottom Right to Top Left",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 89,
+    "id": 14926,
+    "identifier": "EFF2_BLEND_PUSH_TOPRIGHT",
+    "name": "Top Right to Bottom Left",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 90,
+    "id": 14925,
+    "identifier": "EFF2_BLEND_PUSH_TOPLEFT",
+    "name": "Top Left to Bottom Right",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 91,
+    "id": 14927,
+    "identifier": "EFF2_BLEND_PUSH_TOP",
+    "name": "Top to Bottom",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 92,
+    "id": 14922,
+    "identifier": "EFF2_BLEND_PUSH_BOTTOM",
+    "name": "Bottom to Top",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 93,
+    "id": 14923,
+    "identifier": "EFF2_BLEND_PUSH_LEFT",
+    "name": "Left to Right",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 94,
+    "id": 14924,
+    "identifier": "EFF2_BLEND_PUSH_RIGHT",
+    "name": "Right to Left",
+    "category": "Push",
+    "alphaFlex": 1
+  },
+  {
+    "index": 95,
+    "id": 14940,
+    "identifier": "EFF2_BLEND_ROTATE_XROTATE",
+    "name": "X Spin",
+    "category": "Spin",
+    "alphaFlex": 1
+  },
+  {
+    "index": 96,
+    "id": 14941,
+    "identifier": "EFF2_BLEND_ROTATE_YROTATE",
+    "name": "Y Spin",
+    "category": "Spin",
+    "alphaFlex": 1
+  },
+  {
+    "index": 97,
+    "id": 14942,
+    "identifier": "EFF2_BLEND_ROTATE_ZROTATE",
+    "name": "Z Spin",
+    "category": "Spin",
+    "alphaFlex": 1
+  },
+  {
+    "index": 98,
+    "id": 14964,
+    "identifier": "EFF2_BLEND_SQUEEZE_ZOOM",
+    "name": "Centered Zoom",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 99,
+    "id": 14965,
+    "identifier": "EFF2_BLEND_SQUEEZE_HORZ",
+    "name": "Horizontal Centered",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 100,
+    "id": 14974,
+    "identifier": "EFF2_BLEND_SQUEEZE_VERT",
+    "name": "Vertical Centered",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 101,
+    "id": 14960,
+    "identifier": "EFF2_BLEND_SQUEEZE_BOTTOMCENTER",
+    "name": "Bottom Centered",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 102,
+    "id": 14968,
+    "identifier": "EFF2_BLEND_SQUEEZE_RIGHTCENTER",
+    "name": "Right Centered",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 103,
+    "id": 14970,
+    "identifier": "EFF2_BLEND_SQUEEZE_TOPCENTER",
+    "name": "Top Centered",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 104,
+    "id": 14966,
+    "identifier": "EFF2_BLEND_SQUEEZE_LEFTCENTER",
+    "name": "Left Centered",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 105,
+    "id": 14973,
+    "identifier": "EFF2_BLEND_SQUEEZETOP",
+    "name": "Top to Bottom",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 106,
+    "id": 14963,
+    "identifier": "EFF2_BLEND_SQUEEZEBOTTOM",
+    "name": "Bottom to Top",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 107,
+    "id": 14967,
+    "identifier": "EFF2_BLEND_SQUEEZELEFT",
+    "name": "Left to Right",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 108,
+    "id": 14969,
+    "identifier": "EFF2_BLEND_SQUEEZERIGHT",
+    "name": "Right to Left",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 109,
+    "id": 14961,
+    "identifier": "EFF2_BLEND_SQUEEZE_BOTTOMLEFT",
+    "name": "Bottom Left",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 110,
+    "id": 14972,
+    "identifier": "EFF2_BLEND_SQUEEZE_TOPRIGHT",
+    "name": "Top Right",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 111,
+    "id": 14962,
+    "identifier": "EFF2_BLEND_SQUEEZE_BOTTOMRIGHT",
+    "name": "Bottom Right",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 112,
+    "id": 14971,
+    "identifier": "EFF2_BLEND_SQUEEZE_TOPLEFT",
+    "name": "Top Left",
+    "category": "Squeeze",
+    "alphaFlex": 1
+  },
+  {
+    "index": 113,
+    "id": 4294967295,
+    "identifier": "FLUID_MORPH",
+    "name": "FluidMorph",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 114,
+    "id": 4294967295,
+    "identifier": "FLUID_COLORMAP",
+    "name": "FluidColorMap",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 115,
+    "id": 4294967295,
+    "identifier": "FLUID_BLUR",
+    "name": "FluidBlur",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 116,
+    "id": 4294967295,
+    "identifier": "REGION_STABILIZE",
+    "name": "Region Stabilize",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 117,
+    "id": 4294967295,
+    "identifier": "YC_KEY",
+    "name": "SpectraMatte Legacy",
+    "category": "Legacy",
+    "alphaFlex": 1
+  },
+  {
+    "index": 118,
+    "id": 4551,
+    "identifier": "4F1887D2-D124-4272-AAEE-19A4A2CE47CA",
+    "name": "SpectraMatte A",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 119,
+    "id": 4552,
+    "identifier": "A68A5D6C-EBFC-442D-92D7-3A8D8D9C3A5E",
+    "name": "Luma Key A",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 120,
+    "id": 14400,
+    "identifier": "EFF2_BLEND_GRAPHIC",
+    "name": "Title",
+    "category": "Title",
+    "alphaFlex": 1
+  },
+  {
+    "index": 121,
+    "id": 4294967295,
+    "identifier": "SAFE_COLOR_LIMITER",
+    "name": "Safe Color Limiter",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 122,
+    "id": 4294967295,
+    "identifier": "AI_OBJECT_DETECT",
+    "name": "Object Detection",
+    "category": "Avid Debug",
+    "alphaFlex": 1
+  },
+  {
+    "index": 123,
+    "id": 4294967295,
+    "identifier": "YC_SWATCH",
+    "name": "SpectraGraph",
+    "category": "Avid Debug",
+    "alphaFlex": 1
+  },
+  {
+    "index": 124,
+    "id": 4294967295,
+    "identifier": "FRAME_OFFSET",
+    "name": "Frame Offset",
+    "category": "Avid Debug",
+    "alphaFlex": 1
+  },
+  {
+    "index": 125,
+    "id": 4294967295,
+    "identifier": "DIFFERENCE",
+    "name": "Difference",
+    "category": "Avid Debug",
+    "alphaFlex": 1
+  },
+  {
+    "index": 126,
+    "id": 4294967295,
+    "identifier": "STRESS_TEST",
+    "name": "Stress Test",
+    "category": "Avid Debug",
+    "alphaFlex": 1
+  },
+  {
+    "index": 127,
+    "id": 4294967295,
+    "identifier": "FIELD_SWAP",
+    "name": "Field Swap",
+    "category": "Image",
+    "alphaFlex": 1
+  },
+  {
+    "index": 128,
+    "id": 4294967295,
+    "identifier": "DIFFERENCE KEY",
+    "name": "Difference Key",
+    "category": "Key",
+    "alphaFlex": 1
+  },
+  {
+    "index": 129,
+    "id": 4294967295,
+    "identifier": "PSNR",
+    "name": "PSNR Generator",
+    "category": "Avid Debug",
+    "alphaFlex": 1
+  },
+  {
+    "index": 130,
+    "id": 4294967295,
+    "identifier": "Flare",
+    "name": "Flare",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 131,
+    "id": 4294967295,
+    "identifier": "CRYSTAL",
+    "name": "Crystal",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 132,
+    "id": 4294967295,
+    "identifier": "PINCH",
+    "name": "Pinch",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 133,
+    "id": 4294967295,
+    "identifier": "IRIS",
+    "name": "Iris",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 134,
+    "id": 4294967295,
+    "identifier": "SPHERE",
+    "name": "Sphere",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 135,
+    "id": 4294967295,
+    "identifier": "SWIRL",
+    "name": "Swirl",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 136,
+    "id": 4294967295,
+    "identifier": "WAVE",
+    "name": "Wave",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 137,
+    "id": 4294967295,
+    "identifier": "MOTIONBLUR",
+    "name": "Motion Blur",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 138,
+    "id": 4294967295,
+    "identifier": "FILMGRAIN",
+    "name": "Film Grain",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 139,
+    "id": 4294967295,
+    "identifier": "COLORMIX",
+    "name": "Color Mix",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 140,
+    "id": 4294967295,
+    "identifier": "PAGECURL",
+    "name": "Pagecurl",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 141,
+    "id": 4294967295,
+    "identifier": "MIX",
+    "name": "Random Blend",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 142,
+    "id": 4294967295,
+    "identifier": "Twist",
+    "name": "Twist",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 143,
+    "id": 4294967295,
+    "identifier": "Shear",
+    "name": "Shear",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 144,
+    "id": 4294967295,
+    "identifier": "Kaleidoscope",
+    "name": "Kaleidoscope",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 145,
+    "id": 4294967295,
+    "identifier": "MELT",
+    "name": "Melt",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 146,
+    "id": 4294967295,
+    "identifier": "ROLLUP",
+    "name": "Rollup",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 147,
+    "id": 4294967295,
+    "identifier": "RIPPLE",
+    "name": "Ripple",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 148,
+    "id": 4294967295,
+    "identifier": "RADIALBLUR",
+    "name": "Radial Blur",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 149,
+    "id": 4294967295,
+    "identifier": "LIGHTNING",
+    "name": "Lightning",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 150,
+    "id": 4294967295,
+    "identifier": "PARTICLEORBIT",
+    "name": "Particle Orbit",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 151,
+    "id": 4294967295,
+    "identifier": "PARTICLEBLAST",
+    "name": "Particle Blast",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 152,
+    "id": 4294967295,
+    "identifier": "PARTICLEWIND",
+    "name": "Particle Wind",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 153,
+    "id": 4294967295,
+    "identifier": "Sparkler",
+    "name": "Sparkler",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 154,
+    "id": 4294967295,
+    "identifier": "PATTERNGENERATOR",
+    "name": "Pattern Generator",
+    "category": "Illusion FX",
+    "alphaFlex": 1
+  },
+  {
+    "index": 155,
+    "id": 4294967295,
+    "identifier": "EFF2_RGBKEYER",
+    "name": "RGBKeyer Legacy",
+    "category": "Legacy",
+    "alphaFlex": 1
+  },
+  {
+    "index": 156,
+    "id": 14754,
+    "identifier": "EFF2_COMPOSITE",
+    "name": "Composite",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 157,
+    "id": 14766,
+    "identifier": "EFF2_COMPOSITE_ADAPTER",
+    "name": "Composite Adapter",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 158,
+    "id": 14761,
+    "identifier": "EFF2_TRACK_COMPOSITE",
+    "name": "TrackComposite",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 159,
+    "id": 14757,
+    "identifier": "EFF2_3TRACK_COMBINER",
+    "name": "3-track Combiner",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 160,
+    "id": 14759,
+    "identifier": "EFF2_2TRACK_COMBINER",
+    "name": "Combiner",
+    "category": "Alpha",
+    "alphaFlex": 1
+  },
+  {
+    "index": 161,
+    "id": 20202,
+    "identifier": "INT_EFF_SPATIAL_ADAPTER",
+    "name": "FrameFlex",
+    "category": "Reformat",
+    "alphaFlex": 1
+  }
+]

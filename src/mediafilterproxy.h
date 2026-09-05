@@ -3,13 +3,13 @@
 #include <QSet>
 #include <QSortFilterProxyModel>
 #include <QString>
+#include <QStringList>
 
 class MediaTableModel;
 struct MediaFile;
 
-/// Four independent filters all have to pass for a row to make it
-/// through: FilterMode tab, project list, bin filter MOB set, and
-/// free text search across the visible string columns.
+/// Independent filters all have to pass: tab, projects, bin MOBs,
+/// optional effect names/volume, and free text in visible string fields.
 class MediaFilterProxy : public QSortFilterProxyModel
 {
 	Q_OBJECT
@@ -35,6 +35,18 @@ public:
 	void setFilterMode(FilterMode mode);
 	void setSearchText(const QString &text);
 	void setProjectFilter(const QSet<QString> &projects);
+
+	/// Experimental effect details are off by default. Turning them off
+	/// clears both effect selections; setters cannot activate them while off.
+	void setEffectDetailsEnabled(bool enabled);
+	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
+	/// Exact names are ORed; any name or volume selection first requires a
+	/// proven Precompute. Empty names means all names on the chosen volume.
+	void setEffectFilter(const QStringList &effects);
+	QStringList effectFilter() const;
+	/// The row's stored volumePath, not its display label. Empty means all.
+	void setEffectVolumeFilter(const QString &volumePath);
+	QString effectVolumeFilter() const { return m_effectVolumePath; }
 
 	/// Caches the concrete model pointer for the hot
 	/// filterAcceptsRow / lessThan paths; see m_sourceModel.
@@ -69,6 +81,9 @@ private:
 	/// matches decomposed (NFD) filenames macOS volumes hand back.
 	QString m_searchNfc;
 	QSet<QString> m_selectedProjects;
+	bool m_effectDetailsEnabled = false;
+	QSet<QString> m_selectedEffects;
+	QString m_effectVolumePath;
 	bool m_binFilterActive = false;
 	QSet<QString> m_binFilterAcceptedMobs;
 };

@@ -12,7 +12,7 @@ int MediaTableModel::rowCount(const QModelIndex &) const
 }
 int MediaTableModel::columnCount(const QModelIndex &) const
 {
-	return Enum::to_underlying(Column::Count_);
+	return Enum::to_underlying(m_effectDetailsEnabled ? Column::Count_ : Column::Effect);
 }
 
 void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
@@ -81,9 +81,29 @@ void MediaTableModel::setShowRawCodecHex(bool on)
 	}
 }
 
+void MediaTableModel::setEffectDetailsEnabled(bool enabled)
+{
+	if (m_effectDetailsEnabled == enabled)
+		return;
+	const int first = Enum::to_underlying(Column::Effect);
+	const int last = Enum::to_underlying(Column::Count_) - 1;
+	if (enabled)
+	{
+		beginInsertColumns({}, first, last);
+		m_effectDetailsEnabled = true;
+		endInsertColumns();
+	}
+	else
+	{
+		beginRemoveColumns({}, first, last);
+		m_effectDetailsEnabled = false;
+		endRemoveColumns();
+	}
+}
+
 QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 {
-	if (!index.isValid() || index.row() >= m_files.size())
+	if (!index.isValid() || index.row() >= m_files.size() || index.column() >= columnCount())
 		return {};
 	const MediaFile &f = m_files[index.row()];
 
@@ -121,6 +141,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.typeDisplay();
 		case Column::SourceFile:
 			return f.sourceFileName;
+		case Column::Effect:
+			return f.type == MediaFile::Type::Precompute ? f.effect : QString();
+		case Column::EffectCategory:
+			return f.type == MediaFile::Type::Precompute ? f.effectCategory : QString();
+		case Column::EffectSequence:
+			return f.type == MediaFile::Type::Precompute ? f.effectSequence : QString();
 		case Column::Count_:
 			break;
 		}
@@ -140,6 +166,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	}
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourceFile)
 		return f.sourceFilePath; // the full path Avid recorded; the cell shows the name
+	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Kind &&
+		f.kind == MediaFile::Kind::Unknown)
+		return QStringLiteral("The available metadata has not identified this file as audio or video.");
+	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Type &&
+		f.type == MediaFile::Type::Unknown)
+		return QStringLiteral("The available metadata has not identified this file as media or a precompute.");
 	if (role == Qt::TextAlignmentRole && static_cast<Column>(index.column()) == Column::SizeMB)
 		return QVariant(int(Qt::AlignRight | Qt::AlignVCenter));
 	if (role == Qt::UserRole)
@@ -157,7 +189,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 
 QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	if (orientation != Qt::Horizontal)
+	if (orientation != Qt::Horizontal || section < 0 || section >= columnCount())
 		return {};
 
 	if (role == Qt::ToolTipRole)
@@ -195,7 +227,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	const char *headers[] = {"Clip Name", "Filename", "Project", "Bin", "Kind",
 							 "Codec", "Resolution", "FPS", "Duration",
 							 "Size (MB)", "Location", "Date Created", "Date Modified",
-							 "Type", "Source File"};
+							 "Type", "Source File", "Effect", "Effect Category", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "
 				  "add or remove a header string when changing the Column enum");

@@ -1,0 +1,284 @@
+{
+  "oldDistinctPairs": 878,
+  "newDistinctPairs": 887,
+  "added": [
+    [
+      "3-track Combiner",
+      "Alpha"
+    ],
+    [
+      "3D Warp",
+      "Blend"
+    ],
+    [
+      "3D Warp Legacy",
+      "Legacy"
+    ],
+    [
+      "AniMatte Legacy",
+      "Legacy"
+    ],
+    [
+      "Audio Dissolve",
+      "Blend"
+    ],
+    [
+      "Color LUT",
+      "Image"
+    ],
+    [
+      "Color Mix",
+      "Illusion FX"
+    ],
+    [
+      "D-Verb",
+      "AudioSuite"
+    ],
+    [
+      "Difference",
+      "Avid Debug"
+    ],
+    [
+      "Difference Key",
+      "Key"
+    ],
+    [
+      "Field Swap",
+      "Image"
+    ],
+    [
+      "Film Grain",
+      "Illusion FX"
+    ],
+    [
+      "Frame Offset",
+      "Avid Debug"
+    ],
+    [
+      "Luma Key A",
+      "Alpha"
+    ],
+    [
+      "Luma Key Legacy",
+      "Legacy"
+    ],
+    [
+      "Motion Blur",
+      "Illusion FX"
+    ],
+    [
+      "Motion Effect",
+      "Timewarp"
+    ],
+    [
+      "Object Detection",
+      "Avid Debug"
+    ],
+    [
+      "PSNR Generator",
+      "Avid Debug"
+    ],
+    [
+      "Particle Blast",
+      "Illusion FX"
+    ],
+    [
+      "Particle Orbit",
+      "Illusion FX"
+    ],
+    [
+      "Particle Wind",
+      "Illusion FX"
+    ],
+    [
+      "Pattern Generator",
+      "Illusion FX"
+    ],
+    [
+      "Picture-In-Picture Legacy",
+      "Legacy"
+    ],
+    [
+      "RGBKeyer",
+      "Key"
+    ],
+    [
+      "RGBKeyer Legacy",
+      "Legacy"
+    ],
+    [
+      "Radial Blur",
+      "Illusion FX"
+    ],
+    [
+      "Random Blend",
+      "Illusion FX"
+    ],
+    [
+      "Region Stabilize",
+      "Image"
+    ],
+    [
+      "Safe Color Limiter",
+      "Image"
+    ],
+    [
+      "SpectraGraph",
+      "Avid Debug"
+    ],
+    [
+      "SpectraMatte",
+      "Key"
+    ],
+    [
+      "SpectraMatte A",
+      "Alpha"
+    ],
+    [
+      "SpectraMatte Legacy",
+      "Legacy"
+    ],
+    [
+      "Stress Test",
+      "Avid Debug"
+    ],
+    [
+      "Superimpose Legacy",
+      "Legacy"
+    ],
+    [
+      "Symphony Warp",
+      "Blend"
+    ],
+    [
+      "TrackComposite",
+      "Alpha"
+    ],
+    [
+      "Transformation",
+      "Alpha"
+    ]
+  ],
+  "removed": [
+    [
+      "2-track Combiner",
+      ""
+    ],
+    [
+      "3D Warp",
+      "Xpress 3D Effect"
+    ],
+    [
+      "Box Wipe",
+      "Box Wipe"
+    ],
+    [
+      "Color",
+      "Illusion FX"
+    ],
+    [
+      "Conceal",
+      "Conceal"
+    ],
+    [
+      "Edge Wipe",
+      "Edge Wipe"
+    ],
+    [
+      "Film",
+      "Film"
+    ],
+    [
+      "Film",
+      "Illusion FX"
+    ],
+    [
+      "Image",
+      "Image"
+    ],
+    [
+      "Key",
+      "Key"
+    ],
+    [
+      "L-Conceal",
+      "L-Conceal"
+    ],
+    [
+      "Matrix Wipe",
+      "Matrix Wipe"
+    ],
+    [
+      "Motion",
+      "Illusion FX"
+    ],
+    [
+      "PSNR",
+      "Illusion FX"
+    ],
+    [
+      "Particle",
+      "Illusion FX"
+    ],
+    [
+      "Pattern",
+      "Illusion FX"
+    ],
+    [
+      "Peel",
+      "Peel"
+    ],
+    [
+      "Push",
+      "Push"
+    ],
+    [
+      "RGBKeyer",
+      "Illusion FX"
+    ],
+    [
+      "Radial",
+      "Illusion FX"
+    ],
+    [
+      "Random",
+      "Illusion FX"
+    ],
+    [
+      "Reformat",
+      "Reformat"
+    ],
+    [
+      "Region",
+      "Illusion FX"
+    ],
+    [
+      "Sawtooth Wipe",
+      "Sawtooth Wipe"
+    ],
+    [
+      "Shape Wipe",
+      "Shape Wipe"
+    ],
+    [
+      "Spin",
+      "Spin"
+    ],
+    [
+      "Squeeze",
+      "Squeeze"
+    ],
+    [
+      "Symphony Warp",
+      "Xpress 3D Effect"
+    ],
+    [
+      "Transformation",
+      "Xpress 3D Effect"
+    ],
+    [
+      "Xpress 3D Effect",
+      "Xpress 3D Effect"
+    ]
+  ]
+}

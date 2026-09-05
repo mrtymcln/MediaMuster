@@ -1,5 +1,6 @@
 #include "mediascanner.h"
 #include "avideffects.h"
+#include "avidusage.h"
 #include "conventions.h"
 #include "testpause.h"
 #include "logcategories.h"
@@ -7,7 +8,6 @@
 #include "mxfparser.h"
 #include "omfparser.h" // OMF-era: the Bento-tail twin of MxfParser for legacy essence
 #include "omfuid.h"	   // OMF-era: tells a folder's databases' era from their MOB form
-#include "pathkey.h"
 #include "pmrkey.h"
 #include "progressthrottle.h"
 #include <QDir>
@@ -26,6 +26,16 @@
 #endif
 
 // MARK: - MediaScanner construction
+
+namespace
+{
+	QString scannerFolderKey(const QString &path)
+	{
+		const QFileInfo info(path);
+		const QString canonical = info.canonicalFilePath();
+		return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
+	}
+}
 
 MediaScanner::MediaScanner(QObject *parent)
 	: QObject(parent)
@@ -57,6 +67,7 @@ void MediaScanner::startScan(const Options &options)
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
 		m_mdbMapsByFolder.clear();
+		m_seenFolders.clear();
 	}
 	m_flushTimer.start();
 	m_lastFlushElapsed = 0;
@@ -109,35 +120,17 @@ namespace
 
 	// MARK: - Media vs Precompute
 	//
-	// Decided by ONE fact Avid records in the file: the MaterialPackage's
-	// UsageCode (local tag 0x4408). See MxfParser::isPrecomputeUsage.
+	// Classification follows the selected master mob, never its name. MDB/OMF
+	// master application codes 1 and 7 mean Precompute and Media respectively.
+	// MXF combines the private MobAppCode with the standard UsageCode UID:
+	// LowerLevel alone also covers groups and motion effects in MC 26.8.
+	// See AvidUsage for the shared definitions and conflict handling.
 	//
-	// This replaced four name-shape rules on 2026-08-14, all now deleted.
-	// Measured over 823 distinct real files, they were a poor stand-in:
-	//   - the `P##.`/`W...##.` filename prefix matched 0 files
-	//   - the Boris `,S_` test matched 0 files
-	//   - the effect-keyword list could never be completed — the real render
-	//     names here are 3D_Page_Fold, AniMatte, 14_9_Letterbox, 3D_Ball,
-	//     1.85_Mask, 10101010, and not one was in the list
-	//   - and it was wrong in both directions on ordinary names: a clip called
-	//     "Resize test", "Flip Book" or "Untitled" classified as Precompute,
-	//     while the one real Video Mixdown classified as Precompute only
-	//     because "title" happens to sit inside "Untitled" — a mixdown is a
-	//     master clip, not a render (Avid community thread 90606).
-	// UsageCode gets all 823 right, including the mixdown, which carries no
-	// UsageCode and so needs no special case.
-	//
-	// The databases carry the same verdict as an integer — OMFI:MOBJ:UsageCode
-	// 1 on a precompute's MASTER mob, 7 on a master clip's (MdbParser reads
-	// it; 1,155 corpus joins plus 54 real-drive renders agree with the
-	// header's 0x4408) — so a row the database covers is classified without a
-	// header read. The file mob's code (9 on most renders, 0 on some) is not
-	// part of the rule.
-	//
-	// Consequence worth knowing: a file whose MXF header cannot be read, and
-	// that no database describes, gets no verdict and stays Media. That is
-	// the honest answer — nothing about the file says otherwise — where the
-	// old rules would guess from a name.
+	// File-mob codes are not a verdict: the 2,493-file corpus includes 107
+	// precomputes with file code 9 and another 64 with file code 0. Unknown or
+	// conflicting master usage stays Unknown. Catalogue/name lookup happens
+	// only after classification, so a title or renamed clip cannot establish
+	// that the underlying media is a precompute.
 
 	/// The one place a clip name is ever assigned. Takes only when the new
 	/// name comes from a STRICTLY better source, so the rungs of the ladder
@@ -190,12 +183,14 @@ namespace
 	/// two cannot disagree on a derived field.
 	void applyMetadata(MediaFile &mf, const MxfMetadata &mxf)
 	{
+		// A failed/incomplete header read cannot negate an earlier database
+		// classification or contribute half-read import/identity information.
+		if (!mxf.valid && !mxf.classificationKnown)
+			return;
+		if (mxf.clipNameFromMaterial)
+			setClipName(mf, mxf.clipName, MediaFile::ClipNameSource::MaterialPackage);
 		if (mxf.valid)
 		{
-			// Only a MaterialPackage name is a rung of the ladder; a
-			// SourcePackage name never is (see MediaFile::ClipNameSource).
-			if (mxf.clipNameFromMaterial)
-				setClipName(mf, mxf.clipName, MediaFile::ClipNameSource::MaterialPackage);
 			if (!mxf.codec.isEmpty())
 				mf.codec = mxf.codec;
 			if (!mxf.essenceContainerLabel.isEmpty())
@@ -221,6 +216,8 @@ namespace
 			// the MDB). No display-name comparisons here.
 			if (mxf.isAudio)
 				mf.kind = MediaFile::Kind::Audio;
+			else if (mxf.width > 0 && mxf.height > 0)
+				mf.kind = MediaFile::Kind::Video;
 		}
 
 		// Import facts a header carries as TaggedValues (UNC Path, Video,
@@ -229,14 +226,18 @@ namespace
 		assignIfMissing(mf.sourceFilePath, mxf.sourceFilePath);
 		assignIfMissing(mf.sourceContainer, mxf.sourceContainer);
 		if (mf.sourceFileName.isEmpty() && !mf.sourceFilePath.isEmpty())
-			mf.sourceFileName = mf.sourceFilePath.section(QLatin1Char('/'), -1);
+			mf.sourceFileName = QString(mf.sourceFilePath).replace(QLatin1Char('\\'), QLatin1Char('/')).section(QLatin1Char('/'), -1);
 		if (mxf.hasImportSetting)
 			mf.isImported = true;
 
-		// The one place a file is classified. A parsed header or the
-		// database's usage codes can say, and either says both ways: a render
-		// is marked, and everything else is positively not one.
-		mf.type = mxf.isPrecompute ? MediaFile::Type::Precompute : MediaFile::Type::Media;
+		// The one place a file is classified. Apply a producer's supported
+		// verdict; absence of a verdict cannot stand in for ordinary media.
+		if (mxf.classificationKnown)
+			mf.type = mxf.isPrecompute ? MediaFile::Type::Precompute : MediaFile::Type::Media;
+		else if (mxf.valid && mxf.hasMaterialPackage)
+			// A fully read material package with unsupported/conflicting usage
+			// cannot retain an earlier database's positive classification.
+			mf.type = MediaFile::Type::Unknown;
 	}
 } // namespace
 
@@ -479,6 +480,7 @@ void MediaScanner::concludeScan(const QVector<MediaFile> &files, bool cancelled)
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
 		m_mdbMapsByFolder.clear();
+		m_seenFolders.clear();
 	}
 
 	// Drain the log buffer first so the last batch doesn't land
@@ -812,6 +814,13 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 	if (m_job.isCancelled())
 		return result;
+	{
+		const QString key = scannerFolderKey(task.folderPath);
+		QMutexLocker lock(&m_mdbMapsMutex);
+		if (m_seenFolders.contains(key))
+			return result;
+		m_seenFolders.insert(key);
+	}
 
 	// Buffer logs in the result instead of emitting from pool
 	// threads. The orchestrator replays them in input order so
@@ -936,12 +945,11 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	// Cache the clip records for pass 2's UMID re-join — only the masters;
 	// the per-file essence is consumed above and dropped. Move because this
 	// task is done with it. Skip empties as nothing to join.
-	// PathKey::normalise keeps both passes agreeing on folder identity
-	// across different Qt path APIs.
+	// Keep case-sensitive share directories distinct in both passes.
 	if (!mdb.masters.isEmpty())
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
-		m_mdbMapsByFolder.insert(PathKey::normalise(task.folderPath), std::move(mdb.masters));
+		m_mdbMapsByFolder.insert(scannerFolderKey(task.folderPath), std::move(mdb.masters));
 	}
 
 	return result;
@@ -1161,84 +1169,44 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	if (pmrIt != pmrMap.constEnd() && !pmrIt->isEmpty())
 		applyPmrHit(pmrIt->first());
 
-	// MARK: MDB lookup (the master clip's record)
-
-	// The clip-level facts — name, bin, source, import flag — live on the
-	// MASTER mob, the one the PMR's MASTER record names. The file mob's own
-	// record is not consulted: its CPNT:Name is usually the source filename,
-	// and reading it first used to put "Avid DNx SQ.mov" in the Clip Name
-	// column on 67 of 795 corpus rows whenever the header went unread.
-	// applyMdbRecord is the file-scope helper above; pass 1 and the pass-2
-	// re-join both call it so the merge rules can't drift.
-	const auto masterIt = mf.masterMobId.isEmpty() ? mdb.masters.constEnd() : mdb.masters.constFind(mf.masterMobId);
-	if (masterIt != mdb.masters.constEnd())
-		applyMdbRecord(mf, masterIt.value());
-
-	// OMF-era: a version-2 PMR carries no project, so the row takes the
-	// `_PJ` the MDB read from the file mob (or the source mob it points at)
-	// — the same attribute OmfParser would read from the file itself, which
-	// keeps a database-covered row out of the header pass. MXF-era rows are
-	// left exactly as before: their PMR names the project, and the header
-	// pass reads `_PJ` for any row still without one.
+	// The PMR v1 contains no embedded master/project. Recover a master only
+	// when the MDB's source-reference graph establishes a unique relationship.
 	const bool isOmfEra = mf.omfEra;
 	const auto fileIt = mf.mobId.isEmpty() ? mdb.files.constEnd() : mdb.files.constFind(mf.mobId);
-	if (isOmfEra && fileIt != mdb.files.constEnd())
+	if (mf.masterMobId.isEmpty() && fileIt != mdb.files.constEnd())
+		mf.masterMobId = fileIt->masterMobId;
+	const auto masterIt = mf.masterMobId.isEmpty() ? mdb.masters.constEnd() : mdb.masters.constFind(mf.masterMobId);
+	if (masterIt != mdb.masters.constEnd())
 	{
+		applyMdbRecord(mf, masterIt.value());
+		assignIfMissing(mf.project, masterIt->project);
+	}
+	if (fileIt != mdb.files.constEnd())
 		assignIfMissing(mf.project, fileIt->project);
-		if (masterIt != mdb.masters.constEnd())
-			assignIfMissing(mf.project, masterIt->project);
-	}
 
-	// MARK: Technical facts from the database — or leave them for pass 2
-
-	// The database may describe this very file: the PMR names it, the MDB
-	// holds its file mob with a complete essence record AND its master mob,
-	// and the file on disk is still the one Avid indexed — its modified time
-	// matches the PMR's trailer in either of the two spellings Avid has used
-	// (PmrParser::trailerMatchesModified). Then the row takes every
-	// technical fact from the database and the file is never opened.
-	// Anything less — no PMR entry, an incomplete record (MPEG audio has no
-	// codec label in the MDB), a file changed since it was indexed, a
-	// database that didn't read, or Debug ▸ Force header scan — leaves the
-	// row for the header pass, which is exactly the pre-database-first path.
-	// A row the database covered has a codec (finalise always names one);
-	// pass 2 picks up the rows that don't.
-	//
-	// OMF-era: a legacy essence file has a readable tail too (OmfParser),
-	// so it is admitted to both branches on the same terms as an .mxf; the
-	// sub-1 KB floor keeps stubs and plain RIFF fragments out.
-	const bool headerReadable = (Conventions::hasMxfExtension(mf.extension) || isOmfEra) && mf.sizeBytes > 1024;
-	if (headerReadable && pmrHit && !m_options.forceHeaderScan && !mdb.isEmpty())
+	// One stored decision drives both the log and pass2. Missing timestamps
+	// are unknown freshness, not permission to skip checking the actual file.
+	const bool headerReadable = (Conventions::hasMxfExtension(mf.extension) || isOmfEra) && mf.sizeBytes > 0;
+	const bool described = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
+		masterIt != mdb.masters.constEnd();
+	mf.databaseMetadataCurrent = described && pmrHit && pmrHit->fileModifiedSecs != 0 &&
+		PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
+	if (described && pmrHit && !mf.databaseMetadataCurrent)
+		++tally.stale;
+	if (headerReadable && mf.databaseMetadataCurrent)
 	{
-		const bool described = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
-							   masterIt != mdb.masters.constEnd();
-		bool current = described;
-		if (described && pmrHit->fileModifiedSecs != 0)
-		{
-			current = PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
-			if (!current)
-				++tally.stale;
-		}
-		if (current)
-		{
-			MxfMetadata essence = fileIt->essence;
-			// The master mob's usage code is the verdict, as the MaterialPackage's
-			// is in the header: 1 = precompute. (The file mob usually says 9 too,
-			// but real folders hold renders whose file mob says 0 — 54 on one
-			// drive — so the file code is not required.)
-			essence.isPrecompute = masterIt->usageCode == 1;
-			applyMetadata(mf, essence);
-			++tally.covered;
-		}
-		else
-		{
-			++tally.header;
-		}
+		MxfMetadata essence = fileIt->essence;
+		essence.isPrecompute = AvidUsage::masterClassification(masterIt->usageCode) ==
+			AvidUsage::Classification::Precompute;
+		essence.classificationKnown = masterIt->classificationKnown;
+		applyMetadata(mf, essence);
 	}
-	else if (headerReadable)
-	{
+	mf.needsHeaderRead = headerReadable && (!mf.databaseMetadataCurrent ||
+		mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown);
+	if (mf.needsHeaderRead)
 		++tally.header;
-	}
+	else if (headerReadable)
+		++tally.covered;
 
 	// An all-zero MOB ID means Avid never wrote a real identity for the file
 	// or its clip; the media can't be tracked or relinked reliably.
@@ -1261,19 +1229,9 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 
 void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 {
-	// The rows the databases did not describe: an .mxf worth opening that
-	// still has no codec (finalise always names one for essence the MDB
-	// vouched for; a row without a database, or sent here by the staleness
-	// guard or the Debug toggle, has none yet). Everything else — sub-1 KB
-	// stubs, every database-covered row, stray audio in an MXF folder — is
-	// left alone. OMF-era: the legacy essence rows (.omf/.aif/.wav/.sd2)
-	// INSIDE an OMFI MediaFiles root are admitted on the same terms and
-	// dispatched to OmfParser below (see isOmfEraRow); a plain RIFF file
-	// that Avid never wrote costs one 24-byte tail read and yields nothing.
-	// Each row
-	// carries its folder's key so the re-join below can find that folder's
-	// clip records; PathKey::normalise is a filesystem round-trip, so it
-	// runs once per distinct folder, not once per file.
+	// Pass 1 records the single header decision used here and in coverage
+	// logs: incomplete/stale database facts or missing identity. Resolve a
+	// case-preserving cache key once per folder.
 	struct HeaderRow
 	{
 		int index;
@@ -1290,13 +1248,12 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 		// A row needs its header when the databases left it without technical
 		// facts — or without a project name, which the header also carries.
 		const bool omfEra = f.omfEra; // OMF-era: pass 1's verdict (isOmfEraRow); admitted beside .mxf
-		if ((!Conventions::hasMxfExtension(f.extension) && !omfEra) || f.sizeBytes <= 1024 ||
-			(!f.codec.isEmpty() && !f.project.isEmpty()))
+		if (!f.needsHeaderRead)
 			continue;
 		const QString rawFolder = QFileInfo(f.filePath).absolutePath();
 		auto cacheIt = folderKeyCache.find(rawFolder);
 		if (cacheIt == folderKeyCache.end())
-			cacheIt = folderKeyCache.insert(rawFolder, PathKey::normalise(rawFolder));
+			cacheIt = folderKeyCache.insert(rawFolder, scannerFolderKey(rawFolder));
 		rows.append({i, cacheIt.value(), omfEra});
 		if (omfEra)
 			++omfRows;
@@ -1308,10 +1265,10 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 	const int mxfRows = total - omfRows;
 	if (omfRows == 0)
 		emitLog(QtInfoMsg, QStringLiteral("scanner"),
-				QStringLiteral("Reading MXF headers for %1 file(s) the databases don't describe").arg(total));
+				QStringLiteral("Reading MXF headers for %1 file(s) needing metadata verification").arg(total));
 	else // OMF-era: name both kinds so the console says what is being opened; the MXF-only line above is unchanged
 		emitLog(QtInfoMsg, QStringLiteral("scanner"),
-				QStringLiteral("Reading MXF/OMF headers for %1 file(s) the databases don't describe (%2 MXF, %3 OMF)")
+				QStringLiteral("Reading MXF/OMF headers for %1 file(s) needing metadata verification (%2 MXF, %3 OMF)")
 					.arg(total)
 					.arg(mxfRows)
 					.arg(omfRows));
@@ -1321,8 +1278,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 	std::atomic<int> recovered{0};
 	std::atomic<qint64> totalBytesRead{0};
 	std::atomic<qint64> maxBytesRead{0};
-	// OMF-era: the legacy reads are tallied apart so the MXF summary line
-	// keeps its meaning (a Bento tail is ~15 KB; an MXF fast read 256 KB).
+	// Tally the actual bounded reads separately for MXF and OMF containers.
 	std::atomic<qint64> omfBytesRead{0};
 	std::atomic<qint64> omfMaxBytesRead{0};
 	ProgressThrottle throttle;
@@ -1345,44 +1301,67 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			MediaFile &mf = base[row.index];
 			qint64 bytesRead = 0;
 			MxfMetadata mxf;
+			QString headerBin;
 			if (row.omfEra)
 			{
-				// OMF-era: the Bento tail gives the same MxfMetadata the
-				// header path does, plus two facts a header never carries —
-				// the master's bin, and the FILE mob's own identity (the
-				// media-data object's MobID, which is exactly what the v2
-				// PMR would have named). Both fill only what pass 1 left
-				// empty; a database-listed row keeps its PMR/MDB values.
+				// OMF1/OMF2 return the same essence fields, with the master
+				// bin and file identity obtained from their object graph.
 				const OmfMetadata omf = OmfParser::parseHeader(mf.filePath, &bytesRead);
 				mxf = omf.essence;
-				assignIfMissing(mf.originalBin, omf.bin);
-				if (mf.mobId.isEmpty())
-					mf.mobId = omf.fileMobId;
+				headerBin = omf.bin;
+				mxf.fileMobId = omf.fileMobId;
 			}
 			else
 			{
 				mxf = MxfParser::parseHeader(mf.filePath, &bytesRead);
+			}
+			const bool headerUsable = mxf.valid || mxf.classificationKnown;
+			const auto canonicalHeaderId = [&](const QString &id) {
+				if (row.omfEra || id.isEmpty()) return id;
+				const QString canonical = MobId::toPmrForm(id);
+				return canonical.isEmpty() ? id : canonical;
+			};
+			const QString headerFileId = headerUsable ? canonicalHeaderId(mxf.fileMobId) : QString{};
+			const bool headerMasterKnown = row.omfEra || mxf.hasMaterialPackage;
+			const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(mxf.umid) : QString{};
+			const auto contradicts = [](const QString &oldId, const QString &actualId) {
+				return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
+			};
+			if (contradicts(mf.mobId, headerFileId) || contradicts(mf.masterMobId, headerMasterId))
+			{
+				// The name was reused for different media. None of the old
+				// clip's editorial/technical fields belongs to the replacement.
+				mf.project.clear(); mf.mobId.clear(); mf.masterMobId.clear();
+				mf.clipName.clear(); mf.clipNameSource = MediaFile::ClipNameSource::None;
+				mf.originalBin.clear(); mf.sourceFilePath.clear(); mf.sourceFileName.clear();
+				mf.sourceContainer.clear(); mf.isImported = false;
+				mf.codec.clear(); mf.codecHex.clear(); mf.resolution.clear(); mf.fps.clear(); mf.bitDepth.clear();
+				mf.sampleRate = 0; mf.channels = 0; mf.durationFrames = 0; mf.timecodeBase = 0; mf.dropFrame = false;
+				mf.kind = MediaFile::Kind::Unknown; mf.type = MediaFile::Type::Unknown;
+				mf.databaseMetadataCurrent = false;
+			}
+			if (headerUsable)
+			{
+				assignIfMissing(mf.mobId, headerFileId);
+				assignIfMissing(mf.masterMobId, headerMasterId);
+				assignIfMissing(mf.originalBin, headerBin);
 			}
 			applyMetadata(mf, mxf);
 
 			// Pass 1 found no project in the PMR (no entry, or a blank one):
 			// take the one Avid wrote into the file — the very attribute
 			// Media Composer reads back when it rebuilds a folder's PMR.
-			if (mf.project.isEmpty())
+			if (headerUsable && mf.project.isEmpty())
 				mf.project = mxf.projectName;
 
 			// Re-join by the header's own UMID (its MaterialPackage UID = the
 			// master MOB in MXF byte order): a file the PMR doesn't name but
 			// the MDB still knows — copied in before Avid re-indexed, another
 			// seat's media, or a PMR that was corrupt while the MDB read fine.
-			// Recovers name/bin/source and the master MOB so the bin filter
-			// and Select Relatives see the row; the FILE mob is left empty
-			// (the header can't identify it reliably). The database status is
-			// NOT changed: the folder's PMR still doesn't list the file, and
-			// that is what the status reports. Media vs Precompute is NOT
-			// touched: the header just said.
-			const bool unlisted = mf.dbStatus != MediaFile::DbStatus::Listed;
-			if (unlisted && !mxf.umid.isEmpty() && !MobId::isAllZero(mxf.umid))
+			// Recovers name/bin/source by the verified master identity. File
+			// identity comes from the owning source package above. Database
+			// status still describes PMR membership, independent of recovery.
+			if (headerUsable && headerMasterKnown && !mxf.umid.isEmpty() && !MobId::isAllZero(mxf.umid))
 			{
 				const auto mapIt = clipsByFolder.constFind(row.folderKey);
 				if (mapIt != clipsByFolder.constEnd() && !mapIt->isEmpty())
@@ -1411,7 +1390,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			}
 			// The header's own identity can be the zero one too.
 			mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
-							   (!mxf.umid.isEmpty() && MobId::isAllZero(mxf.umid));
+				(headerUsable && (MobId::isAllZero(mxf.umid) || MobId::isAllZero(mxf.fileMobId)));
 
 			// OMF-era: separate counters, see above.
 			std::atomic<qint64> &sumCounter = row.omfEra ? omfBytesRead : totalBytesRead;

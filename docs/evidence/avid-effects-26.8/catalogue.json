@@ -1,0 +1,7148 @@
+[
+  {
+    "name": "Old Style",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Old Style",
+      "Estilo antiguo",
+      "Style ancien",
+      "Stile precedente",
+      "古いスタイル",
+      "旧样式",
+      "Старый стиль"
+    ]
+  },
+  {
+    "name": "Timewarp",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Timewarp",
+      "Deformación temporal",
+      "Variation de vitesse",
+      "Timewarp",
+      "Timewarp",
+      "时间扭曲",
+      "Искривление времени"
+    ]
+  },
+  {
+    "name": "Pulldown Removal",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Pull-Down-Entfernung",
+      "Eliminación de pull-down",
+      "Suppression de la compensation",
+      "Rimozione pulldown",
+      "プルダウン削除",
+      "移除下拉变换",
+      "Удаление конвертирования"
+    ]
+  },
+  {
+    "name": "Pulldown Insertion",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Pull-Down-Einfügung",
+      "Inserción de pull-down",
+      "Insertion de la compensation",
+      "Inserimento pulldown",
+      "プルダウン挿入",
+      "插入下拉变换",
+      "Вставка конвертирования"
+    ]
+  },
+  {
+    "name": "0% To 100%",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "0 % bis 100 %",
+      "0 % a 100 %",
+      "0 % à 100 %",
+      "Da 0% a 100%",
+      "0% から 100%",
+      "0% 到 100%",
+      "от 0 % до 100 %"
+    ]
+  },
+  {
+    "name": "100% To 0%",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "100 % bis 0 %",
+      "100 % a 0 %",
+      "100 % à 0 %",
+      "Da 100% a 0%",
+      "100% から 0%",
+      "100% 至 0%",
+      "от 100 до 0 %"
+    ]
+  },
+  {
+    "name": "Reverse Motion",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Bewegung umkehren",
+      "Invertir movimiento",
+      "Inverser le mouvement",
+      "Inverti movimento",
+      "リバース",
+      "反转动作",
+      "Инверт. движение"
+    ]
+  },
+  {
+    "name": "Speed Boost",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Geschwindigkeits-Boost",
+      "Speed Boost",
+      "Accélération",
+      "Incremento velocità",
+      "スピード ブースト",
+      "提速",
+      "Повышение скорости"
+    ]
+  },
+  {
+    "name": "Speed Bump",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Speed Bump",
+      "Speed Bump",
+      "Décélération",
+      "Dissuasore di velocità",
+      "スピード バンプ",
+      "减速",
+      "Лежачий полицейский"
+    ]
+  },
+  {
+    "name": "Trim To Fill",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Zum Ausfüllen trimmen",
+      "Ajustar hasta rellenar",
+      "Trim to fill",
+      "Taglia per riempire",
+      "トリムフィル",
+      "修整填充",
+      "Трим до заполнения"
+    ]
+  },
+  {
+    "name": "FluidFilm 2:3 Cadence",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "FluidFilm Progressive",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Motion Adapter",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "Bewegungsadapter",
+      "Adaptador de movimiento",
+      "Adaptateur de mouvement",
+      "Motion Adapter",
+      "モーションアダプタ",
+      "运动适配器",
+      "Адаптер движения"
+    ]
+  },
+  {
+    "name": "Picture-In-Picture A",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Transformation",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Bottom Box",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Unteres Feld",
+      "Caja inferior",
+      "Case du bas",
+      "Casella in basso",
+      "下ボックス",
+      "底框",
+      "Нижнее окно"
+    ]
+  },
+  {
+    "name": "Left Box",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Feld links",
+      "Cuadro de la izquierda",
+      "Case gauche",
+      "Casella sinistra",
+      "左ボックス",
+      "左侧方框",
+      "Левый блок"
+    ]
+  },
+  {
+    "name": "Bottom Left to Top Right",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Unten links bis oben rechts",
+      "De abajo a la izquierda hasta arriba a la derecha",
+      "Inférieur gauche à supérieur droit",
+      "Da in basso a sinistra a in alto a destra",
+      "左下から右上",
+      "左下到右上",
+      "Снизу вверх, слева направо"
+    ]
+  },
+  {
+    "name": "Bottom Right to Top Left",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Unten rechts bis oben links",
+      "De abajo a la derecha hasta arriba a la izquierda",
+      "Inférieur droit à supérieur gauche",
+      "Da in basso a destra a in alto a sinistra",
+      "右下から左上",
+      "右下到左上",
+      "Снизу вверх, справа налево"
+    ]
+  },
+  {
+    "name": "Right Box",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Feld rechts",
+      "Cuadro derecho",
+      "Case droite",
+      "Casella di destra",
+      "右ボックス",
+      "右侧方框",
+      "Правое окно"
+    ]
+  },
+  {
+    "name": "Top Box",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Obere Box",
+      "Caja superior",
+      "Boîte supérieure",
+      "Casella superiore",
+      "上ボックス",
+      "顶部方框",
+      "Верхнее окно"
+    ]
+  },
+  {
+    "name": "Top Left to Bottom Right",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Oben links nach unten rechts",
+      "Desde arriba a la izquierda hasta abajo a la derecha",
+      "En haut à gauche jusqu'en bas à droite",
+      "Da angolo superiore sinistro a inferiore destro",
+      "左上から右下",
+      "左上到右下",
+      "Сверху вниз, слева направо"
+    ]
+  },
+  {
+    "name": "Top Right to Bottom Left",
+    "category": "Box Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Oben rechts nach unten links",
+      "Desde arriba a la derecha hasta abajo a la izquierda",
+      "En haut à droite jusqu'en bas à gauche",
+      "Da angolo superiore destro a inferiore sinistro",
+      "右上から左下",
+      "右上到左下",
+      "Сверху вниз, справа налево"
+    ]
+  },
+  {
+    "name": "Horizontal",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Horz Open",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Horz Offen",
+      "Horiz. abierto",
+      "Ouverture horizontale",
+      "Apertura oriz.",
+      "水平 オープン",
+      "水平开放式",
+      "Гориз. открыть"
+    ]
+  },
+  {
+    "name": "Vertical",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Vert Open",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Vert. öffnen",
+      "Abierto vert.",
+      "Ouverture Verticale",
+      "Apertura vert",
+      "垂直 オープン",
+      "垂直打开",
+      "Верт. откр."
+    ]
+  },
+  {
+    "name": "Lower Left Diagonal",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Links unten diagonal",
+      "Izquierda inferior diagonal",
+      "Diagonale gauche bas",
+      "Diagonale in basso a sinistra",
+      "左下から対角",
+      "对角线左下方",
+      "Нижняя левая диагональ"
+    ]
+  },
+  {
+    "name": "Lower Right Diagonal",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Rechts unten diagonal",
+      "Derecha inferior diagonal",
+      "Diagonale droite bas",
+      "Diagonale in basso a destra",
+      "右下から対角",
+      "对角线右下方",
+      "Нижняя правая диагональ"
+    ]
+  },
+  {
+    "name": "Upper Left Diagonal",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Oben links diagonal",
+      "Izquierda superior diagonal",
+      "Diagonale gauche supérieure",
+      "Diagonale in alto a sinistra",
+      "左上から対角",
+      "对角线左上方",
+      "Верхний слева по диагонали"
+    ]
+  },
+  {
+    "name": "Upper Right Diagonal",
+    "category": "Edge Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Oben rechts diagonal",
+      "Derecha superior diagonal",
+      "Diagonale droite supérieure",
+      "Diagonale in alto a destra",
+      "右上から対角",
+      "对角线右上方",
+      "Верхний справа по диагонали"
+    ]
+  },
+  {
+    "name": "Spiral",
+    "category": "Matrix Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Spirale",
+      "Spiral",
+      "Spirale",
+      "Spirale",
+      "スパイラル",
+      "螺旋",
+      "Спираль"
+    ]
+  },
+  {
+    "name": "Grid",
+    "category": "Matrix Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Raster",
+      "Cuadrícula",
+      "Grille",
+      "Griglia",
+      "グリッド",
+      "安全框",
+      "Сетка"
+    ]
+  },
+  {
+    "name": "One-Way Row",
+    "category": "Matrix Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Unidirektionale Zeile",
+      "Fila unidireccional",
+      "Rangée simple",
+      "Riga unidirezionale",
+      "ワンウェイ",
+      "单向行",
+      "Односторонний ряд"
+    ]
+  },
+  {
+    "name": "Speckle",
+    "category": "Matrix Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Fleck",
+      "Speckle",
+      "Tache",
+      "Speckle",
+      "ブロック",
+      "斑点",
+      "Пятнистость"
+    ]
+  },
+  {
+    "name": "Zig Zag",
+    "category": "Matrix Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Zickzack",
+      "Zig Zag",
+      "Zigzag",
+      "Zig zag",
+      "ジクザグ",
+      "锯齿",
+      "Зигзаг"
+    ]
+  },
+  {
+    "name": "Horz Open Sawtooth",
+    "category": "Sawtooth Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Horz Offener Sägezahn",
+      "Diente de sierra horiz. abierto",
+      "Dents de scie ouverture horizontale",
+      "Dente di sega apertura oriz.",
+      "水平 オープン ノコギリ",
+      "水平开放式锯齿波",
+      "Гориз. откр. пилообразный уступ"
+    ]
+  },
+  {
+    "name": "Horizontal Sawtooth",
+    "category": "Sawtooth Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Horizontaler Sägezahn",
+      "Diente de sierra horizontal",
+      "Dents de scie horizontales",
+      "Dente di sega orizzontale",
+      "水平ノコギリ",
+      "水平锯齿",
+      "Горизонтальный пилообразный уступ"
+    ]
+  },
+  {
+    "name": "Vert Open Sawtooth",
+    "category": "Sawtooth Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Vert. Offener Sägezahn",
+      "Diente de sierra abierto vert.",
+      "Dents de scie ouverture verticale",
+      "Dente di sega apertura vert",
+      "垂直 オープン ノコギリ",
+      "垂直打开锯齿",
+      "Верт. откр. пилообразный уступ"
+    ]
+  },
+  {
+    "name": "Vertical Sawtooth",
+    "category": "Sawtooth Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Vertikaler Sägezahn",
+      "Diente de sierra vertical",
+      "Dents de scie verticales",
+      "Dente di sega verticale",
+      "垂直 ノコギリ",
+      "垂直锯齿",
+      "Вертикальный пилообразный уступ"
+    ]
+  },
+  {
+    "name": "4 Corners",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "4 Ecken",
+      "4 esquinas",
+      "4 coins",
+      "4 angoli",
+      "4コーナー",
+      "4 角",
+      "4 угла"
+    ]
+  },
+  {
+    "name": "Center Box",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Feld zentrieren",
+      "Recuadro centro",
+      "Case centrale",
+      "Casella centrale",
+      "中央ボックス",
+      "中心方框",
+      "Центральное окно"
+    ]
+  },
+  {
+    "name": "Circle",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Kreis",
+      "Círculo",
+      "Cercle",
+      "Cerchio",
+      "円形",
+      "圆",
+      "Окружность"
+    ]
+  },
+  {
+    "name": "Clock",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Uhr",
+      "Reloj",
+      "Horloge",
+      "Orologio",
+      "クロック",
+      "时钟",
+      "Тактовый генератор"
+    ]
+  },
+  {
+    "name": "Diamond",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Raute",
+      "Rombo",
+      "Losange",
+      "Rombo",
+      "菱形",
+      "菱形",
+      "Ромб"
+    ]
+  },
+  {
+    "name": "Ellipse",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Ellipse",
+      "Elipse",
+      "Ellipse",
+      "Ellissi",
+      "楕円",
+      "椭圆",
+      "Эллипс"
+    ]
+  },
+  {
+    "name": "Horizontal Bands",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Horizontale Streifen",
+      "Bandas horizontales",
+      "Bandes horizontales",
+      "Bande orizzontali",
+      "水平 バンド",
+      "水平条带",
+      "Горизонтальные полосы"
+    ]
+  },
+  {
+    "name": "Vertical Blinds",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Vertikale Markise",
+      "Cortinas verticales",
+      "Persiennes verticales",
+      "Punti ciechi verticali",
+      "垂直 ブラインド",
+      "垂直百叶窗",
+      "Вертикальные створки"
+    ]
+  },
+  {
+    "name": "Horizontal Blinds",
+    "category": "Shape Wipe",
+    "source": "libame-registration",
+    "localised": [
+      "Horizontale Markise",
+      "Persianas horizontales",
+      "Persiennes horizontales",
+      "Blinds orizzontali",
+      "水平 ブラインド",
+      "水平百叶窗",
+      "Горизонтальные створки"
+    ]
+  },
+  {
+    "name": "Chroma Key",
+    "category": "Key",
+    "source": "libame-registration",
+    "localised": [
+      "Chrominanz-Key",
+      "Inserción del croma",
+      "Incrustation en chrominance",
+      "Chiave crominanza",
+      "クロマキー",
+      "色健",
+      "Хромакей"
+    ]
+  },
+  {
+    "name": "Luma Key",
+    "category": "Key",
+    "source": "libame-registration",
+    "localised": [
+      "Luma-Schlüssel",
+      "Inserción (key) de luma",
+      "Incrustation en luminance",
+      "Chiave luminanza",
+      "ルミナンス キー",
+      "亮度抠像",
+      "Кеинг Luma"
+    ]
+  },
+  {
+    "name": "Rolling Matte",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "Abspielen der Matte",
+      "Máscara de roll",
+      "Masque à défilement vertical",
+      "Mascherino a scorrimento verticale",
+      "ロールマット",
+      "滚动遮罩",
+      "Протяжка маски \"прокруткой\""
+    ]
+  },
+  {
+    "name": "Crawling Matte",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "Kriechende Matte",
+      "Máscara de crawl",
+      "Masque à défilement horizontal",
+      "Scorrimento orizzontale del mascherino",
+      "クローリングマット",
+      "滚屏遮罩",
+      "Ползущая маска"
+    ]
+  },
+  {
+    "name": "Matte Key",
+    "category": "Key",
+    "source": "libame-registration",
+    "localised": [
+      "Matte-Key",
+      "Key de máscara",
+      "Cache",
+      "Effetto Matte Key",
+      "マットキー",
+      "遮罩抠像",
+      "Ключ маски"
+    ]
+  },
+  {
+    "name": "Dissolve",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Blende",
+      "Encadenado",
+      "Fondu",
+      "Dissolvenza",
+      "ディゾルブ",
+      "叠化",
+      "Эффект растворения"
+    ]
+  },
+  {
+    "name": "Superimpose",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Superimpose",
+      "Superponer",
+      "Surimpression",
+      "Sovrapponi",
+      "スーパーインポーズ",
+      "叠加",
+      "Наложение"
+    ]
+  },
+  {
+    "name": "Film Dissolve",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "Film-Blende",
+      "Película: encadenado",
+      "Enchaîné du film",
+      "Dissolvenza pellicola",
+      "フィルム ディゾルブ",
+      "影片渐隐",
+      "Микширование пленки"
+    ]
+  },
+  {
+    "name": "Film Fade",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "Film-Fade",
+      "Película: fundido",
+      "Fondu du film",
+      "Fade pellicola",
+      "フィルム フェード",
+      "影片淡变",
+      "Film Fade"
+    ]
+  },
+  {
+    "name": "Fade to Color",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Fade zu Farbe",
+      "Fundir a color",
+      "Fondu à une couleur",
+      "Dissolvi in colore",
+      "カラーへフェード",
+      "淡变为颜色",
+      "Угасание в цвет"
+    ]
+  },
+  {
+    "name": "Fade from Color",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Fade aus Farbe",
+      "Fundir desde color",
+      "Fondu d'une couleur",
+      "Dissolvi da colore",
+      "カラーからフェード",
+      "从颜色淡变",
+      "Появление из цвета"
+    ]
+  },
+  {
+    "name": "Dip to Color",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Übergang zu Farbe",
+      "Fundido a color",
+      "Enchaîner par une couleur",
+      "Dip in colore",
+      "カラーにディップ",
+      "渐变为纯色",
+      "Резкий переход в цвет"
+    ]
+  },
+  {
+    "name": "Title",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Rolling Title",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "Rolltitel",
+      "Título de roll",
+      "Titre à défilement vertical",
+      "Titolo a scorrimento verticale",
+      "ロールタイトル",
+      "滚动字幕",
+      "Протяжка титров \"прокруткой\""
+    ]
+  },
+  {
+    "name": "Crawling Title",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "Kriechtitel",
+      "Título de crawl",
+      "Titre à défilement horizontal",
+      "Titolo scorrimento orizzontale",
+      "クローリングタイトル",
+      "滚屏字幕",
+      "Ползущий титр"
+    ]
+  },
+  {
+    "name": "Animated Title",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "Animierter Titel",
+      "Título animado",
+      "Titre animé",
+      "Titolo animato",
+      "アニメタイトル",
+      "动画字幕",
+      "Анимированные титры"
+    ]
+  },
+  {
+    "name": "PassThru",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "PassThru",
+      "PassThru",
+      "Passage",
+      "Passthrough",
+      "パススルー",
+      "直通",
+      "PassThru"
+    ]
+  },
+  {
+    "name": "Paint Effect",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Farbeffekt",
+      "Efecto de pintura",
+      "Effet de peinture",
+      "Effetto disegno",
+      "ペイントエフェクト",
+      "绘画特效",
+      "Эффект окрашивания"
+    ]
+  },
+  {
+    "name": "AniMatte",
+    "category": "Key",
+    "source": "libame-registration",
+    "localised": [
+      "AniMatte",
+      "AniMatte",
+      "AniMatte",
+      "AniMatte",
+      "AniMatte",
+      "AniMatte",
+      "AniMatte"
+    ]
+  },
+  {
+    "name": "Mosaic Effect",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Mosaik-Effekt",
+      "Efecto de mosaico",
+      "Effet mosaïque",
+      "Effetto mosaico",
+      "モザイク エフェクト",
+      "马赛克特效",
+      "Эффект мозаики"
+    ]
+  },
+  {
+    "name": "Spot Color Effect",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Spot-Farbeffekt",
+      "Efecto Spot Color",
+      "Effet de retouche de couleur",
+      "Effetto colore campione",
+      "スポットカラーエフェクト",
+      "聚光色彩特效",
+      "Эффект комбинированного цвета"
+    ]
+  },
+  {
+    "name": "Scratch Removal",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Entfernen von Kratzern",
+      "Eliminación de rasguños",
+      "Suppression du bruit de rayure",
+      "Rimozione file temporanei",
+      "スクラッチ除去",
+      "消除划道",
+      "Удаление пометок"
+    ]
+  },
+  {
+    "name": "FluidMotion Edit",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "FluidMotion-Bearbeitung",
+      "Editar FluidMotion",
+      "Montage FluidMotion",
+      "Modifica FluidMotion",
+      "FluidMotion 編集",
+      "FluidMotion 编辑",
+      "Правка FluidMotion"
+    ]
+  },
+  {
+    "name": "Blur Effect",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Weichzeichnen-Effekt",
+      "Efecto difuminado",
+      "Effet flou",
+      "Effetto sfocato",
+      "ブラーエフェクト",
+      "模糊特效",
+      "Эффект размывки"
+    ]
+  },
+  {
+    "name": "Submaster",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Submaster",
+      "Submaster",
+      "Substitut",
+      "Submaster",
+      "サブマスター",
+      "亚主素材片段",
+      "Субконтрольный"
+    ]
+  },
+  {
+    "name": "Color Effect",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Farbeffekt",
+      "Efecto de color",
+      "Effet colorimétrique",
+      "Effetto colore",
+      "カラー エフェクト",
+      "色彩特效",
+      "Цветовой эффект"
+    ]
+  },
+  {
+    "name": "Color Correction",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Farbkorrektur",
+      "Corrección de color",
+      "Correction colorimétrique",
+      "Correzione colore",
+      "カラー コレクション",
+      "色彩修正",
+      "Цветокоррекция"
+    ]
+  },
+  {
+    "name": "3D Warp",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Warp",
+      "Deformación 3D",
+      "Distorsion 3D",
+      "Distorsione 3D",
+      "3Dワープ",
+      "3D 扭曲",
+      "3D-деформация"
+    ]
+  },
+  {
+    "name": "3D PIP",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-PIP",
+      "PIP 3D",
+      "Image dans l'image 3D",
+      "PIP 3D",
+      "3D PIP",
+      "3D PIP",
+      "3D картинка в картинке"
+    ]
+  },
+  {
+    "name": "3D Page Curl",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D Page Curl",
+      "Rizo de página 3D",
+      "Enroulement de page 3D",
+      "Arrotolamento pagina 3D",
+      "3Dページカール",
+      "3D 卷曲页面",
+      "3D скручивание страницы"
+    ]
+  },
+  {
+    "name": "3D Quad Split",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Vierer-Split",
+      "División cuad.3D",
+      "4/4 3D",
+      "Divisione quadrupla 3D",
+      "3D 4面スプリット",
+      "3D 四分",
+      "3D счетверенный видеокадр"
+    ]
+  },
+  {
+    "name": "3D Arrow",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Pfeil",
+      "Flecha 3D",
+      "Flèche 3D",
+      "Freccia 3D",
+      "3D矢印",
+      "3D 箭头",
+      "3D стрелка"
+    ]
+  },
+  {
+    "name": "3D Slats",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Lamelle",
+      "Tablillas 3D",
+      "Lattes 3D",
+      "Slat 3D",
+      "3Dスラット",
+      "3D 条板",
+      "3D пластинки"
+    ]
+  },
+  {
+    "name": "3D Multi Wave",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Multi-Welle",
+      "Multionda 3D",
+      "Multivague 3D",
+      "Multionda 3D",
+      "3Dマルチウェーブ",
+      "3D 多个波形",
+      "3D волны"
+    ]
+  },
+  {
+    "name": "3D Center Burst",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Mitte-Burst",
+      "Golpe centro 3D",
+      "Impulsion centrale 3D",
+      "Burst centro 3D",
+      "3Dセンターバースト",
+      "3D 中心爆炸",
+      "3D разбивка по центру"
+    ]
+  },
+  {
+    "name": "3D Sine Wave",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Sinuswelle",
+      "Onda sinusoidal 3D",
+      "Sinusoïdale 3D",
+      "Sinusoide 3D",
+      "3Dサイン波",
+      "3D 正弦波",
+      "3D синусоидальная волна"
+    ]
+  },
+  {
+    "name": "3D Ball",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Kugel",
+      "Bola 3D",
+      "Balle 3D",
+      "Palla 3D",
+      "3Dボール",
+      "3D 球体",
+      "3D шар"
+    ]
+  },
+  {
+    "name": "3D Page Fold",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D Page Fold",
+      "Pliegue de página 3D",
+      "Pli de page 3D",
+      "Piega pagina 3D",
+      "3Dページフォルド",
+      "3D 折页",
+      "3D складка страницы"
+    ]
+  },
+  {
+    "name": "3D Bumps",
+    "category": "Xpress 3D Effect",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Erhebungen",
+      "Protuberancias 3D",
+      "Bumps 3D",
+      "3D Bumps",
+      "3Dバンプ",
+      "3D 凸块",
+      "3D выпуклости"
+    ]
+  },
+  {
+    "name": "3D Title",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Titel",
+      "Título 3D",
+      "Titre 3D",
+      "Titolo 3D",
+      "3Dタイトル",
+      "3D 字幕",
+      "3D титр"
+    ]
+  },
+  {
+    "name": "3D Matte Key",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "3D-Matte-Key",
+      "Key de máscara 3D",
+      "Cache 3D",
+      "Effetto Matte Key 3D",
+      "3Dマットキー",
+      "3D 遮罩抠像",
+      "3D маска"
+    ]
+  },
+  {
+    "name": "Symphony Warp",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Symphony Warp",
+      "Symphony Warp",
+      "Distorsion Symphony",
+      "Distorsione Symphony",
+      "Symphony Warp",
+      "Symphony Warp",
+      "Искажение Symphony"
+    ]
+  },
+  {
+    "name": "Ultimatte",
+    "category": "Key",
+    "source": "libame-registration",
+    "localised": [
+      "Ultimatte",
+      "Ultimatte",
+      "Ultimatte",
+      "Ultimatte",
+      "Ultimatte",
+      "Ultimatte",
+      "Ultimatte"
+    ]
+  },
+  {
+    "name": "Stabilize",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Stabilisieren",
+      "Estabilizar",
+      "Stabiliser",
+      "Stabilizza",
+      "スタビライズ",
+      "稳定",
+      "Стабилизация"
+    ]
+  },
+  {
+    "name": "Color Adapter",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Farbadapter",
+      "Adaptador de color",
+      "Adaptateur de couleur",
+      "Adattatore colore",
+      "カラーアダプター",
+      "色彩适配器",
+      "Адаптер цвета"
+    ]
+  },
+  {
+    "name": "Color Space",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Farbraum",
+      "Espacio de color",
+      "Espace colorimétrique",
+      "Spazio colore",
+      "カラースペース",
+      "色彩空间",
+      "Цветовое пространство"
+    ]
+  },
+  {
+    "name": "Target Color Space",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Ziel-Farbraum",
+      "Espacio de color de destino",
+      "Espace colorimétrique cible",
+      "Spazio colore di destinazione",
+      "ターゲットカラースペース",
+      "目标色彩空间",
+      "Целевое цветовое пространство"
+    ]
+  },
+  {
+    "name": "Composite",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "Compuesto",
+      "Composite",
+      "Composito",
+      "コンポジット",
+      "复合",
+      "Композитный"
+    ]
+  },
+  {
+    "name": "3D DVE",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "DVE 3D",
+      "DVE 3D",
+      "DVE 3D",
+      "3D DVE",
+      "3D DVE",
+      "3D DVE"
+    ]
+  },
+  {
+    "name": "3D Blur",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "Desenfoque 3D",
+      "Flou 3D",
+      "Sfocatura 3D",
+      "3Dブラー",
+      "3D 模糊",
+      "3D Размывка"
+    ]
+  },
+  {
+    "name": "3-track Combiner",
+    "category": "Key",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "Combinador de 3 pistas",
+      "Combinateur 3-track",
+      "Combinatore a 3 tracce",
+      "3トラックコンバイナー",
+      "三轨合路器",
+      "Сумматор 3 дорожек"
+    ]
+  },
+  {
+    "name": "3D 3-track Combiner",
+    "category": "Title",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "Combinador 3D de 3 pistas",
+      "Combinateur 3-track 3D",
+      "Combinatore a 3 tracce 3D",
+      "3D 3トラックコンバイナー",
+      "3D 三轨合路器",
+      "3D сумматор 3 дорожек"
+    ]
+  },
+  {
+    "name": "Combiner",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Working Color Space",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Track Composite",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "3D Crop",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "3D Spill",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "3D Color Slide",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Avid Color Generator",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Composite Adapter",
+    "category": "Alpha",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "1.66 Mask",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "1,66 Maske",
+      "Máscara de 1,66",
+      "Masque 1,66",
+      "Maschera 1.66",
+      "1.66マスク",
+      "1:66 遮罩",
+      "маска 1,66"
+    ]
+  },
+  {
+    "name": "1.85 Mask",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "1,85 Maske",
+      "Máscara de 1,85",
+      "Masque 1,85",
+      "Maschera 1.85",
+      "1.85マスク",
+      "1:85 遮罩",
+      "Маска 1,85"
+    ]
+  },
+  {
+    "name": "Anamorphic Mask",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "Anamorphotische Maske",
+      "Máscara anamórfica",
+      "Masque anamorphique",
+      "Maschera anamorfica",
+      "アナモフィックマスク",
+      "变形遮罩",
+      "Анаморфированная маска"
+    ]
+  },
+  {
+    "name": "16:9 Mask",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "16:9 Maske",
+      "Máscara 16:9",
+      "16:9 masque",
+      "Maschera 16:9",
+      "16:9マスク",
+      "16:9 遮罩",
+      "Маска 16:9"
+    ]
+  },
+  {
+    "name": "Mask",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "Maske",
+      "Máscara",
+      "Masque",
+      "Maschera",
+      "マスク",
+      "遮罩",
+      "Маска"
+    ]
+  },
+  {
+    "name": "Mask",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Maske",
+      "Máscara",
+      "Masque",
+      "Maschera",
+      "マスク",
+      "遮罩",
+      "Маска"
+    ]
+  },
+  {
+    "name": "Picture-In-Picture",
+    "category": "Blend",
+    "source": "libame-registration",
+    "localised": [
+      "Bild-in-Bild",
+      "Imagen en imagen",
+      "Image dans l'image",
+      "Picture in Picture",
+      "ピクチャ-イン-ピクチャ",
+      "画中画",
+      "Картинка-в-картинке"
+    ]
+  },
+  {
+    "name": "Blowup",
+    "category": "Film",
+    "source": "libame-registration",
+    "localised": [
+      "Blow-up",
+      "Ampliación",
+      "Agrandissement",
+      "Ingrandimento",
+      "ブローアップ",
+      "放大",
+      "Увеличение"
+    ]
+  },
+  {
+    "name": "Resize",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Größe ändern",
+      "Cambiar tamaño",
+      "Redimensionner",
+      "Ridimensiona",
+      "リサイズ",
+      "调整大小",
+      "Изменить размер"
+    ]
+  },
+  {
+    "name": "Pan and Scan",
+    "category": "Reformat",
+    "source": "libame-registration",
+    "localised": [
+      "Pannen und Scannen",
+      "Pan. y scan",
+      "Pan and Scan",
+      "Pan e scansione",
+      "パン アンド スキャン",
+      "横摇和扫描",
+      "Панорама и сканирование"
+    ]
+  },
+  {
+    "name": "16:9 Letterbox",
+    "category": "Reformat",
+    "source": "libame-registration",
+    "localised": [
+      "16:9 Letterbox",
+      "16:9 apaisado",
+      "16:9 letterbox",
+      "Letterbox 16:9",
+      "16:9レターボックス",
+      "16:9 上下黑边",
+      "киноформат \"Letterbox\" 16:9"
+    ]
+  },
+  {
+    "name": "14:9 Letterbox",
+    "category": "Reformat",
+    "source": "libame-registration",
+    "localised": [
+      "14:9 Letterbox",
+      "14:9 apaisado",
+      "14:9 letterbox",
+      "Letterbox 14:9",
+      "14:9レターボックス",
+      "14:9 上下黑边",
+      "киноформат \"Letterbox\" 14:9"
+    ]
+  },
+  {
+    "name": "4:3 Sidebar",
+    "category": "Reformat",
+    "source": "libame-registration",
+    "localised": [
+      "4:3-Seitenleiste",
+      "Barra lateral 4:3",
+      "4:3 barre latérale",
+      "Barra laterale 4:3",
+      "4:3 サイドバー",
+      "4:3 工具条",
+      "Боковая полоса 4:3"
+    ]
+  },
+  {
+    "name": "Flip",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Spiegeln/Umkehren",
+      "Invertir",
+      "Retourner",
+      "Inverti",
+      "フリップ",
+      "翻转",
+      "Отразить по вертикали"
+    ]
+  },
+  {
+    "name": "Flip-Flop",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Flip-Flop (vert.-hor.)",
+      "Flip-Flop",
+      "Retournement horizontal et vertical",
+      "Inverti-ribalta",
+      "フリップ-フロップ",
+      "纵横翻转",
+      "Отразить в двух плоскостях"
+    ]
+  },
+  {
+    "name": "Flop",
+    "category": "Image",
+    "source": "libame-registration",
+    "localised": [
+      "Flop (hor.)",
+      "Flop",
+      "Retournement horizontal",
+      "Ribalta",
+      "フロップ",
+      "纵横",
+      "Отразить по горизонтали"
+    ]
+  },
+  {
+    "name": "Bottom Left to Top Right",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Unten links bis oben rechts",
+      "De abajo a la izquierda hasta arriba a la derecha",
+      "Inférieur gauche à supérieur droit",
+      "Da in basso a sinistra a in alto a destra",
+      "左下から右上",
+      "左下到右上",
+      "Снизу вверх, слева направо"
+    ]
+  },
+  {
+    "name": "Bottom Right to Top Left",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Unten rechts bis oben links",
+      "De abajo a la derecha hasta arriba a la izquierda",
+      "Inférieur droit à supérieur gauche",
+      "Da in basso a destra a in alto a sinistra",
+      "右下から左上",
+      "右下到左上",
+      "Снизу вверх, справа налево"
+    ]
+  },
+  {
+    "name": "Bottom to Top",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Unten bis oben",
+      "De abajo arriba",
+      "De bas en haut",
+      "Dal basso verso l'alto",
+      "下から上",
+      "从下到上",
+      "Снизу вверх"
+    ]
+  },
+  {
+    "name": "Left to Right",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Von links nach rechts",
+      "De izquierda a derecha",
+      "De gauche à droite",
+      "Da sinistra a destra",
+      "左から右",
+      "左至右",
+      "Слева направо"
+    ]
+  },
+  {
+    "name": "Right to Left",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Von rechts nach links",
+      "De derecha a izquierda",
+      "De droite à gauche",
+      "Da destra a sinistra",
+      "右から左",
+      "从右到左",
+      "Справа налево"
+    ]
+  },
+  {
+    "name": "Top Left to Bottom Right",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Oben links nach unten rechts",
+      "Desde arriba a la izquierda hasta abajo a la derecha",
+      "En haut à gauche jusqu'en bas à droite",
+      "Da angolo superiore sinistro a inferiore destro",
+      "左上から右下",
+      "左上到右下",
+      "Сверху вниз, слева направо"
+    ]
+  },
+  {
+    "name": "Top Right to Bottom Left",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Oben rechts nach unten links",
+      "Desde arriba a la derecha hasta abajo a la izquierda",
+      "En haut à droite jusqu'en bas à gauche",
+      "Da angolo superiore destro a inferiore sinistro",
+      "右上から左下",
+      "右上到左下",
+      "Сверху вниз, справа налево"
+    ]
+  },
+  {
+    "name": "Top to Bottom",
+    "category": "Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Von oben nach unten",
+      "De arriba abajo",
+      "De haut en bas",
+      "Dall'alto verso il basso",
+      "上から下",
+      "上至下",
+      "Сверху вниз"
+    ]
+  },
+  {
+    "name": "Bottom Left",
+    "category": "L-Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Unten links",
+      "Abajo a la izquierda",
+      "Gauche bas",
+      "In basso a sinistra",
+      "左下",
+      "左下",
+      "Снизу слева"
+    ]
+  },
+  {
+    "name": "Bottom Right",
+    "category": "L-Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Unten rechts",
+      "Abajo a la derecha",
+      "Droite bas",
+      "In basso a destra",
+      "右下",
+      "右下",
+      "Снизу справа"
+    ]
+  },
+  {
+    "name": "Top Left",
+    "category": "L-Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Oben links",
+      "Arriba a la izquierda",
+      "En haut à gauche",
+      "In alto a sinistra",
+      "左上",
+      "左上",
+      "Верхний слева"
+    ]
+  },
+  {
+    "name": "Top Right",
+    "category": "L-Conceal",
+    "source": "libame-registration",
+    "localised": [
+      "Oben Rechts",
+      "Arriba a la derecha",
+      "Droite haut",
+      "In alto a destra",
+      "右上",
+      "右上",
+      "Верхний справа"
+    ]
+  },
+  {
+    "name": "Bottom Left Corner",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Untere linke Ecke",
+      "Esquina inferior izquierda",
+      "Coin inférieur gauche",
+      "Angolo in basso a sinistra",
+      "左下コーナー",
+      "左下角",
+      "Нижний угол слева"
+    ]
+  },
+  {
+    "name": "Bottom Right Corner",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Untere rechte Ecke",
+      "Esquina inferior derecha",
+      "Coin inférieur droit",
+      "Angolo in basso a destra",
+      "右下コーナー",
+      "右下角",
+      "Нижний угол справа"
+    ]
+  },
+  {
+    "name": "Bottom to Top",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Unten bis oben",
+      "De abajo arriba",
+      "De bas en haut",
+      "Dal basso verso l'alto",
+      "下から上",
+      "从下到上",
+      "Снизу вверх"
+    ]
+  },
+  {
+    "name": "Left to Right",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Von links nach rechts",
+      "De izquierda a derecha",
+      "De gauche à droite",
+      "Da sinistra a destra",
+      "左から右",
+      "左至右",
+      "Слева направо"
+    ]
+  },
+  {
+    "name": "Right to Left",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Von rechts nach links",
+      "De derecha a izquierda",
+      "De droite à gauche",
+      "Da destra a sinistra",
+      "右から左",
+      "从右到左",
+      "Справа налево"
+    ]
+  },
+  {
+    "name": "Top Left Corner",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Obere linke Ecke",
+      "Esquina superior izquierda",
+      "Coin supérieur gauche",
+      "Angolo in alto a sinistra",
+      "左上コーナー",
+      "左上角",
+      "Верхний угол слева"
+    ]
+  },
+  {
+    "name": "Top Right Corner",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Obere rechte Ecke",
+      "Esquina superior derecha",
+      "Coin droit supérieur",
+      "Angolo in alto a destra",
+      "右上コーナー",
+      "右上角",
+      "Верхний угол справа"
+    ]
+  },
+  {
+    "name": "Top to Bottom",
+    "category": "Peel",
+    "source": "libame-registration",
+    "localised": [
+      "Von oben nach unten",
+      "De arriba abajo",
+      "De haut en bas",
+      "Dall'alto verso il basso",
+      "上から下",
+      "上至下",
+      "Сверху вниз"
+    ]
+  },
+  {
+    "name": "Bottom Left to Top Right",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Unten links bis oben rechts",
+      "De abajo a la izquierda hasta arriba a la derecha",
+      "Inférieur gauche à supérieur droit",
+      "Da in basso a sinistra a in alto a destra",
+      "左下から右上",
+      "左下到右上",
+      "Снизу вверх, слева направо"
+    ]
+  },
+  {
+    "name": "Bottom Right to Top Left",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Unten rechts bis oben links",
+      "De abajo a la derecha hasta arriba a la izquierda",
+      "Inférieur droit à supérieur gauche",
+      "Da in basso a destra a in alto a sinistra",
+      "右下から左上",
+      "右下到左上",
+      "Снизу вверх, справа налево"
+    ]
+  },
+  {
+    "name": "Bottom to Top",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Unten bis oben",
+      "De abajo arriba",
+      "De bas en haut",
+      "Dal basso verso l'alto",
+      "下から上",
+      "从下到上",
+      "Снизу вверх"
+    ]
+  },
+  {
+    "name": "Left to Right",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Von links nach rechts",
+      "De izquierda a derecha",
+      "De gauche à droite",
+      "Da sinistra a destra",
+      "左から右",
+      "左至右",
+      "Слева направо"
+    ]
+  },
+  {
+    "name": "Right to Left",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Von rechts nach links",
+      "De derecha a izquierda",
+      "De droite à gauche",
+      "Da destra a sinistra",
+      "右から左",
+      "从右到左",
+      "Справа налево"
+    ]
+  },
+  {
+    "name": "Top Left to Bottom Right",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Oben links nach unten rechts",
+      "Desde arriba a la izquierda hasta abajo a la derecha",
+      "En haut à gauche jusqu'en bas à droite",
+      "Da angolo superiore sinistro a inferiore destro",
+      "左上から右下",
+      "左上到右下",
+      "Сверху вниз, слева направо"
+    ]
+  },
+  {
+    "name": "Top Right to Bottom Left",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Oben rechts nach unten links",
+      "Desde arriba a la derecha hasta abajo a la izquierda",
+      "En haut à droite jusqu'en bas à gauche",
+      "Da angolo superiore destro a inferiore sinistro",
+      "右上から左下",
+      "右上到左下",
+      "Сверху вниз, справа налево"
+    ]
+  },
+  {
+    "name": "Top to Bottom",
+    "category": "Push",
+    "source": "libame-registration",
+    "localised": [
+      "Von oben nach unten",
+      "De arriba abajo",
+      "De haut en bas",
+      "Dall'alto verso il basso",
+      "上から下",
+      "上至下",
+      "Сверху вниз"
+    ]
+  },
+  {
+    "name": "X Spin",
+    "category": "Spin",
+    "source": "libame-registration",
+    "localised": [
+      "X-Spin",
+      "Giro X",
+      "Rotation X",
+      "Rotazione X",
+      "X スピン",
+      "X 旋转",
+      "Вращение Х"
+    ]
+  },
+  {
+    "name": "Y Spin",
+    "category": "Spin",
+    "source": "libame-registration",
+    "localised": [
+      "Y-Spin",
+      "Giro Y",
+      "Rotation Y",
+      "Rotazione Y",
+      "Y スピン",
+      "Y 旋转",
+      "Вращение Y"
+    ]
+  },
+  {
+    "name": "Z Spin",
+    "category": "Spin",
+    "source": "libame-registration",
+    "localised": [
+      "Z-Spin",
+      "Giro Z",
+      "Rotation Z",
+      "Rotazione Z",
+      "Zスピン",
+      "Z 旋转",
+      "Вращение Z"
+    ]
+  },
+  {
+    "name": "Bottom Centered",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Unten Mitte",
+      "Centrado en la parte inferior",
+      "Centré bas",
+      "In basso al centro",
+      "下センター",
+      "底部居中",
+      "Снизу по центру"
+    ]
+  },
+  {
+    "name": "Bottom Left",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Unten links",
+      "Abajo a la izquierda",
+      "Gauche bas",
+      "In basso a sinistra",
+      "左下",
+      "左下",
+      "Снизу слева"
+    ]
+  },
+  {
+    "name": "Bottom Right",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Unten rechts",
+      "Abajo a la derecha",
+      "Droite bas",
+      "In basso a destra",
+      "右下",
+      "右下",
+      "Снизу справа"
+    ]
+  },
+  {
+    "name": "Bottom to Top",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Unten bis oben",
+      "De abajo arriba",
+      "De bas en haut",
+      "Dal basso verso l'alto",
+      "下から上",
+      "从下到上",
+      "Снизу вверх"
+    ]
+  },
+  {
+    "name": "Centered Zoom",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Zentrierter Zoom",
+      "Zoom centrado",
+      "Zoom centré",
+      "Zoom centrato",
+      "センター ズーム",
+      "居中缩放",
+      "Масштабирование по центру"
+    ]
+  },
+  {
+    "name": "Horizontal Centered",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Horizontal zentriert",
+      "Centrado horizontal",
+      "Centré horizontal",
+      "Centrato orizzontalmente",
+      "水平方向中央",
+      "水平居中",
+      "Горизонтально по центру"
+    ]
+  },
+  {
+    "name": "Left Centered",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Links zentriert",
+      "Centrado a la izquierda",
+      "Centré gauche",
+      "Centrato a sinistra",
+      "左 センター",
+      "左侧居中",
+      "Выровненный по левому краю по центру"
+    ]
+  },
+  {
+    "name": "Left to Right",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Von links nach rechts",
+      "De izquierda a derecha",
+      "De gauche à droite",
+      "Da sinistra a destra",
+      "左から右",
+      "左至右",
+      "Слева направо"
+    ]
+  },
+  {
+    "name": "Right Centered",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Rechts zentriert",
+      "Centrado a la derecha",
+      "Centré droite",
+      "Centrato a destra",
+      "右 センター",
+      "右侧居中",
+      "Выровненный по центру справа"
+    ]
+  },
+  {
+    "name": "Right to Left",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Von rechts nach links",
+      "De derecha a izquierda",
+      "De droite à gauche",
+      "Da destra a sinistra",
+      "右から左",
+      "从右到左",
+      "Справа налево"
+    ]
+  },
+  {
+    "name": "Top Centered",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Oben zentriert",
+      "Arriba en el centro",
+      "Centré haut",
+      "Centrato in alto",
+      "上 センター",
+      "顶部居中",
+      "Верхний по центру"
+    ]
+  },
+  {
+    "name": "Top Left",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Oben links",
+      "Arriba a la izquierda",
+      "En haut à gauche",
+      "In alto a sinistra",
+      "左上",
+      "左上",
+      "Верхний слева"
+    ]
+  },
+  {
+    "name": "Top Right",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Oben Rechts",
+      "Arriba a la derecha",
+      "Droite haut",
+      "In alto a destra",
+      "右上",
+      "右上",
+      "Верхний справа"
+    ]
+  },
+  {
+    "name": "Top to Bottom",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Von oben nach unten",
+      "De arriba abajo",
+      "De haut en bas",
+      "Dall'alto verso il basso",
+      "上から下",
+      "上至下",
+      "Сверху вниз"
+    ]
+  },
+  {
+    "name": "Vertical Centered",
+    "category": "Squeeze",
+    "source": "libame-registration",
+    "localised": [
+      "Vertikal zentriert",
+      "Vertical en el centro",
+      "Centré vertical",
+      "Centrato verticalmente",
+      "垂直 センター",
+      "垂直居中",
+      "Вертикально по центру"
+    ]
+  },
+  {
+    "name": "FrameFlex",
+    "category": "Reformat",
+    "source": "libame-registration",
+    "localised": [
+      "FrameFlex",
+      "FrameFlex",
+      "FrameFlex",
+      "FrameFlex",
+      "FrameFlex",
+      "FrameFlex",
+      "FrameFlex"
+    ]
+  },
+  {
+    "name": "Freeze Frame",
+    "category": "Timewarp",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "Congelar frame",
+      "Gel d'image",
+      "Congela fotogramma",
+      "フリーズフレーム",
+      "定格",
+      "Стоп-кадр"
+    ]
+  },
+  {
+    "name": "Luma Key Legacy",
+    "category": "Legacy",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Superimpose Legacy",
+    "category": "Legacy",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "AniMatte Legacy",
+    "category": "Legacy",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "3D Warp Legacy",
+    "category": "Legacy",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Picture-In-Picture Legacy",
+    "category": "Legacy",
+    "source": "libame-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Color LUT",
+    "category": "Image",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "FluidMorph",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "FluidColorMap",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "FluidBlur",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Region Stabilize",
+    "category": "Image",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "SpectraMatte",
+    "category": "Key",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "SpectraMatte A",
+    "category": "Alpha",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Luma Key A",
+    "category": "Alpha",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Safe Color Limiter",
+    "category": "Image",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Object Detection",
+    "category": "Avid Debug",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "SpectraGraph",
+    "category": "Avid Debug",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Frame Offset",
+    "category": "Avid Debug",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Difference",
+    "category": "Avid Debug",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Stress Test",
+    "category": "Avid Debug",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Field Swap",
+    "category": "Image",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Difference Key",
+    "category": "Key",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "PSNR Generator",
+    "category": "Avid Debug",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Flare",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Crystal",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Pinch",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Iris",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Sphere",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Swirl",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Wave",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Motion Blur",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Film Grain",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Color Mix",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Pagecurl",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Random Blend",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Twist",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Shear",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Kaleidoscope",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Melt",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Rollup",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Ripple",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Radial Blur",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Lightning",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Particle Orbit",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Particle Blast",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Particle Wind",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Sparkler",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Pattern Generator",
+    "category": "Illusion FX",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "RGBKeyer",
+    "category": "Key",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "TrackComposite",
+    "category": "Alpha",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "3-track Combiner",
+    "category": "Alpha",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "Combinador de 3 pistas",
+      "Combinateur 3-track",
+      "Combinatore a 3 tracce",
+      "3トラックコンバイナー",
+      "三轨合路器",
+      "Сумматор 3 дорожек"
+    ]
+  },
+  {
+    "name": "SpectraMatte Legacy",
+    "category": "Legacy",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "RGBKeyer Legacy",
+    "category": "Legacy",
+    "source": "MCEffects-registration",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Audio Dissolve",
+    "category": "Blend",
+    "source": "reviewed-render-name",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Motion Effect",
+    "category": "Timewarp",
+    "source": "reviewed-render-name",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "D-Verb",
+    "category": "AudioSuite",
+    "source": "reviewed-render-name",
+    "localised": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "S_SwishPan",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeStripes",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TriTone",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Textured Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Safe Colors MT",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Title Studio",
+    "category": "BCC 3D Objects",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_MatteOpsComp",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 3D Extruded ImageShatter TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Sphere",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Trails Basic",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DeGrain OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wave TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeAwareBlur",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Radial Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerMatch",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Reptilian RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpVortex",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerRemove",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cube TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GrainRemove",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Posterize",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeClock",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Match",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glow Matte OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZConvolve",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveGlintRainbow",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Sparkles",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Blobs Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spotlight",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Super Blend TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Ring MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Process OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Sharpen",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z Space II TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpFishEye",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Threshold",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DVE",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveGlint",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z Space III OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureCells",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Witness Protection",
+    "category": "BCC Match Move",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Clouds",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "EFF_NEWBLUE_TITLE_V2",
+    "category": "Generator",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Trails",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Noise Map 2",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Mosaic OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare Round",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Matte TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Misalignment",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Transition OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_AutoPaint",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Optical Flow",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Boost Blend TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cross Melt",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlutterCut",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_JitterFrames",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Match MT",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EmbossShiny",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Wedge",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_MuzzleFlash",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Vector Blur Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pixel Fixer",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Shape",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CloudsMultColor",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Vector Displacement",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveZap",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Flashbulbs",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pin Art 3D",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_PseudoColor",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_LensFlareAutoTrack",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Linear Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Checker Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "Timecode Burn-In",
+    "category": "Generator",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FreezeFrame",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Scatterize",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DistortBlur",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowRings",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Magic Sharp",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Unsharp Mask",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spraypaint Noise TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cloth RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Swish3D",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC UpRez",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeColorize",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_LaserBeam",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Emitter 3D",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Glow OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureWeave",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rectangular Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureLoops",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Boost Blend OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Tint",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Bump Map",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 3D Extruded ImageShatter",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpPolar",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FeedbackDistort",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Linear Luma Key OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BandPass",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Flicker Fixer",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Emitter 3D MT",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Displacement Map",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Composite",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CardFlip",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveDiffuse",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveGlare",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Sweep MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z Space II OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Bulge MT",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Balance",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_PsykoBlobs",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_SpotLight",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Velocity Remap",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare 3D",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fast Flipper OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Blur OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Caustics",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Matte OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Damage",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Dust and Scratches",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rough Glow TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Page Turn",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GradientMulti",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Mixed Colors RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GradientRadial",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Invert-Solarize OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Damaged TV Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DVE Basic",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveAutoPaint",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Alpha Spotlight TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Gaussian Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Levels-Gamma OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TimeWarpRGB",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Star Matte OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cube",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DistortChroma",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Motion Key",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Two Way Key",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_MotionDetect",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_JpegDamage",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Video Glitch RT",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureFlux",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rock RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Radial Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolvePuddle",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Glow Dissolve OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Radiant Spotlight",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Beauty Studio",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multitone OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FieldRemove",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TVDamage",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TrailsDiffuse",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpBubble",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC UpRez DeInt",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlysEyeCircles",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Mixed Colors",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Safe Colors",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpTransform",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Stretch Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC RGB Blend OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Layer",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Invert",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Blur Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Deband",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveEdgeRays",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Invert-Solarize",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeFourWedges",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowDarks",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_KaleidoRadial",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Array 3D TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DeNoise OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Colorize MT",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EmbossGlass",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeDiffuse",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerRmMatteColor",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_InfiniteZoom",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Stage Light TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveFilm",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Systems MT",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Motion Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Drop Shadow",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipePlasma",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Radial Blur MT",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 3D Image Shatter OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Make Alpha OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wood Grain RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveVortex",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeRectangle",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Rays",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Sketch",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Extruded EPS",
+    "category": "BCC 3D Objects",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z-Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CloudsColorSmooth",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_QuadTone",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_HalfToneRings",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerRemoveColor",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeWeave",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Halftone MT",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Dissolve",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DVE Basic TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Colorize Glow",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Edge Light",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeDoubleWedge",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 3D Image Shatter TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowAura",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Grain",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Remover",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_NightSky",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ReverseClip",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Streaks",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Ribbon Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Radiant Edges MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Textured Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Unsharp Mask OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Extruded Text",
+    "category": "BCC 3D Objects",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Textured MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeTiles",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Matte Choker",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_StripSlideTransition",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Puffy TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Noise Map OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Trails",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Water Waves Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Ripple Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Zebrafy",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Sparks",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Edge Grunge",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wood Grain",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DistortRGB",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_LensFlare",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fractal Noise RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeCells",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fast Lens Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Scanline",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Radial Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DV Fixer",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Median TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Two Way Key OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_SoftFocus",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Balance OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Streaky MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cylinder",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wooden Planks RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Scatterize TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lightning",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveWaves",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Composite TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_HalfToneColor",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Correction",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Misalignment TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Alpha Pixel Noise OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpWaves",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wire Remover",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ReverseEdits",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fractal Noise",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DefocusPrism",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Twirl MT",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeBubble",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Vector Displacement TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glint",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Two Strip Color",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Stripe Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Textured Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Sphere Transition",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Smooth Tone MT",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveTiles",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipePointalize",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fast Film Glow",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Match Grain",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BokehLights",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FilmRoll",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Flutter Cut",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Videoscope",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Mosaic",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BleachBypass",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Criss-Cross Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fast Film Process",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fire TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Blur",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Weave RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Brick",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Brick RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Kaleido",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Array 3D",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_StretchFrameEdges",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_LightLeak",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Radiant Spotlight MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_VintageColor2Strip",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glare MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeRings",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare 3D MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Optical Stabilizer",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cylinder TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveRays",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowEdges",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_MathOps",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rock",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Emboss MT",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Colorize",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Leaks",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Ripply",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spotlight MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Grunge",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Clouds RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeFlash",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_VintageColor3Strip",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Turbulence TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Flicker",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Twister",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Ring",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Radial Blur TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeRays",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pyramid Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeWedge",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Shape",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Jitter",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Organic Strands OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wooden Planks",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Textured",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Organic Strands",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Displacement Map TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare Advanced TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Matte Cleanup",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Tile Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Solarize",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BlurDirectional",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cross Glitch",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Bulge",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Criss-Cross Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZGlow",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Grunge",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Sequencer OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Directional Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Artists Poster OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Corner Pin",
+    "category": "BCC Match Move",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Ripple",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Chroma Key Studio",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spiral Blur TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FilmDamage",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Bulge TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wild Cards TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveGlow",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Laser Beam",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Make Alpha",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Beauty",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_PsykoStripes",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_HueSatBright",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Monochrome",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spiral Blur",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZapFrom",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Comet",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Transition",
+    "category": "Sapphire Builder",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Noise Reduction",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TimeDisplace",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ShowBadColors",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Cartoon",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpCornerPin",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_PanAndZoom",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Zoom OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Choker",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fast Film Glow Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_NearestColor",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveSpeckle",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureNoiseEmboss",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Median",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Star Matte TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Twirl TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z Space I OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pin Art 3D OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Radiant Edges",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rough Glow OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Turbulence",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpBubble2",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Extruded Spline",
+    "category": "BCC 3D Objects",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Correct Selected",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Cartoon MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multitone",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Emboss",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare 3D TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Grid Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Leaks Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveBlur",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeLine",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveLensFlare",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlysEyeHex",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CartoonPaint",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TVChannelChange",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TimeSlice",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_StripSlide",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Grain",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Artists Poster",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeStar",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowDist",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Burnt Film",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 3D Image Shatter",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlysEyeRect",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Steel Plate RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZFogExponential",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeCircle",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpPuddle",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC HSL",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Sweep TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpChroma",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpRepeat",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CloudsPsyko",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Sphere Transition TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flash",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_RackDefocus",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DogVision",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_MakeRGBA",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Alpha Process",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureSpots",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BlurMotionCurves",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Ripple TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Colorize Glow MT",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlintRainbow",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TimeAverage",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ScanLines",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveFlashbulbs",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Damage MT",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpDrops",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pin Art 3D TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeBlobs",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cross Glitch RT",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ScanLinesMono",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Wedge MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowRainbow",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Alpha Spotlight OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 2D Particles TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveShake",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Gamma",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z Space III TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Puffy MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Linear Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Temporal Blur",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeDetectDouble",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Gaussian Blur OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Vignette Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeFlux",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Zap",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Emboss",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgesInDirection",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Systems",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BlurMotion",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Tritone Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Wrap",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Looper",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Veined Marble RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Film Grain MT",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZDefocus",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Shadow",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerMatchColor",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZFogLinear",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Dropout Fixer",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Grid",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_KaleidoPolar",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC RGB Edges",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC RGB Blend TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Polar Displacement TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureTiles",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_MatteOps",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Distortion Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pixel Chooser",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pan and Zoom",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZebrafyColor",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Burnt Film TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spiral Blur MT",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cartoon Look",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Caustics",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glare",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_HalfTone",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Levels-Gamma",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Edge Bevel OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Polar Displacement",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Swish Pan",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureChromaSpiral",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC RGB Pixel Noise",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpPerspective",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureNeurons",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Linear Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DigitalDamage",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC 2D Particles",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GrainStatic",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipePixelate",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeDetect",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CloudsVortex",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EmbossDistort",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Distort",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FeedbackBubble",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pyramid Blur MT",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Noise Map RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rectangular Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Layer Deformer",
+    "category": "BCC 3D Objects",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BlurChroma",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeChecker",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_EdgeBlur",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Streaky",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC FX Browser",
+    "category": "BCC Browser",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureNoisePaint",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Shape MT",
+    "category": "BCC Blur",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Steel Plate",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Transition TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Time Displacement",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Page Turn TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glitter",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Radial Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Spraypaint Noise",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Laser Beam MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Ripply MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Halftone",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Retime",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZBlur",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Jitter Basic",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Veined Marble",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Composite OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Composite Choker",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureFolded",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Match Move",
+    "category": "BCC Match Move",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Video Glitch",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Tritone OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Weave",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Mosaic",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Type On Text",
+    "category": "BCC 3D Objects",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Noise Map 2 TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rays_Puffy",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Granite",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Prism",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Posterize Time",
+    "category": "BCC Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Stars",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fire OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Halftone TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rectangular Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Correction",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DuoTone",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Reptilian",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cartooner",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wild Cards",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZComp",
+    "category": "Sapphire Composite",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Clouds",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Linear Luma Key",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CloudsPerspective",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cross Zoom",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Super Blend OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_CutToDissolve",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Reverse Spotlight",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Composite Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Feedback",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Array 3D OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Sparks MT",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_RackDfComp",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Tritone",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Hotspots",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureMicro",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveStatic",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC LED",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glint MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Deinterlace",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC DVE TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Stretch Wipe OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowOrthicon",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Effect",
+    "category": "Sapphire Builder",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Particle Emitter 3D TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ClampChroma",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Cloth",
+    "category": "BCC Textures",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Colorize Glow TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FilmEffect",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Vignette",
+    "category": "BCC Film Style",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pixel Chooser OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Smooth Tone",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TileScramble",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerMchMatteColor",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveDistort",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Granite RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Median",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Charcoal Sketch",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveDefocus",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Crosshatch",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Blur Dissolve",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rings Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GetFrame",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpMagnify",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Pencil Sketch",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Glare",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ConvolveComp",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Zoom TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Stage Light",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Linear Color Key",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Reframer",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TexturePlasma",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Light Sweep",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare Spiked",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveLuma",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Etching",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glow Alpha Edges",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeDots",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Z Space I TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_GlowNoise",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Light3D",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ChannelSwitcher",
+    "category": "Sapphire Adjust",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wave",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Correction OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "Titler Pro 4",
+    "category": "NewBlue Titler Pro 4",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Water Color",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerMatchMatte",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Convolve",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_SparklesColor",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Directional Blur TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Criss-Cross Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Glint",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Snow",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Median MT",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Twirl",
+    "category": "BCC Warp",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_FlickerRemoveMatte",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Aurora",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Vignette",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Posterize OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glow Matte TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Gradient",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Lens Flare Advanced OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Bump Map RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Glow",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Chroma Key",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Fast Flipper",
+    "category": "BCC Perspective",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Brightness Contrast",
+    "category": "BCC Color & Tone",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Rain",
+    "category": "BCC Particles",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpToRect",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC RGB Blend",
+    "category": "BCC Key & Blend",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Brightness Contrast OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wild Cards OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DropShadow",
+    "category": "Sapphire Lighting",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Stretch Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_DissolveBubble",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_RepairFrames",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_RandomEdits",
+    "category": "Sapphire Time",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Posterize",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Stripe Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_ZapTo",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_TextureMoire",
+    "category": "Sapphire Render",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Tile Mosaic",
+    "category": "BCC Art Looks",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Wire Remover MT",
+    "category": "BCC Image Restoration",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Glow OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Diffuse",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WarpWaves2",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeMoire",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Shake",
+    "category": "Sapphire Distort",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_Cartoon",
+    "category": "Sapphire Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Damaged TV",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Emboss RT Static OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Gaussian Blur TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_WipeClouds",
+    "category": "Sapphire Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Reverse Spotlight MT",
+    "category": "BCC Lights",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Multi Stripe Wipe",
+    "category": "BCC Transitions",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "S_BlurChannels",
+    "category": "Sapphire Blur+Sharpen",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Color Choker MT",
+    "category": "BCC Stylize",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  },
+  {
+    "name": "BCC Organic Strands TR OBS",
+    "category": "BCC Obsolete",
+    "source": "shipped-third-party-registry",
+    "localised": []
+  }
+]

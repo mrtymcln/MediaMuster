@@ -37,7 +37,10 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 public:
-	explicit MainWindow(QWidget *parent = nullptr);
+	/// UiOnly supports interface tests/previews without volume discovery,
+	/// monitoring, crash collection or journal recovery against the host.
+	enum class StartupMode { Normal, UiOnly };
+	explicit MainWindow(QWidget *parent = nullptr, StartupMode startup = StartupMode::Normal);
 	~MainWindow();
 
 private slots:
@@ -64,6 +67,7 @@ private slots:
 	void onPathsDropped(const QStringList &paths);
 	void onCheckPermissions();
 	void onFilterByBins();
+	void onFilterByEffects();
 	void onRebalance();
 	void onAbout();
 	void showMediaMusterTrashDialog(const QString &trashFolderPath, int fileCount);
@@ -203,6 +207,7 @@ private:
 	void rebuildVolumeList(const QVector<VolumeInfo> &volumes);
 
 	void rebuildFilterChips();
+	void setEffectDetailsEnabled(bool enabled);
 
 	/// Drop every active filter back to its default after a scan swaps in a
 	/// new dataset, so a stale predicate (a project name or bin MOB from the
@@ -237,6 +242,7 @@ private:
 
 	QPushButton *m_btnFileOps;
 	QPushButton *m_btnBinFilter;
+	QPushButton *m_btnEffectFilter = nullptr;
 	QPushButton *m_btnExport;
 	QPushButton *m_btnRebalance;
 
@@ -254,9 +260,9 @@ private:
 
 	QElapsedTimer m_scanTimer;
 	bool m_showAllFilterTabs = false;
-	/// Debug ▸ Force header scan — snapshotted into MediaScanner::Options at
-	/// scan start, so a toggle mid-scan applies to the next scan, not this one.
-	bool m_forceHeaderScan = false;
+	bool m_effectDetailsEnabled = false;
+	class QAction *m_effectDetailsAct = nullptr;
+	class QAction *m_effectFilterAct = nullptr;
 	QSet<QString> m_manualVolumes;
 
 	// MARK: - Selection persistence

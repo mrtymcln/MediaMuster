@@ -8,6 +8,7 @@
 #include "mediatablemodel.h"
 
 #include <QDateTime>
+#include <QPersistentModelIndex>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -42,6 +43,9 @@ private slots:
 	// must be impossible. Labels asserted as raw literals on purpose —
 	// the rename tripwire.
 	void status_words_come_from_one_table();
+	void unknown_classification_displays_without_guessing();
+	void effect_gate_preserves_rows_and_existing_indexes();
+	void effect_columns_only_display_precompute_details();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -330,6 +334,99 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	const QString tip = m.index(0, col).data(Qt::ToolTipRole).toString();
 	QVERIFY(tip.contains(MediaFile::noProjectWhy()));
 	QVERIFY(tip.contains(MediaFile::dbStatusText(DbStatus::NoReference).why));
+}
+
+void TestMediaTableModel::unknown_classification_displays_without_guessing()
+{
+	// Known numeric values are stable for existing consumers.
+	static_assert(int(MediaFile::Kind::Video) == 0 && int(MediaFile::Kind::Audio) == 1);
+	static_assert(int(MediaFile::Type::Media) == 0 && int(MediaFile::Type::Precompute) == 1);
+	MediaFile unknown;
+	QCOMPARE(unknown.kind, MediaFile::Kind::Unknown);
+	QCOMPARE(unknown.type, MediaFile::Type::Unknown);
+	QVERIFY(!unknown.needsHeaderRead);
+	QVERIFY(!unknown.databaseMetadataCurrent);
+
+	MediaFile video;
+	video.kind = MediaFile::Kind::Video;
+	video.type = MediaFile::Type::Media;
+	MediaFile audio;
+	audio.kind = MediaFile::Kind::Audio;
+	audio.type = MediaFile::Type::Precompute;
+	MediaTableModel model;
+	model.setMediaFiles({unknown, video, audio});
+	const int kind = int(MediaTableModel::Column::Kind);
+	const int type = int(MediaTableModel::Column::Type);
+	QCOMPARE(model.index(0, kind).data().toString(), QStringLiteral("\u2014"));
+	QCOMPARE(model.index(0, type).data().toString(), QStringLiteral("\u2014"));
+	QVERIFY(!model.index(0, kind).data(Qt::ToolTipRole).toString().isEmpty());
+	QVERIFY(!model.index(0, type).data(Qt::ToolTipRole).toString().isEmpty());
+	QCOMPARE(model.index(1, kind).data().toString(), QStringLiteral("Video"));
+	QCOMPARE(model.index(1, type).data().toString(), QStringLiteral("Media"));
+	QCOMPARE(model.index(2, kind).data().toString(), QStringLiteral("Audio"));
+	QCOMPARE(model.index(2, type).data().toString(), QStringLiteral("Precompute"));
+}
+
+void TestMediaTableModel::effect_gate_preserves_rows_and_existing_indexes()
+{
+	MediaTableModel model;
+	model.setMediaFiles(makeRows(2));
+	const QPersistentModelIndex row(model.index(1, int(MediaTableModel::Column::Location)));
+	const QString path = row.data().toString();
+	QSignalSpy reset(&model, &QAbstractItemModel::modelReset);
+	QSignalSpy inserted(&model, &QAbstractItemModel::columnsInserted);
+	QSignalSpy removed(&model, &QAbstractItemModel::columnsRemoved);
+	QVERIFY(!model.effectDetailsEnabled());
+	QCOMPARE(model.columnCount(), 15);
+	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
+	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
+	model.setEffectDetailsEnabled(true);
+	QCOMPARE(model.columnCount(), 18);
+	QCOMPARE(inserted.size(), 1);
+	QCOMPARE(inserted.first().at(1).toInt(), 15);
+	QCOMPARE(inserted.first().at(2).toInt(), 17);
+	QVERIFY(row.isValid());
+	QCOMPARE(row.data().toString(), path);
+	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
+	model.setEffectDetailsEnabled(true);
+	QCOMPARE(inserted.size(), 1);
+	model.setEffectDetailsEnabled(false);
+	model.setEffectDetailsEnabled(false);
+	QCOMPARE(model.columnCount(), 15);
+	QCOMPARE(removed.size(), 1);
+	QCOMPARE(reset.size(), 0);
+	QCOMPARE(model.rowCount(), 2);
+	QVERIFY(row.isValid());
+	QCOMPARE(row.data().toString(), path);
+	QVERIFY(!effect.isValid());
+}
+
+void TestMediaTableModel::effect_columns_only_display_precompute_details()
+{
+	MediaFile precompute;
+	precompute.type = MediaFile::Type::Precompute;
+	precompute.effect = QStringLiteral("Custom, exact name");
+	precompute.effectCategory = QStringLiteral("Category");
+	precompute.effectSequence = QStringLiteral("Sequence");
+	MediaFile media = precompute;
+	media.type = MediaFile::Type::Media;
+	MediaFile unknown = precompute;
+	unknown.type = MediaFile::Type::Unknown;
+	MediaTableModel model;
+	model.setMediaFiles({precompute, media, unknown});
+	model.setEffectDetailsEnabled(true);
+	const QStringList headers{QStringLiteral("Effect"), QStringLiteral("Effect Category"), QStringLiteral("Effect Sequence")};
+	const QStringList values{precompute.effect, precompute.effectCategory, precompute.effectSequence};
+	for (int i = 0; i < values.size(); ++i)
+	{
+		const int column = int(MediaTableModel::Column::Effect) + i;
+		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), headers[i]);
+		QCOMPARE(model.index(0, column).data().toString(), values[i]);
+		QVERIFY(model.index(1, column).data().toString().isEmpty());
+		QVERIFY(model.index(2, column).data().toString().isEmpty());
+	}
+	model.setEffectDetailsEnabled(false);
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::Type)).data().toString(), QStringLiteral("Precompute"));
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

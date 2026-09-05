@@ -4,11 +4,36 @@
 
 #include <QSize>
 #include <algorithm>
+#include <utility>
 
 // MARK: - Numeric sort helpers
 
 namespace
 {
+	// Preserve Audio/Video order and group unresolved kinds afterwards.
+	// Duration ties use the same total order; treating Unknown as equivalent
+	// to both Audio and Video would violate the sort's strict weak ordering.
+	int kindSortRank(MediaFile::Kind kind)
+	{
+		switch (kind)
+		{
+		case MediaFile::Kind::Audio: return 0;
+		case MediaFile::Kind::Video: return 1;
+		case MediaFile::Kind::Unknown: return 2;
+		}
+		return 2;
+	}
+	int typeSortRank(MediaFile::Type type)
+	{
+		switch (type)
+		{
+		case MediaFile::Type::Media: return 0;
+		case MediaFile::Type::Precompute: return 1;
+		case MediaFile::Type::Unknown: return 2;
+		}
+		return 2;
+	}
+
 	// True when every character is plain ASCII. ASCII has exactly one
 	// Unicode form, so normalisation can never change such a string.
 	bool isAsciiOnly(const QString &s)
@@ -78,6 +103,46 @@ void MediaFilterProxy::setProjectFilter(const QSet<QString> &projects)
 	invalidateRowsFilter();
 }
 
+void MediaFilterProxy::setEffectDetailsEnabled(bool enabled)
+{
+	if (m_effectDetailsEnabled == enabled)
+		return;
+	m_effectDetailsEnabled = enabled;
+	if (!enabled)
+	{
+		m_selectedEffects.clear();
+		m_effectVolumePath.clear();
+	}
+	invalidateRowsFilter();
+}
+
+void MediaFilterProxy::setEffectFilter(const QStringList &effects)
+{
+	if (!m_effectDetailsEnabled)
+		return;
+	QSet<QString> selected(effects.cbegin(), effects.cend());
+	selected.remove(QString()); // an empty value is not an effect name
+	if (m_selectedEffects == selected)
+		return;
+	m_selectedEffects = std::move(selected);
+	invalidateRowsFilter();
+}
+
+QStringList MediaFilterProxy::effectFilter() const
+{
+	QStringList names = m_selectedEffects.values();
+	names.sort();
+	return names;
+}
+
+void MediaFilterProxy::setEffectVolumeFilter(const QString &volumePath)
+{
+	if (!m_effectDetailsEnabled || m_effectVolumePath == volumePath)
+		return;
+	m_effectVolumePath = volumePath;
+	invalidateRowsFilter();
+}
+
 void MediaFilterProxy::setBinFilterMobs(bool isActive, const QSet<QString> &acceptedMobs)
 {
 	m_binFilterActive = isActive;
@@ -130,6 +195,16 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	if (!m_selectedProjects.isEmpty() && !m_selectedProjects.contains(f.projectDisplay()))
 		return false;
 
+	if (m_effectDetailsEnabled && (!m_selectedEffects.isEmpty() || !m_effectVolumePath.isEmpty()))
+	{
+		// Names never establish classification. Even stale detail strings on
+		// ordinary/unknown rows must not make them match an effect selection.
+		if (f.type != MediaFile::Type::Precompute ||
+			(!m_effectVolumePath.isEmpty() && f.volumePath != m_effectVolumePath) ||
+			(!m_selectedEffects.isEmpty() && !m_selectedEffects.contains(f.effect)))
+			return false;
+	}
+
 	if (m_binFilterActive)
 	{
 		const bool hit =
@@ -153,7 +228,9 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		// stays: a Windows path ("E:/...") need not contain the label.
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
 			   matches(f.codec) || matches(f.volumeName) || matches(f.filePath) ||
-			   matches(f.sourceFileName) || matches(f.effect);
+			   matches(f.sourceFileName) ||
+			   (m_effectDetailsEnabled && f.type == MediaFile::Type::Precompute &&
+				(matches(f.effect) || matches(f.effectCategory) || matches(f.effectSequence)));
 	}
 	return true;
 }
@@ -202,10 +279,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	}
 
 	case Col::Kind:
-		// Preserve old display-string ordering: 'Audio' < 'Video'.
-		if (l.kind == r.kind)
-			return false;
-		return l.kind == MediaFile::Kind::Audio;
+		return kindSortRank(l.kind) < kindSortRank(r.kind);
 
 	case Col::Duration:
 	{
@@ -224,7 +298,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		const double rs = tcSeconds(r);
 		if (ls != rs)
 			return ls < rs;
-		return l.kind == MediaFile::Kind::Audio && r.kind == MediaFile::Kind::Video;
+		return kindSortRank(l.kind) < kindSortRank(r.kind);
 	}
 
 	case Col::FileName:
@@ -256,10 +330,12 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::Location:
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
-		// Preserve old display-string ordering: 'Media' < 'Precompute'.
-		if (l.type == r.type)
-			return false;
-		return l.type == MediaFile::Type::Media;
+		return typeSortRank(l.type) < typeSortRank(r.type);
+	case Col::Effect:
+	case Col::EffectCategory:
+	case Col::EffectSequence:
+		// Model data applies the same precompute-only display rule.
+		return QString::compare(left.data().toString(), right.data().toString(), Qt::CaseInsensitive) < 0;
 	case Col::Count_:
 		break;
 	}

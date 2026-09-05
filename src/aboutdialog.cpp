@@ -4,10 +4,13 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QDialogButtonBox>
+#include <QFile>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPixmap>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QStringList>
 #include <QTimer>
@@ -222,6 +225,29 @@ AboutDialog::AboutDialog(QWidget *parent)
 	layout->addSpacing(12);
 
 	auto *btnRow = new QHBoxLayout;
+	auto *licensesBtn = new QPushButton(tr("Licenses"));
+	licensesBtn->setAutoDefault(false);
+	connect(licensesBtn, &QPushButton::clicked, this, [this]
+	{
+		auto *dialog = new QDialog(this);
+		dialog->setAttribute(Qt::WA_DeleteOnClose);
+		dialog->setWindowTitle(tr("Third-party licenses"));
+		dialog->setWindowModality(Qt::WindowModal);
+		auto *licenseLayout = new QVBoxLayout(dialog);
+		auto *text = new QPlainTextEdit(dialog);
+		text->setReadOnly(true);
+		QFile notices(QStringLiteral(":/licenses/third-party-notices.txt"));
+		text->setPlainText(notices.open(QIODevice::ReadOnly)
+			? QString::fromUtf8(notices.readAll())
+			: tr("The license notices could not be loaded."));
+		licenseLayout->addWidget(text);
+		auto *close = new QDialogButtonBox(QDialogButtonBox::Close, dialog);
+		connect(close, &QDialogButtonBox::rejected, dialog, &QDialog::close);
+		licenseLayout->addWidget(close);
+		dialog->resize(680, 500);
+		dialog->show();
+	});
+	btnRow->addWidget(licensesBtn);
 	btnRow->addStretch();
 	auto *okBtn = new QPushButton(tr("Sweet as!"));
 	okBtn->setDefault(true);

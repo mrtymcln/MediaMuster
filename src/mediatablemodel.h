@@ -32,6 +32,9 @@ public:
 		Modified,
 		Type,
 		SourceFile,
+		Effect,
+		EffectCategory,
+		EffectSequence,
 		Count_
 	};
 
@@ -60,7 +63,13 @@ public:
 	void setShowRawCodecHex(bool on);
 	bool showRawCodecHex() const { return m_showRawCodecHex; }
 
+	/// Appended experimental columns; changing the gate preserves rows,
+	/// existing column numbers and persistent indexes in those columns.
+	void setEffectDetailsEnabled(bool enabled);
+	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
+
 private:
 	QVector<MediaFile> m_files;
 	bool m_showRawCodecHex = false;
+	bool m_effectDetailsEnabled = false;
 };

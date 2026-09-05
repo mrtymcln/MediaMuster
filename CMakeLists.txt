@@ -118,6 +118,7 @@ set(SOURCES
     src/oprescue.cpp
     src/avbparser.cpp
     src/binfilterdialog.cpp
+    src/effectfilterdialog.cpp
     src/managemediadialog.cpp
     src/progressdialog.cpp
     src/rebalancer.cpp

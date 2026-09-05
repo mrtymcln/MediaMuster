@@ -272,3 +272,11 @@ mediamuster_add_test(tst_mediafilterproxy
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
 )
+
+# Effect picker: choose names and a volume, then use the actual table filter.
+mediamuster_add_test(tst_effectfilterdialog
+    ${CMAKE_SOURCE_DIR}/src/effectfilterdialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+)
+target_link_libraries(tst_effectfilterdialog PRIVATE Qt6::Widgets)

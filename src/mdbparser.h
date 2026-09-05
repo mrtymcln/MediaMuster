@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mxfparser.h"
+#include "omfobjects.h"
 
 #include <QHash>
 #include <QString>
@@ -22,6 +23,7 @@ struct MdbMasterMob
 	QString sourceContainer; ///< _USER/Video — "QTFF" for a QuickTime import.
 	QString project;		 ///< OMF-era: _PJ on the master mob, for when the PMR has no project. Usually empty.
 	bool isImported = false; ///< An _IMPORTSETTING attribute exists.
+	bool classificationKnown = false; ///< Avid usage1/7 establishes precompute/media; absent OMF2 usage stays unknown.
 	int usageCode = -1;		 ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
 };
 
@@ -36,6 +38,7 @@ struct MdbMasterMob
 struct MdbFileMob
 {
 	QString mobIdHex;
+	QString masterMobId; ///< Unique master whose source-clip graph references this file; empty if ambiguous.
 	int usageCode = -1; ///< 0 = media, 9 = precompute.
 	MxfMetadata essence;
 	bool essenceComplete = false;
@@ -59,6 +62,7 @@ struct MdbFileMob
 /// the same string the v2 PMR yields, so the join needs no second form.
 struct MdbDatabase
 {
+	OmfObjects::Revision revision = OmfObjects::Revision::Unknown;
 	QHash<QString, MdbMasterMob> masters;
 	QHash<QString, MdbFileMob> files;
 	[[nodiscard]] bool isEmpty() const { return masters.isEmpty() && files.isEmpty(); }

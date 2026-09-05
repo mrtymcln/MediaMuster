@@ -1,0 +1,3337 @@
+[
+  {
+    "name": "S_SwishPan",
+    "category": "Sapphire Transitions",
+    "effectId": "0018D81B-2C43-00AD-AD8C-96B49A384D51"
+  },
+  {
+    "name": "S_WipeStripes",
+    "category": "Sapphire Transitions",
+    "effectId": "0064B81C-BB9D-008B-8B73-FC4265FD4CD1"
+  },
+  {
+    "name": "S_TriTone",
+    "category": "Sapphire Adjust",
+    "effectId": "00EDD0B5-54E1-009C-9CEC-DA477985D269"
+  },
+  {
+    "name": "BCC Textured Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "01330C98-911B-3379-87DA-F1DE9D284F1C"
+  },
+  {
+    "name": "BCC Safe Colors MT",
+    "category": "BCC Color & Tone",
+    "effectId": "018C67FE-8449-30C0-AFD2-FC89B1CE7BA4"
+  },
+  {
+    "name": "BCC Title Studio",
+    "category": "BCC 3D Objects",
+    "effectId": "01DFFA1D-4071-3590-AC68-C68D807B2A8D"
+  },
+  {
+    "name": "S_MatteOpsComp",
+    "category": "Sapphire Composite",
+    "effectId": "01F63092-D9B7-00BA-BA5F-F429C6DE5A49"
+  },
+  {
+    "name": "BCC 3D Extruded ImageShatter TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "022644F5-D7D0-3D42-AEA0-ECCE772D9E7F"
+  },
+  {
+    "name": "BCC Sphere",
+    "category": "BCC Perspective",
+    "effectId": "023B0DF5-663B-389F-9132-30807072F839"
+  },
+  {
+    "name": "BCC Trails Basic",
+    "category": "BCC Time",
+    "effectId": "0269BA30-80B2-3988-8CDD-CC2EC00C5E05"
+  },
+  {
+    "name": "BCC DeGrain OBS",
+    "category": "BCC Obsolete",
+    "effectId": "028D09DB-F4D7-3165-81F5-D767263C5020"
+  },
+  {
+    "name": "BCC Wave TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "02C70BB3-0991-34EE-97BE-407AFE8D2CDC"
+  },
+  {
+    "name": "S_EdgeAwareBlur",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "035B0194-F126-00BF-BF04-EAD63B774F08"
+  },
+  {
+    "name": "BCC Radial Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0388BB70-F445-397F-BD70-42801DCC1A83"
+  },
+  {
+    "name": "S_FlickerMatch",
+    "category": "Sapphire Time",
+    "effectId": "04798FF4-2F94-00A2-A260-15E3365443F4"
+  },
+  {
+    "name": "BCC Reptilian RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "04B43B96-9A4E-3358-8621-7285F8919F4A"
+  },
+  {
+    "name": "S_WarpVortex",
+    "category": "Sapphire Distort",
+    "effectId": "04DF3D5B-185D-00A5-A5EE-F20532E164A4"
+  },
+  {
+    "name": "S_FlickerRemove",
+    "category": "Sapphire Time",
+    "effectId": "04FABEDF-8435-008B-8BE4-468AC9FDABB4"
+  },
+  {
+    "name": "BCC Cube TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "050277BB-16A5-3D1A-BCB4-46A68E6A08D0"
+  },
+  {
+    "name": "S_GrainRemove",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "050BAEDF-C001-0089-89F6-3892518DBBE6"
+  },
+  {
+    "name": "BCC Posterize",
+    "category": "BCC Art Looks",
+    "effectId": "051090B0-C721-3F76-B8EA-57FA78D50E31"
+  },
+  {
+    "name": "S_WipeClock",
+    "category": "Sapphire Transitions",
+    "effectId": "0562360A-7ED2-009E-9E77-1BE67A403464"
+  },
+  {
+    "name": "BCC Color Match",
+    "category": "BCC Color & Tone",
+    "effectId": "05A0CC96-BACA-329F-9F86-B9CE810AA17B"
+  },
+  {
+    "name": "BCC Glow Matte OBS",
+    "category": "BCC Obsolete",
+    "effectId": "05F19223-DA74-384F-86F4-4DC20DEFBA90"
+  },
+  {
+    "name": "S_ZConvolve",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "06155CB0-46E5-00A0-A0BA-72907A739A91"
+  },
+  {
+    "name": "S_DissolveGlintRainbow",
+    "category": "Sapphire Transitions",
+    "effectId": "0635531D-69AD-009A-9AE8-1ADDB3AA9992"
+  },
+  {
+    "name": "S_Sparkles",
+    "category": "Sapphire Render",
+    "effectId": "065DF4C1-1D6B-0087-8705-88DE829EF3C2"
+  },
+  {
+    "name": "BCC Blobs Wipe",
+    "category": "BCC Transitions",
+    "effectId": "06E7CC01-17E8-3CF0-A551-FC3E6B00F4DA"
+  },
+  {
+    "name": "BCC Spotlight",
+    "category": "BCC Lights",
+    "effectId": "0744FCDF-032A-357D-873A-AEBB52C7A75F"
+  },
+  {
+    "name": "BCC Super Blend TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "078FDD75-11EA-3173-843D-3A783EC05E36"
+  },
+  {
+    "name": "BCC Rays_Ring MT",
+    "category": "BCC Lights",
+    "effectId": "07956A4E-6641-3778-8797-F2D8D0341501"
+  },
+  {
+    "name": "BCC Film Process OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0883C539-A479-3BD2-8619-367B09169FE9"
+  },
+  {
+    "name": "S_Sharpen",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "09D3D625-3516-00AF-AF73-4E25D35A375F"
+  },
+  {
+    "name": "BCC Z Space II TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0A1D1EF7-7BD3-3270-9241-1D16245B0EE0"
+  },
+  {
+    "name": "S_WarpFishEye",
+    "category": "Sapphire Distort",
+    "effectId": "0A229561-C541-008D-8D10-33543ADBA927"
+  },
+  {
+    "name": "S_Threshold",
+    "category": "Sapphire Adjust",
+    "effectId": "0A2E9CA5-44BA-00A5-A5BC-8AB44288B02B"
+  },
+  {
+    "name": "BCC DVE",
+    "category": "BCC Perspective",
+    "effectId": "0A78DD6A-C1ED-379A-B0BD-3272774373CB"
+  },
+  {
+    "name": "S_DissolveGlint",
+    "category": "Sapphire Transitions",
+    "effectId": "0ABD8B2D-9F8B-00BD-BD11-FCF414C8C458"
+  },
+  {
+    "name": "BCC Z Space III OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0ABE9FFC-F53C-3960-B1A9-4AE3FFBD60A6"
+  },
+  {
+    "name": "S_TextureCells",
+    "category": "Sapphire Render",
+    "effectId": "0ADC79F2-3A6F-00BE-BE32-350107DDABDE"
+  },
+  {
+    "name": "BCC Witness Protection",
+    "category": "BCC Match Move",
+    "effectId": "0B8416A3-6143-3E40-AC3F-7C0DBDA23EB9"
+  },
+  {
+    "name": "BCC Clouds",
+    "category": "BCC Textures",
+    "effectId": "0B852776-FD67-3B6F-B0A1-4DA36D7A8944"
+  },
+  {
+    "name": "EFF_NEWBLUE_TITLE_V2",
+    "category": "Generator",
+    "effectId": "0BBDBF86-AAE6-4F9B-9BC6-97EB68D3826E"
+  },
+  {
+    "name": "S_Trails",
+    "category": "Sapphire Time",
+    "effectId": "0BD2FBB7-73D5-0090-90AC-6586AFCB47F4"
+  },
+  {
+    "name": "BCC Noise Map 2",
+    "category": "BCC Textures",
+    "effectId": "0C0BFEE4-E65E-375A-B34D-F1AFF91AB7F6"
+  },
+  {
+    "name": "BCC Mosaic OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0C0D2F68-7DF3-3209-8B5C-D90A50A5F8E4"
+  },
+  {
+    "name": "BCC Lens Flare Round",
+    "category": "BCC Transitions",
+    "effectId": "0C0D334A-36AA-3D04-AB64-901987EFACC9"
+  },
+  {
+    "name": "BCC Light Matte TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0CEBAE53-F5B6-3BAD-AE70-3AA0EFA91F12"
+  },
+  {
+    "name": "BCC Misalignment",
+    "category": "BCC Stylize",
+    "effectId": "0D481A69-C10D-3BAD-B232-8FABB8DD0C51"
+  },
+  {
+    "name": "BCC Lens Transition OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0E695DB8-569F-3EC2-B382-43077C11EDBE"
+  },
+  {
+    "name": "S_AutoPaint",
+    "category": "Sapphire Stylize",
+    "effectId": "0EA5FCAB-2EF1-00A3-A307-54EB04CB4608"
+  },
+  {
+    "name": "BCC Optical Flow",
+    "category": "BCC Time",
+    "effectId": "0F9A924C-DB03-3061-B758-86E4C04A2F84"
+  },
+  {
+    "name": "BCC Boost Blend TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "0FFF1B0A-2D47-3D9F-ADF8-9194E48740A8"
+  },
+  {
+    "name": "BCC Cross Melt",
+    "category": "BCC Transitions",
+    "effectId": "10EED794-6748-3F22-A015-2AC21E377DAD"
+  },
+  {
+    "name": "S_FlutterCut",
+    "category": "Sapphire Transitions",
+    "effectId": "111EA557-B006-0089-898E-E051F8202CC1"
+  },
+  {
+    "name": "S_JitterFrames",
+    "category": "Sapphire Time",
+    "effectId": "11E68ADB-4BAA-00BC-BCE7-1452E616FCEC"
+  },
+  {
+    "name": "BCC Color Match MT",
+    "category": "BCC Color & Tone",
+    "effectId": "12122489-7056-3F05-9344-472668EE9BDA"
+  },
+  {
+    "name": "S_EmbossShiny",
+    "category": "Sapphire Stylize",
+    "effectId": "1258D576-A3B5-00A8-A870-BF1D964E2FC9"
+  },
+  {
+    "name": "BCC Rays_Wedge",
+    "category": "BCC Lights",
+    "effectId": "1275C13C-0BD2-333F-918C-CA348C858794"
+  },
+  {
+    "name": "S_MuzzleFlash",
+    "category": "Sapphire Render",
+    "effectId": "12C2AEDA-DD85-0096-9602-BB3E66831065"
+  },
+  {
+    "name": "BCC Vector Blur Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "12C42526-F8FE-3572-8A96-9025BD9C6210"
+  },
+  {
+    "name": "BCC Pixel Fixer",
+    "category": "BCC Image Restoration",
+    "effectId": "131B8A73-D94E-39D8-9067-76144B089F2A"
+  },
+  {
+    "name": "BCC Lens Shape",
+    "category": "BCC Blur",
+    "effectId": "135D5008-A09D-305F-9C61-F187C8D876F6"
+  },
+  {
+    "name": "S_CloudsMultColor",
+    "category": "Sapphire Render",
+    "effectId": "1398CDCC-B9BA-0080-8030-0774BD0DE58F"
+  },
+  {
+    "name": "BCC Vector Displacement",
+    "category": "BCC Warp",
+    "effectId": "13BC08B7-5D07-36A7-B540-D69AF13368D7"
+  },
+  {
+    "name": "S_DissolveZap",
+    "category": "Sapphire Transitions",
+    "effectId": "13E152E5-1872-00AD-AD83-59D388CFDCE5"
+  },
+  {
+    "name": "S_Flashbulbs",
+    "category": "Sapphire Lighting",
+    "effectId": "140B88D0-2318-0088-88C9-83566F66F9C0"
+  },
+  {
+    "name": "BCC Pin Art 3D",
+    "category": "BCC Particles",
+    "effectId": "1426179E-5F88-3052-B9C7-7643994E8DB0"
+  },
+  {
+    "name": "S_PseudoColor",
+    "category": "Sapphire Stylize",
+    "effectId": "14A11FB0-4514-0080-80ED-2E5E197B311C"
+  },
+  {
+    "name": "S_LensFlareAutoTrack",
+    "category": "Sapphire Lighting",
+    "effectId": "14C232FD-CE8B-0098-986C-2AC3A641628F"
+  },
+  {
+    "name": "BCC Linear Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "16708915-E5AC-36EB-8618-0942F4428A48"
+  },
+  {
+    "name": "BCC Checker Wipe",
+    "category": "BCC Transitions",
+    "effectId": "16753DE3-4363-3DD7-8D37-BB05BA5BE7EB"
+  },
+  {
+    "name": "Timecode Burn-In",
+    "category": "Generator",
+    "effectId": "169317AB-ACAA-416F-84CE-249BFE0B09ED"
+  },
+  {
+    "name": "S_FreezeFrame",
+    "category": "Sapphire Time",
+    "effectId": "16E26BC3-A4A0-00A1-A163-F0671F56F8C3"
+  },
+  {
+    "name": "BCC Scatterize",
+    "category": "BCC Stylize",
+    "effectId": "183EBF48-09A3-376D-BF79-EAD9DB093E27"
+  },
+  {
+    "name": "S_DistortBlur",
+    "category": "Sapphire Distort",
+    "effectId": "189EA258-713A-00B9-B9A7-85E8B8CCD19F"
+  },
+  {
+    "name": "S_GlowRings",
+    "category": "Sapphire Lighting",
+    "effectId": "18C14852-724D-00A6-A60A-EDE93A864174"
+  },
+  {
+    "name": "BCC Magic Sharp",
+    "category": "BCC Image Restoration",
+    "effectId": "18CC4753-28CC-3F41-AE5E-8703B7F1FD54"
+  },
+  {
+    "name": "BCC Unsharp Mask",
+    "category": "BCC Blur",
+    "effectId": "19B81EBF-6DE1-3A50-89AD-F43F499DE6A5"
+  },
+  {
+    "name": "BCC Spraypaint Noise TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "1A1BFECA-E212-35ED-9562-B926A8094BD1"
+  },
+  {
+    "name": "BCC Cloth RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "1A4DB6B1-70D6-36DC-854D-40047F197F75"
+  },
+  {
+    "name": "S_Swish3D",
+    "category": "Sapphire Transitions",
+    "effectId": "1A8F355B-5C5B-00A7-A768-448287732B0B"
+  },
+  {
+    "name": "BCC UpRez",
+    "category": "BCC Image Restoration",
+    "effectId": "1B681A8B-D968-368C-8405-C95D95D59F85"
+  },
+  {
+    "name": "S_EdgeColorize",
+    "category": "Sapphire Stylize",
+    "effectId": "1B8359A4-96C2-00B1-B171-6AB7D3ABE222"
+  },
+  {
+    "name": "S_LaserBeam",
+    "category": "Sapphire Render",
+    "effectId": "1BAA05EB-D982-0094-945C-4C81402A67AB"
+  },
+  {
+    "name": "BCC Particle Emitter 3D",
+    "category": "BCC Particles",
+    "effectId": "1C29A5CC-E601-3A38-903D-2BB1FFCE4F30"
+  },
+  {
+    "name": "BCC Film Glow OBS",
+    "category": "BCC Obsolete",
+    "effectId": "1CB2871C-778E-3029-85CD-BD1A1FCA9785"
+  },
+  {
+    "name": "S_TextureWeave",
+    "category": "Sapphire Render",
+    "effectId": "1CBD3622-6BBC-00B1-B18A-26AF0DAAF432"
+  },
+  {
+    "name": "BCC Rectangular Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "1D42C493-EFB7-31EC-B81D-633F8369D3DB"
+  },
+  {
+    "name": "S_TextureLoops",
+    "category": "Sapphire Render",
+    "effectId": "1E236A61-5A12-00B4-B431-BE9D49CE46FF"
+  },
+  {
+    "name": "BCC Boost Blend OBS",
+    "category": "BCC Obsolete",
+    "effectId": "1EB4F93D-5F24-3E8F-BB24-33A869F19D9F"
+  },
+  {
+    "name": "S_Tint",
+    "category": "Sapphire Adjust",
+    "effectId": "1F8B74CF-007C-00B9-B920-2937F50DFF2D"
+  },
+  {
+    "name": "BCC Bump Map",
+    "category": "BCC Art Looks",
+    "effectId": "1F91EA20-32F3-3CAD-BACC-5BC14E3EF1C7"
+  },
+  {
+    "name": "BCC 3D Extruded ImageShatter",
+    "category": "BCC Perspective",
+    "effectId": "1F99617A-4BE6-3653-A043-EA8F98D6BC5D"
+  },
+  {
+    "name": "S_WarpPolar",
+    "category": "Sapphire Distort",
+    "effectId": "1FB2DF0D-4173-0086-86B7-1D80D6CF2DF3"
+  },
+  {
+    "name": "S_FeedbackDistort",
+    "category": "Sapphire Time",
+    "effectId": "1FD32B65-1AED-00BC-BCD6-5095E5A367AC"
+  },
+  {
+    "name": "BCC Linear Luma Key OBS",
+    "category": "BCC Obsolete",
+    "effectId": "1FE3E47E-8E87-3F4A-B40F-D54AB8DAFADD"
+  },
+  {
+    "name": "S_BandPass",
+    "category": "Sapphire Stylize",
+    "effectId": "2075F03D-E9D8-008B-8BBE-4FB09539E470"
+  },
+  {
+    "name": "BCC Flicker Fixer",
+    "category": "BCC Image Restoration",
+    "effectId": "208DBDA0-D22A-3637-A034-45999D80C25B"
+  },
+  {
+    "name": "BCC Particle Emitter 3D MT",
+    "category": "BCC Particles",
+    "effectId": "20A18BB5-17E9-38B6-AAE9-23EB132537B2"
+  },
+  {
+    "name": "BCC Displacement Map",
+    "category": "BCC Warp",
+    "effectId": "20A2EE66-8D91-3017-A7E6-248C1A091399"
+  },
+  {
+    "name": "BCC Composite",
+    "category": "BCC Key & Blend",
+    "effectId": "20BB4668-21E4-300C-96D5-665D85C0EF99"
+  },
+  {
+    "name": "S_CardFlip",
+    "category": "Sapphire Transitions",
+    "effectId": "218446A0-8FC9-00A8-A83B-904F0E9E2A48"
+  },
+  {
+    "name": "S_DissolveDiffuse",
+    "category": "Sapphire Transitions",
+    "effectId": "21C15F41-4527-008B-8BC3-7247AABB8F77"
+  },
+  {
+    "name": "S_DissolveGlare",
+    "category": "Sapphire Transitions",
+    "effectId": "226E1502-8C27-00B7-B790-EDF83E8BFA94"
+  },
+  {
+    "name": "BCC Light Sweep MT",
+    "category": "BCC Lights",
+    "effectId": "237A2DCC-A923-3683-B875-85C9E72B4AC5"
+  },
+  {
+    "name": "BCC Z Space II OBS",
+    "category": "BCC Obsolete",
+    "effectId": "23A0905E-DDFC-3C56-9CDB-481DC1FDF20C"
+  },
+  {
+    "name": "BCC Bulge MT",
+    "category": "BCC Warp",
+    "effectId": "23FD1676-7FE4-34EE-AA66-7A47E5742DE7"
+  },
+  {
+    "name": "BCC Color Balance",
+    "category": "BCC Color & Tone",
+    "effectId": "2545060A-FCC0-3A22-9CF0-1C9150B54B38"
+  },
+  {
+    "name": "S_PsykoBlobs",
+    "category": "Sapphire Stylize",
+    "effectId": "25D3CA9E-6EA2-0083-8309-5E0B97B27CB8"
+  },
+  {
+    "name": "S_SpotLight",
+    "category": "Sapphire Lighting",
+    "effectId": "25ECD83F-D935-0096-9608-6DEB5A34F370"
+  },
+  {
+    "name": "BCC Velocity Remap",
+    "category": "BCC Time",
+    "effectId": "26527F9F-DC8A-3877-95B6-EDAA854FAB91"
+  },
+  {
+    "name": "BCC Lens Flare 3D",
+    "category": "BCC Lights",
+    "effectId": "2676FF84-FF26-388E-B57C-2562611D4257"
+  },
+  {
+    "name": "BCC Fast Flipper OBS",
+    "category": "BCC Obsolete",
+    "effectId": "26B4CD13-8793-3D84-9563-98F614EBCC64"
+  },
+  {
+    "name": "BCC Lens Blur OBS",
+    "category": "BCC Obsolete",
+    "effectId": "27536A80-E781-3C46-8FFF-4ED65B81669E"
+  },
+  {
+    "name": "BCC Caustics",
+    "category": "BCC Textures",
+    "effectId": "27F1DA26-4010-33C4-96F3-F07148E676D1"
+  },
+  {
+    "name": "BCC Light Matte OBS",
+    "category": "BCC Obsolete",
+    "effectId": "284B9222-5FEA-3021-A22B-9BAD1CCF4EC8"
+  },
+  {
+    "name": "BCC Film Damage",
+    "category": "BCC Film Style",
+    "effectId": "2865FCC9-E86C-37D7-B179-D59687411D82"
+  },
+  {
+    "name": "BCC Dust and Scratches",
+    "category": "BCC Image Restoration",
+    "effectId": "287F9374-B716-31A3-A180-24C88FBB2364"
+  },
+  {
+    "name": "BCC Rough Glow TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "28D872EA-0212-3FCD-AC72-2904AD5C680E"
+  },
+  {
+    "name": "BCC Page Turn",
+    "category": "BCC Perspective",
+    "effectId": "28FE4852-87B0-37D7-A640-73A07303763E"
+  },
+  {
+    "name": "S_GradientMulti",
+    "category": "Sapphire Render",
+    "effectId": "290CF4A7-5FBE-0089-892F-48049F3ED090"
+  },
+  {
+    "name": "BCC Mixed Colors RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "292E7B25-5D3B-3DE3-A96D-EBA141FDD84E"
+  },
+  {
+    "name": "S_GradientRadial",
+    "category": "Sapphire Render",
+    "effectId": "29AC01E0-A25C-00B0-B0BF-B48C26FAAF47"
+  },
+  {
+    "name": "BCC Invert-Solarize OBS",
+    "category": "BCC Obsolete",
+    "effectId": "29B3551C-C45D-3914-9F0E-FE92B747A339"
+  },
+  {
+    "name": "BCC Damaged TV Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "29D799A9-EDF2-3A25-A72B-ECA7825766BF"
+  },
+  {
+    "name": "BCC DVE Basic",
+    "category": "BCC Perspective",
+    "effectId": "2A2EB4C7-792B-3EC4-A8FA-292988B548A8"
+  },
+  {
+    "name": "S_DissolveAutoPaint",
+    "category": "Sapphire Transitions",
+    "effectId": "2ACA8C3E-BD43-0094-94D6-A6C437D80460"
+  },
+  {
+    "name": "BCC Alpha Spotlight TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "2B3EFBCD-7C02-3A96-AD7E-6B8172B28104"
+  },
+  {
+    "name": "BCC Gaussian Blur",
+    "category": "BCC Blur",
+    "effectId": "2B6146B2-C9D1-3B42-97BC-90C4DAA7BA2E"
+  },
+  {
+    "name": "BCC Levels-Gamma OBS",
+    "category": "BCC Obsolete",
+    "effectId": "2B6C871A-71FA-3EE6-83D5-70541BFFB3AD"
+  },
+  {
+    "name": "S_TimeWarpRGB",
+    "category": "Sapphire Time",
+    "effectId": "2BA8BE6E-DD08-00BA-BA85-22AC6BB158AF"
+  },
+  {
+    "name": "BCC Film Process OBS",
+    "category": "BCC Obsolete",
+    "effectId": "2C051998-0A50-345D-B27C-385E1EC02511"
+  },
+  {
+    "name": "BCC Star Matte OBS",
+    "category": "BCC Obsolete",
+    "effectId": "2C391249-C5A9-3A6B-8E06-766AF43A37F9"
+  },
+  {
+    "name": "BCC Cube",
+    "category": "BCC Perspective",
+    "effectId": "2C5B9824-4B49-3BF8-9E01-24B9E238AF4C"
+  },
+  {
+    "name": "S_DistortChroma",
+    "category": "Sapphire Distort",
+    "effectId": "2CC0A156-0BD2-00B7-B74E-F87FFF9A60D4"
+  },
+  {
+    "name": "BCC Motion Key",
+    "category": "BCC Image Restoration",
+    "effectId": "2CEC2103-8C91-3E92-BE15-A30ED7323D3F"
+  },
+  {
+    "name": "BCC Two Way Key",
+    "category": "BCC Key & Blend",
+    "effectId": "2D6432EA-AA1D-3138-94E4-C9701490E832"
+  },
+  {
+    "name": "S_MotionDetect",
+    "category": "Sapphire Time",
+    "effectId": "2D7AB3AA-92B0-0081-8130-47EAFBA9D9B2"
+  },
+  {
+    "name": "S_JpegDamage",
+    "category": "Sapphire Stylize",
+    "effectId": "2E5043E5-6D9B-008A-8A32-DCD640A6E258"
+  },
+  {
+    "name": "BCC Video Glitch RT",
+    "category": "BCC Stylize",
+    "effectId": "2E650AC8-3D7B-3418-856E-2D07729CC74B"
+  },
+  {
+    "name": "S_TextureFlux",
+    "category": "Sapphire Render",
+    "effectId": "2E87ACCC-923A-0098-98AE-8F18B9DC827E"
+  },
+  {
+    "name": "BCC Rock RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "2EAE158C-01E6-3716-8DE8-D2063742BFAE"
+  },
+  {
+    "name": "BCC Radial Blur",
+    "category": "BCC Blur",
+    "effectId": "2EB44660-0A88-35DA-AA18-CD194BBC8081"
+  },
+  {
+    "name": "S_DissolvePuddle",
+    "category": "Sapphire Transitions",
+    "effectId": "2ECBCE9B-127A-00BB-BB15-D94CA2F281F9"
+  },
+  {
+    "name": "BCC Film Glow Dissolve OBS",
+    "category": "BCC Obsolete",
+    "effectId": "2F24F0A0-9B44-30B2-AE5F-2CC0F882C8D9"
+  },
+  {
+    "name": "BCC Rays_Radiant Spotlight",
+    "category": "BCC Lights",
+    "effectId": "2FE1B9B7-37E8-327F-A9E0-37A6F5E5F59E"
+  },
+  {
+    "name": "BCC Beauty Studio",
+    "category": "BCC Image Restoration",
+    "effectId": "3038F825-0201-3831-A120-45D4C91EC3C9"
+  },
+  {
+    "name": "BCC Multitone OBS",
+    "category": "BCC Obsolete",
+    "effectId": "304B0E99-6AC2-3820-97C2-2A52A4889684"
+  },
+  {
+    "name": "S_FieldRemove",
+    "category": "Sapphire Time",
+    "effectId": "31673443-F9E9-00AE-AE4E-DF816151E58A"
+  },
+  {
+    "name": "S_TVDamage",
+    "category": "Sapphire Stylize",
+    "effectId": "3177A4F2-6852-00A0-A0A8-D1AD104DB456"
+  },
+  {
+    "name": "S_TrailsDiffuse",
+    "category": "Sapphire Time",
+    "effectId": "31C8D721-C28E-0088-88A7-414C18E4F452"
+  },
+  {
+    "name": "S_WarpBubble",
+    "category": "Sapphire Distort",
+    "effectId": "327727B4-0516-00AD-AD88-D20979EC89F0"
+  },
+  {
+    "name": "BCC UpRez DeInt",
+    "category": "BCC Image Restoration",
+    "effectId": "33C97F8D-549B-3E4A-BDC0-6C042BD26871"
+  },
+  {
+    "name": "S_FlysEyeCircles",
+    "category": "Sapphire Stylize",
+    "effectId": "33DDBE8C-4FB8-0093-93FA-DFCDF2A79150"
+  },
+  {
+    "name": "BCC Mixed Colors",
+    "category": "BCC Textures",
+    "effectId": "3481E57A-38CB-3316-95FC-BC0056B61AAB"
+  },
+  {
+    "name": "BCC Safe Colors",
+    "category": "BCC Color & Tone",
+    "effectId": "34C49344-6CF2-35D0-9779-854699F25232"
+  },
+  {
+    "name": "S_WarpTransform",
+    "category": "Sapphire Distort",
+    "effectId": "355D3F47-859C-0080-805E-00DD436B18BD"
+  },
+  {
+    "name": "BCC Multi Stretch Wipe",
+    "category": "BCC Transitions",
+    "effectId": "37DBA70C-6AE2-317E-BE62-0E62CE63D2F2"
+  },
+  {
+    "name": "BCC RGB Blend OBS",
+    "category": "BCC Obsolete",
+    "effectId": "380613BF-4BAA-38DA-8CE4-1A9FC3A7670B"
+  },
+  {
+    "name": "S_Layer",
+    "category": "Sapphire Composite",
+    "effectId": "383A3D60-76D2-008D-8D61-28C1E1246F8C"
+  },
+  {
+    "name": "S_Invert",
+    "category": "Sapphire Adjust",
+    "effectId": "389FE0EC-D7B3-0091-913A-646FA5EB61DE"
+  },
+  {
+    "name": "BCC Lens Blur Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "390A4DAF-7786-33A2-BC5A-90FC3F78C40A"
+  },
+  {
+    "name": "S_Deband",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "39470A40-153A-00A8-A867-AAB6C9B87229"
+  },
+  {
+    "name": "S_DissolveEdgeRays",
+    "category": "Sapphire Transitions",
+    "effectId": "396432F1-D17D-00A7-A71C-F4478776228A"
+  },
+  {
+    "name": "BCC Invert-Solarize",
+    "category": "BCC Color & Tone",
+    "effectId": "39AAF0DA-2DC4-3CD6-8AF8-D3BCC9695C53"
+  },
+  {
+    "name": "S_WipeFourWedges",
+    "category": "Sapphire Transitions",
+    "effectId": "3A02D6E5-5E86-0096-96CE-17F832073D4E"
+  },
+  {
+    "name": "S_GlowDarks",
+    "category": "Sapphire Lighting",
+    "effectId": "3A124930-437C-0083-83C1-844156EB85B9"
+  },
+  {
+    "name": "S_KaleidoRadial",
+    "category": "Sapphire Stylize",
+    "effectId": "3A234FF2-4823-0083-8319-CB8F9D6ADC0F"
+  },
+  {
+    "name": "BCC Particle Array 3D TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3A8BC262-670D-378E-A7F4-C67E6CD1F655"
+  },
+  {
+    "name": "BCC Film Glow OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3B0B1037-CCE8-30ED-B0E0-44C8B679E0F0"
+  },
+  {
+    "name": "BCC DeNoise OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3B20A815-693E-3D6E-A499-52CD69B93A8E"
+  },
+  {
+    "name": "BCC Colorize MT",
+    "category": "BCC Color & Tone",
+    "effectId": "3B65510D-89BE-30A1-AC84-31D6E89B45B2"
+  },
+  {
+    "name": "S_EmbossGlass",
+    "category": "Sapphire Stylize",
+    "effectId": "3B68AB56-11A0-0085-8583-35BAC894590B"
+  },
+  {
+    "name": "S_WipeDiffuse",
+    "category": "Sapphire Transitions",
+    "effectId": "3BCD72BC-BD7F-00AF-AFEB-3D194AC73A26"
+  },
+  {
+    "name": "S_FlickerRmMatteColor",
+    "category": "Sapphire Time",
+    "effectId": "3C4D58BA-C95F-00B5-B5FB-8C83DD925620"
+  },
+  {
+    "name": "S_InfiniteZoom",
+    "category": "Sapphire Distort",
+    "effectId": "3C50CA15-EAAF-00A4-A4D9-B7212B7CC854"
+  },
+  {
+    "name": "BCC Stage Light TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3CD662B2-48DA-3D04-81E8-8785B52402F3"
+  },
+  {
+    "name": "S_DissolveFilm",
+    "category": "Sapphire Transitions",
+    "effectId": "3D1CF5C8-C121-0091-91F5-25A834CA7769"
+  },
+  {
+    "name": "BCC Particle Systems MT",
+    "category": "BCC Particles",
+    "effectId": "3D7C4131-235F-3F7E-8D99-1E4CC977B5AA"
+  },
+  {
+    "name": "BCC Motion Blur",
+    "category": "BCC Blur",
+    "effectId": "3DF066AA-DFC8-3FBA-BD21-7AEE4D82F0E6"
+  },
+  {
+    "name": "BCC Drop Shadow",
+    "category": "BCC Stylize",
+    "effectId": "3E59E9ED-DA0A-3DED-81F7-1556142B781C"
+  },
+  {
+    "name": "S_WipePlasma",
+    "category": "Sapphire Transitions",
+    "effectId": "3E97EBB5-802C-0087-87BF-E94257202D57"
+  },
+  {
+    "name": "BCC Radial Blur MT",
+    "category": "BCC Blur",
+    "effectId": "3F15EDD0-4F92-3623-9F67-2BEB142D6F50"
+  },
+  {
+    "name": "BCC 3D Image Shatter OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3F56E38E-867C-3E7C-B29C-CCB56BCB1E3A"
+  },
+  {
+    "name": "BCC Make Alpha OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3F8FCB13-E465-3F26-946B-F61FF3093911"
+  },
+  {
+    "name": "BCC Wood Grain RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "3FE4F0DE-5283-39B1-A435-84406182E557"
+  },
+  {
+    "name": "S_DissolveVortex",
+    "category": "Sapphire Transitions",
+    "effectId": "3FEED5D8-2AF4-00B8-B89C-4B3077731857"
+  },
+  {
+    "name": "S_WipeRectangle",
+    "category": "Sapphire Transitions",
+    "effectId": "40A3F031-11BC-00BF-BF0D-D681FC563115"
+  },
+  {
+    "name": "S_Rays",
+    "category": "Sapphire Lighting",
+    "effectId": "4104AE7E-F0CE-00AE-AEB7-939F404B722C"
+  },
+  {
+    "name": "S_Sketch",
+    "category": "Sapphire Stylize",
+    "effectId": "412EBBC7-C074-0080-8020-112B02225AA1"
+  },
+  {
+    "name": "BCC Extruded EPS",
+    "category": "BCC 3D Objects",
+    "effectId": "41EECD6E-56C4-3F37-A9FA-77A1B0EFE290"
+  },
+  {
+    "name": "BCC Z-Blur",
+    "category": "BCC Blur",
+    "effectId": "4231AE58-7F74-35E7-90D8-619AECD31168"
+  },
+  {
+    "name": "S_CloudsColorSmooth",
+    "category": "Sapphire Render",
+    "effectId": "432E6233-3223-00B1-B1C1-A778F7E43EC7"
+  },
+  {
+    "name": "BCC Light Wipe",
+    "category": "BCC Transitions",
+    "effectId": "43346090-BD62-30EB-AAAE-713EAD56F169"
+  },
+  {
+    "name": "S_QuadTone",
+    "category": "Sapphire Adjust",
+    "effectId": "433D446A-635A-0081-818C-3D1A5BAFCF2E"
+  },
+  {
+    "name": "S_HalfToneRings",
+    "category": "Sapphire Stylize",
+    "effectId": "4370CD71-ADE1-009E-9E60-A9848D68F0A7"
+  },
+  {
+    "name": "S_FlickerRemoveColor",
+    "category": "Sapphire Time",
+    "effectId": "43C4EEE1-004A-0086-86D9-94CD140846F1"
+  },
+  {
+    "name": "S_WipeWeave",
+    "category": "Sapphire Transitions",
+    "effectId": "44CE8FE8-BFBB-00A7-A7E1-B672369AC73C"
+  },
+  {
+    "name": "BCC Halftone MT",
+    "category": "BCC Art Looks",
+    "effectId": "44EE8140-7675-3E79-BC11-2D3B310027A7"
+  },
+  {
+    "name": "S_Dissolve",
+    "category": "Sapphire Transitions",
+    "effectId": "4542A390-0825-009D-9D4E-30437187FB64"
+  },
+  {
+    "name": "BCC DVE Basic TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "45772242-7AA8-34A4-9EA8-8A4F0848F7CF"
+  },
+  {
+    "name": "BCC Colorize Glow",
+    "category": "BCC Stylize",
+    "effectId": "458E7CA0-01BD-37FA-9EC0-C2167BB29016"
+  },
+  {
+    "name": "BCC Edge Light",
+    "category": "BCC Lights",
+    "effectId": "45A8F2E9-B7FE-3C05-9407-89B9884D38A3"
+  },
+  {
+    "name": "S_WipeDoubleWedge",
+    "category": "Sapphire Transitions",
+    "effectId": "46782E62-F24D-00AC-AC4E-7D69091AF500"
+  },
+  {
+    "name": "BCC 3D Image Shatter TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "467E32B9-742D-3167-B110-4F8D12623DDF"
+  },
+  {
+    "name": "S_GlowAura",
+    "category": "Sapphire Lighting",
+    "effectId": "46A98217-2759-008D-8D12-D05D2DD4E518"
+  },
+  {
+    "name": "BCC Film Grain",
+    "category": "BCC Film Style",
+    "effectId": "47263B56-9037-33B1-9B28-FA61FCC394C3"
+  },
+  {
+    "name": "BCC Remover",
+    "category": "BCC Image Restoration",
+    "effectId": "4749D3E0-1F83-3CCB-97C3-E6C27EA577E1"
+  },
+  {
+    "name": "S_NightSky",
+    "category": "Sapphire Render",
+    "effectId": "47891752-43F3-0088-88F0-C64AF7699912"
+  },
+  {
+    "name": "S_ReverseClip",
+    "category": "Sapphire Time",
+    "effectId": "47B363FC-B1C7-00A3-A30A-A0532A11FCC2"
+  },
+  {
+    "name": "S_Streaks",
+    "category": "Sapphire Lighting",
+    "effectId": "4882925F-3FF6-00B3-B329-BACCD5706816"
+  },
+  {
+    "name": "BCC Ribbon Wipe",
+    "category": "BCC Transitions",
+    "effectId": "48C4D645-4CDE-3757-9B84-9A620AFD7886"
+  },
+  {
+    "name": "BCC Rays_Radiant Edges MT",
+    "category": "BCC Lights",
+    "effectId": "490D1C5F-B4DC-39B4-9384-3E4B0BFE1F15"
+  },
+  {
+    "name": "BCC Textured Wipe",
+    "category": "BCC Transitions",
+    "effectId": "490D9D9F-E437-3660-86BD-12D77C5B240F"
+  },
+  {
+    "name": "BCC Unsharp Mask OBS",
+    "category": "BCC Obsolete",
+    "effectId": "49A5842A-0E82-30B7-B35E-953E2557C0AA"
+  },
+  {
+    "name": "BCC Extruded Text",
+    "category": "BCC 3D Objects",
+    "effectId": "49AA5F8A-0DA6-3D01-AA09-BAF26B34BAF4"
+  },
+  {
+    "name": "BCC Rays_Textured MT",
+    "category": "BCC Lights",
+    "effectId": "49DCDD55-66A3-3FD8-BB85-3C53284034AF"
+  },
+  {
+    "name": "S_WipeTiles",
+    "category": "Sapphire Transitions",
+    "effectId": "4A23664E-7E39-009C-9C42-76561868E356"
+  },
+  {
+    "name": "BCC Matte Choker",
+    "category": "BCC Key & Blend",
+    "effectId": "4A702BAF-E718-3E02-8B6F-9F4DEE8AD64C"
+  },
+  {
+    "name": "S_StripSlideTransition",
+    "category": "Sapphire Transitions",
+    "effectId": "4ADACBF2-481F-0096-965A-B15153AC054E"
+  },
+  {
+    "name": "BCC Rays_Puffy TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "4AF663A0-6707-39CB-9004-02F003E75DF7"
+  },
+  {
+    "name": "BCC Noise Map OBS",
+    "category": "BCC Obsolete",
+    "effectId": "4B5D7B3B-ABC5-331E-9EC6-47D2E1E8AC0A"
+  },
+  {
+    "name": "BCC Trails",
+    "category": "BCC Time",
+    "effectId": "4BD28F74-7436-3DB8-AC7A-72C8363E601C"
+  },
+  {
+    "name": "BCC Water Waves Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "4CE2151D-FB02-3BBB-AB5C-18B8E6CBBC0D"
+  },
+  {
+    "name": "BCC Ripple Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "4CFD1B61-FA87-32C9-800C-AE30A2990467"
+  },
+  {
+    "name": "S_Zebrafy",
+    "category": "Sapphire Stylize",
+    "effectId": "4D35521C-2DB1-009E-9E02-4C200012DFBE"
+  },
+  {
+    "name": "BCC Sparks",
+    "category": "BCC Particles",
+    "effectId": "4D61ACB7-7614-3995-9992-9A5913061446"
+  },
+  {
+    "name": "BCC Edge Grunge",
+    "category": "BCC Stylize",
+    "effectId": "4EE1A650-7868-3A50-8F6D-7789675A69F9"
+  },
+  {
+    "name": "BCC Wood Grain",
+    "category": "BCC Textures",
+    "effectId": "4F15FE5C-0836-345D-BEC0-928AD471715F"
+  },
+  {
+    "name": "S_DistortRGB",
+    "category": "Sapphire Distort",
+    "effectId": "4F57939E-1FA5-00BA-BAE2-3CF929D85ECA"
+  },
+  {
+    "name": "S_LensFlare",
+    "category": "Sapphire Lighting",
+    "effectId": "4F8A9A34-BE87-00A8-A80A-D20B11CB2D5B"
+  },
+  {
+    "name": "BCC Lens Blur OBS",
+    "category": "BCC Obsolete",
+    "effectId": "4FB30A14-DE67-3DD5-981D-D96BD9DFCDAD"
+  },
+  {
+    "name": "BCC Fractal Noise RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "4FD2FC53-60A8-30CA-B61F-FFBB5D308A7A"
+  },
+  {
+    "name": "S_WipeCells",
+    "category": "Sapphire Transitions",
+    "effectId": "501BFFBE-84A6-00AA-AA45-90DAFDCC2207"
+  },
+  {
+    "name": "BCC Fast Lens Blur",
+    "category": "BCC Blur",
+    "effectId": "5076A809-8768-31B3-B4FE-C21BBE71C1ED"
+  },
+  {
+    "name": "BCC Scanline",
+    "category": "BCC Stylize",
+    "effectId": "50A3B594-CCC2-311C-A1E3-C7DD82857232"
+  },
+  {
+    "name": "BCC Radial Wipe",
+    "category": "BCC Transitions",
+    "effectId": "50A62108-C588-371B-8BEE-EE77C5B0FEA8"
+  },
+  {
+    "name": "BCC DV Fixer",
+    "category": "BCC Image Restoration",
+    "effectId": "50DF7E4C-0C8F-3392-9E86-949386EA0421"
+  },
+  {
+    "name": "BCC Median TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "5148DFAC-BC5D-3FEF-A4EC-2FEB7146D52F"
+  },
+  {
+    "name": "BCC Two Way Key OBS",
+    "category": "BCC Obsolete",
+    "effectId": "5150B4C9-9935-303D-9EDA-1BFE67571D8B"
+  },
+  {
+    "name": "S_SoftFocus",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "533EAC05-3082-008E-8EB1-8E0095254B7C"
+  },
+  {
+    "name": "BCC Color Balance OBS",
+    "category": "BCC Obsolete",
+    "effectId": "54F323A1-DFEA-3A82-B653-76A152F52F94"
+  },
+  {
+    "name": "BCC Glow Matte OBS",
+    "category": "BCC Obsolete",
+    "effectId": "55843F0C-2A5A-3026-A2AA-08AF6FC42CB3"
+  },
+  {
+    "name": "BCC Rays_Streaky MT",
+    "category": "BCC Lights",
+    "effectId": "56500B14-A8CD-34D5-B40D-0F545ECD3D46"
+  },
+  {
+    "name": "BCC Cylinder",
+    "category": "BCC Perspective",
+    "effectId": "56B4AE1D-220E-3F4E-9729-F34796AD3DF6"
+  },
+  {
+    "name": "BCC Wooden Planks RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "56B86C13-5108-35E0-9950-E9AC7A61334E"
+  },
+  {
+    "name": "BCC Scatterize TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "5867E52B-CB44-3DF6-9DEB-011629539060"
+  },
+  {
+    "name": "BCC Lightning",
+    "category": "BCC Lights",
+    "effectId": "5955B655-C02E-3B3D-9218-9408CDF54FAC"
+  },
+  {
+    "name": "S_DissolveWaves",
+    "category": "Sapphire Transitions",
+    "effectId": "59C8D1A4-74EB-00B6-B6EA-FFD43A8EBCA2"
+  },
+  {
+    "name": "BCC Composite TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "5DC2A958-3F83-3FF5-84C7-D3D811C72278"
+  },
+  {
+    "name": "S_HalfToneColor",
+    "category": "Sapphire Stylize",
+    "effectId": "5DC5CD44-9C54-009F-9FE0-61286965262C"
+  },
+  {
+    "name": "BCC Lens Correction",
+    "category": "BCC Image Restoration",
+    "effectId": "5E48718C-5A4A-3967-A1EA-2184404C4732"
+  },
+  {
+    "name": "BCC Misalignment TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "5E7F0772-93EF-349B-9516-DE5688BDDBC8"
+  },
+  {
+    "name": "BCC Alpha Pixel Noise OBS",
+    "category": "BCC Obsolete",
+    "effectId": "5EC6E8AF-5F7F-3993-9AF0-8CB0D0ABCAB9"
+  },
+  {
+    "name": "S_WarpWaves",
+    "category": "Sapphire Distort",
+    "effectId": "5F5AF6EA-2692-00A3-A343-C82093840998"
+  },
+  {
+    "name": "BCC Wire Remover",
+    "category": "BCC Image Restoration",
+    "effectId": "5FBB1E6A-BDC2-3089-9E92-6D86DD0BABED"
+  },
+  {
+    "name": "S_ReverseEdits",
+    "category": "Sapphire Time",
+    "effectId": "5FDCBEA3-1F03-009F-9F03-48D7F21C92A9"
+  },
+  {
+    "name": "BCC Fractal Noise",
+    "category": "BCC Textures",
+    "effectId": "6001D7AE-C884-3890-AA4F-537777171A72"
+  },
+  {
+    "name": "S_DefocusPrism",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "60057699-7EE8-00A1-A1F1-3BC87AB53A2B"
+  },
+  {
+    "name": "BCC Twirl MT",
+    "category": "BCC Warp",
+    "effectId": "6090F065-F2CC-38EF-9A93-637DCCA206EC"
+  },
+  {
+    "name": "S_WipeBubble",
+    "category": "Sapphire Transitions",
+    "effectId": "60F73967-9B43-00B7-B732-4BE41A2EFF81"
+  },
+  {
+    "name": "BCC Vector Displacement TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "61588F2F-AB46-37B7-9217-2479B667F676"
+  },
+  {
+    "name": "BCC Glint",
+    "category": "BCC Lights",
+    "effectId": "616DF8C5-D21D-30C8-95EA-D9A764D349C2"
+  },
+  {
+    "name": "BCC Two Strip Color",
+    "category": "BCC Film Style",
+    "effectId": "61BD0D65-8960-3EC3-B4B0-D00F559A4023"
+  },
+  {
+    "name": "BCC Multi Stripe Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "62004EF4-CFAA-33F5-9339-78ADF589D1C3"
+  },
+  {
+    "name": "BCC Textured Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "62670E65-D256-3A41-A3C3-3BBBFDB32D57"
+  },
+  {
+    "name": "BCC Sphere Transition",
+    "category": "BCC Perspective",
+    "effectId": "6296B66C-1745-3209-9795-5DFEC19DE038"
+  },
+  {
+    "name": "BCC Smooth Tone MT",
+    "category": "BCC Image Restoration",
+    "effectId": "6314AA92-6CDF-3F85-A01A-E6A6344DA8E6"
+  },
+  {
+    "name": "S_DissolveTiles",
+    "category": "Sapphire Transitions",
+    "effectId": "6371C413-F4FB-00A3-A3B4-819B5FA85FDE"
+  },
+  {
+    "name": "S_WipePointalize",
+    "category": "Sapphire Transitions",
+    "effectId": "63C20884-9FA4-009C-9C95-89AC739475E5"
+  },
+  {
+    "name": "BCC Fast Film Glow",
+    "category": "BCC Film Style",
+    "effectId": "643EA5CB-DA96-3637-BE10-1CE5C2B52FF9"
+  },
+  {
+    "name": "BCC Match Grain",
+    "category": "BCC Film Style",
+    "effectId": "64ABEFD9-228E-3DCB-A4CA-975812144AC2"
+  },
+  {
+    "name": "S_BokehLights",
+    "category": "Sapphire Lighting",
+    "effectId": "64E05E7B-FD09-0097-977C-B19D46958E63"
+  },
+  {
+    "name": "S_FilmRoll",
+    "category": "Sapphire Transitions",
+    "effectId": "6522CECE-E184-00BA-BA4B-5D5629F51FD9"
+  },
+  {
+    "name": "BCC Flutter Cut",
+    "category": "BCC Transitions",
+    "effectId": "6565374C-7971-32F6-813E-6DBD0B767B68"
+  },
+  {
+    "name": "BCC Videoscope",
+    "category": "BCC Color & Tone",
+    "effectId": "65A78A09-7AE5-3870-A542-0FCE6498EAB4"
+  },
+  {
+    "name": "S_Mosaic",
+    "category": "Sapphire Stylize",
+    "effectId": "661961BE-5399-0085-85A2-C31FE1336BFC"
+  },
+  {
+    "name": "S_BleachBypass",
+    "category": "Sapphire Stylize",
+    "effectId": "66EC1367-CD7E-00B5-B5C6-A1CF2FAB50CB"
+  },
+  {
+    "name": "BCC Criss-Cross Wipe",
+    "category": "BCC Transitions",
+    "effectId": "6791CE11-CECB-3598-AFDD-48A713282185"
+  },
+  {
+    "name": "BCC Fast Film Process",
+    "category": "BCC Film Style",
+    "effectId": "68706CC2-9339-3DF0-8A56-A9B28B90111F"
+  },
+  {
+    "name": "BCC Fire TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "6908334A-0634-3AFB-849D-12C741B9DDFC"
+  },
+  {
+    "name": "S_Blur",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "69D316FE-DF4E-0085-8507-8A651B3C6057"
+  },
+  {
+    "name": "BCC Weave RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "6A46D265-1FE8-3D50-B537-60A5DE87F98F"
+  },
+  {
+    "name": "BCC Brick",
+    "category": "BCC Textures",
+    "effectId": "6B8C92B5-A39D-3C44-A156-E837F373FD6F"
+  },
+  {
+    "name": "BCC Brick RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "6C09E2F4-0251-33BE-BF68-9398ED8804AF"
+  },
+  {
+    "name": "S_Kaleido",
+    "category": "Sapphire Stylize",
+    "effectId": "6C57F9EF-429B-009F-9F52-6E1069469D99"
+  },
+  {
+    "name": "BCC Particle Array 3D",
+    "category": "BCC Particles",
+    "effectId": "6D01064D-994F-395B-A7EB-00B5C2113578"
+  },
+  {
+    "name": "S_StretchFrameEdges",
+    "category": "Sapphire Distort",
+    "effectId": "6D29537A-5F09-00BE-BE60-F9529C012D1A"
+  },
+  {
+    "name": "S_LightLeak",
+    "category": "Sapphire Lighting",
+    "effectId": "6D43FDD9-0D3C-0096-96DA-B02A97F888F3"
+  },
+  {
+    "name": "BCC Rays_Radiant Spotlight MT",
+    "category": "BCC Lights",
+    "effectId": "6D58C561-301E-3B90-9526-5108D989FA6F"
+  },
+  {
+    "name": "S_VintageColor2Strip",
+    "category": "Sapphire Stylize",
+    "effectId": "6DA8B891-C570-008D-8DE3-747E9D04FE5A"
+  },
+  {
+    "name": "BCC Glare MT",
+    "category": "BCC Lights",
+    "effectId": "6E09D1A9-B805-37BB-B1DA-0ED434477B3F"
+  },
+  {
+    "name": "S_WipeRings",
+    "category": "Sapphire Transitions",
+    "effectId": "6EC680EC-8ED3-00AA-AA37-D06979C2FFD7"
+  },
+  {
+    "name": "BCC Lens Flare 3D MT",
+    "category": "BCC Lights",
+    "effectId": "6ECDABF1-4FC9-328A-BD38-42FC83488768"
+  },
+  {
+    "name": "BCC Lens Flare OBS",
+    "category": "BCC Obsolete",
+    "effectId": "6F24AD61-5D6F-34F7-BC86-3BA572DC5845"
+  },
+  {
+    "name": "BCC Optical Stabilizer",
+    "category": "BCC Image Restoration",
+    "effectId": "6F56CAE8-5EE3-3BB7-B258-8134AD96F8F8"
+  },
+  {
+    "name": "BCC Cylinder TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "6FC4C28F-0356-39C8-8D8E-1E0D7F9FC359"
+  },
+  {
+    "name": "S_DissolveRays",
+    "category": "Sapphire Transitions",
+    "effectId": "71820038-1FC2-00A1-A1BD-A34A926C20E1"
+  },
+  {
+    "name": "S_GlowEdges",
+    "category": "Sapphire Lighting",
+    "effectId": "71A7E673-0665-00B0-B060-6DE6AD9F24F6"
+  },
+  {
+    "name": "S_MathOps",
+    "category": "Sapphire Composite",
+    "effectId": "7236BE83-2382-008B-8B82-D973F3337F5D"
+  },
+  {
+    "name": "BCC Rock",
+    "category": "BCC Textures",
+    "effectId": "7259A001-2D5E-3AD7-A16E-535B20BCDD38"
+  },
+  {
+    "name": "BCC Emboss MT",
+    "category": "BCC Stylize",
+    "effectId": "733AEB65-1744-3446-B2F2-4693086506E3"
+  },
+  {
+    "name": "BCC Colorize",
+    "category": "BCC Color & Tone",
+    "effectId": "73623354-DC0D-30E1-A836-31EFEA1D08B9"
+  },
+  {
+    "name": "BCC Light Leaks",
+    "category": "BCC Lights",
+    "effectId": "7445B4C1-F5E2-34FC-A42C-2695794F583E"
+  },
+  {
+    "name": "BCC Rays_Ripply",
+    "category": "BCC Lights",
+    "effectId": "74F11CA6-891C-38A8-98C3-B3DB5F1B0389"
+  },
+  {
+    "name": "BCC Spotlight MT",
+    "category": "BCC Lights",
+    "effectId": "7515C086-0A42-3CA8-8777-73B36E87728A"
+  },
+  {
+    "name": "BCC Lens Flare TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "754C99CB-79CC-3390-8293-AFE5D6C33AB3"
+  },
+  {
+    "name": "S_Grunge",
+    "category": "Sapphire Render",
+    "effectId": "75AA45E5-2005-0086-8619-0CC26C3E6A49"
+  },
+  {
+    "name": "BCC Clouds RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "75C5BCDD-FF87-3A27-A39C-BC3BA38EB745"
+  },
+  {
+    "name": "S_EdgeFlash",
+    "category": "Sapphire Composite",
+    "effectId": "7653E61F-4934-00BA-BA08-2B4EFCC2DD42"
+  },
+  {
+    "name": "S_VintageColor3Strip",
+    "category": "Sapphire Stylize",
+    "effectId": "7665C012-CF53-00BF-BF88-71317858165B"
+  },
+  {
+    "name": "BCC Turbulence TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "772C4E49-9971-3EC8-875A-E21A7C15230D"
+  },
+  {
+    "name": "S_Flicker",
+    "category": "Sapphire Time",
+    "effectId": "776C95A9-166C-00BB-BB9A-97D766592CB3"
+  },
+  {
+    "name": "BCC Twister",
+    "category": "BCC Transitions",
+    "effectId": "77C34365-50D4-36DC-98C8-CB27369C373E"
+  },
+  {
+    "name": "BCC Rays_Ring",
+    "category": "BCC Lights",
+    "effectId": "77F61376-6660-353C-ABCE-5CC6A262CEA3"
+  },
+  {
+    "name": "BCC Radial Blur TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "782FD0BC-EB39-3F01-92E3-3D5350D9AE16"
+  },
+  {
+    "name": "S_EdgeRays",
+    "category": "Sapphire Lighting",
+    "effectId": "78B9484B-353F-00BC-BC5A-29186F6844B4"
+  },
+  {
+    "name": "BCC Pyramid Blur",
+    "category": "BCC Blur",
+    "effectId": "79114312-6BAF-376C-836D-B9578774E7E6"
+  },
+  {
+    "name": "S_WipeWedge",
+    "category": "Sapphire Transitions",
+    "effectId": "79676B91-B331-008D-8DB9-F8EDECA4C0D2"
+  },
+  {
+    "name": "S_Shape",
+    "category": "Sapphire Render",
+    "effectId": "79FFD4F0-0D68-009A-9A65-3F180EE0FF98"
+  },
+  {
+    "name": "BCC Jitter",
+    "category": "BCC Time",
+    "effectId": "7A112A5D-B1A9-317B-B553-E790CC39D4D2"
+  },
+  {
+    "name": "BCC Organic Strands OBS",
+    "category": "BCC Obsolete",
+    "effectId": "7BB32AA9-D4B0-3030-B688-270B1C63CDCD"
+  },
+  {
+    "name": "BCC Wooden Planks",
+    "category": "BCC Textures",
+    "effectId": "7BCCCC26-29FB-3DDB-9AC9-0F8E36406274"
+  },
+  {
+    "name": "BCC Rays_Textured",
+    "category": "BCC Lights",
+    "effectId": "7BDFB0D1-0019-3E3A-9791-286BFF564A25"
+  },
+  {
+    "name": "BCC Organic Strands",
+    "category": "BCC Particles",
+    "effectId": "7BEBA703-477B-35A1-905A-636C63583332"
+  },
+  {
+    "name": "BCC Displacement Map TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "7DA34E47-054D-378B-A5C5-EA022D85228D"
+  },
+  {
+    "name": "BCC Lens Flare Advanced TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "7E4D82AB-9725-3F6E-80CD-96C4470D2977"
+  },
+  {
+    "name": "BCC Lens Flare Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "7E95C70C-BEBA-33F1-93DD-64EB2A520FF5"
+  },
+  {
+    "name": "BCC Matte Cleanup",
+    "category": "BCC Key & Blend",
+    "effectId": "7F6537CA-CEDB-3709-9E90-7BF63069444F"
+  },
+  {
+    "name": "BCC Tile Wipe",
+    "category": "BCC Transitions",
+    "effectId": "7FBAAD09-CD6A-3FF6-B3CE-F5BBE9D4FAF4"
+  },
+  {
+    "name": "S_Solarize",
+    "category": "Sapphire Stylize",
+    "effectId": "801EC52A-FF66-009A-9A54-7D4CA2E51A26"
+  },
+  {
+    "name": "S_BlurDirectional",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "806B8DCA-376E-00A8-A809-A7BE5B759694"
+  },
+  {
+    "name": "BCC Cross Glitch",
+    "category": "BCC Transitions",
+    "effectId": "8078697F-29D6-3BA2-816F-70C5891ABAED"
+  },
+  {
+    "name": "BCC Bulge",
+    "category": "BCC Warp",
+    "effectId": "81F10C51-DCA8-3337-8D5C-4B6D95CD3523"
+  },
+  {
+    "name": "BCC Criss-Cross Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "82826328-1FF7-34A4-B729-0F32FF550513"
+  },
+  {
+    "name": "S_ZGlow",
+    "category": "Sapphire Lighting",
+    "effectId": "8297950A-3B7B-00AE-AE76-62D3E1AA114F"
+  },
+  {
+    "name": "BCC Grunge",
+    "category": "BCC Stylize",
+    "effectId": "8316A93F-8FE5-3365-B70E-4FD29B3FC602"
+  },
+  {
+    "name": "BCC Sequencer OBS",
+    "category": "BCC Obsolete",
+    "effectId": "833C869D-C2C7-33B6-8A2B-C5256374D0CC"
+  },
+  {
+    "name": "BCC Directional Blur",
+    "category": "BCC Blur",
+    "effectId": "846AC414-DD0C-3FDD-A71C-6FE39696F6C6"
+  },
+  {
+    "name": "BCC Artists Poster OBS",
+    "category": "BCC Obsolete",
+    "effectId": "85345586-4A3D-39AA-A539-632BA7502BE1"
+  },
+  {
+    "name": "BCC Corner Pin",
+    "category": "BCC Match Move",
+    "effectId": "85645BBF-8078-330F-BDFE-1FFDF6D68941"
+  },
+  {
+    "name": "BCC Ripple",
+    "category": "BCC Warp",
+    "effectId": "860D9A25-EA88-3096-AFE5-332630E7E9E4"
+  },
+  {
+    "name": "BCC Chroma Key Studio",
+    "category": "BCC Key & Blend",
+    "effectId": "86432820-3788-3BC4-BF6E-0C42BF1589E8"
+  },
+  {
+    "name": "BCC Spiral Blur TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "865ACBBE-968C-3DE9-8735-03B4BB935A96"
+  },
+  {
+    "name": "S_FilmDamage",
+    "category": "Sapphire Stylize",
+    "effectId": "86E4DEB6-524C-0083-83D9-03071334C370"
+  },
+  {
+    "name": "BCC Bulge TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "877C8812-CCFF-34D4-8AED-45DE3679C6CD"
+  },
+  {
+    "name": "BCC Wild Cards TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "878746E5-813E-38B7-9C47-2D6807104643"
+  },
+  {
+    "name": "S_DissolveGlow",
+    "category": "Sapphire Transitions",
+    "effectId": "87D13DA7-8BC8-008B-8BEF-89DAC6C30A7F"
+  },
+  {
+    "name": "BCC Laser Beam",
+    "category": "BCC Lights",
+    "effectId": "87DC2DCB-1E1C-3411-B852-BB9E59AC198B"
+  },
+  {
+    "name": "BCC Make Alpha",
+    "category": "BCC Key & Blend",
+    "effectId": "88714655-17CD-36E8-9EFB-C3A2BAE6658C"
+  },
+  {
+    "name": "S_Beauty",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "88D78C25-0299-0081-81C4-73231F9726A8"
+  },
+  {
+    "name": "S_PsykoStripes",
+    "category": "Sapphire Stylize",
+    "effectId": "8A9CD926-23A4-00BE-BEE4-DDCC1AF17424"
+  },
+  {
+    "name": "S_HueSatBright",
+    "category": "Sapphire Adjust",
+    "effectId": "8AD20346-0518-00A5-A5C0-12AAB8C4A276"
+  },
+  {
+    "name": "S_Monochrome",
+    "category": "Sapphire Adjust",
+    "effectId": "8B43C436-E2E1-00A7-A71F-53F67F9AF325"
+  },
+  {
+    "name": "BCC Spiral Blur",
+    "category": "BCC Blur",
+    "effectId": "8BA4A785-D89E-39BC-B433-DF84D221621D"
+  },
+  {
+    "name": "S_ZapFrom",
+    "category": "Sapphire Render",
+    "effectId": "8BF46A09-CDB3-00A7-A7C6-6D08B510C095"
+  },
+  {
+    "name": "BCC Comet",
+    "category": "BCC Particles",
+    "effectId": "8C00970C-75D6-3401-AC77-FA60B5B6E92F"
+  },
+  {
+    "name": "S_Transition",
+    "category": "Sapphire Builder",
+    "effectId": "8C5982F9-3601-00AA-AA90-BA571D3EBE71"
+  },
+  {
+    "name": "BCC Noise Reduction",
+    "category": "BCC Image Restoration",
+    "effectId": "8CC1EBEF-2791-3CD0-A514-B8EF27CFA228"
+  },
+  {
+    "name": "S_TimeDisplace",
+    "category": "Sapphire Time",
+    "effectId": "8CDB8B14-7B0F-00B0-B04D-B2410F66FC57"
+  },
+  {
+    "name": "S_ShowBadColors",
+    "category": "Sapphire Adjust",
+    "effectId": "8E6E4B87-EB7E-0083-838D-60809CD00CE9"
+  },
+  {
+    "name": "BCC Rays_Cartoon",
+    "category": "BCC Lights",
+    "effectId": "8F738E87-B0AD-308B-A4EA-1B5BE4817F49"
+  },
+  {
+    "name": "S_WarpCornerPin",
+    "category": "Sapphire Distort",
+    "effectId": "9007F7CF-D4D9-00B7-B76A-B980C6CE70CA"
+  },
+  {
+    "name": "S_PanAndZoom",
+    "category": "Sapphire Distort",
+    "effectId": "901547F7-BAF3-0080-8085-2AA8A25A79CD"
+  },
+  {
+    "name": "BCC Light Zoom OBS",
+    "category": "BCC Obsolete",
+    "effectId": "903E0D21-2A48-3A82-B17B-B3A5EC689DC8"
+  },
+  {
+    "name": "BCC Color Choker",
+    "category": "BCC Stylize",
+    "effectId": "90CBFD32-9AA3-325D-9BBB-00EC00585EC4"
+  },
+  {
+    "name": "BCC Fast Film Glow Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "9181B612-C61D-3447-A171-1FA297221B6E"
+  },
+  {
+    "name": "S_NearestColor",
+    "category": "Sapphire Time",
+    "effectId": "91E4F95D-2381-0084-841A-0E1E6030858C"
+  },
+  {
+    "name": "S_DissolveSpeckle",
+    "category": "Sapphire Transitions",
+    "effectId": "91F6459F-FB1A-00BA-BA1C-EB7F5C1CB259"
+  },
+  {
+    "name": "S_TextureNoiseEmboss",
+    "category": "Sapphire Render",
+    "effectId": "921FC3CF-F880-00A6-A631-5331346F0CC7"
+  },
+  {
+    "name": "BCC Median",
+    "category": "BCC Art Looks",
+    "effectId": "924B5D48-2292-33BC-B21F-CACDC9801F5E"
+  },
+  {
+    "name": "BCC Star Matte TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "924C9BF6-7ECF-360E-93AE-257F9777A195"
+  },
+  {
+    "name": "BCC Twirl TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "927C51E4-8370-3248-89EF-DFE4F816B2CD"
+  },
+  {
+    "name": "BCC Z Space I OBS",
+    "category": "BCC Obsolete",
+    "effectId": "92A819D7-A205-329C-8EE7-D3930F09729F"
+  },
+  {
+    "name": "BCC Star Matte OBS",
+    "category": "BCC Obsolete",
+    "effectId": "92B02EC0-B36C-3A91-9464-70F935EBB912"
+  },
+  {
+    "name": "BCC Pin Art 3D OBS",
+    "category": "BCC Obsolete",
+    "effectId": "92BDBA37-F543-34E0-A184-CD65E5FE2B0E"
+  },
+  {
+    "name": "BCC Rays_Radiant Edges",
+    "category": "BCC Lights",
+    "effectId": "92C15B35-0994-385D-8B83-1FF7CC24A1CA"
+  },
+  {
+    "name": "BCC Rough Glow OBS",
+    "category": "BCC Obsolete",
+    "effectId": "937CBDF3-199E-31F0-9510-133FEF23AAB3"
+  },
+  {
+    "name": "BCC Turbulence",
+    "category": "BCC Warp",
+    "effectId": "93DB03C9-61D7-348D-B213-4ABD26C2E754"
+  },
+  {
+    "name": "S_WarpBubble2",
+    "category": "Sapphire Distort",
+    "effectId": "93F59683-6363-0090-90CA-2BA0F5B6CC1F"
+  },
+  {
+    "name": "BCC Extruded Spline",
+    "category": "BCC 3D Objects",
+    "effectId": "9500898B-2DAE-3800-B0D0-30C85BB37BAB"
+  },
+  {
+    "name": "BCC Correct Selected",
+    "category": "BCC Color & Tone",
+    "effectId": "9510D417-575F-30A8-B14C-519321026727"
+  },
+  {
+    "name": "BCC Rays_Cartoon MT",
+    "category": "BCC Lights",
+    "effectId": "958D7FB5-B14C-3E85-991E-83A98B94BD92"
+  },
+  {
+    "name": "BCC Multitone",
+    "category": "BCC Color & Tone",
+    "effectId": "95D4851B-CF41-36F2-AAFC-A4D7A4E3D39D"
+  },
+  {
+    "name": "S_Emboss",
+    "category": "Sapphire Stylize",
+    "effectId": "962B6D67-0502-0080-800E-8E54B972EC2D"
+  },
+  {
+    "name": "BCC Lens Flare 3D TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "96584934-8095-3F75-B38B-4B71AD248ADD"
+  },
+  {
+    "name": "BCC Grid Wipe",
+    "category": "BCC Transitions",
+    "effectId": "9736430A-E17A-36DE-8E3F-8CDE414A8AFF"
+  },
+  {
+    "name": "BCC Light Leaks Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "97EF2119-63A4-3EFA-8243-6DD7755043ED"
+  },
+  {
+    "name": "S_DissolveBlur",
+    "category": "Sapphire Transitions",
+    "effectId": "987370C3-CBF4-00A0-A0A5-41155941A9CF"
+  },
+  {
+    "name": "S_WipeLine",
+    "category": "Sapphire Transitions",
+    "effectId": "988B5EEA-B783-00AF-AFD6-DB57B0734811"
+  },
+  {
+    "name": "S_DissolveLensFlare",
+    "category": "Sapphire Transitions",
+    "effectId": "98A823E5-6283-00BB-BB7B-E8F7AB3D5136"
+  },
+  {
+    "name": "S_FlysEyeHex",
+    "category": "Sapphire Stylize",
+    "effectId": "98EB292E-CE8C-00B3-B346-7C6488D9AD89"
+  },
+  {
+    "name": "S_CartoonPaint",
+    "category": "Sapphire Stylize",
+    "effectId": "998703A2-7552-009B-9B5F-17ED2B8E6476"
+  },
+  {
+    "name": "S_TVChannelChange",
+    "category": "Sapphire Transitions",
+    "effectId": "99BF55FD-6BEF-00AC-AC25-70219C2FA59C"
+  },
+  {
+    "name": "S_TimeSlice",
+    "category": "Sapphire Time",
+    "effectId": "99C116DF-D9B5-00B9-B927-C52DD140B23C"
+  },
+  {
+    "name": "S_StripSlide",
+    "category": "Sapphire Stylize",
+    "effectId": "99F4B32E-27CA-008F-8F8F-9C6095EFA058"
+  },
+  {
+    "name": "S_Grain",
+    "category": "Sapphire Stylize",
+    "effectId": "9A1D2445-C97C-0082-8293-1BA75E268C74"
+  },
+  {
+    "name": "BCC Artists Poster",
+    "category": "BCC Art Looks",
+    "effectId": "9A680082-E2BE-3B46-9087-888B719C0B4C"
+  },
+  {
+    "name": "S_WipeStar",
+    "category": "Sapphire Transitions",
+    "effectId": "9A8DBBCA-116D-00AE-AEAA-A97C78B6566F"
+  },
+  {
+    "name": "S_GlowDist",
+    "category": "Sapphire Lighting",
+    "effectId": "9A9A0E80-2815-008E-8EB9-F9A68375B9D9"
+  },
+  {
+    "name": "BCC Burnt Film",
+    "category": "BCC Transitions",
+    "effectId": "9ABA46AE-2D77-34B0-90CF-B3668A03B280"
+  },
+  {
+    "name": "BCC 3D Image Shatter",
+    "category": "BCC Perspective",
+    "effectId": "9B511FB6-E9CF-3B84-84D5-BD5E52494FF4"
+  },
+  {
+    "name": "S_FlysEyeRect",
+    "category": "Sapphire Stylize",
+    "effectId": "9B6181A4-C4BE-009B-9BD8-303DA20861FC"
+  },
+  {
+    "name": "BCC Steel Plate RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "9BF83FE5-6F36-3128-AE3E-DAFC861EEF8E"
+  },
+  {
+    "name": "S_ZFogExponential",
+    "category": "Sapphire Stylize",
+    "effectId": "9C02842B-9110-008B-8B22-8A35E51AEE65"
+  },
+  {
+    "name": "S_WipeCircle",
+    "category": "Sapphire Transitions",
+    "effectId": "9C34B2FA-6EE5-0099-99F5-E6316B3A8022"
+  },
+  {
+    "name": "S_WarpPuddle",
+    "category": "Sapphire Distort",
+    "effectId": "9C69111F-B747-009F-9F73-0A09C468D7A0"
+  },
+  {
+    "name": "BCC HSL",
+    "category": "BCC Color & Tone",
+    "effectId": "9C8B6610-8B6C-30DE-8498-D717F6480A66"
+  },
+  {
+    "name": "BCC Light Sweep TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "9D4DF390-E01A-3FCE-AE8A-6852801971BC"
+  },
+  {
+    "name": "S_WarpChroma",
+    "category": "Sapphire Distort",
+    "effectId": "9DD2BD9C-A0F7-00BD-BD50-895E639A3F50"
+  },
+  {
+    "name": "S_WarpRepeat",
+    "category": "Sapphire Distort",
+    "effectId": "9E962E33-C839-00AA-AA01-5E143F55D1B0"
+  },
+  {
+    "name": "S_CloudsPsyko",
+    "category": "Sapphire Render",
+    "effectId": "9F2A7B15-2FDC-0087-87DC-053E5C93F826"
+  },
+  {
+    "name": "BCC Sphere Transition TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "9FF59D6A-756A-3386-9E1D-80D9815FE3E5"
+  },
+  {
+    "name": "BCC Lens Flash",
+    "category": "BCC Transitions",
+    "effectId": "A008C699-43BC-3711-A8E3-4189C9CE2BFE"
+  },
+  {
+    "name": "S_RackDefocus",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "A09C701E-3981-0094-9405-29B0F38D0C3E"
+  },
+  {
+    "name": "S_DogVision",
+    "category": "Sapphire Stylize",
+    "effectId": "A1B58A9D-5C42-0089-8923-20587479AF50"
+  },
+  {
+    "name": "S_MakeRGBA",
+    "category": "Sapphire Composite",
+    "effectId": "A1C30C96-5564-0094-94F4-A63F887C7460"
+  },
+  {
+    "name": "BCC Alpha Process",
+    "category": "BCC Key & Blend",
+    "effectId": "A25C6A0E-55E1-3AAB-9463-80BBB7E153C5"
+  },
+  {
+    "name": "S_TextureSpots",
+    "category": "Sapphire Render",
+    "effectId": "A2833AE6-4B12-0083-8387-803A9C9DBC0B"
+  },
+  {
+    "name": "S_BlurMotionCurves",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "A2CC45AC-13F2-009C-9CF8-09017B96A1AE"
+  },
+  {
+    "name": "BCC Ripple TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "A2F29C0E-107E-31C0-8CDE-A538848DD834"
+  },
+  {
+    "name": "BCC Colorize Glow MT",
+    "category": "BCC Stylize",
+    "effectId": "A2FAFD99-FF55-302E-838D-F159DF3C844E"
+  },
+  {
+    "name": "S_GlintRainbow",
+    "category": "Sapphire Lighting",
+    "effectId": "A33E6DA7-C30E-009C-9C5C-003836380018"
+  },
+  {
+    "name": "S_TimeAverage",
+    "category": "Sapphire Time",
+    "effectId": "A3E83824-FF35-009D-9D46-B57E27036ADF"
+  },
+  {
+    "name": "S_ScanLines",
+    "category": "Sapphire Stylize",
+    "effectId": "A450F27E-C7A3-00AA-AAA0-72E301D80BC9"
+  },
+  {
+    "name": "S_DissolveFlashbulbs",
+    "category": "Sapphire Transitions",
+    "effectId": "A4B06574-5775-009F-9F87-85AA16835B12"
+  },
+  {
+    "name": "BCC Film Damage MT",
+    "category": "BCC Film Style",
+    "effectId": "A4D2B9F3-7D0F-3F67-910B-08F957E9FB22"
+  },
+  {
+    "name": "S_WarpDrops",
+    "category": "Sapphire Distort",
+    "effectId": "A54578C6-0D36-00B0-B024-2BA45CD2EF7D"
+  },
+  {
+    "name": "BCC Pin Art 3D TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "A57B9725-2564-3F93-B3FA-82D1FA2423EB"
+  },
+  {
+    "name": "S_WipeBlobs",
+    "category": "Sapphire Transitions",
+    "effectId": "A610D0E2-34F2-008D-8D57-678EF447B420"
+  },
+  {
+    "name": "BCC Cross Glitch RT",
+    "category": "BCC Transitions",
+    "effectId": "A6F6A6FA-7740-3199-83D8-5A87E0E98AA7"
+  },
+  {
+    "name": "S_ScanLinesMono",
+    "category": "Sapphire Stylize",
+    "effectId": "A7C7139E-82F6-00A6-A6E4-AA62736D2CDE"
+  },
+  {
+    "name": "BCC Rays_Wedge MT",
+    "category": "BCC Lights",
+    "effectId": "A80670A6-7D5F-3AA7-8C96-08DE19C9CD60"
+  },
+  {
+    "name": "S_GlowRainbow",
+    "category": "Sapphire Lighting",
+    "effectId": "A87FB05F-0E22-00A8-A8CD-E6AF410AAF43"
+  },
+  {
+    "name": "BCC Alpha Spotlight OBS",
+    "category": "BCC Obsolete",
+    "effectId": "A99994AC-2B9E-373E-BF75-36B7CD8AD2DD"
+  },
+  {
+    "name": "BCC 2D Particles TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "A9D4A74F-B4CF-3182-8733-F33066CDCBDD"
+  },
+  {
+    "name": "S_DissolveShake",
+    "category": "Sapphire Transitions",
+    "effectId": "A9EDAF18-0912-009E-9E65-CDA27B2CE5E2"
+  },
+  {
+    "name": "S_Gamma",
+    "category": "Sapphire Adjust",
+    "effectId": "AA117F30-591E-00A0-A058-E8E22BB8DA36"
+  },
+  {
+    "name": "BCC Z Space III TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "AAE946C7-8831-3DA8-8300-37525745901F"
+  },
+  {
+    "name": "BCC Rays_Puffy MT",
+    "category": "BCC Lights",
+    "effectId": "AB2F217C-96CC-3822-86EF-C745715EA817"
+  },
+  {
+    "name": "BCC Linear Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "ABBFDE40-FB9F-3CFA-869C-477271E52A1E"
+  },
+  {
+    "name": "BCC Temporal Blur",
+    "category": "BCC Time",
+    "effectId": "AC9CA139-747C-3110-AC20-429A71A2FD39"
+  },
+  {
+    "name": "S_EdgeDetectDouble",
+    "category": "Sapphire Stylize",
+    "effectId": "ACFD3367-97B5-00B3-B39B-E6FC6FAD065B"
+  },
+  {
+    "name": "BCC Gaussian Blur OBS",
+    "category": "BCC Obsolete",
+    "effectId": "ADDB13C6-1C64-3FAC-84B5-6B3E0E79E148"
+  },
+  {
+    "name": "BCC Vignette Wipe",
+    "category": "BCC Transitions",
+    "effectId": "AE33ABF9-B279-3EB8-903A-9A5DEF90CAA5"
+  },
+  {
+    "name": "S_WipeFlux",
+    "category": "Sapphire Transitions",
+    "effectId": "AED4AA62-219D-008C-8CFA-847CA33BEBA7"
+  },
+  {
+    "name": "S_Zap",
+    "category": "Sapphire Render",
+    "effectId": "AEF5464E-0C6F-00BE-BE6A-5D0114ACA08F"
+  },
+  {
+    "name": "BCC Emboss",
+    "category": "BCC Stylize",
+    "effectId": "AF35250B-C92E-3062-AC44-828BFAFD530D"
+  },
+  {
+    "name": "S_EdgesInDirection",
+    "category": "Sapphire Stylize",
+    "effectId": "AF7D69DA-0CE8-009C-9CE9-5C3E5007B6BA"
+  },
+  {
+    "name": "BCC Particle Systems",
+    "category": "BCC Particles",
+    "effectId": "B03B09A7-60C9-3A8E-A09D-7FBC30A7D916"
+  },
+  {
+    "name": "S_BlurMotion",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "B052CA85-35BD-00A5-A52B-B8F96599AAB8"
+  },
+  {
+    "name": "BCC Tritone Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "B1480464-FB88-3A22-BA2D-0758EAE7A082"
+  },
+  {
+    "name": "BCC Light Wrap",
+    "category": "BCC Key & Blend",
+    "effectId": "B14DD49D-6346-3219-8B9F-F16DC2ED8121"
+  },
+  {
+    "name": "BCC Looper",
+    "category": "BCC Time",
+    "effectId": "B16E80B4-F49B-38F6-9811-545B8BCDFB84"
+  },
+  {
+    "name": "BCC Veined Marble RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "B1839403-C1A1-325A-812A-6FA66B94304C"
+  },
+  {
+    "name": "BCC Film Grain MT",
+    "category": "BCC Film Style",
+    "effectId": "B1E04512-5912-336A-8A2B-59C03AD006FB"
+  },
+  {
+    "name": "S_ZDefocus",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "B20B5542-D3A2-00BF-BF13-A9552BD5D324"
+  },
+  {
+    "name": "BCC Multi Shadow",
+    "category": "BCC Stylize",
+    "effectId": "B213423A-9076-3448-8A85-D0132587CE5C"
+  },
+  {
+    "name": "S_FlickerMatchColor",
+    "category": "Sapphire Time",
+    "effectId": "B28E36EA-4898-0090-9082-C226A57380C3"
+  },
+  {
+    "name": "S_ZFogLinear",
+    "category": "Sapphire Stylize",
+    "effectId": "B2BA8BCD-2DC1-0084-84F1-322B36A1EA2C"
+  },
+  {
+    "name": "BCC Dropout Fixer",
+    "category": "BCC Image Restoration",
+    "effectId": "B2CFEE9B-D2C4-3A16-9EEC-058DD0C4E44B"
+  },
+  {
+    "name": "S_Grid",
+    "category": "Sapphire Render",
+    "effectId": "B2F0C6FC-828B-008B-8BC7-E5185B7C78D7"
+  },
+  {
+    "name": "S_KaleidoPolar",
+    "category": "Sapphire Stylize",
+    "effectId": "B324DC26-545B-00A0-A05E-F4A11B164324"
+  },
+  {
+    "name": "BCC RGB Edges",
+    "category": "BCC Stylize",
+    "effectId": "B35AFA91-69B8-30C6-84E5-0D6872C37816"
+  },
+  {
+    "name": "BCC RGB Blend TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "B3E8051B-FE83-3CFF-A60E-826ED94B8CB2"
+  },
+  {
+    "name": "BCC Polar Displacement TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "B4235E1A-AA14-305B-AA39-B5E8FBFB5EB5"
+  },
+  {
+    "name": "S_TextureTiles",
+    "category": "Sapphire Render",
+    "effectId": "B48CBE2E-0C76-00AB-ABB4-A623237C4F8E"
+  },
+  {
+    "name": "S_MatteOps",
+    "category": "Sapphire Composite",
+    "effectId": "B52713A8-E151-009F-9F2D-952C1566175D"
+  },
+  {
+    "name": "BCC Lens Distortion Wipe",
+    "category": "BCC Transitions",
+    "effectId": "B54196F7-57C6-3B5A-AB24-EC2EF6FFA03A"
+  },
+  {
+    "name": "BCC Pixel Chooser",
+    "category": "BCC Key & Blend",
+    "effectId": "B54A05A3-9EF3-36B8-8F66-FDDA8617E386"
+  },
+  {
+    "name": "BCC Pan and Zoom",
+    "category": "BCC Perspective",
+    "effectId": "B784BB4C-AACF-34F2-9D4F-0C6B2A4A57DC"
+  },
+  {
+    "name": "BCC Alpha Spotlight OBS",
+    "category": "BCC Obsolete",
+    "effectId": "B824D8E4-F1CE-3899-9F02-73F88CB73843"
+  },
+  {
+    "name": "S_ZebrafyColor",
+    "category": "Sapphire Stylize",
+    "effectId": "B8664CD6-A372-00B4-B412-0E50BCACB80A"
+  },
+  {
+    "name": "BCC Burnt Film TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "B8FCB5D4-3104-3C4F-8880-514681A6492B"
+  },
+  {
+    "name": "BCC Spiral Blur MT",
+    "category": "BCC Blur",
+    "effectId": "B9D4ECAE-1BE8-364E-A3AA-81A0230CD598"
+  },
+  {
+    "name": "BCC Cartoon Look",
+    "category": "BCC Art Looks",
+    "effectId": "BA53AFB4-6A7F-3D15-A423-5B2576365C8E"
+  },
+  {
+    "name": "S_Caustics",
+    "category": "Sapphire Render",
+    "effectId": "BA5B221A-BC6C-008D-8D9A-3EA8D1616F40"
+  },
+  {
+    "name": "BCC Glare",
+    "category": "BCC Lights",
+    "effectId": "BA8C6861-1BA4-39E1-B393-2E66CEC5FEEB"
+  },
+  {
+    "name": "S_HalfTone",
+    "category": "Sapphire Stylize",
+    "effectId": "BBA223F7-CC1B-009F-9F94-00E9C5BEEC76"
+  },
+  {
+    "name": "BCC Levels-Gamma",
+    "category": "BCC Color & Tone",
+    "effectId": "BC1CC83F-FE32-3D53-AB77-0CBDEC2C5BBD"
+  },
+  {
+    "name": "BCC Edge Bevel OBS",
+    "category": "BCC Obsolete",
+    "effectId": "BC7CB63F-9E48-30B1-84E8-114271E7B6D5"
+  },
+  {
+    "name": "BCC Polar Displacement",
+    "category": "BCC Warp",
+    "effectId": "BD4ADF8C-8012-3D7D-BC39-75C7EFE79754"
+  },
+  {
+    "name": "BCC Swish Pan",
+    "category": "BCC Transitions",
+    "effectId": "BD78FECD-CABC-301C-B4A5-2CF4CDE8F44A"
+  },
+  {
+    "name": "S_TextureChromaSpiral",
+    "category": "Sapphire Render",
+    "effectId": "BD9A1649-1423-0093-9340-260112D996BD"
+  },
+  {
+    "name": "BCC RGB Pixel Noise",
+    "category": "BCC Stylize",
+    "effectId": "BDE63BF1-F9A3-30A5-BEED-799655E2A0AD"
+  },
+  {
+    "name": "BCC Rays Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "BDEA868C-994E-3681-8F11-0A431A8B0C1A"
+  },
+  {
+    "name": "S_WarpPerspective",
+    "category": "Sapphire Distort",
+    "effectId": "BE665684-E9F5-00A5-A535-B9FE80107FDA"
+  },
+  {
+    "name": "S_TextureNeurons",
+    "category": "Sapphire Render",
+    "effectId": "BF40B242-4150-0084-8462-1403D69C3EC4"
+  },
+  {
+    "name": "BCC Linear Wipe",
+    "category": "BCC Transitions",
+    "effectId": "BF5A4276-D486-38BB-B3EB-3254FAAD340B"
+  },
+  {
+    "name": "S_DigitalDamage",
+    "category": "Sapphire Stylize",
+    "effectId": "C0B3CA2D-FEBE-00B3-B31C-AE1D8C1096CB"
+  },
+  {
+    "name": "BCC 2D Particles",
+    "category": "BCC Particles",
+    "effectId": "C0F8910C-DB7A-3490-B541-0E41BE2A11E0"
+  },
+  {
+    "name": "S_GrainStatic",
+    "category": "Sapphire Stylize",
+    "effectId": "C109BC9C-9A7A-00B3-B3D3-166E1C1DC6E0"
+  },
+  {
+    "name": "S_WipePixelate",
+    "category": "Sapphire Transitions",
+    "effectId": "C1519EEC-146A-00A2-A22C-17288D65E54D"
+  },
+  {
+    "name": "S_EdgeDetect",
+    "category": "Sapphire Stylize",
+    "effectId": "C16A2E59-3256-00B5-B527-B8E8166265BB"
+  },
+  {
+    "name": "S_CloudsVortex",
+    "category": "Sapphire Render",
+    "effectId": "C19320D8-4485-0098-98B3-E262AB5D5C00"
+  },
+  {
+    "name": "S_EmbossDistort",
+    "category": "Sapphire Stylize",
+    "effectId": "C272AFF5-6E26-00BB-BB9B-8571357FC952"
+  },
+  {
+    "name": "S_Distort",
+    "category": "Sapphire Distort",
+    "effectId": "C2B47E90-B010-0099-999F-E35EF8F4F9A8"
+  },
+  {
+    "name": "S_FeedbackBubble",
+    "category": "Sapphire Time",
+    "effectId": "C3113A44-FCE0-0090-9034-DCE4DBE01FBA"
+  },
+  {
+    "name": "BCC Pyramid Blur MT",
+    "category": "BCC Blur",
+    "effectId": "C31C14FA-C2A5-32D5-91CB-B16991F62C97"
+  },
+  {
+    "name": "BCC Boost Blend OBS",
+    "category": "BCC Obsolete",
+    "effectId": "C4351548-57EE-3E77-92FD-D6BD9EAE2CA1"
+  },
+  {
+    "name": "BCC Noise Map RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "C46B1454-21CB-3EF5-B85A-44CC51201D62"
+  },
+  {
+    "name": "BCC Rectangular Wipe",
+    "category": "BCC Transitions",
+    "effectId": "C48E0BF8-E146-3E4F-A93E-1A01EDF9B738"
+  },
+  {
+    "name": "BCC Layer Deformer",
+    "category": "BCC 3D Objects",
+    "effectId": "C4B0EAD2-588B-34B6-A7C1-8278892A7538"
+  },
+  {
+    "name": "S_BlurChroma",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "C4B17FE4-75F6-00AA-AABC-7863F8242C8C"
+  },
+  {
+    "name": "S_WipeChecker",
+    "category": "Sapphire Transitions",
+    "effectId": "C4C5F72E-76DC-00A7-A73F-C393D6E11AAB"
+  },
+  {
+    "name": "S_EdgeBlur",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "C51B9CC8-7857-0083-83BC-16102B097221"
+  },
+  {
+    "name": "BCC Rays_Streaky",
+    "category": "BCC Lights",
+    "effectId": "C660F953-8E85-3A88-AE91-6D97646932A5"
+  },
+  {
+    "name": "BCC FX Browser",
+    "category": "BCC Browser",
+    "effectId": "C684725C-6342-3D54-AD16-96F73E9966B2"
+  },
+  {
+    "name": "S_TextureNoisePaint",
+    "category": "Sapphire Render",
+    "effectId": "C6968719-04EE-00AB-ABE7-C886323A8DF5"
+  },
+  {
+    "name": "BCC Lens Shape MT",
+    "category": "BCC Blur",
+    "effectId": "C6984E1C-BA19-3DCB-A80E-BBF2F44AED67"
+  },
+  {
+    "name": "BCC Steel Plate",
+    "category": "BCC Textures",
+    "effectId": "C6B5D5DD-3E2C-3A40-A92A-7011BD6A3244"
+  },
+  {
+    "name": "BCC Lens Transition TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "C6D704F1-4E62-3768-B73E-7D0D3248C891"
+  },
+  {
+    "name": "BCC Time Displacement",
+    "category": "BCC Time",
+    "effectId": "C756CA6A-1751-328C-A231-02558EFD936D"
+  },
+  {
+    "name": "BCC Page Turn TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "C86D6664-9710-336C-A6CD-452BD7DAFC8F"
+  },
+  {
+    "name": "BCC Glitter",
+    "category": "BCC Lights",
+    "effectId": "C883CFA3-F3C9-39C8-8D65-11F0BB0E8627"
+  },
+  {
+    "name": "BCC Radial Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "C8CBA299-7D86-35A4-85CC-6236629C4B99"
+  },
+  {
+    "name": "BCC Spraypaint Noise",
+    "category": "BCC Art Looks",
+    "effectId": "C93C92A8-8DAA-3F74-AE2C-868FBDA13ADB"
+  },
+  {
+    "name": "BCC Laser Beam MT",
+    "category": "BCC Lights",
+    "effectId": "C9ECC0FB-7493-3D4C-958A-5D94D2BA2DC9"
+  },
+  {
+    "name": "BCC Rays_Ripply MT",
+    "category": "BCC Lights",
+    "effectId": "CA68C02C-08D3-3C2A-8EA2-BA518B2B165D"
+  },
+  {
+    "name": "BCC Halftone",
+    "category": "BCC Art Looks",
+    "effectId": "CAEBEABD-A602-3C5F-B290-3DF513C903A0"
+  },
+  {
+    "name": "S_Retime",
+    "category": "Sapphire Time",
+    "effectId": "CB3FA6E6-BF4B-00A5-A590-2458C0A52CCC"
+  },
+  {
+    "name": "S_ZBlur",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "CB86B13F-6C03-00AD-AD22-8DF3B20FA66C"
+  },
+  {
+    "name": "BCC Jitter Basic",
+    "category": "BCC Time",
+    "effectId": "CBDA56AE-CF5C-373F-A7B6-ACDC5EDF4C58"
+  },
+  {
+    "name": "BCC Veined Marble",
+    "category": "BCC Textures",
+    "effectId": "CC5B97B3-05F8-3C8C-9B1D-FF5762393864"
+  },
+  {
+    "name": "BCC Composite OBS",
+    "category": "BCC Obsolete",
+    "effectId": "CCD747D2-F82C-3180-9FCC-5875E617E365"
+  },
+  {
+    "name": "BCC Composite Choker",
+    "category": "BCC Key & Blend",
+    "effectId": "CD12D103-6489-32EF-8FBE-2C715B765835"
+  },
+  {
+    "name": "S_TextureFolded",
+    "category": "Sapphire Render",
+    "effectId": "CD41BC05-8F98-008B-8BA2-71D152656421"
+  },
+  {
+    "name": "BCC Match Move",
+    "category": "BCC Match Move",
+    "effectId": "CD51D4C7-EF11-3B0E-ABF5-24A05E66CF47"
+  },
+  {
+    "name": "BCC Video Glitch",
+    "category": "BCC Stylize",
+    "effectId": "CE045978-C029-30BC-852B-E82A2DD4CA4D"
+  },
+  {
+    "name": "BCC Tritone OBS",
+    "category": "BCC Obsolete",
+    "effectId": "CEEE417A-E990-38E3-865B-25EED429647B"
+  },
+  {
+    "name": "BCC Weave",
+    "category": "BCC Textures",
+    "effectId": "CF1EEE3A-DC32-340A-9FBD-39057879AC97"
+  },
+  {
+    "name": "BCC Mosaic",
+    "category": "BCC Stylize",
+    "effectId": "CF361D49-E0F4-37C6-8CAB-C4E6A4EC5941"
+  },
+  {
+    "name": "BCC Type On Text",
+    "category": "BCC 3D Objects",
+    "effectId": "CF6C5E60-1C20-3FE6-8834-2ACBDFAAE964"
+  },
+  {
+    "name": "BCC Noise Map 2 TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "CFB94B80-011C-35D7-AD5C-934ADAD433E8"
+  },
+  {
+    "name": "BCC Rays_Puffy",
+    "category": "BCC Lights",
+    "effectId": "CFDE29AA-98F1-369D-BD0A-ED8A241B57B2"
+  },
+  {
+    "name": "BCC Granite",
+    "category": "BCC Textures",
+    "effectId": "D3004D3D-D2F2-3AA4-8EAE-C1B9C748F206"
+  },
+  {
+    "name": "BCC Prism",
+    "category": "BCC Stylize",
+    "effectId": "D35729D4-7431-3B23-B543-D0E0697EA278"
+  },
+  {
+    "name": "BCC Posterize Time",
+    "category": "BCC Time",
+    "effectId": "D35B9DCE-F840-389E-B46D-1DF7F4E8C746"
+  },
+  {
+    "name": "BCC Stars",
+    "category": "BCC Textures",
+    "effectId": "D3B6438C-4911-3CD2-A2D6-6DA4F2459D6F"
+  },
+  {
+    "name": "BCC Fire OBS",
+    "category": "BCC Obsolete",
+    "effectId": "D3F6FA38-395C-3A4B-AD82-42C2D732F17F"
+  },
+  {
+    "name": "BCC Halftone TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "D43DF814-24F2-30A0-BF8E-3BAF6FB0AD02"
+  },
+  {
+    "name": "BCC Rectangular Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "D4554319-3F95-3987-A8CD-EBDAF4ABF3EA"
+  },
+  {
+    "name": "BCC Color Correction",
+    "category": "BCC Color & Tone",
+    "effectId": "D4BE7A47-B837-3104-825F-58ECD8A35CD2"
+  },
+  {
+    "name": "S_DuoTone",
+    "category": "Sapphire Adjust",
+    "effectId": "D500B2E8-1437-00BE-BEFE-4546818A633D"
+  },
+  {
+    "name": "BCC Reptilian",
+    "category": "BCC Textures",
+    "effectId": "D519F30F-C224-32B2-B844-0868A0BA6D7F"
+  },
+  {
+    "name": "BCC Cartooner",
+    "category": "BCC Art Looks",
+    "effectId": "D51B3E66-E6DD-3C32-9590-D93E211A9F4F"
+  },
+  {
+    "name": "BCC Wild Cards",
+    "category": "BCC Particles",
+    "effectId": "D52D326F-54C2-30F2-8A16-C8C6CD0A0C52"
+  },
+  {
+    "name": "S_ZComp",
+    "category": "Sapphire Composite",
+    "effectId": "D579D7DC-430E-0096-96A8-09AE194EE9D4"
+  },
+  {
+    "name": "S_Clouds",
+    "category": "Sapphire Render",
+    "effectId": "D67A09A3-B116-009D-9D77-BC98067DB20E"
+  },
+  {
+    "name": "BCC Linear Luma Key",
+    "category": "BCC Key & Blend",
+    "effectId": "D6D0D426-DE1A-38CA-993C-DB211D56ABE6"
+  },
+  {
+    "name": "S_CloudsPerspective",
+    "category": "Sapphire Render",
+    "effectId": "D7396442-9012-0095-95E5-406C41A18631"
+  },
+  {
+    "name": "BCC Cross Zoom",
+    "category": "BCC Transitions",
+    "effectId": "D76D364A-B851-372E-A3E7-0C582C61350B"
+  },
+  {
+    "name": "BCC Super Blend OBS",
+    "category": "BCC Obsolete",
+    "effectId": "D7DAC46A-0122-3881-892A-727FD0D22750"
+  },
+  {
+    "name": "S_CutToDissolve",
+    "category": "Sapphire Time",
+    "effectId": "D7DDD6A5-9D4F-00B1-B1F0-84C2121DBC02"
+  },
+  {
+    "name": "BCC Reverse Spotlight",
+    "category": "BCC Lights",
+    "effectId": "D80D5868-3ECF-3FCC-97A4-78760665AF22"
+  },
+  {
+    "name": "BCC Composite Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "D8F05271-3314-3277-95C0-934562E7D00B"
+  },
+  {
+    "name": "S_Feedback",
+    "category": "Sapphire Time",
+    "effectId": "D9831F43-CA13-0084-84E2-640EFAAE9ABE"
+  },
+  {
+    "name": "BCC Particle Array 3D OBS",
+    "category": "BCC Obsolete",
+    "effectId": "DA262F7C-0FE6-36E8-8898-18936F2357AC"
+  },
+  {
+    "name": "BCC Sparks MT",
+    "category": "BCC Particles",
+    "effectId": "DB09B331-A79E-363A-AE89-57B39D7011C7"
+  },
+  {
+    "name": "S_RackDfComp",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "DB6F050D-45EB-00AD-ADA7-F82414DDF88E"
+  },
+  {
+    "name": "BCC Tritone",
+    "category": "BCC Color & Tone",
+    "effectId": "DBB01BE6-BDF6-3C5B-841E-40B0A08CABA0"
+  },
+  {
+    "name": "S_Hotspots",
+    "category": "Sapphire Adjust",
+    "effectId": "DC6DB26D-1078-008E-8EB3-40FC0A7A4084"
+  },
+  {
+    "name": "S_TextureMicro",
+    "category": "Sapphire Render",
+    "effectId": "DC87D493-9625-008B-8BEE-E3AF6D81D2D7"
+  },
+  {
+    "name": "S_DissolveStatic",
+    "category": "Sapphire Transitions",
+    "effectId": "DCBD1B39-F08D-00A0-A013-621977C62A48"
+  },
+  {
+    "name": "BCC LED",
+    "category": "BCC Stylize",
+    "effectId": "DCE5EB46-C830-3E75-A5DC-9EF279C8F971"
+  },
+  {
+    "name": "BCC Glint MT",
+    "category": "BCC Lights",
+    "effectId": "DD088179-B6F1-3DA9-A33F-DB6BC7BCEFCF"
+  },
+  {
+    "name": "BCC Deinterlace",
+    "category": "BCC Film Style",
+    "effectId": "DD2A8384-E56A-34E7-B27F-3D019FC21B6B"
+  },
+  {
+    "name": "BCC DVE TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "DD354476-968B-344E-B8E2-D7090D2EC418"
+  },
+  {
+    "name": "BCC Multi Stretch Wipe OBS",
+    "category": "BCC Obsolete",
+    "effectId": "DD468325-1339-3718-8501-D26430BDAF60"
+  },
+  {
+    "name": "S_GlowOrthicon",
+    "category": "Sapphire Lighting",
+    "effectId": "DD471228-CB0D-009E-9EE2-3A466A3D46FF"
+  },
+  {
+    "name": "S_Effect",
+    "category": "Sapphire Builder",
+    "effectId": "DDED5BEC-E7E2-009A-9AED-DC9944E6D24D"
+  },
+  {
+    "name": "BCC Particle Emitter 3D TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "DE73282F-C924-37A5-9CAC-413B069EB5C8"
+  },
+  {
+    "name": "S_ClampChroma",
+    "category": "Sapphire Adjust",
+    "effectId": "DE84E741-99EB-0093-93E5-D1A47234EAAA"
+  },
+  {
+    "name": "BCC Cloth",
+    "category": "BCC Textures",
+    "effectId": "DF3B3273-58A4-3EDE-AA46-FAC88261BC35"
+  },
+  {
+    "name": "BCC Colorize Glow TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "DF3EECFF-543B-30C8-A779-A7C9EA663DFF"
+  },
+  {
+    "name": "S_FilmEffect",
+    "category": "Sapphire Stylize",
+    "effectId": "DF4A8FAA-F4EC-00A1-A145-CD7606A39E97"
+  },
+  {
+    "name": "BCC Vignette",
+    "category": "BCC Film Style",
+    "effectId": "DFA25A0D-5979-327E-9F67-5B017ACF9ED8"
+  },
+  {
+    "name": "BCC Pixel Chooser OBS",
+    "category": "BCC Obsolete",
+    "effectId": "DFAEF62F-AA6A-3EE8-AD07-A9EB1DBB2A50"
+  },
+  {
+    "name": "BCC Smooth Tone",
+    "category": "BCC Image Restoration",
+    "effectId": "DFF0D523-A560-3CCD-8CD5-20CF768AFFF6"
+  },
+  {
+    "name": "S_TileScramble",
+    "category": "Sapphire Stylize",
+    "effectId": "E0163EE6-3302-00B7-B72D-4C62AC59EA00"
+  },
+  {
+    "name": "S_FlickerMchMatteColor",
+    "category": "Sapphire Time",
+    "effectId": "E01725F9-672A-0085-850B-C80FBC91FB88"
+  },
+  {
+    "name": "S_DissolveDistort",
+    "category": "Sapphire Transitions",
+    "effectId": "E019A179-760A-009C-9C5E-32F798EA4C7B"
+  },
+  {
+    "name": "BCC Granite RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "E033EE3F-9092-3327-8F13-1C5254D341BF"
+  },
+  {
+    "name": "S_Median",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "E11B3C06-AABD-00B3-B3AE-FB2F3D67B712"
+  },
+  {
+    "name": "BCC Charcoal Sketch",
+    "category": "BCC Art Looks",
+    "effectId": "E122275E-C608-371C-BE82-0CB9EA432814"
+  },
+  {
+    "name": "S_DissolveDefocus",
+    "category": "Sapphire Transitions",
+    "effectId": "E19726B4-B37A-00B4-B423-B7493032F49C"
+  },
+  {
+    "name": "S_Crosshatch",
+    "category": "Sapphire Stylize",
+    "effectId": "E19BD584-9150-00A3-A3BC-E88058735930"
+  },
+  {
+    "name": "BCC Blur Dissolve",
+    "category": "BCC Transitions",
+    "effectId": "E271E14A-826C-32C8-BDBD-F002DFE6878D"
+  },
+  {
+    "name": "BCC Rings Wipe",
+    "category": "BCC Transitions",
+    "effectId": "E2EEBE22-8652-3E77-8CC7-7DE04AE968C5"
+  },
+  {
+    "name": "S_GetFrame",
+    "category": "Sapphire Time",
+    "effectId": "E37A9A87-9BA7-00B3-B304-8C0B81C595EA"
+  },
+  {
+    "name": "S_WarpMagnify",
+    "category": "Sapphire Distort",
+    "effectId": "E3906464-A3BC-00A7-A792-58FD9026544B"
+  },
+  {
+    "name": "BCC Pencil Sketch",
+    "category": "BCC Art Looks",
+    "effectId": "E3F38F3C-E313-35CB-BCE5-DF9A1322F627"
+  },
+  {
+    "name": "S_Glare",
+    "category": "Sapphire Lighting",
+    "effectId": "E4159632-B832-00BD-BDC0-8622B47410F0"
+  },
+  {
+    "name": "S_ConvolveComp",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "E428AE74-A369-0084-8419-A677D46A7064"
+  },
+  {
+    "name": "BCC Light Matte OBS",
+    "category": "BCC Obsolete",
+    "effectId": "E5205C1A-C89A-3F51-96DD-947F65B36DC5"
+  },
+  {
+    "name": "BCC Light Zoom TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "E574FE73-F596-33D7-A7B3-70C6CF884CE6"
+  },
+  {
+    "name": "BCC Stage Light",
+    "category": "BCC Lights",
+    "effectId": "E589095C-F8AB-39C3-9C9E-925E85DAAE8E"
+  },
+  {
+    "name": "BCC Linear Color Key",
+    "category": "BCC Key & Blend",
+    "effectId": "E589371E-9747-3250-8291-7C09D9161F05"
+  },
+  {
+    "name": "BCC Reframer",
+    "category": "BCC Image Restoration",
+    "effectId": "E6108363-A858-3F91-ACA9-82C12A7E649D"
+  },
+  {
+    "name": "S_TexturePlasma",
+    "category": "Sapphire Render",
+    "effectId": "E6CEB81F-28E7-0084-84A2-87F1778CD0AF"
+  },
+  {
+    "name": "BCC Light Sweep",
+    "category": "BCC Lights",
+    "effectId": "E7F9978A-4196-3A58-A743-88E296C776F7"
+  },
+  {
+    "name": "BCC Lens Flare Spiked",
+    "category": "BCC Transitions",
+    "effectId": "E810E590-B489-3C3E-9488-F3E608C3B53A"
+  },
+  {
+    "name": "S_DissolveLuma",
+    "category": "Sapphire Transitions",
+    "effectId": "E875DA12-F2B1-008B-8BFD-A480B7461AFB"
+  },
+  {
+    "name": "S_Etching",
+    "category": "Sapphire Stylize",
+    "effectId": "E9707D7E-0D4D-009B-9BBB-C24843154199"
+  },
+  {
+    "name": "BCC Glow Alpha Edges",
+    "category": "BCC Stylize",
+    "effectId": "EA42AECC-83F2-339F-AE6F-2D313744B756"
+  },
+  {
+    "name": "S_WipeDots",
+    "category": "Sapphire Transitions",
+    "effectId": "EAB15369-A1B6-00A8-A8B2-C289AB868279"
+  },
+  {
+    "name": "BCC Z Space I TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "EB52D630-982D-3034-B733-1901D26BEFD7"
+  },
+  {
+    "name": "S_GlowNoise",
+    "category": "Sapphire Lighting",
+    "effectId": "EB7A4C1E-24EB-0086-8647-743607A1CF1F"
+  },
+  {
+    "name": "S_Light3D",
+    "category": "Sapphire Lighting",
+    "effectId": "EBD90595-6B40-00AE-AEB5-8A773E5ABE6A"
+  },
+  {
+    "name": "S_ChannelSwitcher",
+    "category": "Sapphire Adjust",
+    "effectId": "EC8874C8-AEFC-008A-8A7D-3BB8D49420B0"
+  },
+  {
+    "name": "BCC Wave",
+    "category": "BCC Warp",
+    "effectId": "ECFDD66C-A938-3C52-A55B-DF5ECB85242D"
+  },
+  {
+    "name": "BCC Color Correction OBS",
+    "category": "BCC Obsolete",
+    "effectId": "EDC01F7C-4E8A-3ED9-B48B-3A26F916998E"
+  },
+  {
+    "name": "Titler Pro 4",
+    "category": "NewBlue Titler Pro 4",
+    "effectId": "EE666276-6516-4304-8D42-8D4DAEEF48F7"
+  },
+  {
+    "name": "BCC Water Color",
+    "category": "BCC Art Looks",
+    "effectId": "EE7E31A4-2F88-38EE-9C7A-9C6D79AA8CA2"
+  },
+  {
+    "name": "S_FlickerMatchMatte",
+    "category": "Sapphire Time",
+    "effectId": "EF5C7599-F78A-00A9-A998-432D9AB62DF5"
+  },
+  {
+    "name": "S_Convolve",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "EFBD8291-079B-00BB-BB5A-05E3066175C8"
+  },
+  {
+    "name": "S_SparklesColor",
+    "category": "Sapphire Render",
+    "effectId": "EFFAEBDF-96FF-009C-9C81-B3412B4BA506"
+  },
+  {
+    "name": "BCC Directional Blur TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F1124D3B-D858-39C3-AB23-3B2D4B55C892"
+  },
+  {
+    "name": "BCC Criss-Cross Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F140C711-E657-3095-AFEE-B9717F479663"
+  },
+  {
+    "name": "S_Glint",
+    "category": "Sapphire Lighting",
+    "effectId": "F156DC50-19BA-0080-8097-E67939AED22E"
+  },
+  {
+    "name": "BCC Snow",
+    "category": "BCC Particles",
+    "effectId": "F15C0454-00EE-3136-83FA-829F60137058"
+  },
+  {
+    "name": "BCC Median MT",
+    "category": "BCC Art Looks",
+    "effectId": "F2860AB9-CE77-3AE4-8755-9B338327234A"
+  },
+  {
+    "name": "BCC Twirl",
+    "category": "BCC Warp",
+    "effectId": "F2CCC599-7760-3E19-8C85-49DFA056B115"
+  },
+  {
+    "name": "S_FlickerRemoveMatte",
+    "category": "Sapphire Time",
+    "effectId": "F2EFB61E-C816-00A5-A5DE-E3F3D3316893"
+  },
+  {
+    "name": "S_Aurora",
+    "category": "Sapphire Render",
+    "effectId": "F44CDE24-C113-00A2-A2C0-C6F57D11A309"
+  },
+  {
+    "name": "S_Vignette",
+    "category": "Sapphire Stylize",
+    "effectId": "F465515A-C3D1-00BD-BD16-7BF182A9C302"
+  },
+  {
+    "name": "BCC Posterize OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F4E71AAA-4031-31D4-90D2-693917E7392B"
+  },
+  {
+    "name": "BCC Glow Matte TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F5B244E7-6BDF-3872-832C-DC2B7AB8E5B8"
+  },
+  {
+    "name": "S_Gradient",
+    "category": "Sapphire Render",
+    "effectId": "F5C6CE8D-17DB-0094-9453-2A43ED54493E"
+  },
+  {
+    "name": "BCC Lens Flare Advanced OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F6087EBB-EDF7-3FF4-9F0E-8575A69E52DE"
+  },
+  {
+    "name": "BCC Bump Map RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F626442C-44F6-3DB1-8B2B-488B1D464419"
+  },
+  {
+    "name": "S_Glow",
+    "category": "Sapphire Lighting",
+    "effectId": "F668F0CE-0E8B-009A-9A9F-05F7FF519869"
+  },
+  {
+    "name": "BCC Chroma Key",
+    "category": "BCC Key & Blend",
+    "effectId": "F7244216-69B3-39F8-8494-EEDEAC68CDB9"
+  },
+  {
+    "name": "BCC Fast Flipper",
+    "category": "BCC Perspective",
+    "effectId": "F7A948CE-A572-3200-8C94-607970D6A044"
+  },
+  {
+    "name": "BCC Brightness Contrast",
+    "category": "BCC Color & Tone",
+    "effectId": "F7B4887E-9B21-3A2E-8CB3-36DD76C1F86F"
+  },
+  {
+    "name": "BCC Rain",
+    "category": "BCC Particles",
+    "effectId": "F7BEEBE9-91A4-3E6E-BC19-DBFA9DE55B7D"
+  },
+  {
+    "name": "S_WarpToRect",
+    "category": "Sapphire Distort",
+    "effectId": "F7C128A4-EAE5-00AB-AB0A-F0A7778AD9D9"
+  },
+  {
+    "name": "BCC RGB Blend",
+    "category": "BCC Key & Blend",
+    "effectId": "F7CE4940-ACB2-33E8-A77F-1A92AEEB094B"
+  },
+  {
+    "name": "BCC Brightness Contrast OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F7E28BDE-C54F-3690-A59C-E9BEBBF220CA"
+  },
+  {
+    "name": "BCC Wild Cards OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F87E53A5-B538-3A11-9A1B-4A7449F65D47"
+  },
+  {
+    "name": "S_DropShadow",
+    "category": "Sapphire Lighting",
+    "effectId": "F886F0AE-79E1-00A8-A8F8-4C9942762C83"
+  },
+  {
+    "name": "BCC Multi Stretch Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "F8C10157-B84D-3028-8973-24A812DB6785"
+  },
+  {
+    "name": "S_DissolveBubble",
+    "category": "Sapphire Transitions",
+    "effectId": "FA0BA47B-7241-0092-9273-031DF8611259"
+  },
+  {
+    "name": "S_RepairFrames",
+    "category": "Sapphire Time",
+    "effectId": "FA7BC3B5-F6EB-009A-9ABF-ED5B3646A85F"
+  },
+  {
+    "name": "S_RandomEdits",
+    "category": "Sapphire Time",
+    "effectId": "FAA2AE03-B8BA-0089-8973-F3018743AF4D"
+  },
+  {
+    "name": "S_Posterize",
+    "category": "Sapphire Stylize",
+    "effectId": "FAE3496B-6A59-009C-9C0A-59ACD9209585"
+  },
+  {
+    "name": "BCC Multi Stripe Wipe TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "FB12D1A3-19F6-32BB-AE51-9C2849804705"
+  },
+  {
+    "name": "S_ZapTo",
+    "category": "Sapphire Render",
+    "effectId": "FB85B8A1-B97F-0080-80BA-89A8246915E6"
+  },
+  {
+    "name": "S_TextureMoire",
+    "category": "Sapphire Render",
+    "effectId": "FBCEE070-3BEA-0084-8446-F062A4B45B66"
+  },
+  {
+    "name": "BCC Tile Mosaic",
+    "category": "BCC Art Looks",
+    "effectId": "FBD36231-E104-3E97-B028-247DD1BB2163"
+  },
+  {
+    "name": "BCC Wire Remover MT",
+    "category": "BCC Image Restoration",
+    "effectId": "FC2E3BA1-3757-35C5-85C9-3508746F1908"
+  },
+  {
+    "name": "BCC Glow OBS",
+    "category": "BCC Obsolete",
+    "effectId": "FC3ED3B8-7AA5-3AB5-91F8-3E76C21229E2"
+  },
+  {
+    "name": "S_Diffuse",
+    "category": "Sapphire Stylize",
+    "effectId": "FCC15AE5-6394-008D-8D63-6C2C36D6C50A"
+  },
+  {
+    "name": "S_WarpWaves2",
+    "category": "Sapphire Distort",
+    "effectId": "FD814F38-BE95-00A2-A2CF-27E59CC31B39"
+  },
+  {
+    "name": "S_WipeMoire",
+    "category": "Sapphire Transitions",
+    "effectId": "FD998B67-8B08-0089-89F9-46DE87E9EF4F"
+  },
+  {
+    "name": "S_Shake",
+    "category": "Sapphire Distort",
+    "effectId": "FDB1A2E7-1533-00A4-A4F8-1F51BECA21F2"
+  },
+  {
+    "name": "S_Cartoon",
+    "category": "Sapphire Stylize",
+    "effectId": "FDB948FA-74B2-008B-8B23-E797BE696BF1"
+  },
+  {
+    "name": "BCC Damaged TV",
+    "category": "BCC Stylize",
+    "effectId": "FE72906F-3770-37FB-9C70-E87472794279"
+  },
+  {
+    "name": "BCC Emboss RT Static OBS",
+    "category": "BCC Obsolete",
+    "effectId": "FE7F0CEE-DD49-3804-8425-53D786663345"
+  },
+  {
+    "name": "BCC Gaussian Blur TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "FE85B66E-DFEB-39B7-8C4E-D424E5C8ED8B"
+  },
+  {
+    "name": "S_WipeClouds",
+    "category": "Sapphire Transitions",
+    "effectId": "FECD3FFD-22CD-0096-9677-5E7394ADFAE7"
+  },
+  {
+    "name": "BCC Reverse Spotlight MT",
+    "category": "BCC Lights",
+    "effectId": "FF1F6D60-070D-33CC-A1BF-5B421FB165EC"
+  },
+  {
+    "name": "BCC Multi Stripe Wipe",
+    "category": "BCC Transitions",
+    "effectId": "FF4868F0-E48D-398B-937A-2647636EFDD6"
+  },
+  {
+    "name": "S_BlurChannels",
+    "category": "Sapphire Blur+Sharpen",
+    "effectId": "FFCE3975-2BC4-0086-86B0-048776C4405E"
+  },
+  {
+    "name": "BCC Color Choker MT",
+    "category": "BCC Stylize",
+    "effectId": "FFD08842-76D0-3A8E-8352-03699DB655CB"
+  },
+  {
+    "name": "BCC Organic Strands TR OBS",
+    "category": "BCC Obsolete",
+    "effectId": "FFDF0005-5155-3B5F-A6A7-B50FA6795EAA"
+  }
+]

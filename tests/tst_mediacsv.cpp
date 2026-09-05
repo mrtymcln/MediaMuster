@@ -11,6 +11,36 @@
 
 namespace
 {
+	QStringList readCsvRecord(QString line)
+	{
+		if (line.endsWith(QLatin1Char('\n')))
+			line.chop(1);
+		QStringList fields;
+		QString field;
+		bool quoted = false;
+		for (qsizetype i = 0; i < line.size(); ++i)
+		{
+			const QChar c = line[i];
+			if (c == QLatin1Char('"'))
+			{
+				if (quoted && i + 1 < line.size() && line[i + 1] == c)
+				{
+					field += c;
+					++i;
+				}
+				else quoted = !quoted;
+			}
+			else if (c == QLatin1Char(',') && !quoted)
+			{
+				fields.append(field);
+				field.clear();
+			}
+			else field += c;
+		}
+		fields.append(field);
+		return fields;
+	}
+
 	int fieldCount(const QString &line)
 	{
 		// Split on commas outside quotes; CsvUtil quotes every string
@@ -30,6 +60,8 @@ namespace
 	MediaFile sampleRow()
 	{
 		MediaFile f;
+		f.kind = MediaFile::Kind::Video;
+		f.type = MediaFile::Type::Media;
 		f.clipName = QStringLiteral("Scene 1 - Take 3");
 		f.fileName = QStringLiteral("A11B22C33D44.mxf");
 		f.project = QStringLiteral("MyFilm");
@@ -61,6 +93,9 @@ private slots:
 	void volume_and_location_columns_carry_name_and_full_path();
 	void formula_injection_is_neutralised();
 	void write_produces_header_plus_one_line_per_row();
+	void unknown_classification_is_exported_without_guessing();
+	void effect_details_are_explicit_and_quoted();
+	void non_precompute_effect_fields_stay_blank();
 };
 
 void TestMediaCsv::header_and_row_have_the_same_field_count()
@@ -68,10 +103,14 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
 	const int headerFields = fieldCount(MediaCsv::headerLine().trimmed());
-	QCOMPARE(headerFields, 25);
+	QCOMPARE(headerFields, 22);
 	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow()).trimmed()), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}).trimmed()), headerFields);
+	const MediaCsv::Options enabled{true};
+	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 25);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 25);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 25);
 }
 
 void TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()
@@ -134,14 +173,81 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 	QVERIFY(tmp.isValid());
 	const QString path = tmp.path() + QStringLiteral("/export.csv");
 
-	QVERIFY(MediaCsv::write(path, {sampleRow(), sampleRow()}));
+	for (bool enabled : {false, true})
+	{
+		const MediaCsv::Options options{enabled};
+		QVERIFY(MediaCsv::write(path, {sampleRow(), sampleRow()}, options));
+		QFile f(path);
+		QVERIFY(f.open(QIODevice::ReadOnly));
+		const QByteArray raw = f.readAll();
+		// UTF-8 BOM keeps Excel on Windows from mojibaking non-Latin names.
+		QVERIFY(raw.startsWith("\xEF\xBB\xBF"));
+		QCOMPARE(raw.mid(3), (MediaCsv::headerLine(options) +
+			MediaCsv::rowLine(sampleRow(), options) + MediaCsv::rowLine(sampleRow(), options)).toUtf8());
+		QCOMPARE(QString::fromUtf8(raw).count(QLatin1Char('\n')), 3);
+	}
+}
 
-	QFile f(path);
-	QVERIFY(f.open(QIODevice::ReadOnly));
-	const QByteArray raw = f.readAll();
-	// UTF-8 BOM keeps Excel on Windows from mojibaking non-Latin names.
-	QVERIFY(raw.startsWith("\xEF\xBB\xBF"));
-	QCOMPARE(QString::fromUtf8(raw).count(QLatin1Char('\n')), 3); // header + 2 rows
+void TestMediaCsv::unknown_classification_is_exported_without_guessing()
+{
+	const QStringList headers = MediaCsv::headerLine().trimmed().split(QLatin1Char(','));
+	const auto unknown = MediaCsv::rowLine(MediaFile{}).trimmed().split(QLatin1Char(','));
+	QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\"\u2014\""));
+	QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\"\u2014\""));
+
+	const auto known = MediaCsv::rowLine(sampleRow()).trimmed().split(QLatin1Char(','));
+	QCOMPARE(known.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\"Video\""));
+	QCOMPARE(known.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\"Media\""));
+}
+
+void TestMediaCsv::effect_details_are_explicit_and_quoted()
+{
+	MediaFile f = sampleRow();
+	f.type = MediaFile::Type::Precompute;
+	f.effect = QStringLiteral("=Custom,\"Quoted\"\nEffect");
+	f.effectCategory = QStringLiteral("@Category,\"Quoted\"");
+	f.effectSequence = QStringLiteral("+Sequence,\"Quoted\"\nNext");
+	f.codecHex = QStringLiteral("raw-debug-value");
+	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
+	for (bool enabled : {false, true})
+	{
+		const MediaCsv::Options options{enabled};
+		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
+		QCOMPARE(fields.size(), headers.size());
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Type"))], QStringLiteral("Precompute"));
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Codec"))], f.codec);
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Date Created"))], f.createdDisplay());
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Date Modified"))], f.modifiedDisplay());
+		if (enabled)
+		{
+			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect"))], QLatin1Char('\'') + f.effect);
+			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Category"))], QLatin1Char('\'') + f.effectCategory);
+			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Sequence"))], QLatin1Char('\'') + f.effectSequence);
+		}
+		else
+		{
+			QVERIFY(!headers.contains(QStringLiteral("Effect")));
+			QVERIFY(!headers.contains(QStringLiteral("Effect Category")));
+			QVERIFY(!headers.contains(QStringLiteral("Effect Sequence")));
+			QVERIFY(!MediaCsv::rowLine(f, options).contains(QStringLiteral("Custom")));
+		}
+	}
+}
+
+void TestMediaCsv::non_precompute_effect_fields_stay_blank()
+{
+	const MediaCsv::Options options{true};
+	const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+	for (auto type : {MediaFile::Type::Media, MediaFile::Type::Unknown})
+	{
+		MediaFile f = sampleRow();
+		f.type = type;
+		f.effect = f.effectCategory = f.effectSequence = QStringLiteral("stale detail");
+		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
+		for (const auto &header : {QStringLiteral("Effect"), QStringLiteral("Effect Category"), QStringLiteral("Effect Sequence")})
+			QVERIFY(fields[headers.indexOf(header)].isEmpty());
+	}
 }
 
 QTEST_APPLESS_MAIN(TestMediaCsv)

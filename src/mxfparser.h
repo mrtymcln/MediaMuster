@@ -6,7 +6,7 @@
 // MARK: - Shared codec names
 
 /// Display name for PCM audio essence, shared by the codec table, the
-/// no-descriptor fallback, and the demo data so a rebrand can't fork
+/// explicitly identified PCM fallback, and the demo data so a rebrand can't fork
 /// the spelling. Classification never compares against it — the parser
 /// decides audio-ness from the UL bytes themselves (see
 /// isAudioEssenceLabel in mxfparser.cpp). The tests keep raw
@@ -16,11 +16,20 @@ inline constexpr char kPcmAudioName[] = "PCM"; // was: PCM Audio
 // MARK: - MxfMetadata
 
 /// Technical metadata pulled from one MXF file's header partition.
-/// `valid=false` means the parser didn't find enough information to
-/// classify the file, usually a corrupt or non-Avid MXF. Empty
-/// strings mean 'field absent in this MXF', not 'field is empty'.
+/// `valid=false` means technical facts could not be established reliably.
+/// Classification has its own validity flag. Empty strings mean unknown;
+/// HeaderStatus distinguishes malformed/incomplete data from a completed read.
 struct MxfMetadata
 {
+	enum class HeaderStatus { NotRead, Complete, Incomplete, Malformed, IoError, LimitExceeded };
+	HeaderStatus headerStatus = HeaderStatus::NotRead;
+	QString fileMobId; ///< Owning file SourcePackage, distinct from the material/master UMID.
+	bool pcmDescriptor = false; ///< A Wave/AES3/legacy PCM descriptor establishes PCM when coding is absent.
+	bool rgbaDescriptor = false; ///< The selected essence descriptor is RGBA, not another picture class.
+	bool rgbaAlpha8 = false; ///< Its complete pixel layout describes only an 8-bit alpha component.
+	bool pictureCodingPresent = false; ///< A present but unusable coding property must not become an absent-property fallback.
+	bool hasMaterialPackage = false; ///< A completed header selected a MaterialPackage with a 32-byte UID, independently of usage classification.
+	bool classificationKnown = false; ///< An identified material/master package supplied a usage verdict.
 	QString codec;		///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
 	QString resolution; ///< '1920x1080', or empty for audio.
 	QString fps;		///< '23.976', '25', '29.97', etc.
@@ -34,11 +43,9 @@ struct MxfMetadata
 	/// ladder (see MediaFile::ClipNameSource); a source name is not.
 	bool clipNameFromMaterial = false;
 
-	/// True when the MaterialPackage's UsageCode (local tag 0x4408) is
-	/// `Usage_LowerLevel` — Avid's mark for a rendered effect. Ordinary media
-	/// carries no UsageCode at all, and neither does a mixdown (a mixdown is a
-	/// master clip, not a precompute). This is the whole Media-vs-Precompute
-	/// test; see the note above isPrecomputeUsage in mxfparser.cpp.
+	/// A verified master usage1 identifies a precompute. Standard LowerLevel
+	/// alone is ambiguous (Avid also uses it for group/motion clips). Consult
+	/// classificationKnown before interpreting false as ordinary media.
 	bool isPrecompute = false;
 
 	/// Avid's own TaggedValues (set 0x3F, on the packages' attribute lists):
@@ -54,7 +61,8 @@ struct MxfMetadata
 	bool hasImportSetting = false;
 	QString projectName;
 
-	QByteArray essenceContainerLabel; ///< Raw essence-coding UL (usually 16 bytes), looked up against kEntries.
+	QByteArray essenceContainerLabel; ///< Compatibility name: this is the COMPRESSION/coding UL, not wrapping.
+	QByteArray wrappingLabel; ///< FileDescriptor EssenceContainer (0x3004); separate from compression.
 	int width = 0;
 	int height = 0;		///< Stored value; interlaced files store one field height.
 	int channels = 0;	///< Audio only.
@@ -76,6 +84,7 @@ struct MxfMetadata
 	/// the Avid-bin timecode model (see the duration note in
 	/// parseFromBuffer). 0 = unknown.
 	qint64 durationFrames = 0;
+	bool durationFromTrack = false; ///< Top-level owning-track duration, already converted to display frames.
 
 	/// Nominal timecode base (24, 25, 30...). Video: from the 0x3001 edit
 	/// rate. Audio: derived from the frame-track duration against the WAVE
@@ -100,17 +109,18 @@ struct MxfMetadata
 
 /// Reads an MXF file's header partition and pulls out the metadata
 /// the table needs (codec, resolution, fps, duration, UMID, clip
-/// name). Only the first 256–512 KB is read; essence data is never
-/// touched. See `mxfparser.cpp` for the KLV walk and the codec lookup.
+/// name). Walks complete metadata KLVs, skipping padding and stopping at
+/// essence or the next partition. Metadata allocation is bounded; reaching
+/// that bound is reported explicitly rather than treated as success.
 class MxfParser
 {
 public:
 	/// Parse the MXF file's header. On success, `valid=true` and the
 	/// metadata fields are populated. A file it can't open returns a
-	/// default-constructed MxfMetadata; a file it opens but can't classify
+	/// MxfMetadata with IoError status; a file it opens but can't classify
 	/// (no recognisable descriptors) returns whatever fields it did read,
-	/// with `valid=false`. A missing header-partition pack is not fatal —
-	/// the KLV walk simply starts from offset 0.
+	/// with `valid=false`. Standalone metadata KLVs at offset 0 retain a
+	/// recovery path when the header-partition pack is absent.
 	///
 	/// `bytesRead`, if non-null, receives the number of bytes the
 	/// parser actually read from disk; useful for telemetry in the
@@ -118,7 +128,7 @@ public:
 	[[nodiscard]] static MxfMetadata parseHeader(const QString &filePath,
 												 qint64 *bytesRead = nullptr);
 
-	/// Map a 16-byte essence-container UL to the marketing name like
+	/// Map a 16-byte compression/coding UL to the marketing name like
 	/// 'Avid DNx HQ (DNxHD 220)'. `fps` is needed to resolve the
 	/// DNxHD bitrate (the UL identifies the tier but not the rate).
 	/// A UL not in the table returns the family inferred from its byte

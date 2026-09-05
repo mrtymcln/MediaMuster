@@ -31,6 +31,7 @@
 // id equal to what its version-2 PMR stores (tst_omfparser).
 
 #include "omfparser.h"
+#include "avidusage.h"
 #include "bentofile.h"
 #include "logcategories.h"
 #include "omfobjects.h"
@@ -55,25 +56,28 @@ namespace
 		quint32 mediaDesc = 0; ///< That descriptor.
 		bool anyPhysical = false;
 		int usageCode = -1;
+		bool masterClass = false;
+		bool legacyMaster = false;
 	};
 
-	/// The media-data object's MobID — the file mob's identity. The four
-	/// property names are the four essence classes an OMF file can hold;
-	/// exactly one exists per file.
-	QByteArray mediaDataMobId(const BentoFile &b, const OmfObjects::Props &p)
+	/// Embedded media identity. More than one distinct ID cannot be
+	/// represented by this single-essence API without choosing arbitrarily.
+	QByteArray mediaDataMobId(const BentoFile &b, const OmfObjects::Props &p, bool &ambiguous)
 	{
-		for (int prop : {p.mdatMobId, p.waveMobId, p.aifcMobId, p.sd2mMobId})
+		QSet<QByteArray> ids;
+		for (int prop : {p.mdatMobId, p.waveMobId, p.aifcMobId, p.sd2mMobId, p.sd2dMobId})
 		{
 			if (prop < 0)
 				continue;
 			for (quint32 obj : b.objectsWithProperty(prop))
 			{
-				const QByteArray raw = b.bytes(obj, prop);
+				const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, prop));
 				if (!OmfUid::canonicalHex(raw).isEmpty())
-					return raw;
+					ids.insert(raw);
 			}
 		}
-		return {};
+		ambiguous = ids.size() > 1;
+		return ids.size() == 1 ? *ids.cbegin() : QByteArray();
 	}
 } // namespace
 
@@ -89,20 +93,24 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		*bytesRead = b.bytesRead();
 	if (!opened)
 	{
-		// A plain RIFF/AIFF file with no Bento label lands here after one
-		// 24-byte read: not an error, just not OMF-written.
+		// No supported Bento tail or embedded omfi chunk was found.
 		qCDebug(lcOmf) << filePath << "is not an OMF container:" << why;
 		return out;
 	}
 
 	const OmfObjects::Props p(b);
+	out.revision = p.revision;
+	out.essence.headerStatus = MxfMetadata::HeaderStatus::Incomplete;
 	if (p.mobId < 0)
 	{
 		qCDebug(lcOmf) << filePath << "carries no MobID property — a Bento container without mobs";
 		return out;
 	}
 
-	const QByteArray fileMobRaw = mediaDataMobId(b, p);
+	bool ambiguousData = false;
+	const QByteArray fileMobRaw = mediaDataMobId(b, p, ambiguousData);
+	if (ambiguousData)
+		return out;
 	out.fileMobId = OmfUid::canonicalHex(fileMobRaw);
 
 	// Group every MOBJ by its canonical hex and note what each owns, the
@@ -113,9 +121,9 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	QVector<QString> order;
 	for (quint32 obj : b.objectsWithProperty(p.mobId))
 	{
-		if (b.objectClass(obj) != "MOBJ")
+		if (!OmfObjects::isMobClass(b.objectClass(obj)))
 			continue;
-		const QByteArray raw = b.bytes(obj, p.mobId);
+		const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, p.mobId));
 		const QString hex = OmfUid::canonicalHex(raw);
 		if (hex.isEmpty())
 			continue;
@@ -128,10 +136,18 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 			order.append(hex);
 		}
 		it->objects.append(obj);
-		const QByteArray usage = b.bytes(obj, p.usage);
-		if (it->usageCode < 0 && !usage.isEmpty())
-			it->usageCode = int(BentoFile::uint(usage));
-		const quint32 desc = BentoFile::handle(b.bytes(obj, p.physMedia));
+		it->masterClass |= b.objectClass(obj) == "MMOB";
+		const auto usage = b.read(obj, p.usage);
+		if (usage.status != BentoFile::ReadStatus::Missing)
+		{
+			const qint32 code = usage.ok() && usage.data.size() == 4 ?
+				AvidUsage::integerCode(b.uintValue(usage.data)) : AvidUsage::kInvalidOrConflicting;
+			it->legacyMaster |= AvidUsage::isMasterCode(code);
+			it->usageCode = AvidUsage::merge(it->usageCode, code);
+		}
+		// A present but unreadable descriptor is not evidence of a master.
+		it->anyPhysical |= b.hasProperty(obj, p.physMedia);
+		const quint32 desc = b.ref(obj, p.physMedia);
 		if (desc == 0)
 			continue;
 		it->anyPhysical = true;
@@ -142,32 +158,19 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		}
 	}
 
-	// Triage. The file mob is the group whose id the media-data object
-	// names (falling back to whichever group owns a media descriptor, for
-	// a writer that keys its data object differently); the master is the
-	// group with no PhysicalMedia at all; the source mob is whatever the
-	// file mob's SCLP points at. UsageCode is deliberately NOT part of the
-	// test: a precompute master carries 1, not 7, so usage cannot be a
-	// criterion without losing renders, and the MDB triage never used it
-	// either — owning nothing physical is what makes a master a master.
+	// Select the embedded data's file mob, or the unique media descriptor
+	// when the file omits its data ID. Master identity is resolved through
+	// source-clip links below (OMF1 usage 7/1, or OMF2 MMOB class).
 	const MobGroup *fileMob = nullptr;
 	const MobGroup *master = nullptr;
 	for (const QString &hex : order)
 	{
 		const MobGroup &g = groups[hex];
-		if (!fileMob && g.mediaObj != 0 && (hex == out.fileMobId || out.fileMobId.isEmpty()))
-			fileMob = &g;
-		if (!master && !g.anyPhysical)
-			master = &g;
-	}
-	if (!fileMob)
-	{
-		for (const QString &hex : order)
-			if (const MobGroup &g = groups[hex]; g.mediaObj != 0)
-			{
-				fileMob = &g;
-				break;
-			}
+		if (g.mediaObj == 0 || (!out.fileMobId.isEmpty() && hex != out.fileMobId))
+			continue;
+		if (fileMob)
+			return out; // several media files; a single-row API cannot select one safely
+		fileMob = &g;
 	}
 	if (!fileMob)
 	{
@@ -179,8 +182,31 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	if (out.fileMobId.isEmpty() || out.fileMobId != fileMob->hex)
 		out.fileMobId = fileMob->hex;
 
+	// A composition is not a master. Match the actual source-clip graph
+	// to the selected file mob, and leave identity unknown on ambiguity.
+	for (const QString &hex : order)
+	{
+		const MobGroup &g = groups[hex];
+		if (p.omf2 ? !g.masterClass :
+			(g.anyPhysical || (p.revision == OmfObjects::Revision::Omf1 && !g.legacyMaster)))
+			continue;
+		bool referencesFile = false;
+		for (quint32 obj : g.objects)
+			for (quint32 target : OmfObjects::sourceMobs(b, p, obj, objectByMob))
+				referencesFile |= fileMob->objects.contains(target);
+		if (!referencesFile)
+			continue;
+		if (master)
+		{
+			master = nullptr;
+			break;
+		}
+		master = &g;
+	}
+
 	MxfMetadata &e = out.essence;
 	OmfObjects::readDescriptor(b, p, fileMob->mediaObj, fileMob->mediaDesc, objectByMob, e);
+	e.fileMobId = out.fileMobId;
 
 	// Identity from the master: the clip name Avid displays and the id the
 	// PMR's MASTER record and the bins carry. A file with no master mob
@@ -195,7 +221,9 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 				e.clipName = BentoFile::string(b.bytes(obj, p.name));
 		}
 		e.clipNameFromMaterial = !e.clipName.isEmpty();
-		e.isPrecompute = master->usageCode == 1;
+		const auto classification = AvidUsage::masterClassification(master->usageCode);
+		e.isPrecompute = classification == AvidUsage::Classification::Precompute;
+		e.classificationKnown = classification != AvidUsage::Classification::Unknown;
 	}
 
 	// Attributes, first-non-empty in the order the facts are trusted:
@@ -208,10 +236,10 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	QSet<quint32> seen;
 	if (master)
 		for (quint32 obj : master->objects)
-			OmfObjects::walkAttributes(b, p, BentoFile::handle(b.bytes(obj, p.attrs)), a, seen, 0);
+			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
 	e.hasImportSetting = a.isImported; // the master's flag only, as the MDB reads it
 	for (quint32 obj : fileMob->objects)
-		OmfObjects::walkAttributes(b, p, BentoFile::handle(b.bytes(obj, p.attrs)), a, seen, 0);
+		OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
 
 	// The source mob and every object sharing its id, resolved once for the
 	// two facts below that may live there.
@@ -219,13 +247,13 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	QVector<quint32> srcObjs;
 	if (src != 0)
 	{
-		const QString srcHex = OmfUid::canonicalHex(b.bytes(src, p.mobId));
+		const QString srcHex = OmfUid::canonicalHex(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
 		const auto it = groups.constFind(srcHex);
 		srcObjs = it == groups.cend() ? QVector<quint32>{src} : it->objects;
 	}
 	if (a.project.isEmpty())
 		for (quint32 obj : srcObjs)
-			OmfObjects::walkAttributes(b, p, BentoFile::handle(b.bytes(obj, p.attrs)), a, seen, 0);
+			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
 
 	// The oldest slates (15 of the 80 shipped: the JFIF12S/14S/35/42 and
 	// DV411 families, 2001-era) carry no _SRCFILE at all; their import path
@@ -236,10 +264,10 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	{
 		for (quint32 obj : srcObjs)
 		{
-			const quint32 desc = BentoFile::handle(b.bytes(obj, p.physMedia));
-			if (desc == 0 || b.objectClass(desc) != "MDES")
+			const quint32 desc = b.ref(obj, p.physMedia);
+			if (desc == 0 || (!p.omf2 && b.objectClass(desc) != "MDES"))
 				continue;
-			for (quint32 loc : BentoFile::handles(b.bytes(desc, p.locator)))
+			for (quint32 loc : b.refs(desc, p.locator))
 			{
 				if (b.objectClass(loc) == "MSML")
 					continue;
@@ -278,6 +306,8 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 
 	if (bytesRead)
 		*bytesRead = b.bytesRead();
+	e.headerStatus = e.valid && !out.fileMobId.isEmpty() && master
+		? MxfMetadata::HeaderStatus::Complete : MxfMetadata::HeaderStatus::Incomplete;
 	if (!e.valid)
 		qCWarning(lcOmf) << "no usable OMF metadata in" << filePath << "(read" << b.bytesRead() << "bytes)";
 	else

@@ -6,6 +6,7 @@
 #include "binfilterdialog.h"
 #include "crashcollector.h"
 #include "enumutil.h"
+#include "effectfilterdialog.h"
 #include "formatutil.h"
 #include "icons.h"
 #include "layoututil.h"
@@ -84,6 +85,9 @@ namespace
 	// registers it. Engine, journal and tests are untouched and still run,
 	// so the feature can't rot while it waits. Flip to true to ship it.
 	constexpr bool kUndoEnabled = false;
+	// The implementation stays testable while its table/CSV/filter surfaces
+	// are opt-in through Debug. Change the default when the feature ships.
+	constexpr bool kEffectDetailsEnabledByDefault = false;
 
 	/// The fixed-pitch face the table and console share. Lived in theme.h
 	/// until 2026-08-31; folded in here as its only consumer (a real theme
@@ -161,7 +165,7 @@ namespace
 
 // MARK: - MainWindow construction
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
 	  // Order needs to match mainwindow.h, otherwise the compiler
 	  // gets cranky. Pass `this` as parent and Qt handles cleanup.
@@ -177,9 +181,11 @@ MainWindow::MainWindow(QWidget *parent)
 	setupUi();
 	setupMenus();
 	setupConnections();
+	setEffectDetailsEnabled(kEffectDetailsEnabledByDefault);
 
 	setWindowTitle("MediaMuster");
 	resize(1200, 750);
+	if (startup == StartupMode::UiOnly) return;
 
 	QString platform;
 #ifdef Q_OS_MAC
@@ -416,6 +422,10 @@ QWidget *MainWindow::buildToolbar()
 
 	m_btnFileOps = new QPushButton(tr("Manage Media..."));
 	m_btnBinFilter = new QPushButton(tr("Filter by Bin..."));
+	m_btnEffectFilter = new QPushButton(tr("Filter by Effect..."));
+	m_btnEffectFilter->setObjectName(QStringLiteral("filterByEffectButton"));
+	m_btnEffectFilter->setVisible(false);
+	m_btnEffectFilter->setEnabled(false);
 	m_btnExport = new QPushButton(tr("Export CSV..."));
 	m_btnRebalance = new QPushButton(tr("Rebalance..."));
 	m_btnFileOps->setEnabled(false);
@@ -437,6 +447,7 @@ QWidget *MainWindow::buildToolbar()
 	actionsRow->setSpacing(8);
 	actionsRow->addWidget(m_btnFileOps);
 	actionsRow->addWidget(m_btnBinFilter);
+	actionsRow->addWidget(m_btnEffectFilter);
 	actionsRow->addWidget(m_btnRebalance);
 	actionsRow->addWidget(m_btnExport);
 	actionsRow->addStretch();
@@ -719,6 +730,11 @@ void MainWindow::buildSpecialMenu()
 	auto *binFilterAct = specialMenu->addAction(tr("Filter by &Bin..."));
 	binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
 	connect(binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
+	m_effectFilterAct = specialMenu->addAction(tr("Filter by &Effect..."));
+	m_effectFilterAct->setObjectName(QStringLiteral("filterByEffectAction"));
+	m_effectFilterAct->setVisible(false);
+	m_effectFilterAct->setEnabled(false);
+	connect(m_effectFilterAct, &QAction::triggered, this, &MainWindow::onFilterByEffects);
 
 	specialMenu->addSeparator();
 	auto *rebalanceAct = specialMenu->addAction(tr("&Rebalance..."));
@@ -736,6 +752,12 @@ void MainWindow::buildSpecialMenu()
 void MainWindow::buildDebugMenu()
 {
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
+	m_effectDetailsAct = debugMenu->addAction(tr("&Effect Details and Filtering"));
+	m_effectDetailsAct->setObjectName(QStringLiteral("effectDetailsDebugAction"));
+	m_effectDetailsAct->setCheckable(true);
+	m_effectDetailsAct->setChecked(false);
+	connect(m_effectDetailsAct, &QAction::triggered, this, &MainWindow::setEffectDetailsEnabled);
+	debugMenu->addSeparator();
 
 	auto *verifyAct = debugMenu->addAction(tr("&Verification checks"));
 	verifyAct->setCheckable(true);
@@ -756,22 +778,6 @@ void MainWindow::buildDebugMenu()
 			{
 				m_model->setShowRawCodecHex(on);
 				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec as Raw Hex enabled" : "Codec as Raw Hex disabled");
-			});
-
-	// Database-first is the default: a row the folder's msmFMID.pmr +
-	// msmMMOB.mdb fully describe never has its header read. This forces the
-	// pre-database-first behaviour — every .mxf header read — which is also
-	// how the two are compared (scan, export, toggle, rescan, export, diff).
-	auto *forceHeaderAct = debugMenu->addAction(tr("&Force header scan"));
-	forceHeaderAct->setCheckable(true);
-	forceHeaderAct->setChecked(m_forceHeaderScan);
-	connect(forceHeaderAct, &QAction::triggered, this,
-			[this](bool on)
-			{
-				m_forceHeaderScan = on;
-				addLog(QtInfoMsg, QStringLiteral("app"),
-					   on ? "Force header scan enabled — every MXF header is read on the next scan"
-						  : "Force header scan disabled — the databases describe rows on the next scan");
 			});
 
 	// Whatever style main.cpp installed at startup is the one to restore.
@@ -984,6 +990,7 @@ void MainWindow::setupConnections()
 	connect(m_tableView, &QTableView::doubleClicked, this, &MainWindow::onTableDoubleClicked);
 	connect(m_btnFileOps, &QPushButton::clicked, this, &MainWindow::onFileOperations);
 	connect(m_btnBinFilter, &QPushButton::clicked, this, &MainWindow::onFilterByBins);
+	connect(m_btnEffectFilter, &QPushButton::clicked, this, &MainWindow::onFilterByEffects);
 	connect(m_btnExport, &QPushButton::clicked, this, &MainWindow::onExportCsv);
 	connect(m_btnRebalance, &QPushButton::clicked, this, &MainWindow::onRebalance);
 	connect(m_scanButton, &QPushButton::clicked, this, &MainWindow::onScanClicked);
@@ -1051,6 +1058,68 @@ void MainWindow::onCheckPermissions()
 		}
 	}
 #endif // Q_OS_MAC
+}
+
+// MARK: - Effect details and filter
+
+void MainWindow::setEffectDetailsEnabled(bool enabled)
+{
+	if (m_effectDetailsEnabled == enabled) return;
+	m_effectDetailsEnabled = enabled;
+	applyFilterPreservingSelection([this, enabled]() {
+		// A sort column that is about to disappear must not keep controlling
+		// the rows while its heading is no longer available to the editor.
+		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::Effect))
+			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
+		m_proxy->setEffectDetailsEnabled(enabled);
+		m_model->setEffectDetailsEnabled(enabled);
+	});
+	m_effectDetailsAct->setChecked(enabled);
+	m_btnEffectFilter->setVisible(enabled);
+	m_effectFilterAct->setVisible(enabled);
+	const bool canFilter = enabled && m_scanButton->isEnabled() && !m_model->allFiles().isEmpty();
+	m_btnEffectFilter->setEnabled(canFilter);
+	m_effectFilterAct->setEnabled(canFilter);
+	if (enabled)
+	{
+		// Put the newly enabled details together after Type, ahead of Source
+		// File, without moving or resetting the existing columns.
+		auto *header = m_tableView->horizontalHeader();
+		int position = header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Type)) + 1;
+		for (auto column : {MediaTableModel::Column::Effect, MediaTableModel::Column::EffectCategory,
+			MediaTableModel::Column::EffectSequence})
+		{
+			const int logical = Enum::to_underlying(column);
+			header->moveSection(header->visualIndex(logical), position++);
+			m_tableView->resizeColumnToContents(logical);
+		}
+	}
+	rebuildFilterChips();
+	updateStatusBar();
+	addLog(QtInfoMsg, QStringLiteral("effects"), enabled
+		? QStringLiteral("Effect details and filtering enabled for this session")
+		: QStringLiteral("Effect details and filtering disabled; effect filter cleared"));
+}
+
+void MainWindow::onFilterByEffects()
+{
+	if (!m_effectDetailsEnabled || !m_scanButton->isEnabled() || m_model->allFiles().isEmpty()) return;
+	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->effectFilter(),
+		m_proxy->effectVolumeFilter(), this);
+	if (dialog.exec() != QDialog::Accepted) return;
+	const QStringList effects = dialog.selectedEffects();
+	const QString volume = dialog.selectedVolume();
+	applyFilterPreservingSelection([this, &effects, &volume]() {
+		m_proxy->setEffectFilter(effects);
+		m_proxy->setEffectVolumeFilter(volume);
+	});
+	rebuildFilterChips();
+	updateStatusBar();
+	addLog(QtInfoMsg, QStringLiteral("effects"), effects.isEmpty() && volume.isEmpty()
+		? QStringLiteral("Effect filter cleared")
+		: QStringLiteral("Effect filter: %1; volume: %2")
+			.arg(effects.isEmpty() ? QStringLiteral("all precomputes") : effects.join(QStringLiteral(", ")),
+				volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume));
 }
 
 // MARK: - Bin filter
@@ -1442,7 +1511,6 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 		else
 			opts.manualPaths.append(path);
 	}
-	opts.forceHeaderScan = m_forceHeaderScan;
 
 	setBusy(true);
 	progressDialog()->begin();
@@ -1498,7 +1566,7 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	m_model->setMediaFiles(results);
 	m_persistentSelectedPaths.clear();
 
-	qint64 elapsed = m_scanTimer.elapsed();
+	const qint64 elapsed = m_scanTimer.isValid() ? m_scanTimer.elapsed() : 0;
 	QString timeStr = tr("Scan: %1 ms").arg(elapsed);
 	m_statusScanTime->setText(timeStr);
 
@@ -2099,6 +2167,7 @@ void MainWindow::onExportCsv()
 	}
 
 	const int count = rows.size();
+	const MediaCsv::Options csvOptions{m_effectDetailsEnabled};
 	const QString label = exportSelected ? "selected records" : "records";
 	addLog(QtInfoMsg, QStringLiteral("export"), QStringLiteral("Exporting %1 %2 to %3").arg(count).arg(label).arg(path));
 	m_btnExport->setEnabled(false);
@@ -2123,8 +2192,8 @@ void MainWindow::onExportCsv()
 			});
 
 	watcher->setFuture(
-		QtConcurrent::run([path, rows = std::move(rows)]()
-						  { return MediaCsv::write(path, rows); }));
+		QtConcurrent::run([path, rows = std::move(rows), csvOptions]()
+						  { return MediaCsv::write(path, rows, csvOptions); }));
 }
 
 // MARK: - Project summary
@@ -2139,21 +2208,23 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 		s.hasProject = !f.hasNoProject();
 		if (f.kind == MediaFile::Kind::Video)
 			s.videoCount++;
-		else
+		else if (f.kind == MediaFile::Kind::Audio)
 			s.audioCount++;
+		else
+			s.unknownKindCount++;
 		s.totalBytes += f.sizeBytes;
 		if (!f.originalBin.isEmpty() && !s.bins.contains(f.originalBin))
 			s.bins.append(f.originalBin);
 	}
 	auto *dlg = new QDialog(this);
 	dlg->setWindowTitle(tr("Project Summary"));
-	dlg->resize(600, 380);
+	dlg->resize(680, 380);
 	dlg->setAttribute(Qt::WA_DeleteOnClose);
 	auto *t = new QTableView(dlg);
-	auto *sm = new QStandardItemModel(static_cast<int>(map.size()), 5, dlg);
+	auto *sm = new QStandardItemModel(static_cast<int>(map.size()), 6, dlg);
 	// Column-type vocabulary, kept literal to match the main table headers.
 	sm->setHorizontalHeaderLabels({QStringLiteral("Project"), QStringLiteral("Video"),
-								   QStringLiteral("Audio"), QStringLiteral("Bins"),
+								   QStringLiteral("Audio"), QStringLiteral("Unknown Kind"), QStringLiteral("Bins"),
 								   QStringLiteral("Size")});
 	// Sort on UserRole, not the formatted display text: otherwise "1,000" sorts
 	// before "9" and "5.6 GB" before "900 MB".
@@ -2178,8 +2249,9 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 		sm->setItem(r, 0, proj);
 		sm->setItem(r, 1, numItem(Format::count(s.videoCount), s.videoCount));
 		sm->setItem(r, 2, numItem(Format::count(s.audioCount), s.audioCount));
-		sm->setItem(r, 3, numItem(Format::count(s.bins.size()), s.bins.size()));
-		sm->setItem(r, 4, numItem(Format::bytes(s.totalBytes), s.totalBytes));
+		sm->setItem(r, 3, numItem(Format::count(s.unknownKindCount), s.unknownKindCount));
+		sm->setItem(r, 4, numItem(Format::count(s.bins.size()), s.bins.size()));
+		sm->setItem(r, 5, numItem(Format::bytes(s.totalBytes), s.totalBytes));
 	}
 	t->setModel(sm);
 	t->setSortingEnabled(true);
@@ -2423,7 +2495,7 @@ QItemSelection MainWindow::selectionForRows(const QVector<int> &proxyRows) const
 	// fires one selectionChanged per run, not one per row. `proxyRows` must
 	// be ascending — every caller iterates rows in order.
 	QItemSelection sel;
-	const int lastCol = Enum::to_underlying(MediaTableModel::Column::Count_) - 1;
+	const int lastCol = m_proxy->columnCount() - 1;
 	const int n = proxyRows.size();
 	for (int i = 0; i < n;)
 	{
@@ -2485,6 +2557,9 @@ void MainWindow::setBusy(bool busy)
 		m_tableView->selectionModel() && !m_tableView->selectionModel()->selectedRows().isEmpty();
 	m_btnFileOps->setEnabled(!busy && hasSel);
 	m_btnRebalance->setEnabled(!busy && !m_model->allFiles().isEmpty());
+	m_btnEffectFilter->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
+	m_effectFilterAct->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
+	m_effectDetailsAct->setEnabled(!busy);
 	updateResumeAction();
 
 	if (!busy && m_progressDialog)
@@ -2631,6 +2706,30 @@ void MainWindow::rebuildFilterChips()
 				{ item->setSelected(false); });
 	}
 
+	if (m_effectDetailsEnabled)
+	{
+		const QStringList effects = m_proxy->effectFilter();
+		if (!effects.isEmpty())
+			addChip(effects.size() == 1 ? tr("Effect: %1").arg(effects.first())
+				: tr("%n effects", nullptr, effects.size()), [this]() {
+				applyFilterPreservingSelection([this]() { m_proxy->setEffectFilter({}); });
+				rebuildFilterChips();
+				updateStatusBar();
+			});
+		const QString volume = m_proxy->effectVolumeFilter();
+		if (!volume.isEmpty())
+		{
+			QString name = volume;
+			for (const auto &file : m_model->allFiles())
+				if (file.volumePath == volume && !file.volumeName.isEmpty()) { name = file.volumeName; break; }
+			addChip(tr("Effect volume: %1").arg(name), [this]() {
+				applyFilterPreservingSelection([this]() { m_proxy->setEffectVolumeFilter({}); });
+				rebuildFilterChips();
+				updateStatusBar();
+			});
+		}
+	}
+
 	// One chip per unique bin referenced in the chain; mirrors the
 	// Project: <name> pattern above. Dismissing any chip clears the
 	// entire chain. Loaded bins stay loaded, so re-filtering is trivial.
@@ -2702,6 +2801,8 @@ void MainWindow::resetFiltersForNewScan()
 	m_proxy->setSearchText({});
 	m_proxy->setProjectFilter({});
 	m_proxy->setBinFilterMobs(false, {});
+	m_proxy->setEffectFilter({});
+	m_proxy->setEffectVolumeFilter({});
 
 	rebuildFilterChips();
 }

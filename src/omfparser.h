@@ -12,6 +12,7 @@
 // MDB reader through OmfObjects.
 
 #include "mxfparser.h"
+#include "omfobjects.h"
 
 #include <QString>
 
@@ -27,6 +28,7 @@
 /// is free here; held back from MediaFile until a column wants it).
 struct OmfMetadata
 {
+	OmfObjects::Revision revision = OmfObjects::Revision::Unknown;
 	/// `umid` = the MASTER mob's canonical hex (the wrapped 32-byte form,
 	/// equal to the v2 PMR's masterMobId); `clipName` = the master's
 	/// OMFI:CPNT:Name with `clipNameFromMaterial` set; `projectName` = the
@@ -58,10 +60,10 @@ struct OmfMetadata
 /// label, the TOC and the property dictionary (a few KB regardless of file
 /// size) and every value after that by seek+read — then follows the three
 /// mob records (master, file, source) the way MdbParser does for a
-/// database row. A plain RIFF `.wav` / `.aif` that Avid did not write has
-/// no Bento label and fails at the first 24-byte read (`valid=false`,
-/// `bytesRead == 24`); the scanner treats that as "no OMF metadata", never
-/// as an error.
+/// database row. Both OMF1 and OMF2 schemas are read. A plain audio file
+/// without a Bento tail or supported embedded omfi chunk yields no OMF
+/// metadata. A file containing several independent media objects does not
+/// have one unambiguous essence row and is not collapsed into the first one.
 class OmfParser
 {
 public:

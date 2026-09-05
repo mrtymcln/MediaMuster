@@ -6,43 +6,36 @@
 
 /// Names a rendered effect from its precompute's clip name.
 ///
-/// Avid names a render `<sequence>,<Effect>+<N>` — the effect's display name
-/// with spaces and colons turned into underscores, the sequence it was
-/// rendered for (mangled the same way), and the N-th render of that effect
-/// in that sequence. The structural effect id is NOT in the media (verified:
-/// no OperationGroup in any of 795 headers; the MDB's EffectID is a constant),
-/// so the name is the only carrier — which is why this is consulted ONLY for
-/// rows the usage code has already proven to be a precompute: it labels,
-/// it never decides.
+/// Observed names include `<sequence>,<Effect>+<N>` and
+/// `<sequence>,<Effect>,<N>[.new.<N>...]`. Exact known display spellings use
+/// spaces/colons as underscores; sequence names can contain commas.
+/// This lookup labels rows already classified as precomputes by metadata.
+/// A clip name is editable, so a match is a label, not proof of effect identity.
 ///
-/// The catalogue is Avid's own: 887 effects extracted from a Media Composer
-/// 2025.12 install and compiled straight into the binary — there is no data
-/// file to find or lose (the table sits in avideffects.cpp, with its
-/// provenance beside it).
-/// Names are keyed in all five shipped languages, because a German Media
-/// Composer writes "Blende" where an English one writes "Dissolve". 68 keys
-/// are ambiguous across categories ("Bottom to Top" is a Conceal, a Peel, a
-/// Push and a Squeeze); those report every category.
+/// Names/categories come from the installed Media Composer 26.8.0.58987 ARM64
+/// registrations and shipped resources. Distinct AlphaFlex variants and
+/// ambiguous categories are retained. See docs/evidence/avid-effects-26.8.
 namespace AvidEffects
 {
 	struct Hit
 	{
 		QString name;	  ///< Avid's display name ("Color Correction"), or the raw token when unknown.
-		QString category; ///< Palette group ("Image", "Timewarp"...), "A / B" when ambiguous,
-						  ///< "Not a standard Avid effect" when unknown (a user-typed title,
+		QString category; ///< Avid category/group ("Image", "Timewarp"...), "A / B" when ambiguous,
+						  ///< "Unrecognized effect" when unknown (a user-typed title,
 						  ///< an unregistered plug-in, or a renamed template).
-		QString sequence; ///< The text before the last comma, as Avid wrote it (mangled).
-		int instance = 0; ///< The +N suffix; 0 when absent.
+		QString sequence; ///< The text preceding the effect token, as Avid wrote it (mangled).
+		int instance = 0; ///< The +N or comma-N instance; 0 when absent or invalid.
 		bool matched = false;
 	};
 
-	/// Parse a precompute clip name and look the effect up. Never empty: an
-	/// unparseable name comes back as `name == clipName`, unmatched.
+	/// Parse a precompute clip name and look the effect up. An unrecognized
+	/// effect token is returned verbatim, unmatched. Malformed or out-of-range
+	/// numeric suffixes remain in the token rather than being silently lost.
 	[[nodiscard]] Hit lookup(const QString &clipName);
 
 	/// The clip-name spelling of a display name: space and colon → underscore.
 	[[nodiscard]] QString mangle(const QString &displayName);
 
-	/// Rows loaded from the resource (for tests and the About box).
+	/// Distinct name/category pairs compiled into the catalogue.
 	[[nodiscard]] int size();
 } // namespace AvidEffects
