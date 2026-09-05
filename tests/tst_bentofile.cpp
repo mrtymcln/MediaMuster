@@ -1,13 +1,9 @@
-// BentoFile: the container primitive under msmMMOB.mdb. Label + TOC
-// arithmetic, immediate vs offset values, first-in-file-wins on duplicate
-// entries, the file's own property-name dictionary, and the typed readers —
-// against builder-made containers and the three real MDB fixtures.
-// The omf_* cases cover the OMF-era tail-first mode (open()/bytes()/
-// mobIndex()) against the OMF fixtures; the two gates that differ by mode
-// (continued entries, label major version) have cases of their own.
+// Bento1 and Bento2 container decoding, reference maps, fragmented values,
+// bounded reads, real Avid fixtures and optional public toolkit specimens.
 
 #include "bentofile.h"
 #include "testbento.h"
+#include "testbento2.h"
 
 #include <QByteArray>
 #include <QDir>
@@ -55,12 +51,16 @@ private slots:
 	void property_names_come_from_the_file();
 	void typed_readers();
 	void real_fixtures_load_with_the_expected_shape();
-	void continued_entry_reads_empty_in_load_mode_and_refuses_open();
-	void label_version_gate_is_major_only_and_open_mode_only();
+	void continued_values_assemble_or_fail_explicitly();
+	void label_versions_select_real_toc_decoders();
 	void omf_open_matches_load_on_real_fixtures();
 	void omf_open_reads_only_the_tail();
 	void omf_open_fails_cleanly_on_non_bento_input();
 	void omf_mob_index();
+	void bento2_endian_references_and_status();
+	void bento2_opcode_boundaries();
+	void toolkit_corpus();
+	void riff_embedded_label_uses_file_relative_offsets();
 };
 
 void TestBentoFile::rejects_a_missing_or_garbled_label()
@@ -72,11 +72,12 @@ void TestBentoFile::rejects_a_missing_or_garbled_label()
 	QVERIFY(!b.load(QByteArray(100, 'x'), &why));
 	QVERIFY(why.contains(QStringLiteral("label")));
 
-	// Right magic, wrong byte-order tag.
+	// Bento1 TOC stays little-endian with Macintosh payload encoding.
 	QByteArray l = BentoBuilder::label(0, 0);
 	l[10] = 'M';
 	l[11] = 'M';
-	QVERIFY(!b.load(l, &why));
+	QVERIFY(b.load(l, &why));
+	QVERIFY(b.isBigEndian());
 	QCOMPARE(b.entryCount(), 0);
 }
 
@@ -275,79 +276,53 @@ void TestBentoFile::real_fixtures_load_with_the_expected_shape()
 	QCOMPARE(r3.objectsWithProperty(r3.propertyId("OMFI:MOBJ:MobID")).size(), 1392);
 }
 
-void TestBentoFile::continued_entry_reads_empty_in_load_mode_and_refuses_open()
+void TestBentoFile::continued_values_assemble_or_fail_explicitly()
 {
-	// A "continued" value (TOC flag bit 1) spans several entries; reading
-	// only the first would be a silent truncation. Load mode — the MXF-era
-	// MDB path — keeps the database readable and reads THAT value as empty,
-	// every other value as before (one flag-2 entry must not cost a whole
-	// folder its bin/source/import facts); the tail-first mode refuses the
-	// file, since it cannot assemble the parts.
 	BentoBuilder w;
 	const quint32 o = w.addObject("MOBJ");
-	w.set(o, "OMFI:CPNT:Name", QByteArray("first half\0", 11), 2);
-	w.setU32(o, "OMFI:MOBJ:UsageCode", 7);
-	const quint32 other = w.addObject("MOBJ");
-	w.setString(other, "OMFI:CPNT:Name", "intact");
+	w.set(o, "OMFI:CPNT:Name", "first ", 2);
+	w.set(o, "OMFI:CPNT:Name", "second");
 	const QByteArray raw = w.build();
-
-	BentoFile b;
-	QString why;
-	QVERIFY2(b.load(raw, &why), qPrintable(why));
-	QCOMPARE(b.entryCount(), 8); // two ObjIDs, the continued name, the usage, the intact name, three dictionary entries
-	const int nameProp = b.propertyId("OMFI:CPNT:Name");
-	QVERIFY(nameProp > 0);
-	QVERIFY(b.value(o, nameProp).isEmpty()); // never "first half"
-	QVERIFY(b.bytes(o, nameProp).isEmpty());
-	QCOMPARE(BentoFile::uint(b.value(o, b.propertyId("OMFI:MOBJ:UsageCode"))), 7u);
-	QCOMPARE(BentoFile::string(b.value(other, nameProp)), QStringLiteral("intact"));
-	QCOMPARE(b.objectClass(o), QByteArray("MOBJ"));
-	int continued = 0;
-	for (const BentoFile::Entry &e : b.entries())
-		continued += e.continued ? 1 : 0;
-	QCOMPARE(continued, 1);
-
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	BentoFile opened;
-	why.clear();
-	QVERIFY(!opened.open(writeTemp(tmp, "cont.bento", raw), &why));
-	QVERIFY2(why.contains(QStringLiteral("continued")), qPrintable(why));
-	QCOMPARE(opened.entryCount(), 0);
+	BentoFile loaded, opened;
+	QString why;
+	QVERIFY2(loaded.load(raw, &why), qPrintable(why));
+	QVERIFY2(opened.open(writeTemp(tmp, "continued.bento", raw), &why), qPrintable(why));
+	const int p = loaded.propertyId("OMFI:CPNT:Name");
+	QCOMPARE(loaded.bytes(o, p), QByteArray("first second"));
+	QCOMPARE(opened.value(o, p).toByteArray(), loaded.bytes(o, p));
+	QCOMPARE(loaded.read(o, p, 3).status, BentoFile::ReadStatus::TooLarge);
+
+	BentoBuilder broken;
+	const quint32 bad = broken.addObject("MOBJ");
+	broken.set(bad, "OMFI:MOBJ:PhysicalMedia", BentoBuilder::le32(5), 2);
+	QVERIFY(!loaded.load(broken.build(), &why));
+	QVERIFY(why.contains("continued"));
+	QVERIFY(!opened.open(writeTemp(tmp, "broken.bento", broken.build()), &why));
 }
 
-void TestBentoFile::label_version_gate_is_major_only_and_open_mode_only()
+void TestBentoFile::label_versions_select_real_toc_decoders()
 {
-	// The label's version is two u16s (major, minor). A minor bump keeps the
-	// TOC layout and is accepted everywhere; a major bump is refused by the
-	// tail-first mode only — load() never checked it before and still
-	// reads the file (the arithmetic gates are what it relies on).
 	BentoBuilder w;
 	const quint32 o = w.addObject("MOBJ");
 	w.setString(o, "OMFI:CPNT:Name", "x");
-	QVERIFY(BentoFile().load(w.build({}, 1)));
-
 	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
 	QString why;
-
-	// Major 1, minor 1: u32 65537 writes as 01 00 01 00.
-	const QByteArray minorBump = w.build({}, 0x00010001u);
-	BentoFile m;
-	QVERIFY2(m.load(minorBump, &why), qPrintable(why));
-	QCOMPARE(BentoFile::string(m.value(o, m.propertyId("OMFI:CPNT:Name"))), QStringLiteral("x"));
-	QVERIFY2(m.open(writeTemp(tmp, "v1_1.bento", minorBump), &why), qPrintable(why));
-	QCOMPARE(BentoFile::string(m.bytes(o, m.propertyId("OMFI:CPNT:Name"))), QStringLiteral("x"));
-
-	// Major 2: load() reads it (with a warning), open() refuses it by name.
-	const QByteArray majorBump = w.build({}, 2);
+	for (quint32 version : {2u, 3u, 0x00010001u})
+	{
+		BentoFile b;
+		const QByteArray relabeled = w.build({}, version);
+		QVERIFY(!b.load(relabeled, &why));
+		QVERIFY(!b.open(writeTemp(tmp, "relabeled.bento", relabeled), &why));
+	}
+	Bento2Builder v2;
+	const quint32 clip = v2.addObject("SMOB");
+	v2.set(clip, "OMFI:MOBJ:Name", "real compact TOC");
 	BentoFile b;
-	QVERIFY2(b.load(majorBump, &why), qPrintable(why));
-	QCOMPARE(BentoFile::string(b.value(o, b.propertyId("OMFI:CPNT:Name"))), QStringLiteral("x"));
-	why.clear();
-	QVERIFY(!b.open(writeTemp(tmp, "v2.bento", majorBump), &why));
-	QVERIFY2(why.contains(QStringLiteral("version 2")), qPrintable(why));
-	QCOMPARE(b.entryCount(), 0);
+	QVERIFY2(b.load(v2.build(), &why), qPrintable(why));
+	QCOMPARE(b.containerVersion(), 2);
+	QCOMPARE(b.objectClass(clip), QByteArray("SMOB"));
 }
 
 void TestBentoFile::omf_open_matches_load_on_real_fixtures()
@@ -482,13 +457,13 @@ void TestBentoFile::omf_open_fails_cleanly_on_non_bento_input()
 	QVERIFY(tmp.isValid());
 	QString why;
 
-	// A plain RIFF stub: the label read happens (24 bytes), then nothing.
+	// A malformed RIFF stub: label plus fixed WAVE header, no essence reads.
 	QByteArray riff("RIFF\0\0\0\0WAVEfmt ", 16);
 	riff.resize(1024);
 	BentoFile b;
 	QVERIFY(!b.open(writeTemp(tmp, "stub.wav", riff), &why));
-	QVERIFY2(why.contains(QStringLiteral("label")), qPrintable(why));
-	QCOMPARE(b.bytesRead(), qint64(24));
+	QVERIFY2(why.contains(QStringLiteral("RIFF extent")), qPrintable(why));
+	QCOMPARE(b.bytesRead(), qint64(36));
 	QCOMPARE(b.entryCount(), 0);
 	QVERIFY(b.bytes(1, 0).isEmpty());
 
@@ -546,6 +521,189 @@ void TestBentoFile::omf_mob_index()
 	QByteArray zero = BentoBuilder::le32(1).left(2) + mobIndexRow(coreA, 0, 0);
 	QVERIFY(BentoFile::mobIndex(zero).isEmpty());
 	QVERIFY(BentoFile::mobIndex(QByteArrayView()).isEmpty());
+}
+
+void TestBentoFile::bento2_endian_references_and_status()
+{
+	for (bool big : {false, true})
+	{
+		Bento2Builder w(big);
+		w.set(1, "OMFI:OOBJ:ObjClass", "HEAD", true);
+		w.set(1, "OMFI:HEAD:Version", QByteArray::fromHex("0200"), true);
+		w.set(1, "OMFI:HEAD:ByteOrder", big ? "MM" : "II", true);
+		const quint32 source = w.addObject("SMOB"), descriptor = w.addObject("WAVE");
+		w.set(source, "OMFI:MOBJ:Name", "first", false, true);
+		w.set(source, "OMFI:MOBJ:Name", " part");
+		w.set(source, "OMFI:SMOB:MediaDescription", w.word(7), true, false, 300);
+		w.setRaw(300, 31, w.word(7) + w.word(descriptor));
+		w.set(source, "OMFI:MOBJ:Slots", w.half(2) + w.word(7) + w.word(8), false, false, 301);
+		w.setRaw(301, 31, w.word(7) + w.word(descriptor) + w.word(8) + w.word(source));
+		w.set(descriptor, "OMFI:MDFL:SampleRate", w.word(48000) + w.word(1));
+		w.set(descriptor, "OMFI:Zero", QByteArray(), true);
+		BentoFile loaded, opened;
+		QString why;
+		QTemporaryDir tmp;
+		QVERIFY2(loaded.load(w.build(), &why), qPrintable(why));
+		QVERIFY2(opened.open(writeTemp(tmp, "v2.omf", w.build()), &why), qPrintable(why));
+		for (BentoFile *b : {&loaded, &opened})
+		{
+			QCOMPARE(b->containerIsBigEndian(), big);
+			QCOMPARE(b->isBigEndian(), big);
+			QCOMPARE(b->objectClass(source), QByteArray("SMOB"));
+			QCOMPARE(b->bytes(source, b->propertyId("OMFI:MOBJ:Name")), QByteArray("first part"));
+			BentoFile::ReadStatus status;
+			QCOMPARE(b->ref(source, b->propertyId("OMFI:SMOB:MediaDescription"), &status), descriptor);
+			QCOMPARE(status, BentoFile::ReadStatus::Ok);
+			QCOMPARE(b->refs(source, b->propertyId("OMFI:MOBJ:Slots"), &status), (QVector<quint32>{descriptor, source}));
+			QCOMPARE(status, BentoFile::ReadStatus::Ok);
+			qint32 num = 0, den = 0;
+			QVERIFY(b->rationalValue(b->bytes(descriptor, b->propertyId("OMFI:MDFL:SampleRate")), num, den));
+			QCOMPARE(num, 48000); QCOMPARE(den, 1);
+			QCOMPARE(b->read(descriptor, b->propertyId("OMFI:Zero")).status, BentoFile::ReadStatus::Ok);
+			QCOMPARE(b->read(source, -1).status, BentoFile::ReadStatus::Missing);
+			QCOMPARE(b->read(source, b->propertyId("OMFI:MOBJ:Name"), 2).status, BentoFile::ReadStatus::TooLarge);
+		}
+	}
+	// A valid little-endian container may carry big-endian OMF values.
+	BentoBuilder v1;
+	v1.setImmediate(1, "OMFI:ByteOrder", "MM");
+	v1.setImmediate(1, "OMFI:Number", QByteArray::fromHex("01020304"));
+	BentoFile b;
+	QVERIFY(b.load(v1.build()));
+	QVERIFY(b.isBigEndian());
+	QVERIFY(!b.containerIsBigEndian());
+	QCOMPARE(b.uintValue(b.bytes(1, b.propertyId("OMFI:Number"))), 0x01020304u);
+}
+
+void TestBentoFile::bento2_opcode_boundaries()
+{
+	Bento2Builder w;
+	auto raw = [&](const QByteArray &values, const QByteArray &toc, quint16 blocks = 1)
+	{
+		return values + toc + QByteArray::fromHex("a4434da5486472d7") + w.half(0x0101) + w.half(blocks)
+			+ w.half(2) + w.half(0) + w.word(quint32(values.size())) + w.word(quint32(toc.size()));
+	};
+	const QByteArray prefix = QByteArray(1, char(1)) + w.word(20) + w.word(40) + w.word(0);
+	BentoFile b;
+	QString why;
+	// Eight-byte offset and length opcodes have high-word/low-word pairs.
+	const QByteArray wide = prefix + char(25) + w.word(0) + w.word(0) + w.word(0) + w.word(3);
+	QVERIFY2(b.load(raw("abc", wide), &why), qPrintable(why));
+	QCOMPARE(b.bytes(20, 40), QByteArray("abc"));
+	QCOMPARE(b.read(20, 40, 2).status, BentoFile::ReadStatus::TooLarge);
+	QByteArray outside = prefix + char(7) + w.word(1) + w.word(0) + w.word(1);
+	QVERIFY(b.load(raw("abc", outside), &why));
+	QCOMPARE(b.read(20, 40).status, BentoFile::ReadStatus::Malformed);
+	QVERIFY(b.hasProperty(20, 40));
+	// Headers, generation, reference list and payload must follow grammar.
+	for (const QByteArray &toc : {prefix, prefix + char(4), prefix + char(0), prefix + char(16),
+		prefix + char(13) + "x", prefix + char(4) + w.word(1) + char(4) + w.word(2),
+		prefix + char(6) + w.word(0) + w.word(1)})
+		QVERIFY2(!b.load(raw("abc", toc), &why), qPrintable(toc.toHex()));
+	// A compact opcode payload cannot cross the advertised buffer edge.
+	QByteArray crossing(1010, char(255));
+	crossing += prefix + char(13) + "ABCD";
+	QVERIFY(!b.load(raw({}, crossing), &why));
+	// EndOfBufr skips unused block bytes and state survives the boundary.
+	QByteArray padded = prefix + char(13) + "ABCD" + char(24);
+	padded.resize(1024);
+	padded += char(2) + w.word(41) + w.word(0) + char(13) + "EFGH";
+	QVERIFY2(b.load(raw({}, padded), &why), qPrintable(why));
+	QCOMPARE(b.bytes(20, 40), QByteArray("ABCD"));
+	QCOMPARE(b.bytes(20, 41), QByteArray("EFGH"));
+	// A reference key missing from its explicit map is malformed, not null.
+	Bento2Builder bad;
+	const quint32 obj = bad.addObject("SMOB");
+	bad.set(obj, "OMFI:Ref", bad.word(9), true, false, 300);
+	bad.setRaw(300, 31, bad.word(8) + bad.word(obj));
+	QVERIFY(b.load(bad.build()));
+	BentoFile::ReadStatus status;
+	QCOMPARE(b.ref(obj, b.propertyId("OMFI:Ref"), &status), 0u);
+	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
+}
+
+void TestBentoFile::riff_embedded_label_uses_file_relative_offsets()
+{
+	BentoBuilder w;
+	const quint32 obj = w.addObject("MOBJ");
+	w.setString(obj, "OMFI:CPNT:Name", "wrapped");
+	QByteArray original = w.build();
+	if (original.size() & 1)
+	{
+		w.setString(obj, "OMFI:Padding", "xx");
+		original = w.build();
+	}
+	// Add an initial alignment byte if needed and adjust every absolute
+	// offset by that byte and by the surrounding RIFF prefix.
+	auto relocate = [&](quint32 base)
+	{
+		QByteArray raw = original;
+		const quint32 oldToc = qFromLittleEndian<quint32>(raw.constData() + raw.size() - 8);
+		const quint32 extra = raw.size() & 1;
+		for (qsizetype pos = oldToc; pos < raw.size() - 24; pos += 24)
+			if (!(qFromLittleEndian<quint16>(raw.constData() + pos + 22) & 1))
+			{
+				const quint32 old = qFromLittleEndian<quint32>(raw.constData() + pos + 12);
+				qToLittleEndian(old + base + extra, raw.data() + pos + 12);
+			}
+		qToLittleEndian(oldToc + base + extra, raw.data() + raw.size() - 8);
+		if (extra) raw.prepend('\0');
+		return raw;
+	};
+	for (bool rf64 : {false, true})
+	{
+		QByteArray prefix;
+		if (rf64)
+		{
+			prefix = QByteArray("RF64") + BentoBuilder::le32(0xffffffffu) + "WAVEds64" + BentoBuilder::le32(28);
+			prefix += QByteArray(28, '\0');
+			qToLittleEndian<quint64>(4, prefix.data() + 28);
+			prefix += QByteArray("data") + BentoBuilder::le32(0xffffffffu) + "abcd";
+		}
+		else prefix = QByteArray("RIFF") + BentoBuilder::le32(0) + "WAVEJUNK" + BentoBuilder::le32(3) + QByteArray("abc\0", 4);
+		const QByteArray inner = relocate(quint32(prefix.size() + 8));
+		QByteArray file = prefix + "omfi" + BentoBuilder::le32(quint32(inner.size())) + inner + "JUNK" + BentoBuilder::le32(2) + "zz";
+		if (rf64) qToLittleEndian<quint64>(quint64(file.size() - 8), file.data() + 20);
+		else qToLittleEndian<quint32>(quint32(file.size() - 8), file.data() + 4);
+		BentoFile loaded, opened;
+		QString why;
+		QTemporaryDir tmp;
+		QVERIFY2(loaded.load(file, &why), qPrintable(why));
+		QVERIFY2(opened.open(writeTemp(tmp, "wrapped.wav", file), &why), qPrintable(why));
+		const int prop = loaded.propertyId("OMFI:CPNT:Name");
+		QCOMPARE(BentoFile::string(loaded.bytes(obj, prop)), QStringLiteral("wrapped"));
+		QCOMPARE(opened.bytes(obj, prop), loaded.bytes(obj, prop));
+		QByteArray malformed = file;
+		qToLittleEndian<quint32>(0xffffff00u, malformed.data() + prefix.size() + 4);
+		QVERIFY(!loaded.load(malformed, &why));
+		QVERIFY(!opened.open(writeTemp(tmp, "malformed.wav", malformed), &why));
+	}
+}
+
+void TestBentoFile::toolkit_corpus()
+{
+	// The toolkit's license does not grant fixture redistribution. Point to
+	// a separately obtained public LWKS-Software/omfkt22 checkout to run it.
+	const QString root = qEnvironmentVariable("MEDIAMUSTER_OMFKT22");
+	if (root.isEmpty()) QSKIP("Set MEDIAMUSTER_OMFKT22 to exercise genuine public toolkit files");
+	const QDir corpus(QDir(root).filePath(QStringLiteral("NTProjects_VS10")));
+	const QStringList files = corpus.entryList({QStringLiteral("*.omf")}, QDir::Files);
+	QVERIFY(files.size() >= 7);
+	for (const QString &name : files)
+	{
+		const QString path = corpus.filePath(name);
+		BentoFile loaded, opened;
+		QString why;
+		QVERIFY2(loaded.load(readFile(path), &why), qPrintable(path + ": " + why));
+		QVERIFY2(opened.open(path, &why), qPrintable(path + ": " + why));
+		QCOMPARE(loaded.objectClass(1), QByteArray("HEAD"));
+		QCOMPARE(opened.entryCount(), loaded.entryCount());
+		for (const auto &e : loaded.entries())
+		{
+			QCOMPARE(opened.bytes(e.object, int(e.property)), loaded.bytes(e.object, int(e.property)));
+			QCOMPARE(opened.objectClass(e.object), loaded.objectClass(e.object));
+		}
+	}
 }
 
 QTEST_APPLESS_MAIN(TestBentoFile)

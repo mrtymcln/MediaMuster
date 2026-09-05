@@ -10,6 +10,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QPair>
+#include <QSet>
 #include <QString>
 #include <QVector>
 #include <atomic>
@@ -46,7 +47,7 @@ struct LogMsg
 ///   Pass 2 — headers. Only for the rows pass 1 could not cover — no PMR
 ///            entry (Interplay keeps records centrally; a file MediaMuster
 ///            just copied in), an incomplete MDB record, a file changed since
-///            Avid indexed it, an unreadable database, or the Debug toggle —
+///            Avid indexed it, or an unreadable database —
 ///            read the MXF header as before (OMF-era: the Bento tail via
 ///            OmfParser), then try the MDB once more by the header's own
 ///            UMID to recover name/bin/source.
@@ -76,12 +77,6 @@ public:
 		/// Folders the user added by hand: scanned by scanAddedFolder, which
 		/// keeps the shape cases and the two-level search.
 		QStringList manualPaths;
-		/// Debug ▸ Force header scan. The databases are still read — they
-		/// supply project, MOB ids, clip name, bin and source exactly as
-		/// before — but no row takes its TECHNICAL facts from them, so every
-		/// .mxf goes through the header pass: the pre-database-first
-		/// behaviour, and the tool for comparing the two.
-		bool forceHeaderScan = false;
 	};
 
 	explicit MediaScanner(QObject *parent = nullptr);
@@ -279,10 +274,12 @@ private:
 
 	/// Each folder's clip records (MdbDatabase::masters), cached by pass 1
 	/// for pass 2's UMID re-join and dropped in concludeScan. Keyed through
-	/// PathKey::normalise so pass 1 (QDir::filePath) and pass 2
-	/// (QFileInfo::absolutePath) can't drift on the same folder identity.
+	/// a canonical, case-preserving path so distinct directories on a
+	/// case-sensitive share cannot borrow each other's clip records.
 	/// Written under m_mdbMapsMutex by pool threads during pass 1; read
 	/// without it in pass 2, when no writer exists.
 	QMutex m_mdbMapsMutex;
 	QHash<QString, QHash<QString, MdbMasterMob>> m_mdbMapsByFolder;
+	/// Guarded by the same mutex; overlapping scan roots enumerate a folder once.
+	QSet<QString> m_seenFolders;
 };

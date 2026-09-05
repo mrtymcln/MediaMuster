@@ -13,18 +13,17 @@
 
 #include <QByteArrayView>
 #include <QString>
+#include <QtEndian>
 #include <array>
 #include <cstring>
 
-/// Every consumer in the app keys on the 32-byte canonical MobId hex
-/// (mediafilterproxy, Select Relatives, the MDB join, the journal). An
-/// OMF-era mob is only 8 bytes of real identity — bytes [4:12] of the
-/// 12-byte omfi:UID, and exactly the 8 bytes the v2 PMR stores — so
-/// something has to widen it. Avid already chose how: its own PMR Unicode
+/// Avid's prefix-42 OMF IDs use bytes [4:12] of the 12-byte omfi:UID
+/// in the legacy PMR. Avid already chose how to widen those IDs: its PMR Unicode
 /// set and its .avb bins wrap those 8 bytes in a constant 16-byte prefix
 /// and 8-byte suffix. Reusing that wrap, byte for byte, means an OMF row's
 /// ID is the same string Avid writes into its bins, and nothing downstream
-/// has to learn a second form.
+/// has to learn a second form for Avid media. General OMF IDs preserve
+/// all three words in an explicit omf: namespace, without claiming a PMR join.
 ///
 /// Byte-verified against tests/fixtures/omf/mc2026_audio/msmFMID.pmr and
 /// avid_supporting/msmFMID.pmr (every Unicode-set MOB is kPrefix + the
@@ -81,15 +80,30 @@ namespace OmfUid
 		return MobId::format(wrap8(eight).data());
 	}
 
-	/// One formatter for whatever width a mob arrives in: a 12-byte
-	/// omfi:UID is wrapped from its core, a 32-byte UMID (MC 2026 writes
+	/// One formatter for whatever width a mob arrives in: a prefix-42
+	/// omfi:UID is wrapped from its core, other 12-byte UIDs retain all words,
+	/// and a 32-byte UMID (MC 2026 writes
 	/// one on the physical mob of the same file) formats unchanged, and any
 	/// other width is empty so a caller can skip it rather than guess.
 	inline QString canonicalHex(QByteArrayView uid)
 	{
 		const auto *raw = reinterpret_cast<const unsigned char *>(uid.data());
 		if (uid.size() == kUidSize)
-			return canonicalFromPmr8(raw + kUidCoreOffset);
+		{
+			bool nullUid = true;
+			for (int i = 0; i < kUidSize; ++i)
+				nullUid &= raw[i] == 0;
+			if (nullUid)
+				return {}; // OMF's 0-0-0 original-source sentinel has no mob identity
+			// Only Avid's prefix-42 IDs have the measured 8-byte PMR bridge.
+			// Other OMF producers may use every word of the 12-byte UID.
+			// Keep a separate full-UID namespace rather than collapsing distinct
+			// sources or inventing an Avid UMID. Input words are little-endian;
+			// the file reader normalizes big-endian OMF before calling this.
+			if (qFromLittleEndian<quint32>(raw) == 42)
+				return canonicalFromPmr8(raw + kUidCoreOffset);
+			return QStringLiteral("omf:") + QString::fromLatin1(uid.toByteArray().toHex());
+		}
 		if (uid.size() == MobId::kRawSize)
 			return MobId::format(raw);
 		return {};

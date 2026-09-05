@@ -15,6 +15,10 @@ private slots:
 	void corpus_render_names_resolve();
 	void user_typed_title_is_not_a_standard_effect();
 	void parse_splits_on_the_last_comma_and_strips_the_instance();
+	void comma_instances_data();
+	void comma_instances();
+	void invalid_suffixes_stay_visible_data();
+	void invalid_suffixes_stay_visible();
 	void mangle_turns_spaces_and_colons_into_underscores();
 	void ambiguous_names_report_every_category();
 	void localised_spellings_resolve_to_the_english_name();
@@ -95,6 +99,110 @@ void TestAvidEffects::parse_splits_on_the_last_comma_and_strips_the_instance()
 	h = AvidEffects::lookup(QString());
 	QVERIFY(!h.matched);
 	QVERIFY(h.name.isEmpty());
+}
+
+void TestAvidEffects::comma_instances_data()
+{
+	QTest::addColumn<QString>("clip");
+	QTest::addColumn<QString>("name");
+	QTest::addColumn<QString>("category");
+	QTest::addColumn<QString>("sequence");
+	QTest::addColumn<int>("instance");
+	QTest::addColumn<bool>("matched");
+
+	// Actual 2026-09-05 export rows 235, 236 and 245. Their Effect column
+	// used to show 4.new.01/9.new.01/79.new.01, and Sequence included the
+	// real effect token. Audio_Dissolve is intentionally not a catalogue alias.
+	QTest::newRow("real-title")
+		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Title,4.new.01")
+		<< QStringLiteral("Title") << QStringLiteral("Title")
+		<< QStringLiteral("HAA_1730_8647_SUBMASTER") << 4 << true;
+	QTest::newRow("real-resize")
+		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Resize,9.new.01")
+		<< QStringLiteral("Resize") << QStringLiteral("Image")
+		<< QStringLiteral("HAA_1730_8647_SUBMASTER") << 9 << true;
+	QTest::newRow("real-audio-dissolve-unknown")
+		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Audio_Dissolve,79.new.01")
+		<< QStringLiteral("Audio_Dissolve") << QStringLiteral("Not a standard Avid effect")
+		<< QStringLiteral("HAA_1730_8647_SUBMASTER") << 79 << false;
+	QTest::newRow("sequence-commas")
+		<< QStringLiteral("Act_1,_Scene_2,Title,12")
+		<< QStringLiteral("Title") << QStringLiteral("Title")
+		<< QStringLiteral("Act_1,_Scene_2") << 12 << true;
+	QTest::newRow("repeated-rename-suffixes")
+		<< QStringLiteral("Act_1,_Scene_2,Resize,12.new.01.new.002")
+		<< QStringLiteral("Resize") << QStringLiteral("Image")
+		<< QStringLiteral("Act_1,_Scene_2") << 12 << true;
+	QTest::newRow("zero-instance")
+		<< QStringLiteral("Seq,Title,0")
+		<< QStringLiteral("Title") << QStringLiteral("Title")
+		<< QStringLiteral("Seq") << 0 << true;
+	QTest::newRow("largest-instance")
+		<< QStringLiteral("Seq,Title,2147483647.new.2147483647")
+		<< QStringLiteral("Title") << QStringLiteral("Title")
+		<< QStringLiteral("Seq") << 2147483647 << true;
+	QTest::newRow("plus-instance-with-sequence-commas")
+		<< QStringLiteral("Act_1,_Scene_2,Resize+9")
+		<< QStringLiteral("Resize") << QStringLiteral("Image")
+		<< QStringLiteral("Act_1,_Scene_2") << 9 << true;
+}
+
+void TestAvidEffects::comma_instances()
+{
+	QFETCH(QString, clip);
+	QFETCH(QString, name);
+	QFETCH(QString, category);
+	QFETCH(QString, sequence);
+	QFETCH(int, instance);
+	QFETCH(bool, matched);
+	const AvidEffects::Hit hit = AvidEffects::lookup(clip);
+	QCOMPARE(hit.name, name);
+	QCOMPARE(hit.category, category);
+	QCOMPARE(hit.sequence, sequence);
+	QCOMPARE(hit.instance, instance);
+	QCOMPARE(hit.matched, matched);
+}
+
+void TestAvidEffects::invalid_suffixes_stay_visible_data()
+{
+	QTest::addColumn<QString>("clip");
+	QTest::addColumn<QString>("name");
+	QTest::addColumn<QString>("sequence");
+	for (const QString &suffix : {
+			 QStringLiteral("4.new."), QStringLiteral("4.new.one"),
+			 QStringLiteral("4.new.01.extra"), QStringLiteral("4.new.01.02"),
+			 QStringLiteral("4.NEW.01"), QStringLiteral("-4"), QStringLiteral("+4"),
+			 QStringLiteral("4.0"), QStringLiteral("4 "), QStringLiteral("4\n"),
+			 QStringLiteral("2147483648"), QStringLiteral("4.new.2147483648"),
+			 QStringLiteral("999999999999999999999999999999999999")})
+	{
+		QTest::newRow(qPrintable(QStringLiteral("comma-") + suffix))
+			<< QStringLiteral("Act_1,_Scene_2,Title,") + suffix
+			<< suffix << QStringLiteral("Act_1,_Scene_2,Title");
+	}
+	QTest::newRow("missing-effect")
+		<< QStringLiteral("Seq,,4") << QStringLiteral("4") << QStringLiteral("Seq,");
+	QTest::newRow("only-one-comma")
+		<< QStringLiteral("Seq,4.new.01") << QStringLiteral("4.new.01") << QStringLiteral("Seq");
+	QTest::newRow("plus-overflow")
+		<< QStringLiteral("Act_1,_Scene_2,Dissolve+2147483648")
+		<< QStringLiteral("Dissolve+2147483648") << QStringLiteral("Act_1,_Scene_2");
+	QTest::newRow("plus-malformed")
+		<< QStringLiteral("Act_1,_Scene_2,Dissolve+one")
+		<< QStringLiteral("Dissolve+one") << QStringLiteral("Act_1,_Scene_2");
+}
+
+void TestAvidEffects::invalid_suffixes_stay_visible()
+{
+	QFETCH(QString, clip);
+	QFETCH(QString, name);
+	QFETCH(QString, sequence);
+	const AvidEffects::Hit hit = AvidEffects::lookup(clip);
+	QCOMPARE(hit.name, name);
+	QCOMPARE(hit.sequence, sequence);
+	QCOMPARE(hit.instance, 0);
+	QVERIFY(!hit.matched);
+	QCOMPARE(hit.category, QStringLiteral("Not a standard Avid effect"));
 }
 
 void TestAvidEffects::mangle_turns_spaces_and_colons_into_underscores()

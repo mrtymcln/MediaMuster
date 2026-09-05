@@ -11,6 +11,7 @@
 #include "omfuid.h"
 #include "pmrparser.h"
 #include "testbento.h"
+#include "testomf.h"
 #include "testutil.h"
 
 #include <QByteArray>
@@ -56,7 +57,158 @@ private slots:
 	void omf_non_bento_input_fails_cleanly();
 	void omf_container_without_a_media_descriptor_is_not_valid();
 	void omf_finalise_parity_with_a_header();
+	void sdii_omf1_and_omf2_semantics();
+	void ambiguous_master_is_not_guessed();
+	void unreadable_descriptor_is_not_media();
+	void multiple_embedded_files_are_not_collapsed();
+	void avid_legacy_version_alias_data();
+	void avid_legacy_version_alias();
+	void avid_legacy_version_excludes_compositions();
 };
+
+void TestOmfParser::avid_legacy_version_alias_data()
+{
+	QTest::addColumn<bool>("compact");
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<bool>("modernHead");
+	QTest::addColumn<QByteArray>("version");
+	QTest::addColumn<int>("expected");
+	for (bool compact : {false, true})
+		for (bool big : {false, true})
+		{
+			const QByteArray suffix = QByteArray(compact ? "-bento2" : "-bento1") + (big ? "-MM" : "-II");
+			QTest::newRow(("avid-0001" + suffix).constData())
+				<< compact << big << false << QByteArray::fromHex("0001") << int(OmfObjects::Revision::Omf1);
+			QTest::newRow(("standard-0100" + suffix).constData())
+				<< compact << big << false << QByteArray::fromHex("0100") << int(OmfObjects::Revision::Omf1);
+			QTest::newRow(("standard-0200" + suffix).constData())
+				<< compact << big << true << QByteArray::fromHex("0200") << int(OmfObjects::Revision::Omf2);
+		}
+	for (const QByteArray &raw : {QByteArray(), QByteArray::fromHex("00"), QByteArray::fromHex("0000"),
+		QByteArray::fromHex("0002"), QByteArray::fromHex("0300"), QByteArray::fromHex("000100")})
+		QTest::newRow(("unknown-" + raw.toHex()).constData())
+			<< false << false << false << raw << int(OmfObjects::Revision::Unknown);
+	QTest::newRow("alias-does-not-apply-to-omf2-head")
+		<< true << false << true << QByteArray::fromHex("0001") << int(OmfObjects::Revision::Unknown);
+}
+
+void TestOmfParser::avid_legacy_version_alias()
+{
+	QFETCH(bool, compact);
+	QFETCH(bool, big);
+	QFETCH(bool, modernHead);
+	QFETCH(QByteArray, version);
+	QFETCH(int, expected);
+	TestOmf::Writer w(compact, big);
+	w.setImmediate(1, modernHead ? "OMFI:OOBJ:ObjClass" : "OMFI:ObjID", QByteArray("HEAD", 4));
+	w.setImmediate(1, modernHead ? "OMFI:HEAD:Version" : "OMFI:Version", version);
+	w.setImmediate(1, modernHead ? "OMFI:HEAD:ByteOrder" : "OMFI:ByteOrder", QByteArray(big ? "MM" : "II", 2));
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const QString path = temp.filePath("revision.omf");
+	QVERIFY(tryWriteFile(path, w.build()));
+	BentoFile b;
+	QVERIFY(b.open(path));
+	QCOMPARE(int(OmfObjects::revision(b)), expected);
+	QCOMPARE(b.containerVersion(), compact ? 2 : 1);
+	QCOMPARE(b.isBigEndian(), big);
+}
+
+void TestOmfParser::avid_legacy_version_excludes_compositions()
+{
+	BentoBuilder w;
+	w.setImmediate(1, "OMFI:ObjID", QByteArray("HEAD", 4));
+	w.setImmediate(1, "OMFI:Version", QByteArray::fromHex("0001"));
+	for (quint32 usage : {0u, 1u, 7u, 99u})
+	{
+		const quint32 mob = w.addObject("MOBJ");
+		w.set(mob, "OMFI:MOBJ:MobID", TestOmf::uid(usage + 1));
+		w.setU32(mob, "OMFI:MOBJ:UsageCode", usage);
+	}
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const QString path = temp.filePath("roles.mdb");
+	QVERIFY(tryWriteFile(path, w.build()));
+	const MdbDatabase db = MdbParser::load(path);
+	QCOMPARE(db.revision, OmfObjects::Revision::Omf1);
+	QCOMPARE(db.masters.size(), 2);
+	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2)))); // usage1 precompute
+	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(8)))); // usage7 master
+	QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(1)))); // usage0 composition
+	QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(100))));
+}
+
+void TestOmfParser::sdii_omf1_and_omf2_semantics()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	for (int variant : {0, 1, 2, 3})
+	{
+		const bool omf2 = variant != 0, compact = variant >= 2, big = variant == 3;
+		const QString path = temp.filePath(omf2 ? "sdii-2.omf" : "sdii-1.omf");
+		QFile f(path);
+		QVERIFY(f.open(QIODevice::WriteOnly));
+		f.write(TestOmf::sdii(omf2, false, false, compact, big));
+		f.close();
+		const OmfMetadata m = OmfParser::parseHeader(path);
+		QCOMPARE(m.revision, omf2 ? OmfObjects::Revision::Omf2 : OmfObjects::Revision::Omf1);
+		QVERIFY(m.essence.valid);
+		QVERIFY(m.essence.isAudio);
+		QCOMPARE(m.essence.codec, QStringLiteral("SDII"));
+		QCOMPARE(m.essence.sampleRate, 48000);
+		QCOMPARE(m.essence.channels, 2);
+		QCOMPARE(m.essence.bitDepth, QStringLiteral("24-bit"));
+		QCOMPARE(m.essence.durationFrames, qint64(50));
+		QCOMPARE(m.essence.clipName, QStringLiteral("SDII clip"));
+		QCOMPARE(m.essence.projectName, QStringLiteral("SDII project"));
+		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.sd2"));
+		QCOMPARE(m.essence.classificationKnown, !omf2); // no Avid UsageCode in standard OMF2
+		QCOMPARE(m.essence.umid, OmfUid::canonicalHex(TestOmf::uid(1)));
+		QCOMPARE(m.fileMobId, OmfUid::canonicalHex(TestOmf::uid(2)));
+		QCOMPARE(m.startTimecode, omf2 ? qint64(0x10000002aULL) : qint64(90000));
+		QCOMPARE(m.timecodeFps, 25);
+	}
+}
+
+void TestOmfParser::ambiguous_master_is_not_guessed()
+{
+	QTemporaryDir temp;
+	const QString path = temp.filePath("ambiguous.omf");
+	QFile f(path);
+	QVERIFY(f.open(QIODevice::WriteOnly));
+	f.write(TestOmf::sdii(true, true));
+	f.close();
+	const auto m = OmfParser::parseHeader(path);
+	QVERIFY(m.essence.valid);
+	QVERIFY(m.essence.umid.isEmpty());
+	QVERIFY(m.essence.clipName.isEmpty());
+}
+
+void TestOmfParser::unreadable_descriptor_is_not_media()
+{
+	QTemporaryDir temp;
+	const QString path = temp.filePath("bad.omf");
+	QFile f(path);
+	QVERIFY(f.open(QIODevice::WriteOnly));
+	f.write(TestOmf::sdii(true, false, true));
+	f.close();
+	QVERIFY(!OmfParser::parseHeader(path).essence.valid);
+}
+
+void TestOmfParser::multiple_embedded_files_are_not_collapsed()
+{
+	BentoBuilder w;
+	for (quint32 id : {1u, 2u})
+	{
+		const auto mob = w.addObject("MOBJ"), desc = w.addObject("SD2D");
+		w.set(mob, "OMFI:MOBJ:MobID", TestOmf::uid(id));
+		w.setHandle(mob, "OMFI:MOBJ:PhysicalMedia", desc);
+		w.setRational(desc, "OMFI:MDFL:SampleRate", 48000, 1);
+	}
+	QTemporaryDir temp;
+	const QString path = writeFileIn(temp.path(), QStringLiteral("multiple.omf"), w.build());
+	QVERIFY(!OmfParser::parseHeader(path).essence.valid);
+}
 
 // MARK: - Every one of the 80 slates
 
@@ -71,6 +223,7 @@ void TestOmfParser::omf_every_slate_parses_with_a_named_codec()
 		const char *fn = fnBytes.constData();
 		qint64 read = 0;
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(name), &read);
+		QCOMPARE(m.revision, OmfObjects::Revision::Omf1);
 		const MxfMetadata &e = m.essence;
 		QVERIFY2(e.valid, fn);
 		QVERIFY2(!e.isAudio, fn);
@@ -239,7 +392,7 @@ void TestOmfParser::omf_video_facts_by_resolution_id()
 		{"BLACK_1920x540x2_AVHD_145.omf", "Avid DNx SQ (DNxHD 145)", "1920x1080", "29.97", 1},	// 1242 at 29.97
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ (DNxHD 220)", "1920x1080", "29.97", 1},	// 1243 at 29.97
 		{"BLACK_1440x540x2_DNxHD.omf", "Avid DNx TR", "1920x1080", "29.97", 1},					// 1244 (the 0x0D spelling)
-		{"BLACK_1280x720x1_DNxHD_145.omf", "Avid DNx SQ", "1280x720", "59.94", 0}, // 1252: no 720p bitrate row at 59.94
+		{"BLACK_1280x720x1_DNxHD_145.omf", "Avid DNx SQ (DNxHD 145)", "1280x720", "59.94", 0}, // 2012 DNxHD whitepaper: 720p SQ at 59.94
 		// DV 100 (UNVERIFIED names; already qualified, so no suffix)
 		{"BLACK_1920x540x2_DV100_115.omf", "DV 100 1080i", "1920x1080", "25", 1}, // 2500 DV/C, 1920x540 layout 1
 		{"BLACK_1280x720x1_DV100_90.omf", "DV 100 720p", "1280x720", "59.94", 0}, // 2502 DV/C, 1280x720 layout 0
@@ -342,6 +495,7 @@ void TestOmfParser::omf_audio_files_describe_the_tones()
 	{
 		qint64 read = 0;
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(QLatin1String(pin.file)), &read);
+		QCOMPARE(m.revision, OmfObjects::Revision::Omf1);
 		const MxfMetadata &e = m.essence;
 		QVERIFY2(e.valid, pin.file);
 		QVERIFY2(e.isAudio, pin.file);
@@ -384,10 +538,15 @@ void TestOmfParser::omf_non_bento_input_fails_cleanly()
 	QVERIFY(tmp.isValid());
 
 	// A plain RIFF stub — what a non-Avid .wav in an OMF folder looks like.
-	// One 24-byte label read decides it; nothing else is touched.
+	// The reader checks a possible RIFF omfi chunk as well as the tail.
+	// It must skip the data payload instead of reading the audio samples.
 	QByteArray riff("RIFF");
 	riff.append(BentoBuilder::le32(1024 - 8));
 	riff.append("WAVEfmt ");
+	riff.append(BentoBuilder::le32(16));
+	riff.append(QByteArray(16, '\0'));
+	riff.append("data");
+	riff.append(BentoBuilder::le32(1024 - 44));
 	riff.append(QByteArray(1024 - riff.size(), '\0'));
 	const QString stub = writeFileIn(tmp.path(), QStringLiteral("plain.wav"), riff);
 	QVERIFY(!stub.isEmpty());
@@ -396,7 +555,7 @@ void TestOmfParser::omf_non_bento_input_fails_cleanly()
 	QVERIFY(!m.essence.valid);
 	QVERIFY(m.fileMobId.isEmpty());
 	QVERIFY(m.essence.umid.isEmpty());
-	QCOMPARE(read, qint64(24));
+	QVERIFY(read > 0 && read < 128);
 
 	// A missing file reads nothing at all.
 	read = -1;

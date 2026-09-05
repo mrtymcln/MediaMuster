@@ -42,6 +42,7 @@ private slots:
 	// must be impossible. Labels asserted as raw literals on purpose —
 	// the rename tripwire.
 	void status_words_come_from_one_table();
+	void unknown_classification_displays_without_guessing();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -330,6 +331,37 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	const QString tip = m.index(0, col).data(Qt::ToolTipRole).toString();
 	QVERIFY(tip.contains(MediaFile::noProjectWhy()));
 	QVERIFY(tip.contains(MediaFile::dbStatusText(DbStatus::NoReference).why));
+}
+
+void TestMediaTableModel::unknown_classification_displays_without_guessing()
+{
+	// Known numeric values are stable for existing consumers.
+	static_assert(int(MediaFile::Kind::Video) == 0 && int(MediaFile::Kind::Audio) == 1);
+	static_assert(int(MediaFile::Type::Media) == 0 && int(MediaFile::Type::Precompute) == 1);
+	MediaFile unknown;
+	QCOMPARE(unknown.kind, MediaFile::Kind::Unknown);
+	QCOMPARE(unknown.type, MediaFile::Type::Unknown);
+	QVERIFY(!unknown.needsHeaderRead);
+	QVERIFY(!unknown.databaseMetadataCurrent);
+
+	MediaFile video;
+	video.kind = MediaFile::Kind::Video;
+	video.type = MediaFile::Type::Media;
+	MediaFile audio;
+	audio.kind = MediaFile::Kind::Audio;
+	audio.type = MediaFile::Type::Precompute;
+	MediaTableModel model;
+	model.setMediaFiles({unknown, video, audio});
+	const int kind = int(MediaTableModel::Column::Kind);
+	const int type = int(MediaTableModel::Column::Type);
+	QCOMPARE(model.index(0, kind).data().toString(), QStringLiteral("\u2014"));
+	QCOMPARE(model.index(0, type).data().toString(), QStringLiteral("\u2014"));
+	QVERIFY(!model.index(0, kind).data(Qt::ToolTipRole).toString().isEmpty());
+	QVERIFY(!model.index(0, type).data(Qt::ToolTipRole).toString().isEmpty());
+	QCOMPARE(model.index(1, kind).data().toString(), QStringLiteral("Video"));
+	QCOMPARE(model.index(1, type).data().toString(), QStringLiteral("Media"));
+	QCOMPARE(model.index(2, kind).data().toString(), QStringLiteral("Audio"));
+	QCOMPARE(model.index(2, type).data().toString(), QStringLiteral("Precompute"));
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

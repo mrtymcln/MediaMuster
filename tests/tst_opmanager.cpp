@@ -13,6 +13,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <memory>
+
 // OpManager — the engine v2 facade, driven through its real signals on
 // its real worker thread. This suite owns the MID-FLIGHT behaviours the
 // synchronous runner tests can't reach: reading the journal while a copy
@@ -54,6 +56,7 @@ private slots:
 	void copy_replace_journals_parked_path_while_still_in_flight();
 	void copy_replace_midCopyFailure_restores_original();
 	void copy_replace_cancel_restores_and_is_not_counted_failed();
+	void destruction_during_copy_waits_for_rollback();
 	void copy_replace_strandedRestore_keepsDirtyJournal();
 	void move_copyLeg_verifyOff_tamperedDestination_keepsSource();
 	void delete_osTrashProbe_leavesNoResidue();
@@ -340,6 +343,46 @@ void TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed()
 	QVERIFY2(QDir(dest).entryList({"*__copyreplace*"}, QDir::Files).isEmpty(),
 			 "the parked temp must not be left behind");
 	QVERIFY2(QFile::exists(src), "cancel must leave the source untouched");
+}
+
+void TestOpManager::destruction_during_copy_waits_for_rollback()
+{
+	// Closing the owner while a Replace copy is in flight must wait for
+	// rollback and journal completion, even without another event-loop turn.
+	qputenv("MEDIAMUSTER_DISABLE_CLONEFILE", "1");
+	qputenv("MEDIAMUSTER_DISABLE_COPYFILEEX", "1");
+	TestPause::setEnabled(true);
+
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString src = tmp.path() + "/src/clip.mxf";
+	const QString dest = tmp.path() + "/dest";
+	const QByteArray sourceBytes(8 * 1024 * 1024, 'N');
+	writeFile(src, sourceBytes);
+	writeFile(dest + "/clip.mxf", "OLD");
+
+	MediaFile mf;
+	mf.filePath = src;
+	mf.fileName = "clip.mxf";
+	mf.sizeBytes = sourceBytes.size();
+	auto mgr = std::make_unique<OpManager>();
+	const quint64 ticks = OpCopier::loopTicks().load();
+	dispatch(*mgr, OpKind::Copy, {mf}, dest, false,
+			 {{src, ConflictPolicy::Replace}});
+	QTRY_VERIFY_WITH_TIMEOUT(OpCopier::loopTicks().load() > ticks, 20000);
+	QVERIFY(!QDir(dest).entryList({"*__copyreplace*"}, QDir::Files).isEmpty());
+
+	mgr.reset();
+
+	QCOMPARE(readFile(dest + "/clip.mxf"), QByteArray("OLD"));
+	QCOMPARE(readFile(src), sourceBytes);
+	QVERIFY(QDir(dest).entryList({"*__copyreplace*"}, QDir::Files).isEmpty());
+	const auto records = OpJournal::scan(m_journalDir.path());
+	QCOMPARE(records.size(), 1);
+	QVERIFY(records.first().complete);
+	QVERIFY(records.first().cancelled);
+	QVERIFY(!records.first().dirty);
+	QCOMPARE(records.first().doneCount(), 0);
 }
 
 void TestOpManager::copy_replace_strandedRestore_keepsDirtyJournal()

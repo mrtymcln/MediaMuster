@@ -758,22 +758,6 @@ void MainWindow::buildDebugMenu()
 				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec as Raw Hex enabled" : "Codec as Raw Hex disabled");
 			});
 
-	// Database-first is the default: a row the folder's msmFMID.pmr +
-	// msmMMOB.mdb fully describe never has its header read. This forces the
-	// pre-database-first behaviour — every .mxf header read — which is also
-	// how the two are compared (scan, export, toggle, rescan, export, diff).
-	auto *forceHeaderAct = debugMenu->addAction(tr("&Force header scan"));
-	forceHeaderAct->setCheckable(true);
-	forceHeaderAct->setChecked(m_forceHeaderScan);
-	connect(forceHeaderAct, &QAction::triggered, this,
-			[this](bool on)
-			{
-				m_forceHeaderScan = on;
-				addLog(QtInfoMsg, QStringLiteral("app"),
-					   on ? "Force header scan enabled — every MXF header is read on the next scan"
-						  : "Force header scan disabled — the databases describe rows on the next scan");
-			});
-
 	// Whatever style main.cpp installed at startup is the one to restore.
 	// Read it here, before the toggle below can change it — main.cpp stays
 	// the single authority on the platform's native style.
@@ -1442,7 +1426,6 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 		else
 			opts.manualPaths.append(path);
 	}
-	opts.forceHeaderScan = m_forceHeaderScan;
 
 	setBusy(true);
 	progressDialog()->begin();
@@ -2139,21 +2122,23 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 		s.hasProject = !f.hasNoProject();
 		if (f.kind == MediaFile::Kind::Video)
 			s.videoCount++;
-		else
+		else if (f.kind == MediaFile::Kind::Audio)
 			s.audioCount++;
+		else
+			s.unknownKindCount++;
 		s.totalBytes += f.sizeBytes;
 		if (!f.originalBin.isEmpty() && !s.bins.contains(f.originalBin))
 			s.bins.append(f.originalBin);
 	}
 	auto *dlg = new QDialog(this);
 	dlg->setWindowTitle(tr("Project Summary"));
-	dlg->resize(600, 380);
+	dlg->resize(680, 380);
 	dlg->setAttribute(Qt::WA_DeleteOnClose);
 	auto *t = new QTableView(dlg);
-	auto *sm = new QStandardItemModel(static_cast<int>(map.size()), 5, dlg);
+	auto *sm = new QStandardItemModel(static_cast<int>(map.size()), 6, dlg);
 	// Column-type vocabulary, kept literal to match the main table headers.
 	sm->setHorizontalHeaderLabels({QStringLiteral("Project"), QStringLiteral("Video"),
-								   QStringLiteral("Audio"), QStringLiteral("Bins"),
+								   QStringLiteral("Audio"), QStringLiteral("Unknown Kind"), QStringLiteral("Bins"),
 								   QStringLiteral("Size")});
 	// Sort on UserRole, not the formatted display text: otherwise "1,000" sorts
 	// before "9" and "5.6 GB" before "900 MB".
@@ -2178,8 +2163,9 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 		sm->setItem(r, 0, proj);
 		sm->setItem(r, 1, numItem(Format::count(s.videoCount), s.videoCount));
 		sm->setItem(r, 2, numItem(Format::count(s.audioCount), s.audioCount));
-		sm->setItem(r, 3, numItem(Format::count(s.bins.size()), s.bins.size()));
-		sm->setItem(r, 4, numItem(Format::bytes(s.totalBytes), s.totalBytes));
+		sm->setItem(r, 3, numItem(Format::count(s.unknownKindCount), s.unknownKindCount));
+		sm->setItem(r, 4, numItem(Format::count(s.bins.size()), s.bins.size()));
+		sm->setItem(r, 5, numItem(Format::bytes(s.totalBytes), s.totalBytes));
 	}
 	t->setModel(sm);
 	t->setSortingEnabled(true);

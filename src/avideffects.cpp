@@ -988,8 +988,11 @@ int AvidEffects::size()
 AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 {
 	Hit hit;
-	// `<sequence>,<Effect>+<N>`: split on the LAST comma — the separator is
-	// not escaped and a sequence name may contain one.
+	// Both observed render names keep the effect at the right-hand end:
+	// `<sequence>,<Effect>+<N>` and `<sequence>,<Effect>,<N>[.new.<N>...]`.
+	// Validate the latter's entire numeric suffix before using the preceding
+	// comma; earlier commas still belong to the sequence. This labels only
+	// already-classified precomputes and does not identify media by name.
 	QString token = clipName;
 	const int comma = clipName.lastIndexOf(QLatin1Char(','));
 	if (comma >= 0)
@@ -997,12 +1000,51 @@ AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 		hit.sequence = clipName.left(comma);
 		token = clipName.mid(comma + 1);
 	}
-	static const QRegularExpression kInstance(QStringLiteral("\\+(\\d+)$"));
-	const QRegularExpressionMatch m = kInstance.match(token);
-	if (m.hasMatch())
+	bool commaInstance = false;
+	static const QRegularExpression kCommaInstance(QStringLiteral("\\A[0-9]+(?:\\.new\\.[0-9]+)*\\z"));
+	if (comma > 0 && kCommaInstance.match(token).hasMatch())
 	{
-		hit.instance = m.captured(1).toInt();
-		token.chop(m.capturedLength(0));
+		const int effectComma = clipName.lastIndexOf(QLatin1Char(','), comma - 1);
+		if (effectComma >= 0 && effectComma + 1 < comma)
+		{
+			const QStringList numbers = token.split(QStringLiteral(".new."));
+			bool valid = true;
+			int instance = 0;
+			for (qsizetype i = 0; i < numbers.size(); ++i)
+			{
+				bool ok = false;
+				const int value = numbers[i].toInt(&ok);
+				if (!ok)
+				{
+					valid = false;
+					break;
+				}
+				if (i == 0)
+					instance = value;
+			}
+			if (valid)
+			{
+				hit.sequence = clipName.left(effectComma);
+				token = clipName.mid(effectComma + 1, comma - effectComma - 1);
+				hit.instance = instance;
+				commaInstance = true;
+			}
+		}
+	}
+	if (!commaInstance)
+	{
+		static const QRegularExpression kInstance(QStringLiteral("\\+([0-9]+)\\z"));
+		const QRegularExpressionMatch m = kInstance.match(token);
+		if (m.hasMatch() && m.capturedStart(0) > 0)
+		{
+			bool ok = false;
+			const int instance = m.captured(1).toInt(&ok);
+			if (ok)
+			{
+				hit.instance = instance;
+				token.chop(m.capturedLength(0));
+			}
+		}
 	}
 
 	const Table &t = table();

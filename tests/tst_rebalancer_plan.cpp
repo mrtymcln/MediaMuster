@@ -1,14 +1,19 @@
 #include "mediafile.h"
 #include "rebalanceplan.h"
 #include "rebalancer.h"
+#include "opjournal.h"
+#include "testpause.h"
 
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QString>
 #include <QTemporaryDir>
 #include <QScopeGuard>
 #include <QSignalSpy>
 #include <QTest>
+
+#include <memory>
 
 class TestRebalancerPlan : public QObject
 {
@@ -42,6 +47,7 @@ private slots:
 	void execute_resets_the_avid_databases_of_every_folder_it_touches();
 	void execute_never_clobbers_an_existing_destination();
 	void execute_cancel_keeps_what_already_landed();
+	void destruction_during_execution_joins_the_engine();
 	void execute_aborts_when_a_donor_folder_is_read_only();
 
 private:
@@ -574,6 +580,52 @@ void TestRebalancerPlan::execute_cancel_keeps_what_already_landed()
 	QCOMPARE(failed, 0);
 	if (cancelled)
 		QVERIFY2(succeeded < kFiles, "a cancelled run must not have moved everything");
+}
+
+void TestRebalancerPlan::destruction_during_execution_joins_the_engine()
+{
+	// Rebalancer's QObject child owns a second worker which calls back into
+	// the parent. Destruction must stop and join it before parent teardown,
+	// preserving landed files and completing its journal synchronously.
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	const QVector<MediaFile> files{
+		makeMxf(root, "1", "a.mxf", "mobA"),
+		makeMxf(root, "1", "b.mxf", "mobB"),
+		makeMxf(root, "1", "c.mxf", "mobC"),
+	};
+	makeFillers(root, "2", 0);
+	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
+	plan.ops.clear();
+	for (const MediaFile &file : files)
+		plan.ops.append({file.filePath, FolderName{QString(), 2},
+						 file.masterMobId, file.sizeBytes});
+
+	TestPause::setEnabled(true);
+	const auto restorePause = qScopeGuard([] { TestPause::setEnabled(false); });
+	auto rebalancer = std::make_unique<Rebalancer>();
+	QSignalSpy progress(rebalancer.get(), &Rebalancer::progress);
+	rebalancer->executeAsync(plan);
+	QTRY_VERIFY_WITH_TIMEOUT(!progress.isEmpty(), 30000);
+	rebalancer.reset();
+
+	int landed = 0;
+	for (const MediaFile &file : files)
+	{
+		const bool atSource = QFile::exists(file.filePath);
+		const bool atDest = QFile::exists(root + "/2/" + QFileInfo(file.filePath).fileName());
+		QVERIFY(atSource != atDest);
+		landed += atDest;
+	}
+	QVERIFY(landed > 0);
+	QVERIFY(landed < files.size());
+	const auto records = OpJournal::scan(m_journalDir.path());
+	QCOMPARE(records.size(), 1);
+	QVERIFY(records.first().complete);
+	QVERIFY(records.first().cancelled);
+	QVERIFY(!records.first().dirty);
+	QCOMPARE(records.first().doneCount(), landed);
 }
 
 void TestRebalancerPlan::execute_aborts_when_a_donor_folder_is_read_only()

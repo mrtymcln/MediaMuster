@@ -13,6 +13,9 @@
 
 #include <QTest>
 
+#include <algorithm>
+#include <array>
+
 namespace
 {
 	MediaFile rowNamed(const QString &clipName)
@@ -51,6 +54,8 @@ private slots:
 	// filename and the Avid folder are both substrings of the path, they
 	// keep matching without a pass of their own.
 	void search_matches_the_path_shown_in_the_location_column();
+	void unknown_classification_does_not_match_known_filters();
+	void three_state_classification_sort_is_consistent();
 };
 
 void TestMediaFilterProxy::nfc_search_finds_nfd_row()
@@ -175,6 +180,75 @@ void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
 	// The two neighbours really do render identically — proof the order
 	// above cannot have come from the display string.
 	QCOMPARE(model.fileAt(1).sizeMBDisplay(), model.fileAt(2).sizeMBDisplay());
+}
+
+void TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
+{
+	MediaFile unknown = rowNamed(QStringLiteral("unread"));
+	MediaFile video = rowNamed(QStringLiteral("picture"));
+	video.kind = MediaFile::Kind::Video;
+	video.type = MediaFile::Type::Media;
+	MediaFile audio = rowNamed(QStringLiteral("sound"));
+	audio.kind = MediaFile::Kind::Audio;
+	audio.type = MediaFile::Type::Precompute;
+	MediaTableModel model;
+	model.setMediaFiles({unknown, video, audio});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int name = int(MediaTableModel::Column::ClipName);
+	QCOMPARE(proxy.rowCount(), 3);
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.index(0, name).data().toString(), QStringLiteral("picture"));
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.index(0, name).data().toString(), QStringLiteral("sound"));
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.index(0, name).data().toString(), QStringLiteral("sound"));
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
+	proxy.setSearchText(QStringLiteral("unread"));
+	QCOMPARE(proxy.rowCount(), 1); // unresolved files remain accessible
+}
+
+void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
+{
+	MediaFile audio = rowNamed(QStringLiteral("audio"));
+	audio.kind = MediaFile::Kind::Audio;
+	audio.type = MediaFile::Type::Media;
+	MediaFile video = rowNamed(QStringLiteral("video"));
+	video.kind = MediaFile::Kind::Video;
+	video.type = MediaFile::Type::Precompute;
+	MediaFile unknown = rowNamed(QStringLiteral("unknown"));
+	std::array<MediaFile, 3> rows{audio, video, unknown};
+	for (auto &row : rows)
+	{
+		row.durationFrames = 250;
+		row.timecodeBase = 25;
+	}
+	std::array<int, 3> order{0, 1, 2};
+	do
+	{
+		MediaTableModel model;
+		model.setMediaFiles({rows[order[0]], rows[order[1]], rows[order[2]]});
+		MediaFilterProxy proxy;
+		proxy.setSourceModel(&model);
+		for (const auto column : {MediaTableModel::Column::Kind, MediaTableModel::Column::Type,
+								  MediaTableModel::Column::Duration})
+		{
+			for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+			{
+				proxy.sort(int(column), direction);
+				QStringList names;
+				for (int i = 0; i < proxy.rowCount(); ++i)
+					names << proxy.index(i, int(MediaTableModel::Column::ClipName)).data().toString();
+				QStringList expected{QStringLiteral("audio"), QStringLiteral("video"), QStringLiteral("unknown")};
+				if (direction == Qt::DescendingOrder)
+					std::reverse(expected.begin(), expected.end());
+				QCOMPARE(names, expected);
+			}
+		}
+	} while (std::next_permutation(order.begin(), order.end()));
 }
 
 QTEST_GUILESS_MAIN(TestMediaFilterProxy)

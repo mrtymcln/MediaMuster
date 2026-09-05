@@ -30,6 +30,8 @@ namespace
 	MediaFile sampleRow()
 	{
 		MediaFile f;
+		f.kind = MediaFile::Kind::Video;
+		f.type = MediaFile::Type::Media;
 		f.clipName = QStringLiteral("Scene 1 - Take 3");
 		f.fileName = QStringLiteral("A11B22C33D44.mxf");
 		f.project = QStringLiteral("MyFilm");
@@ -61,6 +63,7 @@ private slots:
 	void volume_and_location_columns_carry_name_and_full_path();
 	void formula_injection_is_neutralised();
 	void write_produces_header_plus_one_line_per_row();
+	void unknown_classification_is_exported_without_guessing();
 };
 
 void TestMediaCsv::header_and_row_have_the_same_field_count()
@@ -142,6 +145,18 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 	// UTF-8 BOM keeps Excel on Windows from mojibaking non-Latin names.
 	QVERIFY(raw.startsWith("\xEF\xBB\xBF"));
 	QCOMPARE(QString::fromUtf8(raw).count(QLatin1Char('\n')), 3); // header + 2 rows
+}
+
+void TestMediaCsv::unknown_classification_is_exported_without_guessing()
+{
+	const QStringList headers = MediaCsv::headerLine().trimmed().split(QLatin1Char(','));
+	const auto unknown = MediaCsv::rowLine(MediaFile{}).trimmed().split(QLatin1Char(','));
+	QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\"\u2014\""));
+	QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\"\u2014\""));
+
+	const auto known = MediaCsv::rowLine(sampleRow()).trimmed().split(QLatin1Char(','));
+	QCOMPARE(known.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\"Video\""));
+	QCOMPARE(known.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\"Media\""));
 }
 
 QTEST_APPLESS_MAIN(TestMediaCsv)

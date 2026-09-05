@@ -59,6 +59,17 @@ Rebalancer::Rebalancer(QObject *parent)
 			});
 }
 
+Rebalancer::~Rebalancer()
+{
+	// Both workers can access our members. QObject child destruction runs
+	// after those members are gone, so join the engine here as well as the
+	// pre-flight job. A blocked filesystem call can delay this safe shutdown.
+	cancel();
+	m_preflight.shutdown();
+	delete m_engine;
+	m_engine = nullptr;
+}
+
 // MARK: - Folder name parsing
 
 std::optional<FolderName> Rebalancer::parseFolderName(const QString &name)

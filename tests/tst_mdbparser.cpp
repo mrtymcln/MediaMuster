@@ -13,6 +13,7 @@
 #include "omfuid.h"
 #include "pmrparser.h"
 #include "testbento.h"
+#include "testomf.h"
 
 #include <QByteArray>
 #include <QDir>
@@ -109,6 +110,12 @@ class TestMdbParser : public QObject
 {
 	Q_OBJECT
 private slots:
+	void uncompressed_alpha_requires_explicit_none_and_component_arrays();
+	void omf2_roles_and_file_master_ancestry();
+	void descriptor_failure_never_creates_a_master();
+	void external_toolkit_semantic_regression();
+	void omf2_video_uses_full_mixed_field_height_and_64_bit_length();
+	void tiff_summary_respects_own_byte_order_and_avid_short_values();
 	// Gate
 	void missing_or_garbage_file_reports_not_ok();
 	void mob_signature_without_a_bento_label_is_not_an_mdb();
@@ -211,6 +218,7 @@ void TestMdbParser::real_fixture_mdbs_load()
 		bool ok = false;
 		const MdbDatabase db = MdbParser::load(fx(rel), &ok);
 		QVERIFY2(ok, rel);
+		QCOMPARE(db.revision, OmfObjects::Revision::Omf1);
 		QVERIFY2(!db.masters.isEmpty(), rel);
 		QVERIFY2(!db.files.isEmpty(), rel);
 	}
@@ -521,7 +529,8 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 				continue; // the MPGA case — asserted separately
 			}
 			const MxfMetadata &db_ = f.essence;
-			const char *fn = e.fileName.toUtf8().constData();
+			const QByteArray fnBytes = e.fileName.toUtf8();
+			const char *fn = fnBytes.constData();
 			QVERIFY2(db_.valid, fn);
 			QVERIFY2(db_.essenceContainerLabel == hdr.essenceContainerLabel,
 					 qPrintable(e.fileName + QStringLiteral(": label ") + db_.essenceContainerLabel.toHex() +
@@ -783,7 +792,7 @@ void TestMdbParser::omf_era_mdb_video_facts_by_resolution_id()
 	const QString dnx1252 =
 		MxfParser::codecFromEssenceLabel(OmfObjects::ulFromResId(1252), QStringLiteral("59.94"));
 	QCOMPARE(dnx1242, QStringLiteral("Avid DNx SQ (DNxHD 145)"));
-	QCOMPARE(dnx1252, QStringLiteral("Avid DNx SQ")); // 720p at 59.94 has no documented bitrate name
+	QCOMPARE(dnx1252, QStringLiteral("Avid DNx SQ (DNxHD 145)")); // 2012 DNxHD whitepaper: 720p SQ at 59.94
 
 	struct Pin
 	{
@@ -1193,6 +1202,223 @@ void TestMdbParser::mxf_era_master_keeps_the_macl_only_srcfile_rule()
 	const MdbMasterMob &mc = db.masters[BentoFile::mobIdHex(mobC)];
 	QCOMPARE(mc.sourceFilePath, QStringLiteral("/Volumes/Media/import.mov"));
 	QCOMPARE(mc.sourceFileName, QStringLiteral("import.mov"));
+}
+
+void TestMdbParser::omf2_roles_and_file_master_ancestry()
+{
+	QTemporaryDir temp;
+	for (bool ambiguous : {false, true})
+	{
+		bool ok = false;
+		const auto db = MdbParser::load(writeMdb(temp.filePath("roles.mdb"), TestOmf::sdii(true, ambiguous)), &ok);
+		QVERIFY(ok);
+		QCOMPARE(db.revision, OmfObjects::Revision::Omf2);
+		QCOMPARE(db.files.size(), 1);
+		QCOMPARE(db.masters.size(), ambiguous ? 2 : 1);
+		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(99)))); // CMOB
+		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(3)))); // physical SMOB
+		QVERIFY(!db.masters.value(OmfUid::canonicalHex(TestOmf::uid(1))).classificationKnown);
+		const auto file = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
+		QVERIFY(file.essenceComplete);
+		QCOMPARE(file.essence.codec, QStringLiteral("SDII"));
+		QCOMPARE(file.masterMobId, ambiguous ? QString() : OmfUid::canonicalHex(TestOmf::uid(1)));
+	}
+}
+
+void TestMdbParser::descriptor_failure_never_creates_a_master()
+{
+	QTemporaryDir temp;
+	for (bool omf2 : {false, true})
+	{
+		bool ok = false;
+		const auto db = MdbParser::load(writeMdb(temp.filePath("bad.mdb"), TestOmf::sdii(omf2, false, true)), &ok);
+		QVERIFY(ok);
+		QVERIFY(db.files.isEmpty());
+		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2))));
+	}
+}
+
+void TestMdbParser::external_toolkit_semantic_regression()
+{
+	// Original toolkit specimens are intentionally not redistributed here.
+	// Set OMF_TOOLKIT_SAMPLES to a local omfkt22/NTProjects_VS10 directory.
+	const QString samples = qEnvironmentVariable("OMF_TOOLKIT_SAMPLES");
+	if (samples.isEmpty())
+		QSKIP("Set OMF_TOOLKIT_SAMPLES to validate external toolkit writer outputs");
+	bool ok = false;
+	const auto two = MdbParser::load(QDir(samples).filePath("Simple2x.omf"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(two.revision, OmfObjects::Revision::Omf2);
+	// unittest/MkSimple.c CreateMasterMob writes two Null Master Mobs,
+	// both with null source clips, plus a separate Simple Composition.
+	QCOMPARE(two.masters.size(), 2);
+	QVERIFY(two.files.isEmpty());
+	for (const auto &master : two.masters)
+		QCOMPARE(master.clipName, QStringLiteral("Null Master Mob"));
+	const auto one = MdbParser::load(QDir(samples).filePath("Simple1x.omf"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(one.revision, OmfObjects::Revision::Omf1);
+	QVERIFY(!one.masters.isEmpty());
+	// MkDesc.c writes tape and film source mobs, neither file nor master.
+	const auto physical = MdbParser::load(QDir(samples).filePath("MkDesc2x.omf"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(physical.revision, OmfObjects::Revision::Omf2);
+	QVERIFY(physical.isEmpty());
+	const auto complex = MdbParser::load(QDir(samples).filePath("Complx2x.omf"), &ok);
+	QVERIFY(ok);
+	QCOMPARE(complex.files.size(), 3);
+	int audio = 0, video = 0;
+	// MkCplx.c CreateVideoAudioMedia writes 320x240 TIFF video and two
+	// mono16-bit44.1kHz AIFF tracks, all owned by Synchronized AV.
+	for (const auto &file : complex.files)
+	{
+		QVERIFY(file.essence.valid);
+		QCOMPARE(complex.masters.value(file.masterMobId).clipName, QStringLiteral("Synchronized AV"));
+		if (file.essence.isAudio)
+		{
+			++audio;
+			QCOMPARE(file.essence.sampleRate, 44100);
+			QCOMPARE(file.essence.channels, 1);
+			QCOMPARE(file.essence.bitDepth, QStringLiteral("16-bit"));
+			QCOMPARE(file.essence.codec, QStringLiteral("AIFF-C (OMF)"));
+		}
+		else
+		{
+			++video;
+			QCOMPARE(file.essence.width, 320);
+			QCOMPARE(file.essence.height, 240);
+			QCOMPARE(file.essence.bitDepth, QStringLiteral("8-bit"));
+			QCOMPARE(file.essence.codec, QStringLiteral("JPEG (TIFF)"));
+		}
+	}
+	QCOMPARE(audio, 2);
+	QCOMPARE(video, 1);
+}
+
+void TestMdbParser::omf2_video_uses_full_mixed_field_height_and_64_bit_length()
+{
+	for (bool big : {false, true})
+	{
+		TestOmf::Writer w(true, big);
+		w.setImmediate(1, "OMFI:OOBJ:ObjClass", "HEAD");
+		w.setImmediate(1, "OMFI:HEAD:Version", QByteArray::fromHex("0200"));
+		w.setImmediate(1, "OMFI:HEAD:ByteOrder", big ? "MM" : "II");
+		const auto mob = w.addObject("SMOB"), desc = w.addObject("CDCI");
+		w.set(mob, "OMFI:MOBJ:MobID", w.word(42) + w.word(12) + w.word(7));
+		w.set(mob, "OMFI:SMOB:MediaDescription", w.word(desc));
+		w.setRational(desc, "OMFI:MDFL:SampleRate", 25, 1);
+		w.set(desc, "OMFI:MDFL:Length", w.wide(0x10000002aULL));
+		w.setU32(desc, "OMFI:DIDD:StoredWidth", 1920);
+		w.setU32(desc, "OMFI:DIDD:StoredHeight", 1080);
+		w.setU16(desc, "OMFI:DIDD:FrameLayout", 3);
+		w.setU32(desc, "OMFI:CDCI:ComponentWidth", 10);
+		w.setString(desc, "OMFI:DIDD:Compression", "JPEG");
+		BentoFile b;
+		QVERIFY(b.load(w.build()));
+		OmfObjects::Props p(b);
+		MxfMetadata m;
+		bool codecKnown = false;
+		QVERIFY(OmfObjects::readDescriptor(b, p, mob, desc, {}, m, &codecKnown));
+		QVERIFY(m.valid);
+		QVERIFY(codecKnown);
+		QCOMPARE(m.codec, QStringLiteral("JPEG"));
+		QCOMPARE(m.width, 1920);
+		QCOMPARE(m.height, 1080);
+		QCOMPARE(m.durationFrames, qint64(0x10000002aULL));
+		QCOMPARE(m.fps, QStringLiteral("25"));
+	}
+}
+
+void TestMdbParser::tiff_summary_respects_own_byte_order_and_avid_short_values()
+{
+	for (bool big : {false, true})
+		for (bool avid : {false, true})
+		{
+			TestOmf::Writer w(true, big);
+			w.setImmediate(1, "OMFI:OOBJ:ObjClass", "HEAD");
+			w.setImmediate(1, "OMFI:HEAD:Version", QByteArray::fromHex("0200"));
+			w.setImmediate(1, "OMFI:HEAD:ByteOrder", big ? "MM" : "II");
+			const auto mob = w.addObject("SMOB"), desc = w.addObject("TIFD");
+			w.set(mob, "OMFI:MOBJ:MobID", w.word(42) + w.word(12) + w.word(7));
+			QByteArray tiff = QByteArray(big ? "MM" : "II") + w.half(42) + w.word(8) + w.half(avid ? 5 : 4);
+			auto entry = [&](quint16 tag, quint16 type, quint32 value) {
+				tiff += w.half(tag) + w.half(type) + w.word(1);
+				tiff += type == 3 && !avid ? w.half(quint16(value)) + w.half(0) : w.word(value);
+			};
+			entry(256, 4, 320);
+			entry(257, 4, 240);
+			entry(258, 3, 8);
+			entry(259, 3, 6);
+			if (avid) entry(34434, 3, 4); // TIFF mixed-fields means two separate image fields
+			tiff += w.word(0);
+			w.set(desc, "OMFI:TIFD:Summary", tiff);
+			w.setRational(desc, "OMFI:MDFL:SampleRate", 25, 1);
+			w.set(desc, "OMFI:MDFL:Length", w.wide(1));
+			BentoFile b;
+			QVERIFY(b.load(w.build()));
+			MxfMetadata m;
+			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, m));
+			QVERIFY(m.valid);
+			QCOMPARE(m.width, 320);
+			QCOMPARE(m.height, avid ? 480 : 240);
+			QCOMPARE(m.bitDepth, QStringLiteral("8-bit"));
+			QCOMPARE(m.codec, QStringLiteral("JPEG (TIFF)"));
+		}
+}
+
+void TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arrays()
+{
+	const struct
+	{
+		const char *name;
+		const char *descriptor;
+		QByteArray compression, layout, depths, coding;
+		bool alpha;
+	} cases[] = {
+		{"alpha", "RGBA", "NONE", "A", QByteArray(1, 8), {}, true},
+		{"terminated-arrays", "RGBA", "NONE", QByteArray("A\0", 2), QByteArray::fromHex("0800"), {}, true},
+		{"missing-compression", "RGBA", {}, "A", QByteArray(1, 8), {}, false},
+		{"unknown-compression", "RGBA", "ZXYZ", "A", QByteArray(1, 8), {}, false},
+		{"wrong-class", "CDCI", "NONE", "A", QByteArray(1, 8), {}, false},
+		{"color", "RGBA", "NONE", "RGB", QByteArray::fromHex("080808"), {}, false},
+		{"alpha-and-color", "RGBA", "NONE", "AR", QByteArray::fromHex("0808"), {}, false},
+		{"different-depth", "RGBA", "NONE", "A", QByteArray(1, 16), {}, false},
+		{"missing-layout", "RGBA", "NONE", {}, QByteArray(1, 8), {}, false},
+		{"oversized-layout", "RGBA", "NONE", QByteArray(32, 'A'), QByteArray(1, 8), {}, false},
+		{"explicit-coding", "RGBA", "NONE", "A", QByteArray(1, 8), QByteArray(16, 'x'), false},
+		{"unusable-coding", "RGBA", "NONE", "A", QByteArray(1, 8), QByteArray(1, 'x'), false},
+	};
+	for (bool omf2 : {false, true})
+		for (int mobSize : {12, 32})
+			for (const auto &test : cases)
+			{
+				TestOmf::Writer w(omf2, false);
+				w.setImmediate(1, omf2 ? "OMFI:OOBJ:ObjClass" : "OMFI:ObjID", "HEAD");
+				w.setImmediate(1, omf2 ? "OMFI:HEAD:Version" : "OMFI:Version", QByteArray::fromHex(omf2 ? "0200" : "0100"));
+				const auto mob = w.addObject(omf2 ? "SMOB" : "MOBJ"), desc = w.addObject(test.descriptor);
+				w.set(mob, "OMFI:MOBJ:MobID", QByteArray(mobSize, 'm'));
+				w.setU32(desc, "OMFI:DIDD:StoredWidth", 1920);
+				w.setU32(desc, "OMFI:DIDD:StoredHeight", 1080);
+				w.setRational(desc, "OMFI:MDFL:SampleRate", 24, 1);
+				w.set(desc, "OMFI:MDFL:Length", w.word(1));
+				if (!test.compression.isNull()) w.setString(desc, "OMFI:DIDD:Compression", test.compression);
+				if (!test.layout.isNull()) w.set(desc, "OMFI:RGBA:PixelLayout", test.layout);
+				if (!test.depths.isNull()) w.set(desc, "OMFI:RGBA:PixelStructure", test.depths);
+				if (!test.coding.isNull()) w.set(desc, "OMFI:DIDD:EssenceCompression", test.coding);
+				BentoFile b;
+				QVERIFY2(b.load(w.build()), test.name);
+				MxfMetadata meta;
+				bool known = false;
+				QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, meta, &known));
+				QVERIFY(meta.valid);
+				QVERIFY2((meta.codec == QStringLiteral("Uncompressed alpha")) == test.alpha, test.name);
+				if (test.alpha)
+				{
+					QVERIFY(known);
+					QCOMPARE(meta.bitDepth, QStringLiteral("8-bit"));
+					QCOMPARE(meta.fps, QStringLiteral("24"));
+				}
+			}
 }
 
 QTEST_APPLESS_MAIN(TestMdbParser)

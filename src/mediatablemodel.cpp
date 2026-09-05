@@ -140,6 +140,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	}
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourceFile)
 		return f.sourceFilePath; // the full path Avid recorded; the cell shows the name
+	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Kind &&
+		f.kind == MediaFile::Kind::Unknown)
+		return QStringLiteral("The available metadata has not identified this file as audio or video.");
+	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Type &&
+		f.type == MediaFile::Type::Unknown)
+		return QStringLiteral("The available metadata has not identified this file as media or a precompute.");
 	if (role == Qt::TextAlignmentRole && static_cast<Column>(index.column()) == Column::SizeMB)
 		return QVariant(int(Qt::AlignRight | Qt::AlignVCenter));
 	if (role == Qt::UserRole)

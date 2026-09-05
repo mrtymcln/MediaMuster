@@ -9,6 +9,30 @@
 
 namespace
 {
+	// Preserve Audio/Video order and group unresolved kinds afterwards.
+	// Duration ties use the same total order; treating Unknown as equivalent
+	// to both Audio and Video would violate the sort's strict weak ordering.
+	int kindSortRank(MediaFile::Kind kind)
+	{
+		switch (kind)
+		{
+		case MediaFile::Kind::Audio: return 0;
+		case MediaFile::Kind::Video: return 1;
+		case MediaFile::Kind::Unknown: return 2;
+		}
+		return 2;
+	}
+	int typeSortRank(MediaFile::Type type)
+	{
+		switch (type)
+		{
+		case MediaFile::Type::Media: return 0;
+		case MediaFile::Type::Precompute: return 1;
+		case MediaFile::Type::Unknown: return 2;
+		}
+		return 2;
+	}
+
 	// True when every character is plain ASCII. ASCII has exactly one
 	// Unicode form, so normalisation can never change such a string.
 	bool isAsciiOnly(const QString &s)
@@ -202,10 +226,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	}
 
 	case Col::Kind:
-		// Preserve old display-string ordering: 'Audio' < 'Video'.
-		if (l.kind == r.kind)
-			return false;
-		return l.kind == MediaFile::Kind::Audio;
+		return kindSortRank(l.kind) < kindSortRank(r.kind);
 
 	case Col::Duration:
 	{
@@ -224,7 +245,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		const double rs = tcSeconds(r);
 		if (ls != rs)
 			return ls < rs;
-		return l.kind == MediaFile::Kind::Audio && r.kind == MediaFile::Kind::Video;
+		return kindSortRank(l.kind) < kindSortRank(r.kind);
 	}
 
 	case Col::FileName:
@@ -256,10 +277,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::Location:
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
-		// Preserve old display-string ordering: 'Media' < 'Precompute'.
-		if (l.type == r.type)
-			return false;
-		return l.type == MediaFile::Type::Media;
+		return typeSortRank(l.type) < typeSortRank(r.type);
 	case Col::Count_:
 		break;
 	}

@@ -13,11 +13,13 @@
 //
 // MARK: - What the database is
 //
-// `msmMMOB.mdb` is an OMF Interchange 2.x object store (Avid's pre-AAF
+// `msmMMOB.mdb` is an OMF Interchange object store (Avid's pre-AAF
 // format; the spec is public) inside an Apple Bento container (BentoFile).
-// Every clip and every essence file is an OMFI:MOBJ object with a 32-byte
+// The captured Avid databases use legacy MOBJ objects with a 32-byte
 // OMFI:MOBJ:MobID — the same UMID the PMR and the MXF carry, in Avid's byte
-// order (PMR↔MDB join raw; MXF needs MobId::toPmrForm). Properties are named
+// order (PMR↔MDB join raw; MXF needs MobId::toPmrForm). Standard OMF2 instead
+// uses explicit MMOB/SMOB/CMOB classes, mob slots and MediaDescription. Both
+// schemas are handled independently of Bento container revision. Properties are named
 // by a dictionary the file itself embeds, so this parser resolves
 // "OMFI:CPNT:Name" per file and hard-codes no ids.
 //
@@ -133,6 +135,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		*ok = true;
 
 	const OmfObjects::Props p(b);
+	db.revision = p.revision;
 	if (p.mobId < 0)
 	{
 		qCDebug(lcMdb) << mdbFilePath << "carries no MobID property — an empty database";
@@ -146,16 +149,16 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 	QVector<QString> order;
 	for (quint32 obj : b.objectsWithProperty(p.mobId))
 	{
-		if (b.objectClass(obj) != "MOBJ")
+		if (!OmfObjects::isMobClass(b.objectClass(obj)))
 			continue;
-		const QByteArrayView raw = b.value(obj, p.mobId);
+		const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, p.mobId));
 		// OMF-era: canonicalHex accepts a 12-byte omfi:UID (wrapped to the
 		// 32-byte form the v2 PMR yields) beside the 32-byte UMID, and reads
 		// empty for any other width; a 32-byte id formats exactly as before.
 		const QString hex = OmfUid::canonicalHex(raw);
 		if (hex.isEmpty() || raw == QByteArrayView(placeholderMob()))
 			continue;
-		const QByteArray rawBytes = raw.toByteArray();
+		const QByteArray rawBytes = raw;
 		if (!objectByMob.contains(rawBytes))
 			objectByMob.insert(rawBytes, obj);
 		auto it = objectsByHex.find(hex);
@@ -176,9 +179,15 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		// import/tape source — not needed); a master mob owns nothing.
 		quint32 mediaObj = 0, mediaDesc = 0;
 		bool anyPhysical = false;
+		bool explicitMaster = false;
+		bool legacyMaster = false;
 		for (quint32 obj : objs)
 		{
-			const quint32 desc = BentoFile::handle(b.value(obj, p.physMedia));
+			explicitMaster |= b.objectClass(obj) == "MMOB";
+			const auto usage = b.read(obj, p.usage);
+			legacyMaster |= usage.ok() && (b.uintValue(usage.data) == 7 || b.uintValue(usage.data) == 1);
+			anyPhysical |= b.hasProperty(obj, p.physMedia);
+			const quint32 desc = b.ref(obj, p.physMedia);
 			if (desc == 0)
 				continue;
 			anyPhysical = true;
@@ -193,19 +202,25 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		{
 			MdbFileMob f;
 			f.mobIdHex = hex;
+			f.essence.fileMobId = hex;
 			for (quint32 obj : objs)
 			{
 				const QByteArrayView u = b.value(obj, p.usage);
 				if (f.usageCode < 0 && !u.isEmpty())
-					f.usageCode = int(BentoFile::uint(u));
+					f.usageCode = int(b.uintValue(u));
 			}
-			// Complete = the scanner may skip the header. Audio needs a codec it
-			// can name (PCM is the no-label default; MPEG audio has no label here
-			// and would wrongly read as PCM), video needs its label.
+			// Skipping the header requires usable technical facts, not just a
+			// recognised descriptor class with missing/unreadable properties.
 			bool codecKnown = false;
 			if (OmfObjects::readDescriptor(b, p, mediaObj, mediaDesc, objectByMob, f.essence, &codecKnown))
+			{
+				const auto length = b.read(mediaDesc, p.length);
 				f.essenceComplete =
-					f.essence.valid && (f.essence.isAudio ? b.objectClass(mediaDesc) != "MPGA" : codecKnown);
+					f.essence.valid && codecKnown && length.ok() && (length.data.size() == 4 || length.data.size() == 8) &&
+					b.int64Value(length.data) >= 0 &&
+					(f.essence.isAudio ? f.essence.sampleRate > 0 && f.essence.channels > 0 && !f.essence.bitDepth.isEmpty()
+									   : !f.essence.fps.isEmpty());
+			}
 			if (f.essenceComplete)
 				++complete;
 
@@ -217,11 +232,11 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				a.omfEra = b.value(mediaObj, p.mobId).size() == OmfUid::kUidSize; // OMF-era: 12-byte mob
 				QSet<quint32> seen;
 				for (quint32 obj : objs)
-					OmfObjects::walkAttributes(b, p, BentoFile::handle(b.value(obj, p.attrs)), a, seen, 0);
+					OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
 				if (a.project.isEmpty())
 				{
 					const quint32 src = OmfObjects::findSourceMob(b, p, mediaObj, objectByMob);
-					OmfObjects::walkAttributes(b, p, BentoFile::handle(b.value(src, p.attrs)), a, seen, 0);
+					OmfObjects::walkAttributes(b, p, b.ref(src, p.attrs), a, seen, 0);
 				}
 				f.project = a.project;
 			}
@@ -230,7 +245,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 			// file was last seen on (MSML). Diagnostic only — never a fact.
 			if (lcMdb().isDebugEnabled())
 			{
-				for (quint32 loc : BentoFile::handles(b.value(mediaDesc, p.locator)))
+				for (quint32 loc : b.refs(mediaDesc, p.locator))
 				{
 					if (b.objectClass(loc) != "MSML")
 						continue;
@@ -244,7 +259,8 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 			db.files.insert(hex, f);
 			continue;
 		}
-		if (anyPhysical)
+		if (anyPhysical || (p.omf2 && !explicitMaster) ||
+			(p.revision == OmfObjects::Revision::Omf1 && !legacyMaster))
 			continue; // a source mob
 
 		MdbMasterMob m;
@@ -261,10 +277,11 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				m.clipName = BentoFile::string(b.value(obj, p.name));
 			const QByteArrayView u = b.value(obj, p.usage);
 			if (m.usageCode < 0 && !u.isEmpty())
-				m.usageCode = int(BentoFile::uint(u));
-			OmfObjects::walkAttributes(b, p, BentoFile::handle(b.value(obj, p.attrs)), a, seen, 0);
+				m.usageCode = int(b.uintValue(u));
+			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
 		}
 		m.bin = a.bin;
+		m.classificationKnown = m.usageCode == 1 || m.usageCode == 7;
 		m.sourceFilePath = a.sourceFilePath;
 		m.sourceContainer = a.sourceContainer;
 		m.project = a.project; // OMF-era: _PJ on a master mob, when a file keeps it there.
@@ -272,6 +289,24 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		if (!m.sourceFilePath.isEmpty())
 			m.sourceFileName = baseName(m.sourceFilePath);
 		db.masters.insert(hex, m);
+	}
+
+	// Reverse the master -> source-clip -> file link. A file referenced by
+	// two distinct masters has no unique answer; never choose hash order.
+	QHash<QString, QSet<QString>> mastersByFile;
+	for (auto master = db.masters.cbegin(); master != db.masters.cend(); ++master)
+		for (quint32 obj : objectsByHex.value(master.key()))
+			for (quint32 target : OmfObjects::sourceMobs(b, p, obj, objectByMob))
+			{
+				const QString fileHex = OmfUid::canonicalHex(OmfObjects::normalizedMobId(b, b.bytes(target, p.mobId)));
+				if (db.files.contains(fileHex))
+					mastersByFile[fileHex].insert(master.key());
+			}
+	for (auto file = db.files.begin(); file != db.files.end(); ++file)
+	{
+		const auto masters = mastersByFile.value(file.key());
+		if (masters.size() == 1)
+			file->masterMobId = *masters.cbegin();
 	}
 
 	qCDebug(lcMdb) << mdbFilePath << ":" << b.entryCount() << "TOC entries," << db.masters.size() << "clips,"

@@ -134,24 +134,31 @@ struct MediaFile
 	/// compares against the PMR's recorded mtime (see PmrEntry).
 	QDateTime modified;
 
+	/// Scan decisions carried between database lookup and the header pass.
+	/// A usable database alone does not establish that its metadata is current.
+	bool needsHeaderRead = false;
+	bool databaseMetadataCurrent = false;
+
 	// MARK: Classification
 
-	/// Audio or video essence — the "Kind" column.
+	/// Audio or video essence — unknown until metadata identifies it.
 	enum class Kind : int
 	{
-		Video,
-		Audio
+		Unknown = -1,
+		Video = 0,
+		Audio = 1
 	};
-	Kind kind = Kind::Video;
+	Kind kind = Kind::Unknown;
 
 	/// Master-clip media or a rendered precompute — the "Type" column.
-	/// Every file is exactly one of the two; both are first-class media.
+	/// Unknown when the usage metadata has not established either value.
 	enum class Type : int
 	{
-		Media,
-		Precompute
+		Unknown = -1,
+		Media = 0,
+		Precompute = 1
 	};
-	Type type = Type::Media;
+	Type type = Type::Unknown;
 
 	/// Whether this folder's Avid databases (msmFMID.pmr / msmMMOB.mdb) list
 	/// the file — a folder-level fact stamped per row. One enum value, so a
@@ -254,14 +261,25 @@ struct MediaFile
 	/// the sort, and the export can't drift apart.
 	QString kindDisplay() const
 	{
-		return kind == Kind::Audio ? QStringLiteral("Audio") : QStringLiteral("Video");
+		switch (kind)
+		{
+		case Kind::Audio: return QStringLiteral("Audio");
+		case Kind::Video: return QStringLiteral("Video");
+		case Kind::Unknown: return QStringLiteral("\u2014");
+		}
+		return QStringLiteral("\u2014");
 	}
 
 	/// "Type" column / CSV string; same single-site rule as kindDisplay.
 	QString typeDisplay() const
 	{
-		return type == Type::Precompute ? QStringLiteral("Precompute")
-										: QStringLiteral("Media");
+		switch (type)
+		{
+		case Type::Media: return QStringLiteral("Media");
+		case Type::Precompute: return QStringLiteral("Precompute");
+		case Type::Unknown: return QStringLiteral("\u2014");
+		}
+		return QStringLiteral("\u2014");
 	}
 
 	/// "Size (MB)" column / CSV string — derived from sizeBytes on every
@@ -412,6 +430,7 @@ struct ProjectSummary
 	bool hasProject = true; ///< false for the one "No project" row.
 	int videoCount = 0;
 	int audioCount = 0;
+	int unknownKindCount = 0;
 	qint64 totalBytes = 0;
 	QVector<QString> bins;
 };

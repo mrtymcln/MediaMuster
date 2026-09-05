@@ -57,7 +57,7 @@ class Rebalancer : public QObject
 public:
 	explicit Rebalancer(QObject *parent = nullptr);
 
-	~Rebalancer() override = default;
+	~Rebalancer() override;
 
 	// MARK: - Planning
 

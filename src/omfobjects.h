@@ -37,6 +37,12 @@
 
 namespace OmfObjects
 {
+	// OMF semantic version, independent of the Bento label's version.
+	// OMF1 objects may also be stored in Bento2 (the toolkit's IMA mode).
+	enum class Revision { Unknown, Omf1, Omf2 };
+	[[nodiscard]] Revision revision(const BentoFile &b);
+	[[nodiscard]] QByteArray normalizedMobId(const BentoFile &b, QByteArrayView raw);
+	[[nodiscard]] bool isMobClass(const QByteArray &cls);
 	// MARK: - Property ids, resolved once per file
 
 	/// Every property the walker reads, resolved by name from the file's
@@ -45,6 +51,8 @@ namespace OmfObjects
 	/// nothing rather than a guard at every use.
 	struct Props
 	{
+		Revision revision;
+		bool omf2;
 		int mobId, usage, name, editRate, attrs, physMedia;
 		int attrRefs, attbName, attbKind, attbInt, attbString, attbObj;
 		int binNameUtf8, binName, posixPath, pathUtf8, pathName;
@@ -60,6 +68,8 @@ namespace OmfObjects
 		int tcFps, tcStart;
 		int mdatMobId, waveMobId, aifcMobId, sd2mMobId;
 		int mobKind, unxlPath, locator, lastKnownVolumeUtf8, lastKnownVolume;
+		int sd2dMobId, slotRate, nestedSlots, selected, choices, inputSegment;
+		int winlPath, maclPath, tiffSummary, rgbaLayout, rgbaStructure;
 
 		explicit Props(const BentoFile &b);
 	};
@@ -70,6 +80,12 @@ namespace OmfObjects
 	/// whichever width the mob was written in (12 or 32), since a SourceID
 	/// is written in the same width as the mob it names.
 	using ObjectByMob = QHash<QByteArray, quint32>;
+
+	// Direct source-mob references in a mob's segment graph; no ancestry hop.
+	// Returning all targets lets callers reject ambiguous file/master matches.
+	[[nodiscard]] QVector<quint32> sourceMobs(const BentoFile &b, const Props &p, quint32 mob,
+										const ObjectByMob &objectByMob);
+	[[nodiscard]] bool mobEditRate(const BentoFile &b, const Props &p, quint32 mob, qint32 &num, qint32 &den);
 
 	// MARK: - Descriptor classes
 
