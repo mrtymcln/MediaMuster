@@ -92,11 +92,11 @@ caee4: sub x23,x9,#1
 caee8: ldr x22,[x8,x23,lsl #3] ; objectList[id-1]
 ```
 
-**MediaMuster implication:** Flat physical chunks do not imply a graph cannot be indexed or navigated. Build an ordinal-to-(class,payload offset,payload size) table in one pass, then read only the classes needed for identities, names, and references. Distinguish absence of a separate on-disk offset index from ability to build an in-memory index; the current blanket “no index and no random access” rationale is misleading. These inspected routines do not by themselves establish every possible on-disk document variant; the implementation should cross-check header fields and variants against fixtures and pyavb.
+**MediaMuster implication:** Flat physical chunks do not imply a graph cannot be indexed or navigated. Build an ordinal-to-(class,payload offset,payload size) table in one pass, then read only the classes needed for identities, names, and references. Distinguish absence of a separate on-disk offset index from ability to build an in-memory index; the current blanket “no index and no random access” rationale is misleading. These inspected routines do not by themselves establish every possible on-disk document variant; the implementation should cross-check header fields and variants against fixtures and the reference reader.
 
 ### 3. Original-bin metadata has a native object type, with UTF-8 extension
 
-AMCBinRef::Get(AStream*, AIODesc*) at 0x2d5b48 checks class mark 0x4d434252 (MCBR), version 1, reads two int32 identity words and a legacy string handle, then recognizes extension tag 1 and calls ReadUTF8StringAndConvertToUTF16. AMCBinRef::Put is at 0x2d5990. This agrees with the parent's pyavb MCBR discovery.
+AMCBinRef::Get(AStream*, AIODesc*) at 0x2d5b48 checks class mark 0x4d434252 (MCBR), version 1, reads two int32 identity words and a legacy string handle, then recognizes extension tag 1 and calls ReadUTF8StringAndConvertToUTF16. AMCBinRef::Put is at 0x2d5990. This agrees with the reference-reader MCBR discovery.
 
 Relevant instructions:
 
@@ -113,11 +113,11 @@ Relevant instructions:
 2d5cf0: ldr x8,[x8,#0x2a8] ; ReadUTF8StringAndConvertToUTF16
 ```
 
-**MediaMuster implication:** Resolve a clip's original bin reference through the object graph. Prefer native UTF-8 bin names, retaining legacy name fallback. Keep “current AVB filename” distinct from “original bin name” in data and UI semantics. The precise _ORG_BIN attribute linkage is supported by the parent's pyavb/fixture work, not asserted solely from this small native function.
+**MediaMuster implication:** Resolve a clip's original bin reference through the object graph. Prefer native UTF-8 bin names, retaining legacy name fallback. Keep “current AVB filename” distinct from “original bin name” in data and UI semantics. The precise _ORG_BIN attribute linkage is supported by the reference-reader and fixture work, not asserted solely from this small native function.
 
 ## Scope and reproducibility
 
 - Every address above is an image-relative address in the identified arm64 slice, not an ASLR process address.
 - *.asm.txt files contain focused LLVM disassembly; *.pseudo.txt files are local Hopper output. The two decompile-*.py scripts state their exact target addresses.
 - Metadata and pseudocode are review evidence, not product implementation. No Media Composer binary, decompiled proprietary source, or modified product file was added to the repository.
-- This does not certify an exhaustive AVB grammar or historical version support. It supports a targeted, bounded parser and explicit confidence/error states, with pyavb and real-bin comparison as the validation oracle.
+- This does not certify an exhaustive AVB grammar or historical version support. It supports a targeted, bounded parser and explicit confidence/error states, with reference-reader and real-bin comparison as the validation oracle.

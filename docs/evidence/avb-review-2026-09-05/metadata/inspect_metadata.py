@@ -1,4 +1,4 @@
-"""Read-only AVB metadata evidence. Requires the user-supplied pyavb checkout."""
+"""Read-only AVB metadata evidence. Requires the supplied reference reader."""
 import collections
 import json
 import sys

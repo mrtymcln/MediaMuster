@@ -284,8 +284,8 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 			 QStringLiteral("2026-07-20 12:30"));
 	QVERIFY(m.index(1, col).data(Qt::DisplayRole).toString().isEmpty());
 
-	// The sort role hands back the raw (possibly invalid) datetime; Qt
-	// orders invalid before valid, so blanks group together.
+	// The sort role hands back the raw (possibly invalid) datetime;
+	// invalid values sort before valid ones, so blanks group together.
 	QVERIFY(!m.index(1, col).data(Qt::UserRole).toDateTime().isValid());
 }
 

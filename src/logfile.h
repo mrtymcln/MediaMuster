@@ -5,7 +5,7 @@
 
 // MARK: - AppLog
 //
-// The diagnostic log at <AppData>/mediamuster.log. Installs a Qt
+// The diagnostic log at <AppData>/mediamuster.log. Installs a
 // message handler so every qDebug/qCWarning/etc lands in a file, not just
 // stderr (a double-clicked .app has none). The in-app console tees its
 // lines here too, so one file carries both the user-facing story and the

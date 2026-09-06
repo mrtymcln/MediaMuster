@@ -68,8 +68,8 @@ namespace NativeFile
 
 	SyncResult syncFile(QFile &f, Durability level)
 	{
-		// flush() first: Qt buffers writes in userspace, and fsync on a fd
-		// whose bytes are still in Qt's buffer would confirm nothing.
+		// flush() first: QFile buffers writes in userspace, and fsync on a fd
+		// whose bytes are still in that buffer would confirm nothing.
 		if (!f.flush())
 			return SyncResult::Failed;
 		const int fd = f.handle();

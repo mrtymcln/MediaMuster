@@ -210,11 +210,18 @@ void MediaFilterProxy::setEffectVolumeFilter(const QString &volumePath)
 	invalidateRowsFilter();
 }
 
+void MediaFilterProxy::setBinFilter(const BinFilter &filter)
+{
+	m_binFilter = filter;
+	invalidateRowsFilter();
+}
+
 void MediaFilterProxy::setBinFilterMobs(bool isActive, const QSet<QString> &acceptedMobs)
 {
-	m_binFilterActive = isActive;
-	m_binFilterAcceptedMobs = isActive ? acceptedMobs : QSet<QString>{};
-	invalidateRowsFilter();
+	BinFilter filter;
+	if (isActive)
+		filter.steps.append({BinFilter::Operation::Intersect, {}, acceptedMobs});
+	setBinFilter(filter);
 }
 
 bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
@@ -278,18 +285,12 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 			return false;
 	}
 
-	if (m_binFilterActive)
-	{
-		const bool hit =
-			(!f.mobId.isEmpty() && m_binFilterAcceptedMobs.contains(f.mobId)) ||
-			(!f.masterMobId.isEmpty() && m_binFilterAcceptedMobs.contains(f.masterMobId));
-		if (!hit)
-			return false;
-	}
+	if (!m_binFilter.matches(f.mobId, f.masterMobId))
+		return false;
 
 	if (!m_search.isEmpty())
 	{
-		// Qt::CaseInsensitive folds on the fly during the compare. Both
+		// Case-insensitive comparison folds on the fly. Both
 		// sides go through searchForm so an NFD filename matches NFC
 		// keyboard input and vice versa; accents themselves stay
 		// significant ("cafe" does not match "café" in either form).
@@ -329,8 +330,8 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 
 	case Col::Created:
 	{
-		// Invalid (unknown) datetimes sort before every valid one — Qt's
-		// documented ordering — so blank rows group together predictably.
+		// Invalid (unknown) datetimes sort before every valid one, so blank
+		// rows group together predictably.
 		return l.created < r.created;
 	}
 	case Col::Modified:

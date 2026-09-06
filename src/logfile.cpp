@@ -51,12 +51,12 @@ namespace
 		g_file->flush();
 	}
 
-	/// The two lines Qt prints on every click in an item view while the
+	/// The two lines printed on every click in an item view while the
 	/// macOS accessibility guard is on (macaccessibilityguard.h): the view
 	/// still announces "row N changed", and the row-less interface the guard
 	/// hands out cannot resolve it. Benign by design, and they would land in
 	/// the user's log on every click, so they are dropped here — and only
-	/// here: they still reach Qt's own handler for anyone debugging with
+	/// here: they still reach the previous handler for anyone debugging with
 	/// QT_LOGGING_RULES. Compiles away with the guard.
 	bool isGuardedAccessibilityNoise(const QMessageLogContext &ctx, const QString &msg)
 	{

@@ -575,7 +575,7 @@ void RebalanceDialog::setupUi()
 	intro->setWordWrap(true);
 	intro->setTextFormat(Qt::RichText);
 	// Consistent paragraph margins + 140% line-height for breathing
-	// room. Qt's QLabel only honours inline CSS, not stylesheet rules.
+	// room. QLabel only honours inline CSS, not stylesheet rules.
 	const QString paraStyle = QStringLiteral("margin: 0 0 10px 0; line-height: 140%;");
 	const QString lastParaStyle = QStringLiteral("margin: 0; line-height: 140%;");
 	intro->setText(tr("<p style='%1'>Avid performance can degrade once a "

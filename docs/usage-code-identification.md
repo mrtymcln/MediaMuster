@@ -6,16 +6,16 @@ This review inspected Media Composer **26.8.0.58987** (`CFBundleShortVersionStri
 
 ## Integer definitions and direct binary evidence
 
-The historical [OMF toolkit definitions](https://github.com/LWKS-Software/omfkt22/blob/06a9dcebf52c69318cdb7b7caa0f0f736556151e/include/omDefs.h#L85-L95) name the following integer values. The last column distinguishes that source from what the installed binary independently confirms.
+The following table separates conventional integer meanings from what the inspected binary confirms directly.
 
-| Integer | Public toolkit definition | Confirmation in Media Composer 26.8 |
+| Integer | Conventional meaning | Confirmation in Media Composer 26.8 |
 |---|---|---|
 | 0 | No special usage | Context dependent: not a universal master or non-render flag. |
 | 1 | Precompute master | Name `renderedeffect`; logical/master mob role. |
 | 2 | Subclip | Name `subclip`. |
 | 3 | Effect holder | Name `effect`. |
 | 4 | Group | Name `group`; can become `multigroup` through an attribute. |
-| 5 | Group backup (`UC_GROUPOOFTER`) | This binary's name table says `Unknown`; toolkit supplies the meaning. |
+| 5 | Group backup | This binary's name table says `Unknown`; the conventional meaning is not confirmed here. |
 | 6 | Motion-effect clip | Name `motion`. |
 | 7 | Master mob | Name `masterclip`; logical/master mob role. |
 | 9 | Precompute file | The precompute constructor writes 9 on its physical/file mob. |
@@ -49,6 +49,6 @@ An independent raw MXF walk found all 171 rendered MaterialPackages carry privat
 
 Raw and parser comparison records are retained under `/tmp/mediamuster-audit/`: `usage-corpus-probe.json`, `usage-mdb-file-corroboration.json`, and `usage-export-classification-comparison.json`. A final rebuilt probe after separating master identity confirmed the same 2,493 verdicts and a selected MaterialPackage in all 2,411 MXF files; see `usage-identity-corpus-validation.json` and `usage-identity-export-after.json`. The tests cover private-tag remapping, incorrect widths, negative integers, contradictory metadata, ambiguous standard usage, source-package isolation, duplicate OMF mob records and both OMF payload byte orders.
 
-On 5 September 2026, both the normal build and the AddressSanitizer/UndefinedBehaviorSanitizer build passed `tst_mxfparser` **80**, `tst_mdbparser` **32**, and `tst_omfparser` **36** QtTest checks, including setup/cleanup: **148 total, no failures or skips**. The external toolkit semantic regression ran with `OMF_TOOLKIT_SAMPLES` set. There were no sanitizer diagnostics; 35 expected parser warnings came from negative fixtures. All 122 checked repository dependency-to-object timestamps were current in each build.
+On 5 September 2026, both the normal build and the AddressSanitizer/UndefinedBehaviorSanitizer build passed `tst_mxfparser` **80**, `tst_mdbparser` **32**, and `tst_omfparser` **36** test checks, including setup/cleanup: **148 total, no failures or skips**. The external-fixture semantic regression ran with `OMF_TOOLKIT_SAMPLES` set. There were no sanitizer diagnostics; 35 expected parser warnings came from negative fixtures. All 122 checked repository dependency-to-object timestamps were current in each build.
 
-Complete final QtTest output is preserved as `usage-identity-parser-qttest.log` and `usage-identity-sanitizer-qttest.log`; build logs use the same prefixes with `-build.log`. `usage-identity-validation-evidence.json` records the check totals, dependency audit and source hashes. The sanitizer build uses `-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all`; the run sets `UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1`. These are reader tests, not a claim to have exercised every Media Composer behavior or every effects UI path.
+Complete final test output is preserved as `usage-identity-parser-qttest.log` and `usage-identity-sanitizer-qttest.log`; build logs use the same prefixes with `-build.log`. `usage-identity-validation-evidence.json` records the check totals, dependency audit and source hashes. The sanitizer build uses `-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all`; the run sets `UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1`. These are reader tests, not a claim to have exercised every Media Composer behavior or every effects UI path.

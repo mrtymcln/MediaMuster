@@ -23,7 +23,7 @@ public:
 
 	/// Synchronous; only call from the UI thread when blocking is
 	/// acceptable (startup, 'Scan All'). The 5 second poll tick runs this
-	/// off-thread via QtConcurrent; see pollVolumes / onPollFinished.
+	/// off-thread via the shared pool; see pollVolumes / onPollFinished.
 	QVector<VolumeInfo> detectVolumes() const;
 
 	QStringList allScannablePaths() const;

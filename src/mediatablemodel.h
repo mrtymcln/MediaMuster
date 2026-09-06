@@ -3,9 +3,13 @@
 #include "mediafile.h"
 
 #include <QAbstractTableModel>
+#include <QHash>
 #include <QSet>
 #include <QString>
 #include <QVector>
+
+struct AvbBin;
+struct AvbMob;
 
 /// One row per MediaFile. Columns ordered identity > context >
 /// technical, matching the visual order in the UI.
@@ -52,6 +56,11 @@ public:
 
 	void setMediaFiles(const QVector<MediaFile> &files);
 
+	/// Fill missing clip/original-bin names from matching master clips in
+	/// successfully loaded bins. Conflicting values stay unknown. Removing
+	/// a bin retracts only the fallback metadata; scanner values take precedence.
+	void setAvbBins(const QVector<AvbBin> &bins);
+
 	/// Groups contiguous deletions into single beginRemoveRows /
 	/// endRemoveRows ranges, so the view is preserved.
 	void removeFilesByPath(const QSet<QString> &paths);
@@ -70,6 +79,18 @@ public:
 	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
 
 private:
+	struct AvbMetadata
+	{
+		void merge(const AvbMob &mob);
+
+		QString clipName;
+		QString originalBin;
+		QString originalBinUid;
+		bool nameConflict = false;
+		bool binConflict = false;
+	};
+	void applyAvbMetadata(bool notify);
+	QHash<QString, AvbMetadata> m_avbMetadata;
 	QVector<MediaFile> m_files;
 	bool m_showRawCodecHex = false;
 	bool m_effectDetailsEnabled = false;

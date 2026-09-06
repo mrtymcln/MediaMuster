@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-/// Toggle for xxHash3 verification.
+/// Toggle for checksum verification.
 
 namespace OpVerify
 {

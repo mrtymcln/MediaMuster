@@ -132,7 +132,7 @@ public:
 	struct DoneInfo
 	{
 		QString finalPath;	   ///< Delete: where the file landed (trash path).
-		QString hash;		   ///< XXH3 hex when a hashing path ran; empty for clone/rename.
+		QString hash;		   ///< Hash in hex when a hashing path ran; empty for clone/rename.
 		FileIdentity landedId; ///< Identity of the landed file, captured after completion.
 		QString parkedFinal;   ///< Replace: the trash path the parked original went to.
 	};
@@ -210,7 +210,7 @@ public:
 		FileIdentity srcId;			   ///< Source identity at op time.
 		FileIdentity parkedOriginalId; ///< Replace: the parked file's identity.
 		FileIdentity landedId;		   ///< From 'done': the landed file's identity.
-		QString hash;				   ///< From 'done': XXH3 hex, when a hashing path ran.
+		QString hash;				   ///< From 'done': hash in hex, when a hashing path ran.
 		QString parkedFinal;		   ///< Trash path of the committed park — from 'done',
 									   ///< or from a 'fail' that happened after the disposal.
 		bool completed = false;

@@ -1,0 +1,86 @@
+{
+    "checks": [
+        {
+            "check": "Open actual bin window",
+            "passed": true
+        },
+        {
+            "check": "Renamed text drag rejected before row insertion",
+            "passed": true
+        },
+        {
+            "check": "Drag error reaches visible MainWindow console",
+            "passed": true
+        },
+        {
+            "check": "Open picker retains AVB extension filter",
+            "passed": true
+        },
+        {
+            "check": "Visible filename field selects requested fixture",
+            "passed": true
+        },
+        {
+            "check": "Open accepts selected path",
+            "passed": true
+        },
+        {
+            "check": "Invoke actual + picker handler",
+            "passed": true
+        },
+        {
+            "check": "Impostor selected through Open starts as asynchronous loading row",
+            "passed": true
+        },
+        {
+            "check": "Impostor background read completed",
+            "passed": true
+        },
+        {
+            "check": "Open failure removes row and logs full parser error",
+            "passed": true
+        },
+        {
+            "check": "Open picker retains AVB extension filter",
+            "passed": true
+        },
+        {
+            "check": "Visible filename field selects requested fixture",
+            "passed": true
+        },
+        {
+            "check": "Open accepts selected path",
+            "passed": true
+        },
+        {
+            "check": "Invoke actual + picker handler",
+            "passed": true
+        },
+        {
+            "check": "Uppercase AVB selected through Open completed",
+            "passed": true
+        },
+        {
+            "check": "Valid empty uppercase AVB remains usable",
+            "passed": true
+        },
+        {
+            "check": "Unsupported bin read completed",
+            "passed": true
+        },
+        {
+            "check": "Unsupported class diagnostic reaches visible console",
+            "passed": true
+        },
+        {
+            "check": "No error message boxes created",
+            "passed": true
+        },
+        {
+            "check": "Actual console screenshot saved",
+            "passed": true
+        }
+    ],
+    "console": "09:52:17 [WARN] [binfilter] Cannot load bin \"/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/ConsoleBinProbe-AfopoE/Renamed text.avb\": This file is not an Avid bin.\n09:52:17 [WARN] [binfilter] Cannot load bin \"/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/ConsoleBinProbe-AfopoE/Renamed text.avb\": Not an Avid bin: invalid byte-order marker.\n09:52:17 [WARN] [binfilter] Cannot load bin \"/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/ConsoleBinProbe-AfopoE/Unsupported.avb\": This bin contains data that MediaMuster does not yet support; Unsupported AVB class ZZZZ; whole-bin identity coverage is incomplete.\n09:52:17 [INFO] [binfilter] Bin filter active — 1 operations",
+    "failures": 0
+}

@@ -10,8 +10,8 @@
 //
 // The value types every part of the file-operations engine v2 speaks:
 // what the user asked for (OpRequest), one file's line item (OpItem),
-// and the on-disk names for the enums. Pure data — no I/O, no Qt beyond
-// containers — so the journal, runner, recovery and undo can all include
+// and the on-disk names for the enums. Pure data with no I/O — so the
+// journal, runner, recovery and undo can all include
 // this without dragging each other in.
 //
 // The engine deliberately does NOT pass MediaFile around: an OpItem

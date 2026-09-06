@@ -63,6 +63,13 @@ private slots:
 	void precompute_tree_unites_branches_and_preserves_complete_paths();
 	void precompute_tree_empty_and_unknown_are_not_wildcards();
 	void precompute_tree_gate_reset_and_legacy_filters_have_no_hidden_state();
+	void bin_intersection_matches_different_identities_on_the_same_row();
+	void bin_subtraction_rejects_either_identity_data();
+	void bin_subtraction_rejects_either_identity();
+	void bin_ordered_add_can_restore_a_row();
+	void bin_leading_subtract_uses_all_media_rows();
+	void bin_empty_operand_and_inactive_filter_are_distinct();
+	void bin_expression_intersects_search_and_survives_model_refresh();
 };
 
 void TestMediaFilterProxy::nfc_search_finds_nfd_row()
@@ -597,6 +604,122 @@ void TestMediaFilterProxy::precompute_tree_gate_reset_and_legacy_filters_have_no
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setPrecomputeTreeFilter({false, {{QStringLiteral("Rendered Effects"), {}, {}}}});
 	QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty()); // inactive filters retain no stale paths
+}
+
+void TestMediaFilterProxy::bin_intersection_matches_different_identities_on_the_same_row()
+{
+	MediaFile row = rowNamed(QStringLiteral("same media"));
+	row.mobId = QStringLiteral("F");
+	row.masterMobId = QStringLiteral("M");
+	MediaTableModel model;
+	model.setMediaFiles({row});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {QStringLiteral("M")}},
+						 {BinFilter::Operation::Intersect, {}, {QStringLiteral("F")}}}});
+	QCOMPARE(proxy.rowCount(), 1);
+}
+
+void TestMediaFilterProxy::bin_subtraction_rejects_either_identity_data()
+{
+	QTest::addColumn<QString>("subtract");
+	QTest::newRow("file") << QStringLiteral("F");
+	QTest::newRow("master") << QStringLiteral("M");
+}
+
+void TestMediaFilterProxy::bin_subtraction_rejects_either_identity()
+{
+	QFETCH(QString, subtract);
+	MediaFile row = rowNamed(QStringLiteral("same media"));
+	row.mobId = QStringLiteral("F");
+	row.masterMobId = QStringLiteral("M");
+	MediaTableModel model;
+	model.setMediaFiles({row});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {QStringLiteral("M"), QStringLiteral("F")}},
+						 {BinFilter::Operation::Subtract, {}, {subtract}}}});
+	QCOMPARE(proxy.rowCount(), 0);
+}
+
+void TestMediaFilterProxy::bin_ordered_add_can_restore_a_row()
+{
+	MediaFile row = rowNamed(QStringLiteral("same media"));
+	row.mobId = QStringLiteral("F");
+	row.masterMobId = QStringLiteral("M");
+	MediaTableModel model;
+	model.setMediaFiles({row, rowNamed(QStringLiteral("unrelated"))});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const BinFilter filter{{{BinFilter::Operation::Intersect, {}, {QStringLiteral("M")}},
+							{BinFilter::Operation::Subtract, {}, {QStringLiteral("F")}},
+							{BinFilter::Operation::Add, {}, {QStringLiteral("M")}}}};
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	proxy.setBinFilter({{{BinFilter::Operation::Add, {}, {QStringLiteral("F")}}}});
+	QCOMPARE(proxy.rowCount(), 1); // leading Add starts with its own matches
+}
+
+void TestMediaFilterProxy::bin_leading_subtract_uses_all_media_rows()
+{
+	MediaFile hit = rowNamed(QStringLiteral("hit"));
+	hit.masterMobId = QStringLiteral("M");
+	MediaFile outside = rowNamed(QStringLiteral("outside all bins"));
+	outside.mobId = QStringLiteral("X");
+	MediaFile unknown = rowNamed(QStringLiteral("no identity"));
+	MediaTableModel model;
+	model.setMediaFiles({hit, outside, unknown});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, {QStringLiteral("M"), QString{}}}}});
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 2);
+}
+
+void TestMediaFilterProxy::bin_empty_operand_and_inactive_filter_are_distinct()
+{
+	MediaTableModel model;
+	model.setMediaFiles({rowNamed(QStringLiteral("one"))});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {}}}});
+	QCOMPARE(proxy.rowCount(), 0);
+	proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, {}}}});
+	QCOMPARE(proxy.rowCount(), 1);
+	proxy.setBinFilter({{{BinFilter::Operation::Add, {}, {}}}});
+	QCOMPARE(proxy.rowCount(), 0);
+	proxy.setBinFilter({});
+	QCOMPARE(proxy.rowCount(), 1);
+	proxy.setBinFilterMobs(true, {}); // compatibility API retains empty-active semantics
+	QCOMPARE(proxy.rowCount(), 0);
+	proxy.setBinFilterMobs(false, {QStringLiteral("stale")});
+	QCOMPARE(proxy.rowCount(), 1);
+}
+
+void TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_refresh()
+{
+	MediaFile first = rowNamed(QStringLiteral("first"));
+	first.mobId = QStringLiteral("F");
+	first.masterMobId = QStringLiteral("M");
+	MediaFile second = rowNamed(QStringLiteral("second"));
+	second.mobId = first.mobId;
+	second.masterMobId = first.masterMobId;
+	MediaTableModel model;
+	model.setMediaFiles({first, second});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {QStringLiteral("M")}},
+						 {BinFilter::Operation::Intersect, {}, {QStringLiteral("F")}}}});
+	proxy.setSearchText(QStringLiteral("second"));
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	model.setMediaFiles({rowNamed(QStringLiteral("second unrelated")), second});
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	proxy.setBinFilter({});
+	QCOMPARE(proxy.rowCount(), 2);
 }
 
 QTEST_GUILESS_MAIN(TestMediaFilterProxy)

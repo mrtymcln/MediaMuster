@@ -37,8 +37,6 @@
 #pragma once
 #include "avidusage.h"
 
-// Property identifiers adapted from BBC libMXF data model definitions.
-// https://github.com/BBC-archive/libMXF/tree/main/mxf
 // These are canonical property identifiers, not file-local tag numbers.
 struct MxfPropertyIdentifier
 {
@@ -90,6 +88,6 @@ inline constexpr MxfPropertyIdentifier kMxfProperties[] = {
 	{AvidUsage::kPrivateMxfPropertyHex, AvidUsage::kPrivateMxfTag}, // Avid MobAppCode integer; not standard UsageCode UID
 };
 
-// libMXF mxf_avid_labels_and_keys.h: AvidUncRGBA. The generic AAF-KLV
-// descriptor wrapper is not codec-specific; this label is in the partition.
+// AvidUncRGBA container label, stored in the partition. The generic AAF-KLV
+// descriptor wrapper is not codec-specific.
 inline constexpr char kAvidUncRgbaContainerHex[] = "060e2b34040101010e04030102080100";

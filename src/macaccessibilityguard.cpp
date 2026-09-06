@@ -9,7 +9,7 @@
 namespace
 {
 #if defined(Q_OS_MAC) && QT_VERSION < QT_VERSION_CHECK(6, 6, 2)
-	// The three base classes Qt's own factory keys item views on. A row-less
+	// The three base classes the default factory keys item views on. A row-less
 	// interface for these is the whole guard; see the header for why.
 	QAccessible::Role roleFor(const QString &className)
 	{

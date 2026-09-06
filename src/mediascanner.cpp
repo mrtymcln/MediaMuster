@@ -163,9 +163,9 @@ namespace
 	// MaterialPackage name, so it only ever shows for files whose MXF
 	// header can't be read.
 	//
-	// The bin has no other source in the app: PmrEntry carries a project but
-	// no bin, and AvbParser yields only MOB IDs for the Bin Filter. Unknown
-	// therefore means blank, never a guess.
+	// PMR carries a project but no bin. Header metadata can also supply the
+	// recorded original bin. After scanning, the table may fill a remaining
+	// blank from an owning master clip's _ORG_BIN in a loaded AVB.
 	void applyMdbRecord(MediaFile &mf, const MdbMasterMob &rec)
 	{
 		setClipName(mf, rec.clipName, MediaFile::ClipNameSource::Mdb);
@@ -775,7 +775,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 	// ~30 Hz emit cap when folders finish quickly.
 	ProgressThrottle throttle;
 
-	// QtConcurrent::mapped preserves input order, so buffered logs
+	// The parallel map preserves input order, so buffered logs
 	// replay in scan order.
 	QFuture<MediaScanner::FolderResult> future =
 		QtConcurrent::mapped(tasks,

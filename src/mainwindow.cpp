@@ -167,7 +167,7 @@ namespace
 MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
 	  // Order needs to match mainwindow.h, otherwise the compiler
-	  // gets cranky. Pass `this` as parent and Qt handles cleanup.
+	  // gets cranky. Pass `this` as parent to bind cleanup to the window.
 	  m_volumeManager(new VolumeManager(this)),
 	  m_scanner(new MediaScanner(this)),
 	  m_fileOps(new OpManager(this)),
@@ -241,7 +241,7 @@ void MainWindow::runStartupRecovery()
 	// OpRescue::run only touches the filesystem, so it's safe on a pool
 	// thread; the watcher cleans itself up once it fires. (A lambda, not
 	// a function pointer: default arguments don't travel through
-	// QtConcurrent's pointer overloads.)
+	// the pool runner's pointer overloads.)
 	auto *watcher = new QFutureWatcher<OpRescue::Summary>(this);
 	connect(watcher, &QFutureWatcher<OpRescue::Summary>::finished, this,
 			[this, watcher]
@@ -1140,43 +1140,44 @@ void MainWindow::onFilterByBins()
 	if (!m_binFilterDialog)
 	{
 		m_binFilterDialog = new BinFilterDialog(this);
+		connect(m_binFilterDialog, &BinFilterDialog::loadError, this,
+				[this](const QString &path, const QString &reason)
+				{
+					addLog(QtWarningMsg, QStringLiteral("binfilter"),
+						   tr("Cannot load bin \"%1\": %2").arg(path, reason));
+				});
+		connect(m_binFilterDialog, &BinFilterDialog::binsChanged, this,
+				[this](const QVector<AvbBin> &bins)
+				{
+					applyFilterPreservingSelection([this, &bins]
+												   { m_model->setAvbBins(bins); });
+					updateStatusBar();
+				});
 		// Apply the chain change through the selection-preserving
 		// helper so the user's selection survives the filter shuffle.
 		connect(m_binFilterDialog, &BinFilterDialog::filterChainChanged, this,
-				[this](bool isActive, const QSet<QString> &acceptedMobs, const QStringList &)
+				[this](const BinFilter &filter, const QStringList &)
 				{
 					applyFilterPreservingSelection(
-						[this, isActive, &acceptedMobs]()
-						{ m_proxy->setBinFilterMobs(isActive, acceptedMobs); });
+						[this, &filter]()
+						{ m_proxy->setBinFilter(filter); });
 				});
 		connect(
 			m_binFilterDialog, &BinFilterDialog::filterChainChanged, this,
-			[this](bool isActive, const QSet<QString> &acceptedMobs, const QStringList &binNames)
+			[this](const BinFilter &filter, const QStringList &binNames)
 			{
-				m_binFilterActive = isActive;
+				m_binFilterActive = filter.isActive();
 				m_binFilterBinNames = binNames;
 				rebuildFilterChips();
 
-				if (!isActive)
+				if (!filter.isActive())
 				{
 					addLog(QtInfoMsg, QStringLiteral("binfilter"), "Bin filter cleared");
 					updateStatusBar();
 					return;
 				}
 				addLog(QtInfoMsg, QStringLiteral("binfilter"),
-					   QStringLiteral("Bin filter active — %1 MOBs accepted").arg(acceptedMobs.size()));
-
-				// Log a bin sample + file sample side-by-side to spot
-				// namespace mismatches (case, dotted vs undotted hex).
-				if (!acceptedMobs.isEmpty() && !m_model->allFiles().isEmpty())
-				{
-					auto binSample = *acceptedMobs.constBegin();
-					QString fileSample = m_model->allFiles().first().mobId;
-					QString compSample = m_model->allFiles().first().masterMobId;
-					addLog(QtDebugMsg, QStringLiteral("binfilter"), QStringLiteral("Bin MOB sample   : %1").arg(binSample));
-					addLog(QtDebugMsg, QStringLiteral("binfilter"), QStringLiteral("File mobId sample: %1").arg(fileSample));
-					addLog(QtDebugMsg, QStringLiteral("binfilter"), QStringLiteral("File masterMobId   : %1").arg(compSample));
-				}
+					   QStringLiteral("Bin filter active — %1 operations").arg(filter.steps.size()));
 				updateStatusBar();
 			});
 	}
@@ -1667,7 +1668,9 @@ void MainWindow::onSelectionChanged()
 		selectedCount += range.bottom() - range.top() + 1;
 	const bool hasSelection = selectedCount > 0;
 
-	m_btnFileOps->setEnabled(hasSelection);
+	// Background bin metadata can change the selection while a scan or
+	// operation is running. Preserve the busy gate during that restoration.
+	m_btnFileOps->setEnabled(hasSelection && m_scanButton->isEnabled());
 	m_statusSep1->setVisible(hasSelection);
 	m_statusSelected->setVisible(hasSelection);
 	m_statusSep2->setVisible(hasSelection);
@@ -2162,7 +2165,7 @@ void MainWindow::onExportCsv()
 	if (path.isEmpty())
 		return;
 
-	// Snapshot on the main thread; Qt models are thread-affine.
+	// Snapshot on the main thread; item models are thread-affine.
 	// Also freezes the export against later filter/sort changes.
 	QVector<MediaFile> rows;
 	if (exportSelected)
@@ -2549,7 +2552,7 @@ void MainWindow::autoFitColumns()
 	// A table wider than its window scrolls sideways; that is the normal
 	// way to show wide content, not something to protect the user from.
 	//
-	// Qt measures the first 1000 rows by default (setResizeContentsPrecision)
+	// The header measures the first 1000 rows by default (setResizeContentsPrecision)
 	// rather than all of them, which is what keeps this instant on a
 	// 300,000-file Nexis scan.
 	m_tableView->resizeColumnsToContents();
@@ -2817,7 +2820,7 @@ void MainWindow::rebuildFilterChips()
 			if (m_binFilterDialog)
 			{
 				// Dialog drives the cleanup: clearChain re-emits with
-				// isActive=false, which fans out through the connected
+				// an empty expression, which fans out through the connected
 				// signal handlers to update the proxy, cache, log, and
 				// chip strip uniformly.
 				m_binFilterDialog->clearChain();
@@ -2828,7 +2831,7 @@ void MainWindow::rebuildFilterChips()
 			m_binFilterActive = false;
 			m_binFilterBinNames.clear();
 			applyFilterPreservingSelection([this]()
-										   { m_proxy->setBinFilterMobs(false, {}); });
+										   { m_proxy->setBinFilter({}); });
 			rebuildFilterChips();
 			updateStatusBar();
 		};
@@ -2877,7 +2880,7 @@ void MainWindow::resetFiltersForNewScan()
 	m_proxy->setFilterMode(MediaFilterProxy::FilterMode::All);
 	m_proxy->setSearchText({});
 	m_proxy->setProjectFilter({});
-	m_proxy->setBinFilterMobs(false, {});
+	m_proxy->setBinFilter({});
 	m_proxy->setPrecomputeTreeFilter({});
 	m_proxy->setEffectVolumeFilter({});
 

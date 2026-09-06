@@ -15,7 +15,7 @@ Recognition from a clip name is **not a definitive effect ID**. Clip names are e
 | Additional reviewed render names | Audio Dissolve, Motion Effect, D-Verb; explanations below | 3 |
 | Shipped `Default_ExternalDynamicAVX2.xml` | 667 registry records, 659 distinct name-category pairs | 659 |
 
-The third-party registry is a shipped recognition list. It does **not** prove those plug-ins are installed, licensed, enabled, or available in the current session. Similarly, the binary contains registrations for hidden/debug/legacy entries; their inclusion does not claim they appear in the current palette. `FXBaseProxyRegistration` placeholders are omitted because they describe internal proxy registrations, not public effect names.
+The inspected effect registry is a shipped recognition list. It does **not** prove those plug-ins are installed, licensed, enabled, or available in the current session. Similarly, the binary contains registrations for hidden/debug/legacy entries; their inclusion does not claim they appear in the current palette. `FXBaseProxyRegistration` placeholders are omitted because they describe internal proxy registrations, not public effect names.
 
 Names in German, Spanish, French, Italian, Japanese, Chinese, and Russian come from current shipped `MCStrings_*.xml` entries that explicitly cite `AEffectInfo.c`. Only names independently established by registrations receive these aliases. There are 1,106 nonempty translated values; these are aliases, not additional effects. A palette category string in the translation file is not evidence that it is an effect name.
 
@@ -47,6 +47,6 @@ Generated outputs are `src/avideffectscatalogue.inc` and the JSON files here. `c
 
 ## Validation
 
-- Fresh C++17/Qt 6.5.3 build of `tst_avideffects`: **36 checks passed**, none failed or skipped. Coverage includes current/legacy registrations, all four requested render spellings, sequence commas, malformed/overflow suffixes, localized lookup, category ambiguity, and negative cases for arbitrary names/case changes.
+- Fresh C++17 build of `tst_avideffects`: **36 checks passed**, none failed or skipped. Coverage includes current/legacy registrations, all four requested render spellings, sequence commas, malformed/overflow suffixes, localized lookup, category ambiguity, and negative cases for arbitrary names/case changes.
 - A separately rebuilt C++ probe processed all **171 supplied precompute clip names**: **107 recognized**, including **51 additional matches** (44 Audio Dissolve, five D-Verb, one Motion Effect, one 3D Warp). The remaining **64** retain their original title/template/custom text and are unrecognized. Private clip names are not copied into this repository; before/after JSON and test logs remain under `/tmp/mediamuster-audit/effects26`.
 - This validates recognition of those names. It does not prove the actual effect graph, plug-in availability, or live AlphaFlex state from a name alone.

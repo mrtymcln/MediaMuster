@@ -21,7 +21,7 @@ namespace RevealInFinder
 
 		// Last-resort fallback. Called when the file no longer exists, or
 		// when a platform-specific reveal failed. Plain "show this folder" —
-		// Qt picks Finder or Explorer, so no per-platform branch here (the
+		// The desktop service picks Finder or Explorer, so no per-platform branch here (the
 		// reveal-and-highlight tiers below are the genuinely platform-bound part).
 		void openParentFolder(const QString &parentDir, const Logger &log)
 		{
@@ -88,7 +88,7 @@ namespace RevealInFinder
 			fullPath.resize(fullPathLen);
 			const QString canonicalPath = QString::fromWCharArray(fullPath.data());
 
-			// CoInitializeEx defensively: Qt may have already initialised
+			// CoInitializeEx defensively: the framework may have already initialised
 			// COM with a different model (RPC_E_CHANGED_MODE). Skip the
 			// matching CoUninitialize in that case.
 			const HRESULT coHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);

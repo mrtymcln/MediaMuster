@@ -1,0 +1,249 @@
+{
+  "date": "2026-09-06",
+  "cxx_standard": 17,
+  "qt_version": "6.5.3",
+  "build": "universal macOS arm64+x86_64",
+  "ctest": {
+    "targets": 31,
+    "passed": 31,
+    "failed": 0,
+    "seconds": 36.93
+  },
+  "sanitizers": {
+    "address": true,
+    "undefined_behavior": true,
+    "parser_cases_passed": 66,
+    "failed": 0,
+    "diagnostics": 0
+  },
+  "independent_header_compilation": [
+    "avbparser.h",
+    "binfilter.h",
+    "binfilterdialog.h",
+    "mediatablemodel.h"
+  ],
+  "final_dialog_check": {
+    "passed": 13,
+    "failed": 0
+  },
+  "strict_codesign_verification": "passed",
+  "suite_details": [
+    {
+      "name": "tst_avbmetadata",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_avbparser",
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_avideffects",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_bentofile",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 1,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_binfilterdialog",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_conventions",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_crashcollector",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_effectfilterdialog",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_fileidentity",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_format",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_logfile",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_mdbparser",
+      "passed": 62,
+      "failed": 0,
+      "skipped": 1,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_mediacsv",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_mediafilterproxy",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_mediatablemodel",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_mobid",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_mxfparser",
+      "passed": 102,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_omfparser",
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_omfuid",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_opjournal",
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_opmanager",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_oprequest",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_oprescue",
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_oprunner",
+      "passed": 41,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_opundo",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_pathkey",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_pmrkey",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_pmrparser",
+      "passed": 100,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_rebalancer_parse",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_rebalancer_plan",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "blacklisted": 0
+    },
+    {
+      "name": "tst_scanner",
+      "passed": 49,
+      "failed": 0,
+      "skipped": 1,
+      "blacklisted": 0
+    }
+  ]
+}

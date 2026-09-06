@@ -379,7 +379,7 @@ OpUndo::ItemOutcome OpUndo::undoMoveOp(const OpJournal::Entry &op, OpJournal &jo
 	QDir().mkpath(QFileInfo(op.src).absolutePath());
 
 	// Same-volume: pure rename home. The same gate as the forward run —
-	// Qt would otherwise silently copy-and-unlink across volumes. Test
+	// QFile::rename would silently copy-and-unlink across volumes. Test
 	// seam MEDIAMUSTER_FORCE_MOVE_COPY forces the copy-back leg, exactly
 	// as it forces the forward copy leg.
 	const bool forceCopyLeg = qEnvironmentVariableIsSet("MEDIAMUSTER_FORCE_MOVE_COPY");

@@ -23,7 +23,7 @@ class ParkedFile;
 //      verify — no bytes were rewritten — beyond a size re-stat floor.
 //   2. Windows native copy (CopyFileExW, BOTH ends proven-local). The
 //      OS engine moves the bytes; we then re-read BOTH files and compare
-//      XXH3 checksums — the price of the native path is that extra
+//      checksums — the price of the native path is that extra
 //      source read, because the OS gave us no hash along the way.
 //   3. Our own buffered loop (everywhere else — and ALWAYS when either
 //      end is a network/Nexis volume, Marty's call: unknown storage
@@ -67,7 +67,7 @@ public:
 	{
 		Outcome outcome = Outcome::Failed;
 		QString error;	 ///< User-facing sentence, set when Failed.
-		QString hashHex; ///< XXH3-64 of the verified bytes, hex; empty on
+		QString hashHex; ///< 64-bit hash of the verified bytes, hex; empty on
 						 ///< the clone path or with verification off.
 		bool usedClone = false;
 		bool usedNativeCopy = false;
@@ -110,7 +110,7 @@ public:
 		quint64 digest = 0;
 	};
 
-	/// XXH3-64 of a whole file. Public because Undo re-checks a landed
+	/// 64-bit hash of a whole file. Public because Undo re-checks a landed
 	/// copy against the journal's recorded hash before acting on it.
 	HashOutcome hashFile(const QString &path, const std::atomic<bool> &cancel);
 

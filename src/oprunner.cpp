@@ -571,7 +571,7 @@ OpRunner::Totals OpRunner::runCopyMove(const OpRequest &req, const QString &jour
 		}
 
 		// MOVE, same volume: pure rename — the fast path. The volume check
-		// is NOT an optimisation (adversarial review finding 5): Qt's
+		// is NOT an optimisation (adversarial review finding 5):
 		// QFile::rename silently falls back to a copy-then-DELETE when the
 		// paths cross volumes — an unverified 4 KB-buffered copy whose
 		// destination can still be entirely in the page cache when the

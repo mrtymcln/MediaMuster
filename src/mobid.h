@@ -65,9 +65,10 @@ namespace MobId
 
 	// MARK: - Encoding conversion
 
-	/// Swap the middle fields (bytes 16..23) of a raw 32-byte MOB,
-	/// converting between MXF/AVB byte order (little-endian middle fields)
-	/// and PMR/MDB byte order (big-endian). The two encodings share every
+	/// Swap the middle fields (bytes 16..23) of a logical 32-byte MOB,
+	/// converting between little- and big-endian material fields. AVB
+	/// scalars follow the container's byte order and are normalized by its
+	/// reader before reaching this helper. The two encodings share every
 	/// other byte; only these differ:
 	///   bytes 16..19: a u32  (swap [16] with [19], [17] with [18])
 	///   bytes 20..21: a u16  (swap [20] with [21])
@@ -86,8 +87,8 @@ namespace MobId
 		std::swap(dst[22], dst[23]);
 	}
 
-	/// Re-encode a formatted MobId hex from MXF/AVB byte order to PMR/MDB
-	/// byte order via swapMiddleFields. Bridges a UMID extracted from an
+	/// Re-encode formatted MobId hex from little-endian material fields to
+	/// PMR/MDB form via swapMiddleFields. Bridges a UMID extracted from an
 	/// MXF header (tag 0x4401) into a MOB ID that matches PMR/MDB-keyed
 	/// lookup tables. Returns empty if `avbFormHex` isn't 32 bytes.
 	inline QString toPmrForm(const QString &avbFormHex)

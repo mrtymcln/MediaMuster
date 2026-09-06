@@ -165,15 +165,6 @@ AboutDialog::AboutDialog(QWidget *parent)
 
 	addCredit(tr("Crafty"), QStringLiteral("Sette Café"));
 
-	auto *provenance =
-		new QLabel(tr("Made with published specifications and examination of files.\n"
-					  "No Avid source code was used in the making of this app."));
-	provenance->setWordWrap(true);
-	provenance->setAlignment(Qt::AlignHCenter);
-	tweakFont(provenance, -1);
-	roll->addWidget(provenance);
-	roll->addSpacing(10);
-
 	auto *copyright = new QLabel(tr("© 2026 Martin McLean. All rights reserved."));
 	copyright->setAlignment(Qt::AlignHCenter);
 	tweakFont(copyright, -1);

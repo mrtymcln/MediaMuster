@@ -686,8 +686,8 @@ void TestBentoFile::riff_embedded_label_uses_file_relative_offsets()
 
 void TestBentoFile::toolkit_corpus()
 {
-	// The toolkit's license does not grant fixture redistribution. Point to
-	// a separately obtained public LWKS-Software/omfkt22 checkout to run it.
+	// These external fixtures are not redistributed. Point to a separately
+	// obtained checkout containing NTProjects_VS10 to run this test.
 	const QString root = qEnvironmentVariable("MEDIAMUSTER_OMFKT22");
 	if (root.isEmpty())
 		QSKIP("Set MEDIAMUSTER_OMFKT22 to exercise genuine public toolkit files");

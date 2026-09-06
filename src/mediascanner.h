@@ -117,7 +117,7 @@ private:
 	// MARK: - Scan stages
 	//
 	// Everything below runs off-thread (BackgroundJob worker or
-	// QtConcurrent pool). Don't call from UI handlers.
+	// shared thread pool). Don't call from UI handlers.
 
 	void doScan();
 
@@ -151,7 +151,7 @@ private:
 	//
 	// Nested: nothing outside this class names either type.
 
-	/// One unit of folder-level work submitted to QtConcurrent::mapped.
+	/// One unit of folder-level work submitted to the parallel map.
 	/// Self-contained so the parser doesn't reach back into the scanner.
 	struct ScanTask
 	{
@@ -255,7 +255,7 @@ private:
 
 	Options m_options;
 
-	/// Guarded by m_logMutex. Orchestrator + QtConcurrent pool threads
+	/// Guarded by m_logMutex. Orchestrator + shared pool threads
 	/// all append via emitLog. The swap-then-emit dance in flushLogs
 	/// keeps the mutex hold short.
 	QMutex m_logMutex;

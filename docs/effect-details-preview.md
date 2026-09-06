@@ -11,9 +11,9 @@ The new effect details and picker are a preview, disabled at every launch:
 
 The table gains **Precompute Category**, **Effect Category**, **Effect** and **Effect Sequence** columns. CSV exports include those same four columns while the feature is enabled (26 columns enabled, 22 disabled). Turning it off removes the columns and clears category, effect and volume filters. It does not change the underlying metadata classification. The Debug toggle is unavailable while a scan or media operation is busy and is disabled again at the next launch.
 
-The picker uses a narrow standard Qt dialog and outline. Its **Volume** row follows the Rebalance dialog. **Rendered Effects** expands into effect categories and then individual effects; **Titles and Matte Keys** and **unknown** expand directly into their named effects. The checkboxes show the selection, without separate selected-filter chips. There is no Search field, tree heading or Files column. The matching-file total remains below the outline, alongside **Apply** and **Cancel**.
+The picker uses a narrow standard dialog and outline. Its **Volume** row follows the Rebalance dialog. **Rendered Effects** expands into effect categories and then individual effects; **Titles and Matte Keys** and **unknown** expand directly into their named effects. The checkboxes show the selection, without separate selected-filter chips. There is no Search field, tree heading or Files column. The matching-file total remains below the outline, alongside **Apply** and **Cancel**.
 
-The dialog inherits the application's Qt style, palette and font, and uses the standard window frame with spacing matching Rebalance. The experimental Platinum drawing code, images and bundled font have been removed from the application.
+The dialog inherits the application's style, palette and font, and uses the standard window frame with spacing matching Rebalance. The experimental custom drawing code, images and bundled font have been removed from the application.
 
 Ticking a branch selects its contents. Different checked branches are alternatives: selecting all **Titles and Matte Keys** together with **Rendered Effects → Blend → 3D Warp** shows both groups. A named effect matches its complete branch, so another effect with the same label elsewhere is not added accidentally. The word **unknown** is a selectable value, not a wildcard.
 
@@ -47,7 +47,7 @@ After a file is classified as a precompute, MediaMuster compares its stored rend
 
 Effect details continue to come from the clip name, as requested. A name shared by multiple palette categories displays all matching categories. An unmatched token stays visible with category **unknown**; an empty effect displays **unknown**. Renaming can remove the clue or create a misleading match. This limitation is documented beside the lookup code, without an effect-name tooltip. Effect recognition does not decide the parent precompute category.
 
-The exact historical token `3DWarp` maps to **3D Warp / Blend** as a documented compatibility alias. The [Avid 2026 Effects Guide](https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf), pages 287–288, also places 3D Warp in Blend. **3D Warp Legacy / Legacy** remains a separate catalogue entry. The shipped third-party registry describes names Media Composer recognizes; it is not proof that every listed plug-in is installed or licensed.
+The exact historical token `3DWarp` maps to **3D Warp / Blend** as a documented compatibility alias. The [Avid 2026 Effects Guide](https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf), pages 287–288, also places 3D Warp in Blend. **3D Warp Legacy / Legacy** remains a separate catalogue entry. The inspected effect registry describes names Media Composer recognizes; it is not proof that every listed plug-in is installed or licensed.
 
 The [catalogue evidence and regeneration instructions](evidence/avid-effects-26.8/README.md) distinguish direct registration facts, translated aliases, and the additional Motion Effect/Timewarp and D-Verb/AudioSuite groupings.
 
@@ -61,26 +61,26 @@ A native probe of the actual MainWindow passes all 30 checks. It reproduces the 
 - A separate probe of the actual MainWindow passes 21 checks using synthetic rows. It verifies Apply, Cancel, descriptive branch and disambiguated volume chips, independent removal of either restriction, and restoring all rows after clearing both. The captured chip strip displays both labels and clear controls without clipping.
 - MediaMuster rebuilds successfully and its Developer ID signature verifies. Probe source, results and native screenshots are retained under `/tmp/mediamuster-audit/compact-filter-*`.
 
-## Earlier standard Qt picker validation — 5 September 2026
+## Earlier standard picker validation — 5 September 2026
 
-These measurements describe the initial standard Qt layout, before the compact Volume-only layout and Apply button were selected.
+These measurements describe the initial standard layout, before the compact Volume-only layout and Apply button were selected.
 
 - MediaMuster and the dialog test target rebuild successfully; the app's Developer ID signature verifies.
-- All nine dialog test entries pass using both Qt's default offscreen style and the native Cocoa/macOS style. They cover branch selection, mixed states, reopening, search, volume changes, keyboard actions, and Done/Cancel.
-- Native previews were inspected at normal and minimum sizes. The dialog inherits the application style, font and palette, with no custom frame or stylesheet. Button ordering follows the platform's standard Qt convention.
-- Platinum source files, bundled artwork and fonts, build/resource entries and their dedicated attribution notices are removed. Prior screenshots remain historical evidence.
+- All nine dialog test entries pass using both the default offscreen style and the native Cocoa/macOS style. They cover branch selection, mixed states, reopening, search, volume changes, keyboard actions, and Done/Cancel.
+- Native previews were inspected at normal and minimum sizes. The dialog inherits the application style, font and palette, with no custom frame or stylesheet. Button ordering follows the platform's standard convention.
+- The custom drawing code, bundled artwork and fonts, and build/resource entries are removed. Prior screenshots remain historical evidence.
 
-## Earlier Platinum picker validation — 5 September 2026
+## Earlier custom picker validation — 5 September 2026
 
-These measurements describe the earlier custom appearance, which has since been removed. The branch selection behaviour is retained in the standard Qt dialog.
+These measurements describe the earlier custom appearance, which has since been removed. The branch selection behaviour is retained in the standard dialog.
 
 - The rebuilt application and all 29 test suites pass. Dialog checks exercise branch selection and mixed states, reopening, same-name effects in different subtypes, zero-result volumes, search, keyboard toggling, Done and Cancel.
-- The actual Qt dialog was rendered and inspected at its normal and minimum sizes, including the volume popup. Search and Volume share one row; the footer contains Cancel and Done, with no Reset button or selected-filter chips.
-- The app retains its verified Developer ID signature. The Platinum appearance is local to this dialog; native Qt controls retain keyboard navigation. Escape and Command-period cancel, Return activates Done, and Command-left/right collapse or expand the current branch.
+- The actual dialog was rendered and inspected at its normal and minimum sizes, including the volume popup. Search and Volume share one row; the footer contains Cancel and Done, with no Reset button or selected-filter chips.
+- The app retains its verified Developer ID signature. The custom appearance is local to this dialog; native controls retain keyboard navigation. Escape and Command-period cancel, Return activates Done, and Command-left/right collapse or expand the current branch.
 
 ## Earlier precompute category validation — 5 September 2026
 
-These measurements preceded the Platinum picker and describe the earlier filter interface.
+These measurements preceded the custom picker and describe the earlier filter interface.
 
 - Fresh reads through the new MDB and MXF parsers independently match all 171 precomputes in the earlier raw-metadata ledger: **107 Rendered Effects and 64 Titles and Matte Keys**, with zero category mismatches.
 - A complete read-only scan of EDIT found 2,052 current files and reproduced those same 171 categories. Category filters selected 107 and 64 files; **3D Warp on EDIT** selected one file. Turning the Debug feature off cleared the experimental filters.
@@ -98,6 +98,6 @@ The following results describe the earlier three-column effect preview, before t
 - Current C++ table, filter and CSV code was exercised with all 2,493 records. All 7,479 effect-detail table cells agreed with the catalogue output; all 56 effect/volume count checks passed. **3D Warp on EDIT** selects only row 272 of the supplied second CSV.
 - Preview off/on exports contain 22/25 columns respectively, with 2,493 correctly aligned rows. All 54,846 non-effect cells agree with the supplied second CSV. Effect Sequence values are preserved.
 - An actual MainWindow probe passed 31 checks, including Debug gating, modal Apply/Cancel, keyboard checkboxes, identical volume labels, selection restoration, sorting, clearing filter chips and new-scan resets. It used synthetic rows with startup scanning and recovery disabled.
-- The final application builds for Apple Silicon and Intel, and its configured Developer ID signature verifies. All 29 test suites have passing final results: 675 QtTest entries passed, none failed, with one filesystem-specific case skipped because this host is case-insensitive. The three changed parser suites also passed 148 entries under AddressSanitizer and UndefinedBehaviorSanitizer, with no skips or diagnostics.
+- The final application builds for Apple Silicon and Intel, and its configured Developer ID signature verifies. All 29 test suites have passing final results: 675 test entries passed, none failed, with one filesystem-specific case skipped because this host is case-insensitive. The three changed parser suites also passed 148 entries under AddressSanitizer and UndefinedBehaviorSanitizer, with no skips or diagnostics.
 
 The original CSVs, Avid databases and media files were only read. Probe exports and detailed local test evidence are retained separately under `/tmp/mediamuster-audit`. A durable copy of the principal results is in the task's `MediaMuster-audit/effects-26.8` artifact folder.

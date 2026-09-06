@@ -166,8 +166,9 @@ mediamuster_add_test(tst_crashcollector
     ${CMAKE_SOURCE_DIR}/src/crashcollector.cpp
 )
 
-# AvbParser: MOB extraction from a bin, driven by hand-crafted byte buffers,
-# plus the two real OMF-era bins in fixtures/omf (raw wrapped MOBs).
+# AvbParser: complete structured documents in both byte orders, malformed
+# object/reference boundaries, typed identities and metadata ownership, plus
+# the two real OMF-era bins in fixtures/omf.
 mediamuster_add_test(tst_avbparser
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
 )
@@ -267,7 +268,12 @@ mediamuster_add_test(tst_mediatablemodel
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
 )
 
-# MediaFilterProxy: search across Unicode normalisation forms (NFC vs NFD).
+# AVB enrichment: preserve scan metadata and reject conflicting bin fallbacks.
+mediamuster_add_test(tst_avbmetadata
+    ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+)
+
+# MediaFilterProxy: text normalization, classifications and row-level AVB algebra.
 mediamuster_add_test(tst_mediafilterproxy
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
@@ -280,3 +286,14 @@ mediamuster_add_test(tst_effectfilterdialog
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
 )
 target_link_libraries(tst_effectfilterdialog PRIVATE Qt6::Widgets)
+
+# Bin picker: asynchronous loading/status and ordered expressions through the
+# actual proxy, including empty operands and removed pending reads.
+mediamuster_add_test(tst_binfilterdialog
+    ${CMAKE_SOURCE_DIR}/src/binfilterdialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+)
+target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent)
+set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

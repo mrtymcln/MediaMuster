@@ -18,7 +18,7 @@ static constexpr qint64 kCopyBufferSize = 4 * 1024 * 1024;
 
 namespace
 {
-	// RAII wrapper for xxHash3 streaming state. Hashes the source during
+	// RAII wrapper for streaming hash state. Hashes the source during
 	// the read pass, re-hashes the destination after the copy; mismatch
 	// means the copy is not trusted and the destination is discarded.
 	struct XxhStream
@@ -35,7 +35,7 @@ namespace
 				XXH3_freeState(s);
 		}
 
-		// XXH3 state isn't copyable; moving would double-free.
+		// The owned hash state isn't copyable; moving would double-free.
 		XxhStream(const XxhStream &) = delete;
 		XxhStream &operator=(const XxhStream &) = delete;
 		XxhStream(XxhStream &&) = delete;
@@ -396,7 +396,7 @@ OpCopier::Result OpCopier::copyBuffered(const QString &src, const QString &dst, 
 
 	srcFile.close();
 
-	// Floor 1 — runs with or without verification: hand Qt's write
+	// Floor 1 — runs with or without verification: hand the file's write
 	// buffer to the OS and confirm both that handoff and the close. A
 	// full disk or a failing share often only admits trouble here.
 	const bool dstFlushOk = dstFile.flush();

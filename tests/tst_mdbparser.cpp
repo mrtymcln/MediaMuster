@@ -1277,7 +1277,7 @@ void TestMdbParser::descriptor_failure_never_creates_a_master()
 void TestMdbParser::external_toolkit_semantic_regression()
 {
 	// Original toolkit specimens are intentionally not redistributed here.
-	// Set OMF_TOOLKIT_SAMPLES to a local omfkt22/NTProjects_VS10 directory.
+	// Set OMF_TOOLKIT_SAMPLES to the local NTProjects_VS10 specimen directory.
 	const QString samples = qEnvironmentVariable("OMF_TOOLKIT_SAMPLES");
 	if (samples.isEmpty())
 		QSKIP("Set OMF_TOOLKIT_SAMPLES to validate external toolkit writer outputs");

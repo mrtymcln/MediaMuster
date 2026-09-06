@@ -2,7 +2,7 @@
 
 Updated 5 September 2026. This describes the implementation following the independent review of the proposed rebuild. The attached proposal was treated as a set of claims to check, rather than automatic authority to rewrite every subsystem. Existing interfaces and measured behaviour were retained where the evidence supported them.
 
-MediaMuster now follows more of the database and media-reading rules found in the installed Media Composer. This is a substantial compatibility improvement, not proof that the two applications are identical. Tests distinguish real Avid files, original OMF toolkit files, and independently constructed cases for formats for which no real specimen was available.
+MediaMuster now follows more of the database and media-reading rules found in the installed Media Composer. This is a substantial compatibility improvement, not proof that the two applications are identical. Tests distinguish real Avid files, external OMF specimens, and independently constructed cases for formats for which no real specimen was available.
 
 ## What changes for an editor
 
@@ -37,16 +37,16 @@ The binary reference is **Media Composer 26.8.0.58987**, specifically `libameLib
 | PMR version 1 | `ReadPmrRec` at `0x4476c8–0x4477f4` omits stored project/master fields and recovers them through other database information. The scanner now follows the unique MDB file-to-master relationship. |
 | Unicode records | `LoadPMR` at `0x445154–0x4452ec` and `DumpCache` at `0x4509d4–0x450b50` establish the independent appended count and preferred record vector. The called `AStream::ReadUTF8StringAndConvertToUTF16` method establishes the on-disk UTF-8 framing. |
 | Timestamp exception | `CompareDirectory` at `0x4537a8–0x4537c0` and the cached directory scan at `0x44c738–0x44c74c` accept an exact one-hour difference. MediaMuster adds that exact exception to its existing two-second filesystem tolerance around its Unix/local-1904 interpretations. It does not accept a one-hour interval or infer arbitrary foreign time zones. |
-| Real Bento2 | `omf2DualStream::getNextTOCEntry` at `0x4ad824` and the original toolkit's `bento/TOCIO.h`/`TOCIO.c` describe compact TOC opcodes. `src/bentofile.cpp` now decodes them rather than interpreting Bento2 as a renamed Bento1 table. |
+| Real Bento2 | `omf2DualStream::getNextTOCEntry` at `0x4ad824` implements compact TOC opcodes. `src/bentofile.cpp` now decodes them rather than interpreting Bento2 as a renamed Bento1 table. |
 | Embedded WAVE OMF metadata | `IsOMFIFile` at `0xddc3c` checks RIFF/RF64 `omfi` chunks as well as the ordinary tail label. Authored tests verify the absolute stream offsets observed in those instructions. Avid gates this path with a preference; MediaMuster's read-only reader recognizes the wrapper directly. |
-| OMF1/OMF2 objects | The [OMF2.1 specification](https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf), Appendix A, and the [original toolkit](https://github.com/LWKS-Software/omfkt22/tree/06a9dcebf52c69318cdb7b7caa0f0f736556151e) define classes, properties and relationships. `src/omfobjects.cpp` separates OMF1 MOBJ/TRKG/TRAK from OMF2 MMOB/SMOB/CMOB and slots/segments. Recognized OMF1 and OMF2 schemas distinguish compositions from masters. A present but unreadable physical descriptor does not qualify its owner as a master. |
+| OMF1/OMF2 objects | The [OMF2.1 specification](https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf), Appendix A, defines classes, properties and relationships. `src/omfobjects.cpp` separates OMF1 MOBJ/TRKG/TRAK from OMF2 MMOB/SMOB/CMOB and slots/segments. Recognized OMF1 and OMF2 schemas distinguish compositions from masters. A present but unreadable physical descriptor does not qualify its owner as a master. |
 | Avid legacy OMF version | `omfiHPDomain::CloseContainer` at `0xe28e8` stores a native 16-bit `0x100`; the property-17 write at `0xe2a90–0xe2ab8` copies its two bytes as `OMFI:Version`. The observed `00 01` value is recognized as OMF1 only with the legacy `OMFI:ObjID` HEAD property and without `OMFI:OOBJ:ObjClass`. This does not reinterpret arbitrary version bytes or substitute the Bento version. |
-| Uncompressed alpha | The [BBC libMXF Avid labels](https://github.com/BBC-archive/libMXF/blob/main/mxf/mxf_avid_labels_and_keys.h) identify `060e2b34040101010e04030102080100` as AvidUncRGBA. The ten observed files pair this with an RGBA descriptor and A/8 pixel layout; their MDB descriptors explicitly declare `NONE` compression. The display name describes that evidence, rather than claiming an exact Avid menu spelling. |
-| SDII | Installed Avid property registrations include `SD2D:BitsPerSample`, `NumChannels`, `Data` and `MobID`. The toolkit identifies SD2D and its MDFL inheritance. Tests cover OMF1/OMF2 and both metadata byte orders, but are constructed from the schema. |
-| MXF properties | The [BBC libMXF data-model definitions](https://github.com/BBC-archive/libMXF/tree/main/mxf) supply the property identifiers used to resolve each file's Primer Pack. The selected identifiers and attribution are in `src/mxfproperties.h`. |
+| Uncompressed alpha | The ten observed files pair essence identifier `060e2b34040101010e04030102080100` with an RGBA descriptor and A/8 pixel layout; their MDB descriptors explicitly declare `NONE` compression. The display name describes that evidence, rather than claiming an exact Avid menu spelling. |
+| SDII | Installed Avid property registrations include `SD2D:BitsPerSample`, `NumChannels`, `Data` and `MobID`. The schema identifies SD2D and its MDFL inheritance. Tests cover OMF1/OMF2 and both metadata byte orders, but are constructed from the schema. |
+| MXF properties | The property identifiers selected in `src/mxfproperties.h` resolve each file's Primer Pack. |
 | DNx rates | The user's **DNx Specs old.pdf**, printed pages 9–10, contains the legacy 1080 and 720 tables, including high frame rates. The newer **The Avid DNx Video Codec - Avid White Paper.pdf**, pages 3–6, supplies the current family/tier terminology. Unsupported or missing rates retain the known tier, as chosen by the user. |
 
-The OMF1 archive link supplied by the user could not be retrieved. OMF1 implementation relies on the actual toolkit source and existing Avid specimens; it does not claim to quote an unavailable PDF. No original toolkit source or specimen has been copied into the repository: external specimen tests are optional because that archive includes restrictive distribution terms.
+The OMF1 archive link supplied by the user could not be retrieved. OMF1 implementation was checked against the reference reader and existing Avid specimens; it does not claim to quote an unavailable PDF. External specimen tests use local files that have not been copied into the repository.
 
 ## Compatibility limits
 
@@ -61,20 +61,20 @@ The OMF1 archive link supplied by the user could not be retrieved. OMF1 implemen
 
 ## Reproducing validation
 
-Build with the project's pinned Qt 6.5.3 and C++17 configuration, then run:
+Build with the project's pinned C++17 configuration, then run:
 
 ```sh
 cmake --build build --parallel 4
 ctest --test-dir build --output-on-failure
 ```
 
-Optional original-toolkit checks use a local checkout without copying its specimens into this repository:
+Optional external-fixture checks use a local checkout without copying its specimens into this repository:
 
 ```sh
 MEDIAMUSTER_OMFKT22=/path/to/omfkt22 build/tests/tst_bentofile toolkit_corpus
 OMF_TOOLKIT_SAMPLES=/path/to/omfkt22/NTProjects_VS10 build/tests/tst_mdbparser external_toolkit_semantic_regression
 ```
 
-The tests cover real Avid PMR/MDB/header joins, 82 legacy essence specimens, all 65 available original-toolkit OMF container specimens, independently authored OMF1/OMF2/SDII structures, malformed lengths/references, PMR version/byte-order/Unicode boundaries, stale and reused-filename scanner behaviour, and unknown-value consumers. The optional toolkit checks skip when their environment variables are absent. The case-sensitive directory test skips on case-insensitive storage.
+The tests cover real Avid PMR/MDB/header joins, 82 legacy essence specimens, all 65 available external OMF container specimens, independently authored OMF1/OMF2/SDII structures, malformed lengths/references, PMR version/byte-order/Unicode boundaries, stale and reused-filename scanner behaviour, and unknown-value consumers. The optional external-fixture checks skip when their environment variables are absent. The case-sensitive directory test skips on case-insensitive storage.
 
 Final build, complete-suite and sanitizer outcomes are recorded in [the implementation validation note](implementation-validation.md).

@@ -2,11 +2,14 @@
 #include "dragdroputil.h"
 #include "formatutil.h"
 
+#include <QDir>
 #include <QDragEnterEvent>
 #include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFrame>
+#include <QFutureWatcher>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -18,12 +21,28 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QUrl>
+#include <QVariant>
 #include <QVBoxLayout>
+#include <QtConcurrent>
+
+#include <algorithm>
+#include <utility>
 
 // MARK: - File-local helpers
 
 namespace
 {
+	constexpr int kMaxConcurrentBinLoads = 2;
+
+	QString binExplanation(const AvbBin &bin, bool loading)
+	{
+		if (loading)
+			return BinFilterDialog::tr("Loading…");
+		if (bin.mobIds.isEmpty())
+			return BinFilterDialog::tr("No media references.");
+		return bin.warnings.isEmpty() ? QString() : BinFilterDialog::tr("Loaded with warnings.");
+	}
+
 	QString opLabel(BinFilterDialog::Operation op)
 	{
 		switch (op)
@@ -91,11 +110,19 @@ BinFilterDialog::BinFilterDialog(QWidget *parent)
 	setAttribute(Qt::WA_MacAlwaysShowToolWindow, true);
 	setModal(false);
 	setAcceptDrops(true);
+	m_parsePool.setMaxThreadCount(kMaxConcurrentBinLoads);
 	resize(720, 640);
 	setupUi();
 }
 
-BinFilterDialog::~BinFilterDialog() = default;
+BinFilterDialog::~BinFilterDialog()
+{
+	for (const auto &cancelled : std::as_const(m_pendingLoads))
+		cancelled->store(true, std::memory_order_relaxed);
+	// Workers own only their path and cancellation flag. On teardown, join
+	// after signalling cancellation so the pool cannot outlive the dialog.
+	m_parsePool.waitForDone();
+}
 
 // MARK: - UI layout
 
@@ -128,6 +155,7 @@ void BinFilterDialog::setupUi()
 	framedLayout->setContentsMargins(0, 0, 0, 0);
 	framedLayout->setSpacing(0);
 	m_binList = new QListWidget;
+	m_binList->setObjectName(QStringLiteral("BinList"));
 	m_binList->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	m_binList->setMinimumHeight(140);
 	m_binList->setFrameShape(QFrame::NoFrame);
@@ -165,6 +193,7 @@ void BinFilterDialog::setupUi()
 	segLayout->addWidget(vSep2);
 	segLayout->addStretch(1);
 	m_binListSummary = new QLabel(tr("0 loaded, 0 ticked"));
+	m_binListSummary->setObjectName(QStringLiteral("BinListSummary"));
 	m_binListSummary->setStyleSheet(
 		QStringLiteral("QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
 	segLayout->addWidget(m_binListSummary);
@@ -201,6 +230,9 @@ void BinFilterDialog::setupUi()
 		tr("Add"),
 		tr("Bring back media referenced in the ticked bins, even if an earlier step hid it."),
 		m_btnAdd));
+	m_btnIntersect->setObjectName(QStringLiteral("BinIntersectButton"));
+	m_btnSubtract->setObjectName(QStringLiteral("BinSubtractButton"));
+	m_btnAdd->setObjectName(QStringLiteral("BinAddButton"));
 
 	root->addWidget(opsGroup);
 
@@ -220,6 +252,7 @@ void BinFilterDialog::setupUi()
 	chainFrameLayout->setSpacing(0);
 
 	m_chainList = new QListWidget;
+	m_chainList->setObjectName(QStringLiteral("BinChainList"));
 	m_chainList->setMinimumHeight(96);
 	m_chainList->setFrameShape(QFrame::NoFrame);
 	chainFrameLayout->addWidget(m_chainList, 1);
@@ -295,10 +328,15 @@ void BinFilterDialog::setupUi()
 
 void BinFilterDialog::refreshBinSelectionUi()
 {
-	const int loaded = m_bins.size();
+	const auto loading = std::count_if(m_bins.cbegin(), m_bins.cend(),
+									   [](const LoadedBin &entry)
+									   { return entry.loading; });
+	const auto loaded = m_bins.size() - loading;
 	const int ready = selectedBinsCount();
-	m_binListSummary->setText(
-		tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready)));
+	QString summary = tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready));
+	if (loading > 0)
+		summary += tr(", %1 loading").arg(Format::count(loading));
+	m_binListSummary->setText(summary);
 
 	// Disabled op buttons hard-couple the two halves of the dialog: users can't
 	// click an op without first ticking a bin, so the 'tickbox = arms, button =
@@ -307,11 +345,8 @@ void BinFilterDialog::refreshBinSelectionUi()
 	const bool canApply = ready > 0;
 	m_btnIntersect->setEnabled(canApply);
 	m_btnAdd->setEnabled(canApply);
-	// Subtract additionally needs an existing base to act on. As the very first
-	// step it would fall back to the loaded-bin union and hide media that's in
-	// no loaded bin — a surprise. Requiring a prior Intersect/Add step keeps it
-	// predictable, so it stays disabled until the chain has at least one step.
-	m_btnSubtract->setEnabled(canApply && !m_chain.isEmpty());
+	// A leading Subtract starts with all media rows, just as its help text says.
+	m_btnSubtract->setEnabled(canApply);
 
 	// Empty-chain placeholder. Single message; the intro text and
 	// the bin-list summary already guide users into loading + ticking
@@ -322,13 +357,11 @@ void BinFilterDialog::refreshBinSelectionUi()
 
 // MARK: - Drag and drop
 
-// Shared between dragEnterEvent, dragMoveEvent, and dropEvent so
-// all three honour the same drop-accept rules.
-static bool dragHasAvb(const QMimeData *mime)
+bool BinFilterDialog::hasAcceptedDragPath(const QMimeData *mime) const
 {
 	return DragDropUtil::hasAnyLocalUrl(
-		mime, [](const QString &path)
-		{ return path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive); });
+		mime, [this](const QString &path)
+		{ return m_dragAcceptedPaths.contains(path); });
 }
 
 // Same blue ring + tint the Volumes list draws (VolumeListWidget). Kept as a
@@ -345,20 +378,42 @@ void BinFilterDialog::setDropHighlight(bool on)
 
 void BinFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 {
-	if (dragHasAvb(event->mimeData()))
+	m_dragAcceptedPaths.clear();
+	QSet<QString> inspectedPaths;
+	// Recognize contents once per drag, not on every mouse movement. Full
+	// object validation still runs on the background workers after dropping.
+	for (const QUrl &url : event->mimeData()->urls())
+	{
+		if (!url.isLocalFile())
+			continue;
+		const QString path = url.toLocalFile();
+		if (inspectedPaths.contains(path))
+			continue;
+		inspectedPaths.insert(path);
+		const AvbHeaderCheck header = path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive)
+										  ? AvbParser::inspectHeader(path)
+										  : AvbHeaderCheck{false, tr("Choose an Avid bin file with an .avb extension.")};
+		if (header.recognized)
+			m_dragAcceptedPaths.insert(path);
+		else
+			// A rejected enter need not receive a drop event, so report it now.
+			emit loadError(path, header.error);
+	}
+	if (hasAcceptedDragPath(event->mimeData()))
 	{
 		event->acceptProposedAction();
 		setDropHighlight(true);
 	}
 	else
 	{
+		setDropHighlight(false);
 		event->ignore();
 	}
 }
 
 void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
 {
-	if (dragHasAvb(event->mimeData()))
+	if (hasAcceptedDragPath(event->mimeData()))
 		event->acceptProposedAction();
 	else
 		event->ignore();
@@ -367,22 +422,28 @@ void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
 void BinFilterDialog::dragLeaveEvent(QDragLeaveEvent *event)
 {
 	setDropHighlight(false);
+	m_dragAcceptedPaths.clear();
 	QDialog::dragLeaveEvent(event);
 }
 
 void BinFilterDialog::dropEvent(QDropEvent *event)
 {
 	setDropHighlight(false);
-	if (!event->mimeData()->hasUrls())
+	if (!hasAcceptedDragPath(event->mimeData()))
+	{
+		m_dragAcceptedPaths.clear();
+		event->ignore();
 		return;
+	}
 	for (const QUrl &url : event->mimeData()->urls())
 	{
 		if (!url.isLocalFile())
 			continue;
 		const QString path = url.toLocalFile();
-		if (path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive))
+		if (m_dragAcceptedPaths.contains(path))
 			addBinFromFile(path);
 	}
+	m_dragAcceptedPaths.clear();
 	event->acceptProposedAction();
 }
 
@@ -390,40 +451,145 @@ void BinFilterDialog::dropEvent(QDropEvent *event)
 
 void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
 {
-	// De-dupe by path to avoid two list entries with the same MOBs.
-	for (const AvbBin &b : m_bins)
+	const QFileInfo info(avbFilePath);
+	const QString canonical = info.canonicalFilePath();
+	const QString path = canonical.isEmpty()
+							 ? QDir::cleanPath(info.absoluteFilePath())
+							 : canonical;
+	for (const LoadedBin &entry : std::as_const(m_bins))
 	{
-		if (b.filePath == avbFilePath)
+		if (entry.bin.filePath == path)
 			return;
 	}
-
-	AvbBin bin = AvbParser::parse(avbFilePath);
-	if (!bin.valid)
+	if (!avbFilePath.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive))
 	{
-		// Both entry points filter to .avb — the picker by file filter, the drag
-		// by extension — so a non-bin normally can't reach here and no error row
-		// is shown. A file with a genuinely renamed .avb extension could still
-		// slip past the extension check; drop it silently (the parser logged why
-		// to the lcAvb category) rather than list it as if it were a real bin.
+		AvbBin rejected;
+		rejected.filePath = path;
+		rejected.displayName = info.completeBaseName();
+		rejected.error = tr("Choose an Avid bin file with an .avb extension.");
+		reportLoadFailure(rejected);
+		emit binLoaded(rejected);
 		return;
 	}
-	m_bins.append(bin);
-	appendBinItem(m_bins.size() - 1);
 
-	// Convenience: an empty chain + a fresh add means the user hasn't
-	// built any filter yet. Auto-apply Intersect across whatever's
-	// ticked so the most common case (filter to just-loaded bins)
-	// works without a button press. singleShot(0) coalesces drop
-	// bursts and file-picker batches: the first scheduled call applies
-	// the Intersect; subsequent calls see a non-empty chain and skip.
+	LoadedBin entry;
+	entry.bin.filePath = path;
+	entry.bin.displayName = info.completeBaseName();
+	entry.id = m_nextBinId++;
+	const quint64 id = entry.id;
+	const int row = m_binList->count();
+	m_bins.append(std::move(entry));
+	appendBinItem(row);
+	refreshBinSelectionUi();
+
 	if (m_chain.isEmpty())
-		QTimer::singleShot(0, this, &BinFilterDialog::maybeAutoIntersect);
+		m_autoIntersectPending = true;
+	startBinLoad(id, path);
+}
+
+void BinFilterDialog::startBinLoad(quint64 id, const QString &path)
+{
+	const auto cancelled = std::make_shared<std::atomic_bool>(false);
+	m_pendingLoads.insert(id, cancelled);
+	auto *const watcher = new QFutureWatcher<AvbBin>(this);
+	connect(watcher, &QFutureWatcher<AvbBin>::finished, this,
+			[this, watcher, id]()
+			{
+				m_pendingLoads.remove(id);
+				const AvbBin parsed = watcher->result();
+				watcher->deleteLater();
+				completeBinLoad(id, parsed);
+				QTimer::singleShot(0, this, &BinFilterDialog::finishLoadingBatch);
+			});
+	// The worker owns its path and shares only the cancellation flag. The
+	// watcher callback is bound to this dialog's lifetime on the GUI thread.
+	watcher->setFuture(QtConcurrent::run(&m_parsePool,
+										 [path, cancelled]()
+										 { return AvbParser::parse(path, cancelled.get()); }));
+}
+
+void BinFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
+{
+	// Rows may have been removed, compacted, or re-added while parsing.
+	// Only the original stable ID can receive this result.
+	for (int row = 0; row < m_binList->count(); ++row)
+	{
+		LoadedBin &entry = m_bins[row];
+		if (entry.id != id)
+			continue;
+		if (!bin.valid || !bin.complete)
+		{
+			removeBinRow(row);
+			refreshBinSelectionUi();
+			reportLoadFailure(bin);
+			emit binLoaded(bin);
+			return;
+		}
+		entry.bin = bin;
+		entry.loading = false;
+		m_newlyLoadedIds.insert(id);
+		updateBinItem(row);
+		refreshBinSelectionUi();
+		m_metadataUpdatePending = true;
+		emit binLoaded(bin);
+		return;
+	}
+}
+
+void BinFilterDialog::removeBinRow(int row)
+{
+	m_newlyLoadedIds.remove(m_bins[row].id);
+	m_bins.removeAt(row);
+	// takeItem transfers ownership out of the view; release it at scope end.
+	const std::unique_ptr<QListWidgetItem> removed(m_binList->takeItem(row));
+	const QSignalBlocker block(m_binList);
+	for (int index = row; index < m_binList->count(); ++index)
+		m_binList->item(index)->setData(Qt::UserRole, index);
+}
+
+void BinFilterDialog::reportLoadFailure(const AvbBin &bin)
+{
+	QStringList reasons;
+	if (bin.valid)
+		reasons.append(tr("This bin contains data that MediaMuster does not yet support"));
+	if (!bin.error.isEmpty())
+		reasons.append(bin.error);
+	reasons.append(bin.warnings);
+	if (reasons.isEmpty())
+		reasons.append(tr("The bin could not be read completely."));
+	emit loadError(bin.filePath, reasons.join(QStringLiteral("; ")));
+}
+
+bool BinFilterDialog::hasLoadingBins() const
+{
+	return std::any_of(m_bins.cbegin(), m_bins.cend(),
+					   [](const LoadedBin &entry)
+					   { return entry.loading; });
+}
+
+void BinFilterDialog::finishLoadingBatch()
+{
+	if (hasLoadingBins())
+		return;
+	// Both metadata and initial filtering use the settled set of retained
+	// bins. This avoids rebuilding all media metadata on every file result.
+	if (m_metadataUpdatePending)
+		emitBinsChanged();
+	// Rejected attempts must not reactivate a previously cleared filter.
+	if (!m_newlyLoadedIds.isEmpty())
+		maybeAutoIntersect();
+	else
+		m_autoIntersectPending = false;
+	m_newlyLoadedIds.clear();
 }
 
 void BinFilterDialog::maybeAutoIntersect()
 {
-	if (!m_chain.isEmpty())
+	if (!m_autoIntersectPending || !m_chain.isEmpty())
 		return;
+	if (hasLoadingBins())
+		return;
+	m_autoIntersectPending = false;
 	if (selectedBinsCount() == 0)
 		return;
 	applyOperation(Operation::Intersect);
@@ -431,15 +597,45 @@ void BinFilterDialog::maybeAutoIntersect()
 
 void BinFilterDialog::appendBinItem(int idx)
 {
-	const AvbBin &bin = m_bins[idx];
-
-	// Just the bin's display name; the underlying MOB-ID count is
-	// an Avid internal that doesn't map cleanly to clips or files,
-	// so we don't surface it.
-	auto *item = new QListWidgetItem(bin.displayName, m_binList);
+	const QSignalBlocker block(m_binList);
+	auto *const item = new QListWidgetItem(m_binList);
 	item->setData(Qt::UserRole, idx);
-	item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-	item->setCheckState(Qt::Checked);
+	updateBinItem(idx);
+}
+
+void BinFilterDialog::updateBinItem(int idx)
+{
+	const LoadedBin &entry = m_bins[idx];
+	const AvbBin &bin = entry.bin;
+	QListWidgetItem *const item = m_binList->item(idx);
+	const QSignalBlocker block(m_binList);
+	const bool usable = !entry.loading && bin.valid && bin.complete;
+	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable |
+				   (usable ? Qt::ItemIsUserCheckable : Qt::NoItemFlags));
+	// Loading rows remain selectable so their outstanding reads can be cancelled.
+	item->setData(Qt::CheckStateRole, usable ? QVariant(Qt::Checked) : QVariant());
+	const QString explanation = binExplanation(bin, entry.loading);
+	item->setText(explanation.isEmpty() ? bin.displayName
+										: bin.displayName + QStringLiteral("\n") + explanation);
+	QStringList details{bin.filePath};
+	if (!explanation.isEmpty())
+		details.append(explanation);
+	if (!bin.error.isEmpty())
+		details.append(bin.error);
+	details.append(bin.warnings);
+	item->setToolTip(details.join(QStringLiteral("\n")));
+}
+
+void BinFilterDialog::emitBinsChanged()
+{
+	m_metadataUpdatePending = false;
+	QVector<AvbBin> bins;
+	for (const LoadedBin &entry : std::as_const(m_bins))
+	{
+		if (!entry.loading && entry.bin.valid && entry.bin.complete)
+			bins.append(entry.bin);
+	}
+	emit binsChanged(bins);
 }
 
 void BinFilterDialog::onAddBinsClicked()
@@ -459,13 +655,11 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 	if (selected.isEmpty())
 		return;
 
-	// Drop the backing AvbBins. Every row carries its m_bins index in
-	// UserRole — an invalid bin produces no row at all, so there are no
-	// placeholders and the >= 0 check below is belt-and-braces. Descending
-	// so each removeAt doesn't shift indices we still need.
+	// Every retained row, including pending reads, carries its current
+	// m_bins index. Remove descending so later indices stay valid.
 	QList<int> binIndices;
 	binIndices.reserve(selected.size());
-	for (QListWidgetItem *it : selected)
+	for (const QListWidgetItem *it : selected)
 	{
 		const int idx = it->data(Qt::UserRole).toInt();
 		if (idx >= 0)
@@ -475,12 +669,18 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 	for (int idx : binIndices)
 	{
 		if (idx < m_bins.size())
+		{
+			const auto cancelled = m_pendingLoads.value(m_bins[idx].id);
+			if (cancelled)
+				cancelled->store(true, std::memory_order_relaxed);
+			m_newlyLoadedIds.remove(m_bins[idx].id);
 			m_bins.removeAt(idx);
+		}
 	}
 
 	// Delete the clicked rows in place instead of clearing and rebuilding the
 	// whole list. The old rebuild re-ran appendBinItem for every survivor,
-	// which forces Qt::Checked — silently re-ticking bins the user had
+	// which forces the checked state — silently re-ticking bins the user had
 	// deliberately unticked. Deleting in place leaves each survivor's tick
 	// state intact.
 	qDeleteAll(selected);
@@ -493,7 +693,7 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 		int compacted = 0;
 		for (int row = 0; row < m_binList->count(); ++row)
 		{
-			QListWidgetItem *it = m_binList->item(row);
+			QListWidgetItem *const it = m_binList->item(row);
 			if (it->data(Qt::UserRole).toInt() >= 0)
 				it->setData(Qt::UserRole, compacted++);
 		}
@@ -503,9 +703,11 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 	// state ourselves; otherwise they'd stay stale when the last bin goes.
 	refreshBinSelectionUi();
 
-	// Chain steps snapshot MOB IDs at apply time, so removing a
-	// loaded bin doesn't invalidate them; re-emit the cached result.
+	// Chain operands are snapshots and remain unchanged, including a
+	// leading Subtract. Metadata, however, belongs to the retained bins.
+	emitBinsChanged();
 	recomputeAndEmit();
+	QTimer::singleShot(0, this, &BinFilterDialog::finishLoadingBatch);
 }
 
 // MARK: - Tick helpers
@@ -515,7 +717,10 @@ int BinFilterDialog::selectedBinsCount() const
 	int n = 0;
 	for (int i = 0; i < m_binList->count(); ++i)
 	{
-		if (m_binList->item(i)->checkState() == Qt::Checked)
+		const QListWidgetItem *item = m_binList->item(i);
+		const int idx = item->data(Qt::UserRole).toInt();
+		if (item->checkState() == Qt::Checked && idx >= 0 && idx < m_bins.size() &&
+			!m_bins[idx].loading && m_bins[idx].bin.valid && m_bins[idx].bin.complete)
 			++n;
 	}
 	return n;
@@ -526,13 +731,15 @@ QSet<QString> BinFilterDialog::selectedBinsMobs() const
 	QSet<QString> out;
 	for (int i = 0; i < m_binList->count(); ++i)
 	{
-		QListWidgetItem *it = m_binList->item(i);
+		const QListWidgetItem *it = m_binList->item(i);
 		if (it->checkState() != Qt::Checked)
 			continue;
 		const int idx = it->data(Qt::UserRole).toInt();
 		if (idx < 0 || idx >= m_bins.size())
 			continue;
-		out.unite(m_bins[idx].mobIds);
+		const LoadedBin &entry = m_bins[idx];
+		if (!entry.loading && entry.bin.valid && entry.bin.complete)
+			out.unite(entry.bin.mobIds);
 	}
 	return out;
 }
@@ -542,22 +749,16 @@ QVector<QString> BinFilterDialog::selectedBinsDisplayNames() const
 	QVector<QString> out;
 	for (int i = 0; i < m_binList->count(); ++i)
 	{
-		QListWidgetItem *it = m_binList->item(i);
+		const QListWidgetItem *it = m_binList->item(i);
 		if (it->checkState() != Qt::Checked)
 			continue;
 		const int idx = it->data(Qt::UserRole).toInt();
 		if (idx < 0 || idx >= m_bins.size())
 			continue;
-		out.append(m_bins[idx].displayName);
+		const LoadedBin &entry = m_bins[idx];
+		if (!entry.loading && entry.bin.valid && entry.bin.complete)
+			out.append(entry.bin.displayName);
 	}
-	return out;
-}
-
-QSet<QString> BinFilterDialog::allLoadedMobs() const
-{
-	QSet<QString> out;
-	for (const AvbBin &b : m_bins)
-		out.unite(b.mobIds);
 	return out;
 }
 
@@ -578,109 +779,71 @@ void BinFilterDialog::onAddClicked()
 
 void BinFilterDialog::applyOperation(Operation op)
 {
-	QSet<QString> mobs = selectedBinsMobs();
-	// The op buttons are disabled when nothing is ticked; this guard
-	// is belt-and-braces in case the path ever opens up programmatically.
-	if (mobs.isEmpty())
+	// A selected, complete empty bin is a real operand: Intersect must
+	// create an active filter matching no rows. Absence of ticks is separate.
+	if (selectedBinsCount() == 0)
 		return;
+	m_autoIntersectPending = false;
 	ChainStep step;
 	step.op = op;
 	step.binDisplayNames = selectedBinsDisplayNames();
-	step.mobIds = std::move(mobs);
+	step.mobIds = selectedBinsMobs();
 	m_chain.append(std::move(step));
 	rebuildChainList();
 	recomputeAndEmit();
-	refreshBinSelectionUi(); // re-gate Subtract now the chain has a step
+	refreshBinSelectionUi();
 }
 
 void BinFilterDialog::clearChain()
 {
+	m_autoIntersectPending = false;
 	if (m_chain.isEmpty())
 		return;
 	m_chain.clear();
 	rebuildChainList();
 	recomputeAndEmit();
-	refreshBinSelectionUi(); // chain empty again — disable Subtract
+	refreshBinSelectionUi();
 }
 
 void BinFilterDialog::onRemoveStep(int index)
 {
 	if (index < 0 || index >= m_chain.size())
 		return;
+	m_autoIntersectPending = false;
 	m_chain.removeAt(index);
 	rebuildChainList();
 	recomputeAndEmit();
-	refreshBinSelectionUi(); // chain may now be empty — re-gate Subtract
+	refreshBinSelectionUi();
 }
 
 void BinFilterDialog::rebuildChainList()
 {
 	m_chainList->clear();
-	for (int i = 0; i < m_chain.size(); ++i)
+	for (const ChainStep &step : std::as_const(m_chain))
 	{
-		const ChainStep &step = m_chain[i];
+		const int row = m_chainList->count();
 		const QString binNames =
 			step.binDisplayNames.isEmpty()
 				? tr("(no bins)")
 				: QStringList(step.binDisplayNames.cbegin(), step.binDisplayNames.cend())
 					  .join(QStringLiteral(", "));
 
-		auto *item = new QListWidgetItem(
-			QStringLiteral("%1.  %2:  %3").arg(i + 1).arg(opLabel(step.op), binNames));
-		item->setData(Qt::UserRole, i);
+		auto *const item = new QListWidgetItem(
+			QStringLiteral("%1.  %2:  %3").arg(row + 1).arg(opLabel(step.op), binNames));
+		item->setData(Qt::UserRole, row);
 		m_chainList->addItem(item);
 	}
 }
 
-// MARK: - Resolve chain and emit
+// MARK: - Emit the ordered chain
 
 void BinFilterDialog::recomputeAndEmit()
 {
 	if (m_chain.isEmpty())
 	{
 		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));
-		emit filterChainChanged(false, {}, {});
+		emit filterChainChanged({}, {});
 		return;
-	}
-
-	// Starting universe depends on the first op:
-	//   Intersect / Add: start from `first.mobIds` directly.
-	//   Subtract: start from (loaded-bin union) \ `first.mobIds`.
-	//
-	// Subtract seeds from the loaded-bin union because
-	// 'subtract from accept-everything' isn't expressible as a
-	// finite set.
-	QSet<QString> accepted;
-
-	const ChainStep &first = m_chain.first();
-	switch (first.op)
-	{
-	case Operation::Intersect:
-		accepted = first.mobIds;
-		break;
-	case Operation::Subtract:
-		accepted = allLoadedMobs().subtract(first.mobIds);
-		break;
-	case Operation::Add:
-		accepted = first.mobIds;
-		break;
-	}
-
-	for (int i = 1; i < m_chain.size(); ++i)
-	{
-		const ChainStep &s = m_chain[i];
-		switch (s.op)
-		{
-		case Operation::Intersect:
-			accepted.intersect(s.mobIds);
-			break;
-		case Operation::Subtract:
-			accepted.subtract(s.mobIds);
-			break;
-		case Operation::Add:
-			accepted.unite(s.mobIds);
-			break;
-		}
 	}
 
 	// No summary line here: the step list above already spells out the active
@@ -694,7 +857,7 @@ void BinFilterDialog::recomputeAndEmit()
 	// across re-emits.
 	QStringList binNames;
 	QSet<QString> seen;
-	for (const ChainStep &s : m_chain)
+	for (const ChainStep &s : std::as_const(m_chain))
 	{
 		for (const QString &name : s.binDisplayNames)
 		{
@@ -706,5 +869,5 @@ void BinFilterDialog::recomputeAndEmit()
 		}
 	}
 
-	emit filterChainChanged(true, accepted, binNames);
+	emit filterChainChanged(BinFilter{m_chain}, binNames);
 }

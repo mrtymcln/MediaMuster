@@ -1,0 +1,18 @@
+{
+  "scope": "Header recognition, rejection and grouped error dialogs",
+  "cxx_standard": 17,
+  "affected_test_targets": 4,
+  "passed_test_targets": 4,
+  "failed_test_targets": 0,
+  "qt_cases": {
+    "parser": 98,
+    "bin_dialog": 31,
+    "media_proxy": 24,
+    "avb_metadata": 8
+  },
+  "skipped_cases": 0,
+  "real_bin_headers_recognized": 42,
+  "real_bins_checked": 42,
+  "corpus_comparisons_passed": 46,
+  "historical_media_joins_preserved": 363
+}

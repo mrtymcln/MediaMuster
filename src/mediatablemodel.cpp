@@ -1,5 +1,9 @@
 #include "mediatablemodel.h"
+#include "avbparser.h"
 #include "enumutil.h"
+#include "mobid.h"
+
+#include <utility>
 
 MediaTableModel::MediaTableModel(QObject *parent)
 	: QAbstractTableModel(parent)
@@ -19,7 +23,107 @@ void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
 {
 	beginResetModel();
 	m_files = files;
+	applyAvbMetadata(false);
 	endResetModel();
+}
+
+void MediaTableModel::AvbMetadata::merge(const AvbMob &mob)
+{
+	if (!mob.name.isEmpty())
+	{
+		if (!clipName.isEmpty() && clipName != mob.name)
+			nameConflict = true;
+		else
+			clipName = mob.name;
+	}
+	if (!mob.originalBinUid.isEmpty())
+	{
+		if (!originalBinUid.isEmpty() && originalBinUid != mob.originalBinUid)
+			binConflict = true;
+		else
+			originalBinUid = mob.originalBinUid;
+	}
+	if (!mob.originalBin.isEmpty())
+	{
+		if (!originalBin.isEmpty() && originalBin != mob.originalBin)
+			binConflict = true;
+		else
+			originalBin = mob.originalBin;
+	}
+}
+
+void MediaTableModel::setAvbBins(const QVector<AvbBin> &bins)
+{
+	QHash<QString, AvbMetadata> metadata;
+	for (const AvbBin &bin : bins)
+	{
+		if (!bin.valid || !bin.complete)
+			continue;
+		for (const AvbMob &mob : bin.mobs)
+		{
+			// SourceMob names describe imported files/tapes. Only a MasterMob
+			// can supply the editor's clip name and that clip's original bin.
+			if (mob.mobType != AvbMob::masterMobType || mob.mobId.isEmpty())
+				continue;
+			const QSet<QString> keys{mob.mobId, MobId::toPmrForm(mob.mobId)};
+			for (const QString &key : keys)
+			{
+				if (key.isEmpty())
+					continue;
+				metadata[key].merge(mob);
+			}
+		}
+	}
+	m_avbMetadata = std::move(metadata);
+	applyAvbMetadata(true);
+}
+
+void MediaTableModel::applyAvbMetadata(bool notify)
+{
+	int firstChanged = -1;
+	int lastChanged = -1;
+	const int rows = rowCount();
+	for (int row = 0; row < rows; ++row)
+	{
+		MediaFile &file = m_files[row];
+		const QString previousName = file.clipName;
+		const QString previousBin = file.originalBin;
+		if (file.clipNameSource == MediaFile::ClipNameSource::Avb)
+		{
+			file.clipName.clear();
+			file.clipNameSource = MediaFile::ClipNameSource::None;
+		}
+		if (file.originalBinFromAvb)
+		{
+			file.originalBin.clear();
+			file.originalBinFromAvb = false;
+		}
+		const auto found = m_avbMetadata.constFind(file.masterMobId);
+		if (found != m_avbMetadata.cend())
+		{
+			const AvbMetadata &value = found.value();
+			if (file.clipName.isEmpty() && !value.nameConflict && !value.clipName.isEmpty())
+			{
+				file.clipName = value.clipName;
+				file.clipNameSource = MediaFile::ClipNameSource::Avb;
+			}
+			if (file.originalBin.isEmpty() && !value.binConflict && !value.originalBin.isEmpty())
+			{
+				file.originalBin = value.originalBin;
+				file.originalBinFromAvb = true;
+			}
+		}
+		if (file.clipName != previousName || file.originalBin != previousBin)
+		{
+			if (firstChanged < 0)
+				firstChanged = row;
+			lastChanged = row;
+		}
+	}
+	if (notify && firstChanged >= 0)
+		emit dataChanged(index(firstChanged, static_cast<int>(Column::ClipName)),
+						 index(lastChanged, static_cast<int>(Column::OriginalBin)),
+						 {Qt::DisplayRole, Qt::UserRole});
 }
 
 void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)

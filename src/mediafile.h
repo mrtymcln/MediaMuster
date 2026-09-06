@@ -43,6 +43,9 @@ struct MediaFile
 	///                     (360/360 against MaterialPackage names on a real
 	///                     folder), and the only name available when the MXF
 	///                     header can't be read at all.
+	///   Avb             — a matching master clip in the loaded bins. Used
+	///                     only when the scanner has no name and those bins
+	///                     agree; removed when that supporting bin is unloaded.
 	///   None            — genuinely unknown. The Clip Name cell stays blank;
 	///                     the filename is NOT substituted (user ruling
 	///                     2026-08-14). See clipNameDisplay().
@@ -57,8 +60,9 @@ struct MediaFile
 	enum class ClipNameSource
 	{
 		None = 0,
-		Mdb = 1,
-		MaterialPackage = 2,
+		Avb = 1,
+		Mdb = 2,
+		MaterialPackage = 3,
 	};
 	ClipNameSource clipNameSource = ClipNameSource::None;
 
@@ -69,7 +73,8 @@ struct MediaFile
 	/// (see projectDisplay / hasNoProject). Independent of dbStatus: a file
 	/// can be unlisted in this folder's databases and still name its project.
 	QString project;
-	QString originalBin; ///< MDB _ORG_BIN — frozen at import time.
+	QString originalBin;			 ///< The recorded import-time _ORG_BIN, from media metadata or a bin reference.
+	bool originalBinFromAvb = false; ///< Loaded-bin fallback; cleared when its supporting bins change.
 
 	// MARK: MXF or MDB technical metadata
 
@@ -176,9 +181,9 @@ struct MediaFile
 		NoReference, ///< Databases present and readable, but no reference to this
 					 ///< file: copied in or created since Avid last indexed the
 					 ///< folder, or its records were removed. Avid re-indexes at launch.
-		NoDatabase, ///< No msmFMID.pmr here — no index to check against: other seats'
-					///< folders on shared storage, Interplay / MediaCentral, Quarantined
-					///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
+		NoDatabase,	 ///< No msmFMID.pmr here — no index to check against: other seats'
+					 ///< folders on shared storage, Interplay / MediaCentral, Quarantined
+					 ///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
 		DbUnreadable ///< A database exists but could not be read (corrupt, truncated,
 					 ///< or an unsupported older version); Avid rebuilds it at relaunch.
 	};
@@ -477,7 +482,7 @@ struct ProjectSummary
 	QVector<QString> bins;
 };
 
-// MARK: - Qt metatype registration
+// MARK: - Metatype registration
 
 Q_DECLARE_METATYPE(MediaFile)
 Q_DECLARE_METATYPE(VolumeInfo)

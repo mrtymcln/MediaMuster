@@ -5,7 +5,7 @@
 #include <QString>
 #include <QStringList>
 
-// Normalise paths before using them as hash keys. Qt APIs disagree on
+// Normalise paths before using them as hash keys. File and directory APIs disagree on
 // trailing slashes, `.`/`..`, symlinks/firmlinks (`/var` vs `/private/var`),
 // and Unicode form (NFC vs NFD — SMB vs APFS). canonicalFilePath settles all
 // of these, but only for a path that exists.
@@ -30,7 +30,7 @@ namespace PathKey
 			return path;
 
 		// Clean lexically first, so "." and ".." can never survive as leaf
-		// components the walk below would re-attach verbatim. Qt resolves
+		// components the walk below would re-attach verbatim. canonicalFilePath resolves
 		// those through the filesystem only for a path that exists — the
 		// very thing that can't be relied on here — so this is the same
 		// lexical answer it already gave for anything not yet on disk.

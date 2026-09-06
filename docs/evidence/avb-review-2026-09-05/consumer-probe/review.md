@@ -1,6 +1,6 @@
 # AVB consumer review, 2026-09-05
 
-Product sources and existing tests were not edited. The isolated CMake probe builds the current `avbparser.cpp`, `binfilterdialog.cpp`, `mediafilterproxy.cpp`, `mediatablemodel.cpp`, and logging sources directly. Its JSON output is in `results.json`. Qt required a run outside the sandbox to detect ARM NEON; the probe used the offscreen platform and performed no media operations. Existing `build/tests/tst_avbparser` reported 9 passes, 0 failures (including init/cleanup).
+Product sources and existing tests were not edited. The isolated CMake probe builds the current `avbparser.cpp`, `binfilterdialog.cpp`, `mediafilterproxy.cpp`, `mediatablemodel.cpp`, and logging sources directly. Its JSON output is in `results.json`. UI execution required a run outside the sandbox to detect ARM NEON; the probe used the offscreen platform and performed no media operations. Existing `build/tests/tst_avbparser` reported 9 passes, 0 failures (including init/cleanup).
 
 ## P1 — Perform bin operations on media membership, not raw ID sets
 
@@ -26,7 +26,7 @@ Locations: `src/avbparser.cpp:128–144`, `src/avbparser.cpp:277`, `src/binfilte
 Two independent cases both produce a loaded bin and no filter:
 
 * A file consisting of only the 12-byte `06 00 DomainDJBO` prefix reports `valid=true` and zero IDs.
-* A structurally genuine empty AVB written by the supplied pyavb also reports `valid=true` and zero IDs.
+* A structurally genuine empty AVB written by the supplied reference reader also reports `valid=true` and zero IDs.
 
 For both, loading the file and explicitly invoking Intersect leaves `active=false`, emits zero filter-change signals, and leaves the example media row visible. The operation buttons are enabled by selected-bin count (`307–309`) but `applyOperation` rejects an empty MOB set as though no bin were selected. With a nonempty prior chain, an empty intersection is likewise silently skipped.
 
@@ -44,10 +44,10 @@ Fix: prevent/rewrite a leading Subtract after step removal, or capture the initi
 
 ## Comments and test coverage
 
-* `src/avbparser.cpp:13–20`: flat chunks do not imply no random access. The supplied pyavb reads the object count/root index, scans sizes into an ordinal offset array (`src/avb/file.py:150–182`), and seeks to referenced objects (`243–279`). Say there is no on-disk offset table and a one-pass index enables random access.
-* `src/avbparser.cpp:149–161`: the failed contiguous 32-byte heuristic is useful historical evidence, but it does not establish that binary MOBs are unavailable. The actual encoding has twelve label bytes, tagged length/instance fields, and tagged UUID fields; see `src/avb/ioctx.py:231–273` and `195–214`. Avoid “Avid writes a MOB ... as ASCII” as a general format claim. It is correct to reject blind 32-byte slices.
+* `src/avbparser.cpp:13–20`: flat chunks do not imply no random access. The supplied reference reader reads the object count/root index, scans sizes into an ordinal offset array, and seeks to referenced objects. Say there is no on-disk offset table and a one-pass index enables random access.
+* `src/avbparser.cpp:149–161`: the failed contiguous 32-byte heuristic is useful historical evidence, but it does not establish that binary MOBs are unavailable. The actual encoding has twelve label bytes, tagged length/instance fields, and tagged UUID fields. Avoid “Avid writes a MOB ... as ASCII” as a general format claim. It is correct to reject blind 32-byte slices.
 * `src/avbparser.cpp:135`: a matching prefix establishes the format family, not “this is a real bin.”
-* `src/avbparser.cpp:172–175`: a targeted, bounds-checked index and class subset can be implemented incrementally. Full pyavb line count exaggerates the minimum scope required for membership and metadata.
+* `src/avbparser.cpp:172–175`: a targeted, bounds-checked index and class subset can be implemented incrementally. The line count of a full reader/writer exaggerates the minimum scope required for membership and metadata.
 * `src/avbparser.cpp:182–184`: zero extracted IDs is not the only indication of incompleteness. Partially understood bins can contain some searchable IDs and still omit many real members.
 * `tests/tst_avbparser.cpp:1–4`: overview promises all-zero sentinel filtering, boundary/truncation coverage, and no maintained binary fixtures. The current suite has no explicit zero-ID test; the only truncation case is a wrapped-pattern suffix, asserted `valid=true`; two real OMF fixtures are used at `187–217`.
 * Synthetic tests assemble only a 12-byte prefix plus arbitrary bytes, so they exercise scavenging rather than AVB format validity. Add structural fixtures (LE and BE), true empty bins, tag-coded IDs with no text copy, object/reference truncation, unknown-class/extension cases, and consumer operation tests. Retain the useful direct pattern tests but describe their scope accurately.

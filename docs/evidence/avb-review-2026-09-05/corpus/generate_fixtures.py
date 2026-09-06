@@ -16,6 +16,6 @@ for name,byte_order,comment in [('binary_only_le','little',False),('binary_only_
         if comment: mob.attributes['Comments']='Unrelated historical ID: '+UNRELATED
         f.write(str(OUT/(name+'.avb')),byte_order=byte_order)
 (OUT/'header_only.avb').write_bytes(b'\x06\x00DomainDJBO')
-manifest=dict(master_id_le=MASTER,unrelated_comment_id_le=UNRELATED,notes='Synthesized with attached pyavb, not saved or validated by Media Composer; first three reopen fully with pyavb.')
+manifest=dict(master_id_le=MASTER,unrelated_comment_id_le=UNRELATED,notes='Synthesized with the reference writer, not saved or validated by Media Composer; first three reopen fully with the reference reader.')
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 print(OUT)

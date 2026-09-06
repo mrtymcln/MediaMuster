@@ -2,7 +2,7 @@
 
 #include <QLoggingCategory>
 
-/// Qt logging categories for developer telemetry. The shipped app forces
+/// Logging categories for developer telemetry. The shipped app forces
 /// every category to full debug detail in AppLog::install(), so nothing
 /// needs enabling there. Outside that (unit tests, standalone runs) they
 /// default to warnings and up; raise one with, e.g.,

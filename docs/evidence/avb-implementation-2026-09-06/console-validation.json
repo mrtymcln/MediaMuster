@@ -1,0 +1,33 @@
+{
+  "revision": "console-only bin load errors",
+  "date": "2026-09-06",
+  "test_targets": {
+    "tst_avbparser": 98,
+    "tst_binfilterdialog": 34,
+    "tst_mediafilterproxy": 24,
+    "tst_avbmetadata": 8
+  },
+  "total_passed": 164,
+  "failed": 0,
+  "skipped": 0,
+  "main_window_probe": {
+    "checks_passed": 20,
+    "failed": 0,
+    "platform": "Qt offscreen with non-native Qt file panel",
+    "native_finder_or_file_panel_tested": false
+  },
+  "build": {
+    "architectures": [
+      "arm64",
+      "x86_64"
+    ],
+    "strict_codesign_verification": "passed outside sandbox"
+  },
+  "source_sha256": {
+    "src/binfilterdialog.cpp": "507c0a63909fdf6db9ef494dfa8f3076a3b5b1631563c88fa6fe400a4db28c4f",
+    "src/binfilterdialog.h": "c2cc760eec79e63e4f52075b8f3d0dbad30bfe02fb5c64577eb8c10392056556",
+    "src/mainwindow.cpp": "0e2164e464ea6317072a752e3e94f63267c0644ef6d8590d73615881e4f6a3b9",
+    "tests/tst_binfilterdialog.cpp": "d7983e2aa96ed0fe24893e08bad5c79a9dab9c1e278d46666455dba5f42bea34"
+  },
+  "test_log": "Test project /Users/martymclean/Developer/MediaMuster/build\n    Start 19: tst_avbparser\n1/4 Test #19: tst_avbparser ....................   Passed    0.17 sec\n    Start 28: tst_avbmetadata\n2/4 Test #28: tst_avbmetadata ..................   Passed    0.02 sec\n    Start 29: tst_mediafilterproxy\n3/4 Test #29: tst_mediafilterproxy .............   Passed    0.02 sec\n    Start 31: tst_binfilterdialog\n4/4 Test #31: tst_binfilterdialog ..............   Passed    1.29 sec\n\n100% tests passed, 0 tests failed out of 4\n\nTotal Test time (real) =   1.50 sec\n"
+}

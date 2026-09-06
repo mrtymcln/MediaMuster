@@ -1,5 +1,6 @@
 #pragma once
 
+#include "binfilter.h"
 #include "precomputefilter.h"
 
 #include <QSet>
@@ -70,6 +71,9 @@ public:
 	static bool matchesMode(FilterMode mode, const MediaFile &f);
 
 public slots:
+	/// Apply ordered bin operations to each row's file/master membership.
+	void setBinFilter(const BinFilter &filter);
+
 	/// isActive=false bypasses this check (matches everything);
 	/// true requires the row's mobId or masterMobId to be in
 	/// acceptedMobs.
@@ -98,6 +102,5 @@ private:
 	QSet<QString> m_selectedPrecomputeCategories;
 	QSet<QString> m_selectedEffectCategories;
 	QString m_effectVolumePath;
-	bool m_binFilterActive = false;
-	QSet<QString> m_binFilterAcceptedMobs;
+	BinFilter m_binFilter;
 };

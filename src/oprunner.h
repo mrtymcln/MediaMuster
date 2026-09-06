@@ -117,7 +117,7 @@ public:
 	static std::optional<QString> generateRenamePath(const QString &destPath);
 
 	/// Provably the same volume, gating every rename fast path (Move,
-	/// Undo-of-move). NOT an optimisation: Qt's QFile::rename silently
+	/// Undo-of-move). NOT an optimisation: QFile::rename silently
 	/// falls back to an unverified copy-then-DELETE across volumes,
 	/// which would bypass the checksum, the durability barrier and the
 	/// trash rule in one line (review finding 5). "Don't know" fails
