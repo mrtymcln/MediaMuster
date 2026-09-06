@@ -2,6 +2,7 @@
 
 #include "testutil.h"
 
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -19,20 +20,30 @@
 
 namespace
 {
+	// Stamped at the moment of writing, in the product's own format, so a
+	// hand-written journal always sits inside the undo window. A frozen
+	// date here aged past kUndoCandidateMaxAgeDays once and took the
+	// three retention tests with it. aged_undo_candidate_is_pruned writes
+	// its own 2020 stamp on purpose.
+	QString startedNow()
+	{
+		return QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
+	}
+
 	// Every hand-written journal belongs to a dead owner: pid 999999 on a
 	// host that isn't this machine, so the live-owner guard never trips.
 	QString beginRec(const QString &kind)
 	{
 		return QStringLiteral(
-				   R"({"schema":2,"record":"begin","kind":"%1","started":"2026-08-29T10:00:00.000Z","processId":999999,"host":"deadhost"})")
-			.arg(kind);
+				   R"({"schema":2,"record":"begin","kind":"%1","started":"%2","processId":999999,"host":"deadhost"})")
+			.arg(kind, startedNow());
 	}
 
 	QString beginUndoRec(const QString &originalKind, const QString &undoes)
 	{
 		return QStringLiteral(
-				   R"({"schema":2,"record":"begin","kind":"undo","started":"2026-08-29T10:00:00.000Z","processId":999999,"host":"deadhost","metadata":{"undoes":"%1","originalKind":"%2"}})")
-			.arg(undoes, originalKind);
+				   R"({"schema":2,"record":"begin","kind":"undo","started":"%3","processId":999999,"host":"deadhost","metadata":{"undoes":"%1","originalKind":"%2"}})")
+			.arg(undoes, originalKind, startedNow());
 	}
 
 	QString planRec(const QString &dest, const QStringList &srcs)
@@ -310,9 +321,10 @@ void TestOpRescue::live_owner_is_left_alone()
 	// This very process is the owner: alive by definition.
 	const QString line =
 		QStringLiteral(
-			R"({"schema":2,"record":"begin","kind":"move","started":"2026-08-29T10:00:00.000Z","processId":%1,"host":"%2"})")
+			R"({"schema":2,"record":"begin","kind":"move","started":"%3","processId":%1,"host":"%2"})")
 			.arg(QCoreApplication::applicationPid())
-			.arg(QSysInfo::machineHostName());
+			.arg(QSysInfo::machineHostName())
+			.arg(startedNow());
 	const QString path =
 		writeJournal(tmp.path(), {line, opRec(0, tmp.path() + "/src/a.mxf", dst, 7)});
 
