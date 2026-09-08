@@ -17,9 +17,9 @@ libameLibrary functions:
 
 | Function | arm64 image-relative address |
 | --- | --- |
-| Write_AAFMobID(AStream*, const char*, _aafMCMobID_t) | 0x235a8c |
+| Write_AAFMobID(AStream*, const char*,_aafMCMobID_t) | 0x235a8c |
 | Read_AAFMobID(AStream*, const char*) | 0x235bf0 |
-| Write_OMFMobID(AStream*, const char*, _aafMCMobID_t) | 0x235918 |
+| Write_OMFMobID(AStream*, const char*,_aafMCMobID_t) | 0x235918 |
 | Read_OMFMobID(AStream*, const char*) | 0x2359b4 |
 | AComposition::Put(AStream*, AIODesc*) | 0x180a70 |
 | AComposition::Get(AStream*, AIODesc*) | 0x181420 |

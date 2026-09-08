@@ -1,0 +1,311 @@
+[1/307] Copying OS X Content MediaMuster.app/Contents/Resources/mediamuster-mac.icns
+[2/307] Automatic MOC for target tst_pmrkey
+[3/307] Automatic MOC for target tst_mobid
+[4/307] Automatic MOC for target tst_logfile
+[5/307] Automatic MOC for target tst_pathkey
+[6/307] Automatic MOC for target tst_format
+[7/307] Automatic MOC for target tst_omfuid
+[8/307] Automatic MOC for target tst_mediacsv
+[9/307] Automatic MOC for target MediaMuster
+[10/307] Automatic MOC for target tst_conventions
+[11/307] Automatic MOC for target tst_rebalancer_parse
+[12/307] Automatic MOC for target tst_rebalancer_plan
+[13/307] Automatic RCC for src/resources.qrc
+[14/307] Automatic MOC for target tst_oprequest
+[15/307] Automatic MOC for target tst_oprunner
+[16/307] Automatic MOC for target tst_fileidentity
+[17/307] Automatic MOC for target tst_opjournal
+[18/307] Automatic MOC for target tst_opmanager
+[19/307] Automatic MOC for target tst_oprescue
+[20/307] Automatic MOC for target tst_opundo
+[21/307] Automatic MOC for target tst_crashcollector
+[22/307] Automatic MOC for target tst_avbparser
+[23/307] Automatic MOC for target tst_mxfparser
+[24/307] Automatic MOC for target tst_bentofile
+[25/307] Automatic MOC for target tst_pmrparser
+[26/307] Automatic MOC for target tst_mdbparser
+[27/307] Automatic MOC for target tst_omfparser
+[28/307] Automatic MOC for target tst_avideffects
+[29/307] Automatic MOC for target tst_avbmetadata
+[30/307] Automatic MOC for target tst_scanner
+[31/307] Automatic MOC for target tst_mediatablemodel
+[32/307] Automatic MOC for target tst_mediafilterproxy
+[33/307] Automatic MOC for target tst_effectfilterdialog
+[34/307] Automatic MOC for target tst_binfilterdialog
+[35/307] Building CXX object CMakeFiles/MediaMuster.dir/src/logcategories.cpp.o
+[36/307] Building CXX object CMakeFiles/MediaMuster.dir/src/main.cpp.o
+[37/307] Building CXX object CMakeFiles/MediaMuster.dir/src/aboutdialog.cpp.o
+[38/307] Building CXX object CMakeFiles/MediaMuster.dir/src/icons.cpp.o
+[39/307] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o
+[40/307] Building CXX object CMakeFiles/MediaMuster.dir/src/logfile.cpp.o
+[41/307] Building CXX object CMakeFiles/MediaMuster.dir/src/macaccessibilityguard.cpp.o
+[42/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o
+[43/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o
+[44/307] Building CXX object CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o
+[45/307] Building CXX object CMakeFiles/MediaMuster.dir/src/volumelistwidget.cpp.o
+[46/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mxfparser.cpp.o
+[47/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[48/307] Building CXX object CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o
+[49/307] Building CXX object CMakeFiles/MediaMuster.dir/src/pmrparser.cpp.o
+[50/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o
+[51/307] Building CXX object CMakeFiles/MediaMuster.dir/src/omfresolutions.cpp.o
+[52/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mdbparser.cpp.o
+[53/307] Building CXX object CMakeFiles/MediaMuster.dir/src/omfparser.cpp.o
+[54/307] Building CXX object CMakeFiles/MediaMuster.dir/src/omfobjects.cpp.o
+[55/307] Building CXX object CMakeFiles/MediaMuster.dir/src/bentofile.cpp.o
+[56/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o
+[57/307] Building CXX object CMakeFiles/MediaMuster.dir/src/avideffects.cpp.o
+[58/307] Building CXX object CMakeFiles/MediaMuster.dir/src/fileidentity.cpp.o
+[59/307] Building CXX object CMakeFiles/MediaMuster.dir/src/nativefile.cpp.o
+[60/307] Building CXX object CMakeFiles/MediaMuster.dir/src/opjournal.cpp.o
+[61/307] Building CXX object CMakeFiles/MediaMuster.dir/src/opcopier.cpp.o
+[62/307] Building CXX object CMakeFiles/MediaMuster.dir/src/trashrouter.cpp.o
+[63/307] Building CXX object CMakeFiles/MediaMuster.dir/src/opundo.cpp.o
+[64/307] Building CXX object CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o
+[65/307] Building CXX object CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o
+[66/307] Building CXX object CMakeFiles/MediaMuster.dir/src/oprescue.cpp.o
+[67/307] Building CXX object CMakeFiles/MediaMuster.dir/src/avbparser.cpp.o
+[68/307] Building CXX object CMakeFiles/MediaMuster.dir/src/progressdialog.cpp.o
+[69/307] Building CXX object CMakeFiles/MediaMuster.dir/src/effectfilterdialog.cpp.o
+[70/307] Building C object CMakeFiles/MediaMuster.dir/src/third_party/xxhash.c.o
+[71/307] Building CXX object CMakeFiles/MediaMuster.dir/src/crashcollector.cpp.o
+[72/307] Building CXX object tests/CMakeFiles/tst_mobid.dir/tst_mobid_autogen/mocs_compilation.cpp.o
+[73/307] Building CXX object CMakeFiles/MediaMuster.dir/src/binfilterdialog.cpp.o
+[74/307] Building CXX object CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o
+[75/307] Building CXX object tests/CMakeFiles/tst_logfile.dir/tst_logfile_autogen/mocs_compilation.cpp.o
+[76/307] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o
+[77/307] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/UVLADIE3JM/qrc_resources.cpp.o
+[78/307] Building CXX object tests/CMakeFiles/tst_mobid.dir/__/src/logcategories.cpp.o
+[79/307] Building CXX object tests/CMakeFiles/tst_pathkey.dir/tst_pathkey_autogen/mocs_compilation.cpp.o
+[80/307] Building CXX object tests/CMakeFiles/tst_mobid.dir/tst_mobid.cpp.o
+[81/307] Building CXX object tests/CMakeFiles/tst_logfile.dir/tst_logfile.cpp.o
+[82/307] Building CXX object tests/CMakeFiles/tst_pmrkey.dir/tst_pmrkey_autogen/mocs_compilation.cpp.o
+[83/307] Building CXX object tests/CMakeFiles/tst_logfile.dir/__/src/logcategories.cpp.o
+[84/307] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o
+[85/307] Building CXX object tests/CMakeFiles/tst_format.dir/tst_format_autogen/mocs_compilation.cpp.o
+[86/307] Building CXX object tests/CMakeFiles/tst_pathkey.dir/__/src/logcategories.cpp.o
+[87/307] Building CXX object tests/CMakeFiles/tst_logfile.dir/__/src/logfile.cpp.o
+[88/307] Building CXX object tests/CMakeFiles/tst_conventions.dir/tst_conventions_autogen/mocs_compilation.cpp.o
+[89/307] Building CXX object tests/CMakeFiles/tst_pathkey.dir/tst_pathkey.cpp.o
+[90/307] Building CXX object tests/CMakeFiles/tst_pmrkey.dir/__/src/logcategories.cpp.o
+[91/307] Building CXX object tests/CMakeFiles/tst_omfuid.dir/tst_omfuid_autogen/mocs_compilation.cpp.o
+[92/307] Building CXX object tests/CMakeFiles/tst_pmrkey.dir/tst_pmrkey.cpp.o
+[93/307] Building CXX object tests/CMakeFiles/tst_format.dir/__/src/logcategories.cpp.o
+[94/307] Building CXX object tests/CMakeFiles/tst_mediacsv.dir/tst_mediacsv_autogen/mocs_compilation.cpp.o
+[95/307] Building CXX object tests/CMakeFiles/tst_format.dir/tst_format.cpp.o
+[96/307] Building CXX object tests/CMakeFiles/tst_conventions.dir/__/src/logcategories.cpp.o
+[97/307] Building CXX object tests/CMakeFiles/tst_omfuid.dir/__/src/logcategories.cpp.o
+[98/307] Building CXX object tests/CMakeFiles/tst_omfuid.dir/tst_omfuid.cpp.o
+[99/307] Building CXX object tests/CMakeFiles/tst_conventions.dir/tst_conventions.cpp.o
+[100/307] Building CXX object tests/CMakeFiles/tst_mediacsv.dir/__/src/logcategories.cpp.o
+[101/307] Building CXX object tests/CMakeFiles/tst_mediacsv.dir/tst_mediacsv.cpp.o
+[102/307] Building CXX object tests/CMakeFiles/tst_mediacsv.dir/__/src/mediacsv.cpp.o
+[103/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/logcategories.cpp.o
+[104/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/tst_rebalancer_parse_autogen/mocs_compilation.cpp.o
+[105/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/tst_rebalancer_parse.cpp.o
+[106/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/opmanager.cpp.o
+[107/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/opundo.cpp.o
+[108/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/rebalancer.cpp.o
+[109/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/oprescue.cpp.o
+[110/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/trashrouter.cpp.o
+[111/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/oprunner.cpp.o
+[112/307] Building C object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/third_party/xxhash.c.o
+[113/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/opcopier.cpp.o
+[114/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/fileidentity.cpp.o
+[115/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/opjournal.cpp.o
+[116/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/nativefile.cpp.o
+[117/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/tst_rebalancer_plan_autogen/mocs_compilation.cpp.o
+[118/307] Building CXX object tests/CMakeFiles/tst_rebalancer_parse.dir/__/src/mxfparser.cpp.o
+[119/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/logcategories.cpp.o
+[120/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/tst_rebalancer_plan.cpp.o
+[121/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/opmanager.cpp.o
+[122/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/opundo.cpp.o
+[123/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/rebalancer.cpp.o
+[124/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/oprescue.cpp.o
+[125/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/oprunner.cpp.o
+[126/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/trashrouter.cpp.o
+[127/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/opcopier.cpp.o
+[128/307] Building CXX object tests/CMakeFiles/tst_oprequest.dir/tst_oprequest_autogen/mocs_compilation.cpp.o
+[129/307] Building C object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/third_party/xxhash.c.o
+[130/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/nativefile.cpp.o
+[131/307] Building CXX object tests/CMakeFiles/tst_fileidentity.dir/tst_fileidentity_autogen/mocs_compilation.cpp.o
+[132/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/fileidentity.cpp.o
+[133/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/opjournal.cpp.o
+[134/307] Building CXX object tests/CMakeFiles/tst_oprequest.dir/__/src/logcategories.cpp.o
+[135/307] Building CXX object tests/CMakeFiles/tst_rebalancer_plan.dir/__/src/mxfparser.cpp.o
+[136/307] Building CXX object tests/CMakeFiles/tst_oprequest.dir/tst_oprequest.cpp.o
+[137/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/tst_opjournal_autogen/mocs_compilation.cpp.o
+[138/307] Building CXX object tests/CMakeFiles/tst_fileidentity.dir/__/src/logcategories.cpp.o
+[139/307] Building CXX object tests/CMakeFiles/tst_fileidentity.dir/__/src/nativefile.cpp.o
+[140/307] Building CXX object tests/CMakeFiles/tst_fileidentity.dir/__/src/fileidentity.cpp.o
+[141/307] Building CXX object tests/CMakeFiles/tst_fileidentity.dir/tst_fileidentity.cpp.o
+[142/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/__/src/logcategories.cpp.o
+[143/307] Building CXX object tests/CMakeFiles/tst_fileidentity.dir/__/src/mxfparser.cpp.o
+[144/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/tst_oprunner_autogen/mocs_compilation.cpp.o
+[145/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/tst_opjournal.cpp.o
+[146/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/__/src/nativefile.cpp.o
+[147/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/__/src/fileidentity.cpp.o
+[148/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/__/src/opjournal.cpp.o
+[149/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/logcategories.cpp.o
+[150/307] Building CXX object tests/CMakeFiles/tst_opjournal.dir/__/src/mxfparser.cpp.o
+[151/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/trashrouter.cpp.o
+[152/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/tst_oprunner.cpp.o
+[153/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/oprunner.cpp.o
+[154/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/opcopier.cpp.o
+[155/307] Building C object tests/CMakeFiles/tst_oprunner.dir/__/src/third_party/xxhash.c.o
+[156/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/fileidentity.cpp.o
+[157/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/opjournal.cpp.o
+[158/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/nativefile.cpp.o
+[159/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/tst_opmanager_autogen/mocs_compilation.cpp.o
+[160/307] Building CXX object tests/CMakeFiles/tst_oprunner.dir/__/src/mxfparser.cpp.o
+[161/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/logcategories.cpp.o
+[162/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/tst_opmanager.cpp.o
+[163/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/opmanager.cpp.o
+[164/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/opundo.cpp.o
+[165/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/trashrouter.cpp.o
+[166/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/oprescue.cpp.o
+[167/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/oprunner.cpp.o
+[168/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/opcopier.cpp.o
+[169/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/tst_oprescue_autogen/mocs_compilation.cpp.o
+[170/307] Building C object tests/CMakeFiles/tst_opmanager.dir/__/src/third_party/xxhash.c.o
+[171/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/opjournal.cpp.o
+[172/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/fileidentity.cpp.o
+[173/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/nativefile.cpp.o
+[174/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/__/src/logcategories.cpp.o
+[175/307] Building CXX object tests/CMakeFiles/tst_opmanager.dir/__/src/mxfparser.cpp.o
+[176/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/tst_oprescue.cpp.o
+/Users/martymclean/Developer/MediaMuster/tests/tst_oprescue.cpp:90:10: warning: unused function 'skipRec' [-Wunused-function]
+   90 |         QString skipRec(int id) { return QStringLiteral(R"({"record":"skip","id":%1})").arg(id); }
+      |                 ^~~~~~~
+1 warning generated.
+[177/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/tst_opundo_autogen/mocs_compilation.cpp.o
+[178/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/__/src/fileidentity.cpp.o
+[179/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/__/src/oprescue.cpp.o
+[180/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/__/src/opjournal.cpp.o
+[181/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/__/src/nativefile.cpp.o
+[182/307] Building CXX object tests/CMakeFiles/tst_oprescue.dir/__/src/mxfparser.cpp.o
+[183/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/logcategories.cpp.o
+[184/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/tst_opundo.cpp.o
+[185/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/trashrouter.cpp.o
+[186/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/opundo.cpp.o
+[187/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/oprunner.cpp.o
+[188/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/opcopier.cpp.o
+[189/307] Building C object tests/CMakeFiles/tst_opundo.dir/__/src/third_party/xxhash.c.o
+[190/307] Building CXX object tests/CMakeFiles/tst_crashcollector.dir/tst_crashcollector_autogen/mocs_compilation.cpp.o
+[191/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/opjournal.cpp.o
+[192/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/nativefile.cpp.o
+[193/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/fileidentity.cpp.o
+[194/307] Building CXX object tests/CMakeFiles/tst_avbparser.dir/tst_avbparser_autogen/mocs_compilation.cpp.o
+[195/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/oprescue.cpp.o
+[196/307] Building CXX object tests/CMakeFiles/tst_opundo.dir/__/src/mxfparser.cpp.o
+[197/307] Building CXX object tests/CMakeFiles/tst_crashcollector.dir/__/src/logcategories.cpp.o
+[198/307] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/tst_mxfparser_autogen/mocs_compilation.cpp.o
+[199/307] Building CXX object tests/CMakeFiles/tst_crashcollector.dir/tst_crashcollector.cpp.o
+[200/307] Building CXX object tests/CMakeFiles/tst_crashcollector.dir/__/src/crashcollector.cpp.o
+[201/307] Building CXX object tests/CMakeFiles/tst_avbparser.dir/__/src/logcategories.cpp.o
+[202/307] Building CXX object tests/CMakeFiles/tst_bentofile.dir/tst_bentofile_autogen/mocs_compilation.cpp.o
+[203/307] Building CXX object tests/CMakeFiles/tst_avbparser.dir/tst_avbparser.cpp.o
+[204/307] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/__/src/logcategories.cpp.o
+[205/307] Building CXX object tests/CMakeFiles/tst_avbparser.dir/__/src/avbparser.cpp.o
+[206/307] Building CXX object tests/CMakeFiles/tst_pmrparser.dir/tst_pmrparser_autogen/mocs_compilation.cpp.o
+[207/307] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/tst_mxfparser.cpp.o
+[208/307] Building CXX object tests/CMakeFiles/tst_bentofile.dir/__/src/logcategories.cpp.o
+[209/307] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/__/src/mxfparser.cpp.o
+[210/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/tst_mdbparser_autogen/mocs_compilation.cpp.o
+[211/307] Building CXX object tests/CMakeFiles/tst_bentofile.dir/tst_bentofile.cpp.o
+[212/307] Building CXX object tests/CMakeFiles/tst_bentofile.dir/__/src/bentofile.cpp.o
+[213/307] Building CXX object tests/CMakeFiles/tst_pmrparser.dir/__/src/logcategories.cpp.o
+[214/307] Building CXX object tests/CMakeFiles/tst_pmrparser.dir/tst_pmrparser.cpp.o
+[215/307] Building CXX object tests/CMakeFiles/tst_pmrparser.dir/__/src/pmrparser.cpp.o
+[216/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/logcategories.cpp.o
+[217/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/omfresolutions.cpp.o
+[218/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/mdbparser.cpp.o
+[219/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/omfobjects.cpp.o
+[220/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/tst_omfparser_autogen/mocs_compilation.cpp.o
+[221/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/tst_mdbparser.cpp.o
+[222/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/bentofile.cpp.o
+[223/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/mxfparser.cpp.o
+[224/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/logcategories.cpp.o
+[225/307] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/pmrparser.cpp.o
+[226/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/omfparser.cpp.o
+[227/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/omfresolutions.cpp.o
+[228/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/omfobjects.cpp.o
+[229/307] Building CXX object tests/CMakeFiles/tst_avideffects.dir/tst_avideffects_autogen/mocs_compilation.cpp.o
+[230/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/tst_omfparser.cpp.o
+[231/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/bentofile.cpp.o
+[232/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/mxfparser.cpp.o
+[233/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/pmrparser.cpp.o
+[234/307] Building CXX object tests/CMakeFiles/tst_avideffects.dir/__/src/logcategories.cpp.o
+[235/307] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/mdbparser.cpp.o
+[236/307] Building CXX object tests/CMakeFiles/tst_avideffects.dir/tst_avideffects.cpp.o
+[237/307] Building CXX object tests/CMakeFiles/tst_avideffects.dir/__/src/avideffects.cpp.o
+[238/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/logcategories.cpp.o
+[239/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/tst_scanner_autogen/mocs_compilation.cpp.o
+[240/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/pmrparser.cpp.o
+[241/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/mxfparser.cpp.o
+[242/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/mdbparser.cpp.o
+[243/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/tst_scanner.cpp.o
+[244/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/omfparser.cpp.o
+[245/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/mediascanner.cpp.o
+[246/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/omfresolutions.cpp.o
+[247/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/omfobjects.cpp.o
+[248/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/avideffects.cpp.o
+[249/307] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/bentofile.cpp.o
+[250/307] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/tst_mediatablemodel_autogen/mocs_compilation.cpp.o
+[251/307] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/__/src/logcategories.cpp.o
+[252/307] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/__/src/mediatablemodel.cpp.o
+[253/307] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/tst_mediatablemodel.cpp.o
+[254/307] Building CXX object tests/CMakeFiles/tst_avbmetadata.dir/__/src/logcategories.cpp.o
+[255/307] Building CXX object tests/CMakeFiles/tst_avbmetadata.dir/tst_avbmetadata_autogen/mocs_compilation.cpp.o
+[256/307] Building CXX object tests/CMakeFiles/tst_avbmetadata.dir/__/src/mediatablemodel.cpp.o
+[257/307] Building CXX object tests/CMakeFiles/tst_avbmetadata.dir/tst_avbmetadata.cpp.o
+[258/307] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/logcategories.cpp.o
+[259/307] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/tst_mediafilterproxy_autogen/mocs_compilation.cpp.o
+[260/307] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/mediafilterproxy.cpp.o
+[261/307] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/tst_mediafilterproxy.cpp.o
+[262/307] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/mediatablemodel.cpp.o
+[263/307] Building CXX object tests/CMakeFiles/tst_effectfilterdialog.dir/__/src/logcategories.cpp.o
+[264/307] Building CXX object tests/CMakeFiles/tst_effectfilterdialog.dir/tst_effectfilterdialog_autogen/mocs_compilation.cpp.o
+[265/307] Building CXX object tests/CMakeFiles/tst_effectfilterdialog.dir/__/src/mediafilterproxy.cpp.o
+[266/307] Building CXX object tests/CMakeFiles/tst_effectfilterdialog.dir/__/src/mediatablemodel.cpp.o
+[267/307] Building CXX object tests/CMakeFiles/tst_effectfilterdialog.dir/tst_effectfilterdialog.cpp.o
+[268/307] Building CXX object tests/CMakeFiles/tst_effectfilterdialog.dir/__/src/effectfilterdialog.cpp.o
+[269/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/logcategories.cpp.o
+[270/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/tst_binfilterdialog_autogen/mocs_compilation.cpp.o
+[271/307] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster
+[272/307] Linking CXX executable tests/tst_mobid
+[273/307] Linking CXX executable tests/tst_logfile
+[274/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/mediafilterproxy.cpp.o
+[275/307] Linking CXX executable tests/tst_pathkey
+[276/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/avbparser.cpp.o
+[277/307] Linking CXX executable tests/tst_pmrkey
+[278/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/tst_binfilterdialog.cpp.o
+[279/307] Linking CXX executable tests/tst_format
+[280/307] Linking CXX executable tests/tst_conventions
+[281/307] Linking CXX executable tests/tst_omfuid
+[282/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/mediatablemodel.cpp.o
+[283/307] Linking CXX executable tests/tst_mediacsv
+[284/307] Linking CXX executable tests/tst_rebalancer_parse
+[285/307] Linking CXX executable tests/tst_rebalancer_plan
+[286/307] Linking CXX executable tests/tst_oprequest
+[287/307] Linking CXX executable tests/tst_fileidentity
+[288/307] Linking CXX executable tests/tst_opjournal
+[289/307] Linking CXX executable tests/tst_oprunner
+[290/307] Linking CXX executable tests/tst_opmanager
+[291/307] Linking CXX executable tests/tst_oprescue
+[292/307] Linking CXX executable tests/tst_crashcollector
+[293/307] Linking CXX executable tests/tst_opundo
+[294/307] Linking CXX executable tests/tst_avbparser
+[295/307] Linking CXX executable tests/tst_mxfparser
+[296/307] Linking CXX executable tests/tst_bentofile
+[297/307] Linking CXX executable tests/tst_pmrparser
+[298/307] Linking CXX executable tests/tst_mdbparser
+[299/307] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/binfilterdialog.cpp.o
+[300/307] Linking CXX executable tests/tst_avideffects
+[301/307] Linking CXX executable tests/tst_omfparser
+[302/307] Linking CXX executable tests/tst_scanner
+[303/307] Linking CXX executable tests/tst_avbmetadata
+[304/307] Linking CXX executable tests/tst_mediatablemodel
+[305/307] Linking CXX executable tests/tst_mediafilterproxy
+[306/307] Linking CXX executable tests/tst_binfilterdialog
+[307/307] Linking CXX executable tests/tst_effectfilterdialog

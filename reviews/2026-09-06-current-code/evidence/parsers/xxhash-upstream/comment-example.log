@@ -1,0 +1,5 @@
+exit_code=1
+/tmp/mediamuster-review-20260906/parsers/xxhash-upstream/comment-example.cpp:19:49: error: use of undeclared identifier 'seed'
+   19 |            XXH3_generateSecret_fromSeed(secret, seed);
+      |                                                 ^
+1 error generated.

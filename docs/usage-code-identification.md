@@ -9,7 +9,7 @@ This review inspected Media Composer **26.8.0.58987** (`CFBundleShortVersionStri
 The following table separates conventional integer meanings from what the inspected binary confirms directly.
 
 | Integer | Conventional meaning | Confirmation in Media Composer 26.8 |
-|---|---|---|
+| --- | --- | --- |
 | 0 | No special usage | Context dependent: not a universal master or non-render flag. |
 | 1 | Precompute master | Name `renderedeffect`; logical/master mob role. |
 | 2 | Subclip | Name `subclip`. |

@@ -51,4 +51,3 @@ Fix: prevent/rewrite a leading Subtract after step removal, or capture the initi
 * `src/avbparser.cpp:182–184`: zero extracted IDs is not the only indication of incompleteness. Partially understood bins can contain some searchable IDs and still omit many real members.
 * `tests/tst_avbparser.cpp:1–4`: overview promises all-zero sentinel filtering, boundary/truncation coverage, and no maintained binary fixtures. The current suite has no explicit zero-ID test; the only truncation case is a wrapped-pattern suffix, asserted `valid=true`; two real OMF fixtures are used at `187–217`.
 * Synthetic tests assemble only a 12-byte prefix plus arbitrary bytes, so they exercise scavenging rather than AVB format validity. Add structural fixtures (LE and BE), true empty bins, tag-coded IDs with no text copy, object/reference truncation, unknown-class/extension cases, and consumer operation tests. Retain the useful direct pattern tests but describe their scope accurately.
-

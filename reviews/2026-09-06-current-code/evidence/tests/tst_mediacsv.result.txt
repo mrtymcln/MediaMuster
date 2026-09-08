@@ -1,0 +1,17 @@
+********* Start testing of TestMediaCsv *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestMediaCsv::initTestCase()
+PASS   : TestMediaCsv::header_and_row_have_the_same_field_count()
+PASS   : TestMediaCsv::created_date_carries_time_of_day()
+PASS   : TestMediaCsv::unknown_created_date_is_blank()
+PASS   : TestMediaCsv::size_column_matches_the_table()
+PASS   : TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()
+PASS   : TestMediaCsv::formula_injection_is_neutralised()
+PASS   : TestMediaCsv::write_produces_header_plus_one_line_per_row()
+PASS   : TestMediaCsv::unknown_classification_is_exported_without_guessing()
+PASS   : TestMediaCsv::effect_details_are_explicit_and_quoted()
+PASS   : TestMediaCsv::non_precompute_effect_fields_stay_blank()
+PASS   : TestMediaCsv::precompute_categories_preserve_unknown_details()
+PASS   : TestMediaCsv::cleanupTestCase()
+Totals: 13 passed, 0 failed, 0 skipped, 0 blacklisted, 3ms
+********* Finished testing of TestMediaCsv *********

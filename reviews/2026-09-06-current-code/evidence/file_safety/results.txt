@@ -1,0 +1,16 @@
+SOURCE_EDIT_LOST {"destinationRetainedOldByte":true,"failed":0,"sourceConfidence":2,"sourceExists":false,"sourceHadUmid":true,"succeeded":1}
+CANCEL_DELETES_REPLACEMENT {"failed":0,"replacementExists":false,"sourceExists":true,"succeeded":0}
+mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/review-mQCICz/dst/a.mxf" status 3 read 10 bytes
+FAILED_RECOVERY_FORGOTTEN {"firstFlagged":1,"journalExists":false,"originalStillParked":true,"secondReversed":0}
+RECOVERED_PATHS_REVERT {"firstUsesNewRoot":true,"pendingUsesOldRoot":true,"secondUsesOldRoot":true}
+UNVERIFIED_WHOLE_COPY_ACCEPTED {"differentBytes":true,"opsFlagged":0,"resumeOffers":0,"sameSize":true}
+MOVE_CANCEL_STRANDING_UNJOURNALED {"destinationBytes":4194304,"destinationLeftBehind":true,"failed":0,"journalComplete":true,"journalDirty":false,"sourceBytes":8388608}
+BALANCED_FULL_GROUP_MOVES_FOREVER {"firstDestination":"2","firstMoves":4999,"folderTarget":4999,"secondDestination":"3","secondMoves":4999}
+mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/review-gBOqbv/src/a.mxf" status 3 read 9 bytes
+mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/review-gBOqbv/dst/a.mxf" status 3 read 12 bytes
+DORMANT_UNDO_FORGETS_REPLACE_TAIL {"destinationStillMissing":true,"firstFailed":1,"journalUndone":true,"replacedOriginalStillInTrash":true,"secondSkipped":1}
+mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/review-jTlwGi/MXF/1/a.mxf" status 3 read 5 bytes
+RENAME_WITHOUT_JOURNAL_SUCCEEDS {"destinationExists":true,"journalCount":0,"sourceExists":false,"succeeded":1}
+mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/review-bwTtHO/MXF/1/video.mxf" status 3 read 5 bytes
+mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/review-bwTtHO/MXF/1/audio.mxf" status 3 read 5 bytes
+RELATIVES_SPLIT_ON_FAILURE {"audioMovedToFolder2":true,"failed":1,"succeeded":1,"videoStayedInFolder1":true}

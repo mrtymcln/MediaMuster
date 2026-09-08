@@ -1,0 +1,25 @@
+********* Start testing of TestBentoFile *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestBentoFile::initTestCase()
+PASS   : TestBentoFile::rejects_a_missing_or_garbled_label()
+PASS   : TestBentoFile::rejects_toc_arithmetic_that_does_not_close()
+PASS   : TestBentoFile::reads_immediate_and_offset_values()
+PASS   : TestBentoFile::out_of_range_value_reads_empty_not_a_crash()
+PASS   : TestBentoFile::duplicate_entries_first_in_file_wins()
+PASS   : TestBentoFile::property_names_come_from_the_file()
+PASS   : TestBentoFile::typed_readers()
+PASS   : TestBentoFile::real_fixtures_load_with_the_expected_shape()
+PASS   : TestBentoFile::continued_values_assemble_or_fail_explicitly()
+PASS   : TestBentoFile::label_versions_select_real_toc_decoders()
+PASS   : TestBentoFile::omf_open_matches_load_on_real_fixtures()
+PASS   : TestBentoFile::omf_open_reads_only_the_tail()
+PASS   : TestBentoFile::omf_open_fails_cleanly_on_non_bento_input()
+PASS   : TestBentoFile::omf_mob_index()
+PASS   : TestBentoFile::bento2_endian_references_and_status()
+PASS   : TestBentoFile::bento2_opcode_boundaries()
+SKIP   : TestBentoFile::toolkit_corpus() Set MEDIAMUSTER_OMFKT22 to exercise genuine public toolkit files
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_bentofile.cpp(693)]
+PASS   : TestBentoFile::riff_embedded_label_uses_file_relative_offsets()
+PASS   : TestBentoFile::cleanupTestCase()
+Totals: 19 passed, 0 failed, 1 skipped, 0 blacklisted, 354ms
+********* Finished testing of TestBentoFile *********

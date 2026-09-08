@@ -1,0 +1,21 @@
+********* Start testing of TestConventions *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestConventions::initTestCase()
+PASS   : TestConventions::mxf_root_name_is_case_insensitive()
+PASS   : TestConventions::omf_root_is_not_an_mxf_root()
+PASS   : TestConventions::mxf_root_under_builds_canonical_path()
+PASS   : TestConventions::dot_hidden_names()
+PASS   : TestConventions::mxf_extension_is_case_insensitive()
+PASS   : TestConventions::essence_name_combinations()
+PASS   : TestConventions::avid_media_extensions()
+PASS   : TestConventions::avid_media_name_is_the_table_rule()
+PASS   : TestConventions::temp_renamed_media_is_still_media()
+PASS   : TestConventions::folder_budget_thresholds_stay_ordered()
+PASS   : TestConventions::omf_root_constant_and_omf_root_under()
+PASS   : TestConventions::omf_era_extension_set()
+PASS   : TestConventions::creating_folder_name_is_case_insensitive()
+PASS   : TestConventions::system_drive_media_bases_per_platform()
+PASS   : TestConventions::database_file_names_cover_both_spellings()
+PASS   : TestConventions::cleanupTestCase()
+Totals: 17 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestConventions *********

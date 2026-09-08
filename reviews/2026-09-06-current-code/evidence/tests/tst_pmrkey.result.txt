@@ -1,0 +1,9 @@
+********* Start testing of TestPmrKey *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestPmrKey::initTestCase()
+PASS   : TestPmrKey::primary_lowercases()
+PASS   : TestPmrKey::primary_normalizes_nfd_to_nfc()
+PASS   : TestPmrKey::primary_passes_through_already_normalised()
+PASS   : TestPmrKey::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestPmrKey *********

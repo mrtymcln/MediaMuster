@@ -1,0 +1,64 @@
+********* Start testing of TestRebalancerPlan *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestRebalancerPlan::initTestCase()
+PASS   : TestRebalancerPlan::missing_root_yields_empty_plan()
+PASS   : TestRebalancerPlan::noop_when_already_balanced()
+PASS   : TestRebalancerPlan::consolidates_relatives_into_home_folder()
+PASS   : TestRebalancerPlan::quarantined_folder_left_alone()
+PASS   : TestRebalancerPlan::out_of_scope_media_files_dropped()
+PASS   : TestRebalancerPlan::folder_count_excludes_databases_and_hidden_files()
+PASS   : TestRebalancerPlan::host_prefix_isolates_consolidation()
+PASS   : TestRebalancerPlan::home_full_falls_back_to_existing_folder()
+PASS   : TestRebalancerPlan::new_folder_when_all_existing_are_full()
+QWARN  : TestRebalancerPlan::execute_moves_the_planned_files() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-SDvTqM/Avid MediaFiles/MXF/1/clip0.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_moves_the_planned_files() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-SDvTqM/Avid MediaFiles/MXF/1/clip1.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_moves_the_planned_files() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-SDvTqM/Avid MediaFiles/MXF/1/clip2.mxf" status 3 read 1000 bytes
+PASS   : TestRebalancerPlan::execute_moves_the_planned_files()
+QWARN  : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-hmUEih/Avid MediaFiles/MXF/1/m1.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-hmUEih/Avid MediaFiles/MXF/2/m2.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-hmUEih/Avid MediaFiles/MXF/2/m3.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-hmUEih/Avid MediaFiles/MXF/2/m4.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-hmUEih/Avid MediaFiles/MXF/2/m5.mxf" status 3 read 1000 bytes
+QWARN  : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-hmUEih/Avid MediaFiles/MXF/2/m6.mxf" status 3 read 1000 bytes
+PASS   : TestRebalancerPlan::execute_runs_a_planner_built_plan_and_creates_its_new_folder()
+QWARN  : TestRebalancerPlan::execute_resets_the_avid_databases_of_every_folder_it_touches() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-LtPpPx/Avid MediaFiles/MXF/1/clip.mxf" status 3 read 1000 bytes
+PASS   : TestRebalancerPlan::execute_resets_the_avid_databases_of_every_folder_it_touches()
+QWARN  : TestRebalancerPlan::execute_never_clobbers_an_existing_destination() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-DwXdlO/Avid MediaFiles/MXF/1/clip.mxf" status 3 read 1000 bytes
+PASS   : TestRebalancerPlan::execute_never_clobbers_an_existing_destination()
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip0.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip1.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip2.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip3.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip4.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip5.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip6.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip7.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip8.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip9.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip10.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip11.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip12.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip13.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip14.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip15.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip16.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip17.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip18.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip19.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip20.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip21.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip22.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip23.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip24.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip25.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip26.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip27.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip28.mxf" status 3 read 100 bytes
+QWARN  : TestRebalancerPlan::execute_cancel_keeps_what_already_landed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-mQUUGM/Avid MediaFiles/MXF/1/clip29.mxf" status 3 read 100 bytes
+PASS   : TestRebalancerPlan::execute_cancel_keeps_what_already_landed()
+QWARN  : TestRebalancerPlan::destruction_during_execution_joins_the_engine() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_rebalancer_plan-XzvHiK/Avid MediaFiles/MXF/1/a.mxf" status 3 read 1000 bytes
+PASS   : TestRebalancerPlan::destruction_during_execution_joins_the_engine()
+PASS   : TestRebalancerPlan::execute_aborts_when_a_donor_folder_is_read_only()
+PASS   : TestRebalancerPlan::cleanupTestCase()
+Totals: 18 passed, 0 failed, 0 skipped, 0 blacklisted, 5120ms
+********* Finished testing of TestRebalancerPlan *********

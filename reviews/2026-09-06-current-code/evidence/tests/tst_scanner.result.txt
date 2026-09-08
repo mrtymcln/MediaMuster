@@ -1,0 +1,71 @@
+********* Start testing of TestScanner *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestScanner::initTestCase()
+PASS   : TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
+PASS   : TestScanner::unreferenced_mxf_recovered_via_mdb()
+PASS   : TestScanner::stage3_mdb_name_must_not_clobber_material_name()
+PASS   : TestScanner::mxf_without_any_database_is_no_database()
+PASS   : TestScanner::wav_with_readable_dbs_is_no_reference()
+QWARN  : TestScanner::corrupt_pmr_flags_no_database_and_mdb_still_recovers() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-mththk/Avid MediaFiles/MXF/1/msmFMID.pmr"
+PASS   : TestScanner::corrupt_pmr_flags_no_database_and_mdb_still_recovers()
+PASS   : TestScanner::appledouble_sibling_is_never_media()
+PASS   : TestScanner::non_avid_files_are_invisible()
+PASS   : TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
+PASS   : TestScanner::effect_render_names_classify_as_precompute()
+QWARN  : TestScanner::mdb_name_fills_in_when_the_mxf_has_none() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-iFOVAT/Avid MediaFiles/MXF/1/garbage.mxf" status 3 read 2048 bytes
+PASS   : TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
+QWARN  : TestScanner::unknown_clip_name_is_blank_not_the_filename() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-PngoZB/Avid MediaFiles/MXF/1/garbage.mxf" status 3 read 2048 bytes
+PASS   : TestScanner::unknown_clip_name_is_blank_not_the_filename()
+QWARN  : TestScanner::source_package_name_is_not_a_clip_name() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-feeNPm/Avid MediaFiles/MXF/1/tape.mxf" status 2 read 4096 bytes
+PASS   : TestScanner::source_package_name_is_not_a_clip_name()
+PASS   : TestScanner::mixdown_is_media_not_precompute()
+QWARN  : TestScanner::unreadable_header_stays_unknown() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-HLMdJF/Avid MediaFiles/MXF/1/Untitled_Sequence.0B4A3F9FV.mxf" status 3 read 2048 bytes
+PASS   : TestScanner::unreadable_header_stays_unknown()
+PASS   : TestScanner::database_described_row_never_reads_its_header()
+PASS   : TestScanner::stale_header_and_current_database_agree()
+QWARN  : TestScanner::changed_file_falls_back_to_its_header() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-VWbsEa/Avid MediaFiles/MXF/1/TONE_100A01.EA7D504A.611740.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::changed_file_falls_back_to_its_header()
+QWARN  : TestScanner::zero_pmr_timestamp_forces_header_and_keeps_kind_and_type_unknown() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-fZfkWG/Avid MediaFiles/MXF/1/TONE_100A01.EA7D504A.611740.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::zero_pmr_timestamp_forces_header_and_keeps_kind_and_type_unknown()
+QWARN  : TestScanner::current_render_with_missing_project_survives_failed_header_read() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-UAlphy/Avid MediaFiles/MXF/1/render.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::current_render_with_missing_project_survives_failed_header_read()
+QWARN  : TestScanner::precompute_category_from_current_database(render-no-import) mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-OFlooH/Avid MediaFiles/MXF/1/render.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::precompute_category_from_current_database(render-no-import)
+QWARN  : TestScanner::precompute_category_from_current_database(two-track-import-null-payload) mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-IqQLDT/Avid MediaFiles/MXF/1/render.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::precompute_category_from_current_database(two-track-import-null-payload)
+QWARN  : TestScanner::precompute_category_from_current_database(one-track-import) mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-vqhnRY/Avid MediaFiles/MXF/1/render.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::precompute_category_from_current_database(one-track-import)
+QWARN  : TestScanner::precompute_category_from_current_database(unreadable-kind) mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-nddBqd/Avid MediaFiles/MXF/1/render.mxf" status 3 read 4096 bytes
+PASS   : TestScanner::precompute_category_from_current_database(unreadable-kind)
+PASS   : TestScanner::precompute_category_conflict_and_stale_database()
+PASS   : TestScanner::reused_filename_clears_old_editorial_details()
+PASS   : TestScanner::pmr_v1_recovers_unique_master_from_mdb()
+PASS   : TestScanner::omf2_header_keeps_master_identity_with_unknown_classification()
+PASS   : TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
+PASS   : TestScanner::folder_without_databases_reads_every_header()
+PASS   : TestScanner::mpeg_audio_falls_back_to_its_header()
+PASS   : TestScanner::precompute_row_gets_effect_fields()
+PASS   : TestScanner::modified_is_the_filesystem_mtime()
+PASS   : TestScanner::omf_volume_root_scans_both_folders()
+PASS   : TestScanner::omf_volume_scan_stops_at_the_root_but_a_manual_path_goes_deeper()
+PASS   : TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
+PASS   : TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
+PASS   : TestScanner::omf_video_rows_show_avid_short_names()
+PASS   : TestScanner::omf_folder_with_any_name_is_recognised_by_its_databases()
+PASS   : TestScanner::omf_folder_is_recognised_by_its_mdb_alone()
+PASS   : TestScanner::creating_folder_is_skipped_under_mxf_and_omfi()
+PASS   : TestScanner::ama_databases_are_read()
+PASS   : TestScanner::manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root()
+PASS   : TestScanner::overlapping_volume_and_manual_roots_scan_each_folder_once()
+SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp(1992)]
+PASS   : TestScanner::stray_audio_in_an_mxf_folder_is_listed_but_never_opened()
+PASS   : TestScanner::stray_omf_in_an_mxf_folder_is_opened()
+QWARN  : TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-oiyILc/Avid MediaFiles/MXF/2/amaFMID.pmr"
+QWARN  : TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable() mediamuster.mdb: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-oiyILc/Avid MediaFiles/MXF/2/amaMMOB.mdb" is not a readable Avid MDB: "too small for a Bento label"
+QWARN  : TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-oiyILc/Avid MediaFiles/MXF/1/amaFMID.pmr"
+QWARN  : TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable() mediamuster.mdb: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-oiyILc/Avid MediaFiles/MXF/1/amaMMOB.mdb" is not a readable Avid MDB: "too small for a Bento label"
+PASS   : TestScanner::unreadable_ama_twin_does_not_mark_the_folder_unreadable()
+PASS   : TestScanner::cleanupTestCase()
+Totals: 49 passed, 0 failed, 1 skipped, 0 blacklisted, 4437ms
+********* Finished testing of TestScanner *********

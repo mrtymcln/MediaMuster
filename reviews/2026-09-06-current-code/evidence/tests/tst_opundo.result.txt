@@ -1,0 +1,26 @@
+********* Start testing of TestOpUndo *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestOpUndo::initTestCase()
+QWARN  : TestOpUndo::undo_copy_trashes_the_copy_and_stamps_undone() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-itNwJI/src/clip.mxf" status 3 read 10 bytes
+PASS   : TestOpUndo::undo_copy_trashes_the_copy_and_stamps_undone()
+QWARN  : TestOpUndo::undo_copy_replace_restores_the_replaced_original() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-diSYjR/src/clip.mxf" status 3 read 10 bytes
+QWARN  : TestOpUndo::undo_copy_replace_restores_the_replaced_original() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-diSYjR/dest/clip.mxf" status 3 read 12 bytes
+PASS   : TestOpUndo::undo_copy_replace_restores_the_replaced_original()
+QWARN  : TestOpUndo::undo_move_renames_back_same_volume() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hpZqxD/src/clip.mxf" status 3 read 11 bytes
+PASS   : TestOpUndo::undo_move_renames_back_same_volume()
+QWARN  : TestOpUndo::undo_move_copyleg_copies_back_and_trashes_far_copy() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-aThaRM/src/clip.mxf" status 3 read 9 bytes
+PASS   : TestOpUndo::undo_move_copyleg_copies_back_and_trashes_far_copy()
+QWARN  : TestOpUndo::undo_delete_restores_from_trash() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-vSJXFH/media/clip.mxf" status 3 read 13 bytes
+PASS   : TestOpUndo::undo_delete_restores_from_trash()
+QWARN  : TestOpUndo::undo_rename_renames_back_and_resets_avid_dbs() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NaNfBk/mxf/1/clip.mxf" status 3 read 13 bytes
+PASS   : TestOpUndo::undo_rename_renames_back_and_resets_avid_dbs()
+QWARN  : TestOpUndo::undo_skips_already_undone_items() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RPrpDL/src/a.mxf" status 3 read 4 bytes
+QWARN  : TestOpUndo::undo_skips_already_undone_items() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RPrpDL/src/b.mxf" status 3 read 4 bytes
+PASS   : TestOpUndo::undo_skips_already_undone_items()
+QWARN  : TestOpUndo::undo_refuses_identity_drift_and_keeps_candidacy() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-wVuRhW/src/clip.mxf" status 3 read 10 bytes
+PASS   : TestOpUndo::undo_refuses_identity_drift_and_keeps_candidacy()
+QWARN  : TestOpUndo::undo_writes_its_own_journal() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-txHigm/src/clip.mxf" status 3 read 5 bytes
+PASS   : TestOpUndo::undo_writes_its_own_journal()
+PASS   : TestOpUndo::cleanupTestCase()
+Totals: 11 passed, 0 failed, 0 skipped, 0 blacklisted, 33ms
+********* Finished testing of TestOpUndo *********

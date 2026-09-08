@@ -1,0 +1,12 @@
+********* Start testing of TestAvbMetadata *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestAvbMetadata::initTestCase()
+PASS   : TestAvbMetadata::fills_missing_owned_metadata_in_both_identity_forms()
+PASS   : TestAvbMetadata::preserves_scanner_metadata_and_ignores_source_names()
+PASS   : TestAvbMetadata::conflicts_are_independent_and_retractable()
+PASS   : TestAvbMetadata::same_bin_name_with_different_uid_is_ambiguous()
+PASS   : TestAvbMetadata::incomplete_bins_cannot_supply_metadata()
+PASS   : TestAvbMetadata::rescans_and_removals_preserve_provenance()
+PASS   : TestAvbMetadata::cleanupTestCase()
+Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestAvbMetadata *********

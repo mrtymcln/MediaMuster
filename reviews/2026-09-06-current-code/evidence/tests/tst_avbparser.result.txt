@@ -1,0 +1,134 @@
+********* Start testing of TestAvbParser *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestAvbParser::initTestCase()
+PASS   : TestAvbParser::header_recognition(little-endian)
+PASS   : TestAvbParser::header_recognition(big-endian)
+PASS   : TestAvbParser::header_recognition(renamed-text)
+PASS   : TestAvbParser::header_recognition(empty-file)
+PASS   : TestAvbParser::header_recognition(signature-only)
+PASS   : TestAvbParser::header_recognition(damaged-body)
+PASS   : TestAvbParser::header_recognition(truncated-signature-1)
+PASS   : TestAvbParser::header_recognition(truncated-signature-2)
+PASS   : TestAvbParser::header_recognition(truncated-signature-3)
+PASS   : TestAvbParser::header_recognition(truncated-signature-4)
+PASS   : TestAvbParser::header_recognition(truncated-signature-5)
+PASS   : TestAvbParser::header_recognition(truncated-signature-6)
+PASS   : TestAvbParser::header_recognition(truncated-signature-7)
+PASS   : TestAvbParser::header_recognition(truncated-signature-8)
+PASS   : TestAvbParser::header_recognition(truncated-signature-9)
+PASS   : TestAvbParser::header_recognition(truncated-signature-10)
+PASS   : TestAvbParser::header_recognition(truncated-signature-11)
+PASS   : TestAvbParser::header_recognition(truncated-signature-12)
+PASS   : TestAvbParser::header_recognition(truncated-signature-13)
+PASS   : TestAvbParser::header_recognition(truncated-signature-14)
+PASS   : TestAvbParser::header_recognition(truncated-signature-15)
+PASS   : TestAvbParser::header_recognition(truncated-signature-16)
+PASS   : TestAvbParser::header_recognition(truncated-signature-17)
+PASS   : TestAvbParser::header_recognition(truncated-signature-18)
+PASS   : TestAvbParser::header_recognition(truncated-signature-19)
+PASS   : TestAvbParser::header_recognition(truncated-signature-20)
+PASS   : TestAvbParser::header_recognition(damaged-signature-byte-0)
+PASS   : TestAvbParser::header_recognition(damaged-signature-byte-2)
+PASS   : TestAvbParser::header_recognition(damaged-signature-byte-8)
+PASS   : TestAvbParser::header_recognition(damaged-signature-byte-12)
+PASS   : TestAvbParser::header_recognition(damaged-signature-byte-14)
+PASS   : TestAvbParser::header_recognition_requires_a_readable_file()
+PASS   : TestAvbParser::missing_file_has_diagnostic()
+PASS   : TestAvbParser::binary_only_master(LE-u16-ABIN)
+PASS   : TestAvbParser::binary_only_master(LE-u16-BINF)
+PASS   : TestAvbParser::binary_only_master(LE-u32-ABIN)
+PASS   : TestAvbParser::binary_only_master(LE-u32-BINF)
+PASS   : TestAvbParser::binary_only_master(BE-u16-ABIN)
+PASS   : TestAvbParser::binary_only_master(BE-u16-BINF)
+PASS   : TestAvbParser::binary_only_master(BE-u32-ABIN)
+PASS   : TestAvbParser::binary_only_master(BE-u32-BINF)
+PASS   : TestAvbParser::source_and_mob_references_and_owned_metadata(little-endian)
+PASS   : TestAvbParser::source_and_mob_references_and_owned_metadata(big-endian)
+PASS   : TestAvbParser::macroman_names_are_decoded_without_utf8_extension()
+QWARN  : TestAvbParser::malformed_utf8_metadata_is_invalid() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-EclRpf/invalid-utf8.avb" "Invalid UTF-8 AVB string (byte 611)"
+PASS   : TestAvbParser::malformed_utf8_metadata_is_invalid()
+PASS   : TestAvbParser::mob_looking_comment_is_not_membership()
+PASS   : TestAvbParser::valid_empty_bin_is_complete(little-endian)
+PASS   : TestAvbParser::valid_empty_bin_is_complete(big-endian)
+PASS   : TestAvbParser::strict_prefixes_are_invalid()
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-object-count-overflow) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hpWWQs/broken.avb" "Invalid AVB object count or root reference (byte 51)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-object-count-overflow)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-undeclared-trailing-object) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-DIMOjW/broken.avb" "Unexpected data after declared AVB objects (byte 624)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-undeclared-trailing-object)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-null-root) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VgSTVM/broken.avb" "Invalid AVB object count or root reference (byte 51)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-null-root)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-root-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-acuHsH/broken.avb" "Invalid AVB object count or root reference (byte 51)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-root-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-root-is-not-bin) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-BPXUbf/broken.avb" "AVB document root is not a bin (byte 698)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-root-is-not-bin)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-chunk-size-overflow) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-XdVCby/broken.avb" "Invalid AVB chunk length (byte 267)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-chunk-size-overflow)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-bin-item-reference-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pVGQUR/broken.avb" "Invalid AVB object reference 7 (byte 147)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-bin-item-reference-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-bin-item-is-not-composition) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-FaSXAR/broken.avb" "AVB reference 3 must identify CMPO (byte 147)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-bin-item-is-not-composition)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-track-reference-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-aCryMR/broken.avb" "Invalid AVB object reference 7 (byte 333)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-track-reference-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-original-bin-reference-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-kxBhMr/broken.avb" "Invalid AVB object reference 7 (byte 557)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-original-bin-reference-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-original-bin-reference-wrong-type) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ujWJrE/broken.avb" "AVB reference 3 must identify MCBR (byte 557)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-original-bin-reference-wrong-type)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(LE-large-bin-item-count-overflow) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-FJAygF/broken.avb" "Invalid AVB entry count (byte 145)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(LE-large-bin-item-count-overflow)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-object-count-overflow) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-jPREEX/broken.avb" "Invalid AVB object count or root reference (byte 51)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-object-count-overflow)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-undeclared-trailing-object) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-uRhJGp/broken.avb" "Unexpected data after declared AVB objects (byte 624)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-undeclared-trailing-object)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-null-root) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rJiism/broken.avb" "Invalid AVB object count or root reference (byte 51)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-null-root)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-root-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RSNipH/broken.avb" "Invalid AVB object count or root reference (byte 51)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-root-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-root-is-not-bin) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-seFNMx/broken.avb" "AVB document root is not a bin (byte 698)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-root-is-not-bin)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-chunk-size-overflow) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-EpymwV/broken.avb" "Invalid AVB chunk length (byte 267)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-chunk-size-overflow)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-bin-item-reference-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-cirNnv/broken.avb" "Invalid AVB object reference 7 (byte 147)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-bin-item-reference-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-bin-item-is-not-composition) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rTObwe/broken.avb" "AVB reference 3 must identify CMPO (byte 147)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-bin-item-is-not-composition)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-track-reference-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-XXVjpa/broken.avb" "Invalid AVB object reference 7 (byte 333)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-track-reference-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-original-bin-reference-out-of-range) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-XsyJdc/broken.avb" "Invalid AVB object reference 7 (byte 557)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-original-bin-reference-out-of-range)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-original-bin-reference-wrong-type) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-fqQqtG/broken.avb" "AVB reference 3 must identify MCBR (byte 557)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-original-bin-reference-wrong-type)
+QWARN  : TestAvbParser::malformed_counts_lengths_and_references(BE-large-bin-item-count-overflow) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-GujRgJ/broken.avb" "Invalid AVB entry count (byte 145)"
+PASS   : TestAvbParser::malformed_counts_lengths_and_references(BE-large-bin-item-count-overflow)
+PASS   : TestAvbParser::native_legacy_words_are_decoded(little-endian)
+PASS   : TestAvbParser::native_legacy_words_are_decoded(big-endian)
+PASS   : TestAvbParser::terminal_source_nulls_are_ignored(all-zero-typed)
+PASS   : TestAvbParser::terminal_source_nulls_are_ignored(legacy-wrapper-zero-core)
+PASS   : TestAvbParser::terminal_source_nulls_are_ignored(native-zero-words)
+PASS   : TestAvbParser::unknown_class_is_incomplete()
+PASS   : TestAvbParser::unknown_identity_extension_is_incomplete()
+QWARN  : TestAvbParser::dependency_lists_validate_references(SEQU-LE-bad-reference) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Xkhpbu/dependency.avb" "Invalid AVB object reference 8 (byte 461)"
+PASS   : TestAvbParser::dependency_lists_validate_references(SEQU-LE-bad-reference)
+PASS   : TestAvbParser::dependency_lists_validate_references(SEQU-LE-valid)
+QWARN  : TestAvbParser::dependency_lists_validate_references(SEQU-BE-bad-reference) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-SOLXPl/dependency.avb" "Invalid AVB object reference 8 (byte 461)"
+PASS   : TestAvbParser::dependency_lists_validate_references(SEQU-BE-bad-reference)
+PASS   : TestAvbParser::dependency_lists_validate_references(SEQU-BE-valid)
+QWARN  : TestAvbParser::dependency_lists_validate_references(PRLS-LE-bad-reference) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-izULkA/dependency.avb" "Invalid AVB object reference 8 (byte 642)"
+PASS   : TestAvbParser::dependency_lists_validate_references(PRLS-LE-bad-reference)
+PASS   : TestAvbParser::dependency_lists_validate_references(PRLS-LE-valid)
+QWARN  : TestAvbParser::dependency_lists_validate_references(PRLS-BE-bad-reference) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-fBDedt/dependency.avb" "Invalid AVB object reference 8 (byte 642)"
+PASS   : TestAvbParser::dependency_lists_validate_references(PRLS-BE-bad-reference)
+PASS   : TestAvbParser::dependency_lists_validate_references(PRLS-BE-valid)
+QWARN  : TestAvbParser::dependency_lists_validate_references(TMCS-LE-bad-reference) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-FaDRjC/dependency.avb" "Invalid AVB object reference 8 (byte 640)"
+PASS   : TestAvbParser::dependency_lists_validate_references(TMCS-LE-bad-reference)
+PASS   : TestAvbParser::dependency_lists_validate_references(TMCS-LE-valid)
+QWARN  : TestAvbParser::dependency_lists_validate_references(TMCS-BE-bad-reference) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hNyRZA/dependency.avb" "Invalid AVB object reference 8 (byte 640)"
+PASS   : TestAvbParser::dependency_lists_validate_references(TMCS-BE-bad-reference)
+PASS   : TestAvbParser::dependency_lists_validate_references(TMCS-BE-valid)
+PASS   : TestAvbParser::unknown_component_version_is_incomplete()
+QWARN  : TestAvbParser::typed_mob_field_framing_is_validated() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WJLFUw/bad-mob-array.avb" "Invalid MOB label length (byte 364)"
+PASS   : TestAvbParser::typed_mob_field_framing_is_validated()
+PASS   : TestAvbParser::cancelled_read_never_becomes_valid()
+PASS   : TestAvbParser::omf_bins_preserve_file_and_master_identities()
+PASS   : TestAvbParser::cleanupTestCase()
+Totals: 98 passed, 0 failed, 0 skipped, 0 blacklisted, 129ms
+********* Finished testing of TestAvbParser *********

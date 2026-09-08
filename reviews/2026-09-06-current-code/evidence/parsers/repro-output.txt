@@ -1,0 +1,10 @@
+german_colliding_alias_name "Paint Effect" category "Image" matched true
+german_mask_name "85_Maske" category "unknown" matched false sequence "Seq,1"
+edit_rate_last false sampleRate 48000 valid true headerStatus 1
+edit_rate_last true sampleRate 24 valid true headerStatus 1
+sound_coding_bytes 1 codec "PCM" valid true status 1
+sound_coding_bytes 15 codec "PCM" valid true status 1
+sound_coding_bytes 16 codec "Unknown (78787878787878787878787878787878)" valid true status 1
+omf_alias a "060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80" b "060a2b3401010101.01010f0013000000.4433221166558877.060e2b347f7f2a80" distinct true valid true complete true bin_has_a true bin_has_unrelated_b true
+bin_filter_unrelated_b_matches true
+duplicate_source mdb_ok true file_count 1 mdb_project "" essence_complete true omf_project "Correct project"

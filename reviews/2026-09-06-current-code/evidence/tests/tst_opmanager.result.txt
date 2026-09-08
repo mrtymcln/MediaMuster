@@ -1,0 +1,28 @@
+********* Start testing of TestOpManager *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestOpManager::initTestCase()
+PASS   : TestOpManager::items_from_mediafiles_carry_scan_claims()
+QWARN  : TestOpManager::copy_run_writes_its_plan_before_the_first_op() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-LEqOkf/src/a.mxf" status 3 read 65552 bytes
+PASS   : TestOpManager::copy_run_writes_its_plan_before_the_first_op()
+QWARN  : TestOpManager::copy_replace_journals_parked_path_while_still_in_flight() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-qBuKFp/src/clip.mxf" status 3 read 65552 bytes
+QWARN  : TestOpManager::copy_replace_journals_parked_path_while_still_in_flight() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-qBuKFp/dest/clip.mxf" status 3 read 3 bytes
+PASS   : TestOpManager::copy_replace_journals_parked_path_while_still_in_flight()
+QWARN  : TestOpManager::copy_replace_midCopyFailure_restores_original() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-AVphQI/src/clip.mxf" status 3 read 65552 bytes
+QWARN  : TestOpManager::copy_replace_midCopyFailure_restores_original() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-AVphQI/dest/clip.mxf" status 3 read 3 bytes
+PASS   : TestOpManager::copy_replace_midCopyFailure_restores_original()
+QWARN  : TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-qVMwYa/src/clip.mxf" status 3 read 65552 bytes
+QWARN  : TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-qVMwYa/dest/clip.mxf" status 3 read 3 bytes
+PASS   : TestOpManager::copy_replace_cancel_restores_and_is_not_counted_failed()
+QWARN  : TestOpManager::destruction_during_copy_waits_for_rollback() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-CfRfDc/src/clip.mxf" status 3 read 65552 bytes
+QWARN  : TestOpManager::destruction_during_copy_waits_for_rollback() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-CfRfDc/dest/clip.mxf" status 3 read 3 bytes
+PASS   : TestOpManager::destruction_during_copy_waits_for_rollback()
+QWARN  : TestOpManager::copy_replace_strandedRestore_keepsDirtyJournal() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-uAvspb/src/clip.mxf" status 3 read 65552 bytes
+QWARN  : TestOpManager::copy_replace_strandedRestore_keepsDirtyJournal() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-uAvspb/dest/clip.mxf" status 3 read 3 bytes
+PASS   : TestOpManager::copy_replace_strandedRestore_keepsDirtyJournal()
+QWARN  : TestOpManager::move_copyLeg_verifyOff_tamperedDestination_keepsSource() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-uSVmGp/src/clip.mxf" status 3 read 65552 bytes
+PASS   : TestOpManager::move_copyLeg_verifyOff_tamperedDestination_keepsSource()
+QWARN  : TestOpManager::delete_osTrashProbe_leavesNoResidue() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_opmanager-hpKhJE/media/clip.mxf" status 3 read 6 bytes
+PASS   : TestOpManager::delete_osTrashProbe_leavesNoResidue()
+PASS   : TestOpManager::cleanupTestCase()
+Totals: 11 passed, 0 failed, 0 skipped, 0 blacklisted, 20090ms
+********* Finished testing of TestOpManager *********

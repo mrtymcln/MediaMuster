@@ -1,0 +1,8 @@
+--- upstream/xxhash.h
++++ local/xxhash.h
+@@ -7235,4 +7235,4 @@
+ 
+ #if defined (__cplusplus)
+ } /* extern "C" */
+-#endif
++#endif

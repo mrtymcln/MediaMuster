@@ -1,0 +1,1 @@
+JOURNAL_FAILS_MIDRUN_RENAME_CONTINUES {"degradedWarningEmitted":false,"destinationExists":true,"failed":0,"initialJournalAndPlanPresent":true,"journalCount":0,"succeeded":1}

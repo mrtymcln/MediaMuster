@@ -1,0 +1,12 @@
+qt.qpa.fonts: Populating font family aliases took 60 ms. Replace uses of missing font family "Sans Serif" with one that exists to avoid this cost. 
+macOS accessibility guard on: item views expose no rows (QTBUG-119526, Qt 6.5.3 < 6.6.2)
+EXPIRY configured=2027-02-31 QDate-valid=0
+VOLUME initial selected=0 expected=1
+VOLUME after refresh selected=0 expected=1
+VOLUME manual-add selected=0 expected=1
+PROJECT rows-after-remove=0 sidebar-projects=1 tooltip=1 files, 1 B
+REBALANCE cancelled moved=0 source-before=3380 projected=3333 displayed-after=3333
+DEST-PREVIEW | duplicate.mxf | duplicate (2).mxf | duplicate (2).mxf
+SPACE-SKIP policy=1 execute-enabled=0 remaining-required=1 available=641879117824
+ACCESSIBILITY rows=1 accessible-children=0 table-interface=0
+LOG-MIGRATION old-history-exists=0 crash-report-exists=0

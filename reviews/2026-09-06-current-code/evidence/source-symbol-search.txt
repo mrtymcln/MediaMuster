@@ -1,0 +1,63 @@
+Current source symbol search
+Captured UTC: 2026-09-06T00:58:51.284421+00:00
+Scope: repository src/tests code and helpers only; no prior documents or fixture binaries.
+Each match is a reference, not automatically a read/call. Inspect declaration/assignment/call context when assessing unused state.
+
+Operation state/API references
+Command: ['rg', '-n', '-w', 'undoesJournalPath|m_finished|usedMediaMusterTrash', 'src', 'tests', '-g', '*.cpp', '-g', '*.h', '-g', '*.c', '-g', '*.inc', '-g', 'CMakeLists.txt']
+src/oprescue.cpp:800:	r.usedMediaMusterTrash = sawMediaMusterTrash;
+tests/tst_oprescue.cpp:620:	QVERIFY(sum.resumable[0].usedMediaMusterTrash);
+src/oprequest.h:171:	QString undoesJournalPath;
+src/opjournal.cpp:247:	m_finished = true;
+src/trashrouter.h:32:		bool usedMediaMusterTrash = false;
+src/opjournal.h:296:	bool m_finished = false;
+src/rebalancedialog.cpp:279:	bool m_finished = false;
+src/rebalancedialog.cpp:302:	m_finished = false;
+src/rebalancedialog.cpp:320:	m_finished = true;
+src/rebalancedialog.cpp:435:	if (m_finished)
+src/oprescue.h:73:		bool usedMediaMusterTrash = false;
+src/mainwindow.cpp:1982:		reassurance = r.usedMediaMusterTrash
+src/trashrouter.cpp:133:	out.usedMediaMusterTrash = true;
+Exit code: 0
+
+Legacy/flat filter setter references
+Command: ['rg', '-n', '-w', 'setEffectFilter|setPrecomputeCategoryFilter|setEffectCategoryFilter|setBinFilterMobs', 'src', 'tests', '-g', '*.cpp', '-g', '*.h', '-g', '*.c', '-g', '*.inc', '-g', 'CMakeLists.txt']
+tests/tst_mediafilterproxy.cpp:298:	proxy.setEffectFilter({QStringLiteral("Title"), QStringLiteral("Custom, exact name")});
+tests/tst_mediafilterproxy.cpp:306:	proxy.setBinFilterMobs(true, {title.masterMobId});
+tests/tst_mediafilterproxy.cpp:308:	proxy.setBinFilterMobs(true, {custom.masterMobId});
+tests/tst_mediafilterproxy.cpp:315:	proxy.setBinFilterMobs(false, {});
+tests/tst_mediafilterproxy.cpp:318:	proxy.setEffectFilter({QStringLiteral("title")});
+tests/tst_mediafilterproxy.cpp:320:	proxy.setEffectFilter({});
+tests/tst_mediafilterproxy.cpp:342:	proxy.setEffectFilter({render.effect});
+tests/tst_mediafilterproxy.cpp:358:	proxy.setEffectFilter({render.effect, render.effect, QString()});
+tests/tst_mediafilterproxy.cpp:431:	proxy.setPrecomputeCategoryFilter({QStringLiteral("Rendered Effects")});
+tests/tst_mediafilterproxy.cpp:432:	proxy.setEffectCategoryFilter({QStringLiteral("Blend")});
+tests/tst_mediafilterproxy.cpp:436:	proxy.setPrecomputeCategoryFilter({QStringLiteral("Rendered Effects"), QStringLiteral("Titles and Matte Keys")});
+tests/tst_mediafilterproxy.cpp:438:	proxy.setEffectCategoryFilter({QStringLiteral("Blend"), QStringLiteral("unknown")});
+tests/tst_mediafilterproxy.cpp:442:	proxy.setEffectFilter({QStringLiteral("3D Warp")});
+tests/tst_mediafilterproxy.cpp:444:	proxy.setEffectFilter({QStringLiteral("unknown")});
+tests/tst_mediafilterproxy.cpp:446:	proxy.setEffectCategoryFilter({QStringLiteral("unknown")});
+tests/tst_mediafilterproxy.cpp:447:	proxy.setPrecomputeCategoryFilter({QStringLiteral("unknown")});
+tests/tst_mediafilterproxy.cpp:449:	proxy.setPrecomputeCategoryFilter({QStringLiteral("Titles and Matte Keys")});
+tests/tst_mediafilterproxy.cpp:508:	proxy.setBinFilterMobs(true, {matte.masterMobId});
+tests/tst_mediafilterproxy.cpp:579:	proxy.setPrecomputeCategoryFilter({QStringLiteral("Titles and Matte Keys")});
+tests/tst_mediafilterproxy.cpp:580:	proxy.setEffectCategoryFilter({QStringLiteral("Title")});
+tests/tst_mediafilterproxy.cpp:581:	proxy.setEffectFilter({QStringLiteral("Title")});
+tests/tst_mediafilterproxy.cpp:588:	proxy.setEffectFilter({});
+tests/tst_mediafilterproxy.cpp:590:	proxy.setEffectCategoryFilter({QStringLiteral("Title")});
+tests/tst_mediafilterproxy.cpp:695:	proxy.setBinFilterMobs(true, {}); // compatibility API retains empty-active semantics
+tests/tst_mediafilterproxy.cpp:697:	proxy.setBinFilterMobs(false, {QStringLiteral("stale")});
+src/mediafilterproxy.h:52:	void setEffectFilter(const QStringList &effects);
+src/mediafilterproxy.h:55:	void setPrecomputeCategoryFilter(const QStringList &categories);
+src/mediafilterproxy.h:57:	void setEffectCategoryFilter(const QStringList &categories);
+src/mediafilterproxy.h:80:	void setBinFilterMobs(bool isActive, const QSet<QString> &acceptedMobs);
+src/mediafilterproxy.cpp:145:void MediaFilterProxy::setEffectFilter(const QStringList &effects)
+src/mediafilterproxy.cpp:165:void MediaFilterProxy::setPrecomputeCategoryFilter(const QStringList &categories)
+src/mediafilterproxy.cpp:185:void MediaFilterProxy::setEffectCategoryFilter(const QStringList &categories)
+src/mediafilterproxy.cpp:219:void MediaFilterProxy::setBinFilterMobs(bool isActive, const QSet<QString> &acceptedMobs)
+Exit code: 0
+
+Reported unused test helper
+Command: ['rg', '-n', '-w', 'skipRec', 'src', 'tests', '-g', '*.cpp', '-g', '*.h', '-g', '*.c', '-g', '*.inc', '-g', 'CMakeLists.txt']
+tests/tst_oprescue.cpp:90:	QString skipRec(int id) { return QStringLiteral(R"({"record":"skip","id":%1})").arg(id); }
+Exit code: 0

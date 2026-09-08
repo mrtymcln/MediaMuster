@@ -1,0 +1,28 @@
+********* Start testing of TestMediaFilterProxy *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestMediaFilterProxy::initTestCase()
+PASS   : TestMediaFilterProxy::nfc_search_finds_nfd_row()
+PASS   : TestMediaFilterProxy::nfd_search_finds_nfc_row()
+PASS   : TestMediaFilterProxy::folding_and_normalisation_compose()
+PASS   : TestMediaFilterProxy::plain_ascii_never_matches_accents()
+PASS   : TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
+PASS   : TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column()
+PASS   : TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
+PASS   : TestMediaFilterProxy::three_state_classification_sort_is_consistent()
+PASS   : TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filters()
+PASS   : TestMediaFilterProxy::effect_gate_clears_selection_and_hidden_search()
+PASS   : TestMediaFilterProxy::effect_columns_sort_displayed_values()
+PASS   : TestMediaFilterProxy::precompute_hierarchy_filters_intersect_and_unknown_is_selectable()
+PASS   : TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complete_paths()
+PASS   : TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
+PASS   : TestMediaFilterProxy::precompute_tree_gate_reset_and_legacy_filters_have_no_hidden_state()
+PASS   : TestMediaFilterProxy::bin_intersection_matches_different_identities_on_the_same_row()
+PASS   : TestMediaFilterProxy::bin_subtraction_rejects_either_identity(file)
+PASS   : TestMediaFilterProxy::bin_subtraction_rejects_either_identity(master)
+PASS   : TestMediaFilterProxy::bin_ordered_add_can_restore_a_row()
+PASS   : TestMediaFilterProxy::bin_leading_subtract_uses_all_media_rows()
+PASS   : TestMediaFilterProxy::bin_empty_operand_and_inactive_filter_are_distinct()
+PASS   : TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_refresh()
+PASS   : TestMediaFilterProxy::cleanupTestCase()
+Totals: 24 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms
+********* Finished testing of TestMediaFilterProxy *********

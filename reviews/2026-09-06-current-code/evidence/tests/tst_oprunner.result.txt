@@ -1,0 +1,77 @@
+********* Start testing of TestOpRunner *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestOpRunner::initTestCase()
+PASS   : TestOpRunner::buildDestPath_preserve_true_uses_avid_structure()
+PASS   : TestOpRunner::buildDestPath_preserve_false_flattens()
+PASS   : TestOpRunner::buildDestPath_omf_row_preserves_to_omfi_root()
+PASS   : TestOpRunner::generateRenamePath_first_slot_when_no_copies()
+PASS   : TestOpRunner::generateRenamePath_skips_existing_slots()
+PASS   : TestOpRunner::generateRenamePath_returns_nullopt_when_exhausted()
+PASS   : TestOpRunner::generateRenamePath_handles_extensionless_path()
+PASS   : TestOpRunner::copy_writes_file_and_leaves_source()
+PASS   : TestOpRunner::copy_skip_policy_leaves_existing_destination()
+QWARN  : TestOpRunner::copy_replace_sends_replaced_original_to_trash() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pCqjGx/src/clip.mxf" status 3 read 11 bytes
+QWARN  : TestOpRunner::copy_replace_sends_replaced_original_to_trash() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pCqjGx/dest/clip.mxf" status 3 read 17 bytes
+PASS   : TestOpRunner::copy_replace_sends_replaced_original_to_trash()
+QWARN  : TestOpRunner::copy_keepboth_policy_keeps_both() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-UOQfWs/src/clip.mxf" status 3 read 3 bytes
+PASS   : TestOpRunner::copy_keepboth_policy_keeps_both()
+QWARN  : TestOpRunner::copy_flatten_sameName_keepsBothFiles() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yuwUFA/1/clip.mxf" status 3 read 5 bytes
+QWARN  : TestOpRunner::copy_flatten_sameName_keepsBothFiles() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yuwUFA/2/clip.mxf" status 3 read 6 bytes
+PASS   : TestOpRunner::copy_flatten_sameName_keepsBothFiles()
+QWARN  : TestOpRunner::copy_flatten_sameName_keepsBothFiles_throughASymlinkedDestination() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-DzxQkU/1/clip.mxf" status 3 read 5 bytes
+QWARN  : TestOpRunner::copy_flatten_sameName_keepsBothFiles_throughASymlinkedDestination() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-DzxQkU/2/clip.mxf" status 3 read 6 bytes
+PASS   : TestOpRunner::copy_flatten_sameName_keepsBothFiles_throughASymlinkedDestination()
+QWARN  : TestOpRunner::copy_flatten_caseVariantNames_noSilentOverwrite() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-XsibCe/1/CLIP.mxf" status 3 read 5 bytes
+QWARN  : TestOpRunner::copy_flatten_caseVariantNames_noSilentOverwrite() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-XsibCe/2/clip.mxf" status 3 read 5 bytes
+PASS   : TestOpRunner::copy_flatten_caseVariantNames_noSilentOverwrite()
+PASS   : TestOpRunner::copy_conflictNotInPolicyMap_isSkippedNotReplaced()
+QWARN  : TestOpRunner::copy_verifyOff_stillSucceeds() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rdBMjw/src/clip.mxf" status 3 read 1024 bytes
+PASS   : TestOpRunner::copy_verifyOff_stillSucceeds()
+QWARN  : TestOpRunner::copy_refuses_source_with_wrong_size() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pxCWHm/src/clip.mxf" status 3 read 3 bytes
+QWARN  : TestOpRunner::copy_refuses_source_with_wrong_size() item failed: "clip.mxf" "'A001_C002' at /private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pxCWHm/src/clip.mxf is not the file that was scanned — its size changed from 100 B to 3 B. Rescan and try again. Nothing was touched."
+PASS   : TestOpRunner::copy_refuses_source_with_wrong_size()
+QWARN  : TestOpRunner::copy_refuses_source_with_wrong_umid() item failed: "clip.mxf" "'clip.mxf' at /private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YxonYk/src/clip.mxf is not the file that was selected — the Avid media ID inside it doesn't match the clip from the scan. Rescan and try again. Nothing was touched."
+PASS   : TestOpRunner::copy_refuses_source_with_wrong_umid()
+PASS   : TestOpRunner::copy_accepts_database_byte_order_mob_claims()
+QWARN  : TestOpRunner::copy_missing_source_fails_cleanly() item failed: "gone.mxf" "'gone.mxf' is no longer at /private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gNMzhL/src/gone.mxf — it may have been moved or its drive disconnected. Nothing was touched."
+PASS   : TestOpRunner::copy_missing_source_fails_cleanly()
+QWARN  : TestOpRunner::delete_refuses_identity_mismatch() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Rodaaq/media/clip.mxf" status 3 read 17 bytes
+QWARN  : TestOpRunner::delete_refuses_identity_mismatch() item failed: "clip.mxf" "'clip.mxf' at /private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Rodaaq/media/clip.mxf is not the file that was scanned — its size changed from 4 B to 17 B. Rescan and try again. Nothing was touched."
+PASS   : TestOpRunner::delete_refuses_identity_mismatch()
+QWARN  : TestOpRunner::move_happy_sameVolume_removesSource() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-HyxLHk/src/clip.mxf" status 3 read 6 bytes
+PASS   : TestOpRunner::move_happy_sameVolume_removesSource()
+QWARN  : TestOpRunner::move_replace_sends_replaced_original_to_trash() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-zTpWrn/src/clip.mxf" status 3 read 11 bytes
+QWARN  : TestOpRunner::move_replace_sends_replaced_original_to_trash() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-zTpWrn/dest/clip.mxf" status 3 read 17 bytes
+PASS   : TestOpRunner::move_replace_sends_replaced_original_to_trash()
+QWARN  : TestOpRunner::move_flatten_caseVariantNames_nothingLost() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-TPCNnB/1/CLIP.mxf" status 3 read 5 bytes
+QWARN  : TestOpRunner::move_flatten_caseVariantNames_nothingLost() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-TPCNnB/2/clip.mxf" status 3 read 5 bytes
+PASS   : TestOpRunner::move_flatten_caseVariantNames_nothingLost()
+PASS   : TestOpRunner::move_conflictNotInPolicyMap_isSkippedNotReplaced()
+QWARN  : TestOpRunner::move_copyLeg_movesFileAndRemovesSource() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iowUvk/src/clip.mxf" status 3 read 1024 bytes
+PASS   : TestOpRunner::move_copyLeg_movesFileAndRemovesSource()
+QWARN  : TestOpRunner::move_copyLeg_replace_trashesParkedAndRemovesSource() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lxZHzQ/src/clip.mxf" status 3 read 11 bytes
+QWARN  : TestOpRunner::move_copyLeg_replace_trashesParkedAndRemovesSource() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lxZHzQ/dest/clip.mxf" status 3 read 17 bytes
+PASS   : TestOpRunner::move_copyLeg_replace_trashesParkedAndRemovesSource()
+QWARN  : TestOpRunner::delete_moves_file_to_trash_and_records_final() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-vvzjEe/media/clip.mxf" status 3 read 15 bytes
+PASS   : TestOpRunner::delete_moves_file_to_trash_and_records_final()
+QWARN  : TestOpRunner::delete_fallbackTrash_neverOverwritesPriorCatch() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lXhrKx/media/clip.mxf" status 3 read 11 bytes
+QWARN  : TestOpRunner::delete_fallbackTrash_neverOverwritesPriorCatch() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lXhrKx/media/clip.mxf" status 3 read 12 bytes
+PASS   : TestOpRunner::delete_fallbackTrash_neverOverwritesPriorCatch()
+PASS   : TestOpRunner::parkedfile_never_deletes_a_file_it_did_not_write()
+PASS   : TestOpRunner::parkedfile_discards_only_its_own_write()
+PASS   : TestOpRunner::parkedfile_disarm_freezes_disk_state()
+PASS   : TestOpRunner::parkedfile_reports_a_partial_it_could_not_delete()
+PASS   : TestOpRunner::copier_racer_at_destination_survives()
+QWARN  : TestOpRunner::rename_moves_file_and_fires_folder_hook() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-IWckTH/MXF/1/clip.mxf" status 3 read 10 bytes
+PASS   : TestOpRunner::rename_moves_file_and_fires_folder_hook()
+QWARN  : TestOpRunner::rename_refuses_occupied_destination() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YyMyuG/MXF/1/clip.mxf" status 3 read 4 bytes
+QWARN  : TestOpRunner::rename_refuses_occupied_destination() item failed: "clip.mxf" "Couldn't move clip.mxf — a file already exists at the destination. Nothing was touched."
+PASS   : TestOpRunner::rename_refuses_occupied_destination()
+PASS   : TestOpRunner::rename_precancelled_runs_nothing()
+QWARN  : TestOpRunner::journal_survives_run_and_plan_precedes_ops() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-fMQHvH/src/clip.mxf" status 3 read 9 bytes
+PASS   : TestOpRunner::journal_survives_run_and_plan_precedes_ops()
+QWARN  : TestOpRunner::plan_records_volume_fingerprints() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hgSZcs/src/clip.mxf" status 3 read 7 bytes
+PASS   : TestOpRunner::plan_records_volume_fingerprints()
+PASS   : TestOpRunner::cleanupTestCase()
+Totals: 41 passed, 0 failed, 0 skipped, 0 blacklisted, 300ms
+********* Finished testing of TestOpRunner *********

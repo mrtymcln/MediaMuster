@@ -1,0 +1,11 @@
+SCAN parked.mxf.__movereplace_ab12 ext=.__movereplace_ab12 header=0 clip= mob=
+SCAN tone.mxf ext=.mxf header=1 clip=TONE: 1000 Hz @ -14.0 dB.1 mob=060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613
+STANDALONE rows=0
+SINGLE_FOLDER rows=3
+PROJECT_SENTINEL selected=2 unknown=1 named_unknown=0
+DURATION_SORT DF=01;00;00;01 then NDF=01:00:00:00
+MODEL_PARENT rows=2 cols=15
+REMOVE_PERF n=10000 elapsed_ms=357
+REMOVE_PERF n=20000 elapsed_ms=1389
+REMOVE_PERF n=40000 elapsed_ms=5501
+CSV_WRITE returned=1 expected_bytes=306 actual_bytes=8 contents=efbbbf436c697020

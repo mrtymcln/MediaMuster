@@ -1,0 +1,17 @@
+********* Start testing of TestPathKey *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestPathKey::initTestCase()
+PASS   : TestPathKey::normalise_empty_input_returns_empty()
+PASS   : TestPathKey::normalise_strips_trailing_slash()
+PASS   : TestPathKey::normalise_preserves_root_slash()
+PASS   : TestPathKey::normalise_resolves_dot_components()
+PASS   : TestPathKey::normalise_resolves_dotdot_components()
+PASS   : TestPathKey::normalise_equates_trailing_slash_variants()
+PASS   : TestPathKey::normalise_equates_dot_and_plain_forms()
+PASS   : TestPathKey::normalise_non_existent_path_falls_back_to_absolute()
+PASS   : TestPathKey::normalise_case_folds_on_case_insensitive_platforms()
+PASS   : TestPathKey::normalise_key_is_stable_when_the_file_appears()
+PASS   : TestPathKey::normalise_key_is_stable_through_a_symlinked_parent()
+PASS   : TestPathKey::cleanupTestCase()
+Totals: 13 passed, 0 failed, 0 skipped, 0 blacklisted, 7ms
+********* Finished testing of TestPathKey *********

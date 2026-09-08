@@ -1,0 +1,14 @@
+********* Start testing of TestOmfUid *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestOmfUid::initTestCase()
+PASS   : TestOmfUid::wrap8_is_prefix_core_suffix()
+PASS   : TestOmfUid::wrap8_matches_the_unicode_set_in_the_real_pmrs()
+PASS   : TestOmfUid::wrap8_does_not_swap_middle_fields()
+PASS   : TestOmfUid::canonicalHex_12_bytes_wraps_the_core()
+PASS   : TestOmfUid::canonicalHex_32_bytes_formats_unchanged()
+PASS   : TestOmfUid::canonicalHex_other_widths_are_empty()
+PASS   : TestOmfUid::isOmfForm_recognises_only_the_wrap()
+PASS   : TestOmfUid::omf_form_never_collides_with_mxf_form()
+PASS   : TestOmfUid::cleanupTestCase()
+Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestOmfUid *********

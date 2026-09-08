@@ -1,0 +1,23 @@
+********* Start testing of TestMediaTableModel *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestMediaTableModel::initTestCase()
+PASS   : TestMediaTableModel::empty_paths_emits_nothing()
+PASS   : TestMediaTableModel::empty_model_emits_nothing()
+PASS   : TestMediaTableModel::unknown_paths_emit_nothing()
+PASS   : TestMediaTableModel::single_row_emits_one_range()
+PASS   : TestMediaTableModel::contiguous_block_emits_one_range()
+PASS   : TestMediaTableModel::leading_block_emits_one_range()
+PASS   : TestMediaTableModel::trailing_block_emits_one_range()
+PASS   : TestMediaTableModel::remove_all_emits_one_range()
+PASS   : TestMediaTableModel::two_separated_rows_emit_two_ranges()
+PASS   : TestMediaTableModel::three_blocks_emit_three_ranges()
+PASS   : TestMediaTableModel::unknown_created_date_displays_blank()
+PASS   : TestMediaTableModel::location_cell_shows_the_full_path()
+PASS   : TestMediaTableModel::status_words_come_from_one_table()
+PASS   : TestMediaTableModel::unknown_classification_displays_without_guessing()
+PASS   : TestMediaTableModel::effect_gate_preserves_rows_and_existing_indexes()
+PASS   : TestMediaTableModel::effect_columns_only_display_precompute_details()
+PASS   : TestMediaTableModel::precompute_categories_and_unknown_effects_display_consistently()
+PASS   : TestMediaTableModel::cleanupTestCase()
+Totals: 19 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms
+********* Finished testing of TestMediaTableModel *********

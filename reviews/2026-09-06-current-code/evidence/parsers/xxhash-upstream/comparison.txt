@@ -1,0 +1,22 @@
+xxhash.c: upstream_size=1855 local_size=1854 byte_equal=False
+upstream_sha256=5c3591fe6e6c86a619eb26760e9520e37a6fd5152882ab5ad93f912e2a855966
+local_sha256=562800c4b2a2a27c0c7935c8ff49bcbb133c3a4ac60e1b99e7a474ae8ffb6f26
+--- upstream/xxhash.c
++++ local/xxhash.c
+@@ -39,4 +39,4 @@
+ #define XXH_STATIC_LINKING_ONLY /* access advanced declarations */
+ #define XXH_IMPLEMENTATION      /* access definitions */
+ 
+-#include "xxhash.h"
++#include "xxhash.h"
+xxhash.h: upstream_size=268319 local_size=268318 byte_equal=False
+upstream_sha256=17973c0dc49d9854ca26caa191f0e12f7a424b68858d9a78de3860d959d85e4b
+local_sha256=d92752bc296f4adeb7d46dadad8978862f6bd5e194c79b33852b757351d8eea2
+--- upstream/xxhash.h
++++ local/xxhash.h
+@@ -7235,4 +7235,4 @@
+ 
+ #if defined (__cplusplus)
+ } /* extern "C" */
+-#endif
++#endif

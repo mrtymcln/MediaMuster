@@ -5,10 +5,8 @@
 #include <QApplication>
 #include <QDir>
 #include <QFont>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QPixmap>
-#include <QPushButton>
 #include <QStringList>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -204,17 +202,6 @@ AboutDialog::AboutDialog(QWidget *parent)
 				});
 		QTimer::singleShot(kRollStartDelayMs, rollTimer, [rollTimer] { rollTimer->start(); });
 	}
-
-	layout->addSpacing(12);
-
-	auto *btnRow = new QHBoxLayout;
-	btnRow->addStretch();
-	auto *okBtn = new QPushButton(tr("Sweet as!"));
-	okBtn->setDefault(true);
-	connect(okBtn, &QPushButton::clicked, this, &QDialog::accept);
-	btnRow->addWidget(okBtn);
-	btnRow->addStretch();
-	layout->addLayout(btnRow);
 
 	setFixedWidth(kDialogWidth);
 	adjustSize();

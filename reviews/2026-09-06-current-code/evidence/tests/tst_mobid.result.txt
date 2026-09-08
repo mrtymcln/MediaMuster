@@ -1,0 +1,16 @@
+********* Start testing of TestMobId *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestMobId::initTestCase()
+PASS   : TestMobId::format_renders_canonical_dotted_hex()
+PASS   : TestMobId::format_renders_lowercase()
+PASS   : TestMobId::format_too_short_buffer_returns_empty()
+PASS   : TestMobId::isAllZero_detects_all_zero_pattern()
+PASS   : TestMobId::isAllZero_rejects_real_mob()
+PASS   : TestMobId::isAllZero_rejects_empty()
+PASS   : TestMobId::toPmrForm_swaps_middle_fields()
+PASS   : TestMobId::toPmrForm_is_involution()
+PASS   : TestMobId::toPmrForm_rejects_malformed()
+PASS   : TestMobId::toPmrForm_rejects_empty()
+PASS   : TestMobId::cleanupTestCase()
+Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestMobId *********

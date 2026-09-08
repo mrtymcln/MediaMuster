@@ -1,0 +1,14 @@
+********* Start testing of TestRebalancerParse *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestRebalancerParse::initTestCase()
+PASS   : TestRebalancerParse::parseFolderName_plain_number()
+PASS   : TestRebalancerParse::parseFolderName_with_host_prefix()
+PASS   : TestRebalancerParse::parseFolderName_rejects_quarantined()
+PASS   : TestRebalancerParse::parseFolderName_rejects_leading_dot()
+PASS   : TestRebalancerParse::parseFolderName_rejects_zero_padded()
+PASS   : TestRebalancerParse::parseFolderName_rejects_zero()
+PASS   : TestRebalancerParse::parseFolderName_rejects_negative()
+PASS   : TestRebalancerParse::parseFolderName_rejects_non_numeric_tail()
+PASS   : TestRebalancerParse::cleanupTestCase()
+Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestRebalancerParse *********

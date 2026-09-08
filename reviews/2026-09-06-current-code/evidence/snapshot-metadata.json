@@ -1,0 +1,11 @@
+{
+  "captured_at": "2026-09-06T00:47:51.745428+00:00",
+  "repository": "/Users/martymclean/Developer/MediaMuster",
+  "source_files": 147,
+  "source_lines": 55928,
+  "source_bytes": 2098939,
+  "test_result_logs": 31,
+  "line_count_definition": "newline count plus final unterminated logical line",
+  "status_exclusion": "reviews/2026-09-06-current-code/**",
+  "scope": "src all rg-listed text including .inc, vendor, qrc and version template; tests root code/helpers/CMake; root CMakeLists.txt; .github; tools code. Fixture files, prior documentation/notes, generated binaries and build directories excluded."
+}

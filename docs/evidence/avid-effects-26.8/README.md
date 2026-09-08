@@ -9,7 +9,7 @@ Recognition from a clip name is **not a definitive effect ID**. Clip names are e
 `manifest.json` records full installed binary hashes, selected ARM64 hashes, resource hashes, and entry points. The original application was only read. No Avid code was loaded or executed by the extractor.
 
 | Source | Observed facts | Contribution after deduplication |
-|--- |---|---: |
+| --- | --- | ---: |
 | `libameLibrary.dylib`, `AEffect::SetEffectInfoFromIdentifier(int,int)`, ARM64 `0x7467e0` | Decision tree, relative jump tables, `SetFundementals` name argument, category setter, and category setup helpers; 174 distinct registration IDs / 178 name-category pairs | 178 |
 | `MCEffects.avx`, `__GLOBAL__sub_I_MCEffects.cpp`, ARM64 `0x411e0` | 162 registration records per AlphaFlex state. Records have 0x48-byte stride; internal identifier at +0x10, UTF-32 display name at +0x18, category at +0x20. `_ACFRegisterComponent` at `0xb694` reads these fields; `0xbb5c–0xbb7c` sends +0x20 to `ACFATTR_Effect_Category` | 47 additional |
 | Additional reviewed render names | Audio Dissolve, Motion Effect, D-Verb; explanations below | 3 |

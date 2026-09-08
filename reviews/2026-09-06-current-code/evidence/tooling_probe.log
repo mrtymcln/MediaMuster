@@ -1,0 +1,4 @@
+EXTRACTOR optimize=0 assertion_error_instructions=8
+EXTRACTOR optimize=1 assertion_error_instructions=0
+EXTRACTOR optimize=2 assertion_error_instructions=0
+Source assertion locations: 41,151,152,154,83,163,112,121

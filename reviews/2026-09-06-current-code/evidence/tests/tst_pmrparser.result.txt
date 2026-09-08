@@ -1,0 +1,147 @@
+********* Start testing of TestPmrParser *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestPmrParser::initTestCase()
+PASS   : TestPmrParser::parses_one_file_comp_pair()
+PASS   : TestPmrParser::empty_project_still_yields_entry()
+PASS   : TestPmrParser::empty_record_sets_are_valid()
+QWARN  : TestPmrParser::implausible_pair_count_is_rejected() mediamuster.pmr: incomplete or invalid PMR record at byte 44 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gKODEw/msmFMID.pmr"
+PASS   : TestPmrParser::implausible_pair_count_is_rejected()
+QWARN  : TestPmrParser::file_comp_desync_bails_with_what_it_has() mediamuster.pmr: incomplete or invalid PMR record at byte 130 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-QrObxw/msmFMID.pmr"
+PASS   : TestPmrParser::file_comp_desync_bails_with_what_it_has()
+QWARN  : TestPmrParser::truncated_body_stops_cleanly() mediamuster.pmr: incomplete or invalid PMR record at byte 95 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-DFutAv/msmFMID.pmr"
+PASS   : TestPmrParser::truncated_body_stops_cleanly()
+QWARN  : TestPmrParser::too_small_file_returns_empty() mediamuster.pmr: incomplete or invalid PMR record at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-QlwNJb/msmFMID.pmr"
+PASS   : TestPmrParser::too_small_file_returns_empty()
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 9 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 9 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 15 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 15 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 16 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 16 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 17 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 17 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 2147483647 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 2147483647 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pEBwGz/msmFMID.pmr"
+PASS   : TestPmrParser::unsupported_version_is_rejected()
+QWARN  : TestPmrParser::wrong_magic_is_refused() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-jAiKZG/msmFMID.pmr"
+PASS   : TestPmrParser::wrong_magic_is_refused()
+PASS   : TestPmrParser::non_smpte_master_identity_is_preserved()
+PASS   : TestPmrParser::non_smpte_file_identity_is_preserved()
+QWARN  : TestPmrParser::ok_flag_reports_clean_vs_failed_parses() mediamuster.pmr: cannot open "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-KHQLWE/nonexistent.pmr" "No such file or directory"
+QWARN  : TestPmrParser::ok_flag_reports_clean_vs_failed_parses() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-KHQLWE/small.pmr"
+QWARN  : TestPmrParser::ok_flag_reports_clean_vs_failed_parses() mediamuster.pmr: incomplete or invalid PMR record at byte 130 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-KHQLWE/desync.pmr"
+PASS   : TestPmrParser::ok_flag_reports_clean_vs_failed_parses()
+PASS   : TestPmrParser::macroman_project_names_decode_correctly()
+PASS   : TestPmrParser::unicode_section_names_take_precedence()
+QWARN  : TestPmrParser::malformed_unicode_section_keeps_mbcs_names() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 190 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NUxnxH/a.pmr"
+QWARN  : TestPmrParser::malformed_unicode_section_keeps_mbcs_names() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 138 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NUxnxH/b.pmr"
+PASS   : TestPmrParser::malformed_unicode_section_keeps_mbcs_names()
+PASS   : TestPmrParser::trailer_is_the_file_modified_time()
+PASS   : TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
+PASS   : TestPmrParser::trailer_matches_modified_in_both_epochs()
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--7200)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-0)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-7200)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--7200)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-0)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-7200)
+PASS   : TestPmrParser::omf_v2_pair_parses_with_wrapped_mobs()
+PASS   : TestPmrParser::omf_v2_unicode_set_replaces_names()
+QWARN  : TestPmrParser::omf_v2_file_desync_bails_with_what_it_has() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-oEUyFY/msmFMID.pmr"
+PASS   : TestPmrParser::omf_v2_file_desync_bails_with_what_it_has()
+PASS   : TestPmrParser::omf_v2_real_avid_supporting_fixture()
+PASS   : TestPmrParser::omf_v2_real_mc2026_audio_fixture()
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-2147483648-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-2147483648-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-1-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-1-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(0-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(0-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(1-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(1-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(2-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(2-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(3-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(3-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(4-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(4-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(5-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(5-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(6-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(6-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(7-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(7-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(8-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(8-BE)
+PASS   : TestPmrParser::independent_unicode_records(LE-0-2)
+PASS   : TestPmrParser::independent_unicode_records(LE-1-2)
+PASS   : TestPmrParser::independent_unicode_records(LE-3-1)
+PASS   : TestPmrParser::independent_unicode_records(LE-1-0)
+PASS   : TestPmrParser::independent_unicode_records(BE-0-2)
+PASS   : TestPmrParser::independent_unicode_records(BE-1-2)
+PASS   : TestPmrParser::independent_unicode_records(BE-3-1)
+PASS   : TestPmrParser::independent_unicode_records(BE-1-0)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(1-LE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(1-BE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(2-LE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(2-BE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(8-LE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(8-BE)
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 49 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/missing-project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 49 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lCPuDq/missing-project.pmr"
+PASS   : TestPmrParser::project_lengths_are_checked()
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 66 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 60 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 66 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 60 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yUrevL/bad-unicode.pmr"
+PASS   : TestPmrParser::unicode_framing_and_encoding_are_checked()
+PASS   : TestPmrParser::filename_limits_and_null_strings()
+PASS   : TestPmrParser::unicode_filename_limit_counts_utf16_units()
+QWARN  : TestPmrParser::null_identities_are_explicit() mediamuster.pmr: incomplete or invalid PMR record at byte 20 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-qhXPaB/null-file.pmr"
+QWARN  : TestPmrParser::null_identities_are_explicit() mediamuster.pmr: incomplete or invalid PMR record at byte 44 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-qhXPaB/null-file.pmr"
+PASS   : TestPmrParser::null_identities_are_explicit()
+PASS   : TestPmrParser::cleanupTestCase()
+Totals: 100 passed, 0 failed, 0 skipped, 0 blacklisted, 95ms
+********* Finished testing of TestPmrParser *********

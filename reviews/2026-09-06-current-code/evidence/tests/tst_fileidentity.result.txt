@@ -1,0 +1,28 @@
+********* Start testing of TestFileIdentity *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestFileIdentity::initTestCase()
+PASS   : TestFileIdentity::capture_regular_file_is_full_strength_on_local_volume()
+PASS   : TestFileIdentity::capture_missing_file_has_no_strength()
+PASS   : TestFileIdentity::verify_unchanged_file_matches()
+PASS   : TestFileIdentity::verify_size_change_is_changed()
+PASS   : TestFileIdentity::verify_swapped_same_size_file_is_changed_on_full()
+PASS   : TestFileIdentity::verify_in_place_edit_same_size_matches_on_full()
+PASS   : TestFileIdentity::verify_missing_file_is_missing()
+PASS   : TestFileIdentity::sizetime_tier_uses_mtime()
+PASS   : TestFileIdentity::capture_fixture_mxf_reads_umid()
+PASS   : TestFileIdentity::verify_media_swap_same_object_is_changed_by_umid()
+PASS   : TestFileIdentity::identity_json_round_trip_preserves_large_ids()
+PASS   : TestFileIdentity::volume_capture_local_has_full_identity()
+PASS   : TestFileIdentity::volume_capture_twice_matches()
+PASS   : TestFileIdentity::volume_weak_fingerprints_compare_by_triple()
+PASS   : TestFileIdentity::volume_none_never_matches()
+PASS   : TestFileIdentity::volume_json_round_trip()
+PASS   : TestFileIdentity::proven_local_accepts_temp_dir()
+PASS   : TestFileIdentity::proven_local_rejects_empty_and_missing()
+PASS   : TestFileIdentity::sync_file_holds_both_barriers_on_local_disk()
+PASS   : TestFileIdentity::sync_directory_succeeds_on_local_disk()
+PASS   : TestFileIdentity::clone_behaviour_matches_platform()
+PASS   : TestFileIdentity::win_copy_behaviour_matches_platform()
+PASS   : TestFileIdentity::cleanupTestCase()
+Totals: 24 passed, 0 failed, 0 skipped, 0 blacklisted, 87ms
+********* Finished testing of TestFileIdentity *********

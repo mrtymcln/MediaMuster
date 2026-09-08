@@ -1,0 +1,58 @@
+********* Start testing of TestBinFilterDialog *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestBinFilterDialog::initTestCase()
+QWARN  : TestBinFilterDialog::loading_completion_auto_intersects() qt.qpa.fonts: Populating font family aliases took 61 ms. Replace uses of missing font family "Sans Serif" with one that exists to avoid this cost. 
+PASS   : TestBinFilterDialog::loading_completion_auto_intersects()
+PASS   : TestBinFilterDialog::loaded_bin_metadata_is_published_as_one_batch()
+PASS   : TestBinFilterDialog::intersect_empty_bin_is_active_and_matches_nothing()
+PASS   : TestBinFilterDialog::intersection_and_subtraction_use_row_membership(intersect-master-then-file)
+PASS   : TestBinFilterDialog::intersection_and_subtraction_use_row_membership(subtract-file-from-master-and-file)
+PASS   : TestBinFilterDialog::add_restores_a_previously_subtracted_row()
+PASS   : TestBinFilterDialog::snapshots_survive_reticking_and_bin_removal()
+QWARN  : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(empty-file) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-RkNdRb/Problem.avb" "AVB file is empty, truncated, or exceeds the 256 MiB limit."
+PASS   : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(empty-file)
+QWARN  : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(truncated-signature) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-GxuQdv/Problem.avb" "Truncated AVB property (byte 12)"
+PASS   : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(truncated-signature)
+QWARN  : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(renamed-text) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-peDCqW/Problem.avb" "Not an Avid bin: invalid byte-order marker."
+PASS   : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(renamed-text)
+QWARN  : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(damaged-body) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-BeipHc/Problem.avb" "Invalid AVB chunk length (byte 267)"
+PASS   : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(damaged-body)
+PASS   : TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs(unsupported-dependency)
+QWARN  : TestBinFilterDialog::bad_header_batch_is_parsed_asynchronously_and_reported_once() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-dKQHwb/Notes.avb" "Not an Avid bin: invalid byte-order marker."
+QWARN  : TestBinFilterDialog::bad_header_batch_is_parsed_asynchronously_and_reported_once() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-dKQHwb/Truncated.avb" "Truncated AVB property (byte 12)"
+PASS   : TestBinFilterDialog::bad_header_batch_is_parsed_asynchronously_and_reported_once()
+PASS   : TestBinFilterDialog::non_avb_extension_is_rejected_without_parsing()
+QWARN  : TestBinFilterDialog::mixed_batch_reports_errors_once_and_keeps_usable_bins() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-soaxgd/Damaged.avb" "Invalid AVB chunk length (byte 267)"
+PASS   : TestBinFilterDialog::mixed_batch_reports_errors_once_and_keeps_usable_bins()
+QWARN  : TestBinFilterDialog::rejected_path_can_be_repaired_and_retried() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-zHuaNV/Repair.avb" "Invalid AVB chunk length (byte 267)"
+PASS   : TestBinFilterDialog::rejected_path_can_be_repaired_and_retried()
+QWARN  : TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter(bad-header) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-nLYGLp/Rejected.avb" "Not an Avid bin: invalid byte-order marker."
+PASS   : TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter(bad-header)
+QWARN  : TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter(damaged-body) mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-noSXxC/Rejected.avb" "Invalid AVB chunk length (byte 267)"
+PASS   : TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter(damaged-body)
+PASS   : TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter(unsupported-dependency)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(plain-text)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(renamed-text)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(actual-bin-wrong-extension)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(little-endian-bin)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(big-endian-bin)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(uppercase-extension)
+PASS   : TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content(recognizable-damaged-bin)
+PASS   : TestBinFilterDialog::rejected_drag_cannot_drop_renamed_text()
+PASS   : TestBinFilterDialog::repeated_drag_paths_and_moves_do_not_repeat_errors()
+PASS   : TestBinFilterDialog::mixed_drop_loads_only_recognizable_avb_files()
+QWARN  : TestBinFilterDialog::changed_content_is_rechecked_when_dropped() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-mWVQhS/Changed.avb" "Not an Avid bin: invalid byte-order marker."
+PASS   : TestBinFilterDialog::changed_content_is_rechecked_when_dropped()
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove0.avb" "Bin reading cancelled. (byte 2)"
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove1.avb" "Bin reading cancelled. (byte 2)"
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove2.avb" "Not an Avid bin: invalid byte-order marker."
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove3.avb" "Bin reading cancelled. (byte 2)"
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove4.avb" "Bin reading cancelled. (byte 2)"
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove5.avb" "Bin reading cancelled. (byte 2)"
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove6.avb" "Not an Avid bin: invalid byte-order marker."
+QWARN  : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows() mediamuster.avb: cannot parse "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_binfilterdialog-Ehcdxb/Remove7.avb" "Bin reading cancelled. (byte 2)"
+PASS   : TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows()
+PASS   : TestBinFilterDialog::clear_while_loading_suppresses_automatic_filter()
+PASS   : TestBinFilterDialog::cleanupTestCase()
+Totals: 34 passed, 0 failed, 0 skipped, 0 blacklisted, 477ms
+********* Finished testing of TestBinFilterDialog *********

@@ -27,7 +27,6 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDialog>
-#include <QDialogButtonBox>
 #include <QDir>
 #include <QDirIterator>
 #include <QFileDialog>
@@ -2274,9 +2273,6 @@ QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 	t->verticalHeader()->setVisible(false);
 	auto *l = new QVBoxLayout(dlg);
 	l->addWidget(t);
-	auto *b = new QDialogButtonBox(QDialogButtonBox::Close);
-	connect(b, &QDialogButtonBox::rejected, dlg, &QDialog::close);
-	l->addWidget(b);
 	return dlg;
 }
 

@@ -1,0 +1,14 @@
+********* Start testing of TestEffectFilterDialog *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestEffectFilterDialog::initTestCase()
+QWARN  : TestEffectFilterDialog::initial_all_and_empty_are_distinct() qt.qpa.fonts: Populating font family aliases took 61 ms. Replace uses of missing font family "Sans Serif" with one that exists to avoid this cost. 
+PASS   : TestEffectFilterDialog::initial_all_and_empty_are_distinct()
+PASS   : TestEffectFilterDialog::branches_combine_and_reopen_without_crossing_subtypes()
+PASS   : TestEffectFilterDialog::collapsed_branch_selects_all_descendants()
+PASS   : TestEffectFilterDialog::volume_changes_preserve_zero_match_choices()
+PASS   : TestEffectFilterDialog::unknown_effect_and_unknown_subtype_remain_distinct()
+PASS   : TestEffectFilterDialog::apply_cancel_and_keyboard_actions()
+PASS   : TestEffectFilterDialog::standard_qt_layout_and_preview()
+PASS   : TestEffectFilterDialog::cleanupTestCase()
+Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted, 196ms
+********* Finished testing of TestEffectFilterDialog *********

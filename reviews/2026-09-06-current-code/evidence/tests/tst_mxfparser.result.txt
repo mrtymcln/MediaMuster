@@ -1,0 +1,134 @@
+********* Start testing of TestMxfParser *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestMxfParser::initTestCase()
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(Avid-alpha-padding)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(zero-padding)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(no-container)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(different-container)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(ambiguous-containers)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(wrong-class)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(missing-layout)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(short-layout)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(different-depth)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(RGB-not-alpha)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(alpha-and-color)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(unknown-explicit-coding)
+PASS   : TestMxfParser::avid_alpha_requires_positive_container_and_layout(empty-explicit-coding)
+QWARN  : TestMxfParser::avid_alpha_respects_descriptor_selection_and_primer() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-alaCWe/ambiguous.mxf" status 1 read 518 bytes
+PASS   : TestMxfParser::avid_alpha_respects_descriptor_selection_and_primer()
+QWARN  : TestMxfParser::partition_container_batch_is_bounded() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PpEYkn/malformed.mxf" status 3 read 267 bytes
+QWARN  : TestMxfParser::partition_container_batch_is_bounded() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PpEYkn/malformed.mxf" status 3 read 267 bytes
+QWARN  : TestMxfParser::partition_container_batch_is_bounded() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PpEYkn/malformed.mxf" status 3 read 267 bytes
+QWARN  : TestMxfParser::partition_container_batch_is_bounded() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PpEYkn/malformed.mxf" status 3 read 267 bytes
+QWARN  : TestMxfParser::partition_container_batch_is_bounded() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PpEYkn/malformed.mxf" status 3 read 251 bytes
+PASS   : TestMxfParser::partition_container_batch_is_bounded()
+PASS   : TestMxfParser::project_prefers_owning_file_then_material_then_linked_source()
+PASS   : TestMxfParser::project_recovers_unique_orphan_attribute()
+PASS   : TestMxfParser::project_leaves_conflicting_fallbacks_unknown()
+PASS   : TestMxfParser::empty_label_returns_empty()
+PASS   : TestMxfParser::pcm_audio_ul_resolves()
+PASS   : TestMxfParser::prores_422_ul_resolves()
+PASS   : TestMxfParser::dnxhd_bitrate_follows_fps()
+PASS   : TestMxfParser::dnxhd_hqx_carries_x_suffix()
+PASS   : TestMxfParser::vc3_720p_sq_keeps_its_own_name()
+PASS   : TestMxfParser::unknown_ul_infers_family_from_structure()
+PASS   : TestMxfParser::fully_unknown_ul_falls_back_to_hex()
+QWARN  : TestMxfParser::material_package_name_wins_over_source_package() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-wEiTVQ/clip.mxf" status 1 read 312 bytes
+PASS   : TestMxfParser::material_package_name_wins_over_source_package()
+QWARN  : TestMxfParser::source_only_name_is_flagged_as_fallback() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ZeZUks/clip.mxf" status 1 read 150 bytes
+PASS   : TestMxfParser::source_only_name_is_flagged_as_fallback()
+QWARN  : TestMxfParser::hostile_ber_length_does_not_crash() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-UdZmDR/hostile.mxf" status 3 read 25 bytes
+PASS   : TestMxfParser::hostile_ber_length_does_not_crash()
+QWARN  : TestMxfParser::indefinite_ber_length_is_rejected() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ehIEdh/indef.mxf" status 3 read 81 bytes
+PASS   : TestMxfParser::indefinite_ber_length_is_rejected()
+QWARN  : TestMxfParser::truncated_ber_length_is_rejected() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WFeRtj/trunc.mxf" status 3 read 18 bytes
+PASS   : TestMxfParser::truncated_ber_length_is_rejected()
+PASS   : TestMxfParser::material_package_beyond_fast_read_is_recovered()
+PASS   : TestMxfParser::fractional_frame_rates_are_never_rounded()
+PASS   : TestMxfParser::equivalent_rate_fractions_resolve_by_value()
+PASS   : TestMxfParser::odd_width_duration_fields_read_exactly()
+PASS   : TestMxfParser::real_avid_headers_parse_exactly()
+PASS   : TestMxfParser::audio_duration_displays_bin_timecode()
+PASS   : TestMxfParser::drop_frame_durations_render_like_avid()
+PASS   : TestMxfParser::mp2_audio_descriptor_recognised()
+QWARN  : TestMxfParser::label_only_audio_classifies_from_ul() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-syujcq/vid.mxf" status 1 read 74 bytes
+PASS   : TestMxfParser::label_only_audio_classifies_from_ul()
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case2.mxf" status 1 read 74 bytes
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case3.mxf" status 1 read 74 bytes
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case4.mxf" status 1 read 74 bytes
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case5.mxf" status 1 read 74 bytes
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case6.mxf" status 1 read 74 bytes
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case7.mxf" status 1 read 74 bytes
+QWARN  : TestMxfParser::essence_label_audio_classification() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gfQCiX/case8.mxf" status 1 read 74 bytes
+PASS   : TestMxfParser::essence_label_audio_classification()
+PASS   : TestMxfParser::float_bit_depth_sentinel_shows_float()
+PASS   : TestMxfParser::uhd_corpus_codec_entries_resolve()
+PASS   : TestMxfParser::avc_files_resolve_to_their_family()
+PASS   : TestMxfParser::archived_corpus_all_parses_with_no_unknowns()
+PASS   : TestMxfParser::applyEditRate_labels_fractional_rates()
+PASS   : TestMxfParser::mdb_style_metadata_finalises_like_a_header()
+PASS   : TestMxfParser::tagged_values_yield_source_path_and_import_flag()
+PASS   : TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read()
+PASS   : TestMxfParser::dynamic_primer_tags_are_resolved_by_property()
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(ordinary-material-no-usage)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(lowerlevel-alone-is-ambiguous)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(private-precompute)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(precompute-corroborated)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(precompute-swapped-standard)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(master-explicit)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(master-adjusted)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(master-conflicts-with-lowerlevel)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(precompute-conflicts-with-adjusted)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(precompute-unknown-standard)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(unknown-standard)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-0)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-2)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-3)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-4)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-5)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-6)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-8)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-9)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-10)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(other-code-99)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(group-is-not-precompute)
+PASS   : TestMxfParser::usage_requires_unambiguous_master_evidence(motion-is-not-precompute)
+QWARN  : TestMxfParser::private_usage_requires_primer_and_exact_integer() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tVxbql/bad-width.mxf" status 3 read 604 bytes
+QWARN  : TestMxfParser::private_usage_requires_primer_and_exact_integer() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tVxbql/bad-width.mxf" status 3 read 608 bytes
+QWARN  : TestMxfParser::private_usage_requires_primer_and_exact_integer() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tVxbql/bad-width.mxf" status 3 read 620 bytes
+PASS   : TestMxfParser::private_usage_requires_primer_and_exact_integer()
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(direct-import-two-video)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(direct-import-one-video)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(audio-is-not-a-second-video)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(direct-import-no-tracks)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(no-import-even-with-two-video)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(absent-import-short-circuits-unknown-track)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(ordinary-master-is-not-title)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(unknown-master-usage)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(same-name-string-is-not-an-object)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(unverified-portable-object)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(unresolved-attribute-reference)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(incomplete-import-list)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(malformed-master-attribute-list)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(malformed-attribute-name)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(missing-attribute-value)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(unidentified-private-local-tag)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(unknown-track-kind)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(missing-track-kind)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(unresolved-direct-track-segment)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(tagged-value-cannot-be-a-video-segment)
+PASS   : TestMxfParser::precompute_categories_require_direct_typed_evidence(conflicting-import-definitions)
+QWARN  : TestMxfParser::precompute_categories_scope_and_incomplete_headers() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-eiwgas/incomplete.mxf" status 2 read 1670 bytes
+PASS   : TestMxfParser::precompute_categories_scope_and_incomplete_headers()
+PASS   : TestMxfParser::owning_package_selects_descriptor()
+PASS   : TestMxfParser::split_master_uses_individual_file_duration()
+QWARN  : TestMxfParser::malformed_local_property_invalidates_header() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hGfoiA/broken.mxf" status 3 read 378 bytes
+QWARN  : TestMxfParser::malformed_local_property_invalidates_header() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hGfoiA/usage.mxf" status 3 read 448 bytes
+QWARN  : TestMxfParser::malformed_local_property_invalidates_header() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hGfoiA/fill.mxf" status 2 read 376 bytes
+QWARN  : TestMxfParser::malformed_local_property_invalidates_header() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hGfoiA/crossing.mxf" status 3 read 268 bytes
+QWARN  : TestMxfParser::malformed_local_property_invalidates_header() mediamuster.mxf: no complete usable MXF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hGfoiA/early.mxf" status 3 read 421 bytes
+PASS   : TestMxfParser::malformed_local_property_invalidates_header()
+PASS   : TestMxfParser::finalise_is_idempotent_and_does_not_guess()
+PASS   : TestMxfParser::cleanupTestCase()
+Totals: 102 passed, 0 failed, 0 skipped, 0 blacklisted, 2097ms
+********* Finished testing of TestMxfParser *********
