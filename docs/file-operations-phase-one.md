@@ -46,6 +46,10 @@ The bundled MXFs are the exact supplied files, about 145 MB in total. The projec
 
 The file-operation tests run inside an app bundle on macOS, using the same resource lookup as MediaMuster. This covers the resolved resource paths as well as the file contents. An identity-access failure includes the affected path and the engine's reason in the report.
 
+Directory persistence failures report the native call, the directory it acted on, and the Windows or POSIX error code. A failed parent-directory flush is distinct from failure to create the child folder. The engine still stops on either failure. The utility prepares its local report folder first, allowing it to save a report even if source or destination setup fails.
+
+Trash and successful Rebalance relocation checks run within the **selected source storage**. A source-to-destination copy run does not also validate relocation on the destination storage. Optional extra MXFs are copied directly from their selected original paths; the source-area choice applies to generated and bundled fixtures.
+
 The suite creates uniquely named `MediaMuster_Test_*` folders. Files and journals remain for inspection; remove these disposable test folders manually when finished. Cancellation never triggers recursive deletion.
 
 **Passed**, **Failed**, **Unsupported** and **Not tested** have different meanings. A verified-copy fallback does not validate source removal. An interruption injected at a checkpoint is not a power-loss test. Automatic recovery on an unqualified network volume is reported as unsupported, while its files and journal remain intact.
@@ -54,16 +58,18 @@ The suite creates uniquely named `MediaMuster_Test_*` folders. Files and journal
 
 The new regression suite covers the reproduced dangerous sequences: same-size source edits, cancellation beside an unrelated destination, failed cleanup surviving repeated recovery, full-size unverified partials, publication and journal failures, partial Rebalance groups, late group conflicts, database regeneration, repeated volume-path resolution, torn journal tails and an abruptly exiting child process. Real MXF fixtures exercise the MobId gate. Planner tests cover the 4,999 boundary, oversized-group stability, invalid IDs and workstation/root boundaries.
 
-The existing GitHub Actions workflow runs CTest on both macOS and Windows; the new tests are included automatically. No remote CI run was initiated by this implementation task.
+GitHub Actions run [34326986830](https://github.com/mrtymcln/MediaMuster/actions/runs/34326986830), commit `c19944a`, passed all 27 CTest suites and packaging on both macOS and Windows. The Windows field reports below were supplied on 9 September 2026; their format does not record a build commit.
 
-| Configuration | Status at implementation |
+| Configuration | Validation evidence |
 | --- | --- |
 | Development Mac, local APFS, arm64 | Build, regression suite and disposable Debug harness run locally |
 | macOS x86_64 | Included in the universal build; runtime not separately validated |
 | Mac external drives | Field test pending for each filesystem in use |
-| GitHub Windows runner | New tests wired in; execution pending |
-| Work Windows PC on NEXIS | Debug report and controlled field tests pending |
-| Work Windows PC on NAS | Debug report and controlled field tests pending |
+| GitHub Windows runner | All 27 CTest suites and packaging passed |
+| Work Windows PC, local NTFS | Report 1: 14 checks passed |
+| Work Windows PC, NEXIS workspace to another workspace (AVIDFOS) | Report 5: 13 checks passed; automatic network recovery unsupported; cross-workspace Move retained its source. Successful Trash/Rebalance relocation exercised the source workspace |
+| Work Windows PC, local NTFS to NEXIS | Report 6: 89 checks passed, including 76 additional MXF copies; automatic network recovery unsupported; cross-filesystem Move retained its source |
+| Work Windows PC on NAS | Reports 2–4: stopped during test-folder setup because parent-directory persistence could not be confirmed. No media scenarios ran. The reports omit the native error; rerun with the added error reporting to diagnose the refusal |
 | Mac on NAS or NEXIS | Not tested; Windows results do not qualify the Mac client |
 
 Use disposable data for controlled disconnect/reconnect, competing-client and process-termination trials. Verify all originals and unrelated destination files afterwards, and retain the reports/journals from failed runs. Power-loss behaviour requires separate storage-specific validation; a returned flush request is not independent proof about a server's hardware caches. Repeat relevant field checks when the OS, client software, protocol or storage configuration changes.

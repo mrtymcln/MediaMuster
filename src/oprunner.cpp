@@ -150,10 +150,12 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error)
 		const auto src = OpFile::inspect(e.item.src), dst = OpFile::inspect(e.dst);
 		if (e.source.unchanged(dst) && !OpFile::occupied(e.item.src))
 		{
-			if (!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath()) ||
-				!NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath()))
+			QString syncError;
+			if (!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
+				!NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(), &syncError))
 			{
-				error = "A relocated file exists, but its folder updates could not be confirmed.";
+				error = "A relocated file exists, but its folder updates could not be confirmed.\n" +
+						syncError;
 				return false;
 			}
 			e.landed = dst;
@@ -202,11 +204,13 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error)
 							"destination and journal were retained.";
 					return false;
 				}
-				if (!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath()) ||
-					(moved && !NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath())))
+				QString syncError;
+				if (!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
+					(moved && !NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(),
+														  &syncError)))
 				{
 					error = "The verified destination exists, but folder durability remains "
-							"unconfirmed.";
+							"unconfirmed.\n" + syncError;
 					return false;
 				}
 				e.step = moved && OpFile::occupied(e.item.src) ? Step::SourceRetained : Step::Done;
@@ -334,10 +338,14 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 		}
 		const auto oldTemp = e.temp;
 		e.temp.clear();
-		if (fail("folder-sync") || !NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath()) ||
-			!NativeFile::syncDirectory(QFileInfo(oldTemp).absolutePath()))
+		QString syncError;
+		if (fail("folder-sync") ||
+			!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
+			!NativeFile::syncDirectory(QFileInfo(oldTemp).absolutePath(), &syncError))
 		{
 			e.error = "The published file's folder update could not be confirmed. Source retained.";
+			if (!syncError.isEmpty())
+				e.error += '\n' + syncError;
 			save(j, e, Step::NeedsAttention);
 			return result(e, State::NeedsAttention, e.error);
 		}
@@ -496,12 +504,15 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 						save(j, e, Step::NeedsAttention);
 						return result(e, State::NeedsAttention, e.error);
 					}
+					QString syncError;
 					if (fail("folder-sync") ||
-						!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath()) ||
-						!NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath()))
+						!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
+						!NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(), &syncError))
 					{
 						e.error = "File relocated to " + e.dst +
 								  ", but folder durability needs recovery confirmation.";
+						if (!syncError.isEmpty())
+							e.error += '\n' + syncError;
 						save(j, e, Step::NeedsAttention);
 						return result(e, State::NeedsAttention, e.error);
 					}

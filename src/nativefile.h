@@ -25,5 +25,6 @@ enum class SyncResult
 SyncResult syncFile(QFile &file, Durability level);
 // Requests persistence of directory changes. A failure must remain visible
 // to the caller; success cannot establish remote hardware's behaviour.
-bool syncDirectory(const QString &path);
+// Optional error reports the failed native call, path and OS error code.
+bool syncDirectory(const QString &path, QString *error = nullptr);
 } // namespace NativeFile

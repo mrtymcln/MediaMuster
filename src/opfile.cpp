@@ -116,9 +116,11 @@ bool OpFile::makeDirectory(const QString &path, QString &error)
 		error = QStringLiteral("Cannot create folder %1").arg(path);
 		return false;
 	}
-	if (!NativeFile::syncDirectory(parent))
+	QString syncError;
+	if (!NativeFile::syncDirectory(parent, &syncError))
 	{
-		error = QStringLiteral("Cannot confirm the new folder was recorded: %1").arg(path);
+		error = QStringLiteral("Cannot confirm the new folder was recorded: %1\n%2")
+					.arg(path, syncError);
 		return false;
 	}
 	return true;

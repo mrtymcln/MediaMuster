@@ -342,9 +342,11 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 	try
 	{
 		QString error;
-		if (!OpFile::makeDirectory(sourceRoot, error) ||
-			!OpFile::makeDirectory(destinationRoot, error) ||
-			!OpFile::makeDirectory(reportRoot, error))
+		// Prepare the local report folder first so storage setup failures
+		// can still be saved automatically for diagnosis.
+		if (!OpFile::makeDirectory(reportRoot, error) ||
+			!OpFile::makeDirectory(sourceRoot, error) ||
+			!OpFile::makeDirectory(destinationRoot, error))
 			throw std::runtime_error(error.toStdString());
 
 		const QStringList scenarios{"Copy and readback",

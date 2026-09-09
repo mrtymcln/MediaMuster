@@ -109,6 +109,7 @@ class TestFileOperations : public QObject
 	void mismatched_volume_is_never_session_matched();
 	void second_runner_cannot_change_files();
 	void debug_harness_uses_disposable_files();
+	void debug_setup_failure_saves_report();
 	void bundled_samples_match_supplied_files();
 	void selected_duplicates_keep_both();
 	void regenerated_database_is_retired_on_resume();
@@ -720,6 +721,25 @@ void TestFileOperations::debug_harness_uses_disposable_files()
 #endif
 	QCOMPARE(get(f.src), f.bytes);
 	QVERIFY(QFile::exists(options.samples[0]));
+}
+void TestFileOperations::debug_setup_failure_saves_report()
+{
+	Fixture f;
+	OpDiagnostics::Options options;
+	options.sourceArea = f.root;
+	options.destinationArea = f.src; // A file cannot hold the destination test folder.
+	options.reportArea = f.root + "/reports";
+	std::atomic<bool> cancel{false};
+	const auto report = OpDiagnostics::run(options, cancel);
+	QVERIFY2(QFile::exists(report.path), qPrintable(report.text));
+	QCOMPARE(QJsonDocument::fromJson(get(report.path)).object(), report.json);
+	const auto checks = report.json["checks"].toArray();
+	QCOMPARE(checks.size(), 3); // Setup failure and the two untested/unsupported notices.
+	QCOMPARE(checks[0].toObject()["name"].toString(), QString("Test setup or storage access"));
+	QCOMPARE(checks[0].toObject()["status"].toString(), QString("failed"));
+	QVERIFY(!report.json.contains("bundledSamples"));
+	QVERIFY(QDir(report.json["sourceTestFolder"].toString()).isEmpty());
+	QCOMPARE(get(f.src), f.bytes);
 }
 void TestFileOperations::bundled_samples_match_supplied_files()
 {

@@ -3,11 +3,9 @@
 #include <QDir>
 #include <QFile>
 #include <QStorageInfo>
-
-#ifdef Q_OS_MAC
 #include <cerrno>
-#include <fcntl.h>
-#endif
+#include <cstring>
+
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #include <io.h>
@@ -109,31 +107,49 @@ SyncResult syncFile(QFile &f, Durability level)
 #endif
 }
 
-bool syncDirectory(const QString &dirPath)
+bool syncDirectory(const QString &dirPath, QString *error)
 {
+	if (error)
+		error->clear();
 #if defined(Q_OS_WIN)
-	// FILE_FLAG_BACKUP_SEMANTICS is the only way CreateFileW hands out
-	// a DIRECTORY handle; FlushFileBuffers on it persists the entries.
-	// This is the upgrade path the v1 journal named in a comment and
-	// never built — journals on Windows could vanish in a power cut
-	// right after creation because only the file's bytes were synced,
-	// not the directory entry naming it.
+	// Directory access and flush support depend on the filesystem/client.
+	// Keep refusals visible, including which native request failed.
 	const QString native = QDir::toNativeSeparators(dirPath);
 	const HANDLE h = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()),
 								   GENERIC_WRITE, // FlushFileBuffers requires write access
 								   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
 								   OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 	if (h == INVALID_HANDLE_VALUE)
+	{
+		const DWORD code = ::GetLastError();
+		if (error)
+			*error = QStringLiteral("CreateFileW(directory) failed for %1 (Windows error %2).")
+						 .arg(dirPath).arg(code);
 		return false;
+	}
 	const bool ok = ::FlushFileBuffers(h) != 0;
+	const DWORD code = ok ? ERROR_SUCCESS : ::GetLastError();
 	::CloseHandle(h);
+	if (!ok && error)
+		*error = QStringLiteral("FlushFileBuffers(directory) failed for %1 (Windows error %2).")
+					 .arg(dirPath).arg(code);
 	return ok;
 #else
 	const int fd = ::open(QFile::encodeName(dirPath).constData(), O_RDONLY);
 	if (fd == -1)
+	{
+		const int code = errno;
+		if (error)
+			*error = QStringLiteral("open(directory) failed for %1 (POSIX error %2: %3).")
+						 .arg(dirPath).arg(code).arg(QString::fromLocal8Bit(std::strerror(code)));
 		return false;
+	}
 	const bool ok = ::fsync(fd) == 0;
+	const int code = ok ? 0 : errno;
 	::close(fd);
+	if (!ok && error)
+		*error = QStringLiteral("fsync(directory) failed for %1 (POSIX error %2: %3).")
+					 .arg(dirPath).arg(code).arg(QString::fromLocal8Bit(std::strerror(code)));
 	return ok;
 #endif
 }

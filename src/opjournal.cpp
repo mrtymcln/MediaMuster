@@ -246,6 +246,7 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 		addVolume(request.destRoot);
 	if (!request.diagnosticTrashRoot.isEmpty())
 		addVolume(request.diagnosticTrashRoot);
+	QString syncError;
 	const bool ok = append({{"record", "begin"},
 							{"schema", schema},
 							{"kind", opKindName(request.kind)},
@@ -255,12 +256,13 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 							{"diagnosticTrashRoot", request.diagnosticTrashRoot},
 							{"volumes", volumes},
 							{"items", items}}) &&
-					NativeFile::syncDirectory(dir);
+					NativeFile::syncDirectory(dir, &syncError);
 	if (!ok)
 	{
 		m_healthy = false;
-		error =
-			m_error.isEmpty() ? QStringLiteral("Cannot persist the journal directory.") : m_error;
+		error = m_error.isEmpty()
+					? QStringLiteral("Cannot persist the journal directory.\n") + syncError
+					: m_error;
 	}
 	return ok;
 }
