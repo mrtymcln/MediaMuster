@@ -243,16 +243,29 @@ static QString readUtf16BE(const QByteArray &data, qint64 pos, quint16 len)
 // skip padding/unknown payloads without loading essence into memory.
 MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 {
-	using Status = MxfMetadata::HeaderStatus;
-	qint64 readCount = 0;
 	if (bytesRead)
 		*bytesRead = 0;
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		MxfMetadata result;
-		result.headerStatus = Status::IoError;
+		result.headerStatus = MxfMetadata::HeaderStatus::IoError;
 		qCWarning(lcMxf) << "cannot open" << filePath << file.errorString();
+		return result;
+	}
+	return parseHeader(file, bytesRead);
+}
+
+MxfMetadata MxfParser::parseHeader(QFile &file, qint64 *bytesRead)
+{
+	using Status = MxfMetadata::HeaderStatus;
+	qint64 readCount = 0;
+	if (bytesRead)
+		*bytesRead = 0;
+	if (!file.isOpen() || !file.isReadable() || file.isSequential() || !file.seek(0))
+	{
+		MxfMetadata result;
+		result.headerStatus = Status::IoError;
 		return result;
 	}
 	auto read = [&](qint64 count)
@@ -459,7 +472,7 @@ MxfMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		result.precomputeCategory = AvidPrecompute::Category::Unknown;
 	}
 	if (!result.valid)
-		qCWarning(lcMxf) << "no complete usable MXF metadata in" << filePath
+		qCWarning(lcMxf) << "no complete usable MXF metadata in" << file.fileName()
 						 << "status" << int(status) << "read" << readCount << "bytes";
 	if (bytesRead)
 		*bytesRead = readCount;

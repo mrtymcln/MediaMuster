@@ -104,6 +104,7 @@ class TestFileOperations : public QObject
 	void partial_group_failure_keeps_every_file_recorded();
 	void same_volume_keep_both_handles_late_conflict();
 	void real_mxf_identity_is_checked();
+	void mxf_parser_borrows_protected_handle();
 	void journal_volume_paths_survive_two_resolutions();
 	void mismatched_volume_is_never_session_matched();
 	void second_runner_cannot_change_files();
@@ -574,6 +575,39 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	request.items[0].name = "refused.mxf";
 	QCOMPARE(runner.run(request, f.journals).failed, 1);
 	QVERIFY(!QFile::exists(f.dest + "/refused.mxf"));
+}
+void TestFileOperations::mxf_parser_borrows_protected_handle()
+{
+	Fixture f;
+	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
+	const auto expected = MxfParser::parseHeader(sample);
+	const QString path = f.root + "/protected.mxf";
+	QVERIFY(QFile::copy(sample, path));
+	QString error;
+	auto file = OpFile::open(path, false, error);
+	QVERIFY2(file, qPrintable(error));
+	const auto before = file->stamp();
+	const int descriptor = file->io().handle();
+	QVERIFY(file->io().seek(128));
+	qint64 bytesRead = 0;
+	const auto actual = MxfParser::parseHeader(file->io(), &bytesRead);
+	QCOMPARE(actual.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(actual.fileMobId, expected.fileMobId);
+	QCOMPARE(actual.umid, expected.umid);
+	QVERIFY(bytesRead > 0);
+	QVERIFY(file->io().isOpen());
+	QCOMPARE(file->io().handle(), descriptor);
+	QVERIFY(file->stillAt(path, before));
+#ifdef Q_OS_WIN
+	QVERIFY(file->protectedFromWriters());
+	QFile writer(path);
+	QVERIFY(!writer.open(QIODevice::ReadWrite));
+#endif
+	QFile closed;
+	bytesRead = 123;
+	QCOMPARE(MxfParser::parseHeader(closed, &bytesRead).headerStatus,
+		MxfMetadata::HeaderStatus::IoError);
+	QCOMPARE(bytesRead, 0);
 }
 void TestFileOperations::journal_volume_paths_survive_two_resolutions()
 {

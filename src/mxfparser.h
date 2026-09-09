@@ -5,6 +5,8 @@
 #include <QByteArray>
 #include <QString>
 
+class QFile;
+
 // MARK: - Shared codec names
 
 /// Display name for PCM audio essence, shared by the codec table, the
@@ -138,6 +140,11 @@ public:
 	/// scanner's "MXF parse" summary log line.
 	[[nodiscard]] static MxfMetadata parseHeader(const QString &filePath,
 												 qint64 *bytesRead = nullptr);
+
+	/// Read through a caller-owned handle without reopening or closing it.
+	/// Starts at offset zero and changes the cursor; the caller retains ownership
+	/// and any native sharing protection. Requires a readable, seekable file.
+	[[nodiscard]] static MxfMetadata parseHeader(QFile &file, qint64 *bytesRead = nullptr);
 
 	/// Map a 16-byte compression/coding UL to the marketing name like
 	/// 'Avid DNx HQ (DNxHD 220)'. `fps` is needed to resolve the

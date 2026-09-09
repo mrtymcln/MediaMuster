@@ -120,7 +120,7 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 		const auto stamp = file ? file->stamp() : OpStamp{};
 		if (!file)
 			identityErrors.append(QFileInfo(path).fileName() + ": " + error);
-		const auto header = MxfParser::parseHeader(path);
+		const auto header = file ? MxfParser::parseHeader(file->io()) : MxfMetadata{};
 		originals.append(stamp);
 		headers.append(header);
 		valid = valid && stamp.valid() &&

@@ -50,7 +50,7 @@ QString trashRoot(const QString &source)
 	}
 	return QFileInfo(source).dir().filePath(Conventions::kMediaMusterTrashDir);
 }
-bool mediaIdentityMatches(const OpItem &item, QString &error)
+bool mediaIdentityMatches(const OpItem &item, OpFile &source, QString &error)
 {
 	if (!Conventions::hasMxfExtension(item.src))
 		return true;
@@ -58,7 +58,7 @@ bool mediaIdentityMatches(const OpItem &item, QString &error)
 	const bool masterKnown = !item.masterMobId.isEmpty() && !MobId::isAllZero(item.masterMobId);
 	if (!fileKnown && !masterKnown)
 		return true;
-	const auto h = MxfParser::parseHeader(item.src);
+	const auto h = MxfParser::parseHeader(source.io());
 	auto matches = [](const QString &expected, const QString &actual)
 	{
 		return !actual.isEmpty() && !MobId::isAllZero(actual) &&
@@ -379,7 +379,7 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		(e.item.bytes >= 0 && e.item.bytes != current.size) ||
 		(e.item.modifiedMs >= 0 &&
 		 QFileInfo(e.item.src).lastModified().toMSecsSinceEpoch() != e.item.modifiedMs) ||
-		!mediaIdentityMatches(e.item, error) || !source->stillAt(e.item.src, current))
+		!mediaIdentityMatches(e.item, *source, error) || !source->stillAt(e.item.src, current))
 	{
 		if (error.isEmpty())
 			error =
