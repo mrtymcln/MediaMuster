@@ -12,8 +12,8 @@
 #include "layoututil.h"
 #include "managemediadialog.h"
 #include "mediacsv.h"
-#include "opverify.h"
 #include "opjournal.h"
+#include "fileoperationtestdialog.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
 #include "rebalancer.h"
@@ -79,10 +79,7 @@ namespace
 {
 	// Edit ▸ Undo. Disabled until a future release.
 	//
-	// The gate is the menu action alone: nothing else can reach OpUndo, and
-	// the Cmd-Z shortcut belongs to the action, so an ungated build never
-	// registers it. Engine, journal and tests are untouched and still run,
-	// so the feature can't rot while it waits. Flip to true to ship it.
+	// Future Undo must use the recorded original locations and the new engine.
 	constexpr bool kUndoEnabled = false;
 	// The implementation stays testable while its table/CSV/filter surfaces
 	// are opt-in through Debug. Change the default when the feature ships.
@@ -752,16 +749,15 @@ void MainWindow::buildSpecialMenu()
 void MainWindow::buildDebugMenu()
 {
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
-	auto *verifyAct = debugMenu->addAction(tr("Verify each file op"));
-	verifyAct->setCheckable(true);
-	verifyAct->setChecked(OpVerify::enabled());
-	connect(verifyAct, &QAction::triggered, this,
-			[this](bool on)
-			{
-				OpVerify::setEnabled(on);
-				addLog(QtInfoMsg, QStringLiteral("app"),
-					   on ? "Verify each file op enabled" : "Verify each file op disabled");
-			});
+    auto *fileTests = debugMenu->addAction(tr("Test File Operations…"));
+    fileTests->setObjectName("fileOperationTestsAction");
+    connect(fileTests, &QAction::triggered, this, [this] {
+        if (!m_scanButton->isEnabled()) return;
+        auto *dialog = new FileOperationTestDialog(this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->show();
+    });
+    debugMenu->addSeparator();
 
 	auto *codecHexAct = debugMenu->addAction(tr("Codec hex details"));
 	codecHexAct->setCheckable(true);
@@ -894,25 +890,23 @@ void MainWindow::setupConnections()
 		[this](QtMsgType level, const QString &message)
 		{ addLog(level, QStringLiteral("ops"), message); },
 		Qt::QueuedConnection);
-	connect(
-		m_fileOps, &OpManager::operationItemDone, this,
-		[this](const QString &name, const QString &filePath, bool ok, const QString &err,
-			   bool skipped)
-		{
-			// Three outcomes, three lines: a skip is neither a failure nor
-			// "done" — the engine's message already reads "Skipped (...)".
-			addLog(ok ? QtInfoMsg : QtCriticalMsg, QStringLiteral("ops"),
-				   !ok		 ? name + " FAILED: " + err
-				   : skipped ? name + ": " + err
-							 : name + " done");
+	connect(m_fileOps, &OpManager::operationResult, this,
+        [this](const OpResult &r) {
+            QString state;
+            switch (r.state) {
+            case OpResult::State::Completed: state = tr("Completed"); break;
+            case OpResult::State::SourceRetained: state = tr("Copied and verified; source retained"); break;
+            case OpResult::State::Skipped: state = tr("Skipped"); break;
+            case OpResult::State::Cancelled: state = tr("Cancelled"); break;
+            case OpResult::State::Failed: state = tr("Failed"); break;
+            case OpResult::State::NeedsAttention: state = tr("Needs attention"); break;
+            }
+            const bool problem = r.state == OpResult::State::Failed || r.state == OpResult::State::NeedsAttention;
+            addLog(problem ? QtWarningMsg : QtInfoMsg, QStringLiteral("ops"),
+                r.name + ": " + state + (r.message.isEmpty() ? QString() : " — " + r.message));
+            if (r.sourceRemoved && m_removeAfterOp) m_successfulOpPaths.insert(r.source);
+        }, Qt::QueuedConnection);
 
-			// Track successful paths so we can drop those rows once
-			// the job finishes. Skipped items left the source alone,
-			// so removing their rows would lie about table state.
-			if (ok && !skipped && m_removeAfterOp)
-				m_successfulOpPaths.insert(filePath);
-		},
-		Qt::QueuedConnection);
 	connect(
 		m_fileOps, &OpManager::operationFinished, this,
 		[this](int /*succeeded*/, int /*failed*/)
@@ -949,8 +943,7 @@ void MainWindow::setupConnections()
 		},
 		Qt::QueuedConnection);
 
-	// Network volumes have no OS recycle bin, so deletes there
-	// land in a per-volume `_MediaMuster_Trash` folder.
+	// Delete always relocates to `_MediaMuster_Trash` on the same filesystem.
 	connect(m_fileOps, &OpManager::mediaMusterTrashUsed, this,
 			&MainWindow::showMediaMusterTrashDialog, Qt::QueuedConnection);
 
@@ -1778,28 +1771,13 @@ bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const 
 	return dispatchRequest(std::move(req));
 }
 
-// The write-ahead journal is the only thing that can put files back after
-// a crash. If it can't be written (disk full, permissions), running
-// anyway is the user's call to make — not a console line to miss. Cancel
-// stays default: a stray Return must not waive the net. Shared by every
-// dispatch INCLUDING undo — an undo without its own journal would itself
-// be unrecoverable if interrupted.
+// The journal is mandatory; the engine independently enforces this before I/O.
 bool MainWindow::confirmCrashProtection()
 {
-	if (OpJournal::standardDirWritable())
-		return true;
-	QMessageBox confirm(this);
-	confirm.setIcon(QMessageBox::Warning);
-	confirm.setWindowTitle(tr("No crash protection"));
-	confirm.setText(tr("MediaMuster can't write its safety journal (the record used to "
-					   "undo an interrupted operation). Check free space and permissions "
-					   "on your system disk.\n\nIf this operation is interrupted, files "
-					   "cannot be put back automatically. Continue anyway?"));
-	auto *goBtn = confirm.addButton(tr("Continue Anyway"), QMessageBox::DestructiveRole);
-	confirm.addButton(QMessageBox::Cancel);
-	confirm.setDefaultButton(QMessageBox::Cancel);
-	confirm.exec();
-	return confirm.clickedButton() == goBtn;
+    if (OpJournal::standardDirWritable()) return true;
+    QMessageBox::warning(this, tr("Operation cannot start"),
+        tr("MediaMuster cannot write its operation journal. Check free space and permissions on the system disk, then try again."));
+    return false;
 }
 
 void MainWindow::updateUndoAction()
@@ -1897,49 +1875,8 @@ void MainWindow::updateResumeAction()
 
 void MainWindow::refreshResumable()
 {
-	// Off the GUI thread: reading the journal folder means stat()-ing the
-	// media paths in every journal, and a dropped network mount would
-	// freeze the window (the launch sweep runs on a pool thread for the
-	// same reason). The menu item keeps its last state until this lands.
-	auto *watcher = new QFutureWatcher<QVector<OpRescue::Resumable>>(this);
-	connect(watcher, &QFutureWatcher<QVector<OpRescue::Resumable>>::finished, this,
-			[this, watcher]
-			{
-				m_resumable = watcher->result();
-				watcher->deleteLater();
-				updateResumeAction();
-			});
-	watcher->setFuture(QtConcurrent::run([]
-										 { return OpRescue::pending(); }));
-
-	// The Edit ▸ Undo candidate, computed in the same off-thread sweep
-	// spirit: reading the newest journal stats media paths and must never
-	// block the GUI on a dead mount. Skipped while Undo is disabled — with
-	// no menu item to label there is nothing to compute, and this is a real
-	// journal read plus a stat per refresh.
-	if (!kUndoEnabled)
-		return;
-
-	auto *undoWatcher = new QFutureWatcher<UndoCandidate>(this);
-	connect(undoWatcher, &QFutureWatcher<UndoCandidate>::finished, this,
-			[this, undoWatcher]
-			{
-				m_undoCandidate = undoWatcher->result();
-				undoWatcher->deleteLater();
-				updateUndoAction();
-			});
-	undoWatcher->setFuture(QtConcurrent::run(
-		[]() -> UndoCandidate
-		{
-			const auto rec = OpJournal::latestUndoable();
-			if (!rec)
-				return {};
-			QString kind = opKindName(rec->kind);
-			if (!kind.isEmpty())
-				kind[0] = kind[0].toUpper();
-			return {rec->path,
-					tr("&Undo %1 (%2 files)").arg(kind).arg(rec->doneCount())};
-		}));
+    m_undoCandidate = {};
+    updateUndoAction();
 }
 
 void MainWindow::offerResume()
@@ -1970,19 +1907,14 @@ void MainWindow::offerResume()
 		headline = tr("I was moving %n file(s) over to %1, but didn't get them all in.", nullptr,
 					  r.total)
 					   .arg(where);
-		reassurance = tr("The successfully moved files are at the destination. "
-						 "The remaining files are untouched.");
+		reassurance = tr("Completed work and retained sources are recorded in the operation journal. "
+                         "Resume will check the recorded files before continuing.");
 		break;
 	case OpKind::Delete:
 		headline = tr("I was clearing out %n file(s) but didn't get them all out.", nullptr,
 					  r.total);
-		// Network volumes have no OS trash, so those deletes go to a
-		// MediaMuster Trash folder on the volume itself.
-		reassurance = r.usedMediaMusterTrash
-						  ? tr("The successfully deleted files are in the MediaMuster Trash "
-							   "on that volume. The rest are untouched.")
-						  : tr("The successfully deleted files are in your bin. "
-							   "The rest are untouched.");
+        reassurance = tr("Files already relocated are in MediaMuster Trash. "
+                         "The journal records their original and current locations.");
 		break;
 	case OpKind::Rename:
 		headline = tr("I was reorganising %n file(s) between media folders, but didn't finish.",
@@ -2025,9 +1957,9 @@ void MainWindow::offerResume()
 
 	if (box.clickedButton() == discardBtn)
 	{
-		if (!QFile::remove(r.journalPath))
-			addLog(QtWarningMsg, QStringLiteral("app"),
-				   QStringLiteral("Couldn't delete the interrupted-run journal %1").arg(r.journalPath));
+		QString dismissError;
+        if (!OpJournal::dismiss(r.journalPath, dismissError))
+            addLog(QtWarningMsg, QStringLiteral("app"), dismissError);
 		else
 			addLog(QtInfoMsg, QStringLiteral("app"),
 				   QStringLiteral("Discarded an interrupted %1 (%2 of %3 files were not done)")
@@ -2059,11 +1991,10 @@ void MainWindow::offerResume()
 	req.destRoot = r.dest;
 	req.preserve = r.preserve;
 	req.items = r.remaining;
+	req.resumeJournalPath = r.journalPath;
 	const bool dispatched = dispatchRequest(std::move(req));
-	if (dispatched && !QFile::remove(r.journalPath))
-		addLog(QtWarningMsg, QStringLiteral("app"),
-			   QStringLiteral("Couldn't delete the interrupted-run journal %1 — it may be offered again")
-				   .arg(r.journalPath));
+	Q_UNUSED(dispatched); // The worker continues the existing durable journal.
+
 	refreshResumable();
 }
 
@@ -2075,63 +2006,15 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath, int 
 	msgBox.setIcon(QMessageBox::Information);
 	msgBox.setWindowTitle(tr("MediaMuster Trash"));
 	msgBox.setText(tr("<b>%n file(s) moved to the MediaMuster Trash</b>", nullptr, fileCount));
-	msgBox.setInformativeText(tr("Network volumes only support permanent delete, so "
-								 "MediaMuster has moved the file(s) to:\n\n%1\n\n"
-								 "These files can be restored by moving them back to "
-								 "their original location. To permanently delete them, "
-								 "click \"Empty Trash\".")
-								  .arg(trashFolderPath));
-
-	auto *btnOk = msgBox.addButton(QMessageBox::Ok);
-	auto *btnOpen = msgBox.addButton(tr("Take Me There"), QMessageBox::ActionRole);
-	auto *btnEmpty = msgBox.addButton(tr("Empty Trash"), QMessageBox::DestructiveRole);
-	msgBox.setDefaultButton(btnOk);
-	msgBox.exec();
-
-	if (msgBox.clickedButton() == btnOpen)
-	{
-		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(trashFolderPath)))
-			addLog(QtWarningMsg, QStringLiteral("ops"),
-				   QStringLiteral("Couldn't open %1 in the file browser").arg(trashFolderPath));
-		return;
-	}
-
-	if (msgBox.clickedButton() != btnEmpty)
-		return;
-
-	int trashFileCount = 0;
-	qint64 trashBytes = 0;
-	QDirIterator it(trashFolderPath, QDir::Files, QDirIterator::Subdirectories);
-	while (it.hasNext())
-	{
-		it.next();
-		trashFileCount++;
-		trashBytes += it.fileInfo().size();
-	}
-
-	// Destructive, irreversible: name the action on the button and give it
-	// the DestructiveRole so it reads (and, on macOS, styles) as the danger
-	// choice. Cancel stays the default so a stray Return doesn't wipe files.
-	QMessageBox confirm(this);
-	confirm.setIcon(QMessageBox::Warning);
-	confirm.setWindowTitle(tr("Empty the MediaMuster Trash?"));
-	confirm.setText(tr("Permanently delete %n file(s) (%1) "
-					   "from:\n\n%2\n\n"
-					   "This cannot be undone.",
-					   nullptr, trashFileCount)
-						.arg(Format::bytes(trashBytes), trashFolderPath));
-	auto *emptyBtn = confirm.addButton(tr("Empty Trash"), QMessageBox::DestructiveRole);
-	confirm.addButton(QMessageBox::Cancel);
-	confirm.setDefaultButton(QMessageBox::Cancel);
-	confirm.exec();
-
-	if (confirm.clickedButton() != emptyBtn)
-		return;
-
-	if (QDir(trashFolderPath).removeRecursively())
-		addLog(QtInfoMsg, QStringLiteral("ops"), QStringLiteral("MediaMuster Trash emptied: %1").arg(trashFolderPath));
-	else
-		addLog(QtCriticalMsg, QStringLiteral("ops"), QStringLiteral("Failed to empty MediaMuster Trash: %1").arg(trashFolderPath));
+	msgBox.setInformativeText(tr("Files were moved to:\n\n%1\n\n"
+                                  "Their original locations are recorded in the operation journal. "
+                                  "Moving files to this folder does not free disk space.")
+                                  .arg(trashFolderPath));
+    msgBox.addButton(QMessageBox::Ok);
+    auto *open = msgBox.addButton(tr("Open Folder"), QMessageBox::ActionRole);
+    msgBox.exec();
+    if (msgBox.clickedButton() == open)
+        QDesktopServices::openUrl(QUrl::fromLocalFile(trashFolderPath));
 }
 
 // MARK: - CSV export

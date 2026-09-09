@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include <QMetaType>
 #include <QVector>
 #include <QtGlobal>
 
@@ -8,10 +9,10 @@
 
 // MARK: - Op request types
 //
-// The value types every part of the file-operations engine v2 speaks:
+// The value types every part of the file-operations engine speaks:
 // what the user asked for (OpRequest), one file's line item (OpItem),
 // and the on-disk names for the enums. Pure data with no I/O — so the
-// journal, runner, recovery and undo can all include
+// journal, runner, recovery can all include
 // this without dragging each other in.
 //
 // The engine deliberately does NOT pass MediaFile around: an OpItem
@@ -22,9 +23,8 @@
 
 // MARK: - OpKind
 
-/// The five things the engine can be asked to do. Rename is the
-/// Rebalance feature's same-volume relocation; Undo is the reversal of a
-/// previous run (itself journaled, so a crashed undo is recoverable).
+/// Supported operations plus the reserved Undo name, which the engine rejects.
+/// Rename is Rebalance's same-filesystem relocation.
 enum class OpKind : int
 {
 	Copy = 0,
@@ -44,8 +44,7 @@ enum class OpKind : int
 enum class ConflictPolicy : int
 {
 	KeepBoth = 0,
-	Skip = 1,
-	Replace = 2
+	Skip = 1
 };
 
 // MARK: - On-disk names
@@ -99,8 +98,6 @@ inline QString conflictPolicyName(ConflictPolicy policy)
 		return QStringLiteral("keepboth");
 	case ConflictPolicy::Skip:
 		return QStringLiteral("skip");
-	case ConflictPolicy::Replace:
-		return QStringLiteral("replace");
 	}
 	return {};
 }
@@ -111,8 +108,6 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 		return ConflictPolicy::KeepBoth;
 	if (name == QStringLiteral("skip"))
 		return ConflictPolicy::Skip;
-	if (name == QStringLiteral("replace"))
-		return ConflictPolicy::Replace;
 	return std::nullopt;
 }
 
@@ -128,7 +123,7 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 /// recovery messages can name clips ("A001_C002"), not just cryptic MXF
 /// filenames. They are claims, not captures: the runner re-reads the
 /// real identity from the file itself immediately before touching it
-/// (see FileIdentity), because the dialog can sit open for minutes while
+/// (using its handle and freshly parsed header), because the dialog can sit open for minutes while
 /// a shared volume changes underneath it.
 struct OpItem
 {
@@ -140,7 +135,9 @@ struct OpItem
 	/// says; journaled so a resumed run lands it in the same place.
 	bool omfEra = false;
 	qint64 bytes = 0;
-	QString policy; ///< Conflict policy by name; empty = none chosen.
+	qint64 modifiedMs = -1;	  ///< Scanner timestamp; -1 when not supplied.
+	bool maintenance = false; ///< Rebalance database relocation, excluded from media totals.
+	QString policy;			  ///< Conflict policy by name; empty = none chosen.
 
 	// Scan claims about the media inside the file (empty when unknown).
 	QString mobId;		 ///< Avid MOB ID of this essence file.
@@ -149,7 +146,7 @@ struct OpItem
 
 	// Rename (Rebalance) only.
 	QString renameDst; ///< Full destination path for this rename.
-	QString groupKey;  ///< Relatives-atomic cancel boundary: cancel only
+	QString groupKey;  ///< Relatives cancel boundary: cancel only
 					   ///< lands between groups, never inside one.
 };
 
@@ -157,7 +154,7 @@ struct OpItem
 
 /// Everything the engine needs to run one operation. Built by the
 /// OpManager facade from the UI's selection, by the resume flow from a
-/// journal's plan record, or by OpUndo as the inverse of a previous run.
+/// journal's plan record.
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
@@ -165,8 +162,27 @@ struct OpRequest
 	bool preserve = false; ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
 	QVector<OpItem> items;
 
-	/// Undo only: the journal file this run reverses. The undo run writes
-	/// its own journal; on clean finish the original gets an 'undone'
-	/// marker so it can never be undone twice.
-	QString undoesJournalPath;
+	QString resumeJournalPath;	 ///< Continue this journal; never retire it on dispatch.
+	QString diagnosticTrashRoot; ///< Explicit disposable-test root; production leaves empty.
 };
+
+// Explicit outcomes keep a retained source visible in the media table.
+struct OpResult
+{
+	enum class State
+	{
+		Completed,
+		SourceRetained,
+		Skipped,
+		Cancelled,
+		Failed,
+		NeedsAttention
+	};
+	State state = State::Failed;
+	QString name;
+	QString source;
+	QString destination;
+	QString message;
+	bool sourceRemoved = false;
+};
+Q_DECLARE_METATYPE(OpResult)

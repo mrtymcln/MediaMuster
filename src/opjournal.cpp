@@ -1,597 +1,560 @@
 #include "opjournal.h"
-#include "conventions.h" // OMF-era: the folder-name rule pre-2026-09-03 journals were routed by
-
-#include "nativefile.h"
-
-#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
-#include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QStandardPaths>
-#include <QSysInfo>
+#include <QStorageInfo>
 #include <QUuid>
-
-#include <atomic>
+#include <QSet>
+#include <algorithm>
 
 namespace
 {
-	// Bump only when the on-disk shape changes in a way readers can't
-	// cope with. The reader REFUSES anything that isn't this exact value:
-	// no backwards compatibility during the beta (Marty's decision), and
-	// forwards a newer build's journals are simply not ours to interpret.
-	constexpr int kSchema = 2;
-
-	// Push a just-written line down to the drive. The Disk barrier
-	// (fsync/_commit) is the deliberate choice for journal LINES — it
-	// survives an app crash and a drive-acknowledged power loss, which
-	// covers the realistic failure modes at a per-line cost the run can
-	// afford. The MEDIA files get the harder Platter barrier at the one
-	// instant that matters (see the copier); the journal doesn't need it:
-	// losing the very last line to a heroic power cut leaves an
-	// interrupted-looking run whose recovery pass reads the DISK for
-	// evidence anyway.
-	bool syncLine(QFile &f)
-	{
-		return NativeFile::syncFile(f, NativeFile::Durability::Disk) !=
-			   NativeFile::SyncResult::Failed;
-	}
-
-	QString nowIso()
-	{
-		return QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
-	}
+constexpr int schema = 3;
+QJsonObject itemJson(const OpItem &i)
+{
+	return {{"src", i.src},
+			{"name", i.name},
+			{"folder", i.folder},
+			{"omf", i.omfEra},
+			{"bytes", QString::number(i.bytes)},
+			{"modifiedMs", QString::number(i.modifiedMs)},
+			{"maintenance", i.maintenance},
+			{"policy", i.policy},
+			{"mob", i.mobId},
+			{"master", i.masterMobId},
+			{"clip", i.clipName},
+			{"rename", i.renameDst},
+			{"group", i.groupKey}};
+}
+OpItem itemFromJson(const QJsonObject &v)
+{
+	OpItem i;
+	i.src = v["src"].toString();
+	i.name = v["name"].toString();
+	i.folder = v["folder"].toString();
+	i.modifiedMs = v["modifiedMs"].toString("-1").toLongLong();
+	i.maintenance = v["maintenance"].toBool();
+	i.omfEra = v["omf"].toBool();
+	i.bytes = v["bytes"].toString().toLongLong();
+	i.policy = v["policy"].toString();
+	i.mobId = v["mob"].toString();
+	i.masterMobId = v["master"].toString();
+	i.clipName = v["clip"].toString();
+	i.renameDst = v["rename"].toString();
+	i.groupKey = v["group"].toString();
+	return i;
+}
+bool inside(const QString &path, const QString &root)
+{
+	return path == root || path.startsWith(root.endsWith('/') ? root : root + '/');
+}
 } // namespace
 
-// MARK: - Construction
-
-OpJournal::OpJournal(OpKind kind, const QJsonObject &meta, const QString &dir,
-					 const QString &sparePath)
+QString OpJournal::stepName(Step s)
 {
-	const QString base = dir.isEmpty() ? standardJournalDir() : dir;
-	if (!QDir().mkpath(base))
-		return;
-
-	// THE undo-invalidation choke point: a new operation supersedes the
-	// previous run's undo candidate, so every finished, non-dirty journal
-	// dies here — before this run writes its first line. One place is
-	// both the retention policy and the invalidation rule, so the two
-	// can never disagree. (An Undo run spares the journal it reverses.)
-	pruneSuperseded(base, sparePath);
-
-	// Timestamp orders the files chronologically. Two runs in the SAME
-	// millisecond would tie on the stamp and be ordered by the random
-	// uuid — and name order is how scan() and latestUndoable() decide
-	// "newest" — so a process-local sequence number breaks the tie
-	// deterministically. The uuid tail still keeps two PROCESSES started
-	// in the same millisecond from colliding on a filename.
-	static std::atomic<quint32> s_sequence{0};
-	const QString stamp =
-		QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyyMMdd'T'HHmmsszzz"));
-	const QString seq = QStringLiteral("%1").arg(s_sequence.fetch_add(1) % 10000, 4,
-												 10, QLatin1Char('0'));
-	const QString tag = QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
-	m_path = base + QStringLiteral("/journal-%1-%2-%3.jsonl").arg(stamp, seq, tag);
-
-	m_file = std::make_unique<QFile>(m_path);
-	if (!m_file->open(QIODevice::WriteOnly))
+	switch (s)
 	{
-		m_file.reset();
-		m_path.clear();
-		return;
+	case Step::Planned:
+		return "planned";
+	case Step::Copying:
+		return "copying";
+	case Step::Verified:
+		return "verified";
+	case Step::Publishing:
+		return "publishing";
+	case Step::Published:
+		return "published";
+	case Step::Relocating:
+		return "relocating";
+	case Step::Done:
+		return "done";
+	case Step::SourceRetained:
+		return "source-retained";
+	case Step::Skipped:
+		return "skipped";
+	case Step::Cancelled:
+		return "cancelled";
+	case Step::Failed:
+		return "failed";
+	case Step::NeedsAttention:
+		return "needs-attention";
 	}
-
-	writeLine({{QStringLiteral("schema"), kSchema},
-			   {QStringLiteral("record"), QStringLiteral("begin")},
-			   {QStringLiteral("kind"), opKindName(kind)},
-			   {QStringLiteral("started"), nowIso()},
-			   {QStringLiteral("appVersion"), QCoreApplication::applicationVersion()},
-			   {QStringLiteral("processId"), QCoreApplication::applicationPid()},
-			   {QStringLiteral("host"), QSysInfo::machineHostName()},
-			   {QStringLiteral("metadata"), meta}});
-
-	// Make the journal's EXISTENCE durable, not just its first line's
-	// bytes: a file whose directory entry is lost to a power cut protects
-	// nothing. Real on both platforms now (NativeFile::syncDirectory).
-	NativeFile::syncDirectory(base);
+	return {};
 }
-
-OpJournal::~OpJournal() = default;
-
-bool OpJournal::isOpen() const
+bool OpJournal::Entry::complete() const
 {
-	return m_file && m_file->isOpen();
+	return step == Step::Done || step == Step::SourceRetained || step == Step::Skipped;
 }
-
-// MARK: - Plan
-
-void OpJournal::writePlan(const QString &dest, bool preserve, const QVector<OpItem> &items,
-						  const QVector<VolumeIdentity> &volumes)
+QJsonObject OpJournal::Entry::json() const
 {
-	QJsonArray files;
-	for (const OpItem &it : items)
-	{
-		QJsonObject o{{QStringLiteral("source"), it.src}, {QStringLiteral("name"), it.name}};
-		if (!it.folder.isEmpty())
-			o.insert(QStringLiteral("folder"), it.folder);
-		// OMF-era: written for every item, true or false, so the reader never
-		// has to guess a new journal's verdict from the folder's name.
-		o.insert(QStringLiteral("omfEra"), it.omfEra);
-		if (it.bytes > 0)
-			o.insert(QStringLiteral("bytes"), QJsonValue(it.bytes));
-		if (!it.policy.isEmpty())
-			o.insert(QStringLiteral("policy"), it.policy);
-		// The scan's claims about the media, so resumed runs keep their
-		// cross-checks and every message can name the clip.
-		if (!it.mobId.isEmpty())
-			o.insert(QStringLiteral("mobId"), it.mobId);
-		if (!it.masterMobId.isEmpty())
-			o.insert(QStringLiteral("masterMobId"), it.masterMobId);
-		if (!it.clipName.isEmpty())
-			o.insert(QStringLiteral("clipName"), it.clipName);
-		// Rename (Rebalance) items carry their own full destination and
-		// their relatives-atomic group.
-		if (!it.renameDst.isEmpty())
-			o.insert(QStringLiteral("destination"), it.renameDst);
-		if (!it.groupKey.isEmpty())
-			o.insert(QStringLiteral("group"), it.groupKey);
-		files.append(o);
-	}
-
-	// The fingerprint of every volume this run touches, so recovery and
-	// undo can re-find a drive that came back under a different name —
-	// and refuse a different drive squatting at the recorded address.
-	QJsonArray vols;
-	for (const VolumeIdentity &v : volumes)
-		vols.append(v.toJson());
-
-	writeLine({{QStringLiteral("record"), QStringLiteral("plan")},
-			   {QStringLiteral("destination"), dest},
-			   {QStringLiteral("preserve"), preserve},
-			   {QStringLiteral("files"), files},
-			   {QStringLiteral("volumes"), vols}});
+	return {{"record", "item"},
+			{"id", id},
+			{"item", itemJson(item)},
+			{"original", originalSource},
+			{"originalVolume", originalVolume.toJson()},
+			{"originalRelative", originalRelativePath},
+			{"dst", dst},
+			{"temp", temp},
+			{"algorithm", "XXH3-64"},
+			{"hash", hash},
+			{"copyDurable", copyDurable},
+			{"metadataComplete", metadataComplete},
+			{"error", error},
+			{"source", source.json()},
+			{"landed", landed.json()},
+			{"step", stepName(step)},
+			{"artifacts", QJsonArray::fromStringList(artifacts)}};
 }
-
-// MARK: - Per-op records
-
-int OpJournal::planOp(const QString &src, const QString &dst, qint64 bytes, const QString &parked,
-					  const FileIdentity &srcId, const FileIdentity &parkedOriginalId)
+std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 {
-	const int id = m_nextId++;
-
-	QJsonObject o{{QStringLiteral("record"), QStringLiteral("op")},
-				  {QStringLiteral("id"), id},
-				  {QStringLiteral("source"), src},
-				  {QStringLiteral("destination"), dst}};
-	if (bytes > 0)
-		o.insert(QStringLiteral("bytes"), QJsonValue(bytes));
-	if (!parked.isEmpty())
-		o.insert(QStringLiteral("parked"), parked);
-	// The identities this op was verified against. Recovery and undo
-	// re-verify against THESE, not against fresh guesses.
-	if (srcId.confidence != FileIdentity::Confidence::Low)
-		o.insert(QStringLiteral("sourceId"), srcId.toJson());
-	if (parkedOriginalId.confidence != FileIdentity::Confidence::Low)
-		o.insert(QStringLiteral("destinationId"), parkedOriginalId.toJson());
-
-	writeLine(o);
-	return id;
+	Entry e;
+	bool known = false;
+	for (int n = 0; n <= int(Step::NeedsAttention); ++n)
+		if (stepName(Step(n)) == v["step"].toString())
+		{
+			e.step = Step(n);
+			known = true;
+			break;
+		}
+	if (!known || v["algorithm"].toString() != "XXH3-64")
+		return {};
+	e.id = v["id"].toInt(-1);
+	e.item = itemFromJson(v["item"].toObject());
+	e.originalSource = v["original"].toString();
+	e.originalVolume = VolumeIdentity::fromJson(v["originalVolume"].toObject());
+	e.originalRelativePath = v["originalRelative"].toString();
+	e.dst = v["dst"].toString();
+	e.temp = v["temp"].toString();
+	e.hash = v["hash"].toString();
+	e.copyDurable = v["copyDurable"].toBool();
+	e.metadataComplete = v["metadataComplete"].toBool();
+	e.error = v["error"].toString();
+	e.source = OpStamp::fromJson(v["source"].toObject());
+	e.landed = OpStamp::fromJson(v["landed"].toObject());
+	for (const auto &a : v["artifacts"].toArray())
+		e.artifacts.append(a.toString());
+	if (e.id < 0 || !QDir::isAbsolutePath(e.item.src))
+		return {};
+	return e;
 }
-
-void OpJournal::markDone(int id, const DoneInfo &info)
+QString OpJournal::canonicalPath(const QString &path)
 {
-	QJsonObject o{{QStringLiteral("record"), QStringLiteral("done")}, {QStringLiteral("id"), id}};
-	if (!info.finalPath.isEmpty())
-		o.insert(QStringLiteral("final"), info.finalPath);
-	if (!info.hash.isEmpty())
-		o.insert(QStringLiteral("hash"), info.hash);
-	if (info.landedId.confidence != FileIdentity::Confidence::Low)
-		o.insert(QStringLiteral("destinationId"), info.landedId.toJson());
-	if (!info.parkedFinal.isEmpty())
-		o.insert(QStringLiteral("parkedFinal"), info.parkedFinal);
-	writeLine(o);
+	if (path.isEmpty())
+		return {};
+	QFileInfo fi(QDir::cleanPath(QFileInfo(path).absoluteFilePath()));
+	if (fi.isSymLink())
+		return fi.absoluteFilePath(); // engine refuses the leaf link
+	const auto parent = fi.absolutePath();
+	const auto resolved = QFileInfo(parent).canonicalFilePath();
+	if (!resolved.isEmpty())
+		return QDir(resolved).filePath(fi.fileName());
+	if (parent == fi.absoluteFilePath())
+		return fi.absoluteFilePath();
+	return QDir(canonicalPath(parent)).filePath(fi.fileName());
 }
-
-void OpJournal::markFailed(int id, const QString &error, bool rollbackIncomplete,
-						   const QString &parkedFinal)
-{
-	QJsonObject o{{QStringLiteral("record"), QStringLiteral("fail")},
-				  {QStringLiteral("id"), id},
-				  {QStringLiteral("error"), error}};
-	// Present only when the disposal of a replaced original had already
-	// succeeded before the step failed; otherwise the address of a file the
-	// engine moved to the trash would die with the run.
-	if (!parkedFinal.isEmpty())
-		o.insert(QStringLiteral("parkedFinal"), parkedFinal);
-	if (rollbackIncomplete)
-	{
-		o.insert(QStringLiteral("dirty"), true);
-		m_hasDirty = true;
-	}
-	writeLine(o);
-}
-
-void OpJournal::markSkipped(int id)
-{
-	writeLine({{QStringLiteral("record"), QStringLiteral("skip")}, {QStringLiteral("id"), id}});
-}
-
-void OpJournal::writeNote(const QString &text)
-{
-	writeLine({{QStringLiteral("record"), QStringLiteral("note")},
-			   {QStringLiteral("text"), text},
-			   {QStringLiteral("timestamp"), nowIso()}});
-}
-
-// MARK: - Finish
-
-void OpJournal::finish(int succeeded, int failed, int skipped, bool cancelled)
-{
-	if (!isOpen())
-		return;
-
-	QJsonObject o{{QStringLiteral("record"), QStringLiteral("end")},
-				  {QStringLiteral("succeeded"), succeeded},
-				  {QStringLiteral("failed"), failed},
-				  {QStringLiteral("skipped"), skipped},
-				  {QStringLiteral("ended"), nowIso()}};
-	if (cancelled)
-		o.insert(QStringLiteral("cancelled"), true);
-	// Forensics only — the read side computes dirtiness from the fail
-	// lines, which survive a crash between the last op and this end line.
-	if (m_hasDirty)
-		o.insert(QStringLiteral("dirty"), true);
-	writeLine(o);
-
-	m_finished = true;
-	m_file->close();
-
-	// A finished journal normally STAYS — it is the undo candidate (the
-	// v2 retention change). The one exception: degraded. With lines
-	// missing, the on-disk file no longer tells the truth — recovery
-	// could read a finished run as interrupted and "roll back" work that
-	// completed, and undo would reverse from an incomplete record.
-	// Degraded overrides even dirty: a half-told story is worse than
-	// none, and the caller's critical log is the surviving record.
-	if (m_degraded && !m_path.isEmpty())
-		QFile::remove(m_path);
-}
-
-// MARK: - Retention
-
-void OpJournal::pruneSuperseded(const QString &dir, const QString &sparePath)
-{
-	// scan() only ever returns schema-2 records, so legacy files are
-	// structurally safe from this sweep — invisible, untouched.
-	for (const Record &rec : scan(dir))
-	{
-		if (!sparePath.isEmpty() && rec.path == sparePath)
-			continue; // the journal an undo is reversing; see the ctor
-		// Finished and clean = a superseded undo candidate. Interrupted
-		// journals (no end line) and dirty ones belong to recovery.
-		if (rec.complete && !rec.dirty)
-			QFile::remove(rec.path);
-	}
-}
-
-// MARK: - Locations
-
 QString OpJournal::standardJournalDir()
 {
-	// Escape hatch for tests, and for moving the journal off a full
-	// system disk. Points straight at the journal dir, no /journal suffix.
-	const QString override = qEnvironmentVariable("MEDIAMUSTER_JOURNAL_DIR");
-	if (!override.isEmpty())
-		return override;
-
-	QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-	// AppDataLocation can come back empty on a misconfigured box; fall
-	// back to the dotfolder so we never silently lose the journal.
+	const auto overridePath = qEnvironmentVariable("MEDIAMUSTER_JOURNAL_DIR");
+	auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 	if (base.isEmpty())
-		base = QDir::homePath() + QStringLiteral("/.mediamuster");
-	return base + QStringLiteral("/journal");
+		base = QDir::homePath() + "/.mediamuster";
+	// Keep the existing location so older recovery records remain visible.
+	return canonicalPath(overridePath.isEmpty() ? base + "/journal" : overridePath);
 }
-
 bool OpJournal::standardDirWritable()
 {
-	const QString dir = standardJournalDir();
-	if (!QDir().mkpath(dir))
-		return false;
-	QFile probe(dir + QStringLiteral("/.write-probe-") +
-				QUuid::createUuid().toString(QUuid::WithoutBraces).left(8));
-	if (!probe.open(QIODevice::WriteOnly))
-		return false;
-	const bool ok = probe.write("x", 1) == 1;
-	probe.close();
-	QFile::remove(probe.fileName());
-	return ok;
+	const auto d = standardJournalDir();
+	return QDir().mkpath(d) && QFileInfo(d).isWritable();
 }
-
-QString OpJournal::openFailedText(OpKind k)
+std::unique_ptr<QLockFile> OpJournal::acquire(const QString &directory, QString &error)
 {
-	return QStringLiteral("Couldn't open the operations journal — this %1 runs "
-						  "without crash recovery.")
-		.arg(opKindName(k));
-}
-
-QString OpJournal::degradedText()
-{
-	return QStringLiteral("The operations journal stopped accepting writes (disk "
-						  "full?). The run continues, but crash recovery can't "
-						  "protect files from here on.");
-}
-
-// MARK: - Line writer
-
-void OpJournal::writeLine(const QJsonObject &obj)
-{
-	if (!m_file || !m_file->isOpen())
-		return;
-	// A WAL line that never reached the disk protects nothing. Track the
-	// first failure (full disk, dying drive) as permanent degradation:
-	// the callers warn the user once, and finish() disposes of the file
-	// rather than leaving a half-told story for recovery to misread.
-	const QByteArray line = QJsonDocument(obj).toJson(QJsonDocument::Compact);
-	bool ok = m_file->write(line) == line.size();
-	ok = m_file->write("\n", 1) == 1 && ok;
-	ok = syncLine(*m_file) && ok;
-	if (!ok)
-		m_degraded = true;
-}
-
-// MARK: - Read side
-
-int OpJournal::Record::doneCount() const
-{
-	int n = 0;
-	for (const Entry &op : ops)
-		if (op.completed)
-			++n;
-	return n;
-}
-
-std::optional<OpJournal::Record> OpJournal::readOne(const QString &journalPath)
-{
-	QFile f(journalPath);
-	if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
-		return std::nullopt;
-
-	Record rec;
-	rec.path = journalPath;
-
-	// op id to its index in rec.ops, so outcome lines can find their op.
-	QHash<int, int> idToIdx;
-
-	while (!f.atEnd())
+	const auto dir = directory.isEmpty() ? standardJournalDir() : canonicalPath(directory);
+	if (!OpFile::makeDirectory(dir, error))
+		return {};
+	auto lock = std::make_unique<QLockFile>(dir + "/engine.lock");
+	lock->setStaleLockTime(0);
+	if (!lock->tryLock(0))
 	{
-		const QByteArray line = f.readLine().trimmed();
-		if (line.isEmpty())
-			continue;
-
-		// A torn final line (crash mid-write) is expected, not fatal.
-		const QJsonDocument doc = QJsonDocument::fromJson(line);
-		if (!doc.isObject())
-			continue;
-		const QJsonObject o = doc.object();
-		const QString r = o.value(QStringLiteral("record")).toString();
-
-		if (r == QStringLiteral("begin"))
-		{
-			rec.schema = o.value(QStringLiteral("schema")).toInt(0);
-			const auto kind = opKindFromName(o.value(QStringLiteral("kind")).toString());
-			rec.kindKnown = kind.has_value();
-			rec.kind = kind.value_or(OpKind::Copy);
-			rec.meta = o.value(QStringLiteral("metadata")).toObject();
-			rec.started = o.value(QStringLiteral("started")).toString();
-			rec.pid = o.value(QStringLiteral("processId")).toInteger(0);
-			rec.host = o.value(QStringLiteral("host")).toString();
-			rec.undoes = rec.meta.value(QStringLiteral("undoes")).toString();
-			rec.originalKind =
-				opKindFromName(rec.meta.value(QStringLiteral("originalKind")).toString());
-		}
-		else if (r == QStringLiteral("op"))
-		{
-			Entry e;
-			e.id = o.value(QStringLiteral("id")).toInt(-1);
-			e.src = o.value(QStringLiteral("source")).toString();
-			e.dst = o.value(QStringLiteral("destination")).toString();
-			e.bytes = o.value(QStringLiteral("bytes")).toInteger(0);
-			e.parked = o.value(QStringLiteral("parked")).toString();
-			e.srcId = FileIdentity::fromJson(o.value(QStringLiteral("sourceId")).toObject());
-			e.parkedOriginalId =
-				FileIdentity::fromJson(o.value(QStringLiteral("destinationId")).toObject());
-			idToIdx.insert(e.id, rec.ops.size());
-			rec.ops.append(e);
-		}
-		else if (r == QStringLiteral("done"))
-		{
-			const int idx = idToIdx.value(o.value(QStringLiteral("id")).toInt(-1), -1);
-			if (idx >= 0)
-			{
-				rec.ops[idx].completed = true;
-				rec.ops[idx].finalPath = o.value(QStringLiteral("final")).toString();
-				rec.ops[idx].hash = o.value(QStringLiteral("hash")).toString();
-				rec.ops[idx].landedId =
-					FileIdentity::fromJson(o.value(QStringLiteral("destinationId")).toObject());
-				rec.ops[idx].parkedFinal = o.value(QStringLiteral("parkedFinal")).toString();
-			}
-		}
-		else if (r == QStringLiteral("fail"))
-		{
-			const int idx = idToIdx.value(o.value(QStringLiteral("id")).toInt(-1), -1);
-			if (idx >= 0)
-			{
-				rec.ops[idx].failed = true;
-				if (o.value(QStringLiteral("dirty")).toBool(false))
-				{
-					rec.ops[idx].rollbackIncomplete = true;
-					rec.dirty = true;
-				}
-				// A fail that landed AFTER a replaced original had already
-				// gone to the trash carries that address too, so the only
-				// record of a file the engine moved isn't lost with the run.
-				const QString parkedFinal = o.value(QStringLiteral("parkedFinal")).toString();
-				if (!parkedFinal.isEmpty())
-					rec.ops[idx].parkedFinal = parkedFinal;
-			}
-		}
-		else if (r == QStringLiteral("skip"))
-		{
-			const int idx = idToIdx.value(o.value(QStringLiteral("id")).toInt(-1), -1);
-			if (idx >= 0)
-				rec.ops[idx].skipped = true;
-		}
-		else if (r == QStringLiteral("end"))
-		{
-			rec.complete = true;
-			rec.cancelled = o.value(QStringLiteral("cancelled")).toBool(false);
-		}
-		else if (r == QStringLiteral("recovered"))
-		{
-			rec.recovered = true;
-		}
-		else if (r == QStringLiteral("undone"))
-		{
-			rec.undone = true;
-		}
-		else if (r == QStringLiteral("note"))
-		{
-			const QString text = o.value(QStringLiteral("text")).toString();
-			if (!text.isEmpty())
-				rec.notes << text;
-		}
-		else if (r == QStringLiteral("plan"))
-		{
-			rec.hasPlan = true;
-			rec.planDest = o.value(QStringLiteral("destination")).toString();
-			rec.planPreserve = o.value(QStringLiteral("preserve")).toBool(false);
-			rec.plan.clear();
-			const QJsonArray files = o.value(QStringLiteral("files")).toArray();
-			rec.plan.reserve(files.size());
-			for (const QJsonValue &v : files)
-			{
-				const QJsonObject fo = v.toObject();
-				OpItem it;
-				it.src = fo.value(QStringLiteral("source")).toString();
-				it.name = fo.value(QStringLiteral("name")).toString();
-				it.folder = fo.value(QStringLiteral("folder")).toString();
-				// OMF-era: journals written before 2026-09-03 carry no key; their
-				// items were routed by the folder's name (an OMFI MediaFiles
-				// folder preserved to the OMFI root), so a resumed remainder is
-				// read the way its finished part was written. A present key is
-				// the verdict, whatever the folder is called.
-				const QJsonValue omfEra = fo.value(QStringLiteral("omfEra"));
-				it.omfEra = omfEra.isBool() ? omfEra.toBool() : Conventions::isOmfRootName(it.folder);
-				it.bytes = fo.value(QStringLiteral("bytes")).toInteger(0);
-				it.policy = fo.value(QStringLiteral("policy")).toString();
-				it.mobId = fo.value(QStringLiteral("mobId")).toString();
-				it.masterMobId = fo.value(QStringLiteral("masterMobId")).toString();
-				it.clipName = fo.value(QStringLiteral("clipName")).toString();
-				it.renameDst = fo.value(QStringLiteral("destination")).toString();
-				it.groupKey = fo.value(QStringLiteral("group")).toString();
-				if (!it.src.isEmpty())
-					rec.plan.append(it);
-			}
-			rec.volumes.clear();
-			const QJsonArray vols = o.value(QStringLiteral("volumes")).toArray();
-			rec.volumes.reserve(vols.size());
-			for (const QJsonValue &v : vols)
-				rec.volumes.append(VolumeIdentity::fromJson(v.toObject()));
-		}
+		error = "Another file operation or recovery owns the journal. Try again after it finishes.";
+		return {};
 	}
-
-	// The no-backwards-compatibility line: anything that isn't OUR schema
-	// — an old beta's journal, a future build's, or a file so torn its
-	// begin line never parsed — is not ours to interpret. Invisible to
-	// every caller, left untouched on disk.
-	if (rec.schema != kSchema)
-		return std::nullopt;
-
-	return rec;
+	return lock;
 }
-
-QVector<OpJournal::Record> OpJournal::scan(const QString &dir)
+bool OpJournal::append(const QJsonObject &value)
 {
-	const QString base = dir.isEmpty() ? standardJournalDir() : dir;
-	QVector<Record> out;
-
-	QDir d(base);
-	if (!d.exists())
-		return out;
-
-	// Name sort == chronological, since the filename leads with a
-	// zero-padded UTC timestamp.
-	const QStringList files =
-		d.entryList({QStringLiteral("journal-*.jsonl")}, QDir::Files, QDir::Name);
-
-	for (const QString &name : files)
-	{
-		// A file we can't open, that vanished mid-sweep, or that isn't
-		// schema 2 simply isn't part of the set; skip it rather than
-		// fail the whole scan.
-		if (const auto rec = readOne(d.filePath(name)))
-			out.append(*rec);
-	}
-
-	return out;
-}
-
-// MARK: - Undo bookkeeping
-
-std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &dir)
-{
-	const QVector<Record> records = scan(dir);
-	// Newest first: scan is oldest-first by name.
-	for (int i = records.size() - 1; i >= 0; --i)
-	{
-		const Record &rec = records[i];
-		// The full qualification, spelled out:
-		//   complete    — the run concluded on the user's watch. Cancelled
-		//                 counts: stop-and-keep means landed work is real.
-		//   doneCount   — something actually landed; a run of pure
-		//                 skips/failures has nothing to reverse.
-		//   !dirty      — a stranded park makes the record recovery's
-		//                 business, not undo's.
-		//   !undone     — single-level undo, spent is spent.
-		//   !recovered  — the sweep already acted on it.
-		//   kind!=Undo  — no undo-of-undo (no redo), by design.
-		if (rec.complete && !rec.dirty && !rec.undone && !rec.recovered && rec.kindKnown &&
-			rec.kind != OpKind::Undo && rec.doneCount() > 0)
-			return rec;
-	}
-	return std::nullopt;
-}
-
-bool OpJournal::markRecovered(const QString &journalPath, int reversed, int failed)
-{
-	QFile f(journalPath);
-	if (!f.open(QIODevice::Append))
+	if (!m_healthy)
 		return false;
-
-	const QJsonObject o{{QStringLiteral("record"), QStringLiteral("recovered")},
-						{QStringLiteral("reversed"), reversed},
-						{QStringLiteral("failed"), failed},
-						{QStringLiteral("timestamp"), nowIso()}};
-	f.write(QJsonDocument(o).toJson(QJsonDocument::Compact));
-	f.write("\n", 1);
-	syncLine(f);
-	f.close();
+	const auto line = QJsonDocument(value).toJson(QJsonDocument::Compact) + '\n';
+	if (m_file.write(line) != line.size() ||
+		NativeFile::syncFile(m_file, NativeFile::Durability::Platter) != NativeFile::SyncResult::Ok)
+	{
+		m_healthy = false;
+		m_error = "The operation journal could not be saved. Further changes have stopped; files "
+				  "and recovery records were retained.";
+		return false;
+	}
 	return true;
 }
-
-bool OpJournal::markUndone(const QString &journalPath, const QString &by)
+bool OpJournal::create(const OpRequest &request, const QString &directory, QString &error)
 {
-	QFile f(journalPath);
-	if (!f.open(QIODevice::Append))
+	const auto dir = directory.isEmpty() ? standardJournalDir() : canonicalPath(directory);
+	if (!OpFile::makeDirectory(dir, error))
 		return false;
+	m_record.request = request;
+	m_record.started = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
+	m_file.setFileName(dir + "/operation-" + QUuid::createUuid().toString(QUuid::WithoutBraces) +
+					   ".jsonl");
+	if (!m_file.open(QIODevice::WriteOnly | QIODevice::NewOnly))
+	{
+		error = m_file.errorString();
+		return false;
+	}
+	m_record.path = path();
+	m_healthy = true;
+	QJsonArray items, volumes;
+	QSet<QString> seen;
+	auto addVolume = [&](QString p)
+	{
+		while (!QFileInfo::exists(p) && QFileInfo(p).absolutePath() != p)
+			p = QFileInfo(p).absolutePath();
+		const auto v = VolumeIdentity::capture(p);
+		if (seen.contains(v.rootPath))
+			return;
+		seen.insert(v.rootPath);
+		m_record.volumes.append(v);
+		volumes.append(v.toJson());
+	};
+	for (int n = 0; n < request.items.size(); ++n)
+	{
+		Entry e;
+		e.id = n;
+		e.item = request.items[n];
+		e.originalSource = e.item.src;
+		e.source = OpFile::inspect(e.item.src);
+		e.originalVolume = VolumeIdentity::capture(e.item.src);
+		e.originalRelativePath = QDir(e.originalVolume.rootPath).relativeFilePath(e.item.src);
+		m_record.entries.append(e);
+		items.append(e.json());
+		addVolume(e.item.src);
+		if (!e.item.renameDst.isEmpty())
+			addVolume(QFileInfo(e.item.renameDst).absolutePath());
+	}
+	if (!request.destRoot.isEmpty())
+		addVolume(request.destRoot);
+	if (!request.diagnosticTrashRoot.isEmpty())
+		addVolume(request.diagnosticTrashRoot);
+	const bool ok = append({{"record", "begin"},
+							{"schema", schema},
+							{"kind", opKindName(request.kind)},
+							{"dest", request.destRoot},
+							{"preserve", request.preserve},
+							{"started", m_record.started},
+							{"diagnosticTrashRoot", request.diagnosticTrashRoot},
+							{"volumes", volumes},
+							{"items", items}}) &&
+					NativeFile::syncDirectory(dir);
+	if (!ok)
+	{
+		m_healthy = false;
+		error =
+			m_error.isEmpty() ? QStringLiteral("Cannot persist the journal directory.") : m_error;
+	}
+	return ok;
+}
+bool OpJournal::resume(const Record &record, QString &error)
+{
+	if (record.corrupt)
+	{
+		error = "Journal contains an invalid record; it was preserved for inspection.";
+		return false;
+	}
+	m_record = record;
+	m_file.setFileName(record.path);
+	if (!m_file.open(QIODevice::ReadWrite))
+	{
+		error = m_file.errorString();
+		return false;
+	}
+	// Only an incomplete final line may be truncated; malformed complete lines
+	// stop recovery. Previously durable records are never removed.
+	if (record.torn && !m_file.resize(record.validBytes))
+	{
+		error = m_file.errorString();
+		return false;
+	}
+	m_file.seek(m_file.size());
+	m_healthy = true;
+	QJsonArray entries, volumes;
+	for (const auto &e : record.entries)
+		entries.append(e.json());
+	for (const auto &v : record.volumes)
+		volumes.append(v.toJson());
+	if (!append({{"record", "resolved"},
+				 {"entries", entries},
+				 {"volumes", volumes},
+				 {"dest", record.request.destRoot},
+				 {"diagnosticTrashRoot", record.request.diagnosticTrashRoot},
+				 {"folders", QJsonArray::fromStringList(record.changedFolders)}}))
+	{
+		error = m_error;
+		return false;
+	}
+	return true;
+}
+bool OpJournal::save(const Entry &entry)
+{
+	const bool added = entry.id == m_record.entries.size() && entry.step == Step::Planned;
+	if (entry.id < 0 || (!added && entry.id >= m_record.entries.size()))
+	{
+		stop("Invalid journal item; operation stopped.");
+		return false;
+	}
+	if (!append(entry.json()))
+		return false;
+	if (added)
+		m_record.entries.append(entry);
+	else
+		m_record.entries[entry.id] = entry;
+	return true;
+}
+bool OpJournal::touchFolder(const QString &folder)
+{
+	if (m_record.changedFolders.contains(folder))
+		return true;
+	if (!append({{"record", "folder"}, {"path", folder}}))
+		return false;
+	m_record.changedFolders.append(folder);
+	return true;
+}
+bool OpJournal::finish(bool cancelled)
+{
+	return append({{"record", "stop"}, {"cancelled", cancelled}});
+}
 
-	const QJsonObject o{{QStringLiteral("record"), QStringLiteral("undone")},
-						{QStringLiteral("byJournal"), by},
-						{QStringLiteral("timestamp"), nowIso()}};
-	f.write(QJsonDocument(o).toJson(QJsonDocument::Compact));
-	f.write("\n", 1);
-	syncLine(f);
-	f.close();
+std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
+{
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly))
+		return {};
+	Record rec;
+	rec.path = path;
+	bool began = false;
+	while (!file.atEnd())
+	{
+		const QByteArray line = file.readLine();
+		if (!line.endsWith('\n'))
+		{
+			rec.torn = true;
+			break;
+		}
+		QJsonParseError parse{};
+		const auto doc = QJsonDocument::fromJson(line, &parse);
+		if (parse.error != QJsonParseError::NoError || !doc.isObject())
+		{
+			rec.corrupt = true;
+			break;
+		}
+		const auto v = doc.object();
+		const auto type = v["record"].toString();
+		if (!began)
+		{
+			if (type != "begin" || v["schema"].toInt() != schema)
+				return {};
+			const auto kind = opKindFromName(v["kind"].toString());
+			if (!kind || *kind == OpKind::Undo)
+				return {};
+			rec.request.kind = *kind;
+			rec.request.destRoot = v["dest"].toString();
+			rec.request.preserve = v["preserve"].toBool();
+			rec.request.diagnosticTrashRoot = v["diagnosticTrashRoot"].toString();
+			rec.started = v["started"].toString();
+			for (const auto &a : v["volumes"].toArray())
+				rec.volumes.append(VolumeIdentity::fromJson(a.toObject()));
+			for (const auto &a : v["items"].toArray())
+			{
+				const auto entry = Entry::fromJson(a.toObject());
+				if (!entry || entry->id != rec.entries.size())
+				{
+					rec.corrupt = true;
+					break;
+				}
+				rec.entries.append(*entry);
+				rec.request.items.append(entry->item);
+			}
+			began = true;
+		}
+		else if (type == "resolved")
+		{
+			QVector<Entry> entries;
+			for (const auto &a : v["entries"].toArray())
+			{
+				const auto entry = Entry::fromJson(a.toObject());
+				if (!entry || entry->id != entries.size())
+				{
+					rec.corrupt = true;
+					break;
+				}
+				entries.append(*entry);
+			}
+			if (entries.size() != rec.entries.size())
+			{
+				rec.corrupt = true;
+				break;
+			}
+			rec.entries = entries;
+			rec.volumes.clear();
+			for (const auto &a : v["volumes"].toArray())
+				rec.volumes.append(VolumeIdentity::fromJson(a.toObject()));
+			rec.request.destRoot = v["dest"].toString();
+			rec.request.diagnosticTrashRoot = v["diagnosticTrashRoot"].toString();
+			rec.changedFolders.clear();
+			for (const auto &a : v["folders"].toArray())
+				rec.changedFolders.append(a.toString());
+		}
+		else if (type == "item")
+		{
+			const auto entry = Entry::fromJson(v);
+			if (!entry || entry->id > rec.entries.size() ||
+				(entry->id == rec.entries.size() && entry->step != Step::Planned))
+			{
+				rec.corrupt = true;
+				break;
+			}
+			if (entry->id == rec.entries.size())
+				rec.entries.append(*entry);
+			else
+				rec.entries[entry->id] = *entry;
+		}
+		else if (type == "folder")
+			rec.changedFolders.append(v["path"].toString());
+		else if (type == "stop")
+			rec.stopped = true;
+		else if (type == "dismiss")
+			rec.dismissed = true;
+		else
+		{
+			rec.corrupt = true;
+			break;
+		}
+		rec.validBytes = file.pos();
+	}
+	return began ? std::optional<Record>(rec) : std::nullopt;
+}
+QVector<OpJournal::Record> OpJournal::scan(const QString &directory)
+{
+	QDir dir(directory.isEmpty() ? standardJournalDir() : directory);
+	QVector<Record> out;
+	for (const auto &name : dir.entryList({"operation-*.jsonl"}, QDir::Files, QDir::Name))
+		if (auto r = readOne(dir.filePath(name)))
+			out.append(*r);
+	std::sort(out.begin(), out.end(), [](const Record &a, const Record &b)
+			  { return a.started == b.started ? a.path < b.path : a.started < b.started; });
+	return out;
+}
+QStringList OpJournal::unreadableRecords(const QString &directory)
+{
+	QDir dir(directory.isEmpty() ? standardJournalDir() : directory);
+	QStringList out;
+	for (const auto &name : dir.entryList({"*.jsonl"}, QDir::Files, QDir::Name))
+		if (!name.startsWith("operation-") || !readOne(dir.filePath(name)))
+			out.append(dir.filePath(name));
+	return out;
+}
+bool OpJournal::dismiss(const QString &path, QString &error)
+{
+	auto lock = acquire(QFileInfo(path).absolutePath(), error);
+	if (!lock)
+		return false;
+	auto rec = readOne(path);
+	if (!rec)
+	{
+		error = "Cannot read recovery record.";
+		return false;
+	}
+	for (const auto &e : rec->entries)
+		if (!e.artifacts.isEmpty() || e.step == Step::NeedsAttention ||
+			e.step == Step::Publishing || e.step == Step::Relocating)
+		{
+			error = "This operation has unresolved files. Its recovery record must be retained.";
+			return false;
+		}
+	OpJournal j;
+	if (!j.resume(*rec, error))
+		return false;
+	return j.append({{"record", "dismiss"}});
+}
+bool OpJournal::resolve(Record &rec, QString &error, const QVector<VolumeIdentity> &overrideVolumes)
+{
+	QVector<VolumeIdentity> mounted = overrideVolumes;
+	if (mounted.isEmpty())
+		for (const auto &v : QStorageInfo::mountedVolumes())
+			if (v.isValid() && v.isReady())
+				mounted.append(VolumeIdentity::capture(v.rootPath()));
+	QHash<QString, QString> roots;
+	for (const auto &old : rec.volumes)
+	{
+		QString found;
+		for (const auto &now : mounted)
+		{
+			const bool strong = old.confidence == VolumeIdentity::Confidence::High &&
+								now.confidence == VolumeIdentity::Confidence::High &&
+								old.matches(now);
+			if (strong)
+			{
+				if (!found.isEmpty() && found != now.rootPath)
+				{
+					error = "The recorded volume has more than one possible mount; files were "
+							"retained.";
+					return false;
+				}
+				found = now.rootPath;
+			}
+		}
+		if (found.isEmpty())
+		{
+			error = QStringLiteral("Cannot establish the recorded volume at %1. Reconnect the "
+								   "original storage; recovery records are retained.")
+						.arg(old.rootPath);
+			return false;
+		}
+		roots.insert(old.rootPath, found);
+	}
+	auto rewrite = [&](QString p)
+	{
+		QString owner;
+		for (auto it = roots.cbegin(); it != roots.cend(); ++it)
+			if (inside(p, it.key()) && it.key().size() > owner.size())
+				owner = it.key();
+		return owner.isEmpty() ? p : QDir(roots[owner]).filePath(QDir(owner).relativeFilePath(p));
+	};
+	rec.request.destRoot = rewrite(rec.request.destRoot);
+	rec.request.diagnosticTrashRoot = rewrite(rec.request.diagnosticTrashRoot);
+	for (auto &e : rec.entries)
+	{
+		e.item.src = rewrite(e.item.src);
+		e.item.renameDst = rewrite(e.item.renameDst);
+		e.dst = rewrite(e.dst);
+		e.temp = rewrite(e.temp);
+		for (auto &p : e.artifacts)
+			p = rewrite(p);
+		// A positively resolved volume can change its OS device number after
+		// remount. Rebind only when file ID, length and mtime still agree.
+		auto rebind = [](OpStamp &old, const QString &path)
+		{
+			const auto now = OpFile::inspect(path);
+			if (old.valid() && now.valid() && old.fileId == now.fileId && old.size == now.size &&
+				old.modified == now.modified)
+				old.volumeId = now.volumeId;
+		};
+		rebind(e.source, e.item.src);
+		rebind(e.landed, OpFile::occupied(e.temp) ? e.temp : e.dst);
+	}
+	for (auto &folder : rec.changedFolders)
+		folder = rewrite(folder);
+	for (auto &v : rec.volumes)
+		v.rootPath = roots.value(v.rootPath, v.rootPath);
 	return true;
 }

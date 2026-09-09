@@ -1,12 +1,10 @@
 #include "opmanager.h"
 
-#include "opundo.h"
-
 // MARK: - Construction
 
-OpManager::OpManager(QObject *parent)
-	: QObject(parent)
+OpManager::OpManager(QObject *parent) : QObject(parent)
 {
+	qRegisterMetaType<OpResult>();
 }
 
 // MARK: - OpSink (re-emit as signals)
@@ -14,12 +12,6 @@ OpManager::OpManager(QObject *parent)
 void OpManager::progress(const QString &name, int current, int total, double pct)
 {
 	emit operationProgress(name, current, total, pct);
-}
-
-void OpManager::itemDone(const QString &name, const QString &path, bool ok, const QString &error,
-						 bool skipped)
-{
-	emit operationItemDone(name, path, ok, error, skipped);
 }
 
 void OpManager::log(QtMsgType level, const QString &message)
@@ -47,6 +39,7 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 		it.folder = mf.mxfFolder;
 		it.omfEra = mf.omfEra; // OMF-era: travels with the item, and through the journal
 		it.bytes = mf.sizeBytes;
+		it.modifiedMs = mf.modified.isValid() ? mf.modified.toMSecsSinceEpoch() : -1;
 		if (const auto p = policies.constFind(mf.filePath); p != policies.constEnd())
 			it.policy = conflictPolicyName(p.value());
 		// The scan's Avid identity claims. The runner cross-checks the
@@ -76,17 +69,15 @@ void OpManager::execute(OpRequest request)
 	startRun(std::move(request));
 }
 
-void OpManager::executeUndo(const QString &journalPath)
+void OpManager::executeUndo(const QString &)
 {
-	// Same worker discipline as every run: one BackgroundJob, cancel
-	// token polled inside; exactly one operationFinished at the end.
-	m_job.start(
-		[this, journalPath]
-		{
-			OpUndo undo(*this, m_job.cancelFlag());
-			const OpRunner::Totals totals = undo.run(journalPath);
-			emit operationFinished(totals.succeeded, totals.failed);
-		});
+	emit operationLog(QtWarningMsg, QStringLiteral("Undo remains gated for the new engine."));
+	emit operationFinished(0, 1);
+}
+
+void OpManager::result(const OpResult &value)
+{
+	emit operationResult(value);
 }
 
 // MARK: - The worker
@@ -101,6 +92,7 @@ void OpManager::startRun(OpRequest request)
 			const OpRunner::Totals totals = runner.run(request);
 			// Exactly once, on every path out of run() — this is what
 			// un-busies the UI, so nothing may return without it.
-			emit operationFinished(totals.succeeded, totals.failed);
+			emit operationFinished(totals.succeeded,
+								   totals.failed + totals.needsAttention + totals.retained);
 		});
 }

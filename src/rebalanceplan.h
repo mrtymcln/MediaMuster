@@ -72,6 +72,7 @@ struct RenameOp
 	FolderName dest;
 	QString masterMobId; ///< Empty for files with no relatives group.
 	qint64 sizeBytes = 0;
+    qint64 modifiedMs = -1;
 };
 
 // MARK: - FolderState

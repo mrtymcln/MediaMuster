@@ -27,7 +27,7 @@ class QShowEvent;
 /// structure, and resolve per-file conflicts before the op happens.
 ///
 /// Preview tree shows source + destination per file. Conflicting
-/// rows gain a per-row policy combo (Keep Both / Skip / Replace).
+/// rows gain a per-row policy combo (Keep Both / Skip).
 /// A global combo applies the same policy to every conflicting row;
 /// syncing goes both ways via syncGlobalFromPerFile.
 class ManageMediaDialog : public QDialog

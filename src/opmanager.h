@@ -12,57 +12,28 @@
 #include <functional>
 #include <optional>
 
-// MARK: - OpManager
-//
-// The engine's front door — the only part of the file-operations engine
-// that is a QObject. MainWindow (and the Rebalance adapter) talk to
-// this; everything behind it (OpRunner, OpCopier, OpJournal) is plain
-// C++ driven synchronously on one worker thread.
-//
-// The signal and entry-point contract is MediaManager's, kept on
-// purpose so the swap is a re-point, not a rewrite:
-//
-//   - entry points take the selection BY VALUE and return immediately;
-//     the caller raises the progress sheet itself.
-//   - operationFinished fires EXACTLY once per run, including cancel —
-//     it is what un-busies the whole UI.
-//   - operationItemDone carries the SOURCE path (row pruning keys on
-//     it), and a skip is success=true + skipped=true, or Move/Delete
-//     would prune rows for files still on disk.
-//   - cancel is stop-and-keep: landed work stays, the summary says
-//     cancelled, and the finished journal becomes the undo candidate.
-/// Privately an OpSink: the runner reports through the interface, and
-/// the overrides below simply re-emit as this object's signals (only a
-/// member can emit its own protected signals). The overrides run on the
-/// worker thread; every connection into the GUI is queued, so that is
-/// safe by construction.
+// Qt facade for the shared engine. Requests run on one owned worker; results
+// reach the GUI through queued signals. The runner also holds the journal lock
+// so another facade or recovery pass cannot change files concurrently.
 class OpManager : public QObject, private OpSink
 {
 	Q_OBJECT
-public:
+  public:
 	explicit OpManager(QObject *parent = nullptr);
 	~OpManager() override = default;
 
 	// MARK: - Job entry points
 
-	/// THE entry point: run a fully built request. MainWindow's dispatch
-	/// builds Copy/Move/Delete requests from the selection (via
-	/// itemsFromMediaFiles), the resume flow dispatches the journal's own
-	/// plan items, and the Rebalance adapter dispatches Rename requests.
-	/// (Per-kind convenience wrappers used to sit beside this; they were
-	/// dead code once MainWindow switched to request-building, and were
-	/// removed 2026-08-31. Delete is never a hard delete either way —
-	/// see TrashRouter.)
+	/// Dispatch Copy, Move, Trash or Rebalance, preserving the selected items.
 	void execute(OpRequest request);
 
-	/// Edit ▸ Undo: reverse the completed run recorded at `journalPath`
-	/// (found via OpJournal::latestUndoable). Fire-and-forget like every
-	/// other entry point; progress/itemDone/operationFinished flow
-	/// through the same signals, and the undo writes its own journal so
-	/// a crash mid-undo is recovered at next launch.
+	/// Reserved entry point. Undo remains disabled until implemented for this journal.
 	void executeUndo(const QString &journalPath);
 
-	void cancel() { m_job.cancel(); }
+	void cancel()
+	{
+		m_job.cancel();
+	}
 
 	// MARK: - Path helpers (public: ManageMediaDialog previews with
 	// them, and the tests pin them)
@@ -87,7 +58,8 @@ public:
 	/// action. Set before dispatching; not thread-safe to change mid-run.
 	std::function<void(const QString &folderPath)> renameFolderTouched;
 
-signals:
+  signals:
+	void operationResult(const OpResult &result);
 
 	// MARK: - Progress signals (consumed via QueuedConnection)
 
@@ -95,30 +67,22 @@ signals:
 	/// (pure rename) and Delete have no per-byte progress and emit 0.
 	void operationProgress(const QString &fileName, int current, int total, double pct);
 
-	/// `skipped=true` means policy was Skip; success is also true (no
-	/// error, just opted out). filePath enables O(1) row pruning by
-	/// consumers.
-	void operationItemDone(const QString &fileName, const QString &filePath, bool success,
-						   const QString &error, bool skipped = false);
-
 	/// Exactly once per run, including cancel.
 	void operationFinished(int succeeded, int failed);
 
 	void operationLog(QtMsgType level, const QString &message);
 
-	/// Files landed in a per-volume MediaMuster Trash this run (deletes
-	/// on volumes without a usable OS trash, and replaced originals).
+	/// Aggregated locations used by Delete in this run.
 	void mediaMusterTrashUsed(const QString &trashFolderPath, int fileCount);
 
-private:
+  private:
 	// MARK: - OpSink (the runner's reporting channel)
 
 	void progress(const QString &name, int current, int total, double pct) override;
-	void itemDone(const QString &name, const QString &path, bool ok, const QString &error,
-				  bool skipped) override;
 	void log(QtMsgType level, const QString &message) override;
 	void trashUsed(const QString &folder, int count) override;
 
+	void result(const OpResult &value) override;
 	void startRun(OpRequest request);
 
 	/// Must stay the LAST member: BackgroundJob's destructor joins the

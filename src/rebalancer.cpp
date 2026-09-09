@@ -1,4 +1,6 @@
 #include "rebalancer.h"
+#include "mobid.h"
+#include "pathkey.h"
 #include "conventions.h"
 #include "formatutil.h"
 #include "progressthrottle.h"
@@ -38,14 +40,10 @@ Rebalancer::Rebalancer(QObject *parent)
 	connect(m_engine, &OpManager::operationLog, this,
 			[this](QtMsgType level, const QString &message)
 			{ emit log(level, message); });
-	connect(m_engine, &OpManager::operationItemDone, this,
-			[this](const QString &name, const QString &, bool ok, const QString &error, bool)
-			{
-				// Successes stay quiet (the progress line already moves);
-				// every refusal or failure is worth a console line.
-				if (!ok)
-					emit log(QtWarningMsg, QStringLiteral("%1: %2").arg(name, error));
-			});
+    connect(m_engine, &OpManager::operationResult, this, [this](const OpResult &result) {
+        if(result.state!=OpResult::State::Completed)
+            emit log(QtWarningMsg, result.name+": "+result.message);
+    });
 	connect(m_engine, &OpManager::operationFinished, this,
 			[this](int succeeded, int failed)
 			{
@@ -119,65 +117,6 @@ namespace
 		return Conventions::countsAsEssenceName(fileName);
 	}
 
-	/// What a pre-flight check can conclude about a donor folder.
-	enum class FolderCheck
-	{
-		Ok,		   ///< A scratch file was created and renamed here.
-		Refused,   ///< The folder itself won't have it: gone, or read-only.
-		Unverified ///< Couldn't create a scratch file for some other reason.
-	};
-
-	/// Can this folder accept the renames a rebalance is about to make?
-	/// Proved with a scratch file of our own — create it, rename it, delete
-	/// it — the way the rest of the app tests a location (compare
-	/// OpJournal::standardDirWritable).
-	///
-	/// This check used to rename one of the USER'S clips out and straight
-	/// back. That tested the same folder permission, but if the app died in
-	/// the moment between the two renames it left a real clip under a name
-	/// Avid cannot see — a vanished clip, and a whole write-ahead journal
-	/// plus a recovery sweep existed only to put it back. No pre-flight
-	/// result is worth that.
-	///
-	/// Creating a file needs free space; renaming one does not. So a
-	/// create failure that ISN'T a permissions problem returns Unverified
-	/// rather than Refused: a workspace with no room left is exactly when a
-	/// rebalance is worth running, and every move reports itself if it
-	/// fails. A clip Avid holds open is likewise not caught here — that one
-	/// fails its own rename in the move loop, where it is counted and
-	/// logged.
-	FolderCheck checkFolderRenames(const QString &folderPath, QString &detail)
-	{
-		const QFileInfo info(folderPath);
-		if (!info.isDir())
-		{
-			detail = QStringLiteral("the folder is no longer there");
-			return FolderCheck::Refused;
-		}
-
-		const QString scratch = folderPath + QStringLiteral("/.mm_preflight_") +
-								QUuid::createUuid().toString(QUuid::WithoutBraces).left(8);
-		{
-			QFile f(scratch);
-			if (!f.open(QIODevice::WriteOnly))
-			{
-				detail = f.errorString();
-				return info.isWritable() ? FolderCheck::Unverified : FolderCheck::Refused;
-			}
-			f.write("x", 1);
-		}
-
-		const QString renamed = scratch + QStringLiteral(".tmp");
-		const bool ok = QFile::rename(scratch, renamed);
-		QFile::remove(ok ? renamed : scratch);
-		if (!ok)
-		{
-			detail = QStringLiteral("a test rename was refused");
-			return FolderCheck::Refused;
-		}
-		return FolderCheck::Ok;
-	}
-
 	// Prefix for synthetic relatives keys assigned to loose files
 	// (no masterMobId). Lets us detect 'this was a loose file'
 	// later via a cheap startsWith check.
@@ -189,7 +128,12 @@ namespace
 	// executor-side overloads delegate here so the format can't drift.
 	QString relativesKey(const QString &masterMobId, const QString &fallbackPath)
 	{
-		return masterMobId.isEmpty() ? kLoneKeyPrefix + fallbackPath : masterMobId;
+		if (masterMobId.isEmpty() || MobId::isAllZero(masterMobId) || MobId::toPmrForm(masterMobId).isEmpty())
+            return kLoneKeyPrefix + fallbackPath;
+        const QFileInfo parent(QFileInfo(fallbackPath).absolutePath());
+        const auto folder = Rebalancer::parseFolderName(parent.fileName());
+        const QString prefix = folder ? folder->prefix : QString();
+        return parent.absolutePath() + QChar(0x1f) + prefix + QChar(0x1f) + masterMobId;
 	}
 
 	QString relativesKey(const MediaFile &mf)
@@ -277,6 +221,8 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		const auto parsed = parseFolderName(mf.mxfFolder);
 		if (!parsed)
 			continue;
+        if (PathKey::normalise(QFileInfo(mf.filePath).absolutePath()) !=
+            PathKey::normalise(QDir(mxfRoot).filePath(mf.mxfFolder))) continue;
 		realBytes[*parsed] += mf.sizeBytes;
 		bucketed[relativesKey(mf)].append({&mf, *parsed});
 	}
@@ -305,7 +251,7 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 	{
 		Group g;
 		g.members = it.value();
-		g.masterMobId = it.key().startsWith(kLoneKeyPrefix) ? QString() : it.key();
+		g.masterMobId = it.key().startsWith(kLoneKeyPrefix) ? QString() : g.members.first().file->masterMobId;
 
 		QHash<QString, int> prefixCount;
 		for (const auto &m : g.members)
@@ -352,7 +298,9 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 					  return a.homePrefix < b.homePrefix;
 				  if (a.homeN != b.homeN)
 					  return a.homeN < b.homeN;
-				  return a.members.size() > b.members.size();
+                  if (a.members.size() != b.members.size()) return a.members.size() > b.members.size();
+                  if (a.masterMobId != b.masterMobId) return a.masterMobId < b.masterMobId;
+                  return a.members.first().file->filePath < b.members.first().file->filePath;
 			  });
 
 	// MARK: Pack groups into folders
@@ -400,7 +348,8 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 	{
 		if (m.folder == dest)
 			return;
-		plan.ops.append({m.file->filePath, dest, m.file->masterMobId, m.file->sizeBytes});
+		plan.ops.append({m.file->filePath, dest, m.file->masterMobId, m.file->sizeBytes,
+                         m.file->modified.isValid() ? m.file->modified.toMSecsSinceEpoch() : -1});
 		projected[m.folder] -= 1;
 		projected[dest] += 1;
 	};
@@ -411,10 +360,18 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 		const FolderName home{prefix, g.homeN};
 		const int size = static_cast<int>(g.members.size());
 
-		// Edge case: relatives group >= Conventions::kFolderTarget. Deterministic split
+		// Oversized relatives groups need multiple folders. Keep a completed packing stable.
 		// across new folders.
-		if (size >= Conventions::kFolderTarget)
-		{
+		if (size > Conventions::kFolderTarget)
+        {
+            QSet<FolderName> occupiedFolders;
+            bool withinBudget = true;
+            for (const auto &member : g.members) {
+                occupiedFolders.insert(member.folder);
+                withinBudget = withinBudget && projected.value(member.folder) <= Conventions::kFolderTarget;
+            }
+            const int minimumFolders = (size + Conventions::kFolderTarget - 1) / Conventions::kFolderTarget;
+            if (withinBudget && occupiedFolders.size() == minimumFolders) continue;
 			int idx = 0;
 			while (idx < size)
 			{
@@ -519,103 +476,60 @@ RebalancePlan Rebalancer::computePlan(const QString &mxfRoot, const QString &vol
 
 // MARK: - Execution
 
+OpRequest Rebalancer::requestForPlan(const RebalancePlan &plan)
+{
+	QHash<QString, QVector<int>> opsByComp;
+	QStringList compOrder;
+	for (int i = 0; i < plan.ops.size(); ++i)
+	{
+		const QString key = relativesKey(plan.ops[i]);
+		if (!opsByComp.contains(key))
+			compOrder.append(key);
+		opsByComp[key].append(i);
+	}
+
+	OpRequest req;
+	req.kind = OpKind::Rename;
+	req.items.reserve(plan.ops.size());
+	for (const QString &compKey : compOrder)
+	{
+		for (int idx : opsByComp[compKey])
+		{
+			const RenameOp &op = plan.ops[idx];
+			const QString fileName = QFileInfo(op.srcPath).fileName();
+			OpItem it;
+			it.src = op.srcPath;
+			it.name = fileName;
+			it.bytes = op.sizeBytes;
+                    it.modifiedMs = op.modifiedMs;
+			it.masterMobId = op.masterMobId;
+			it.renameDst = plan.mxfRoot + QLatin1Char('/') + op.dest.display() +
+						   QLatin1Char('/') + fileName;
+			it.groupKey = compKey;
+			req.items.append(it);
+		}
+	}
+	return req;
+}
+
 void Rebalancer::executeAsync(const RebalancePlan &plan)
 {
 	m_cancelRequested.store(false, std::memory_order_release);
 	m_foldersReset.store(0, std::memory_order_relaxed);
 
-	// Phase 1, on our own short-lived worker (a dead network mount must
-	// not freeze the GUI): the donor pre-flight and folder creation,
-	// unchanged from v1, then the plan becomes an engine request.
+	// Build the grouped request off the GUI thread. The engine owns every
+	// filesystem change, including folder creation and database retirement.
 	m_preflight.start(
 		[this, plan]
 		{
-			// MARK: Pre-flight — can each donor folder accept renames?
-			//
-			// A folder that is gone or read-only aborts the run before
-			// anything moves, with a scratch file paying for the answer
-			// rather than a clip. A single clip another app holds open
-			// isn't caught here; it fails its own rename in the engine,
-			// where it is counted and logged.
-			{
-				QSet<FolderName> donors;
-				for (const RenameOp &op : plan.ops)
-					if (const auto srcFid = srcFolderOf(op.srcPath))
-						donors.insert(*srcFid);
-
-				for (const FolderName &fid : donors)
-				{
-					QString detail;
-					const FolderCheck check = checkFolderRenames(
-						plan.mxfRoot + QLatin1Char('/') + fid.display(), detail);
-					if (check == FolderCheck::Ok)
-						continue;
-					if (check == FolderCheck::Unverified)
-					{
-						emit log(QtWarningMsg,
-								 tr("Couldn't pre-check folder '%1' (%2). Carrying on: moving "
-									"a file needs no free space, and any file that can't move "
-									"is reported.")
-									 .arg(fid.display(), detail));
-						continue;
-					}
-					emit aborted(tr("Can't move files out of folder '%1' — %2. If Avid Media "
-									"Composer (or another app) is using these files, quit it "
-									"and try again.")
-									 .arg(fid.display(), detail));
-					return; // no moves performed; no finished will follow
-				}
-			}
-
-			// MARK: Pre-create new folders
-			//
-			// Per-move failures are handled by the engine; if one of
-			// these mkpaths fails the corresponding renames fail
-			// naturally and log themselves.
-			for (const FolderName &fid : plan.newFolders)
-			{
-				const QString path = plan.mxfRoot + QLatin1Char('/') + fid.display();
-				if (!QDir().mkpath(path))
-					emit log(QtCriticalMsg,
-							 QStringLiteral("Failed to create folder: %1").arg(path));
-			}
-
 			// MARK: Build the engine request, group-contiguously
 			//
 			// Relatives (one master clip's video + audio essence) are
 			// contiguous in the item order and share a groupKey, and the
 			// engine's Rename machine only honours cancel at group
-			// boundaries — so relatives stay atomic, exactly as before.
-			QHash<QString, QVector<int>> opsByComp;
-			QStringList compOrder;
-			for (int i = 0; i < plan.ops.size(); ++i)
-			{
-				const QString key = relativesKey(plan.ops[i]);
-				if (!opsByComp.contains(key))
-					compOrder.append(key);
-				opsByComp[key].append(i);
-			}
-
-			OpRequest req;
-			req.kind = OpKind::Rename;
-			req.items.reserve(plan.ops.size());
-			for (const QString &compKey : compOrder)
-			{
-				for (int idx : opsByComp[compKey])
-				{
-					const RenameOp &op = plan.ops[idx];
-					const QString fileName = QFileInfo(op.srcPath).fileName();
-					OpItem it;
-					it.src = op.srcPath;
-					it.name = fileName;
-					it.bytes = op.sizeBytes;
-					it.masterMobId = op.masterMobId;
-					it.renameDst = plan.mxfRoot + QLatin1Char('/') + op.dest.display() +
-								   QLatin1Char('/') + fileName;
-					it.groupKey = compKey;
-					req.items.append(it);
-				}
-			}
+			// boundaries — so cancellation does not split a group. I/O failure stops
+			// the run with every completed move recorded for recovery.
+			OpRequest req = requestForPlan(plan);
 
 			// A cancel that raced the pre-flight: stop before dispatch.
 			if (m_preflight.isCancelled())

@@ -84,6 +84,19 @@ endif()
 configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 
 ### Sources ###
+# Store the supplied MXFs losslessly compressed; the app ships ordinary files,
+# so diagnostics use the same native file handles as production operations.
+set(_mm_sample_dir "${CMAKE_CURRENT_BINARY_DIR}/file-operation-samples")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/file_operations/relatives.zip")
+file(ARCHIVE_EXTRACT
+    INPUT "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/file_operations/relatives.zip"
+    DESTINATION "${_mm_sample_dir}")
+set(MEDIAMUSTER_DIAGNOSTIC_SAMPLES
+    "${_mm_sample_dir}/A01.E696869F_1DBEC1DBECCDFA.mxf"
+    "${_mm_sample_dir}/A02.E69686A0_1DBEC1DBECCE8A.mxf"
+    "${_mm_sample_dir}/V01.E696869E_1DBEC1DBECCC4V.mxf")
+
 set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
@@ -109,11 +122,12 @@ set(SOURCES
     src/mediacsv.cpp
     src/fileidentity.cpp
     src/nativefile.cpp
+    src/opfile.cpp
+    src/opdiagnostics.cpp
+    src/fileoperationtestdialog.cpp
     src/opjournal.cpp
     src/opcopier.cpp
     src/oprunner.cpp
-    src/opundo.cpp
-    src/trashrouter.cpp
     src/opmanager.cpp
     src/oprescue.cpp
     src/avbparser.cpp
@@ -169,6 +183,20 @@ elseif(WIN32)
 endif()
 
 ### Target settings ###
+# Asset-only changes must also rerun the post-build signing/packaging commands.
+set_property(TARGET MediaMuster APPEND PROPERTY LINK_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/file_operations/relatives.zip")
+if(APPLE)
+    set_source_files_properties(${MEDIAMUSTER_DIAGNOSTIC_SAMPLES} PROPERTIES
+        MACOSX_PACKAGE_LOCATION "Resources/file-operation-samples")
+    target_sources(MediaMuster PRIVATE ${MEDIAMUSTER_DIAGNOSTIC_SAMPLES})
+else()
+    add_custom_command(TARGET MediaMuster POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${_mm_sample_dir}"
+            "$<TARGET_FILE_DIR:MediaMuster>/file-operation-samples"
+        VERBATIM)
+endif()
+
 target_include_directories(MediaMuster PRIVATE
     src
     ${CMAKE_CURRENT_BINARY_DIR}

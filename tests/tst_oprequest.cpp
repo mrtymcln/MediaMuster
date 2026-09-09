@@ -45,8 +45,7 @@ void TestOpRequest::kind_unknown_name_is_refused()
 
 void TestOpRequest::policy_names_round_trip()
 {
-	const ConflictPolicy policies[] = {ConflictPolicy::KeepBoth, ConflictPolicy::Skip,
-									   ConflictPolicy::Replace};
+	const ConflictPolicy policies[] = {ConflictPolicy::KeepBoth, ConflictPolicy::Skip};
 	for (const ConflictPolicy p : policies)
 	{
 		const auto back = conflictPolicyFromName(conflictPolicyName(p));
@@ -55,7 +54,7 @@ void TestOpRequest::policy_names_round_trip()
 	}
 	QCOMPARE(conflictPolicyName(ConflictPolicy::KeepBoth), QStringLiteral("keepboth"));
 	QCOMPARE(conflictPolicyName(ConflictPolicy::Skip), QStringLiteral("skip"));
-	QCOMPARE(conflictPolicyName(ConflictPolicy::Replace), QStringLiteral("replace"));
+	QVERIFY(!conflictPolicyFromName(QStringLiteral("replace")));
 }
 
 void TestOpRequest::policy_unknown_name_is_refused()

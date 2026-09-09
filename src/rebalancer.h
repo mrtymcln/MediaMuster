@@ -15,42 +15,12 @@
 
 // MARK: - Rebalancer
 
-/// Plans and executes redistribution of MXF files between
-/// `Avid MediaFiles/MXF/<n>` folders. Avid recommends keeping each
-/// folder under 5000 files; past that Media Composer slows down.
-///
-/// Split in two halves:
-///
-///   1. computePlan: synchronous pure function over indexed files
-///      plus current folder state on disk. Produces a RebalancePlan
-///      describing every move, every new folder, every warning.
-///      Nothing touched on disk yet.
-///
-///   2. executeAsync: runs the approved plan through the file-
-///      operations engine. It opens with the scratch-file rename check
-///      per donor folder (on its own short-lived worker), so a folder
-///      that is gone or read-only aborts the run before anything moves;
-///      then the plan becomes an OpRequest of Rename items and the
-///      engine does the rest — which is the v2 upgrade: every rename is
-///      now WRITE-AHEAD JOURNALED, identity-checked, recoverable after a
-///      crash from the next launch's sweep, and undoable from Edit ▸
-///      Undo. (v1 ran bare QFile::rename with none of that — the one
-///      feature outside the safety net.)
-///
-///      Each folder's stale .mdb / .pmr is still deleted the moment its
-///      contents change, via the engine's folder-touched hook, so Avid
-///      rebuilds them.
-///
-/// Relatives stay together. Bucket by masterMobId, order the request
-/// group-contiguously, and the engine's Rename machine only honours
-/// cancel at group boundaries — never mid-bucket.
-///
-/// This adapter owns a PRIVATE OpManager rather than sharing
-/// MainWindow's: the main window's signal handlers (row pruning, busy
-/// state, the modal progress sheet) are wired to ITS engine instance
-/// and must not fire for a rebalance, whose dialog has its own progress
-/// UI. The modal dialogs remain what prevents two operations running at
-/// once, exactly as before.
+/// Plans MXF redistribution below 5,000 files per Avid folder and submits it
+/// to the shared engine. Relatives are scoped by media root, workstation and
+/// valid MasterMobId. Cancellation is honoured between groups; an I/O failure
+/// stops the run with completed and pending moves recorded for recovery.
+/// A private OpManager keeps the Rebalance dialog's progress separate from
+/// MainWindow's operations. The shared journal lock serializes engine runs.
 class Rebalancer : public QObject
 {
 	Q_OBJECT
@@ -71,6 +41,9 @@ public:
 	/// isn't a conforming Avid folder name.
 	static std::optional<FolderName> srcFolderOf(const QString &srcPath);
 
+	/// Shared plan-to-engine adapter, also exercised by the disposable diagnostics.
+	static OpRequest requestForPlan(const RebalancePlan &plan);
+
 	// MARK: - Execution
 
 	/// Only one execute is in flight per instance; a second call
@@ -78,8 +51,7 @@ public:
 	void executeAsync(const RebalancePlan &plan);
 
 	/// Checked at relatives-group boundaries so relatives stay
-	/// together; never leave half a master clip's essence split
-	/// across folders.
+	/// together on cancellation. Failures may require recovery.
 	void cancel()
 	{
 		m_cancelRequested.store(true, std::memory_order_release);
@@ -115,8 +87,7 @@ private:
 
 	std::atomic<bool> m_cancelRequested{false};
 
-	/// Pre-flight only: the scratch-file donor checks and the request
-	/// build run here so a dead network mount can't freeze the GUI. The
+	/// Request preparation runs here so it cannot freeze the GUI. The
 	/// renames themselves run on the engine's own worker.
 	BackgroundJob m_preflight{this};
 };

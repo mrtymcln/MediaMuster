@@ -230,19 +230,13 @@ namespace Conventions
 	// MARK: - Names MediaMuster writes to disk
 	// ═══════════════════════════════════════════════════════════════
 
-	/// [OURS — SAFE TO CHANGE] Copy and Move park an existing destination
-	/// aside by appending one of these plus a uuid. Used by the ops engine
-	/// (the parking, in oprunner.cpp) and by the scanner, which must
-	/// recognise a stranded park as temp-renamed media rather than hiding
-	/// it. Changing these leaves any park already on disk unrecognised.
+    /// Legacy replacement names remain recognised by the scanner so stranded
+    /// files from earlier versions are visible. The new engine never writes them.
 	inline constexpr QLatin1String kCopyReplaceTag(".__copyreplace_");
 	inline constexpr QLatin1String kMoveReplaceTag(".__movereplace_");
 
-	/// [OURS — SAFE TO CHANGE] Where Delete puts files on a volume whose
-	/// OS trash can't be used or won't say where a file landed (network
-	/// shares): a folder at the volume root. The delete path (TrashRouter)
-	/// and anything that has to recognise the folder afterwards share this
-	/// one spelling.
+    /// Delete's retained-file folder, beside the Avid media tree on the same
+    /// filesystem. All locations and original paths are journalled.
 	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
 
 	/// The name with a trailing MediaMuster temp suffix removed, so

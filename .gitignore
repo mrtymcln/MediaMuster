@@ -77,6 +77,10 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 build/
+# Supplied originals are preserved losslessly in fixtures/file_operations/relatives.zip.
+/tests/A01.E696869F_1DBEC1DBECCDFA.mxf
+/tests/A02.E69686A0_1DBEC1DBECCE8A.mxf
+/tests/V01.E696869E_1DBEC1DBECCC4V.mxf
 *_autogen/
 .claude
 .vscode

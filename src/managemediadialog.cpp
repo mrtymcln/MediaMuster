@@ -27,7 +27,7 @@
 
 // MARK: - Row repaint helper
 
-// 'Keep Both' renders the renamed \"name (2)\" destination; 'Replace'/'Skip'
+// 'Keep Both' renders the renamed \"name (2)\" destination; 'Skip'
 // keep the original path, painted red.
 //
 // `renamedHint` is the pool sweep's precomputed rename preview: non-null
@@ -132,12 +132,12 @@ void ManageMediaDialog::setupUi()
 					 "Originals are untouched.")));
 	opLayout->addWidget(
 		makeOpRow(m_radioMove, tr("Move"),
-				  tr("Move the selected files. Originals are removed after a "
-					 "successful copy.")));
+				  tr("Move files within the same drive. Copies between drives "
+					 "are verified and keep their originals.")));
 	opLayout->addWidget(
 		makeOpRow(m_radioDelete, tr("Delete"),
-				  tr("Delete the selected files. Deleted files can be recovered "
-					 "from the trash.")));
+				  tr("Move the selected files to MediaMuster Trash on the same drive. "
+					 "This does not free disk space.")));
 
 	m_radioCopy->setChecked(true);
 
@@ -189,13 +189,12 @@ void ManageMediaDialog::setupUi()
 	m_conflictGlobalCombo->addItem(tr("Keep Both"),
 								   Enum::to_underlying(ConflictPolicy::KeepBoth));
 	m_conflictGlobalCombo->addItem(tr("Skip"), Enum::to_underlying(ConflictPolicy::Skip));
-	m_conflictGlobalCombo->addItem(tr("Replace"),
-								   Enum::to_underlying(ConflictPolicy::Replace));
+
 	m_conflictGlobalCombo->addItem(tr("— Mixed —"), -1);
 
 	// 'Mixed' is informational; set programmatically when per-file combos diverge.
 	if (auto *model = qobject_cast<QStandardItemModel *>(m_conflictGlobalCombo->model()))
-		model->item(3)->setFlags(Qt::NoItemFlags);
+		model->item(m_conflictGlobalCombo->count() - 1)->setFlags(Qt::NoItemFlags);
 	m_conflictGlobalCombo->setCurrentIndex(0);
 	m_conflictGlobalCombo->setMinimumWidth(180);
 	conflictLayout->addWidget(m_conflictGlobalCombo);
@@ -491,8 +490,8 @@ void ManageMediaDialog::onDestCheckFinished()
 		const PendingRow &row = m_pendingRows[i];
 		if (result.exists[i])
 		{
-			// A real on-disk conflict: the user gets a Keep Both / Skip /
-			// Replace choice (combo added below). A row that's also a batch
+			// A real on-disk conflict: the user gets Keep Both / Skip
+			// (combo added below). A row that's also a batch
 			// dup still counts as on-disk — there really is a file at the
 			// destination to act on.
 			row.item->setForeground(1, Qt::red);
@@ -504,8 +503,7 @@ void ManageMediaDialog::onDestCheckFinished()
 		{
 			// Clashes only with another *selected* file, not with disk.
 			// The engine always keeps both here (the later file is renamed)
-			// — 'Replace' can't be honoured because there's nothing on disk
-			// to replace, so no choice is offered; show the real outcome.
+			// so the preview shows the automatic Keep Both result.
 			// With 3+ identical names the preview can repeat a suffix (it
 			// can't see files that don't exist yet), but the outcome — kept,
 			// renamed — is faithful.
@@ -535,7 +533,6 @@ void ManageMediaDialog::onDestCheckFinished()
 			auto *combo = new QComboBox;
 			combo->addItem(tr("Keep Both"), Enum::to_underlying(ConflictPolicy::KeepBoth));
 			combo->addItem(tr("Skip"), Enum::to_underlying(ConflictPolicy::Skip));
-			combo->addItem(tr("Replace"), Enum::to_underlying(ConflictPolicy::Replace));
 			combo->setCurrentIndex(globalIdx);
 			m_previewTree->setItemWidget(row.item, 2, combo);
 			m_perFileConflictCombos.insert(row.sourcePath, combo);
@@ -598,7 +595,7 @@ void ManageMediaDialog::updateSummary()
 
 	bool canExecute = !m_files.isEmpty();
 	// Hold Execute while the destination sweep is in flight: launching a
-	// Copy/Move before conflicts are known could Replace something the user
+	// Copy/Move before conflicts are known could skip something the user
 	// never got the chance to see.
 	if (m_checkingDest)
 		canExecute = false;

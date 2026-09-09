@@ -48,10 +48,9 @@ mediamuster_add_test(tst_mediacsv ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 mediamuster_add_test(tst_rebalancer_parse
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
     ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
-    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
@@ -67,10 +66,9 @@ mediamuster_add_test(tst_rebalancer_parse
 mediamuster_add_test(tst_rebalancer_plan
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
     ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
-    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
@@ -93,73 +91,37 @@ target_compile_definitions(tst_fileidentity PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# Engine v2 journal: WAL writer + reader, retention, undo candidacy.
-mediamuster_add_test(tst_opjournal
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
-    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-)
-
-# Engine v2 runner: the state machines driven synchronously through a
-# test sink — conflict rules, identity gates, trash tiers, journal order.
-mediamuster_add_test(tst_oprunner
-    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
-    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
-    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
-    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
-)
-target_compile_definitions(tst_oprunner PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-
-# Engine v2 facade: signals, worker thread, mid-flight behaviours
-# (journal readable during a copy, cancel, mutation, stranded park).
-mediamuster_add_test(tst_opmanager
+# Phase-one engine contracts, failure sequences and recovery.
+mediamuster_add_test(tst_fileoperations
+    ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/opdiagnostics.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
-    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
-
-# Engine v2 rescue: the launch sweep over hand-written journals — v1's
-# decision tables plus identity guards, volume re-anchoring, undo runs.
-mediamuster_add_test(tst_oprescue
-    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
-    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-)
-target_compile_definitions(tst_oprescue PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-
-# Edit-Undo: forward run through the real runner, then reverse it and
-# check the disk. The whole single-level undo contract lives here.
-mediamuster_add_test(tst_opundo
-    ${CMAKE_SOURCE_DIR}/src/opundo.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
-    ${CMAKE_SOURCE_DIR}/src/trashrouter.cpp
-    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
-    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
-)
+target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+set_property(TARGET tst_fileoperations APPEND PROPERTY LINK_DEPENDS
+    "${CMAKE_SOURCE_DIR}/tests/fixtures/file_operations/relatives.zip")
+if(APPLE)
+    # Exercise the same Contents/MacOS -> Contents/Resources lookup as the app.
+    # A plain test executable missed the unclean ../Resources path regression.
+    set_target_properties(tst_fileoperations PROPERTIES MACOSX_BUNDLE TRUE)
+    set_source_files_properties(${MEDIAMUSTER_DIAGNOSTIC_SAMPLES} PROPERTIES
+        MACOSX_PACKAGE_LOCATION "Resources/file-operation-samples")
+    target_sources(tst_fileoperations PRIVATE ${MEDIAMUSTER_DIAGNOSTIC_SAMPLES})
+else()
+    add_custom_command(TARGET tst_fileoperations POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${_mm_sample_dir}"
+            "$<TARGET_FILE_DIR:tst_fileoperations>/file-operation-samples"
+        VERBATIM)
+endif()
 
 # Collect macOS crash reports into the logs folder.
 mediamuster_add_test(tst_crashcollector
