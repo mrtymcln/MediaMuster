@@ -98,32 +98,40 @@ bool OpFile::occupied(const QString &path)
 	return fi.exists() || fi.isSymLink();
 }
 
-bool OpFile::makeDirectory(const QString &path, QString &error)
+NativeFile::SyncResult OpFile::makeDirectory(const QString &path, QString &error,
+											 const NativeFile::DirectorySync &sync)
 {
+	using Sync = NativeFile::SyncResult;
 	if (!safePath(path))
 	{
 		error = QStringLiteral("A path contains a symbolic link or unsupported reparse point: %1")
 					.arg(path);
-		return false;
+		return Sync::Failed;
 	}
 	if (QFileInfo(path).isDir())
-		return true;
+		return Sync::Ok;
 	const QString parent = QFileInfo(path).absolutePath();
-	if (parent == path || !makeDirectory(parent, error))
-		return false;
+	if (parent == path)
+		return Sync::Failed;
+	const auto parentSync = makeDirectory(parent, error, sync);
+	if (parentSync == Sync::Failed)
+		return Sync::Failed;
+	const QString parentError = error;
 	if (!QDir().mkdir(path) && !QFileInfo(path).isDir())
 	{
 		error = QStringLiteral("Cannot create folder %1").arg(path);
-		return false;
+		return Sync::Failed;
 	}
 	QString syncError;
-	if (!NativeFile::syncDirectory(parent, &syncError))
+	const auto synced = sync(parent, &syncError);
+	if (synced != Sync::Ok)
 	{
-		error = QStringLiteral("Cannot confirm the new folder was recorded: %1\n%2")
+		error = QStringLiteral("Folder created, but its directory persistence is unconfirmed: %1\n%2")
 					.arg(path, syncError);
-		return false;
+		return synced;
 	}
-	return true;
+	error = parentError;
+	return parentSync;
 }
 
 std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &error)

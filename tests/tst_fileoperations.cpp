@@ -110,6 +110,11 @@ class TestFileOperations : public QObject
 	void second_runner_cannot_change_files();
 	void debug_harness_uses_disposable_files();
 	void debug_setup_failure_saves_report();
+	void unsupported_directory_flush_preserves_originals();
+	void directory_io_failure_stops_copy();
+	void unsupported_relocation_keeps_media_and_databases();
+	void directory_creation_propagates_durability();
+	void debug_harness_runs_copies_without_directory_flush();
 	void bundled_samples_match_supplied_files();
 	void selected_duplicates_keep_both();
 	void regenerated_database_is_retired_on_resume();
@@ -739,6 +744,174 @@ void TestFileOperations::debug_setup_failure_saves_report()
 	QCOMPARE(checks[0].toObject()["status"].toString(), QString("failed"));
 	QVERIFY(!report.json.contains("bundledSamples"));
 	QVERIFY(QDir(report.json["sourceTestFolder"].toString()).isEmpty());
+	QCOMPARE(get(f.src), f.bytes);
+}
+void TestFileOperations::unsupported_directory_flush_preserves_originals()
+{
+	for (const auto kind : {OpKind::Copy, OpKind::Move})
+	{
+		Fixture f;
+		put(f.dest + "/clip.bin", "existing media");
+		Sink sink;
+		std::atomic<bool> cancel{false};
+		OpRunner runner(sink, cancel);
+		runner.hooks.directorySync = [](const QString &path, QString *error)
+		{
+			*error = "Directory flush unsupported: " + path;
+			return NativeFile::SyncResult::OkDegraded;
+		};
+		int chunks = 0;
+		bool raced = false;
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &entry)
+		{
+			if (stage == "copy-chunk")
+				++chunks;
+			if (stage == "publishing" && !raced)
+			{
+				put(entry.dst, "late writer");
+				raced = true;
+			}
+		};
+		const auto totals = runner.run(f.request(kind, "keepboth"), f.journals);
+		QCOMPARE(totals.succeeded, kind == OpKind::Copy ? 1 : 0);
+		QCOMPARE(totals.retained, kind == OpKind::Move ? 1 : 0);
+		QCOMPARE(totals.failed + totals.needsAttention, 0);
+		QCOMPARE(chunks, 2); // A late conflict must reuse the verified copy.
+		QCOMPARE(get(f.src), f.bytes);
+		QCOMPARE(get(f.dest + "/clip.bin"), QByteArray("existing media"));
+		QCOMPARE(get(f.dest + "/clip (2).bin"), QByteArray("late writer"));
+		QCOMPARE(get(f.dest + "/clip (3).bin"), f.bytes);
+		QVERIFY(!sink.results.last().sourceRemoved);
+		QVERIFY(sink.results.last().message.contains("does not support"));
+		const auto entry = OpJournal::scan(f.journals)[0].entries[0];
+		QVERIFY(!entry.hash.isEmpty());
+		QVERIFY(!entry.copyDurable);
+		QVERIFY(!entry.source.sameObject(entry.landed));
+	}
+}
+void TestFileOperations::directory_io_failure_stops_copy()
+{
+	for (const bool afterPublication : {false, true})
+	{
+		Fixture f;
+		Sink sink;
+		std::atomic<bool> cancel{false};
+		OpRunner runner(sink, cancel);
+		bool publishing = false;
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+		{ publishing = publishing || stage == "publishing"; };
+		runner.hooks.directorySync = [&](const QString &path, QString *error)
+		{
+			if (!afterPublication || (publishing && path.contains("/.mediamuster-")))
+			{
+				*error = "Injected directory I/O error";
+				return NativeFile::SyncResult::Failed;
+			}
+			if (publishing)
+			{
+				*error = "Directory flush unsupported";
+				return NativeFile::SyncResult::OkDegraded;
+			}
+			return NativeFile::syncDirectory(path, error);
+		};
+		const auto totals = runner.run(f.request(), f.journals);
+		QCOMPARE(totals.succeeded + totals.retained, 0);
+		QCOMPARE(totals.failed + totals.needsAttention, 1);
+		QCOMPARE(get(f.src), f.bytes);
+		QVERIFY(sink.results.last().message.contains("Injected directory I/O error"));
+		if (afterPublication)
+		{
+			QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+			const auto entry = OpJournal::scan(f.journals)[0].entries[0];
+			QCOMPARE(entry.step, OpJournal::Step::NeedsAttention);
+			QVERIFY(!entry.copyDurable);
+		}
+		else
+			QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	}
+}
+void TestFileOperations::unsupported_relocation_keeps_media_and_databases()
+{
+	for (const auto kind : {OpKind::Delete, OpKind::Rename})
+	{
+		Fixture f;
+		const auto database = f.root + "/source/msmMMOB.mdb";
+		put(database, "original Avid database");
+		auto request = f.request(kind);
+		request.diagnosticTrashRoot = f.root + "/trash";
+		request.items[0].renameDst = f.dest + "/clip.bin";
+		request.items[0].groupKey = "relatives";
+		Sink sink;
+		std::atomic<bool> cancel{false};
+		OpRunner runner(sink, cancel);
+		bool attemptedRelocation = false;
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+		{ attemptedRelocation = attemptedRelocation || stage == "relocating"; };
+		runner.hooks.directorySync = [](const QString &, QString *error)
+		{
+			*error = "Directory flush unsupported";
+			return NativeFile::SyncResult::OkDegraded;
+		};
+		const auto totals = runner.run(request, f.journals);
+		QCOMPARE(totals.succeeded + totals.retained, 0);
+		QCOMPARE(totals.failed + totals.needsAttention, 1);
+		QVERIFY(!attemptedRelocation);
+		QCOMPARE(get(f.src), f.bytes);
+		QCOMPARE(get(database), QByteArray("original Avid database"));
+		QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+		QCOMPARE(OpJournal::scan(f.journals)[0].entries.size(), 1);
+	}
+}
+void TestFileOperations::directory_creation_propagates_durability()
+{
+	using Sync = NativeFile::SyncResult;
+	for (const auto childResult : {Sync::Ok, Sync::Failed})
+	{
+		Fixture f;
+		QString error;
+		const auto status = OpFile::makeDirectory(f.root + "/parent/child", error,
+			[&](const QString &path, QString *detail)
+			{
+				*detail = path == f.root ? "parent unsupported" : "child I/O error";
+				return path == f.root ? Sync::OkDegraded : childResult;
+			});
+		QCOMPARE(status, childResult == Sync::Failed ? Sync::Failed : Sync::OkDegraded);
+		QVERIFY(error.contains(childResult == Sync::Failed ? "child I/O error" : "parent unsupported"));
+	}
+}
+void TestFileOperations::debug_harness_runs_copies_without_directory_flush()
+{
+	Fixture f;
+	OpDiagnostics::Options options;
+	options.sourceArea = f.root;
+	options.destinationArea = f.dest;
+	options.reportArea = f.root + "/reports";
+	options.directorySync = [](const QString &path, QString *error)
+	{
+		*error = "Directory flush unsupported: " + path;
+		return NativeFile::SyncResult::OkDegraded;
+	};
+	std::atomic<bool> cancel{false};
+	const auto report = OpDiagnostics::run(options, cancel);
+	QCOMPARE(report.json["schema"].toInt(), 3);
+	QVERIFY(QFile::exists(report.path));
+	QSet<QString> passed, unsupported;
+	for (const auto &value : report.json["checks"].toArray())
+	{
+		const auto check = value.toObject();
+		QVERIFY2(check["status"] != "failed", qPrintable(report.text));
+		if (check["status"] == "passed")
+			passed.insert(check["name"].toString());
+		if (check["status"] == "unsupported")
+			unsupported.insert(check["name"].toString());
+	}
+	for (const auto &name : {"Copy and readback", "Keep Both with a late conflict", "Skip",
+							 "Cancel during copy", "Journal failure", "Move", "Bundled MXF copy and readback",
+							 "Rebalance group conflict", "Bundled relatives group conflict"})
+		QVERIFY2(passed.contains(name), name);
+	for (const auto &name : {"Source directory persistence", "Destination directory persistence",
+							 "MediaMuster Trash", "Rebalance relocation", "Bundled relatives Rebalance"})
+		QVERIFY2(unsupported.contains(name), name);
 	QCOMPARE(get(f.src), f.bytes);
 }
 void TestFileOperations::bundled_samples_match_supplied_files()

@@ -14,6 +14,29 @@ namespace
 {
 using Step = OpJournal::Step;
 using State = OpResult::State;
+using Sync = NativeFile::SyncResult;
+Sync syncFolders(const QStringList &folders, QString &error,
+				 const NativeFile::DirectorySync &sync = NativeFile::syncDirectory)
+{
+	QStringList warnings;
+	for (const auto &folder : folders)
+	{
+		QString detail;
+		const auto status = sync(folder, &detail);
+		if (status == Sync::Failed)
+		{
+			error = detail;
+			return status;
+		}
+		if (status == Sync::OkDegraded)
+			warnings.append(detail);
+	}
+	error = warnings.join('\n');
+	return warnings.isEmpty() ? Sync::Ok : Sync::OkDegraded;
+}
+const QString directoryWarning = QStringLiteral(
+	"Copy verified; original retained. This storage does not support confirming folder "
+	"changes against a crash or power loss.");
 QString unique()
 {
 	return QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -151,8 +174,8 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error)
 		if (e.source.unchanged(dst) && !OpFile::occupied(e.item.src))
 		{
 			QString syncError;
-			if (!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
-				!NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(), &syncError))
+			if (syncFolders({QFileInfo(e.dst).absolutePath(),
+							 QFileInfo(e.item.src).absolutePath()}, syncError) != Sync::Ok)
 			{
 				error = "A relocated file exists, but its folder updates could not be confirmed.\n" +
 						syncError;
@@ -205,9 +228,9 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error)
 					return false;
 				}
 				QString syncError;
-				if (!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
-					(moved && !NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(),
-														  &syncError)))
+				if (NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) != Sync::Ok ||
+					(moved && NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(),
+														 &syncError) != Sync::Ok))
 				{
 					error = "The verified destination exists, but folder durability remains "
 							"unconfirmed.\n" + syncError;
@@ -227,7 +250,7 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error)
 }
 
 OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFile &source,
-							int index, int total)
+							int index, int total, bool directoryDurable)
 {
 	QString error;
 	const QString tempDir = QFileInfo(e.dst).absolutePath() + "/.mediamuster-" + unique();
@@ -236,12 +259,14 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 	e.landed = {};
 	if (!save(j, e, Step::Copying))
 		return result(e, State::NeedsAttention, "Journal failure; source retained.");
-	if (!OpFile::makeDirectory(tempDir, error))
+	const auto tempSync = OpFile::makeDirectory(tempDir, error, hooks.directorySync);
+	if (tempSync == Sync::Failed)
 	{
 		e.error = error;
 		save(j, e, Step::Failed);
 		return result(e, State::Failed, error);
 	}
+	directoryDurable = directoryDurable && tempSync == Sync::Ok;
 	QFile::setPermissions(tempDir,
 						  QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
 	auto destination = OpFile::open(e.temp, true, error);
@@ -292,12 +317,14 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 																	  : State::Failed,
 					   copied.error);
 	e.hash = copied.hash;
-	e.copyDurable = copied.durable;
+	e.copyDurable = copied.durable && directoryDurable;
 	e.metadataComplete = copied.metadataComplete;
 	e.error = copied.error;
 	if (!copied.durable)
 		e.error += " Destination readback passed; the storage did not confirm the full durability "
 				   "request.";
+	if (!directoryDurable)
+		e.error += '\n' + directoryWarning;
 	e.landed = destination->stamp();
 	if (!save(j, e, Step::Verified))
 		return result(e, State::NeedsAttention,
@@ -339,15 +366,24 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 		const auto oldTemp = e.temp;
 		e.temp.clear();
 		QString syncError;
-		if (fail("folder-sync") ||
-			!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
-			!NativeFile::syncDirectory(QFileInfo(oldTemp).absolutePath(), &syncError))
+		const auto publishedSync = fail("folder-sync") ? Sync::Failed :
+			syncFolders({QFileInfo(e.dst).absolutePath(), QFileInfo(oldTemp).absolutePath()},
+						syncError, hooks.directorySync);
+		if (publishedSync == Sync::Failed)
 		{
+			e.copyDurable = false;
 			e.error = "The published file's folder update could not be confirmed. Source retained.";
 			if (!syncError.isEmpty())
 				e.error += '\n' + syncError;
 			save(j, e, Step::NeedsAttention);
 			return result(e, State::NeedsAttention, e.error);
+		}
+		if (publishedSync == Sync::OkDegraded)
+		{
+			e.copyDurable = false;
+			if (directoryDurable)
+				e.error += '\n' + directoryWarning;
+			e.error += '\n' + syncError;
 		}
 		if (!save(j, e, Step::Published))
 			return result(e, State::NeedsAttention,
@@ -355,9 +391,10 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 							  e.item.src);
 		if (kind == OpKind::Move)
 		{
-			e.error = m_cancel.load() ? "Copied and verified; source retained after cancellation."
-									  : "Copied and verified; source retained. Cross-filesystem "
-										"source removal is not enabled in this phase.";
+			e.error = (m_cancel.load() ? QStringLiteral("Copied and verified; source retained after cancellation.")
+									 : QStringLiteral("Copied and verified; source retained. Source removal "
+													  "after a byte copy is not enabled in this phase.")) +
+					  (e.error.isEmpty() ? QString() : '\n' + e.error);
 			if (!save(j, e, Step::SourceRetained))
 				return result(e, State::NeedsAttention, "Journal failure; both files retained.");
 			return result(e, State::SourceRetained, e.error);
@@ -414,12 +451,15 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 	const auto originalDestination = e.dst;
 	if (!save(j, e, Step::Planned))
 		return result(e, State::NeedsAttention, "Journal failure; source retained.");
-	if (!OpFile::makeDirectory(QFileInfo(e.dst).absolutePath(), error))
+	const auto destinationSync = OpFile::makeDirectory(QFileInfo(e.dst).absolutePath(), error,
+														 hooks.directorySync);
+	if (destinationSync == Sync::Failed)
 	{
 		e.error = error;
 		save(j, e, Step::Failed);
 		return result(e, State::Failed, error);
 	}
+	bool directoryDurable = destinationSync == Sync::Ok;
 	if (e.source.sameObject(OpFile::inspect(e.dst)))
 	{
 		save(j, e, Step::Skipped);
@@ -448,8 +488,22 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		}
 		e.dst = *next;
 	}
-	if ((trash || kind == OpKind::Rename || kind == OpKind::Move) && !hooks.forceCopy &&
-		sameVolumeForRename(e.item.src, e.dst))
+	bool canRelocate = (trash || kind == OpKind::Rename || kind == OpKind::Move) &&
+		!hooks.forceCopy && sameVolumeForRename(e.item.src, e.dst);
+	if (canRelocate)
+	{
+		const auto relocationSync = syncFolders(
+			{QFileInfo(e.item.src).absolutePath(), QFileInfo(e.dst).absolutePath()},
+			error, hooks.directorySync);
+		if (relocationSync == Sync::Failed)
+		{
+			e.error = "Cannot prepare relocation; the source was retained.\n" + error;
+			save(j, e, Step::Failed);
+			return result(e, State::Failed, e.error);
+		}
+		canRelocate = directoryDurable && relocationSync == Sync::Ok;
+	}
+	if (canRelocate)
 	{
 		e.hash.clear();
 		e.landed = {};
@@ -506,8 +560,9 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 					}
 					QString syncError;
 					if (fail("folder-sync") ||
-						!NativeFile::syncDirectory(QFileInfo(e.dst).absolutePath(), &syncError) ||
-						!NativeFile::syncDirectory(QFileInfo(e.item.src).absolutePath(), &syncError))
+						syncFolders({QFileInfo(e.dst).absolutePath(),
+									 QFileInfo(e.item.src).absolutePath()}, syncError,
+									hooks.directorySync) != Sync::Ok)
 					{
 						e.error = "File relocated to " + e.dst +
 								  ", but folder durability needs recovery confirmation.";
@@ -542,11 +597,12 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 	}
 	if (trash || kind == OpKind::Rename)
 	{
-		e.error = "Safe same-filesystem relocation is unavailable. The source was retained.";
+		e.error = "Safe same-filesystem relocation is unavailable. The source was retained." +
+				  (error.isEmpty() ? QString() : '\n' + error);
 		save(j, e, Step::Failed);
 		return result(e, State::Failed, e.error);
 	}
-	return transfer(j, e, kind, *source, index, total);
+	return transfer(j, e, kind, *source, index, total, directoryDurable);
 }
 
 bool OpRunner::retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error)
@@ -758,6 +814,14 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 					folders << QFileInfo(entries[k].item.src).absolutePath()
 							<< QFileInfo(entries[k].item.renameDst).absolutePath();
 				}
+				// Check the whole group before retiring any Avid database or media.
+				for (const auto &folder : folders)
+					if (OpFile::makeDirectory(folder, error, hooks.directorySync) != Sync::Ok)
+						throw std::runtime_error(("Rebalance unavailable; source files retained.\n" +
+												  error).toStdString());
+				if (syncFolders(folders.values(), error, hooks.directorySync) != Sync::Ok)
+					throw std::runtime_error(("Rebalance unavailable; source files retained.\n" +
+											  error).toStdString());
 				if (!retireDatabases(journal, folders, error))
 					throw std::runtime_error(error.toStdString());
 			}

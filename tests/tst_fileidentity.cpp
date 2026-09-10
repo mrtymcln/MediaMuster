@@ -3,6 +3,10 @@
 #include <QTest>
 #include <QTemporaryDir>
 #include <QFile>
+#include <cerrno>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 class TestFileIdentity : public QObject
 {
@@ -13,6 +17,7 @@ class TestFileIdentity : public QObject
 	void labels_and_capacity_are_not_identity();
 	void local_durability_requests();
 	void directory_sync_reports_native_error();
+	void unsupported_directory_flush_is_not_an_io_failure();
 };
 void TestFileIdentity::local_volume_round_trip()
 {
@@ -56,7 +61,7 @@ void TestFileIdentity::local_durability_requests()
 	QCOMPARE(file.write("test", 4), 4);
 	QCOMPARE(NativeFile::syncFile(file, NativeFile::Durability::Platter),
 			 NativeFile::SyncResult::Ok);
-	QVERIFY(NativeFile::syncDirectory(dir.path()));
+	QCOMPARE(NativeFile::syncDirectory(dir.path()), NativeFile::SyncResult::Ok);
 }
 void TestFileIdentity::directory_sync_reports_native_error()
 {
@@ -64,7 +69,7 @@ void TestFileIdentity::directory_sync_reports_native_error()
 	QVERIFY(dir.isValid());
 	const QString missing = dir.path() + "/missing/child";
 	QString error;
-	QVERIFY(!NativeFile::syncDirectory(missing, &error));
+	QCOMPARE(NativeFile::syncDirectory(missing, &error), NativeFile::SyncResult::Failed);
 	QVERIFY2(error.contains(missing), qPrintable(error));
 #ifdef Q_OS_WIN
 	QVERIFY2(error.contains("CreateFileW(directory)"), qPrintable(error));
@@ -73,8 +78,24 @@ void TestFileIdentity::directory_sync_reports_native_error()
 	QVERIFY2(error.contains("open(directory)"), qPrintable(error));
 	QVERIFY2(error.contains("POSIX error 2:"), qPrintable(error)); // ENOENT
 #endif
-	QVERIFY2(NativeFile::syncDirectory(dir.path(), &error), qPrintable(error));
+	QCOMPARE(NativeFile::syncDirectory(dir.path(), &error), NativeFile::SyncResult::Ok);
 	QVERIFY(error.isEmpty());
+}
+void TestFileIdentity::unsupported_directory_flush_is_not_an_io_failure()
+{
+	using Sync = NativeFile::SyncResult;
+	QCOMPARE(NativeFile::directoryFlushResult(0), Sync::Ok);
+#ifdef Q_OS_WIN
+	for (const int code : {ERROR_INVALID_FUNCTION, ERROR_NOT_SUPPORTED})
+		QCOMPARE(NativeFile::directoryFlushResult(code), Sync::OkDegraded);
+	for (const int code : {ERROR_ACCESS_DENIED, ERROR_INVALID_HANDLE, ERROR_NOT_READY,
+						   ERROR_WRITE_FAULT, ERROR_IO_DEVICE, ERROR_INVALID_PARAMETER})
+		QCOMPARE(NativeFile::directoryFlushResult(code), Sync::Failed);
+#else
+	QCOMPARE(NativeFile::directoryFlushResult(ENOTSUP), Sync::OkDegraded);
+	for (const int code : {EIO, EACCES, EINVAL, ENOENT})
+		QCOMPARE(NativeFile::directoryFlushResult(code), Sync::Failed);
+#endif
 }
 QTEST_GUILESS_MAIN(TestFileIdentity)
 #include "tst_fileidentity.moc"

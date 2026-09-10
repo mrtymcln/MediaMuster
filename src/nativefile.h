@@ -1,5 +1,6 @@
 #pragma once
 #include <QString>
+#include <functional>
 class QFile;
 
 // Platform durability requests and a conservative local-filesystem predicate.
@@ -26,5 +27,8 @@ SyncResult syncFile(QFile &file, Durability level);
 // Requests persistence of directory changes. A failure must remain visible
 // to the caller; success cannot establish remote hardware's behaviour.
 // Optional error reports the failed native call, path and OS error code.
-bool syncDirectory(const QString &path, QString *error = nullptr);
+SyncResult syncDirectory(const QString &path, QString *error = nullptr);
+// Classifies the result of the flush itself, never a failed handle open.
+SyncResult directoryFlushResult(int nativeCode);
+using DirectorySync = std::function<SyncResult(const QString &, QString *)>;
 } // namespace NativeFile

@@ -31,6 +31,7 @@ class OpRunner
 	{
 		std::function<void(const QString &, const OpJournal::Entry &)> checkpoint;
 		std::function<bool(const QString &)> fail;
+		NativeFile::DirectorySync directorySync = NativeFile::syncDirectory;
 		bool forceCopy = false;
 	};
 	OpRunner(OpSink &sink, const std::atomic<bool> &cancel) : m_sink(sink), m_cancel(cancel) {}
@@ -48,7 +49,7 @@ class OpRunner
 	OpResult execute(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, int index,
 					 int total);
 	OpResult transfer(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, OpFile &source,
-					  int index, int total);
+					  int index, int total, bool directoryDurable);
 	bool retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error);
 	void checkpoint(const QString &name, const OpJournal::Entry &entry);
 	bool fail(const QString &name) const

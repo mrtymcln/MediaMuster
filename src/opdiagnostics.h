@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nativefile.h"
 #include <QJsonObject>
 #include <QStringList>
 #include <atomic>
@@ -16,6 +17,8 @@ struct Options
 	QString reportArea;
 	QString storageNotes;
 	QStringList samples;
+	// Explicit injection for regression tests; the UI uses the native implementation.
+	NativeFile::DirectorySync directorySync = NativeFile::syncDirectory;
 };
 struct Report
 {

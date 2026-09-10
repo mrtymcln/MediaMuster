@@ -21,6 +21,7 @@
 
 namespace
 {
+using Sync = NativeFile::SyncResult;
 class Sink : public OpSink
 {
   public:
@@ -40,13 +41,16 @@ class Sink : public OpSink
 	void result(const OpResult &value) override
 	{
 		results.append(value);
+		if (!value.message.isEmpty())
+			messages.append(value.name + ": " + value.message);
 	}
 };
 
-void create(const QString &path, const QByteArray &bytes)
+void create(const QString &path, const QByteArray &bytes,
+			const NativeFile::DirectorySync &sync)
 {
 	QString error;
-	if (!OpFile::makeDirectory(QFileInfo(path).absolutePath(), error))
+	if (OpFile::makeDirectory(QFileInfo(path).absolutePath(), error, sync) == Sync::Failed)
 		throw std::runtime_error(error.toStdString());
 	auto file = OpFile::open(path, true, error);
 	if (!file || file->io().write(bytes) != bytes.size() ||
@@ -96,7 +100,8 @@ using RecordCheck = std::function<void(const QString &, const QString &, const Q
 void testBundledRelatives(const QString &sourceRoot, const QString &destinationRoot,
 						  const QString &reportRoot, const std::atomic<bool> &cancel,
 						  const OpDiagnostics::Progress &progress, const RecordCheck &record,
-						  QJsonObject &reportJson)
+						  QJsonObject &reportJson, const NativeFile::DirectorySync &sync,
+						  bool sourceRelocationSupported)
 {
 	const QStringList names{"Bundled MXF identities", "Bundled MXF copy and readback",
 							"Bundled relatives Rebalance", "Bundled relatives group conflict"};
@@ -160,6 +165,7 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 	Sink sink;
 	sink.update = progress;
 	OpRunner runner(sink, cancel);
+	runner.hooks.directorySync = sync;
 	bool copied = true;
 	for (int i = 0; i < samples.size() && !cancel.load(); ++i)
 	{
@@ -221,6 +227,13 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 
 	for (int scenario = 0; scenario < 2; ++scenario)
 	{
+		if (scenario == 0 && !sourceRelocationSupported)
+		{
+			record(names[2], "unsupported",
+				   "The source storage does not support directory flush. Relatives stay in place; "
+				   "their verified-copy checks ran separately.");
+			continue;
+		}
 		const auto &files = scenario == 0 ? sourceFiles : destinationFiles;
 		const auto &root = scenario == 0 ? sourceMxf : destinationMxf;
 		const auto plan = Rebalancer::computePlan(root, "Disposable bundled relatives", files);
@@ -250,7 +263,7 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 		if (scenario == 1)
 		{
 			blocker = request.items[0].renameDst;
-			create(blocker, "existing unrelated media");
+			create(blocker, "existing unrelated media", sync);
 		}
 		sink.messages.clear();
 		const auto totals = runner.run(request, reportRoot + "/journals/bundled-rebalance-" +
@@ -310,7 +323,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 		QDir(options.destinationArea).filePath("MediaMuster_Test_Destination_" + id));
 	const QString reportRoot = OpJournal::canonicalPath(QDir(options.reportArea).filePath(id));
 	report.path = reportRoot + "/report.json";
-	report.json = {{"schema", 2},
+	report.json = {{"schema", 3},
 				   {"started", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},
 				   {"os", QSysInfo::prettyProductName()},
 				   {"kernel", QSysInfo::kernelVersion()},
@@ -344,10 +357,25 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 		QString error;
 		// Prepare the local report folder first so storage setup failures
 		// can still be saved automatically for diagnosis.
-		if (!OpFile::makeDirectory(reportRoot, error) ||
-			!OpFile::makeDirectory(sourceRoot, error) ||
-			!OpFile::makeDirectory(destinationRoot, error))
+		if (OpFile::makeDirectory(reportRoot, error) != Sync::Ok ||
+			OpFile::makeDirectory(sourceRoot, error, options.directorySync) == Sync::Failed ||
+			OpFile::makeDirectory(destinationRoot, error, options.directorySync) == Sync::Failed)
 			throw std::runtime_error(error.toStdString());
+		auto directoryCheck = [&](const QString &name, const QString &path)
+		{
+			QString detail;
+			const auto status = options.directorySync(path, &detail);
+			record(name, status == Sync::Ok ? "passed" :
+				   status == Sync::OkDegraded ? "unsupported" : "failed",
+				   status == Sync::Ok ? "Directory flush acknowledged for " + path :
+				   detail + "\nVerified copies retain their originals. Trash and Rebalance require "
+							"directory persistence support.");
+			if (status == Sync::Failed)
+				throw std::runtime_error(detail.toStdString());
+			return status == Sync::Ok;
+		};
+		const bool sourceRelocationSupported = directoryCheck("Source directory persistence", sourceRoot);
+		directoryCheck("Destination directory persistence", destinationRoot);
 
 		const QStringList scenarios{"Copy and readback",
 									"Keep Both with a late conflict",
@@ -367,6 +395,13 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 				record(name, "not tested", "Cancelled before this check.");
 				continue;
 			}
+			if ((index == 7 || index == 8) && !sourceRelocationSupported)
+			{
+				record(name, "unsupported",
+					   "The source storage does not support directory flush. Existing files stay "
+					   "in place; this check requires native relocation.");
+				continue;
+			}
 			if (progress)
 				progress(name);
 			const QString source = sourceRoot + '/' + QString::number(index) + "/clip.bin";
@@ -374,8 +409,8 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 			if (index >= 7)
 				destination = sourceRoot + "/relocations/" + QString::number(index);
 			const QString journals = reportRoot + "/journals/" + QString::number(index);
-			create(source, payload);
-			if (!OpFile::makeDirectory(destination, error))
+			create(source, payload, options.directorySync);
+			if (OpFile::makeDirectory(destination, error, options.directorySync) == Sync::Failed)
 				throw std::runtime_error(error.toStdString());
 			const auto original = OpFile::inspect(source);
 			OpRequest request;
@@ -390,6 +425,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 			sink.update = progress;
 			std::atomic<bool> stop{false};
 			OpRunner runner(sink, stop);
+			runner.hooks.directorySync = options.directorySync;
 			bool raced = false, rejectJournal = false;
 			runner.hooks.checkpoint = [&](const QString &stage, const OpJournal::Entry &entry)
 			{
@@ -397,7 +433,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 					stop = true;
 				if (index == 1 && stage == "publishing" && !raced)
 				{
-					create(entry.dst, "late writer");
+					create(entry.dst, "late writer", options.directorySync);
 					raced = true;
 				}
 				if (index == 3 && stage == "copy-chunk")
@@ -411,7 +447,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 			{ return rejectJournal && point == "journal"; };
 			if (index == 1 || index == 2)
 			{
-				create(destination + "/clip.bin", "existing file");
+				create(destination + "/clip.bin", "existing file", options.directorySync);
 				request.items[0].policy = index == 1 ? "keepboth" : "skip";
 			}
 			if (index == 6)
@@ -427,10 +463,10 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 				audio.name = "audio.bin";
 				audio.src = QFileInfo(source).absolutePath() + "/audio.bin";
 				audio.renameDst = destination + "/audio.bin";
-				create(audio.src, payload);
+				create(audio.src, payload, options.directorySync);
 				request.items.append(audio);
 				if (index == 9)
-					create(audio.renameDst, "existing audio");
+					create(audio.renameDst, "existing audio", options.directorySync);
 			}
 			const auto totals = runner.run(request, journals);
 			bool passed = false;
@@ -497,7 +533,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 		}
 
 		testBundledRelatives(sourceRoot, destinationRoot, reportRoot, cancel, progress, record,
-							 report.json);
+							 report.json, options.directorySync, sourceRelocationSupported);
 
 		for (int index = 0; index < options.samples.size(); ++index)
 		{
@@ -521,6 +557,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 			Sink sink;
 			sink.update = progress;
 			OpRunner runner(sink, cancel);
+			runner.hooks.directorySync = options.directorySync;
 			const auto totals =
 				runner.run(request, reportRoot + "/journals/sample-" + QString::number(index));
 			const bool passed = totals.succeeded == 1 && before.unchanged(OpFile::inspect(source));

@@ -172,7 +172,7 @@ bool OpJournal::standardDirWritable()
 std::unique_ptr<QLockFile> OpJournal::acquire(const QString &directory, QString &error)
 {
 	const auto dir = directory.isEmpty() ? standardJournalDir() : canonicalPath(directory);
-	if (!OpFile::makeDirectory(dir, error))
+	if (OpFile::makeDirectory(dir, error) != NativeFile::SyncResult::Ok)
 		return {};
 	auto lock = std::make_unique<QLockFile>(dir + "/engine.lock");
 	lock->setStaleLockTime(0);
@@ -201,7 +201,7 @@ bool OpJournal::append(const QJsonObject &value)
 bool OpJournal::create(const OpRequest &request, const QString &directory, QString &error)
 {
 	const auto dir = directory.isEmpty() ? standardJournalDir() : canonicalPath(directory);
-	if (!OpFile::makeDirectory(dir, error))
+	if (OpFile::makeDirectory(dir, error) != NativeFile::SyncResult::Ok)
 		return false;
 	m_record.request = request;
 	m_record.started = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
@@ -256,7 +256,7 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 							{"diagnosticTrashRoot", request.diagnosticTrashRoot},
 							{"volumes", volumes},
 							{"items", items}}) &&
-					NativeFile::syncDirectory(dir, &syncError);
+					NativeFile::syncDirectory(dir, &syncError) == NativeFile::SyncResult::Ok;
 	if (!ok)
 	{
 		m_healthy = false;

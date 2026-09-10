@@ -36,7 +36,10 @@ class OpFile
 	static std::unique_ptr<OpFile> open(const QString &path, bool create, QString &error);
 	static OpStamp inspect(const QString &path);
 	static bool occupied(const QString &path);
-	static bool makeDirectory(const QString &path, QString &error);
+	// OkDegraded means created, but the storage does not support directory flush.
+	static NativeFile::SyncResult makeDirectory(
+		const QString &path, QString &error,
+		const NativeFile::DirectorySync &sync = NativeFile::syncDirectory);
 	static bool safePath(const QString &path);
 
 	QFile &io()

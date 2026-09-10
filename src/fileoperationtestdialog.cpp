@@ -23,8 +23,8 @@ FileOperationTestDialog::FileOperationTestDialog(QWidget *parent) : QDialog(pare
 	auto *layout = new QVBoxLayout(this);
 	auto *intro = new QLabel(
 		tr("Run Copy, Move, Trash, Rebalance and recovery checks using disposable files. "
-		   "Choose folders on the drives you want to test. Test files and reports are kept for "
-		   "inspection."),
+		   "The test creates its own folders in BOTH selected locations. Test files and reports "
+		   "are kept for inspection, including after a stopped run."),
 		this);
 	intro->setWordWrap(true);
 	layout->addWidget(intro);
