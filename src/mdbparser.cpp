@@ -46,7 +46,7 @@
 //                                    a HALF height for layouts 1 AND 3 (the MXF only
 //                                    for 1) — normalised here, flagged for finalise
 //     OMFI:MDFL:SampleRate           rational; decimal approximations (2997/100),
-//                                    so it goes through MxfParser::applyEditRate
+//                                    so it goes through MediaMetadataUtil::applyEditRate
 //     OMFI:MDFL:Length               frames (video) / samples (audio)
 //     OMFI:CDCI:ComponentWidth / OMFI:MDAU:BitsPerSample / OMFI:MDAU:NumChannels
 //     OMFI:TRKG:Tracks → TRAK → TrackComponent → SEQU/SCLP/TCCP: drop frame
@@ -101,11 +101,6 @@ namespace
 		return kMob;
 	}
 
-	QString baseName(const QString &path)
-	{
-		const int slash = qMax(path.lastIndexOf(QLatin1Char('/')), path.lastIndexOf(QLatin1Char('\\')));
-		return slash < 0 ? path : path.mid(slash + 1);
-	}
 } // namespace
 
 // MARK: - Load
@@ -289,7 +284,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		m.project = a.project; // OMF-era: _PJ on a master mob, when a file keeps it there.
 		m.isImported = a.isImported;
 		if (!m.sourceFilePath.isEmpty())
-			m.sourceFileName = baseName(m.sourceFilePath);
+			m.sourceFileName = MediaMetadataUtil::sourceFileBaseName(m.sourceFilePath);
 		db.masters.insert(hex, m);
 	}
 

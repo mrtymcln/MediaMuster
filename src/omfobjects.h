@@ -28,7 +28,7 @@
 
 #include "bentofile.h"
 #include "avidprecompute.h"
-#include "mxfparser.h"
+#include "mediametadata.h"
 
 #include <QByteArray>
 #include <QByteArrayView>
@@ -239,7 +239,7 @@ namespace OmfObjects
 	// MARK: - Descriptor
 
 	/// Fill `e` from the media descriptor `desc` of the file mob `mobObj`
-	/// the way a header parse would, then hand it to MxfParser::finalise so
+	/// the way a header parse would, then hand it to MediaMetadataUtil::finalise so
 	/// every derived value comes from the same code as the header path.
 	/// Returns false — leaving `e` untouched — when `desc` is not a media
 	/// class. `codecKnown` (optional) reports whether a codec was
@@ -249,5 +249,5 @@ namespace OmfObjects
 	/// descriptor class, since MPEG audio has no label here and would
 	/// wrongly read as PCM.
 	bool readDescriptor(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
-						const ObjectByMob &objectByMob, MxfMetadata &e, bool *codecKnown = nullptr);
+						const ObjectByMob &objectByMob, MediaMetadata &e, bool *codecKnown = nullptr);
 } // namespace OmfObjects

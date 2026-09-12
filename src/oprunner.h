@@ -20,6 +20,7 @@ class OpRunner
 	struct Totals
 	{
 		int succeeded = 0;
+		int unchanged = 0;
 		int failed = 0;
 		int skipped = 0;
 		int retained = 0;
@@ -31,6 +32,8 @@ class OpRunner
 	{
 		std::function<void(const QString &, const OpJournal::Entry &)> checkpoint;
 		std::function<bool(const QString &)> fail;
+		// Inject an OS copy error before native transfer; zero runs the real copier.
+		std::function<int(const OpJournal::Entry &)> nativeCopyError;
 		NativeFile::DirectorySync directorySync = NativeFile::syncDirectory;
 		bool forceCopy = false;
 		bool forceNetworkTrash = false; // Exercise network routing on disposable local fixtures.
@@ -39,10 +42,6 @@ class OpRunner
 	Totals run(const OpRequest &request, const QString &journalDir = {});
 	Hooks hooks;
 	std::function<void(const QString &)> onRenameFolderTouched;
-	static QString buildDestPath(const QString &, const QString &, const QString &, bool,
-								 bool omfEra = false);
-	static std::optional<QString> generateRenamePath(const QString &);
-	static bool sameVolumeForRename(const QString &, const QString &);
 	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error,
 		const std::atomic<bool> *cancellation = nullptr,
 		const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
@@ -50,9 +49,9 @@ class OpRunner
   private:
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
 	OpResult execute(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, int index,
-					 int total);
+						 int total, bool *retryableCopy = nullptr);
 	OpResult transfer(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, OpFile &source,
-					  int index, int total, bool directoryDurable);
+						  int index, int total, bool directoryDurable, bool *retryableCopy);
 	OpResult removeOriginal(OpJournal &, OpJournal::Entry &, int index, int total);
 	OpRequest planUndo(OpJournal::Record &, const OpRequest &);
 	bool retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error);

@@ -4,8 +4,7 @@
 #include "mediafilterproxy.h"
 #include "mediascanner.h"
 #include "mediatablemodel.h"
-#include "opmanager.h"
-#include "oprescue.h"
+#include "fileoperationcontroller.h"
 #include "volumelistwidget.h"
 #include "volumemanager.h"
 
@@ -29,10 +28,9 @@ class QTimer;
 
 // MARK: - MainWindow
 
-/// Composes VolumeManager, MediaScanner, OpManager,
+/// Composes volume discovery, scanning and operation controllers with
 /// MediaTableModel + MediaFilterProxy, and on-demand dialogs.
-/// Most of the work happens in the slot handlers; this class is
-/// mostly wiring and UI assembly.
+/// Owns window widgets, selection and presentation of the current media set.
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -100,54 +98,10 @@ private:
 	void startScanWithPaths(const QStringList &paths);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
 
-	// MARK: - Crash recovery
-
-	/// Reconcile interrupted journals once at launch, off the GUI thread.
-	void runStartupRecovery();
-	void onRecoveryDone(const OpRescue::Summary &summary);
-
-	// MARK: - Resume an interrupted operation
-
-	/// Re-reads the journal folder for interrupted runs that can be finished,
-	/// OFF the GUI thread (it stats media paths), then updates the menu
-	/// item. Called after abandonment or a finished operation; the
-	/// launch sweep supplies the first list for free.
-	void refreshResumable();
-
-	/// Enable/label Edit ▸ Undo from the cached candidate; disabled while
-	/// an operation runs (same busy flag as Resume).
-	void updateUndoAction();
-	void onUndoLastOperation();
-
-	/// The journal is mandatory; false means no operation may start.
-	bool confirmCrashProtection();
-
-	/// Applies the File-menu item's enabled state from the cached list.
-	/// Cheap and synchronous — safe to call from setBusy on every edge.
-	void updateResumeAction();
-
-	/// Explicit Resume continues the recorded job; explicit Cancel abandons
-	/// its remainder. Escape/window close leaves the journal untouched.
-	void offerResume();
-	bool resolvePreviousJob();
-	bool resumeOperation(const OpRescue::Resumable &job);
-	void applyOperationHistory(const OpRescue::Summary &history);
-	void readOperationHistoryForGate();
-
-	/// The one dispatch path for Copy/Move/Delete: journal-writable gate,
-	/// engine call, busy state, progress sheet. Used by the Manage Media
-	/// dialog and by Resume, so a resumed run is a normal run.
-	/// Returns false when nothing was started (empty list, or the user
-	/// declined the no-journal warning).
+	/// Adapt the selected media rows to the controller's request format.
 	bool dispatchOperation(OpKind kind, QVector<MediaFile> files,
 						   const QString &dest, bool preserve,
 						   const QHash<QString, ConflictPolicy> &policies);
-
-	/// The shared tail of every dispatch: the journal-writable gate, the
-	/// row-pruning flag, the engine call, and the busy/progress raise.
-	/// Resume comes through here with a request built straight from the
-	/// interrupted journal's own plan items.
-	bool dispatchRequest(OpRequest request);
 
 	/// Collects MacOS crash reports into the logs folder,
 	/// and nudges the user to send them to the developer.
@@ -162,7 +116,7 @@ private:
 
 	void updateFilterCounts();
 	void openManageMedia(int initialOp);
-	void setBusy(bool busy);
+	void updateActivityUi();
 	class ProgressDialog *progressDialog();
 	QVector<MediaFile> selectedFiles() const;
 	void addVolumePath(const QString &path);
@@ -222,7 +176,7 @@ private:
 
 	VolumeManager *m_volumeManager;
 	MediaScanner *m_scanner;
-	OpManager *m_fileOps;
+	FileOperationController *m_operations;
 
 	MediaTableModel *m_model;
 	MediaFilterProxy *m_proxy;
@@ -280,34 +234,6 @@ private:
 	/// shuffles rows; without this the rows the proxy drops would
 	/// shrink the persistent record and lose the user's picks.
 	bool m_inFilterRestore = false;
-
-	/// Set by openManageMedia for Move/Delete (not Copy). Tells the
-	/// operationFinished handler to remove rows for the paths we
-	/// accumulated in m_successfulOpPaths.
-	bool m_removeAfterOp = false;
-	QSet<QString> m_successfulOpPaths;
-
-	/// Interrupted runs that can be finished (see OpRescue::pending),
-	/// oldest first; drives the File > Resume Interrupted Operation item.
-	QVector<OpRescue::Resumable> m_resumable;
-	class QAction *m_resumeAct = nullptr;
-	class QAction *m_undoAct = nullptr;
-	class QAction *m_undoSeparator = nullptr;
-	class QAction *m_verifyCopiesAct = nullptr;
-	class QAction *m_enableUndoAct = nullptr;
-	bool m_operationGateActive = false;
-	bool m_rebalanceDialogActive = false;
-	bool m_historyLoading = false;
-	quint64 m_historyGeneration = 0;
-	/// Edit ▸ Undo candidate, refreshed off-thread with the resumables:
-	/// the newest journal with completed effects and the menu label naming it.
-	/// Empty path = nothing to undo.
-	struct UndoCandidate
-	{
-		QString path;
-		QString label;
-	};
-	UndoCandidate m_undoCandidate;
 
 	class BinFilterDialog *m_binFilterDialog = nullptr;
 

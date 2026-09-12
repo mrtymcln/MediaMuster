@@ -4,30 +4,8 @@
 
 #include <atomic>
 
-// MARK: - TestPause
-//
-// A TEST SEAM, not a user feature. Off in every shipped build, reachable
-// only from the test suite — no menu item, no setting, nothing a user can
-// switch on.
-//
-// It exists because the engine's most important promises can only be
-// checked WHILE a copy is running: that the plan reaches disk before the
-// first byte moves, that a mid-copy failure puts the original back, that
-// Cancel restores rather than abandons, that a source swapped underneath
-// us is caught. An 8 MB copy finishes in milliseconds, leaving a test
-// nothing to interrupt; these pauses hold the door open long enough to
-// act.
-//
-// Nothing is slowed proportionally. The real work takes exactly as long
-// as it always does and a fixed wait is added at three points, each named
-// in real milliseconds at its call site.
-//
-// The waits are load-bearing — seven tests are timed to act inside these
-// windows — so change one only with its tests in view.
-//
-// (Was DebugSlowdown, surfaced as Debug ▸ Slow mode with a ×50 multiplier
-// over hand-picked numbers. The menu item and the multiplier went on
-// 2026-08-31; the seam stayed, because the tests need it.)
+// Test-only pause at scan-folder boundaries. Disabled by default; the scanner
+// cancellation tests enable it to observe an in-progress scan deterministically.
 
 namespace TestPause
 {
@@ -58,12 +36,5 @@ namespace TestPause
 		QThread::msleep(ms);
 	}
 
-	/// The three waits in use, named so the call sites read as intent and
-	/// so the relationship between them is visible in one place: a chunk
-	/// pause has to be short enough that a file still completes, an item
-	/// pause long enough to click Cancel, a folder pause long enough to
-	/// watch a scan advance folder by folder.
-	inline constexpr unsigned long kPerCopyChunkMs = 250;	   ///< per 4 MB written
-	inline constexpr unsigned long kPerItemMs = 2000;		   ///< per file in a run
-	inline constexpr unsigned long kPerScannedFolderMs = 4000; ///< per media folder
+	inline constexpr unsigned long kPerScannedFolderMs = 4000;
 } // namespace TestPause

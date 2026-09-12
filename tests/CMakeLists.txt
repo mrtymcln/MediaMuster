@@ -43,71 +43,67 @@ target_compile_definitions(tst_omfuid PRIVATE
 # reachable from a test at all.
 mediamuster_add_test(tst_mediacsv ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 
-# parseFolderName and the folder-name rules. Rebalancer executes via
-# the ops engine now, so its tests link the engine too.
+# Folder-name parsing is independent of workers and the operation engine.
 mediamuster_add_test(tst_rebalancer_parse
-    ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
-    ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
-    ${CMAKE_SOURCE_DIR}/src/opfile.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
-    ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
-    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
+    ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
 )
 
-# Golden tests for Rebalancer::computePlan over synthetic Avid
+# Golden tests for RebalancePlanner::computePlan over synthetic Avid
 # folder trees, plus execute_* tests that now drive the engine-backed
 # Rename machine end to end. Creates a few thousand empty files in
 # QTemporaryDir for the cap-related tests — runs in well under a second.
 mediamuster_add_test(tst_rebalancer_plan
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
+    ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/operationrecovery.cpp
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/operationplan.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 
 # Engine v2 value types: the on-disk enum names (header-only).
 mediamuster_add_test(tst_oprequest)
 
-# Engine v2 identity: FileIdentity/VolumeIdentity plus the NativeFile
+# Volume identity plus the NativeFile
 # platform primitives, over real temp files and fixture MXF headers.
-mediamuster_add_test(tst_fileidentity
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+mediamuster_add_test(tst_volumeidentity
+    ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
 )
-target_compile_definitions(tst_fileidentity PRIVATE
+target_compile_definitions(tst_volumeidentity PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
 # Phase-one engine contracts, failure sequences and recovery.
 mediamuster_add_test(tst_fileoperations
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
+    ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
     ${CMAKE_SOURCE_DIR}/src/opdiagnostics.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
+    ${CMAKE_SOURCE_DIR}/src/operationplan.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprescue.cpp
+    ${CMAKE_SOURCE_DIR}/src/operationrecovery.cpp
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-foreach(_engine_test tst_rebalancer_parse tst_rebalancer_plan tst_fileoperations)
+foreach(_engine_test tst_rebalancer_plan tst_fileoperations)
     target_sources(${_engine_test} PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)
     if(APPLE)
         target_sources(${_engine_test} PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash_mac.mm)
@@ -150,6 +146,7 @@ target_compile_definitions(tst_avbparser PRIVATE
 # fixtures/avid_headers.
 mediamuster_add_test(tst_mxfparser
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
 )
 target_compile_definitions(tst_mxfparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -183,6 +180,7 @@ mediamuster_add_test(tst_mdbparser
     ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
     ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
 )
 target_compile_definitions(tst_mdbparser PRIVATE
@@ -199,6 +197,7 @@ mediamuster_add_test(tst_omfparser
     ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
     ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
 )
@@ -217,6 +216,7 @@ mediamuster_add_test(tst_avideffects
 mediamuster_add_test(tst_scanner
     ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
     ${CMAKE_SOURCE_DIR}/src/omfparser.cpp
@@ -235,17 +235,20 @@ target_compile_definitions(tst_scanner PRIVATE
 # The model is QtCore only (QAbstractTableModel); no widgets, no icons.
 mediamuster_add_test(tst_mediatablemodel
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
 
 # AVB enrichment: preserve scan metadata and reject conflicting bin fallbacks.
 mediamuster_add_test(tst_avbmetadata
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
 
 # MediaFilterProxy: text normalization, classifications and row-level AVB algebra.
 mediamuster_add_test(tst_mediafilterproxy
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
 
 # Effect picker: choose names and a volume, then use the actual table filter.
@@ -253,6 +256,7 @@ mediamuster_add_test(tst_effectfilterdialog
     ${CMAKE_SOURCE_DIR}/src/effectfilterdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
 target_link_libraries(tst_effectfilterdialog PRIVATE Qt6::Widgets)
 
@@ -263,6 +267,7 @@ mediamuster_add_test(tst_binfilterdialog
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
 target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent)
 set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -272,8 +277,9 @@ mediamuster_add_test(tst_opjournal
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
 )
 mediamuster_link_native_operations(tst_opjournal)
 

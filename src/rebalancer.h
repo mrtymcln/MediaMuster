@@ -1,8 +1,6 @@
 #pragma once
 
-#include "conventions.h"
 #include "backgroundjob.h"
-#include "mediafile.h"
 #include "opmanager.h"
 #include "rebalanceplan.h"
 
@@ -11,16 +9,14 @@
 #include <QVector>
 
 #include <atomic>
-#include <optional>
 
 // MARK: - Rebalancer
 
-/// Plans MXF redistribution below 5,000 files per Avid folder and submits it
-/// to the shared engine. Relatives are scoped by media root, workstation and
-/// valid MasterMobId. Cancellation is honoured between groups; an I/O failure
-/// stops the run with completed and pending moves recorded for recovery.
-/// A private OpManager keeps the Rebalance dialog's progress separate from
-/// MainWindow's operations. The shared journal lock serializes engine runs.
+/// Submits a RebalancePlanner result to the shared file-operation engine. Relatives are scoped by
+/// media root, workstation and valid MasterMobId. Cancellation is honoured between groups; an I/O
+/// failure stops the run with completed and pending moves recorded for recovery. A private
+/// OpManager keeps the Rebalance dialog's progress separate from MainWindow's operations. The
+/// shared journal lock serializes engine runs.
 class Rebalancer : public QObject
 {
 	Q_OBJECT
@@ -28,21 +24,6 @@ public:
 	explicit Rebalancer(QObject *parent = nullptr);
 
 	~Rebalancer() override;
-
-	// MARK: - Planning
-
-	static RebalancePlan computePlan(const QString &mxfRoot, const QString &volumeLabel,
-									 const QVector<MediaFile> &files);
-
-	static std::optional<FolderName> parseFolderName(const QString &name);
-
-	/// The source folder a RenameOp came from, recomputed from its srcPath
-	/// (RenameOp doesn't store the FolderName). nullopt when the parent dir
-	/// isn't a conforming Avid folder name.
-	static std::optional<FolderName> srcFolderOf(const QString &srcPath);
-
-	/// Shared plan-to-engine adapter, also exercised by the disposable diagnostics.
-	static OpRequest requestForPlan(const RebalancePlan &plan);
 
 	// MARK: - Execution
 

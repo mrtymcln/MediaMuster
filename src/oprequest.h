@@ -170,7 +170,7 @@ struct OpRequest
 	QString destRoot;	   ///< Copy/Move destination root; empty for Delete/Rename/Undo.
 	bool preserve = false; ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
 	bool verifyCopies = false; ///< Captured once from Debug; Resume keeps this choice.
-	bool copyMove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
+	bool copyThenRemove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
 	bool undoEnabled = false; ///< Runtime permission to start a NEW Undo; not persisted.
 	QVector<OpItem> items;
 
@@ -186,6 +186,7 @@ struct OpResult
 	enum class State
 	{
 		Completed,
+		NoEffect,
 		SourceRetained,
 		Skipped,
 		Cancelled,

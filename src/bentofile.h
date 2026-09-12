@@ -68,20 +68,8 @@ public:
 	[[nodiscard]] quint32 ref(quint32 object, int property, ReadStatus *status = nullptr) const;
 	[[nodiscard]] QVector<quint32> refs(quint32 object, int property, ReadStatus *status = nullptr) const;
 
-	/// Legacy little-endian helpers retained for callers constructing raw OMF1 data.
-	[[nodiscard]] static quint32 uint(QByteArrayView v);
-	static bool rational(QByteArrayView v, qint32 &num, qint32 &den);
-	[[nodiscard]] static quint32 handle(QByteArrayView v);
-	[[nodiscard]] static QVector<quint32> handles(QByteArrayView v);
 	[[nodiscard]] static QString string(QByteArrayView v);
 	[[nodiscard]] static QString utf8String(QByteArrayView v);
-	[[nodiscard]] static QString mobIdHex(QByteArrayView v);
-	struct MobIndexEntry
-	{
-		QByteArray uid;
-		quint32 object = 0;
-	};
-	[[nodiscard]] static QVector<MobIndexEntry> mobIndex(QByteArrayView v);
 
 	[[nodiscard]] int entryCount() const { return m_entries.size(); }
 	[[nodiscard]] int propertyNameCount() const { return m_propIdByName.size(); }

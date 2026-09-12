@@ -11,7 +11,7 @@ OpRequest requestFor(const QString &root)
 {
 	OpRequest request;
 	request.kind = OpKind::Move;
-	request.copyMove = true;
+	request.copyThenRemove = true;
 	request.destRoot = root + "/destination";
 	OpItem item;
 	item.src = root + "/source.bin";
@@ -38,6 +38,7 @@ class TestOpJournal : public QObject
   private slots:
 	void saved_policy_and_inverse_identity_survive_restart();
 	void incomplete_moves_are_not_completed_by_source_retention();
+	void no_effect_requires_identity_evidence();
 	void missing_new_policy_rejects_old_beta_record();
 	void missing_new_entry_evidence_is_not_defaulted();
 	void abandoned_unresolved_job_keeps_every_record_and_artifact();
@@ -83,7 +84,7 @@ void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 	const auto saved = OpJournal::readOne(path);
 	QVERIFY(saved);
 	QVERIFY(saved->request.verifyCopies);
-	QVERIFY(saved->request.copyMove);
+	QVERIFY(saved->request.copyThenRemove);
 	QVERIFY(!saved->request.undoEnabled);
 	QCOMPARE(saved->request.undoOf, request.undoOf);
 	QVERIFY(saved->copiesComplete);
@@ -108,11 +109,42 @@ void TestOpJournal::incomplete_moves_are_not_completed_by_source_retention()
 		entry.step = step;
 		QVERIFY(!entry.complete());
 	}
-	for (const auto step : {OpJournal::Step::SourceRemoved, OpJournal::Step::Done, OpJournal::Step::Skipped})
+	for (const auto step : {OpJournal::Step::SourceRemoved, OpJournal::Step::Done,
+		OpJournal::Step::Skipped, OpJournal::Step::NoEffect})
 	{
 		entry.step = step;
 		QVERIFY(entry.complete());
 	}
+}
+
+void TestOpJournal::no_effect_requires_identity_evidence()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	auto request = requestFor(temp.path());
+	QVERIFY(writeBytes(request.items[0].src, "source"));
+	QString error;
+	OpJournal journal;
+	QVERIFY(journal.create(request, temp.path() + "/journals", error));
+	auto entry = journal.record().entries[0];
+	entry.dst = entry.item.src;
+	entry.landed = entry.source;
+	entry.step = OpJournal::Step::NoEffect;
+	QVERIFY(journal.save(entry));
+	const auto saved = OpJournal::readOne(journal.path());
+	QVERIFY(saved);
+	QCOMPARE(saved->entries[0].step, OpJournal::Step::NoEffect);
+	QVERIFY(!saved->entries[0].explicitSkip);
+	QVERIFY(!OpJournal::latestUndoable(temp.path() + "/journals"));
+	auto invalid = entry.json();
+	invalid["landed"] = OpStamp{}.json();
+	QVERIFY(!OpJournal::Entry::fromJson(invalid));
+	invalid = entry.json();
+	invalid["sourceRemoved"] = true;
+	QVERIFY(!OpJournal::Entry::fromJson(invalid));
+	invalid = entry.json();
+	invalid["explicitSkip"] = true;
+	QVERIFY(!OpJournal::Entry::fromJson(invalid));
 }
 
 void TestOpJournal::missing_new_policy_rejects_old_beta_record()

@@ -26,5 +26,7 @@ class OpCopier
 				const Progress &progress = {}, const std::function<void()> &beforeReadback = {},
 				bool verify = true);
 	static Result hash(OpFile &file, const std::atomic<bool> &cancel,
-					   const Progress &progress = {});
+						   const Progress &progress = {});
+	// Native transfer errors only; identity, metadata and durability failures never retry.
+	static bool isRetryableNativeError(int error);
 };

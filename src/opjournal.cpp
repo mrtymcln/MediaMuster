@@ -89,6 +89,8 @@ QString OpJournal::stepName(Step s)
 		return "source-removed";
 	case Step::Done:
 		return "done";
+	case Step::NoEffect:
+		return "no-effect";
 	case Step::SourceRetained:
 		return "source-retained";
 	case Step::Skipped:
@@ -104,7 +106,8 @@ QString OpJournal::stepName(Step s)
 }
 bool OpJournal::Entry::complete() const
 {
-	return step == Step::Done || step == Step::SourceRemoved || step == Step::Skipped;
+	return step == Step::Done || step == Step::SourceRemoved || step == Step::Skipped ||
+		step == Step::NoEffect;
 }
 QJsonObject OpJournal::Entry::json() const
 {
@@ -195,6 +198,10 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	e.error = v["error"].toString();
 	e.source = OpStamp::fromJson(v["source"].toObject());
 	e.landed = OpStamp::fromJson(v["landed"].toObject());
+	if (e.step == Step::NoEffect && (!e.source.unchanged(e.landed) ||
+		!QDir::isAbsolutePath(e.dst) || e.sourceRemoved || e.explicitSkip ||
+		!e.mechanism.isEmpty() || !e.retirement.isEmpty()))
+		return {}; // A no-effect result needs identity evidence, not an inferred Skip.
 	for (const auto &a : v["artifacts"].toArray())
 		e.artifacts.append(a.toString());
 	if (e.id < 0 || !QDir::isAbsolutePath(e.item.src))
@@ -250,7 +257,7 @@ bool OpJournal::append(const QJsonObject &value)
 		return false;
 	const auto line = QJsonDocument(value).toJson(QJsonDocument::Compact) + '\n';
 	if (m_file.write(line) != line.size() ||
-		NativeFile::syncFile(m_file, NativeFile::Durability::Platter) != NativeFile::SyncResult::Ok)
+		NativeFile::syncFile(m_file) != NativeFile::SyncResult::Ok)
 	{
 		m_healthy = false;
 		m_error = "The operation journal could not be saved. Further changes have stopped; files "
@@ -326,7 +333,7 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 							{"dest", request.destRoot},
 							{"preserve", request.preserve},
 							{"verifyCopies", request.verifyCopies},
-							{"copyMove", request.copyMove},
+							{"copyThenRemove", request.copyThenRemove},
 							{"undoOf", request.undoOf},
 							{"copiesComplete", false},
 							{"undoPath", QString()},
@@ -471,7 +478,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 		{
 			if (type != "begin" || v["schema"].toInt() != schema)
 				return {};
-			if (!v["verifyCopies"].isBool() || !v["copyMove"].isBool() ||
+			if (!v["verifyCopies"].isBool() || !v["copyThenRemove"].isBool() ||
 				!v["undoOf"].isString() || !v["copiesComplete"].isBool() ||
 				!v["undoPath"].isString())
 				return {}; // Incompatible beta record; no migration or default guessing.
@@ -480,7 +487,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 				return {};
 			rec.request.kind = *kind;
 			rec.request.verifyCopies = v["verifyCopies"].toBool();
-			rec.request.copyMove = v["copyMove"].toBool();
+			rec.request.copyThenRemove = v["copyThenRemove"].toBool();
 			rec.request.undoOf = v["undoOf"].toString();
 			rec.copiesComplete = v["copiesComplete"].toBool();
 			rec.undoPath = v["undoPath"].toString();
@@ -625,7 +632,7 @@ std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &direct
 			return {};
 		for (const auto &entry : it->entries)
 		{
-			if (entry.item.maintenance)
+			if (entry.item.maintenance || entry.step == Step::NoEffect)
 				continue;
 			if (entry.step == Step::Done || entry.step == Step::SourceRemoved ||
 				entry.step == Step::Published || entry.step == Step::SourceRetained ||

@@ -2,6 +2,7 @@
 // bounded reads, real Avid fixtures and optional public toolkit specimens.
 
 #include "bentofile.h"
+#include "omfuid.h"
 #include "testbento.h"
 #include "testbento2.h"
 
@@ -10,6 +11,7 @@
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QtEndian>
 
 namespace
 {
@@ -125,9 +127,9 @@ void TestBentoFile::reads_immediate_and_offset_values()
 	BentoFile b;
 	QVERIFY(b.load(w.build()));
 	QCOMPARE(b.objectClass(o), QByteArray("CDCI"));
-	QCOMPARE(BentoFile::uint(b.value(o, b.propertyId("OMFI:DIDD:StoredWidth"))), 1920u);
+	QCOMPARE(b.uintValue(b.value(o, b.propertyId("OMFI:DIDD:StoredWidth"))), 1920u);
 	QCOMPARE(b.value(o, b.propertyId("OMFI:DIDD:FrameLayout")).size(), qsizetype(2));
-	QCOMPARE(BentoFile::uint(b.value(o, b.propertyId("OMFI:DIDD:FrameLayout"))), 3u);
+	QCOMPARE(b.uintValue(b.value(o, b.propertyId("OMFI:DIDD:FrameLayout"))), 3u);
 	// Immediate bytes come back in file order, not byte-swapped.
 	QCOMPARE(b.value(o, b.propertyId("OMFI:DIDD:DIDCompressMethod")).toByteArray(), QByteArray("AVHD"));
 	QCOMPARE(BentoFile::string(b.value(o, b.propertyId("OMFI:CPNT:Name"))), QStringLiteral("Clip"));
@@ -201,9 +203,10 @@ void TestBentoFile::typed_readers()
 	BentoBuilder w;
 	const quint32 a = w.addObject("MOBJ");
 	const quint32 t = w.addObject("TRAK");
+	const quint32 secondTrack = w.addObject("TRAK");
 	w.setRational(a, "OMFI:CPNT:EditRate", 2997, 100);
 	w.setHandle(a, "OMFI:MOBJ:PhysicalMedia", t);
-	w.setHandles(a, "OMFI:TRKG:Tracks", {t, t + 1});
+	w.setHandles(a, "OMFI:TRKG:Tracks", {t, secondTrack});
 	w.setString(a, "OMFI:CPNT:Name", QByteArray("zT_\xa7t", 5)); // MacRoman ß
 	w.setString(a, "OMFI:MCBR:MC:binNameUTF8", QByteArray("zT_\xc3\x9ft", 6));
 	const QByteArray mob = QByteArray::fromHex("060a2b340101010501010f1013000000"
@@ -213,21 +216,21 @@ void TestBentoFile::typed_readers()
 	BentoFile b;
 	QVERIFY(b.load(w.build()));
 	qint32 num = 0, den = 0;
-	QVERIFY(BentoFile::rational(b.value(a, b.propertyId("OMFI:CPNT:EditRate")), num, den));
+	QVERIFY(b.rationalValue(b.value(a, b.propertyId("OMFI:CPNT:EditRate")), num, den));
 	QCOMPARE(num, 2997);
 	QCOMPARE(den, 100);
-	QCOMPARE(BentoFile::handle(b.value(a, b.propertyId("OMFI:MOBJ:PhysicalMedia"))), t);
-	QCOMPARE(BentoFile::handles(b.value(a, b.propertyId("OMFI:TRKG:Tracks"))), (QVector<quint32>{t, t + 1}));
+	QCOMPARE(b.ref(a, b.propertyId("OMFI:MOBJ:PhysicalMedia")), t);
+	QCOMPARE(b.refs(a, b.propertyId("OMFI:TRKG:Tracks")), (QVector<quint32>{t, secondTrack}));
 	QCOMPARE(BentoFile::string(b.value(a, b.propertyId("OMFI:CPNT:Name"))), QString::fromUtf8("zT_ßt"));
 	QCOMPARE(BentoFile::utf8String(b.value(a, b.propertyId("OMFI:MCBR:MC:binNameUTF8"))),
 			 QString::fromUtf8("zT_ßt"));
-	QCOMPARE(BentoFile::mobIdHex(b.value(a, b.propertyId("OMFI:MOBJ:MobID"))),
+	QCOMPARE(OmfUid::canonicalHex(b.value(a, b.propertyId("OMFI:MOBJ:MobID"))),
 			 QStringLiteral("060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613"));
 	// Malformed shapes read as nothing rather than something.
-	QCOMPARE(BentoFile::handle(QByteArrayView("abc")), 0u);
-	QVERIFY(BentoFile::handles(QByteArrayView("\x05\x00zz")).isEmpty());
-	QVERIFY(!BentoFile::rational(QByteArrayView("1234"), num, den));
-	QVERIFY(BentoFile::mobIdHex(QByteArrayView("short")).isEmpty());
+	QCOMPARE(b.handleValue(QByteArrayView("abc")), 0u);
+	QVERIFY(b.handlesValue(QByteArrayView("\x05\x00zz")).isEmpty());
+	QVERIFY(!b.rationalValue(QByteArrayView("1234"), num, den));
+	QVERIFY(OmfUid::canonicalHex(QByteArrayView("short")).isEmpty());
 }
 
 void TestBentoFile::real_fixtures_load_with_the_expected_shape()
@@ -425,13 +428,14 @@ void TestBentoFile::omf_open_reads_only_the_tail()
 	QCOMPARE(heads.size(), 1);
 	QCOMPARE(again.objectClass(heads[0]), QByteArray("HEAD"));
 	const QByteArray srcMobs = again.bytes(heads[0], srcProp);
-	const QVector<BentoFile::MobIndexEntry> idx = BentoFile::mobIndex(srcMobs);
-	QCOMPARE(idx.size(), 2);
-	QCOMPARE(idx[0].uid.size(), 12);
-	QCOMPARE(idx[0].uid.mid(4).toHex(), QByteArray("7429976a70397047"));
-	QCOMPARE(again.objectClass(idx[0].object), QByteArray("MOBJ"));
-	QCOMPARE(again.bytes(idx[0].object, mobIdProp), idx[0].uid);
-	QVERIFY(BentoFile::handles(srcMobs).isEmpty());
+	QVERIFY(srcMobs.size() >= 2 + 2 * 20);
+	QCOMPARE(qFromLittleEndian<quint16>(srcMobs.constData()), 2u);
+	const QByteArray firstUid = srcMobs.mid(2, 12);
+	const quint32 firstObject = qFromLittleEndian<quint32>(srcMobs.constData() + 14);
+	QCOMPARE(firstUid.mid(4).toHex(), QByteArray("7429976a70397047"));
+	QCOMPARE(again.objectClass(firstObject), QByteArray("MOBJ"));
+	QCOMPARE(again.bytes(firstObject, mobIdProp), firstUid);
+	QVERIFY(again.handlesValue(srcMobs).isEmpty());
 
 	// A small .omf: the same budget, and the picture is only read when asked.
 	BentoFile omf;
@@ -443,12 +447,13 @@ void TestBentoFile::omf_open_reads_only_the_tail()
 	QCOMPARE(images.size(), 1);
 	QVERIFY(omf.bytes(images[0], imageProp, 1024).isEmpty());
 	QCOMPARE(omf.bytes(images[0], imageProp).size(), 8876);
-	const QVector<BentoFile::MobIndexEntry> comp =
-		BentoFile::mobIndex(omf.bytes(omf.objectsWithProperty(omf.propertyId("OMFI:CompositionMobs"))[0],
-									  omf.propertyId("OMFI:CompositionMobs")));
-	QCOMPARE(comp.size(), 1);
-	QCOMPARE(comp[0].object, 68006u);
-	QCOMPARE(omf.objectClass(comp[0].object), QByteArray("MOBJ"));
+	const int compositionProperty = omf.propertyId("OMFI:CompositionMobs");
+	const QByteArray compositions = omf.bytes(omf.objectsWithProperty(compositionProperty)[0], compositionProperty);
+	QVERIFY(compositions.size() >= 2 + 20);
+	QCOMPARE(qFromLittleEndian<quint16>(compositions.constData()), 1u);
+	const quint32 compositionObject = qFromLittleEndian<quint32>(compositions.constData() + 14);
+	QCOMPARE(compositionObject, 68006u);
+	QCOMPARE(omf.objectClass(compositionObject), QByteArray("MOBJ"));
 }
 
 void TestBentoFile::omf_open_fails_cleanly_on_non_bento_input()
@@ -505,22 +510,16 @@ void TestBentoFile::omf_mob_index()
 	const QByteArray v = b.bytes(head, b.propertyId("OMFI:SourceMobs"));
 	QCOMPARE(v, index);
 
-	const QVector<BentoFile::MobIndexEntry> idx = BentoFile::mobIndex(v);
-	QCOMPARE(idx.size(), 2);
-	QCOMPARE(idx[0].uid, BentoBuilder::le32(0x2a) + coreA);
-	QCOMPARE(idx[0].object, 68011u);
-	QCOMPARE(idx[1].uid, BentoBuilder::le32(0x2a) + coreB);
-	QCOMPARE(idx[1].object, 68020u);
-	// handles() sees 8-byte pairs whose second word is never zero here.
-	QVERIFY(BentoFile::handles(v).isEmpty());
-
-	// Malformed shapes read as nothing: short, over-declared, zero object.
-	QVERIFY(BentoFile::mobIndex(QByteArrayView("\x01")).isEmpty());
-	const QByteArray overDeclared = BentoBuilder::le32(3).left(2) + index.mid(2);
-	QVERIFY(BentoFile::mobIndex(overDeclared).isEmpty());
-	QByteArray zero = BentoBuilder::le32(1).left(2) + mobIndexRow(coreA, 0, 0);
-	QVERIFY(BentoFile::mobIndex(zero).isEmpty());
-	QVERIFY(BentoFile::mobIndex(QByteArrayView()).isEmpty());
+	// Bento preserves the schema payload exactly. A mob index is not a
+	// regular object-reference array and must not be interpreted as one.
+	QCOMPARE(qFromLittleEndian<quint16>(v.constData()), 2u);
+	QCOMPARE(v.mid(2, 12), BentoBuilder::le32(0x2a) + coreA);
+	QCOMPARE(qFromLittleEndian<quint32>(v.constData() + 14), 68011u);
+	QCOMPARE(v.mid(22, 12), BentoBuilder::le32(0x2a) + coreB);
+	QCOMPARE(qFromLittleEndian<quint32>(v.constData() + 34), 68020u);
+	BentoFile::ReadStatus status;
+	QVERIFY(b.refs(head, b.propertyId("OMFI:SourceMobs"), &status).isEmpty());
+	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 }
 
 void TestBentoFile::bento2_endian_references_and_status()

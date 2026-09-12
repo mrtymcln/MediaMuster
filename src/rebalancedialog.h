@@ -33,7 +33,7 @@ class Rebalancer;
 /// Two state phases:
 ///
 ///   - **Planning**: the volume picker computes a fresh plan via
-///     `Rebalancer::computePlan` and the table reflects what *would*
+///     `RebalancePlanner::computePlan` and the table reflects what *would*
 ///     happen. No disk changes yet.
 ///
 ///   - **Running**: Rebalance is in flight. The picker is disabled,

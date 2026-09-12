@@ -18,7 +18,7 @@ The journal remains numeric schema **3**. The new fields are required; incompati
 
 ## Local validation
 
-The application and all test targets build on macOS 15.8 with pinned Qt 6.5.3, including the universal arm64/x86_64 application. Application signature verification passes. Runtime tests execute the arm64 build. **All 29 CTest targets pass**, including 59 file-operation checks, 17 journal checks and 14 interface checks (QtTest totals include setup/cleanup). `git diff --check` also passes.
+The application and all test targets build on macOS 15.8 with pinned Qt 6.5.3, including the universal arm64/x86_64 application. Application signature verification passes. Runtime tests execute the arm64 build. **All 29 CTest targets pass** after the cleanup, including 92 file-operation checks, 18 journal checks and 18 interface checks (QtTest totals include setup/cleanup). `git diff --check` also passes.
 
 The regression coverage includes native copying with verification on/off; bounded retries; late destination conflicts; source changes; cancellation; abrupt child-process termination; journal and directory-flush failures; original-removal crash boundaries; whole-job Move barriers; partial Undo; Undo ownership and Resume; regenerated Avid indexes; network Trash routing; volume-remount identity handling; and a real macOS system Trash/Undo round trip using disposable data.
 
@@ -39,3 +39,47 @@ codesign --verify --deep --strict build/MediaMuster.app
 - Physical power-loss and competing-client tests. Filesystem flush success is not a guarantee about remote hardware. A stalled native network call may not acknowledge cancellation immediately.
 
 Uncertain outcomes and partial files that cannot be safely removed remain journalled for inspection. Tests use disposable data. An early failed native-Trash development test lost its temporary fixture journal and left its disposable file in Trash; subsequent tests preserve receipts and restore their own fixtures on early failure. No unrelated Trash items were searched or removed.
+
+## Windows CI and retry-policy follow-up
+
+The supplied Windows CI log fails at `opcopier.cpp`'s verification-progress limit calculation: Windows' function-like `max` macro expands `std::numeric_limits<qint64>::max()`. Parenthesizing the function name prevents that expansion. A local compiler reproducer using the expression extracted from the source fails with the original expression and passes with the corrected expression. This confirms the reported macro clash, not a complete Windows build.
+
+`OpCopier::Result::retryable` now controls the existing bounded Copy/Move retry loop. Classified temporary native errors receive at most three attempts; permanent errors, publication/verification/protection failures and cancellation do not automatically recopy. Windows classification also checks that `CopyFileEx` actually failed, the source is unchanged, and the staging file is protected or positively absent. A failed access/network probe is not treated as absence. Backoff observes cancellation every 25 ms.
+
+The full Mac build, application signature check and all 29 CTest targets pass after this change, including 76 file-operation checks (QtTest totals include setup/cleanup). Added coverage exercises temporary failure followed by success, permanent/exhausted failure with continuation, whole-job Move retention, cancellation, journal failure and publication failure without recopy. Native error injection tests use the same classifier as production; they do not simulate a real NEXIS disconnect. Build signing and Qt tests required execution outside the tool sandbox. Actual Windows CI compilation and Windows/NEXIS runtime validation remain outstanding.
+
+## Cleanup validation
+
+The accepted cleanup removes the unused parked-file writer and old filename recognition,
+obsolete filter interfaces and unused helpers. Shared metadata, bin fallback rules,
+operation UI coordination and Rebalance planning now have focused owners. The
+[architecture map](architecture.md) records the new names and boundaries; the
+[contributor guide](../CONTRIBUTING.md) records naming and formatting rules. CMake
+continues to list sources explicitly, and `RevealInFinder` is unchanged.
+
+`NativeFile` now exposes the existing full-flush operation without an unused durability
+choice. Unsupported persistence remains distinct from a real I/O failure. Journal
+schema stays at numeric **3**, with `copyThenRemove` replacing the misleading
+`copyMove` field and no compatibility reader.
+
+The preview and runner share destination naming and Move space calculations. A mixed
+Move accounts for every required temporary copy. Identity-confirmed files already at
+their destination are recorded as `NoEffect` and displayed as unchanged: they require
+no extra copy space, do not block the other Move items, and are excluded from Undo.
+This is distinct from an explicit user Skip. Resume and journal decoding preserve and
+validate the recorded identity evidence; an all-unchanged job does not replace the
+previous eligible Undo candidate.
+
+Preview filesystem, identity, volume and free-space checks run in a background worker.
+Changing destination or conflict choices invalidates older results and keeps execution
+disabled until the current assessment returns. The runner still rechecks live state
+before acting. Regression tests cover delayed/stale preview results, mixed Move
+estimates, unchanged items across Copy/Move/Resume/Undo, and invalid journal evidence.
+Controller and metadata-resolver tests retain cancellation, recovery, Debug defaults,
+conflict handling and metadata provenance coverage.
+
+Final validation: the full universal Mac application and all test targets build;
+**29/29 CTest targets pass** in 36.87 seconds; strict deep application signature
+verification and `git diff --check` pass. Windows compilation and real Windows/NEXIS
+storage acceptance remain outstanding. Deeper scanner/runner state decomposition is
+deferred until that platform baseline, as agreed in the cleanup sequence.

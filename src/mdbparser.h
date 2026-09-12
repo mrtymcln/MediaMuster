@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mxfparser.h"
+#include "mediametadata.h"
 #include "omfobjects.h"
 
 #include <QHash>
@@ -30,7 +30,7 @@ struct MdbMasterMob
 
 /// One essence file as the MDB describes it. Keyed by the file MOB — the
 /// PMR's FILE record. `essence` is filled the way MxfParser fills it from
-/// a header, then run through the same MxfParser::finalise, so a row built
+/// a header, then run through the same MediaMetadataUtil::finalise, so a row built
 /// from the database shows the same codec / resolution / fps / duration /
 /// bit depth the header path would. `essenceComplete` is the scanner's
 /// permission to skip the header read — false when the database cannot
@@ -41,7 +41,7 @@ struct MdbFileMob
 	QString mobIdHex;
 	QString masterMobId; ///< Unique master whose source-clip graph references this file; empty if ambiguous.
 	int usageCode = -1;	 ///< 0 = media, 9 = precompute.
-	MxfMetadata essence;
+	MediaMetadata essence;
 	bool essenceComplete = false;
 	/// OMF-era: _PJ from the file mob, else from the source mob its SCLP
 	/// points at — the two places OMF files keep the project (MC 2026 and

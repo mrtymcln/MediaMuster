@@ -181,7 +181,7 @@ namespace OmfObjects
 			return {};
 		// Gap fix: 1244 (DNx TR, 1440x540i) was registered under version
 		// byte 0x0D, not 0x0A — the only DNxHD id whose 0x0A spelling names
-		// nothing in MxfParser's table. Both eras hit this.
+		// nothing in the shared codec table. Both eras hit this.
 		if (resId == 1244)
 			return QByteArray::fromHex("060E2B340401010D04010202710A0000");
 		QByteArray ul = QByteArray::fromHex("060e2b340401010a04010202");
@@ -675,7 +675,7 @@ namespace OmfObjects
 	// MARK: - Descriptor
 
 	bool readDescriptor(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
-						const ObjectByMob &objectByMob, MxfMetadata &e, bool *codecKnown)
+						const ObjectByMob &objectByMob, MediaMetadata &e, bool *codecKnown)
 	{
 		if (codecKnown)
 			*codecKnown = false;
@@ -708,7 +708,7 @@ namespace OmfObjects
 				tableHit = true;
 			}
 		}
-		e.essenceContainerLabel = label;
+		e.compressionLabel = label;
 		// Avid alpha-only database descriptors explicitly store NONE and
 		// separate A / 8 component arrays. This works with either MobID width
 		// and OMF revision; missing or unreadable compression is not NONE.
@@ -748,7 +748,7 @@ namespace OmfObjects
 		// Rate. Video goes through the same label matcher as tag 0x3001.
 		qint32 num = 0, den = 0;
 		if (b.rationalValue(b.bytes(desc, p.sampleRate), num, den) && den > 0 && num > 0)
-			MxfParser::applyEditRate(e, quint32(num), quint32(den));
+			MediaMetadataUtil::applyEditRate(e, quint32(num), quint32(den));
 
 		const qint64 length = b.int64Value(b.bytes(desc, p.length));
 		if (e.isAudio)
@@ -810,12 +810,12 @@ namespace OmfObjects
 					e.durationFrames = qint64(std::round(frames));
 			}
 			if (const quint32 bits = b.uintValue(b.bytes(desc, p.bits)))
-				e.bitDepth = MxfParser::bitDepthLabel(bits);
+				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
 			e.channels = int(b.uintValue(b.bytes(desc, p.channels)));
 			// OMF-era: the MDAU properties above are absent on the legacy
 			// descriptors, so the blob supplies what they left empty.
 			if (e.bitDepth.isEmpty() && blobBits > 0)
-				e.bitDepth = MxfParser::bitDepthLabel(quint32(blobBits));
+				e.bitDepth = MediaMetadataUtil::bitDepthLabel(quint32(blobBits));
 			if (e.channels <= 0 && blobChannels > 0)
 				e.channels = blobChannels;
 		}
@@ -833,7 +833,7 @@ namespace OmfObjects
 				height = tiff.height;
 				e.codec = tiff.codec;
 				if (tiff.bits > 0)
-					e.bitDepth = MxfParser::bitDepthLabel(quint32(tiff.bits));
+					e.bitDepth = MediaMetadataUtil::bitDepthLabel(quint32(tiff.bits));
 				if (codecKnown)
 					*codecKnown = !e.codec.isEmpty();
 			}
@@ -846,7 +846,7 @@ namespace OmfObjects
 			e.frameLayout = layout;
 			e.heightIsFrameHeight = height > 0;
 			if (const quint32 bits = b.uintValue(b.bytes(desc, p.compWidth)))
-				e.bitDepth = MxfParser::bitDepthLabel(bits);
+				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
 		}
 
 		// Drop frame: the timecode component is on a source mob, reached
@@ -855,7 +855,7 @@ namespace OmfObjects
 		if (const quint32 tccp = findTimecodeComponent(b, p, mobObj, objectByMob, seen, 0))
 			e.dropFrame = b.uintValue(b.bytes(tccp, p.tcFlags)) != 0;
 
-		MxfParser::finalise(e);
+		MediaMetadataUtil::finalise(e);
 		return true;
 	}
 } // namespace OmfObjects

@@ -251,7 +251,7 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 	MediaFile f;
 	f.fileName = QStringLiteral("V01.abc.mxf");
 	f.volumeName = QStringLiteral("EDIT");
-	f.mxfFolder = QStringLiteral("8646");
+	f.mediaFolderName = QStringLiteral("8646");
 	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
 
 	MediaTableModel model;

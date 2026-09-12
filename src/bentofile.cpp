@@ -1,6 +1,5 @@
 #include "bentofile.h"
 #include "avidtext.h"
-#include "mobid.h"
 
 #include <QtEndian>
 #include <algorithm>
@@ -12,7 +11,6 @@ namespace
 	constexpr quint64 kMaxTailBytes = 64 * 1024 * 1024;
 	constexpr qsizetype kMaxEntries = qsizetype(kMaxTailBytes / 24);
 	constexpr unsigned char kMagic[] = {0xA4, 0x43, 0x4D, 0xA5, 0x48, 0x64, 0x72, 0xD7};
-	constexpr qsizetype kMobIndexUidSize = 12, kMobIndexRowSize = 20;
 	quint32 u32At(const char *p) { return qFromLittleEndian<quint32>(p); }
 	quint16 u16At(const char *p) { return qFromLittleEndian<quint16>(p); }
 	quint32 word(const char *p, bool big) { return big ? qFromBigEndian<quint32>(p) : u32At(p); }
@@ -742,51 +740,6 @@ QVector<quint32> BentoFile::refs(quint32 object, int property, ReadStatus *statu
 		*status = s;
 	return result;
 }
-quint32 BentoFile::uint(QByteArrayView v)
-{
-	quint32 n = 0;
-	const qsizetype len = qMin<qsizetype>(v.size(), 4);
-	for (qsizetype i = 0; i < len; ++i)
-		n |= quint32(static_cast<unsigned char>(v[i])) << (8 * i);
-	return n;
-}
-
-bool BentoFile::rational(QByteArrayView v, qint32 &num, qint32 &den)
-{
-	if (v.size() != 8)
-		return false;
-	num = qint32(u32At(v.data()));
-	den = qint32(u32At(v.data() + 4));
-	return true;
-}
-
-quint32 BentoFile::handle(QByteArrayView v)
-{
-	if (v.size() != 8)
-		return 0;
-	if (u32At(v.data() + 4) != 0)
-		return 0;
-	return u32At(v.data());
-}
-
-QVector<quint32> BentoFile::handles(QByteArrayView v)
-{
-	QVector<quint32> out;
-	if (v.size() < 2)
-		return out;
-	const quint32 count = u16At(v.data());
-	if (qint64(v.size()) < 2 + qint64(count) * 8)
-		return out; // declared more than it holds: not a handle array
-	out.reserve(int(count));
-	for (quint32 i = 0; i < count; ++i)
-	{
-		const quint32 id = handle(v.sliced(2 + qsizetype(i) * 8, 8));
-		if (id != 0)
-			out.append(id);
-	}
-	return out;
-}
-
 QString BentoFile::string(QByteArrayView v)
 {
 	const QByteArrayView t = untilNul(v);
@@ -797,34 +750,4 @@ QString BentoFile::utf8String(QByteArrayView v)
 {
 	const QByteArrayView t = untilNul(v);
 	return QString::fromUtf8(t.data(), t.size());
-}
-
-QString BentoFile::mobIdHex(QByteArrayView v)
-{
-	if (v.size() < MobId::kRawSize)
-		return {};
-	return MobId::format(reinterpret_cast<const unsigned char *>(v.data()));
-}
-
-// MARK: - OMF-era: mob index
-
-QVector<BentoFile::MobIndexEntry> BentoFile::mobIndex(QByteArrayView v)
-{
-	QVector<MobIndexEntry> out;
-	if (v.size() < 2)
-		return out;
-	const quint32 count = u16At(v.data());
-	if (qint64(v.size()) < 2 + qint64(count) * kMobIndexRowSize)
-		return out; // declared more than it holds: not a mob index
-	out.reserve(int(count));
-	for (quint32 i = 0; i < count; ++i)
-	{
-		const char *row = v.data() + 2 + qsizetype(i) * kMobIndexRowSize;
-		MobIndexEntry e;
-		e.uid = QByteArray(row, kMobIndexUidSize);
-		e.object = u32At(row + kMobIndexUidSize);
-		if (e.object != 0)
-			out.append(e);
-	}
-	return out;
 }

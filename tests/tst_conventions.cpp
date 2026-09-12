@@ -22,7 +22,7 @@ private slots:
 	void essence_name_combinations();
 	void avid_media_extensions();
 	void avid_media_name_is_the_table_rule();
-	void temp_renamed_media_is_still_media();
+	void unrecognised_suffixes_are_not_media();
 	void folder_budget_thresholds_stay_ordered();
 
 	// MARK: - OMF-era
@@ -117,32 +117,21 @@ void TestConventions::avid_media_extensions()
 	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("Thumbs.db")));
 	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("desktop.ini")));
 	// Raw extension test sees only the temp suffix; stripping is
-	// isAvidMediaName's job (below).
+	// The full filename must end in a supported extension.
 	QVERIFY(!Conventions::hasAvidMediaExtension(
 		QStringLiteral("clip.mxf.__movereplace_ab12")));
 }
 
-void TestConventions::temp_renamed_media_is_still_media()
+void TestConventions::unrecognised_suffixes_are_not_media()
 {
-	// A parked file is the user's own media wearing a suffix one of our
-	// operations gave it. If a crash strands it, the table is where the
-	// user finds it — so it must never be filtered out.
-	const QString uuid = QStringLiteral("9f2c1d3e-0000-4000-8000-abcdefabcdef");
-	for (const QLatin1String tag : {Conventions::kCopyReplaceTag, Conventions::kMoveReplaceTag})
+	// Only actual media extensions qualify; old replacement markers have no special meaning.
+	for (const QString &name : {QStringLiteral("Clip.mxf.__copyreplace_ab12"),
+		QStringLiteral("Clip.mxf.__movereplace_ab12"), QStringLiteral("Clip.omf.partial"),
+		QStringLiteral("Clip.wav.backup")})
 	{
-		const QString parked = QStringLiteral("Clip.mxf") + tag + uuid;
-		QVERIFY2(Conventions::isAvidMediaName(parked), qPrintable(parked));
-		QCOMPARE(Conventions::withoutTempSuffix(parked).toString(), QStringLiteral("Clip.mxf"));
+		QVERIFY2(!Conventions::isAvidMediaName(name), qPrintable(name));
+		QVERIFY2(!Conventions::countsAsEssenceName(name), qPrintable(name));
 	}
-
-	// A name that is ONLY a marker has no media base — still hidden.
-	QVERIFY(!Conventions::isAvidMediaName(
-		QStringLiteral(".__movereplace_9f2c1d3e-0000-4000-8000-abcdefabcdef")));
-	// Stripping must not rescue a non-media file.
-	QVERIFY(!Conventions::isAvidMediaName(QStringLiteral("notes.txt.__copyreplace_ab12")));
-	// An ordinary name passes through untouched.
-	QCOMPARE(Conventions::withoutTempSuffix(QStringLiteral("Clip.mxf")).toString(),
-			 QStringLiteral("Clip.mxf"));
 }
 
 void TestConventions::avid_media_name_is_the_table_rule()

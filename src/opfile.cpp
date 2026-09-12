@@ -273,34 +273,22 @@ bool OpFile::stillAt(const QString &path, const OpStamp &expected) const
 
 NativeFile::SyncResult OpFile::sync()
 {
-	return NativeFile::syncFile(m_file, NativeFile::Durability::Platter);
+	return NativeFile::syncFile(m_file);
 }
 
+#ifndef Q_OS_WIN
 bool OpFile::preserveMetadataFrom(OpFile &source, QString &error)
 {
-#ifdef Q_OS_WIN
-	FILETIME created{}, accessed{}, modified{};
-	if (::GetFileTime(handle(source.m_file), &created, &accessed, &modified) &&
-		::SetFileTime(handle(m_file), &created, &accessed, &modified))
-	{
-		error = QStringLiteral("File bytes and timestamps copied. Windows security and "
-							   "alternate-stream metadata are not copied; the source is retained.");
-		return false;
-	}
-#elif defined(Q_OS_MAC)
-	// Metadata only: the data fork still uses our single copy/hash loop.
-	// This also preserves resource forks and ACLs where supported.
+#ifdef Q_OS_MAC
+	// The native data transfer has finished. Copy resource forks, ACLs and
+	// the remaining metadata separately before publication.
 	if (::fcopyfile(source.m_file.handle(), m_file.handle(), nullptr, COPYFILE_METADATA) == 0)
 		return true;
 #else
 	struct stat info{};
 	if (::fstat(source.m_file.handle(), &info) == 0)
 	{
-#ifdef Q_OS_MAC
-		const timespec times[] = {info.st_atimespec, info.st_mtimespec};
-#else
 		const timespec times[] = {info.st_atim, info.st_mtim};
-#endif
 		if (::fchmod(m_file.handle(), info.st_mode & 0777) == 0 &&
 			::futimens(m_file.handle(), times) == 0)
 			return true;
@@ -309,8 +297,9 @@ bool OpFile::preserveMetadataFrom(OpFile &source, QString &error)
 	error = QStringLiteral("Could not preserve all file metadata: %1").arg(nativeError());
 	return false;
 }
+#endif
 
-bool OpFile::canStreamCopy(QString &error) const
+bool OpFile::checkCopySupport(QString &error) const
 {
 #ifdef Q_OS_WIN
 	BY_HANDLE_FILE_INFORMATION info{};

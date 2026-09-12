@@ -3,6 +3,7 @@
 Q_LOGGING_CATEGORY(lcAvb, "mediamuster.avb", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcBento, "mediamuster.bento", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcMdb, "mediamuster.mdb", QtWarningMsg)
+Q_LOGGING_CATEGORY(lcMetadata, "mediamuster.metadata", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcMxf, "mediamuster.mxf", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcOmf, "mediamuster.omf", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcPmr, "mediamuster.pmr", QtWarningMsg)

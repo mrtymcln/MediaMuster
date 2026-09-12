@@ -88,7 +88,7 @@ namespace Conventions
 	///
 	/// An OMF root is deliberately NOT an MXF root: the scanner scans one,
 	/// but rebalancing an OMF root into MXF-numbered folders would be
-	/// wrong, and Rebalancer::parseFolderName rejects it. Keep the two
+	/// wrong, and RebalancePlanner::parseFolderName rejects it. Keep the two
 	/// distinct; tst_conventions pins that they never collide.
 	inline constexpr QLatin1String kOmfMediaFilesDir("OMFI MediaFiles");
 
@@ -230,27 +230,9 @@ namespace Conventions
 	// MARK: - Names MediaMuster writes to disk
 	// ═══════════════════════════════════════════════════════════════
 
-    /// Legacy replacement names remain recognised by the scanner so stranded
-    /// files from earlier versions are visible. The new engine never writes them.
-	inline constexpr QLatin1String kCopyReplaceTag(".__copyreplace_");
-	inline constexpr QLatin1String kMoveReplaceTag(".__movereplace_");
-
     /// Delete's retained-file folder, beside the Avid media tree on the same
     /// filesystem. All locations and original paths are journalled.
 	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
-
-	/// The name with a trailing MediaMuster temp suffix removed, so
-	/// "Clip.mxf.__movereplace_ab12" reads as "Clip.mxf".
-	inline QStringView withoutTempSuffix(QStringView fileName)
-	{
-		for (const QLatin1String tag : {kCopyReplaceTag, kMoveReplaceTag})
-		{
-			const qsizetype at = fileName.lastIndexOf(tag);
-			if (at > 0)
-				return fileName.left(at);
-		}
-		return fileName;
-	}
 
 	// ═══════════════════════════════════════════════════════════════
 	// MARK: - What counts as media
@@ -260,23 +242,15 @@ namespace Conventions
 	/// dot-hidden AppleDouble twins ("._clip.mxf"). No junk denylist
 	/// needed — Thumbs.db, desktop.ini, the msm databases, and stray
 	/// exports all fail the extension test.
-	///
-	/// A file wearing one of OUR temp suffixes still counts: it is the
-	/// user's own media, renamed aside by an operation that then died.
-	/// Hiding it would be the one case where this rule loses a file —
-	/// a crash whose journal never got to report the park (an unmounted
-	/// volume at recovery time, say) leaves the table as the only place
-	/// the file is findable.
 	inline bool isAvidMediaName(QStringView fileName)
 	{
-		return !isDotHidden(fileName) && hasAvidMediaExtension(withoutTempSuffix(fileName));
+		return !isDotHidden(fileName) && hasAvidMediaExtension(fileName);
 	}
 
 	/// True when a directory entry occupies Avid's per-folder file budget
 	/// (kFolderMax above): an .mxf that isn't dot-hidden. Used by the
 	/// rebalancer's packing and the Quarantined tally — NOT by the media
-	/// table, which admits more (isAvidMediaName: non-MXF audio too, and
-	/// it looks through a temp-rename suffix). The two differ on purpose;
+	/// table, which also admits non-MXF audio. The two differ on purpose;
 	/// tst_conventions pins both.
 	inline bool countsAsEssenceName(QStringView fileName)
 	{

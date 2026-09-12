@@ -253,7 +253,7 @@ void TestMdbParser::tiny_fixture_covers_the_tone_file()
 	QCOMPARE(f.essence.codec, QString::fromLatin1(kPcmAudioName));
 
 	// The technical fields equal what the media file's own header says.
-	const MxfMetadata hdr = MxfParser::parseHeader(fx("TONE_100A01.EA7D504A.611740.mxf"));
+	const MediaMetadata hdr = MxfParser::parseHeader(fx("TONE_100A01.EA7D504A.611740.mxf"));
 	QVERIFY(hdr.valid);
 	QCOMPARE(f.essence.sampleRate, hdr.sampleRate);
 	QCOMPARE(f.essence.channels, hdr.channels);
@@ -448,7 +448,7 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 		const QString path = fx("corpus_headers/") + QLatin1String(file);
 		QVERIFY2(QFile::exists(path), qPrintable(path));
 
-		const MxfMetadata meta = MxfParser::parseHeader(path);
+		const MediaMetadata meta = MxfParser::parseHeader(path);
 		QVERIFY2(meta.valid, file);
 		QVERIFY2(meta.clipNameFromMaterial, file);
 
@@ -522,7 +522,7 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 			const MdbFileMob &f = db.files[e.mobId];
 			const MdbMasterMob &m = db.masters[e.masterMobId];
 
-			const MxfMetadata hdr = MxfParser::parseHeader(path);
+			const MediaMetadata hdr = MxfParser::parseHeader(path);
 			QVERIFY2(hdr.valid, qPrintable(e.fileName));
 			QCOMPARE(m.clipName, hdr.clipName);
 			QCOMPARE(f.essence.isAudio, hdr.isAudio);
@@ -533,13 +533,13 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 				++incomplete;
 				continue; // the MPGA case — asserted separately
 			}
-			const MxfMetadata &db_ = f.essence;
+			const MediaMetadata &db_ = f.essence;
 			const QByteArray fnBytes = e.fileName.toUtf8();
 			const char *fn = fnBytes.constData();
 			QVERIFY2(db_.valid, fn);
-			QVERIFY2(db_.essenceContainerLabel == hdr.essenceContainerLabel,
-					 qPrintable(e.fileName + QStringLiteral(": label ") + db_.essenceContainerLabel.toHex() +
-								QStringLiteral(" vs ") + hdr.essenceContainerLabel.toHex()));
+			QVERIFY2(db_.compressionLabel == hdr.compressionLabel,
+					 qPrintable(e.fileName + QStringLiteral(": label ") + db_.compressionLabel.toHex() +
+								QStringLiteral(" vs ") + hdr.compressionLabel.toHex()));
 			QVERIFY2(db_.codec == hdr.codec,
 					 qPrintable(e.fileName + QStringLiteral(": codec ") + db_.codec + QStringLiteral(" vs ") + hdr.codec));
 			QVERIFY2(db_.resolution == hdr.resolution,
@@ -582,7 +582,7 @@ void TestMdbParser::mpga_audio_is_not_essence_complete()
 	QVERIFY(f.essence.isAudio);
 	QVERIFY(!f.essenceComplete);
 
-	const MxfMetadata hdr = MxfParser::parseHeader(fx("corpus_headers/A01.E68C35B3_2C34B2C34B61AA.mxf"));
+	const MediaMetadata hdr = MxfParser::parseHeader(fx("corpus_headers/A01.E68C35B3_2C34B2C34B61AA.mxf"));
 	QVERIFY(hdr.valid);
 	QVERIFY2(hdr.codec.contains(QStringLiteral("MP2")), qPrintable(hdr.codec));
 }
@@ -618,7 +618,7 @@ void TestMdbParser::omf_resolution_id_1244_names_avid_dnx_tr()
 	// 25.12 additions); the 0x0A spelling every other DNxHD id uses names
 	// nothing for it. The neighbours keep the 0x0A spelling.
 	QCOMPARE(OmfObjects::ulFromResId(1244), QByteArray::fromHex("060E2B340401010D04010202710A0000"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(OmfObjects::ulFromResId(1244), QStringLiteral("29.97")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(OmfObjects::ulFromResId(1244), QStringLiteral("29.97")),
 			 QStringLiteral("Avid DNx TR"));
 	QCOMPARE(OmfObjects::ulFromResId(1243), QByteArray::fromHex("060e2b340401010a0401020271090000"));
 	QCOMPARE(OmfObjects::ulFromResId(1237), QByteArray::fromHex("060e2b340401010a0401020271030000"));
@@ -793,9 +793,9 @@ void TestMdbParser::omf_era_mdb_video_facts_by_resolution_id()
 	// DNxHD-era ids keep whatever the MXF path names their label — the
 	// filename tokens (AVHD_145, AVHD_220) agree with the tier table.
 	const QString dnx1242 =
-		MxfParser::codecFromEssenceLabel(OmfObjects::ulFromResId(1242), QStringLiteral("29.97"));
+		MediaMetadataUtil::codecFromCompressionLabel(OmfObjects::ulFromResId(1242), QStringLiteral("29.97"));
 	const QString dnx1252 =
-		MxfParser::codecFromEssenceLabel(OmfObjects::ulFromResId(1252), QStringLiteral("59.94"));
+		MediaMetadataUtil::codecFromCompressionLabel(OmfObjects::ulFromResId(1252), QStringLiteral("59.94"));
 	QCOMPARE(dnx1242, QStringLiteral("Avid DNx SQ (DNxHD 145)"));
 	QCOMPARE(dnx1252, QStringLiteral("Avid DNx SQ (DNxHD 145)")); // 2012 DNxHD whitepaper: 720p SQ at 59.94
 
@@ -1115,7 +1115,7 @@ void TestMdbParser::omf_winl_and_unxl_locators_yield_the_source_path()
 	OmfObjects::Attributes attrs;
 	attrs.omfEra = true; // as MdbParser sets it for a 12-byte mob: the UNXL is admitted
 	QSet<quint32> seen;
-	OmfObjects::walkAttributes(bf, p, BentoFile::handle(bf.bytes(b, p.attrs)), attrs, seen, 0);
+	OmfObjects::walkAttributes(bf, p, bf.ref(b, p.attrs), attrs, seen, 0);
 	QCOMPARE(attrs.mediaFilePath, QStringLiteral("/Volumes/Media/OMFI MediaFiles/tone.aif"));
 	QCOMPARE(attrs.sourceFilePath, QStringLiteral("/mnt/clips/tone.aif"));
 }
@@ -1195,16 +1195,16 @@ void TestMdbParser::mxf_era_master_keeps_the_macl_only_srcfile_rule()
 	QVERIFY(ok);
 	QCOMPARE(db.masters.size(), 3);
 
-	const MdbMasterMob &ma = db.masters[BentoFile::mobIdHex(mobA)];
+	const MdbMasterMob &ma = db.masters[OmfUid::canonicalHex(mobA)];
 	QCOMPARE(ma.sourceFilePath, QStringLiteral("\\\\server\\share\\import.mov"));
 	QCOMPARE(ma.sourceFileName, QStringLiteral("import.mov"));
 	QVERIFY(ma.isImported);
 
-	const MdbMasterMob &mb = db.masters[BentoFile::mobIdHex(mobB)];
+	const MdbMasterMob &mb = db.masters[OmfUid::canonicalHex(mobB)];
 	QVERIFY2(mb.sourceFilePath.isEmpty(), qPrintable(mb.sourceFilePath));
 	QVERIFY(mb.sourceFileName.isEmpty());
 
-	const MdbMasterMob &mc = db.masters[BentoFile::mobIdHex(mobC)];
+	const MdbMasterMob &mc = db.masters[OmfUid::canonicalHex(mobC)];
 	QCOMPARE(mc.sourceFilePath, QStringLiteral("/Volumes/Media/import.mov"));
 	QCOMPARE(mc.sourceFileName, QStringLiteral("import.mov"));
 }
@@ -1352,7 +1352,7 @@ void TestMdbParser::omf2_video_uses_full_mixed_field_height_and_64_bit_length()
 		BentoFile b;
 		QVERIFY(b.load(w.build()));
 		OmfObjects::Props p(b);
-		MxfMetadata m;
+		MediaMetadata m;
 		bool codecKnown = false;
 		QVERIFY(OmfObjects::readDescriptor(b, p, mob, desc, {}, m, &codecKnown));
 		QVERIFY(m.valid);
@@ -1394,7 +1394,7 @@ void TestMdbParser::tiff_summary_respects_own_byte_order_and_avid_short_values()
 			w.set(desc, "OMFI:MDFL:Length", w.wide(1));
 			BentoFile b;
 			QVERIFY(b.load(w.build()));
-			MxfMetadata m;
+			MediaMetadata m;
 			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, m));
 			QVERIFY(m.valid);
 			QCOMPARE(m.width, 320);
@@ -1449,7 +1449,7 @@ void TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arra
 					w.set(desc, "OMFI:DIDD:EssenceCompression", test.coding);
 				BentoFile b;
 				QVERIFY2(b.load(w.build()), test.name);
-				MxfMetadata meta;
+				MediaMetadata meta;
 				bool known = false;
 				QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, meta, &known));
 				QVERIFY(meta.valid);

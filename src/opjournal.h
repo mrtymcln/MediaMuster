@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fileidentity.h"
+#include "volumeidentity.h"
 #include "opfile.h"
 #include "oprequest.h"
 #include <QFile>
@@ -25,6 +25,7 @@ class OpJournal
 		RemovingSource,
 		SourceRemoved,
 		Done,
+		NoEffect,
 		SourceRetained,
 		Skipped,
 		Cancelled,

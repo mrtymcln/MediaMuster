@@ -62,7 +62,7 @@ private slots:
 	void precompute_hierarchy_filters_intersect_and_unknown_is_selectable();
 	void precompute_tree_unites_branches_and_preserves_complete_paths();
 	void precompute_tree_empty_and_unknown_are_not_wildcards();
-	void precompute_tree_gate_reset_and_legacy_filters_have_no_hidden_state();
+	void precompute_tree_gate_reset_has_no_hidden_state();
 	void bin_intersection_matches_different_identities_on_the_same_row();
 	void bin_subtraction_rejects_either_identity_data();
 	void bin_subtraction_rejects_either_identity();
@@ -134,12 +134,12 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 	MediaFile a = rowNamed(QStringLiteral("Scene 1"));
 	a.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
 	a.fileName = QStringLiteral("V01.abc.mxf");
-	a.mxfFolder = QStringLiteral("8646");
+	a.mediaFolderName = QStringLiteral("8646");
 	a.volumeName = QStringLiteral("EDIT");
 	MediaFile b = rowNamed(QStringLiteral("Scene 2"));
 	b.filePath = QStringLiteral("/Volumes/BACKUP/Avid MediaFiles/MXF/1/V02.def.mxf");
 	b.fileName = QStringLiteral("V02.def.mxf");
-	b.mxfFolder = QStringLiteral("1");
+	b.mediaFolderName = QStringLiteral("1");
 	b.volumeName = QStringLiteral("BACKUP");
 	model.setMediaFiles({a, b});
 
@@ -295,7 +295,7 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setEffectDetailsEnabled(true);
-	proxy.setEffectFilter({QStringLiteral("Title"), QStringLiteral("Custom, exact name")});
+	proxy.setPrecomputeTreeFilter({true, {{{}, {}, QStringLiteral("Title")}, {{}, {}, QStringLiteral("Custom, exact name")}}});
 	QCOMPARE(proxy.rowCount(), 4); // OR across names, proven precomputes only
 	proxy.setEffectVolumeFilter(title.volumePath);
 	QCOMPARE(proxy.rowCount(), 3);
@@ -303,21 +303,21 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilterMobs(true, {title.masterMobId});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {title.masterMobId}}}});
 	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setBinFilterMobs(true, {custom.masterMobId});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {custom.masterMobId}}}});
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText(QStringLiteral("picture"));
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setSearchText(QStringLiteral("sound"));
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText({});
-	proxy.setBinFilterMobs(false, {});
+	proxy.setBinFilter({});
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
 	proxy.setProjectFilter({});
-	proxy.setEffectFilter({QStringLiteral("title")});
+	proxy.setPrecomputeTreeFilter({true, {{{}, {}, QStringLiteral("title")}}});
 	QCOMPARE(proxy.rowCount(), 0); // names are exact, not fuzzy or case folded
-	proxy.setEffectFilter({});
+	proxy.setPrecomputeTreeFilter({});
 	QCOMPARE(proxy.rowCount(), 3); // volume alone still means precomputes
 	proxy.setEffectVolumeFilter({});
 	QCOMPARE(proxy.rowCount(), 6); // neither selection means no effect filter
@@ -339,9 +339,9 @@ void TestMediaFilterProxy::effect_gate_clears_selection_and_hidden_search()
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	QVERIFY(!proxy.effectDetailsEnabled());
-	proxy.setEffectFilter({render.effect});
+	proxy.setPrecomputeTreeFilter({true, {{{}, {}, render.effect}}});
 	proxy.setEffectVolumeFilter(render.volumePath);
-	QVERIFY(proxy.effectFilter().isEmpty());
+	QVERIFY(!proxy.precomputeTreeFilter().active);
 	QVERIFY(proxy.effectVolumeFilter().isEmpty());
 	QCOMPARE(proxy.rowCount(), 2);
 	for (const auto &text : {render.effect, render.effectCategory, render.effectSequence})
@@ -355,13 +355,13 @@ void TestMediaFilterProxy::effect_gate_clears_selection_and_hidden_search()
 	}
 	proxy.setSearchText({});
 	proxy.setEffectDetailsEnabled(true);
-	proxy.setEffectFilter({render.effect, render.effect, QString()});
-	QCOMPARE(proxy.effectFilter(), QStringList{render.effect});
+	proxy.setPrecomputeTreeFilter({true, {{{}, {}, render.effect}}});
+	QCOMPARE(proxy.precomputeTreeFilter().paths.size(), 1);
 	proxy.setEffectVolumeFilter(render.volumePath);
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setEffectDetailsEnabled(false);
 	QCOMPARE(proxy.rowCount(), 2);
-	QVERIFY(proxy.effectFilter().isEmpty());
+	QVERIFY(!proxy.precomputeTreeFilter().active);
 	QVERIFY(proxy.effectVolumeFilter().isEmpty());
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
 	QCOMPARE(proxy.rowCount(), 1); // classification does not depend on the gate
@@ -428,30 +428,28 @@ void TestMediaFilterProxy::precompute_hierarchy_filters_intersect_and_unknown_is
 	model.setMediaFiles({warp, title, unresolved, uncertain, otherVolume, ordinary});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setPrecomputeCategoryFilter({QStringLiteral("Rendered Effects")});
-	proxy.setEffectCategoryFilter({QStringLiteral("Blend")});
-	QVERIFY(proxy.precomputeCategoryFilter().isEmpty());
-	QVERIFY(proxy.effectCategoryFilter().isEmpty());
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}}}});
+	QVERIFY(!proxy.precomputeTreeFilter().active);
 	proxy.setEffectDetailsEnabled(true);
-	proxy.setPrecomputeCategoryFilter({QStringLiteral("Rendered Effects"), QStringLiteral("Titles and Matte Keys")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), {}, {}},
+		{QStringLiteral("Titles and Matte Keys"), {}, {}}}});
 	QCOMPARE(proxy.rowCount(), 4);
-	proxy.setEffectCategoryFilter({QStringLiteral("Blend"), QStringLiteral("unknown")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}},
+		{QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), {}}}});
 	QCOMPARE(proxy.rowCount(), 3);
 	proxy.setEffectVolumeFilter(warp.volumePath);
 	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setEffectFilter({QStringLiteral("3D Warp")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setEffectFilter({QStringLiteral("unknown")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), QStringLiteral("unknown")}}});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setEffectCategoryFilter({QStringLiteral("unknown")});
-	proxy.setPrecomputeCategoryFilter({QStringLiteral("unknown")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("unknown"), QStringLiteral("unknown"), QStringLiteral("unknown")}}});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setPrecomputeCategoryFilter({QStringLiteral("Titles and Matte Keys")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("unknown"), QStringLiteral("unknown")}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setEffectDetailsEnabled(false);
 	QCOMPARE(proxy.rowCount(), 6);
-	QVERIFY(proxy.precomputeCategoryFilter().isEmpty());
-	QVERIFY(proxy.effectCategoryFilter().isEmpty());
+	QVERIFY(!proxy.precomputeTreeFilter().active);
 	proxy.setEffectDetailsEnabled(true);
 	proxy.setSearchText(QStringLiteral("Titles and Matte Keys"));
 	QCOMPARE(proxy.rowCount(), 1);
@@ -505,7 +503,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilterMobs(true, {matte.masterMobId});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {matte.masterMobId}}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
 	QCOMPARE(proxy.rowCount(), 1);
@@ -558,7 +556,7 @@ void TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
 	QCOMPARE(proxy.rowCount(), 4);
 }
 
-void TestMediaFilterProxy::precompute_tree_gate_reset_and_legacy_filters_have_no_hidden_state()
+void TestMediaFilterProxy::precompute_tree_gate_reset_has_no_hidden_state()
 {
 	MediaFile render = rowNamed(QStringLiteral("render"));
 	render.type = MediaFile::Type::Precompute;
@@ -576,19 +574,12 @@ void TestMediaFilterProxy::precompute_tree_gate_reset_and_legacy_filters_have_no
 	QVERIFY(!proxy.precomputeTreeFilter().active);
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setEffectDetailsEnabled(true);
-	proxy.setPrecomputeCategoryFilter({QStringLiteral("Titles and Matte Keys")});
-	proxy.setEffectCategoryFilter({QStringLiteral("Title")});
-	proxy.setEffectFilter({QStringLiteral("Title")});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("Title"), QStringLiteral("Title")}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setPrecomputeTreeFilter({true, {{}}});
-	QVERIFY(proxy.precomputeCategoryFilter().isEmpty());
-	QVERIFY(proxy.effectCategoryFilter().isEmpty());
-	QVERIFY(proxy.effectFilter().isEmpty());
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setEffectFilter({});
-	QVERIFY(proxy.precomputeTreeFilter().active); // empty legacy no-op cannot erase checked branches
-	proxy.setEffectCategoryFilter({QStringLiteral("Title")});
-	QVERIFY(!proxy.precomputeTreeFilter().active);
+	proxy.setPrecomputeTreeFilter({true, {{{}, QStringLiteral("Title"), {}}}});
+	QVERIFY(proxy.precomputeTreeFilter().active);
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setPrecomputeTreeFilter({true, {}});
 	proxy.setEffectVolumeFilter(render.volumePath);
@@ -692,9 +683,9 @@ void TestMediaFilterProxy::bin_empty_operand_and_inactive_filter_are_distinct()
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setBinFilter({});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilterMobs(true, {}); // compatibility API retains empty-active semantics
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, {}}}});
 	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setBinFilterMobs(false, {QStringLiteral("stale")});
+	proxy.setBinFilter({});
 	QCOMPARE(proxy.rowCount(), 1);
 }
 

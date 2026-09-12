@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mediafile.h"
+#include "binmetadataresolver.h"
 
 #include <QAbstractTableModel>
 #include <QHash>
@@ -9,7 +10,6 @@
 #include <QVector>
 
 struct AvbBin;
-struct AvbMob;
 
 /// One row per MediaFile. Columns ordered identity > context >
 /// technical, matching the visual order in the UI.
@@ -79,18 +79,8 @@ public:
 	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
 
 private:
-	struct AvbMetadata
-	{
-		void merge(const AvbMob &mob);
-
-		QString clipName;
-		QString originalBin;
-		QString originalBinUid;
-		bool nameConflict = false;
-		bool binConflict = false;
-	};
 	void applyAvbMetadata(bool notify);
-	QHash<QString, AvbMetadata> m_avbMetadata;
+	BinMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
 	bool m_showRawCodecHex = false;
 	bool m_effectDetailsEnabled = false;

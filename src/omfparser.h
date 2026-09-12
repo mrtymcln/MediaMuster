@@ -6,12 +6,12 @@
 // msmFMID.pmr (8-byte MOBs) and a msmMMOB.mdb whose mobs carry 12-byte
 // omfi:UIDs instead of the 32-byte UMIDs every MXF-era source writes.
 // This is the reader for ONE such file: the OMF-era twin of
-// MxfParser::parseHeader, producing the same MxfMetadata so the table
+// MxfParser::parseHeader, producing the same MediaMetadata so the table
 // cannot tell which era a row came from. MXF header handling (MxfParser)
 // lives elsewhere and is unaffected; the object walks are shared with the
 // MDB reader through OmfObjects.
 
-#include "mxfparser.h"
+#include "mediametadata.h"
 #include "omfobjects.h"
 
 #include <QString>
@@ -20,7 +20,7 @@
 
 /// What one OMF essence file says about itself. `essence` is filled the
 /// way MxfParser fills it from a header and run through the same
-/// MxfParser::finalise, so codec / resolution / fps / duration / bit
+/// MediaMetadataUtil::finalise, so codec / resolution / fps / duration / bit
 /// depth / audio facts are derived by one piece of code for both eras.
 /// The extra fields are the facts an OMF file carries that a header does
 /// not surface: the master's bin (the MDB is the only MXF-era source of
@@ -35,7 +35,7 @@ struct OmfMetadata
 	/// `_PJ` attribute searched master → file → source mob (the 2021 slates
 	/// keep it on the source mob, MC 2026 on the file mob); `isPrecompute`
 	/// = master UsageCode 1; `dropFrame` = TCCP Flags != 0.
-	MxfMetadata essence;
+	MediaMetadata essence;
 
 	/// The media-data object's MobID in canonical hex — the FILE mob, equal
 	/// to the v2 PMR's mobId. Never equal to `essence.umid`.

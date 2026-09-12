@@ -142,7 +142,7 @@ private:
 	/// OMF-era: the flat root is ONE folder task — media and its single
 	/// database pair sit at the same level, and the enumeration takes files
 	/// only, so Avid's transient `Creating` subfolder is invisible here.
-	/// Rows carry `mxfFolder == "OMFI MediaFiles"`, which the rebalancer's
+	/// Rows carry `mediaFolderName == "OMFI MediaFiles"`, which the rebalancer's
 	/// folder-name rule rejects, keeping OMF media out of its scope.
 	QVector<MediaFile> scanOmfRoot(const QString &omfRootPath, const QString &volumeName,
 								   const QString &volumePath);
@@ -232,7 +232,7 @@ private:
 	/// against its folder's cached clip records by the header's UMID (the
 	/// file-in-MDB-but-not-PMR case). Per-folder parallelism alone starves
 	/// cores on small folders, so this runs over all rows after the walk.
-	void parseMxfHeadersConcurrently(QVector<MediaFile> &files);
+	void readMediaHeadersConcurrently(QVector<MediaFile> &files);
 
 	// MARK: - Log batching
 

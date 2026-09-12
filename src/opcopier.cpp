@@ -16,7 +16,7 @@
 
 namespace
 {
-constexpr qint64 chunkSize = 4 * 1024 * 1024;
+constexpr qint64 kHashChunkSize = 4 * 1024 * 1024;
 struct Hash
 {
 	XXH3_state_t *state = XXH3_createState();
@@ -145,7 +145,7 @@ OpCopier::Result OpCopier::hash(OpFile &file, const std::atomic<bool> &cancel,
 		out.error = "Cannot start checksum readback.";
 		return out;
 	}
-	QByteArray buffer(int(chunkSize), Qt::Uninitialized);
+	QByteArray buffer(int(kHashChunkSize), Qt::Uninitialized);
 	qint64 read = 0;
 	while (read < before.size)
 	{
@@ -154,7 +154,7 @@ OpCopier::Result OpCopier::hash(OpFile &file, const std::atomic<bool> &cancel,
 			out.outcome = Outcome::Cancelled;
 			return out;
 		}
-		const auto n = file.io().read(buffer.data(), qMin(chunkSize, before.size - read));
+		const auto n = file.io().read(buffer.data(), qMin(kHashChunkSize, before.size - read));
 		if (n <= 0)
 		{
 			out.error = "Checksum readback failed before the complete file was read.";
@@ -179,13 +179,27 @@ OpCopier::Result OpCopier::hash(OpFile &file, const std::atomic<bool> &cancel,
 	out.outcome = Outcome::Succeeded;
 	return out;
 }
+bool OpCopier::isRetryableNativeError(int error)
+{
+#ifdef Q_OS_WIN
+	return error == ERROR_BUSY || error == ERROR_NETWORK_BUSY || error == ERROR_NOT_READY ||
+		error == ERROR_SEM_TIMEOUT || error == ERROR_RETRY ||
+		error == ERROR_SHARING_VIOLATION || error == ERROR_LOCK_VIOLATION;
+#elif defined(Q_OS_MAC)
+	return error == EAGAIN || error == EINTR || error == ETIMEDOUT || error == EBUSY;
+#else
+	Q_UNUSED(error);
+	return false;
+#endif
+}
+
 OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 									const std::atomic<bool> &cancel, const Progress &progress,
 									const std::function<void()> &beforeReadback, bool verify)
 {
 	Result out;
 	const auto before = source.stamp();
-	if (!source.canStreamCopy(out.error))
+	if (!source.checkCopySupport(out.error))
 		return out;
 	if (!before.valid() || !source.stillAt(source.path(), before) ||
 		!destination.m_created || destination.stamp().size != 0 ||
@@ -224,7 +238,7 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		out.outcome = cancel.load() ? Outcome::Cancelled : Outcome::Failed;
 		out.error = QStringLiteral("Native copying failed: %1 (POSIX %2).")
 			.arg(QString::fromLocal8Bit(std::strerror(copyError))).arg(copyError);
-		out.retryable = copyError == EAGAIN || copyError == EINTR || copyError == ETIMEDOUT || copyError == EBUSY;
+		out.retryable = out.outcome == Outcome::Failed && isRetryableNativeError(copyError);
 		return out;
 	}
 #elif defined(Q_OS_WIN)
@@ -291,8 +305,19 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		out.error = context.changed ? QStringLiteral("A native copying handle referred to a changed file.") :
 			QStringLiteral("Native copying could not be completed and protected (Windows %1). %2 %3")
 				.arg(copyError).arg(sourceError, destinationError);
-		out.retryable = !context.changed && (copyError == ERROR_BUSY || copyError == ERROR_NETWORK_BUSY ||
-			copyError == ERROR_NOT_READY || copyError == ERROR_SEM_TIMEOUT || copyError == ERROR_RETRY);
+		// GetLastError is meaningful only after CopyFileEx failed. A successful copy
+		// followed by a protection/identity failure must never use a stale error to retry.
+		bool destinationAbsent = false;
+		if (!destinationOpened &&
+			::GetFileAttributesW(reinterpret_cast<LPCWSTR>(destinationPath.utf16())) == INVALID_FILE_ATTRIBUTES)
+		{
+			const DWORD absenceError = ::GetLastError();
+			destinationAbsent = absenceError == ERROR_FILE_NOT_FOUND || absenceError == ERROR_PATH_NOT_FOUND;
+		}
+		out.retryable = !copied && out.outcome == Outcome::Failed && !context.changed &&
+			sourceOpened && source.stillAt(source.path(), before) && attributesRestored &&
+			(destinationOpened || destinationAbsent) &&
+			isRetryableNativeError(copyError);
 		return out;
 	}
 #else
@@ -334,7 +359,7 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		auto verificationProgress = [&](qint64 bytes, qint64 size, bool destinationPass)
 		{
 			if (!progress) return;
-			if (size <= std::numeric_limits<qint64>::max() / 2)
+			if (size <= (std::numeric_limits<qint64>::max)() / 2)
 				progress((destinationPass ? size : 0) + bytes, size * 2, true);
 			else
 				progress((destinationPass ? size / 2 : 0) + bytes / 2, size, true);

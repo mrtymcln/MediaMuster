@@ -1,7 +1,7 @@
 // OMF-era (legacy Avid media, pre-MXF). The reader for one OMF essence
 // file — see omfparser.h for where it sits. Nothing here is MXF-specific;
 // the walks are OmfObjects', shared with the MDB reader, and only the
-// triage and the field mapping onto MxfMetadata live in this file.
+// triage and the field mapping onto MediaMetadata live in this file.
 //
 // MARK: - What the file holds (read from the fixtures)
 //
@@ -100,7 +100,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 
 	const OmfObjects::Props p(b);
 	out.revision = p.revision;
-	out.essence.headerStatus = MxfMetadata::HeaderStatus::Incomplete;
+	out.essence.headerStatus = MediaMetadata::HeaderStatus::Incomplete;
 	if (p.mobId < 0)
 	{
 		qCDebug(lcOmf) << filePath << "carries no MobID property — a Bento container without mobs";
@@ -202,7 +202,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 		master = &g;
 	}
 
-	MxfMetadata &e = out.essence;
+	MediaMetadata &e = out.essence;
 	OmfObjects::readDescriptor(b, p, fileMob->mediaObj, fileMob->mediaDesc, objectByMob, e);
 	e.fileMobId = out.fileMobId;
 
@@ -308,8 +308,8 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	if (bytesRead)
 		*bytesRead = b.bytesRead();
 	e.headerStatus = e.valid && !out.fileMobId.isEmpty() && master
-						 ? MxfMetadata::HeaderStatus::Complete
-						 : MxfMetadata::HeaderStatus::Incomplete;
+						 ? MediaMetadata::HeaderStatus::Complete
+						 : MediaMetadata::HeaderStatus::Incomplete;
 	if (!e.valid)
 		qCWarning(lcOmf) << "no usable OMF metadata in" << filePath << "(read" << b.bytesRead() << "bytes)";
 	else

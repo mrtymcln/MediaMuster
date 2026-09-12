@@ -1,3 +1,4 @@
+#include "rebalanceplanner.h"
 #include "rebalancedialog.h"
 #include "conventions.h"
 #include "formatutil.h"
@@ -703,7 +704,7 @@ void RebalanceDialog::recomputePlan()
 	// the main thread.
 	m_planWatcher.setFuture(QtConcurrent::run(
 		[mxfRoot, label, files]
-		{ return Rebalancer::computePlan(mxfRoot, label, files); }));
+		{ return RebalancePlanner::computePlan(mxfRoot, label, files); }));
 }
 
 void RebalanceDialog::onPlanReady()
@@ -995,7 +996,7 @@ void RebalanceDialog::primeLiveState()
 	// Pre-parse each op's source FolderName once. The hot path (live
 	// updates) reuses this without re-parsing srcPath.
 	for (const auto &op : m_currentPlan.ops)
-		m_srcFolderByOp.append(Rebalancer::srcFolderOf(op.srcPath).value_or(FolderName{}));
+		m_srcFolderByOp.append(RebalancePlanner::srcFolderOf(op.srcPath).value_or(FolderName{}));
 }
 
 QSet<FolderName> RebalanceDialog::affectedFolders() const
@@ -1004,7 +1005,7 @@ QSet<FolderName> RebalanceDialog::affectedFolders() const
 	for (const RenameOp &op : m_currentPlan.ops)
 	{
 		affected.insert(op.dest);
-		if (const auto src = Rebalancer::srcFolderOf(op.srcPath))
+		if (const auto src = RebalancePlanner::srcFolderOf(op.srcPath))
 			affected.insert(*src);
 	}
 	return affected;

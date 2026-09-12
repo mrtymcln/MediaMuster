@@ -179,65 +179,65 @@ namespace
 
 	/// Technical facts → the row. Shared by both producers: pass 1 hands in
 	/// what msmMMOB.mdb says about the file, pass 2 what the file's own header
-	/// says. Every value has already been through MxfParser::finalise, so the
+	/// says. Every value has already been through MediaMetadataUtil::finalise, so the
 	/// two cannot disagree on a derived field.
-	void applyMetadata(MediaFile &mf, const MxfMetadata &mxf)
+	void applyMetadata(MediaFile &mf, const MediaMetadata &metadata)
 	{
 		// A failed/incomplete header read cannot negate an earlier database
 		// classification or contribute half-read import/identity information.
-		if (!mxf.valid && !mxf.classificationKnown)
+		if (!metadata.valid && !metadata.classificationKnown)
 			return;
-		if (mxf.clipNameFromMaterial)
-			setClipName(mf, mxf.clipName, MediaFile::ClipNameSource::MaterialPackage);
-		if (mxf.valid)
+		if (metadata.clipNameFromMaterial)
+			setClipName(mf, metadata.clipName, MediaFile::ClipNameSource::MaterialPackage);
+		if (metadata.valid)
 		{
-			if (!mxf.codec.isEmpty())
-				mf.codec = mxf.codec;
-			if (!mxf.essenceContainerLabel.isEmpty())
-				mf.codecHex = mxf.essenceContainerLabel.toHex().toUpper();
-			if (!mxf.resolution.isEmpty())
-				mf.resolution = mxf.resolution;
-			if (!mxf.fps.isEmpty())
-				mf.fps = mxf.fps;
-			if (!mxf.bitDepth.isEmpty())
-				mf.bitDepth = mxf.bitDepth;
-			if (mxf.sampleRate > 0)
-				mf.sampleRate = mxf.sampleRate;
-			if (mxf.channels > 0)
-				mf.channels = mxf.channels;
-			if (mxf.durationFrames > 0)
-				mf.durationFrames = mxf.durationFrames;
-			if (mxf.timecodeBase > 0)
-				mf.timecodeBase = mxf.timecodeBase;
-			if (mxf.dropFrame)
+			if (!metadata.codec.isEmpty())
+				mf.codec = metadata.codec;
+			if (!metadata.compressionLabel.isEmpty())
+				mf.codecHex = metadata.compressionLabel.toHex().toUpper();
+			if (!metadata.resolution.isEmpty())
+				mf.resolution = metadata.resolution;
+			if (!metadata.fps.isEmpty())
+				mf.fps = metadata.fps;
+			if (!metadata.bitDepth.isEmpty())
+				mf.bitDepth = metadata.bitDepth;
+			if (metadata.sampleRate > 0)
+				mf.sampleRate = metadata.sampleRate;
+			if (metadata.channels > 0)
+				mf.channels = metadata.channels;
+			if (metadata.durationFrames > 0)
+				mf.durationFrames = metadata.durationFrames;
+			if (metadata.timecodeBase > 0)
+				mf.timecodeBase = metadata.timecodeBase;
+			if (metadata.dropFrame)
 				mf.dropFrame = true;
 			// The producer owns audio-ness end to end (descriptor sets or the
 			// essence label's own bytes in a header; the descriptor class in
 			// the MDB). No display-name comparisons here.
-			if (mxf.isAudio)
+			if (metadata.isAudio)
 				mf.kind = MediaFile::Kind::Audio;
-			else if (mxf.width > 0 && mxf.height > 0)
+			else if (metadata.width > 0 && metadata.height > 0)
 				mf.kind = MediaFile::Kind::Video;
 		}
 
 		// Import facts a header carries as TaggedValues (UNC Path, Video,
 		// _IMPORTSETTING). The MDB usually supplied them in pass 1; this is
 		// what gives a row WITHOUT a database — Interplay — the same columns.
-		assignIfMissing(mf.sourceFilePath, mxf.sourceFilePath);
-		assignIfMissing(mf.sourceContainer, mxf.sourceContainer);
+		assignIfMissing(mf.sourceFilePath, metadata.sourceFilePath);
+		assignIfMissing(mf.sourceContainer, metadata.sourceContainer);
 		if (mf.sourceFileName.isEmpty() && !mf.sourceFilePath.isEmpty())
-			mf.sourceFileName = QString(mf.sourceFilePath).replace(QLatin1Char('\\'), QLatin1Char('/')).section(QLatin1Char('/'), -1);
-		if (mxf.hasImportSetting)
+			mf.sourceFileName = MediaMetadataUtil::sourceFileBaseName(mf.sourceFilePath);
+		if (metadata.hasImportSetting)
 			mf.isImported = true;
 
 		// The one place a file is classified. Apply a producer's supported
 		// verdict; absence of a verdict cannot stand in for ordinary media.
-		if (mxf.classificationKnown)
+		if (metadata.classificationKnown)
 		{
-			mf.type = mxf.isPrecompute ? MediaFile::Type::Precompute : MediaFile::Type::Media;
-			mf.precomputeCategory = mxf.isPrecompute ? mxf.precomputeCategory : MediaFile::PrecomputeCategory::Unknown;
+			mf.type = metadata.isPrecompute ? MediaFile::Type::Precompute : MediaFile::Type::Media;
+			mf.precomputeCategory = metadata.isPrecompute ? metadata.precomputeCategory : MediaFile::PrecomputeCategory::Unknown;
 		}
-		else if (mxf.valid && mxf.hasMaterialPackage)
+		else if (metadata.valid && metadata.hasMaterialPackage)
 		{
 			// A fully read material package with unsupported/conflicting usage
 			// cannot retain an earlier database's positive classification.
@@ -367,7 +367,7 @@ void MediaScanner::doScan()
 
 	// MARK: Pass 2 — headers for the rows the databases didn't cover
 
-	parseMxfHeadersConcurrently(allFiles);
+	readMediaHeadersConcurrently(allFiles);
 	qCDebug(lcScanner) << "pass 2 (headers):" << stageTimer.restart() << "ms";
 
 	if (m_job.isCancelled())
@@ -1137,7 +1137,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	mf.extension = "." + fi.suffix().toLower();
 	mf.volumeName = volumeName;
 	mf.volumePath = volumePath;
-	mf.mxfFolder = folderNumber;
+	mf.mediaFolderName = folderNumber;
 	// OMF-era: settled here, once; pass 2 and the copy engine read the flag.
 	mf.omfEra = isOmfEraRow(mf.extension, folderNumber, folderOmfEra);
 
@@ -1201,7 +1201,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		++tally.stale;
 	if (headerReadable && mf.databaseMetadataCurrent)
 	{
-		MxfMetadata essence = fileIt->essence;
+		MediaMetadata essence = fileIt->essence;
 		essence.isPrecompute = AvidUsage::masterClassification(masterIt->usageCode) ==
 							   AvidUsage::Classification::Precompute;
 		essence.classificationKnown = masterIt->classificationKnown;
@@ -1235,7 +1235,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 
 // MARK: - Header pass (pass 2)
 
-void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
+void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 {
 	// Pass 1 records the single header decision used here and in coverage
 	// logs: incomplete/stale database facts or missing identity. Resolve a
@@ -1309,22 +1309,22 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			MediaFile &mf = base[row.index];
 			const auto databaseCategory = mf.precomputeCategory;
 			qint64 bytesRead = 0;
-			MxfMetadata mxf;
+			MediaMetadata metadata;
 			QString headerBin;
 			if (row.omfEra)
 			{
 				// OMF1/OMF2 return the same essence fields, with the master
 				// bin and file identity obtained from their object graph.
 				const OmfMetadata omf = OmfParser::parseHeader(mf.filePath, &bytesRead);
-				mxf = omf.essence;
+				metadata = omf.essence;
 				headerBin = omf.bin;
-				mxf.fileMobId = omf.fileMobId;
+				metadata.fileMobId = omf.fileMobId;
 			}
 			else
 			{
-				mxf = MxfParser::parseHeader(mf.filePath, &bytesRead);
+				metadata = MxfParser::parseHeader(mf.filePath, &bytesRead);
 			}
-			const bool headerUsable = mxf.valid || mxf.classificationKnown;
+			const bool headerUsable = metadata.valid || metadata.classificationKnown;
 			const auto canonicalHeaderId = [&](const QString &id)
 			{
 				if (row.omfEra || id.isEmpty())
@@ -1332,9 +1332,9 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 				const QString canonical = MobId::toPmrForm(id);
 				return canonical.isEmpty() ? id : canonical;
 			};
-			const QString headerFileId = headerUsable ? canonicalHeaderId(mxf.fileMobId) : QString{};
-			const bool headerMasterKnown = row.omfEra || mxf.hasMaterialPackage;
-			const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(mxf.umid) : QString{};
+			const QString headerFileId = headerUsable ? canonicalHeaderId(metadata.fileMobId) : QString{};
+			const bool headerMasterKnown = row.omfEra || metadata.hasMaterialPackage;
+			const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(metadata.umid) : QString{};
 			const auto contradicts = [](const QString &oldId, const QString &actualId)
 			{
 				return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
@@ -1374,21 +1374,21 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 				assignIfMissing(mf.masterMobId, headerMasterId);
 				assignIfMissing(mf.originalBin, headerBin);
 			}
-			applyMetadata(mf, mxf);
+			applyMetadata(mf, metadata);
 			// Current sources for the same identity must agree. Do not let the
 			// later MDB name/bin re-join restore a disputed category. A stale
 			// database (or one for replaced media) has no say in this decision.
-			if (mf.databaseMetadataCurrent && mxf.classificationKnown && mxf.isPrecompute &&
+			if (mf.databaseMetadataCurrent && metadata.classificationKnown && metadata.isPrecompute &&
 				databaseCategory != MediaFile::PrecomputeCategory::Unknown &&
-				mxf.precomputeCategory != MediaFile::PrecomputeCategory::Unknown &&
-				databaseCategory != mxf.precomputeCategory)
+				metadata.precomputeCategory != MediaFile::PrecomputeCategory::Unknown &&
+				databaseCategory != metadata.precomputeCategory)
 				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 
 			// Pass 1 found no project in the PMR (no entry, or a blank one):
 			// take the one Avid wrote into the file — the very attribute
 			// Media Composer reads back when it rebuilds a folder's PMR.
 			if (headerUsable && mf.project.isEmpty())
-				mf.project = mxf.projectName;
+				mf.project = metadata.projectName;
 
 			// Re-join by the header's own UMID (its MaterialPackage UID = the
 			// master MOB in MXF byte order): a file the PMR doesn't name but
@@ -1397,7 +1397,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			// Recovers name/bin/source by the verified master identity. File
 			// identity comes from the owning source package above. Database
 			// status still describes PMR membership, independent of recovery.
-			if (headerUsable && headerMasterKnown && !mxf.umid.isEmpty() && !MobId::isAllZero(mxf.umid))
+			if (headerUsable && headerMasterKnown && !metadata.umid.isEmpty() && !MobId::isAllZero(metadata.umid))
 			{
 				const auto mapIt = clipsByFolder.constFind(row.folderKey);
 				if (mapIt != clipsByFolder.constEnd() && !mapIt->isEmpty())
@@ -1405,13 +1405,13 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 					// Direct match is rare: the MXF stores the middle fields
 					// little-endian, the MDB big-endian. Try direct (free),
 					// then swapped.
-					auto recIt = mapIt->constFind(mxf.umid);
+					auto recIt = mapIt->constFind(metadata.umid);
 					// OMF-era: the wrapped id is already the database's key
 					// form, and swapping its middle fields would name a
 					// DIFFERENT (equally well-formed) OMF id — so no retry.
 					if (recIt == mapIt->constEnd() && !row.omfEra)
 					{
-						const QString swapped = MobId::toPmrForm(mxf.umid);
+						const QString swapped = MobId::toPmrForm(metadata.umid);
 						if (!swapped.isEmpty())
 							recIt = mapIt->constFind(swapped);
 					}
@@ -1426,7 +1426,7 @@ void MediaScanner::parseMxfHeadersConcurrently(QVector<MediaFile> &files)
 			}
 			// The header's own identity can be the zero one too.
 			mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
-							   (headerUsable && (MobId::isAllZero(mxf.umid) || MobId::isAllZero(mxf.fileMobId)));
+							   (headerUsable && (MobId::isAllZero(metadata.umid) || MobId::isAllZero(metadata.fileMobId)));
 
 			// OMF-era: separate counters, see above.
 			std::atomic<qint64> &sumCounter = row.omfEra ? omfBytesRead : totalBytesRead;

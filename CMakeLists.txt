@@ -111,6 +111,7 @@ set(MEDIAMUSTER_DIAGNOSTIC_SAMPLES
 set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
+    src/fileoperationcontroller.cpp
     src/aboutdialog.cpp
     src/icons.cpp
     src/logcategories.cpp
@@ -118,11 +119,13 @@ set(SOURCES
     src/macaccessibilityguard.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
+    src/binmetadataresolver.cpp
     src/revealinfinder.cpp
     src/volumelistwidget.cpp
     src/volumemanager.cpp
     src/mediascanner.cpp
     src/mxfparser.cpp
+    src/mediametadata.cpp
     src/pmrparser.cpp
     src/mdbparser.cpp
     src/omfparser.cpp
@@ -131,7 +134,7 @@ set(SOURCES
     src/bentofile.cpp
     src/avideffects.cpp
     src/mediacsv.cpp
-    src/fileidentity.cpp
+    src/volumeidentity.cpp
     src/nativefile.cpp
     src/opfile.cpp
     src/optrash.cpp
@@ -140,14 +143,16 @@ set(SOURCES
     src/opjournal.cpp
     src/opcopier.cpp
     src/oprunner.cpp
+    src/operationplan.cpp
     src/opmanager.cpp
-    src/oprescue.cpp
+    src/operationrecovery.cpp
     src/avbparser.cpp
     src/binfilterdialog.cpp
     src/effectfilterdialog.cpp
     src/managemediadialog.cpp
     src/progressdialog.cpp
     src/rebalancer.cpp
+    src/rebalanceplanner.cpp
     src/crashcollector.cpp
     src/rebalancedialog.cpp
     src/resources.qrc

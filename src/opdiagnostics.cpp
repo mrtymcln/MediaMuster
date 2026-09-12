@@ -1,9 +1,9 @@
+#include "rebalanceplanner.h"
 #include "opdiagnostics.h"
-#include "oprescue.h"
+#include "operationrecovery.h"
 #include "oprunner.h"
 #include "mxfparser.h"
 #include "mobid.h"
-#include "rebalancer.h"
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
@@ -113,7 +113,7 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 	}
 	const auto samples = OpDiagnostics::bundledSamples();
 	QVector<OpStamp> originals;
-	QVector<MxfMetadata> headers;
+	QVector<MediaMetadata> headers;
 	QSet<QString> masters, fileMobs;
 	QJsonArray manifest;
 	QStringList identityErrors;
@@ -125,11 +125,11 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 		const auto stamp = file ? file->stamp() : OpStamp{};
 		if (!file)
 			identityErrors.append(QFileInfo(path).fileName() + ": " + error);
-		const auto header = file ? MxfParser::parseHeader(file->io()) : MxfMetadata{};
+		const auto header = file ? MxfParser::parseHeader(file->io()) : MediaMetadata{};
 		originals.append(stamp);
 		headers.append(header);
 		valid = valid && stamp.valid() &&
-				header.headerStatus == MxfMetadata::HeaderStatus::Complete &&
+				header.headerStatus == MediaMetadata::HeaderStatus::Complete &&
 				header.hasMaterialPackage && !MobId::toPmrForm(header.umid).isEmpty() &&
 				!MobId::isAllZero(header.umid) && !MobId::toPmrForm(header.fileMobId).isEmpty() &&
 				!MobId::isAllZero(header.fileMobId);
@@ -189,7 +189,7 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 		MediaFile media;
 		media.filePath = request.destRoot + '/' + item.name;
 		media.fileName = item.name;
-		media.mxfFolder = QFileInfo(media.filePath).dir().dirName();
+		media.mediaFolderName = QFileInfo(media.filePath).dir().dirName();
 		media.sizeBytes = item.bytes;
 		media.masterMobId = item.masterMobId;
 		media.mobId = item.mobId;
@@ -237,8 +237,8 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 		}
 		const auto &files = scenario == 0 ? sourceFiles : destinationFiles;
 		const auto &root = scenario == 0 ? sourceMxf : destinationMxf;
-		const auto plan = Rebalancer::computePlan(root, "Disposable bundled relatives", files);
-		const auto request = Rebalancer::requestForPlan(plan);
+		const auto plan = RebalancePlanner::computePlan(root, "Disposable bundled relatives", files);
+		const auto request = RebalancePlanner::requestForPlan(plan);
 		bool passed = plan.ops.size() == 2 && request.items.size() == 2;
 		if (passed)
 			passed = !request.items[0].groupKey.isEmpty() &&
@@ -495,8 +495,8 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 						 !OpFile::occupied(destination + "/clip.bin");
 			if (index == 5)
 			{
-				const auto first = OpRescue::run(journals);
-				const auto second = OpRescue::run(journals);
+				const auto first = OperationRecovery::run(journals);
+				const auto second = OperationRecovery::run(journals);
 				passed = !first.resumable.isEmpty() && !second.resumable.isEmpty() &&
 						 read(source) == payload && !OpFile::occupied(destination + "/clip.bin") &&
 						 OpJournal::scan(journals).size() == 1;

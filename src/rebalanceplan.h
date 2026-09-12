@@ -29,7 +29,7 @@
 ///
 /// Anything that doesn't round-trip through `display()` (e.g.
 /// `Quarantined Files`, `.5`, `01`) gets rejected by
-/// `Rebalancer::parseFolderName` and falls back to `std::nullopt`.
+/// `RebalancePlanner::parseFolderName` and falls back to `std::nullopt`.
 struct FolderName
 {
 	QString prefix;
@@ -98,7 +98,7 @@ struct FolderState
 
 // MARK: - RebalancePlan
 
-/// Output of Rebalancer::computePlan. Either rendered in the preview
+/// Output of RebalancePlanner::computePlan. Either rendered in the preview
 /// dialog or passed to Rebalancer::executeAsync to perform the moves.
 struct RebalancePlan
 {

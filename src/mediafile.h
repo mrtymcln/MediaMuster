@@ -79,7 +79,7 @@ struct MediaFile
 	// MARK: MXF or MDB technical metadata
 
 	QString codec;		///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
-	QString codecHex;	///< Raw hex of the MXF essence container label.
+	QString codecHex;	///< Raw hex of the compression/coding UL.
 	QString resolution; ///< "1920x1080". Video only; audio rows stay blank.
 	QString fps;		///< "23.976", "25". Video only; audio rows stay blank.
 	QString bitDepth;	///< "10-bit", "24-bit".
@@ -126,7 +126,7 @@ struct MediaFile
 	/// legacy root has no numbered folders, so its rows carry the root's own
 	/// name, "OMFI MediaFiles" — which the rebalancer's folder-name rule
 	/// rejects, keeping OMF media out of its scope.
-	QString mxfFolder;
+	QString mediaFolderName;
 	/// OMF-era: legacy media — read by OmfParser, preserved by the copy
 	/// engine to "OMFI MediaFiles". Decided once, in the scanner
 	/// (isOmfEraRow): an .omf extension, Avid's OMFI root, or a folder
@@ -455,34 +455,4 @@ struct MediaFile
 	}
 };
 
-// MARK: - VolumeInfo
-
-/// One mounted volume the user might want to scan. Built by
-/// VolumeManager from QStorageInfo plus Avid-aware heuristics.
-struct VolumeInfo
-{
-	QString name;
-	QString path;
-	qint64 totalBytes = 0;
-	qint64 usedBytes = 0;
-	QString volumeType;		   ///< "Internal", "Network", or "Nexis".
-	bool hasAvidMedia = false; ///< True if `<path>/Avid MediaFiles` exists.
-};
-
-// MARK: - ProjectSummary
-
-struct ProjectSummary
-{
-	QString name;			///< projectDisplay() — real name, or "No project".
-	bool hasProject = true; ///< false for the one "No project" row.
-	int videoCount = 0;
-	int audioCount = 0;
-	int unknownKindCount = 0;
-	qint64 totalBytes = 0;
-	QVector<QString> bins;
-};
-
-// MARK: - Metatype registration
-
 Q_DECLARE_METATYPE(MediaFile)
-Q_DECLARE_METATYPE(VolumeInfo)

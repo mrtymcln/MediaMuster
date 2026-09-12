@@ -3,27 +3,20 @@
 #include <functional>
 class QFile;
 
-// Platform durability requests and a conservative local-filesystem predicate.
+// Platform durability requests.
 // OpFile owns handles and no-overwrite relocation. All byte copying goes
 // through OpCopier; its job policy determines whether checksum verification runs.
 namespace NativeFile
 {
-// Recognises local APFS/HFS+ and NTFS/ReFS; this is not field certification.
-bool isProvenLocalVolume(const QString &path);
-enum class Durability
-{
-	Disk,
-	Platter
-};
 enum class SyncResult
 {
 	Ok,
 	OkDegraded,
 	Failed
 };
-// Flush Qt's buffer, then the OS buffer. Platter also requests the device
-// cache barrier where the OS offers one. Unsupported is not an I/O error.
-SyncResult syncFile(QFile &file, Durability level);
+// Flush Qt and OS buffers, requesting the device cache barrier where available.
+// Unsupported full durability is reported separately from an I/O failure.
+SyncResult syncFile(QFile &file);
 // Requests persistence of directory changes. A failure must remain visible
 // to the caller; success cannot establish remote hardware's behaviour.
 // Optional error reports the failed native call, path and OS error code.

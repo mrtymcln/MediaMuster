@@ -27,8 +27,6 @@ class OpManager : public QObject, private OpSink
 	/// Dispatch Copy, Move, Trash or Rebalance, preserving the selected items.
 	void execute(OpRequest request);
 
-	/// Start the inverse operation only while the runtime Debug gate is enabled.
-	void executeUndo(const QString &journalPath);
 	void setUndoEnabled(bool enabled) { m_undoEnabled = enabled; }
 	bool isRunning() const { return m_running; }
 
@@ -36,15 +34,6 @@ class OpManager : public QObject, private OpSink
 	{
 		m_job.cancel();
 	}
-
-	// MARK: - Path helpers (public: ManageMediaDialog previews with
-	// them, and the tests pin them)
-
-	/// Where `mf` lands under destRoot — the MediaFile-shaped face of
-	/// OpRunner::buildDestPath. (The rename-path probe has no such
-	/// unpacking to do; callers use OpRunner::generateRenamePath
-	/// directly.)
-	static QString buildDestPath(const MediaFile &mf, const QString &destRoot, bool preserve);
 
 	/// The engine's entire read of a MediaFile, in one place: path,
 	/// name, folder, size, the per-file conflict policy, and the scan's

@@ -1,3 +1,4 @@
+#include "rebalanceplanner.h"
 #include "mediafile.h"
 #include "rebalanceplan.h"
 #include "rebalancer.h"
@@ -133,7 +134,7 @@ MediaFile TestRebalancerPlan::makeMxf(const QString &mxfRoot, const QString &fol
 
 	MediaFile mf;
 	mf.filePath = path;
-	mf.mxfFolder = folderName;
+	mf.mediaFolderName = folderName;
 	mf.masterMobId = masterMobId.isEmpty() ? QString()
 										   : MobId::format(QCryptographicHash::hash(
 												 masterMobId.toUtf8(), QCryptographicHash::Sha256));
@@ -159,7 +160,7 @@ int TestRebalancerPlan::opsBetween(const RebalancePlan &p, const QString &srcFol
 void TestRebalancerPlan::missing_root_yields_empty_plan()
 {
 	const RebalancePlan p =
-		Rebalancer::computePlan(QStringLiteral("/nope/does/not/exist"), QStringLiteral("Vol"), {});
+		RebalancePlanner::computePlan(QStringLiteral("/nope/does/not/exist"), QStringLiteral("Vol"), {});
 	QCOMPARE(p.ops.size(), 0);
 	QCOMPARE(p.newFolders.size(), 0);
 	QCOMPARE(p.folders.size(), 0);
@@ -178,7 +179,7 @@ void TestRebalancerPlan::noop_when_already_balanced()
 		makeMxf(root, "1", "c.mxf", "C1"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 0);
 	QCOMPARE(p.newFolders.size(), 0);
 }
@@ -197,7 +198,7 @@ void TestRebalancerPlan::consolidates_relatives_into_home_folder()
 		makeMxf(root, "2", "c.mxf", "C1"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 1);
 	QCOMPARE(opsBetween(p, "2", "1"), 1);
 	QCOMPARE(p.newFolders.size(), 0);
@@ -215,7 +216,7 @@ void TestRebalancerPlan::quarantined_folder_left_alone()
 		makeMxf(root, "1", "b.mxf"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 0);
 
 	// Quarantined appears in folders[] but marked out-of-scope.
@@ -258,7 +259,7 @@ void TestRebalancerPlan::folder_count_excludes_databases_and_hidden_files()
 	// contents never count toward any folder's budget.
 	makeFillers(root, "Creating", 2);
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 
 	bool sawOne = false, sawCreating = false;
 	for (const auto &fs : p.folders)
@@ -291,7 +292,7 @@ void TestRebalancerPlan::out_of_scope_media_files_dropped()
 		makeMxf(root, "Quarantined Files", "b.mxf"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 0);
 }
 
@@ -310,7 +311,7 @@ void TestRebalancerPlan::host_prefix_isolates_consolidation()
 		makeMxf(root, "Edit14.5", "d.mxf", "C2"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 1);
 	QCOMPARE(opsBetween(p, "MartysiMac.2", "MartysiMac.1"), 1);
 }
@@ -333,7 +334,7 @@ void TestRebalancerPlan::home_full_falls_back_to_existing_folder()
 		makeMxf(root, "2", "stray_c.mxf", "C1"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 1);
 	QCOMPARE(opsBetween(p, "1", "2"), 1);
 	QCOMPARE(p.newFolders.size(), 0);
@@ -356,7 +357,7 @@ void TestRebalancerPlan::new_folder_when_all_existing_are_full()
 		makeMxf(root, "2", "m5.mxf", "C1"), makeMxf(root, "2", "m6.mxf", "C1"),
 	};
 
-	const RebalancePlan p = Rebalancer::computePlan(root, "Vol", files);
+	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.newFolders.size(), 1);
 	QCOMPARE(p.newFolders.first().display(), QStringLiteral("3"));
 	QCOMPARE(p.ops.size(), 6);
@@ -376,7 +377,7 @@ void TestRebalancerPlan::invalid_mxf_claims_are_refused_by_adapter()
 		makeMxf(root, "1", "c.mxf", "mobC"),
 	};
 	makeFillers(root, "2", 0);
-	RebalancePlan plan = Rebalancer::computePlan(root, "Vol", files);
+	RebalancePlan plan = RebalancePlanner::computePlan(root, "Vol", files);
 	plan.ops.clear();
 	for (const MediaFile &file : files)
 		plan.ops.append(
@@ -410,7 +411,7 @@ void TestRebalancerPlan::same_master_never_crosses_workstation_prefix()
 	const QVector<MediaFile> files{
 		makeMxf(root, "Mac.1", "a.mxf", "same"), makeMxf(root, "Mac.2", "b.mxf", "same"),
 		makeMxf(root, "PC.1", "c.mxf", "same"), makeMxf(root, "PC.2", "d.mxf", "same")};
-	const auto plan = Rebalancer::computePlan(root, "Test", files);
+	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QCOMPARE(plan.ops.size(), 2);
 	QCOMPARE(opsBetween(plan, "Mac.2", "Mac.1"), 1);
 	QCOMPARE(opsBetween(plan, "PC.2", "PC.1"), 1);
@@ -422,7 +423,7 @@ void TestRebalancerPlan::exactly_4999_relatives_are_stable()
 	QVector<MediaFile> files;
 	for (int n = 0; n < 4999; ++n)
 		files.append(makeMxf(root, "1", QString::number(n) + ".mxf", "same", 0));
-	const auto plan = Rebalancer::computePlan(root, "Test", files);
+	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.newFolders.isEmpty());
 }
@@ -433,7 +434,7 @@ void TestRebalancerPlan::oversized_packed_relatives_are_stable()
 	QVector<MediaFile> files;
 	for (int n = 0; n < 5000; ++n)
 		files.append(makeMxf(root, n < 4999 ? "1" : "2", QString::number(n) + ".mxf", "same", 0));
-	const auto plan = Rebalancer::computePlan(root, "Test", files);
+	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.newFolders.isEmpty());
 }
@@ -448,7 +449,7 @@ void TestRebalancerPlan::invalid_master_ids_are_independent()
 	{
 		for (auto &file : files)
 			file.masterMobId = id;
-		QVERIFY(Rebalancer::computePlan(root, "Test", files).ops.isEmpty());
+		QVERIFY(RebalancePlanner::computePlan(root, "Test", files).ops.isEmpty());
 	}
 }
 void TestRebalancerPlan::media_from_another_root_is_excluded()
@@ -457,7 +458,7 @@ void TestRebalancerPlan::media_from_another_root_is_excluded()
 	const auto root = stageMxfRoot(a), other = stageMxfRoot(b);
 	const QVector<MediaFile> files{makeMxf(root, "1", "a.mxf", "same"),
 								   makeMxf(other, "2", "b.mxf", "same")};
-	QVERIFY(Rebalancer::computePlan(root, "Test", files).ops.isEmpty());
+	QVERIFY(RebalancePlanner::computePlan(root, "Test", files).ops.isEmpty());
 }
 QTEST_MAIN(TestRebalancerPlan)
 #include "tst_rebalancer_plan.moc"

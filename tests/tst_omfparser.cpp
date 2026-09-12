@@ -260,7 +260,7 @@ void TestOmfParser::omf_every_slate_parses_with_a_named_codec()
 		qint64 read = 0;
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(name), &read);
 		QCOMPARE(m.revision, OmfObjects::Revision::Omf1);
-		const MxfMetadata &e = m.essence;
+		const MediaMetadata &e = m.essence;
 		QVERIFY2(e.valid, fn);
 		QVERIFY2(!e.isAudio, fn);
 		QVERIFY2(!e.codec.isEmpty(), fn);
@@ -350,7 +350,7 @@ void TestOmfParser::omf_mdb_row_agrees_with_the_file()
 			const MdbFileMob &row = db.files[entry.mobId];
 			const MdbMasterMob &master = db.masters[entry.masterMobId];
 			const OmfMetadata m = OmfParser::parseHeader(dir.filePath(entry.fileName));
-			const MxfMetadata &e = m.essence;
+			const MediaMetadata &e = m.essence;
 			QVERIFY2(row.essenceComplete, fn);
 			QVERIFY2(e.valid, fn);
 			QCOMPARE(e.isAudio, row.essence.isAudio);
@@ -384,7 +384,7 @@ void TestOmfParser::omf_mdb_row_agrees_with_the_file()
 
 // MARK: - One file per resolution id
 
-// Rules each value follows (see omfresolutions.cpp and MxfParser::finalise):
+// Rules each value follows (see omfresolutions.cpp and MediaMetadataUtil::finalise):
 //   codec       bare Avid short name from OmfResolutions for the (id, 4CC)
 //               pair; DNxHD-era ids (1235..1489) through OmfObjects::ulFromResId
 //               and the app's kEntries/kDnxTiers names; any name starting
@@ -438,7 +438,7 @@ void TestOmfParser::omf_video_facts_by_resolution_id()
 	{
 		const QString name = QLatin1String(pin.file);
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(name));
-		const MxfMetadata &e = m.essence;
+		const MediaMetadata &e = m.essence;
 		QVERIFY2(e.valid, pin.file);
 		QVERIFY2(e.codec == QLatin1String(pin.codec), qPrintable(name + QStringLiteral(": codec ") + e.codec));
 		QVERIFY2(e.resolution == QLatin1String(pin.resolution),
@@ -532,7 +532,7 @@ void TestOmfParser::omf_audio_files_describe_the_tones()
 		qint64 read = 0;
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(QLatin1String(pin.file)), &read);
 		QCOMPARE(m.revision, OmfObjects::Revision::Omf1);
-		const MxfMetadata &e = m.essence;
+		const MediaMetadata &e = m.essence;
 		QVERIFY2(e.valid, pin.file);
 		QVERIFY2(e.isAudio, pin.file);
 		QCOMPARE(e.sampleRate, 48000);
@@ -649,16 +649,16 @@ void TestOmfParser::omf_finalise_parity_with_a_header()
 	{
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(QStringLiteral("BLACK_720x243x2_JFIF35.omf")));
 		QVERIFY(m.essence.valid);
-		QVERIFY(m.essence.essenceContainerLabel.isEmpty());
+		QVERIFY(m.essence.compressionLabel.isEmpty());
 		QVERIFY(m.essence.heightIsFrameHeight);
 
-		MxfMetadata hdr;
+		MediaMetadata hdr;
 		hdr.codec = QStringLiteral("20:1"); // pre-filled, as readDescriptor does before finalise
 		hdr.width = 720;
 		hdr.height = 248; // the stored field height
 		hdr.frameLayout = 1;
-		MxfParser::applyEditRate(hdr, 2997, 100);
-		MxfParser::finalise(hdr);
+		MediaMetadataUtil::applyEditRate(hdr, 2997, 100);
+		MediaMetadataUtil::finalise(hdr);
 		QCOMPARE(hdr.valid, m.essence.valid);
 		QCOMPARE(hdr.resolution, m.essence.resolution);
 		QCOMPARE(hdr.codec, m.essence.codec);
@@ -669,15 +669,15 @@ void TestOmfParser::omf_finalise_parity_with_a_header()
 	{
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(QStringLiteral("BLACK_1920x540x2_AVHD_220.omf")));
 		QVERIFY(m.essence.valid);
-		QVERIFY(!m.essence.essenceContainerLabel.isEmpty());
+		QVERIFY(!m.essence.compressionLabel.isEmpty());
 
-		MxfMetadata hdr;
-		hdr.essenceContainerLabel = m.essence.essenceContainerLabel;
+		MediaMetadata hdr;
+		hdr.compressionLabel = m.essence.compressionLabel;
 		hdr.width = 1920;
 		hdr.height = 540;
 		hdr.frameLayout = 1;
-		MxfParser::applyEditRate(hdr, 2997, 100);
-		MxfParser::finalise(hdr);
+		MediaMetadataUtil::applyEditRate(hdr, 2997, 100);
+		MediaMetadataUtil::finalise(hdr);
 		QCOMPARE(hdr.resolution, m.essence.resolution);
 		QCOMPARE(hdr.codec, m.essence.codec);
 		QCOMPARE(hdr.codec, QStringLiteral("Avid DNx HQ (DNxHD 220)"));
@@ -686,13 +686,13 @@ void TestOmfParser::omf_finalise_parity_with_a_header()
 		const OmfMetadata m = OmfParser::parseHeader(dir.filePath(QStringLiteral("BLACK_720x576x1_DV420.omf")));
 		QVERIFY(m.essence.valid);
 
-		MxfMetadata hdr;
+		MediaMetadata hdr;
 		hdr.codec = QStringLiteral("DV 25 420");
 		hdr.width = 720;
 		hdr.height = 288;
 		hdr.frameLayout = 1;
-		MxfParser::applyEditRate(hdr, 25, 1);
-		MxfParser::finalise(hdr);
+		MediaMetadataUtil::applyEditRate(hdr, 25, 1);
+		MediaMetadataUtil::finalise(hdr);
 		QCOMPARE(hdr.codec, m.essence.codec);
 		QCOMPARE(hdr.codec, QStringLiteral("DV 25 420 i(PAL)"));
 	}

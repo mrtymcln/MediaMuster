@@ -1,4 +1,4 @@
-#include "fileidentity.h"
+#include "volumeidentity.h"
 #include "nativefile.h"
 #include <QTest>
 #include <QTemporaryDir>
@@ -8,7 +8,7 @@
 #include <windows.h>
 #endif
 
-class TestFileIdentity : public QObject
+class TestVolumeIdentity : public QObject
 {
 	Q_OBJECT
   private slots:
@@ -19,7 +19,7 @@ class TestFileIdentity : public QObject
 	void directory_sync_reports_native_error();
 	void unsupported_directory_flush_is_not_an_io_failure();
 };
-void TestFileIdentity::local_volume_round_trip()
+void TestVolumeIdentity::local_volume_round_trip()
 {
 	QTemporaryDir dir;
 	QVERIFY(dir.isValid());
@@ -28,7 +28,7 @@ void TestFileIdentity::local_volume_round_trip()
 	QVERIFY(id.matches(VolumeIdentity::capture(dir.path())));
 	QVERIFY(id.matches(VolumeIdentity::fromJson(id.toJson())));
 }
-void TestFileIdentity::a_different_volume_never_matches()
+void TestVolumeIdentity::a_different_volume_never_matches()
 {
 	QTemporaryDir dir;
 	const auto id = VolumeIdentity::capture(dir.path());
@@ -40,7 +40,7 @@ void TestFileIdentity::a_different_volume_never_matches()
 	if (id.serial)
 		QVERIFY(!id.matches(other));
 }
-void TestFileIdentity::labels_and_capacity_are_not_identity()
+void TestVolumeIdentity::labels_and_capacity_are_not_identity()
 {
 	VolumeIdentity a;
 	a.confidence = VolumeIdentity::Confidence::Med;
@@ -53,17 +53,17 @@ void TestFileIdentity::labels_and_capacity_are_not_identity()
 	b.confidence = a.confidence;
 	QVERIFY(!a.matches(b)); // Missing native IDs do not become strong by label.
 }
-void TestFileIdentity::local_durability_requests()
+void TestVolumeIdentity::local_durability_requests()
 {
 	QTemporaryDir dir;
 	QFile file(dir.path() + "/data");
 	QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::NewOnly));
 	QCOMPARE(file.write("test", 4), 4);
-	QCOMPARE(NativeFile::syncFile(file, NativeFile::Durability::Platter),
+	QCOMPARE(NativeFile::syncFile(file),
 			 NativeFile::SyncResult::Ok);
 	QCOMPARE(NativeFile::syncDirectory(dir.path()), NativeFile::SyncResult::Ok);
 }
-void TestFileIdentity::directory_sync_reports_native_error()
+void TestVolumeIdentity::directory_sync_reports_native_error()
 {
 	QTemporaryDir dir;
 	QVERIFY(dir.isValid());
@@ -81,7 +81,7 @@ void TestFileIdentity::directory_sync_reports_native_error()
 	QCOMPARE(NativeFile::syncDirectory(dir.path(), &error), NativeFile::SyncResult::Ok);
 	QVERIFY(error.isEmpty());
 }
-void TestFileIdentity::unsupported_directory_flush_is_not_an_io_failure()
+void TestVolumeIdentity::unsupported_directory_flush_is_not_an_io_failure()
 {
 	using Sync = NativeFile::SyncResult;
 	QCOMPARE(NativeFile::directoryFlushResult(0), Sync::Ok);
@@ -97,5 +97,5 @@ void TestFileIdentity::unsupported_directory_flush_is_not_an_io_failure()
 		QCOMPARE(NativeFile::directoryFlushResult(code), Sync::Failed);
 #endif
 }
-QTEST_GUILESS_MAIN(TestFileIdentity)
-#include "tst_fileidentity.moc"
+QTEST_GUILESS_MAIN(TestVolumeIdentity)
+#include "tst_volumeidentity.moc"

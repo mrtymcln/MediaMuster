@@ -126,7 +126,7 @@ void TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()
 
 	MediaFile f = sampleRow();
 	f.volumeName = QStringLiteral("EDIT");
-	f.mxfFolder = QStringLiteral("8646");
+	f.mediaFolderName = QStringLiteral("8646");
 	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/A11B22C33D44.mxf");
 
 	const QStringList fields = MediaCsv::rowLine(f).trimmed().split(QLatin1Char(','));

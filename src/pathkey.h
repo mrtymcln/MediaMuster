@@ -87,7 +87,7 @@ namespace PathKey
 		// The fold is safe for every current user of these keys: on a
 		// rare case-SENSITIVE volume it can at worst cause an
 		// unnecessary " (2)" divert name — never an overwrite, which is
-		// prevented by parking and NewOnly, not by this key.
+		// prevented by protected file identities and no-overwrite native operations.
 		result = result.toCaseFolded();
 #endif
 

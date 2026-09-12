@@ -1,7 +1,7 @@
 #pragma once
 #include "opjournal.h"
 
-class OpRescue
+class OperationRecovery
 {
   public:
 	struct Resumable
@@ -15,21 +15,14 @@ class OpRescue
 		QString started;
 		int total = 0;
 		int finished = 0;
-		bool usedMediaMusterTrash = false;
 		QVector<OpItem> remaining;
 	};
 	struct Summary
 	{
-		int journalsRecovered = 0;
-		int opsReversed = 0;
 		int opsFlagged = 0;
 		QStringList notes;
 		QVector<Resumable> resumable;
 		std::optional<OpJournal::Record> undoCandidate;
-		bool anything() const
-		{
-			return !notes.isEmpty() || !resumable.isEmpty();
-		}
 		bool hadTrouble() const
 		{
 			return opsFlagged > 0;

@@ -2,7 +2,7 @@
 #include "enumutil.h"
 #include "formatutil.h"
 #include "opmanager.h"
-#include "oprunner.h"
+#include "operationplan.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -30,23 +30,13 @@
 // 'Keep Both' renders the renamed \"name (2)\" destination; 'Skip'
 // keep the original path, painted red.
 //
-// `renamedHint` is the pool sweep's precomputed rename preview: non-null
-// means "use this", null-but-present means the sweep found no free slot.
-// Passing nullptr (interactive combo changes) probes the disk live — one
-// row per click, which is fine even on a network share; the hint exists so
-// the initial paint of N conflicted rows doesn't run N probe chains on the
-// UI thread.
+// Rename hints always come from the background sweep; repainting does no disk I/O.
 static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseDest,
 									 ManageMediaDialog::ConflictPolicy policy,
-									 const QString *renamedHint = nullptr)
+									 const QString &renamed)
 {
 	if (policy == ManageMediaDialog::ConflictPolicy::KeepBoth)
 	{
-		QString renamed;
-		if (renamedHint)
-			renamed = *renamedHint;
-		else if (const auto probed = OpRunner::generateRenamePath(baseDest))
-			renamed = *probed;
 		if (!renamed.isNull())
 		{
 			item->setText(1, renamed);
@@ -76,9 +66,6 @@ ManageMediaDialog::ManageMediaDialog(const QVector<MediaFile> &files, QWidget *p
 	setMinimumWidth(700);
 	resize(780, 620);
 	setupUi();
-
-	connect(&m_destCheckWatcher, &QFutureWatcher<DestCheckResult>::finished, this,
-			&ManageMediaDialog::onDestCheckFinished);
 
 	switch (initialOp)
 	{
@@ -132,12 +119,12 @@ void ManageMediaDialog::setupUi()
 					 "Originals are untouched.")));
 	opLayout->addWidget(
 		makeOpRow(m_radioMove, tr("Move"),
-				  tr("Move files within the same drive. Copies between drives "
-					 "are verified and keep their originals.")));
+				  tr("Move the selected files to a new location. When copying is needed, "
+					 "all originals are kept until every required copy succeeds.")));
 	opLayout->addWidget(
 		makeOpRow(m_radioDelete, tr("Delete"),
-				  tr("Move the selected files to MediaMuster Trash on the same drive. "
-					 "This does not free disk space.")));
+				  tr("Move the selected files to the system Trash. Network and NEXIS drives "
+					 "use MediaMuster Trash on the same drive. Emptying Trash frees space.")));
 
 	m_radioCopy->setChecked(true);
 
@@ -309,6 +296,11 @@ void ManageMediaDialog::onGlobalConflictPolicyChanged(int index)
 	if (m_conflictGlobalCombo->itemData(index).toInt() == -1)
 		return;
 
+	if (m_checkingDest)
+	{
+		updatePreview();
+		return;
+	}
 	const ConflictPolicy policy =
 		static_cast<ConflictPolicy>(m_conflictGlobalCombo->itemData(index).toInt());
 
@@ -325,23 +317,25 @@ void ManageMediaDialog::onGlobalConflictPolicyChanged(int index)
 			continue;
 		const QSignalBlocker blocker(combo);
 		combo->setCurrentIndex(index);
-		applyConflictPolicyToRow(item, item->data(1, Qt::UserRole).toString(), policy);
+		applyConflictPolicyToRow(item, item->data(1, Qt::UserRole).toString(), policy,
+			item->data(1, Qt::UserRole + 1).toString());
 	}
+	startDestinationCheck(false);
 }
 
 // MARK: - Preview rebuild
 
 void ManageMediaDialog::updatePreview()
 {
+	// Invalidate old worker results before destroying their preview rows.
+	++m_destCheckGeneration;
 	m_previewTree->setSortingEnabled(false);
 	m_previewTree->clear();
 	m_perFileConflictCombos.clear();
 
-	// Invalidate any in-flight destination sweep before anything else: the
-	// clear() above just destroyed the tree items its results point at, so a
-	// generation bump here guarantees those results get dropped on arrival.
-	++m_destCheckGeneration;
 	m_checkingDest = false;
+	m_assessment = {};
+	m_availableBytes = -1;
 	m_pendingRows.clear();
 
 	const Operation op = operation();
@@ -383,7 +377,7 @@ void ManageMediaDialog::updatePreview()
 			QHash<QString, int> destCounts;
 			for (const MediaFile &mf : m_files)
 			{
-				const QString dp = OpManager::buildDestPath(mf, dest, preserve);
+				const QString dp = OperationPlan::destinationPath(mf.fileName, mf.mediaFolderName, dest, preserve, mf.omfEra);
 				destPaths.append(dp);
 				++destCounts[dp];
 			}
@@ -415,46 +409,11 @@ void ManageMediaDialog::updatePreview()
 				++seenSoFar[dp];
 			}
 
-			// Launch this generation's sweep. The worker captures plain value
-			// copies (never `this`), so a dialog closed mid-sweep is safe; a
-			// superseded sweep's results are dropped on arrival by the
-			// generation check in onDestCheckFinished.
-			m_checkingDest = true;
-			m_destCheckLaunched = m_destCheckGeneration;
-			QStringList paths;
-			paths.reserve(m_pendingRows.size());
-			QVector<bool> dupLater;
-			dupLater.reserve(m_pendingRows.size());
-			for (const PendingRow &row : m_pendingRows)
-			{
-				paths.append(row.destPath);
-				dupLater.append(row.dupLater);
-			}
-			m_destCheckWatcher.setFuture(QtConcurrent::run(
-				[paths, dupLater]
-				{
-					DestCheckResult res;
-					res.exists.reserve(paths.size());
-					res.renamed.resize(paths.size());
-					for (const QString &p : paths)
-						res.exists.append(QFileInfo::exists(p));
-					// Rename previews only where a row will show one: an
-					// on-disk conflict (Keep Both preview) or a later same-run
-					// duplicate. An entry left null despite needing one means
-					// every rename slot was taken.
-					for (int i = 0; i < paths.size(); ++i)
-					{
-						if (!res.exists[i] && !dupLater[i])
-							continue;
-						if (const auto renamed = OpRunner::generateRenamePath(paths[i]))
-							res.renamed[i] = *renamed;
-					}
-					return res;
-				}));
+			startDestinationCheck(true);
 		}
 
 		// Conflict styling, the per-row combos, and the group's visibility
-		// arrive with the sweep results in onDestCheckFinished.
+		// arrive with the sweep results in applyDestinationCheck.
 		m_conflictGroup->setVisible(false);
 	}
 
@@ -465,17 +424,96 @@ void ManageMediaDialog::updatePreview()
 
 // MARK: - Destination sweep results
 
-void ManageMediaDialog::onDestCheckFinished()
+void ManageMediaDialog::startDestinationCheck(bool includeConflicts)
 {
-	// Superseded: a newer updatePreview() ran after this sweep launched, so
-	// these results describe tree rows that no longer exist. The current
-	// generation's own sweep (if any) reports separately.
-	if (m_destCheckLaunched != m_destCheckGeneration)
-		return;
+	if (operation() == Operation::Delete || destination().isEmpty()) return;
+	const int generation = ++m_destCheckGeneration;
+	m_checkingDest = true;
+	updateSummary();
+	OpRequest request;
+	request.kind = operation() == Operation::Copy ? OpKind::Copy : OpKind::Move;
+	request.destRoot = destination();
+	request.preserve = preserveStructure();
+	request.items = OpManager::itemsFromMediaFiles(m_files, conflictPolicies());
+	const auto defaultPolicy = conflictPolicyName(
+		m_conflictGlobalCombo->currentData().toInt() == Enum::to_underlying(ConflictPolicy::Skip)
+			? ConflictPolicy::Skip : ConflictPolicy::KeepBoth);
+	QStringList paths;
+	QVector<bool> dupLater;
+	for (const auto &row : m_pendingRows)
+	{
+		paths.append(row.destPath);
+		dupLater.append(row.dupLater);
+	}
+	auto *watcher = new QFutureWatcher<DestCheckResult>(this);
+	connect(watcher, &QFutureWatcher<DestCheckResult>::finished, this,
+		[this, watcher, generation, includeConflicts]
+		{
+			const auto result = watcher->result();
+			watcher->deleteLater();
+			if (generation != m_destCheckGeneration) return;
+			applyDestinationCheck(result, includeConflicts);
+		});
+	watcher->setFuture(QtConcurrent::run(
+		[request = std::move(request), paths, dupLater, defaultPolicy, includeConflicts]() mutable
+		{
+			DestCheckResult result;
+			QHash<QPair<QString, QString>, bool> sameFiles;
+			auto sameFile = [&](const QString &source, const QString &destination)
+			{
+				const auto paths = qMakePair(source, destination);
+				const auto found = sameFiles.constFind(paths);
+				if (found != sameFiles.cend()) return found.value();
+				const bool same = OperationPlan::alreadyAtDestination(source, destination);
+				sameFiles.insert(paths, same);
+				return same;
+			};
+			if (includeConflicts)
+			{
+				result.exists.reserve(paths.size());
+				result.renamed.resize(paths.size());
+				for (int i = 0; i < paths.size(); ++i)
+				{
+					const bool occupied = QFileInfo::exists(paths[i]);
+					if (!occupied) sameFiles.insert(qMakePair(request.items[i].src, paths[i]), false);
+					const bool unchanged = occupied && sameFile(request.items[i].src, paths[i]);
+					result.alreadyAtDestination.append(unchanged);
+					const bool exists = occupied && !unchanged;
+					result.exists.append(exists);
+					if (exists) request.items[i].policy = defaultPolicy;
+					if (!unchanged && (exists || dupLater[i]))
+						if (const auto renamed = OperationPlan::findKeepBothPath(paths[i]))
+							result.renamed[i] = *renamed;
+				}
+			}
+			QHash<QPair<QString, QString>, bool> relocationByFolders;
+			result.assessment = OperationPlan::assessCopyMove(request,
+				[&](const QString &source, const QString &destination)
+				{
+					const auto folders = qMakePair(QFileInfo(source).absolutePath(), QFileInfo(destination).absolutePath());
+					const auto found = relocationByFolders.constFind(folders);
+					if (found != relocationByFolders.cend()) return found.value();
+					const bool canRelocate = OperationPlan::sameVolumeForRename(source, destination);
+					relocationByFolders.insert(folders, canRelocate);
+					return canRelocate;
+				}, false, sameFile);
+			const QStorageInfo storage(request.destRoot);
+			if (storage.isValid() && storage.isReady()) result.availableBytes = storage.bytesAvailable();
+			return result;
+		}));
+}
 
-	const DestCheckResult result = m_destCheckWatcher.result();
-	if (result.exists.size() != m_pendingRows.size())
-		return; // belt-and-braces; index-aligned by construction
+void ManageMediaDialog::applyDestinationCheck(const DestCheckResult &result, bool includeConflicts)
+{
+	m_assessment = result.assessment;
+	m_availableBytes = result.availableBytes;
+	if (!includeConflicts)
+	{
+		m_checkingDest = false;
+		updateSummary();
+		return;
+	}
+	if (result.exists.size() != m_pendingRows.size()) return;
 
 	// New per-file combos: default to 'Keep Both' if global is 'Mixed',
 	// otherwise inherit global.
@@ -488,6 +526,11 @@ void ManageMediaDialog::onDestCheckFinished()
 	for (int i = 0; i < m_pendingRows.size(); ++i)
 	{
 		const PendingRow &row = m_pendingRows[i];
+		if (result.alreadyAtDestination[i])
+		{
+			row.item->setToolTip(1, tr("Already at destination; no change needed."));
+			continue;
+		}
 		if (result.exists[i])
 		{
 			// A real on-disk conflict: the user gets Keep Both / Skip
@@ -537,19 +580,22 @@ void ManageMediaDialog::onDestCheckFinished()
 			m_previewTree->setItemWidget(row.item, 2, combo);
 			m_perFileConflictCombos.insert(row.sourcePath, combo);
 
+			row.item->setData(1, Qt::UserRole + 1, result.renamed[i]);
 			// Initial paint uses the sweep's precomputed rename so N
 			// conflicted rows don't re-run the probe chain on the UI thread.
 			applyConflictPolicyToRow(row.item, row.destPath,
 									 static_cast<ConflictPolicy>(combo->currentData().toInt()),
-									 &result.renamed[i]);
+									 result.renamed[i]);
 
 			connect(combo, &QComboBox::currentIndexChanged, this,
 					[this, item = row.item, baseDest = row.destPath, combo](int)
 					{
 						applyConflictPolicyToRow(
 							item, baseDest,
-							static_cast<ConflictPolicy>(combo->currentData().toInt()));
+							static_cast<ConflictPolicy>(combo->currentData().toInt()),
+							item->data(1, Qt::UserRole + 1).toString());
 						syncGlobalFromPerFile();
+						startDestinationCheck(false);
 					});
 		}
 
@@ -604,61 +650,18 @@ void ManageMediaDialog::updateSummary()
 	if (operation() != Operation::Delete && dest.isEmpty())
 		canExecute = false;
 
-	// Block Copy/Move if the destination volume can't fit what actually
-	// lands on it as new data. A same-volume Move is just a rename — zero
-	// new bytes — so for Move we only count files coming from *other*
-	// volumes. (Copy always duplicates, so every byte counts.) An estimate
-	// only: doMove has no same-volume test of its own — it tries the rename
-	// and falls back to copy+delete when it fails across a boundary.
-	if (operation() != Operation::Delete && !dest.isEmpty())
+	// The worker supplied both the whole-job estimate and available capacity.
+	// Changing a policy starts another check; this paint never probes storage.
+	if (!m_checkingDest && operation() != Operation::Delete && !dest.isEmpty() &&
+		m_availableBytes >= 0 && m_assessment.temporaryBytes > m_availableBytes)
 	{
-		const QStorageInfo storage(dest);
-		qint64 incomingBytes = totalBytes;
-		if (operation() == Operation::Move && storage.isValid())
-		{
-			// A same-volume Move is a rename — zero new bytes. A file's device
-			// is fixed by its volume, so resolve QStorageInfo once per distinct
-			// volume rather than once per file; this runs on every preview
-			// refresh and a big Move can be thousands of files.
-			const QString destDevice = storage.device();
-			QHash<QString, QString> deviceByVolume;
-			auto deviceFor = [&deviceByVolume](const QString &key) -> QString
-			{
-				const auto it = deviceByVolume.constFind(key);
-				if (it != deviceByVolume.constEnd())
-					return it.value();
-				const QString device = QStorageInfo(key).device();
-				deviceByVolume.insert(key, device);
-				return device;
-			};
-
-			incomingBytes = 0;
-			for (const MediaFile &mf : m_files)
-			{
-				const QString key = mf.volumePath.isEmpty() ? mf.filePath : mf.volumePath;
-				if (deviceFor(key) != destDevice)
-					incomingBytes += mf.sizeBytes;
-			}
-		}
-
-		if (storage.isValid() && incomingBytes > storage.bytesAvailable())
-		{
-			m_spaceWarning->setText(
-				tr("Insufficient space: %1 needed, %2 free on destination volume")
-					.arg(Format::bytes(incomingBytes))
-					.arg(Format::bytes(storage.bytesAvailable())));
-			m_spaceWarning->setVisible(true);
-			canExecute = false;
-		}
-		else
-		{
-			m_spaceWarning->setVisible(false);
-		}
+		m_spaceWarning->setText(tr("Insufficient space: %1 needed, %2 free on destination volume")
+			.arg(Format::bytes(m_assessment.temporaryBytes)).arg(Format::bytes(m_availableBytes)));
+		m_spaceWarning->setVisible(true);
+		canExecute = false;
 	}
 	else
-	{
 		m_spaceWarning->setVisible(false);
-	}
 
 	m_btnExecute->setEnabled(canExecute);
 }

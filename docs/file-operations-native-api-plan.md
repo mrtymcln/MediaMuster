@@ -2,7 +2,9 @@
 
 Implementation has been completed and tested locally on macOS. See [implementation and validation results](file-operations-native-api-validation.md), including the remaining Windows and live-storage acceptance checks.
 
-Updated: 12 September 2026, incorporating the user's review. Planning only; application code has not been changed.
+Updated: 12 September 2026. This records the agreed implementation plan; descriptions
+of the former implementation below are historical planning context. Current module
+ownership is documented in the [architecture map](architecture.md).
 
 ## What the app should feel like
 
@@ -19,6 +21,7 @@ Windows and macOS perform the file actions. MediaMuster controls the plan, desti
 | Resume | Keep completed work and restart an unfinished file from the beginning. No partial-file byte resume. |
 | Cross-drive Move | Keep all originals until every required, non-skipped file has copied successfully. If verification is enabled, it must also succeed before source removal begins. |
 | Deliberate Skip | Exclude that file from the operation, leave its original untouched, and continue with the remaining files. Deliberate skips do not block the others from finishing their Move. |
+| Already at destination | When both paths identify the same protected file, record it as unchanged (`NoEffect`). Exclude it from copy space, source removal and Undo while continuing the remaining items. |
 | Move source removal | After the copying stage succeeds, remove originals to free source space. Future Undo copies moved files back. |
 | Copy errors | After bounded automatic retries fail, record the error and try the remaining files. A failed required copy prevents the Move source-removal stage. |
 | Undo delivery | Implement and test Undo, controlled by **Debug → Enable Undo**, off by default. Turning it on enables the app's Undo command for beta testing. |
@@ -184,9 +187,10 @@ Release native Copy and recovery only after their checks pass; cross-drive sourc
 | `src/opfile.*`, `src/nativefile.*` | Protected handles, metadata, staging/publication, native retirement/removal and persistence. |
 | `src/opjournal.*` | Reshaped beta job/item states under numeric schema 3, explicit completion evidence, Trash receipts, abandonment and Undo links. |
 | `src/oprunner.*` | Copy coordination, job-wide Move barrier, source removal, recovery and Undo execution. |
-| `src/oprescue.*`, `src/fileidentity.*` | Resume discovery/reconciliation, storage resolution and Undo candidates. |
+| `src/operationrecovery.*`, `src/volumeidentity.*` | Resume discovery/reconciliation, storage resolution and Undo candidates. |
 | New native Trash adapters, plus build configuration | System bin routing, per-item result receipts, restoration and fallback. |
-| `src/opmanager.*`, `src/mainwindow.*`, `src/managemediadialog.*`, `src/progressdialog.*` | One active job, Debug flags, interrupted-job dialog, phase labels, summaries and same-session recovery. |
+| `src/opmanager.*`, `src/fileoperationcontroller.*`, `src/mainwindow.*`, `src/managemediadialog.*`, `src/progressdialog.*` | One active job, Debug flags, interrupted-job dialog, phase labels, summaries and same-session recovery. |
+| `src/operationplan.*` | Shared advisory destination naming and Move copy/space assessment; the runner rechecks live state. |
 | `tests/tst_fileoperations.cpp`, `src/opdiagnostics.*`, `src/fileoperationtestdialog.*` | Regression and field diagnostics for the production paths. |
 
 ## Documentation used for API selection

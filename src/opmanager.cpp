@@ -36,7 +36,7 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 		OpItem it;
 		it.src = mf.filePath;
 		it.name = mf.fileName;
-		it.folder = mf.mxfFolder;
+		it.folder = mf.mediaFolderName;
 		it.omfEra = mf.omfEra; // OMF-era: travels with the item, and through the journal
 		it.bytes = mf.sizeBytes;
 		it.modifiedMs = mf.modified.isValid() ? mf.modified.toMSecsSinceEpoch() : -1;
@@ -54,26 +54,10 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 	return out;
 }
 
-// MARK: - Path helpers
-
-QString OpManager::buildDestPath(const MediaFile &mf, const QString &destRoot, bool preserve)
-{
-	return OpRunner::buildDestPath(mf.fileName, mf.mxfFolder, destRoot, preserve,
-								   mf.omfEra); // OMF-era: the scanner's verdict routes preserve
-}
-
 // MARK: - Job entry points
 
 void OpManager::execute(OpRequest request)
 {
-	startRun(std::move(request));
-}
-
-void OpManager::executeUndo(const QString &journalPath)
-{
-	OpRequest request;
-	request.kind = OpKind::Undo;
-	request.undoJournalPath = journalPath;
 	startRun(std::move(request));
 }
 

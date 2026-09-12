@@ -1,9 +1,9 @@
-#include "oprescue.h"
+#include "operationrecovery.h"
 #include "oprunner.h"
 #include <QDir>
 #include <QSet>
 
-std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpJournal::Record &rec)
+std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(const OpJournal::Record &rec)
 {
 	if (rec.corrupt || rec.dismissed || !rec.undoPath.isEmpty())
 		return {};
@@ -15,7 +15,6 @@ std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpJournal::Reco
 	out.verifyCopies = rec.request.verifyCopies;
 	out.copiesComplete = rec.copiesComplete;
 	out.started = rec.started;
-	out.usedMediaMusterTrash = out.kind == OpKind::Delete;
 	for (const auto &e : rec.entries)
 	{
 		if (!e.item.maintenance)
@@ -29,7 +28,7 @@ std::optional<OpRescue::Resumable> OpRescue::resumableFrom(const OpJournal::Reco
 	}
 	return out.remaining.isEmpty() ? std::nullopt : std::optional<Resumable>(out);
 }
-QVector<OpRescue::Resumable> OpRescue::pending(const QString &directory)
+QVector<OperationRecovery::Resumable> OperationRecovery::pending(const QString &directory)
 {
 	QVector<Resumable> out;
 	for (const auto &rec : OpJournal::interrupted(directory))
@@ -39,7 +38,7 @@ QVector<OpRescue::Resumable> OpRescue::pending(const QString &directory)
 	}
 	return out;
 }
-OpRescue::Summary OpRescue::run(const QString &directory, const QVector<VolumeIdentity> &mounted)
+OperationRecovery::Summary OperationRecovery::run(const QString &directory, const QVector<VolumeIdentity> &mounted)
 {
 	Summary out;
 	auto reportArtifacts = [&](const OpJournal::Record &record)
@@ -118,8 +117,6 @@ OpRescue::Summary OpRescue::run(const QString &directory, const QVector<VolumeId
 				++out.opsFlagged;
 				out.notes.append(error + " Journal: " + rec.path);
 			}
-			else
-				++out.journalsRecovered;
 		}
 		if (auto r = resumableFrom(journal.record()))
 			out.resumable.append(*r);

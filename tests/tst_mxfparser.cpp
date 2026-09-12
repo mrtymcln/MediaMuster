@@ -1,7 +1,5 @@
-// Unit tests for MxfParser::codecFromEssenceLabel — the public, pure codec-UL
-// lookup. Covers exact table hits, the DNxHD "bitrate depends on fps" logic,
-// the family-inference fallback for unrecognised ULs, and the empty/unknown
-// edges. The KLV walk itself is exercised by the fixture-backed tst_scanner.
+// MXF framing, graph ownership and metadata extraction, plus shared codec and
+// display derivation rules. Real header fixtures pin the decoded results.
 
 #include "mediafile.h"
 #include "mobid.h"
@@ -285,18 +283,18 @@ private slots:
 
 void TestMxfParser::empty_label_returns_empty()
 {
-	QCOMPARE(MxfParser::codecFromEssenceLabel({}, QStringLiteral("25")), QString());
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel({}, QStringLiteral("25")), QString());
 }
 
 void TestMxfParser::pcm_audio_ul_resolves()
 {
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B34040101010D01030102060100"), QString()),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102060100"), QString()),
 			 QStringLiteral("PCM"));
 }
 
 void TestMxfParser::prores_422_ul_resolves()
 {
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B34040101010D010301020C0301"), QString()),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D010301020C0301"), QString()),
 			 QStringLiteral("Apple ProRes 422"));
 }
 
@@ -305,18 +303,18 @@ void TestMxfParser::dnxhd_bitrate_follows_fps()
 	// Same UL (DNxHD SQ tier); current Avid branding leads, the legacy
 	// technical bitrate name (rate-dependent) stays in the parenthesis.
 	const QByteArray sq = ul("060E2B34040101010D01030102060101");
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, QStringLiteral("25")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, QStringLiteral("25")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 120)"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, QStringLiteral("29.97")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, QStringLiteral("29.97")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 145)"));
 	// Unsupported or absent fps retains the known tier without a guessed bitrate.
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, QStringLiteral("48")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, QStringLiteral("48")),
 			 QStringLiteral("Avid DNx SQ"));
 }
 
 void TestMxfParser::dnxhd_hqx_carries_x_suffix()
 {
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B34040101010D01030102060202"),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102060202"),
 											  QStringLiteral("25")),
 			 QStringLiteral("Avid DNx HQX (DNxHD 185X)"));
 }
@@ -327,30 +325,30 @@ void TestMxfParser::vc3_720p_sq_keeps_its_own_name()
 	// names come from the 2012 whitepaper's 720p table — NOT the 1080-line
 	// numbers (75 at 29.97, not 145). Display leads with current branding.
 	const QByteArray sq720 = ul("060E2B340401010A0401020271120000");
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq720, QStringLiteral("29.97")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("29.97")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 75)"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq720, QStringLiteral("25")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("25")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 60)"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq720, QStringLiteral("23.976")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("23.976")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 60)"));
 	// The 720p 50/59.94 rows are at the bottom of p9, before p10.
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq720, QStringLiteral("59.94")),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("59.94")),
 			 QStringLiteral("Avid DNx SQ (DNxHD 145)"));
 
 	// Sibling 720p tiers (CIDs 1251/1250), same whitepaper table.
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B340401010A0401020271110000"),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B340401010A0401020271110000"),
 											  QStringLiteral("25")),
 			 QStringLiteral("Avid DNx HQ (DNxHD 90)"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B340401010A0401020271100000"),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B340401010A0401020271100000"),
 											  QStringLiteral("29.97")),
 			 QStringLiteral("Avid DNx HQX (DNxHD 110x)"));
 
 	// DNxHR is under the same brand with no bitrate names — level only,
 	// bare at every rate ("HR" is communicated by the Resolution column).
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B34040101010D01030102110201"),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102110201"),
 											  QStringLiteral("25")),
 			 QStringLiteral("Avid DNx SQ"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(ul("060E2B34040101010D01030102110501"),
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102110501"),
 											  QStringLiteral("50")),
 			 QStringLiteral("Avid DNx 444"));
 }
@@ -359,7 +357,7 @@ void TestMxfParser::unknown_ul_infers_family_from_structure()
 {
 	// Not in the table, but byte[8]=04, byte[9]=01, byte[12]=71 → VC-3 family.
 	const QString name =
-		MxfParser::codecFromEssenceLabel(ul("060E2B340401010A0401020271FF0000"), QStringLiteral("25"));
+		MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B340401010A0401020271FF0000"), QStringLiteral("25"));
 	QVERIFY2(name.startsWith(QStringLiteral("VC-3")), qPrintable(name));
 	QVERIFY(name.contains(QStringLiteral("unknown variant")));
 }
@@ -367,7 +365,7 @@ void TestMxfParser::unknown_ul_infers_family_from_structure()
 void TestMxfParser::fully_unknown_ul_falls_back_to_hex()
 {
 	const QString name =
-		MxfParser::codecFromEssenceLabel(ul("112233445566778899AABBCCDDEEFF00"), QString());
+		MediaMetadataUtil::codecFromCompressionLabel(ul("112233445566778899AABBCCDDEEFF00"), QString());
 	QVERIFY2(name.startsWith(QStringLiteral("Unknown (")), qPrintable(name));
 }
 
@@ -393,7 +391,7 @@ void TestMxfParser::material_package_name_wins_over_source_package()
 	buf += packageSet(0x37, srcUmid, QStringLiteral("7362010SS"));	  // SourcePackage, first
 	buf += packageSet(0x36, matUmid, QStringLiteral("214/1.new.01")); // MaterialPackage, second
 
-	const MxfMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/clip.mxf", buf));
+	const MediaMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/clip.mxf", buf));
 
 	QCOMPARE(meta.clipName, QStringLiteral("214/1.new.01"));
 	QCOMPARE(meta.umid, MobId::format(matUmid));
@@ -416,7 +414,7 @@ void TestMxfParser::source_only_name_is_flagged_as_fallback()
 	QByteArray buf;
 	buf += packageSet(0x37, srcUmid, QStringLiteral("7302108SL"));
 
-	const MxfMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/clip.mxf", buf));
+	const MediaMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/clip.mxf", buf));
 
 	QCOMPARE(meta.clipName, QStringLiteral("7302108SL"));
 	QVERIFY(!meta.clipNameFromMaterial);
@@ -436,7 +434,7 @@ void TestMxfParser::hostile_ber_length_does_not_crash()
 	buf.append('\x88');			// long form: 8 length bytes follow
 	buf.append(QByteArray::fromHex("7FFFFFFFFFFFFFFF"));
 
-	const MxfMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/hostile.mxf", buf));
+	const MediaMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/hostile.mxf", buf));
 	QVERIFY(!meta.valid);
 }
 
@@ -452,7 +450,7 @@ void TestMxfParser::indefinite_ber_length_is_rejected()
 	buf.append('\x80');					// indefinite length
 	buf.append(QByteArray(64, '\x00')); // trailing bytes that must not be walked
 
-	const MxfMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/indef.mxf", buf));
+	const MediaMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/indef.mxf", buf));
 	QVERIFY(!meta.valid);
 }
 
@@ -468,7 +466,7 @@ void TestMxfParser::truncated_ber_length_is_rejected()
 	buf.append('\x84'); // long form, 4 length bytes...
 	buf.append('\x00'); // ...only 1 present
 
-	const MxfMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/trunc.mxf", buf));
+	const MediaMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/trunc.mxf", buf));
 	QVERIFY(!meta.valid);
 }
 
@@ -489,7 +487,7 @@ void TestMxfParser::material_package_beyond_fast_read_is_recovered()
 		buf += fillerItem(8000);
 	buf += packageSet(0x36, matUmid, QStringLiteral("BEYOND/1.new.01"));
 
-	const MxfMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/big.mxf", buf));
+	const MediaMetadata meta = MxfParser::parseHeader(writeMxf(tmp.path() + "/big.mxf", buf));
 
 	QCOMPARE(meta.resolution, QStringLiteral("1920x1080"));
 	QCOMPARE(meta.clipName, QStringLiteral("BEYOND/1.new.01"));
@@ -520,7 +518,7 @@ void TestMxfParser::fractional_frame_rates_are_never_rounded()
 	{
 		const QString path =
 			tmp.path() + QStringLiteral("/rate_%1_%2.mxf").arg(r.num).arg(r.den);
-		const MxfMetadata meta =
+		const MediaMetadata meta =
 			MxfParser::parseHeader(writeMxf(path, cdciSet(1920, 1080, r.num, r.den)));
 		QVERIFY(meta.valid);
 		QCOMPARE(meta.fps, QString::fromLatin1(r.expected));
@@ -549,7 +547,7 @@ void TestMxfParser::equivalent_rate_fractions_resolve_by_value()
 	{
 		const QString path =
 			tmp.path() + QStringLiteral("/eqrate_%1_%2.mxf").arg(r.num).arg(r.den);
-		const MxfMetadata meta =
+		const MediaMetadata meta =
 			MxfParser::parseHeader(writeMxf(path, cdciSet(1920, 1080, r.num, r.den)));
 		QVERIFY(meta.valid);
 		QCOMPARE(meta.fps, QString::fromLatin1(r.expected));
@@ -576,7 +574,7 @@ void TestMxfParser::odd_width_duration_fields_read_exactly()
 	set.append(char(value.size())); // BER short form
 	set += value;
 
-	const MxfMetadata meta =
+	const MediaMetadata meta =
 		MxfParser::parseHeader(writeMxf(tmp.path() + "/sixbyte.mxf", set));
 	QVERIFY(meta.valid);
 	QCOMPARE(meta.durationFrames, qint64(300));
@@ -587,7 +585,7 @@ void TestMxfParser::mp2_audio_descriptor_recognised()
 	const QString path = QStringLiteral(
 		FIXTURES_DIR "/avid_headers/A01.E68C35B3_2C34B2C34B61AA.mxf");
 	QVERIFY(QFile::exists(path));
-	const MxfMetadata m = MxfParser::parseHeader(path);
+	const MediaMetadata m = MxfParser::parseHeader(path);
 
 	QVERIFY(m.valid);
 	QVERIFY(m.isAudio);
@@ -615,7 +613,7 @@ void TestMxfParser::label_only_audio_classifies_from_ul()
 	QVERIFY(tmp.isValid());
 
 	// GC AES3/BWF sound container — the namespace of Avid's PCM label.
-	const MxfMetadata pcm = MxfParser::parseHeader(writeMxf(
+	const MediaMetadata pcm = MxfParser::parseHeader(writeMxf(
 		tmp.path() + "/pcm.mxf", labelOnlySet(ul("060E2B34040101010D01030102060100"))));
 	QVERIFY(pcm.valid);
 	QVERIFY(pcm.isAudio);
@@ -623,7 +621,7 @@ void TestMxfParser::label_only_audio_classifies_from_ul()
 	QCOMPARE(pcm.durationFrames, qint64(0));
 
 	// MPEG-1 Layer II sound-coding UL (bytes 8-9 = 04 02).
-	const MxfMetadata mp2 = MxfParser::parseHeader(writeMxf(
+	const MediaMetadata mp2 = MxfParser::parseHeader(writeMxf(
 		tmp.path() + "/mp2.mxf", labelOnlySet(ul("060E2B34040101010402020203020500"))));
 	QVERIFY(mp2.valid);
 	QVERIFY(mp2.isAudio);
@@ -631,7 +629,7 @@ void TestMxfParser::label_only_audio_classifies_from_ul()
 
 	// A video coding UL through the identical shape must NOT classify
 	// as audio (DNxHD SQ; picture namespace 04 01).
-	const MxfMetadata vid = MxfParser::parseHeader(writeMxf(
+	const MediaMetadata vid = MxfParser::parseHeader(writeMxf(
 		tmp.path() + "/vid.mxf", labelOnlySet(ul("060E2B340401010A0401020271030000"))));
 	QVERIFY(!vid.isAudio);
 }
@@ -664,10 +662,10 @@ void TestMxfParser::essence_label_audio_classification()
 	for (const auto &c : kCases)
 	{
 		const QString path = tmp.path() + QStringLiteral("/case%1.mxf").arg(i++);
-		const MxfMetadata m = MxfParser::parseHeader(writeMxf(path, labelOnlySet(ul(c.ul))));
+		const MediaMetadata m = MxfParser::parseHeader(writeMxf(path, labelOnlySet(ul(c.ul))));
 		// The label must actually have reached the classifier, or the
 		// isAudio assertion below would pass vacuously.
-		QVERIFY2(!m.essenceContainerLabel.isEmpty(), c.why);
+		QVERIFY2(!m.compressionLabel.isEmpty(), c.why);
 		QVERIFY2(m.isAudio == c.audio, c.why);
 	}
 }
@@ -701,7 +699,7 @@ void TestMxfParser::float_bit_depth_sentinel_shows_float()
 		set.append(char(value.size()));
 		set += value;
 
-		const MxfMetadata meta = MxfParser::parseHeader(
+		const MediaMetadata meta = MxfParser::parseHeader(
 			writeMxf(tmp.path() + QStringLiteral("/bits_%1.mxf").arg(c.bits), set));
 		QVERIFY(meta.valid);
 		QCOMPARE(meta.bitDepth, QString::fromLatin1(c.expected));
@@ -744,7 +742,7 @@ void TestMxfParser::uhd_corpus_codec_entries_resolve()
 	{
 		const QString path = QStringLiteral(FIXTURES_DIR "/avid_headers/") + QLatin1String(f.name);
 		QVERIFY2(QFile::exists(path), f.name);
-		const MxfMetadata meta = MxfParser::parseHeader(path);
+		const MediaMetadata meta = MxfParser::parseHeader(path);
 		QVERIFY2(meta.valid, f.name);
 		QCOMPARE(meta.codec, QString::fromLatin1(f.codec));
 		QCOMPARE(meta.bitDepth, QString::fromLatin1(f.bits));
@@ -792,7 +790,7 @@ void TestMxfParser::avc_files_resolve_to_their_family()
 	{
 		const QString path = QStringLiteral(FIXTURES_DIR "/corpus_headers/") + QLatin1String(f.name);
 		QVERIFY2(QFile::exists(path), qPrintable(path));
-		const MxfMetadata meta = MxfParser::parseHeader(path);
+		const MediaMetadata meta = MxfParser::parseHeader(path);
 		QVERIFY2(meta.valid, f.name);
 		QCOMPARE(meta.codec, QString::fromLatin1(f.codec));
 	}
@@ -810,7 +808,7 @@ void TestMxfParser::archived_corpus_all_parses_with_no_unknowns()
 	int checked = 0;
 	for (const QString &name : slices)
 	{
-		const MxfMetadata meta = MxfParser::parseHeader(corpus.filePath(name));
+		const MediaMetadata meta = MxfParser::parseHeader(corpus.filePath(name));
 		QVERIFY2(meta.valid, qPrintable(name));
 		QVERIFY2(!meta.codec.isEmpty(), qPrintable(name));
 		QVERIFY2(!meta.codec.contains(QLatin1String("unknown variant")),
@@ -901,7 +899,7 @@ void TestMxfParser::real_avid_headers_parse_exactly()
 	{
 		const QString path = QStringLiteral(FIXTURES_DIR "/avid_headers/") + QLatin1String(f.name);
 		QVERIFY2(QFile::exists(path), qPrintable(path));
-		const MxfMetadata meta = MxfParser::parseHeader(path);
+		const MediaMetadata meta = MxfParser::parseHeader(path);
 
 		QVERIFY2(meta.valid, f.name);
 		QCOMPARE(meta.clipName, QString::fromLatin1(f.clip));
@@ -919,7 +917,7 @@ void TestMxfParser::real_avid_headers_parse_exactly()
 void TestMxfParser::audio_duration_displays_bin_timecode()
 {
 	// End to end through the same steps the scanner takes: parse the real
-	// header, copy the fields applyMxfMetadata copies, and format with
+	// header, copy the fields applyMediaMetadata copies, and format with
 	// MediaFile::durationDisplay. Audio shows HH:MM:SS:FF at the clip's
 	// edit rate, exactly like the Avid bin — never wall clock.
 	const struct
@@ -935,7 +933,7 @@ void TestMxfParser::audio_duration_displays_bin_timecode()
 	for (const auto &a : kAudio)
 	{
 		const QString path = QStringLiteral(FIXTURES_DIR "/avid_headers/") + QLatin1String(a.name);
-		const MxfMetadata meta = MxfParser::parseHeader(path);
+		const MediaMetadata meta = MxfParser::parseHeader(path);
 		QVERIFY2(meta.valid && meta.isAudio, a.name);
 
 		MediaFile mf;
@@ -950,7 +948,7 @@ void TestMxfParser::audio_duration_displays_bin_timecode()
 	}
 
 	// Video through the same path: 765 frames at 25 fps.
-	const MxfMetadata v = MxfParser::parseHeader(
+	const MediaMetadata v = MxfParser::parseHeader(
 		QStringLiteral(FIXTURES_DIR "/avid_headers/V01.E683CD72_FF4BEFF4BE92DV.mxf"));
 	MediaFile vf;
 	vf.fps = v.fps;
@@ -996,7 +994,7 @@ void TestMxfParser::drop_frame_durations_render_like_avid()
 	const QString path = QStringLiteral(
 		FIXTURES_DIR "/avid_headers/Untitled Sequence.175B1728V.mxf");
 	QVERIFY(QFile::exists(path));
-	const MxfMetadata m = MxfParser::parseHeader(path);
+	const MediaMetadata m = MxfParser::parseHeader(path);
 	QVERIFY(m.valid);
 	QVERIFY(m.dropFrame);
 	QCOMPARE(m.timecodeBase, 30);
@@ -1033,20 +1031,20 @@ void TestMxfParser::applyEditRate_labels_fractional_rates()
 	};
 	for (const Case &c : cases)
 	{
-		MxfMetadata m;
-		MxfParser::applyEditRate(m, c.num, c.den);
+		MediaMetadata m;
+		MediaMetadataUtil::applyEditRate(m, c.num, c.den);
 		QCOMPARE(m.fps, QString::fromLatin1(c.fps));
 		QCOMPARE(m.timecodeBase, c.base);
 		QCOMPARE(m.sampleRate, 0);
 	}
-	MxfMetadata a;
+	MediaMetadata a;
 	a.isAudio = true;
-	MxfParser::applyEditRate(a, 48000, 1);
+	MediaMetadataUtil::applyEditRate(a, 48000, 1);
 	QCOMPARE(a.sampleRate, 48000);
 	QVERIFY(a.fps.isEmpty());
 
-	MxfMetadata z;
-	MxfParser::applyEditRate(z, 25, 0); // zero denominator: ignored, not a crash
+	MediaMetadata z;
+	MediaMetadataUtil::applyEditRate(z, 25, 0); // zero denominator: ignored, not a crash
 	QVERIFY(z.fps.isEmpty());
 }
 
@@ -1057,56 +1055,56 @@ void TestMxfParser::mdb_style_metadata_finalises_like_a_header()
 {
 	const QByteArray sq = ul("060E2B34040101010D01030102060101");
 
-	MxfMetadata db;
-	db.essenceContainerLabel = sq;
+	MediaMetadata db;
+	db.compressionLabel = sq;
 	db.width = 1920;
 	db.height = 1080; // the MDB producer already doubled its 540
 	db.frameLayout = 1;
 	db.heightIsFrameHeight = true;
-	MxfParser::applyEditRate(db, 25, 1);
-	MxfParser::finalise(db);
+	MediaMetadataUtil::applyEditRate(db, 25, 1);
+	MediaMetadataUtil::finalise(db);
 	QVERIFY(db.valid);
 	QCOMPARE(db.resolution, QStringLiteral("1920x1080"));
 	QCOMPARE(db.codec, QStringLiteral("Avid DNx SQ (DNxHD 120)"));
 
 	// The same facts as a header presents them: a field height, no flag.
-	MxfMetadata hdr;
-	hdr.essenceContainerLabel = sq;
+	MediaMetadata hdr;
+	hdr.compressionLabel = sq;
 	hdr.width = 1920;
 	hdr.height = 540;
 	hdr.frameLayout = 1;
-	MxfParser::applyEditRate(hdr, 25, 1);
-	MxfParser::finalise(hdr);
+	MediaMetadataUtil::applyEditRate(hdr, 25, 1);
+	MediaMetadataUtil::finalise(hdr);
 	QCOMPARE(hdr.resolution, db.resolution);
 	QCOMPARE(hdr.codec, db.codec);
 	QCOMPARE(hdr.valid, db.valid);
 
 	// Layout 3 is a full height in a header but a half height in the MDB;
 	// the producer normalises and flags, finalise leaves it alone.
-	MxfMetadata l3;
-	l3.essenceContainerLabel = sq;
+	MediaMetadata l3;
+	l3.compressionLabel = sq;
 	l3.width = 1920;
 	l3.height = 1080;
 	l3.frameLayout = 3;
 	l3.heightIsFrameHeight = true;
-	MxfParser::applyEditRate(l3, 25, 1);
-	MxfParser::finalise(l3);
+	MediaMetadataUtil::applyEditRate(l3, 25, 1);
+	MediaMetadataUtil::finalise(l3);
 	QCOMPARE(l3.resolution, QStringLiteral("1920x1080"));
 
 	// Audio from the database: samples + sample rate + frame count.
-	MxfMetadata au;
+	MediaMetadata au;
 	au.isAudio = true;
 	au.sampleRate = 48000;
 	au.pcmDescriptor = true;
 	au.descriptorDuration = 2880002; // samples
 	au.durationFrames = 1500;		 // frames at 25
-	MxfParser::finalise(au);
+	MediaMetadataUtil::finalise(au);
 	QVERIFY(au.valid);
 	QCOMPARE(au.timecodeBase, 25);
 	QCOMPARE(au.durationFrames, qint64(1500));
 	QCOMPARE(au.codec, QString::fromLatin1(kPcmAudioName));
-	QCOMPARE(MxfParser::bitDepthLabel(24), QStringLiteral("24-bit"));
-	QCOMPARE(MxfParser::bitDepthLabel(254), QStringLiteral("Float"));
+	QCOMPARE(MediaMetadataUtil::bitDepthLabel(24), QStringLiteral("24-bit"));
+	QCOMPARE(MediaMetadataUtil::bitDepthLabel(254), QStringLiteral("Float"));
 }
 
 // The MaterialPackage's TaggedValues carry the import facts the MDB also
@@ -1116,7 +1114,7 @@ void TestMxfParser::tagged_values_yield_source_path_and_import_flag()
 {
 	const QString imported = QStringLiteral(FIXTURES_DIR "/corpus_headers/V01.E6966CE5_A3C580A3C588BV.mxf");
 	QVERIFY(QFileInfo::exists(imported));
-	const MxfMetadata m = MxfParser::parseHeader(imported);
+	const MediaMetadata m = MxfParser::parseHeader(imported);
 	QVERIFY(m.valid);
 	QVERIFY(m.hasImportSetting);
 	QCOMPARE(m.sourceContainer, QStringLiteral("QTFF"));
@@ -1126,20 +1124,20 @@ void TestMxfParser::tagged_values_yield_source_path_and_import_flag()
 
 	// `_PJ` is the attribute Media Composer's own PMR rebuild reads from the
 	// file; the PMR beside this fixture says "block 1729" and so does the file.
-	const MxfMetadata pmrTone =
+	const MediaMetadata pmrTone =
 		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"));
 	QVERIFY(pmrTone.valid);
 	QCOMPARE(pmrTone.projectName, QStringLiteral("block 1729"));
 
 	// Avid-generated media carries none of the import facts: a tone and a render.
-	const MxfMetadata tone =
+	const MediaMetadata tone =
 		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/avid_headers/TONE_100A01.F7C83BB3.612410.mxf"));
 	QVERIFY(tone.valid);
 	QVERIFY(!tone.hasImportSetting);
 	QVERIFY(tone.sourceFilePath.isEmpty());
 	QVERIFY(tone.sourceContainer.isEmpty());
 
-	const MxfMetadata render =
+	const MediaMetadata render =
 		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/zT_ßt_1080i_50_seqDD866C6BV.mxf"));
 	QVERIFY(render.valid);
 	QVERIFY(render.isPrecompute);
@@ -1192,7 +1190,7 @@ void TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read()
 	qint64 bytes = 0;
 	const auto result = MxfParser::parseHeader(path, &bytes);
 	QVERIFY(result.valid);
-	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Complete);
 	QCOMPARE(result.clipName, QStringLiteral("Late material"));
 	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
 	QVERIFY2(bytes < 64 * 1024, qPrintable(QString::number(bytes)));
@@ -1290,7 +1288,7 @@ void TestMxfParser::private_usage_requires_primer_and_exact_integer()
 	{
 		const auto malformed = MxfParser::parseHeader(writeMxf(temp.filePath("bad-width.mxf"),
 															   partitionPack() + primer + material(0x9009, value) + cdciSet(1920, 1080, 25)));
-		QCOMPARE(malformed.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+		QCOMPARE(malformed.headerStatus, MediaMetadata::HeaderStatus::Malformed);
 		QVERIFY(!malformed.hasMaterialPackage);
 		QVERIFY(!malformed.classificationKnown);
 	}
@@ -1381,14 +1379,14 @@ void TestMxfParser::malformed_local_property_invalidates_header()
 	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("broken.mxf"), partitionPack() + cdciSet(1920, 1080) + bad));
 	QVERIFY(!result.valid);
 	QVERIFY(!result.classificationKnown);
-	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Malformed);
 	const QByteArray badUsage = objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) + localProperty(0x4408, QByteArray(1, '\0')));
 	const auto usage = MxfParser::parseHeader(writeMxf(temp.filePath("usage.mxf"), partitionPack() + cdciSet(1920, 1080) + badUsage));
 	QVERIFY(!usage.classificationKnown);
 	QVERIFY(!usage.valid);
 	const QByteArray fill = klv(ul("060e2b34010101010301021001000000"), QByteArray(100, '\0'));
 	const auto shortFill = MxfParser::parseHeader(writeMxf(temp.filePath("fill.mxf"), partitionPack() + cdciSet(1920, 1080) + fill.left(fill.size() - 50)));
-	QCOMPARE(shortFill.headerStatus, MxfMetadata::HeaderStatus::Incomplete);
+	QCOMPARE(shortFill.headerStatus, MediaMetadata::HeaderStatus::Incomplete);
 	QVERIFY(!shortFill.valid);
 	const QByteArray descriptor = cdciSet(1920, 1080);
 	QByteArray pack(88, '\0');
@@ -1396,7 +1394,7 @@ void TestMxfParser::malformed_local_property_invalidates_header()
 	qToBigEndian<quint64>(quint64(descriptor.size() - 1), pack.data() + 32);
 	const auto crossing = MxfParser::parseHeader(writeMxf(temp.filePath("crossing.mxf"),
 														  klv(ul("060e2b34020501010d01020101020400"), pack) + descriptor));
-	QCOMPARE(crossing.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+	QCOMPARE(crossing.headerStatus, MediaMetadata::HeaderStatus::Malformed);
 	QVERIFY(!crossing.valid);
 	// The file may be long enough while essence starts too early for the
 	// declared metadata extent. Do not certify that header as complete.
@@ -1404,41 +1402,41 @@ void TestMxfParser::malformed_local_property_invalidates_header()
 	const auto earlyEssence = MxfParser::parseHeader(writeMxf(temp.filePath("early.mxf"),
 															  klv(ul("060e2b34020501010d01020101020400"), pack) + descriptor +
 																  klv(ul("060e2b34010201010d01030115010501"), QByteArray(100, '\0'))));
-	QCOMPARE(earlyEssence.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+	QCOMPARE(earlyEssence.headerStatus, MediaMetadata::HeaderStatus::Malformed);
 	QVERIFY(!earlyEssence.valid);
 }
 
 void TestMxfParser::finalise_is_idempotent_and_does_not_guess()
 {
-	MxfMetadata picture;
+	MediaMetadata picture;
 	picture.width = 1920;
 	picture.height = 540;
 	picture.frameLayout = 1;
-	MxfParser::finalise(picture);
-	MxfParser::finalise(picture);
+	MediaMetadataUtil::finalise(picture);
+	MediaMetadataUtil::finalise(picture);
 	QCOMPARE(picture.height, 1080);
 	QVERIFY(picture.codec.isEmpty());
-	MxfMetadata corrupt;
+	MediaMetadata corrupt;
 	corrupt.width = 1920;
 	corrupt.height = std::numeric_limits<int>::min();
 	corrupt.frameLayout = 1;
-	MxfParser::finalise(corrupt);
+	MediaMetadataUtil::finalise(corrupt);
 	QCOMPARE(corrupt.height, 0);
 	QVERIFY(!corrupt.valid);
-	MxfMetadata sound;
+	MediaMetadata sound;
 	sound.isAudio = true;
 	sound.sampleRate = 48000;
-	MxfParser::finalise(sound);
+	MediaMetadataUtil::finalise(sound);
 	QVERIFY(sound.valid);
 	QVERIFY(sound.codec.isEmpty());
 	sound.pcmDescriptor = true;
-	MxfParser::finalise(sound);
+	MediaMetadataUtil::finalise(sound);
 	QCOMPARE(sound.codec, QString::fromLatin1(kPcmAudioName));
 	const QByteArray sq = ul("060E2B34040101010D01030102060101");
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, {}), QStringLiteral("Avid DNx SQ"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, "50"), QStringLiteral("Avid DNx SQ (DNxHD 240)"));
-	QCOMPARE(MxfParser::codecFromEssenceLabel(sq, "59.94"), QStringLiteral("Avid DNx SQ (DNxHD 290)"));
-	QVERIFY(!MxfParser::codecFromEssenceLabel(ul("060e2b34040101010d99111111111111"), {}).startsWith("Avid"));
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, {}), QStringLiteral("Avid DNx SQ"));
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, "50"), QStringLiteral("Avid DNx SQ (DNxHD 240)"));
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, "59.94"), QStringLiteral("Avid DNx SQ (DNxHD 290)"));
+	QVERIFY(!MediaMetadataUtil::codecFromCompressionLabel(ul("060e2b34040101010d99111111111111"), {}).startsWith("Avid"));
 }
 
 void TestMxfParser::avid_alpha_requires_positive_container_and_layout_data()
@@ -1481,7 +1479,7 @@ void TestMxfParser::avid_alpha_requires_positive_container_and_layout()
 	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("alpha.mxf"),
 														klv(ul("060e2b34020501010d01020101020400"), pack) + objectSet(quint8(descriptorType), 'd', fields)));
 	QVERIFY(result.valid);
-	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Complete);
 	QCOMPARE(result.codec == QStringLiteral("Uncompressed alpha"), alpha);
 	if (alpha)
 	{
@@ -1548,7 +1546,7 @@ void TestMxfParser::partition_container_batch_is_bounded()
 		const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("malformed.mxf"),
 															klv(ul("060e2b34020501010d01020101020400"), pack) + cdciSet(1920, 1080)));
 		QVERIFY(!result.valid);
-		QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Malformed);
+		QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Malformed);
 		QVERIFY(result.codec.isEmpty());
 	}
 }
@@ -1740,7 +1738,7 @@ void TestMxfParser::precompute_categories_require_direct_typed_evidence()
 	QTemporaryDir temp;
 	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("category.mxf"), content));
 	QVERIFY(result.valid);
-	QCOMPARE(result.headerStatus, MxfMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Complete);
 	QCOMPARE(result.precomputeCategory, expected);
 }
 
@@ -1773,7 +1771,7 @@ void TestMxfParser::precompute_categories_scope_and_incomplete_headers()
 	QByteArray complete = precomputeGraph({video, video}, directImport) + importObject();
 	complete += klv(ul("060e2b34010101020301021001000000"), QByteArray(100, 'x')).chopped(20);
 	const auto incomplete = MxfParser::parseHeader(writeMxf(temp.filePath("incomplete.mxf"), complete));
-	QVERIFY(incomplete.headerStatus != MxfMetadata::HeaderStatus::Complete);
+	QVERIFY(incomplete.headerStatus != MediaMetadata::HeaderStatus::Complete);
 	QVERIFY(!incomplete.classificationKnown);
 	QCOMPARE(incomplete.precomputeCategory, Category::Unknown);
 }

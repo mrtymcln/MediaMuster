@@ -1,10 +1,16 @@
 #include "mainwindow.h"
+#include "managemediadialog.h"
 #include "opjournal.h"
 #include "progressdialog.h"
 
 #include <QAction>
 #include <QApplication>
 #include <QDialog>
+#include <QComboBox>
+#include <QRadioButton>
+#include <QSemaphore>
+#include <QTreeWidget>
+#include <QtConcurrent>
 #include <QDir>
 #include <QEvent>
 #include <QFile>
@@ -41,6 +47,28 @@ struct Sink : OpSink
 			cancelAfterResult->store(true);
 	}
 };
+// Holds background work deterministically while the dialog receives edits.
+struct BlockPool
+{
+	QThreadPool *pool = QThreadPool::globalInstance();
+	int previousMaximum = pool->maxThreadCount();
+	QSemaphore entered;
+	QSemaphore releaseWorker;
+	QFuture<void> future;
+	BlockPool()
+	{
+		pool->waitForDone();
+		pool->setMaxThreadCount(1);
+		future = QtConcurrent::run([this] { entered.release(); releaseWorker.acquire(); });
+	}
+	~BlockPool()
+	{
+		releaseWorker.release();
+		future.waitForFinished();
+		pool->setMaxThreadCount(previousMaximum);
+	}
+};
+
 }
 
 class TestOperationUi : public QObject
@@ -59,10 +87,14 @@ private slots:
 	void interrupted_undo_resumes_with_debug_flag_off();
 	void observed_removals_prune_rows_even_when_job_needs_attention();
 	void rebalance_dialog_blocks_other_operation_entrypoints();
+	void scan_activity_blocks_operations_even_if_button_state_changes();
+	void rebalance_resume_keeps_running_job_activity();
 	void verification_is_saved_per_job();
 	void same_session_refresh_and_stale_result_guard();
 	void facade_refuses_second_job_without_cancelling_first();
 	void progress_cancel_is_acknowledged_once();
+	void preview_background_checks_discard_superseded_results();
+	void preview_policy_changes_refresh_space_and_same_file_is_no_effect();
 private:
 	OpRequest request(const QString &name = QStringLiteral("old"), int count = 1);
 	QString makeInterrupted(OpRequest request, bool completeFirst = false);
@@ -124,7 +156,7 @@ QString TestOperationUi::makeInterrupted(OpRequest request, bool completeFirst)
 		OpRunner runner(sink, cancel);
 		const auto totals = runner.run(request, path("journals"));
 		if (totals.succeeded != 1) qFatal("Cannot prepare interrupted UI fixture");
-		const auto pending = OpRescue::pending(path("journals"));
+		const auto pending = OperationRecovery::pending(path("journals"));
 		if (pending.size() != 1) qFatal("Interrupted UI fixture was not resumable");
 		return pending.first().journalPath;
 	}
@@ -165,23 +197,23 @@ void TestOperationUi::debug_flags_default_off_and_text_undo_works()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.show();
-	QVERIFY(window.m_verifyCopiesAct->isCheckable());
-	QVERIFY(!window.m_verifyCopiesAct->isChecked());
-	QVERIFY(window.m_enableUndoAct->isCheckable());
-	QVERIFY(!window.m_enableUndoAct->isChecked());
-	QVERIFY(!window.m_undoAct->isVisible());
-	QVERIFY(window.m_undoAct->shortcut().isEmpty());
+	QVERIFY(window.m_operations->m_verifyCopiesAct->isCheckable());
+	QVERIFY(!window.m_operations->m_verifyCopiesAct->isChecked());
+	QVERIFY(window.m_operations->m_enableUndoAct->isCheckable());
+	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
+	QVERIFY(!window.m_operations->m_undoAct->isVisible());
+	QVERIFY(window.m_operations->m_undoAct->shortcut().isEmpty());
 	window.m_searchField->setFocus();
 	QTest::keyClicks(window.m_searchField, "typed search");
 	QVERIFY(window.m_searchField->isUndoAvailable());
 	QTest::keySequence(window.m_searchField, QKeySequence::Undo);
 	QVERIFY(window.m_searchField->text().isEmpty());
-	window.m_enableUndoAct->setChecked(true);
-	QVERIFY(window.m_undoAct->isVisible());
-	QCOMPARE(window.m_undoAct->shortcut(), QKeySequence(QKeySequence::Undo));
-	window.m_enableUndoAct->setChecked(false);
-	QVERIFY(!window.m_undoAct->isVisible());
-	QVERIFY(window.m_undoAct->shortcut().isEmpty());
+	window.m_operations->m_enableUndoAct->setChecked(true);
+	QVERIFY(window.m_operations->m_undoAct->isVisible());
+	QCOMPARE(window.m_operations->m_undoAct->shortcut(), QKeySequence(QKeySequence::Undo));
+	window.m_operations->m_enableUndoAct->setChecked(false);
+	QVERIFY(!window.m_operations->m_undoAct->isVisible());
+	QVERIFY(window.m_operations->m_undoAct->shortcut().isEmpty());
 }
 void TestOperationUi::interrupted_dialog_escape_does_not_abandon()
 {
@@ -189,7 +221,7 @@ void TestOperationUi::interrupted_dialog_escape_does_not_abandon()
 	const auto journalPath = makeInterrupted(old);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	clickInterrupted("escape");
-	QVERIFY(!window.dispatchRequest(request("attempted")));
+	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
 	const auto record = OpJournal::readOne(journalPath);
 	QVERIFY(record);
 	QVERIFY(!record->dismissed);
@@ -201,7 +233,7 @@ void TestOperationUi::interrupted_dialog_close_does_not_abandon()
 	const auto journalPath = makeInterrupted(request());
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	clickInterrupted("close");
-	QVERIFY(!window.resolvePreviousJob());
+	QVERIFY(!window.m_operations->resolvePreviousJob());
 	QVERIFY(!OpJournal::readOne(journalPath)->dismissed);
 }
 void TestOperationUi::interrupted_dialog_cancel_keeps_completed_effects()
@@ -210,13 +242,13 @@ void TestOperationUi::interrupted_dialog_cancel_keeps_completed_effects()
 	const auto journalPath = makeInterrupted(old, true);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	clickInterrupted("cancelInterruptedJobButton");
-	QVERIFY(window.resolvePreviousJob());
+	QVERIFY(window.m_operations->resolvePreviousJob());
 	const auto record = OpJournal::readOne(journalPath);
 	QVERIFY(record && record->dismissed);
 	QVERIFY(QFileInfo::exists(path("old/destination/clip-0.bin")));
 	QVERIFY(QFileInfo::exists(old.items[1].src));
 	QVERIFY(!QFileInfo::exists(path("old/destination/clip-1.bin")));
-	QVERIFY(OpRescue::pending().isEmpty());
+	QVERIFY(OperationRecovery::pending().isEmpty());
 	QVERIFY(OpJournal::latestUndoable());
 	QCOMPARE(OpJournal::latestUndoable()->path, journalPath);
 }
@@ -226,9 +258,9 @@ void TestOperationUi::interrupted_dialog_resume_starts_only_old_job()
 	old.verifyCopies = true;
 	const auto journalPath = makeInterrupted(old);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	QSignalSpy finished(window.m_fileOps, &OpManager::operationFinished);
+	QSignalSpy finished(window.m_operations->m_fileOps, &OpManager::operationFinished);
 	clickInterrupted("resumeInterruptedJobButton");
-	QVERIFY(!window.dispatchRequest(request("attempted")));
+	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
 	QVERIFY(QFileInfo::exists(path("old/destination/clip-0.bin")));
 	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
@@ -255,16 +287,16 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	sink.cancelAfterResult = &cancel;
 	OpRunner undo(sink, cancel);
 	QCOMPARE(undo.run(inverse, path("journals")).succeeded, 1);
-	const auto pending = OpRescue::pending();
+	const auto pending = OperationRecovery::pending();
 	QCOMPARE(pending.size(), 1);
 	QCOMPARE(pending.first().kind, OpKind::Undo);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	QVERIFY(!window.m_enableUndoAct->isChecked());
-	QSignalSpy finished(window.m_fileOps, &OpManager::operationFinished);
+	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
+	QSignalSpy finished(window.m_operations->m_fileOps, &OpManager::operationFinished);
 	clickInterrupted("resumeInterruptedJobButton");
-	QVERIFY(!window.dispatchRequest(request("attempted")));
+	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
-	QVERIFY(OpRescue::pending().isEmpty());
+	QVERIFY(OperationRecovery::pending().isEmpty());
 	QVERIFY(!QFileInfo::exists(path("original/destination/clip-0.bin")));
 	QVERIFY(!QFileInfo::exists(path("original/destination/clip-1.bin")));
 	QVERIFY(QFileInfo::exists(original.items[0].src));
@@ -279,58 +311,86 @@ void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention
 	removed.filePath = path("removed.mxf");
 	retained.filePath = path("retained.mxf");
 	window.m_model->setMediaFiles({retired, removed, retained});
-	window.m_removeAfterOp = true;
+	window.m_operations->m_pruneSourceRowsAfterOperation = true;
 	OpResult retirement;
 	retirement.state = OpResult::State::SourceRetained;
 	retirement.source = retired.filePath;
 	retirement.sourceRemoved = true;
-	emit window.m_fileOps->operationResult(retirement);
+	emit window.m_operations->m_fileOps->operationResult(retirement);
 	OpResult removal;
 	removal.state = OpResult::State::NeedsAttention;
 	removal.source = removed.filePath;
 	removal.sourceRemoved = true;
-	emit window.m_fileOps->operationResult(removal);
+	emit window.m_operations->m_fileOps->operationResult(removal);
 	OpResult kept;
 	kept.state = OpResult::State::NeedsAttention;
 	kept.source = retained.filePath;
-	emit window.m_fileOps->operationResult(kept);
-	emit window.m_fileOps->operationFinished(0, 3);
+	emit window.m_operations->m_fileOps->operationResult(kept);
+	emit window.m_operations->m_fileOps->operationFinished(0, 3);
 	QTRY_COMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).filePath, retained.filePath);
 }
 void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	window.m_enableUndoAct->setChecked(true);
-	window.m_undoCandidate.path = path("earlier-journal.jsonl");
-	OpRescue::Resumable interrupted;
+	window.m_operations->m_enableUndoAct->setChecked(true);
+	window.m_operations->m_undoCandidate.path = path("earlier-journal.jsonl");
+	OperationRecovery::Resumable interrupted;
 	interrupted.journalPath = path("interrupted-journal.jsonl");
-	window.m_resumable = {interrupted};
-	window.m_rebalanceDialogActive = true;
-	window.updateResumeAction();
-	QVERIFY(!window.m_undoAct->isEnabled());
-	QVERIFY(!window.m_resumeAct->isEnabled());
-	QVERIFY(!window.dispatchRequest(request("competing")));
-	QVERIFY(!window.resolvePreviousJob());
-	window.onUndoLastOperation();
-	QVERIFY(!window.m_fileOps->isRunning());
+	window.m_operations->m_resumable = {interrupted};
+	window.m_operations->setActivity(FileOperationController::Activity::RebalanceDialog);
+	window.m_operations->updateResumeAction();
+	QVERIFY(!window.m_operations->m_undoAct->isEnabled());
+	QVERIFY(!window.m_operations->m_resumeAct->isEnabled());
+	QVERIFY(!window.m_operations->dispatchRequest(request("competing")));
+	QVERIFY(!window.m_operations->resolvePreviousJob());
+	window.m_operations->undoLastOperation();
+	QVERIFY(!window.m_operations->m_fileOps->isRunning());
 	QVERIFY(OpJournal::scan().isEmpty());
 	QVERIFY(!QFileInfo::exists(path("competing/destination/clip-0.bin")));
 }
+void TestOperationUi::scan_activity_blocks_operations_even_if_button_state_changes()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
+	window.m_scanButton->setEnabled(true); // Widget presentation is no longer the safety state.
+	QVERIFY(!window.m_operations->dispatchRequest(request("blocked")));
+	QVERIFY(!window.m_operations->resolvePreviousJob());
+	QVERIFY(!window.m_operations->manager()->isRunning());
+	window.m_operations->setActivity(FileOperationController::Activity::Idle);
+	QVERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::rebalance_resume_keeps_running_job_activity()
+{
+	makeInterrupted(request("old"));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *operations = window.m_operations;
+	operations->setActivity(FileOperationController::Activity::RebalanceDialog);
+	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
+	clickInterrupted("resumeInterruptedJobButton");
+	QVERIFY(!operations->resolveBeforeRebalance());
+	QCOMPARE(operations->activity(), FileOperationController::Activity::FileOperation);
+	operations->endRebalanceDialog();
+	QCOMPARE(operations->activity(), FileOperationController::Activity::FileOperation);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(operations->isIdle());
+}
+
 void TestOperationUi::verification_is_saved_per_job()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	QSignalSpy finished(window.m_fileOps, &OpManager::operationFinished);
-	QVERIFY(window.dispatchRequest(request("unchecked")));
+	QSignalSpy finished(window.m_operations->m_fileOps, &OpManager::operationFinished);
+	QVERIFY(window.m_operations->dispatchRequest(request("unchecked")));
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
-	QTRY_VERIFY_WITH_TIMEOUT(!window.m_historyLoading, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
 	auto record = OpJournal::scan().first();
 	QVERIFY(!record.request.verifyCopies);
 	QVERIFY(record.entries.first().hash.isEmpty());
-	window.m_verifyCopiesAct->setChecked(true);
-	QVERIFY(window.dispatchRequest(request("checked")));
+	window.m_operations->m_verifyCopiesAct->setChecked(true);
+	QVERIFY(window.m_operations->dispatchRequest(request("checked")));
 	// A later toggle cannot change the already accepted request.
-	window.m_verifyCopiesAct->setChecked(false);
+	window.m_operations->m_verifyCopiesAct->setChecked(false);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 2, 15000);
 	record = OpJournal::scan().last();
 	QVERIFY(record.request.verifyCopies);
@@ -340,17 +400,17 @@ void TestOperationUi::same_session_refresh_and_stale_result_guard()
 {
 	const auto journalPath = makeInterrupted(request());
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	window.refreshResumable();
-	QTRY_VERIFY_WITH_TIMEOUT(!window.m_historyLoading, 15000);
-	QVERIFY(window.m_resumeAct->isEnabled());
-	QCOMPARE(window.m_resumable.first().journalPath, journalPath);
-	window.refreshResumable();
-	++window.m_historyGeneration; // A newer dispatch invalidates the pending read.
-	window.m_resumable.clear();
-	window.m_historyLoading = false;
+	window.m_operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
+	QVERIFY(window.m_operations->m_resumeAct->isEnabled());
+	QCOMPARE(window.m_operations->m_resumable.first().journalPath, journalPath);
+	window.m_operations->refreshHistory();
+	++window.m_operations->m_historyGeneration; // A newer dispatch invalidates the pending read.
+	window.m_operations->m_resumable.clear();
+	window.m_operations->m_historyLoading = false;
 	QThreadPool::globalInstance()->waitForDone();
 	QCoreApplication::processEvents();
-	QVERIFY(window.m_resumable.isEmpty());
+	QVERIFY(window.m_operations->m_resumable.isEmpty());
 }
 void TestOperationUi::facade_refuses_second_job_without_cancelling_first()
 {
@@ -369,6 +429,84 @@ void TestOperationUi::facade_refuses_second_job_without_cancelling_first()
 	auto lock = OpJournal::acquire(path("journals"), error);
 	QVERIFY2(lock, qPrintable(error));
 }
+void TestOperationUi::preview_background_checks_discard_superseded_results()
+{
+	const auto fixture = request("preview");
+	const auto &source = fixture.items.first();
+	MediaFile file;
+	file.filePath = source.src;
+	file.fileName = source.name;
+	file.sizeBytes = source.bytes;
+	const QString oldDestination = fixture.destRoot;
+	const QString latestDestination = path("latest");
+	QVERIFY(QDir().mkpath(latestDestination));
+	QVERIFY(put(oldDestination + '/' + source.name, "occupied"));
+	ManageMediaDialog dialog({file});
+	{
+		BlockPool block;
+		QVERIFY(block.entered.tryAcquire(1, 10000));
+		dialog.m_destPath->setText(oldDestination);
+		QVERIFY(dialog.m_checkingDest);
+		QVERIFY(!dialog.m_btnExecute->isEnabled());
+		const int earlier = dialog.m_destCheckGeneration;
+		dialog.m_destPath->setText(latestDestination);
+		QVERIFY(dialog.m_destCheckGeneration > earlier);
+		QVERIFY(dialog.m_checkingDest);
+		QVERIFY(!dialog.m_btnExecute->isEnabled());
+	}
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QThreadPool::globalInstance()->waitForDone();
+	QCoreApplication::processEvents();
+	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
+	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->text(1), latestDestination + '/' + source.name);
+	QCOMPARE(dialog.m_assessment.temporaryBytes, source.bytes);
+	QVERIFY(dialog.m_btnExecute->isEnabled());
+	{
+		BlockPool block;
+		QVERIFY(block.entered.tryAcquire(1, 10000));
+		dialog.m_destPath->setText(oldDestination);
+		QVERIFY(dialog.m_checkingDest);
+		dialog.m_radioDelete->setChecked(true);
+		QVERIFY(!dialog.m_checkingDest);
+		QVERIFY(dialog.m_btnExecute->isEnabled());
+	}
+	QThreadPool::globalInstance()->waitForDone();
+	QCoreApplication::processEvents();
+	QCOMPARE(dialog.operation(), ManageMediaDialog::Operation::Delete);
+	QCOMPARE(dialog.m_previewTree->columnCount(), 1);
+	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
+}
+
+void TestOperationUi::preview_policy_changes_refresh_space_and_same_file_is_no_effect()
+{
+	const auto fixture = request("preview");
+	const auto &source = fixture.items.first();
+	MediaFile file;
+	file.filePath = source.src;
+	file.fileName = source.name;
+	file.sizeBytes = source.bytes;
+	QVERIFY(put(fixture.destRoot + '/' + source.name, "occupied"));
+	ManageMediaDialog dialog({file});
+	dialog.m_destPath->setText(fixture.destRoot);
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.temporaryBytes, source.bytes);
+	QCOMPARE(dialog.m_perFileConflictCombos.size(), 1);
+	auto *policy = dialog.m_perFileConflictCombos.value(source.src);
+	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::Skip)));
+	QVERIFY(dialog.m_checkingDest);
+	QVERIFY(!dialog.m_btnExecute->isEnabled());
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.temporaryBytes, qint64(0));
+	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::KeepBoth)));
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.temporaryBytes, source.bytes);
+	dialog.m_destPath->setText(QFileInfo(source.src).absolutePath());
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.temporaryBytes, qint64(0));
+	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
+	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->toolTip(1), QStringLiteral("Already at destination; no change needed."));
+}
+
 void TestOperationUi::progress_cancel_is_acknowledged_once()
 {
 	ProgressDialog dialog;

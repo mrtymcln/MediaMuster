@@ -1,4 +1,4 @@
-#include "fileidentity.h"
+#include "volumeidentity.h"
 
 #include "nativefile.h"
 

@@ -2,6 +2,7 @@
 
 #include "mediafile.h"
 #include "opmanager.h"
+#include "operationplan.h"
 
 #include <QDialog>
 #include <QFutureWatcher>
@@ -33,6 +34,7 @@ class QShowEvent;
 class ManageMediaDialog : public QDialog
 {
 	Q_OBJECT
+	friend class TestOperationUi;
 public:
 	enum class Operation
 	{
@@ -70,15 +72,11 @@ private slots:
 	void onOperationChanged();
 	void onGlobalConflictPolicyChanged(int index);
 
-	/// Applies the pool sweep's exists/rename results to the preview rows
-	/// (red conflict rows, per-row combos, duplicate-rename previews) and
-	/// re-enables Execute. Results from a superseded generation are dropped.
-	void onDestCheckFinished();
-
 private:
 	void setupUi();
 	void updatePreview();
 	void updateSummary();
+	void startDestinationCheck(bool includeConflicts);
 	void syncGlobalFromPerFile();
 
 	QVector<MediaFile> m_files;
@@ -119,7 +117,7 @@ private:
 
 	// MARK: - Async destination check
 
-	// The exists()/rename probes for the preview run on a pool thread: on an
+	// All conflict, rename, identity and space probes run on a pool thread: on an
 	// SMB/Nexis share, thousands of synchronous stats per option change froze
 	// the dialog for seconds. While a sweep is in flight the Execute button is
 	// held disabled (m_checkingDest) so a Copy/Move can't launch against
@@ -145,12 +143,16 @@ private:
 	struct DestCheckResult
 	{
 		QVector<bool> exists;
+		QVector<bool> alreadyAtDestination;
 		QVector<QString> renamed;
+		OperationPlan::CopyMoveAssessment assessment;
+		qint64 availableBytes = -1;
 	};
 
-	QFutureWatcher<DestCheckResult> m_destCheckWatcher;
+	void applyDestinationCheck(const DestCheckResult &result, bool includeConflicts);
+	OperationPlan::CopyMoveAssessment m_assessment;
+	qint64 m_availableBytes = -1;
 	QVector<PendingRow> m_pendingRows;
-	int m_destCheckGeneration = 0; ///< Bumped by every updatePreview().
-	int m_destCheckLaunched = -1;  ///< Generation the in-flight sweep belongs to.
+	int m_destCheckGeneration = 0; ///< Invalidates superseded preview or policy checks.
 	bool m_checkingDest = false;   ///< Gates Execute in updateSummary().
 };

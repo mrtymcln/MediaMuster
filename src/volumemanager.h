@@ -1,11 +1,26 @@
 #pragma once
 
-#include "mediafile.h"
 #include <QFutureWatcher>
 #include <QObject>
 #include <QTimer>
+#include <QString>
+#include <QVector>
+#include <utility>
 
 class QStorageInfo;
+
+/// One mounted volume the user might want to scan.
+struct VolumeInfo
+{
+	QString name;
+	QString path;
+	qint64 totalBytes = 0;
+	qint64 usedBytes = 0;
+	QString volumeType; ///< "Internal", "Network", or "Nexis".
+	bool hasAvidMedia = false;
+};
+
+Q_DECLARE_METATYPE(VolumeInfo)
 
 // MARK: - VolumeManager
 

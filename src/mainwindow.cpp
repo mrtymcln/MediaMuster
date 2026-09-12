@@ -12,11 +12,9 @@
 #include "layoututil.h"
 #include "managemediadialog.h"
 #include "mediacsv.h"
-#include "opjournal.h"
 #include "fileoperationtestdialog.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
-#include "rebalancer.h"
 #include "revealinfinder.h"
 #include "version.h"
 
@@ -27,12 +25,9 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDialog>
-#include <QDialogButtonBox>
 #include <QDir>
-#include <QDirIterator>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QEventLoop>
 #include <QFont>
 #include <QFutureWatcher>
 #include <QGroupBox>
@@ -67,7 +62,6 @@
 #include <QKeyEvent>
 #include <QPersistentModelIndex>
 #include <QScrollBar>
-#include <QScopedValueRollback>
 #include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -80,57 +74,6 @@
 
 namespace
 {
-	// Only a button click chooses Cancel. QDialog's ordinary reject path
-	// (Escape or window close) leaves the job unresolved and changes nothing.
-	class InterruptedJobDialog : public QDialog
-	{
-	public:
-		enum class Choice { Unresolved, Resume, Cancel };
-		explicit InterruptedJobDialog(const OpRescue::Resumable &job, QWidget *parent)
-			: QDialog(parent)
-		{
-			setObjectName(QStringLiteral("interruptedJobDialog"));
-			setWindowTitle(tr("Interrupted job"));
-			auto *layout = new QVBoxLayout(this);
-			auto *headline = new QLabel(tr("The previous job was interrupted."), this);
-			headline->setTextFormat(Qt::PlainText);
-			layout->addWidget(headline);
-			auto *details = new QLabel(tr("%1 of %2 files finished.\n\n"
-				"Resume continues that job. Cancel abandons its unfinished work "
-				"and keeps the completed results." ).arg(Format::count(job.finished),
-														Format::count(job.total)), this);
-			details->setTextFormat(Qt::PlainText);
-			details->setWordWrap(true);
-			details->setMinimumWidth(380);
-			layout->addWidget(details);
-			auto *buttons = new QDialogButtonBox(this);
-			auto *resume = buttons->addButton(tr("Resume"), QDialogButtonBox::AcceptRole);
-			auto *cancel = buttons->addButton(tr("Cancel"), QDialogButtonBox::ActionRole);
-			resume->setObjectName(QStringLiteral("resumeInterruptedJobButton"));
-			cancel->setObjectName(QStringLiteral("cancelInterruptedJobButton"));
-			connect(resume, &QPushButton::clicked, this, [this]
-			{
-				choice = Choice::Resume;
-				accept();
-			});
-			connect(cancel, &QPushButton::clicked, this, [this]
-			{
-				choice = Choice::Cancel;
-				accept();
-			});
-			layout->addWidget(buttons);
-		}
-		Choice choice = Choice::Unresolved;
-	};
-
-	OpRescue::Summary operationHistory()
-	{
-		OpRescue::Summary result;
-		result.resumable = OpRescue::pending();
-		result.undoCandidate = OpJournal::latestUndoable();
-		return result;
-	}
-
 	// The implementation stays testable while its table/CSV/filter surfaces
 	// are opt-in through Debug. Change the default when the feature ships.
 	constexpr bool kEffectDetailsEnabledByDefault = false;
@@ -216,7 +159,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	  // gets cranky. Pass `this` as parent to bind cleanup to the window.
 	  m_volumeManager(new VolumeManager(this)),
 	  m_scanner(new MediaScanner(this)),
-	  m_fileOps(new OpManager(this)),
+	  m_operations(new FileOperationController(this)),
 	  m_model(new MediaTableModel(this)),
 	  m_proxy(new MediaFilterProxy(this))
 {
@@ -274,63 +217,13 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 					   [this]
 					   {
 						   collectCrashReports();
-						   runStartupRecovery();
+						   m_operations->runStartupRecovery();
 					   });
 }
 
 MainWindow::~MainWindow() = default;
 
 // MARK: - Crash recovery
-
-void MainWindow::runStartupRecovery()
-{
-	setBusy(true);
-	const quint64 generation = ++m_historyGeneration;
-	m_historyLoading = true;
-	// OpRescue::run only touches the filesystem, so it's safe on a pool
-	// thread; the watcher cleans itself up once it fires. (A lambda, not
-	// a function pointer: default arguments don't travel through
-	// the pool runner's pointer overloads.)
-	auto *watcher = new QFutureWatcher<OpRescue::Summary>(this);
-	connect(watcher, &QFutureWatcher<OpRescue::Summary>::finished, this,
-			[this, watcher, generation]
-			{
-				const OpRescue::Summary summary = watcher->result();
-				watcher->deleteLater();
-				if (generation != m_historyGeneration)
-					return;
-				m_historyLoading = false;
-				setBusy(false);
-				onRecoveryDone(summary);
-			});
-	watcher->setFuture(QtConcurrent::run([]
-										 { return OpRescue::run(); }));
-}
-
-void MainWindow::onRecoveryDone(const OpRescue::Summary &summary)
-{
-	// Tidying up after a crash is housekeeping, not news: the partial file
-	// the interrupted run wrote is MediaMuster's own mess, and removing it
-	// restores the state the user expects. So no dialog for it — but every
-	// note goes to the console and the log, because the one thing that must
-	// never be invisible is a file MediaMuster took off the user's disk.
-	for (const QString &note : summary.notes)
-		addLog(summary.hadTrouble() ? QtWarningMsg : QtInfoMsg, QStringLiteral("app"), note);
-
-	// A dialog only when something needs the user: a file that couldn't be
-	// put back or removed, or an original still sitting under a temp name.
-	if (summary.hadTrouble())
-		QMessageBox::warning(this, tr("Some files need a look"), summary.message());
-
-	// The launch sweep already worked this out on the pool thread; no need
-	// to re-read the journal folder here.
-	applyOperationHistory(summary);
-
-	// Anything left to finish? Ask now; the File menu item stays live for
-	// later if the dialog is closed without choosing either action.
-	if (!m_resumable.isEmpty())
-		offerResume();
-}
 
 void MainWindow::collectCrashReports()
 {
@@ -685,10 +578,8 @@ void MainWindow::buildFileMenu()
 	fileMenu->addSeparator();
 
 	// Greyed out unless an interrupted Copy/Move/Delete is waiting to be
-	// finished (see refreshResumable); offered automatically at launch too.
-	m_resumeAct = fileMenu->addAction(tr("Resume Interrupted Operation..."));
-	m_resumeAct->setEnabled(false);
-	connect(m_resumeAct, &QAction::triggered, this, &MainWindow::offerResume);
+	// finished (see FileOperationController::refreshHistory); offered automatically at launch too.
+	fileMenu->addAction(m_operations->resumeAction());
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
@@ -706,13 +597,8 @@ void MainWindow::buildEditMenu()
 
 	// Hidden and without a shortcut until Debug enables it, so ordinary
 	// text-field Undo keeps working throughout the default beta workflow.
-	m_undoAct = editMenu->addAction(tr("&Undo"));
-	m_undoAct->setObjectName(QStringLiteral("undoFileOperationAction"));
-	m_undoAct->setEnabled(false);
-	m_undoAct->setVisible(false);
-	connect(m_undoAct, &QAction::triggered, this, &MainWindow::onUndoLastOperation);
-	m_undoSeparator = editMenu->addSeparator();
-	m_undoSeparator->setVisible(false);
+	editMenu->addAction(m_operations->undoAction());
+	m_operations->setUndoSeparator(editMenu->addSeparator());
 
 	auto *findAct = editMenu->addAction(tr("&Find"));
 	findAct->setShortcut(QKeySequence::Find);
@@ -797,24 +683,13 @@ void MainWindow::buildSpecialMenu()
 void MainWindow::buildDebugMenu()
 {
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
-	m_verifyCopiesAct = debugMenu->addAction(tr("Verify copies"));
-	m_verifyCopiesAct->setObjectName(QStringLiteral("verifyCopiesDebugAction"));
-	m_verifyCopiesAct->setCheckable(true);
-	m_verifyCopiesAct->setChecked(false);
-	m_enableUndoAct = debugMenu->addAction(tr("Enable Undo"));
-	m_enableUndoAct->setObjectName(QStringLiteral("enableUndoDebugAction"));
-	m_enableUndoAct->setCheckable(true);
-	m_enableUndoAct->setChecked(false);
-	connect(m_enableUndoAct, &QAction::toggled, this, [this](bool enabled)
-	{
-		m_fileOps->setUndoEnabled(enabled);
-		updateUndoAction();
-	});
+	debugMenu->addAction(m_operations->verifyCopiesAction());
+	debugMenu->addAction(m_operations->enableUndoAction());
 	debugMenu->addSeparator();
     auto *fileTests = debugMenu->addAction(tr("Test File Operations…"));
     fileTests->setObjectName("fileOperationTestsAction");
     connect(fileTests, &QAction::triggered, this, [this] {
-        if (!m_scanButton->isEnabled()) return;
+        if (!m_operations->isIdle()) return;
         auto *dialog = new FileOperationTestDialog(this);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->show();
@@ -935,79 +810,22 @@ void MainWindow::setupConnections()
 		},
 		Qt::QueuedConnection);
 
-	connect(
-		m_fileOps, &OpManager::operationProgress, this,
-		[this](const QString &name, int cur, int total, double pct)
+	connect(m_operations, &FileOperationController::activityChanged, this,
+		[this](FileOperationController::Activity) { updateActivityUi(); });
+	connect(m_operations, &FileOperationController::logMessage, this, &MainWindow::addLog);
+	connect(m_operations, &FileOperationController::mediaMusterTrashUsed, this,
+		&MainWindow::showMediaMusterTrashDialog);
+	connect(m_operations, &FileOperationController::sourcesRemoved, this,
+		[this](const QSet<QString> &paths)
 		{
-			// The engine reports per-byte progress within the current
-			// file; fold it into the bar so one 40 GB MXF doesn't look
-			// like a hang. The label names the current phase and file.
-			auto *dlg = progressDialog();
-			dlg->setItemProgress(cur, total, pct);
-			dlg->setDetail(name);
-		},
-		Qt::QueuedConnection);
-	connect(
-		m_fileOps, &OpManager::operationLog, this,
-		[this](QtMsgType level, const QString &message)
-		{ addLog(level, QStringLiteral("ops"), message); },
-		Qt::QueuedConnection);
-	connect(m_fileOps, &OpManager::operationResult, this,
-        [this](const OpResult &r) {
-            QString state;
-            switch (r.state) {
-            case OpResult::State::Completed: state = tr("Completed"); break;
-            case OpResult::State::SourceRetained: state = tr("Copied; source retained"); break;
-            case OpResult::State::Skipped: state = tr("Skipped"); break;
-            case OpResult::State::Cancelled: state = tr("Cancelled"); break;
-            case OpResult::State::Failed: state = tr("Failed"); break;
-            case OpResult::State::NeedsAttention: state = tr("Needs attention"); break;
-            }
-            const bool problem = r.state == OpResult::State::Failed || r.state == OpResult::State::NeedsAttention;
-            addLog(problem ? QtWarningMsg : QtInfoMsg, QStringLiteral("ops"),
-                r.name + ": " + state + (r.message.isEmpty() ? QString() : " — " + r.message));
-            if (r.sourceRemoved && m_removeAfterOp) m_successfulOpPaths.insert(r.source);
-        }, Qt::QueuedConnection);
-
-	connect(
-		m_fileOps, &OpManager::operationFinished, this,
-		[this](int /*succeeded*/, int /*failed*/)
-		{
-			// The engine has already logged its own summary line via
-			// operationLog; nothing to narrate here.
-			setBusy(false);
-
-			// After Move/Delete, drop the successful files so the table
-			// reflects reality without a re-scan. begin/endRemoveRows
-			// per contiguous range preserves scroll and selection.
-			if (m_removeAfterOp && !m_successfulOpPaths.isEmpty())
-			{
-				// Count what actually left the table: a resumed Move/Delete
-				// works from the journal, and its files may not be rows here.
-				const int rowsBefore = m_model->rowCount();
-				m_model->removeFilesByPath(m_successfulOpPaths);
-				const int removedCount = rowsBefore - m_model->rowCount();
-				// Drop the removed paths from the persistent selection
-				// record so the next filter change doesn't try to
-				// re-select rows no longer on disk.
-				m_persistentSelectedPaths.subtract(m_successfulOpPaths);
-				updateFilterCounts();
-				updateStatusBar();
-				addLog(QtInfoMsg, QStringLiteral("ops"), QStringLiteral("Removed %1 files from table").arg(removedCount));
-			}
-			m_removeAfterOp = false;
-			m_successfulOpPaths.clear();
-
-			// The concluded run's journal stays behind as the undo
-			// candidate; re-read the folder (off-thread) so the Resume
-			// item reflects the new state.
-			refreshResumable();
-		},
-		Qt::QueuedConnection);
-
-	// Network/NEXIS Delete always uses the app-owned, same-volume Trash.
-	connect(m_fileOps, &OpManager::mediaMusterTrashUsed, this,
-			&MainWindow::showMediaMusterTrashDialog, Qt::QueuedConnection);
+			const int rowsBefore = m_model->rowCount();
+			m_model->removeFilesByPath(paths);
+			m_persistentSelectedPaths.subtract(paths);
+			updateFilterCounts();
+			updateStatusBar();
+			addLog(QtInfoMsg, QStringLiteral("ops"),
+				QStringLiteral("Removed %1 files from table").arg(rowsBefore - m_model->rowCount()));
+		});
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
 
@@ -1134,7 +952,7 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 	m_effectDetailsAct->setChecked(enabled);
 	m_btnEffectFilter->setVisible(enabled);
 	m_effectFilterAct->setVisible(enabled);
-	const bool canFilter = enabled && m_scanButton->isEnabled() && !m_model->allFiles().isEmpty();
+	const bool canFilter = enabled && m_operations->isIdle() && !m_model->allFiles().isEmpty();
 	m_btnEffectFilter->setEnabled(canFilter);
 	m_effectFilterAct->setEnabled(canFilter);
 	if (enabled)
@@ -1158,7 +976,7 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 
 void MainWindow::onFilterByEffects()
 {
-	if (!m_effectDetailsEnabled || !m_scanButton->isEnabled() || m_model->allFiles().isEmpty())
+	if (!m_effectDetailsEnabled || !m_operations->isIdle() || m_model->allFiles().isEmpty())
 		return;
 	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
 	if (dialog.exec() != QDialog::Accepted)
@@ -1246,7 +1064,7 @@ void MainWindow::onFilterByBins()
 // picker only shows volumes with scanned data.
 void MainWindow::onRebalance()
 {
-	if (m_rebalanceDialogActive || !m_scanButton->isEnabled() || !resolvePreviousJob())
+	if (!m_operations->isIdle() || !m_operations->resolvePreviousJob())
 		return;
 	if (m_model->allFiles().isEmpty())
 	{
@@ -1338,28 +1156,18 @@ void MainWindow::onRebalance()
 	RebalanceDialog dlg(mxfRootsByLabel, filesByMxfRoot, initialLabel, this);
 	dlg.beforeRebalance = [this, &dlg]
 	{
-		bool resolved = false;
-		{
-			QScopedValueRollback<bool> allowResolution(m_rebalanceDialogActive, false);
-			resolved = resolvePreviousJob();
-		}
-		updateResumeAction();
-		if (resolved)
+		if (m_operations->resolveBeforeRebalance())
 			return true;
-		// Resume starts the old job only. Close this unstarted plan so it
-		// cannot obscure that job's progress or become an implicit queue.
-		if (m_fileOps->isRunning())
+		if (m_operations->manager()->isRunning())
 			dlg.done(QDialog::Rejected);
 		return false;
 	};
 	connect(&dlg, &RebalanceDialog::logMessage, this, [this](QtMsgType level, const QString &msg)
-			{ addLog(level, QStringLiteral("rebalance"), msg); });
-	{
-		QScopedValueRollback<bool> active(m_rebalanceDialogActive, true);
-		updateResumeAction();
-		dlg.exec();
-	}
-	refreshResumable();
+		{ addLog(level, QStringLiteral("rebalance"), msg); });
+	m_operations->setActivity(FileOperationController::Activity::RebalanceDialog);
+	dlg.exec();
+	m_operations->endRebalanceDialog();
+	m_operations->refreshHistory();
 
 	// Re-scan if didRebalance; a cancelled run can still have
 	// moved files.
@@ -1576,7 +1384,7 @@ void MainWindow::onScanAllClicked()
 
 void MainWindow::startScanWithPaths(const QStringList &paths)
 {
-	if (m_rebalanceDialogActive || !m_scanButton->isEnabled())
+	if (!m_operations->isIdle())
 		return;
 	// Detected volumes and hand-added folders scan differently (see
 	// MediaScanner::Options): a volume is probed at its root only, a folder
@@ -1601,7 +1409,7 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 			opts.manualPaths.append(path);
 	}
 
-	setBusy(true);
+	m_operations->setActivity(FileOperationController::Activity::Scanning);
 	progressDialog()->begin();
 	progressDialog()->setDetail(tr("Starting scan..."));
 	m_scanTimer.start();
@@ -1700,7 +1508,7 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	updateStatusBar();
 	autoFitColumns();
 
-	setBusy(false);
+	m_operations->setActivity(FileOperationController::Activity::Idle);
 }
 
 // MARK: - Filter / search slots
@@ -1749,7 +1557,7 @@ void MainWindow::onSelectionChanged()
 
 	// Background bin metadata can change the selection while a scan or
 	// operation is running. Preserve the busy gate during that restoration.
-	m_btnFileOps->setEnabled(hasSelection && m_scanButton->isEnabled());
+	m_btnFileOps->setEnabled(hasSelection && m_operations->isIdle());
 	m_statusSep1->setVisible(hasSelection);
 	m_statusSelected->setVisible(hasSelection);
 	m_statusSep2->setVisible(hasSelection);
@@ -1819,7 +1627,7 @@ void MainWindow::onFileOperations()
 
 void MainWindow::openManageMedia(int initialOp)
 {
-	if (m_rebalanceDialogActive || !m_scanButton->isEnabled())
+	if (!m_operations->isIdle())
 		return;
 	auto files = selectedFiles();
 	if (files.isEmpty())
@@ -1857,207 +1665,12 @@ bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const 
 	req.destRoot = dest;
 	req.preserve = preserve;
 	req.items = OpManager::itemsFromMediaFiles(files, policies);
-	return dispatchRequest(std::move(req));
+	return m_operations->dispatchRequest(std::move(req));
 }
 
 // The journal is mandatory; the engine independently enforces this before I/O.
-bool MainWindow::confirmCrashProtection()
-{
-    if (OpJournal::standardDirWritable()) return true;
-    QMessageBox::warning(this, tr("Operation cannot start"),
-        tr("MediaMuster cannot write its operation journal. Check free space and permissions on the system disk, then try again."));
-    return false;
-}
-
-void MainWindow::updateUndoAction()
-{
-	if (!m_undoAct)
-		return;
-	const bool enabled = m_enableUndoAct && m_enableUndoAct->isChecked();
-	m_undoAct->setVisible(enabled);
-	m_undoSeparator->setVisible(enabled);
-	m_undoAct->setShortcut(enabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
-	m_undoAct->setEnabled(enabled && !m_rebalanceDialogActive && !m_historyLoading && !m_undoCandidate.path.isEmpty()
-						 && m_scanButton->isEnabled());
-	m_undoAct->setText(m_undoCandidate.label.isEmpty() ? tr("&Undo") : m_undoCandidate.label);
-}
-
-void MainWindow::onUndoLastOperation()
-{
-	if (m_rebalanceDialogActive || !m_enableUndoAct->isChecked() || !m_scanButton->isEnabled())
-		return;
-	// Resolve the forward remainder before selecting its completed effects
-	// for Undo. Choosing Resume starts only that old job, never this Undo.
-	if (!resolvePreviousJob() || m_undoCandidate.path.isEmpty())
-		return;
-
-	QString plainLabel = m_undoCandidate.label;
-	plainLabel.remove(QLatin1Char('&'));
-	QMessageBox confirm(this);
-	confirm.setIcon(QMessageBox::Question);
-	confirm.setWindowTitle(tr("Undo"));
-	confirm.setText(tr("%1?").arg(plainLabel));
-	confirm.setInformativeText(tr("Only completed changes will be reversed. Files will be "
-		"restored to their original locations; copies being removed go to Trash. "
-		"Changed files and occupied original locations will be reported."));
-	auto *goBtn = confirm.addButton(plainLabel, QMessageBox::AcceptRole);
-	confirm.addButton(QMessageBox::Cancel);
-	confirm.exec();
-	if (confirm.clickedButton() != goBtn)
-		return;
-
-	OpRequest request;
-	request.kind = OpKind::Undo;
-	request.undoJournalPath = m_undoCandidate.path;
-	if (dispatchRequest(std::move(request)))
-		addLog(QtInfoMsg, QStringLiteral("ops"),
-			   tr("Undoing the last operation. Rescan afterwards to refresh the table."));
-}
-
-bool MainWindow::dispatchRequest(OpRequest request)
-{
-	if (m_rebalanceDialogActive || !m_scanButton->isEnabled() || m_fileOps->isRunning())
-		return false;
-	const bool resuming = !request.resumeJournalPath.isEmpty();
-	if (request.items.isEmpty() && !resuming && request.kind != OpKind::Undo)
-		return false;
-	if (!resuming && !resolvePreviousJob())
-		return false;
-	if (request.kind == OpKind::Undo && !resuming && !m_enableUndoAct->isChecked())
-		return false;
-	if (!confirmCrashProtection())
-		return false;
-
-	// Capture only new-job choices. Resume uses the policy saved in its journal.
-	if (!resuming && (request.kind == OpKind::Copy || request.kind == OpKind::Move))
-		request.verifyCopies = m_verifyCopiesAct->isChecked();
-	m_removeAfterOp = (request.kind == OpKind::Move || request.kind == OpKind::Delete);
-	m_successfulOpPaths.clear();
-	++m_historyGeneration; // A previous asynchronous read cannot repopulate stale actions.
-	m_historyLoading = false;
-	m_undoCandidate = {};
-	setBusy(true);
-	progressDialog()->begin();
-	m_fileOps->execute(std::move(request));
-	return true;
-}
 
 // MARK: - Resume an interrupted operation
-
-void MainWindow::updateResumeAction()
-{
-	if (m_resumeAct)
-		m_resumeAct->setEnabled(!m_rebalanceDialogActive && !m_historyLoading && !m_resumable.isEmpty()
-							   && m_scanButton->isEnabled());
-	updateUndoAction();
-}
-
-void MainWindow::applyOperationHistory(const OpRescue::Summary &history)
-{
-	m_resumable = history.resumable;
-	m_undoCandidate = {};
-	if (history.undoCandidate)
-	{
-		m_undoCandidate.path = history.undoCandidate->path;
-		switch (history.undoCandidate->request.kind)
-		{
-		case OpKind::Copy: m_undoCandidate.label = tr("&Undo Copy"); break;
-		case OpKind::Move: m_undoCandidate.label = tr("&Undo Move"); break;
-		case OpKind::Delete: m_undoCandidate.label = tr("&Undo Delete"); break;
-		case OpKind::Rename: m_undoCandidate.label = tr("&Undo Rebalance"); break;
-		case OpKind::Undo: m_undoCandidate = {}; break;
-		}
-	}
-	updateResumeAction();
-}
-
-void MainWindow::refreshResumable()
-{
-	const quint64 generation = ++m_historyGeneration;
-	m_historyLoading = true;
-	m_undoCandidate = {};
-	updateResumeAction();
-	auto *watcher = new QFutureWatcher<OpRescue::Summary>(this);
-	connect(watcher, &QFutureWatcher<OpRescue::Summary>::finished, this,
-			[this, watcher, generation]
-	{
-		const auto history = watcher->result();
-		watcher->deleteLater();
-		if (generation != m_historyGeneration)
-			return;
-		m_historyLoading = false;
-		applyOperationHistory(history);
-	});
-	watcher->setFuture(QtConcurrent::run(operationHistory));
-}
-
-void MainWindow::readOperationHistoryForGate()
-{
-	// Read journal files on a pool thread. Paint/timer events continue while
-	// the dispatch boundary waits, but a second user action cannot race it.
-	// Pending discovery deliberately does not probe disconnected media.
-	++m_historyGeneration;
-	QFutureWatcher<OpRescue::Summary> watcher;
-	QEventLoop loop;
-	connect(&watcher, &QFutureWatcher<OpRescue::Summary>::finished, &loop, &QEventLoop::quit);
-	watcher.setFuture(QtConcurrent::run(operationHistory));
-	if (!watcher.isFinished())
-		loop.exec(QEventLoop::ExcludeUserInputEvents);
-	m_historyLoading = false;
-	applyOperationHistory(watcher.result());
-}
-
-bool MainWindow::resolvePreviousJob()
-{
-	if (m_rebalanceDialogActive || !m_scanButton->isEnabled() || m_fileOps->isRunning() || m_operationGateActive)
-		return false;
-	QScopedValueRollback<bool> guard(m_operationGateActive, true);
-	readOperationHistoryForGate();
-	while (!m_resumable.isEmpty())
-	{
-		const OpRescue::Resumable job = m_resumable.first();
-		InterruptedJobDialog dialog(job, this);
-		dialog.exec();
-		if (dialog.choice == InterruptedJobDialog::Choice::Resume)
-		{
-			resumeOperation(job);
-			return false;
-		}
-		if (dialog.choice != InterruptedJobDialog::Choice::Cancel)
-			return false;
-		QString error;
-		if (!OpJournal::dismiss(job.journalPath, error))
-		{
-			addLog(QtWarningMsg, QStringLiteral("ops"), error);
-			QMessageBox::warning(this, tr("Job could not be cancelled"), error);
-			refreshResumable();
-			return false;
-		}
-		addLog(QtInfoMsg, QStringLiteral("ops"),
-			   tr("Cancelled the unfinished part of the previous job. Completed results were kept."));
-		readOperationHistoryForGate();
-	}
-	return true;
-}
-
-void MainWindow::offerResume()
-{
-	// The same dialog and explicit abandonment rules apply at launch,
-	// from the File menu, and before any new operation.
-	resolvePreviousJob();
-}
-
-bool MainWindow::resumeOperation(const OpRescue::Resumable &job)
-{
-	OpRequest request;
-	request.kind = job.kind;
-	request.destRoot = job.dest;
-	request.preserve = job.preserve;
-	request.items = job.remaining;
-	request.resumeJournalPath = job.journalPath;
-	addLog(QtInfoMsg, QStringLiteral("ops"), tr("Resuming the previous job."));
-	return dispatchRequest(std::move(request));
-}
 
 // MARK: - MediaMuster Trash dialog
 
@@ -2156,6 +1769,16 @@ void MainWindow::onExportCsv()
 
 QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
 {
+	struct ProjectSummary
+	{
+		QString name;
+		bool hasProject = true;
+		int videoCount = 0;
+		int audioCount = 0;
+		int unknownKindCount = 0;
+		qint64 totalBytes = 0;
+		QVector<QString> bins;
+	};
 	QMap<QString, ProjectSummary> map;
 	for (const auto &f : files)
 	{
@@ -2500,8 +2123,9 @@ void MainWindow::autoFitColumns()
 
 // MARK: - Busy state
 
-void MainWindow::setBusy(bool busy)
+void MainWindow::updateActivityUi()
 {
+	const bool busy = !m_operations->isIdle();
 	m_scanButton->setEnabled(!busy);
 	m_scanAllButton->setEnabled(!busy);
 
@@ -2513,7 +2137,6 @@ void MainWindow::setBusy(bool busy)
 	m_btnEffectFilter->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
 	m_effectFilterAct->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
 	m_effectDetailsAct->setEnabled(!busy);
-	updateResumeAction();
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();
@@ -2526,7 +2149,7 @@ void MainWindow::setBusy(bool busy)
 
 ProgressDialog *MainWindow::progressDialog()
 {
-	// Cancel fires on both workers; the idle worker's cancel() is a no-op.
+	// This dialog belongs to scanning; file jobs own their progress dialog.
 	if (!m_progressDialog)
 	{
 		m_progressDialog = new ProgressDialog(this);
@@ -2534,7 +2157,6 @@ ProgressDialog *MainWindow::progressDialog()
 				[this]()
 				{
 					m_scanner->cancelScan();
-					m_fileOps->cancel();
 					addLog(QtWarningMsg, QStringLiteral("app"), "Cancel requested");
 				});
 	}
@@ -2632,9 +2254,7 @@ void MainWindow::rebuildFilterChips()
 	};
 
 	const int tabIdx = m_filterTabs->currentIndex();
-	const bool hasPrecomputeSelection = m_effectDetailsEnabled &&
-										(m_proxy->precomputeTreeFilter().active || !m_proxy->precomputeCategoryFilter().isEmpty() ||
-										 !m_proxy->effectCategoryFilter().isEmpty() || !m_proxy->effectFilter().isEmpty());
+	const bool hasPrecomputeSelection = m_effectDetailsEnabled && m_proxy->precomputeTreeFilter().active;
 	// The detail selection already restricts the table to precomputes. When
 	// that tab is also selected, one chip represents both restrictions.
 	const bool combinedPrecomputeChip = hasPrecomputeSelection && tabIdx >= 0 &&
@@ -2689,26 +2309,6 @@ void MainWindow::rebuildFilterChips()
 			}
 			else
 				selectionLabel = tr("%1 precompute selections").arg(filter.paths.size());
-		}
-		else
-		{
-			// Legacy callers can still set independent category/name filters.
-			// Describe each active dimension without implying a single tree path.
-			const QStringList types = m_proxy->precomputeCategoryFilter();
-			const QStringList categories = m_proxy->effectCategoryFilter();
-			const QStringList effects = m_proxy->effectFilter();
-			QStringList parts;
-			if (!types.isEmpty())
-				parts.append(types.size() == 1 ? tr("Type: %1").arg(types.first())
-											   : tr("%1 precompute types").arg(types.size()));
-			if (!categories.isEmpty())
-				parts.append(categories.size() == 1 ? tr("Category: %1").arg(categories.first())
-													: tr("%1 effect categories").arg(categories.size()));
-			if (!effects.isEmpty())
-				parts.append(effects.size() == 1 ? tr("Effect: %1").arg(effects.first())
-												 : tr("%1 effects").arg(effects.size()));
-			if (!parts.isEmpty())
-				selectionLabel = tr("Precompute: %1").arg(parts.join(QStringLiteral("; ")));
 		}
 		if (!selectionLabel.isEmpty())
 			addChip(selectionLabel, [this, combinedPrecomputeChip]()

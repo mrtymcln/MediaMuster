@@ -54,8 +54,10 @@ class OpFile
 	{
 		return m_protected;
 	}
+#ifndef Q_OS_WIN
 	bool preserveMetadataFrom(OpFile &source, QString &error);
-	bool canStreamCopy(QString &error) const;
+#endif
+	bool checkCopySupport(QString &error) const;
 	NativeFile::SyncResult sync();
 	Relocation relocate(const QString &from, const QString &to, QString &error);
 	// No check-then-unlink fallback. Unsupported removal retains the file.
