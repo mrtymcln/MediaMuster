@@ -5,7 +5,7 @@ class QFile;
 
 // Platform durability requests and a conservative local-filesystem predicate.
 // OpFile owns handles and no-overwrite relocation. All byte copying goes
-// through OpCopier, on every filesystem; there are no unverified fast paths.
+// through OpCopier; its job policy determines whether checksum verification runs.
 namespace NativeFile
 {
 // Recognises local APFS/HFS+ and NTFS/ReFS; this is not field certification.

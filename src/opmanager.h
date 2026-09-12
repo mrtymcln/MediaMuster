@@ -27,8 +27,10 @@ class OpManager : public QObject, private OpSink
 	/// Dispatch Copy, Move, Trash or Rebalance, preserving the selected items.
 	void execute(OpRequest request);
 
-	/// Reserved entry point. Undo remains disabled until implemented for this journal.
+	/// Start the inverse operation only while the runtime Debug gate is enabled.
 	void executeUndo(const QString &journalPath);
+	void setUndoEnabled(bool enabled) { m_undoEnabled = enabled; }
+	bool isRunning() const { return m_running; }
 
 	void cancel()
 	{
@@ -84,6 +86,8 @@ class OpManager : public QObject, private OpSink
 
 	void result(const OpResult &value) override;
 	void startRun(OpRequest request);
+	bool m_undoEnabled = false;
+	bool m_running = false;
 
 	/// Must stay the LAST member: BackgroundJob's destructor joins the
 	/// worker, and members declared after it would be destroyed first —

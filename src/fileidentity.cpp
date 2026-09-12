@@ -6,17 +6,57 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QStorageInfo>
+#include <QUrl>
+#include <QVector>
 
 #if defined(Q_OS_WIN)
 #include <windows.h>
+#include <QLibrary>
 #else
 #include <sys/stat.h>
 #endif
 #ifdef Q_OS_MAC
 #include <sys/attr.h>
+#include <sys/mount.h>
 #include <unistd.h>
 #include <uuid/uuid.h>
 #endif
+
+namespace
+{
+// Strip credentials from mount metadata. The endpoint includes the server and
+// the complete mounted share/workspace path, never merely its displayed label.
+QString networkEndpoint(QString source, const QString &filesystem)
+{
+	source.replace('\\', '/');
+	if (source.startsWith("//?/UNC/", Qt::CaseInsensitive))
+		source = "//" + source.mid(8);
+	if (source.startsWith("//"))
+	{
+		const auto url = QUrl(QStringLiteral("smb:") + source);
+		if (!url.isValid() || url.host().isEmpty() || url.path().size() <= 1)
+			return {};
+		QString authority = url.host().toCaseFolded();
+		if (authority.contains(':'))
+			authority = '[' + authority + ']';
+		if (url.port() >= 0)
+			authority += ':' + QString::number(url.port());
+		const auto path = QDir::cleanPath(url.path(QUrl::FullyDecoded));
+		return QStringLiteral("share://") + authority + path;
+	}
+	// NFS reports host:/export/path. Do not interpret an unknown client's
+	// workspace label or a disconnected Windows drive letter as a server.
+	const auto colon = source.indexOf(":/");
+	if (colon > 0 && filesystem.contains("nfs", Qt::CaseInsensitive))
+	{
+		QString host = source.left(colon).section('@', -1).toCaseFolded();
+		if (host.contains('/') || host.isEmpty())
+			return {};
+		return filesystem.toCaseFolded() + "://" + host + QDir::cleanPath(source.mid(colon + 1));
+	}
+	return {};
+}
+} // namespace
 
 VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 {
@@ -30,11 +70,20 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 	v.fsType = QString::fromLatin1(info.fileSystemType());
 	v.capacityBytes = info.bytesTotal();
 	v.confidence = Confidence::Med;
-	// Network client identities are not qualified for automatic remount recovery.
-	if (!NativeFile::isProvenLocalVolume(anyPathOnVolume))
-		return v;
 
 #ifdef Q_OS_MAC
+	struct statfs mount{};
+	if (::statfs(QFile::encodeName(v.rootPath).constData(), &mount) != 0)
+		return v;
+	if (!(mount.f_flags & MNT_LOCAL))
+	{
+		v.kind = QStringLiteral("network");
+		v.networkId = networkEndpoint(QString::fromLocal8Bit(mount.f_mntfromname), v.fsType);
+		struct stat root{};
+		if (::stat(QFile::encodeName(v.rootPath).constData(), &root) == 0 && S_ISDIR(root.st_mode))
+			v.rootObjectId = QString::number(qulonglong(root.st_ino));
+		return v;
+	}
 	// The volume's own UUID, read via getattrlist on the mount point.
 	// Read-only — nothing is ever written onto the user's drives; the OS
 	// minted this identity when the volume was formatted.
@@ -68,6 +117,45 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 	QString root = QDir::toNativeSeparators(v.rootPath);
 	if (!root.endsWith(QLatin1Char('\\')))
 		root += QLatin1Char('\\');
+	const bool unc = root.startsWith("\\\\") &&
+		(!root.startsWith("\\\\?\\") || root.startsWith("\\\\?\\UNC\\", Qt::CaseInsensitive));
+	if (unc || ::GetDriveTypeW(reinterpret_cast<LPCWSTR>(root.utf16())) == DRIVE_REMOTE)
+	{
+		v.kind = QStringLiteral("network");
+		QString remote = unc ? root : QString();
+		if (!unc)
+		{
+			QLibrary provider(QStringLiteral("mpr"));
+			using GetConnection = DWORD(WINAPI *)(LPCWSTR, LPWSTR, LPDWORD);
+			const auto getConnection = reinterpret_cast<GetConnection>(provider.resolve("WNetGetConnectionW"));
+			if (getConnection)
+			{
+				const auto drive = root.left(2);
+				QVector<wchar_t> buffer(512);
+				DWORD length = DWORD(buffer.size());
+				auto code = getConnection(reinterpret_cast<LPCWSTR>(drive.utf16()), buffer.data(), &length);
+				if (code == ERROR_MORE_DATA && length > 0 && length < 32768)
+				{
+					buffer.resize(int(length));
+					code = getConnection(reinterpret_cast<LPCWSTR>(drive.utf16()), buffer.data(), &length);
+				}
+				if (code == NO_ERROR)
+					remote = QString::fromWCharArray(buffer.constData());
+			}
+		}
+		v.networkId = networkEndpoint(remote, v.fsType);
+		const auto handle = ::CreateFileW(reinterpret_cast<LPCWSTR>(root.utf16()), FILE_READ_ATTRIBUTES,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+		if (handle != INVALID_HANDLE_VALUE)
+		{
+			BY_HANDLE_FILE_INFORMATION metadata{};
+			if (::GetFileInformationByHandle(handle, &metadata))
+				v.rootObjectId = QString::number((qulonglong(metadata.nFileIndexHigh) << 32) | metadata.nFileIndexLow);
+			::CloseHandle(handle);
+		}
+		return v;
+	}
 
 	// The \\?\Volume{GUID}\ path is the volume's permanent address — it
 	// survives drive-letter changes, which is the whole point. Network
@@ -93,6 +181,12 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 
 bool VolumeIdentity::matches(const VolumeIdentity &other) const
 {
+	if (kind != other.kind)
+		return false;
+	if (kind == "network")
+		return confidence >= Confidence::Med && other.confidence >= Confidence::Med &&
+			!networkId.isEmpty() && networkId == other.networkId && !rootObjectId.isEmpty() &&
+			rootObjectId != "0" && rootObjectId == other.rootObjectId;
 	if (confidence != Confidence::High || other.confidence != Confidence::High || uuid.isEmpty() ||
 		other.uuid.isEmpty())
 		return false;
@@ -105,6 +199,9 @@ bool VolumeIdentity::matches(const VolumeIdentity &other) const
 QJsonObject VolumeIdentity::toJson() const
 {
 	QJsonObject o;
+	o.insert(QStringLiteral("kind"), kind);
+	o.insert(QStringLiteral("networkId"), networkId);
+	o.insert(QStringLiteral("rootObjectId"), rootObjectId);
 	if (!uuid.isEmpty())
 		o.insert(QStringLiteral("uuid"), uuid);
 	if (serial != 0)
@@ -124,6 +221,13 @@ QJsonObject VolumeIdentity::toJson() const
 VolumeIdentity VolumeIdentity::fromJson(const QJsonObject &o)
 {
 	VolumeIdentity v;
+	if (!o["kind"].isString() || !o["networkId"].isString() || !o["rootObjectId"].isString())
+		return v;
+	v.kind = o["kind"].toString();
+	if (v.kind != "local" && v.kind != "network")
+		return VolumeIdentity{};
+	v.networkId = o["networkId"].toString();
+	v.rootObjectId = o["rootObjectId"].toString();
 	v.uuid = o.value(QStringLiteral("uuid")).toString();
 	v.serial = o.value(QStringLiteral("serial")).toString().toUInt(nullptr, 16);
 	v.label = o.value(QStringLiteral("label")).toString();

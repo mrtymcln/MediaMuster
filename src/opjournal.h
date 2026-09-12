@@ -17,10 +17,13 @@ class OpJournal
 	{
 		Planned,
 		Copying,
+		CopyReady,
 		Verified,
 		Publishing,
 		Published,
 		Relocating,
+		RemovingSource,
+		SourceRemoved,
 		Done,
 		SourceRetained,
 		Skipped,
@@ -38,6 +41,16 @@ class OpJournal
 		QString dst;
 		QString temp;
 		QString hash;
+		QString mechanism;
+		QString retirement;
+		QString trashProvider;
+		QString trashReceipt;
+		bool verificationRequested = false;
+		bool explicitSkip = false;
+		bool sourceRemoved = false;
+		int attempts = 0;
+		int undoEntryId = -1;
+		QString undoAction;
 		bool copyDurable = false;
 		bool metadataComplete = false;
 		QString error;
@@ -59,6 +72,8 @@ class OpJournal
 		QStringList changedFolders;
 		bool stopped = false;
 		bool dismissed = false;
+		bool copiesComplete = false;
+		QString undoPath;
 		bool torn = false;
 		bool corrupt = false;
 		qint64 validBytes = 0;
@@ -70,6 +85,8 @@ class OpJournal
 	bool save(const Entry &entry);
 	bool touchFolder(const QString &folder);
 	bool finish(bool cancelled);
+	bool markCopiesComplete();
+	bool claimUndo(const QString &undoPath);
 	bool healthy() const
 	{
 		return m_healthy;
@@ -94,6 +111,9 @@ class OpJournal
 	static QString standardJournalDir();
 	static bool standardDirWritable();
 	static QVector<Record> scan(const QString &directory = {});
+	// Journal-only discovery: disconnected storage must not hide an unfinished job.
+	static QVector<Record> interrupted(const QString &directory = {});
+	static std::optional<Record> latestUndoable(const QString &directory = {});
 	static QStringList unreadableRecords(const QString &directory = {});
 	static std::optional<Record> readOne(const QString &path);
 	static bool dismiss(const QString &path, QString &error);

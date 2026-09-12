@@ -24,7 +24,7 @@ Engineer: `QFile::open(WriteOnly)` truncates the destination immediately. The fu
 
 Plain English: A failed export can say it succeeded while leaving an incomplete report. If you were replacing a previous report, the previous good copy is gone too. This loss concerns the export file; this probe does not claim MXF media was overwritten by Export.
 
-Proof: Write an existing `ORIGINAL REPORT`, impose a process-local eight-byte `RLIMIT_FSIZE` with `SIGXFSZ` ignored, then call the actual exporter for one row. Result: `CSV_WRITE returned=1 expected_bytes=306 actual_bytes=8 contents=efbbbf436c697020`. The eight remaining bytes are BOM plus `Clip `, not the original report or the complete new CSV. This exercises a real write error without filling a disk.
+Proof: Write an existing `ORIGINAL REPORT`, impose a process-local eight-byte `RLIMIT_FSIZE` with `SIGXFSZ` ignored, then call the actual exporter for one row. Result: `CSV_WRITE returned=1 expected_bytes=306 actual_bytes=8 contents=efbbbf436c697020`. The eight remaining bytes are BOM plus `Clip`, not the original report or the complete new CSV. This exercises a real write error without filling a disk.
 
 Skill connection: E.1/E.6 error strategy and RAII failure handling. Destruction releases ownership, but an operation whose failure matters must be explicitly checked before reporting success.
 

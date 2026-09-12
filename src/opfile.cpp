@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QUuid>
 #include <cstring>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -136,6 +137,17 @@ NativeFile::SyncResult OpFile::makeDirectory(const QString &path, QString &error
 
 std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &error)
 {
+	return openImpl(path, create, create, error);
+}
+
+std::unique_ptr<OpFile> OpFile::openWritableExisting(const QString &path, QString &error)
+{
+	return openImpl(path, false, true, error);
+}
+
+std::unique_ptr<OpFile> OpFile::openImpl(const QString &path, bool create, bool writable,
+										 QString &error)
+{
 	if (!safePath(path))
 	{
 		error = QStringLiteral("Unsupported or redirected path: %1").arg(path);
@@ -147,12 +159,12 @@ std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &
 	int fd = -1;
 #ifdef Q_OS_WIN
 	const QString native = QDir::toNativeSeparators(path);
-	const DWORD access = GENERIC_READ | DELETE | (create ? GENERIC_WRITE : 0);
+	const DWORD access = GENERIC_READ | DELETE | (writable ? GENERIC_WRITE : 0);
 	HANDLE h = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()), access,
 							 FILE_SHARE_READ, nullptr, create ? CREATE_NEW : OPEN_EXISTING,
 							 FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
 	out->m_protected = h != INVALID_HANDLE_VALUE;
-	if (h == INVALID_HANDLE_VALUE && !create)
+	if (h == INVALID_HANDLE_VALUE && !create && !writable)
 	{
 		h = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()), GENERIC_READ,
 						  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
@@ -172,7 +184,7 @@ std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &
 		return {};
 	}
 	fd = ::_open_osfhandle(reinterpret_cast<intptr_t>(h),
-						   _O_BINARY | (create ? _O_RDWR : _O_RDONLY));
+							   _O_BINARY | (writable ? _O_RDWR : _O_RDONLY));
 	if (fd < 0)
 	{
 		::CloseHandle(h);
@@ -181,7 +193,8 @@ std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &
 	}
 #else
 	fd = ::open(QFile::encodeName(path).constData(),
-				(create ? O_RDWR | O_CREAT | O_EXCL : O_RDONLY) | O_NOFOLLOW | O_CLOEXEC, 0600);
+					(create ? O_RDWR | O_CREAT | O_EXCL : writable ? O_RDWR : O_RDONLY) |
+						O_NOFOLLOW | O_CLOEXEC, 0600);
 	if (fd < 0)
 	{
 		error = nativeError();
@@ -195,7 +208,7 @@ std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &
 		return {};
 	}
 #endif
-	if (!out->m_file.open(fd, create ? QIODevice::ReadWrite : QIODevice::ReadOnly,
+	if (!out->m_file.open(fd, writable ? QIODevice::ReadWrite : QIODevice::ReadOnly,
 						  QFileDevice::AutoCloseHandle))
 	{
 #ifdef Q_OS_WIN
@@ -355,9 +368,9 @@ OpFile::Relocation OpFile::relocate(const QString &from, const QString &to, QStr
 #elif defined(Q_OS_MAC)
 	// Open the actual directories and bind rename to them. No QFile fallback.
 	const int fromDir = ::open(QFile::encodeName(QFileInfo(from).absolutePath()).constData(),
-							   O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+							   O_SEARCH | O_NOFOLLOW | O_CLOEXEC);
 	const int toDir = ::open(QFile::encodeName(QFileInfo(to).absolutePath()).constData(),
-							 O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+							 O_SEARCH | O_NOFOLLOW | O_CLOEXEC);
 	if (fromDir < 0 || toDir < 0)
 	{
 		error = nativeError();
@@ -413,4 +426,86 @@ bool OpFile::removeProtected(QString &error)
 #endif
 	error = QStringLiteral("File retained at %1: protected removal is unavailable.").arg(m_path);
 	return false;
+}
+
+bool OpFile::removeOriginal(QString &error)
+{
+	const QFileInfo item(m_path);
+	const QFileInfo parent(item.absolutePath());
+	const QString prefix = QStringLiteral(".mediamuster-retire-");
+	const QString token = parent.fileName().mid(prefix.size());
+	const auto before = stamp();
+	if (item.fileName() != QStringLiteral("payload.retired") ||
+		!parent.fileName().startsWith(prefix) || QUuid(token).isNull() ||
+		!safePath(m_path) || !stillAt(m_path, before))
+	{
+		error = QStringLiteral("Original removal requires its recorded isolated retirement file.");
+		return false;
+	}
+#ifdef Q_OS_WIN
+	if (!m_protected)
+	{
+		error = QStringLiteral("The retired original could not be protected for removal.");
+		return false;
+	}
+	FILE_DISPOSITION_INFO disposition{};
+	disposition.DeleteFile = TRUE;
+	if (!::SetFileInformationByHandle(handle(m_file), FileDispositionInfo, &disposition,
+									 sizeof(disposition)))
+	{
+		error = nativeError();
+		return false;
+	}
+	// Deletion was requested on this object, not on a pathname. Closing is part
+	// of the action and must precede its journalled completion.
+	m_file.close();
+	if (occupied(m_path))
+	{
+		error = QStringLiteral("Original removal is pending; the retirement path remains occupied.");
+		return false;
+	}
+#elif defined(Q_OS_MAC)
+	const int directory = ::open(QFile::encodeName(parent.absoluteFilePath()).constData(),
+		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	struct stat directoryInfo{}, current{};
+	if (directory < 0)
+	{
+		error = nativeError();
+		return false;
+	}
+	// Unlike an ordinary source directory, this private directory excludes
+	// other users. Keep its descriptor bound through identity check and unlink.
+	// An external writer using this same account is outside that isolation;
+	// callers must not share or reuse retirement directories.
+	const bool isolated = ::fstat(directory, &directoryInfo) == 0 &&
+		directoryInfo.st_uid == ::geteuid() && (directoryInfo.st_mode & 0777) == 0700;
+	const bool same = ::fstatat(directory, "payload.retired", &current, AT_SYMLINK_NOFOLLOW) == 0 &&
+		S_ISREG(current.st_mode) && hex(current.st_ino) == before.fileId &&
+		hex(current.st_dev) == before.volumeId && current.st_size == before.size &&
+		current.st_mtimespec.tv_sec * 1000000000LL + current.st_mtimespec.tv_nsec == before.modified;
+	if (!isolated || !same)
+	{
+		::close(directory);
+		error = QStringLiteral("The retirement directory or original identity is not protected.");
+		return false;
+	}
+	if (::unlinkat(directory, "payload.retired", 0) != 0)
+	{
+		error = nativeError();
+		::close(directory);
+		return false;
+	}
+	m_file.close();
+	const bool synced = ::fsync(directory) == 0;
+	if (!synced)
+		error = QStringLiteral("Original removed, but its retirement directory could not be flushed: ") + nativeError();
+	::close(directory);
+	return synced;
+#else
+	error = QStringLiteral("Protected original removal is unavailable on this platform.");
+	return false;
+#endif
+#ifdef Q_OS_WIN
+	return NativeFile::syncDirectory(parent.absoluteFilePath(), &error) == NativeFile::SyncResult::Ok;
+#endif
 }

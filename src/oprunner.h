@@ -33,6 +33,7 @@ class OpRunner
 		std::function<bool(const QString &)> fail;
 		NativeFile::DirectorySync directorySync = NativeFile::syncDirectory;
 		bool forceCopy = false;
+		bool forceNetworkTrash = false; // Exercise network routing on disposable local fixtures.
 	};
 	OpRunner(OpSink &sink, const std::atomic<bool> &cancel) : m_sink(sink), m_cancel(cancel) {}
 	Totals run(const OpRequest &request, const QString &journalDir = {});
@@ -42,7 +43,9 @@ class OpRunner
 								 bool omfEra = false);
 	static std::optional<QString> generateRenamePath(const QString &);
 	static bool sameVolumeForRename(const QString &, const QString &);
-	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error);
+	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error,
+		const std::atomic<bool> *cancellation = nullptr,
+		const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
 
   private:
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
@@ -50,6 +53,8 @@ class OpRunner
 					 int total);
 	OpResult transfer(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, OpFile &source,
 					  int index, int total, bool directoryDurable);
+	OpResult removeOriginal(OpJournal &, OpJournal::Entry &, int index, int total);
+	OpRequest planUndo(OpJournal::Record &, const OpRequest &);
 	bool retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error);
 	void checkpoint(const QString &name, const OpJournal::Entry &entry);
 	bool fail(const QString &name) const

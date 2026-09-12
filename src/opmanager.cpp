@@ -69,10 +69,12 @@ void OpManager::execute(OpRequest request)
 	startRun(std::move(request));
 }
 
-void OpManager::executeUndo(const QString &)
+void OpManager::executeUndo(const QString &journalPath)
 {
-	emit operationLog(QtWarningMsg, QStringLiteral("Undo remains gated for the new engine."));
-	emit operationFinished(0, 1);
+	OpRequest request;
+	request.kind = OpKind::Undo;
+	request.undoJournalPath = journalPath;
+	startRun(std::move(request));
 }
 
 void OpManager::result(const OpResult &value)
@@ -84,15 +86,37 @@ void OpManager::result(const OpResult &value)
 
 void OpManager::startRun(OpRequest request)
 {
+	// A second dispatch must never cancel the important job already running.
+	if (m_running)
+	{
+		emit operationLog(QtWarningMsg, QStringLiteral("Another operation is still running."));
+		return;
+	}
+	if (request.kind == OpKind::Undo && request.resumeJournalPath.isEmpty())
+	{
+		if (!m_undoEnabled)
+		{
+			emit operationLog(QtWarningMsg, QStringLiteral("Enable Undo in the Debug menu first."));
+			emit operationFinished(0, 1);
+			return;
+		}
+		request.undoEnabled = true;
+	}
+	m_running = true;
 	m_job.start(
 		[this, request = std::move(request)]
 		{
 			OpRunner runner(*this, m_job.cancelFlag());
 			runner.onRenameFolderTouched = renameFolderTouched;
 			const OpRunner::Totals totals = runner.run(request);
-			// Exactly once, on every path out of run() — this is what
-			// un-busies the UI, so nothing may return without it.
-			emit operationFinished(totals.succeeded,
-								   totals.failed + totals.needsAttention + totals.retained);
+			// Join before announcing completion: the next recovery scan must
+			// see a released journal lock and a worker that has fully exited.
+			QMetaObject::invokeMethod(this, [this, totals]
+			{
+				m_job.shutdown();
+				m_running = false;
+				emit operationFinished(totals.succeeded,
+									   totals.failed + totals.needsAttention + totals.retained);
+			}, Qt::QueuedConnection);
 		});
 }

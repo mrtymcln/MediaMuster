@@ -36,6 +36,7 @@ class QTimer;
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
+	friend class TestOperationUi;
 public:
 	/// UiOnly supports interface tests/previews without volume discovery,
 	/// monitoring, crash collection or journal recovery against the host.
@@ -101,9 +102,7 @@ private:
 
 	// MARK: - Crash recovery
 
-	/// Run once at launch, off the GUI thread: rolls back any operation a
-	/// previous run died partway through, deletes the clean journals, then
-	/// reports via onRecoveryDone.
+	/// Reconcile interrupted journals once at launch, off the GUI thread.
 	void runStartupRecovery();
 	void onRecoveryDone(const OpRescue::Summary &summary);
 
@@ -111,7 +110,7 @@ private:
 
 	/// Re-reads the journal folder for interrupted runs that can be finished,
 	/// OFF the GUI thread (it stats media paths), then updates the menu
-	/// item. Called after a resume, a discard, or a finished operation; the
+	/// item. Called after abandonment or a finished operation; the
 	/// launch sweep supplies the first list for free.
 	void refreshResumable();
 
@@ -120,19 +119,20 @@ private:
 	void updateUndoAction();
 	void onUndoLastOperation();
 
-	/// The shared "no crash protection" gate: true = go ahead (journal
-	/// writable, or the user explicitly chose to continue without it).
+	/// The journal is mandatory; false means no operation may start.
 	bool confirmCrashProtection();
 
 	/// Applies the File-menu item's enabled state from the cached list.
 	/// Cheap and synchronous — safe to call from setBusy on every edge.
 	void updateResumeAction();
 
-	/// Ask about the oldest resumable run: Resume (dispatch the unfinished
-	/// files through the ordinary engine, then delete that journal), Resume
-	/// Later (leave it; the menu command stays enabled), Discard (delete it).
-	/// Esc and the close button count as Resume Later — never Discard.
+	/// Explicit Resume continues the recorded job; explicit Cancel abandons
+	/// its remainder. Escape/window close leaves the journal untouched.
 	void offerResume();
+	bool resolvePreviousJob();
+	bool resumeOperation(const OpRescue::Resumable &job);
+	void applyOperationHistory(const OpRescue::Summary &history);
+	void readOperationHistoryForGate();
 
 	/// The one dispatch path for Copy/Move/Delete: journal-writable gate,
 	/// engine call, busy state, progress sheet. Used by the Manage Media
@@ -292,8 +292,15 @@ private:
 	QVector<OpRescue::Resumable> m_resumable;
 	class QAction *m_resumeAct = nullptr;
 	class QAction *m_undoAct = nullptr;
+	class QAction *m_undoSeparator = nullptr;
+	class QAction *m_verifyCopiesAct = nullptr;
+	class QAction *m_enableUndoAct = nullptr;
+	bool m_operationGateActive = false;
+	bool m_rebalanceDialogActive = false;
+	bool m_historyLoading = false;
+	quint64 m_historyGeneration = 0;
 	/// Edit ▸ Undo candidate, refreshed off-thread with the resumables:
-	/// the newest finished journal's path and the menu label naming it.
+	/// the newest journal with completed effects and the menu label naming it.
 	/// Empty path = nothing to undo.
 	struct UndoCandidate
 	{

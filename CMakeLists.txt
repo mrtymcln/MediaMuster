@@ -20,6 +20,11 @@ endif()
 
 ### App name, version and copyright ###
 project(MediaMuster VERSION 0.0.2 LANGUAGES C CXX)
+if(APPLE)
+    enable_language(OBJCXX)
+    set(CMAKE_OBJCXX_STANDARD 17)
+    set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
+endif()
 set(MEDIAMUSTER_COPYRIGHT "Copyright © 2026 Martin McLean")
 
 ### Build settings ###
@@ -28,6 +33,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+
+# Qt 6.5's Windows baseline is Windows 10. Expose the matching SDK declarations
+# for native copy, recycle-only Shell operations and file identity information.
+if(WIN32)
+    add_compile_definitions(_WIN32_WINNT=0x0A00 WINVER=0x0A00 NTDDI_VERSION=0x0A000000)
+endif()
 
 ### Compiler warnings and source encoding for every target ###
 if(MSVC)
@@ -123,6 +134,7 @@ set(SOURCES
     src/fileidentity.cpp
     src/nativefile.cpp
     src/opfile.cpp
+    src/optrash.cpp
     src/opdiagnostics.cpp
     src/fileoperationtestdialog.cpp
     src/opjournal.cpp
@@ -144,6 +156,7 @@ set(SOURCES
 
 ### Target ###
 if(APPLE)
+    list(APPEND SOURCES src/optrash_mac.mm)
     set(MACOS_ICON res/mediamuster-mac.icns)
     set_source_files_properties(${MACOS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     list(APPEND SOURCES ${MACOS_ICON})
@@ -208,6 +221,15 @@ target_link_libraries(MediaMuster PRIVATE
     Qt6::Gui
     Qt6::Concurrent
 )
+
+function(mediamuster_link_native_operations target)
+    if(APPLE)
+        target_link_libraries(${target} PRIVATE "-framework Foundation")
+    elseif(WIN32)
+        target_link_libraries(${target} PRIVATE shell32 ole32 uuid)
+    endif()
+endfunction()
+mediamuster_link_native_operations(MediaMuster)
 
 if(WIN32)
     ### Shell reveal (revealinfinder.cpp) and GetUserNameEx (aboutdialog.cpp) ###

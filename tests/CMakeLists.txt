@@ -107,6 +107,13 @@ mediamuster_add_test(tst_fileoperations
     ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+foreach(_engine_test tst_rebalancer_parse tst_rebalancer_plan tst_fileoperations)
+    target_sources(${_engine_test} PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)
+    if(APPLE)
+        target_sources(${_engine_test} PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash_mac.mm)
+    endif()
+    mediamuster_link_native_operations(${_engine_test})
+endforeach()
 set_property(TARGET tst_fileoperations APPEND PROPERTY LINK_DEPENDS
     "${CMAKE_SOURCE_DIR}/tests/fixtures/file_operations/relatives.zip")
 if(APPLE)
@@ -259,3 +266,27 @@ mediamuster_add_test(tst_binfilterdialog
 )
 target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent)
 set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Journal state/claim contracts use only filesystem primitives, without a runner.
+mediamuster_add_test(tst_opjournal
+    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+    ${CMAKE_SOURCE_DIR}/src/opfile.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+    ${CMAKE_SOURCE_DIR}/src/fileidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+)
+mediamuster_link_native_operations(tst_opjournal)
+
+# Production UI and coordinator behavior, with no alternate operation model.
+set(_operation_ui_sources ${SOURCES})
+list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)(main|logcategories)\\.cpp$")
+list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
+list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
+mediamuster_add_test(tst_operationui ${_operation_ui_sources})
+target_include_directories(tst_operationui PRIVATE ${CMAKE_BINARY_DIR})
+target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent)
+mediamuster_link_native_operations(tst_operationui)
+if(WIN32)
+    target_link_libraries(tst_operationui PRIVATE secur32)
+endif()
+set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

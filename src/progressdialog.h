@@ -32,8 +32,9 @@ public:
 	/// Like setProgress, but folds the CURRENT item's own progress
 	/// (`pct`, 0–100) into the bar, so one 40 GB file visibly advances
 	/// instead of looking like a hang. The bar runs at 1000 ticks per
-	/// item; the counter label keeps counting whole items and shows the
-	/// overall percentage. The ops engine feeds this; scans (no per-item
+	/// work unit; the counter shows overall percentage because a Move can
+	/// include separate copy/removal phases for one file. The ops engine feeds
+	/// this; scans (no per-item
 	/// byte progress) keep using setProgress.
 	void setItemProgress(int current, int total, double pct);
 

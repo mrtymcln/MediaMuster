@@ -809,6 +809,8 @@ void RebalanceDialog::onRebalanceClicked()
 		confirm.exec();
 		if (confirm.clickedButton() != goBtn)
 			return;
+		if (beforeRebalance && !beforeRebalance())
+			return;
 	}
 
 	m_running = true;

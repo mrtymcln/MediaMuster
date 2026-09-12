@@ -10,6 +10,7 @@
 #include <QSet>
 #include <QString>
 #include <QVector>
+#include <functional>
 
 class FolderCard;
 class QComboBox;
@@ -72,6 +73,10 @@ public:
 	/// Label of the volume that was rebalanced; the caller uses
 	/// this to know which volume's scan needs refreshing.
 	QString rebalancedLabel() const { return m_rebalancedLabel; }
+
+	/// MainWindow resolves any previous interrupted job immediately before
+	/// this plan starts. False leaves this plan unstarted.
+	std::function<bool()> beforeRebalance;
 
 signals:
 

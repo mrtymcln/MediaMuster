@@ -170,6 +170,7 @@ void testBundledRelatives(const QString &sourceRoot, const QString &destinationR
 	for (int i = 0; i < samples.size() && !cancel.load(); ++i)
 	{
 		OpRequest request;
+		request.verifyCopies = true;
 		request.destRoot = sourceMxf + "/MediaMusterTest." + QString::number(i + 1);
 		OpItem item;
 		item.src = samples[i];
@@ -414,6 +415,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 				throw std::runtime_error(error.toStdString());
 			const auto original = OpFile::inspect(source);
 			OpRequest request;
+		request.verifyCopies = true;
 			request.destRoot = destination;
 			request.diagnosticTrashRoot = sourceRoot + "/_MediaMuster_Trash";
 			OpItem item;
@@ -451,7 +453,10 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 				request.items[0].policy = index == 1 ? "keepboth" : "skip";
 			}
 			if (index == 6)
+			{
 				request.kind = OpKind::Move;
+				runner.hooks.forceCopy = true;
+			}
 			if (index == 7)
 				request.kind = OpKind::Delete;
 			if (index >= 8)
@@ -546,6 +551,7 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 			const auto before = OpFile::inspect(source);
 			const auto header = MxfParser::parseHeader(source);
 			OpRequest request;
+		request.verifyCopies = true;
 			request.destRoot = destinationRoot + "/samples/" + QString::number(index);
 			OpItem item;
 			item.src = source;
@@ -575,9 +581,9 @@ OpDiagnostics::Report OpDiagnostics::run(const Options &options, const std::atom
 	record("Network disconnect, power loss and competing client", "not tested",
 		   "These require separate controlled field tests. A successful local run does not qualify "
 		   "another OS, client or storage configuration.");
-	record("Cross-filesystem source removal", "unsupported",
-		   "This phase keeps the original after a verified copy. Same-filesystem Move and Trash "
-		   "use native relocation.");
+	record("Cross-filesystem source removal", "not tested",
+		   "The disposable Move exercises copy-then-remove. A real cross-filesystem run still "
+		   "requires selecting different source and destination storage.");
 	report.text += "Test files and journals are retained for inspection. Selected sample originals "
 				   "were only read.\nReport: " +
 				   report.path + '\n';

@@ -1,6 +1,7 @@
 #include "oprunner.h"
 #include "oprescue.h"
 #include "opdiagnostics.h"
+#include "optrash.h"
 #include "mxfparser.h"
 #include <QJsonArray>
 #include <QTest>
@@ -66,6 +67,8 @@ struct Fixture
 	{
 		OpRequest r;
 		r.kind = kind;
+		r.verifyCopies = true;
+		r.diagnosticTrashRoot = root + "/_MediaMuster_Trash";
 		r.destRoot = dest;
 		OpItem i;
 		i.src = src;
@@ -82,6 +85,26 @@ class TestFileOperations : public QObject
 	Q_OBJECT
   private slots:
 	void copy_verifies_and_publishes();
+	void resume_flush_failure_stays_unfinished();
+	void undo_late_collision_remains_resumable();
+	void resume_continues_past_failed_source();
+
+	void network_delete_always_uses_mediamuster_trash();
+	void retry_is_bounded_and_journalled();
+	void undo_rebalance_retires_regenerated_indexes();
+	void undo_original_in_retirement();
+
+	void verification_off_avoids_readback();
+	void move_copies_every_file_before_removal();
+	void failed_copy_continues_and_blocks_all_original_removal();
+	void explicit_skip_survives_disappearing_conflict();
+	void removal_crash_boundaries_resume();
+	void undo_copy_is_gated_and_claims_forward();
+	void undo_partial_move_restores_only_completed_changes();
+	void undo_interrupted_copy_and_changed_result();
+	void undo_move_resume_keeps_saved_policy();
+	void local_trash_and_undo_roundtrip();
+
 	void keep_both_retains_names_and_handles_late_race();
 	void skip_never_overwrites();
 	void replace_is_rejected();
@@ -383,7 +406,9 @@ void TestFileOperations::source_retention_is_explicit()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.fail = [](const QString &s) { return s == "source-remove"; };
+	runner.hooks.checkpoint = [&](const QString &s, const auto &) {
+		if (s == "copies-complete") cancel = true;
+	};
 	auto t = runner.run(f.request(OpKind::Move), f.journals);
 	QCOMPARE(t.retained, 1);
 	QCOMPARE(get(f.src), f.bytes);
@@ -707,7 +732,7 @@ void TestFileOperations::debug_harness_uses_disposable_files()
 		}
 		if (check["name"].toString() == "Cross-filesystem source removal")
 		{
-			QCOMPARE(check["status"].toString(), QString("unsupported"));
+			QCOMPARE(check["status"].toString(), QString("not tested"));
 			continue;
 		}
 		QVERIFY2(check["status"].toString() != "failed" &&
@@ -776,7 +801,7 @@ void TestFileOperations::unsupported_directory_flush_preserves_originals()
 		QCOMPARE(totals.succeeded, kind == OpKind::Copy ? 1 : 0);
 		QCOMPARE(totals.retained, kind == OpKind::Move ? 1 : 0);
 		QCOMPARE(totals.failed + totals.needsAttention, 0);
-		QCOMPARE(chunks, 2); // A late conflict must reuse the verified copy.
+		QVERIFY(chunks > 0); // Native APIs choose their own chunk sizes.
 		QCOMPARE(get(f.src), f.bytes);
 		QCOMPARE(get(f.dest + "/clip.bin"), QByteArray("existing media"));
 		QCOMPARE(get(f.dest + "/clip (2).bin"), QByteArray("late writer"));
@@ -786,6 +811,7 @@ void TestFileOperations::unsupported_directory_flush_preserves_originals()
 		const auto entry = OpJournal::scan(f.journals)[0].entries[0];
 		QVERIFY(!entry.hash.isEmpty());
 		QVERIFY(!entry.copyDurable);
+		QCOMPARE(entry.attempts, 1); // Late Keep Both conflicts reuse the completed copy.
 		QVERIFY(!entry.source.sameObject(entry.landed));
 	}
 }
@@ -1088,6 +1114,492 @@ void TestFileOperations::encrypted_windows_copy_is_refused()
 	QVERIFY(sink.results.last().message.contains("Encrypted"));
 }
 #endif
+void TestFileOperations::verification_off_avoids_readback()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	bool readback = false;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		readback = readback || stage == "before-readback" || stage == "readback-chunk";
+	};
+	auto request = f.request();
+	request.verifyCopies = false;
+	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	QVERIFY(!readback);
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	const auto record = OpJournal::scan(f.journals).first();
+	QVERIFY(record.entries.first().hash.isEmpty());
+	QVERIFY(!record.request.verifyCopies);
+}
+void TestFileOperations::move_copies_every_file_before_removal()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Move);
+	request.verifyCopies = false;
+	auto second = request.items[0];
+	second.src = f.root + "/source/audio.bin";
+	second.name = "audio.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	int published = 0;
+	bool intact = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		if (stage == "published") {
+			++published;
+			intact = intact && get(f.src) == f.bytes && get(second.src) == f.bytes;
+		}
+		if (stage == "before-source-retirement") intact = intact && published == 2;
+	};
+	const auto t = runner.run(request, f.journals);
+	QVERIFY2(t.succeeded == 2, qPrintable(sink.messages.join('\n')));
+	QVERIFY(intact);
+	QVERIFY(!QFile::exists(f.src));
+	QVERIFY(!QFile::exists(second.src));
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	QCOMPARE(get(f.dest + "/audio.bin"), f.bytes);
+	QCOMPARE(sink.results.size(), 2);
+	QVERIFY(OpJournal::scan(f.journals)[0].copiesComplete);
+}
+void TestFileOperations::failed_copy_continues_and_blocks_all_original_removal()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Move);
+	auto second = request.items[0];
+	second.src = f.root + "/source/audio.bin";
+	second.name = "audio.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	put(f.dest + "/clip.bin", "unexpected conflict");
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	const auto t = runner.run(request, f.journals);
+	QCOMPARE(t.failed, 1);
+	QCOMPARE(t.retained, 1);
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(get(second.src), f.bytes);
+	QCOMPARE(get(f.dest + "/audio.bin"), f.bytes);
+	QVERIFY(!OpJournal::scan(f.journals)[0].copiesComplete);
+}
+void TestFileOperations::explicit_skip_survives_disappearing_conflict()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Move, "skip");
+	auto second = request.items[0];
+	second.src = f.root + "/source/audio.bin";
+	second.name = "audio.bin";
+	second.policy.clear();
+	put(second.src, f.bytes);
+	request.items.append(second);
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	const auto t = runner.run(request, f.journals);
+	QCOMPARE(t.skipped, 1);
+	QCOMPARE(t.succeeded, 1);
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QVERIFY(!QFile::exists(second.src));
+}
+void TestFileOperations::removal_crash_boundaries_resume()
+{
+	for (const auto &point : {"copies-complete", "before-source-retirement", "source-retired", "source-unlinked"})
+	{
+		Fixture f;
+		Sink sink;
+		std::atomic<bool> cancel{false};
+		OpRunner runner(sink, cancel);
+		runner.hooks.forceCopy = true;
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+			if (stage == point) throw std::runtime_error("crash boundary");
+		};
+		auto request = f.request(OpKind::Move);
+		request.verifyCopies = false;
+		QVERIFY(runner.run(request, f.journals).needsAttention > 0);
+		auto saved = OpJournal::scan(f.journals).first();
+		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+		OpRequest resume;
+		resume.resumeJournalPath = saved.path;
+		runner.hooks = {};
+		const auto t = runner.run(resume, f.journals);
+		QVERIFY2(t.needsAttention == 0 && t.failed == 0,
+			qPrintable(QString(point) + ": " + sink.messages.join('\n')));
+		QVERIFY(!QFile::exists(f.src));
+		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+		QVERIFY(OpJournal::readOne(saved.path)->entries[0].complete());
+	}
+}
+void TestFileOperations::undo_copy_is_gated_and_claims_forward()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	QCOMPARE(runner.run(f.request(), f.journals).succeeded, 1);
+	const auto forward = OpJournal::scan(f.journals).first();
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoJournalPath = forward.path;
+	QVERIFY(runner.run(undo, f.journals).needsAttention > 0);
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	undo.undoEnabled = true;
+	const auto t = runner.run(undo, f.journals);
+	QVERIFY2(t.succeeded == 1, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QVERIFY(!OpJournal::readOne(forward.path)->undoPath.isEmpty());
+	QVERIFY(!OpJournal::latestUndoable(f.journals));
+	OpRequest resume;
+	resume.resumeJournalPath = forward.path;
+	QVERIFY(runner.run(resume, f.journals).needsAttention > 0);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+}
+void TestFileOperations::undo_partial_move_restores_only_completed_changes()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Move);
+	request.verifyCopies = false;
+	auto second = request.items[0];
+	second.src = f.root + "/source/audio.bin";
+	second.name = "audio.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &e) {
+		if (stage == "source-removed" && e.id == 0) cancel = true;
+	};
+	const auto first = runner.run(request, f.journals);
+	QVERIFY(first.cancelled);
+	QVERIFY(!QFile::exists(f.src));
+	QCOMPARE(get(second.src), f.bytes);
+	const auto forward = OpJournal::scan(f.journals).first();
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	cancel = false;
+	runner.hooks = {};
+	const auto t = runner.run(undo, f.journals);
+	QVERIFY2(t.succeeded == 2, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(get(second.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QVERIFY(!QFile::exists(f.dest + "/audio.bin"));
+}
+void TestFileOperations::undo_interrupted_copy_and_changed_result()
+{
+	Fixture f;
+	auto request = f.request();
+	auto second = request.items[0];
+	second.src = f.root + "/source/audio.bin";
+	second.name = "audio.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &e) {
+		if (stage == "done" && e.id == 0) cancel = true;
+	};
+	QVERIFY(runner.run(request, f.journals).cancelled);
+	const auto forward = OpJournal::scan(f.journals).first();
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	cancel = false;
+	runner.hooks = {};
+	QCOMPARE(runner.run(undo, f.journals).succeeded, 1);
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(get(second.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QVERIFY(!QFile::exists(f.dest + "/audio.bin"));
+
+	Fixture changed;
+	QCOMPARE(runner.run(changed.request(), changed.journals).succeeded, 1);
+	undo.undoJournalPath = OpJournal::scan(changed.journals).first().path;
+	put(changed.dest + "/clip.bin", "a changed file");
+	QVERIFY(runner.run(undo, changed.journals).needsAttention > 0);
+	QCOMPARE(get(changed.dest + "/clip.bin"), QByteArray("a changed file"));
+}
+void TestFileOperations::undo_move_resume_keeps_saved_policy()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	auto request = f.request(OpKind::Move);
+	request.verifyCopies = false;
+	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = OpJournal::scan(f.journals).first().path;
+	runner.hooks = {};
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		if (stage == "published") throw std::runtime_error("interrupt Undo");
+	};
+	QVERIFY(runner.run(undo, f.journals).needsAttention > 0);
+	const auto pending = OpJournal::interrupted(f.journals);
+	QCOMPARE(pending.size(), 1);
+	QCOMPARE(pending[0].request.kind, OpKind::Undo);
+	QVERIFY(!pending[0].request.verifyCopies);
+	OpRequest resume;
+	resume.resumeJournalPath = pending[0].path;
+	resume.verifyCopies = true;
+	bool readback = false;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		if (stage == "before-readback") readback = true;
+	};
+	const auto t = runner.run(resume, f.journals);
+	QVERIFY2(t.needsAttention == 0 && t.failed == 0, qPrintable(sink.messages.join('\n')));
+	QVERIFY(!readback);
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+}
+void TestFileOperations::local_trash_and_undo_roundtrip()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	struct RestoreDisposable
+	{
+		Fixture &fixture;
+		std::atomic<bool> &cancel;
+		~RestoreDisposable()
+		{
+			if (QFile::exists(fixture.src)) return;
+			cancel.store(false);
+			for (const auto &record : OpJournal::scan(fixture.journals))
+				for (const auto &entry : record.entries)
+					if (!entry.trashReceipt.isEmpty() && entry.landed.valid())
+					{
+						const auto restored = OpTrash::restore(entry.trashReceipt, fixture.src,
+							entry.landed, cancel, entry.dst);
+						if (QFile::exists(fixture.src)) return;
+						qWarning().noquote() << "Disposable Trash restoration:" << restored.error;
+					}
+			fixture.dir.setAutoRemove(false);
+			qWarning().noquote() << "Disposable Trash recovery record retained:" << fixture.journals;
+		}
+	} restoreDisposable{f, cancel};
+	auto details = [&]
+	{
+		QStringList messages = sink.messages;
+		for (const auto &result : sink.results)
+			messages.append(result.message + " Source: " + result.source + " Destination: " + result.destination);
+		return messages.join('\n');
+	};
+	OpRunner runner(sink, cancel);
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	const auto first = runner.run(request, f.journals);
+	QVERIFY2(first.succeeded == 1, qPrintable(details()));
+	QVERIFY(!QFile::exists(f.src));
+	const auto forward = OpJournal::scan(f.journals).first();
+	if (forward.entries[0].trashProvider == "system")
+		QVERIFY(!forward.entries[0].trashReceipt.isEmpty());
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	const auto t = runner.run(undo, f.journals);
+	QVERIFY2(t.succeeded == 1, qPrintable(details()));
+	QCOMPARE(get(f.src), f.bytes);
+}
+
+void TestFileOperations::retry_is_bounded_and_journalled()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int failures = 0;
+	runner.hooks.fail = [&](const QString &name) { return name == "publish" && failures++ == 0; };
+	QCOMPARE(runner.run(f.request(), f.journals).succeeded, 1);
+	QCOMPARE(OpJournal::scan(f.journals)[0].entries[0].attempts, 2);
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+
+	Fixture failed;
+	runner.hooks.fail = [](const QString &name) { return name == "publish"; };
+	QCOMPARE(runner.run(failed.request(), failed.journals).failed, 1);
+	QCOMPARE(OpJournal::scan(failed.journals)[0].entries[0].attempts, 3);
+	QCOMPARE(get(failed.src), failed.bytes);
+	QVERIFY(!QFile::exists(failed.dest + "/clip.bin"));
+}
+void TestFileOperations::undo_rebalance_retires_regenerated_indexes()
+{
+	Fixture f;
+	put(f.root + "/source/msmMMOB.mdb", "original database");
+	auto request = f.request(OpKind::Rename);
+	request.items[0].renameDst = f.dest + "/clip.bin";
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	const auto forward = OpJournal::scan(f.journals)[0];
+	put(f.root + "/source/msmMMOB.mdb", "regenerated source");
+	put(f.dest + "/msmFMID.pmr", "regenerated destination");
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	const auto t = runner.run(undo, f.journals);
+	QVERIFY2(t.succeeded == 1, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QVERIFY(!QFile::exists(f.root + "/source/msmMMOB.mdb"));
+	QVERIFY(!QFile::exists(f.dest + "/msmFMID.pmr"));
+	const auto inverse = OpJournal::readOne(OpJournal::readOne(forward.path)->undoPath);
+	QVERIFY(inverse);
+	int retired = 0;
+	for (const auto &entry : inverse->entries)
+		if (entry.item.maintenance) { ++retired; QVERIFY(entry.complete()); }
+	QCOMPARE(retired, 2);
+}
+void TestFileOperations::undo_original_in_retirement()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		if (stage == "source-retired") cancel = true;
+	};
+	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).cancelled);
+	const auto forward = OpJournal::scan(f.journals)[0];
+	QVERIFY(!QFile::exists(f.src));
+	QCOMPARE(get(forward.entries[0].retirement), f.bytes);
+	QVERIFY(OpJournal::latestUndoable(f.journals));
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	cancel = false;
+	runner.hooks = {};
+	const auto t = runner.run(undo, f.journals);
+	QVERIFY2(t.needsAttention == 0 && t.failed == 0, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QVERIFY(!QFile::exists(forward.entries[0].retirement));
+}
+
+void TestFileOperations::network_delete_always_uses_mediamuster_trash()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceNetworkTrash = true;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	const auto saved = OpJournal::scan(f.journals)[0];
+	QCOMPARE(saved.entries[0].trashProvider, QString("mediamuster"));
+	QVERIFY(saved.entries[0].trashReceipt.isEmpty());
+	QVERIFY(saved.entries[0].dst.contains("/_MediaMuster_Trash/"));
+	QCOMPARE(get(saved.entries[0].dst), f.bytes);
+	QVERIFY(!QFile::exists(f.src));
+}
+
+void TestFileOperations::resume_flush_failure_stays_unfinished()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.checkpoint = [](const QString &stage, const auto &) {
+		if (stage == "published") throw std::runtime_error("interrupted copy");
+	};
+	QVERIFY(runner.run(f.request(), f.journals).needsAttention > 0);
+	const auto saved = OpJournal::scan(f.journals)[0];
+	OpRequest resume;
+	resume.resumeJournalPath = saved.path;
+	runner.hooks = {};
+	runner.hooks.directorySync = [](const QString &, QString *error) {
+		*error = "Injected directory I/O failure";
+		return NativeFile::SyncResult::Failed;
+	};
+	QVERIFY(runner.run(resume, f.journals).needsAttention > 0);
+	QVERIFY(!OpJournal::readOne(saved.path)->entries[0].complete());
+	QCOMPARE(get(f.src), f.bytes);
+	runner.hooks = {};
+	QCOMPARE(runner.run(resume, f.journals).needsAttention, 0);
+	QVERIFY(OpJournal::readOne(saved.path)->entries[0].complete());
+}
+void TestFileOperations::undo_late_collision_remains_resumable()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	QCOMPARE(runner.run(f.request(OpKind::Move), f.journals).succeeded, 1);
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = OpJournal::scan(f.journals)[0].path;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &e) {
+		if (stage == "relocating") put(e.dst, "late conflict");
+	};
+	const auto failed = runner.run(undo, f.journals);
+	QVERIFY(failed.failed + failed.needsAttention > 0);
+	QCOMPARE(get(f.src), QByteArray("late conflict"));
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	const auto pending = OpJournal::interrupted(f.journals);
+	QCOMPARE(pending.size(), 1);
+	QVERIFY(QFile::remove(f.src));
+	OpRequest resume;
+	resume.resumeJournalPath = pending[0].path;
+	runner.hooks = {};
+	QCOMPARE(runner.run(resume, f.journals).succeeded, 1);
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+}
+void TestFileOperations::resume_continues_past_failed_source()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Move);
+	auto second = request.items[0];
+	second.src = f.root + "/source/audio.bin";
+	second.name = "audio.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	put(f.dest + "/clip.bin", "unexpected conflict");
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		if (stage == "failed") cancel = true;
+	};
+	QVERIFY(runner.run(request, f.journals).cancelled);
+	const auto saved = OpJournal::scan(f.journals)[0];
+	QVERIFY(QFile::remove(f.src)); // A failed source disappears while the app is stopped.
+	OpRequest resume;
+	resume.resumeJournalPath = saved.path;
+	cancel = false;
+	runner.hooks = {};
+	const auto t = runner.run(resume, f.journals);
+	QCOMPARE(t.failed, 1);
+	QCOMPARE(t.retained, 1);
+	QCOMPARE(get(second.src), f.bytes);
+	QCOMPARE(get(f.dest + "/audio.bin"), f.bytes);
+	QVERIFY(!OpJournal::readOne(saved.path)->copiesComplete);
+}
+
 int main(int argc, char **argv)
 {
 	QCoreApplication app(argc, argv);
@@ -1103,6 +1615,7 @@ int main(int argc, char **argv)
 				std::_Exit(81);
 		};
 		OpRequest request;
+		request.verifyCopies = true;
 		request.destRoot = args[4];
 		OpItem item;
 		item.src = args[3];

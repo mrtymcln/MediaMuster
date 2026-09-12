@@ -10,6 +10,8 @@ class OpRescue
 		OpKind kind = OpKind::Copy;
 		QString dest;
 		bool preserve = false;
+		bool verifyCopies = false;
+		bool copiesComplete = false;
 		QString started;
 		int total = 0;
 		int finished = 0;
@@ -23,6 +25,7 @@ class OpRescue
 		int opsFlagged = 0;
 		QStringList notes;
 		QVector<Resumable> resumable;
+		std::optional<OpJournal::Record> undoCandidate;
 		bool anything() const
 		{
 			return !notes.isEmpty() || !resumable.isEmpty();

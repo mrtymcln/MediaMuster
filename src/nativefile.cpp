@@ -148,7 +148,14 @@ SyncResult syncDirectory(const QString &dirPath, QString *error)
 					 .arg(dirPath).arg(code);
 	return directoryFlushResult(static_cast<int>(code));
 #else
+#ifdef Q_OS_MAC
+	// Flushing or using a directory-relative operation needs traversal, not
+	// directory enumeration. In particular macOS permits a known Trash item
+	// while denying an O_RDONLY listing handle for its protected parent.
+	const int fd = ::open(QFile::encodeName(dirPath).constData(), O_SEARCH | O_NOFOLLOW | O_CLOEXEC);
+#else
 	const int fd = ::open(QFile::encodeName(dirPath).constData(), O_RDONLY);
+#endif
 	if (fd == -1)
 	{
 		const int code = errno;

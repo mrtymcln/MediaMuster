@@ -23,7 +23,7 @@
 
 // MARK: - OpKind
 
-/// Supported operations plus the reserved Undo name, which the engine rejects.
+/// Supported operations. New Undo jobs require an explicit runtime Debug gate.
 /// Rename is Rebalance's same-filesystem relocation.
 enum class OpKind : int
 {
@@ -144,6 +144,15 @@ struct OpItem
 	QString masterMobId; ///< The master clip's MOB ID.
 	QString clipName;	 ///< The human name the editor knows the clip by.
 
+	// Inverse operations must target the object recorded by the original job,
+	// not whichever file happens to occupy its path while building the new plan.
+	QString expectedFileId;
+	QString expectedVolumeId;
+	qint64 expectedModified = 0;
+	QString undoAction;
+	int undoEntryId = -1;
+	QString trashReceipt;
+
 	// Rename (Rebalance) only.
 	QString renameDst; ///< Full destination path for this rename.
 	QString groupKey;  ///< Relatives cancel boundary: cancel only
@@ -160,10 +169,15 @@ struct OpRequest
 	OpKind kind = OpKind::Copy;
 	QString destRoot;	   ///< Copy/Move destination root; empty for Delete/Rename/Undo.
 	bool preserve = false; ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
+	bool verifyCopies = false; ///< Captured once from Debug; Resume keeps this choice.
+	bool copyMove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
+	bool undoEnabled = false; ///< Runtime permission to start a NEW Undo; not persisted.
 	QVector<OpItem> items;
 
 	QString resumeJournalPath;	 ///< Continue this journal; never retire it on dispatch.
 	QString diagnosticTrashRoot; ///< Explicit disposable-test root; production leaves empty.
+	QString undoJournalPath; ///< Forward job requested by a new Undo command.
+	QString undoOf; ///< Persisted forward-job link for an executing inverse operation.
 };
 
 // Explicit outcomes keep a retained source visible in the media table.

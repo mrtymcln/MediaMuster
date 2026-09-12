@@ -112,15 +112,16 @@ void ProgressDialog::setItemProgress(int current, int total, double pct)
 	const int max = total * kTicksPerItem;
 	if (m_bar->maximum() != max)
 		m_bar->setRange(0, max);
-	m_bar->setValue((clampedCurrent - 1) * kTicksPerItem +
-					int(clampedPct * (kTicksPerItem / 100.0)));
+	const int ticks = (clampedCurrent - 1) * kTicksPerItem +
+					  int(clampedPct * (kTicksPerItem / 100.0));
+	// Native copying reaching its final byte still leaves publication,
+	// persistence and (for Move) source removal. Only finish ends the job.
+	m_bar->setValue(qMin(ticks, max - 1));
 
-	// The label counts whole items, with the overall percentage folding
-	// the current item's fraction in — "42% — 3 of 7".
+	// The engine may count separate copy/removal work units for one file.
+	// Present overall progress without describing those steps as more files.
 	const double overall = ((clampedCurrent - 1) + clampedPct / 100.0) / total * 100.0;
-	m_counterLabel->setText(tr("%1% — %2 of %3")
-								.arg(qRound(overall))
-								.arg(Format::count(current), Format::count(total)));
+	m_counterLabel->setText(tr("%1%").arg(qMin(99, qRound(overall))));
 }
 
 void ProgressDialog::setDetail(const QString &text)

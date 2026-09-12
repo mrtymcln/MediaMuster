@@ -3,8 +3,9 @@
 #include <QString>
 
 // Persistent identity of a mounted volume. Labels, capacity and mount paths
-// describe a volume but do not authorize recovery. Network volume identities
-// remain unqualified until their client/storage configuration is validated.
+// describe a volume but do not authorize recovery. Network matches require an
+// OS-reported server/share endpoint and the root directory's object identity;
+// the operation journal additionally checks its recorded file identities.
 struct VolumeIdentity
 {
 	enum class Confidence
@@ -19,6 +20,9 @@ struct VolumeIdentity
 	QString fsType;
 	qint64 capacityBytes = 0;
 	QString rootPath;
+	QString kind = QStringLiteral("local");
+	QString networkId;
+	QString rootObjectId;
 	Confidence confidence = Confidence::Low;
 	static VolumeIdentity capture(const QString &path);
 	bool matches(const VolumeIdentity &other) const;

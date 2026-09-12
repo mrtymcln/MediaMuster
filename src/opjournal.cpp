@@ -27,7 +27,13 @@ QJsonObject itemJson(const OpItem &i)
 			{"master", i.masterMobId},
 			{"clip", i.clipName},
 			{"rename", i.renameDst},
-			{"group", i.groupKey}};
+			{"group", i.groupKey},
+			{"expectedFileId", i.expectedFileId},
+			{"expectedVolumeId", i.expectedVolumeId},
+			{"expectedModified", QString::number(i.expectedModified)},
+			{"undoAction", i.undoAction},
+			{"undoEntryId", i.undoEntryId},
+			{"trashReceipt", i.trashReceipt}};
 }
 OpItem itemFromJson(const QJsonObject &v)
 {
@@ -45,6 +51,12 @@ OpItem itemFromJson(const QJsonObject &v)
 	i.clipName = v["clip"].toString();
 	i.renameDst = v["rename"].toString();
 	i.groupKey = v["group"].toString();
+	i.expectedFileId = v["expectedFileId"].toString();
+	i.expectedVolumeId = v["expectedVolumeId"].toString();
+	i.expectedModified = v["expectedModified"].toString().toLongLong();
+	i.undoAction = v["undoAction"].toString();
+	i.undoEntryId = v["undoEntryId"].toInt(-1);
+	i.trashReceipt = v["trashReceipt"].toString();
 	return i;
 }
 bool inside(const QString &path, const QString &root)
@@ -61,6 +73,8 @@ QString OpJournal::stepName(Step s)
 		return "planned";
 	case Step::Copying:
 		return "copying";
+	case Step::CopyReady:
+		return "copy-ready";
 	case Step::Verified:
 		return "verified";
 	case Step::Publishing:
@@ -69,6 +83,10 @@ QString OpJournal::stepName(Step s)
 		return "published";
 	case Step::Relocating:
 		return "relocating";
+	case Step::RemovingSource:
+		return "removing-source";
+	case Step::SourceRemoved:
+		return "source-removed";
 	case Step::Done:
 		return "done";
 	case Step::SourceRetained:
@@ -86,7 +104,7 @@ QString OpJournal::stepName(Step s)
 }
 bool OpJournal::Entry::complete() const
 {
-	return step == Step::Done || step == Step::SourceRetained || step == Step::Skipped;
+	return step == Step::Done || step == Step::SourceRemoved || step == Step::Skipped;
 }
 QJsonObject OpJournal::Entry::json() const
 {
@@ -99,7 +117,17 @@ QJsonObject OpJournal::Entry::json() const
 			{"dst", dst},
 			{"temp", temp},
 			{"algorithm", "XXH3-64"},
-			{"hash", hash},
+				{"hash", hash},
+				{"mechanism", mechanism},
+				{"retirement", retirement},
+				{"trashProvider", trashProvider},
+				{"trashReceipt", trashReceipt},
+				{"verificationRequested", verificationRequested},
+				{"explicitSkip", explicitSkip},
+				{"sourceRemoved", sourceRemoved},
+				{"attempts", attempts},
+				{"undoEntryId", undoEntryId},
+				{"undoAction", undoAction},
 			{"copyDurable", copyDurable},
 			{"metadataComplete", metadataComplete},
 			{"error", error},
@@ -111,6 +139,23 @@ QJsonObject OpJournal::Entry::json() const
 std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 {
 	Entry e;
+	// This beta deliberately retains schema 3 while replacing the record contract.
+	// Missing fields are incompatible, never silently interpreted as new defaults.
+	for (const auto *key : {"mechanism", "retirement", "trashProvider", "trashReceipt", "undoAction"})
+		if (!v[key].isString())
+			return {};
+	for (const auto *key : {"verificationRequested", "explicitSkip", "sourceRemoved"})
+		if (!v[key].isBool())
+			return {};
+	if (!v["undoEntryId"].isDouble() || !v["attempts"].isDouble() ||
+		v["attempts"].toInt(-1) < 0 || !v["item"].isObject())
+		return {};
+	const auto item = v["item"].toObject();
+	for (const auto *key : {"expectedFileId", "expectedVolumeId", "expectedModified", "undoAction", "trashReceipt"})
+		if (!item[key].isString())
+			return {};
+	if (!item["undoEntryId"].isDouble())
+		return {};
 	bool known = false;
 	for (int n = 0; n <= int(Step::NeedsAttention); ++n)
 		if (stepName(Step(n)) == v["step"].toString())
@@ -129,6 +174,22 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	e.dst = v["dst"].toString();
 	e.temp = v["temp"].toString();
 	e.hash = v["hash"].toString();
+	e.mechanism = v["mechanism"].toString();
+	if (!e.mechanism.isEmpty() && e.mechanism != "copy" && e.mechanism != "relocate" &&
+		e.mechanism != "systemTrash")
+		return {};
+	e.retirement = v["retirement"].toString();
+	e.trashProvider = v["trashProvider"].toString();
+	e.trashReceipt = v["trashReceipt"].toString();
+	e.verificationRequested = v["verificationRequested"].toBool();
+	e.explicitSkip = v["explicitSkip"].toBool();
+	e.sourceRemoved = v["sourceRemoved"].toBool();
+	e.attempts = v["attempts"].toInt();
+	e.undoEntryId = v["undoEntryId"].toInt(-1);
+	e.undoAction = v["undoAction"].toString();
+	if (!e.undoAction.isEmpty() && e.undoAction != "restoreMove" && e.undoAction != "discardCopy" &&
+		e.undoAction != "restoreTrash" && e.undoAction != "restoreRelocate")
+		return {};
 	e.copyDurable = v["copyDurable"].toBool();
 	e.metadataComplete = v["metadataComplete"].toBool();
 	e.error = v["error"].toString();
@@ -234,6 +295,18 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 		e.item = request.items[n];
 		e.originalSource = e.item.src;
 		e.source = OpFile::inspect(e.item.src);
+		if (!e.item.expectedFileId.isEmpty())
+		{
+			e.source.fileId = e.item.expectedFileId;
+			e.source.volumeId = e.item.expectedVolumeId;
+			e.source.size = e.item.bytes;
+			e.source.modified = e.item.expectedModified;
+		}
+		e.verificationRequested = request.verifyCopies;
+		e.explicitSkip = e.item.policy == "skip";
+		e.undoAction = e.item.undoAction;
+		e.undoEntryId = e.item.undoEntryId;
+		e.trashReceipt = e.item.trashReceipt;
 		e.originalVolume = VolumeIdentity::capture(e.item.src);
 		e.originalRelativePath = QDir(e.originalVolume.rootPath).relativeFilePath(e.item.src);
 		m_record.entries.append(e);
@@ -252,6 +325,11 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 							{"kind", opKindName(request.kind)},
 							{"dest", request.destRoot},
 							{"preserve", request.preserve},
+							{"verifyCopies", request.verifyCopies},
+							{"copyMove", request.copyMove},
+							{"undoOf", request.undoOf},
+							{"copiesComplete", false},
+							{"undoPath", QString()},
 							{"started", m_record.started},
 							{"diagnosticTrashRoot", request.diagnosticTrashRoot},
 							{"volumes", volumes},
@@ -333,7 +411,35 @@ bool OpJournal::touchFolder(const QString &folder)
 }
 bool OpJournal::finish(bool cancelled)
 {
-	return append({{"record", "stop"}, {"cancelled", cancelled}});
+	if (!append({{"record", "stop"}, {"cancelled", cancelled}}))
+		return false;
+	m_record.stopped = true;
+	return true;
+}
+bool OpJournal::markCopiesComplete()
+{
+	if (m_record.copiesComplete)
+		return true;
+	if (!append({{"record", "copies-complete"}}))
+		return false;
+	m_record.copiesComplete = true;
+	return true;
+}
+bool OpJournal::claimUndo(const QString &undoPath)
+{
+	if (!QDir::isAbsolutePath(undoPath) || m_record.request.kind == OpKind::Undo ||
+		undoPath == m_record.path ||
+		(!m_record.undoPath.isEmpty() && m_record.undoPath != undoPath))
+	{
+		stop("This job is already claimed by another Undo, or its Undo reference is invalid.");
+		return false;
+	}
+	if (m_record.undoPath == undoPath)
+		return true;
+	if (!append({{"record", "undo-claim"}, {"path", undoPath}}))
+		return false;
+	m_record.undoPath = undoPath;
+	return true;
 }
 
 std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
@@ -365,10 +471,23 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 		{
 			if (type != "begin" || v["schema"].toInt() != schema)
 				return {};
+			if (!v["verifyCopies"].isBool() || !v["copyMove"].isBool() ||
+				!v["undoOf"].isString() || !v["copiesComplete"].isBool() ||
+				!v["undoPath"].isString())
+				return {}; // Incompatible beta record; no migration or default guessing.
 			const auto kind = opKindFromName(v["kind"].toString());
-			if (!kind || *kind == OpKind::Undo)
+			if (!kind)
 				return {};
 			rec.request.kind = *kind;
+			rec.request.verifyCopies = v["verifyCopies"].toBool();
+			rec.request.copyMove = v["copyMove"].toBool();
+			rec.request.undoOf = v["undoOf"].toString();
+			rec.copiesComplete = v["copiesComplete"].toBool();
+			rec.undoPath = v["undoPath"].toString();
+			if ((rec.request.kind == OpKind::Undo && !QDir::isAbsolutePath(rec.request.undoOf)) ||
+				(rec.request.kind != OpKind::Undo && !rec.request.undoOf.isEmpty()) ||
+				(!rec.undoPath.isEmpty() && !QDir::isAbsolutePath(rec.undoPath)))
+				return {};
 			rec.request.destRoot = v["dest"].toString();
 			rec.request.preserve = v["preserve"].toBool();
 			rec.request.diagnosticTrashRoot = v["diagnosticTrashRoot"].toString();
@@ -434,6 +553,19 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 			rec.changedFolders.append(v["path"].toString());
 		else if (type == "stop")
 			rec.stopped = true;
+		else if (type == "copies-complete")
+			rec.copiesComplete = true;
+		else if (type == "undo-claim")
+		{
+			const auto inverse = v["path"].toString();
+			if (!QDir::isAbsolutePath(inverse) || rec.request.kind == OpKind::Undo ||
+				(!rec.undoPath.isEmpty() && rec.undoPath != inverse))
+			{
+				rec.corrupt = true;
+				break;
+			}
+			rec.undoPath = inverse;
+		}
 		else if (type == "dismiss")
 			rec.dismissed = true;
 		else
@@ -443,6 +575,8 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 		}
 		rec.validBytes = file.pos();
 	}
+	for (int n = 0; n < rec.request.items.size() && n < rec.entries.size(); ++n)
+		rec.request.items[n] = rec.entries[n].item;
 	return began ? std::optional<Record>(rec) : std::nullopt;
 }
 QVector<OpJournal::Record> OpJournal::scan(const QString &directory)
@@ -455,6 +589,59 @@ QVector<OpJournal::Record> OpJournal::scan(const QString &directory)
 	std::sort(out.begin(), out.end(), [](const Record &a, const Record &b)
 			  { return a.started == b.started ? a.path < b.path : a.started < b.started; });
 	return out;
+}
+QVector<OpJournal::Record> OpJournal::interrupted(const QString &directory)
+{
+	QVector<Record> out;
+	const auto records = scan(directory);
+	QSet<QString> claimed;
+	for (const auto &record : records)
+		if (!record.corrupt && record.request.kind == OpKind::Undo)
+			claimed.insert(record.request.undoOf);
+	for (const auto &record : records)
+	{
+		if (record.corrupt || record.dismissed || !record.undoPath.isEmpty() || claimed.contains(record.path))
+			continue;
+		if (std::any_of(record.entries.cbegin(), record.entries.cend(),
+						[](const Entry &entry) { return !entry.complete(); }))
+			out.append(record);
+	}
+	return out;
+}
+std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &directory)
+{
+	const auto records = scan(directory);
+	QSet<QString> claimed;
+	for (const auto &record : records)
+		if (!record.corrupt && record.request.kind == OpKind::Undo)
+			claimed.insert(record.request.undoOf);
+	for (auto it = records.crbegin(); it != records.crend(); ++it)
+	{
+		if (it->corrupt)
+			continue;
+		if (it->request.kind == OpKind::Undo)
+			return {}; // One level of Undo; completing it does not expose older jobs.
+		if (!it->undoPath.isEmpty() || claimed.contains(it->path))
+			return {};
+		for (const auto &entry : it->entries)
+		{
+			if (entry.item.maintenance)
+				continue;
+			if (entry.step == Step::Done || entry.step == Step::SourceRemoved ||
+				entry.step == Step::Published || entry.step == Step::SourceRetained ||
+				(entry.mechanism == "copy" && entry.landed.valid() &&
+				 (entry.step == Step::RemovingSource || entry.step == Step::Publishing ||
+				  entry.step == Step::NeedsAttention)) ||
+				(entry.mechanism == "relocate" && entry.source.valid() &&
+				 (entry.step == Step::Relocating || entry.step == Step::NeedsAttention)) ||
+				(entry.mechanism == "systemTrash" && entry.step == Step::NeedsAttention &&
+				 !entry.trashReceipt.isEmpty() && entry.landed.valid()))
+				// Ambiguous final appends are candidates for the Undo planner's live
+				// reconciliation, not a claim that a filesystem mutation succeeded.
+				return *it;
+		}
+	}
+	return {};
 }
 QStringList OpJournal::unreadableRecords(const QString &directory)
 {
@@ -476,35 +663,44 @@ bool OpJournal::dismiss(const QString &path, QString &error)
 		error = "Cannot read recovery record.";
 		return false;
 	}
-	for (const auto &e : rec->entries)
-		if (!e.artifacts.isEmpty() || e.step == Step::NeedsAttention ||
-			e.step == Step::Publishing || e.step == Step::Relocating)
-		{
-			error = "This operation has unresolved files. Its recovery record must be retained.";
-			return false;
-		}
+	if (rec->dismissed)
+		return true;
+	// Abandonment ends future work; it neither resolves storage nor removes
+	// completed effects, retained originals, partials or their recovery evidence.
 	OpJournal j;
 	if (!j.resume(*rec, error))
 		return false;
-	return j.append({{"record", "dismiss"}});
+	if (!j.append({{"record", "dismiss"}}))
+	{
+		error = j.error();
+		return false;
+	}
+	return true;
 }
 bool OpJournal::resolve(Record &rec, QString &error, const QVector<VolumeIdentity> &overrideVolumes)
 {
 	QVector<VolumeIdentity> mounted = overrideVolumes;
 	if (mounted.isEmpty())
+	{
 		for (const auto &v : QStorageInfo::mountedVolumes())
 			if (v.isValid() && v.isReady())
 				mounted.append(VolumeIdentity::capture(v.rootPath()));
+		// Direct UNC shares need not be enumerated as mapped Windows drives.
+		// Their recorded endpoint can still be checked at its original path.
+		for (const auto &old : rec.volumes)
+		{
+			const auto current = VolumeIdentity::capture(old.rootPath);
+			if (!current.rootPath.isEmpty())
+				mounted.append(current);
+		}
+	}
 	QHash<QString, QString> roots;
 	for (const auto &old : rec.volumes)
 	{
 		QString found;
 		for (const auto &now : mounted)
 		{
-			const bool strong = old.confidence == VolumeIdentity::Confidence::High &&
-								now.confidence == VolumeIdentity::Confidence::High &&
-								old.matches(now);
-			if (strong)
+			if (old.matches(now))
 			{
 				if (!found.isEmpty() && found != now.rootPath)
 				{
@@ -540,6 +736,7 @@ bool OpJournal::resolve(Record &rec, QString &error, const QVector<VolumeIdentit
 		e.item.renameDst = rewrite(e.item.renameDst);
 		e.dst = rewrite(e.dst);
 		e.temp = rewrite(e.temp);
+		e.retirement = rewrite(e.retirement);
 		for (auto &p : e.artifacts)
 			p = rewrite(p);
 		// A positively resolved volume can change its OS device number after
@@ -552,11 +749,19 @@ bool OpJournal::resolve(Record &rec, QString &error, const QVector<VolumeIdentit
 				old.volumeId = now.volumeId;
 		};
 		rebind(e.source, e.item.src);
+		if (!e.retirement.isEmpty())
+			rebind(e.source, e.retirement);
+		if (e.mechanism == "relocate" || e.mechanism == "systemTrash")
+			rebind(e.source, e.dst);
 		rebind(e.landed, OpFile::occupied(e.temp) ? e.temp : e.dst);
+		if (!e.item.expectedFileId.isEmpty() && e.source.fileId == e.item.expectedFileId)
+			e.item.expectedVolumeId = e.source.volumeId;
 	}
 	for (auto &folder : rec.changedFolders)
 		folder = rewrite(folder);
 	for (auto &v : rec.volumes)
 		v.rootPath = roots.value(v.rootPath, v.rootPath);
+	for (int n = 0; n < rec.request.items.size() && n < rec.entries.size(); ++n)
+		rec.request.items[n] = rec.entries[n].item;
 	return true;
 }
