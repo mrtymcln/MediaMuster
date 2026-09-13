@@ -247,7 +247,7 @@ private slots:
 	void avc_files_resolve_to_their_family();
 
 	// Tripwire over the archived ground-truth corpus (fixtures/
-	// corpus_headers: 512 KB slices of all 435 files, captured 2026-07-31 —
+	// corpus_headers: 512 KiB slices of all 795 files —
 	// see its README). Every slice must keep parsing valid and must never
 	// resolve to an "unknown variant" label: a failure here means either a
 	// parser regression or a dictionary gap, both of which the named-corpus
@@ -482,7 +482,7 @@ void TestMxfParser::odd_width_duration_fields_read_exactly()
 void TestMxfParser::mp2_audio_descriptor_recognised()
 {
 	const QString path = QStringLiteral(
-		FIXTURES_DIR "/avid_headers/A01.E68C35B3_2C34B2C34B61AA.mxf");
+		FIXTURES_DIR "/corpus_headers/A01.E68C35B3_2C34B2C34B61AA.mxf");
 	QVERIFY(QFile::exists(path));
 	const MediaMetadata m = MxfParser::parseHeader(path);
 
@@ -639,7 +639,7 @@ void TestMxfParser::uhd_corpus_codec_entries_resolve()
 
 	for (const auto &f : kFiles)
 	{
-		const QString path = QStringLiteral(FIXTURES_DIR "/avid_headers/") + QLatin1String(f.name);
+		const QString path = QStringLiteral(FIXTURES_DIR "/corpus_headers/") + QLatin1String(f.name);
 		QVERIFY2(QFile::exists(path), f.name);
 		const MediaMetadata meta = MxfParser::parseHeader(path);
 		QVERIFY2(meta.valid, f.name);
@@ -891,7 +891,7 @@ void TestMxfParser::drop_frame_durations_render_like_avid()
 	// the synthetic cases above predicted as 00;10;11;28 before this file
 	// existed.
 	const QString path = QStringLiteral(
-		FIXTURES_DIR "/avid_headers/Untitled Sequence.175B1728V.mxf");
+		FIXTURES_DIR "/corpus_headers/Untitled Sequence.175B1728V.mxf");
 	QVERIFY(QFile::exists(path));
 	const MediaMetadata m = MxfParser::parseHeader(path);
 	QVERIFY(m.valid);

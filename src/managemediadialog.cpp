@@ -318,7 +318,7 @@ void ManageMediaDialog::onGlobalConflictPolicyChanged(int index)
 		const QSignalBlocker blocker(combo);
 		combo->setCurrentIndex(index);
 		applyConflictPolicyToRow(item, item->data(1, Qt::UserRole).toString(), policy,
-			item->data(1, Qt::UserRole + 1).toString());
+								 item->data(1, Qt::UserRole + 1).toString());
 	}
 	startDestinationCheck(false);
 }
@@ -426,7 +426,8 @@ void ManageMediaDialog::updatePreview()
 
 void ManageMediaDialog::startDestinationCheck(bool includeConflicts)
 {
-	if (operation() == Operation::Delete || destination().isEmpty()) return;
+	if (operation() == Operation::Delete || destination().isEmpty())
+		return;
 	const int generation = ++m_destCheckGeneration;
 	m_checkingDest = true;
 	updateSummary();
@@ -437,7 +438,8 @@ void ManageMediaDialog::startDestinationCheck(bool includeConflicts)
 	request.items = OpManager::itemsFromMediaFiles(m_files, conflictPolicies());
 	const auto defaultPolicy = conflictPolicyName(
 		m_conflictGlobalCombo->currentData().toInt() == Enum::to_underlying(ConflictPolicy::Skip)
-			? ConflictPolicy::Skip : ConflictPolicy::KeepBoth);
+			? ConflictPolicy::Skip
+			: ConflictPolicy::KeepBoth);
 	QStringList paths;
 	QVector<bool> dupLater;
 	for (const auto &row : m_pendingRows)
@@ -447,13 +449,14 @@ void ManageMediaDialog::startDestinationCheck(bool includeConflicts)
 	}
 	auto *watcher = new QFutureWatcher<DestCheckResult>(this);
 	connect(watcher, &QFutureWatcher<DestCheckResult>::finished, this,
-		[this, watcher, generation, includeConflicts]
-		{
-			const auto result = watcher->result();
-			watcher->deleteLater();
-			if (generation != m_destCheckGeneration) return;
-			applyDestinationCheck(result, includeConflicts);
-		});
+			[this, watcher, generation, includeConflicts]
+			{
+				const auto result = watcher->result();
+				watcher->deleteLater();
+				if (generation != m_destCheckGeneration)
+					return;
+				applyDestinationCheck(result, includeConflicts);
+			});
 	watcher->setFuture(QtConcurrent::run(
 		[request = std::move(request), paths, dupLater, defaultPolicy, includeConflicts]() mutable
 		{
@@ -463,7 +466,8 @@ void ManageMediaDialog::startDestinationCheck(bool includeConflicts)
 			{
 				const auto paths = qMakePair(source, destination);
 				const auto found = sameFiles.constFind(paths);
-				if (found != sameFiles.cend()) return found.value();
+				if (found != sameFiles.cend())
+					return found.value();
 				const bool same = OperationPlan::alreadyAtDestination(source, destination);
 				sameFiles.insert(paths, same);
 				return same;
@@ -475,30 +479,31 @@ void ManageMediaDialog::startDestinationCheck(bool includeConflicts)
 				for (int i = 0; i < paths.size(); ++i)
 				{
 					const bool occupied = QFileInfo::exists(paths[i]);
-					if (!occupied) sameFiles.insert(qMakePair(request.items[i].src, paths[i]), false);
+					if (!occupied)
+						sameFiles.insert(qMakePair(request.items[i].src, paths[i]), false);
 					const bool unchanged = occupied && sameFile(request.items[i].src, paths[i]);
 					result.alreadyAtDestination.append(unchanged);
 					const bool exists = occupied && !unchanged;
 					result.exists.append(exists);
-					if (exists) request.items[i].policy = defaultPolicy;
+					if (exists)
+						request.items[i].policy = defaultPolicy;
 					if (!unchanged && (exists || dupLater[i]))
 						if (const auto renamed = OperationPlan::findKeepBothPath(paths[i]))
 							result.renamed[i] = *renamed;
 				}
 			}
 			QHash<QPair<QString, QString>, bool> relocationByFolders;
-			result.assessment = OperationPlan::assessCopyMove(request,
-				[&](const QString &source, const QString &destination)
-				{
+			result.assessment = OperationPlan::assessCopyMove(request, [&](const QString &source, const QString &destination)
+															  {
 					const auto folders = qMakePair(QFileInfo(source).absolutePath(), QFileInfo(destination).absolutePath());
 					const auto found = relocationByFolders.constFind(folders);
 					if (found != relocationByFolders.cend()) return found.value();
 					const bool canRelocate = OperationPlan::sameVolumeForRename(source, destination);
 					relocationByFolders.insert(folders, canRelocate);
-					return canRelocate;
-				}, false, sameFile);
+					return canRelocate; }, false, sameFile);
 			const QStorageInfo storage(request.destRoot);
-			if (storage.isValid() && storage.isReady()) result.availableBytes = storage.bytesAvailable();
+			if (storage.isValid() && storage.isReady())
+				result.availableBytes = storage.bytesAvailable();
 			return result;
 		}));
 }
@@ -513,7 +518,8 @@ void ManageMediaDialog::applyDestinationCheck(const DestCheckResult &result, boo
 		updateSummary();
 		return;
 	}
-	if (result.exists.size() != m_pendingRows.size()) return;
+	if (result.exists.size() != m_pendingRows.size())
+		return;
 
 	// New per-file combos: default to 'Keep Both' if global is 'Mixed',
 	// otherwise inherit global.
@@ -656,7 +662,8 @@ void ManageMediaDialog::updateSummary()
 		m_availableBytes >= 0 && m_assessment.temporaryBytes > m_availableBytes)
 	{
 		m_spaceWarning->setText(tr("Insufficient space: %1 needed, %2 free on destination volume")
-			.arg(Format::bytes(m_assessment.temporaryBytes)).arg(Format::bytes(m_availableBytes)));
+									.arg(Format::bytes(m_assessment.temporaryBytes))
+									.arg(Format::bytes(m_availableBytes)));
 		m_spaceWarning->setVisible(true);
 		canExecute = false;
 	}

@@ -24,38 +24,38 @@
 
 namespace
 {
-// Strip credentials from mount metadata. The endpoint includes the server and
-// the complete mounted share/workspace path, never merely its displayed label.
-QString networkEndpoint(QString source, const QString &filesystem)
-{
-	source.replace('\\', '/');
-	if (source.startsWith("//?/UNC/", Qt::CaseInsensitive))
-		source = "//" + source.mid(8);
-	if (source.startsWith("//"))
+	// Strip credentials from mount metadata. The endpoint includes the server and
+	// the complete mounted share/workspace path, never merely its displayed label.
+	QString networkEndpoint(QString source, const QString &filesystem)
 	{
-		const auto url = QUrl(QStringLiteral("smb:") + source);
-		if (!url.isValid() || url.host().isEmpty() || url.path().size() <= 1)
-			return {};
-		QString authority = url.host().toCaseFolded();
-		if (authority.contains(':'))
-			authority = '[' + authority + ']';
-		if (url.port() >= 0)
-			authority += ':' + QString::number(url.port());
-		const auto path = QDir::cleanPath(url.path(QUrl::FullyDecoded));
-		return QStringLiteral("share://") + authority + path;
+		source.replace('\\', '/');
+		if (source.startsWith("//?/UNC/", Qt::CaseInsensitive))
+			source = "//" + source.mid(8);
+		if (source.startsWith("//"))
+		{
+			const auto url = QUrl(QStringLiteral("smb:") + source);
+			if (!url.isValid() || url.host().isEmpty() || url.path().size() <= 1)
+				return {};
+			QString authority = url.host().toCaseFolded();
+			if (authority.contains(':'))
+				authority = '[' + authority + ']';
+			if (url.port() >= 0)
+				authority += ':' + QString::number(url.port());
+			const auto path = QDir::cleanPath(url.path(QUrl::FullyDecoded));
+			return QStringLiteral("share://") + authority + path;
+		}
+		// NFS reports host:/export/path. Do not interpret an unknown client's
+		// workspace label or a disconnected Windows drive letter as a server.
+		const auto colon = source.indexOf(":/");
+		if (colon > 0 && filesystem.contains("nfs", Qt::CaseInsensitive))
+		{
+			QString host = source.left(colon).section('@', -1).toCaseFolded();
+			if (host.contains('/') || host.isEmpty())
+				return {};
+			return filesystem.toCaseFolded() + "://" + host + QDir::cleanPath(source.mid(colon + 1));
+		}
+		return {};
 	}
-	// NFS reports host:/export/path. Do not interpret an unknown client's
-	// workspace label or a disconnected Windows drive letter as a server.
-	const auto colon = source.indexOf(":/");
-	if (colon > 0 && filesystem.contains("nfs", Qt::CaseInsensitive))
-	{
-		QString host = source.left(colon).section('@', -1).toCaseFolded();
-		if (host.contains('/') || host.isEmpty())
-			return {};
-		return filesystem.toCaseFolded() + "://" + host + QDir::cleanPath(source.mid(colon + 1));
-	}
-	return {};
-}
 } // namespace
 
 VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
@@ -118,7 +118,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 	if (!root.endsWith(QLatin1Char('\\')))
 		root += QLatin1Char('\\');
 	const bool unc = root.startsWith("\\\\") &&
-		(!root.startsWith("\\\\?\\") || root.startsWith("\\\\?\\UNC\\", Qt::CaseInsensitive));
+					 (!root.startsWith("\\\\?\\") || root.startsWith("\\\\?\\UNC\\", Qt::CaseInsensitive));
 	if (unc || ::GetDriveTypeW(reinterpret_cast<LPCWSTR>(root.utf16())) == DRIVE_REMOTE)
 	{
 		v.kind = QStringLiteral("network");
@@ -145,8 +145,8 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 		}
 		v.networkId = networkEndpoint(remote, v.fsType);
 		const auto handle = ::CreateFileW(reinterpret_cast<LPCWSTR>(root.utf16()), FILE_READ_ATTRIBUTES,
-			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-			FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+										  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+										  FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 		if (handle != INVALID_HANDLE_VALUE)
 		{
 			BY_HANDLE_FILE_INFORMATION metadata{};
@@ -185,8 +185,8 @@ bool VolumeIdentity::matches(const VolumeIdentity &other) const
 		return false;
 	if (kind == "network")
 		return confidence >= Confidence::Med && other.confidence >= Confidence::Med &&
-			!networkId.isEmpty() && networkId == other.networkId && !rootObjectId.isEmpty() &&
-			rootObjectId != "0" && rootObjectId == other.rootObjectId;
+			   !networkId.isEmpty() && networkId == other.networkId && !rootObjectId.isEmpty() &&
+			   rootObjectId != "0" && rootObjectId == other.rootObjectId;
 	if (confidence != Confidence::High || other.confidence != Confidence::High || uuid.isEmpty() ||
 		other.uuid.isEmpty())
 		return false;

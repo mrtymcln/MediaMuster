@@ -12,7 +12,6 @@
 #include "layoututil.h"
 #include "managemediadialog.h"
 #include "mediacsv.h"
-#include "fileoperationtestdialog.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
 #include "revealinfinder.h"
@@ -686,15 +685,6 @@ void MainWindow::buildDebugMenu()
 	debugMenu->addAction(m_operations->verifyCopiesAction());
 	debugMenu->addAction(m_operations->enableUndoAction());
 	debugMenu->addSeparator();
-    auto *fileTests = debugMenu->addAction(tr("Test File Operations…"));
-    fileTests->setObjectName("fileOperationTestsAction");
-    connect(fileTests, &QAction::triggered, this, [this] {
-        if (!m_operations->isIdle()) return;
-        auto *dialog = new FileOperationTestDialog(this);
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
-        dialog->show();
-    });
-    debugMenu->addSeparator();
 
 	auto *codecHexAct = debugMenu->addAction(tr("Codec hex details"));
 	codecHexAct->setCheckable(true);
@@ -811,21 +801,22 @@ void MainWindow::setupConnections()
 		Qt::QueuedConnection);
 
 	connect(m_operations, &FileOperationController::activityChanged, this,
-		[this](FileOperationController::Activity) { updateActivityUi(); });
+			[this](FileOperationController::Activity)
+			{ updateActivityUi(); });
 	connect(m_operations, &FileOperationController::logMessage, this, &MainWindow::addLog);
 	connect(m_operations, &FileOperationController::mediaMusterTrashUsed, this,
-		&MainWindow::showMediaMusterTrashDialog);
+			&MainWindow::showMediaMusterTrashDialog);
 	connect(m_operations, &FileOperationController::sourcesRemoved, this,
-		[this](const QSet<QString> &paths)
-		{
-			const int rowsBefore = m_model->rowCount();
-			m_model->removeFilesByPath(paths);
-			m_persistentSelectedPaths.subtract(paths);
-			updateFilterCounts();
-			updateStatusBar();
-			addLog(QtInfoMsg, QStringLiteral("ops"),
-				QStringLiteral("Removed %1 files from table").arg(rowsBefore - m_model->rowCount()));
-		});
+			[this](const QSet<QString> &paths)
+			{
+				const int rowsBefore = m_model->rowCount();
+				m_model->removeFilesByPath(paths);
+				m_persistentSelectedPaths.subtract(paths);
+				updateFilterCounts();
+				updateStatusBar();
+				addLog(QtInfoMsg, QStringLiteral("ops"),
+					   QStringLiteral("Removed %1 files from table").arg(rowsBefore - m_model->rowCount()));
+			});
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
 
@@ -1163,7 +1154,7 @@ void MainWindow::onRebalance()
 		return false;
 	};
 	connect(&dlg, &RebalanceDialog::logMessage, this, [this](QtMsgType level, const QString &msg)
-		{ addLog(level, QStringLiteral("rebalance"), msg); });
+			{ addLog(level, QStringLiteral("rebalance"), msg); });
 	m_operations->setActivity(FileOperationController::Activity::RebalanceDialog);
 	dlg.exec();
 	m_operations->endRebalanceDialog();
@@ -1681,14 +1672,14 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath, int 
 	msgBox.setWindowTitle(tr("MediaMuster Trash"));
 	msgBox.setText(tr("<b>%n file(s) moved to the MediaMuster Trash</b>", nullptr, fileCount));
 	msgBox.setInformativeText(tr("Files were moved to:\n\n%1\n\n"
-                                  "Their original locations are recorded in the operation journal. "
-                                  "Moving files to this folder does not free disk space.")
-                                  .arg(trashFolderPath));
-    msgBox.addButton(QMessageBox::Ok);
-    auto *open = msgBox.addButton(tr("Open Folder"), QMessageBox::ActionRole);
-    msgBox.exec();
-    if (msgBox.clickedButton() == open)
-        QDesktopServices::openUrl(QUrl::fromLocalFile(trashFolderPath));
+								 "Their original locations are recorded in the operation journal. "
+								 "Moving files to this folder does not free disk space.")
+								  .arg(trashFolderPath));
+	msgBox.addButton(QMessageBox::Ok);
+	auto *open = msgBox.addButton(tr("Open Folder"), QMessageBox::ActionRole);
+	msgBox.exec();
+	if (msgBox.clickedButton() == open)
+		QDesktopServices::openUrl(QUrl::fromLocalFile(trashFolderPath));
 }
 
 // MARK: - CSV export

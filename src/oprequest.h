@@ -167,17 +167,17 @@ struct OpItem
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
-	QString destRoot;	   ///< Copy/Move destination root; empty for Delete/Rename/Undo.
-	bool preserve = false; ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
-	bool verifyCopies = false; ///< Captured once from Debug; Resume keeps this choice.
+	QString destRoot;			 ///< Copy/Move destination root; empty for Delete/Rename/Undo.
+	bool preserve = false;		 ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
+	bool verifyCopies = false;	 ///< Captured once from Debug; Resume keeps this choice.
 	bool copyThenRemove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
-	bool undoEnabled = false; ///< Runtime permission to start a NEW Undo; not persisted.
+	bool undoEnabled = false;	 ///< Runtime permission to start a NEW Undo; not persisted.
 	QVector<OpItem> items;
 
 	QString resumeJournalPath;	 ///< Continue this journal; never retire it on dispatch.
 	QString diagnosticTrashRoot; ///< Explicit disposable-test root; production leaves empty.
-	QString undoJournalPath; ///< Forward job requested by a new Undo command.
-	QString undoOf; ///< Persisted forward-job link for an executing inverse operation.
+	QString undoJournalPath;	 ///< Forward job requested by a new Undo command.
+	QString undoOf;				 ///< Persisted forward-job link for an executing inverse operation.
 };
 
 // Explicit outcomes keep a retained source visible in the media table.

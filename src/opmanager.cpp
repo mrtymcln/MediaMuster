@@ -96,11 +96,10 @@ void OpManager::startRun(OpRequest request)
 			// Join before announcing completion: the next recovery scan must
 			// see a released journal lock and a worker that has fully exited.
 			QMetaObject::invokeMethod(this, [this, totals]
-			{
+									  {
 				m_job.shutdown();
 				m_running = false;
 				emit operationFinished(totals.succeeded,
-									   totals.failed + totals.needsAttention + totals.retained);
-			}, Qt::QueuedConnection);
+									   totals.failed + totals.needsAttention + totals.retained); }, Qt::QueuedConnection);
 		});
 }

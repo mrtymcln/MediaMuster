@@ -5,15 +5,12 @@
 #include "mobid.h"
 #include "operationplan.h"
 #include "operationrecovery.h"
-#include "opdiagnostics.h"
 #include "optrash.h"
 #include "mxfparser.h"
-#include <QJsonArray>
 #include <QTest>
 #include <QSignalSpy>
 #include <memory>
 #include <QTemporaryDir>
-#include <QJsonDocument>
 #include <QFileInfo>
 #include <QProcess>
 #include <QCryptographicHash>
@@ -24,9 +21,6 @@
 #endif
 #include <stdexcept>
 #include <limits>
-#ifdef Q_OS_MAC
-#include <sys/mount.h>
-#endif
 #ifndef Q_OS_WIN
 #include <unistd.h>
 #endif
@@ -195,14 +189,10 @@ class TestFileOperations : public QObject
 	void second_runner_cannot_change_files();
 	void facade_refuses_second_job_without_cancelling_first();
 	void invalid_mxf_claims_are_refused_by_adapter();
-	void debug_harness_uses_disposable_files();
-	void debug_setup_failure_saves_report();
 	void unsupported_directory_flush_preserves_originals();
 	void directory_io_failure_stops_copy();
 	void unsupported_relocation_keeps_media_and_databases();
 	void directory_creation_propagates_durability();
-	void debug_harness_runs_copies_without_directory_flush();
-	void bundled_samples_match_supplied_files();
 	void selected_duplicates_keep_both();
 	void regenerated_database_is_retired_on_resume();
 	void torn_tail_retains_verified_prefix();
@@ -1146,68 +1136,6 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	for (const auto &entry : records.first().entries)
 		QVERIFY(entry.step != OpJournal::Step::Done);
 }
-void TestFileOperations::debug_harness_uses_disposable_files()
-{
-	Fixture f;
-	OpDiagnostics::Options options;
-	options.sourceArea = f.root;
-	options.destinationArea = f.dest;
-	options.reportArea = f.root + "/reports";
-	options.samples = {QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf")};
-	std::atomic<bool> cancel{false};
-	const auto report = OpDiagnostics::run(options, cancel);
-	QVERIFY2(QFile::exists(report.path), qPrintable(report.text));
-	int bundledChecks = 0;
-	for (const auto &value : report.json["checks"].toArray())
-	{
-		const auto check = value.toObject();
-		if (check["name"].toString().startsWith("Bundled "))
-		{
-			++bundledChecks;
-			QVERIFY2(check["status"].toString() == "passed",
-					 qPrintable(check["name"].toString() + ": " + check["detail"].toString()));
-		}
-		if (check["name"].toString() == "Cross-filesystem source removal")
-		{
-			QCOMPARE(check["status"].toString(), QString("not tested"));
-			continue;
-		}
-		QVERIFY2(check["status"].toString() != "failed" &&
-					 check["status"].toString() != "unsupported",
-				 qPrintable(report.text));
-	}
-	QCOMPARE(bundledChecks, 4);
-	QCOMPARE(report.json["bundledSamples"].toArray().size(), 3);
-#ifdef Q_OS_MAC
-	struct statfs native{};
-	QCOMPARE(::statfs(QFile::encodeName(f.root).constData(), &native), 0);
-	const auto sourceVolume = report.json["source"].toObject();
-	QCOMPARE(sourceVolume["device"].toString(), QFile::decodeName(native.f_mntfromname));
-	QCOMPARE(sourceVolume["mount"].toString(), QFile::decodeName(native.f_mntonname));
-	QCOMPARE(sourceVolume["readOnly"].toBool(), bool(native.f_flags & MNT_RDONLY));
-#endif
-	QCOMPARE(get(f.src), f.bytes);
-	QVERIFY(QFile::exists(options.samples[0]));
-}
-void TestFileOperations::debug_setup_failure_saves_report()
-{
-	Fixture f;
-	OpDiagnostics::Options options;
-	options.sourceArea = f.root;
-	options.destinationArea = f.src; // A file cannot hold the destination test folder.
-	options.reportArea = f.root + "/reports";
-	std::atomic<bool> cancel{false};
-	const auto report = OpDiagnostics::run(options, cancel);
-	QVERIFY2(QFile::exists(report.path), qPrintable(report.text));
-	QCOMPARE(QJsonDocument::fromJson(get(report.path)).object(), report.json);
-	const auto checks = report.json["checks"].toArray();
-	QCOMPARE(checks.size(), 3); // Setup failure and the two untested/unsupported notices.
-	QCOMPARE(checks[0].toObject()["name"].toString(), QString("Test setup or storage access"));
-	QCOMPARE(checks[0].toObject()["status"].toString(), QString("failed"));
-	QVERIFY(!report.json.contains("bundledSamples"));
-	QVERIFY(QDir(report.json["sourceTestFolder"].toString()).isEmpty());
-	QCOMPARE(get(f.src), f.bytes);
-}
 void TestFileOperations::unsupported_directory_flush_preserves_originals()
 {
 	for (const auto kind : {OpKind::Copy, OpKind::Move})
@@ -1341,67 +1269,6 @@ void TestFileOperations::directory_creation_propagates_durability()
 		QCOMPARE(status, childResult == Sync::Failed ? Sync::Failed : Sync::OkDegraded);
 		QVERIFY(error.contains(childResult == Sync::Failed ? "child I/O error" : "parent unsupported"));
 	}
-}
-void TestFileOperations::debug_harness_runs_copies_without_directory_flush()
-{
-	Fixture f;
-	OpDiagnostics::Options options;
-	options.sourceArea = f.root;
-	options.destinationArea = f.dest;
-	options.reportArea = f.root + "/reports";
-	options.directorySync = [](const QString &path, QString *error)
-	{
-		*error = "Directory flush unsupported: " + path;
-		return NativeFile::SyncResult::OkDegraded;
-	};
-	std::atomic<bool> cancel{false};
-	const auto report = OpDiagnostics::run(options, cancel);
-	QCOMPARE(report.json["schema"].toInt(), 3);
-	QVERIFY(QFile::exists(report.path));
-	QSet<QString> passed, unsupported;
-	for (const auto &value : report.json["checks"].toArray())
-	{
-		const auto check = value.toObject();
-		QVERIFY2(check["status"] != "failed", qPrintable(report.text));
-		if (check["status"] == "passed")
-			passed.insert(check["name"].toString());
-		if (check["status"] == "unsupported")
-			unsupported.insert(check["name"].toString());
-	}
-	for (const auto &name : {"Copy and readback", "Keep Both with a late conflict", "Skip",
-							 "Cancel during copy", "Journal failure", "Move", "Bundled MXF copy and readback",
-							 "Rebalance group conflict", "Bundled relatives group conflict"})
-		QVERIFY2(passed.contains(name), name);
-	for (const auto &name : {"Source directory persistence", "Destination directory persistence",
-							 "MediaMuster Trash", "Rebalance relocation", "Bundled relatives Rebalance"})
-		QVERIFY2(unsupported.contains(name), name);
-	QCOMPARE(get(f.src), f.bytes);
-}
-void TestFileOperations::bundled_samples_match_supplied_files()
-{
-	const QStringList expected{"5e2ed2597d8a95f15c8b3a9da7bfa97cc8142734fd1ac1707bff0ad7df0d26c4",
-							   "76e4981ad8d844e10f12e3a91e44540228d80f7e04f51a10e584a90d13f242e5",
-							   "efafabf1876cd7e7481017f29325e66314431ea7faeab91b41ffd8ec738ccc2e"};
-	const auto samples = OpDiagnostics::bundledSamples();
-	QCOMPARE(samples.size(), expected.size());
-	QSet<QString> masters, fileMobs;
-	for (int i = 0; i < samples.size(); ++i)
-	{
-		QVERIFY2(OpFile::safePath(samples[i]), qPrintable(samples[i]));
-		QCOMPARE(OpFile::inspect(samples[i]).size, QFileInfo(samples[i]).size());
-		QFile file(samples[i]);
-		QVERIFY2(file.open(QIODevice::ReadOnly), qPrintable(samples[i]));
-		QCryptographicHash hash(QCryptographicHash::Sha256);
-		QVERIFY(hash.addData(&file));
-		QCOMPARE(QString::fromLatin1(hash.result().toHex()), expected[i]);
-		const auto header = MxfParser::parseHeader(samples[i]);
-		QCOMPARE(header.headerStatus, MediaMetadata::HeaderStatus::Complete);
-		QVERIFY(header.hasMaterialPackage);
-		masters.insert(header.umid);
-		fileMobs.insert(header.fileMobId);
-	}
-	QCOMPARE(masters.size(), 1);
-	QCOMPARE(fileMobs.size(), 3);
 }
 void TestFileOperations::selected_duplicates_keep_both()
 {

@@ -28,7 +28,6 @@ endfunction()
 mediamuster_add_test(tst_mobid core)
 mediamuster_add_test(tst_logfile core ${CMAKE_SOURCE_DIR}/src/logfile.cpp)
 mediamuster_add_test(tst_pathkey core)
-mediamuster_add_test(tst_pmrkey core)
 mediamuster_add_test(tst_format core)
 
 # Conventions: the agreed folder names, essence-name rules and folder
@@ -64,7 +63,7 @@ target_compile_definitions(tst_bentofile PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# PmrParser: fixed-layout msmFMID.pmr, driven by hand-crafted byte buffers.
+# PMR filename normalization and fixed-layout parsing, driven by hand-crafted byte buffers.
 mediamuster_add_test(tst_pmrparser media
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
 )
@@ -152,9 +151,6 @@ target_compile_definitions(tst_scanner PRIVATE
 
 ### Operations ###
 
-# Operation request value types and their serialized enum names (header-only).
-mediamuster_add_test(tst_oprequest operations)
-
 # Volume identity plus the NativeFile
 # platform primitives, over real temp files and fixture MXF headers.
 mediamuster_add_test(tst_volumeidentity operations
@@ -167,7 +163,7 @@ target_compile_definitions(tst_volumeidentity PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# Journal state/claim contracts use only filesystem primitives, without a runner.
+# Journal state/claim contracts and serialized operation/policy names, without a runner.
 mediamuster_add_test(tst_opjournal operations
     ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
@@ -190,7 +186,6 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/opdiagnostics.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/operationplan.cpp
     ${CMAKE_SOURCE_DIR}/src/opcopier.cpp
@@ -209,21 +204,6 @@ if(APPLE)
     target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash_mac.mm)
 endif()
 mediamuster_link_native_operations(tst_fileoperations)
-set_property(TARGET tst_fileoperations APPEND PROPERTY LINK_DEPENDS
-    "${CMAKE_SOURCE_DIR}/tests/fixtures/file_operations/relatives.zip")
-if(APPLE)
-    # Exercise the same Contents/MacOS -> Contents/Resources lookup as the app.
-    # A plain test executable missed the unclean ../Resources path regression.
-    set_target_properties(tst_fileoperations PROPERTIES MACOSX_BUNDLE TRUE)
-    set_source_files_properties(${MEDIAMUSTER_DIAGNOSTIC_SAMPLES} PROPERTIES
-        MACOSX_PACKAGE_LOCATION "Resources/file-operation-samples")
-    target_sources(tst_fileoperations PRIVATE ${MEDIAMUSTER_DIAGNOSTIC_SAMPLES})
-else()
-    add_custom_command(TARGET tst_fileoperations POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${_mm_sample_dir}"
-            "$<TARGET_FILE_DIR:tst_fileoperations>/file-operation-samples"
-        VERBATIM)
-endif()
 
 ### UI and export ###
 

@@ -21,24 +21,24 @@
 
 namespace
 {
-QString hex(quint64 value)
-{
-	return QString::number(value, 16);
-}
+	QString hex(quint64 value)
+	{
+		return QString::number(value, 16);
+	}
 #ifdef Q_OS_WIN
-HANDLE handle(const QFile &file)
-{
-	return reinterpret_cast<HANDLE>(::_get_osfhandle(file.handle()));
-}
-QString nativeError()
-{
-	return QStringLiteral("Windows file error %1").arg(::GetLastError());
-}
+	HANDLE handle(const QFile &file)
+	{
+		return reinterpret_cast<HANDLE>(::_get_osfhandle(file.handle()));
+	}
+	QString nativeError()
+	{
+		return QStringLiteral("Windows file error %1").arg(::GetLastError());
+	}
 #else
-QString nativeError()
-{
-	return QString::fromLocal8Bit(std::strerror(errno));
-}
+	QString nativeError()
+	{
+		return QString::fromLocal8Bit(std::strerror(errno));
+	}
 #endif
 } // namespace
 
@@ -184,7 +184,7 @@ std::unique_ptr<OpFile> OpFile::openImpl(const QString &path, bool create, bool 
 		return {};
 	}
 	fd = ::_open_osfhandle(reinterpret_cast<intptr_t>(h),
-							   _O_BINARY | (writable ? _O_RDWR : _O_RDONLY));
+						   _O_BINARY | (writable ? _O_RDWR : _O_RDONLY));
 	if (fd < 0)
 	{
 		::CloseHandle(h);
@@ -193,8 +193,10 @@ std::unique_ptr<OpFile> OpFile::openImpl(const QString &path, bool create, bool 
 	}
 #else
 	fd = ::open(QFile::encodeName(path).constData(),
-					(create ? O_RDWR | O_CREAT | O_EXCL : writable ? O_RDWR : O_RDONLY) |
-						O_NOFOLLOW | O_CLOEXEC, 0600);
+				(create ? O_RDWR | O_CREAT | O_EXCL : writable ? O_RDWR
+															   : O_RDONLY) |
+					O_NOFOLLOW | O_CLOEXEC,
+				0600);
 	if (fd < 0)
 	{
 		error = nativeError();
@@ -440,7 +442,7 @@ bool OpFile::removeOriginal(QString &error)
 	FILE_DISPOSITION_INFO disposition{};
 	disposition.DeleteFile = TRUE;
 	if (!::SetFileInformationByHandle(handle(m_file), FileDispositionInfo, &disposition,
-									 sizeof(disposition)))
+									  sizeof(disposition)))
 	{
 		error = nativeError();
 		return false;
@@ -455,7 +457,7 @@ bool OpFile::removeOriginal(QString &error)
 	}
 #elif defined(Q_OS_MAC)
 	const int directory = ::open(QFile::encodeName(parent.absoluteFilePath()).constData(),
-		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+								 O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
 	struct stat directoryInfo{}, current{};
 	if (directory < 0)
 	{
@@ -467,11 +469,11 @@ bool OpFile::removeOriginal(QString &error)
 	// An external writer using this same account is outside that isolation;
 	// callers must not share or reuse retirement directories.
 	const bool isolated = ::fstat(directory, &directoryInfo) == 0 &&
-		directoryInfo.st_uid == ::geteuid() && (directoryInfo.st_mode & 0777) == 0700;
+						  directoryInfo.st_uid == ::geteuid() && (directoryInfo.st_mode & 0777) == 0700;
 	const bool same = ::fstatat(directory, "payload.retired", &current, AT_SYMLINK_NOFOLLOW) == 0 &&
-		S_ISREG(current.st_mode) && hex(current.st_ino) == before.fileId &&
-		hex(current.st_dev) == before.volumeId && current.st_size == before.size &&
-		current.st_mtimespec.tv_sec * 1000000000LL + current.st_mtimespec.tv_nsec == before.modified;
+					  S_ISREG(current.st_mode) && hex(current.st_ino) == before.fileId &&
+					  hex(current.st_dev) == before.volumeId && current.st_size == before.size &&
+					  current.st_mtimespec.tv_sec * 1000000000LL + current.st_mtimespec.tv_nsec == before.modified;
 	if (!isolated || !same)
 	{
 		::close(directory);

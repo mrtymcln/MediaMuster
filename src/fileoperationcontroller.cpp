@@ -18,65 +18,65 @@
 
 namespace
 {
-// Only a button click chooses Cancel. QDialog's ordinary reject path
-// (Escape or window close) leaves the job unresolved and changes nothing.
-class InterruptedJobDialog : public QDialog
-{
-public:
-	enum class Choice
+	// Only a button click chooses Cancel. QDialog's ordinary reject path
+	// (Escape or window close) leaves the job unresolved and changes nothing.
+	class InterruptedJobDialog : public QDialog
 	{
-		Unresolved,
-		Resume,
-		Cancel
+	public:
+		enum class Choice
+		{
+			Unresolved,
+			Resume,
+			Cancel
+		};
+		explicit InterruptedJobDialog(const OperationRecovery::Resumable &job, QWidget *parent)
+			: QDialog(parent)
+		{
+			setObjectName(QStringLiteral("interruptedJobDialog"));
+			setWindowTitle(tr("Interrupted job"));
+			auto *layout = new QVBoxLayout(this);
+			auto *headline = new QLabel(tr("The previous job was interrupted."), this);
+			headline->setTextFormat(Qt::PlainText);
+			layout->addWidget(headline);
+			auto *details =
+				new QLabel(tr("%1 of %2 files finished.\n\n"
+							  "Resume continues that job. Cancel abandons its unfinished work "
+							  "and keeps the completed results.")
+							   .arg(Format::count(job.finished), Format::count(job.total)),
+						   this);
+			details->setTextFormat(Qt::PlainText);
+			details->setWordWrap(true);
+			details->setMinimumWidth(380);
+			layout->addWidget(details);
+			auto *buttons = new QDialogButtonBox(this);
+			auto *resume = buttons->addButton(tr("Resume"), QDialogButtonBox::AcceptRole);
+			auto *cancel = buttons->addButton(tr("Cancel"), QDialogButtonBox::ActionRole);
+			resume->setObjectName(QStringLiteral("resumeInterruptedJobButton"));
+			cancel->setObjectName(QStringLiteral("cancelInterruptedJobButton"));
+			connect(resume, &QPushButton::clicked, this,
+					[this]
+					{
+						choice = Choice::Resume;
+						accept();
+					});
+			connect(cancel, &QPushButton::clicked, this,
+					[this]
+					{
+						choice = Choice::Cancel;
+						accept();
+					});
+			layout->addWidget(buttons);
+		}
+		Choice choice = Choice::Unresolved;
 	};
-	explicit InterruptedJobDialog(const OperationRecovery::Resumable &job, QWidget *parent)
-		: QDialog(parent)
-	{
-		setObjectName(QStringLiteral("interruptedJobDialog"));
-		setWindowTitle(tr("Interrupted job"));
-		auto *layout = new QVBoxLayout(this);
-		auto *headline = new QLabel(tr("The previous job was interrupted."), this);
-		headline->setTextFormat(Qt::PlainText);
-		layout->addWidget(headline);
-		auto *details =
-			new QLabel(tr("%1 of %2 files finished.\n\n"
-						  "Resume continues that job. Cancel abandons its unfinished work "
-						  "and keeps the completed results.")
-						   .arg(Format::count(job.finished), Format::count(job.total)),
-					   this);
-		details->setTextFormat(Qt::PlainText);
-		details->setWordWrap(true);
-		details->setMinimumWidth(380);
-		layout->addWidget(details);
-		auto *buttons = new QDialogButtonBox(this);
-		auto *resume = buttons->addButton(tr("Resume"), QDialogButtonBox::AcceptRole);
-		auto *cancel = buttons->addButton(tr("Cancel"), QDialogButtonBox::ActionRole);
-		resume->setObjectName(QStringLiteral("resumeInterruptedJobButton"));
-		cancel->setObjectName(QStringLiteral("cancelInterruptedJobButton"));
-		connect(resume, &QPushButton::clicked, this,
-				[this]
-				{
-					choice = Choice::Resume;
-					accept();
-				});
-		connect(cancel, &QPushButton::clicked, this,
-				[this]
-				{
-					choice = Choice::Cancel;
-					accept();
-				});
-		layout->addWidget(buttons);
-	}
-	Choice choice = Choice::Unresolved;
-};
 
-OperationRecovery::Summary operationHistory()
-{
-	OperationRecovery::Summary result;
-	result.resumable = OperationRecovery::pending();
-	result.undoCandidate = OpJournal::latestUndoable();
-	return result;
-}
+	OperationRecovery::Summary operationHistory()
+	{
+		OperationRecovery::Summary result;
+		result.resumable = OperationRecovery::pending();
+		result.undoCandidate = OpJournal::latestUndoable();
+		return result;
+	}
 
 } // namespace
 
@@ -236,7 +236,8 @@ void FileOperationController::runStartupRecovery()
 				setActivity(Activity::Idle);
 				onRecoveryDone(summary);
 			});
-	watcher->setFuture(QtConcurrent::run([] { return OperationRecovery::run(); }));
+	watcher->setFuture(QtConcurrent::run([]
+										 { return OperationRecovery::run(); }));
 }
 
 void FileOperationController::onRecoveryDone(const OperationRecovery::Summary &summary)

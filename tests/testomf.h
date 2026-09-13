@@ -53,10 +53,6 @@ namespace TestOmf
 	{
 		return BentoBuilder::le32(42) + BentoBuilder::le32(number) + BentoBuilder::le32(7);
 	}
-	inline QByteArray le64(quint64 number)
-	{
-		return BentoBuilder::le32(quint32(number)) + BentoBuilder::le32(quint32(number >> 32));
-	}
 	inline QByteArray sdii(bool omf2, bool ambiguousMaster = false, bool badDescriptor = false,
 						   bool compact = false, bool big = false)
 	{

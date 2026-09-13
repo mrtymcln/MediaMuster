@@ -181,9 +181,9 @@ struct MediaFile
 		NoReference, ///< Databases present and readable, but no reference to this
 					 ///< file: copied in or created since Avid last indexed the
 					 ///< folder, or its records were removed. Avid re-indexes at launch.
-		NoDatabase,	 ///< No msmFMID.pmr here — no index to check against: other seats'
-					 ///< folders on shared storage, Interplay / MediaCentral, Quarantined
-					 ///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
+		NoDatabase, ///< No msmFMID.pmr here — no index to check against: other seats'
+					///< folders on shared storage, Interplay / MediaCentral, Quarantined
+					///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
 		DbUnreadable ///< A database exists but could not be read (corrupt, truncated,
 					 ///< or an unsupported older version); Avid rebuilds it at relaunch.
 	};

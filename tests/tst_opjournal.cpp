@@ -1,4 +1,5 @@
 #include "opjournal.h"
+#include "oprequest.h"
 
 #include <QFile>
 #include <QJsonDocument>
@@ -36,6 +37,10 @@ class TestOpJournal : public QObject
 {
 	Q_OBJECT
   private slots:
+	void serialized_kind_names_round_trip();
+	void unknown_serialized_kind_name_is_refused();
+	void serialized_policy_names_round_trip();
+	void unknown_serialized_policy_name_is_refused();
 	void saved_policy_and_inverse_identity_survive_restart();
 	void incomplete_moves_are_not_completed_by_source_retention();
 	void no_effect_requires_identity_evidence();
@@ -53,6 +58,55 @@ class TestOpJournal : public QObject
 	void interrupted_system_trash_requires_a_saved_receipt_for_undo();
 	void network_matching_requires_endpoint_and_directory_identity();
 };
+
+// Journal enum names are persisted on disk; unknown spellings must be refused.
+
+void TestOpJournal::serialized_kind_names_round_trip()
+{
+	const OpKind kinds[] = {OpKind::Copy, OpKind::Move, OpKind::Delete, OpKind::Rename,
+							OpKind::Undo};
+	for (const OpKind k : kinds)
+	{
+		const auto back = opKindFromName(opKindName(k));
+		QVERIFY(back.has_value());
+		QCOMPARE(*back, k);
+	}
+	// The exact spellings are load-bearing (they live in journal files).
+	QCOMPARE(opKindName(OpKind::Copy), QStringLiteral("copy"));
+	QCOMPARE(opKindName(OpKind::Move), QStringLiteral("move"));
+	QCOMPARE(opKindName(OpKind::Delete), QStringLiteral("delete"));
+	QCOMPARE(opKindName(OpKind::Rename), QStringLiteral("rename"));
+	QCOMPARE(opKindName(OpKind::Undo), QStringLiteral("undo"));
+}
+
+void TestOpJournal::unknown_serialized_kind_name_is_refused()
+{
+	QVERIFY(!opKindFromName(QStringLiteral("bogus")).has_value());
+	QVERIFY(!opKindFromName(QString()).has_value());
+	// Case matters: the writer always emits lowercase, so anything else
+	// is not one of ours.
+	QVERIFY(!opKindFromName(QStringLiteral("Copy")).has_value());
+}
+
+void TestOpJournal::serialized_policy_names_round_trip()
+{
+	const ConflictPolicy policies[] = {ConflictPolicy::KeepBoth, ConflictPolicy::Skip};
+	for (const ConflictPolicy p : policies)
+	{
+		const auto back = conflictPolicyFromName(conflictPolicyName(p));
+		QVERIFY(back.has_value());
+		QCOMPARE(*back, p);
+	}
+	QCOMPARE(conflictPolicyName(ConflictPolicy::KeepBoth), QStringLiteral("keepboth"));
+	QCOMPARE(conflictPolicyName(ConflictPolicy::Skip), QStringLiteral("skip"));
+	QVERIFY(!conflictPolicyFromName(QStringLiteral("replace")));
+}
+
+void TestOpJournal::unknown_serialized_policy_name_is_refused()
+{
+	QVERIFY(!conflictPolicyFromName(QStringLiteral("bogus")).has_value());
+	QVERIFY(!conflictPolicyFromName(QString()).has_value());
+}
 
 void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 {

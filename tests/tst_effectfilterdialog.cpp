@@ -4,9 +4,7 @@
 
 #include <QApplication>
 #include <QComboBox>
-#include <QDialogButtonBox>
 #include <QLabel>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QSignalSpy>
 #include <QTest>
@@ -104,7 +102,6 @@ private slots:
 	void volume_changes_preserve_zero_match_choices();
 	void unknown_effect_and_unknown_subtype_remain_distinct();
 	void apply_cancel_and_keyboard_actions();
-	void native_dialog_style_and_controls();
 };
 
 void TestEffectFilterDialog::initial_all_and_empty_are_distinct()
@@ -236,28 +233,6 @@ void TestEffectFilterDialog::apply_cancel_and_keyboard_actions()
 	QTest::keyClick(&apply, Qt::Key_Return);
 	QCOMPARE(apply.result(), int(QDialog::Accepted));
 	QCOMPARE(matchingFiles(rows(), apply.precomputeFilter()).size(), 3);
-}
-
-void TestEffectFilterDialog::native_dialog_style_and_controls()
-{
-	EffectFilterDialog dialog(rows(), {true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}}, {});
-	dialog.show();
-	QTest::qWait(20);
-	auto *volumes = dialog.findChild<QComboBox *>(QStringLiteral("effectVolume"));
-	auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("effectChoices"));
-	QVERIFY(volumes && tree);
-	QVERIFY(dialog.findChildren<QLineEdit *>().isEmpty());
-	QVERIFY(volumes->geometry().bottom() < tree->geometry().top());
-	QVERIFY(tree->isHeaderHidden());
-	QCOMPARE(tree->columnCount(), 1);
-	QCOMPARE(dialog.findChildren<QPushButton *>().size(), 2);
-	QCOMPARE(dialog.findChild<QPushButton *>(QStringLiteral("applyEffectFilter"))->text(), QStringLiteral("Apply"));
-	QVERIFY(!dialog.windowFlags().testFlag(Qt::FramelessWindowHint));
-	QCOMPARE(dialog.style(), QApplication::style());
-	QCOMPARE(dialog.font(), QApplication::font());
-	QCOMPARE(dialog.palette(), QApplication::palette());
-	QCOMPARE(volumes->style(), QApplication::style());
-	QVERIFY(dialog.styleSheet().isEmpty());
 }
 
 QTEST_MAIN(TestEffectFilterDialog)

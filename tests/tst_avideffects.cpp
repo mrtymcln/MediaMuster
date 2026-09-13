@@ -29,7 +29,7 @@ private slots:
 void TestAvidEffects::the_whole_catalogue_is_compiled_in()
 {
 	// The fresh 26.8 extraction produces 887 distinct name/category pairs.
-	// This checks the generated include is complete; it does not count availability.
+	// This checks the compiled-in catalogue is complete; it does not count availability.
 	QCOMPARE(AvidEffects::size(), 887);
 }
 

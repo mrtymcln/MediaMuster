@@ -151,7 +151,7 @@ Changed files, occupied original paths, missing copies or unavailable storage st
 
 ### 8. Validate and release
 
-Extend the existing production-engine regression tests and Debug file-operation utility. Test outcomes, filesystem contents and recovery records; do not just test method calls.
+Extend the existing production-engine regression tests. Test outcomes, filesystem contents and recovery records; do not just test method calls.
 
 Required automated cases:
 
@@ -191,7 +191,7 @@ Release native Copy and recovery only after their checks pass; cross-drive sourc
 | New native Trash adapters, plus build configuration | System bin routing, per-item result receipts, restoration and fallback. |
 | `src/opmanager.*`, `src/fileoperationcontroller.*`, `src/mainwindow.*`, `src/managemediadialog.*`, `src/progressdialog.*` | One active job, Debug flags, interrupted-job dialog, phase labels, summaries and same-session recovery. |
 | `src/operationplan.*` | Shared advisory destination naming and Move copy/space assessment; the runner rechecks live state. |
-| `tests/tst_fileoperations.cpp`, `src/opdiagnostics.*`, `src/fileoperationtestdialog.*` | Regression and field diagnostics for the production paths. |
+| `tests/tst_fileoperations.cpp` | Regression coverage for the production file-operation paths. |
 
 ## Documentation used for API selection
 

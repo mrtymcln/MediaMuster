@@ -198,8 +198,10 @@ void MediaMetadataUtil::applyEditRate(MediaMetadata &out, quint32 num, quint32 d
 			const char *label;
 		};
 		static constexpr FractionalRate kFractional[] = {
-			{24000.0 / 1001.0, "23.976"},  {30000.0 / 1001.0, "29.97"},
-			{48000.0 / 1001.0, "47.952"},  {60000.0 / 1001.0, "59.94"},
+			{24000.0 / 1001.0, "23.976"},
+			{30000.0 / 1001.0, "29.97"},
+			{48000.0 / 1001.0, "47.952"},
+			{60000.0 / 1001.0, "59.94"},
 			{120000.0 / 1001.0, "119.88"},
 		};
 		const double rate = double(num) / double(den);
@@ -269,13 +271,13 @@ QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, co
 		{"060E2B34040101010D01030102060101", "DNxHD SQ"},
 		{"060E2B34040101010D01030102060201", "DNxHD HQ"},
 		{"060E2B34040101010D01030102060202", "DNxHD HQX"},
-		{"060E2B340401010A0401020271130000", "DNxHD LB"},        // Avid config also: "Avid DNx LB"
-		{"060E2B340401010A0401020271030000", "DNxHD SQ"},        // Avid config also: "Avid DNx SQ"
-		{"060E2B340401010A0401020271040000", "DNxHD HQ"},        // Avid config also: "Avid DNx HQ"
-		{"060E2B340401010A0401020271010000", "DNxHD HQX"},       // Avid config also: "Avid DNx HQX"
-		{"060E2B340401010A0401020271070000", "DNxHD HQX"},       // Avid config also: "Avid DNx HQX"
-		{"060E2B340401010A0401020271080000", "DNxHD SQ"},        // Avid config also: "Avid DNx SQ"
-		{"060E2B340401010A0401020271090000", "DNxHD HQ"},        // Avid config also: "Avid DNx HQ"
+		{"060E2B340401010A0401020271130000", "DNxHD LB"},		 // Avid config also: "Avid DNx LB"
+		{"060E2B340401010A0401020271030000", "DNxHD SQ"},		 // Avid config also: "Avid DNx SQ"
+		{"060E2B340401010A0401020271040000", "DNxHD HQ"},		 // Avid config also: "Avid DNx HQ"
+		{"060E2B340401010A0401020271010000", "DNxHD HQX"},		 // Avid config also: "Avid DNx HQX"
+		{"060E2B340401010A0401020271070000", "DNxHD HQX"},		 // Avid config also: "Avid DNx HQX"
+		{"060E2B340401010A0401020271080000", "DNxHD SQ"},		 // Avid config also: "Avid DNx SQ"
+		{"060E2B340401010A0401020271090000", "DNxHD HQ"},		 // Avid config also: "Avid DNx HQ"
 		{"060E2B340401010A0401020271120000", "DNxHD SQ (720p)"}, // Avid config also: "Avid DNx SQ"
 		{"060E2B340401010A0401020271110000", "DNxHD HQ (720p)"}, // Avid config also: "Avid DNx HQ"
 		{"060E2B340401010A0401020271100000",
@@ -320,9 +322,9 @@ QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, co
 		{"060E2B34040101010401020202020400", "DV PAL 50Mbps 4:2:2"},  // UI: "DV 50"
 		{"060E2B34040101010401020202020100", "DV NTSC 25Mbps 4:1:1"}, // UI: "DV 25 411"
 		{"060E2B34040101010401020202020300", "DV NTSC 50Mbps 4:2:2"}, // UI: "DV 50"
-		{"060E2B34040101010401020202020500", "DV 1080 60i"},          // UI: "DVCPro HD"
-		{"060E2B34040101010401020202020600", "DV 1080 50i"},          // UI: "DVCPro HD"
-		{"060E2B34040101070401020203010100", "J2K HD"},               // UI: "JPEG 2000"
+		{"060E2B34040101010401020202020500", "DV 1080 60i"},		  // UI: "DVCPro HD"
+		{"060E2B34040101010401020202020600", "DV 1080 50i"},		  // UI: "DVCPro HD"
+		{"060E2B34040101070401020203010100", "J2K HD"},				  // UI: "JPEG 2000"
 		{"060E2B340401010D040102020301020A", "JPEG 2000 IMF"},
 		{"060E2B340401010D0401020203010312", "JPEG 2000 IMF"},
 		{"060E2B34040101010D010301020C0101", "Apple ProRes Proxy"},
@@ -380,7 +382,7 @@ QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, co
 		{"060E2B340401010D0401020201311001", "AVC Long GOP"}, // was: "AVC Long-GOP Baseline"
 		{"060E2B340401010D0401020201313001", "AVC Long GOP"}, // was: "AVC Long-GOP Extended"
 		{"060E2B340401010D0401020201315001", "AVC Long GOP"}, // was: "AVC Long-GOP High10"
-		{"060E2B340401010D0401020201325001", "AVC Intra"},    // was: "AVC-Intra 4:4:4"
+		{"060E2B340401010D0401020201325001", "AVC Intra"},	  // was: "AVC-Intra 4:4:4"
 		{"060E2B340401010D0401020201412001", "H.265/HEVC Main 10 Profile"},
 		{"060E2B340401010D0401020201413001", "H.265/HEVC Main 12 Profile"},
 		{"060E2B340401010D0401020201431001", "H.265/HEVC Main 4:4:4 Profile"},

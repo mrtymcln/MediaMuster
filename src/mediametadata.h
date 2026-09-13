@@ -34,21 +34,21 @@ struct MediaMetadata
 	bool pcmDescriptor =
 		false; ///< A Wave/AES3/legacy PCM descriptor establishes PCM when coding is absent.
 	bool rgbaDescriptor =
-		false; ///< The selected essence descriptor is RGBA, not another picture class.
-	bool rgbaAlpha8 = false; ///< Its complete pixel layout describes only an 8-bit alpha component.
+		false;						   ///< The selected essence descriptor is RGBA, not another picture class.
+	bool rgbaAlpha8 = false;		   ///< Its complete pixel layout describes only an 8-bit alpha component.
 	bool pictureCodingPresent = false; ///< A present but unusable coding property must not become
 									   ///< an absent-property fallback.
 	bool hasMaterialPackage =
 		false; ///< A completed header selected a logical master identity (MaterialPackage in MXF),
 			   ///< independently of usage classification.
 	bool classificationKnown =
-		false;          ///< An identified material/master package supplied a usage verdict.
-	QString codec;      ///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
+		false;			///< An identified material/master package supplied a usage verdict.
+	QString codec;		///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
 	QString resolution; ///< '1920x1080', or empty for audio.
-	QString fps;        ///< '23.976', '25', '29.97', etc.
-	QString bitDepth;   ///< '8-bit', '10-bit', '24-bit'.
+	QString fps;		///< '23.976', '25', '29.97', etc.
+	QString bitDepth;	///< '8-bit', '10-bit', '24-bit'.
 	QString
-		umid; ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
+		umid;		  ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
 	QString clipName; ///< Clip name from tag 0x4402 in the material package.
 
 	/// True when clipName came from the MaterialPackage (the master clip —
@@ -80,8 +80,8 @@ struct MediaMetadata
 	QByteArray
 		wrappingLabel; ///< FileDescriptor EssenceContainer (0x3004); separate from compression.
 	int width = 0;
-	int height = 0;     ///< Stored value; interlaced files store one field height.
-	int channels = 0;   ///< Audio only.
+	int height = 0;		///< Stored value; interlaced files store one field height.
+	int channels = 0;	///< Audio only.
 	int sampleRate = 0; ///< Audio Hz.
 
 	/// 0 = Full Frame, 1 = Separate Fields, 2 = Single Field, 3 = Mixed Fields.
@@ -123,20 +123,20 @@ struct MediaMetadata
 
 namespace MediaMetadataUtil
 {
-/// Derive codec, resolution, validity and duration display facts from raw metadata.
-/// Shared by all producers so a database and a file header use the same rules.
-void finalise(MediaMetadata &metadata);
+	/// Derive codec, resolution, validity and duration display facts from raw metadata.
+	/// Shared by all producers so a database and a file header use the same rules.
+	void finalise(MediaMetadata &metadata);
 
-/// Apply a positive sample/edit-rate rational: audio Hz or video fps/timecode base.
-void applyEditRate(MediaMetadata &metadata, quint32 numerator, quint32 denominator);
+	/// Apply a positive sample/edit-rate rational: audio Hz or video fps/timecode base.
+	void applyEditRate(MediaMetadata &metadata, quint32 numerator, quint32 denominator);
 
-/// Avid's quantization sentinel 254 is displayed as Float.
-[[nodiscard]] QString bitDepthLabel(quint32 bits);
+	/// Avid's quantization sentinel 254 is displayed as Float.
+	[[nodiscard]] QString bitDepthLabel(quint32 bits);
 
-/// Resolve a compression/coding UL, including rate-dependent DNxHD names.
-/// Unknown labels retain their hex value and any recognizable coding family.
-[[nodiscard]] QString codecFromCompressionLabel(const QByteArray &label, const QString &fps);
+	/// Resolve a compression/coding UL, including rate-dependent DNxHD names.
+	/// Unknown labels retain their hex value and any recognizable coding family.
+	[[nodiscard]] QString codecFromCompressionLabel(const QByteArray &label, const QString &fps);
 
-/// A recorded import path may use either OS's separators, regardless of this host.
-[[nodiscard]] QString sourceFileBaseName(const QString &path);
+	/// A recorded import path may use either OS's separators, regardless of this host.
+	[[nodiscard]] QString sourceFileBaseName(const QString &path);
 } // namespace MediaMetadataUtil

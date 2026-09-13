@@ -35,6 +35,7 @@ class ManageMediaDialog : public QDialog
 {
 	Q_OBJECT
 	friend class TestOperationUi;
+
 public:
 	enum class Operation
 	{

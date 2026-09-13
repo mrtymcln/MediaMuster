@@ -12,57 +12,57 @@
 
 namespace
 {
-constexpr int schema = 3;
-QJsonObject itemJson(const OpItem &i)
-{
-	return {{"src", i.src},
-			{"name", i.name},
-			{"folder", i.folder},
-			{"omf", i.omfEra},
-			{"bytes", QString::number(i.bytes)},
-			{"modifiedMs", QString::number(i.modifiedMs)},
-			{"maintenance", i.maintenance},
-			{"policy", i.policy},
-			{"mob", i.mobId},
-			{"master", i.masterMobId},
-			{"clip", i.clipName},
-			{"rename", i.renameDst},
-			{"group", i.groupKey},
-			{"expectedFileId", i.expectedFileId},
-			{"expectedVolumeId", i.expectedVolumeId},
-			{"expectedModified", QString::number(i.expectedModified)},
-			{"undoAction", i.undoAction},
-			{"undoEntryId", i.undoEntryId},
-			{"trashReceipt", i.trashReceipt}};
-}
-OpItem itemFromJson(const QJsonObject &v)
-{
-	OpItem i;
-	i.src = v["src"].toString();
-	i.name = v["name"].toString();
-	i.folder = v["folder"].toString();
-	i.modifiedMs = v["modifiedMs"].toString("-1").toLongLong();
-	i.maintenance = v["maintenance"].toBool();
-	i.omfEra = v["omf"].toBool();
-	i.bytes = v["bytes"].toString().toLongLong();
-	i.policy = v["policy"].toString();
-	i.mobId = v["mob"].toString();
-	i.masterMobId = v["master"].toString();
-	i.clipName = v["clip"].toString();
-	i.renameDst = v["rename"].toString();
-	i.groupKey = v["group"].toString();
-	i.expectedFileId = v["expectedFileId"].toString();
-	i.expectedVolumeId = v["expectedVolumeId"].toString();
-	i.expectedModified = v["expectedModified"].toString().toLongLong();
-	i.undoAction = v["undoAction"].toString();
-	i.undoEntryId = v["undoEntryId"].toInt(-1);
-	i.trashReceipt = v["trashReceipt"].toString();
-	return i;
-}
-bool inside(const QString &path, const QString &root)
-{
-	return path == root || path.startsWith(root.endsWith('/') ? root : root + '/');
-}
+	constexpr int schema = 3;
+	QJsonObject itemJson(const OpItem &i)
+	{
+		return {{"src", i.src},
+				{"name", i.name},
+				{"folder", i.folder},
+				{"omf", i.omfEra},
+				{"bytes", QString::number(i.bytes)},
+				{"modifiedMs", QString::number(i.modifiedMs)},
+				{"maintenance", i.maintenance},
+				{"policy", i.policy},
+				{"mob", i.mobId},
+				{"master", i.masterMobId},
+				{"clip", i.clipName},
+				{"rename", i.renameDst},
+				{"group", i.groupKey},
+				{"expectedFileId", i.expectedFileId},
+				{"expectedVolumeId", i.expectedVolumeId},
+				{"expectedModified", QString::number(i.expectedModified)},
+				{"undoAction", i.undoAction},
+				{"undoEntryId", i.undoEntryId},
+				{"trashReceipt", i.trashReceipt}};
+	}
+	OpItem itemFromJson(const QJsonObject &v)
+	{
+		OpItem i;
+		i.src = v["src"].toString();
+		i.name = v["name"].toString();
+		i.folder = v["folder"].toString();
+		i.modifiedMs = v["modifiedMs"].toString("-1").toLongLong();
+		i.maintenance = v["maintenance"].toBool();
+		i.omfEra = v["omf"].toBool();
+		i.bytes = v["bytes"].toString().toLongLong();
+		i.policy = v["policy"].toString();
+		i.mobId = v["mob"].toString();
+		i.masterMobId = v["master"].toString();
+		i.clipName = v["clip"].toString();
+		i.renameDst = v["rename"].toString();
+		i.groupKey = v["group"].toString();
+		i.expectedFileId = v["expectedFileId"].toString();
+		i.expectedVolumeId = v["expectedVolumeId"].toString();
+		i.expectedModified = v["expectedModified"].toString().toLongLong();
+		i.undoAction = v["undoAction"].toString();
+		i.undoEntryId = v["undoEntryId"].toInt(-1);
+		i.trashReceipt = v["trashReceipt"].toString();
+		return i;
+	}
+	bool inside(const QString &path, const QString &root)
+	{
+		return path == root || path.startsWith(root.endsWith('/') ? root : root + '/');
+	}
 } // namespace
 
 QString OpJournal::stepName(Step s)
@@ -107,7 +107,7 @@ QString OpJournal::stepName(Step s)
 bool OpJournal::Entry::complete() const
 {
 	return step == Step::Done || step == Step::SourceRemoved || step == Step::Skipped ||
-		step == Step::NoEffect;
+		   step == Step::NoEffect;
 }
 QJsonObject OpJournal::Entry::json() const
 {
@@ -120,17 +120,17 @@ QJsonObject OpJournal::Entry::json() const
 			{"dst", dst},
 			{"temp", temp},
 			{"algorithm", "XXH3-64"},
-				{"hash", hash},
-				{"mechanism", mechanism},
-				{"retirement", retirement},
-				{"trashProvider", trashProvider},
-				{"trashReceipt", trashReceipt},
-				{"verificationRequested", verificationRequested},
-				{"explicitSkip", explicitSkip},
-				{"sourceRemoved", sourceRemoved},
-				{"attempts", attempts},
-				{"undoEntryId", undoEntryId},
-				{"undoAction", undoAction},
+			{"hash", hash},
+			{"mechanism", mechanism},
+			{"retirement", retirement},
+			{"trashProvider", trashProvider},
+			{"trashReceipt", trashReceipt},
+			{"verificationRequested", verificationRequested},
+			{"explicitSkip", explicitSkip},
+			{"sourceRemoved", sourceRemoved},
+			{"attempts", attempts},
+			{"undoEntryId", undoEntryId},
+			{"undoAction", undoAction},
 			{"copyDurable", copyDurable},
 			{"metadataComplete", metadataComplete},
 			{"error", error},
@@ -199,8 +199,8 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	e.source = OpStamp::fromJson(v["source"].toObject());
 	e.landed = OpStamp::fromJson(v["landed"].toObject());
 	if (e.step == Step::NoEffect && (!e.source.unchanged(e.landed) ||
-		!QDir::isAbsolutePath(e.dst) || e.sourceRemoved || e.explicitSkip ||
-		!e.mechanism.isEmpty() || !e.retirement.isEmpty()))
+									 !QDir::isAbsolutePath(e.dst) || e.sourceRemoved || e.explicitSkip ||
+									 !e.mechanism.isEmpty() || !e.retirement.isEmpty()))
 		return {}; // A no-effect result needs identity evidence, not an inferred Skip.
 	for (const auto &a : v["artifacts"].toArray())
 		e.artifacts.append(a.toString());
@@ -610,7 +610,8 @@ QVector<OpJournal::Record> OpJournal::interrupted(const QString &directory)
 		if (record.corrupt || record.dismissed || !record.undoPath.isEmpty() || claimed.contains(record.path))
 			continue;
 		if (std::any_of(record.entries.cbegin(), record.entries.cend(),
-						[](const Entry &entry) { return !entry.complete(); }))
+						[](const Entry &entry)
+						{ return !entry.complete(); }))
 			out.append(record);
 	}
 	return out;

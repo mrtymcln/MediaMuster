@@ -16,122 +16,134 @@
 
 namespace
 {
-constexpr qint64 kHashChunkSize = 4 * 1024 * 1024;
-struct Hash
-{
-	XXH3_state_t *state = XXH3_createState();
-	Hash()
+	constexpr qint64 kHashChunkSize = 4 * 1024 * 1024;
+	struct Hash
 	{
-		if (state)
-			XXH3_64bits_reset(state);
-	}
-	~Hash()
-	{
-		if (state)
-			XXH3_freeState(state);
-	}
-	Hash(const Hash &) = delete;
-	Hash &operator=(const Hash &) = delete;
-	QString digest() const
-	{
-		return QStringLiteral("%1").arg(XXH3_64bits_digest(state), 16, 16, QLatin1Char('0'));
-	}
-};
-#ifdef Q_OS_MAC
-struct NativeCopyContext
-{
-	const std::atomic<bool> &cancel;
-	const OpCopier::Progress &progress;
-	qint64 size;
-	std::exception_ptr exception;
-};
-int copyStatus(int what, int stage, copyfile_state_t state, const char *, const char *, void *raw)
-{
-	auto &context = *static_cast<NativeCopyContext *>(raw);
-	if (context.cancel.load())
-		return COPYFILE_QUIT;
-	if (what == COPYFILE_COPY_DATA && stage == COPYFILE_PROGRESS)
-	{
-		off_t copied = 0;
-		if (copyfile_state_get(state, COPYFILE_STATE_COPIED, &copied) == 0 && context.progress)
+		XXH3_state_t *state = XXH3_createState();
+		Hash()
 		{
-			try { context.progress(copied, context.size, false); }
-			catch (...) { context.exception = std::current_exception(); return COPYFILE_QUIT; }
+			if (state)
+				XXH3_64bits_reset(state);
 		}
+		~Hash()
+		{
+			if (state)
+				XXH3_freeState(state);
+		}
+		Hash(const Hash &) = delete;
+		Hash &operator=(const Hash &) = delete;
+		QString digest() const
+		{
+			return QStringLiteral("%1").arg(XXH3_64bits_digest(state), 16, 16, QLatin1Char('0'));
+		}
+	};
+#ifdef Q_OS_MAC
+	struct NativeCopyContext
+	{
+		const std::atomic<bool> &cancel;
+		const OpCopier::Progress &progress;
+		qint64 size;
+		std::exception_ptr exception;
+	};
+	int copyStatus(int what, int stage, copyfile_state_t state, const char *, const char *, void *raw)
+	{
+		auto &context = *static_cast<NativeCopyContext *>(raw);
+		if (context.cancel.load())
+			return COPYFILE_QUIT;
+		if (what == COPYFILE_COPY_DATA && stage == COPYFILE_PROGRESS)
+		{
+			off_t copied = 0;
+			if (copyfile_state_get(state, COPYFILE_STATE_COPIED, &copied) == 0 && context.progress)
+			{
+				try
+				{
+					context.progress(copied, context.size, false);
+				}
+				catch (...)
+				{
+					context.exception = std::current_exception();
+					return COPYFILE_QUIT;
+				}
+			}
+		}
+		return context.cancel.load() ? COPYFILE_QUIT : COPYFILE_CONTINUE;
 	}
-	return context.cancel.load() ? COPYFILE_QUIT : COPYFILE_CONTINUE;
-}
 #elif defined(Q_OS_WIN)
-OpStamp handleStamp(HANDLE file)
-{
-	BY_HANDLE_FILE_INFORMATION basic{};
-	if (!::GetFileInformationByHandle(file, &basic))
-		return {};
-	OpStamp stamp;
-	FILE_ID_INFO extended{};
-	if (::GetFileInformationByHandleEx(file, FileIdInfo, &extended, sizeof(extended)))
+	OpStamp handleStamp(HANDLE file)
 	{
-		stamp.fileId = QString::fromLatin1(QByteArray(reinterpret_cast<const char *>(extended.FileId.Identifier), 16).toHex());
-		stamp.volumeId = QString::number(extended.VolumeSerialNumber, 16);
+		BY_HANDLE_FILE_INFORMATION basic{};
+		if (!::GetFileInformationByHandle(file, &basic))
+			return {};
+		OpStamp stamp;
+		FILE_ID_INFO extended{};
+		if (::GetFileInformationByHandleEx(file, FileIdInfo, &extended, sizeof(extended)))
+		{
+			stamp.fileId = QString::fromLatin1(QByteArray(reinterpret_cast<const char *>(extended.FileId.Identifier), 16).toHex());
+			stamp.volumeId = QString::number(extended.VolumeSerialNumber, 16);
+		}
+		else
+		{
+			stamp.fileId = QString::number((quint64(basic.nFileIndexHigh) << 32) | basic.nFileIndexLow, 16);
+			stamp.volumeId = QString::number(basic.dwVolumeSerialNumber, 16);
+		}
+		stamp.size = qint64((quint64(basic.nFileSizeHigh) << 32) | basic.nFileSizeLow);
+		stamp.modified = qint64((quint64(basic.ftLastWriteTime.dwHighDateTime) << 32) | basic.ftLastWriteTime.dwLowDateTime);
+		return stamp;
 	}
-	else
+	struct NativeCopyContext
 	{
-		stamp.fileId = QString::number((quint64(basic.nFileIndexHigh) << 32) | basic.nFileIndexLow, 16);
-		stamp.volumeId = QString::number(basic.dwVolumeSerialNumber, 16);
-	}
-	stamp.size = qint64((quint64(basic.nFileSizeHigh) << 32) | basic.nFileSizeLow);
-	stamp.modified = qint64((quint64(basic.ftLastWriteTime.dwHighDateTime) << 32) | basic.ftLastWriteTime.dwLowDateTime);
-	return stamp;
-}
-struct NativeCopyContext
-{
-	const std::atomic<bool> &cancel;
-	const OpCopier::Progress &progress;
-	OpStamp expected;
-	OpStamp destination;
-	bool changed = false;
-	std::exception_ptr exception;
-	HANDLE destinationHandle = INVALID_HANDLE_VALUE;
-	~NativeCopyContext()
+		const std::atomic<bool> &cancel;
+		const OpCopier::Progress &progress;
+		OpStamp expected;
+		OpStamp destination;
+		bool changed = false;
+		std::exception_ptr exception;
+		HANDLE destinationHandle = INVALID_HANDLE_VALUE;
+		~NativeCopyContext()
+		{
+			if (destinationHandle != INVALID_HANDLE_VALUE)
+				::CloseHandle(destinationHandle);
+		}
+	};
+	DWORD CALLBACK copyStatus(LARGE_INTEGER total, LARGE_INTEGER transferred, LARGE_INTEGER,
+							  LARGE_INTEGER, DWORD, DWORD, HANDLE source, HANDLE destination, LPVOID raw)
 	{
-		if (destinationHandle != INVALID_HANDLE_VALUE) ::CloseHandle(destinationHandle);
+		auto &context = *static_cast<NativeCopyContext *>(raw);
+		// Alternate-stream callbacks can report that stream's length. Bind every
+		// stream to the expected file object; recheck main-stream size/time below.
+		if (!context.expected.sameObject(handleStamp(source)))
+		{
+			context.changed = true;
+			return PROGRESS_STOP;
+		}
+		const auto landed = handleStamp(destination);
+		if (!landed.valid() || (context.destination.valid() && !context.destination.sameObject(landed)))
+		{
+			context.changed = true;
+			return PROGRESS_STOP;
+		}
+		context.destination = landed;
+		if (context.destinationHandle == INVALID_HANDLE_VALUE &&
+			!::DuplicateHandle(::GetCurrentProcess(), destination, ::GetCurrentProcess(),
+							   &context.destinationHandle, 0, FALSE, DUPLICATE_SAME_ACCESS))
+		{
+			context.changed = true;
+			return PROGRESS_STOP;
+		}
+		if (context.cancel.load())
+			return PROGRESS_STOP;
+		try
+		{
+			if (context.progress)
+				context.progress(transferred.QuadPart, total.QuadPart, false);
+		}
+		catch (...)
+		{
+			context.exception = std::current_exception();
+			return PROGRESS_STOP;
+		}
+		return context.cancel.load() ? PROGRESS_STOP : PROGRESS_CONTINUE;
 	}
-};
-DWORD CALLBACK copyStatus(LARGE_INTEGER total, LARGE_INTEGER transferred, LARGE_INTEGER,
-	LARGE_INTEGER, DWORD, DWORD, HANDLE source, HANDLE destination, LPVOID raw)
-{
-	auto &context = *static_cast<NativeCopyContext *>(raw);
-	// Alternate-stream callbacks can report that stream's length. Bind every
-	// stream to the expected file object; recheck main-stream size/time below.
-	if (!context.expected.sameObject(handleStamp(source)))
-	{
-		context.changed = true;
-		return PROGRESS_STOP;
-	}
-	const auto landed = handleStamp(destination);
-	if (!landed.valid() || (context.destination.valid() && !context.destination.sameObject(landed)))
-	{
-		context.changed = true;
-		return PROGRESS_STOP;
-	}
-	context.destination = landed;
-	if (context.destinationHandle == INVALID_HANDLE_VALUE &&
-		!::DuplicateHandle(::GetCurrentProcess(), destination, ::GetCurrentProcess(),
-			&context.destinationHandle, 0, FALSE, DUPLICATE_SAME_ACCESS))
-	{
-		context.changed = true;
-		return PROGRESS_STOP;
-	}
-	if (context.cancel.load())
-		return PROGRESS_STOP;
-	try
-	{
-		if (context.progress)
-			context.progress(transferred.QuadPart, total.QuadPart, false);
-	}
-	catch (...) { context.exception = std::current_exception(); return PROGRESS_STOP; }
-	return context.cancel.load() ? PROGRESS_STOP : PROGRESS_CONTINUE;
-}
 #endif
 } // namespace
 OpCopier::Result OpCopier::hash(OpFile &file, const std::atomic<bool> &cancel,
@@ -183,8 +195,8 @@ bool OpCopier::isRetryableNativeError(int error)
 {
 #ifdef Q_OS_WIN
 	return error == ERROR_BUSY || error == ERROR_NETWORK_BUSY || error == ERROR_NOT_READY ||
-		error == ERROR_SEM_TIMEOUT || error == ERROR_RETRY ||
-		error == ERROR_SHARING_VIOLATION || error == ERROR_LOCK_VIOLATION;
+		   error == ERROR_SEM_TIMEOUT || error == ERROR_RETRY ||
+		   error == ERROR_SHARING_VIOLATION || error == ERROR_LOCK_VIOLATION;
 #elif defined(Q_OS_MAC)
 	return error == EAGAIN || error == EINTR || error == ETIMEDOUT || error == EBUSY;
 #else
@@ -194,8 +206,8 @@ bool OpCopier::isRetryableNativeError(int error)
 }
 
 OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
-									const std::atomic<bool> &cancel, const Progress &progress,
-									const std::function<void()> &beforeReadback, bool verify)
+								const std::atomic<bool> &cancel, const Progress &progress,
+								const std::function<void()> &beforeReadback, bool verify)
 {
 	Result out;
 	const auto before = source.stamp();
@@ -237,7 +249,8 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	{
 		out.outcome = cancel.load() ? Outcome::Cancelled : Outcome::Failed;
 		out.error = QStringLiteral("Native copying failed: %1 (POSIX %2).")
-			.arg(QString::fromLocal8Bit(std::strerror(copyError))).arg(copyError);
+						.arg(QString::fromLocal8Bit(std::strerror(copyError)))
+						.arg(copyError);
 		out.retryable = out.outcome == Outcome::Failed && isRetryableNativeError(copyError);
 		return out;
 	}
@@ -252,8 +265,8 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	const QString sourcePath = QDir::toNativeSeparators(source.path());
 	const QString destinationPath = QDir::toNativeSeparators(destination.path());
 	const BOOL copied = ::CopyFileExW(reinterpret_cast<LPCWSTR>(sourcePath.utf16()),
-		reinterpret_cast<LPCWSTR>(destinationPath.utf16()), copyStatus, &context, nullptr,
-		COPY_FILE_FAIL_IF_EXISTS);
+									  reinterpret_cast<LPCWSTR>(destinationPath.utf16()), copyStatus, &context, nullptr,
+									  COPY_FILE_FAIL_IF_EXISTS);
 	const DWORD copyError = ::GetLastError();
 	// A copied read-only attribute must not prevent reopening our staging file
 	// with the write/delete rights needed for flush and publication. Change it
@@ -263,14 +276,15 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	bool restoreReadOnly = false;
 	if (copied && context.destinationHandle != INVALID_HANDLE_VALUE &&
 		::GetFileInformationByHandleEx(context.destinationHandle, FileBasicInfo,
-			&copiedAttributes, sizeof(copiedAttributes)) &&
+									   &copiedAttributes, sizeof(copiedAttributes)) &&
 		(copiedAttributes.FileAttributes & FILE_ATTRIBUTE_READONLY))
 	{
 		auto writableAttributes = copiedAttributes;
 		writableAttributes.FileAttributes &= ~FILE_ATTRIBUTE_READONLY;
-		if (!writableAttributes.FileAttributes) writableAttributes.FileAttributes = FILE_ATTRIBUTE_NORMAL;
+		if (!writableAttributes.FileAttributes)
+			writableAttributes.FileAttributes = FILE_ATTRIBUTE_NORMAL;
 		restoreReadOnly = ::SetFileInformationByHandle(context.destinationHandle, FileBasicInfo,
-			&writableAttributes, sizeof(writableAttributes)) != 0;
+													   &writableAttributes, sizeof(writableAttributes)) != 0;
 	}
 	if (context.destinationHandle != INVALID_HANDLE_VALUE)
 	{
@@ -279,11 +293,16 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	}
 	auto attach = [](OpFile &target, std::unique_ptr<OpFile> opened)
 	{
-		if (!opened) return false;
+		if (!opened)
+			return false;
 		const int fd = ::_dup(opened->io().handle());
-		if (fd < 0) return false;
+		if (fd < 0)
+			return false;
 		if (!target.m_file.open(fd, opened->io().openMode(), QFileDevice::AutoCloseHandle))
-		{ ::_close(fd); return false; }
+		{
+			::_close(fd);
+			return false;
+		}
 		target.m_protected = opened->m_protected;
 		return true;
 	};
@@ -291,20 +310,18 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	const bool sourceOpened = attach(source, OpFile::open(source.path(), false, sourceError));
 	auto openedDestination = OpFile::openWritableExisting(destination.path(), destinationError);
 	const bool ownedDestination = openedDestination && context.destination.valid() &&
-		context.destination.sameObject(openedDestination->stamp());
+								  context.destination.sameObject(openedDestination->stamp());
 	const bool destinationOpened = ownedDestination && attach(destination, std::move(openedDestination));
 	const bool attributesRestored = !restoreReadOnly || (destinationOpened &&
-		::SetFileInformationByHandle(reinterpret_cast<HANDLE>(::_get_osfhandle(destination.io().handle())),
-			FileBasicInfo, &copiedAttributes, sizeof(copiedAttributes)) != 0);
+														 ::SetFileInformationByHandle(reinterpret_cast<HANDLE>(::_get_osfhandle(destination.io().handle())),
+																					  FileBasicInfo, &copiedAttributes, sizeof(copiedAttributes)) != 0);
 	if (context.exception)
 		std::rethrow_exception(context.exception);
 	if (!copied || context.changed || !sourceOpened || !destinationOpened || !attributesRestored ||
 		!context.destination.valid() || !context.destination.sameObject(destination.stamp()))
 	{
 		out.outcome = cancel.load() ? Outcome::Cancelled : Outcome::Failed;
-		out.error = context.changed ? QStringLiteral("A native copying handle referred to a changed file.") :
-			QStringLiteral("Native copying could not be completed and protected (Windows %1). %2 %3")
-				.arg(copyError).arg(sourceError, destinationError);
+		out.error = context.changed ? QStringLiteral("A native copying handle referred to a changed file.") : QStringLiteral("Native copying could not be completed and protected (Windows %1). %2 %3").arg(copyError).arg(sourceError, destinationError);
 		// GetLastError is meaningful only after CopyFileEx failed. A successful copy
 		// followed by a protection/identity failure must never use a stale error to retry.
 		bool destinationAbsent = false;
@@ -315,9 +332,9 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 			destinationAbsent = absenceError == ERROR_FILE_NOT_FOUND || absenceError == ERROR_PATH_NOT_FOUND;
 		}
 		out.retryable = !copied && out.outcome == Outcome::Failed && !context.changed &&
-			sourceOpened && source.stillAt(source.path(), before) && attributesRestored &&
-			(destinationOpened || destinationAbsent) &&
-			isRetryableNativeError(copyError);
+						sourceOpened && source.stillAt(source.path(), before) && attributesRestored &&
+						(destinationOpened || destinationAbsent) &&
+						isRetryableNativeError(copyError);
 		return out;
 	}
 #else
@@ -358,14 +375,16 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	{
 		auto verificationProgress = [&](qint64 bytes, qint64 size, bool destinationPass)
 		{
-			if (!progress) return;
+			if (!progress)
+				return;
 			if (size <= (std::numeric_limits<qint64>::max)() / 2)
 				progress((destinationPass ? size : 0) + bytes, size * 2, true);
 			else
 				progress((destinationPass ? size / 2 : 0) + bytes / 2, size, true);
 		};
 		const auto expected = OpCopier::hash(source, cancel,
-			[&](qint64 bytes, qint64 size, bool) { verificationProgress(bytes, size, false); });
+											 [&](qint64 bytes, qint64 size, bool)
+											 { verificationProgress(bytes, size, false); });
 		if (expected.outcome != Outcome::Succeeded)
 		{
 			out.outcome = expected.outcome;
@@ -375,7 +394,8 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		if (beforeReadback)
 			beforeReadback();
 		const auto actual = OpCopier::hash(destination, cancel,
-			[&](qint64 bytes, qint64 size, bool) { verificationProgress(bytes, size, true); });
+										   [&](qint64 bytes, qint64 size, bool)
+										   { verificationProgress(bytes, size, true); });
 		if (actual.outcome != Outcome::Succeeded)
 		{
 			out.outcome = actual.outcome;

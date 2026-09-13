@@ -3,7 +3,7 @@
 
 class OperationRecovery
 {
-  public:
+public:
 	struct Resumable
 	{
 		QString journalPath;

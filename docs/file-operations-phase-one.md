@@ -36,28 +36,6 @@ A full-length temporary file is never considered verified merely because its siz
 
 Resume continues the same journal. Resolved mount paths are saved, so a second interruption does not revert to stale paths. Automatic volume resolution requires a qualified local native volume identity; labels, capacities, drive letters and network-client IDs are not enough. Unresolved network recovery remains recorded for inspection. Legacy journals and malformed complete records are preserved and reported. Only a torn final line can be truncated, retaining its valid prefix. Journals are not aged out or automatically pruned.
 
-## Run the Debug utility
-
-1. Open **Debug → Test File Operations…**.
-2. Browse to a source-area folder and a destination-area folder on the storage to test. First choose two locations on the same drive; then test the drive-to-drive combinations you use.
-3. Add storage notes, especially the NEXIS client version, NAS model and connection type.
-4. The three bundled MXFs (one video and two audio relatives of one master clip) run automatically. Optionally add other MXF samples. Selected originals are only read; additional samples get a separate verified-copy check.
-5. Run Tests, then save the JSON report. It records the OS, architecture, Qt version, mount/filesystem details, exact test folders and the individual results.
-
-The default suite generates 8 MiB files spanning multiple copy chunks. It exercises Copy/readback, late Keep Both conflicts, Skip, cancellation, journal failure, interrupted-copy recovery, Move, Trash and Rebalance relocation/group conflicts through the production engine. It also checks the bundled files' three distinct file MobIds and single shared MasterMobId, prepares verified disposable copies on the selected source storage, copies those to the selected destination storage, and exercises the real Rebalance planner and shared request adapter. A successful relocation reunites three deliberately separated relatives; a destination conflict must skip the entire moving group. Both checks read back the files against the copy checksums.
-
-The bundled MXFs are the exact supplied files, about 145 MB in total. The project stores a lossless ZIP; CMake extracts it into the app's resources on macOS and beside the executable on Windows. Tests pin the originals' SHA-256 checksums. The utility needs no download or file selection to test real media. Its report lists the bundled identities. On macOS, storage reporting queries the filesystem containing the selected folder, avoiding Qt's association of `/Users` with the read-only system volume.
-
-The file-operation tests run inside an app bundle on macOS, using the same resource lookup as MediaMuster. This covers the resolved resource paths as well as the file contents. An identity-access failure includes the affected path and the engine's reason in the report.
-
-Directory persistence failures report the native call, the directory it acted on, and the Windows or POSIX error code. A failed parent-directory flush is distinct from failure to create the child folder. The utility prepares its local report folder first, allowing it to save a report even if source or destination setup fails. Schema 3 adds explicit source/destination directory-persistence checks. Unsupported directory flush no longer prevents disposable copy tests; Trash and successful Rebalance checks are labelled Unsupported on affected source storage. Tests involving occupied destinations still verify that the files remain untouched.
-
-Trash and successful Rebalance relocation checks run within the **selected source storage**. A source-to-destination copy run does not also validate relocation on the destination storage. Optional extra MXFs are copied directly from their selected original paths; the source-area choice applies to generated and bundled fixtures.
-
-The suite creates uniquely named `MediaMuster_Test_*` folders. Files and journals remain for inspection; remove these disposable test folders manually when finished. Cancellation never triggers recursive deletion.
-
-**Passed**, **Failed**, **Unsupported** and **Not tested** have different meanings. A verified-copy fallback does not validate source removal. An interruption injected at a checkpoint is not a power-loss test. Automatic recovery on an unqualified network volume is reported as unsupported, while its files and journal remain intact.
-
 ## Validation and remaining field work
 
 The new regression suite covers the reproduced dangerous sequences: same-size source edits, cancellation beside an unrelated destination, failed cleanup surviving repeated recovery, full-size unverified partials, publication and journal failures, partial Rebalance groups, late group conflicts, database regeneration, repeated volume-path resolution, torn journal tails and an abruptly exiting child process. Real MXF fixtures exercise the MobId gate. Planner tests cover the 4,999 boundary, oversized-group stability, invalid IDs and workstation/root boundaries.
@@ -66,7 +44,7 @@ GitHub Actions run [34326986830](https://github.com/mrtymcln/MediaMuster/actions
 
 | Configuration | Validation evidence |
 | --- | --- |
-| Development Mac, local APFS, arm64 | Build, regression suite and disposable Debug harness run locally |
+| Development Mac, local APFS, arm64 | Build and regression suite run locally |
 | macOS x86_64 | Included in the universal build; runtime not separately validated |
 | Mac external drives | Field test pending for each filesystem in use |
 | GitHub Windows runner | All 27 CTest suites and packaging passed |
@@ -78,4 +56,4 @@ GitHub Actions run [34326986830](https://github.com/mrtymcln/MediaMuster/actions
 
 Use disposable data for controlled disconnect/reconnect, competing-client and process-termination trials. Verify all originals and unrelated destination files afterwards, and retain the reports/journals from failed runs. Power-loss behaviour requires separate storage-specific validation; a returned flush request is not independent proof about a server's hardware caches. Repeat relevant field checks when the OS, client software, protocol or storage configuration changes.
 
-The NAS regression cases inject unsupported directory flush into the production engine and Debug utility. They cover verified Copy/Move with source retention, late Keep Both without recopying, real I/O errors before copying and after publication, an unsupported first directory followed by an actual error on the second, propagation of parent-directory limitations, and refusal to relocate media or Avid databases. They simulate the reported capability limitation; they do not emulate the NAS hardware or replace the field rerun.
+The NAS regression cases inject unsupported directory flush into the production engine. They cover verified Copy/Move with source retention, late Keep Both without recopying, real I/O errors before copying and after publication, an unsupported first directory followed by an actual error on the second, propagation of parent-directory limitations, and refusal to relocate media or Avid databases. They simulate the reported capability limitation; they do not emulate the NAS hardware or replace the field rerun.

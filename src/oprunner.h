@@ -27,7 +27,7 @@ class OpRunner
 		int needsAttention = 0;
 		bool cancelled = false;
 	};
-	// Passed explicitly by tests/Debug diagnostics. Production uses no hooks.
+	// Tests inject failure and storage behaviour through these hooks.
 	struct Hooks
 	{
 		std::function<void(const QString &, const OpJournal::Entry &)> checkpoint;

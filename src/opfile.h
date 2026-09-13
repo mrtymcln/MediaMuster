@@ -25,7 +25,7 @@ struct OpStamp
 
 class OpFile
 {
-  public:
+public:
 	enum class Relocation
 	{
 		Moved,
@@ -72,10 +72,10 @@ class OpFile
 		return m_path;
 	}
 
-  private:
+private:
 	friend class OpCopier;
 	static std::unique_ptr<OpFile> openImpl(const QString &path, bool create, bool writable,
-										QString &error);
+											QString &error);
 	OpFile() = default;
 	QFile m_file;
 	QString m_path;

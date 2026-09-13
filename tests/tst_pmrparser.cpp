@@ -6,6 +6,7 @@
 
 #include "mobid.h"
 #include "omfuid.h"
+#include "pmrkey.h"
 #include "pmrparser.h"
 
 #include <QByteArray>
@@ -206,6 +207,9 @@ class TestPmrParser : public QObject
 {
 	Q_OBJECT
 private slots:
+	void filename_key_lowercases();
+	void filename_key_normalizes_nfd_to_nfc();
+	void filename_key_preserves_already_normalised();
 	void parses_one_file_comp_pair();
 	void empty_project_still_yields_entry();
 	void empty_record_sets_are_valid();
@@ -274,6 +278,25 @@ private slots:
 	void unicode_filename_limit_counts_utf16_units();
 	void null_identities_are_explicit();
 };
+
+void TestPmrParser::filename_key_lowercases()
+{
+	QCOMPARE(PmrKey::primary(QStringLiteral("MyClip.MXF")), QStringLiteral("myclip.mxf"));
+}
+
+void TestPmrParser::filename_key_normalizes_nfd_to_nfc()
+{
+	// 'café.mxf': NFD (e + combining acute) vs NFC (precomposed é).
+	const QString nfd = QString::fromUtf8("cafe\xCC\x81.mxf");
+	const QString nfc = QString::fromUtf8("caf\xC3\xA9.mxf");
+	QCOMPARE(PmrKey::primary(nfd), nfc);
+	QCOMPARE(PmrKey::primary(nfd), PmrKey::primary(nfc));
+}
+
+void TestPmrParser::filename_key_preserves_already_normalised()
+{
+	QCOMPARE(PmrKey::primary(QStringLiteral("simple.mxf")), QStringLiteral("simple.mxf"));
+}
 
 void TestPmrParser::parses_one_file_comp_pair()
 {

@@ -46,48 +46,48 @@ std::optional<FolderName> RebalancePlanner::srcFolderOf(const QString &srcPath)
 
 namespace
 {
-/// True when a directory entry occupies Avid's per-folder file budget.
-/// In an `Avid MediaFiles/MXF/<n>` folder only MXF essence counts:
-/// Avid's own databases, dot-hidden files, shell junk, and stray
-/// non-MXF files are not media. Counting them inflated the preview's
-/// per-folder count and stole slots from the Conventions::kFolderTarget packing.
-/// The name rule itself lives in Conventions. It is the BUDGET rule,
-/// deliberately narrower than the table's (see isAvidMediaName): the
-/// preview counts what Avid counts, not what the table shows.
-bool countsTowardFolderBudget(const QString &fileName)
-{
-	return Conventions::countsAsEssenceName(fileName);
-}
+	/// True when a directory entry occupies Avid's per-folder file budget.
+	/// In an `Avid MediaFiles/MXF/<n>` folder only MXF essence counts:
+	/// Avid's own databases, dot-hidden files, shell junk, and stray
+	/// non-MXF files are not media. Counting them inflated the preview's
+	/// per-folder count and stole slots from the Conventions::kFolderTarget packing.
+	/// The name rule itself lives in Conventions. It is the BUDGET rule,
+	/// deliberately narrower than the table's (see isAvidMediaName): the
+	/// preview counts what Avid counts, not what the table shows.
+	bool countsTowardFolderBudget(const QString &fileName)
+	{
+		return Conventions::countsAsEssenceName(fileName);
+	}
 
-// Prefix for synthetic relatives keys assigned to loose files
-// (no masterMobId). Lets us detect 'this was a loose file'
-// later via a cheap startsWith check.
-inline constexpr QLatin1String kLoneKeyPrefix("__lone__:");
+	// Prefix for synthetic relatives keys assigned to loose files
+	// (no masterMobId). Lets us detect 'this was a loose file'
+	// later via a cheap startsWith check.
+	inline constexpr QLatin1String kLoneKeyPrefix("__lone__:");
 
-// Loose files get a unique synthetic key so each becomes a
-// one-member group; files with a master MOB share their master
-// clip's ID. Single implementation; planner-side and
-// executor-side overloads delegate here so the format can't drift.
-QString relativesKey(const QString &masterMobId, const QString &fallbackPath)
-{
-	if (masterMobId.isEmpty() || MobId::isAllZero(masterMobId) ||
-		MobId::toPmrForm(masterMobId).isEmpty())
-		return kLoneKeyPrefix + fallbackPath;
-	const QFileInfo parent(QFileInfo(fallbackPath).absolutePath());
-	const auto folder = RebalancePlanner::parseFolderName(parent.fileName());
-	const QString prefix = folder ? folder->prefix : QString();
-	return parent.absolutePath() + QChar(0x1f) + prefix + QChar(0x1f) + masterMobId;
-}
+	// Loose files get a unique synthetic key so each becomes a
+	// one-member group; files with a master MOB share their master
+	// clip's ID. Single implementation; planner-side and
+	// executor-side overloads delegate here so the format can't drift.
+	QString relativesKey(const QString &masterMobId, const QString &fallbackPath)
+	{
+		if (masterMobId.isEmpty() || MobId::isAllZero(masterMobId) ||
+			MobId::toPmrForm(masterMobId).isEmpty())
+			return kLoneKeyPrefix + fallbackPath;
+		const QFileInfo parent(QFileInfo(fallbackPath).absolutePath());
+		const auto folder = RebalancePlanner::parseFolderName(parent.fileName());
+		const QString prefix = folder ? folder->prefix : QString();
+		return parent.absolutePath() + QChar(0x1f) + prefix + QChar(0x1f) + masterMobId;
+	}
 
-QString relativesKey(const MediaFile &mf)
-{
-	return relativesKey(mf.masterMobId, mf.filePath);
-}
+	QString relativesKey(const MediaFile &mf)
+	{
+		return relativesKey(mf.masterMobId, mf.filePath);
+	}
 
-QString relativesKey(const RenameOp &op)
-{
-	return relativesKey(op.masterMobId, op.srcPath);
-}
+	QString relativesKey(const RenameOp &op)
+	{
+		return relativesKey(op.masterMobId, op.srcPath);
+	}
 
 } // namespace
 

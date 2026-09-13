@@ -46,18 +46,7 @@ jobs:
 
       ### Every version is written out by hand; stop early if any two disagree ###
       - name: Check the version
-        shell: bash
-        run: |
-          grep -q "^project(MediaMuster VERSION ${APP_VERSION} " CMakeLists.txt \
-            || { echo "APP_VERSION ${APP_VERSION} is not the project() version in CMakeLists.txt"; exit 1; }
-          grep -q "^find_package(Qt6 ${QT_VERSION} EXACT " CMakeLists.txt \
-            || { echo "QT_VERSION ${QT_VERSION} is not the Qt pin in CMakeLists.txt"; exit 1; }
-          grep -q "^find_package(Qt6 ${QT_VERSION} EXACT " tests/CMakeLists.txt \
-            || { echo "QT_VERSION ${QT_VERSION} is not the Qt pin in tests/CMakeLists.txt"; exit 1; }
-          grep -q "Qt/${QT_VERSION}/macos" CMakeLists.txt \
-            || { echo "QT_VERSION ${QT_VERSION} is not the local Qt path in CMakeLists.txt"; exit 1; }
-          [ "$GITHUB_REF_TYPE" != tag ] || [ "${GITHUB_REF_NAME#v}" = "${APP_VERSION}" ] \
-            || { echo "tag ${GITHUB_REF_NAME} is not APP_VERSION ${APP_VERSION}"; exit 1; }
+        run: cmake -P .github/cmake/check-versions.cmake
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -71,43 +60,14 @@ jobs:
 
       - name: Patch Qt for modern MSVC (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $root = if ($env:QT_ROOT_DIR) { $env:QT_ROOT_DIR } else { "$env:RUNNER_TEMP\Qt\Qt\$env:QT_VERSION\msvc2019_64" }
-          $h = Join-Path $root 'include\QtCore\qcompilerdetection.h'
-          $c = Get-Content $h -Raw
-          $c = $c.Replace('stdext::make_unchecked_array_iterator(x)', '(x)')
-          $c = $c.Replace('stdext::make_checked_array_iterator(x, size_t(N))', '(x)')
-          Set-Content $h $c -NoNewline
+        run: cmake -P .github/cmake/patch-qt-windows.cmake
 
-      ### Build (macOS). Minimum macOS and the arm64+x86_64 pair are CMakeLists.txt
-      ### defaults, so they are not repeated here ###
-      - name: Build (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          EXTRA=""
-          if [[ "$GITHUB_REF_NAME" =~ ^v0\. ]]; then EXTRA="-DSELF_DESTRUCT=ON"; fi
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release \
-                   -DCMAKE_PREFIX_PATH="${QT_ROOT_DIR}" \
-                   $EXTRA
-          cmake --build . --config Release --parallel $(sysctl -n hw.ncpu)
-
-      ### Build (Windows) ###
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          $extra = @()
-          if ($env:GITHUB_REF_NAME -match '^v0\.') { $extra += '-DSELF_DESTRUCT=ON' }
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" @extra
-          cmake --build . --config Release --parallel $env:NUMBER_OF_PROCESSORS
+      - name: Build (macOS and Windows)
+        run: cmake -P .github/cmake/build.cmake
 
       ### Test (macOS and Windows) ###
       - name: Test (macOS and Windows)
-        shell: bash
-        run: bash ci/test.sh
+        run: cmake -P .github/cmake/test.cmake
 
       - name: Upload test diagnostics (on failure)
         if: failure()
@@ -137,13 +97,12 @@ jobs:
           APPLE_TEAM_ID:     ${{ secrets.APPLE_TEAM_ID }}
           APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-        run: bash ci/package-macos.sh
+        run: cmake -P .github/cmake/package-macos.cmake
 
       ### Package (Windows) ###
       - name: Package (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: ./ci/package-windows.ps1
+        run: cmake -P .github/cmake/package-windows.cmake
 
       ### Upload artefacts ###
       - name: Upload macOS artefact
@@ -176,10 +135,8 @@ jobs:
           path: release-assets
 
       - name: Zip the Windows folder
-        run: |
-          cd release-assets
-          ### Each artefact lands in its own subdir; the Windows folder ships as one zip ###
-          zip -r "MediaMuster-${APP_VERSION}-Win.zip" "MediaMuster-${APP_VERSION}-Win"
+        working-directory: release-assets
+        run: cmake -E tar cf "MediaMuster-${{ env.APP_VERSION }}-Win.zip" --format=zip "MediaMuster-${{ env.APP_VERSION }}-Win"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3

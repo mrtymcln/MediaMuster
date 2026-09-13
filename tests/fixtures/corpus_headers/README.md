@@ -1,20 +1,21 @@
 # Corpus header archive
 
-512 KB header slices of every MXF in the ground-truth test corpus, plus the
+512 KiB header slices of every MXF in the ground-truth test corpus, plus the
 folder's real Avid databases. Captured from
 `/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/` (Media Composer
 2025) in rounds: rounds 1–2 on 2026-07-31 (435 slices, `msmFMID.pmr` /
-`msmMMOB.mdb`), round 3 on 2026-08-05 (359 slices, `msmFMID_round3.pmr` /
+`msmMMOB.mdb`), round 3 on 2026-08-05 (360 slices, `msmFMID_round3.pmr` /
 `msmMMOB_round3.mdb` — the live folder's media was replaced between
 rounds, so each round keeps its own databases for the PMR/MDB ground-truth
 joins). 795 slices total. The original full-size media may no longer exist
 — these slices ARE the corpus now.
 
-**Why 512 KB is enough:** `MxfParser::parseHeader` never reads more than
-512 KB (Avid allocates 256 KB or 512 KB for the header partition), so a
-slice is parser-equivalent to its original. Verified at capture time: a
-field-by-field sweep diff of all 435 slices against the live files showed
-zero differences.
+**Header extent:** these 512 KiB slices preserve the metadata exercised by
+the corpus tests. At capture time, a field-by-field sweep of the original
+435 slices against the live files showed zero differences. The current
+parser walks MXF framing and can read metadata beyond 512 KiB; this slice
+size is a property of this archive, not a parser or format limit. Synthetic
+tests separately cover metadata beyond that boundary.
 
 **Ground truth convention:** every clip was named in Avid after the codec
 menu entry that created it — so each file's embedded clip name states what

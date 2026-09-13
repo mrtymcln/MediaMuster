@@ -230,8 +230,8 @@ namespace Conventions
 	// MARK: - Names MediaMuster writes to disk
 	// ═══════════════════════════════════════════════════════════════
 
-    /// Delete's retained-file folder, beside the Avid media tree on the same
-    /// filesystem. All locations and original paths are journalled.
+	/// Delete's retained-file folder, beside the Avid media tree on the same
+	/// filesystem. All locations and original paths are journalled.
 	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
 
 	// ═══════════════════════════════════════════════════════════════

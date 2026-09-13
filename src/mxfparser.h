@@ -25,7 +25,7 @@ public:
 	/// parser actually read from disk; useful for telemetry in the
 	/// scanner's "MXF parse" summary log line.
 	[[nodiscard]] static MediaMetadata parseHeader(const QString &filePath,
-												 qint64 *bytesRead = nullptr);
+												   qint64 *bytesRead = nullptr);
 
 	/// Read through a caller-owned handle without reopening or closing it.
 	/// Starts at offset zero and changes the cursor; the caller retains ownership

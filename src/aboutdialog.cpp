@@ -200,7 +200,8 @@ AboutDialog::AboutDialog(QWidget *parent)
 					}
 					content->move(0, y);
 				});
-		QTimer::singleShot(kRollStartDelayMs, rollTimer, [rollTimer] { rollTimer->start(); });
+		QTimer::singleShot(kRollStartDelayMs, rollTimer, [rollTimer]
+						   { rollTimer->start(); });
 	}
 
 	setFixedWidth(kDialogWidth);

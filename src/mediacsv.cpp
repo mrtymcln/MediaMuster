@@ -44,9 +44,9 @@ namespace MediaCsv
 	QString headerLine(Options options)
 	{
 		QString line = QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
-							  "Duration,Source File,Source Path,Source Container,"
-							  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
-							  "Database Status,Type,");
+									  "Duration,Source File,Source Path,Source Container,"
+									  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
+									  "Database Status,Type,");
 		if (options.includeEffectDetails)
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
 		return line + QStringLiteral("Date Created,Date Modified\n");

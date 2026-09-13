@@ -12,7 +12,7 @@
 // a torn last append. Journal errors stop the engine; records are never pruned.
 class OpJournal
 {
-  public:
+public:
 	enum class Step
 	{
 		Planned,
@@ -124,7 +124,7 @@ class OpJournal
 						const QVector<VolumeIdentity> &mounted = {});
 	static std::unique_ptr<QLockFile> acquire(const QString &directory, QString &error);
 
-  private:
+private:
 	bool append(const QJsonObject &value);
 	QFile m_file;
 	Record m_record;

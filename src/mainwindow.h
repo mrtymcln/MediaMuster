@@ -35,6 +35,7 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 	friend class TestOperationUi;
+
 public:
 	/// UiOnly supports interface tests/previews without volume discovery,
 	/// monitoring, crash collection or journal recovery against the host.
