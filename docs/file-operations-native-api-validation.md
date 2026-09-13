@@ -18,7 +18,7 @@ Local Delete uses system Trash with a saved restoration receipt. All network/NEX
 
 Undo is implemented for completed effects of the most recent job, including interrupted or abandoned jobs. Its own journal claims the forward job before making changes, preventing later forward Resume from recreating undone work. Interrupted Undo can resume while its Debug switch is off. Occupied or changed restoration targets remain unresolved rather than being overwritten or silently marked skipped. Undo of Rebalance retires regenerated Avid indexes instead of restoring stale saved indexes.
 
-The journal remains numeric schema **3**. The new fields are required; incompatible old beta records remain on disk but cannot execute or block new work. There is no migration layer.
+The journal uses numeric schema **3**, with required fields and validated job/item states. Recovery rejects malformed records and preserves completed records when a final write is interrupted.
 
 ## Local validation
 
@@ -63,8 +63,7 @@ continues to list sources explicitly, and `RevealInFinder` is unchanged.
 
 `NativeFile` now exposes the existing full-flush operation without an unused durability
 choice. Unsupported persistence remains distinct from a real I/O failure. Journal
-schema stays at numeric **3**, with `copyThenRemove` replacing the misleading
-`copyMove` field and no compatibility reader.
+schema **3** records the Move policy in `copyThenRemove`.
 
 The preview and runner share destination naming and Move space calculations. A mixed
 Move accounts for every required temporary copy. Identity-confirmed files already at

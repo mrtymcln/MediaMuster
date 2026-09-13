@@ -115,7 +115,6 @@ public:
 	// Journal-only discovery: disconnected storage must not hide an unfinished job.
 	static QVector<Record> interrupted(const QString &directory = {});
 	static std::optional<Record> latestUndoable(const QString &directory = {});
-	static QStringList unreadableRecords(const QString &directory = {});
 	static std::optional<Record> readOne(const QString &path);
 	static bool dismiss(const QString &path, QString &error);
 	static QString canonicalPath(const QString &path);

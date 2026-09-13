@@ -29,7 +29,7 @@ Windows and macOS perform the file actions. MediaMuster controls the plan, desti
 | Product model | One active job; no user-facing queue. |
 | Interrupted job | Before starting another job, show **The previous job was interrupted.** with **Resume / Cancel**. Resolve the previous job first. |
 | Delete | Use system Trash/Recycle Bin on local storage where available. Always use `_MediaMuster_Trash` on network/NEXIS storage; never probe or use system Trash there. Record the actual result for recovery and Undo. |
-| Beta journal changes | Reshape the journal freely, without backward-compatibility work or increasing its existing numeric version. The current code uses **3**, not 2. |
+| Journal format | Use numeric schema **3**, with required fields and validated job/item states. |
 
 ## Why Undo includes interrupted jobs
 
@@ -53,7 +53,7 @@ Benefit: an interrupted operation can be backed out without finishing unwanted w
 
 ### 1. Establish the journal and result model
 
-Keep `OpManager`/`OpRunner` as the coordinator and `OpJournal` as the durable operation record. Replace the beta journal shape as needed while leaving `schema = 3` unchanged, as instructed. Do not build migrations, multiple schema readers or support for resuming older beta formats.
+Keep `OpManager`/`OpRunner` as the coordinator and `OpJournal` as the durable operation record, using `schema = 3`.
 
 The saved job needs explicit verification policy, source-removal policy, required-copy/exclusion policy, operation phase, interruption/abandonment state and an immutable selected-file plan. Each item needs original locations, intended and actual destinations, source/destination identities, operation mechanism, temporary-file ownership, transfer attempts, copy completion evidence, verification status, metadata results, durability results and source-removal state. Deletions also need the selected Trash provider and recoverable returned identity/location. A checksum is optional evidence, not a state discriminator.
 
@@ -66,11 +66,11 @@ Distinguish at least:
 - Source removal was intended, completed, or needs reconciliation.
 - An item was skipped, cancelled, failed, or needs attention.
 
-Current recovery interprets `NeedsAttention` with an empty hash as a relocation. Replace that inference with explicit mechanism and phase fields. Current `complete()` includes `SourceRetained` and `Skipped`; it cannot be used as the predicate authorizing a Move's source-removal stage.
+Recovery uses explicit mechanism and phase fields. A missing checksum does not identify the action performed. A Move's source-removal stage requires successful copies of every required item; a generic completion flag is insufficient.
 
 Write and flush intent before a filesystem mutation, and save the observed result afterwards. Journal failure stops further mutations. Recovery inspects actual files when a crash falls between those records. UI byte counts are transient progress; there is no need to persist every progress callback because interrupted files restart.
 
-Require the new shape's mandatory fields and valid states even though the numeric version is unchanged. Older beta records that fail those checks are not resumed or interpreted using new defaults; no compatibility fallback is needed. Leave them and their files untouched rather than deleting data as part of this format change. Exclude incompatible records from the current-job gate so an old beta record cannot permanently block new work. Preserve standard malformed-record rejection, torn-final-line recovery for the new format and the operation lock. This is validation of the new format, not backward compatibility.
+Require schema 3, mandatory fields and valid states before accepting a journal for recovery. Preserve malformed-record rejection, torn-final-line recovery and the operation lock.
 
 ### 2. Introduce native copying behind the existing coordinator
 
@@ -87,7 +87,7 @@ First checkpoint: native Copy works with verification off and on, late conflicts
 
 ### 3. Keep verification optional and separate
 
-When off, do not compute source/destination checksums merely to satisfy the old journal shape. Confirm API success, complete expected size, source/destination identity, supported metadata requirements and the selected persistence policy before publication. Keep isolated staging and no-overwrite final publication.
+When off, do not compute source/destination checksums. Confirm API success, complete expected size, source/destination identity, supported metadata requirements and the selected persistence policy before publication. Keep isolated staging and no-overwrite final publication.
 
 When on, calculate source and destination XXH3-64 checksums and compare them before publication. Keep checks for source replacement/visible changes around the operation. Native callbacks do not expose the transfer buffers for inline hashing, so plan for a separate source read as well as destination readback. Do not imply that a checksum alone prevents concurrent writers or proves storage hardware survived a power failure.
 
@@ -162,7 +162,7 @@ Required automated cases:
 - A middle copy exhausts bounded retries: subsequent files are still attempted, successful copies remain published, all Move originals remain, and Resume retries unresolved copies without recopying completed ones. Journal or untrustworthy storage-state failures stop further mutations instead of being treated as ordinary file failures.
 - Crash or source replacement between private source-retirement rename and unlink; Windows deletion accepted but not yet completed; cleanup failure retaining an explicitly recorded original/artifact.
 - Successful Stage A followed by interrupted Stage B resumes without duplicate copying or removing changed files.
-- Journal failures stop further mutations; the new required shape rejects incompatible beta records without executing them or blocking all new work; numeric schema remains 3; torn-tail recovery works for the new shape.
+- Journal failures stop further mutations; schema 3 requires valid fields and states; malformed records are rejected and torn-tail recovery preserves completed records.
 - No second job runs concurrently. Cancel gives immediate UI acknowledgement; only after the worker exits, results are reconciled and its lock is released does journal refresh enable a valid same-session Resume offer.
 - An interrupted Undo excludes its claimed forward actions from Resume; retrying Undo never reverses the same action twice.
 - Undo after a cancelled, failed or abandoned job reverses only its completed actions, including a Move interrupted during original removal. Skipped/untouched files stay untouched, all-no-op jobs do not displace the Undo candidate, and abandonment of a private retirement step does not discard original media.
@@ -185,7 +185,7 @@ Release native Copy and recovery only after their checks pass; cross-drive sourc
 | `src/oprequest.h` | Saved verification and source-removal policy; clear result states. |
 | `src/opcopier.*` plus native transfer implementations | System copying, progress, cancellation and optional checksum verification. |
 | `src/opfile.*`, `src/nativefile.*` | Protected handles, metadata, staging/publication, native retirement/removal and persistence. |
-| `src/opjournal.*` | Reshaped beta job/item states under numeric schema 3, explicit completion evidence, Trash receipts, abandonment and Undo links. |
+| `src/opjournal.*` | Schema 3 job/item states, explicit completion evidence, Trash receipts, abandonment and Undo links. |
 | `src/oprunner.*` | Copy coordination, job-wide Move barrier, source removal, recovery and Undo execution. |
 | `src/operationrecovery.*`, `src/volumeidentity.*` | Resume discovery/reconciliation, storage resolution and Undo candidates. |
 | New native Trash adapters, plus build configuration | System bin routing, per-item result receipts, restoration and fallback. |

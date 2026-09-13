@@ -58,10 +58,6 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 		out.notes.append(error);
 		return out;
 	}
-	for (const auto &path : OpJournal::unreadableRecords(directory))
-	{
-		out.notes.append("Incompatible beta recovery record retained without execution: " + path);
-	}
 	const auto records = OpJournal::scan(directory);
 	QSet<QString> claimed;
 	for (const auto &record : records)

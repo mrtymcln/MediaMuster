@@ -45,7 +45,7 @@ class TestOpJournal : public QObject
 	void incomplete_moves_are_not_completed_by_source_retention();
 	void no_effect_requires_identity_evidence();
 	void missing_required_policy_is_rejected();
-	void missing_new_entry_evidence_is_not_defaulted();
+	void missing_required_entry_evidence_is_rejected();
 	void abandoned_unresolved_job_keeps_every_record_and_artifact();
 	void disconnected_storage_does_not_hide_interrupted_job();
 	void inverse_creation_claims_forward_even_before_claim_append();
@@ -222,7 +222,7 @@ void TestOpJournal::missing_required_policy_is_rejected()
 	QVERIFY(QFile::exists(path));
 }
 
-void TestOpJournal::missing_new_entry_evidence_is_not_defaulted()
+void TestOpJournal::missing_required_entry_evidence_is_rejected()
 {
 	OpJournal::Entry entry;
 	entry.id = 0;

@@ -142,8 +142,7 @@ QJsonObject OpJournal::Entry::json() const
 std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 {
 	Entry e;
-	// This beta deliberately retains schema 3 while replacing the record contract.
-	// Missing fields are incompatible, never silently interpreted as new defaults.
+	// Required fields must be present with the expected types.
 	for (const auto *key : {"mechanism", "retirement", "trashProvider", "trashReceipt", "undoAction"})
 		if (!v[key].isString())
 			return {};
@@ -229,7 +228,6 @@ QString OpJournal::standardJournalDir()
 	auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 	if (base.isEmpty())
 		base = QDir::homePath() + "/.mediamuster";
-	// Keep the existing location so older recovery records remain visible.
 	return canonicalPath(overridePath.isEmpty() ? base + "/journal" : overridePath);
 }
 bool OpJournal::standardDirWritable()
@@ -481,7 +479,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 			if (!v["verifyCopies"].isBool() || !v["copyThenRemove"].isBool() ||
 				!v["undoOf"].isString() || !v["copiesComplete"].isBool() ||
 				!v["undoPath"].isString())
-				return {}; // Incompatible beta record; no migration or default guessing.
+				return {};
 			const auto kind = opKindFromName(v["kind"].toString());
 			if (!kind)
 				return {};
@@ -650,15 +648,6 @@ std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &direct
 		}
 	}
 	return {};
-}
-QStringList OpJournal::unreadableRecords(const QString &directory)
-{
-	QDir dir(directory.isEmpty() ? standardJournalDir() : directory);
-	QStringList out;
-	for (const auto &name : dir.entryList({"*.jsonl"}, QDir::Files, QDir::Name))
-		if (!name.startsWith("operation-") || !readOne(dir.filePath(name)))
-			out.append(dir.filePath(name));
-	return out;
 }
 bool OpJournal::dismiss(const QString &path, QString &error)
 {
