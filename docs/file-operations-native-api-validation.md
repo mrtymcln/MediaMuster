@@ -2,6 +2,10 @@
 
 Implementation date: 12 September 2026. The agreed design is in [the plan](file-operations-native-api-plan.md).
 
+Updated 13 September: Windows CI now compiles the application and every test target.
+One test assertion failed after compilation; its diagnosis and local correction are
+recorded [below](#windows-ci-move-test-follow-up).
+
 ## What changed
 
 MediaMuster now delegates file copying to macOS `fcopyfile` and Windows `CopyFileExW`. MediaMuster still owns the saved plan, file identities, destination conflicts, progress, recovery and Undo. There is one active job and no queue interface.
@@ -34,7 +38,7 @@ codesign --verify --deep --strict build/MediaMuster.app
 
 ## Platform checks still needed
 
-- Windows SDK compilation and runtime acceptance, including streams/attributes, sharing/cancellation and Recycle Bin disabled/full/oversize cases. Windows code is implemented; the Mac test run does not establish Windows behaviour.
+- A fully passing Windows CI test run after the Move-test correction below, plus Windows runtime acceptance including streams/attributes, sharing/cancellation and Recycle Bin disabled/full/oversize cases. Windows SDK compilation succeeded in the 12 September run; this does not establish all runtime behaviour.
 - Real SMB/NAS/NEXIS copying, disconnect/reconnect, remount and cancellation tests. Automated tests exercise routing and recorded identity rules, not a live NEXIS installation. A proprietary client exposing only an ambiguous workspace label remains unresolved rather than being matched by name alone.
 - Physical power-loss and competing-client tests. Filesystem flush success is not a guarantee about remote hardware. A stalled native network call may not acknowledge cancellation immediately.
 
@@ -46,7 +50,7 @@ The supplied Windows CI log fails at `opcopier.cpp`'s verification-progress limi
 
 `OpCopier::Result::retryable` now controls the existing bounded Copy/Move retry loop. Classified temporary native errors receive at most three attempts; permanent errors, publication/verification/protection failures and cancellation do not automatically recopy. Windows classification also checks that `CopyFileEx` actually failed, the source is unchanged, and the staging file is protected or positively absent. A failed access/network probe is not treated as absence. Backoff observes cancellation every 25 ms.
 
-The full Mac build, application signature check and all 29 CTest targets pass after this change, including 76 file-operation checks (QtTest totals include setup/cleanup). Added coverage exercises temporary failure followed by success, permanent/exhausted failure with continuation, whole-job Move retention, cancellation, journal failure and publication failure without recopy. Native error injection tests use the same classifier as production; they do not simulate a real NEXIS disconnect. Build signing and Qt tests required execution outside the tool sandbox. Actual Windows CI compilation and Windows/NEXIS runtime validation remain outstanding.
+The full Mac build, application signature check and all 29 CTest targets pass after this change, including 76 file-operation checks (QtTest totals include setup/cleanup). Added coverage exercises temporary failure followed by success, permanent/exhausted failure with continuation, whole-job Move retention, cancellation, journal failure and publication failure without recopy. Native error injection tests use the same classifier as production; they do not simulate a real NEXIS disconnect. Build signing and Qt tests required execution outside the tool sandbox. Windows compilation was still unvalidated at this point; the later CI result is recorded below. Windows/NEXIS runtime acceptance remains outstanding.
 
 ## Cleanup validation
 
@@ -80,6 +84,63 @@ conflict handling and metadata provenance coverage.
 
 Final validation: the full universal Mac application and all test targets build;
 **29/29 CTest targets pass** in 36.87 seconds; strict deep application signature
-verification and `git diff --check` pass. Windows compilation and real Windows/NEXIS
-storage acceptance remain outstanding. Deeper scanner/runner state decomposition is
+verification and `git diff --check` pass. Windows compilation was still unvalidated at
+this point; the later CI result is recorded below. Real Windows/NEXIS storage acceptance
+remains outstanding. Deeper scanner/runner state decomposition is
 deferred until that platform baseline, as agreed in the cleanup sequence.
+
+## Windows CI Move-test follow-up
+
+13 September 2026. [Windows CI run 34672164362](https://github.com/mrtymcln/MediaMuster/actions/runs/34672164362/job/103495441523)
+at commit `9c908c6` successfully compiled the application and all test targets with
+MSVC 19.44 / Windows SDK 10.0.26100.0. The subsequent CTest step passed 28 of 29 targets.
+Its saved `tst_fileoperations.result.txt` identifies exactly one failing case:
+`move_copies_every_file_before_removal`, where the `intact` assertion failed. That
+suite recorded 95 passes and one failure, with no skips. The operation itself had
+already satisfied the test's assertion that both files moved successfully.
+
+The test inspected originals at the publication checkpoint through ordinary
+`QFile::open(ReadOnly)`, while the engine still held its protected source handle.
+[Qt 6.5.3's Windows reader](https://github.com/qt/qtbase/blob/v6.5.3/src/corelib/io/qfsfileengine_win.cpp#L65-L96)
+shares read/write access but omits `FILE_SHARE_DELETE`. The engine's existing handle
+requests `DELETE` access for protected rename/removal. Under
+[Windows sharing rules](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew),
+the new reader is incompatible and cannot open the file. The test helper returned
+empty bytes on that failure, incorrectly equating an unreadable inspection with
+changed or missing contents.
+
+The corrected test uses `OpFile`'s compatible read-only observation path and reports
+open, read and content errors separately. Both originals must retain their exact
+contents at every publication; both distinct copies must be ready before either
+original's retirement. Explicit publication, retirement and removal counts prevent
+missing checkpoints from silently passing. The test now runs with verification off
+and on, using distinct source payloads. Production copying, handle protection and
+source-removal behaviour are unchanged.
+
+CI now prints failing QtTest result files inside the failing Test step and uploads
+test logs as a diagnostic artifact. Previously the details were only visible in a
+separate failure-results step, absent from the supplied pasted log. The original
+CTest exit status is preserved even if no QtTest result file exists.
+
+Local validation: rebuilt `tst_fileoperations`; its complete Mac suite passes
+**93 checks, zero failures/skips** (including QtTest setup/cleanup), with both new
+verification rows passing. Parsed the workflow YAML, checked its Bash syntax and
+exercised its exact reporting script with successful, failing, Windows-CRLF,
+missing-result and missing-failure-index cases. All retained the expected exit status
+and printed the appropriate diagnostics. `git diff --check` passes. The corrected
+test still needs a new Windows CI run; no Windows execution of this correction is
+claimed from the local Mac result.
+
+## CI and test consolidation
+
+13 September 2026. The approved [CI cleanup](ci-cleanup-proposal.md) reorganises the
+suite into 28 labelled targets. Rebalance planning and shared metadata have focused
+suites; adapter/coordinator cases now live with file operations, and bin metadata
+cases live with the table model. Retry, row-removal and filter-reset scenarios are
+consolidated with their distinct behaviours retained. The earlier Windows
+Move-barrier test fix is unchanged.
+
+The incremental full build passed, followed by **28/28 CTest suites passing** on
+Mac in 38.94 seconds. Script-flow checks cover detailed failure reporting and both
+Mac signing paths without contacting signing/notary services. Actual Windows CI,
+platform packaging/notarisation and Windows/NEXIS acceptance remain outstanding.

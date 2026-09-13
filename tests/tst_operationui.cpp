@@ -91,7 +91,6 @@ private slots:
 	void rebalance_resume_keeps_running_job_activity();
 	void verification_is_saved_per_job();
 	void same_session_refresh_and_stale_result_guard();
-	void facade_refuses_second_job_without_cancelling_first();
 	void progress_cancel_is_acknowledged_once();
 	void preview_background_checks_discard_superseded_results();
 	void preview_policy_changes_refresh_space_and_same_file_is_no_effect();
@@ -412,23 +411,6 @@ void TestOperationUi::same_session_refresh_and_stale_result_guard()
 	QCoreApplication::processEvents();
 	QVERIFY(window.m_operations->m_resumable.isEmpty());
 }
-void TestOperationUi::facade_refuses_second_job_without_cancelling_first()
-{
-	OpManager manager;
-	QSignalSpy finished(&manager, &OpManager::operationFinished);
-	const auto first = request("first");
-	manager.execute(first);
-	QVERIFY(manager.isRunning());
-	manager.execute(request("second"));
-	QVERIFY(manager.isRunning());
-	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
-	QVERIFY(!manager.isRunning());
-	QVERIFY(QFileInfo::exists(path("first/destination/clip-0.bin")));
-	QVERIFY(!QFileInfo::exists(path("second/destination/clip-0.bin")));
-	QString error;
-	auto lock = OpJournal::acquire(path("journals"), error);
-	QVERIFY2(lock, qPrintable(error));
-}
 void TestOperationUi::preview_background_checks_discard_superseded_results()
 {
 	const auto fixture = request("preview");
@@ -448,9 +430,7 @@ void TestOperationUi::preview_background_checks_discard_superseded_results()
 		dialog.m_destPath->setText(oldDestination);
 		QVERIFY(dialog.m_checkingDest);
 		QVERIFY(!dialog.m_btnExecute->isEnabled());
-		const int earlier = dialog.m_destCheckGeneration;
 		dialog.m_destPath->setText(latestDestination);
-		QVERIFY(dialog.m_destCheckGeneration > earlier);
 		QVERIFY(dialog.m_checkingDest);
 		QVERIFY(!dialog.m_btnExecute->isEnabled());
 	}

@@ -116,7 +116,6 @@ void TestConventions::avid_media_extensions()
 	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("msmFMID.pmr")));
 	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("Thumbs.db")));
 	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("desktop.ini")));
-	// Raw extension test sees only the temp suffix; stripping is
 	// The full filename must end in a supported extension.
 	QVERIFY(!Conventions::hasAvidMediaExtension(
 		QStringLiteral("clip.mxf.__movereplace_ab12")));

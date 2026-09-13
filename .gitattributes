@@ -1,0 +1,2 @@
+# Bash scripts must keep Unix-style line endings on Windows.
+ci/*.sh text eol=lf

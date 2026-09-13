@@ -1,31 +1,60 @@
-// Exercises MediaTableModel::removeFilesByPath; the algorithm's
-// trick is collapsing contiguous deletions into a single
-// begin/endRemoveRows pair, so the assertions count signal
-// emissions in addition to the surviving rows.
+// Table row notifications, display values and bin-derived metadata ownership.
 
+#include "avbparser.h"
 #include "enumutil.h"
 #include "mediafile.h"
 #include "mediatablemodel.h"
+#include "mobid.h"
 
 #include <QDateTime>
 #include <QPersistentModelIndex>
+#include <QSet>
 #include <QSignalSpy>
 #include <QTest>
+#include <initializer_list>
+
+namespace
+{
+	QString masterId()
+	{
+		return MobId::format(QByteArray::fromHex(
+			"060a2b340101010501010f1013000000443322116655887799aabbccddeeff00"));
+	}
+
+	AvbBin bin(const QString &name = QStringLiteral("Edited clip"),
+			   const QString &originalBin = QStringLiteral("Original rushes"),
+			   const QString &uid = QStringLiteral("0000000100000002"))
+	{
+		AvbBin value;
+		value.valid = true;
+		value.complete = true;
+		value.filePath = QStringLiteral("/current/renamed-bin.avb");
+		value.displayName = QStringLiteral("renamed-bin");
+		AvbMob mob;
+		mob.mobId = masterId();
+		mob.name = name;
+		mob.mobType = AvbMob::masterMobType;
+		mob.originalBin = originalBin;
+		mob.originalBinUid = uid;
+		value.mobs.append(mob);
+		return value;
+	}
+
+	MediaFile row(const QString &path = QStringLiteral("/media/clip.mxf"))
+	{
+		MediaFile file;
+		file.filePath = path;
+		file.masterMobId = MobId::toPmrForm(masterId());
+		return file;
+	}
+}
 
 class TestMediaTableModel : public QObject
 {
 	Q_OBJECT
 private slots:
-	void empty_paths_emits_nothing();
-	void empty_model_emits_nothing();
-	void unknown_paths_emit_nothing();
-	void single_row_emits_one_range();
-	void contiguous_block_emits_one_range();
-	void leading_block_emits_one_range();
-	void trailing_block_emits_one_range();
-	void remove_all_emits_one_range();
-	void two_separated_rows_emit_two_ranges();
-	void three_blocks_emit_three_ranges();
+	void row_removal_preserves_rows_and_notifications_data();
+	void row_removal_preserves_rows_and_notifications();
 
 	// An unknown creation date must display blank — never silently
 	// substituted with another timestamp (the modified-time fallback was
@@ -47,6 +76,14 @@ private slots:
 	void effect_gate_preserves_rows_and_existing_indexes();
 	void effect_columns_only_display_precompute_details();
 	void precompute_categories_and_unknown_effects_display_consistently();
+
+	// Bin-derived fallbacks, conflict handling and row refresh notifications.
+	void fills_missing_owned_metadata_in_both_identity_forms();
+	void preserves_scanner_metadata_and_ignores_source_names();
+	void conflicts_are_independent_and_retractable();
+	void same_bin_name_with_different_uid_is_ambiguous();
+	void incomplete_bins_cannot_supply_metadata();
+	void rescans_and_removals_preserve_provenance();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -78,172 +115,65 @@ QStringList TestMediaTableModel::pathsOf(const MediaTableModel &m)
 	return paths;
 }
 
-void TestMediaTableModel::empty_paths_emits_nothing()
+void TestMediaTableModel::row_removal_preserves_rows_and_notifications_data()
 {
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(5));
+	QTest::addColumn<int>("initialCount");
+	QTest::addColumn<QStringList>("removePaths");
+	QTest::addColumn<QList<int>>("ranges"); // Consecutive first/last pairs, in notification order.
+	QTest::addColumn<QStringList>("remainingPaths");
+	auto paths = [](std::initializer_list<int> rows)
+	{
+		QStringList result;
+		for (int row : rows)
+			result.append(QStringLiteral("/fake/row%1.mxf").arg(row));
+		return result;
+	};
+	QTest::newRow("empty_paths_emits_nothing")
+		<< 5 << QStringList{} << QList<int>{} << paths({0, 1, 2, 3, 4});
+	QTest::newRow("empty_model_emits_nothing")
+		<< 0 << paths({0}) << QList<int>{} << QStringList{};
+	QTest::newRow("unknown_paths_emit_nothing")
+		<< 3 << QStringList{QStringLiteral("/nope/missing.mxf")} << QList<int>{} << paths({0, 1, 2});
+	QTest::newRow("single_row_emits_one_range")
+		<< 5 << paths({2}) << QList<int>{2, 2} << paths({0, 1, 3, 4});
+	QTest::newRow("contiguous_block_emits_one_range")
+		<< 5 << paths({1, 2, 3}) << QList<int>{1, 3} << paths({0, 4});
+	QTest::newRow("leading_block_emits_one_range")
+		<< 5 << paths({0, 1}) << QList<int>{0, 1} << paths({2, 3, 4});
+	QTest::newRow("trailing_block_emits_one_range")
+		<< 5 << paths({3, 4}) << QList<int>{3, 4} << paths({0, 1, 2});
+	QTest::newRow("remove_all_emits_one_range")
+		<< 4 << paths({0, 1, 2, 3}) << QList<int>{0, 3} << QStringList{};
+	QTest::newRow("two_separated_rows_emit_two_ranges")
+		<< 5 << paths({1, 3}) << QList<int>{3, 3, 1, 1} << paths({0, 2, 4});
+	QTest::newRow("three_blocks_emit_three_ranges")
+		<< 10 << paths({1, 2, 5, 7, 8}) << QList<int>{7, 8, 5, 5, 1, 2} << paths({0, 3, 4, 6, 9});
+}
 
+void TestMediaTableModel::row_removal_preserves_rows_and_notifications()
+{
+	QFETCH(int, initialCount);
+	QFETCH(QStringList, removePaths);
+	QFETCH(QList<int>, ranges);
+	QFETCH(QStringList, remainingPaths);
+	MediaTableModel model;
+	model.setMediaFiles(makeRows(initialCount));
 	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
 	QSignalSpy doneSpy(&model, &QAbstractItemModel::rowsRemoved);
 
-	model.removeFilesByPath({});
+	model.removeFilesByPath(QSet<QString>(removePaths.cbegin(), removePaths.cend()));
 
-	QCOMPARE(aboutSpy.size(), 0);
-	QCOMPARE(doneSpy.size(), 0);
-	QCOMPARE(model.rowCount(), 5);
-}
-
-void TestMediaTableModel::empty_model_emits_nothing()
-{
-	MediaTableModel model;
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	model.removeFilesByPath({QStringLiteral("/fake/row0.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 0);
-	QCOMPARE(model.rowCount(), 0);
-}
-
-void TestMediaTableModel::unknown_paths_emit_nothing()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(3));
-
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-	model.removeFilesByPath({QStringLiteral("/nope/missing.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 0);
-	QCOMPARE(model.rowCount(), 3);
-}
-
-void TestMediaTableModel::single_row_emits_one_range()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(5));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	model.removeFilesByPath({QStringLiteral("/fake/row2.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 1);
-	const auto args = aboutSpy.takeFirst();
-	QCOMPARE(args.at(1).toInt(), 2); // first
-	QCOMPARE(args.at(2).toInt(), 2); // last
-	QCOMPARE(pathsOf(model),
-			 (QStringList{"/fake/row0.mxf", "/fake/row1.mxf", "/fake/row3.mxf", "/fake/row4.mxf"}));
-}
-
-void TestMediaTableModel::contiguous_block_emits_one_range()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(5));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	// rows 1,2,3 are contiguous, so a single (1,3) range.
-	model.removeFilesByPath({QStringLiteral("/fake/row1.mxf"), QStringLiteral("/fake/row2.mxf"),
-							 QStringLiteral("/fake/row3.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 1);
-	const auto args = aboutSpy.takeFirst();
-	QCOMPARE(args.at(1).toInt(), 1);
-	QCOMPARE(args.at(2).toInt(), 3);
-	QCOMPARE(pathsOf(model), (QStringList{"/fake/row0.mxf", "/fake/row4.mxf"}));
-}
-
-void TestMediaTableModel::leading_block_emits_one_range()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(5));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	// Rows 0,1: exercises the post-loop fall-through path.
-	model.removeFilesByPath({QStringLiteral("/fake/row0.mxf"), QStringLiteral("/fake/row1.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 1);
-	const auto args = aboutSpy.takeFirst();
-	QCOMPARE(args.at(1).toInt(), 0);
-	QCOMPARE(args.at(2).toInt(), 1);
-	QCOMPARE(pathsOf(model), (QStringList{"/fake/row2.mxf", "/fake/row3.mxf", "/fake/row4.mxf"}));
-}
-
-void TestMediaTableModel::trailing_block_emits_one_range()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(5));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	model.removeFilesByPath({QStringLiteral("/fake/row3.mxf"), QStringLiteral("/fake/row4.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 1);
-	const auto args = aboutSpy.takeFirst();
-	QCOMPARE(args.at(1).toInt(), 3);
-	QCOMPARE(args.at(2).toInt(), 4);
-	QCOMPARE(pathsOf(model), (QStringList{"/fake/row0.mxf", "/fake/row1.mxf", "/fake/row2.mxf"}));
-}
-
-void TestMediaTableModel::remove_all_emits_one_range()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(4));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	QSet<QString> all;
-	for (const auto &mf : model.allFiles())
-		all.insert(mf.filePath);
-	model.removeFilesByPath(all);
-
-	QCOMPARE(aboutSpy.size(), 1);
-	const auto args = aboutSpy.takeFirst();
-	QCOMPARE(args.at(1).toInt(), 0);
-	QCOMPARE(args.at(2).toInt(), 3);
-	QCOMPARE(model.rowCount(), 0);
-}
-
-void TestMediaTableModel::two_separated_rows_emit_two_ranges()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(5));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	// Rows 1 and 3 are not adjacent, so two separate ranges.
-	// removeFilesByPath walks back-to-front, so signals arrive
-	// for index 3 first, then index 1.
-	model.removeFilesByPath({QStringLiteral("/fake/row1.mxf"), QStringLiteral("/fake/row3.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 2);
-	const auto first = aboutSpy.takeFirst();
-	QCOMPARE(first.at(1).toInt(), 3);
-	QCOMPARE(first.at(2).toInt(), 3);
-	const auto second = aboutSpy.takeFirst();
-	QCOMPARE(second.at(1).toInt(), 1);
-	QCOMPARE(second.at(2).toInt(), 1);
-	QCOMPARE(pathsOf(model), (QStringList{"/fake/row0.mxf", "/fake/row2.mxf", "/fake/row4.mxf"}));
-}
-
-void TestMediaTableModel::three_blocks_emit_three_ranges()
-{
-	MediaTableModel model;
-	model.setMediaFiles(makeRows(10));
-	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
-
-	// Three disjoint blocks: {1,2}, {5}, {7,8}.
-	model.removeFilesByPath({QStringLiteral("/fake/row1.mxf"), QStringLiteral("/fake/row2.mxf"),
-							 QStringLiteral("/fake/row5.mxf"), QStringLiteral("/fake/row7.mxf"),
-							 QStringLiteral("/fake/row8.mxf")});
-
-	QCOMPARE(aboutSpy.size(), 3);
-
-	const auto a = aboutSpy.takeFirst();
-	QCOMPARE(a.at(1).toInt(), 7);
-	QCOMPARE(a.at(2).toInt(), 8);
-	const auto b = aboutSpy.takeFirst();
-	QCOMPARE(b.at(1).toInt(), 5);
-	QCOMPARE(b.at(2).toInt(), 5);
-	const auto c = aboutSpy.takeFirst();
-	QCOMPARE(c.at(1).toInt(), 1);
-	QCOMPARE(c.at(2).toInt(), 2);
-
-	QCOMPARE(pathsOf(model), (QStringList{"/fake/row0.mxf", "/fake/row3.mxf", "/fake/row4.mxf",
-										  "/fake/row6.mxf", "/fake/row9.mxf"}));
+	QCOMPARE(aboutSpy.size(), ranges.size() / 2);
+	QCOMPARE(doneSpy.size(), ranges.size() / 2);
+	for (qsizetype i = 0; i < ranges.size() / 2; ++i)
+	{
+		QCOMPARE(aboutSpy.at(i).at(1).toInt(), ranges.at(2 * i));
+		QCOMPARE(aboutSpy.at(i).at(2).toInt(), ranges.at(2 * i + 1));
+		QCOMPARE(doneSpy.at(i).at(1).toInt(), ranges.at(2 * i));
+		QCOMPARE(doneSpy.at(i).at(2).toInt(), ranges.at(2 * i + 1));
+	}
+	QCOMPARE(model.rowCount(), remainingPaths.size());
+	QCOMPARE(pathsOf(model), remainingPaths);
 }
 
 void TestMediaTableModel::location_cell_shows_the_full_path()
@@ -447,6 +377,126 @@ void TestMediaTableModel::precompute_categories_and_unknown_effects_display_cons
 		for (int row = 0; row < 3; ++row)
 			QCOMPARE(model.index(row, int(column)).data().toString(), QStringLiteral("unknown"));
 	QVERIFY(model.index(3, category).data().toString().isEmpty());
+}
+
+void TestMediaTableModel::fills_missing_owned_metadata_in_both_identity_forms()
+{
+	MediaTableModel model;
+	MediaFile little = row();
+	little.masterMobId = masterId();
+	model.setMediaFiles({little, row(QStringLiteral("/media/second.mxf"))});
+	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
+	model.setAvbBins({bin()});
+	QCOMPARE(changed.size(), 1);
+	for (const MediaFile &file : model.allFiles())
+	{
+		QCOMPARE(file.clipName, QStringLiteral("Edited clip"));
+		QCOMPARE(file.clipNameSource, MediaFile::ClipNameSource::Avb);
+		QCOMPARE(file.originalBin, QStringLiteral("Original rushes"));
+		QVERIFY(file.originalBinFromAvb);
+	}
+	model.setAvbBins({});
+	for (const MediaFile &file : model.allFiles())
+	{
+		QVERIFY(file.clipName.isEmpty());
+		QCOMPARE(file.clipNameSource, MediaFile::ClipNameSource::None);
+		QVERIFY(file.originalBin.isEmpty());
+		QVERIFY(!file.originalBinFromAvb);
+	}
+}
+
+void TestMediaTableModel::preserves_scanner_metadata_and_ignores_source_names()
+{
+	MediaTableModel model;
+	MediaFile known = row();
+	known.clipName = QStringLiteral("Header clip");
+	known.clipNameSource = MediaFile::ClipNameSource::MaterialPackage;
+	known.originalBin = QStringLiteral("Recorded bin");
+	model.setMediaFiles({known});
+	model.setAvbBins({bin()});
+	model.setAvbBins({});
+	QCOMPARE(model.fileAt(0).clipName, known.clipName);
+	QCOMPARE(model.fileAt(0).clipNameSource, known.clipNameSource);
+	QCOMPARE(model.fileAt(0).originalBin, known.originalBin);
+	QVERIFY(!model.fileAt(0).originalBinFromAvb);
+
+	AvbBin source = bin();
+	source.mobs[0].mobType = 3;
+	model.setMediaFiles({row()});
+	model.setAvbBins({source});
+	QVERIFY(model.fileAt(0).clipName.isEmpty());
+	QVERIFY(model.fileAt(0).originalBin.isEmpty());
+	MediaFile noMaster = row();
+	noMaster.mobId = noMaster.masterMobId;
+	noMaster.masterMobId.clear();
+	model.setMediaFiles({noMaster});
+	model.setAvbBins({bin()});
+	QVERIFY(model.fileAt(0).clipName.isEmpty());
+}
+
+void TestMediaTableModel::conflicts_are_independent_and_retractable()
+{
+	MediaTableModel model;
+	model.setMediaFiles({row()});
+	model.setAvbBins({bin(), bin(QStringLiteral("Another edit"))});
+	QVERIFY(model.fileAt(0).clipName.isEmpty());
+	QCOMPARE(model.fileAt(0).originalBin, QStringLiteral("Original rushes"));
+	model.setAvbBins({bin()});
+	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("Edited clip"));
+	model.setAvbBins({bin(), bin(QStringLiteral("Edited clip"), QStringLiteral("Different bin"))});
+	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("Edited clip"));
+	QVERIFY(model.fileAt(0).originalBin.isEmpty());
+	QVERIFY(!model.fileAt(0).originalBinFromAvb);
+}
+
+void TestMediaTableModel::same_bin_name_with_different_uid_is_ambiguous()
+{
+	MediaTableModel model;
+	model.setMediaFiles({row()});
+	model.setAvbBins({bin(), bin(QStringLiteral("Edited clip"), QStringLiteral("Original rushes"),
+								 QStringLiteral("0000000100000003"))});
+	QVERIFY(model.fileAt(0).originalBin.isEmpty());
+	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("Edited clip"));
+	// A missing display name cannot erase evidence of a different owning bin.
+	model.setAvbBins({bin(), bin(QStringLiteral("Edited clip"), QString(),
+								 QStringLiteral("0000000100000003"))});
+	QVERIFY(model.fileAt(0).originalBin.isEmpty());
+}
+
+void TestMediaTableModel::incomplete_bins_cannot_supply_metadata()
+{
+	MediaTableModel model;
+	model.setMediaFiles({row()});
+	AvbBin unsupported = bin();
+	unsupported.complete = false;
+	AvbBin invalid = bin();
+	invalid.valid = false;
+	model.setAvbBins({unsupported, invalid});
+	QVERIFY(model.fileAt(0).clipName.isEmpty());
+	QVERIFY(model.fileAt(0).originalBin.isEmpty());
+}
+
+void TestMediaTableModel::rescans_and_removals_preserve_provenance()
+{
+	MediaTableModel model;
+	model.setAvbBins({bin()});
+	model.setMediaFiles({row(), row(QStringLiteral("/media/new.mxf"))});
+	QCOMPARE(model.fileAt(1).originalBin, QStringLiteral("Original rushes"));
+	model.removeFilesByPath({QStringLiteral("/media/clip.mxf")});
+	model.setAvbBins({});
+	QCOMPARE(model.rowCount(), 1);
+	QVERIFY(model.fileAt(0).originalBin.isEmpty());
+
+	model.setAvbBins({bin()});
+	MediaFile refreshed = row();
+	refreshed.clipName = QStringLiteral("Database clip");
+	refreshed.clipNameSource = MediaFile::ClipNameSource::Mdb;
+	refreshed.originalBin = QStringLiteral("Database bin");
+	model.setMediaFiles({refreshed});
+	model.setAvbBins({});
+	QCOMPARE(model.fileAt(0).clipName, refreshed.clipName);
+	QCOMPARE(model.fileAt(0).clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(model.fileAt(0).originalBin, refreshed.originalBin);
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

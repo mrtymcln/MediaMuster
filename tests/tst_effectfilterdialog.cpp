@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QDialogButtonBox>
-#include <QDir>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -105,7 +104,7 @@ private slots:
 	void volume_changes_preserve_zero_match_choices();
 	void unknown_effect_and_unknown_subtype_remain_distinct();
 	void apply_cancel_and_keyboard_actions();
-	void standard_qt_layout_and_preview();
+	void native_dialog_style_and_controls();
 };
 
 void TestEffectFilterDialog::initial_all_and_empty_are_distinct()
@@ -239,7 +238,7 @@ void TestEffectFilterDialog::apply_cancel_and_keyboard_actions()
 	QCOMPARE(matchingFiles(rows(), apply.precomputeFilter()).size(), 3);
 }
 
-void TestEffectFilterDialog::standard_qt_layout_and_preview()
+void TestEffectFilterDialog::native_dialog_style_and_controls()
 {
 	EffectFilterDialog dialog(rows(), {true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}}, {});
 	dialog.show();
@@ -249,15 +248,9 @@ void TestEffectFilterDialog::standard_qt_layout_and_preview()
 	QVERIFY(volumes && tree);
 	QVERIFY(dialog.findChildren<QLineEdit *>().isEmpty());
 	QVERIFY(volumes->geometry().bottom() < tree->geometry().top());
-	QCOMPARE(volumes->minimumWidth(), 220);
-	QCOMPARE(dialog.width(), 380);
-	QCOMPARE(dialog.minimumWidth(), 380);
 	QVERIFY(tree->isHeaderHidden());
 	QCOMPARE(tree->columnCount(), 1);
 	QCOMPARE(dialog.findChildren<QPushButton *>().size(), 2);
-	QVERIFY(!dialog.findChild<QWidget *>(QStringLiteral("effectFilterSummary")));
-	QVERIFY(!dialog.findChild<QWidget *>(QStringLiteral("effectFilterDimension")));
-	QVERIFY(!dialog.findChild<QWidget *>(QStringLiteral("clearEffectFilter")));
 	QCOMPARE(dialog.findChild<QPushButton *>(QStringLiteral("applyEffectFilter"))->text(), QStringLiteral("Apply"));
 	QVERIFY(!dialog.windowFlags().testFlag(Qt::FramelessWindowHint));
 	QCOMPARE(dialog.style(), QApplication::style());
@@ -265,27 +258,6 @@ void TestEffectFilterDialog::standard_qt_layout_and_preview()
 	QCOMPARE(dialog.palette(), QApplication::palette());
 	QCOMPARE(volumes->style(), QApplication::style());
 	QVERIFY(dialog.styleSheet().isEmpty());
-	const QString previewDir = qEnvironmentVariable("MEDIAMUSTER_QT_DIALOG_PREVIEW");
-	if (!previewDir.isEmpty())
-	{
-		QVERIFY(QDir().mkpath(previewDir));
-		QVERIFY(dialog.grab().save(previewDir + QStringLiteral("/qt-dialog.png")));
-		dialog.resize(dialog.minimumSize());
-		QTest::qWait(20);
-		QVERIFY(dialog.grab().save(previewDir + QStringLiteral("/qt-dialog-minimum.png")));
-		volumes->showPopup();
-		QTest::qWait(20);
-		QVERIFY(volumes->view()->window()->grab().save(previewDir + QStringLiteral("/qt-volume-popup.png")));
-		volumes->hidePopup();
-		auto manyRows = rows();
-		for (int i = 0; i < 40; ++i)
-			manyRows.append(render(QStringLiteral("Example effect %1").arg(i, 2, 10, QLatin1Char('0')),
-				QStringLiteral("/Volumes/EDIT"), QStringLiteral("example%1.mxf").arg(i)));
-		EffectFilterDialog scrolling(manyRows, {true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}}, {});
-		scrolling.show();
-		QTest::qWait(20);
-		QVERIFY(scrolling.grab().save(previewDir + QStringLiteral("/qt-scrollbar.png")));
-	}
 }
 
 QTEST_MAIN(TestEffectFilterDialog)

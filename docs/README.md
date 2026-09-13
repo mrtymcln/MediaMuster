@@ -5,6 +5,7 @@
 - [Architecture map](architecture.md): module responsibilities and data flow.
 - [Contributor guide](../CONTRIBUTING.md): naming, formatting, build lists and validation.
 - [Cleanup audit](codebase-cleanup-audit.md): accepted decisions and implementation status.
+- [CI and test cleanup](ci-cleanup-proposal.md): implemented before/after, scenario mapping and validation.
 - [Native file-operation design](file-operations-native-api-plan.md).
 - [Native file-operation validation](file-operations-native-api-validation.md): tested behaviour and outstanding platform checks.
 - [Parser compatibility](parser-compatibility.md).

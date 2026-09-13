@@ -57,12 +57,11 @@ private slots:
 	void unknown_classification_does_not_match_known_filters();
 	void three_state_classification_sort_is_consistent();
 	void effect_selection_intersects_volume_and_existing_filters();
-	void effect_gate_clears_selection_and_hidden_search();
+	void effect_gate_resets_filters_and_hidden_search();
 	void effect_columns_sort_displayed_values();
 	void precompute_hierarchy_filters_intersect_and_unknown_is_selectable();
 	void precompute_tree_unites_branches_and_preserves_complete_paths();
 	void precompute_tree_empty_and_unknown_are_not_wildcards();
-	void precompute_tree_gate_reset_has_no_hidden_state();
 	void bin_intersection_matches_different_identities_on_the_same_row();
 	void bin_subtraction_rejects_either_identity_data();
 	void bin_subtraction_rejects_either_identity();
@@ -323,10 +322,11 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	QCOMPARE(proxy.rowCount(), 6); // neither selection means no effect filter
 }
 
-void TestMediaFilterProxy::effect_gate_clears_selection_and_hidden_search()
+void TestMediaFilterProxy::effect_gate_resets_filters_and_hidden_search()
 {
 	MediaFile render = rowNamed(QStringLiteral("render"));
 	render.type = MediaFile::Type::Precompute;
+	render.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 	render.effect = QStringLiteral("Exclusive token");
 	render.effectCategory = QStringLiteral("Exclusive category");
 	render.effectSequence = QStringLiteral("Exclusive sequence");
@@ -338,12 +338,26 @@ void TestMediaFilterProxy::effect_gate_clears_selection_and_hidden_search()
 	model.setMediaFiles({render, media});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
+
+	struct GateCase
+	{
+		PrecomputeFilter filter;
+		int expectedRows;
+	};
+	const GateCase cases[] = {
+		{{true, {{{}, {}, render.effect}}}, 1}, // A named selection.
+		{{true, {}}, 0},                      // An active empty selection means no matches.
+	};
 	QVERIFY(!proxy.effectDetailsEnabled());
-	proxy.setPrecomputeTreeFilter({true, {{{}, {}, render.effect}}});
-	proxy.setEffectVolumeFilter(render.volumePath);
-	QVERIFY(!proxy.precomputeTreeFilter().active);
-	QVERIFY(proxy.effectVolumeFilter().isEmpty());
-	QCOMPARE(proxy.rowCount(), 2);
+	for (const auto &test : cases)
+	{
+		proxy.setPrecomputeTreeFilter(test.filter);
+		proxy.setEffectVolumeFilter(render.volumePath);
+		QVERIFY(!proxy.precomputeTreeFilter().active);
+		QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty());
+		QVERIFY(proxy.effectVolumeFilter().isEmpty());
+		QCOMPARE(proxy.rowCount(), 2);
+	}
 	for (const auto &text : {render.effect, render.effectCategory, render.effectSequence})
 	{
 		proxy.setSearchText(text);
@@ -355,22 +369,40 @@ void TestMediaFilterProxy::effect_gate_clears_selection_and_hidden_search()
 	}
 	proxy.setSearchText({});
 	proxy.setEffectDetailsEnabled(true);
-	proxy.setPrecomputeTreeFilter({true, {{{}, {}, render.effect}}});
-	QCOMPARE(proxy.precomputeTreeFilter().paths.size(), 1);
-	proxy.setEffectVolumeFilter(render.volumePath);
-	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setEffectDetailsEnabled(false);
-	QCOMPARE(proxy.rowCount(), 2);
-	QVERIFY(!proxy.precomputeTreeFilter().active);
-	QVERIFY(proxy.effectVolumeFilter().isEmpty());
-	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
-	QCOMPARE(proxy.rowCount(), 1); // classification does not depend on the gate
-	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
-	proxy.setEffectDetailsEnabled(true);
-	QCOMPARE(proxy.rowCount(), 2); // no hidden selection comes back
+	for (const auto &test : cases)
+	{
+		proxy.setPrecomputeTreeFilter(test.filter);
+		QVERIFY(proxy.precomputeTreeFilter().active);
+		QCOMPARE(proxy.precomputeTreeFilter().paths.size(), test.filter.paths.size());
+		proxy.setEffectVolumeFilter(render.volumePath);
+		QCOMPARE(proxy.rowCount(), test.expectedRows);
+		proxy.setEffectDetailsEnabled(false);
+		QCOMPARE(proxy.rowCount(), 2);
+		QVERIFY(!proxy.precomputeTreeFilter().active);
+		QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty());
+		QVERIFY(proxy.effectVolumeFilter().isEmpty());
+		proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
+		QCOMPARE(proxy.rowCount(), 1); // Classification does not depend on the gate.
+		proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
+		proxy.setEffectDetailsEnabled(true);
+		QCOMPARE(proxy.rowCount(), 2); // Neither selection returns when re-enabled.
+	}
+
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("Title"), QStringLiteral("Title")}}});
+	QCOMPARE(proxy.rowCount(), 0);
+	proxy.setPrecomputeTreeFilter({true, {{}}});
+	QCOMPARE(proxy.rowCount(), 1); // A root wildcard includes only proven precomputes.
+	proxy.setPrecomputeTreeFilter({true, {{{}, QStringLiteral("Title"), {}}}});
+	QVERIFY(proxy.precomputeTreeFilter().active);
+	QCOMPARE(proxy.rowCount(), 0);
+	proxy.setPrecomputeTreeFilter({true, {{}}});
+	proxy.setPrecomputeTreeFilter({});
+	QCOMPARE(proxy.rowCount(), 2); // Inactive and active-empty are different states.
+	proxy.setPrecomputeTreeFilter({false, {{QStringLiteral("Rendered Effects"), {}, {}}}});
+	QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty()); // No stale inactive paths.
 	proxy.setEffectDetailsEnabled(false);
 	proxy.setSearchText(QStringLiteral("render"));
-	QCOMPARE(proxy.rowCount(), 1); // existing visible Clip Name search remains
+	QCOMPARE(proxy.rowCount(), 1); // Existing visible Clip Name search remains.
 }
 
 void TestMediaFilterProxy::effect_columns_sort_displayed_values()
@@ -554,47 +586,6 @@ void TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
 	QCOMPARE(proxy.rowCount(), 2); // the independent volume still requires a precompute
 	proxy.setEffectVolumeFilter({});
 	QCOMPARE(proxy.rowCount(), 4);
-}
-
-void TestMediaFilterProxy::precompute_tree_gate_reset_has_no_hidden_state()
-{
-	MediaFile render = rowNamed(QStringLiteral("render"));
-	render.type = MediaFile::Type::Precompute;
-	render.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
-	render.effect = QStringLiteral("3D Warp");
-	render.effectCategory = QStringLiteral("Blend");
-	render.volumePath = QStringLiteral("/Volumes/EDIT");
-	MediaFile ordinary = render;
-	ordinary.type = MediaFile::Type::Media;
-	MediaTableModel model;
-	model.setMediaFiles({render, ordinary});
-	MediaFilterProxy proxy;
-	proxy.setSourceModel(&model);
-	proxy.setPrecomputeTreeFilter({true, {}});
-	QVERIFY(!proxy.precomputeTreeFilter().active);
-	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setEffectDetailsEnabled(true);
-	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("Title"), QStringLiteral("Title")}}});
-	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setPrecomputeTreeFilter({true, {{}}});
-	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setPrecomputeTreeFilter({true, {{{}, QStringLiteral("Title"), {}}}});
-	QVERIFY(proxy.precomputeTreeFilter().active);
-	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setPrecomputeTreeFilter({true, {}});
-	proxy.setEffectVolumeFilter(render.volumePath);
-	proxy.setEffectDetailsEnabled(false);
-	QVERIFY(!proxy.precomputeTreeFilter().active);
-	QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty());
-	QVERIFY(proxy.effectVolumeFilter().isEmpty());
-	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setEffectDetailsEnabled(true);
-	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setPrecomputeTreeFilter({true, {{}}});
-	proxy.setPrecomputeTreeFilter({});
-	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setPrecomputeTreeFilter({false, {{QStringLiteral("Rendered Effects"), {}, {}}}});
-	QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty()); // inactive filters retain no stale paths
 }
 
 void TestMediaFilterProxy::bin_intersection_matches_different_identities_on_the_same_row()

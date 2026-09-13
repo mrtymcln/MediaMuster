@@ -1,8 +1,6 @@
 #include "rebalanceplanner.h"
 #include "mediafile.h"
 #include "rebalanceplan.h"
-#include "rebalancer.h"
-#include "opjournal.h"
 #include "mobid.h"
 #include <QCryptographicHash>
 
@@ -11,15 +9,21 @@
 #include <QFileInfo>
 #include <QString>
 #include <QTemporaryDir>
-#include <QSignalSpy>
 #include <QTest>
 
-#include <memory>
-
-class TestRebalancerPlan : public QObject
+class TestRebalancePlanner : public QObject
 {
 	Q_OBJECT
-  private slots:
+private slots:
+	void parseFolderName_plain_number();
+	void parseFolderName_with_host_prefix();
+	void parseFolderName_rejects_quarantined();
+	void parseFolderName_rejects_leading_dot();
+	void parseFolderName_rejects_zero_padded();
+	void parseFolderName_rejects_zero();
+	void parseFolderName_rejects_negative();
+	void parseFolderName_rejects_non_numeric_tail();
+
 	void missing_root_yields_empty_plan();
 	void noop_when_already_balanced();
 	void consolidates_relatives_into_home_folder();
@@ -40,24 +44,9 @@ class TestRebalancerPlan : public QObject
 	void home_full_falls_back_to_existing_folder();
 	void new_folder_when_all_existing_are_full();
 
-	// Execution — now through the ops engine, so every rename is
-	// write-ahead journaled and recoverable. What has to hold is that an
-	// approved plan actually lands, and that a folder which won't accept
-	// renames stops the run before anything moves — proved with a
-	// scratch file, never by renaming one of the user's clips (which is
-	// what used to strand real media).
-	void initTestCase();
-	void cleanupTestCase();
-	void invalid_mxf_claims_are_refused_by_adapter();
-
-  private:
+private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
 	static QString stageMxfRoot(const QTemporaryDir &tmp);
-
-	/// Sandbox for the engine's journals: outlives every test so the env
-	/// var keeps pointing at a real directory, and the real AppData
-	/// journal (with a user's live undo candidate) is never touched.
-	QTemporaryDir m_journalDir;
 
 	/// Fills <mxfRoot>/<folderName>/ with `fillerCount` empty .mxf-named
 	/// files. Bumps the on-disk count without producing MediaFiles —
@@ -66,7 +55,7 @@ class TestRebalancerPlan : public QObject
 	/// MediaFiles.
 	static void makeFillers(const QString &mxfRoot, const QString &folderName, int fillerCount);
 
-	/// Creates one empty file under <mxfRoot>/<folderName>/<name>
+	/// Creates one sparse file under <mxfRoot>/<folderName>/<name>
 	/// and returns a MediaFile pointing at it.
 	static MediaFile makeMxf(const QString &mxfRoot, const QString &folderName, const QString &name,
 							 const QString &masterMobId = {}, qint64 sizeBytes = 1000);
@@ -76,18 +65,7 @@ class TestRebalancerPlan : public QObject
 						  const QString &destFolder);
 };
 
-void TestRebalancerPlan::initTestCase()
-{
-	QVERIFY(m_journalDir.isValid());
-	qputenv("MEDIAMUSTER_JOURNAL_DIR", m_journalDir.path().toUtf8());
-}
-
-void TestRebalancerPlan::cleanupTestCase()
-{
-	qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
-}
-
-QString TestRebalancerPlan::stageMxfRoot(const QTemporaryDir &tmp)
+QString TestRebalancePlanner::stageMxfRoot(const QTemporaryDir &tmp)
 {
 	const QString root = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF");
 	[[maybe_unused]] const bool ok = QDir().mkpath(root);
@@ -95,8 +73,8 @@ QString TestRebalancerPlan::stageMxfRoot(const QTemporaryDir &tmp)
 	return root;
 }
 
-void TestRebalancerPlan::makeFillers(const QString &mxfRoot, const QString &folderName,
-									 int fillerCount)
+void TestRebalancePlanner::makeFillers(const QString &mxfRoot, const QString &folderName,
+									   int fillerCount)
 {
 	const QString folder = mxfRoot + QLatin1Char('/') + folderName;
 	QDir().mkpath(folder);
@@ -109,9 +87,9 @@ void TestRebalancerPlan::makeFillers(const QString &mxfRoot, const QString &fold
 	}
 }
 
-MediaFile TestRebalancerPlan::makeMxf(const QString &mxfRoot, const QString &folderName,
-									  const QString &name, const QString &masterMobId,
-									  qint64 sizeBytes)
+MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRoot, const QString &folderName,
+										const QString &name, const QString &masterMobId,
+										qint64 sizeBytes)
 {
 	const QString folder = mxfRoot + QLatin1Char('/') + folderName;
 	QDir().mkpath(folder);
@@ -119,12 +97,7 @@ MediaFile TestRebalancerPlan::makeMxf(const QString &mxfRoot, const QString &fol
 	QFile f(path);
 	[[maybe_unused]] const bool opened = f.open(QIODevice::WriteOnly);
 	Q_ASSERT(opened);
-	// The on-disk size must MATCH the claimed sizeBytes: the engine's
-	// identity gate refuses to touch a file whose real size differs from
-	// what the scan recorded (that is the point of the gate), so a
-	// fixture that claims 1000 bytes over an empty file would be refused
-	// as a swapped file. resize() gives any size as a sparse file for
-	// free — honest metadata without writing the bytes.
+	// Match the planner's claimed size without writing a media payload.
 	if (sizeBytes > 0)
 	{
 		[[maybe_unused]] const bool sized = f.resize(sizeBytes);
@@ -142,8 +115,8 @@ MediaFile TestRebalancerPlan::makeMxf(const QString &mxfRoot, const QString &fol
 	return mf;
 }
 
-int TestRebalancerPlan::opsBetween(const RebalancePlan &p, const QString &srcFolder,
-								   const QString &destFolder)
+int TestRebalancePlanner::opsBetween(const RebalancePlan &p, const QString &srcFolder,
+									 const QString &destFolder)
 {
 	int n = 0;
 	for (const auto &op : p.ops)
@@ -157,16 +130,68 @@ int TestRebalancerPlan::opsBetween(const RebalancePlan &p, const QString &srcFol
 
 // MARK: - Tests
 
-void TestRebalancerPlan::missing_root_yields_empty_plan()
+void TestRebalancePlanner::parseFolderName_plain_number()
 {
-	const RebalancePlan p =
-		RebalancePlanner::computePlan(QStringLiteral("/nope/does/not/exist"), QStringLiteral("Vol"), {});
+	const auto id = RebalancePlanner::parseFolderName(QStringLiteral("5"));
+	QVERIFY(id.has_value());
+	QCOMPARE(id->prefix, QString());
+	QCOMPARE(id->n, 5);
+	QCOMPARE(id->display(), QStringLiteral("5"));
+}
+
+void TestRebalancePlanner::parseFolderName_with_host_prefix()
+{
+	const auto id = RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.42"));
+	QVERIFY(id.has_value());
+	QCOMPARE(id->prefix, QStringLiteral("MartysiMac"));
+	QCOMPARE(id->n, 42);
+	QCOMPARE(id->display(), QStringLiteral("MartysiMac.42"));
+}
+
+void TestRebalancePlanner::parseFolderName_rejects_quarantined()
+{
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("Quarantined Files")).has_value());
+}
+
+void TestRebalancePlanner::parseFolderName_rejects_leading_dot()
+{
+	// '.5' parses tail '5' as n=5, but display would render as '5'
+	// (empty prefix), which doesn't match the original '.5'.
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral(".5")).has_value());
+}
+
+void TestRebalancePlanner::parseFolderName_rejects_zero_padded()
+{
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("05")).has_value());
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.005")).has_value());
+}
+
+void TestRebalancePlanner::parseFolderName_rejects_zero()
+{
+	// Folder "0" is non-canonical for Avid. Rejected by the n > 0 guard.
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("0")).has_value());
+}
+
+void TestRebalancePlanner::parseFolderName_rejects_negative()
+{
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("-1")).has_value());
+}
+
+void TestRebalancePlanner::parseFolderName_rejects_non_numeric_tail()
+{
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.abc")).has_value());
+}
+
+void TestRebalancePlanner::missing_root_yields_empty_plan()
+{
+	const RebalancePlan p = RebalancePlanner::computePlan(QStringLiteral("/nope/does/not/exist"),
+														  QStringLiteral("Vol"), {});
 	QCOMPARE(p.ops.size(), 0);
 	QCOMPARE(p.newFolders.size(), 0);
 	QCOMPARE(p.folders.size(), 0);
 }
 
-void TestRebalancerPlan::noop_when_already_balanced()
+void TestRebalancePlanner::noop_when_already_balanced()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -184,7 +209,7 @@ void TestRebalancerPlan::noop_when_already_balanced()
 	QCOMPARE(p.newFolders.size(), 0);
 }
 
-void TestRebalancerPlan::consolidates_relatives_into_home_folder()
+void TestRebalancePlanner::consolidates_relatives_into_home_folder()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -204,7 +229,7 @@ void TestRebalancerPlan::consolidates_relatives_into_home_folder()
 	QCOMPARE(p.newFolders.size(), 0);
 }
 
-void TestRebalancerPlan::quarantined_folder_left_alone()
+void TestRebalancePlanner::quarantined_folder_left_alone()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -233,7 +258,7 @@ void TestRebalancerPlan::quarantined_folder_left_alone()
 	QVERIFY(quarantinedSeen);
 }
 
-void TestRebalancerPlan::folder_count_excludes_databases_and_hidden_files()
+void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -279,7 +304,7 @@ void TestRebalancerPlan::folder_count_excludes_databases_and_hidden_files()
 	QVERIFY(sawCreating);
 }
 
-void TestRebalancerPlan::out_of_scope_media_files_dropped()
+void TestRebalancePlanner::out_of_scope_media_files_dropped()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -296,7 +321,7 @@ void TestRebalancerPlan::out_of_scope_media_files_dropped()
 	QCOMPARE(p.ops.size(), 0);
 }
 
-void TestRebalancerPlan::host_prefix_isolates_consolidation()
+void TestRebalancePlanner::host_prefix_isolates_consolidation()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -316,7 +341,7 @@ void TestRebalancerPlan::host_prefix_isolates_consolidation()
 	QCOMPARE(opsBetween(p, "MartysiMac.2", "MartysiMac.1"), 1);
 }
 
-void TestRebalancerPlan::home_full_falls_back_to_existing_folder()
+void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -340,7 +365,7 @@ void TestRebalancerPlan::home_full_falls_back_to_existing_folder()
 	QCOMPARE(p.newFolders.size(), 0);
 }
 
-void TestRebalancerPlan::new_folder_when_all_existing_are_full()
+void TestRebalancePlanner::new_folder_when_all_existing_are_full()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -365,46 +390,7 @@ void TestRebalancerPlan::new_folder_when_all_existing_are_full()
 	QCOMPARE(opsBetween(p, "2", "3"), 5);
 }
 
-void TestRebalancerPlan::invalid_mxf_claims_are_refused_by_adapter()
-{
-	// The adapter must pass the scan claims into the shared identity gate.
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString root = stageMxfRoot(tmp);
-	const QVector<MediaFile> files{
-		makeMxf(root, "1", "a.mxf", "mobA"),
-		makeMxf(root, "1", "b.mxf", "mobB"),
-		makeMxf(root, "1", "c.mxf", "mobC"),
-	};
-	makeFillers(root, "2", 0);
-	RebalancePlan plan = RebalancePlanner::computePlan(root, "Vol", files);
-	plan.ops.clear();
-	for (const MediaFile &file : files)
-		plan.ops.append(
-			{file.filePath, FolderName{QString(), 2}, file.masterMobId, file.sizeBytes});
-
-	auto rebalancer = std::make_unique<Rebalancer>();
-	QSignalSpy finished(rebalancer.get(), &Rebalancer::finished);
-	rebalancer->executeAsync(plan);
-	QTRY_VERIFY_WITH_TIMEOUT(!finished.isEmpty(), 30000);
-	rebalancer.reset();
-
-	int landed = 0;
-	for (const MediaFile &file : files)
-	{
-		const bool atSource = QFile::exists(file.filePath);
-		const bool atDest = QFile::exists(root + "/2/" + QFileInfo(file.filePath).fileName());
-		QVERIFY(atSource != atDest);
-		landed += atDest;
-	}
-	QCOMPARE(landed, 0); // Fake MXF IDs are correctly rejected by the engine.
-	const auto records = OpJournal::scan(m_journalDir.path());
-	QCOMPARE(records.size(), 1);
-	for (const auto &entry : records.first().entries)
-		QVERIFY(entry.step != OpJournal::Step::Done);
-}
-
-void TestRebalancerPlan::same_master_never_crosses_workstation_prefix()
+void TestRebalancePlanner::same_master_never_crosses_workstation_prefix()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
@@ -416,7 +402,7 @@ void TestRebalancerPlan::same_master_never_crosses_workstation_prefix()
 	QCOMPARE(opsBetween(plan, "Mac.2", "Mac.1"), 1);
 	QCOMPARE(opsBetween(plan, "PC.2", "PC.1"), 1);
 }
-void TestRebalancerPlan::exactly_4999_relatives_are_stable()
+void TestRebalancePlanner::exactly_4999_relatives_are_stable()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
@@ -427,7 +413,7 @@ void TestRebalancerPlan::exactly_4999_relatives_are_stable()
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.newFolders.isEmpty());
 }
-void TestRebalancerPlan::oversized_packed_relatives_are_stable()
+void TestRebalancePlanner::oversized_packed_relatives_are_stable()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
@@ -438,7 +424,7 @@ void TestRebalancerPlan::oversized_packed_relatives_are_stable()
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.newFolders.isEmpty());
 }
-void TestRebalancerPlan::invalid_master_ids_are_independent()
+void TestRebalancePlanner::invalid_master_ids_are_independent()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
@@ -452,7 +438,7 @@ void TestRebalancerPlan::invalid_master_ids_are_independent()
 		QVERIFY(RebalancePlanner::computePlan(root, "Test", files).ops.isEmpty());
 	}
 }
-void TestRebalancerPlan::media_from_another_root_is_excluded()
+void TestRebalancePlanner::media_from_another_root_is_excluded()
 {
 	QTemporaryDir a, b;
 	const auto root = stageMxfRoot(a), other = stageMxfRoot(b);
@@ -460,5 +446,5 @@ void TestRebalancerPlan::media_from_another_root_is_excluded()
 								   makeMxf(other, "2", "b.mxf", "same")};
 	QVERIFY(RebalancePlanner::computePlan(root, "Test", files).ops.isEmpty());
 }
-QTEST_MAIN(TestRebalancerPlan)
-#include "tst_rebalancer_plan.moc"
+QTEST_APPLESS_MAIN(TestRebalancePlanner)
+#include "tst_rebalanceplanner.moc"

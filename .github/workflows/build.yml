@@ -28,11 +28,15 @@ jobs:
         include:
           - os: macos-latest
             name: MediaMuster-Mac
+            qt-host: mac
+            qt-arch: ''
           ### Pinned image, not a rolling label: the pinned Qt's headers are
           ### patched below for the MSVC that ships on this image, and a
           ### rolling label would move the compiler under that patch. ###
           - os: windows-2022
             name: MediaMuster-Win
+            qt-host: windows
+            qt-arch: win64_msvc2019_64
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -55,26 +59,14 @@ jobs:
           [ "$GITHUB_REF_TYPE" != tag ] || [ "${GITHUB_REF_NAME#v}" = "${APP_VERSION}" ] \
             || { echo "tag ${GITHUB_REF_NAME} is not APP_VERSION ${APP_VERSION}"; exit 1; }
 
-      ### Install Qt ###
-      - name: Install Qt (macOS)
-        if: runner.os == 'macOS'
+      - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
-          host: 'mac'
+          host: ${{ matrix.qt-host }}
           target: 'desktop'
+          arch: ${{ matrix.qt-arch }}
           dir: '${{ runner.temp }}/Qt'
-          cache: true
-
-      - name: Install Qt (Windows)
-        if: runner.os == 'Windows'
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ env.QT_VERSION }}
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_msvc2019_64'
-          dir: '${{ runner.temp }}\Qt'
           cache: true
 
       - name: Patch Qt for modern MSVC (Windows)
@@ -114,25 +106,19 @@ jobs:
 
       ### Test (macOS and Windows) ###
       - name: Test (macOS and Windows)
-        run: ctest --test-dir build -C Release --output-on-failure
-
-      ### --output-on-failure prints nothing for a failing Windows test; ctest always writes this ###
-      - name: Test log (on failure)
-        if: failure() && hashFiles('build/Testing/Temporary/LastTest.log') != ''
         shell: bash
-        run: cat build/Testing/Temporary/LastTest.log
+        run: bash ci/test.sh
 
-      ### The per-test result files are the only reliable record on Windows, ###
-      ### where ctest captures no test stdout at all ###
-      - name: Test results (on failure)
+      - name: Upload test diagnostics (on failure)
         if: failure()
-        shell: bash
-        run: |
-          for f in build/tests/*.result.txt build/tests/Release/*.result.txt; do
-            [ -f "$f" ] || continue
-            echo "===== $f ====="
-            cat "$f"
-          done
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-diagnostics-${{ matrix.name }}
+          path: |
+            build/Testing/Temporary/*.log
+            build/tests/*.result.txt
+            build/tests/Release/*.result.txt
+          if-no-files-found: ignore
 
       ### Code signing certificate (macOS) ###
       - name: Import code-signing cert
@@ -151,113 +137,13 @@ jobs:
           APPLE_TEAM_ID:     ${{ secrets.APPLE_TEAM_ID }}
           APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-        run: |
-          cd build
-
-          DMG="MediaMuster-${APP_VERSION}-Mac.dmg"
-
-          macdeployqt MediaMuster.app
-
-          APP=MediaMuster.app
-          PLUG="$APP/Contents/PlugIns"
-          FW="$APP/Contents/Frameworks"
-          ### SVG and the image formats are leftovers from the old custom-button UI ###
-          for gone in "$PLUG/imageformats" "$PLUG/iconengines" "$PLUG/generic" \
-                      "$PLUG/tls" "$PLUG/networkinformation" \
-                      "$FW/QtSvg.framework" "$FW/QtNetwork.framework"; do
-            rm -rf "$gone"
-            [ ! -e "$gone" ] || { echo "$gone survived the strip"; exit 1; }
-          done
-
-          missing=0
-          while IFS= read -r bin; do
-            for dep in $(otool -L "$bin" 2>/dev/null | awk '/@rpath\/Qt/ {print $1}' \
-                         | sed 's#@rpath/##; s#\.framework.*##' | sort -u); do
-              if [ ! -d "$FW/$dep.framework" ]; then
-                echo "MISSING framework: $dep (linked by $bin)"
-                missing=1
-              fi
-            done
-          done < <(find "$APP" -type f \( -perm -111 -o -name "*.dylib" \))
-          if [ "$missing" -ne 0 ]; then
-            echo "Qt framework trim broke a dependency"
-            exit 1
-          fi
-
-          build_dmg() {
-            local STAGING="$RUNNER_TEMP/dmg-staging"
-            rm -rf "$STAGING"
-            mkdir -p "$STAGING"
-            cp -R MediaMuster.app "$STAGING/"
-            ln -s /Applications "$STAGING/Applications"
-            sync
-            sleep 4
-            rm -f "$DMG"
-            hdiutil create -volname "MediaMuster" -srcfolder "$STAGING" -ov -format ULMO "$DMG"
-            rm -rf "$STAGING"
-          }
-
-          IDENTITY=$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)"/\1/' || true)
-
-          if [ -n "$IDENTITY" ] && [ -n "$APPLE_TEAM_ID" ]; then
-            echo "── Real Developer ID signing + notarization ──"
-            ### Nested-first: --deep is deprecated for signing ###
-            find "$APP/Contents/Frameworks" -maxdepth 1 -name "*.framework" \
-              -exec codesign --force --options runtime --timestamp --sign "$IDENTITY" {} \;
-            find "$APP/Contents/PlugIns" -name "*.dylib" \
-              -exec codesign --force --options runtime --timestamp --sign "$IDENTITY" {} \;
-            codesign --force --options runtime --timestamp --sign "$IDENTITY" "$APP"
-            codesign --verify --deep --strict --verbose=2 "$APP"
-            sync
-            sleep 2
-            build_dmg
-            xcrun notarytool submit "$DMG" --apple-id "$APPLE_ID_USERNAME" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
-            xcrun stapler staple "$DMG"
-            xcrun stapler validate "$DMG"
-          else
-            echo "── No signing identity available — ad-hoc signature ──"
-            find "$APP/Contents/Frameworks" -maxdepth 1 -name "*.framework" \
-              -exec codesign --force --sign - {} \;
-            find "$APP/Contents/PlugIns" -name "*.dylib" \
-              -exec codesign --force --sign - {} \;
-            codesign --force --sign - "$APP"
-            build_dmg
-          fi
+        run: bash ci/package-macos.sh
 
       ### Package (Windows) ###
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: |
-          cd build
-          New-Item -ItemType Directory -Path dist -Force | Out-Null
-          Copy-Item -Path Release\MediaMuster.exe -Destination dist\
-          Copy-Item -Recurse -Path Release\file-operation-samples -Destination dist\
-
-          windeployqt --release --no-translations --no-opengl-sw --no-system-d3d-compiler dist\MediaMuster.exe
-
-          ### SVG and the image formats are leftovers from the old custom-button UI ###
-          $strip = @('Qt6Network.dll', 'Qt6Svg.dll', 'tls', 'networkinformation',
-                     'generic', 'iconengines', 'imageformats')
-          foreach ($item in $strip) {
-            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "dist\$item"
-            if (Test-Path "dist\$item") { throw "$item survived the strip" }
-          }
-
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vs = & $vswhere -latest -property installationPath
-          $crt = Get-ChildItem "$vs\VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT" -Directory | Select-Object -Last 1
-          if (-not $crt) { throw "VC++ CRT redist folder not found under $vs" }
-          $keep = @('msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll',
-                    'msvcp140_atomic_wait.dll', 'msvcp140_codecvt_ids.dll',
-                    'vcruntime140.dll', 'vcruntime140_1.dll')
-          foreach ($dll in $keep) {
-            $src = Join-Path $crt.FullName $dll
-            if (-not (Test-Path $src)) { throw "Expected CRT DLL missing from redist: $dll" }
-            Copy-Item $src dist\
-          }
-
-          Rename-Item dist "MediaMuster-${env:APP_VERSION}-Win"
+        run: ./ci/package-windows.ps1
 
       ### Upload artefacts ###
       - name: Upload macOS artefact

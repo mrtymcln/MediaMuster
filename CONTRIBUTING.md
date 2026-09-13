@@ -62,8 +62,20 @@ Use the Qt version pinned in CMake. Typical local validation:
 
 ```sh
 cmake --build build --parallel 4
-ctest --test-dir build --output-on-failure
+ctest --test-dir build -C Release --parallel 1 --output-on-failure
 ```
+
+The 28 suites are registered in `core`, `media`, `operations` and `ui` groups. Use
+`-L operations` (or another label) for a focused run. Labels do not make suites
+depend on each other; CI runs every suite sequentially before packaging.
+
+The workflow keeps versions handwritten and checks their consistency. The longer
+recipes live in `ci/test.sh`, `ci/package-macos.sh` and `ci/package-windows.ps1`;
+run these from the repository root after building. The test script also prints
+saved QtTest failures, including on Windows. The packaging scripts require
+`APP_VERSION` and the platform's deployment tools; CI supplies these. See the
+[CI cleanup record](docs/ci-cleanup-proposal.md) for the scenario mapping and
+platform validation status.
 
 Run focused tests during a pass and the full suite after integration. A passing Mac
 build does not establish Windows SDK compatibility or real NEXIS behaviour; keep

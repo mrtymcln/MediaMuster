@@ -39,7 +39,7 @@ class TestOpJournal : public QObject
 	void saved_policy_and_inverse_identity_survive_restart();
 	void incomplete_moves_are_not_completed_by_source_retention();
 	void no_effect_requires_identity_evidence();
-	void missing_new_policy_rejects_old_beta_record();
+	void missing_required_policy_is_rejected();
 	void missing_new_entry_evidence_is_not_defaulted();
 	void abandoned_unresolved_job_keeps_every_record_and_artifact();
 	void disconnected_storage_does_not_hide_interrupted_job();
@@ -147,7 +147,7 @@ void TestOpJournal::no_effect_requires_identity_evidence()
 	QVERIFY(!OpJournal::Entry::fromJson(invalid));
 }
 
-void TestOpJournal::missing_new_policy_rejects_old_beta_record()
+void TestOpJournal::missing_required_policy_is_rejected()
 {
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
