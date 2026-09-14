@@ -107,10 +107,10 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationName("MediaMuster disposable Trash diagnostic");
     QCommandLineParser parser;
     parser.addHelpOption();
-    parser.addOptions({{{"case"},"Case name","name"},{{"root"},"New disposable case directory","path"},
-        {{"output"},"Evidence JSON file","path"},{{"bytes"},"Generated fixture size","count","65536"},
-        {{"scan-volume"},"Scan only the volume labeled MMTRASH_DIAG for the generated fixture"},
-        {{"mode"},"production or control","mode","production"}});
+    parser.addOptions({{"case","Case name","name"},{"root","New disposable case directory","path"},
+        {"output","Evidence JSON file","path"},{"bytes","Generated fixture size","count","65536"},
+        {"scan-volume","Scan only the volume labeled MMTRASH_DIAG for the generated fixture"},
+        {"mode","production or control","mode","production"}});
     parser.process(app);
     const auto root = QDir::cleanPath(QDir::fromNativeSeparators(parser.value("root")));
     const auto caseName = parser.value("case");
