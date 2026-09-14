@@ -7,6 +7,12 @@ param(
 $ErrorActionPreference='Stop'
 $result=[ordered]@{targetProcessId=$TargetProcessId;action=$Action;windows=@();clicked=$false}
 function Save-Result { $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath $Output -Encoding utf8 }
+function Fixture-Hash([string]$Path) {
+    $stream=[System.IO.File]::OpenRead($Path)
+    $sha=[System.Security.Cryptography.SHA256]::Create()
+    try { return ([BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-','').ToLowerInvariant() }
+    finally { $sha.Dispose(); $stream.Dispose() }
+}
 Add-Type -TypeDefinition @'
 using System;
 using System.Text;
@@ -59,7 +65,7 @@ try {
     if(!$safeFixture){throw 'Probe evidence does not identify a pending generated production fixture.'}
     $result['fixture']=$data.source
     $result['expectedSha256']=$data.expectedSha256
-    $actual=(Get-FileHash -LiteralPath $data.source -Algorithm SHA256).Hash.ToLowerInvariant()
+    $actual=Fixture-Hash $data.source
     if(!$data.expectedSha256 -or $actual -ne $data.expectedSha256){throw 'Generated fixture hash did not match.'}
     $windows=@([MMDiagWindows]::Snapshot($TargetProcessId))
     $result.windows=$windows
@@ -98,7 +104,7 @@ try {
         if($Action -eq 'Record' -or !$eligible -or $result.clicked){continue}
         # Recheck the target is alive and our generated file is intact immediately before the scoped click.
         if(!(Get-Process -Id $TargetProcessId -ErrorAction SilentlyContinue) -or
-            (Get-FileHash -LiteralPath $data.source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $data.expectedSha256){throw 'Fixture or process changed before click.'}
+            (Fixture-Hash $data.source) -ne $data.expectedSha256){throw 'Fixture or process changed before click.'}
         $buttonId=if($Action -eq 'Yes'){6}else{7}
         $buttons=@($window.children | Where-Object {$_.processId -eq $TargetProcessId -and $_.className -eq 'Button' -and
             $_.id -eq $buttonId -and $_.enabled -and $_.text.Replace('&','').Trim() -eq $Action})
