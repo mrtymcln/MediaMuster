@@ -1,5 +1,6 @@
 #include "optrash.h"
 #include <QFileInfo>
+#include <cerrno>
 #import <Foundation/Foundation.h>
 
 namespace
@@ -11,8 +12,28 @@ NSURL *url(const QString &path)
 }
 QString describe(NSError *error)
 {
-	return error ? QString::fromUtf8([[error localizedDescription] UTF8String]) :
-		QStringLiteral("The system returned no Trash result.");
+	if (!error) return QStringLiteral("The system returned no Trash result.");
+	QStringList details;
+	for (int depth = 0; error && depth < 4; ++depth)
+	{
+		details.append(QStringLiteral("%1 (%2, code %3)")
+			.arg(QString::fromUtf8([[error localizedDescription] UTF8String]),
+				QString::fromUtf8([[error domain] UTF8String]))
+			.arg(qlonglong([error code])));
+		error = [[error userInfo] objectForKey:NSUnderlyingErrorKey];
+	}
+	return details.join(QStringLiteral("; "));
+}
+bool cancelled(NSError *error)
+{
+	for (int depth = 0; error && depth < 4; ++depth)
+	{
+		if (([[error domain] isEqualToString:NSCocoaErrorDomain] && [error code] == NSUserCancelledError) ||
+			([[error domain] isEqualToString:NSPOSIXErrorDomain] && [error code] == ECANCELED))
+			return true;
+		error = [[error userInfo] objectForKey:NSUnderlyingErrorKey];
+	}
+	return false;
 }
 }
 
@@ -22,7 +43,7 @@ OpTrash::Result OpTrashPlatform::move(const QString &path, const OpStamp &expect
 	@autoreleasepool
 	{
 		if (cancel.load()) return {OpTrash::Outcome::Cancelled, {}, {}, "Cancelled before system Trash.", {}};
-		if (!expected.unchanged(OpFile::inspect(path)))
+		if (!OpFile::safePath(path) || !expected.unchanged(OpFile::inspect(path)))
 			return {OpTrash::Outcome::Failed, {}, {}, "The source changed before system Trash.", {}};
 		NSURL *resultURL = nil;
 		NSError *error = nil;
@@ -38,11 +59,16 @@ OpTrash::Result OpTrashPlatform::move(const QString &path, const OpStamp &expect
 		if (!succeeded || !resultURL)
 		{
 			result.error = describe(error);
-			// A native failure can be ambiguous. No second deletion/fallback is
-			// authorized by this error; the coordinator retains the journal.
+			// Only a refused operation with no returned location and an unchanged
+			// original is eligible for the coordinator's fallback consent dialog.
+			// Keep ambiguous native results for reconciliation, even on Cancel.
+			if (!succeeded && !resultURL && OpFile::safePath(path) &&
+				expected.unchanged(OpFile::inspect(path)))
+				result.outcome = cancel.load() || cancelled(error) ?
+					OpTrash::Outcome::Cancelled : OpTrash::Outcome::Unavailable;
 			return result;
 		}
-		if (!expected.unchanged(result.landed) || OpFile::occupied(path))
+		if (!OpFile::safePath(result.path) || !expected.unchanged(result.landed) || OpFile::occupied(path))
 		{
 			result.error = "The system Trash result needs identity or location reconciliation.";
 			return result;

@@ -1,7 +1,9 @@
 #include "opjournal.h"
 #include "oprequest.h"
 
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QTemporaryDir>
 #include <QTest>
@@ -31,6 +33,33 @@ QByteArray readBytes(const QString &path)
 	QFile file(path);
 	return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
 }
+bool setJournalTimes(const QString &path, const QDateTime &started, const QDateTime &modified)
+{
+	const auto bytes = readBytes(path);
+	const auto firstLine = bytes.indexOf('\n');
+	if (firstLine < 0)
+		return false;
+	auto begin = QJsonDocument::fromJson(bytes.left(firstLine)).object();
+	begin["started"] = started.toString(Qt::ISODateWithMs);
+	if (!writeBytes(path, QJsonDocument(begin).toJson(QJsonDocument::Compact) + bytes.mid(firstLine)))
+		return false;
+	QFile file(path);
+	return file.open(QIODevice::ReadWrite) && file.setFileTime(modified, QFileDevice::FileModificationTime);
+}
+QString finishedJournal(const OpRequest &request, const QString &directory, QString &error)
+{
+	OpJournal journal;
+	if (!journal.create(request, directory, error))
+		return {};
+	auto entry = journal.record().entries[0];
+	entry.step = OpJournal::Step::Done;
+	if (!journal.save(entry) || !journal.finish(false))
+	{
+		error = journal.error();
+		return {};
+	}
+	return journal.path();
+}
 } // namespace
 
 class TestOpJournal : public QObject
@@ -57,6 +86,18 @@ class TestOpJournal : public QObject
 	void resolved_request_uses_the_same_paths_as_its_entries();
 	void interrupted_system_trash_requires_a_saved_receipt_for_undo();
 	void network_matching_requires_endpoint_and_directory_identity();
+	void pruning_uses_last_update_data();
+	void pruning_uses_last_update();
+	void pruning_preserves_recovery_evidence_data();
+	void pruning_preserves_recovery_evidence();
+	void pruning_keeps_the_latest_undo_candidate_with_undo_disabled();
+	void pruning_keeps_the_completed_undo_barrier();
+	void pruning_keeps_linked_history_data();
+	void pruning_keeps_linked_history();
+	void pruning_preserves_missing_links_data();
+	void pruning_preserves_missing_links();
+	void pruning_respects_the_operation_lock();
+	void pruning_leaves_media_and_unrelated_files_untouched();
 };
 
 // Journal enum names are persisted on disk; unknown spellings must be refused.
@@ -515,6 +556,350 @@ void TestOpJournal::interrupted_system_trash_requires_a_saved_receipt_for_undo()
 	const auto candidate = OpJournal::latestUndoable(directory);
 	QVERIFY(candidate);
 	QCOMPARE(candidate->path, journal.path());
+}
+
+void TestOpJournal::pruning_uses_last_update_data()
+{
+	QTest::addColumn<int>("secondsFromCutoff");
+	QTest::addColumn<bool>("removed");
+	QTest::newRow("older-than-30-days") << -1 << true;
+	QTest::newRow("exactly-30-days") << 0 << false;
+	QTest::newRow("just-within-30-days") << 1 << false;
+	QTest::newRow("old-job-updated-yesterday") << 29 * 24 * 60 * 60 << false;
+}
+
+void TestOpJournal::pruning_uses_last_update()
+{
+	QFETCH(int, secondsFromCutoff);
+	QFETCH(bool, removed);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	request.items[0].maintenance = true;
+	QString error;
+	const auto path = finishedJournal(request, directory, error);
+	QVERIFY2(!path.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(path, now.addDays(-100), now.addDays(-30).addSecs(secondsFromCutoff)));
+	const auto before = readBytes(path);
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QCOMPARE(QFile::exists(path), !removed);
+	if (!removed)
+		QCOMPARE(readBytes(path), before);
+}
+
+void TestOpJournal::pruning_preserves_recovery_evidence_data()
+{
+	QTest::addColumn<int>("step");
+	QTest::addColumn<QString>("evidence");
+	QTest::addColumn<bool>("removed");
+	using Step = OpJournal::Step;
+	QTest::newRow("completed") << int(Step::Done) << QString() << true;
+	QTest::newRow("completed-source-removal") << int(Step::SourceRemoved) << QString("retirement") << true;
+	QTest::newRow("skipped") << int(Step::Skipped) << QString() << true;
+	QTest::newRow("no-effect") << int(Step::NoEffect) << QString() << true;
+	QTest::newRow("planned") << int(Step::Planned) << QString() << false;
+	QTest::newRow("cancelled") << int(Step::Cancelled) << QString() << false;
+	QTest::newRow("failed") << int(Step::Failed) << QString() << false;
+	QTest::newRow("awaiting-source-removal") << int(Step::Published) << QString() << false;
+	QTest::newRow("source-retained") << int(Step::SourceRetained) << QString() << false;
+	QTest::newRow("needs-attention") << int(Step::NeedsAttention) << QString() << false;
+	QTest::newRow("dismissed-failure") << int(Step::Failed) << QString("dismissed") << false;
+	QTest::newRow("missing-final-stop") << int(Step::Done) << QString("active") << false;
+	QTest::newRow("torn-final-append") << int(Step::Done) << QString("torn") << false;
+	QTest::newRow("corrupt-append") << int(Step::Done) << QString("corrupt") << false;
+	QTest::newRow("retained-artifact") << int(Step::Done) << QString("artifact") << false;
+	QTest::newRow("unfinished-temporary-file") << int(Step::Done) << QString("temp") << false;
+}
+
+void TestOpJournal::pruning_preserves_recovery_evidence()
+{
+	QFETCH(int, step);
+	QFETCH(QString, evidence);
+	QFETCH(bool, removed);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	request.items[0].maintenance = true;
+	QVERIFY(writeBytes(request.items[0].src, "payload"));
+	QString path, error;
+	{
+		OpJournal journal;
+		QVERIFY2(journal.create(request, directory, error), qPrintable(error));
+		path = journal.path();
+		auto entry = journal.record().entries[0];
+		entry.step = OpJournal::Step(step);
+		if (entry.step == OpJournal::Step::NoEffect)
+		{
+			entry.dst = entry.item.src;
+			entry.landed = entry.source;
+		}
+		if (evidence == "retirement")
+		{
+			entry.retirement = temp.path() + "/removed-original.bin";
+			entry.sourceRemoved = true;
+		}
+		if (evidence == "artifact")
+			entry.artifacts.append(temp.path() + "/disconnected-volume/retained.bin");
+		if (evidence == "temp")
+			entry.temp = temp.path() + "/disconnected-volume/partial.bin";
+		QVERIFY(journal.save(entry));
+		if (evidence != "active")
+			QVERIFY(journal.finish(false));
+	}
+	if (evidence == "dismissed")
+		QVERIFY2(OpJournal::dismiss(path, error), qPrintable(error));
+	if (evidence == "torn" || evidence == "corrupt")
+		QVERIFY(writeBytes(path, readBytes(path) + (evidence == "torn" ? QByteArray("{\"record\":") : QByteArray("invalid\n"))));
+	QVERIFY(setJournalTimes(path, now.addDays(-60), now.addDays(-40)));
+	const auto record = OpJournal::readOne(path);
+	QVERIFY(record);
+	QCOMPARE(record->torn, evidence == "torn");
+	QCOMPARE(record->corrupt, evidence == "corrupt");
+	const auto before = readBytes(path);
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QCOMPARE(QFile::exists(path), !removed);
+	if (!removed)
+		QCOMPARE(readBytes(path), before);
+	QCOMPARE(readBytes(request.items[0].src), QByteArray("payload"));
+}
+
+void TestOpJournal::pruning_keeps_the_latest_undo_candidate_with_undo_disabled()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	QVERIFY(!request.undoEnabled);
+	QString error;
+	const auto older = finishedJournal(request, directory, error);
+	const auto candidate = finishedJournal(request, directory, error);
+	request.items[0].maintenance = true;
+	const auto maintenance = finishedJournal(request, directory, error);
+	QVERIFY2(!older.isEmpty() && !candidate.isEmpty() && !maintenance.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(older, now.addDays(-70), now.addDays(-40)));
+	QVERIFY(setJournalTimes(candidate, now.addDays(-60), now.addDays(-40)));
+	QVERIFY(setJournalTimes(maintenance, now.addDays(-50), now.addDays(-40)));
+	const auto before = OpJournal::latestUndoable(directory);
+	QVERIFY(before);
+	QCOMPARE(before->path, candidate);
+	QVERIFY(!before->request.undoEnabled);
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QVERIFY(!QFile::exists(older));
+	QVERIFY(!QFile::exists(maintenance));
+	QVERIFY(QFile::exists(candidate));
+	const auto after = OpJournal::latestUndoable(directory);
+	QVERIFY(after);
+	QCOMPARE(after->path, candidate);
+}
+
+void TestOpJournal::pruning_keeps_the_completed_undo_barrier()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	QString error;
+	const auto older = finishedJournal(request, directory, error);
+	const auto forward = finishedJournal(request, directory, error);
+	QVERIFY2(!older.isEmpty() && !forward.isEmpty(), qPrintable(error));
+	request.kind = OpKind::Undo;
+	request.undoOf = forward;
+	const auto inverse = finishedJournal(request, directory, error);
+	QVERIFY2(!inverse.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(older, now.addDays(-80), now.addDays(-1)));
+	QVERIFY(setJournalTimes(forward, now.addDays(-70), now.addDays(-40)));
+	QVERIFY(setJournalTimes(inverse, now.addDays(-60), now.addDays(-40)));
+	QVERIFY(!OpJournal::latestUndoable(directory));
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QVERIFY(QFile::exists(older));
+	QVERIFY(QFile::exists(forward));
+	QVERIFY(QFile::exists(inverse));
+	QVERIFY(!OpJournal::latestUndoable(directory));
+}
+
+void TestOpJournal::pruning_keeps_linked_history_data()
+{
+	QTest::addColumn<QString>("retainedReason");
+	QTest::addColumn<bool>("claimSaved");
+	QTest::newRow("recent-forward") << QString("recent-forward") << true;
+	QTest::newRow("recent-inverse-before-claim-append") << QString("recent-inverse") << false;
+	QTest::newRow("unfinished-forward") << QString("unfinished-forward") << true;
+	QTest::newRow("unfinished-inverse") << QString("unfinished-inverse") << true;
+	QTest::newRow("old-pair-superseded-by-new-job") << QString() << true;
+}
+
+void TestOpJournal::pruning_keeps_linked_history()
+{
+	QFETCH(QString, retainedReason);
+	QFETCH(bool, claimSaved);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	QString forward, inverse, error;
+	{
+		OpJournal journal;
+		QVERIFY2(journal.create(request, directory, error), qPrintable(error));
+		forward = journal.path();
+		auto entry = journal.record().entries[0];
+		entry.step = retainedReason == "unfinished-forward" ? OpJournal::Step::Failed : OpJournal::Step::Done;
+		QVERIFY(journal.save(entry));
+		QVERIFY(journal.finish(false));
+	}
+	request.kind = OpKind::Undo;
+	request.undoOf = forward;
+	{
+		OpJournal journal;
+		QVERIFY2(journal.create(request, directory, error), qPrintable(error));
+		inverse = journal.path();
+		auto entry = journal.record().entries[0];
+		entry.step = retainedReason == "unfinished-inverse" ? OpJournal::Step::Failed : OpJournal::Step::Done;
+		QVERIFY(journal.save(entry));
+		QVERIFY(journal.finish(false));
+	}
+	if (claimSaved)
+	{
+		const auto record = OpJournal::readOne(forward);
+		QVERIFY(record);
+		OpJournal journal;
+		QVERIFY2(journal.resume(*record, error), qPrintable(error));
+		QVERIFY(journal.claimUndo(inverse));
+	}
+	QVERIFY(setJournalTimes(forward, now.addDays(-80), now.addDays(retainedReason == "recent-forward" ? -1 : -40)));
+	QVERIFY(setJournalTimes(inverse, now.addDays(-70), now.addDays(retainedReason == "recent-inverse" ? -1 : -40)));
+	const auto candidate = finishedJournal(requestFor(temp.path()), directory, error);
+	QVERIFY2(!candidate.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(candidate, now.addDays(-60), now.addDays(-40)));
+	const auto forwardBefore = readBytes(forward);
+	const auto inverseBefore = readBytes(inverse);
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	const bool retained = !retainedReason.isEmpty();
+	QCOMPARE(QFile::exists(forward), retained);
+	QCOMPARE(QFile::exists(inverse), retained);
+	if (retained)
+	{
+		QCOMPARE(readBytes(forward), forwardBefore);
+		QCOMPARE(readBytes(inverse), inverseBefore);
+	}
+	const auto after = OpJournal::latestUndoable(directory);
+	QVERIFY(after);
+	QCOMPARE(after->path, candidate);
+}
+
+void TestOpJournal::pruning_preserves_missing_links_data()
+{
+	QTest::addColumn<bool>("inverse");
+	QTest::newRow("missing-inverse") << false;
+	QTest::newRow("missing-forward") << true;
+}
+
+void TestOpJournal::pruning_preserves_missing_links()
+{
+	QFETCH(bool, inverse);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto missing = directory + "/operation-missing.jsonl";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	if (inverse)
+	{
+		request.kind = OpKind::Undo;
+		request.undoOf = missing;
+	}
+	QString error;
+	const auto path = finishedJournal(request, directory, error);
+	QVERIFY2(!path.isEmpty(), qPrintable(error));
+	if (!inverse)
+	{
+		const auto record = OpJournal::readOne(path);
+		QVERIFY(record);
+		OpJournal journal;
+		QVERIFY2(journal.resume(*record, error), qPrintable(error));
+		QVERIFY(journal.claimUndo(missing));
+	}
+	QVERIFY(setJournalTimes(path, now.addDays(-80), now.addDays(-40)));
+	const auto candidate = finishedJournal(requestFor(temp.path()), directory, error);
+	QVERIFY2(!candidate.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(candidate, now.addDays(-60), now.addDays(-40)));
+	const auto before = readBytes(path);
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QCOMPARE(readBytes(path), before);
+	QVERIFY(!QFile::exists(missing));
+}
+
+void TestOpJournal::pruning_respects_the_operation_lock()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	request.items[0].maintenance = true;
+	QString error;
+	const auto path = finishedJournal(request, directory, error);
+	QVERIFY2(!path.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(path, now.addDays(-60), now.addDays(-40)));
+	const auto before = readBytes(path);
+	auto lock = OpJournal::acquire(directory, error);
+	QVERIFY2(lock, qPrintable(error));
+	QVERIFY(!OpJournal::prune(directory, error, now));
+	QVERIFY(!error.isEmpty());
+	QCOMPARE(readBytes(path), before);
+	lock.reset();
+	error.clear();
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QVERIFY(!QFile::exists(path));
+}
+
+void TestOpJournal::pruning_leaves_media_and_unrelated_files_untouched()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto directory = temp.path() + "/journals";
+	const auto now = QDateTime::fromString("2026-09-14T12:00:00Z", Qt::ISODate);
+	auto request = requestFor(temp.path());
+	request.items[0].maintenance = true;
+	request.diagnosticTrashRoot = temp.path() + "/MediaMuster_Trash";
+	QVERIFY(QDir().mkpath(request.diagnosticTrashRoot));
+	const auto trashed = request.diagnosticTrashRoot + "/trashed.bin";
+	QVERIFY(writeBytes(request.items[0].src, "source media"));
+	QVERIFY(writeBytes(trashed, "trashed media"));
+	QString error;
+	const auto path = finishedJournal(request, directory, error);
+	QVERIFY2(!path.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(path, now.addDays(-60), now.addDays(-40)));
+	const auto notes = directory + "/notes.txt";
+	const auto unknown = directory + "/operation-unrelated.jsonl";
+	QVERIFY(writeBytes(notes, "keep these notes"));
+	QVERIFY(writeBytes(unknown, "unrelated data\n"));
+	const auto outside = finishedJournal(request, temp.path() + "/other-journals", error);
+	QVERIFY2(!outside.isEmpty(), qPrintable(error));
+	QVERIFY(setJournalTimes(outside, now.addDays(-60), now.addDays(-40)));
+	const auto outsideBefore = readBytes(outside);
+#ifdef Q_OS_UNIX
+	const auto link = directory + "/operation-symlink.jsonl";
+	QVERIFY(QFile::link(outside, link));
+	QVERIFY(QFileInfo(link).isSymLink());
+#endif
+	QCOMPARE(OpJournal::scan(directory).size(), 1);
+	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	QVERIFY(!QFile::exists(path));
+	QCOMPARE(readBytes(request.items[0].src), QByteArray("source media"));
+	QCOMPARE(readBytes(trashed), QByteArray("trashed media"));
+	QCOMPARE(readBytes(notes), QByteArray("keep these notes"));
+	QCOMPARE(readBytes(unknown), QByteArray("unrelated data\n"));
+	QCOMPARE(readBytes(outside), outsideBefore);
+#ifdef Q_OS_UNIX
+	QVERIFY(QFileInfo(link).isSymLink());
+#endif
 }
 
 QTEST_GUILESS_MAIN(TestOpJournal)

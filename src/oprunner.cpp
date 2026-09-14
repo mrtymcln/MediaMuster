@@ -171,6 +171,18 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error,
 {
 	if (e.complete())
 		return true;
+	if (e.step == Step::TrashFallback)
+	{
+		// The native call explicitly refused before moving anything. Recovery
+		// can verify this state, but only Resume may ask/perform the fallback.
+		auto original = OpFile::open(e.item.src, false, error);
+		if (!original || !original->stillAt(e.item.src, e.source))
+		{
+			error = "The original changed while awaiting a Trash choice; no fallback was attempted. " + error;
+			return false;
+		}
+		return true;
+	}
 	if (e.mechanism == "systemTrash" && e.step != Step::Planned &&
 		e.step != Step::Failed && e.step != Step::Cancelled)
 	{
@@ -503,10 +515,13 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		return result(e, State::Failed, error);
 	}
 	e.source = current;
-	e.error.clear();
+	if (e.step != Step::TrashFallback)
+		e.error.clear();
 	const bool trash = kind == OpKind::Delete || e.item.maintenance ||
 					   e.undoAction == "discardCopy";
-	if (trash && !e.item.maintenance && !hooks.forceNetworkTrash &&
+	if (trash && e.step == Step::TrashFallback && !e.trashFallbackApproved)
+		return result(e, State::SourceRetained, e.error);
+	if (trash && !e.trashFallbackApproved && !e.item.maintenance && !hooks.forceNetworkTrash &&
 		j.record().request.diagnosticTrashRoot.isEmpty() &&
 		!OpTrash::isNetwork(e.item.src))
 	{
@@ -515,7 +530,8 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		if (!save(j, e, Step::Relocating))
 			return result(e, State::NeedsAttention, j.error());
 		source.reset();
-		const auto trashed = OpTrash::move(e.item.src, e.source, m_cancel);
+		const auto trashed = hooks.nativeTrash ? hooks.nativeTrash(e) :
+			OpTrash::move(e.item.src, e.source, m_cancel);
 		checkpoint("system-trash-returned", e);
 		if (trashed.outcome == OpTrash::Outcome::Succeeded)
 		{
@@ -527,21 +543,42 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 				return result(e, State::NeedsAttention, "System Trash result needs recovery.");
 			return result(e, State::Completed, "Moved to system Trash.", true);
 		}
-		if (trashed.outcome != OpTrash::Outcome::Unavailable)
+		if (trashed.outcome != OpTrash::Outcome::Unavailable ||
+			!trashed.path.isEmpty() || !trashed.receipt.isEmpty() || trashed.landed.valid())
 		{
 			e.dst = trashed.path;
 			e.trashReceipt = trashed.receipt;
 			e.landed = trashed.landed;
 			e.error = trashed.error;
 			const bool unchanged = e.source.unchanged(OpFile::inspect(e.item.src));
-			const auto state = !unchanged ? State::NeedsAttention : (trashed.outcome == OpTrash::Outcome::Cancelled ? State::Cancelled : State::Failed);
-			save(j, e, !unchanged ? Step::NeedsAttention : (state == State::Cancelled ? Step::Cancelled : Step::Failed));
+			const bool uncertain = trashed.outcome == OpTrash::Outcome::Failed || !unchanged || !trashed.path.isEmpty() ||
+				!trashed.receipt.isEmpty() || trashed.landed.valid();
+			const auto state = uncertain ? State::NeedsAttention : (trashed.outcome == OpTrash::Outcome::Cancelled ? State::Cancelled : State::Failed);
+			save(j, e, uncertain ? Step::NeedsAttention : (state == State::Cancelled ? Step::Cancelled : Step::Failed));
 			return result(e, state, e.error, !unchanged);
 		}
 		source = OpFile::open(e.item.src, false, error);
 		if (!source || !source->stillAt(e.item.src, e.source))
-			return result(e, State::NeedsAttention, "Original changed while checking Trash support.");
+		{
+			e.error = "Original changed while checking bin support. " + error;
+			save(j, e, Step::NeedsAttention);
+			return result(e, State::NeedsAttention, e.error);
+		}
+		// This is a confirmed refusal, distinct from an interrupted native move.
+		// Persist it before waiting for consent so Resume never repeats the call.
+		e.mechanism.clear();
+		e.trashProvider.clear();
+		e.dst.clear();
+		e.trashReceipt.clear();
+		e.landed = {};
+		e.error = trashed.error;
+		if (!save(j, e, Step::TrashFallback))
+			return result(e, State::NeedsAttention, "Cannot save the bin refusal; original retained.");
+		checkpoint("trash-fallback-pending", e);
+		return result(e, State::SourceRetained, e.error);
 	}
+	if (trash && e.trashFallbackApproved && m_cancel.load())
+		return result(e, State::Cancelled, "Cancelled before moving to MediaMuster Trash.");
 	if (trash)
 		e.trashProvider = "mediamuster";
 	const auto trashFolder = j.record().request.diagnosticTrashRoot.isEmpty()
@@ -646,6 +683,12 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 				error = "Injected relocation failure.";
 			else
 			{
+				if (trash && m_cancel.load())
+				{
+					e.error = "Cancelled before moving to Trash.";
+					const auto state = save(j, e, Step::Cancelled) ? State::Cancelled : State::NeedsAttention;
+					return result(e, state, e.error);
+				}
 				const auto moved = source->relocate(e.item.src, e.dst, error);
 				if (moved == OpFile::Relocation::Exists)
 				{
@@ -1083,6 +1126,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 		int mediaIndex = 0, mediaTotal = 0;
 		QSet<int> deferred;
 		QVector<int> discards;
+		QVector<int> trashFallbacks;
 		for (const auto &e : entries)
 			if (!e.item.maintenance)
 				++mediaTotal;
@@ -1248,6 +1292,11 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 				}
 				outcome = execute(journal, e, request.kind, mediaIndex, workTotal, &retryableCopy);
 			}
+			if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
+			{
+				trashFallbacks.append(n);
+				continue;
+			}
 			if (outcome.state == State::SourceRetained && removesAfterCopy(e, request))
 			{
 				deferred.insert(n);
@@ -1367,26 +1416,28 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 			if (!undoOriginal || !OpJournal::resolve(*undoOriginal, error))
 				throw std::runtime_error("Cannot confirm original locations before finishing Undo.");
 		}
+		auto canDiscard = [&](const OpJournal::Entry &e)
+		{
+			if (!undoOriginal || undoOriginal->request.kind != OpKind::Move)
+				return true;
+			for (const auto &inverse : journal.record().entries)
+				if (inverse.undoEntryId == e.undoEntryId && inverse.undoAction.startsWith("restore") &&
+					inverse.complete() && inverse.landed.unchanged(OpFile::inspect(inverse.dst)))
+					return true;
+			if (e.undoEntryId >= 0 && e.undoEntryId < undoOriginal->entries.size())
+			{
+				const auto &original = undoOriginal->entries[e.undoEntryId];
+				return original.source.unchanged(OpFile::inspect(original.item.src));
+			}
+			return false;
+		};
 		for (const auto n : discards)
 		{
 			if (!ready || m_cancel.load() || !journal.healthy())
 				break;
 			auto e = journal.record().entries[n];
-			if (undoOriginal->request.kind == OpKind::Move)
-			{
-				bool restored = false;
-				for (const auto &inverse : journal.record().entries)
-					if (inverse.undoEntryId == e.undoEntryId && inverse.undoAction.startsWith("restore") &&
-						inverse.complete() && inverse.landed.unchanged(OpFile::inspect(inverse.dst)))
-						restored = true;
-				if (!restored && e.undoEntryId >= 0 && e.undoEntryId < undoOriginal->entries.size())
-				{
-					const auto &original = undoOriginal->entries[e.undoEntryId];
-					restored = original.source.unchanged(OpFile::inspect(original.item.src));
-				}
-				if (!restored)
-					throw std::runtime_error("A restored original changed; its remaining copy was retained.");
-			}
+			if (!canDiscard(e))
+				throw std::runtime_error("A restored original changed; its remaining copy was retained.");
 			if (e.step != Step::Planned && !reconcile(journal, e, error, &m_cancel, hooks.directorySync))
 			{
 				++totals.needsAttention;
@@ -1396,6 +1447,11 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 			if (e.complete())
 				continue;
 			const auto outcome = execute(journal, e, OpKind::Undo, n + 1, mediaTotal);
+			if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
+			{
+				trashFallbacks.append(n);
+				continue;
+			}
 			m_sink.result(outcome);
 			if (outcome.state == State::Completed)
 				++totals.succeeded;
@@ -1405,6 +1461,91 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 			{
 				++totals.needsAttention;
 				break;
+			}
+		}
+		if (!trashFallbacks.isEmpty())
+		{
+			QVector<OpTrashFallbackItem> choices;
+			QSet<int> changedOriginals;
+			bool eligible = journal.healthy() && !totals.needsAttention && !totals.failed &&
+				!totals.cancelled && !m_cancel.load();
+			for (const auto n : trashFallbacks)
+			{
+				const auto &e = journal.record().entries[n];
+				QString checkError;
+				auto original = OpFile::open(e.item.src, false, checkError);
+				if (!original || !original->stillAt(e.item.src, e.source) || !canDiscard(e))
+				{
+					eligible = false;
+					changedOriginals.insert(n);
+				}
+				choices.append({e.item.src, trashRoot(e.item.src), e.error});
+			}
+			const bool approved = eligible && m_sink.confirmTrashFallback(choices);
+			if (eligible && !approved)
+				totals.cancelled = true;
+			if (approved && !m_cancel.load())
+			{
+				// Persist the whole batch choice before moving its first file.
+				// Every subsequent mutation still revalidates its own source.
+				for (const auto n : trashFallbacks)
+				{
+					auto e = journal.record().entries[n];
+					e.trashFallbackApproved = true;
+					if (!save(journal, e, Step::TrashFallback))
+						throw std::runtime_error(journal.error().toStdString());
+				}
+				checkpoint("trash-fallback-approved", journal.record().entries[trashFallbacks.first()]);
+			}
+			for (const auto n : trashFallbacks)
+			{
+				auto e = journal.record().entries[n];
+				if (changedOriginals.contains(n))
+				{
+					e.error = "An original changed while preparing the Trash choice; no fallback was attempted.";
+					save(journal, e, Step::NeedsAttention);
+					++totals.needsAttention;
+					m_sink.result(result(e, State::NeedsAttention, e.error));
+					continue;
+				}
+				if (!approved || m_cancel.load() || !journal.healthy())
+				{
+					++totals.retained;
+					m_sink.result(result(e, State::SourceRetained,
+						"Original retained; the MediaMuster Trash move was not approved or the operation stopped."));
+					continue;
+				}
+				OpResult outcome;
+				if (e.undoAction == "discardCopy" && !canDiscard(e))
+				{
+					e.error = "A restored original changed while awaiting the Trash choice; its remaining copy was retained.";
+					save(journal, e, Step::NeedsAttention);
+					outcome = result(e, State::NeedsAttention, e.error);
+				}
+				else
+					outcome = execute(journal, e, request.kind, n + 1, mediaTotal);
+				m_sink.result(outcome);
+				if (outcome.state == State::Completed)
+				{
+					++totals.succeeded;
+					QDir trash(QFileInfo(e.dst).absolutePath());
+					trash.cdUp();
+					trash.cdUp();
+					++trashCounts[trash.path()];
+				}
+				else if (outcome.state == State::Cancelled)
+				{
+					totals.cancelled = true;
+					break;
+				}
+				else
+				{
+					if (outcome.state == State::NeedsAttention)
+						++totals.needsAttention;
+					else
+						++totals.failed;
+					break;
+				}
 			}
 		}
 		totals.cancelled = totals.cancelled || m_cancel.load();

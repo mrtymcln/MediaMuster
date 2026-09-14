@@ -1,5 +1,7 @@
 # File operations: first phase
 
+Historical implementation snapshot. See [the native API implementation](file-operations-native-api-validation.md) for current behaviour, including journal retention.
+
 Copy, Move, Delete and Rebalance now use one engine. This is an implementation with local regression coverage, not a claim that every storage configuration has been validated.
 
 ## Current behaviour

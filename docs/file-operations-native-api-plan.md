@@ -72,6 +72,8 @@ Write and flush intent before a filesystem mutation, and save the observed resul
 
 Require schema 3, mandatory fields and valid states before accepting a journal for recovery. Preserve malformed-record rejection, torn-final-line recovery and the operation lock.
 
+At startup, prune completed journals whose last write was more than 30 days ago, under the operation lock and off the UI thread. Retain unfinished, malformed or torn journals and records with unresolved artifacts or temporary payloads. Protect the latest Undo candidate, the record that prevents Undo from reaching an earlier job, and all linked forward/Undo journals needed by any retained record, regardless of the Debug flag. Pruning removes only journal files; it does not inspect or delete media or Trash contents. Cleanup failure is logged without preventing recovery.
+
 ### 2. Introduce native copying behind the existing coordinator
 
 Use a small transfer interface with progress, cancellation and structured results. It performs one file transfer into an operation-owned staging area; it does not choose final names or delete sources.

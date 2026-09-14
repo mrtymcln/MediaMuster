@@ -46,6 +46,13 @@ struct Sink : OpSink
 {
 	QVector<OpResult> results;
 	QStringList messages;
+	QVector<QVector<OpTrashFallbackItem>> trashFallbackPrompts;
+	std::function<bool(const QVector<OpTrashFallbackItem> &)> trashFallbackAnswer;
+	bool confirmTrashFallback(const QVector<OpTrashFallbackItem> &items) override
+	{
+		trashFallbackPrompts.append(items);
+		return trashFallbackAnswer && trashFallbackAnswer(items);
+	}
 	void progress(const QString &, int, int, double) override {}
 	void log(QtMsgType, const QString &s) override
 	{
@@ -138,6 +145,17 @@ class TestFileOperations : public QObject
 	void resume_continues_past_failed_source();
 
 	void network_delete_always_uses_mediamuster_trash();
+	void native_trash_refusals_share_one_consent_and_undo();
+	void native_trash_fallback_declined_keeps_originals();
+	void native_trash_fallback_rechecks_changed_original();
+	void native_trash_ambiguous_result_never_offers_fallback_data();
+	void native_trash_ambiguous_result_never_offers_fallback();
+	void native_trash_cancellation_never_offers_fallback();
+	void native_trash_success_excluded_from_fallback_batch();
+	void native_trash_fallback_crash_resume_data();
+	void native_trash_fallback_crash_resume();
+	void native_trash_fallback_batch_consent_survives_partial_completion();
+	void undo_copy_native_refusal_uses_consented_fallback();
 	void native_copy_error_classification_data();
 	void native_copy_error_classification();
 	void native_copy_retry_policy_data();
@@ -1728,6 +1746,7 @@ void TestFileOperations::local_trash_and_undo_roundtrip()
 {
 	Fixture f;
 	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
 	std::atomic<bool> cancel{false};
 	struct RestoreDisposable
 	{
@@ -2035,15 +2054,418 @@ void TestFileOperations::network_delete_always_uses_mediamuster_trash()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceNetworkTrash = true;
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		++nativeCalls;
+		return OpTrash::Result{};
+	};
 	auto request = f.request(OpKind::Delete);
 	request.diagnosticTrashRoot.clear();
 	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	QCOMPARE(nativeCalls, 0);
+	QVERIFY(sink.trashFallbackPrompts.isEmpty());
 	const auto saved = OpJournal::scan(f.journals)[0];
 	QCOMPARE(saved.entries[0].trashProvider, QString("mediamuster"));
 	QVERIFY(saved.entries[0].trashReceipt.isEmpty());
 	QVERIFY(saved.entries[0].dst.contains("/_MediaMuster_Trash/"));
 	QCOMPARE(get(saved.entries[0].dst), f.bytes);
 	QVERIFY(!QFile::exists(f.src));
+}
+
+// These hooks emulate native API outcomes using only fixture files. They exercise
+// the coordinator's consent, identity and recovery decisions on both platforms.
+void TestFileOperations::native_trash_refusals_share_one_consent_and_undo()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	for (const auto &name : {"second.bin", "third.bin"})
+	{
+		auto item = request.items[0];
+		item.src = f.root + "/source/" + name;
+		item.name = name;
+		put(item.src, f.bytes);
+		request.items.append(item);
+	}
+	const QStringList reasons{"Too large for the native bin", "Native bin unavailable",
+							  "Unrecognized native error 0xDEADBEEF"};
+	Sink sink;
+	bool originalsIntactAtPrompt = true;
+	sink.trashFallbackAnswer = [&](const auto &items) {
+		for (const auto &item : items)
+			originalsIntactAtPrompt &= get(item.source) == f.bytes && !QFile::exists(item.destination);
+		return true;
+	};
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		OpTrash::Result refused;
+		refused.outcome = OpTrash::Outcome::Unavailable;
+		refused.error = reasons[nativeCalls++];
+		return refused;
+	};
+	const auto totals = runner.run(request, f.journals);
+	QCOMPARE(nativeCalls, 3);
+	QVERIFY2(totals.succeeded == 3, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(totals.failed + totals.needsAttention, 0);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	const auto offered = sink.trashFallbackPrompts[0];
+	QCOMPARE(offered.size(), 3);
+	QVERIFY(originalsIntactAtPrompt);
+	const auto forward = OpJournal::scan(f.journals)[0];
+	for (int i = 0; i < request.items.size(); ++i)
+	{
+		QCOMPARE(offered[i].source, request.items[i].src);
+		QCOMPARE(offered[i].reason, reasons[i]);
+		QVERIFY(!offered[i].destination.isEmpty());
+		QVERIFY(forward.entries[i].dst.startsWith(offered[i].destination + '/'));
+		QVERIFY(forward.entries[i].trashFallbackApproved);
+		QCOMPARE(forward.entries[i].trashProvider, QString("mediamuster"));
+		QVERIFY(forward.entries[i].trashReceipt.isEmpty());
+		QCOMPARE(get(forward.entries[i].dst), f.bytes);
+		QVERIFY(!QFile::exists(request.items[i].src));
+	}
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	QCOMPARE(runner.run(undo, f.journals).succeeded, 3);
+	QCOMPARE(nativeCalls, 3);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	for (int i = 0; i < request.items.size(); ++i)
+	{
+		QCOMPARE(get(request.items[i].src), f.bytes);
+		QVERIFY(!QFile::exists(forward.entries[i].dst));
+	}
+}
+
+void TestFileOperations::native_trash_fallback_declined_keeps_originals()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	auto second = request.items[0];
+	second.src = f.root + "/source/second.bin";
+	second.name = "second.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	Sink sink; // No answer is fail-closed, exactly like Cancel/closing the dialog.
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		++nativeCalls;
+		OpTrash::Result refused;
+		refused.outcome = OpTrash::Outcome::Unavailable;
+		refused.error = "Native bin unavailable";
+		return refused;
+	};
+	const auto totals = runner.run(request, f.journals);
+	QCOMPARE(nativeCalls, 2);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	QCOMPARE(sink.trashFallbackPrompts[0].size(), 2);
+	QVERIFY(totals.cancelled);
+	QCOMPARE(totals.succeeded, 0);
+	const auto saved = OpJournal::scan(f.journals)[0];
+	for (const auto &entry : saved.entries)
+	{
+		QVERIFY(!entry.trashFallbackApproved);
+		QCOMPARE(get(entry.item.src), f.bytes);
+		QVERIFY(!QFile::exists(entry.dst));
+	}
+}
+
+void TestFileOperations::native_trash_fallback_rechecks_changed_original()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	Sink sink;
+	sink.trashFallbackAnswer = [&](const auto &) {
+		put(f.src, "A replacement written while the dialog was open");
+		return true;
+	};
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		++nativeCalls;
+		OpTrash::Result refused;
+		refused.outcome = OpTrash::Outcome::Unavailable;
+		refused.error = "Native bin refused the file";
+		return refused;
+	};
+	const auto totals = runner.run(request, f.journals);
+	QCOMPARE(nativeCalls, 1);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	QCOMPARE(totals.succeeded, 0);
+	QVERIFY(totals.failed + totals.needsAttention > 0);
+	QCOMPARE(get(f.src), QByteArray("A replacement written while the dialog was open"));
+	const auto entry = OpJournal::scan(f.journals)[0].entries[0];
+	QVERIFY(!QFile::exists(entry.dst));
+	QVERIFY(!entry.sourceRemoved);
+}
+
+void TestFileOperations::native_trash_ambiguous_result_never_offers_fallback_data()
+{
+	QTest::addColumn<bool>("originalMoved");
+	QTest::newRow("error-after-native-move") << true;
+	QTest::newRow("original-present-but-native-result-also-exists") << false;
+}
+void TestFileOperations::native_trash_ambiguous_result_never_offers_fallback()
+{
+	QFETCH(bool, originalMoved);
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	const auto landed = f.root + "/native-result.bin";
+	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &entry) {
+		++nativeCalls;
+		if (originalMoved)
+		{
+			if (!QFile::rename(entry.item.src, landed))
+				throw std::runtime_error("Cannot move disposable native-result fixture");
+		}
+		else
+			put(landed, f.bytes);
+		OpTrash::Result ambiguous;
+		ambiguous.path = landed;
+		ambiguous.landed = OpFile::inspect(landed);
+		ambiguous.error = "Native move returned incomplete recovery information";
+		return ambiguous;
+	};
+	const auto totals = runner.run(request, f.journals);
+	QVERIFY(sink.trashFallbackPrompts.isEmpty());
+	QCOMPARE(totals.succeeded, 0);
+	QVERIFY(totals.failed + totals.needsAttention > 0);
+	QCOMPARE(get(landed), f.bytes);
+	QCOMPARE(QFile::exists(f.src), !originalMoved);
+	if (!originalMoved) QCOMPARE(get(f.src), f.bytes);
+	const auto entry = OpJournal::scan(f.journals)[0].entries[0];
+	QVERIFY(!entry.trashFallbackApproved);
+	QVERIFY(entry.dst == landed || entry.artifacts.contains(landed));
+	OpRequest resume;
+	resume.resumeJournalPath = OpJournal::scan(f.journals)[0].path;
+	QVERIFY(runner.run(resume, f.journals).needsAttention > 0);
+	QCOMPARE(nativeCalls, 1);
+	QVERIFY(sink.trashFallbackPrompts.isEmpty());
+	QCOMPARE(get(landed), f.bytes);
+}
+
+void TestFileOperations::native_trash_cancellation_never_offers_fallback()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.nativeTrash = [](const auto &) {
+		OpTrash::Result cancelled;
+		cancelled.outcome = OpTrash::Outcome::Cancelled;
+		cancelled.error = "User cancelled the native operation";
+		return cancelled;
+	};
+	const auto totals = runner.run(request, f.journals);
+	QVERIFY(sink.trashFallbackPrompts.isEmpty());
+	QCOMPARE(totals.succeeded, 0);
+	QVERIFY(totals.cancelled);
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!OpJournal::scan(f.journals)[0].entries[0].trashFallbackApproved);
+}
+
+void TestFileOperations::native_trash_success_excluded_from_fallback_batch()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	auto refused = request.items[0];
+	refused.src = f.root + "/source/refused.bin";
+	refused.name = "refused.bin";
+	put(refused.src, f.bytes);
+	request.items.append(refused);
+	const auto nativeDestination = f.root + "/native-result.bin";
+	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.nativeTrash = [&](const auto &entry) {
+		OpTrash::Result result;
+		if (entry.item.src == refused.src)
+		{
+			result.outcome = OpTrash::Outcome::Unavailable;
+			result.error = "Native bin refused this file";
+			return result;
+		}
+		if (!QFile::rename(entry.item.src, nativeDestination))
+			throw std::runtime_error("Cannot move disposable native-success fixture");
+		result.outcome = OpTrash::Outcome::Succeeded;
+		result.path = nativeDestination;
+		result.landed = OpFile::inspect(nativeDestination);
+		result.receipt = OpTrashPlatform::receipt("test", nativeDestination, result.landed);
+		return result;
+	};
+	QCOMPARE(runner.run(request, f.journals).succeeded, 2);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	QCOMPARE(sink.trashFallbackPrompts[0].size(), 1);
+	QCOMPARE(sink.trashFallbackPrompts[0][0].source, refused.src);
+	QCOMPARE(get(nativeDestination), f.bytes);
+	const auto entries = OpJournal::scan(f.journals)[0].entries;
+	QCOMPARE(entries[0].trashProvider, QString("system"));
+	QVERIFY(!entries[0].trashFallbackApproved);
+	QCOMPARE(entries[1].trashProvider, QString("mediamuster"));
+	QVERIFY(entries[1].trashFallbackApproved);
+}
+
+void TestFileOperations::native_trash_fallback_crash_resume_data()
+{
+	QTest::addColumn<QString>("checkpoint");
+	QTest::addColumn<bool>("approved");
+	QTest::newRow("crash-awaiting-consent") << QString("trash-fallback-pending") << false;
+	QTest::newRow("crash-after-durable-consent") << QString("trash-fallback-approved") << true;
+}
+void TestFileOperations::native_trash_fallback_crash_resume()
+{
+	QFETCH(QString, checkpoint);
+	QFETCH(bool, approved);
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		++nativeCalls;
+		OpTrash::Result refused;
+		refused.outcome = OpTrash::Outcome::Unavailable;
+		refused.error = "Native bin refused this file";
+		return refused;
+	};
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
+		if (stage == checkpoint) throw std::runtime_error("Simulated process interruption");
+	};
+	QVERIFY(runner.run(request, f.journals).needsAttention > 0);
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(nativeCalls, 1);
+	const auto saved = OpJournal::scan(f.journals)[0];
+	QCOMPARE(saved.entries[0].step, OpJournal::Step::TrashFallback);
+	QCOMPARE(saved.entries[0].trashFallbackApproved, approved);
+	QVERIFY(!QFile::exists(saved.entries[0].dst));
+	QCOMPARE(sink.trashFallbackPrompts.size(), approved ? 1 : 0);
+	runner.hooks.checkpoint = {};
+	OpRequest resume;
+	resume.resumeJournalPath = saved.path;
+	const auto totals = runner.run(resume, f.journals);
+	QVERIFY2(totals.succeeded == 1, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(nativeCalls, 1); // Saved refusal/consent survives without another native operation.
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	const auto completed = OpJournal::readOne(saved.path);
+	QVERIFY(completed);
+	QVERIFY(completed->entries[0].complete());
+	QVERIFY(completed->entries[0].trashFallbackApproved);
+	QCOMPARE(get(completed->entries[0].dst), f.bytes);
+	QVERIFY(!QFile::exists(f.src));
+}
+
+void TestFileOperations::native_trash_fallback_batch_consent_survives_partial_completion()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	auto second = request.items[0];
+	second.src = f.root + "/source/second.bin";
+	second.name = "second.bin";
+	put(second.src, f.bytes);
+	request.items.append(second);
+	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		++nativeCalls;
+		OpTrash::Result refused;
+		refused.outcome = OpTrash::Outcome::Unavailable;
+		refused.error = "Native bin refused this file";
+		return refused;
+	};
+	runner.hooks.checkpoint = [](const QString &stage, const auto &entry) {
+		if (stage == "done" && entry.id == 0 && entry.trashFallbackApproved)
+			throw std::runtime_error("Interrupted after the first approved file was moved");
+	};
+	QVERIFY(runner.run(request, f.journals).needsAttention > 0);
+	QCOMPARE(nativeCalls, 2);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	QCOMPARE(sink.trashFallbackPrompts[0].size(), 2);
+	const auto saved = OpJournal::scan(f.journals)[0];
+	QVERIFY(saved.entries[0].complete());
+	QVERIFY(!QFile::exists(f.src));
+	QCOMPARE(get(saved.entries[0].dst), f.bytes);
+	QCOMPARE(get(second.src), f.bytes);
+	QCOMPARE(saved.entries[1].step, OpJournal::Step::TrashFallback);
+	QVERIFY(saved.entries[1].trashFallbackApproved);
+	runner.hooks.checkpoint = {};
+	OpRequest resume;
+	resume.resumeJournalPath = saved.path;
+	QCOMPARE(runner.run(resume, f.journals).succeeded, 1);
+	QCOMPARE(nativeCalls, 2);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	const auto completed = OpJournal::readOne(saved.path);
+	QVERIFY(completed);
+	for (const auto &entry : completed->entries)
+	{
+		QVERIFY(entry.complete());
+		QVERIFY(entry.trashFallbackApproved);
+		QCOMPARE(get(entry.dst), f.bytes);
+		QVERIFY(!QFile::exists(entry.item.src));
+	}
+}
+
+void TestFileOperations::undo_copy_native_refusal_uses_consented_fallback()
+{
+	Fixture f;
+	auto request = f.request();
+	request.diagnosticTrashRoot.clear();
+	Sink sink;
+	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	const auto forward = OpJournal::scan(f.journals)[0];
+	int nativeCalls = 0;
+	runner.hooks.nativeTrash = [&](const auto &) {
+		++nativeCalls;
+		OpTrash::Result refused;
+		refused.outcome = OpTrash::Outcome::Unavailable;
+		refused.error = "Native bin is unavailable during Undo";
+		return refused;
+	};
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	QCOMPARE(runner.run(undo, f.journals).succeeded, 1);
+	QCOMPARE(nativeCalls, 1);
+	QCOMPARE(sink.trashFallbackPrompts.size(), 1);
+	QCOMPARE(sink.trashFallbackPrompts[0].size(), 1);
+	QCOMPARE(sink.trashFallbackPrompts[0][0].source, f.dest + "/clip.bin");
+	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	const auto inverse = OpJournal::readOne(OpJournal::readOne(forward.path)->undoPath);
+	QVERIFY(inverse);
+	QCOMPARE(inverse->entries[0].undoAction, QString("discardCopy"));
+	QVERIFY(inverse->entries[0].trashFallbackApproved);
+	QCOMPARE(inverse->entries[0].trashProvider, QString("mediamuster"));
+	QCOMPARE(get(inverse->entries[0].dst), f.bytes);
 }
 
 void TestFileOperations::resume_flush_failure_stays_unfinished()

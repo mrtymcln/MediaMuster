@@ -13,10 +13,12 @@
 #include <QtConcurrent>
 #include <QDir>
 #include <QEvent>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSignalSpy>
@@ -80,6 +82,7 @@ private slots:
 	void cleanup();
 	void cleanupTestCase();
 	void debug_flags_default_off_and_text_undo_works();
+	void startup_prunes_expired_journals_with_undo_disabled();
 	void interrupted_dialog_escape_does_not_abandon();
 	void interrupted_dialog_close_does_not_abandon();
 	void interrupted_dialog_cancel_keeps_completed_effects();
@@ -92,6 +95,12 @@ private slots:
 	void verification_is_saved_per_job();
 	void same_session_refresh_and_stale_result_guard();
 	void progress_cancel_is_acknowledged_once();
+	void trash_fallback_choice_data();
+	void trash_fallback_choice();
+	void trash_fallback_cancel_closes_dialog();
+	void trash_fallback_without_handler_returns_without_waiting();
+	void trash_fallback_destruction_unblocks_without_gui_events();
+	void trash_fallback_controller_destruction_closes_dialog();
 	void preview_background_checks_discard_superseded_results();
 	void preview_policy_changes_refresh_space_and_same_file_is_no_effect();
 private:
@@ -214,6 +223,41 @@ void TestOperationUi::debug_flags_default_off_and_text_undo_works()
 	QVERIFY(!window.m_operations->m_undoAct->isVisible());
 	QVERIFY(window.m_operations->m_undoAct->shortcut().isEmpty());
 }
+void TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
+{
+	QStringList journals;
+	const auto expired = QDateTime::currentDateTimeUtc().addDays(-31);
+	for (int n = 0; n < 2; ++n)
+	{
+		std::atomic<bool> cancel{false};
+		Sink sink;
+		OpRunner runner(sink, cancel);
+		const auto totals = runner.run(request(QStringLiteral("completed-%1").arg(n)), path("journals"));
+		QCOMPARE(totals.succeeded, 1);
+		const auto candidate = OpJournal::latestUndoable();
+		QVERIFY(candidate);
+		journals.append(candidate->path);
+		QFile file(candidate->path);
+		QVERIFY(file.open(QIODevice::ReadWrite));
+		QVERIFY(file.setFileTime(expired, QFileDevice::FileModificationTime));
+		QTest::qWait(2); // Keep the jobs' recorded start times distinct.
+	}
+	QVERIFY(journals[0] != journals[1]);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
+	window.m_operations->runStartupRecovery();
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 10000);
+	QVERIFY(!QFileInfo::exists(journals[0]));
+	QVERIFY(QFileInfo::exists(journals[1]));
+	QCOMPARE(window.m_operations->m_undoCandidate.path, journals[1]);
+	QVERIFY(!window.m_operations->m_undoAct->isVisible());
+	for (int n = 0; n < 2; ++n)
+	{
+		QVERIFY(QFileInfo::exists(path(QStringLiteral("completed-%1/source/clip-0.bin").arg(n))));
+		QVERIFY(QFileInfo::exists(path(QStringLiteral("completed-%1/destination/clip-0.bin").arg(n))));
+	}
+}
+
 void TestOperationUi::interrupted_dialog_escape_does_not_abandon()
 {
 	const auto old = request();
@@ -513,6 +557,159 @@ void TestOperationUi::progress_cancel_is_acknowledged_once()
 	QCOMPARE(cancelled.size(), 1);
 	dialog.finish();
 	QVERIFY(!dialog.isVisible());
+}
+
+void TestOperationUi::trash_fallback_choice_data()
+{
+	QTest::addColumn<QString>("choice");
+	QTest::addColumn<bool>("expectedAcceptance");
+	QTest::newRow("move") << QStringLiteral("acceptTrashFallbackButton") << true;
+	QTest::newRow("cancel") << QStringLiteral("cancelTrashFallbackButton") << false;
+	QTest::newRow("escape") << QStringLiteral("escape") << false;
+	QTest::newRow("window-close") << QStringLiteral("close") << false;
+}
+
+void TestOperationUi::trash_fallback_choice()
+{
+	QFETCH(QString, choice);
+	QFETCH(bool, expectedAcceptance);
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{false};
+	QWidget window;
+	FileOperationController controller(&window);
+	window.show();
+	const QVector<OpTrashFallbackItem> items{
+		{path("source/<clip>.mxf"), path("MediaMuster_Trash/<clip>.mxf"), QStringLiteral("Too large <b>for the bin</b>")},
+		{path("source/second.mxf"), path("MediaMuster_Trash/second.mxf"), QStringLiteral("Bin unavailable")}};
+	auto *manager = controller.manager();
+	QSignalSpy requests(manager, &OpManager::trashFallbackRequested);
+	manager->m_job.start([manager, items, &completed, &accepted]
+	{
+		accepted.store(manager->confirmTrashFallback(items));
+		completed.store(true);
+	});
+	QTRY_VERIFY_WITH_TIMEOUT(controller.m_trashFallbackDialog, 5000);
+	auto *dialog = controller.m_trashFallbackDialog.data();
+	QVERIFY(dialog->isVisible());
+#ifndef Q_OS_MACOS
+	// QMessageBox deliberately ignores window titles on macOS; the headline,
+	// explanatory text and choices below are still required on every platform.
+	QCOMPARE(dialog->windowTitle(), QStringLiteral("MediaMuster Trash"));
+#endif
+	QCOMPARE(dialog->textFormat(), Qt::PlainText);
+	QCOMPARE(dialog->text(), QStringLiteral("Move these files to MediaMuster Trash?"));
+	QCOMPARE(dialog->informativeText(), QStringLiteral("The system bin couldn’t accept these files. Keep them in MediaMuster Trash until you decide."));
+	QVERIFY(dialog->detailedText().contains(items[0].source));
+	QVERIFY(dialog->detailedText().contains(items[0].reason));
+	QVERIFY(dialog->detailedText().contains(items[1].destination));
+	auto *cancel = dialog->findChild<QPushButton *>(QStringLiteral("cancelTrashFallbackButton"));
+	QVERIFY(cancel);
+	QCOMPARE(dialog->defaultButton(), cancel);
+	QCOMPARE(dialog->escapeButton(), cancel);
+	QCOMPARE(requests.size(), 1);
+	const auto requestId = controller.m_trashFallbackRequest;
+	// A stale reply must not resolve the current prompt.
+	manager->respondTrashFallback(requestId + 1, true);
+	QVERIFY(manager->isTrashFallbackPending(requestId));
+	QVERIFY(!completed.load());
+	if (choice == "escape")
+		QTest::keyClick(dialog, Qt::Key_Escape);
+	else if (choice == "close")
+		dialog->close();
+	else
+	{
+		auto *button = dialog->findChild<QPushButton *>(choice);
+		QVERIFY(button);
+		button->click();
+	}
+	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
+	QCOMPARE(accepted.load(), expectedAcceptance);
+	QVERIFY(!manager->isTrashFallbackPending(requestId));
+	QVERIFY(!controller.m_trashFallbackDialog);
+}
+
+void TestOperationUi::trash_fallback_cancel_closes_dialog()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	QWidget window;
+	FileOperationController controller(&window);
+	auto *manager = controller.manager();
+	manager->m_job.start([manager, &completed, &accepted]
+	{
+		accepted.store(manager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true);
+	});
+	QTRY_VERIFY_WITH_TIMEOUT(controller.m_trashFallbackDialog, 5000);
+	const auto requestId = controller.m_trashFallbackRequest;
+	manager->cancel();
+	manager->respondTrashFallback(requestId, true); // Acceptance after cancel must be ignored.
+	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
+	QTRY_VERIFY_WITH_TIMEOUT(!controller.m_trashFallbackDialog, 5000);
+	QVERIFY(!accepted.load());
+	// A request already queued when cancellation happened must not reopen it.
+	controller.showTrashFallback(requestId, {{"source", "trash", "Unavailable"}});
+	QVERIFY(!controller.m_trashFallbackDialog);
+}
+
+void TestOperationUi::trash_fallback_without_handler_returns_without_waiting()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	OpManager manager;
+	QSignalSpy requests(&manager, &OpManager::trashFallbackRequested);
+	manager.m_job.start([&]
+	{
+		accepted.store(manager.confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true);
+	});
+	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
+	QVERIFY(!accepted.load());
+	QCOMPARE(requests.size(), 0);
+}
+
+void TestOperationUi::trash_fallback_destruction_unblocks_without_gui_events()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	QSemaphore requested;
+	auto manager = std::make_unique<OpManager>();
+	manager->setTrashFallbackHandlerAvailable(true);
+	connect(manager.get(), &OpManager::trashFallbackRequested, this,
+			[&requested] { requested.release(); }, Qt::DirectConnection);
+	auto *workerManager = manager.get();
+	manager->m_job.start([workerManager, &completed, &accepted]
+	{
+		accepted.store(workerManager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true);
+	});
+	QVERIFY(requested.tryAcquire(1, 5000));
+	QElapsedTimer timer;
+	timer.start();
+	manager.reset(); // No event processing: the destructor must release and join directly.
+	QVERIFY(timer.elapsed() < 2000);
+	QVERIFY(completed.load());
+	QVERIFY(!accepted.load());
+}
+
+void TestOperationUi::trash_fallback_controller_destruction_closes_dialog()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	QWidget window;
+	auto controller = std::make_unique<FileOperationController>(&window);
+	auto *manager = controller->manager();
+	manager->m_job.start([manager, &completed, &accepted]
+	{
+		accepted.store(manager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true);
+	});
+	QTRY_VERIFY_WITH_TIMEOUT(controller->m_trashFallbackDialog, 5000);
+	QPointer<QMessageBox> dialog = controller->m_trashFallbackDialog;
+	controller.reset();
+	QVERIFY(dialog.isNull());
+	QVERIFY(completed.load());
+	QVERIFY(!accepted.load());
 }
 
 QTEST_MAIN(TestOperationUi)

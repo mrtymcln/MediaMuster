@@ -3,13 +3,15 @@
 #include "volumeidentity.h"
 #include "opfile.h"
 #include "oprequest.h"
+#include <QDateTime>
 #include <QFile>
 #include <QLockFile>
 #include <QVector>
 #include <optional>
 
 // Each append contains the complete state of ONE item. A valid prefix survives
-// a torn last append. Journal errors stop the engine; records are never pruned.
+// a torn last append. Journal errors stop the engine; recovery and Undo records
+// are protected from pruning.
 class OpJournal
 {
 public:
@@ -30,6 +32,7 @@ public:
 		Skipped,
 		Cancelled,
 		Failed,
+		TrashFallback,
 		NeedsAttention
 	};
 	struct Entry
@@ -46,6 +49,7 @@ public:
 		QString retirement;
 		QString trashProvider;
 		QString trashReceipt;
+		bool trashFallbackApproved = false;
 		bool verificationRequested = false;
 		bool explicitSkip = false;
 		bool sourceRemoved = false;
@@ -115,6 +119,10 @@ public:
 	// Journal-only discovery: disconnected storage must not hide an unfinished job.
 	static QVector<Record> interrupted(const QString &directory = {});
 	static std::optional<Record> latestUndoable(const QString &directory = {});
+	// Acquires the operation lock; removes completed journals last updated over
+	// 30 days ago, preserving recovery evidence and Undo dependencies.
+	static bool prune(const QString &directory, QString &error,
+					  const QDateTime &now = QDateTime::currentDateTimeUtc());
 	static std::optional<Record> readOne(const QString &path);
 	static bool dismiss(const QString &path, QString &error);
 	static QString canonicalPath(const QString &path);

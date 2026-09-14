@@ -20,6 +20,10 @@ Undo is implemented for completed effects of the most recent job, including inte
 
 The journal uses numeric schema **3**, with required fields and validated job/item states. Recovery rejects malformed records and preserves completed records when a final write is interrupted.
 
+Startup cleanup retains 30 days of completed journals, measured from each journal's last modification. Unfinished or unresolved records, the latest Undo candidate and its dependencies remain protected even while Undo is disabled. A completed Undo also remains protected while it prevents an older job from being offered again. Cleanup runs under the operation lock without accessing media or Trash contents.
+
+Validated 14 September on macOS: the Debug application builds, and `tst_opjournal`, `tst_fileoperations` and `tst_operationui` pass. The added coverage includes 31 pruning scenarios and a startup check with Undo disabled. It exercises the age boundary, recent updates to old jobs, unfinished and damaged records, linked Undo history, operation locking, skipped symbolic links, and preservation of media and Trash files.
+
 ## Local validation
 
 The application and all test targets build on macOS 15.8 with pinned Qt 6.5.3, including the universal arm64/x86_64 application. Application signature verification passes. Runtime tests execute the arm64 build. **All 29 CTest targets pass** after the cleanup, including 92 file-operation checks, 18 journal checks and 18 interface checks (QtTest totals include setup/cleanup). `git diff --check` also passes.

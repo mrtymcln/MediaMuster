@@ -180,6 +180,15 @@ struct OpRequest
 	QString undoOf;				 ///< Persisted forward-job link for an executing inverse operation.
 };
 
+// Files confirmed unchanged after the native bin refused them. The worker
+// revalidates each original again after the GUI's answer, before relocation.
+struct OpTrashFallbackItem
+{
+	QString source;
+	QString destination;
+	QString reason;
+};
+
 // Explicit outcomes keep a retained source visible in the media table.
 struct OpResult
 {

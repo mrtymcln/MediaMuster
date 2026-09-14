@@ -13,6 +13,7 @@
 #include <knownfolders.h>
 #include <shlguid.h>
 #include <shellapi.h>
+#include <sherrors.h>
 #include <cstring>
 #endif
 
@@ -153,6 +154,78 @@ namespace
 		}
 		return false;
 	}
+	QString nativeError(const QString &step, HRESULT status)
+	{
+		return QStringLiteral("%1 (Windows HRESULT 0x%2).")
+			.arg(step).arg(quint32(status), 8, 16, QLatin1Char('0'));
+	}
+	bool sourceUnchanged(const QString &source, const OpStamp &expected)
+	{
+		return OpFile::safePath(source) && expected.unchanged(OpFile::inspect(source));
+	}
+	bool cancelled(HRESULT status)
+	{
+		return status == HRESULT_FROM_WIN32(ERROR_CANCELLED) ||
+			status == HRESULT_FROM_WIN32(ERROR_OPERATION_ABORTED) ||
+			status == COPYENGINE_E_USER_CANCELLED;
+	}
+	OpTrash::Result refused(const QString &source, const OpStamp &expected,
+		const std::atomic<bool> &cancel, const QString &step, HRESULT status)
+	{
+		// This helper is only for a failure with no returned/moved item. A
+		// native error alone never authorizes moving the source a second time.
+		const auto outcome = !sourceUnchanged(source, expected) ? OpTrash::Outcome::Failed :
+			(cancel.load() || cancelled(status)) ? OpTrash::Outcome::Cancelled : OpTrash::Outcome::Unavailable;
+		return {outcome, {}, {}, nativeError(step, status), {}};
+	}
+	HRESULT recycleBinItem(IShellItem **item)
+	{
+		// The bin is a virtual folder; SHGetKnownFolderItem does not support
+		// virtual known folders. Resolve its PIDL, including for old receipts.
+		PIDLIST_ABSOLUTE id = nullptr;
+		HRESULT status = ::SHGetKnownFolderIDList(FOLDERID_RecycleBinFolder, KF_FLAG_DEFAULT, nullptr, &id);
+		if (SUCCEEDED(status))
+			status = ::SHCreateItemFromIDList(id, IID_PPV_ARGS(item));
+		::CoTaskMemFree(id);
+		return status;
+	}
+	class RecycleAdvice final : public ITransferAdviseSink
+	{
+		LONG references = 1;
+		const std::atomic<bool> &cancel;
+		HRESULT check() const { return cancel.load() ? HRESULT_FROM_WIN32(ERROR_CANCELLED) : S_OK; }
+		HRESULT refuse(HRESULT error)
+		{
+			lastError = FAILED(error) ? error : E_ABORT;
+			return FAILED(check()) ? check() : lastError;
+		}
+	public:
+		HRESULT lastError = S_OK;
+		explicit RecycleAdvice(const std::atomic<bool> &flag) : cancel(flag) {}
+		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void **out) override
+		{
+			if (!out) return E_POINTER;
+			*out = nullptr;
+			if (id != IID_IUnknown && id != IID_ITransferAdviseSink) return E_NOINTERFACE;
+			*out = static_cast<ITransferAdviseSink *>(this);
+			AddRef();
+			return S_OK;
+		}
+		ULONG STDMETHODCALLTYPE AddRef() override { return ULONG(::InterlockedIncrement(&references)); }
+		ULONG STDMETHODCALLTYPE Release() override
+		{
+			const LONG count = ::InterlockedDecrement(&references);
+			if (!count) delete this;
+			return ULONG(count);
+		}
+		HRESULT STDMETHODCALLTYPE UpdateProgress(ULONGLONG, ULONGLONG, int, int, int, int) override { return check(); }
+		HRESULT STDMETHODCALLTYPE UpdateTransferState(TRANSFER_ADVISE_STATE) override { return check(); }
+		HRESULT STDMETHODCALLTYPE ConfirmOverwrite(IShellItem *, IShellItem *, LPCWSTR) override { return refuse(E_ABORT); }
+		HRESULT STDMETHODCALLTYPE ConfirmEncryptionLoss(IShellItem *) override { return refuse(E_ABORT); }
+		HRESULT STDMETHODCALLTYPE FileFailure(IShellItem *, LPCWSTR, HRESULT error, LPWSTR, ULONG) override { return refuse(error); }
+		HRESULT STDMETHODCALLTYPE SubStreamFailure(IShellItem *, LPCWSTR, HRESULT error) override { return refuse(error); }
+		HRESULT STDMETHODCALLTYPE PropertyFailure(IShellItem *, const PROPERTYKEY *, HRESULT error) override { return refuse(error); }
+	};
 	class TrashSink final : public IFileOperationProgressSink
 	{
 		LONG references = 1;
@@ -161,11 +234,9 @@ namespace
 		const std::atomic<bool> &cancel;
 		OpStamp expected;
 		QString source, destination;
-		bool deleting;
-		bool rejectedPermanent = false;
 		OpTrash::Result result;
 		TrashSink(const std::atomic<bool> &flag, const OpStamp &stamp, const QString &src,
-				  const QString &dst, bool remove) : cancel(flag), expected(stamp), source(src), destination(dst), deleting(remove) {}
+				  const QString &dst) : cancel(flag), expected(stamp), source(src), destination(dst) {}
 		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, void **out) override
 		{
 			if (!out)
@@ -194,7 +265,7 @@ namespace
 		HRESULT STDMETHODCALLTYPE PostRenameItem(DWORD, IShellItem *, LPCWSTR, HRESULT, IShellItem *) override { return E_ABORT; }
 		HRESULT STDMETHODCALLTYPE PreMoveItem(DWORD flags, IShellItem *item, IShellItem *, LPCWSTR) override
 		{
-			if (deleting || FAILED(check()) || OpFile::occupied(destination) ||
+			if (FAILED(check()) || OpFile::occupied(destination) ||
 				(flags & (TSF_OVERWRITE_EXIST | TSF_MOVE_AS_COPY_DELETE)))
 				return E_ABORT;
 			const auto physical = shellName(item, SIGDN_FILESYSPATH);
@@ -204,21 +275,8 @@ namespace
 											   HRESULT status, IShellItem *created) override { return capture(status, created); }
 		HRESULT STDMETHODCALLTYPE PreCopyItem(DWORD, IShellItem *, IShellItem *, LPCWSTR) override { return E_ABORT; }
 		HRESULT STDMETHODCALLTYPE PostCopyItem(DWORD, IShellItem *, IShellItem *, LPCWSTR, HRESULT, IShellItem *) override { return E_ABORT; }
-		HRESULT STDMETHODCALLTYPE PreDeleteItem(DWORD flags, IShellItem *item) override
-		{
-			if (!(flags & TSF_DELETE_RECYCLE_IF_POSSIBLE))
-			{
-				rejectedPermanent = true;
-				return E_ABORT;
-			}
-			if (!deleting || FAILED(check()))
-				return E_ABORT;
-			return expected.unchanged(OpFile::inspect(shellName(item, SIGDN_FILESYSPATH))) ? S_OK : E_ABORT;
-		}
-		HRESULT STDMETHODCALLTYPE PostDeleteItem(DWORD, IShellItem *, HRESULT status, IShellItem *created) override
-		{
-			return capture(status, created);
-		}
+		HRESULT STDMETHODCALLTYPE PreDeleteItem(DWORD, IShellItem *) override { return E_ABORT; }
+		HRESULT STDMETHODCALLTYPE PostDeleteItem(DWORD, IShellItem *, HRESULT, IShellItem *) override { return E_ABORT; }
 		HRESULT STDMETHODCALLTYPE PreNewItem(DWORD, IShellItem *, LPCWSTR) override { return E_ABORT; }
 		HRESULT STDMETHODCALLTYPE PostNewItem(DWORD, IShellItem *, LPCWSTR, LPCWSTR, DWORD, HRESULT, IShellItem *) override { return E_ABORT; }
 		HRESULT STDMETHODCALLTYPE UpdateProgress(UINT, UINT) override { return check(); }
@@ -235,12 +293,8 @@ namespace
 			}
 			result.path = shellName(created, SIGDN_FILESYSPATH);
 			result.landed = OpFile::inspect(result.path);
-			const auto id = deleting ? shellId(created) : QByteArray{};
-			if (deleting)
-				result.receipt = OpTrashPlatform::receipt("windows", result.path, result.landed, id);
 			if (!expected.unchanged(result.landed) || OpFile::occupied(source) ||
-				(deleting && !validId(id)) ||
-				(!deleting && result.path.compare(destination, Qt::CaseInsensitive) != 0))
+				result.path.compare(destination, Qt::CaseInsensitive) != 0)
 			{
 				result.error = "The Shell result needs identity or location reconciliation.";
 				return E_ABORT;
@@ -256,32 +310,23 @@ namespace
 			return S_OK;
 		}
 	};
-	OpTrash::Result runShell(IShellItem *item, const QString &source, const QString &destination,
-							 const OpStamp &expected, const std::atomic<bool> &cancel, bool deleting)
+	OpTrash::Result restoreWithShell(IShellItem *item, const QString &source, const QString &destination,
+							 const OpStamp &expected, const std::atomic<bool> &cancel)
 	{
 		ComPtr<IFileOperation> operation;
 		HRESULT status = ::CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_INPROC_SERVER,
 											IID_PPV_ARGS(operation.put()));
 		if (FAILED(status))
 			return {OpTrash::Outcome::Unavailable, {}, {}, "Windows Shell operations are unavailable.", {}};
-		// FOFX_RECYCLEONDELETE is the Windows 8+ API contract to send the item to
-		// Recycle Bin rather than permanently delete it. PreDeleteItem also refuses
-		// a Shell operation that drops recycle mode; PostDeleteItem requires the
-		// actual recoverable item. TSF's "if possible" flag alone is not proof of
-		// recycling. Disabled/full/oversize-bin behavior needs Windows field tests.
-		// Never answer Yes to All and never provide a permanent-delete fallback.
-		DWORD flags = FOF_SILENT | FOF_NOERRORUI | FOFX_EARLYFAILURE | FOF_NO_CONNECTED_ELEMENTS;
-		if (deleting)
-			flags |= FOF_ALLOWUNDO | FOFX_RECYCLEONDELETE | FOF_WANTNUKEWARNING;
-		else
-			flags |= FOF_RENAMEONCOLLISION; // A late conflict may fail reconciliation, never overwrite.
+		// This general Shell API is used only to restore existing bin receipts.
+		// A late conflict may fail reconciliation, but must never overwrite.
+		const DWORD flags = FOF_SILENT | FOF_NOERRORUI | FOFX_EARLYFAILURE |
+			FOF_NO_CONNECTED_ELEMENTS | FOF_RENAMEONCOLLISION;
 		status = operation->SetOperationFlags(flags);
 		ComPtr<TrashSink> sink;
-		sink.value = new TrashSink(cancel, expected, source, destination, deleting);
+		sink.value = new TrashSink(cancel, expected, source, destination);
 		ComPtr<IShellItem> folder;
-		if (SUCCEEDED(status) && deleting)
-			status = operation->DeleteItem(item, sink.value);
-		else if (SUCCEEDED(status))
+		if (SUCCEEDED(status))
 		{
 			const QFileInfo target(destination);
 			const auto parent = QDir::toNativeSeparators(target.absolutePath());
@@ -300,8 +345,6 @@ namespace
 			return result; // A late Cancel cannot undo an already completed item.
 		if (cancel.load())
 			result.outcome = OpTrash::Outcome::Cancelled;
-		else if (sink->rejectedPermanent && expected.unchanged(OpFile::inspect(source)))
-			result.outcome = OpTrash::Outcome::Unavailable;
 		if (result.error.isEmpty())
 			result.error = QStringLiteral("System Trash operation failed (HRESULT %1%2).")
 							   .arg(quint32(status), 8, 16, QLatin1Char('0'))
@@ -315,13 +358,85 @@ OpTrash::Result OpTrashPlatform::move(const QString &path, const OpStamp &expect
 {
 	ComApartment apartment;
 	if (FAILED(apartment.result))
-		return {OpTrash::Outcome::Unavailable, {}, {}, "A Shell STA thread could not be initialized.", {}};
-	ComPtr<IShellItem> item;
+		return refused(path, expected, cancel, "The system bin could not initialize its Shell thread", apartment.result);
+	ComPtr<IShellItem> item, parent, bin, created;
 	const auto native = QDir::toNativeSeparators(path);
-	if (FAILED(::SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(native.utf16()), nullptr,
-											 IID_PPV_ARGS(item.put()))))
-		return {OpTrash::Outcome::Failed, {}, {}, "Cannot identify the system Trash source.", {}};
-	return runShell(item.value, path, {}, expected, cancel, true);
+	HRESULT status = ::SHCreateItemFromParsingName(reinterpret_cast<LPCWSTR>(native.utf16()), nullptr,
+		IID_PPV_ARGS(item.put()));
+	if (FAILED(status))
+		return refused(path, expected, cancel, "The system bin could not identify the source", status);
+	status = item->GetParent(parent.put());
+	if (FAILED(status))
+		return refused(path, expected, cancel, "The system bin could not identify the source folder", status);
+	ComPtr<ITransferSource> transfer;
+	status = parent->BindToHandler(nullptr, BHID_Transfer, IID_PPV_ARGS(transfer.put()));
+	if (FAILED(status))
+		return refused(path, expected, cancel, "This folder does not provide native recycling", status);
+	ComPtr<RecycleAdvice> advice;
+	advice.value = new RecycleAdvice(cancel);
+	DWORD cookie = 0;
+	status = transfer->Advise(advice.value, &cookie);
+	if (FAILED(status))
+		return refused(path, expected, cancel, "The system bin could not install its failure handler", status);
+	struct Unadvise
+	{
+		ITransferSource *transfer;
+		DWORD cookie;
+		~Unadvise() { transfer->Unadvise(cookie); }
+	} unadvise{transfer.value, cookie};
+	status = recycleBinItem(bin.put());
+	if (FAILED(status))
+		return refused(path, expected, cancel, "The system bin is unavailable", status);
+	if (cancel.load())
+		return refused(path, expected, cancel, "Cancelled before system bin recycling", HRESULT_FROM_WIN32(ERROR_CANCELLED));
+	if (!sourceUnchanged(path, expected) ||
+		shellName(item.value, SIGDN_FILESYSPATH).compare(path, Qt::CaseInsensitive) != 0)
+		return {OpTrash::Outcome::Failed, {}, {}, "The source changed before system bin recycling.", {}};
+
+	// RecycleItem is a dedicated recycle operation. The general DeleteItem API
+	// can offer permanent deletion when a bin rejects the file, even with its
+	// recycle flags enabled. Never invoke that API or approve a retry here.
+	status = transfer->RecycleItem(item.value, bin.value, TSF_NORMAL, created.put());
+	OpTrash::Result result;
+	QByteArray id;
+	if (created.value)
+	{
+		result.path = shellName(created.value, SIGDN_FILESYSPATH);
+		result.landed = OpFile::inspect(result.path);
+		id = shellId(created.value);
+		result.receipt = receipt("windows", result.path, result.landed, id);
+	}
+	if (FAILED(status))
+	{
+		const QString detail = nativeError("The system bin could not recycle this file", status) +
+			(FAILED(advice->lastError) && advice->lastError != status ?
+				" " + nativeError("Native failure detail", advice->lastError) : QString{});
+		if (!created.value)
+		{
+			result = refused(path, expected, cancel, "The system bin could not recycle this file", status);
+			if (result.outcome == OpTrash::Outcome::Unavailable && cancelled(advice->lastError))
+				result.outcome = OpTrash::Outcome::Cancelled;
+		}
+		result.error = detail;
+		return result; // Keep any returned location/receipt for reconciliation.
+	}
+	// A successful HRESULT can also mean "ignored" or "pending". Only a
+	// confirmed, recoverable landed file counts as a completed recycling.
+	if (!created.value || !OpFile::safePath(result.path) || !expected.unchanged(result.landed) ||
+		OpFile::occupied(path) || !validId(id))
+	{
+		result.error = nativeError("The system bin result needs identity or location reconciliation", status);
+		return result;
+	}
+	QString syncError;
+	if (NativeFile::syncDirectory(QFileInfo(path).absolutePath(), &syncError) != NativeFile::SyncResult::Ok ||
+		NativeFile::syncDirectory(QFileInfo(result.path).absolutePath(), &syncError) != NativeFile::SyncResult::Ok)
+	{
+		result.error = "File is in the system bin, but directory persistence needs confirmation. " + syncError;
+		return result;
+	}
+	result.outcome = OpTrash::Outcome::Succeeded;
+	return result; // A late cancellation does not undo a completed recycling.
 }
 
 OpTrash::Result OpTrashPlatform::restore(const QJsonObject &saved, const QString &destination,
@@ -352,8 +467,7 @@ OpTrash::Result OpTrashPlatform::restore(const QJsonObject &saved, const QString
 		// moving the latter could strand the Shell's companion restore metadata.
 		ComPtr<IShellItem> recycleBin;
 		ComPtr<IEnumShellItems> items;
-		if (SUCCEEDED(::SHGetKnownFolderItem(FOLDERID_RecycleBinFolder, KF_FLAG_DEFAULT, nullptr,
-											 IID_PPV_ARGS(recycleBin.put()))) &&
+		if (SUCCEEDED(recycleBinItem(recycleBin.put())) &&
 			SUCCEEDED(recycleBin->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(items.put()))))
 		{
 			for (;;)
@@ -382,6 +496,6 @@ OpTrash::Result OpTrashPlatform::restore(const QJsonObject &saved, const QString
 	if (OpTrash::isNetwork(QFileInfo(destination).absolutePath()) || !from.isValid() || !to.isValid() ||
 		from.device().isEmpty() || from.device() != to.device())
 		return {OpTrash::Outcome::Failed, {}, {}, "Trash restoration requires its original local filesystem.", {}};
-	return runShell(item.value, physical, destination, expected, cancel, false);
+	return restoreWithShell(item.value, physical, destination, expected, cancel);
 }
 #endif

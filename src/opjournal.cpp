@@ -99,6 +99,8 @@ QString OpJournal::stepName(Step s)
 		return "cancelled";
 	case Step::Failed:
 		return "failed";
+	case Step::TrashFallback:
+		return "trash-fallback";
 	case Step::NeedsAttention:
 		return "needs-attention";
 	}
@@ -125,6 +127,7 @@ QJsonObject OpJournal::Entry::json() const
 			{"retirement", retirement},
 			{"trashProvider", trashProvider},
 			{"trashReceipt", trashReceipt},
+			{"trashFallbackApproved", trashFallbackApproved},
 			{"verificationRequested", verificationRequested},
 			{"explicitSkip", explicitSkip},
 			{"sourceRemoved", sourceRemoved},
@@ -149,6 +152,8 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	for (const auto *key : {"verificationRequested", "explicitSkip", "sourceRemoved"})
 		if (!v[key].isBool())
 			return {};
+	if (v.contains("trashFallbackApproved") && !v["trashFallbackApproved"].isBool())
+		return {};
 	if (!v["undoEntryId"].isDouble() || !v["attempts"].isDouble() ||
 		v["attempts"].toInt(-1) < 0 || !v["item"].isObject())
 		return {};
@@ -183,6 +188,7 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	e.retirement = v["retirement"].toString();
 	e.trashProvider = v["trashProvider"].toString();
 	e.trashReceipt = v["trashReceipt"].toString();
+	e.trashFallbackApproved = v["trashFallbackApproved"].toBool();
 	e.verificationRequested = v["verificationRequested"].toBool();
 	e.explicitSkip = v["explicitSkip"].toBool();
 	e.sourceRemoved = v["sourceRemoved"].toBool();
@@ -588,7 +594,7 @@ QVector<OpJournal::Record> OpJournal::scan(const QString &directory)
 {
 	QDir dir(directory.isEmpty() ? standardJournalDir() : directory);
 	QVector<Record> out;
-	for (const auto &name : dir.entryList({"operation-*.jsonl"}, QDir::Files, QDir::Name))
+	for (const auto &name : dir.entryList({"operation-*.jsonl"}, QDir::Files | QDir::NoSymLinks, QDir::Name))
 		if (auto r = readOne(dir.filePath(name)))
 			out.append(*r);
 	std::sort(out.begin(), out.end(), [](const Record &a, const Record &b)
@@ -614,40 +620,127 @@ QVector<OpJournal::Record> OpJournal::interrupted(const QString &directory)
 	}
 	return out;
 }
+namespace
+{
+	struct UndoSelection
+	{
+		qsizetype index = -1;
+		bool canUndo = false;
+	};
+
+	// Keep the stopping point as well as the candidate: removing a completed
+	// Undo must not make an earlier job undoable again.
+	UndoSelection selectUndo(const QVector<OpJournal::Record> &records)
+	{
+		using Step = OpJournal::Step;
+		QSet<QString> claimed;
+		for (const auto &record : records)
+			if (!record.corrupt && record.request.kind == OpKind::Undo)
+				claimed.insert(record.request.undoOf);
+		for (qsizetype n = records.size(); n-- > 0;)
+		{
+			const auto &record = records[n];
+			if (record.corrupt)
+				continue;
+			if (record.request.kind == OpKind::Undo || !record.undoPath.isEmpty() || claimed.contains(record.path))
+				return {n, false};
+			for (const auto &entry : record.entries)
+			{
+				if (entry.item.maintenance || entry.step == Step::NoEffect)
+					continue;
+				if (entry.step == Step::Done || entry.step == Step::SourceRemoved ||
+					entry.step == Step::Published || entry.step == Step::SourceRetained ||
+					(entry.mechanism == "copy" && entry.landed.valid() &&
+					 (entry.step == Step::RemovingSource || entry.step == Step::Publishing ||
+					  entry.step == Step::NeedsAttention)) ||
+					(entry.mechanism == "relocate" && entry.source.valid() &&
+					 (entry.step == Step::Relocating || entry.step == Step::NeedsAttention)) ||
+					(entry.mechanism == "systemTrash" && entry.step == Step::NeedsAttention &&
+					 !entry.trashReceipt.isEmpty() && entry.landed.valid()))
+					// Ambiguous final appends are candidates for the Undo planner's live
+					// reconciliation, not a claim that a filesystem mutation succeeded.
+					return {n, true};
+			}
+		}
+		return {};
+	}
+} // namespace
+
 std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &directory)
 {
 	const auto records = scan(directory);
-	QSet<QString> claimed;
-	for (const auto &record : records)
-		if (!record.corrupt && record.request.kind == OpKind::Undo)
-			claimed.insert(record.request.undoOf);
-	for (auto it = records.crbegin(); it != records.crend(); ++it)
+	const auto selection = selectUndo(records);
+	return selection.canUndo ? std::optional<Record>(records[selection.index]) : std::nullopt;
+}
+
+bool OpJournal::prune(const QString &directory, QString &error, const QDateTime &now)
+{
+	error.clear();
+	if (!now.isValid())
 	{
-		if (it->corrupt)
-			continue;
-		if (it->request.kind == OpKind::Undo)
-			return {}; // One level of Undo; completing it does not expose older jobs.
-		if (!it->undoPath.isEmpty() || claimed.contains(it->path))
-			return {};
-		for (const auto &entry : it->entries)
-		{
-			if (entry.item.maintenance || entry.step == Step::NoEffect)
-				continue;
-			if (entry.step == Step::Done || entry.step == Step::SourceRemoved ||
-				entry.step == Step::Published || entry.step == Step::SourceRetained ||
-				(entry.mechanism == "copy" && entry.landed.valid() &&
-				 (entry.step == Step::RemovingSource || entry.step == Step::Publishing ||
-				  entry.step == Step::NeedsAttention)) ||
-				(entry.mechanism == "relocate" && entry.source.valid() &&
-				 (entry.step == Step::Relocating || entry.step == Step::NeedsAttention)) ||
-				(entry.mechanism == "systemTrash" && entry.step == Step::NeedsAttention &&
-				 !entry.trashReceipt.isEmpty() && entry.landed.valid()))
-				// Ambiguous final appends are candidates for the Undo planner's live
-				// reconciliation, not a claim that a filesystem mutation succeeded.
-				return *it;
-		}
+		error = "Cannot determine the journal retention date.";
+		return false;
 	}
-	return {};
+	const auto dir = directory.isEmpty() ? standardJournalDir() : canonicalPath(directory);
+	auto lock = acquire(dir, error);
+	if (!lock)
+		return false;
+	const auto records = scan(dir);
+	const auto cutoff = now.addDays(-30);
+	QSet<QString> retained, known;
+	for (const auto &record : records)
+		known.insert(record.path);
+	const auto selection = selectUndo(records);
+	if (selection.index >= 0)
+		retained.insert(records[selection.index].path);
+	for (const auto &record : records)
+	{
+		const QFileInfo file(record.path);
+		if (record.corrupt || record.torn || !record.stopped ||
+			!QDateTime::fromString(record.started, Qt::ISODateWithMs).isValid() ||
+			!file.isFile() || !OpFile::safePath(record.path) ||
+			!file.lastModified().isValid() || file.lastModified() >= cutoff ||
+			file.size() != record.validBytes ||
+			std::any_of(record.entries.cbegin(), record.entries.cend(), [](const Entry &entry)
+						{ return !entry.complete() || !entry.artifacts.isEmpty() || !entry.temp.isEmpty(); }))
+			retained.insert(record.path);
+		for (const auto &linked : {record.request.undoOf, record.undoPath})
+			if (!linked.isEmpty() && !known.contains(linked))
+				retained.insert(record.path);
+	}
+	// A retained Undo needs its forward evidence, and a retained forward job
+	// needs its Undo claim. Propagate through either recorded direction.
+	bool changed;
+	do
+	{
+		changed = false;
+		for (const auto &record : records)
+			for (const auto &linked : {record.request.undoOf, record.undoPath})
+			{
+				if (linked.isEmpty() || !known.contains(linked))
+					continue;
+				if (retained.contains(record.path) != retained.contains(linked))
+				{
+					retained.insert(record.path);
+					retained.insert(linked);
+					changed = true;
+				}
+			}
+	} while (changed);
+	bool removed = false;
+	for (const auto &record : records)
+	{
+		if (retained.contains(record.path))
+			continue;
+		QFile file(record.path);
+		if (!file.remove())
+		{
+			error = "Cannot remove expired journal: " + record.path + ". " + file.errorString();
+			return false;
+		}
+		removed = true;
+	}
+	return !removed || NativeFile::syncDirectory(dir, &error) == NativeFile::SyncResult::Ok;
 }
 bool OpJournal::dismiss(const QString &path, QString &error)
 {

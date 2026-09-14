@@ -165,7 +165,69 @@ FileOperationController::FileOperationController(QWidget *window)
 		Qt::QueuedConnection);
 	connect(m_fileOps, &OpManager::mediaMusterTrashUsed, this,
 			&FileOperationController::mediaMusterTrashUsed, Qt::QueuedConnection);
+	connect(m_fileOps, &OpManager::trashFallbackRequested, this,
+			&FileOperationController::showTrashFallback, Qt::QueuedConnection);
+	connect(m_fileOps, &OpManager::trashFallbackFinished, this,
+			&FileOperationController::closeTrashFallback, Qt::QueuedConnection);
+	m_fileOps->setTrashFallbackHandlerAvailable(true);
 	updateResumeAction();
+}
+
+FileOperationController::~FileOperationController()
+{
+	m_fileOps->setTrashFallbackHandlerAvailable(false);
+	m_fileOps->cancel();
+	// The dialog belongs to the window/progress sheet, so it would otherwise
+	// outlive this controller when the controller is destroyed independently.
+	delete m_trashFallbackDialog.data();
+}
+
+void FileOperationController::showTrashFallback(quint64 requestId,
+												const QVector<OpTrashFallbackItem> &items)
+{
+	if (!m_fileOps->isTrashFallbackPending(requestId))
+		return;
+	if (m_trashFallbackDialog)
+		closeTrashFallback(m_trashFallbackRequest);
+	auto *parent = m_progressDialog && m_progressDialog->isVisible()
+					   ? static_cast<QWidget *>(m_progressDialog)
+					   : m_window;
+	auto *dialog = new QMessageBox(parent);
+	m_trashFallbackDialog = dialog;
+	m_trashFallbackRequest = requestId;
+	dialog->setObjectName(QStringLiteral("trashFallbackDialog"));
+	dialog->setIcon(QMessageBox::Information);
+	dialog->setWindowTitle(tr("MediaMuster Trash"));
+	dialog->setTextFormat(Qt::PlainText);
+	dialog->setText(tr("Move these files to MediaMuster Trash?"));
+	dialog->setInformativeText(tr("The system trash couldn’t accept these files. Keep them in MediaMuster Trash until you decide."));
+	QStringList details;
+	for (const auto &item : items)
+		details.append(tr("File: %1\nReason: %2\nMediaMuster Trash: %3")
+						   .arg(item.source, item.reason, item.destination));
+	dialog->setDetailedText(details.join(QStringLiteral("\n\n")));
+	auto *cancel = dialog->addButton(tr("Cancel"), QMessageBox::RejectRole);
+	auto *move = dialog->addButton(tr("Move"), QMessageBox::AcceptRole);
+	cancel->setObjectName(QStringLiteral("cancelTrashFallbackButton"));
+	move->setObjectName(QStringLiteral("acceptTrashFallbackButton"));
+	dialog->setDefaultButton(cancel);
+	dialog->setEscapeButton(cancel);
+	connect(dialog, &QDialog::finished, this, [this, dialog, move, requestId]
+			{
+		m_fileOps->respondTrashFallback(requestId, dialog->clickedButton() == move);
+		if (m_trashFallbackDialog == dialog)
+		{
+			m_trashFallbackDialog = nullptr;
+			m_trashFallbackRequest = 0;
+		}
+		dialog->deleteLater(); });
+	dialog->open();
+}
+
+void FileOperationController::closeTrashFallback(quint64 requestId)
+{
+	if (m_trashFallbackDialog && m_trashFallbackRequest == requestId)
+		m_trashFallbackDialog->reject();
 }
 
 void FileOperationController::setUndoSeparator(QAction *separator)
@@ -220,10 +282,8 @@ void FileOperationController::runStartupRecovery()
 	setActivity(Activity::Recovering);
 	const quint64 generation = ++m_historyGeneration;
 	m_historyLoading = true;
-	// OperationRecovery::run only touches the filesystem, so it's safe on a pool
-	// thread; the watcher cleans itself up once it fires. (A lambda, not
-	// a function pointer: default arguments don't travel through
-	// the pool runner's pointer overloads.)
+	// Journal cleanup and recovery run off the UI thread, each under the
+	// operation lock. Cleanup never resolves or modifies media paths.
 	auto *watcher = new QFutureWatcher<OperationRecovery::Summary>(this);
 	connect(watcher, &QFutureWatcher<OperationRecovery::Summary>::finished, this,
 			[this, watcher, generation]
@@ -237,7 +297,13 @@ void FileOperationController::runStartupRecovery()
 				onRecoveryDone(summary);
 			});
 	watcher->setFuture(QtConcurrent::run([]
-										 { return OperationRecovery::run(); }));
+										 {
+		QString cleanupError;
+		const bool cleaned = OpJournal::prune({}, cleanupError);
+		auto summary = OperationRecovery::run();
+		if (!cleaned)
+			summary.notes.prepend("Journal cleanup: " + cleanupError);
+		return summary; }));
 }
 
 void FileOperationController::onRecoveryDone(const OperationRecovery::Summary &summary)
