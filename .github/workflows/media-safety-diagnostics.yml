@@ -57,10 +57,10 @@ jobs:
           $suffix = if ($IsWindows) { '.exe' } else { '' }
           & "./$bin/operations-probe$suffix" 2>&1 | Tee-Object evidence/operations.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Exercise Windows Trash on disposable data
+      - name: Exercise dedicated Windows recycling API on disposable data
         if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Windows' }}
         shell: pwsh
-        run: diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/trash-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash" -DialogFollowupOnly
+        run: diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/native-recycle-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash"
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v7

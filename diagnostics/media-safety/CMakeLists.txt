@@ -36,6 +36,8 @@ target_link_libraries(operations-probe PRIVATE operation-core)
 if(WIN32)
     add_executable(trash-probe trash_probe.cpp)
     target_link_libraries(trash-probe PRIVATE operation-core)
+    add_executable(native-recycle-probe native_recycle_probe.cpp)
+    target_link_libraries(native-recycle-probe PRIVATE operation-core)
 endif()
 add_executable(pmr-probe portable-pmr.cpp
     ${SRC}/logcategories.cpp ${SRC}/mediascanner.cpp ${SRC}/mxfparser.cpp
