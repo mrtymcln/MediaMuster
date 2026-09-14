@@ -2167,7 +2167,8 @@ void TestFileOperations::native_trash_fallback_declined_keeps_originals()
 	QCOMPARE(sink.trashFallbackPrompts[0].size(), 2);
 	QVERIFY(totals.cancelled);
 	QCOMPARE(totals.succeeded, 0);
-	for (const auto &entry : OpJournal::scan(f.journals)[0].entries)
+	const auto saved = OpJournal::scan(f.journals)[0];
+	for (const auto &entry : saved.entries)
 	{
 		QVERIFY(!entry.trashFallbackApproved);
 		QCOMPARE(get(entry.item.src), f.bytes);

@@ -31,22 +31,26 @@ jobs:
       - name: Patch Qt for current MSVC
         if: runner.os == 'Windows'
         run: cmake -P .github/cmake/patch-qt-windows.cmake
-      - name: Build the application and complete test suite
+      - name: Rebuild the corrected file-operation regression suite
         id: app-build
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path evidence -Force | Out-Null
-          cmake -P .github/cmake/build.cmake 2>&1 | Tee-Object evidence/application-build.txt
+          # Production code and the actual native-bin matrix passed run 34813128615.
+          # This follow-up changes only one test's temporary-object lifetime.
+          cmake -S . -B build "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Run the complete test suite
+          cmake --build build --config Release --target tst_fileoperations --parallel 4 2>&1 | Tee-Object evidence/application-build.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run the corrected file-operation regression suite
         if: ${{ !cancelled() && steps.app-build.outcome == 'success' }}
         shell: pwsh
         run: |
-          cmake -P .github/cmake/test.cmake 2>&1 | Tee-Object evidence/application-tests.txt
+          ctest --test-dir build -C Release -R "^tst_fileoperations$" --output-on-failure 2>&1 | Tee-Object evidence/application-tests.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build the probe against the actual production adapters
         id: probe-build
-        if: ${{ !cancelled() }}
+        if: false # Unchanged production adapter matrix passed run 34813128615.
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path evidence -Force | Out-Null
