@@ -598,7 +598,7 @@ void TestOperationUi::trash_fallback_choice()
 #endif
 	QCOMPARE(dialog->textFormat(), Qt::PlainText);
 	QCOMPARE(dialog->text(), QStringLiteral("Move these files to MediaMuster Trash?"));
-	QCOMPARE(dialog->informativeText(), QStringLiteral("The system bin couldn’t accept these files. Keep them in MediaMuster Trash until you decide."));
+	QCOMPARE(dialog->informativeText(), QStringLiteral("The system trash couldn’t accept these files. Keep them in MediaMuster Trash until you decide."));
 	QVERIFY(dialog->detailedText().contains(items[0].source));
 	QVERIFY(dialog->detailedText().contains(items[0].reason));
 	QVERIFY(dialog->detailedText().contains(items[1].destination));

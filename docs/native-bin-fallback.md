@@ -16,9 +16,9 @@ dialog asks about the eligible batch:
 
 > **Move these files to MediaMuster Trash?**
 >
-> The system bin couldn’t accept these files. Keep them in MediaMuster Trash until you decide.
+> The system trash couldn’t accept these files. Keep them in MediaMuster Trash until you decide.
 >
-> **Cancel** · **Move to Trash**
+> **Cancel** · **Move**
 
 The title is MediaMuster Trash where native message boxes display titles.
 Expandable Details contains the actual files, native errors and destination
