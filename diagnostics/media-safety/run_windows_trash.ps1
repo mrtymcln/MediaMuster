@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory=$true)][string]$Probe,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
-    [int]$TimeoutSeconds = 45
+    [int]$TimeoutSeconds = 45,
+    [switch]$DialogFollowupOnly
 )
 $ErrorActionPreference = 'Stop'
 $Probe = (Resolve-Path -LiteralPath $Probe).Path
@@ -11,7 +12,7 @@ $runId = [guid]::NewGuid().ToString('N')
 $summary = [ordered]@{
     runId=$runId; machine=[Environment]::OSVersion.VersionString;
     user=[Security.Principal.WindowsIdentity]::GetCurrent().Name;
-    probe=$Probe; timeoutSeconds=$TimeoutSeconds;
+    probe=$Probe; timeoutSeconds=$TimeoutSeconds; dialogFollowupOnly=[bool]$DialogFollowupOnly;
     limitation='Hosted Windows Server; not interactive Windows 10/11 or real Avid/shared-storage validation.';
     cases=@(); setup='not-started'
 }
@@ -23,7 +24,8 @@ $driveRoot = $null
 function Save-Summary {
     $summary | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'windows-trash-summary.json') -Encoding utf8
 }
-function Run-ProcessBounded([string]$Executable, [string[]]$Arguments, [string]$Prefix, [int]$Seconds) {
+function Run-ProcessBounded([string]$Executable, [string[]]$Arguments, [string]$Prefix, [int]$Seconds,
+    [string]$DialogAction='None',[string]$ProbeEvidence='') {
     $stdout = Join-Path $OutputDirectory "$Prefix.stdout.txt"
     $stderr = Join-Path $OutputDirectory "$Prefix.stderr.txt"
     $start = [Diagnostics.ProcessStartInfo]::new()
@@ -37,7 +39,19 @@ function Run-ProcessBounded([string]$Executable, [string[]]$Arguments, [string]$
     [void]$process.Start()
     $outTask=$process.StandardOutput.ReadToEndAsync()
     $errTask=$process.StandardError.ReadToEndAsync()
-    $finished=$process.WaitForExit($Seconds*1000)
+    $clock=[Diagnostics.Stopwatch]::StartNew()
+    $inspection=$null
+    if($DialogAction -ne 'None') {
+        $finished=$process.WaitForExit(3000)
+        if(!$finished -and (Test-Path -LiteralPath $ProbeEvidence)) {
+            $inspectionJson=Join-Path $OutputDirectory "$Prefix-dialog.json"
+            $inspector=Join-Path $PSScriptRoot 'inspect_probe_dialog.ps1'
+            $inspection=Run-ProcessBounded 'powershell.exe' @('-NoProfile','-NonInteractive','-MTA','-ExecutionPolicy','Bypass',
+                '-File',$inspector,'-TargetProcessId',"$($process.Id)",'-Evidence',$ProbeEvidence,'-Output',$inspectionJson,'-Action',$DialogAction) "$Prefix-inspector" 15
+            $inspection['evidence']=$inspectionJson
+        }
+        $finished=$process.WaitForExit([math]::Max(1,$Seconds*1000-[int]$clock.ElapsedMilliseconds))
+    } else { $finished=$process.WaitForExit($Seconds*1000) }
     if (!$finished) {
         # Only this diagnostic child and its descendants are terminated.
         $process.Kill($true)
@@ -45,10 +59,10 @@ function Run-ProcessBounded([string]$Executable, [string[]]$Arguments, [string]$
     }
     $outTask.GetAwaiter().GetResult() | Set-Content -LiteralPath $stdout -Encoding utf8
     $errTask.GetAwaiter().GetResult() | Set-Content -LiteralPath $stderr -Encoding utf8
-    return [ordered]@{ timedOut=(!$finished); exitCode=$process.ExitCode; stdout=$stdout; stderr=$stderr }
+    return [ordered]@{ timedOut=(!$finished); exitCode=$process.ExitCode; stdout=$stdout; stderr=$stderr; dialogInspection=$inspection }
 }
-function Run-Case([string]$Name, [long]$Bytes, [string]$Root, [bool]$ScanVolume, [string]$ExpectedControl='not-run') {
-    $case=[ordered]@{name=$Name; bytes=$Bytes; expectedControl=$ExpectedControl}
+function Run-Case([string]$Name, [long]$Bytes, [string]$Root, [bool]$ScanVolume, [string]$ExpectedControl='not-run',[string]$DialogAction='None') {
+    $case=[ordered]@{name=$Name; bytes=$Bytes; expectedControl=$ExpectedControl;dialogAction=$DialogAction}
     $modes=if($ScanVolume){@('control','production')}else{@('production')}
     foreach($mode in $modes) {
         $json=Join-Path $OutputDirectory "$Name-$mode.json"
@@ -56,7 +70,8 @@ function Run-Case([string]$Name, [long]$Bytes, [string]$Root, [bool]$ScanVolume,
         $arguments=@('--case',$Name,'--root',$caseRoot,'--output',$json,'--bytes',"$Bytes",'--mode',$mode)
         if($ScanVolume){$arguments+=@('--scan-volume')}
         Write-Host "Running $Name / $mode (generated disposable bytes only)"
-        $run=Run-ProcessBounded $Probe $arguments "$Name-$mode" $TimeoutSeconds
+        $action=if($mode -eq 'production'){$DialogAction}else{'None'}
+        $run=Run-ProcessBounded $Probe $arguments "$Name-$mode" $TimeoutSeconds $action $json
         $run['evidence']=$json
         if(Test-Path -LiteralPath $json) {
             $data=Get-Content -LiteralPath $json -Raw | ConvertFrom-Json
@@ -74,8 +89,12 @@ function Run-Case([string]$Name, [long]$Bytes, [string]$Root, [bool]$ScanVolume,
         $case[$mode]=$run
     }
     if($ScanVolume) {
+        # NTFS System Volume Information is not a Shell recycle location. Explicitly
+        # exclude only that exact volume-root directory; retain all other scan limits.
+        $blocking=@($case.control.unreadableScanDirectories | Where-Object {$_.path -notmatch '^[A-Za-z]:[/\\]System Volume Information$'})
+        $case['ignoredScanDirectories']=@($case.control.unreadableScanDirectories | Where-Object {$_.path -match '^[A-Za-z]:[/\\]System Volume Information$'})
         $case['configurationDemonstrated']=(!$case.control.timedOut -and !$case.control.scanLimitReached -and
-            @($case.control.unreadableScanDirectories).Count -eq 0 -and $case.control.classification -eq $ExpectedControl)
+            $blocking.Count -eq 0 -and $case.control.classification -eq $ExpectedControl)
     }
     $summary.cases+=@($case)
     Save-Summary
@@ -114,7 +133,7 @@ function Configure-Bin([int]$Nuke,[int]$CapacityMb,[int]$PolicyNuke) {
 try {
     # Ordinary test needs no policy changes and does not inspect the system volume.
     $ordinaryRoot=Join-Path $env:RUNNER_TEMP "_mediamuster-trash-diagnostic/$runId"
-    Run-Case 'ordinary-runner-volume' 65536 $ordinaryRoot $false
+    if(!$DialogFollowupOnly){Run-Case 'ordinary-runner-volume' 65536 $ordinaryRoot $false}
     $letters=@('Z','Y','X','W','V','U','T','S','R')
     $letter=$letters | Where-Object { !(Test-Path "${_}:\") -and !(Get-PSDrive -Name $_ -ErrorAction SilentlyContinue) } | Select-Object -First 1
     if(!$letter){throw 'No unused diagnostic drive letter available.'}
@@ -161,10 +180,18 @@ exit
         @{name='vhd-policy-disabled';bytes=65536;nuke=0;capacity=64;policy=1;control='control-original-gone-no-matching-content-found'},
         @{name='vhd-normal-reset';bytes=65536;nuke=0;capacity=64;policy=0;control='control-recycled'}
     )
+    if($DialogFollowupOnly) {
+        $matrix=@(
+            @{name='vhd-oversize-inspect';bytes=4194304;nuke=0;capacity=1;policy=0;control='control-original-gone-no-matching-content-found';dialog='Record'},
+            @{name='vhd-oversize-no';bytes=4194304;nuke=0;capacity=1;policy=0;control='control-original-gone-no-matching-content-found';dialog='No'},
+            @{name='vhd-oversize-yes';bytes=4194304;nuke=0;capacity=1;policy=0;control='control-original-gone-no-matching-content-found';dialog='Yes'}
+        )
+    }
     foreach($row in $matrix) {
         $config=Configure-Bin $row.nuke $row.capacity $row.policy
         $config | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $OutputDirectory "$($row.name)-configuration.json") -Encoding utf8
-        Run-Case $row.name $row.bytes $root $true $row.control
+        $dialog=if($row.ContainsKey('dialog')){$row.dialog}else{'None'}
+        Run-Case $row.name $row.bytes $root $true $row.control $dialog
     }
     $summary.setup='matrix-completed'
 } catch {

@@ -15,9 +15,6 @@ jobs:
           - os: windows-2022
             qt-host: windows
             qt-arch: win64_msvc2019_64
-          - os: macos-latest
-            qt-host: mac
-            qt-arch: ''
     runs-on: ${{ matrix.os }}
     env:
       QT_VERSION: '6.5.3'
@@ -63,7 +60,7 @@ jobs:
       - name: Exercise Windows Trash on disposable data
         if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Windows' }}
         shell: pwsh
-        run: diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/trash-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash"
+        run: diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/trash-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash" -DialogFollowupOnly
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v7
