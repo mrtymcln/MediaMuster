@@ -4,9 +4,11 @@
 #include "opmanager.h"
 
 #include <QObject>
+#include <QPointer>
 #include <QSet>
 
 class QAction;
+class QMessageBox;
 class ProgressDialog;
 class QWidget;
 
@@ -28,6 +30,7 @@ public:
 	};
 	Q_ENUM(Activity)
 	explicit FileOperationController(QWidget *window);
+	~FileOperationController() override;
 	Activity activity() const { return m_activity; }
 	bool isIdle() const { return m_activity == Activity::Idle; }
 	void setActivity(Activity activity);
@@ -64,9 +67,13 @@ private:
 	void applyOperationHistory(const OperationRecovery::Summary &history);
 	void readOperationHistoryForGate();
 	ProgressDialog *progressDialog();
+	void showTrashFallback(quint64 requestId, const QVector<OpTrashFallbackItem> &items);
+	void closeTrashFallback(quint64 requestId);
 	QWidget *m_window;
 	OpManager *m_fileOps;
 	ProgressDialog *m_progressDialog = nullptr;
+	QPointer<QMessageBox> m_trashFallbackDialog;
+	quint64 m_trashFallbackRequest = 0;
 	Activity m_activity = Activity::Idle;
 	bool m_pruneSourceRowsAfterOperation = false;
 	QSet<QString> m_removedSourcePaths;

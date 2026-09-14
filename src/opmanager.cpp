@@ -5,6 +5,91 @@
 OpManager::OpManager(QObject *parent) : QObject(parent)
 {
 	qRegisterMetaType<OpResult>();
+	qRegisterMetaType<QVector<OpTrashFallbackItem>>();
+}
+
+OpManager::~OpManager()
+{
+	// Release a waiting decision before joining: teardown must not depend on
+	// the GUI event loop delivering a queued reply.
+	cancel();
+	m_job.shutdown();
+}
+
+void OpManager::cancel()
+{
+	m_job.cancel();
+	quint64 requestId = 0;
+	{
+		QMutexLocker lock(&m_trashFallbackMutex);
+		if (m_pendingTrashFallbackRequest && !m_trashFallbackAnswered)
+		{
+			requestId = m_pendingTrashFallbackRequest;
+			m_trashFallbackAnswered = true;
+			m_trashFallbackAccepted = false;
+			m_trashFallbackChanged.wakeAll();
+		}
+	}
+	if (requestId)
+		emit trashFallbackFinished(requestId);
+}
+
+void OpManager::setTrashFallbackHandlerAvailable(bool available)
+{
+	quint64 requestId = 0;
+	{
+		QMutexLocker lock(&m_trashFallbackMutex);
+		m_trashFallbackHandlerAvailable = available;
+		if (!available && m_pendingTrashFallbackRequest && !m_trashFallbackAnswered)
+		{
+			requestId = m_pendingTrashFallbackRequest;
+			m_trashFallbackAnswered = true;
+			m_trashFallbackAccepted = false;
+			m_trashFallbackChanged.wakeAll();
+		}
+	}
+	if (requestId)
+		emit trashFallbackFinished(requestId);
+}
+
+bool OpManager::isTrashFallbackPending(quint64 requestId) const
+{
+	QMutexLocker lock(&m_trashFallbackMutex);
+	return requestId && m_pendingTrashFallbackRequest == requestId &&
+		   !m_trashFallbackAnswered && !m_job.isCancelled();
+}
+
+void OpManager::respondTrashFallback(quint64 requestId, bool accepted)
+{
+	{
+		QMutexLocker lock(&m_trashFallbackMutex);
+		if (!requestId || m_pendingTrashFallbackRequest != requestId || m_trashFallbackAnswered)
+			return;
+		m_trashFallbackAnswered = true;
+		m_trashFallbackAccepted = accepted && !m_job.isCancelled() && m_trashFallbackHandlerAvailable;
+		m_trashFallbackChanged.wakeAll();
+	}
+	emit trashFallbackFinished(requestId);
+}
+
+bool OpManager::confirmTrashFallback(const QVector<OpTrashFallbackItem> &items)
+{
+	QMutexLocker lock(&m_trashFallbackMutex);
+	if (items.isEmpty() || !m_trashFallbackHandlerAvailable || m_job.isCancelled() ||
+		m_pendingTrashFallbackRequest)
+		return false;
+	const quint64 requestId = ++m_nextTrashFallbackRequest;
+	m_pendingTrashFallbackRequest = requestId;
+	m_trashFallbackAnswered = false;
+	m_trashFallbackAccepted = false;
+	lock.unlock();
+	emit trashFallbackRequested(requestId, items);
+	lock.relock();
+	while (!m_trashFallbackAnswered && !m_job.isCancelled() && m_trashFallbackHandlerAvailable)
+		m_trashFallbackChanged.wait(&m_trashFallbackMutex);
+	const bool accepted = m_trashFallbackAnswered && m_trashFallbackAccepted && !m_job.isCancelled();
+	m_pendingTrashFallbackRequest = 0;
+	return accepted;
 }
 
 // MARK: - OpSink (re-emit as signals)

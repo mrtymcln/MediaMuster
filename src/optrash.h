@@ -11,6 +11,9 @@ public:
 	enum class Outcome
 	{
 		Succeeded,
+		// Native recycling was refused before a move, and the source still
+		// matches its expected identity. The coordinator must obtain consent
+		// and revalidate it again before selecting MediaMuster Trash.
 		Unavailable,
 		Cancelled,
 		Failed

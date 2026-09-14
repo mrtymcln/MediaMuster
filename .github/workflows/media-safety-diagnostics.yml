@@ -7,7 +7,7 @@ permissions:
 jobs:
   verify:
     name: Diagnostics (${{ matrix.os }})
-    timeout-minutes: 20
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -31,40 +31,75 @@ jobs:
       - name: Patch Qt for current MSVC
         if: runner.os == 'Windows'
         run: cmake -P .github/cmake/patch-qt-windows.cmake
-      - name: Build probes against unchanged production sources
-        id: build
+      - name: Build the application and complete test suite
+        id: app-build
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Path evidence -Force | Out-Null
+          cmake -P .github/cmake/build.cmake 2>&1 | Tee-Object evidence/application-build.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run the complete test suite
+        if: ${{ !cancelled() && steps.app-build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          cmake -P .github/cmake/test.cmake 2>&1 | Tee-Object evidence/application-tests.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build the probe against the actual production adapters
+        id: probe-build
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path evidence -Force | Out-Null
           cmake -S diagnostics/media-safety -B diagnostic-build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cmake --build diagnostic-build --config Release --parallel 4
+          cmake --build diagnostic-build --config Release --target trash-probe --parallel 4
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Run parser and scanner probe
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - name: Verify native bin and consented fallback on disposable Windows data
+        if: ${{ !cancelled() && steps.probe-build.outcome == 'success' }}
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path evidence -Force | Out-Null
-          $bin = if ($IsWindows) { 'diagnostic-build/Release' } else { 'diagnostic-build' }
-          $suffix = if ($IsWindows) { '.exe' } else { '' }
-          & "./$bin/pmr-probe$suffix" "$PWD/tests/fixtures" 2>&1 | Tee-Object evidence/pmr.txt
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Run operation probe
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path evidence -Force | Out-Null
-          $bin = if ($IsWindows) { 'diagnostic-build/Release' } else { 'diagnostic-build' }
-          $suffix = if ($IsWindows) { '.exe' } else { '' }
-          & "./$bin/operations-probe$suffix" 2>&1 | Tee-Object evidence/operations.txt
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Exercise dedicated Windows recycling API on disposable data
-        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Windows' }}
-        shell: pwsh
-        run: diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/native-recycle-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash"
+          & diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/trash-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash"
+          $harnessStatus = $LASTEXITCODE
+          $summary = Get-Content evidence/windows-trash/windows-trash-summary.json -Raw | ConvertFrom-Json
+          $errors = [Collections.Generic.List[string]]::new()
+          if ($harnessStatus -ne 0) { $errors.Add("Disposable harness failed with exit code $harnessStatus.") }
+          if ($summary.setup -ne 'matrix-completed') { $errors.Add('The full disposable-volume matrix did not finish.') }
+          if (!$summary.registryValuesRestored) { $errors.Add('Disposable bin settings were not restored successfully.') }
+          $expectedCases = @('ordinary-runner-volume','vhd-normal','vhd-bin-disabled','vhd-oversize','vhd-policy-disabled','vhd-normal-reset')
+          foreach ($name in $expectedCases) {
+            $cases = @($summary.cases | Where-Object { $_.name -eq $name })
+            if ($cases.Count -ne 1) { $errors.Add("Missing or duplicate case: $name"); continue }
+            $case = $cases[0]
+            if ($case.production.timedOut -or $case.production.exitCode -ne 0) {
+              $errors.Add("Production case $name timed out or returned a failing exit code.")
+            }
+            if (!(Test-Path -LiteralPath $case.production.evidence)) {
+              $errors.Add("Missing production evidence: $name"); continue
+            }
+            $data = Get-Content -LiteralPath $case.production.evidence -Raw | ConvertFrom-Json
+            if ($data.stage -ne 'complete' -or !$data.validation.passed) {
+              $errors.Add("Production assertions failed for ${name}: $($data.validation.failures -join '; ')")
+            }
+            if ($name -eq 'vhd-bin-disabled' -and !$case.configurationDemonstrated) {
+              Write-Host 'The per-volume disabled-bin setting remains inconclusive; no claim is made that Windows honored it.'
+            } elseif ($name -ne 'ordinary-runner-volume' -and !$case.configurationDemonstrated) {
+              $errors.Add("The independent disposable control did not demonstrate the required condition: $name")
+            }
+          }
+          $validation = @{ passed=($errors.Count -eq 0); errors=@($errors); testedCommit=$env:GITHUB_SHA }
+          $validation | ConvertTo-Json -Depth 5 | Set-Content evidence/windows-trash/production-validation.json -Encoding utf8
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host "FAIL: $_" }
+            exit 1
+          }
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: media-safety-${{ matrix.os }}
-          path: evidence/
+          path: |
+            evidence/
+            build/Testing/Temporary/*.log
+            build/tests/*.result.txt
+            build/tests/Release/*.result.txt
           if-no-files-found: warn

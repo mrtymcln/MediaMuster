@@ -6,8 +6,10 @@
 #include "oprunner.h"
 
 #include <QHash>
+#include <QMutex>
 #include <QObject>
 #include <QVector>
+#include <QWaitCondition>
 
 #include <functional>
 #include <optional>
@@ -18,9 +20,10 @@
 class OpManager : public QObject, private OpSink
 {
 	Q_OBJECT
+	friend class TestOperationUi;
   public:
 	explicit OpManager(QObject *parent = nullptr);
-	~OpManager() override = default;
+	~OpManager() override;
 
 	// MARK: - Job entry points
 
@@ -30,10 +33,14 @@ class OpManager : public QObject, private OpSink
 	void setUndoEnabled(bool enabled) { m_undoEnabled = enabled; }
 	bool isRunning() const { return m_running; }
 
-	void cancel()
-	{
-		m_job.cancel();
-	}
+	void cancel();
+
+	// The UI explicitly registers its lifetime so a headless manager never
+	// waits for a decision that nobody can supply. Replies are request-scoped:
+	// an old dialog cannot authorize a later operation.
+	void setTrashFallbackHandlerAvailable(bool available);
+	bool isTrashFallbackPending(quint64 requestId) const;
+	void respondTrashFallback(quint64 requestId, bool accepted);
 
 	/// The engine's entire read of a MediaFile, in one place: path,
 	/// name, folder, size, the per-file conflict policy, and the scan's
@@ -65,6 +72,8 @@ class OpManager : public QObject, private OpSink
 
 	/// Aggregated locations used by Delete in this run.
 	void mediaMusterTrashUsed(const QString &trashFolderPath, int fileCount);
+	void trashFallbackRequested(quint64 requestId, const QVector<OpTrashFallbackItem> &items);
+	void trashFallbackFinished(quint64 requestId);
 
   private:
 	// MARK: - OpSink (the runner's reporting channel)
@@ -72,11 +81,19 @@ class OpManager : public QObject, private OpSink
 	void progress(const QString &name, int current, int total, double pct) override;
 	void log(QtMsgType level, const QString &message) override;
 	void trashUsed(const QString &folder, int count) override;
+	bool confirmTrashFallback(const QVector<OpTrashFallbackItem> &items) override;
 
 	void result(const OpResult &value) override;
 	void startRun(OpRequest request);
 	bool m_undoEnabled = false;
 	bool m_running = false;
+	mutable QMutex m_trashFallbackMutex;
+	QWaitCondition m_trashFallbackChanged;
+	bool m_trashFallbackHandlerAvailable = false;
+	quint64 m_nextTrashFallbackRequest = 0;
+	quint64 m_pendingTrashFallbackRequest = 0;
+	bool m_trashFallbackAnswered = false;
+	bool m_trashFallbackAccepted = false;
 
 	/// Must stay the LAST member: BackgroundJob's destructor joins the
 	/// worker, and members declared after it would be destroyed first —

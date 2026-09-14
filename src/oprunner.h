@@ -1,6 +1,7 @@
 #pragma once
 #include "opcopier.h"
 #include "opjournal.h"
+#include "optrash.h"
 #include <QSet>
 #include <functional>
 
@@ -12,6 +13,8 @@ class OpSink
 	virtual void log(QtMsgType, const QString &) = 0;
 	virtual void trashUsed(const QString &, int) = 0;
 	virtual void result(const OpResult &) = 0;
+	// Headless callers retain originals unless they explicitly support consent.
+	virtual bool confirmTrashFallback(const QVector<OpTrashFallbackItem> &) { return false; }
 };
 
 class OpRunner
@@ -34,6 +37,7 @@ class OpRunner
 		std::function<bool(const QString &)> fail;
 		// Inject an OS copy error before native transfer; zero runs the real copier.
 		std::function<int(const OpJournal::Entry &)> nativeCopyError;
+		std::function<OpTrash::Result(const OpJournal::Entry &)> nativeTrash;
 		NativeFile::DirectorySync directorySync = NativeFile::syncDirectory;
 		bool forceCopy = false;
 		bool forceNetworkTrash = false; // Exercise network routing on disposable local fixtures.
