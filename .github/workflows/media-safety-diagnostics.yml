@@ -1,0 +1,73 @@
+name: Disposable media safety diagnostics
+on:
+  push:
+    branches: [codex/verify-media-safety-20260914]
+permissions:
+  contents: read
+jobs:
+  verify:
+    name: Diagnostics (${{ matrix.os }})
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            qt-host: windows
+            qt-arch: win64_msvc2019_64
+          - os: macos-latest
+            qt-host: mac
+            qt-arch: ''
+    runs-on: ${{ matrix.os }}
+    env:
+      QT_VERSION: '6.5.3'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.5.3'
+          host: ${{ matrix.qt-host }}
+          arch: ${{ matrix.qt-arch }}
+          target: desktop
+          dir: '${{ runner.temp }}/Qt'
+          cache: true
+      - name: Patch Qt for current MSVC
+        if: runner.os == 'Windows'
+        run: cmake -P .github/cmake/patch-qt-windows.cmake
+      - name: Build probes against unchanged production sources
+        id: build
+        shell: pwsh
+        run: |
+          cmake -S diagnostics/media-safety -B diagnostic-build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build diagnostic-build --config Release --parallel 4
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run parser and scanner probe
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path evidence -Force | Out-Null
+          $bin = if ($IsWindows) { 'diagnostic-build/Release' } else { 'diagnostic-build' }
+          $suffix = if ($IsWindows) { '.exe' } else { '' }
+          & "./$bin/pmr-probe$suffix" "$PWD/tests/fixtures" 2>&1 | Tee-Object evidence/pmr.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run operation probe
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path evidence -Force | Out-Null
+          $bin = if ($IsWindows) { 'diagnostic-build/Release' } else { 'diagnostic-build' }
+          $suffix = if ($IsWindows) { '.exe' } else { '' }
+          & "./$bin/operations-probe$suffix" 2>&1 | Tee-Object evidence/operations.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Exercise Windows Trash on disposable data
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && runner.os == 'Windows' }}
+        shell: pwsh
+        run: diagnostics/media-safety/run_windows_trash.ps1 -Probe "$PWD/diagnostic-build/Release/trash-probe.exe" -OutputDirectory "$PWD/evidence/windows-trash"
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: media-safety-${{ matrix.os }}
+          path: evidence/
+          if-no-files-found: warn
