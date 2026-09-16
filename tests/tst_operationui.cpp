@@ -19,6 +19,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMenu>
+#include <QMenuBar>
 #include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
@@ -85,6 +87,10 @@ private slots:
 	void cleanupTestCase();
 	void debug_flags_default_off_and_text_undo_works();
 	void startup_prunes_expired_journals_with_undo_disabled();
+	void unfinished_business_is_the_single_file_recovery_command();
+	void unfinished_business_merges_jobs_and_updates_choices();
+	void unfinished_business_gate_restore_does_not_start_waiting_job();
+	void unfinished_business_gate_cancel_only_dismisses_selected_job();
 	void interrupted_dialog_escape_does_not_abandon();
 	void interrupted_dialog_close_does_not_abandon();
 	void interrupted_dialog_cancel_keeps_completed_effects();
@@ -117,8 +123,7 @@ private:
 	QString makeInterrupted(OpRequest request, bool completeFirst = false);
 	QString makeRetainedOriginal(const QString &name = QStringLiteral("retained"));
 	void clickInterrupted(const QString &button);
-	void clickRestoreOriginals(const QString &button, const OperationRecovery::Restorable &job,
-							  int selectedJob = 0);
+	void clickRestoreOriginals(const QString &button, const OperationRecovery::Restorable &job);
 	QString path(const QString &relative) const { return m_root + '/' + relative; }
 	QByteArray m_previousJournalDir;
 	bool m_hadJournalDir = false;
@@ -196,11 +201,9 @@ void TestOperationUi::clickInterrupted(const QString &button)
 		if (!dialog) return; // The asynchronous journal read may still be running.
 		timer->stop();
 		timer->deleteLater();
-		QCOMPARE(dialog->objectName(), QStringLiteral("interruptedJobDialog"));
-		bool foundHeadline = false;
-		for (auto *label : dialog->findChildren<QLabel *>())
-			foundHeadline |= label->text() == "The previous job was interrupted.";
-		QVERIFY(foundHeadline);
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *summary = dialog->findChild<QLabel *>(QStringLiteral("unfinishedBusinessSummary"));
+		QVERIFY(summary && !summary->text().isEmpty());
 		if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
 		else if (button == "close") dialog->close();
 		else
@@ -248,26 +251,32 @@ QString TestOperationUi::makeRetainedOriginal(const QString &name)
 }
 
 void TestOperationUi::clickRestoreOriginals(const QString &button,
-										 const OperationRecovery::Restorable &job, int selectedJob)
+										 const OperationRecovery::Restorable &job)
 {
 	auto *timer = new QTimer(this);
 	timer->setInterval(1);
-	connect(timer, &QTimer::timeout, this, [timer, button, job, selectedJob]
+	connect(timer, &QTimer::timeout, this, [timer, button, job]
 	{
 		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
 		if (!dialog) return;
 		timer->stop();
 		timer->deleteLater();
-		QCOMPARE(dialog->objectName(), QStringLiteral("restoreOriginalsDialog"));
-		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("restoreOriginalsJob"));
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
 		QVERIFY(jobs);
+		const int selectedJob = jobs->findData(job.journalPath);
+		QVERIFY(selectedJob >= 0);
 		jobs->setCurrentIndex(selectedJob);
 		auto *paths = dialog->findChild<QPlainTextEdit *>(QStringLiteral("restoreOriginalPaths"));
 		QVERIFY(paths && paths->isReadOnly());
-		for (const auto &path : job.originals) QVERIFY(paths->toPlainText().contains(path));
-		for (const auto &path : job.retainedPaths) QVERIFY(paths->toPlainText().contains(path));
-		QCOMPARE(dialog->findChildren<QPushButton *>().size(), 2);
-		if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
+		for (const auto &path : job.originals)
+			QVERIFY(paths->toPlainText().contains(QDir::toNativeSeparators(path)));
+		for (const auto &path : job.retainedPaths)
+			QVERIFY(paths->toPlainText().contains(QDir::toNativeSeparators(path)));
+		auto *close = dialog->findChild<QPushButton *>(QStringLiteral("closeUnfinishedBusinessButton"));
+		QVERIFY(close && close->isDefault());
+		if (button == "enter") QTest::keyClick(dialog, Qt::Key_Return);
+		else if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
 		else if (button == "close") dialog->close();
 		else
 		{
@@ -334,6 +343,187 @@ void TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
 		QVERIFY(QFileInfo::exists(path(QStringLiteral("completed-%1/source/clip-0.bin").arg(n))));
 		QVERIFY(QFileInfo::exists(path(QStringLiteral("completed-%1/destination/clip-0.bin").arg(n))));
 	}
+}
+
+void TestOperationUi::unfinished_business_is_the_single_file_recovery_command()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *recovery = window.m_operations->recoveryAction();
+	QCOMPARE(recovery->objectName(), QStringLiteral("unfinishedBusinessAction"));
+	QCOMPARE(recovery->text(), QStringLiteral("Unfinished Business…"));
+	QVERIFY(!recovery->isEnabled());
+
+	QMenu *fileMenu = nullptr;
+	for (auto *action : window.menuBar()->actions())
+		if (action->text().remove('&') == QStringLiteral("File")) fileMenu = action->menu();
+	QVERIFY(fileMenu);
+	QCOMPARE(fileMenu->actions().count(recovery), 1);
+	for (auto *action : fileMenu->actions())
+	{
+		QVERIFY(!action->text().startsWith(QStringLiteral("Resume Interrupted")));
+		QVERIFY(!action->text().startsWith(QStringLiteral("Restore Interrupted")));
+	}
+
+	makeInterrupted(request());
+	window.m_operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
+	QVERIFY(recovery->isEnabled());
+}
+
+void TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
+{
+	const auto bothPath = makeRetainedOriginal("both");
+	const auto resumePath = makeInterrupted(request("resume"));
+	const auto restorePath = makeRetainedOriginal("restore");
+	QString error;
+	QVERIFY(OpJournal::dismiss(restorePath, error));
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	QCOMPARE(operations.m_resumable.size(), 2);
+	QCOMPARE(operations.m_restorable.size(), 2);
+	QSignalSpy finished(operations.manager(), &OpManager::operationFinished);
+	bool inspected = false;
+	QTimer inspect;
+	inspect.setInterval(1);
+	connect(&inspect, &QTimer::timeout, &window, [&]
+	{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		inspect.stop();
+		QTimer::singleShot(0, dialog, &QDialog::reject); // Also closes if an assertion fails.
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		auto *resume = dialog->findChild<QPushButton *>(QStringLiteral("resumeInterruptedJobButton"));
+		auto *restore = dialog->findChild<QPushButton *>(QStringLiteral("restoreOriginalsButton"));
+		auto *cancel = dialog->findChild<QPushButton *>(QStringLiteral("cancelInterruptedJobButton"));
+		auto *close = dialog->findChild<QPushButton *>(QStringLiteral("closeUnfinishedBusinessButton"));
+		QVERIFY(jobs && resume && restore && cancel && close);
+		QCOMPARE(jobs->count(), 3); // The job with both choices appears only once.
+		QSet<QString> listed;
+		for (int i = 0; i < jobs->count(); ++i) listed.insert(jobs->itemData(i).toString());
+		QCOMPARE(listed, QSet<QString>({bothPath, resumePath, restorePath}));
+		QVERIFY(close->isDefault());
+		for (const auto *button : {resume, restore, cancel})
+		{
+			QVERIFY(!button->isDefault());
+			QVERIFY(!button->autoDefault());
+		}
+
+		jobs->setCurrentIndex(jobs->findData(bothPath));
+		QVERIFY(resume->isVisible() && resume->isEnabled());
+		QVERIFY(restore->isVisible() && restore->isEnabled());
+		QVERIFY(cancel->isVisible() && cancel->isEnabled());
+		jobs->setCurrentIndex(jobs->findData(resumePath));
+		QVERIFY(resume->isVisible() && resume->isEnabled());
+		QVERIFY(!restore->isVisible() || !restore->isEnabled());
+		QVERIFY(cancel->isVisible() && cancel->isEnabled());
+		jobs->setCurrentIndex(jobs->findData(restorePath));
+		QVERIFY(!resume->isVisible() || !resume->isEnabled());
+		QVERIFY(restore->isVisible() && restore->isEnabled());
+		QVERIFY(!cancel->isVisible() || !cancel->isEnabled());
+		inspected = true;
+		close->click();
+	});
+	inspect.start();
+	operations.recoveryAction()->trigger();
+	QVERIFY(inspected);
+	QCOMPARE(finished.count(), 0);
+	QCOMPARE(OperationRecovery::pending().size(), 2);
+	QCOMPARE(OperationRecovery::restorable().size(), 2);
+}
+
+void TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job()
+{
+	const auto dismissedPath = makeRetainedOriginal("dismissed");
+	QString error;
+	QVERIFY(OpJournal::dismiss(dismissedPath, error));
+	const auto restorePath = makeRetainedOriginal("pending");
+	const auto record = OpJournal::readOne(restorePath);
+	QVERIFY(record);
+	const auto original = record->entries.first();
+	QWidget window;
+	FileOperationController operations(&window);
+	QSignalSpy finished(operations.manager(), &OpManager::operationFinished);
+	bool selectedPending = false;
+	QTimer choose;
+	choose.setInterval(1);
+	connect(&choose, &QTimer::timeout, &window, [&]
+	{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		choose.stop();
+		QTimer::singleShot(0, dialog, &QDialog::reject);
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		auto *restore = dialog->findChild<QPushButton *>(QStringLiteral("restoreOriginalsButton"));
+		QVERIFY(jobs && restore);
+		// The previous-job gate selects its unfinished job even when another
+		// dismissed job also has originals waiting to be restored.
+		QCOMPARE(jobs->currentData().toString(), restorePath);
+		selectedPending = true;
+		restore->click();
+	});
+	choose.start();
+	QVERIFY(!operations.dispatchRequest(request("attempted")));
+	QVERIFY(selectedPending);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(operations.isIdle() && !operations.m_historyLoading, 15000);
+	QVERIFY(QFileInfo::exists(original.item.src));
+	QVERIFY(!QFileInfo::exists(original.retirement));
+	QVERIFY(QFileInfo::exists(original.dst));
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QCOMPARE(OpJournal::scan().size(), 2);
+	QVERIFY(OpJournal::readOne(dismissedPath)->dismissed);
+	QCOMPARE(operations.m_restorable.size(), 1);
+	QCOMPARE(operations.m_restorable.first().journalPath, dismissedPath);
+}
+
+void TestOperationUi::unfinished_business_gate_cancel_only_dismisses_selected_job()
+{
+	const auto firstPath = makeInterrupted(request("first"));
+	const auto secondPath = makeInterrupted(request("second"));
+	QWidget window;
+	FileOperationController operations(&window);
+	int dialogsSeen = 0;
+	QTimer choose;
+	choose.setInterval(1);
+	connect(&choose, &QTimer::timeout, &window, [&]
+	{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		QTimer::singleShot(0, dialog, &QDialog::reject);
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		QVERIFY(jobs);
+		++dialogsSeen;
+		if (dialogsSeen == 1)
+		{
+			const int secondIndex = jobs->findData(secondPath);
+			QVERIFY(secondIndex >= 0);
+			jobs->setCurrentIndex(secondIndex);
+			auto *cancel = dialog->findChild<QPushButton *>(QStringLiteral("cancelInterruptedJobButton"));
+			QVERIFY(cancel);
+			cancel->click();
+			return;
+		}
+		choose.stop();
+		QCOMPARE(dialogsSeen, 2);
+		QCOMPARE(jobs->count(), 1);
+		QCOMPARE(jobs->currentData().toString(), firstPath);
+		QVERIFY(!OpJournal::readOne(firstPath)->dismissed);
+		QVERIFY(OpJournal::readOne(secondPath)->dismissed);
+		dialog->close();
+	});
+	choose.start();
+	QVERIFY(!operations.dispatchRequest(request("attempted")));
+	QCOMPARE(dialogsSeen, 2);
+	QVERIFY(!operations.manager()->isRunning());
+	QVERIFY(!OpJournal::readOne(firstPath)->dismissed);
+	QVERIFY(OpJournal::readOne(secondPath)->dismissed);
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QCOMPARE(OpJournal::scan().size(), 2);
 }
 
 void TestOperationUi::interrupted_dialog_escape_does_not_abandon()
@@ -439,16 +629,16 @@ void TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
 	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
 	QVERIFY(!operations->enableUndoAction()->isChecked());
 	QVERIFY(!operations->undoAction()->isVisible());
-	QVERIFY(operations->restoreOriginalsAction()->isEnabled());
+	QVERIFY(operations->recoveryAction()->isEnabled());
 	QCOMPARE(operations->m_restorable.size(), 1);
 	const auto job = operations->m_restorable.first();
 	QCOMPARE(job.journalPath, oldPath);
 	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
-	for (const auto &close : {"closeRestoreOriginalsButton", "escape", "close"})
+	for (const auto &close : {"closeUnfinishedBusinessButton", "escape", "close", "enter"})
 	{
 		clickRestoreOriginals(QString::fromLatin1(close), job);
-		operations->restoreOriginalsAction()->trigger();
-		QVERIFY(operations->restoreOriginalsAction()->isEnabled());
+		operations->recoveryAction()->trigger();
+		QVERIFY(operations->recoveryAction()->isEnabled());
 		QVERIFY(!QFileInfo::exists(job.originals.first()));
 		QVERIFY(QFileInfo::exists(job.retainedPaths.first()));
 		QVERIFY(OpJournal::readOne(oldPath)->dismissed);
@@ -484,14 +674,15 @@ void TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows(
 	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
 	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
 	clickRestoreOriginals("restoreOriginalsButton", operations->m_restorable.first());
-	operations->restoreOriginalsAction()->trigger();
+	operations->recoveryAction()->trigger();
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
 	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 15000);
 	QTRY_VERIFY_WITH_TIMEOUT(operations->isIdle() && !operations->m_historyLoading, 15000);
 	QVERIFY(QFileInfo::exists(old->entries.first().item.src));
 	QVERIFY(!QFileInfo::exists(old->entries.first().retirement));
 	QVERIFY(QFileInfo::exists(old->entries.first().dst));
-	QVERIFY(!operations->restoreOriginalsAction()->isEnabled());
+	QVERIFY(operations->m_restorable.isEmpty());
+	QVERIFY(operations->recoveryAction()->isEnabled()); // The unrelated job can still resume.
 	QCOMPARE(OpJournal::readOne(oldPath)->entries.first().step, OpJournal::Step::SourceRestored);
 	QVERIFY(!OpJournal::readOne(laterPath)->dismissed);
 	QVERIFY(!QFileInfo::exists(path("later/destination/clip-0.bin")));
@@ -526,11 +717,11 @@ void TestOperationUi::resume_restoration_refreshes_rows()
 	auto *operations = window.m_operations;
 	operations->refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
-	QVERIFY(operations->resumeAction()->isEnabled());
+	QVERIFY(operations->recoveryAction()->isEnabled());
 	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
 	QSignalSpy results(operations->manager(), &OpManager::operationResult);
 	clickInterrupted("resumeInterruptedJobButton");
-	operations->resumeAction()->trigger();
+	operations->recoveryAction()->trigger();
 	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 15000);
 	QTRY_VERIFY_WITH_TIMEOUT(operations->isIdle() && !operations->m_historyLoading, 15000);
 	QCOMPARE(results.count(), 1);
@@ -560,18 +751,18 @@ void TestOperationUi::blocked_restore_remains_available()
 	QSignalSpy finished(operations.manager(), &OpManager::operationFinished);
 	QSignalSpy restored(&operations, &FileOperationController::originalsRestored);
 	clickRestoreOriginals("restoreOriginalsButton", operations.m_restorable.first());
-	operations.restoreOriginalsAction()->trigger();
+	operations.recoveryAction()->trigger();
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
 	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading && operations.isIdle(), 15000);
 	QCOMPARE(restored.count(), 0);
-	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+	QVERIFY(operations.recoveryAction()->isEnabled());
 	QVERIFY(QFileInfo::exists(old->entries.first().retirement));
 	QFile occupant(original);
 	QVERIFY(occupant.open(QIODevice::ReadOnly));
 	QCOMPARE(occupant.readAll(), QByteArray("new file in the original location"));
-	clickRestoreOriginals("closeRestoreOriginalsButton", operations.m_restorable.first());
-	operations.offerRestoreOriginals();
-	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+	clickRestoreOriginals("closeUnfinishedBusinessButton", operations.m_restorable.first());
+	operations.offerRecovery();
+	QVERIFY(operations.recoveryAction()->isEnabled());
 }
 
 void TestOperationUi::restore_can_select_another_retained_job()
@@ -587,8 +778,8 @@ void TestOperationUi::restore_can_select_another_retained_job()
 	const auto jobs = operations.m_restorable;
 	QVERIFY(put(jobs[0].originals.first(), QByteArray("occupied")));
 	QSignalSpy finished(operations.manager(), &OpManager::operationFinished);
-	clickRestoreOriginals("restoreOriginalsButton", jobs[1], 1);
-	operations.restoreOriginalsAction()->trigger();
+	clickRestoreOriginals("restoreOriginalsButton", jobs[1]);
+	operations.recoveryAction()->trigger();
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
 	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading && operations.isIdle(), 15000);
 	QCOMPARE(operations.m_restorable.size(), 1);
@@ -608,9 +799,9 @@ void TestOperationUi::startup_offers_retained_originals()
 	OperationRecovery::Summary summary;
 	summary.restorable = OperationRecovery::restorable();
 	QCOMPARE(summary.restorable.size(), 1);
-	clickRestoreOriginals("closeRestoreOriginalsButton", summary.restorable.first());
+	clickRestoreOriginals("closeUnfinishedBusinessButton", summary.restorable.first());
 	operations.onRecoveryDone(summary);
-	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+	QVERIFY(operations.recoveryAction()->isEnabled());
 	QVERIFY(!operations.manager()->isRunning());
 }
 
@@ -627,15 +818,15 @@ void TestOperationUi::restore_originals_respects_busy_gate()
 		 FileOperationController::Activity::FileOperation})
 	{
 		operations.setActivity(activity);
-		QVERIFY(!operations.restoreOriginalsAction()->isEnabled());
-		operations.offerRestoreOriginals();
+		QVERIFY(!operations.recoveryAction()->isEnabled());
+		operations.offerRecovery();
 		OpRequest restore;
 		restore.restoreJournalPath = oldPath;
 		QVERIFY(!operations.dispatchRequest(restore));
 		QVERIFY(!operations.manager()->isRunning());
 	}
 	operations.setActivity(FileOperationController::Activity::Idle);
-	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+	QVERIFY(operations.recoveryAction()->isEnabled());
 }
 
 void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention()
@@ -674,9 +865,9 @@ void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
 	interrupted.journalPath = path("interrupted-journal.jsonl");
 	window.m_operations->m_resumable = {interrupted};
 	window.m_operations->setActivity(FileOperationController::Activity::RebalanceDialog);
-	window.m_operations->updateResumeAction();
+	window.m_operations->updateRecoveryAction();
 	QVERIFY(!window.m_operations->m_undoAct->isEnabled());
-	QVERIFY(!window.m_operations->m_resumeAct->isEnabled());
+	QVERIFY(!window.m_operations->m_recoveryAct->isEnabled());
 	QVERIFY(!window.m_operations->dispatchRequest(request("competing")));
 	QVERIFY(!window.m_operations->resolvePreviousJob());
 	window.m_operations->undoLastOperation();
@@ -737,7 +928,7 @@ void TestOperationUi::same_session_refresh_and_stale_result_guard()
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.m_operations->refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
-	QVERIFY(window.m_operations->m_resumeAct->isEnabled());
+	QVERIFY(window.m_operations->m_recoveryAct->isEnabled());
 	QCOMPARE(window.m_operations->m_resumable.first().journalPath, journalPath);
 	window.m_operations->refreshHistory();
 	++window.m_operations->m_historyGeneration; // A newer dispatch invalidates the pending read.

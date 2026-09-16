@@ -12,8 +12,8 @@ finishes. A distinct completed state prevents Resume from removing that original
 again.
 
 A blocked restoration keeps both its evidence and its actual retained path.
-File > Restore Interrupted Originals remains available after dismissal, restart
-and later jobs, independently of Undo. Its Restore/Close dialog lists current
+File > Unfinished Business… remains available after dismissal, restart
+and later jobs, independently of Undo. Its unified recovery dialog lists current
 recorded locations; multiple jobs can be selected individually. Restore requires
 only the original storage, not a usable or connected destination copy. Changed
 originals, occupied locations and unsafe paths are retained and reported.
@@ -24,11 +24,21 @@ Successful restoration refreshes the media table by scanning the actual media
 roots. A claimed Undo remains the sole recovery owner of its forward job; its
 completed inverse evidence can settle the forward retirement-folder cleanup.
 
-Resume and Restore remain distinct actions: Resume continues an unfinished job;
+Resume Job and Restore Originals remain distinct actions in the same dialog:
+Resume continues an unfinished job;
 Restore returns stranded originals, including those from dismissed jobs, while
 keeping completed copies. Both report an explicit `OriginalRestored` result so
 the UI refreshes restored media regardless of which route performed the return.
 The refresh preserves the scan roots already represented in the table.
+
+The dialog merges each job's available choices into one entry and uses the same
+button-and-description rows as Filter by Bin. Cancel Job explicitly abandons
+unfinished work while preserving completed results and restoration records.
+Close, Escape, window close and the default Enter action leave the job untouched.
+Before starting a new operation, its prerequisite job is selected first; choosing
+Resume or Restore starts only that recovery, never the waiting new operation.
+The File menu contains one recovery command, enabled whenever either kind of
+unfinished work is available and the application is idle.
 
 ## Temporary cleanup
 
@@ -67,15 +77,17 @@ with changed/missing destinations, occupied originals, durable restoration crash
 boundaries, dismissed/older jobs, Undo ownership, cleanup crashes, replacement
 files, unexpected directory contents, permission failures and repeated recovery.
 
-Mac validation on 16 September 2026: the application builds, its code signature
-verifies, and all 27 suites pass. The affected suites contain 127 file-operation,
-78 journal, 32 operation-UI and 16 native-cleanup passed cases. The native tests
-include actual inherited ACL removal and refusal after an ACL broadens access.
+Mac validation after the C++ review on 16 September 2026: the application builds,
+its code signature verifies, and all 27 suites pass. The affected suites contain
+127 file-operation, 78 journal, 33 operation-UI and 16 native-cleanup passed cases.
+The UI tests cover restoration through Resume and preserve drive labels and scan
+roots after Restore. The native tests include actual inherited ACL removal and
+refusal after an ACL broadens access.
 
-Windows validation on 16 September 2026: the full application builds and all
-27 suites pass in [GitHub Actions run 35077564288](https://github.com/mrtymcln/MediaMuster/actions/runs/35077564288),
-at diagnostic commit `d4ead6e65071a945fa79f5f741677ecda2dc3292`.
-The affected suites contain 131 file-operation, 78 journal, 32 operation-UI and
+Windows validation after the C++ review on 16 September 2026: the full application
+builds and all 27 suites pass in [GitHub Actions run 35080288623](https://github.com/mrtymcln/MediaMuster/actions/runs/35080288623),
+at diagnostic commit `21f9220ff690c451da7a1d92491a7d15359094cd`.
+The affected suites contain 131 file-operation, 78 journal, 33 operation-UI and
 12 native-cleanup passed cases, with no skips or failures in those four suites.
 The full Windows run has four unrelated conditional skips for external toolkit
 fixtures, case-sensitive directories and a POSIX symlink fixture.

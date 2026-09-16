@@ -99,6 +99,7 @@ set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
     src/fileoperationcontroller.cpp
+    src/unfinishedbusinessdialog.cpp
     src/aboutdialog.cpp
     src/icons.cpp
     src/logcategories.cpp

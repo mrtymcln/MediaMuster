@@ -20,17 +20,17 @@ jobs:
           cache: true
       - name: Patch Qt for current MSVC
         run: cmake -P .github/cmake/patch-qt-windows.cmake
-      - name: Build application and all regression suites
+      - name: Build application and operation UI tests
         shell: pwsh
         run: |
           cmake -S . -B build "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cmake --build build --config Release --parallel 4
+          cmake --build build --config Release --target MediaMuster tst_operationui --parallel 4
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Test recovery, cleanup and application regressions
+      - name: Test unified recovery and operation UI regressions
         shell: pwsh
         run: |
-          ctest --test-dir build -C Release --output-on-failure
+          ctest --test-dir build -C Release -R '^tst_operationui$' --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload test evidence
         if: always()

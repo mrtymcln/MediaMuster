@@ -636,10 +636,8 @@ void MainWindow::buildFileMenu()
 
 	fileMenu->addSeparator();
 
-	// Greyed out unless an interrupted Copy/Move/Delete is waiting to be
-	// finished (see FileOperationController::refreshHistory); offered automatically at launch too.
-	fileMenu->addAction(m_operations->resumeAction());
-	fileMenu->addAction(m_operations->restoreOriginalsAction());
+	// One place for unfinished jobs and originals awaiting restoration.
+	fileMenu->addAction(m_operations->recoveryAction());
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();

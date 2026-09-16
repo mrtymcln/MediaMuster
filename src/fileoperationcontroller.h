@@ -35,8 +35,7 @@ public:
 	bool isIdle() const { return m_activity == Activity::Idle; }
 	void setActivity(Activity activity);
 	OpManager *manager() const { return m_fileOps; }
-	QAction *resumeAction() const { return m_resumeAct; }
-	QAction *restoreOriginalsAction() const { return m_restoreOriginalsAct; }
+	QAction *recoveryAction() const { return m_recoveryAct; }
 	QAction *undoAction() const { return m_undoAct; }
 	QAction *verifyCopiesAction() const { return m_verifyCopiesAct; }
 	QAction *enableUndoAction() const { return m_enableUndoAct; }
@@ -46,8 +45,7 @@ public:
 	void refreshHistory();
 	bool dispatchRequest(OpRequest request);
 	bool resolvePreviousJob();
-	void offerResume();
-	void offerRestoreOriginals();
+	void offerRecovery();
 	void undoLastOperation();
 	// Temporarily releases only the modal-dialog activity for the authoritative
 	// previous-job gate. A resumed job keeps its activity when the dialog closes.
@@ -62,9 +60,16 @@ signals:
 	void mediaMusterTrashUsed(const QString &folder, int fileCount);
 
 private:
+	enum class RecoveryOutcome
+	{
+		Closed,
+		Started,
+		Dismissed
+	};
 	void onRecoveryDone(const OperationRecovery::Summary &summary);
 	void updateUndoAction();
-	void updateResumeAction();
+	void updateRecoveryAction();
+	RecoveryOutcome showRecoveryDialog(const QString &preferredJournalPath = {});
 	bool confirmCrashProtection();
 	bool resumeOperation(const OperationRecovery::Resumable &job);
 	void applyOperationHistory(const OperationRecovery::Summary &history);
@@ -83,8 +88,7 @@ private:
 	QSet<QString> m_restoredOriginalPaths;
 	QVector<OperationRecovery::Resumable> m_resumable;
 	QVector<OperationRecovery::Restorable> m_restorable;
-	QAction *m_resumeAct;
-	QAction *m_restoreOriginalsAct;
+	QAction *m_recoveryAct;
 	QAction *m_undoAct;
 	QAction *m_undoSeparator = nullptr;
 	QAction *m_verifyCopiesAct;
