@@ -101,6 +101,10 @@ QString OpJournal::stepName(Step s)
 		return "failed";
 	case Step::TrashFallback:
 		return "trash-fallback";
+	case Step::RestoringSource:
+		return "restoring-source";
+	case Step::SourceRestored:
+		return "source-restored";
 	case Step::NeedsAttention:
 		return "needs-attention";
 	}
@@ -108,11 +112,24 @@ QString OpJournal::stepName(Step s)
 }
 bool OpJournal::Entry::complete() const
 {
-	return step == Step::Done || step == Step::SourceRemoved || step == Step::Skipped ||
+	return step == Step::Done || step == Step::SourceRemoved || step == Step::SourceRestored || step == Step::Skipped ||
 		   step == Step::NoEffect;
+}
+bool OpJournal::Entry::needsOriginalRestoration() const
+{
+	return mechanism == "copy" && !retirement.isEmpty() && !sourceRemoved &&
+		   step != Step::SourceRestored && step != Step::Done && step != Step::SourceRemoved &&
+		   step != Step::NoEffect && step != Step::Skipped;
 }
 QJsonObject OpJournal::Entry::json() const
 {
+	QJsonArray cleanupRecords;
+	for (const auto &pending : cleanup)
+		cleanupRecords.append(QJsonObject{{"directory", pending.directory},
+										  {"directoryStamp", pending.directoryStamp.json()},
+										  {"file", pending.file},
+										  {"fileStamp", pending.fileStamp.json()},
+										  {"removeFile", pending.removeFile}});
 	return {{"record", "item"},
 			{"id", id},
 			{"item", itemJson(item)},
@@ -140,7 +157,8 @@ QJsonObject OpJournal::Entry::json() const
 			{"source", source.json()},
 			{"landed", landed.json()},
 			{"step", stepName(step)},
-			{"artifacts", QJsonArray::fromStringList(artifacts)}};
+			{"artifacts", QJsonArray::fromStringList(artifacts)},
+			{"cleanup", cleanupRecords}};
 }
 std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 {
@@ -207,6 +225,69 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 									 !QDir::isAbsolutePath(e.dst) || e.sourceRemoved || e.explicitSkip ||
 									 !e.mechanism.isEmpty() || !e.retirement.isEmpty()))
 		return {}; // A no-effect result needs identity evidence, not an inferred Skip.
+	if (e.step == Step::SourceRestored && (e.mechanism != "copy" || e.retirement.isEmpty() ||
+										   e.sourceRemoved || !e.source.valid()))
+		return {};
+	if (v.contains("cleanup"))
+	{
+		if (!v["cleanup"].isArray())
+			return {};
+		QSet<QString> directories;
+		for (const auto &value : v["cleanup"].toArray())
+		{
+			if (!value.isObject())
+				return {};
+			const auto pending = value.toObject();
+			if (!pending["directory"].isString() || !pending["file"].isString() ||
+				!pending["directoryStamp"].isObject() || !pending["fileStamp"].isObject() ||
+				!pending["removeFile"].isBool())
+				return {};
+			auto stampHasTypes = [](const QJsonObject &stamp)
+			{
+				for (const auto *key : {"file", "volume", "size", "modified"})
+					if (!stamp[key].isString())
+						return false;
+				bool sizeOk = false, modifiedOk = false;
+				stamp["size"].toString().toLongLong(&sizeOk);
+				stamp["modified"].toString().toLongLong(&modifiedOk);
+				return sizeOk && modifiedOk;
+			};
+			if (!stampHasTypes(pending["directoryStamp"].toObject()) ||
+				!stampHasTypes(pending["fileStamp"].toObject()))
+				return {};
+			Cleanup cleanup;
+			cleanup.directory = pending["directory"].toString();
+			cleanup.directoryStamp = OpStamp::fromJson(pending["directoryStamp"].toObject());
+			cleanup.file = pending["file"].toString();
+			cleanup.fileStamp = OpStamp::fromJson(pending["fileStamp"].toObject());
+			cleanup.removeFile = pending["removeFile"].toBool();
+			if (!QDir::isAbsolutePath(cleanup.directory) ||
+				QDir::cleanPath(cleanup.directory) != cleanup.directory ||
+				!cleanup.directoryStamp.valid() || cleanup.directoryStamp.volumeId.isEmpty() ||
+				directories.contains(cleanup.directory))
+				return {};
+			const auto name = QFileInfo(cleanup.directory).fileName();
+			bool privateDirectory = false;
+			for (const auto *prefix : {".mediamuster-stage-", ".mediamuster-retire-", ".mediamuster-"})
+			{
+				const QString start = QString::fromLatin1(prefix);
+				if (!name.startsWith(start))
+					continue;
+				const auto token = name.mid(start.size());
+				const QUuid uuid(token);
+				privateDirectory |= !uuid.isNull() && token == uuid.toString(QUuid::WithoutBraces);
+			}
+			if (!privateDirectory ||
+				(cleanup.file.isEmpty() && (cleanup.removeFile || cleanup.fileStamp.valid())) ||
+				(!cleanup.file.isEmpty() &&
+				 (cleanup.file != cleanup.directory + "/payload.partial" ||
+				  name.startsWith(".mediamuster-retire-") || !cleanup.fileStamp.valid() ||
+				  cleanup.fileStamp.volumeId.isEmpty())))
+				return {};
+			directories.insert(cleanup.directory);
+			e.cleanup.append(cleanup);
+		}
+	}
 	for (const auto &a : v["artifacts"].toArray())
 		e.artifacts.append(a.toString());
 	if (e.id < 0 || !QDir::isAbsolutePath(e.item.src))
@@ -648,10 +729,10 @@ namespace
 			{
 				if (entry.item.maintenance || entry.step == Step::NoEffect)
 					continue;
-				if (entry.step == Step::Done || entry.step == Step::SourceRemoved ||
+				if (entry.step == Step::Done || entry.step == Step::SourceRemoved || entry.step == Step::SourceRestored ||
 					entry.step == Step::Published || entry.step == Step::SourceRetained ||
 					(entry.mechanism == "copy" && entry.landed.valid() &&
-					 (entry.step == Step::RemovingSource || entry.step == Step::Publishing ||
+					 (entry.step == Step::RemovingSource || entry.step == Step::RestoringSource || entry.step == Step::Publishing ||
 					  entry.step == Step::NeedsAttention)) ||
 					(entry.mechanism == "relocate" && entry.source.valid() &&
 					 (entry.step == Step::Relocating || entry.step == Step::NeedsAttention)) ||
@@ -702,7 +783,8 @@ bool OpJournal::prune(const QString &directory, QString &error, const QDateTime 
 			!file.lastModified().isValid() || file.lastModified() >= cutoff ||
 			file.size() != record.validBytes ||
 			std::any_of(record.entries.cbegin(), record.entries.cend(), [](const Entry &entry)
-						{ return !entry.complete() || !entry.artifacts.isEmpty() || !entry.temp.isEmpty(); }))
+						{ return !entry.complete() || entry.needsOriginalRestoration() ||
+								 !entry.artifacts.isEmpty() || !entry.temp.isEmpty() || !entry.cleanup.isEmpty(); }))
 			retained.insert(record.path);
 		for (const auto &linked : {record.request.undoOf, record.undoPath})
 			if (!linked.isEmpty() && !known.contains(linked))
@@ -767,91 +849,164 @@ bool OpJournal::dismiss(const QString &path, QString &error)
 	}
 	return true;
 }
-bool OpJournal::resolve(Record &rec, QString &error, const QVector<VolumeIdentity> &overrideVolumes)
+namespace
 {
-	QVector<VolumeIdentity> mounted = overrideVolumes;
-	if (mounted.isEmpty())
+	bool resolveRecord(OpJournal::Record &rec, QString &error,
+					   const QVector<VolumeIdentity> &overrideVolumes, bool restorationOnly)
 	{
-		for (const auto &v : QStorageInfo::mountedVolumes())
-			if (v.isValid() && v.isReady())
-				mounted.append(VolumeIdentity::capture(v.rootPath()));
-		// Direct UNC shares need not be enumerated as mapped Windows drives.
-		// Their recorded endpoint can still be checked at its original path.
-		for (const auto &old : rec.volumes)
+		QSet<QString> requiredRoots;
+		if (restorationOnly)
 		{
-			const auto current = VolumeIdentity::capture(old.rootPath);
-			if (!current.rootPath.isEmpty())
-				mounted.append(current);
-		}
-	}
-	QHash<QString, QString> roots;
-	for (const auto &old : rec.volumes)
-	{
-		QString found;
-		for (const auto &now : mounted)
-		{
-			if (old.matches(now))
+			for (const auto &entry : rec.entries)
 			{
-				if (!found.isEmpty() && found != now.rootPath)
+				if (!entry.needsOriginalRestoration())
+					continue;
+				for (const auto &path : {entry.item.src, entry.retirement})
 				{
-					error = "The recorded volume has more than one possible mount; files were "
-							"retained.";
-					return false;
+					QString owner;
+					for (const auto &volume : rec.volumes)
+						if (!volume.rootPath.isEmpty() && inside(path, volume.rootPath) &&
+							volume.rootPath.size() > owner.size())
+							owner = volume.rootPath;
+					if (!QDir::isAbsolutePath(path) || QDir::cleanPath(path) != path || owner.isEmpty())
+					{
+						error = "Cannot establish the recorded source storage for restoration. Originals were retained.";
+						return false;
+					}
+					requiredRoots.insert(owner);
 				}
-				found = now.rootPath;
+			}
+			if (requiredRoots.isEmpty())
+				return true;
+		}
+		auto required = [&](const VolumeIdentity &volume)
+		{
+			return !restorationOnly || requiredRoots.contains(volume.rootPath);
+		};
+		QVector<VolumeIdentity> mounted = overrideVolumes;
+		if (mounted.isEmpty())
+		{
+			for (const auto &v : QStorageInfo::mountedVolumes())
+				if (v.isValid() && v.isReady())
+					mounted.append(VolumeIdentity::capture(v.rootPath()));
+			// Direct UNC shares need not be enumerated as mapped Windows drives.
+			// Their recorded endpoint can still be checked at its original path.
+			for (const auto &old : rec.volumes)
+			{
+				if (!required(old))
+					continue;
+				const auto current = VolumeIdentity::capture(old.rootPath);
+				if (!current.rootPath.isEmpty())
+					mounted.append(current);
 			}
 		}
-		if (found.isEmpty())
+		QHash<QString, QString> roots;
+		for (const auto &old : rec.volumes)
 		{
-			error = QStringLiteral("Cannot establish the recorded volume at %1. Reconnect the "
-								   "original storage; recovery records are retained.")
-						.arg(old.rootPath);
-			return false;
+			if (!required(old))
+				continue;
+			QString found;
+			for (const auto &now : mounted)
+			{
+				if (old.matches(now))
+				{
+					if (!found.isEmpty() && found != now.rootPath)
+					{
+						error = "The recorded volume has more than one possible mount; files were "
+								"retained.";
+						return false;
+					}
+					found = now.rootPath;
+				}
+			}
+			if (found.isEmpty())
+			{
+				error = QStringLiteral("Cannot establish the recorded volume at %1. Reconnect the "
+									   "original storage; recovery records are retained.")
+							.arg(old.rootPath);
+				return false;
+			}
+			roots.insert(old.rootPath, found);
 		}
-		roots.insert(old.rootPath, found);
-	}
-	auto rewrite = [&](QString p)
-	{
-		QString owner;
-		for (auto it = roots.cbegin(); it != roots.cend(); ++it)
-			if (inside(p, it.key()) && it.key().size() > owner.size())
-				owner = it.key();
-		return owner.isEmpty() ? p : QDir(roots[owner]).filePath(QDir(owner).relativeFilePath(p));
-	};
-	rec.request.destRoot = rewrite(rec.request.destRoot);
-	rec.request.diagnosticTrashRoot = rewrite(rec.request.diagnosticTrashRoot);
-	for (auto &e : rec.entries)
-	{
-		e.item.src = rewrite(e.item.src);
-		e.item.renameDst = rewrite(e.item.renameDst);
-		e.dst = rewrite(e.dst);
-		e.temp = rewrite(e.temp);
-		e.retirement = rewrite(e.retirement);
-		for (auto &p : e.artifacts)
-			p = rewrite(p);
-		// A positively resolved volume can change its OS device number after
-		// remount. Rebind only when file ID, length and mtime still agree.
-		auto rebind = [](OpStamp &old, const QString &path)
+		auto rewrite = [&](QString p)
 		{
-			const auto now = OpFile::inspect(path);
-			if (old.valid() && now.valid() && old.fileId == now.fileId && old.size == now.size &&
-				old.modified == now.modified)
-				old.volumeId = now.volumeId;
+			QString owner;
+			for (auto it = roots.cbegin(); it != roots.cend(); ++it)
+				if (inside(p, it.key()) && it.key().size() > owner.size())
+					owner = it.key();
+			return owner.isEmpty() ? p : QDir(roots[owner]).filePath(QDir(owner).relativeFilePath(p));
 		};
-		rebind(e.source, e.item.src);
-		if (!e.retirement.isEmpty())
-			rebind(e.source, e.retirement);
-		if (e.mechanism == "relocate" || e.mechanism == "systemTrash")
-			rebind(e.source, e.dst);
-		rebind(e.landed, OpFile::occupied(e.temp) ? e.temp : e.dst);
-		if (!e.item.expectedFileId.isEmpty() && e.source.fileId == e.item.expectedFileId)
-			e.item.expectedVolumeId = e.source.volumeId;
+		rec.request.destRoot = rewrite(rec.request.destRoot);
+		rec.request.diagnosticTrashRoot = rewrite(rec.request.diagnosticTrashRoot);
+		for (auto &e : rec.entries)
+		{
+			const bool restoring = e.needsOriginalRestoration();
+			const auto oldRetirementDirectory = QFileInfo(e.retirement).absolutePath();
+			e.item.src = rewrite(e.item.src);
+			e.item.renameDst = rewrite(e.item.renameDst);
+			e.dst = rewrite(e.dst);
+			e.temp = rewrite(e.temp);
+			e.retirement = rewrite(e.retirement);
+			for (auto &p : e.artifacts)
+				p = rewrite(p);
+			// A positively resolved volume can change its OS device number after
+			// remount. Rebind only when file ID, length and mtime still agree.
+			auto rebind = [](OpStamp &old, const QString &path)
+			{
+				const auto now = OpFile::inspect(path);
+				if (old.valid() && now.valid() && old.fileId == now.fileId && old.size == now.size &&
+					old.modified == now.modified)
+					old.volumeId = now.volumeId;
+			};
+			if (!restorationOnly || restoring)
+			{
+				rebind(e.source, e.item.src);
+				if (!e.retirement.isEmpty())
+					rebind(e.source, e.retirement);
+			}
+			if (!restorationOnly && (e.mechanism == "relocate" || e.mechanism == "systemTrash"))
+				rebind(e.source, e.dst);
+			if (!restorationOnly)
+				rebind(e.landed, OpFile::occupied(e.temp) ? e.temp : e.dst);
+			for (auto &pending : e.cleanup)
+			{
+				bool directoryResolved = false;
+				for (auto it = roots.cbegin(); it != roots.cend(); ++it)
+					directoryResolved |= inside(pending.directory, it.key());
+				const bool restorationDirectory = restoring && pending.directory == oldRetirementDirectory;
+				pending.directory = rewrite(pending.directory);
+				pending.file = rewrite(pending.file);
+				if (!directoryResolved || (restorationOnly && !restorationDirectory))
+					continue;
+				const auto now = OpFile::inspectDirectory(pending.directory);
+				// Directory contents and modification time change during normal use.
+				// Only rebind its device number after the volume and object ID agree.
+				if (pending.directoryStamp.valid() && now.valid() &&
+					pending.directoryStamp.fileId == now.fileId)
+					pending.directoryStamp.volumeId = now.volumeId;
+				if (!pending.file.isEmpty())
+					rebind(pending.fileStamp, pending.file);
+			}
+			if (!e.item.expectedFileId.isEmpty() && e.source.fileId == e.item.expectedFileId)
+				e.item.expectedVolumeId = e.source.volumeId;
+		}
+		for (auto &folder : rec.changedFolders)
+			folder = rewrite(folder);
+		for (auto &v : rec.volumes)
+			v.rootPath = roots.value(v.rootPath, v.rootPath);
+		for (int n = 0; n < rec.request.items.size() && n < rec.entries.size(); ++n)
+			rec.request.items[n] = rec.entries[n].item;
+		return true;
 	}
-	for (auto &folder : rec.changedFolders)
-		folder = rewrite(folder);
-	for (auto &v : rec.volumes)
-		v.rootPath = roots.value(v.rootPath, v.rootPath);
-	for (int n = 0; n < rec.request.items.size() && n < rec.entries.size(); ++n)
-		rec.request.items[n] = rec.entries[n].item;
-	return true;
+} // namespace
+
+bool OpJournal::resolve(Record &record, QString &error, const QVector<VolumeIdentity> &mounted)
+{
+	return resolveRecord(record, error, mounted, false);
+}
+
+bool OpJournal::resolveRestoration(Record &record, QString &error,
+								   const QVector<VolumeIdentity> &mounted)
+{
+	return resolveRecord(record, error, mounted, true);
 }

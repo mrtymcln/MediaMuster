@@ -1,7 +1,59 @@
 #include "operationrecovery.h"
 #include "oprunner.h"
 #include <QDir>
+#include <QHash>
 #include <QSet>
+
+namespace
+{
+	using CompletedUndoEntries = QHash<int, QVector<OpJournal::Entry>>;
+
+	CompletedUndoEntries completedUndoEntries(
+		OpJournal::Record inverse, const QVector<VolumeIdentity> &mounted)
+	{
+		QString error;
+		if (!OpJournal::resolve(inverse, error, mounted))
+			return {}; // Unresolved evidence cannot settle the forward job.
+		CompletedUndoEntries completed;
+		for (const auto &entry : inverse.entries)
+			if (entry.complete())
+				completed[entry.undoEntryId].append(entry);
+		return completed;
+	}
+
+	bool settleOriginalFromUndo(
+		OpJournal &journal, OpJournal::Entry &entry, const CompletedUndoEntries &completed)
+	{
+		if (!entry.needsOriginalRestoration())
+			return true;
+		const auto candidates = completed.constFind(entry.id);
+		if (candidates == completed.cend() || OpFile::occupied(entry.retirement))
+			return true;
+
+		// Undo keeps ownership of the forward job. Its completed entries can
+		// establish where the original ended up without replaying forward work.
+		const auto original = OpFile::inspect(entry.item.src);
+		for (const auto &done : candidates.value())
+		{
+			if (entry.source.unchanged(original))
+			{
+				entry.sourceRemoved = false;
+				entry.step = OpJournal::Step::SourceRestored;
+			}
+			else if (done.undoAction == "restoreMove" && done.dst == entry.item.src &&
+					 done.landed.unchanged(original))
+			{
+				entry.sourceRemoved = true; // Undo replaced the original object with its verified copy.
+				entry.step = OpJournal::Step::SourceRemoved;
+			}
+			else
+				continue;
+			entry.error.clear();
+			return journal.save(entry);
+		}
+		return true;
+	}
+} // namespace
 
 std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(const OpJournal::Record &rec)
 {
@@ -38,6 +90,31 @@ QVector<OperationRecovery::Resumable> OperationRecovery::pending(const QString &
 	}
 	return out;
 }
+QVector<OperationRecovery::Restorable> OperationRecovery::restorable(const QString &directory)
+{
+	QVector<Restorable> out;
+	const auto records = OpJournal::scan(directory);
+	QSet<QString> claimed;
+	for (const auto &record : records)
+		if (!record.corrupt && record.request.kind == OpKind::Undo)
+			claimed.insert(record.request.undoOf);
+	for (const auto &record : records)
+	{
+		if (record.corrupt || !record.undoPath.isEmpty() || claimed.contains(record.path))
+			continue;
+		Restorable job;
+		job.journalPath = record.path;
+		for (const auto &entry : record.entries)
+			if (entry.needsOriginalRestoration())
+			{
+				job.originals.append(entry.item.src);
+				job.retainedPaths.append(entry.retirement);
+			}
+		if (!job.originals.isEmpty())
+			out.append(job);
+	}
+	return out;
+}
 OperationRecovery::Summary OperationRecovery::run(const QString &directory, const QVector<VolumeIdentity> &mounted)
 {
 	Summary out;
@@ -59,10 +136,10 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 		return out;
 	}
 	const auto records = OpJournal::scan(directory);
-	QSet<QString> claimed;
+	QHash<QString, OpJournal::Record> inverses;
 	for (const auto &record : records)
 		if (!record.corrupt && record.request.kind == OpKind::Undo)
-			claimed.insert(record.request.undoOf);
+			inverses.insert(record.request.undoOf, record);
 	for (auto rec : records)
 	{
 		if (rec.corrupt)
@@ -71,16 +148,18 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 			out.notes.append("Invalid journal retained for inspection: " + rec.path);
 			continue;
 		}
-		if (rec.dismissed || !rec.undoPath.isEmpty() || claimed.contains(rec.path))
-			continue;
-		bool incomplete = false, artifacts = false;
+		const bool forwardActive = !rec.dismissed && rec.undoPath.isEmpty() && !inverses.contains(rec.path);
+		bool incomplete = false;
+		bool artifacts = false;
+		bool needsRestoration = false;
 		for (const auto &e : rec.entries)
 		{
-			if (!e.complete())
+			if (forwardActive && !e.complete())
 				incomplete = true;
-			artifacts = artifacts || !e.artifacts.isEmpty();
+			needsRestoration = needsRestoration || e.needsOriginalRestoration();
+			artifacts = artifacts || !e.artifacts.isEmpty() || !e.cleanup.isEmpty();
 		}
-		if (!incomplete && !artifacts)
+		if (!incomplete && !artifacts && !needsRestoration)
 			continue;
 		if (!OpJournal::resolve(rec, error, mounted))
 		{
@@ -91,11 +170,6 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 			continue;
 		}
 		OpJournal journal;
-		if (!incomplete)
-		{
-			reportArtifacts(rec);
-			continue;
-		}
 		if (!journal.resume(rec, error))
 		{
 			++out.opsFlagged;
@@ -104,20 +178,45 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 				out.resumable.append(*r);
 			continue;
 		}
+		const auto inverse = inverses.constFind(rec.path);
+		const auto completedUndo = needsRestoration && inverse != inverses.cend()
+									   ? completedUndoEntries(inverse.value(), mounted)
+									   : CompletedUndoEntries{};
 		for (auto e : rec.entries)
 		{
-			if (e.complete() || e.step == OpJournal::Step::Planned)
-				continue;
-			if (!OpRunner::reconcile(journal, e, error))
+			if (!settleOriginalFromUndo(journal, e, completedUndo))
 			{
 				++out.opsFlagged;
-				out.notes.append(error + " Journal: " + rec.path);
+				out.notes.append(journal.error() + " Journal: " + rec.path);
+				break;
 			}
+			// Dismissal ends forward work, but cannot erase cleanup or a
+			// restoring rename whose completion append was interrupted.
+			if ((!e.complete() && e.step != OpJournal::Step::Planned && forwardActive) ||
+				e.step == OpJournal::Step::RestoringSource)
+			{
+				if (!OpRunner::reconcile(journal, e, error))
+				{
+					++out.opsFlagged;
+					out.notes.append(error + " Journal: " + rec.path);
+				}
+			}
+			if (!journal.healthy())
+				break;
+			QString cleanupError;
+			if (!OpRunner::cleanup(journal, e, cleanupError))
+			{
+				++out.opsFlagged;
+				out.notes.append(cleanupError + " Journal: " + rec.path);
+			}
+			if (!journal.healthy())
+				break;
 		}
 		if (auto r = resumableFrom(journal.record()))
 			out.resumable.append(*r);
 		reportArtifacts(journal.record());
 	}
 	out.undoCandidate = OpJournal::latestUndoable(directory);
+	out.restorable = restorable(directory);
 	return out;
 }

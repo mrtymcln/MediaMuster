@@ -33,7 +33,17 @@ public:
 		Cancelled,
 		Failed,
 		TrashFallback,
+		RestoringSource,
+		SourceRestored,
 		NeedsAttention
+	};
+	struct Cleanup
+	{
+		QString directory;
+		OpStamp directoryStamp;
+		QString file;
+		OpStamp fileStamp;
+		bool removeFile = false;
 	};
 	struct Entry
 	{
@@ -63,7 +73,9 @@ public:
 		OpStamp landed;
 		Step step = Step::Planned;
 		QStringList artifacts;
+		QVector<Cleanup> cleanup;
 		bool complete() const;
+		bool needsOriginalRestoration() const;
 		QJsonObject json() const;
 		static std::optional<Entry> fromJson(const QJsonObject &json);
 	};
@@ -129,6 +141,10 @@ public:
 	static QString stepName(Step step);
 	static bool resolve(Record &record, QString &error,
 						const QVector<VolumeIdentity> &mounted = {});
+	// Protective restoration does not depend on the copied destination being
+	// present: resolve only the volumes containing originals awaiting return.
+	static bool resolveRestoration(Record &record, QString &error,
+								   const QVector<VolumeIdentity> &mounted = {});
 	static std::unique_ptr<QLockFile> acquire(const QString &directory, QString &error);
 
 private:

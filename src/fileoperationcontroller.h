@@ -35,7 +35,7 @@ public:
 	bool isIdle() const { return m_activity == Activity::Idle; }
 	void setActivity(Activity activity);
 	OpManager *manager() const { return m_fileOps; }
-	QAction *resumeAction() const { return m_resumeAct; }
+	QAction *recoveryAction() const { return m_recoveryAct; }
 	QAction *undoAction() const { return m_undoAct; }
 	QAction *verifyCopiesAction() const { return m_verifyCopiesAct; }
 	QAction *enableUndoAction() const { return m_enableUndoAct; }
@@ -45,7 +45,7 @@ public:
 	void refreshHistory();
 	bool dispatchRequest(OpRequest request);
 	bool resolvePreviousJob();
-	void offerResume();
+	void offerRecovery();
 	void undoLastOperation();
 	// Temporarily releases only the modal-dialog activity for the authoritative
 	// previous-job gate. A resumed job keeps its activity when the dialog closes.
@@ -56,12 +56,20 @@ signals:
 	void activityChanged(FileOperationController::Activity activity);
 	void logMessage(QtMsgType level, const QString &module, const QString &message);
 	void sourcesRemoved(const QSet<QString> &paths);
+	void originalsRestored(const QSet<QString> &paths);
 	void mediaMusterTrashUsed(const QString &folder, int fileCount);
 
 private:
+	enum class RecoveryOutcome
+	{
+		Closed,
+		Started,
+		Dismissed
+	};
 	void onRecoveryDone(const OperationRecovery::Summary &summary);
 	void updateUndoAction();
-	void updateResumeAction();
+	void updateRecoveryAction();
+	RecoveryOutcome showRecoveryDialog(const QString &preferredJournalPath = {});
 	bool confirmCrashProtection();
 	bool resumeOperation(const OperationRecovery::Resumable &job);
 	void applyOperationHistory(const OperationRecovery::Summary &history);
@@ -77,8 +85,10 @@ private:
 	Activity m_activity = Activity::Idle;
 	bool m_pruneSourceRowsAfterOperation = false;
 	QSet<QString> m_removedSourcePaths;
+	QSet<QString> m_restoredOriginalPaths;
 	QVector<OperationRecovery::Resumable> m_resumable;
-	QAction *m_resumeAct;
+	QVector<OperationRecovery::Restorable> m_restorable;
+	QAction *m_recoveryAct;
 	QAction *m_undoAct;
 	QAction *m_undoSeparator = nullptr;
 	QAction *m_verifyCopiesAct;

@@ -175,6 +175,7 @@ struct OpRequest
 	QVector<OpItem> items;
 
 	QString resumeJournalPath;	 ///< Continue this journal; never retire it on dispatch.
+	QString restoreJournalPath;	 ///< Restore retained originals only, including dismissed jobs.
 	QString diagnosticTrashRoot; ///< Explicit disposable-test root; production leaves empty.
 	QString undoJournalPath;	 ///< Forward job requested by a new Undo command.
 	QString undoOf;				 ///< Persisted forward-job link for an executing inverse operation.
@@ -197,6 +198,7 @@ struct OpResult
 		Completed,
 		NoEffect,
 		SourceRetained,
+		OriginalRestored,
 		Skipped,
 		Cancelled,
 		Failed,

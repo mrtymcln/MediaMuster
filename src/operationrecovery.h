@@ -4,6 +4,12 @@
 class OperationRecovery
 {
 public:
+	struct Restorable
+	{
+		QString journalPath;
+		QStringList originals;
+		QStringList retainedPaths;
+	};
 	struct Resumable
 	{
 		QString journalPath;
@@ -22,6 +28,7 @@ public:
 		int opsFlagged = 0;
 		QStringList notes;
 		QVector<Resumable> resumable;
+		QVector<Restorable> restorable;
 		std::optional<OpJournal::Record> undoCandidate;
 		bool hadTrouble() const
 		{
@@ -34,5 +41,6 @@ public:
 	};
 	static Summary run(const QString &directory = {}, const QVector<VolumeIdentity> &mounted = {});
 	static QVector<Resumable> pending(const QString &directory = {});
+	static QVector<Restorable> restorable(const QString &directory = {});
 	static std::optional<Resumable> resumableFrom(const OpJournal::Record &record);
 };

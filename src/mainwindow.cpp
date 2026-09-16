@@ -116,6 +116,66 @@ namespace
 			.arg(time, QLatin1String(logPfx(level)), module, message);
 	}
 
+	QString mediaTreeForFolder(const QString &parent)
+	{
+		QString folder = parent;
+		QString mxfRoot;
+		for (;;)
+		{
+			const QFileInfo info(folder);
+			const auto name = info.fileName();
+			if (name.compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0 ||
+				Conventions::isOmfRootName(name))
+				return folder;
+			if (Conventions::isMxfRootName(name))
+				mxfRoot = folder;
+			const auto ancestor = info.absolutePath();
+			if (ancestor == folder)
+				break;
+			folder = ancestor;
+		}
+		return mxfRoot.isEmpty() ? parent : mxfRoot;
+	}
+
+	bool isStandardMediaTree(const QString &path)
+	{
+		const auto name = QFileInfo(path).fileName();
+		return name.compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0 ||
+			   Conventions::isOmfRootName(name);
+	}
+
+	QStringList restorationScanPaths(const QVector<MediaFile> &files, const QSet<QString> &restored)
+	{
+		// One lexical calculation per media folder, with no directory probes
+		// on the UI thread. Keep the scanner's original volume root where it
+		// is available so a drive is not relabelled "Avid MediaFiles".
+		QHash<QString, QString> originsByFolder;
+		for (const auto &file : files)
+			originsByFolder.insert(QFileInfo(file.filePath).absolutePath(), file.volumePath);
+		QSet<QString> trees;
+		QSet<QString> roots;
+		for (auto it = originsByFolder.cbegin(); it != originsByFolder.cend(); ++it)
+		{
+			const auto tree = mediaTreeForFolder(it.key());
+			trees.insert(tree);
+			roots.insert(QDir::cleanPath(isStandardMediaTree(tree) && !it.value().isEmpty() ? it.value() : tree));
+		}
+		for (const auto &path : restored)
+		{
+			const auto tree = mediaTreeForFolder(QFileInfo(path).absolutePath());
+			if (trees.contains(tree))
+				continue;
+			roots.insert(isStandardMediaTree(tree) ? QFileInfo(tree).absolutePath() : tree);
+			trees.insert(tree);
+		}
+		// Scanning the containing volume already includes its MXF/OMF trees.
+		const auto candidates = roots.values();
+		for (const auto &root : candidates)
+			if (isStandardMediaTree(root) && roots.contains(QFileInfo(root).absolutePath()))
+				roots.remove(root);
+		return roots.values();
+	}
+
 	// MARK: - Filter tab definitions
 
 	struct FilterDef
@@ -576,9 +636,8 @@ void MainWindow::buildFileMenu()
 
 	fileMenu->addSeparator();
 
-	// Greyed out unless an interrupted Copy/Move/Delete is waiting to be
-	// finished (see FileOperationController::refreshHistory); offered automatically at launch too.
-	fileMenu->addAction(m_operations->resumeAction());
+	// One place for unfinished jobs and originals awaiting restoration.
+	fileMenu->addAction(m_operations->recoveryAction());
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
@@ -806,6 +865,13 @@ void MainWindow::setupConnections()
 	connect(m_operations, &FileOperationController::logMessage, this, &MainWindow::addLog);
 	connect(m_operations, &FileOperationController::mediaMusterTrashUsed, this,
 			&MainWindow::showMediaMusterTrashDialog);
+	connect(m_operations, &FileOperationController::originalsRestored, this,
+			[this](const QSet<QString> &paths)
+			{
+				const auto roots = restorationScanPaths(m_model->allFiles(), paths);
+				if (!roots.isEmpty())
+					startScanWithPaths(roots);
+			});
 	connect(m_operations, &FileOperationController::sourcesRemoved, this,
 			[this](const QSet<QString> &paths)
 			{

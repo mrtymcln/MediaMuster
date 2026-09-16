@@ -12,6 +12,7 @@
 #include <memory>
 #include <QTemporaryDir>
 #include <QFileInfo>
+#include <QDirIterator>
 #include <QProcess>
 #include <QCryptographicHash>
 #include <cstdlib>
@@ -41,6 +42,19 @@ QByteArray get(const QString &path)
 	if (!f.open(QIODevice::ReadOnly))
 		return {};
 	return f.readAll();
+}
+QStringList privateDirectories(const QString &root)
+{
+	QStringList out;
+	QDirIterator it(root, QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot,
+		QDirIterator::Subdirectories);
+	while (it.hasNext())
+	{
+		const auto path = it.next();
+		if (QFileInfo(path).fileName().startsWith(".mediamuster-"))
+			out.append(path);
+	}
+	return out;
 }
 struct Sink : OpSink
 {
@@ -186,6 +200,20 @@ class TestFileOperations : public QObject
 	void cancellation_preserves_replacement();
 	void corrupt_readback_never_publishes();
 	void failed_cleanup_remains_journalled();
+	void cancel_during_retirement_restores_original_data();
+	void cancel_during_retirement_restores_original();
+	void blocked_restore_survives_dismissal_and_later_job_data();
+	void blocked_restore_survives_dismissal_and_later_job();
+	void restoration_crash_boundaries_are_idempotent_data();
+	void restoration_crash_boundaries_are_idempotent();
+	void completed_transfers_remove_private_directories_data();
+	void completed_transfers_remove_private_directories();
+	void cleanup_crash_boundaries_are_recoverable_data();
+	void cleanup_crash_boundaries_are_recoverable();
+	void cleanup_retains_replaced_partial_and_unrelated_files();
+	void cleanup_retains_partial_when_original_changes();
+	void undo_settles_interrupted_retirement_cleanup_data();
+	void undo_settles_interrupted_retirement_cleanup();
 	void journal_failure_stops_publication();
 	void missing_journal_prevents_relocation();
 	void crash_before_verification_is_not_complete();
@@ -679,11 +707,318 @@ void TestFileOperations::failed_cleanup_remains_journalled()
 	const auto rec = OpJournal::scan(f.journals).first();
 	QVERIFY(!rec.entries[0].artifacts.isEmpty());
 	QVERIFY(QFile::exists(rec.entries[0].artifacts[0]));
+	QVERIFY(!rec.entries[0].cleanup.isEmpty());
+	QString error;
+	QVERIFY(OpJournal::dismiss(rec.path, error));
 	auto a = OperationRecovery::run(f.journals);
 	auto b = OperationRecovery::run(f.journals);
-	QVERIFY(a.opsFlagged > 0);
-	QVERIFY(b.opsFlagged > 0);
+	QVERIFY2(a.opsFlagged == 0, qPrintable(a.message()));
+	QVERIFY2(b.opsFlagged == 0, qPrintable(b.message()));
+	QVERIFY(privateDirectories(f.root).isEmpty());
+	const auto recovered = OpJournal::readOne(rec.path);
+	QVERIFY(recovered && recovered->dismissed);
+	QVERIFY(recovered->entries[0].cleanup.isEmpty());
+	QVERIFY(recovered->entries[0].artifacts.isEmpty());
 	QVERIFY(QFile::exists(rec.path));
+}
+
+void TestFileOperations::cancel_during_retirement_restores_original_data()
+{
+	QTest::addColumn<QString>("boundary");
+	QTest::addColumn<bool>("verify");
+	for (const auto *point : {"before-source-retirement", "source-retired"})
+		for (bool verify : {false, true})
+			QTest::newRow(qPrintable(QString(point) + (verify ? "-verified" : "-plain"))) << QString(point) << verify;
+}
+void TestFileOperations::cancel_during_retirement_restores_original()
+{
+	QFETCH(QString, boundary);
+	QFETCH(bool, verify);
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == boundary) cancel = true; };
+	auto request = f.request(OpKind::Move);
+	request.verifyCopies = verify;
+	const auto totals = runner.run(request, f.journals);
+	QVERIFY(totals.cancelled);
+	QCOMPARE(totals.needsAttention, 0);
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	const auto record = OpJournal::scan(f.journals).first();
+	QCOMPARE(record.entries[0].step, OpJournal::Step::SourceRestored);
+	QVERIFY(!record.entries[0].sourceRemoved);
+	QVERIFY(record.entries[0].cleanup.isEmpty());
+	QVERIFY(privateDirectories(f.root).isEmpty());
+	QCOMPARE(sink.results.last().state, OpResult::State::OriginalRestored);
+	QVERIFY(!sink.results.last().sourceRemoved);
+	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	cancel = false;
+	runner.hooks = {};
+	OpRequest resume;
+	resume.resumeJournalPath = record.path;
+	QCOMPARE(runner.run(resume, f.journals).needsAttention, 0);
+	QCOMPARE(get(f.src), f.bytes); // Resume must not retire this original again.
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+}
+
+void TestFileOperations::blocked_restore_survives_dismissal_and_later_job_data()
+{
+	QTest::addColumn<bool>("removeDestination");
+	QTest::newRow("destination-missing") << true;
+	QTest::newRow("destination-replaced") << false;
+}
+void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
+{
+	QFETCH(bool, removeDestination);
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
+		if (point == "source-retired") { put(f.src, "other writer"); cancel = true; }
+	};
+	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
+	const auto record = OpJournal::scan(f.journals).first();
+	QCOMPARE(record.entries[0].step, OpJournal::Step::RestoringSource);
+	QCOMPARE(get(record.entries[0].retirement), f.bytes);
+	QCOMPARE(get(f.src), QByteArray("other writer"));
+	QString error;
+	QVERIFY(OpJournal::dismiss(record.path, error));
+	cancel = false;
+	runner.hooks = {};
+	auto later = f.request();
+	later.items[0].src = f.root + "/later.bin";
+	later.items[0].name = "later.bin";
+	put(later.items[0].src, f.bytes);
+	QCOMPARE(runner.run(later, f.journals).succeeded, 1);
+	QCOMPARE(OperationRecovery::restorable(f.journals).size(), 1);
+	QVERIFY(QFile::remove(f.src)); // Remove only the disposable replacement fixture.
+	QVERIFY(QFile::remove(f.dest + "/clip.bin"));
+	if (!removeDestination) put(f.dest + "/clip.bin", "changed destination");
+	OpRequest restore;
+	restore.restoreJournalPath = record.path;
+	const auto restored = runner.run(restore, f.journals);
+	QVERIFY2(restored.needsAttention == 0, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(restored.succeeded, 1);
+	QCOMPARE(sink.results.last().state, OpResult::State::OriginalRestored);
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(get(f.dest + "/clip.bin"), removeDestination ? QByteArray() : QByteArray("changed destination"));
+	QCOMPARE(get(f.dest + "/later.bin"), f.bytes);
+	QVERIFY(OpJournal::readOne(record.path)->dismissed);
+	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	QCOMPARE(runner.run(restore, f.journals).needsAttention, 0);
+	QCOMPARE(get(f.src), f.bytes);
+}
+
+void TestFileOperations::restoration_crash_boundaries_are_idempotent_data()
+{
+	QTest::addColumn<QString>("boundary");
+	for (const auto *point : {"restoring-source", "before-source-restore", "source-restored-on-disk", "source-restored"})
+		QTest::newRow(point) << QString(point);
+}
+void TestFileOperations::restoration_crash_boundaries_are_idempotent()
+{
+	QFETCH(QString, boundary);
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
+		if (point == "source-retired") cancel = true;
+		if (point == boundary) throw std::runtime_error("restoration crash");
+	};
+	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
+	const auto record = OpJournal::scan(f.journals).first();
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	const auto recovery = OperationRecovery::run(f.journals);
+	Q_UNUSED(recovery);
+	cancel = false;
+	runner.hooks = {};
+	OpRequest restore;
+	restore.restoreJournalPath = record.path;
+	QCOMPARE(runner.run(restore, f.journals).needsAttention, 0);
+	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	QCOMPARE(OpJournal::readOne(record.path)->entries[0].step, OpJournal::Step::SourceRestored);
+	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	QVERIFY(privateDirectories(f.root).isEmpty());
+	OpRequest resume;
+	resume.resumeJournalPath = record.path;
+	QCOMPARE(runner.run(resume, f.journals).needsAttention, 0);
+	QCOMPARE(get(f.src), f.bytes);
+}
+
+void TestFileOperations::completed_transfers_remove_private_directories_data()
+{
+	QTest::addColumn<bool>("move");
+	QTest::addColumn<bool>("verify");
+	for (bool move : {false, true})
+		for (bool verify : {false, true})
+			QTest::newRow(qPrintable(QString(move ? "move" : "copy") + (verify ? "-verified" : "-plain"))) << move << verify;
+}
+void TestFileOperations::completed_transfers_remove_private_directories()
+{
+	QFETCH(bool, move);
+	QFETCH(bool, verify);
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	auto request = f.request(move ? OpKind::Move : OpKind::Copy);
+	request.verifyCopies = verify;
+	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
+	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	QCOMPARE(QFile::exists(f.src), !move);
+	QVERIFY(privateDirectories(f.root).isEmpty());
+	const auto record = OpJournal::scan(f.journals).first();
+	QVERIFY(record.entries[0].cleanup.isEmpty());
+	QVERIFY(record.entries[0].artifacts.isEmpty());
+	QCOMPARE(OperationRecovery::run(f.journals).opsFlagged, 0);
+}
+
+void TestFileOperations::cleanup_crash_boundaries_are_recoverable_data()
+{
+	QTest::addColumn<QString>("boundary");
+	QTest::addColumn<bool>("cancelCopy");
+	for (const auto *point : {"published", "done", "before-directory-cleanup", "directory-cleaned"})
+		QTest::newRow(point) << QString(point) << false;
+	for (const auto *point : {"before-partial-cleanup", "partial-cleaned"})
+		QTest::newRow(point) << QString(point) << true;
+}
+void TestFileOperations::cleanup_crash_boundaries_are_recoverable()
+{
+	QFETCH(QString, boundary);
+	QFETCH(bool, cancelCopy);
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
+		if (cancelCopy && point == "copy-chunk") cancel = true;
+		if (point == boundary) throw std::runtime_error("cleanup crash");
+	};
+	QVERIFY(runner.run(f.request(), f.journals).needsAttention > 0);
+	const auto record = OpJournal::scan(f.journals).first();
+	QCOMPARE(get(f.src), f.bytes);
+	if (!cancelCopy) QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	for (int repeat = 0; repeat != 2; ++repeat)
+	{
+		const auto recovery = OperationRecovery::run(f.journals);
+		QVERIFY2(recovery.opsFlagged == 0, qPrintable(recovery.message()));
+		QVERIFY(privateDirectories(f.root).isEmpty());
+		const auto saved = OpJournal::readOne(record.path);
+		QVERIFY(saved && saved->entries[0].cleanup.isEmpty());
+		QVERIFY(saved->entries[0].artifacts.isEmpty());
+		QCOMPARE(get(f.src), f.bytes);
+	}
+}
+
+void TestFileOperations::cleanup_retains_replaced_partial_and_unrelated_files()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.fail = [](const QString &point) { return point == "cleanup"; };
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == "copy-chunk") cancel = true; };
+	QVERIFY(runner.run(f.request(), f.journals).cancelled);
+	const auto record = OpJournal::scan(f.journals).first();
+	const auto pending = record.entries[0].cleanup.first();
+	QVERIFY(QFile::rename(pending.file, pending.directory + "/saved-partial.bin"));
+	put(pending.file, "replacement");
+	put(pending.directory + "/unrelated.bin", "do not remove");
+	const QString unrecorded = f.dest + "/.mediamuster-stage-00000000-0000-4000-8000-000000000001";
+	put(unrecorded + "/payload.partial", "unrecorded");
+	const auto recovery = OperationRecovery::run(f.journals);
+	QVERIFY(recovery.opsFlagged > 0);
+	QCOMPARE(get(pending.file), QByteArray("replacement"));
+	QCOMPARE(get(pending.directory + "/unrelated.bin"), QByteArray("do not remove"));
+	QCOMPARE(get(unrecorded + "/payload.partial"), QByteArray("unrecorded"));
+	QVERIFY(!OpJournal::readOne(record.path)->entries[0].cleanup.isEmpty());
+	QCOMPARE(get(f.src), f.bytes);
+}
+
+void TestFileOperations::cleanup_retains_partial_when_original_changes()
+{
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.fail = [](const QString &point) { return point == "cleanup"; };
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == "copy-chunk") cancel = true; };
+	QVERIFY(runner.run(f.request(), f.journals).cancelled);
+	auto record = OpJournal::scan(f.journals).first();
+	auto entry = record.entries[0];
+	const QString partial = entry.cleanup.first().file;
+	QString error;
+	OpJournal journal;
+	QVERIFY(journal.resume(record, error));
+	OpRunner::Hooks hooks;
+	bool moved = false;
+	hooks.checkpoint = [&](const QString &point, const auto &) {
+		if (point == "before-partial-cleanup") moved = QFile::rename(f.src, f.src + ".outside");
+	};
+	const bool cleaned = OpRunner::cleanup(journal, entry, error, &hooks);
+	// Windows can hold the surviving original against the rename; Mac must
+	// detect that it changed after the confirmation and keep the partial.
+	if (moved)
+	{
+		QVERIFY(!cleaned);
+		QVERIFY(QFile::exists(partial));
+		QVERIFY(!entry.cleanup.isEmpty());
+	}
+	else
+		QVERIFY2(cleaned, qPrintable(error));
+	QCOMPARE(get(moved ? f.src + ".outside" : f.src), f.bytes);
+}
+
+void TestFileOperations::undo_settles_interrupted_retirement_cleanup_data()
+{
+	QTest::addColumn<QString>("boundary");
+	QTest::newRow("retired-original") << QStringLiteral("source-retired");
+	QTest::newRow("removed-original") << QStringLiteral("source-unlinked");
+}
+void TestFileOperations::undo_settles_interrupted_retirement_cleanup()
+{
+	QFETCH(QString, boundary);
+	Fixture f;
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
+		if (point == boundary) throw std::runtime_error("removal crash before Undo");
+	};
+	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
+	const auto forward = OpJournal::scan(f.journals).first();
+	runner.hooks = {};
+	if (boundary == "source-unlinked")
+	{
+		OpRequest restore;
+		restore.restoreJournalPath = forward.path;
+		QVERIFY(runner.run(restore, f.journals).needsAttention > 0);
+		// An unsuccessful attempt to find a retained original must not prevent
+		// Undo from recovering it from the still-verified destination copy.
+	}
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoEnabled = true;
+	undo.undoJournalPath = forward.path;
+	const auto undone = runner.run(undo, f.journals);
+	QVERIFY2(undone.needsAttention == 0 && undone.failed == 0, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(get(f.src), f.bytes);
+	const auto recovery = OperationRecovery::run(f.journals);
+	QVERIFY2(recovery.opsFlagged == 0, qPrintable(recovery.message()));
+	QVERIFY(privateDirectories(f.root).isEmpty());
+	QVERIFY(OpJournal::readOne(forward.path)->entries[0].cleanup.isEmpty());
+	QVERIFY(!OpJournal::readOne(forward.path)->undoPath.isEmpty());
+	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
 }
 void TestFileOperations::journal_failure_stops_publication()
 {
@@ -2026,6 +2361,7 @@ void TestFileOperations::undo_original_in_retirement()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
+	runner.hooks.fail = [](const QString &point) { return point == "restore-original"; };
 	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
 		if (stage == "source-retired") cancel = true;
 	};

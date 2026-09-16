@@ -1,79 +1,26 @@
 #include "fileoperationcontroller.h"
-#include "formatutil.h"
 #include "opjournal.h"
 #include "progressdialog.h"
+#include "unfinishedbusinessdialog.h"
 
 #include <QAction>
 #include <QDialog>
-#include <QDialogButtonBox>
 #include <QEventLoop>
 #include <QFutureWatcher>
 #include <QKeySequence>
-#include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QScopedValueRollback>
-#include <QVBoxLayout>
 #include <QtConcurrent>
+#include <algorithm>
 
 namespace
 {
-	// Only a button click chooses Cancel. QDialog's ordinary reject path
-	// (Escape or window close) leaves the job unresolved and changes nothing.
-	class InterruptedJobDialog : public QDialog
-	{
-	public:
-		enum class Choice
-		{
-			Unresolved,
-			Resume,
-			Cancel
-		};
-		explicit InterruptedJobDialog(const OperationRecovery::Resumable &job, QWidget *parent)
-			: QDialog(parent)
-		{
-			setObjectName(QStringLiteral("interruptedJobDialog"));
-			setWindowTitle(tr("Interrupted job"));
-			auto *layout = new QVBoxLayout(this);
-			auto *headline = new QLabel(tr("The previous job was interrupted."), this);
-			headline->setTextFormat(Qt::PlainText);
-			layout->addWidget(headline);
-			auto *details =
-				new QLabel(tr("%1 of %2 files finished.\n\n"
-							  "Resume continues that job. Cancel abandons its unfinished work "
-							  "and keeps the completed results.")
-							   .arg(Format::count(job.finished), Format::count(job.total)),
-						   this);
-			details->setTextFormat(Qt::PlainText);
-			details->setWordWrap(true);
-			details->setMinimumWidth(380);
-			layout->addWidget(details);
-			auto *buttons = new QDialogButtonBox(this);
-			auto *resume = buttons->addButton(tr("Resume"), QDialogButtonBox::AcceptRole);
-			auto *cancel = buttons->addButton(tr("Cancel"), QDialogButtonBox::ActionRole);
-			resume->setObjectName(QStringLiteral("resumeInterruptedJobButton"));
-			cancel->setObjectName(QStringLiteral("cancelInterruptedJobButton"));
-			connect(resume, &QPushButton::clicked, this,
-					[this]
-					{
-						choice = Choice::Resume;
-						accept();
-					});
-			connect(cancel, &QPushButton::clicked, this,
-					[this]
-					{
-						choice = Choice::Cancel;
-						accept();
-					});
-			layout->addWidget(buttons);
-		}
-		Choice choice = Choice::Unresolved;
-	};
-
 	OperationRecovery::Summary operationHistory()
 	{
 		OperationRecovery::Summary result;
 		result.resumable = OperationRecovery::pending();
+		result.restorable = OperationRecovery::restorable();
 		result.undoCandidate = OpJournal::latestUndoable();
 		return result;
 	}
@@ -82,17 +29,18 @@ namespace
 
 FileOperationController::FileOperationController(QWidget *window)
 	: QObject(window), m_window(window), m_fileOps(new OpManager(this)),
-	  m_resumeAct(new QAction(tr("Resume Interrupted Operation..."), this)),
+	  m_recoveryAct(new QAction(tr("Unfinished Business…"), this)),
 	  m_undoAct(new QAction(tr("&Undo"), this)),
 	  m_verifyCopiesAct(new QAction(tr("Verify copies"), this)),
 	  m_enableUndoAct(new QAction(tr("Enable Undo"), this))
 {
 	m_undoAct->setObjectName(QStringLiteral("undoFileOperationAction"));
+	m_recoveryAct->setObjectName(QStringLiteral("unfinishedBusinessAction"));
 	m_verifyCopiesAct->setObjectName(QStringLiteral("verifyCopiesDebugAction"));
 	m_enableUndoAct->setObjectName(QStringLiteral("enableUndoDebugAction"));
 	m_verifyCopiesAct->setCheckable(true);
 	m_enableUndoAct->setCheckable(true);
-	connect(m_resumeAct, &QAction::triggered, this, &FileOperationController::offerResume);
+	connect(m_recoveryAct, &QAction::triggered, this, &FileOperationController::offerRecovery);
 	connect(m_undoAct, &QAction::triggered, this, &FileOperationController::undoLastOperation);
 	connect(m_enableUndoAct, &QAction::toggled, this,
 			[this](bool enabled)
@@ -124,6 +72,9 @@ FileOperationController::FileOperationController(QWidget *window)
 			case OpResult::State::SourceRetained:
 				state = tr("Copied; source retained");
 				break;
+			case OpResult::State::OriginalRestored:
+				state = tr("Original restored");
+				break;
 			case OpResult::State::NoEffect:
 				state = tr("Already at destination");
 				break;
@@ -147,6 +98,8 @@ FileOperationController::FileOperationController(QWidget *window)
 								(result.message.isEmpty() ? QString() : " — " + result.message));
 			if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
 				m_removedSourcePaths.insert(result.source);
+			if (result.state == OpResult::State::OriginalRestored)
+				m_restoredOriginalPaths.insert(result.source);
 		},
 		Qt::QueuedConnection);
 	connect(
@@ -160,6 +113,10 @@ FileOperationController::FileOperationController(QWidget *window)
 				emit sourcesRemoved(m_removedSourcePaths);
 			m_pruneSourceRowsAfterOperation = false;
 			m_removedSourcePaths.clear();
+			const auto restored = m_restoredOriginalPaths;
+			m_restoredOriginalPaths.clear();
+			if (!restored.isEmpty())
+				emit originalsRestored(restored);
 			refreshHistory();
 		},
 		Qt::QueuedConnection);
@@ -170,7 +127,7 @@ FileOperationController::FileOperationController(QWidget *window)
 	connect(m_fileOps, &OpManager::trashFallbackFinished, this,
 			&FileOperationController::closeTrashFallback, Qt::QueuedConnection);
 	m_fileOps->setTrashFallbackHandlerAvailable(true);
-	updateResumeAction();
+	updateRecoveryAction();
 }
 
 FileOperationController::~FileOperationController()
@@ -241,7 +198,7 @@ void FileOperationController::setActivity(Activity activity)
 	if (m_activity == activity)
 		return;
 	m_activity = activity;
-	updateResumeAction();
+	updateRecoveryAction();
 	emit activityChanged(activity);
 }
 
@@ -316,14 +273,14 @@ void FileOperationController::onRecoveryDone(const OperationRecovery::Summary &s
 	if (summary.hadTrouble())
 		QMessageBox::warning(m_window, tr("Some files need a look"), summary.message());
 
-	// The launch sweep already worked this out on the pool thread; no need
-	// to re-read the journal folder here.
+	// Apply the launch sweep's results before offering recovery. The dialog's
+	// dispatch boundary reads fresh journal history before accepting a choice.
 	applyOperationHistory(summary);
 
 	// Anything left to finish? Ask now; the File menu item stays live for
-	// later if the dialog is closed without choosing either action.
-	if (!m_resumable.isEmpty())
-		offerResume();
+	// later if the dialog is closed without choosing an action.
+	if (!m_restorable.isEmpty() || !m_resumable.isEmpty())
+		offerRecovery();
 }
 
 bool FileOperationController::confirmCrashProtection()
@@ -388,20 +345,22 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 	if (!isIdle() || m_fileOps->isRunning())
 		return false;
 	const bool resuming = !request.resumeJournalPath.isEmpty();
-	if (request.items.isEmpty() && !resuming && request.kind != OpKind::Undo)
+	const bool restoring = !request.restoreJournalPath.isEmpty();
+	if (request.items.isEmpty() && !resuming && !restoring && request.kind != OpKind::Undo)
 		return false;
-	if (!resuming && !resolvePreviousJob())
+	if (!resuming && !restoring && !resolvePreviousJob())
 		return false;
-	if (request.kind == OpKind::Undo && !resuming && !m_enableUndoAct->isChecked())
+	if (request.kind == OpKind::Undo && !resuming && !restoring && !m_enableUndoAct->isChecked())
 		return false;
 	if (!confirmCrashProtection())
 		return false;
 
 	// Capture only new-job choices. Resume uses the policy saved in its journal.
-	if (!resuming && (request.kind == OpKind::Copy || request.kind == OpKind::Move))
+	if (!resuming && !restoring && (request.kind == OpKind::Copy || request.kind == OpKind::Move))
 		request.verifyCopies = m_verifyCopiesAct->isChecked();
 	m_pruneSourceRowsAfterOperation =
-		(request.kind == OpKind::Move || request.kind == OpKind::Delete);
+		!restoring && (request.kind == OpKind::Move || request.kind == OpKind::Delete);
+	m_restoredOriginalPaths.clear();
 	m_removedSourcePaths.clear();
 	++m_historyGeneration; // A previous asynchronous read cannot repopulate stale actions.
 	m_historyLoading = false;
@@ -412,16 +371,17 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 	return true;
 }
 
-void FileOperationController::updateResumeAction()
+void FileOperationController::updateRecoveryAction()
 {
-	if (m_resumeAct)
-		m_resumeAct->setEnabled(!m_historyLoading && !m_resumable.isEmpty() && isIdle());
+	m_recoveryAct->setEnabled(!m_historyLoading && isIdle() &&
+							  (!m_resumable.isEmpty() || !m_restorable.isEmpty()));
 	updateUndoAction();
 }
 
 void FileOperationController::applyOperationHistory(const OperationRecovery::Summary &history)
 {
 	m_resumable = history.resumable;
+	m_restorable = history.restorable;
 	m_undoCandidate = {};
 	if (history.undoCandidate)
 	{
@@ -445,7 +405,7 @@ void FileOperationController::applyOperationHistory(const OperationRecovery::Sum
 			break;
 		}
 	}
-	updateResumeAction();
+	updateRecoveryAction();
 }
 
 void FileOperationController::refreshHistory()
@@ -453,7 +413,7 @@ void FileOperationController::refreshHistory()
 	const quint64 generation = ++m_historyGeneration;
 	m_historyLoading = true;
 	m_undoCandidate = {};
-	updateResumeAction();
+	updateRecoveryAction();
 	auto *watcher = new QFutureWatcher<OperationRecovery::Summary>(this);
 	connect(watcher, &QFutureWatcher<OperationRecovery::Summary>::finished, this,
 			[this, watcher, generation]
@@ -493,37 +453,81 @@ bool FileOperationController::resolvePreviousJob()
 	readOperationHistoryForGate();
 	while (!m_resumable.isEmpty())
 	{
-		const OperationRecovery::Resumable job = m_resumable.first();
-		InterruptedJobDialog dialog(job, m_window);
-		dialog.exec();
-		if (dialog.choice == InterruptedJobDialog::Choice::Resume)
-		{
-			resumeOperation(job);
+		// Continuing or restoring an old job must never also start the new
+		// request waiting at this gate. Only explicit abandonment clears it.
+		if (showRecoveryDialog(m_resumable.first().journalPath) != RecoveryOutcome::Dismissed)
 			return false;
-		}
-		if (dialog.choice != InterruptedJobDialog::Choice::Cancel)
-			return false;
-		QString error;
-		if (!OpJournal::dismiss(job.journalPath, error))
-		{
-			emit logMessage(QtWarningMsg, QStringLiteral("ops"), error);
-			QMessageBox::warning(m_window, tr("Job could not be cancelled"), error);
-			refreshHistory();
-			return false;
-		}
-		emit logMessage(
-			QtInfoMsg, QStringLiteral("ops"),
-			tr("Cancelled the unfinished part of the previous job. Completed results were kept."));
-		readOperationHistoryForGate();
 	}
 	return true;
 }
 
-void FileOperationController::offerResume()
+void FileOperationController::offerRecovery()
 {
-	// The same dialog and explicit abandonment rules apply at launch,
-	// from the File menu, and before any new operation.
-	resolvePreviousJob();
+	if (!isIdle() || m_fileOps->isRunning() || m_operationGateActive)
+		return;
+	QScopedValueRollback<bool> guard(m_operationGateActive, true);
+	readOperationHistoryForGate();
+	if (!m_resumable.isEmpty() || !m_restorable.isEmpty())
+		showRecoveryDialog();
+}
+
+FileOperationController::RecoveryOutcome FileOperationController::showRecoveryDialog(
+	const QString &preferredJournalPath)
+{
+	// The modal event loop can deliver history refreshes. Keep this decision
+	// bound to the same value snapshot the user saw, rather than mutable indices.
+	const auto resumableJobs = m_resumable;
+	const auto restorableJobs = m_restorable;
+	UnfinishedBusinessDialog dialog(resumableJobs, restorableJobs, preferredJournalPath, m_window);
+	if (dialog.selectedJournalPath().isEmpty() || dialog.exec() != QDialog::Accepted)
+		return RecoveryOutcome::Closed;
+
+	const auto path = dialog.selectedJournalPath();
+	const auto resumable = std::find_if(resumableJobs.cbegin(), resumableJobs.cend(),
+										[&](const auto &job)
+										{ return job.journalPath == path; });
+	const auto restorable = std::find_if(restorableJobs.cbegin(), restorableJobs.cend(),
+										 [&](const auto &job)
+										 { return job.journalPath == path; });
+	switch (dialog.choice())
+	{
+	case UnfinishedBusinessDialog::Choice::Resume:
+		if (resumable != resumableJobs.cend() && resumeOperation(*resumable))
+			return RecoveryOutcome::Started;
+		break;
+	case UnfinishedBusinessDialog::Choice::Restore:
+		if (restorable != restorableJobs.cend())
+		{
+			OpRequest request;
+			request.restoreJournalPath = path;
+			if (dispatchRequest(std::move(request)))
+			{
+				emit logMessage(QtInfoMsg, QStringLiteral("ops"), tr("Restoring interrupted originals."));
+				return RecoveryOutcome::Started;
+			}
+		}
+		break;
+	case UnfinishedBusinessDialog::Choice::CancelJob:
+		if (resumable != resumableJobs.cend())
+		{
+			QString error;
+			if (!OpJournal::dismiss(path, error))
+			{
+				emit logMessage(QtWarningMsg, QStringLiteral("ops"), error);
+				QMessageBox::warning(m_window, tr("Job could not be cancelled"), error);
+				refreshHistory();
+				break;
+			}
+			emit logMessage(QtInfoMsg, QStringLiteral("ops"),
+							tr("Cancelled the unfinished part of the job. Completed results were kept."));
+			readOperationHistoryForGate();
+			return RecoveryOutcome::Dismissed;
+		}
+		break;
+	case UnfinishedBusinessDialog::Choice::Close:
+		break;
+	}
+	return RecoveryOutcome::Closed;
 }
 
 bool FileOperationController::resumeOperation(const OperationRecovery::Resumable &job)

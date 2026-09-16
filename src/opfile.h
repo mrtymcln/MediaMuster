@@ -37,10 +37,21 @@ public:
 	// Opens an existing regular file for read/write without creating or truncating it.
 	static std::unique_ptr<OpFile> openWritableExisting(const QString &path, QString &error);
 	static OpStamp inspect(const QString &path);
+	static OpStamp inspectDirectory(const QString &path);
 	static bool occupied(const QString &path);
 	// OkDegraded means created, but the storage does not support directory flush.
 	static NativeFile::SyncResult makeDirectory(
 		const QString &path, QString &error,
+		const NativeFile::DirectorySync &sync = NativeFile::syncDirectory);
+	// Exclusively create an operation-owned staging/retirement directory. The
+	// identity remains available if creation succeeds but persistence fails.
+	static NativeFile::SyncResult makePrivateDirectory(
+		const QString &path, OpStamp &identity, QString &error,
+		const NativeFile::DirectorySync &sync = NativeFile::syncDirectory);
+	// Never recursive. Requires the recorded directory identity, not its name
+	// alone; a nonempty, replaced or redirected directory is retained.
+	static NativeFile::SyncResult removeEmptyPrivateDirectory(
+		const QString &path, const OpStamp &identity, QString &error,
 		const NativeFile::DirectorySync &sync = NativeFile::syncDirectory);
 	static bool safePath(const QString &path);
 
@@ -62,6 +73,10 @@ public:
 	Relocation relocate(const QString &from, const QString &to, QString &error);
 	// No check-then-unlink fallback. Unsupported removal retains the file.
 	bool removeProtected(QString &error);
+	// Remove only a journalled payload.partial in its recorded private staging
+	// directory. expectedFile must reflect its latest confirmed contents.
+	bool removePartial(const OpStamp &expectedFile, const OpStamp &expectedDirectory,
+					   QString &error);
 	// Only for journalled original retirement: .mediamuster-retire-<UUID>/payload.retired.
 	// The parent must be an exclusively owned 0700 directory on the source volume.
 	// Caller records intent before relocation here; this method never removes an

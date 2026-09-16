@@ -268,18 +268,27 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 			qCWarning(lcPmr) << "incomplete PMR extension header" << pmrFilePath;
 			return entries;
 		}
-		if (unicodeVersion == kUnicodeVersion)
+		if (unicodeVersion != kUnicodeVersion)
 		{
-			QVector<PmrEntry> unicodeEntries;
-			if (!readSet(cursor, unicodeVersion, unicodeCount, unicodeEntries))
-			{
-				qCWarning(lcPmr) << "incomplete or invalid PMR Unicode set at byte" << cursor.position() << pmrFilePath;
-				return entries;
-			}
-			// LoadPMR prefers a nonempty Unicode vector in its entirety.
-			if (!unicodeEntries.isEmpty())
-				entries = std::move(unicodeEntries);
+			qCWarning(lcPmr) << "unsupported PMR extension version" << unicodeVersion << "at byte" << cursor.position() - 8 << pmrFilePath;
+			return entries;
 		}
+		QVector<PmrEntry> unicodeEntries;
+		if (!readSet(cursor, unicodeVersion, unicodeCount, unicodeEntries))
+		{
+			qCWarning(lcPmr) << "incomplete or invalid PMR Unicode set at byte" << cursor.position() << pmrFilePath;
+			return entries;
+		}
+		// A lowered record count or an unknown tail may hide references. Only
+		// a fully consumed index can certify that a filename is absent.
+		if (cursor.remaining() != 0)
+		{
+			qCWarning(lcPmr) << "unexpected PMR data at byte" << cursor.position() << "remaining bytes" << cursor.remaining() << pmrFilePath;
+			return entries;
+		}
+		// LoadPMR prefers a nonempty Unicode vector in its entirety.
+		if (!unicodeEntries.isEmpty())
+			entries = std::move(unicodeEntries);
 	}
 	if (ok)
 		*ok = true;

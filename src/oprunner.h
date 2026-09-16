@@ -7,7 +7,7 @@
 
 class OpSink
 {
-  public:
+public:
 	virtual ~OpSink() = default;
 	virtual void progress(const QString &, int, int, double) = 0;
 	virtual void log(QtMsgType, const QString &) = 0;
@@ -19,7 +19,7 @@ class OpSink
 
 class OpRunner
 {
-  public:
+public:
 	struct Totals
 	{
 		int succeeded = 0;
@@ -47,16 +47,21 @@ class OpRunner
 	Hooks hooks;
 	std::function<void(const QString &)> onRenameFolderTouched;
 	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error,
-		const std::atomic<bool> *cancellation = nullptr,
-		const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
+						  const std::atomic<bool> *cancellation = nullptr,
+						  const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
+	// Only recorded private artifacts are eligible; incomplete cleanup stays journalled.
+	static bool cleanup(OpJournal &journal, OpJournal::Entry &entry, QString &error,
+						const Hooks *hooks = nullptr);
 
-  private:
+private:
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
 	OpResult execute(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, int index,
-						 int total, bool *retryableCopy = nullptr);
+					 int total, bool *retryableCopy = nullptr);
 	OpResult transfer(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, OpFile &source,
-						  int index, int total, bool directoryDurable, bool *retryableCopy);
+					  int index, int total, bool directoryDurable, bool *retryableCopy);
 	OpResult removeOriginal(OpJournal &, OpJournal::Entry &, int index, int total);
+	OpResult restoreOriginal(OpJournal &, OpJournal::Entry &);
+	Totals restoreOriginals(const OpRequest &, const QString &directory);
 	OpRequest planUndo(OpJournal::Record &, const OpRequest &);
 	bool retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error);
 	void checkpoint(const QString &name, const OpJournal::Entry &entry);
