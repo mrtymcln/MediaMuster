@@ -16,6 +16,7 @@
 #ifdef Q_OS_MAC
 #include <stdio.h>
 #include <copyfile.h>
+#include <sys/acl.h>
 #endif
 #endif
 
@@ -24,6 +25,24 @@ namespace
 	QString hex(quint64 value)
 	{
 		return QString::number(value, 16);
+	}
+	bool privateDirectoryName(const QString &path, bool stageOnly = false)
+	{
+		const QString name = QFileInfo(path).fileName();
+		const QStringList prefixes = stageOnly
+			? QStringList{QStringLiteral(".mediamuster-stage-"), QStringLiteral(".mediamuster-")}
+			: QStringList{QStringLiteral(".mediamuster-stage-"), QStringLiteral(".mediamuster-retire-"),
+						  QStringLiteral(".mediamuster-")};
+		for (const auto &prefix : prefixes)
+		{
+			if (!name.startsWith(prefix))
+				continue;
+			const auto token = name.mid(prefix.size());
+			const QUuid uuid(token);
+			if (!uuid.isNull() && token == uuid.toString(QUuid::WithoutBraces))
+				return true;
+		}
+		return false;
 	}
 #ifdef Q_OS_WIN
 	HANDLE handle(const QFile &file)
@@ -34,10 +53,89 @@ namespace
 	{
 		return QStringLiteral("Windows file error %1").arg(::GetLastError());
 	}
+	OpStamp nativeStamp(HANDLE file)
+	{
+		OpStamp out;
+		BY_HANDLE_FILE_INFORMATION info{};
+		if (!::GetFileInformationByHandle(file, &info))
+			return out;
+		FILE_ID_INFO extended{};
+		if (::GetFileInformationByHandleEx(file, FileIdInfo, &extended, sizeof(extended)))
+		{
+			out.fileId = QString::fromLatin1(
+				QByteArray(reinterpret_cast<const char *>(extended.FileId.Identifier), 16).toHex());
+			out.volumeId = hex(extended.VolumeSerialNumber);
+		}
+		else
+		{
+			out.fileId = hex((quint64(info.nFileIndexHigh) << 32) | info.nFileIndexLow);
+			out.volumeId = hex(info.dwVolumeSerialNumber);
+		}
+		out.size = qint64((quint64(info.nFileSizeHigh) << 32) | info.nFileSizeLow);
+		out.modified = qint64((quint64(info.ftLastWriteTime.dwHighDateTime) << 32) |
+							  info.ftLastWriteTime.dwLowDateTime);
+		return out;
+	}
+	HANDLE openDirectory(const QString &path, bool deleting = false)
+	{
+		const auto native = QDir::toNativeSeparators(path);
+		HANDLE directory = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()),
+			FILE_READ_ATTRIBUTES | (deleting ? DELETE : 0),
+			deleting ? FILE_SHARE_READ : FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+		if (directory == INVALID_HANDLE_VALUE)
+			return directory;
+		BY_HANDLE_FILE_INFORMATION info{};
+		if (!::GetFileInformationByHandle(directory, &info) ||
+			!(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ||
+			(info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+		{
+			::CloseHandle(directory);
+			::SetLastError(ERROR_DIRECTORY);
+			return INVALID_HANDLE_VALUE;
+		}
+		return directory;
+	}
 #else
 	QString nativeError()
 	{
 		return QString::fromLocal8Bit(std::strerror(errno));
+	}
+	OpStamp nativeStamp(const struct stat &info)
+	{
+		OpStamp out;
+		out.fileId = hex(info.st_ino);
+		out.volumeId = hex(info.st_dev);
+		out.size = info.st_size;
+#ifdef Q_OS_MAC
+		out.modified = info.st_mtimespec.tv_sec * 1000000000LL + info.st_mtimespec.tv_nsec;
+#else
+		out.modified = info.st_mtim.tv_sec * 1000000000LL + info.st_mtim.tv_nsec;
+#endif
+		return out;
+	}
+	bool privateDirectory(int directory, struct stat &info)
+	{
+		if (::fstat(directory, &info) != 0 || !S_ISDIR(info.st_mode) ||
+			info.st_uid != ::geteuid() || (info.st_mode & 0777) != 0700)
+			return false;
+#ifdef Q_OS_MAC
+		// chmod's mode bits do not remove inherited ACL grants. A directory used
+		// for descriptor-relative unlink must also have no extended access list.
+		acl_t acl = ::acl_get_fd_np(directory, ACL_TYPE_EXTENDED);
+		if (!acl)
+			// On APFS an empty ACL has no stored attribute: this descriptor-based
+			// query reports ENOENT even though fstat above confirmed the directory.
+			return errno == ENOENT || errno == ENOTSUP;
+		acl_entry_t entry{};
+		errno = 0;
+		const int rc = ::acl_get_entry(acl, ACL_FIRST_ENTRY, &entry);
+		const bool empty = rc == -1 && errno == EINVAL;
+		::acl_free(acl);
+		return empty;
+#else
+		return true;
+#endif
 	}
 #endif
 } // namespace
@@ -135,6 +233,185 @@ NativeFile::SyncResult OpFile::makeDirectory(const QString &path, QString &error
 	return parentSync;
 }
 
+OpStamp OpFile::inspectDirectory(const QString &path)
+{
+	if (!safePath(path))
+		return {};
+#ifdef Q_OS_WIN
+	const auto directory = openDirectory(path);
+	if (directory == INVALID_HANDLE_VALUE)
+		return {};
+	const auto identity = nativeStamp(directory);
+	::CloseHandle(directory);
+#else
+	const int directory = ::open(QFile::encodeName(path).constData(),
+		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	if (directory < 0)
+		return {};
+	struct stat info{};
+	const auto identity = ::fstat(directory, &info) == 0 ? nativeStamp(info) : OpStamp{};
+	::close(directory);
+#endif
+	return identity;
+}
+
+NativeFile::SyncResult OpFile::makePrivateDirectory(
+	const QString &path, OpStamp &identity, QString &error, const NativeFile::DirectorySync &sync)
+{
+	using Sync = NativeFile::SyncResult;
+	identity = {};
+	if (!safePath(path) || !privateDirectoryName(path))
+	{
+		error = QStringLiteral("A private operation folder requires a fresh, unredirected UUID path.");
+		return Sync::Failed;
+	}
+#ifdef Q_OS_WIN
+	const auto native = QDir::toNativeSeparators(path);
+	if (!::CreateDirectoryW(reinterpret_cast<const wchar_t *>(native.utf16()), nullptr))
+	{
+		error = nativeError();
+		return Sync::Failed;
+	}
+	// Windows cleanup targets protected object handles. It does not rely on
+	// Unix permission bits or pathname-based file deletion.
+	const auto directory = openDirectory(path);
+	if (directory == INVALID_HANDLE_VALUE)
+	{
+		error = nativeError();
+		return Sync::Failed;
+	}
+	identity = nativeStamp(directory);
+	::CloseHandle(directory);
+#else
+	if (::mkdir(QFile::encodeName(path).constData(), 0700) != 0)
+	{
+		error = nativeError();
+		return Sync::Failed;
+	}
+	const int directory = ::open(QFile::encodeName(path).constData(),
+		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	if (directory < 0)
+	{
+		error = nativeError();
+		return Sync::Failed;
+	}
+	bool permissions = ::fchmod(directory, 0700) == 0;
+#ifdef Q_OS_MAC
+	acl_t empty = ::acl_init(0);
+	if (!empty)
+		permissions = false;
+	else
+	{
+		if (::acl_set_fd_np(directory, empty, ACL_TYPE_EXTENDED) != 0 && errno != ENOTSUP)
+			permissions = false;
+		::acl_free(empty);
+	}
+#endif
+	struct stat info{};
+	if (!permissions || !privateDirectory(directory, info))
+	{
+		::close(directory);
+		error = QStringLiteral("The operation folder could not be made private: %1").arg(path);
+		return Sync::Failed;
+	}
+	identity = nativeStamp(info);
+	::close(directory);
+#endif
+	if (!identity.valid() || !identity.sameObject(inspectDirectory(path)))
+	{
+		identity = {};
+		error = QStringLiteral("The newly created operation folder could not be identified.");
+		return Sync::Failed;
+	}
+	// Preserve the recorded identity even if persistence is unavailable. The
+	// caller can journal the folder and later clean it without adopting a path.
+	const auto ownSync = sync(path, &error);
+	if (ownSync == Sync::Failed)
+		return ownSync;
+	const QString ownError = error;
+	const auto parentSync = sync(QFileInfo(path).absolutePath(), &error);
+	if (parentSync != Sync::Ok)
+		return parentSync;
+	error = ownError;
+	return ownSync;
+}
+
+NativeFile::SyncResult OpFile::removeEmptyPrivateDirectory(
+	const QString &path, const OpStamp &identity, QString &error,
+	const NativeFile::DirectorySync &sync)
+{
+	using Sync = NativeFile::SyncResult;
+	if (!identity.valid() || !safePath(path) || !privateDirectoryName(path))
+	{
+		error = QStringLiteral("Folder cleanup requires its recorded private directory identity.");
+		return Sync::Failed;
+	}
+#ifdef Q_OS_WIN
+	const auto directory = openDirectory(path, true);
+	if (directory == INVALID_HANDLE_VALUE)
+	{
+		error = nativeError();
+		return Sync::Failed;
+	}
+	if (!identity.sameObject(nativeStamp(directory)))
+	{
+		::CloseHandle(directory);
+		error = QStringLiteral("The private folder was replaced; it was retained.");
+		return Sync::Failed;
+	}
+	FILE_DISPOSITION_INFO disposition{};
+	disposition.DeleteFile = TRUE;
+	// The kernel rejects nonempty directories. Never enumerate/delete children.
+	const bool removed = ::SetFileInformationByHandle(directory, FileDispositionInfo,
+		&disposition, sizeof(disposition)) != 0;
+	if (!removed)
+		error = nativeError();
+	::CloseHandle(directory);
+	if (!removed)
+		return Sync::Failed;
+#else
+	const QString parentPath = QFileInfo(path).absolutePath();
+	const QByteArray name = QFile::encodeName(QFileInfo(path).fileName());
+	const int parent = ::open(QFile::encodeName(parentPath).constData(),
+		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	if (parent < 0)
+	{
+		error = nativeError();
+		return Sync::Failed;
+	}
+	const int directory = ::openat(parent, name.constData(),
+		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	struct stat info{}, atPath{};
+	const bool matches = directory >= 0 && privateDirectory(directory, info) &&
+		identity.sameObject(nativeStamp(info)) &&
+		::fstatat(parent, name.constData(), &atPath, AT_SYMLINK_NOFOLLOW) == 0 &&
+		S_ISDIR(atPath.st_mode) && identity.sameObject(nativeStamp(atPath));
+	if (!matches)
+	{
+		if (directory >= 0)
+			::close(directory);
+		::close(parent);
+		error = QStringLiteral("The private folder identity or permissions changed; it was retained.");
+		return Sync::Failed;
+	}
+	// This can only remove an empty directory. Even if an external process
+	// changes the name after validation, AT_REMOVEDIR cannot remove any files.
+	const bool removed = ::unlinkat(parent, name.constData(), AT_REMOVEDIR) == 0;
+	if (!removed)
+		error = nativeError();
+	::close(directory);
+	::close(parent);
+	if (!removed)
+		return Sync::Failed;
+#endif
+	if (occupied(path))
+	{
+		error = QStringLiteral("Folder cleanup is unconfirmed; the path remains occupied.");
+		return Sync::Failed;
+	}
+	return sync(QFileInfo(path).absolutePath(), &error);
+}
+
 std::unique_ptr<OpFile> OpFile::open(const QString &path, bool create, QString &error)
 {
 	return openImpl(path, create, create, error);
@@ -226,40 +503,12 @@ std::unique_ptr<OpFile> OpFile::openImpl(const QString &path, bool create, bool 
 
 OpStamp OpFile::stamp() const
 {
-	OpStamp out;
 #ifdef Q_OS_WIN
-	BY_HANDLE_FILE_INFORMATION info{};
-	if (!::GetFileInformationByHandle(handle(m_file), &info))
-		return out;
-	FILE_ID_INFO extended{};
-	if (::GetFileInformationByHandleEx(handle(m_file), FileIdInfo, &extended, sizeof(extended)))
-	{
-		out.fileId = QString::fromLatin1(
-			QByteArray(reinterpret_cast<const char *>(extended.FileId.Identifier), 16).toHex());
-		out.volumeId = hex(extended.VolumeSerialNumber);
-	}
-	else
-	{
-		out.fileId = hex((quint64(info.nFileIndexHigh) << 32) | info.nFileIndexLow);
-		out.volumeId = hex(info.dwVolumeSerialNumber);
-	}
-	out.size = qint64((quint64(info.nFileSizeHigh) << 32) | info.nFileSizeLow);
-	out.modified = qint64((quint64(info.ftLastWriteTime.dwHighDateTime) << 32) |
-						  info.ftLastWriteTime.dwLowDateTime);
+	return nativeStamp(handle(m_file));
 #else
 	struct stat info{};
-	if (::fstat(m_file.handle(), &info))
-		return out;
-	out.fileId = hex(info.st_ino);
-	out.volumeId = hex(info.st_dev);
-	out.size = info.st_size;
-#ifdef Q_OS_MAC
-	out.modified = info.st_mtimespec.tv_sec * 1000000000LL + info.st_mtimespec.tv_nsec;
-#else
-	out.modified = info.st_mtim.tv_sec * 1000000000LL + info.st_mtim.tv_nsec;
+	return ::fstat(m_file.handle(), &info) == 0 ? nativeStamp(info) : OpStamp{};
 #endif
-#endif
-	return out;
 }
 
 OpStamp OpFile::inspect(const QString &path)
@@ -419,6 +668,90 @@ bool OpFile::removeProtected(QString &error)
 	return false;
 }
 
+bool OpFile::removePartial(const OpStamp &expectedFile, const OpStamp &expectedDirectory,
+						   QString &error)
+{
+	const QFileInfo item(m_path);
+	const QString parent = item.absolutePath();
+	if (item.fileName() != QStringLiteral("payload.partial") ||
+		!privateDirectoryName(parent, true) || !safePath(m_path) ||
+		!expectedDirectory.valid() || !stillAt(m_path, expectedFile))
+	{
+		error = QStringLiteral("Partial cleanup requires its recorded isolated file and folder.");
+		return false;
+	}
+#ifdef Q_OS_WIN
+	const auto directory = openDirectory(parent);
+	const bool sameDirectory = directory != INVALID_HANDLE_VALUE &&
+		expectedDirectory.sameObject(nativeStamp(directory));
+	if (directory != INVALID_HANDLE_VALUE)
+		::CloseHandle(directory);
+	if (!m_protected || !sameDirectory)
+	{
+		error = QStringLiteral("The partial file or its staging folder could not be protected.");
+		return false;
+	}
+	FILE_DISPOSITION_INFO disposition{};
+	disposition.DeleteFile = TRUE;
+	if (!::SetFileInformationByHandle(handle(m_file), FileDispositionInfo, &disposition,
+									 sizeof(disposition)))
+	{
+		error = nativeError();
+		return false;
+	}
+	m_file.close();
+#elif defined(Q_OS_MAC)
+	const int directory = ::open(QFile::encodeName(parent).constData(),
+		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	if (directory < 0)
+	{
+		error = nativeError();
+		return false;
+	}
+	struct stat directoryInfo{}, current{};
+	const bool matches = privateDirectory(directory, directoryInfo) &&
+		expectedDirectory.sameObject(nativeStamp(directoryInfo)) &&
+		::fstatat(directory, "payload.partial", &current, AT_SYMLINK_NOFOLLOW) == 0 &&
+		S_ISREG(current.st_mode) && expectedFile.unchanged(nativeStamp(current)) &&
+		expectedFile.unchanged(stamp());
+	if (!matches)
+	{
+		::close(directory);
+		error = QStringLiteral("The staging folder or partial file changed; it was retained.");
+		return false;
+	}
+	// The descriptor remains bound to the recorded, owner-only directory.
+	// This has the same isolation boundary as retired-original removal: another
+	// process deliberately modifying private files as this account is outside it.
+	if (::unlinkat(directory, "payload.partial", 0) != 0)
+	{
+		error = nativeError();
+		::close(directory);
+		return false;
+	}
+	m_file.close();
+	const bool synced = ::fsync(directory) == 0;
+	if (!synced)
+		error = QStringLiteral("Partial removed, but its staging folder could not be flushed: ") + nativeError();
+	::close(directory);
+	if (!synced)
+		return false;
+#else
+	error = QStringLiteral("Protected partial removal is unavailable on this platform.");
+	return false;
+#endif
+	if (occupied(m_path))
+	{
+		error = QStringLiteral("Partial cleanup is unconfirmed; the path remains occupied.");
+		return false;
+	}
+#ifdef Q_OS_WIN
+	return NativeFile::syncDirectory(parent, &error) == NativeFile::SyncResult::Ok;
+#else
+	return true;
+#endif
+}
+
 bool OpFile::removeOriginal(QString &error)
 {
 	const QFileInfo item(m_path);
@@ -468,8 +801,7 @@ bool OpFile::removeOriginal(QString &error)
 	// other users. Keep its descriptor bound through identity check and unlink.
 	// An external writer using this same account is outside that isolation;
 	// callers must not share or reuse retirement directories.
-	const bool isolated = ::fstat(directory, &directoryInfo) == 0 &&
-						  directoryInfo.st_uid == ::geteuid() && (directoryInfo.st_mode & 0777) == 0700;
+	const bool isolated = privateDirectory(directory, directoryInfo);
 	const bool same = ::fstatat(directory, "payload.retired", &current, AT_SYMLINK_NOFOLLOW) == 0 &&
 					  S_ISREG(current.st_mode) && hex(current.st_ino) == before.fileId &&
 					  hex(current.st_dev) == before.volumeId && current.st_size == before.size &&

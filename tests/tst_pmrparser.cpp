@@ -10,6 +10,7 @@
 #include "pmrparser.h"
 
 #include <QByteArray>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -212,6 +213,7 @@ private slots:
 	void filename_key_preserves_already_normalised();
 	void parses_one_file_comp_pair();
 	void empty_project_still_yields_entry();
+	void empty_record_sets_are_valid_data();
 	void empty_record_sets_are_valid();
 	void implausible_pair_count_is_rejected();
 	void file_comp_desync_bails_with_what_it_has();
@@ -250,6 +252,8 @@ private slots:
 	// The 4 bytes after a MASTER MOB are the essence file's mtime.
 	void trailer_is_the_file_modified_time();
 	void real_fixture_pmrs_parse_with_unicode_names();
+	void real_fixture_metadata_is_unchanged_data();
+	void real_fixture_metadata_is_unchanged();
 	// Two spellings of the same instant: Unix UTC (MC 2025) and Mac 1904-epoch
 	// local time (older MC, seen on a 2018–19 folder). Both must match; a
 	// different instant, or an unknown trailer, must not.
@@ -270,6 +274,8 @@ private slots:
 	void accepted_versions_and_byte_orders();
 	void independent_unicode_records_data();
 	void independent_unicode_records();
+	void unconsumed_records_and_extensions_report_failure_data();
+	void unconsumed_records_and_extensions_report_failure();
 	void every_truncated_boundary_reports_failure_data();
 	void every_truncated_boundary_reports_failure();
 	void project_lengths_are_checked();
@@ -326,11 +332,23 @@ void TestPmrParser::empty_project_still_yields_entry()
 	QVERIFY(entries[0].project.isEmpty());
 }
 
+void TestPmrParser::empty_record_sets_are_valid_data()
+{
+	QTest::addColumn<qint32>("version");
+	QTest::addColumn<bool>("bigEndian");
+	for (const qint32 version : {1, 2, 8})
+		for (const bool bigEndian : {false, true})
+			QTest::newRow(qPrintable(QString::number(version) + (bigEndian ? "-BE" : "-LE"))) << version << bigEndian;
+}
+
 void TestPmrParser::empty_record_sets_are_valid()
 {
+	QFETCH(qint32, version);
+	QFETCH(bool, bigEndian);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	for (const auto &buf : {pmrHeader(0), pmrHeader(0) + unicodeHeader(0)})
+	const QByteArray base = orderedHeader(version, 0, bigEndian);
+	for (const auto &buf : {base, base + orderedUnicodeHeader(0, bigEndian)})
 	{
 		bool ok = false;
 		QVERIFY(PmrParser::parse(writePmr(tmp.path() + "/empty.pmr", buf), &ok).isEmpty());
@@ -600,6 +618,49 @@ void TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
 		if (g.pairs == 435)
 			QVERIFY2(eszett >= 6, qPrintable(QString::number(eszett)));
 	}
+}
+
+void TestPmrParser::real_fixture_metadata_is_unchanged_data()
+{
+	QTest::addColumn<QString>("relativePath");
+	QTest::addColumn<int>("count");
+	QTest::addColumn<QByteArray>("digest");
+	// Baselines captured before the completeness repair, covering every field
+	// of all 878 records across modern and OMF-era real Avid databases.
+	QTest::newRow("tone") << QStringLiteral("msmFMID.pmr") << 1
+		<< QByteArray("c86f7ec6386c88ce23714f15c7a8ea7733cd7b86fe0b44d760ac1c24adb6d9ac");
+	QTest::newRow("corpus") << QStringLiteral("corpus_headers/msmFMID.pmr") << 435
+		<< QByteArray("9f085e78fcc014a77f52cc6737699e8a70efac211cd3d161a152391533a5a5b9");
+	QTest::newRow("corpus-round3") << QStringLiteral("corpus_headers/msmFMID_round3.pmr") << 360
+		<< QByteArray("88fa7ee35ff7811a7eba1911412e53253d222bc72511ce5e73893b495e4ac912");
+	QTest::newRow("omf-supporting") << QStringLiteral("omf/avid_supporting/msmFMID.pmr") << 80
+		<< QByteArray("f49d8c6c1496ea3194a59c1864fd70d0948868a57fdcab4b82440197046652a9");
+	QTest::newRow("omf-audio") << QStringLiteral("omf/mc2026_audio/msmFMID.pmr") << 2
+		<< QByteArray("372165c9b880b4e1ca3f81e9d634d349eb49ed740f7557eb5bfda83637863bcc");
+}
+
+void TestPmrParser::real_fixture_metadata_is_unchanged()
+{
+	QFETCH(QString, relativePath);
+	QFETCH(int, count);
+	QFETCH(QByteArray, digest);
+	bool ok = false;
+	const auto entries = PmrParser::parse(QStringLiteral(FIXTURES_DIR "/") + relativePath, &ok);
+	QVERIFY(ok);
+	QCOMPARE(entries.size(), count);
+	QByteArray serialized;
+	u32le(serialized, quint32(entries.size()));
+	for (const PmrEntry &entry : entries)
+	{
+		for (const QString &text : {entry.fileName, entry.project, entry.mobId, entry.masterMobId})
+		{
+			const QByteArray utf8 = text.toUtf8();
+			u32le(serialized, quint32(utf8.size()));
+			serialized += utf8;
+		}
+		u32le(serialized, entry.fileModifiedSecs);
+	}
+	QCOMPARE(QCryptographicHash::hash(serialized, QCryptographicHash::Sha256).toHex(), digest);
 }
 
 void TestPmrParser::trailer_matches_modified_in_both_epochs()
@@ -887,6 +948,65 @@ void TestPmrParser::independent_unicode_records()
 	const auto index = PmrParser::buildFileMap(path, &ok);
 	QVERIFY(ok);
 	QCOMPARE(index.size(), entries.size());
+}
+
+void TestPmrParser::unconsumed_records_and_extensions_report_failure_data()
+{
+	QTest::addColumn<QByteArray>("bytes");
+	for (const qint32 version : {1, 2, 8})
+		for (const bool bigEndian : {false, true})
+		{
+			const QString prefix = QString::number(version) + (bigEndian ? "-BE-" : "-LE-");
+			const auto row = [&prefix](const QString &name, const QByteArray &bytes)
+			{
+				QTest::newRow(qPrintable(prefix + name)) << bytes;
+			};
+			const QByteArray first = orderedRecord(version, bigEndian, "first.media");
+			const QByteArray second = orderedRecord(version, bigEndian, "second.media");
+			const QByteArray base = orderedHeader(version, 1, bigEndian) + first;
+			const QByteArray unicodeFirst = orderedRecord(16, bigEndian, "unicode-first.media");
+			const QByteArray unicodeSecond = orderedRecord(16, bigEndian, "unicode-second.media");
+			const QByteArray complete = base + orderedUnicodeHeader(1, bigEndian) + unicodeFirst;
+			for (const quint32 declared : {0u, 1u})
+			{
+				// Complete records left after a lowered count must not masquerade
+				// as an optional extension or an ignorable Unicode tail.
+				row(QString("base-undercount-%1").arg(declared),
+					orderedHeader(version, declared, bigEndian) + first + second);
+				row(QString("unicode-undercount-%1").arg(declared),
+					base + orderedUnicodeHeader(declared, bigEndian) + unicodeFirst + unicodeSecond);
+			}
+			for (const qint32 extensionVersion : {0, 8, 17, -1})
+			{
+				QByteArray extension;
+				ordered32(extension, quint32(extensionVersion), bigEndian);
+				ordered32(extension, 0, bigEndian);
+				row(QString("unknown-extension-%1").arg(extensionVersion), base + extension);
+			}
+			for (const int length : {1, 8})
+			{
+				row(QString("base-trailing-%1").arg(length), base + QByteArray(length, '\0'));
+				row(QString("unicode-trailing-%1").arg(length), complete + QByteArray(length, '\0'));
+			}
+			row(QStringLiteral("second-unicode-extension"), complete + orderedUnicodeHeader(0, bigEndian));
+		}
+}
+
+void TestPmrParser::unconsumed_records_and_extensions_report_failure()
+{
+	QFETCH(QByteArray, bytes);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString path = writePmr(tmp.path() + "/incomplete.pmr", bytes);
+	bool ok = true;
+	const auto recoveryEntries = PmrParser::parse(path, &ok);
+	QVERIFY(!ok);
+	// Recovery entries may still be returned, but neither API may vouch for
+	// a complete index. The scanner trusts only buildFileMap's success flag.
+	ok = true;
+	const auto recoveryMap = PmrParser::buildFileMap(path, &ok);
+	QVERIFY(!ok);
+	QCOMPARE(recoveryMap.size(), recoveryEntries.size());
 }
 
 void TestPmrParser::every_truncated_boundary_reports_failure_data()

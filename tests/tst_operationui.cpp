@@ -19,6 +19,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSignalSpy>
@@ -26,6 +27,7 @@
 #include <QTest>
 #include <QThreadPool>
 #include <QTimer>
+#include <QUuid>
 #include <atomic>
 #include <memory>
 
@@ -88,6 +90,12 @@ private slots:
 	void interrupted_dialog_cancel_keeps_completed_effects();
 	void interrupted_dialog_resume_starts_only_old_job();
 	void interrupted_undo_resumes_with_debug_flag_off();
+	void restore_action_survives_dismissal_later_jobs_and_close();
+	void restore_originals_keeps_completed_copy_and_refreshes_rows();
+	void blocked_restore_remains_available();
+	void restore_can_select_another_retained_job();
+	void startup_offers_retained_originals();
+	void restore_originals_respects_busy_gate();
 	void observed_removals_prune_rows_even_when_job_needs_attention();
 	void rebalance_dialog_blocks_other_operation_entrypoints();
 	void scan_activity_blocks_operations_even_if_button_state_changes();
@@ -106,7 +114,10 @@ private slots:
 private:
 	OpRequest request(const QString &name = QStringLiteral("old"), int count = 1);
 	QString makeInterrupted(OpRequest request, bool completeFirst = false);
+	QString makeRetainedOriginal(const QString &name = QStringLiteral("retained"));
 	void clickInterrupted(const QString &button);
+	void clickRestoreOriginals(const QString &button, const OperationRecovery::Restorable &job,
+							  int selectedJob = 0);
 	QString path(const QString &relative) const { return m_root + '/' + relative; }
 	QByteArray m_previousJournalDir;
 	bool m_hadJournalDir = false;
@@ -189,6 +200,72 @@ void TestOperationUi::clickInterrupted(const QString &button)
 		for (auto *label : dialog->findChildren<QLabel *>())
 			foundHeadline |= label->text() == "The previous job was interrupted.";
 		QVERIFY(foundHeadline);
+		if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
+		else if (button == "close") dialog->close();
+		else
+		{
+			auto *target = dialog->findChild<QPushButton *>(button);
+			QVERIFY(target);
+			target->click();
+		}
+	});
+	timer->start();
+}
+
+QString TestOperationUi::makeRetainedOriginal(const QString &name)
+{
+	// A legacy journal whose move was interrupted after relocating its
+	// original. No destination evidence is needed to restore that original.
+	auto old = request(name);
+	old.kind = OpKind::Move;
+	old.copyThenRemove = true;
+	const auto mediaPath = path(name + "/Avid MediaFiles/MXF/1/clip-0.mxf");
+	if (!QDir().mkpath(QFileInfo(mediaPath).absolutePath()) ||
+		!QFile::rename(old.items[0].src, mediaPath)) qFatal("Cannot rename UI fixture");
+	old.items[0].src = mediaPath;
+	old.items[0].name = QStringLiteral("clip-0.mxf");
+	OpJournal journal;
+	QString error;
+	if (!journal.create(old, path("journals"), error))
+		qFatal("Cannot create retained-original journal: %s", qPrintable(error));
+	auto entry = journal.record().entries.first();
+	entry.dst = old.destRoot + '/' + entry.item.name;
+	entry.retirement = QFileInfo(entry.item.src).absolutePath() + "/.mediamuster-retire-" +
+		QUuid::createUuid().toString(QUuid::WithoutBraces) + "/payload.retired";
+	if (!QFile::copy(entry.item.src, entry.dst) ||
+		!QDir().mkpath(QFileInfo(entry.retirement).absolutePath()) ||
+		!QFile::rename(entry.item.src, entry.retirement))
+		qFatal("Cannot prepare retained-original payload");
+	entry.mechanism = QStringLiteral("copy");
+	entry.landed = OpFile::inspect(entry.dst);
+	entry.copyDurable = true;
+	entry.metadataComplete = true;
+	entry.step = OpJournal::Step::SourceRetained;
+	if (!journal.save(entry) || !journal.markCopiesComplete() || !journal.finish(true))
+		qFatal("Cannot save retained-original journal");
+	return journal.path();
+}
+
+void TestOperationUi::clickRestoreOriginals(const QString &button,
+										 const OperationRecovery::Restorable &job, int selectedJob)
+{
+	auto *timer = new QTimer(this);
+	timer->setInterval(1);
+	connect(timer, &QTimer::timeout, this, [timer, button, job, selectedJob]
+	{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		timer->stop();
+		timer->deleteLater();
+		QCOMPARE(dialog->objectName(), QStringLiteral("restoreOriginalsDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("restoreOriginalsJob"));
+		QVERIFY(jobs);
+		jobs->setCurrentIndex(selectedJob);
+		auto *paths = dialog->findChild<QPlainTextEdit *>(QStringLiteral("restoreOriginalPaths"));
+		QVERIFY(paths && paths->isReadOnly());
+		for (const auto &path : job.originals) QVERIFY(paths->toPlainText().contains(path));
+		for (const auto &path : job.retainedPaths) QVERIFY(paths->toPlainText().contains(path));
+		QCOMPARE(dialog->findChildren<QPushButton *>().size(), 2);
 		if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
 		else if (button == "close") dialog->close();
 		else
@@ -346,6 +423,170 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	QVERIFY(QFileInfo::exists(original.items[1].src));
 	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
 }
+void TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
+{
+	const auto oldPath = makeRetainedOriginal();
+	QString error;
+	QVERIFY(OpJournal::dismiss(oldPath, error));
+	std::atomic<bool> cancel{false};
+	Sink sink;
+	OpRunner later(sink, cancel);
+	QCOMPARE(later.run(request("later"), path("journals")).succeeded, 1);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *operations = window.m_operations;
+	operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
+	QVERIFY(!operations->enableUndoAction()->isChecked());
+	QVERIFY(!operations->undoAction()->isVisible());
+	QVERIFY(operations->restoreOriginalsAction()->isEnabled());
+	QCOMPARE(operations->m_restorable.size(), 1);
+	const auto job = operations->m_restorable.first();
+	QCOMPARE(job.journalPath, oldPath);
+	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
+	for (const auto &close : {"closeRestoreOriginalsButton", "escape", "close"})
+	{
+		clickRestoreOriginals(QString::fromLatin1(close), job);
+		operations->restoreOriginalsAction()->trigger();
+		QVERIFY(operations->restoreOriginalsAction()->isEnabled());
+		QVERIFY(!QFileInfo::exists(job.originals.first()));
+		QVERIFY(QFileInfo::exists(job.retainedPaths.first()));
+		QVERIFY(OpJournal::readOne(oldPath)->dismissed);
+	}
+	QCOMPARE(finished.count(), 0);
+	QCOMPARE(OpJournal::scan().size(), 2);
+}
+
+void TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows()
+{
+	const auto oldPath = makeRetainedOriginal();
+	const auto old = OpJournal::readOne(oldPath);
+	QVERIFY(old);
+	QString error;
+	QVERIFY(OpJournal::dismiss(oldPath, error));
+	// An unrelated unfinished job must not intercept a source-only restore.
+	const auto laterPath = makeInterrupted(request("later"));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile untouched;
+	untouched.filePath = path("unaffected/Avid MediaFiles/MXF/1/other.mxf");
+	untouched.volumePath = path("unaffected");
+	QVERIFY(put(untouched.filePath, QByteArray(1024, 'u')));
+	window.m_model->setMediaFiles({untouched});
+	auto *operations = window.m_operations;
+	operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
+	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
+	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
+	clickRestoreOriginals("restoreOriginalsButton", operations->m_restorable.first());
+	operations->restoreOriginalsAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(operations->isIdle() && !operations->m_historyLoading, 15000);
+	QVERIFY(QFileInfo::exists(old->entries.first().item.src));
+	QVERIFY(!QFileInfo::exists(old->entries.first().retirement));
+	QVERIFY(QFileInfo::exists(old->entries.first().dst));
+	QVERIFY(!operations->restoreOriginalsAction()->isEnabled());
+	QCOMPARE(OpJournal::readOne(oldPath)->entries.first().step, OpJournal::Step::SourceRestored);
+	QVERIFY(!OpJournal::readOne(laterPath)->dismissed);
+	QVERIFY(!QFileInfo::exists(path("later/destination/clip-0.bin")));
+	QSet<QString> displayed;
+	for (const auto &file : window.m_model->allFiles()) displayed.insert(file.filePath);
+	QCOMPARE(displayed, QSet<QString>({untouched.filePath, old->entries.first().item.src}));
+}
+
+void TestOperationUi::blocked_restore_remains_available()
+{
+	const auto oldPath = makeRetainedOriginal();
+	const auto old = OpJournal::readOne(oldPath);
+	QVERIFY(old);
+	const auto original = old->entries.first().item.src;
+	QVERIFY(put(original, QByteArray("new file in the original location")));
+	QString error;
+	QVERIFY(OpJournal::dismiss(oldPath, error));
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	QSignalSpy finished(operations.manager(), &OpManager::operationFinished);
+	QSignalSpy restored(&operations, &FileOperationController::originalsRestored);
+	clickRestoreOriginals("restoreOriginalsButton", operations.m_restorable.first());
+	operations.restoreOriginalsAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading && operations.isIdle(), 15000);
+	QCOMPARE(restored.count(), 0);
+	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+	QVERIFY(QFileInfo::exists(old->entries.first().retirement));
+	QFile occupant(original);
+	QVERIFY(occupant.open(QIODevice::ReadOnly));
+	QCOMPARE(occupant.readAll(), QByteArray("new file in the original location"));
+	clickRestoreOriginals("closeRestoreOriginalsButton", operations.m_restorable.first());
+	operations.offerRestoreOriginals();
+	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+}
+
+void TestOperationUi::restore_can_select_another_retained_job()
+{
+	QString error;
+	QVERIFY(OpJournal::dismiss(makeRetainedOriginal("first"), error));
+	QVERIFY(OpJournal::dismiss(makeRetainedOriginal("second"), error));
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	QCOMPARE(operations.m_restorable.size(), 2);
+	const auto jobs = operations.m_restorable;
+	QVERIFY(put(jobs[0].originals.first(), QByteArray("occupied")));
+	QSignalSpy finished(operations.manager(), &OpManager::operationFinished);
+	clickRestoreOriginals("restoreOriginalsButton", jobs[1], 1);
+	operations.restoreOriginalsAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading && operations.isIdle(), 15000);
+	QCOMPARE(operations.m_restorable.size(), 1);
+	QCOMPARE(operations.m_restorable.first().journalPath, jobs[0].journalPath);
+	QVERIFY(QFileInfo::exists(jobs[0].retainedPaths.first()));
+	QVERIFY(QFileInfo::exists(jobs[1].originals.first()));
+	QVERIFY(!QFileInfo::exists(jobs[1].retainedPaths.first()));
+}
+
+void TestOperationUi::startup_offers_retained_originals()
+{
+	const auto oldPath = makeRetainedOriginal();
+	QString error;
+	QVERIFY(OpJournal::dismiss(oldPath, error));
+	QWidget window;
+	FileOperationController operations(&window);
+	OperationRecovery::Summary summary;
+	summary.restorable = OperationRecovery::restorable();
+	QCOMPARE(summary.restorable.size(), 1);
+	clickRestoreOriginals("closeRestoreOriginalsButton", summary.restorable.first());
+	operations.onRecoveryDone(summary);
+	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+	QVERIFY(!operations.manager()->isRunning());
+}
+
+void TestOperationUi::restore_originals_respects_busy_gate()
+{
+	const auto oldPath = makeRetainedOriginal();
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	for (auto activity : {FileOperationController::Activity::Scanning,
+		 FileOperationController::Activity::Recovering,
+		 FileOperationController::Activity::RebalanceDialog,
+		 FileOperationController::Activity::FileOperation})
+	{
+		operations.setActivity(activity);
+		QVERIFY(!operations.restoreOriginalsAction()->isEnabled());
+		operations.offerRestoreOriginals();
+		OpRequest restore;
+		restore.restoreJournalPath = oldPath;
+		QVERIFY(!operations.dispatchRequest(restore));
+		QVERIFY(!operations.manager()->isRunning());
+	}
+	operations.setActivity(FileOperationController::Activity::Idle);
+	QVERIFY(operations.restoreOriginalsAction()->isEnabled());
+}
+
 void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);

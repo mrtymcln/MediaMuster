@@ -579,6 +579,7 @@ void MainWindow::buildFileMenu()
 	// Greyed out unless an interrupted Copy/Move/Delete is waiting to be
 	// finished (see FileOperationController::refreshHistory); offered automatically at launch too.
 	fileMenu->addAction(m_operations->resumeAction());
+	fileMenu->addAction(m_operations->restoreOriginalsAction());
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
@@ -806,6 +807,35 @@ void MainWindow::setupConnections()
 	connect(m_operations, &FileOperationController::logMessage, this, &MainWindow::addLog);
 	connect(m_operations, &FileOperationController::mediaMusterTrashUsed, this,
 			&MainWindow::showMediaMusterTrashDialog);
+	connect(m_operations, &FileOperationController::originalsRestored, this,
+			[this](const QSet<QString> &paths)
+			{
+				// Rebuild from real media, retaining every root already represented
+				// in the table and including originals whose rows were removed.
+				const auto mediaRoot = [](const QString &path)
+				{
+					const auto parent = QFileInfo(path).absolutePath();
+					QString mxfRoot;
+					QDir folder(parent);
+					do
+					{
+						const auto name = folder.dirName();
+						if (name.compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0 ||
+							Conventions::isOmfRootName(name))
+							return folder.absolutePath();
+						if (Conventions::isMxfRootName(name))
+							mxfRoot = folder.absolutePath();
+					} while (!folder.isRoot() && folder.cdUp());
+					return mxfRoot.isEmpty() ? parent : mxfRoot;
+				};
+				QSet<QString> roots;
+				for (const auto &file : m_model->allFiles())
+					roots.insert(mediaRoot(file.filePath));
+				for (const auto &path : paths)
+					roots.insert(mediaRoot(path));
+				if (!roots.isEmpty())
+					startScanWithPaths(roots.values());
+			});
 	connect(m_operations, &FileOperationController::sourcesRemoved, this,
 			[this](const QSet<QString> &paths)
 			{

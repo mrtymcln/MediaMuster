@@ -75,7 +75,9 @@ public:
 	///
 	/// `ok` (optional) reports whether the file parsed cleanly end to end:
 	/// false on every failure above, including a truncation that still
-	/// returns partial entries. Callers use it to tell "readable database,
+	/// returns partial entries, an unsupported extension or unconsumed bytes.
+	/// Success requires EOF after the base set or its optional version-16
+	/// Unicode set; their record counts need not match. Callers use it to tell "readable database,
 	/// entry genuinely absent" from "database can't vouch for anything".
 	[[nodiscard]] static QVector<PmrEntry> parse(const QString &pmrFilePath, bool *ok = nullptr);
 

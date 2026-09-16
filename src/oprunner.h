@@ -49,6 +49,9 @@ class OpRunner
 	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error,
 		const std::atomic<bool> *cancellation = nullptr,
 		const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
+	// Only recorded private artifacts are eligible; incomplete cleanup stays journalled.
+	static bool cleanup(OpJournal &journal, OpJournal::Entry &entry, QString &error,
+		const Hooks *hooks = nullptr);
 
   private:
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
@@ -57,6 +60,8 @@ class OpRunner
 	OpResult transfer(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, OpFile &source,
 						  int index, int total, bool directoryDurable, bool *retryableCopy);
 	OpResult removeOriginal(OpJournal &, OpJournal::Entry &, int index, int total);
+	OpResult restoreOriginal(OpJournal &, OpJournal::Entry &);
+	Totals restoreOriginals(const OpRequest &, const QString &directory);
 	OpRequest planUndo(OpJournal::Record &, const OpRequest &);
 	bool retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error);
 	void checkpoint(const QString &name, const OpJournal::Entry &entry);

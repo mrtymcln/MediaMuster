@@ -151,6 +151,12 @@ target_compile_definitions(tst_scanner PRIVATE
 
 ### Operations ###
 
+# Identity-bound cleanup of operation-owned partial files and empty folders.
+mediamuster_add_test(tst_opcleanup operations
+    ${CMAKE_SOURCE_DIR}/src/opfile.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
+)
+
 # Volume identity plus the NativeFile
 # platform primitives, over real temp files and fixture MXF headers.
 mediamuster_add_test(tst_volumeidentity operations
