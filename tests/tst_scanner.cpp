@@ -32,6 +32,8 @@ private slots:
 	void mxf_without_any_database_is_no_database();
 	void wav_with_readable_dbs_is_no_reference();
 	void corrupt_pmr_flags_no_database_and_mdb_still_recovers();
+	void structurally_incomplete_pmr_is_not_a_trusted_index_data();
+	void structurally_incomplete_pmr_is_not_a_trusted_index();
 	void appledouble_sibling_is_never_media();
 	void non_avid_files_are_invisible();
 	void cancelled_scan_does_not_leak_databases_into_the_next();
@@ -963,6 +965,102 @@ namespace
 		return finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	}
 } // namespace
+
+void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index_data()
+{
+	QTest::addColumn<QByteArray>("pmr");
+	QTest::addColumn<bool>("readable");
+	QTest::addColumn<bool>("listsTone");
+
+	QFile fixture(fixturesDir() + QStringLiteral("/msmFMID.pmr"));
+	QVERIFY(fixture.open(QIODevice::ReadOnly));
+	const QByteArray original = fixture.readAll();
+	QCOMPARE(fixture.error(), QFileDevice::NoError);
+	// The real fixture contains one MBCS record, followed by one Unicode
+	// record for the same file. Pin the framing before changing only counts
+	// or the boundary of a section; the media/database fixtures stay intact.
+	QCOMPARE(original.size(), 248);
+	QCOMPARE(original.left(12), BentoBuilder::le32(0x7a9) + BentoBuilder::le32(8) + BentoBuilder::le32(1));
+	constexpr qsizetype unicodeOffset = 125;
+	QCOMPARE(original.mid(unicodeOffset, 8), BentoBuilder::le32(16) + BentoBuilder::le32(1));
+	QTest::newRow("healthy") << original << true << true;
+
+	QByteArray empty = original.left(12);
+	empty.replace(8, 4, BentoBuilder::le32(0));
+	QTest::newRow("valid-empty") << empty << true << false;
+
+	QByteArray primaryCount = original;
+	primaryCount.replace(8, 4, BentoBuilder::le32(0));
+	QTest::newRow("under-declared-primary-count") << primaryCount << false << false;
+
+	QByteArray unicodeCount = original;
+	unicodeCount.replace(unicodeOffset + 4, 4, BentoBuilder::le32(0));
+	QTest::newRow("under-declared-unicode-count") << unicodeCount << false << false;
+
+	QByteArray unknownExtension = original;
+	unknownExtension.replace(unicodeOffset, 4, BentoBuilder::le32(17));
+	QTest::newRow("unknown-extension") << unknownExtension << false << false;
+	QTest::newRow("trailing-bytes") << original + QByteArray("unexpected") << false << false;
+	QTest::newRow("truncated-unicode-header") << original.left(unicodeOffset + 4) << false << false;
+	QTest::newRow("truncated-unicode-record") << original.left(original.size() - 1) << false << false;
+}
+
+void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
+{
+	QFETCH(QByteArray, pmr);
+	QFETCH(bool, readable);
+	QFETCH(bool, listsTone);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), pmr));
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(kToneName, folder);
+	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/tone.wav"), QByteArray("RIFF----WAVEfmt ")));
+
+	const auto results = runScan(tmp.path());
+	QCOMPARE(results.size(), 2);
+	const MediaFile *tone = nullptr;
+	const MediaFile *stray = nullptr;
+	for (const MediaFile &mf : results)
+	{
+		if (mf.fileName == kToneName)
+			tone = &mf;
+		else if (mf.fileName == QStringLiteral("tone.wav"))
+			stray = &mf;
+	}
+	QVERIFY(tone != nullptr);
+	QVERIFY(stray != nullptr);
+
+	// A partial entry must not make the MXF Listed, and a partial/empty
+	// result must not make the stray WAV a verified No Reference match.
+	// Only a complete index, including the genuinely empty control, can
+	// certify that miss.
+	const auto unlistedStatus = readable ? MediaFile::DbStatus::NoReference : MediaFile::DbStatus::DbUnreadable;
+	QCOMPARE(tone->dbStatus, listsTone ? MediaFile::DbStatus::Listed : unlistedStatus);
+	QCOMPARE(stray->dbStatus, unlistedStatus);
+	QCOMPARE(tone->isNoDatabase(), !readable);
+	QCOMPARE(stray->isNoDatabase(), !readable);
+	if (!readable)
+	{
+		QCOMPARE(tone->dbStatusText().label, QStringLiteral("No Database"));
+		QCOMPARE(stray->dbStatusText().label, QStringLiteral("No Database"));
+	}
+
+	// Damaged PMR data cannot skip the header read just because its surviving
+	// record has a matching timestamp. The intact header/MDB still recover
+	// descriptive metadata; the MDB-only bin name proves the re-join ran.
+	QCOMPARE(tone->databaseMetadataCurrent, listsTone);
+	QCOMPARE(tone->clipNameSource, listsTone ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(tone->clipName, kToneClip);
+	QCOMPARE(tone->project, QStringLiteral("block 1729"));
+	QCOMPARE(tone->masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613"));
+	QVERIFY(!tone->originalBin.isEmpty());
+	QCOMPARE(tone->kind, MediaFile::Kind::Audio);
+	QVERIFY(tone->sampleRate > 0);
+}
 
 void TestScanner::database_described_row_never_reads_its_header()
 {

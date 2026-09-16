@@ -1,0 +1,43 @@
+name: PMR completeness diagnostics
+on:
+  push:
+    branches: [codex/repair-pmr-completeness-20260916]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.5.3'
+          host: windows
+          arch: win64_msvc2019_64
+          target: desktop
+          dir: '${{ runner.temp }}/Qt'
+          cache: true
+      - name: Patch Qt for current MSVC
+        run: cmake -P .github/cmake/patch-qt-windows.cmake
+      - name: Build parser and scanner regression suites
+        shell: pwsh
+        run: |
+          cmake -S . -B build "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build --config Release --target tst_pmrparser tst_scanner tst_mdbparser tst_omfparser --parallel 4
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test damaged indexes and valid database compatibility
+        shell: pwsh
+        run: |
+          ctest --test-dir build -C Release -R '^tst_(pmrparser|scanner|mdbparser|omfparser)$' --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pmr-completeness-windows
+          path: |
+            build/Testing/Temporary/*.log
+            build/tests/*.result.txt
+          if-no-files-found: warn
