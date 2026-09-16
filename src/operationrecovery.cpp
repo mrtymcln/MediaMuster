@@ -4,6 +4,57 @@
 #include <QHash>
 #include <QSet>
 
+namespace
+{
+	using CompletedUndoEntries = QHash<int, QVector<OpJournal::Entry>>;
+
+	CompletedUndoEntries completedUndoEntries(
+		OpJournal::Record inverse, const QVector<VolumeIdentity> &mounted)
+	{
+		QString error;
+		if (!OpJournal::resolve(inverse, error, mounted))
+			return {}; // Unresolved evidence cannot settle the forward job.
+		CompletedUndoEntries completed;
+		for (const auto &entry : inverse.entries)
+			if (entry.complete())
+				completed[entry.undoEntryId].append(entry);
+		return completed;
+	}
+
+	bool settleOriginalFromUndo(
+		OpJournal &journal, OpJournal::Entry &entry, const CompletedUndoEntries &completed)
+	{
+		if (!entry.needsOriginalRestoration())
+			return true;
+		const auto candidates = completed.constFind(entry.id);
+		if (candidates == completed.cend() || OpFile::occupied(entry.retirement))
+			return true;
+
+		// Undo keeps ownership of the forward job. Its completed entries can
+		// establish where the original ended up without replaying forward work.
+		const auto original = OpFile::inspect(entry.item.src);
+		for (const auto &done : candidates.value())
+		{
+			if (entry.source.unchanged(original))
+			{
+				entry.sourceRemoved = false;
+				entry.step = OpJournal::Step::SourceRestored;
+			}
+			else if (done.undoAction == "restoreMove" && done.dst == entry.item.src &&
+					 done.landed.unchanged(original))
+			{
+				entry.sourceRemoved = true; // Undo replaced the original object with its verified copy.
+				entry.step = OpJournal::Step::SourceRemoved;
+			}
+			else
+				continue;
+			entry.error.clear();
+			return journal.save(entry);
+		}
+		return true;
+	}
+} // namespace
+
 std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(const OpJournal::Record &rec)
 {
 	if (rec.corrupt || rec.dismissed || !rec.undoPath.isEmpty())
@@ -85,14 +136,10 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 		return out;
 	}
 	const auto records = OpJournal::scan(directory);
-	QSet<QString> claimed;
 	QHash<QString, OpJournal::Record> inverses;
 	for (const auto &record : records)
 		if (!record.corrupt && record.request.kind == OpKind::Undo)
-		{
-			claimed.insert(record.request.undoOf);
 			inverses.insert(record.request.undoOf, record);
-		}
 	for (auto rec : records)
 	{
 		if (rec.corrupt)
@@ -101,16 +148,18 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 			out.notes.append("Invalid journal retained for inspection: " + rec.path);
 			continue;
 		}
-		const bool forwardActive = !rec.dismissed && rec.undoPath.isEmpty() && !claimed.contains(rec.path);
-		bool incomplete = false, artifacts = false;
+		const bool forwardActive = !rec.dismissed && rec.undoPath.isEmpty() && !inverses.contains(rec.path);
+		bool incomplete = false;
+		bool artifacts = false;
+		bool needsRestoration = false;
 		for (const auto &e : rec.entries)
 		{
 			if (forwardActive && !e.complete())
 				incomplete = true;
-			artifacts = artifacts || !e.artifacts.isEmpty() || !e.cleanup.isEmpty() ||
-				e.needsOriginalRestoration();
+			needsRestoration = needsRestoration || e.needsOriginalRestoration();
+			artifacts = artifacts || !e.artifacts.isEmpty() || !e.cleanup.isEmpty();
 		}
-		if (!incomplete && !artifacts)
+		if (!incomplete && !artifacts && !needsRestoration)
 			continue;
 		if (!OpJournal::resolve(rec, error, mounted))
 		{
@@ -129,38 +178,16 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 				out.resumable.append(*r);
 			continue;
 		}
+		const auto inverse = inverses.constFind(rec.path);
+		const auto completedUndo = needsRestoration && inverse != inverses.cend()
+			? completedUndoEntries(inverse.value(), mounted) : CompletedUndoEntries{};
 		for (auto e : rec.entries)
 		{
-			if (e.needsOriginalRestoration() && inverses.contains(rec.path) &&
-				!OpFile::occupied(e.retirement))
+			if (!settleOriginalFromUndo(journal, e, completedUndo))
 			{
-				// A completed inverse owns this forward job permanently. Its
-				// evidence can settle an empty retirement folder without replaying
-				// any forward move or relying on the now-discarded destination.
-				auto inverse = inverses.value(rec.path);
-				QString inverseError;
-				if (OpJournal::resolve(inverse, inverseError, mounted))
-					for (const auto &done : inverse.entries)
-						if (done.complete() && done.undoEntryId == e.id)
-						{
-							const auto original = OpFile::inspect(e.item.src);
-							if (e.source.unchanged(original))
-							{
-								e.sourceRemoved = false;
-								e.step = OpJournal::Step::SourceRestored;
-							}
-							else if (done.undoAction == "restoreMove" && done.dst == e.item.src &&
-									 done.landed.unchanged(original))
-							{
-								e.sourceRemoved = true; // The original object was replaced by Undo's verified copy.
-								e.step = OpJournal::Step::SourceRemoved;
-							}
-							else
-								continue;
-							e.error.clear();
-							journal.save(e);
-							break;
-						}
+				++out.opsFlagged;
+				out.notes.append(journal.error() + " Journal: " + rec.path);
+				break;
 			}
 			// Dismissal ends forward work, but cannot erase cleanup or a
 			// restoring rename whose completion append was interrupted.
@@ -181,6 +208,8 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 				++out.opsFlagged;
 				out.notes.append(cleanupError + " Journal: " + rec.path);
 			}
+			if (!journal.healthy())
+				break;
 		}
 		if (auto r = resumableFrom(journal.record()))
 			out.resumable.append(*r);

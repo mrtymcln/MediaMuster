@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QScopeGuard>
 #include <QUuid>
 #include <cstring>
 #ifdef Q_OS_WIN
@@ -79,7 +80,7 @@ namespace
 	HANDLE openDirectory(const QString &path, bool deleting = false)
 	{
 		const auto native = QDir::toNativeSeparators(path);
-		HANDLE directory = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()),
+		const auto directory = ::CreateFileW(reinterpret_cast<const wchar_t *>(native.utf16()),
 			FILE_READ_ATTRIBUTES | (deleting ? DELETE : 0),
 			deleting ? FILE_SHARE_READ : FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 			nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
@@ -122,16 +123,16 @@ namespace
 #ifdef Q_OS_MAC
 		// chmod's mode bits do not remove inherited ACL grants. A directory used
 		// for descriptor-relative unlink must also have no extended access list.
-		acl_t acl = ::acl_get_fd_np(directory, ACL_TYPE_EXTENDED);
+		const auto acl = ::acl_get_fd_np(directory, ACL_TYPE_EXTENDED);
 		if (!acl)
 			// On APFS an empty ACL has no stored attribute: this descriptor-based
 			// query reports ENOENT even though fstat above confirmed the directory.
 			return errno == ENOENT || errno == ENOTSUP;
+		const auto releaseAcl = qScopeGuard([acl]() noexcept { ::acl_free(acl); });
 		acl_entry_t entry{};
 		errno = 0;
 		const int rc = ::acl_get_entry(acl, ACL_FIRST_ENTRY, &entry);
 		const bool empty = rc == -1 && errno == EINVAL;
-		::acl_free(acl);
 		return empty;
 #else
 		return true;
@@ -241,18 +242,17 @@ OpStamp OpFile::inspectDirectory(const QString &path)
 	const auto directory = openDirectory(path);
 	if (directory == INVALID_HANDLE_VALUE)
 		return {};
-	const auto identity = nativeStamp(directory);
-	::CloseHandle(directory);
+	const auto closeDirectory = qScopeGuard([directory]() noexcept { ::CloseHandle(directory); });
+	return nativeStamp(directory);
 #else
 	const int directory = ::open(QFile::encodeName(path).constData(),
 		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
 	if (directory < 0)
 		return {};
+	const auto closeDirectory = qScopeGuard([directory]() noexcept { ::close(directory); });
 	struct stat info{};
-	const auto identity = ::fstat(directory, &info) == 0 ? nativeStamp(info) : OpStamp{};
-	::close(directory);
+	return ::fstat(directory, &info) == 0 ? nativeStamp(info) : OpStamp{};
 #endif
-	return identity;
 }
 
 NativeFile::SyncResult OpFile::makePrivateDirectory(
@@ -274,48 +274,51 @@ NativeFile::SyncResult OpFile::makePrivateDirectory(
 	}
 	// Windows cleanup targets protected object handles. It does not rely on
 	// Unix permission bits or pathname-based file deletion.
-	const auto directory = openDirectory(path);
-	if (directory == INVALID_HANDLE_VALUE)
 	{
-		error = nativeError();
-		return Sync::Failed;
+		const auto directory = openDirectory(path);
+		if (directory == INVALID_HANDLE_VALUE)
+		{
+			error = nativeError();
+			return Sync::Failed;
+		}
+		const auto closeDirectory = qScopeGuard([directory]() noexcept { ::CloseHandle(directory); });
+		identity = nativeStamp(directory);
 	}
-	identity = nativeStamp(directory);
-	::CloseHandle(directory);
 #else
 	if (::mkdir(QFile::encodeName(path).constData(), 0700) != 0)
 	{
 		error = nativeError();
 		return Sync::Failed;
 	}
-	const int directory = ::open(QFile::encodeName(path).constData(),
-		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-	if (directory < 0)
 	{
-		error = nativeError();
-		return Sync::Failed;
-	}
-	bool permissions = ::fchmod(directory, 0700) == 0;
+		const int directory = ::open(QFile::encodeName(path).constData(),
+			O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+		if (directory < 0)
+		{
+			error = nativeError();
+			return Sync::Failed;
+		}
+		const auto closeDirectory = qScopeGuard([directory]() noexcept { ::close(directory); });
+		bool permissions = ::fchmod(directory, 0700) == 0;
 #ifdef Q_OS_MAC
-	acl_t empty = ::acl_init(0);
-	if (!empty)
-		permissions = false;
-	else
-	{
-		if (::acl_set_fd_np(directory, empty, ACL_TYPE_EXTENDED) != 0 && errno != ENOTSUP)
+		const auto empty = ::acl_init(0);
+		if (!empty)
 			permissions = false;
-		::acl_free(empty);
-	}
+		else
+		{
+			const auto releaseAcl = qScopeGuard([empty]() noexcept { ::acl_free(empty); });
+			if (::acl_set_fd_np(directory, empty, ACL_TYPE_EXTENDED) != 0 && errno != ENOTSUP)
+				permissions = false;
+		}
 #endif
-	struct stat info{};
-	if (!permissions || !privateDirectory(directory, info))
-	{
-		::close(directory);
-		error = QStringLiteral("The operation folder could not be made private: %1").arg(path);
-		return Sync::Failed;
+		struct stat info{};
+		if (!permissions || !privateDirectory(directory, info))
+		{
+			error = QStringLiteral("The operation folder could not be made private: %1").arg(path);
+			return Sync::Failed;
+		}
+		identity = nativeStamp(info);
 	}
-	identity = nativeStamp(info);
-	::close(directory);
 #endif
 	if (!identity.valid() || !identity.sameObject(inspectDirectory(path)))
 	{
@@ -346,64 +349,66 @@ NativeFile::SyncResult OpFile::removeEmptyPrivateDirectory(
 		error = QStringLiteral("Folder cleanup requires its recorded private directory identity.");
 		return Sync::Failed;
 	}
+	// Close all directory handles before confirming removal and flushing its parent.
+	{
 #ifdef Q_OS_WIN
-	const auto directory = openDirectory(path, true);
-	if (directory == INVALID_HANDLE_VALUE)
-	{
-		error = nativeError();
-		return Sync::Failed;
-	}
-	if (!identity.sameObject(nativeStamp(directory)))
-	{
-		::CloseHandle(directory);
-		error = QStringLiteral("The private folder was replaced; it was retained.");
-		return Sync::Failed;
-	}
-	FILE_DISPOSITION_INFO disposition{};
-	disposition.DeleteFile = TRUE;
-	// The kernel rejects nonempty directories. Never enumerate/delete children.
-	const bool removed = ::SetFileInformationByHandle(directory, FileDispositionInfo,
-		&disposition, sizeof(disposition)) != 0;
-	if (!removed)
-		error = nativeError();
-	::CloseHandle(directory);
-	if (!removed)
-		return Sync::Failed;
+		const auto directory = openDirectory(path, true);
+		if (directory == INVALID_HANDLE_VALUE)
+		{
+			error = nativeError();
+			return Sync::Failed;
+		}
+		const auto closeDirectory = qScopeGuard([directory]() noexcept { ::CloseHandle(directory); });
+		if (!identity.sameObject(nativeStamp(directory)))
+		{
+			error = QStringLiteral("The private folder was replaced; it was retained.");
+			return Sync::Failed;
+		}
+		FILE_DISPOSITION_INFO disposition{};
+		disposition.DeleteFile = TRUE;
+		// The kernel rejects nonempty directories. Never enumerate/delete children.
+		if (!::SetFileInformationByHandle(directory, FileDispositionInfo,
+			&disposition, sizeof(disposition)))
+		{
+			error = nativeError();
+			return Sync::Failed;
+		}
 #else
-	const QString parentPath = QFileInfo(path).absolutePath();
-	const QByteArray name = QFile::encodeName(QFileInfo(path).fileName());
-	const int parent = ::open(QFile::encodeName(parentPath).constData(),
-		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-	if (parent < 0)
-	{
-		error = nativeError();
-		return Sync::Failed;
-	}
-	const int directory = ::openat(parent, name.constData(),
-		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-	struct stat info{}, atPath{};
-	const bool matches = directory >= 0 && privateDirectory(directory, info) &&
-		identity.sameObject(nativeStamp(info)) &&
-		::fstatat(parent, name.constData(), &atPath, AT_SYMLINK_NOFOLLOW) == 0 &&
-		S_ISDIR(atPath.st_mode) && identity.sameObject(nativeStamp(atPath));
-	if (!matches)
-	{
-		if (directory >= 0)
-			::close(directory);
-		::close(parent);
-		error = QStringLiteral("The private folder identity or permissions changed; it was retained.");
-		return Sync::Failed;
-	}
-	// This can only remove an empty directory. Even if an external process
-	// changes the name after validation, AT_REMOVEDIR cannot remove any files.
-	const bool removed = ::unlinkat(parent, name.constData(), AT_REMOVEDIR) == 0;
-	if (!removed)
-		error = nativeError();
-	::close(directory);
-	::close(parent);
-	if (!removed)
-		return Sync::Failed;
+		const QString parentPath = QFileInfo(path).absolutePath();
+		const QByteArray name = QFile::encodeName(QFileInfo(path).fileName());
+		const int parent = ::open(QFile::encodeName(parentPath).constData(),
+			O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+		if (parent < 0)
+		{
+			error = nativeError();
+			return Sync::Failed;
+		}
+		const auto closeParent = qScopeGuard([parent]() noexcept { ::close(parent); });
+		const int directory = ::openat(parent, name.constData(),
+			O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+		const auto closeDirectory = qScopeGuard([directory]() noexcept {
+			if (directory >= 0)
+				::close(directory);
+		});
+		struct stat info{}, atPath{};
+		const bool matches = directory >= 0 && privateDirectory(directory, info) &&
+			identity.sameObject(nativeStamp(info)) &&
+			::fstatat(parent, name.constData(), &atPath, AT_SYMLINK_NOFOLLOW) == 0 &&
+			S_ISDIR(atPath.st_mode) && identity.sameObject(nativeStamp(atPath));
+		if (!matches)
+		{
+			error = QStringLiteral("The private folder identity or permissions changed; it was retained.");
+			return Sync::Failed;
+		}
+		// This can only remove an empty directory. Even if an external process
+		// changes the name after validation, AT_REMOVEDIR cannot remove any files.
+		if (::unlinkat(parent, name.constData(), AT_REMOVEDIR) != 0)
+		{
+			error = nativeError();
+			return Sync::Failed;
+		}
 #endif
+	}
 	if (occupied(path))
 	{
 		error = QStringLiteral("Folder cleanup is unconfirmed; the path remains occupied.");
@@ -681,11 +686,13 @@ bool OpFile::removePartial(const OpStamp &expectedFile, const OpStamp &expectedD
 		return false;
 	}
 #ifdef Q_OS_WIN
-	const auto directory = openDirectory(parent);
-	const bool sameDirectory = directory != INVALID_HANDLE_VALUE &&
-		expectedDirectory.sameObject(nativeStamp(directory));
-	if (directory != INVALID_HANDLE_VALUE)
-		::CloseHandle(directory);
+	const bool sameDirectory = [&] {
+		const auto directory = openDirectory(parent);
+		if (directory == INVALID_HANDLE_VALUE)
+			return false;
+		const auto closeDirectory = qScopeGuard([directory]() noexcept { ::CloseHandle(directory); });
+		return expectedDirectory.sameObject(nativeStamp(directory));
+	}();
 	if (!m_protected || !sameDirectory)
 	{
 		error = QStringLiteral("The partial file or its staging folder could not be protected.");
@@ -701,41 +708,41 @@ bool OpFile::removePartial(const OpStamp &expectedFile, const OpStamp &expectedD
 	}
 	m_file.close();
 #elif defined(Q_OS_MAC)
-	const int directory = ::open(QFile::encodeName(parent).constData(),
-		O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-	if (directory < 0)
 	{
-		error = nativeError();
-		return false;
+		const int directory = ::open(QFile::encodeName(parent).constData(),
+			O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+		if (directory < 0)
+		{
+			error = nativeError();
+			return false;
+		}
+		const auto closeDirectory = qScopeGuard([directory]() noexcept { ::close(directory); });
+		struct stat directoryInfo{}, current{};
+		const bool matches = privateDirectory(directory, directoryInfo) &&
+			expectedDirectory.sameObject(nativeStamp(directoryInfo)) &&
+			::fstatat(directory, "payload.partial", &current, AT_SYMLINK_NOFOLLOW) == 0 &&
+			S_ISREG(current.st_mode) && expectedFile.unchanged(nativeStamp(current)) &&
+			expectedFile.unchanged(stamp());
+		if (!matches)
+		{
+			error = QStringLiteral("The staging folder or partial file changed; it was retained.");
+			return false;
+		}
+		// The descriptor remains bound to the recorded, owner-only directory.
+		// This has the same isolation boundary as retired-original removal: another
+		// process deliberately modifying private files as this account is outside it.
+		if (::unlinkat(directory, "payload.partial", 0) != 0)
+		{
+			error = nativeError();
+			return false;
+		}
+		m_file.close();
+		if (::fsync(directory) != 0)
+		{
+			error = QStringLiteral("Partial removed, but its staging folder could not be flushed: ") + nativeError();
+			return false;
+		}
 	}
-	struct stat directoryInfo{}, current{};
-	const bool matches = privateDirectory(directory, directoryInfo) &&
-		expectedDirectory.sameObject(nativeStamp(directoryInfo)) &&
-		::fstatat(directory, "payload.partial", &current, AT_SYMLINK_NOFOLLOW) == 0 &&
-		S_ISREG(current.st_mode) && expectedFile.unchanged(nativeStamp(current)) &&
-		expectedFile.unchanged(stamp());
-	if (!matches)
-	{
-		::close(directory);
-		error = QStringLiteral("The staging folder or partial file changed; it was retained.");
-		return false;
-	}
-	// The descriptor remains bound to the recorded, owner-only directory.
-	// This has the same isolation boundary as retired-original removal: another
-	// process deliberately modifying private files as this account is outside it.
-	if (::unlinkat(directory, "payload.partial", 0) != 0)
-	{
-		error = nativeError();
-		::close(directory);
-		return false;
-	}
-	m_file.close();
-	const bool synced = ::fsync(directory) == 0;
-	if (!synced)
-		error = QStringLiteral("Partial removed, but its staging folder could not be flushed: ") + nativeError();
-	::close(directory);
-	if (!synced)
-		return false;
 #else
 	error = QStringLiteral("Protected partial removal is unavailable on this platform.");
 	return false;
@@ -797,6 +804,7 @@ bool OpFile::removeOriginal(QString &error)
 		error = nativeError();
 		return false;
 	}
+	const auto closeDirectory = qScopeGuard([directory]() noexcept { ::close(directory); });
 	// Unlike an ordinary source directory, this private directory excludes
 	// other users. Keep its descriptor bound through identity check and unlink.
 	// An external writer using this same account is outside that isolation;
@@ -808,21 +816,18 @@ bool OpFile::removeOriginal(QString &error)
 					  current.st_mtimespec.tv_sec * 1000000000LL + current.st_mtimespec.tv_nsec == before.modified;
 	if (!isolated || !same)
 	{
-		::close(directory);
 		error = QStringLiteral("The retirement directory or original identity is not protected.");
 		return false;
 	}
 	if (::unlinkat(directory, "payload.retired", 0) != 0)
 	{
 		error = nativeError();
-		::close(directory);
 		return false;
 	}
 	m_file.close();
 	const bool synced = ::fsync(directory) == 0;
 	if (!synced)
 		error = QStringLiteral("Original removed, but its retirement directory could not be flushed: ") + nativeError();
-	::close(directory);
 	return synced;
 #else
 	error = QStringLiteral("Protected original removal is unavailable on this platform.");

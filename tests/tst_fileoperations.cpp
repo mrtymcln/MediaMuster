@@ -752,6 +752,7 @@ void TestFileOperations::cancel_during_retirement_restores_original()
 	QVERIFY(!record.entries[0].sourceRemoved);
 	QVERIFY(record.entries[0].cleanup.isEmpty());
 	QVERIFY(privateDirectories(f.root).isEmpty());
+	QCOMPARE(sink.results.last().state, OpResult::State::OriginalRestored);
 	QVERIFY(!sink.results.last().sourceRemoved);
 	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
 	cancel = false;
@@ -803,6 +804,7 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 	const auto restored = runner.run(restore, f.journals);
 	QVERIFY2(restored.needsAttention == 0, qPrintable(sink.messages.join('\n')));
 	QCOMPARE(restored.succeeded, 1);
+	QCOMPARE(sink.results.last().state, OpResult::State::OriginalRestored);
 	QCOMPARE(get(f.src), f.bytes);
 	QCOMPARE(get(f.dest + "/clip.bin"), removeDestination ? QByteArray() : QByteArray("changed destination"));
 	QCOMPARE(get(f.dest + "/later.bin"), f.bytes);

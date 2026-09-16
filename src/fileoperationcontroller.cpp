@@ -182,7 +182,10 @@ FileOperationController::FileOperationController(QWidget *window)
 				state = tr("Completed");
 				break;
 			case OpResult::State::SourceRetained:
-				state = m_restoringOriginals ? tr("Original restored") : tr("Copied; source retained");
+				state = tr("Copied; source retained");
+				break;
+			case OpResult::State::OriginalRestored:
+				state = tr("Original restored");
 				break;
 			case OpResult::State::NoEffect:
 				state = tr("Already at destination");
@@ -207,8 +210,7 @@ FileOperationController::FileOperationController(QWidget *window)
 								(result.message.isEmpty() ? QString() : " — " + result.message));
 			if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
 				m_removedSourcePaths.insert(result.source);
-			if (m_restoringOriginals && result.state == OpResult::State::SourceRetained &&
-				!result.sourceRemoved)
+			if (result.state == OpResult::State::OriginalRestored)
 				m_restoredOriginalPaths.insert(result.source);
 		},
 		Qt::QueuedConnection);
@@ -223,7 +225,6 @@ FileOperationController::FileOperationController(QWidget *window)
 				emit sourcesRemoved(m_removedSourcePaths);
 			m_pruneSourceRowsAfterOperation = false;
 			m_removedSourcePaths.clear();
-			m_restoringOriginals = false;
 			const auto restored = m_restoredOriginalPaths;
 			m_restoredOriginalPaths.clear();
 			if (!restored.isEmpty())
@@ -473,7 +474,6 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 		request.verifyCopies = m_verifyCopiesAct->isChecked();
 	m_pruneSourceRowsAfterOperation =
 		!restoring && (request.kind == OpKind::Move || request.kind == OpKind::Delete);
-	m_restoringOriginals = restoring;
 	m_restoredOriginalPaths.clear();
 	m_removedSourcePaths.clear();
 	++m_historyGeneration; // A previous asynchronous read cannot repopulate stale actions.

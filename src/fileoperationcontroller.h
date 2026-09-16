@@ -79,7 +79,6 @@ private:
 	quint64 m_trashFallbackRequest = 0;
 	Activity m_activity = Activity::Idle;
 	bool m_pruneSourceRowsAfterOperation = false;
-	bool m_restoringOriginals = false;
 	QSet<QString> m_removedSourcePaths;
 	QSet<QString> m_restoredOriginalPaths;
 	QVector<OperationRecovery::Resumable> m_resumable;

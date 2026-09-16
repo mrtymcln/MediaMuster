@@ -963,10 +963,13 @@ OpResult OpRunner::restoreOriginal(OpJournal &j, OpJournal::Entry &e)
 		keepArtifact(e, retirementDirectory);
 	if (!save(j, e, Step::RestoringSource))
 		return result(e, State::NeedsAttention, j.error());
-	auto blocked = [&](const QString &why)
+	const auto blocked = [&](const QString &why)
 	{
 		e.error = "Original restoration pending: " + e.retirement + " -> " + e.item.src + ". " + why;
-		j.save(e); // Keep the distinct intent even when restoration is blocked.
+		// Keep the distinct intent even when restoration is blocked, and
+		// surface a journal failure rather than hiding it behind the first error.
+		if (!j.save(e))
+			return result(e, State::NeedsAttention, e.error + '\n' + j.error());
 		return result(e, State::NeedsAttention, e.error);
 	};
 	if (!OpFile::safePath(e.item.src) || !OpFile::safePath(e.retirement))
@@ -998,7 +1001,7 @@ OpResult OpRunner::restoreOriginal(OpJournal &j, OpJournal::Entry &e)
 	e.error.clear();
 	if (!save(j, e, Step::SourceRestored))
 		return result(e, State::NeedsAttention, j.error());
-	return result(e, State::SourceRetained, "Original restored to " + e.item.src + ". Completed copies were kept.");
+	return result(e, State::OriginalRestored, "Original restored to " + e.item.src + ". Completed copies were kept.");
 }
 
 OpRunner::Totals OpRunner::restoreOriginals(const OpRequest &request, const QString &directory)
@@ -1035,7 +1038,7 @@ OpRunner::Totals OpRunner::restoreOriginals(const OpRequest &request, const QStr
 			m_sink.progress("Restoring original: " + label(e.item), e.id + 1, saved->entries.size(), 0);
 			const auto outcome = restoreOriginal(journal, e);
 			m_sink.result(outcome);
-			if (outcome.state == State::SourceRetained)
+			if (outcome.state == State::OriginalRestored)
 				++totals.succeeded;
 			else
 				++totals.needsAttention;
@@ -1043,7 +1046,12 @@ OpRunner::Totals OpRunner::restoreOriginals(const OpRequest &request, const QStr
 			if (journal.healthy() && e.step == Step::SourceRestored && !cleanup(journal, e, cleanupError, &hooks))
 				m_sink.log(QtWarningMsg, cleanupError);
 			if (!journal.healthy())
+			{
+				m_sink.log(QtWarningMsg, journal.error());
+				if (outcome.state == State::OriginalRestored)
+					++totals.needsAttention;
 				break;
+			}
 		}
 		if (journal.healthy() && !journal.finish(totals.cancelled))
 			throw std::runtime_error(journal.error().toStdString());
@@ -1341,7 +1349,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 					{
 						const auto restored = restoreOriginal(journal, e);
 						m_sink.result(restored);
-						if (restored.state != State::SourceRetained)
+						if (restored.state != State::OriginalRestored)
 							throw std::runtime_error(restored.message.toStdString());
 						continue;
 					}
@@ -1707,13 +1715,20 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 			if (!deferred.contains(n))
 				continue;
 			auto e = journal.record().entries[n];
-			auto outcome = m_cancel.load() && e.needsOriginalRestoration() ? restoreOriginal(journal, e)
-				: ready && !m_cancel.load() ? removeOriginal(journal, e, mediaTotal + n + 1, workTotal)
-				: result(e, State::SourceRetained, "Original retained because the job's required copies have not all completed safely." + (e.error.isEmpty() ? QString() : '\n' + e.error));
+			const auto outcome = [&]
+			{
+				if (m_cancel.load() && e.needsOriginalRestoration())
+					return restoreOriginal(journal, e);
+				if (ready && !m_cancel.load())
+					return removeOriginal(journal, e, mediaTotal + n + 1, workTotal);
+				return result(e, State::SourceRetained,
+					"Original retained because the job's required copies have not all completed safely." +
+					(e.error.isEmpty() ? QString() : '\n' + e.error));
+			}();
 			m_sink.result(outcome);
 			if (outcome.state == State::Completed)
 				++totals.succeeded;
-			else if (outcome.state == State::SourceRetained)
+			else if (outcome.state == State::SourceRetained || outcome.state == State::OriginalRestored)
 				++totals.retained;
 			else
 			{

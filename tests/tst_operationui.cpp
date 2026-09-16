@@ -92,6 +92,7 @@ private slots:
 	void interrupted_undo_resumes_with_debug_flag_off();
 	void restore_action_survives_dismissal_later_jobs_and_close();
 	void restore_originals_keeps_completed_copy_and_refreshes_rows();
+	void resume_restoration_refreshes_rows();
 	void blocked_restore_remains_available();
 	void restore_can_select_another_retained_job();
 	void startup_offers_retained_originals();
@@ -469,8 +470,14 @@ void TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows(
 	MediaFile untouched;
 	untouched.filePath = path("unaffected/Avid MediaFiles/MXF/1/other.mxf");
 	untouched.volumePath = path("unaffected");
+	untouched.volumeName = QStringLiteral("unaffected");
 	QVERIFY(put(untouched.filePath, QByteArray(1024, 'u')));
-	window.m_model->setMediaFiles({untouched});
+	MediaFile sibling;
+	sibling.filePath = path("retained/Avid MediaFiles/MXF/1/sibling.mxf");
+	sibling.volumePath = path("retained");
+	sibling.volumeName = QStringLiteral("retained");
+	QVERIFY(put(sibling.filePath, QByteArray(1024, 's')));
+	window.m_model->setMediaFiles({untouched, sibling});
 	auto *operations = window.m_operations;
 	operations->refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
@@ -489,8 +496,52 @@ void TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows(
 	QVERIFY(!OpJournal::readOne(laterPath)->dismissed);
 	QVERIFY(!QFileInfo::exists(path("later/destination/clip-0.bin")));
 	QSet<QString> displayed;
-	for (const auto &file : window.m_model->allFiles()) displayed.insert(file.filePath);
-	QCOMPARE(displayed, QSet<QString>({untouched.filePath, old->entries.first().item.src}));
+	const auto files = window.m_model->allFiles();
+	QCOMPARE(files.size(), 3); // The represented restored tree is scanned only once.
+	for (const auto &file : files)
+	{
+		displayed.insert(file.filePath);
+		const auto &previous = file.filePath == untouched.filePath ? untouched : sibling;
+		QCOMPARE(file.volumeName, previous.volumeName);
+		QCOMPARE(file.volumePath, previous.volumePath);
+	}
+	QCOMPARE(displayed, QSet<QString>({untouched.filePath, sibling.filePath, old->entries.first().item.src}));
+}
+
+void TestOperationUi::resume_restoration_refreshes_rows()
+{
+	const auto journalPath = makeRetainedOriginal();
+	const auto record = OpJournal::readOne(journalPath);
+	QVERIFY(record);
+	OpJournal journal;
+	QString error;
+	QVERIFY(journal.resume(*record, error));
+	auto entry = record->entries.first();
+	entry.step = OpJournal::Step::RestoringSource;
+	QVERIFY(journal.save(entry));
+
+	// The original was absent during the current scan. Resuming the saved
+	// restoration intent must refresh the table just like explicit Restore.
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *operations = window.m_operations;
+	operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
+	QVERIFY(operations->resumeAction()->isEnabled());
+	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
+	QSignalSpy results(operations->manager(), &OpManager::operationResult);
+	clickInterrupted("resumeInterruptedJobButton");
+	operations->resumeAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(operations->isIdle() && !operations->m_historyLoading, 15000);
+	QCOMPARE(results.count(), 1);
+	QCOMPARE(qvariant_cast<OpResult>(results.first().first()).state, OpResult::State::OriginalRestored);
+	QVERIFY(QFileInfo::exists(entry.item.src));
+	QVERIFY(QFileInfo::exists(entry.dst));
+	QVERIFY(!QFileInfo::exists(entry.retirement));
+	QCOMPARE(OpJournal::readOne(journalPath)->entries.first().step, OpJournal::Step::SourceRestored);
+	const auto files = window.m_model->allFiles();
+	QCOMPARE(files.size(), 1);
+	QCOMPARE(files.first().filePath, entry.item.src);
 }
 
 void TestOperationUi::blocked_restore_remains_available()

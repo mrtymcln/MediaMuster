@@ -198,6 +198,7 @@ struct OpResult
 		Completed,
 		NoEffect,
 		SourceRetained,
+		OriginalRestored,
 		Skipped,
 		Cancelled,
 		Failed,
