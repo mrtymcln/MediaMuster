@@ -3,6 +3,7 @@
 ## Current design and development
 
 - [Architecture map](architecture.md): module responsibilities and data flow.
+- [Release feature gates](release-feature-gates.md): session-only Debug features and public builds.
 - [Contributor guide](../CONTRIBUTING.md): naming, formatting, build lists and validation.
 - [Cleanup audit](codebase-cleanup-audit.md): accepted decisions and implementation status.
 - [CI and test cleanup](ci-cleanup-proposal.md): implemented before/after, scenario mapping and validation.

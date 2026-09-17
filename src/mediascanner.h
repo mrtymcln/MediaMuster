@@ -77,6 +77,9 @@ public:
 		/// Folders the user added by hand: scanned by scanAddedFolder, which
 		/// keeps the shape cases and the two-level search.
 		QStringList manualPaths;
+		/// Session-only opt-in for OMFI roots and legacy OMF/audio essence.
+		/// MXF and its PMR/MDB metadata remain available by default.
+		bool includeOmf = false;
 	};
 
 	explicit MediaScanner(QObject *parent = nullptr);

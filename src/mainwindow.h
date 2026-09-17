@@ -166,6 +166,8 @@ private:
 	void rebuildVolumeList(const QVector<VolumeInfo> &volumes);
 
 	void rebuildFilterChips();
+	void rebuildProjectList();
+	void setOmfEnabled(bool enabled);
 	void setEffectDetailsEnabled(bool enabled);
 
 	/// Drop every active filter back to its default after a scan swaps in a
@@ -219,6 +221,8 @@ private:
 
 	QElapsedTimer m_scanTimer;
 	bool m_showAllFilterTabs = false;
+	bool m_omfEnabled = false;
+	class QAction *m_omfAct = nullptr;
 	bool m_effectDetailsEnabled = false;
 	class QAction *m_effectDetailsAct = nullptr;
 	class QAction *m_effectFilterAct = nullptr;

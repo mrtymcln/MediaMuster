@@ -39,8 +39,9 @@ public:
 	void setSearchText(const QString &text);
 	void setProjectFilter(const QSet<QString> &projects);
 
-	/// Experimental effect details are off by default. Turning them off
-	/// clears every precompute detail selection; setters cannot activate them while off.
+	/// Experimental precompute features are off by default. Turning them off
+	/// resets Precompute mode to All and clears every detail selection;
+	/// setters cannot activate them while off.
 	void setEffectDetailsEnabled(bool enabled);
 	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
 	/// Whole checked paths are ORed; the other filters still have to pass.

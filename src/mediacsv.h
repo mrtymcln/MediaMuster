@@ -7,7 +7,7 @@
 
 // MARK: - MediaCsv
 /// The CSV shape of the media table: one header line, one line per
-/// MediaFile, 22 columns (25 with experimental effect details). Lives outside the window class so it can be
+/// MediaFile, 21 columns (26 with experimental precompute details). Lives outside the window class so it can be
 /// tested — the header string and the field-emission chain are two
 /// parallel lists that must stay column-for-column aligned, and nothing
 /// but a test can see that from the inside.
@@ -16,6 +16,7 @@ namespace MediaCsv
 {
 	struct Options
 	{
+		/// Includes Type plus the four precompute detail columns.
 		bool includeEffectDetails = false;
 	};
 

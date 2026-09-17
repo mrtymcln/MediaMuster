@@ -81,6 +81,9 @@ endif()
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
 
+### Developer features; independent of compiler Debug/Release configuration ###
+option(MEDIAMUSTER_DEBUG_MENU "Include the Debug menu and session-only feature toggles" ON)
+
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 message(STATUS "Using Qt6 ${Qt6_VERSION}")

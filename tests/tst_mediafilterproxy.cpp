@@ -56,6 +56,7 @@ private slots:
 	void search_matches_the_path_shown_in_the_location_column();
 	void unknown_classification_does_not_match_known_filters();
 	void three_state_classification_sort_is_consistent();
+	void hidden_type_classification_does_not_sort_rows();
 	void effect_selection_intersects_volume_and_existing_filters();
 	void effect_gate_resets_filters_and_hidden_search();
 	void effect_columns_sort_displayed_values();
@@ -216,6 +217,7 @@ void TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.index(0, name).data().toString(), QStringLiteral("sound"));
+	proxy.setEffectDetailsEnabled(true);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.index(0, name).data().toString(), QStringLiteral("sound"));
@@ -246,6 +248,7 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 		model.setMediaFiles({rows[order[0]], rows[order[1]], rows[order[2]]});
 		MediaFilterProxy proxy;
 		proxy.setSourceModel(&model);
+		proxy.setEffectDetailsEnabled(true);
 		for (const auto column : {MediaTableModel::Column::Kind, MediaTableModel::Column::Type,
 								  MediaTableModel::Column::Duration})
 		{
@@ -262,6 +265,28 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 			}
 		}
 	} while (std::next_permutation(order.begin(), order.end()));
+}
+
+void TestMediaFilterProxy::hidden_type_classification_does_not_sort_rows()
+{
+	MediaFile render = rowNamed(QStringLiteral("render"));
+	render.type = MediaFile::Type::Precompute;
+	MediaFile media = rowNamed(QStringLiteral("ordinary"));
+	media.type = MediaFile::Type::Media;
+	MediaTableModel model;
+	model.setMediaFiles({render, media});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int typeColumn = int(MediaTableModel::Column::Type);
+	proxy.sort(typeColumn);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	proxy.setEffectDetailsEnabled(true);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	proxy.setEffectDetailsEnabled(false);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	proxy.sort(typeColumn, Qt::DescendingOrder);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QCOMPARE(proxy.rowCount(), 2); // Hidden classification never removes media rows.
 }
 
 void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filters()
@@ -349,6 +374,8 @@ void TestMediaFilterProxy::effect_gate_resets_filters_and_hidden_search()
 		{{true, {}}, 0},                      // An active empty selection means no matches.
 	};
 	QVERIFY(!proxy.effectDetailsEnabled());
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
+	QCOMPARE(proxy.rowCount(), 2); // Hidden mode cannot activate programmatically.
 	for (const auto &test : cases)
 	{
 		proxy.setPrecomputeTreeFilter(test.filter);
@@ -358,7 +385,7 @@ void TestMediaFilterProxy::effect_gate_resets_filters_and_hidden_search()
 		QVERIFY(proxy.effectVolumeFilter().isEmpty());
 		QCOMPARE(proxy.rowCount(), 2);
 	}
-	for (const auto &text : {render.effect, render.effectCategory, render.effectSequence})
+	for (const auto &text : {render.precomputeCategoryDisplay(), render.effect, render.effectCategory, render.effectSequence})
 	{
 		proxy.setSearchText(text);
 		QCOMPARE(proxy.rowCount(), 0);
@@ -371,6 +398,8 @@ void TestMediaFilterProxy::effect_gate_resets_filters_and_hidden_search()
 	proxy.setEffectDetailsEnabled(true);
 	for (const auto &test : cases)
 	{
+		proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
+		QCOMPARE(proxy.rowCount(), 1);
 		proxy.setPrecomputeTreeFilter(test.filter);
 		QVERIFY(proxy.precomputeTreeFilter().active);
 		QCOMPARE(proxy.precomputeTreeFilter().paths.size(), test.filter.paths.size());
@@ -382,10 +411,9 @@ void TestMediaFilterProxy::effect_gate_resets_filters_and_hidden_search()
 		QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty());
 		QVERIFY(proxy.effectVolumeFilter().isEmpty());
 		proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
-		QCOMPARE(proxy.rowCount(), 1); // Classification does not depend on the gate.
-		proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
+		QCOMPARE(proxy.rowCount(), 2); // Hidden mode remains inactive.
 		proxy.setEffectDetailsEnabled(true);
-		QCOMPARE(proxy.rowCount(), 2); // Neither selection returns when re-enabled.
+		QCOMPARE(proxy.rowCount(), 2); // Mode and selections stay reset when re-enabled.
 	}
 
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("Title"), QStringLiteral("Title")}}});

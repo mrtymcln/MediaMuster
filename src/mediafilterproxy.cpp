@@ -91,7 +91,8 @@ void MediaFilterProxy::setSourceModel(QAbstractItemModel *sourceModel)
 
 void MediaFilterProxy::setFilterMode(FilterMode mode)
 {
-	m_mode = mode;
+	m_mode = !m_effectDetailsEnabled && mode == FilterMode::Precompute
+				 ? FilterMode::All : mode;
 	invalidateRowsFilter();
 }
 
@@ -116,10 +117,12 @@ void MediaFilterProxy::setEffectDetailsEnabled(bool enabled)
 	m_effectDetailsEnabled = enabled;
 	if (!enabled)
 	{
+		if (m_mode == FilterMode::Precompute)
+			m_mode = FilterMode::All;
 		m_precomputeTreeFilter = {};
 		m_effectVolumePath.clear();
 	}
-	invalidateRowsFilter();
+	invalidate();
 }
 
 void MediaFilterProxy::setPrecomputeTreeFilter(const PrecomputeFilter &filter)
@@ -319,7 +322,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::Location:
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
-		return typeSortRank(l.type) < typeSortRank(r.type);
+		return m_effectDetailsEnabled && typeSortRank(l.type) < typeSortRank(r.type);
 	case Col::PrecomputeCategory:
 	case Col::Effect:
 	case Col::EffectCategory:

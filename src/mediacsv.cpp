@@ -46,9 +46,9 @@ namespace MediaCsv
 		QString line = QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
 									  "Duration,Source File,Source Path,Source Container,"
 									  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
-									  "Database Status,Type,");
+									  "Database Status,");
 		if (options.includeEffectDetails)
-			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
+			line += QStringLiteral("Type,Precompute Category,Effect Category,Effect,Effect Sequence,");
 		return line + QStringLiteral("Date Created,Date Modified\n");
 	}
 
@@ -67,12 +67,12 @@ namespace MediaCsv
 			<< CsvUtil::quoted(f.volumeName) << ',' << CsvUtil::quoted(f.filePath) << ','
 			<< CsvUtil::quoted(f.mobId) << ','
 			<< CsvUtil::quoted(f.masterMobId) << ','
-			<< CsvUtil::quoted(f.dbStatusText().label) << ','
-			<< CsvUtil::quoted(f.typeDisplay()) << ',';
+			<< CsvUtil::quoted(f.dbStatusText().label) << ',';
 		if (options.includeEffectDetails)
 		{
 			const bool precompute = f.type == MediaFile::Type::Precompute;
-			out << CsvUtil::quoted(f.precomputeCategoryDisplay()) << ','
+			out << CsvUtil::quoted(f.typeDisplay()) << ','
+				<< CsvUtil::quoted(f.precomputeCategoryDisplay()) << ','
 				<< CsvUtil::quoted(f.effectCategoryDisplay()) << ','
 				<< CsvUtil::quoted(f.effectDisplay()) << ','
 				<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';

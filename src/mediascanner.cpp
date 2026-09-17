@@ -19,6 +19,7 @@
 #include <QMutexLocker>
 #include <QSet>
 #include <QtConcurrent>
+#include <algorithm>
 #include <array>
 
 #ifdef Q_OS_MAC
@@ -34,6 +35,13 @@ namespace
 		const QFileInfo info(path);
 		const QString canonical = info.canonicalFilePath();
 		return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
+	}
+
+	bool isInsideOmfRoot(const QString &path)
+	{
+		const auto parts = QDir::cleanPath(QDir::fromNativeSeparators(path)).split(QLatin1Char('/'));
+		return std::any_of(parts.cbegin(), parts.cend(), [](const QString &part)
+						   { return Conventions::isOmfRootName(part); });
 	}
 }
 
@@ -312,6 +320,8 @@ void MediaScanner::doScan()
 	QSet<QString> scanned;
 	auto scanLocation = [this, &allFiles, &scanned](const QString &path, bool manual)
 	{
+		if (!m_options.includeOmf && isInsideOmfRoot(path))
+			return;
 		if (scanned.contains(path))
 			return;
 		scanned.insert(path);
@@ -515,7 +525,7 @@ QVector<MediaFile> MediaScanner::scanVolumeRoot(const QString &volumePath, const
 	// OMF-era: the legacy root is a sibling of Avid MediaFiles, and a drive
 	// may carry either or both.
 	const QString omfViaRoot = Conventions::omfRootUnder(volumePath);
-	if (QDir(omfViaRoot).exists())
+	if (m_options.includeOmf && QDir(omfViaRoot).exists())
 	{
 		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found OMFI MediaFiles"));
 		files.append(scanOmfRoot(omfViaRoot, volumeName, volumePath));
@@ -523,13 +533,13 @@ QVector<MediaFile> MediaScanner::scanVolumeRoot(const QString &volumePath, const
 
 	if (files.isEmpty())
 	{
-		// Both names, so a miss on a drive with media buried deeper is
-		// visible for what it is rather than read as "no media" — and the
-		// way to reach that media is named, since a volume scan will not.
+		// Name the enabled roots and explain how to reach media buried
+		// deeper, since a volume scan will not look for it.
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("  No Avid MediaFiles or OMFI MediaFiles at the root of %1 "
+				QStringLiteral("  No %1 at the root of %2 "
 							   "(media in a subfolder is found via File > Add Folder or Volume)")
-					.arg(volumeName));
+					.arg(m_options.includeOmf ? QStringLiteral("Avid MediaFiles or OMFI MediaFiles")
+											 : QStringLiteral("Avid MediaFiles"), volumeName));
 	}
 
 	return files;
@@ -560,7 +570,7 @@ QVector<MediaFile> MediaScanner::scanAddedFolder(const QString &folderPath, cons
 	// OMF-era: the legacy root is a sibling at the same level; a folder may
 	// carry either or both, as a drive root may.
 	const QString omfViaRoot = Conventions::omfRootUnder(folderPath);
-	if (QDir(omfViaRoot).exists())
+	if (m_options.includeOmf && QDir(omfViaRoot).exists())
 	{
 		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found OMFI MediaFiles"));
 		files.append(scanOmfRoot(omfViaRoot, volumeName, folderPath));
@@ -596,6 +606,8 @@ QVector<MediaFile> MediaScanner::scanAddedFolder(const QString &folderPath, cons
 	// present) and skip the media sitting at the top level.
 	if (Conventions::isOmfRootName(dirName))
 	{
+		if (!m_options.includeOmf)
+			return {};
 		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Pointed directly at OMFI MediaFiles"));
 		return scanOmfRoot(folderPath, volumeName, QFileInfo(folderPath).absolutePath());
 	}
@@ -649,6 +661,8 @@ QVector<MediaFile> MediaScanner::scanAddedFolder(const QString &folderPath, cons
 	{
 		if (m_job.isCancelled())
 			break;
+		if (!m_options.includeOmf && Conventions::isOmfRootName(sub1))
+			continue;
 		QString path1 = folderPath + "/" + sub1;
 		if (!canReadPath(path1))
 			continue;
@@ -659,6 +673,8 @@ QVector<MediaFile> MediaScanner::scanAddedFolder(const QString &folderPath, cons
 		{
 			if (m_job.isCancelled())
 				break;
+			if (!m_options.includeOmf && Conventions::isOmfRootName(sub2))
+				continue;
 			QString path2 = path1 + "/" + sub2;
 			if (!canReadPath(path2))
 				continue;
@@ -680,7 +696,7 @@ QVector<MediaFile> MediaScanner::scanAddedFolder(const QString &folderPath, cons
 		// OMF-era: the legacy root is probed beside the MXF one at every
 		// level of the search.
 		const QString omfCandidate = Conventions::omfRootUnder(searchDir);
-		if (QDir(omfCandidate).exists())
+		if (m_options.includeOmf && QDir(omfCandidate).exists())
 		{
 			emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found Avid media at %1").arg(omfCandidate));
 			files.append(scanOmfRoot(omfCandidate, volumeName, searchDir));
@@ -700,6 +716,8 @@ QVector<MediaFile> MediaScanner::scanAddedFolder(const QString &folderPath, cons
 QVector<MediaFile> MediaScanner::scanOmfRoot(const QString &omfRootPath, const QString &volumeName,
 											 const QString &volumePath)
 {
+	if (!m_options.includeOmf)
+		return {};
 	// OMF-era: the Case-4 shape (one folder, its databases beside the
 	// media) applied to the root itself. processFolderTask enumerates files
 	// only, so the `Creating` subfolder never enters the listing.
@@ -822,6 +840,8 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		return result;
 	{
 		const QString key = scannerFolderKey(task.folderPath);
+		if (!m_options.includeOmf && (isInsideOmfRoot(task.folderPath) || isInsideOmfRoot(key)))
+			return result;
 		QMutexLocker lock(&m_mdbMapsMutex);
 		if (m_seenFolders.contains(key))
 			return result;
@@ -908,12 +928,14 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 			break;
 
 		QString fileName = entry.fileName();
-		// Only Avid media appears in the table: .mxf, plus (OMF-era: the
-		// legacy essence set, .omf/.aif/.wav/.sd2, admitted by the one gate
-		// in Conventions::hasAvidMediaExtension). Everything else — the msm
-		// databases, OS junk, stray exports, AppleDouble "._clip.mxf" twins
+		// Only enabled Avid media appears in the table: MXF by default,
+		// plus .omf/.aif/.wav/.sd2 when OMF support is enabled. Everything
+		// else — the msm databases, OS junk, stray exports, AppleDouble "._clip.mxf" twins
 		// — is invisible to the table, the counts, and every media operation.
 		if (!Conventions::isAvidMediaName(fileName))
+			continue;
+		if (!m_options.includeOmf && (!Conventions::hasMxfExtension(fileName) ||
+									(isQuarantineFolder && isInsideOmfRoot(entry.filePath()))))
 			continue;
 
 		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, dbs.omfEra, pmrMap, mdb,

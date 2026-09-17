@@ -73,10 +73,6 @@
 
 namespace
 {
-	// The implementation stays testable while its table/CSV/filter surfaces
-	// are opt-in through Debug. Change the default when the feature ships.
-	constexpr bool kEffectDetailsEnabledByDefault = false;
-
 	/// The fixed-pitch face the table and console share. Lived in theme.h
 	/// until 2026-08-31; folded in here as its only consumer (a real theme
 	/// can move it back out the day one exists).
@@ -228,7 +224,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupUi();
 	setupMenus();
 	setupConnections();
-	setEffectDetailsEnabled(kEffectDetailsEnabledByDefault);
+	updateFilterCounts();
 
 	setWindowTitle("MediaMuster");
 	resize(1200, 750);
@@ -538,6 +534,7 @@ void MainWindow::buildTable()
 	setW(Col::Location, 320);
 	setW(Col::Created, 100);
 	setW(Col::Type, 50);
+	m_tableView->setColumnHidden(Enum::to_underlying(Col::Type), true);
 }
 
 // MARK: - Console
@@ -740,7 +737,13 @@ void MainWindow::buildSpecialMenu()
 
 void MainWindow::buildDebugMenu()
 {
+#if MEDIAMUSTER_DEBUG_MENU
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
+	debugMenu->setObjectName(QStringLiteral("debugMenu"));
+	m_omfAct = debugMenu->addAction(tr("Enable OMF/OMFI"));
+	m_omfAct->setObjectName(QStringLiteral("omfDebugAction"));
+	m_omfAct->setCheckable(true);
+	connect(m_omfAct, &QAction::toggled, this, &MainWindow::setOmfEnabled);
 	debugMenu->addAction(m_operations->verifyCopiesAction());
 	debugMenu->addAction(m_operations->enableUndoAction());
 	debugMenu->addSeparator();
@@ -755,13 +758,12 @@ void MainWindow::buildDebugMenu()
 				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec hex details enabled" : "Codec hex details disabled");
 			});
 
-	// Labelled for what it reveals — the effect metadata only precomputes
-	// carry. The gate itself is named for the columns it opens.
-	m_effectDetailsAct = debugMenu->addAction(tr("Precompute details"));
+	// One gate covers classification, details, filtering and CSV fields.
+	m_effectDetailsAct = debugMenu->addAction(tr("Enable Precomputes"));
 	m_effectDetailsAct->setObjectName(QStringLiteral("effectDetailsDebugAction"));
 	m_effectDetailsAct->setCheckable(true);
 	m_effectDetailsAct->setChecked(false);
-	connect(m_effectDetailsAct, &QAction::triggered, this, &MainWindow::setEffectDetailsEnabled);
+	connect(m_effectDetailsAct, &QAction::toggled, this, &MainWindow::setEffectDetailsEnabled);
 
 	// Whatever style main.cpp installed at startup is the one to restore.
 	// Read it here, before the toggle below can change it — main.cpp stays
@@ -798,6 +800,7 @@ void MainWindow::buildDebugMenu()
 	addDemo(tr("Small"), RebalanceDialog::DemoScenario::Small);
 	addDemo(tr("Big"), RebalanceDialog::DemoScenario::Big);
 	addDemo(tr("Really big"), RebalanceDialog::DemoScenario::ReallyBig);
+#endif
 }
 
 // MARK: Help menu
@@ -991,10 +994,63 @@ void MainWindow::onCheckPermissions()
 #endif // Q_OS_MAC
 }
 
-// MARK: - Effect details and filter
+// MARK: - Session-only developer features
+
+void MainWindow::setOmfEnabled(bool enabled)
+{
+	// Omitting buildDebugMenu() must leave the feature unavailable too.
+	enabled = enabled && m_omfAct;
+	if (!m_operations->isIdle())
+	{
+		if (m_omfAct)
+		{
+			const QSignalBlocker blocker(m_omfAct);
+			m_omfAct->setChecked(m_omfEnabled);
+		}
+		return;
+	}
+	if (m_omfEnabled == enabled)
+		return;
+	m_omfEnabled = enabled;
+	if (m_omfAct)
+	{
+		const QSignalBlocker blocker(m_omfAct);
+		m_omfAct->setChecked(enabled);
+	}
+	if (!enabled)
+	{
+		QSet<QString> legacyPaths;
+		for (const auto &file : m_model->allFiles())
+			if (file.omfEra || Conventions::isOmfRootName(file.mediaFolderName) ||
+				Conventions::hasOmfEraExtension(file.fileName))
+				legacyPaths.insert(file.filePath);
+		m_model->removeFilesByPath(legacyPaths);
+		m_persistentSelectedPaths.subtract(legacyPaths);
+		rebuildProjectList();
+		updateFilterCounts();
+		rebuildFilterChips();
+		updateStatusBar();
+		updateActivityUi();
+	}
+	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled
+		? tr("OMF/OMFI enabled for this session. Rescan to include legacy media.")
+		: tr("OMF/OMFI disabled; legacy media removed from the table."));
+}
+
+// MARK: - Precompute classification, details and filter
 
 void MainWindow::setEffectDetailsEnabled(bool enabled)
 {
+	enabled = enabled && m_effectDetailsAct;
+	if (!m_operations->isIdle())
+	{
+		if (m_effectDetailsAct)
+		{
+			const QSignalBlocker blocker(m_effectDetailsAct);
+			m_effectDetailsAct->setChecked(m_effectDetailsEnabled);
+		}
+		return;
+	}
 	if (m_effectDetailsEnabled == enabled)
 		return;
 	m_effectDetailsEnabled = enabled;
@@ -1002,11 +1058,24 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 								   {
 		// A sort column that is about to disappear must not keep controlling
 		// the rows while its heading is no longer available to the editor.
-		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory))
+		if (!enabled && (m_proxy->sortColumn() == Enum::to_underlying(MediaTableModel::Column::Type) ||
+			m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory)))
 			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
+		const int tab = m_filterTabs->currentIndex();
+		if (!enabled && tab >= 0 && tab < static_cast<int>(kFilterDefs.size()) &&
+			kFilterDefs[tab].mode == MediaFilterProxy::FilterMode::Precompute)
+		{
+			const QSignalBlocker blocker(m_filterTabs);
+			m_filterTabs->setCurrentIndex(0);
+		}
 		m_proxy->setEffectDetailsEnabled(enabled);
 		m_model->setEffectDetailsEnabled(enabled); });
-	m_effectDetailsAct->setChecked(enabled);
+	if (m_effectDetailsAct)
+	{
+		const QSignalBlocker blocker(m_effectDetailsAct);
+		m_effectDetailsAct->setChecked(enabled);
+	}
+	m_tableView->setColumnHidden(Enum::to_underlying(MediaTableModel::Column::Type), !enabled);
 	m_btnEffectFilter->setVisible(enabled);
 	m_effectFilterAct->setVisible(enabled);
 	const bool canFilter = enabled && m_operations->isIdle() && !m_model->allFiles().isEmpty();
@@ -1026,9 +1095,10 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 			m_tableView->resizeColumnToContents(logical);
 		}
 	}
+	updateFilterCounts();
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Effect details and filtering enabled for this session") : QStringLiteral("Effect details and filtering disabled; effect filter cleared"));
+	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Precomputes enabled for this session") : QStringLiteral("Precomputes disabled; precompute filters cleared"));
 }
 
 void MainWindow::onFilterByEffects()
@@ -1458,6 +1528,7 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	// a future OMF gate leaves it alone.
 	const QStringList detected = m_volumeManager->allScannablePaths();
 	MediaScanner::Options opts;
+	opts.includeOmf = m_omfEnabled;
 	for (const QString &path : paths)
 	{
 		if (detected.contains(path) && !m_manualVolumes.contains(path))
@@ -1524,6 +1595,25 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	QString timeStr = tr("Scan: %1 ms").arg(elapsed);
 	m_statusScanTime->setText(timeStr);
 
+	rebuildProjectList();
+
+	// Fresh dataset: clear any filters left over from the previous scan
+	// before tallying, so the counts and table reflect the full results.
+	resetFiltersForNewScan();
+
+	updateFilterCounts();
+	updateStatusBar();
+	autoFitColumns();
+
+	m_operations->setActivity(FileOperationController::Activity::Idle);
+}
+
+void MainWindow::rebuildProjectList()
+{
+	QSet<QString> selected;
+	for (auto *item : m_projectList->selectedItems())
+		selected.insert(item->data(Qt::UserRole).toString());
+	const QSignalBlocker blocker(m_projectList);
 	m_projectList->clear();
 	// Group by the displayed project name: real projects plus, at most, the
 	// one "No project" row. Database status is NOT a project and is never
@@ -1535,7 +1625,7 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 		bool hasProject = true;
 	};
 	QHash<QString, ProjectStat> projectStats;
-	for (const auto &f : results)
+	for (const auto &f : m_model->allFiles())
 	{
 		auto &stat = projectStats[f.projectDisplay()];
 		stat.count++;
@@ -1555,17 +1645,12 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 			tip += QStringLiteral("\n\n") + MediaFile::noProjectWhy();
 		item->setToolTip(tip);
 		m_projectList->addItem(item);
+		item->setSelected(selected.contains(p));
 	}
-
-	// Fresh dataset: clear any filters left over from the previous scan
-	// before tallying, so the counts and table reflect the full results.
-	resetFiltersForNewScan();
-
-	updateFilterCounts();
-	updateStatusBar();
-	autoFitColumns();
-
-	m_operations->setActivity(FileOperationController::Activity::Idle);
+	QSet<QString> retained;
+	for (auto *item : m_projectList->selectedItems())
+		retained.insert(item->data(Qt::UserRole).toString());
+	applyFilterPreservingSelection([this, &retained]() { m_proxy->setProjectFilter(retained); });
 }
 
 // MARK: - Filter / search slots
@@ -1576,6 +1661,12 @@ void MainWindow::onFilterChanged(int index)
 	// fed the tab labels in setupUi.
 	if (index >= 0 && index < static_cast<int>(kFilterDefs.size()))
 	{
+		if (!m_effectDetailsEnabled && kFilterDefs[index].mode == MediaFilterProxy::FilterMode::Precompute)
+		{
+			const QSignalBlocker blocker(m_filterTabs);
+			m_filterTabs->setCurrentIndex(0);
+			index = 0;
+		}
 		applyFilterPreservingSelection([this, index]()
 									   { m_proxy->setFilterMode(kFilterDefs[index].mode); });
 		updateStatusBar();
@@ -2193,7 +2284,10 @@ void MainWindow::updateActivityUi()
 	m_btnRebalance->setEnabled(!busy && !m_model->allFiles().isEmpty());
 	m_btnEffectFilter->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
 	m_effectFilterAct->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
-	m_effectDetailsAct->setEnabled(!busy);
+	if (m_effectDetailsAct)
+		m_effectDetailsAct->setEnabled(!busy);
+	if (m_omfAct)
+		m_omfAct->setEnabled(!busy);
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();
@@ -2269,7 +2363,8 @@ void MainWindow::updateFilterCounts()
 		// "All" stays visible no matter what; the others auto-hide
 		// when empty, unless the editor chose 'Show All Filter Tabs'.
 		const bool isAll = (kFilterDefs[i].mode == MediaFilterProxy::FilterMode::All);
-		const bool visible = isAll || m_showAllFilterTabs || counts[i] > 0;
+		const bool available = m_effectDetailsEnabled || kFilterDefs[i].mode != MediaFilterProxy::FilterMode::Precompute;
+		const bool visible = available && (isAll || m_showAllFilterTabs || counts[i] > 0);
 		m_filterTabs->setTabVisible(idx, visible);
 	}
 }
@@ -2461,6 +2556,10 @@ void MainWindow::resetFiltersForNewScan()
 		const QSignalBlocker block(m_searchField);
 		m_searchField->clear();
 	}
+	{
+		const QSignalBlocker block(m_projectList);
+		m_projectList->clearSelection();
+	}
 
 	// Bin filter: when the dialog exists, clearChain() tears down its internal
 	// chain and the chain-list UI. The cached chip state is reset here for the
@@ -2470,10 +2569,8 @@ void MainWindow::resetFiltersForNewScan()
 	m_binFilterActive = false;
 	m_binFilterBinNames.clear();
 
-	// The project selection was wiped by the list rebuild (clear() emits no
-	// signal), so the proxy's project set has to be reset by hand. Reset all
-	// four predicates in one place regardless of which paths above already
-	// touched the proxy.
+	// Reset the predicates as well as their widgets, regardless of which
+	// paths above already touched the proxy.
 	m_proxy->setFilterMode(MediaFilterProxy::FilterMode::All);
 	m_proxy->setSearchText({});
 	m_proxy->setProjectFilter({});
