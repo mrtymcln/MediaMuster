@@ -1,0 +1,1490 @@
+LoadPMR @ 0x4443f0
+Verified procedure entry: 0x4443f0
+    var_50 = r28;
+    decomp_var_48 = r27;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r31 = r31 + 0xffffffffffffffa0 - "ommon.dylib";
+    r23 = r2;
+    r19 = arg1;
+    r22 = arg0;
+    var_68 = **___stack_chk_guard;
+    r0 = mach_timebase_info(&var_898);
+    var_CA8 = mach_absolute_time();
+    var_CB8 = var_898;
+    var_CB0 = var_894;
+    if (r19 == 0x0) {
+            XError::XError(&var_898);
+            r0 = operator+(&var_898);
+            XError::~XError();
+    }
+    if ((*(*r19 + 0x88))(r19) == 0x0) {
+            XError::XError(&var_898);
+            r0 = operator+(&var_898);
+            XError::~XError();
+    }
+    r0 = (*(*r19 + 0xd8))(r19);
+    if (r0 != 0x0) {
+            r0 = bzero(&var_898, "d.72.1.dylib");
+            (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x1a0))();
+            icu_72_Avid::UnicodeString::UnicodeString(&var_B20);
+            r0 = UnicodeStringToCurrentMacMBCSString(&var_B20, 0x0);
+            icu_72_Avid::UnicodeString::~UnicodeString();
+            XError::XError();
+            r21 = AFileLocator::New();
+            if ((*(*r19 + 0xd0))(r19) != 0x0) {
+                    r0 = ama_pmrFileNameUTF16();
+            }
+            else {
+                    r0 = pmrFileNameUTF16();
+            }
+            r8 = *(*(*r19 + 0xe0))(r19, 0x1);
+            r1 = r0;
+            (r8[0x67])();
+            XError::XError();
+            if (FTF_GetToggle("/Media Composer/CacheRemoteBin") != 0x0) {
+                    if (FTF_GetDynamicToggle("/Media Composer/NoEDGEProxy") != 0x0) {
+                            if (IsAvidRemoteVolume((*(*r21 + 0x1d0))(r21)) != 0x0) {
+                                    var_C50 = ADirLocator::New();
+                                    var_B90 = AFileLocator::New();
+                                    var_B40 = AFileLocator::New();
+                                    CreateRemoteProjectLocators(r21, var_B90, var_C50);
+                                    r24 = AFileLocator::New();
+                                    if ((*(*r19 + 0xd0))(r19) != 0x0) {
+                                            r0 = ama_mdbFileNameUTF16();
+                                    }
+                                    else {
+                                            r0 = mdbFileNameUTF16();
+                                    }
+                                    r25 = r0;
+                                    (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x338))();
+                                    r0 = var_C50;
+                                    if (r0 == 0x0) {
+                                            XError::XError(&var_BB8);
+                                            operator+(&var_BB8);
+                                            XError::~XError();
+                                            r0 = var_C50;
+                                    }
+                                    r1 = r25;
+                                    (*(*r0 + 0x338))();
+                                    r25 = var_C50;
+                                    if ((*(*r19 + 0xd0))(r19) != 0x0) {
+                                            r1 = 0x1;
+                                    }
+                                    r25 = AMediaStreamMgr::GetMediaDirectoryDomainType(r25, r1);
+                                    XError::XError();
+                                    var_BB8 = (*(*r21 + 0x1d0))(r21);
+                                    r0 = CheckForNexisConnection(&var_BB8);
+                                    if ((r0 & 0x1) != 0x0) {
+                                            r0 = var_B90;
+                                            if (r0 == 0x0) {
+                                                    XError::XError(&var_BB8);
+                                                    operator+(&var_BB8);
+                                                    XError::~XError();
+                                                    r0 = var_B90;
+                                            }
+                                            if (((*(*r0 + 0x148))() & 0x1) != 0x0) {
+                                                    if ((*(*r21 + 0x320))(r21, 0x0) > (*(*var_B90 + 0x320))(var_B90, 0x0)) {
+                                                            (*(*r21 + 0x3a0))(r21, var_B90, 0x1, 0x0, 0x1);
+                                                            r27 = (*(*AObjSmartPtr<AFileLocator>::operator->() + 0x368))();
+                                                            if (r25 == 0x6) {
+                                                                    r28 = 0x1;
+                                                                    (*(*r24 + 0x3a0))(r24, var_B40, 0x1, 0x0, 0x1);
+                                                            }
+                                                            else {
+                                                                    r28 = 0x1;
+                                                            }
+                                                    }
+                                                    else {
+                                                            r28 = 0x1;
+                                                            r27 = (*(*AObjSmartPtr<AFileLocator>::operator->() + 0x368))();
+                                                            if (r25 == 0x6) {
+                                                                    r0 = (*(*AObjSmartPtr<AFileLocator>::operator->() + 0x148))(&var_B40, 0x1, 0x0);
+                                                                    if ((r0 & 0x1) == 0x0) {
+                                                                            (*(*r24 + 0x3a0))(r24, var_B40, 0x1, 0x0, 0x1);
+                                                                    }
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    (*(*r21 + 0x3a0))(r21, var_B90, 0x1, 0x0, 0x1);
+                                                    r27 = (*(*AObjSmartPtr<AFileLocator>::operator->() + 0x368))();
+                                                    if (r25 == 0x6) {
+                                                            r28 = 0x1;
+                                                            (*(*r24 + 0x3a0))(r24, var_B40, 0x1, 0x0, 0x1);
+                                                    }
+                                                    else {
+                                                            r28 = 0x1;
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            r27 = 0x0;
+                                            r28 = 0x0;
+                                    }
+                                    XError::~XError();
+                                    AObjSmartPtr<AFileLocator>::~AObjSmartPtr(&var_B40);
+                                    AObjSmartPtr<AFileLocator>::~AObjSmartPtr(&var_B90);
+                                    r0 = AObjSmartPtr<ADirLocator>::~AObjSmartPtr(&var_C50);
+                            }
+                            else {
+                                    if ((*(*r21 + 0x148))(r21) != 0x0) {
+                                            r28 = 0x1;
+                                            r27 = (*(*r21 + 0x368))(r21, 0x1, 0x0);
+                                    }
+                                    else {
+                                            r27 = 0x0;
+                                            r28 = 0x0;
+                                    }
+                            }
+                    }
+                    else {
+                            if ((*(*r21 + 0x148))(r21) != 0x0) {
+                                    r28 = 0x1;
+                                    r27 = (*(*r21 + 0x368))(r21, 0x1, 0x0);
+                            }
+                            else {
+                                    r27 = 0x0;
+                                    r28 = 0x0;
+                            }
+                    }
+            }
+            else {
+                    if ((*(*r21 + 0x148))(r21) != 0x0) {
+                            r28 = 0x1;
+                            r27 = (*(*r21 + 0x368))(r21, 0x1, 0x0);
+                    }
+                    else {
+                            r27 = 0x0;
+                            r28 = 0x0;
+                    }
+            }
+            XError::~XError();
+            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                    r9 = var_BD0;
+                    r8 = &var_BD0;
+                    if (sign_extend_64(var_BB9) < 0x0) {
+                            r8 = r9;
+                    }
+                    if (r28 != 0x0) {
+                            r9 = "opened.";
+                            if (r27 == 0x0) {
+                                    r9 = "failed to open!";
+                            }
+                            dprintf1("MSM::LoadPMR(%s) PMR %s\n");
+                    }
+                    else {
+                            dprintf1("MSM::LoadPMR(%s) No PMR file found in the directory.\n");
+                    }
+            }
+            if (r27 != 0x0) {
+                    XError::XError();
+                    r0 = AVLockFileShared(r27);
+                    r20 = r0;
+                    if (r0 == 0x0 && __FtlAssertFailed("lockedPMR", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c", 0x17e2) != 0x0) {
+                            DebugStr(0xfacca1);
+                    }
+                    r26 = AVGetLength(r27);
+                    r19[0x5] = (*(*r21 + 0x320))(r21, 0x0);
+                    if (r26 != 0x0) {
+                            if (r26 >= 0xd) {
+                                    XError::XError();
+                                    r23 = AvNewHandleAvid(r26);
+                                    XError::~XError();
+                                    XError::XError();
+                                    AVReadFile(r27, *r23, 0x0, 0x1, r26, 0x0);
+                                    XError::~XError();
+                                    if (r20 != 0x0) {
+                                            AVUnlockFile(r27);
+                                    }
+                                    r20 = 0x0;
+                                    AVCloseFile(r27);
+                                    var_C28 = 0x0;
+                                    if (LocalVolume::GetCreatesBackgroundMedia() != 0x0 && (*(*r19 + 0xb8))(r19) != 0x0) {
+                                            r8 = AHashTable::New(0x3e8, 0xbb9, 0x58, MSMDBMediaStreamMgr::HashFile(void*, long), MSMDBMediaStreamMgr::IsEqualFile(void*, void const*), 0x1);
+                                            r0 = var_C28;
+                                            if (r0 != r8) {
+                                                    var_C28 = r8;
+                                                    if (r0 != 0x0) {
+                                                            (**r0)();
+                                                    }
+                                            }
+                                    }
+                                    (*(*r22 + 0x318))(r22, r19, var_C28);
+                                    r0 = AMemStream::New(r23, r26);
+                                    r24 = r0;
+                                    r0 = (*(*r0 + 0x238))();
+                                    r26 = r0;
+                                    if (r0 == 0xa9070000) {
+                                            AStream::SetSwapBytes(r24);
+                                            r26 = 0x7a9;
+                                    }
+                                    r25 = (*(*r24 + 0x238))(r24, "VERSION");
+                                    asm { ccmp       w0, #0x9, #0x0, eq };
+                                    if (asm { ccmp       w0, #0x9, #0x0, eq }) {
+                                            r20 = 0x1;
+                                    }
+                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                            if (r26 == 0x7a9) {
+                                                    if (r25 >= 0x9) {
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1("AMSM::LoadPMR() \"%s\" was the wrong version!\n");
+                                                            AObjSmartPtr<AHashTable>::~AObjSmartPtr();
+                                                            (*(*r19 + 0x70))(r19, 0x1);
+                                                            if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                                                    XError::XError();
+                                                                    AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                                                    XError::~XError();
+                                                            }
+                                                            (*(*r22 + 0x318))(r22, r19, 0x0);
+                                                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                            if (r25 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                                                    (*(*GetMobMan() + 0xf8))();
+                                                            }
+                                                            if (0x0 != 0x0) {
+                                                                    if (0x0 != 0x0) {
+                                                                            AVUnlockFile(0x0);
+                                                                    }
+                                                                    AVCloseFile(0x0);
+                                                            }
+                                                            if (r24 != 0x0) {
+                                                                    (**r24)(r24);
+                                                            }
+                                                            if (r23 != 0x0) {
+                                                                    AvDisposeHandle(r23);
+                                                            }
+                                                            if (var_C10 != 0x0) {
+                                                                    stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                                                    r0 = AvText::operator char const*();
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1(r0);
+                                                                    r0 = xDisplay(&decomp_var_c20);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            XError::~XError();
+                                                            r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                                            if (r21 != 0x0) {
+                                                                    (**r21)(r21);
+                                                            }
+                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                                                    mach_timebase_info(&var_B20);
+                                                                    r0 = mach_absolute_time();
+                                                                    r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = 1.0e-06;
+                                                                    d0 = (r8 >> 0x4) * d1;
+                                                                    r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = (r8 >> 0x4) * d1;
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                                            }
+                                                            if (var_BE8 != 0x0) {
+                                                                    r0 = xraisexerror(&decomp_var_bf8);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            r0 = XError::~XError();
+                                                            if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                                                    r0 = operator delete(var_BD0);
+                                                            }
+                                                            if (**___stack_chk_guard != var_68) {
+                                                                    __stack_chk_fail();
+                                                            }
+                                                    }
+                                                    else {
+                                                            XError::XError();
+                                                            if (r25 == 0x1) {
+                                                                    r27 = GetMobMan();
+                                                                    r0 = AMobMan::New();
+                                                                    r28 = r0;
+                                                                    SetMobManProtocol(r0);
+                                                                    var_CD0 = r28;
+                                                                    r0 = CAvList::New();
+                                                                    r26 = r0;
+                                                                    (*(*r0 + 0x138))();
+                                                                    var_B20 = 0x0;
+                                                                    r20 = r27;
+                                                                    var_90 = (*(*r19 + 0xd0))(r19);
+                                                                    r0 = std::__1::vector<int, std::__1::allocator<int> >::push_back(&var_B20, &var_90);
+                                                                    r0 = r22[0x3];
+                                                                    r0 = (*(*r0 + 0x18))(r0, r26, &var_B20, 0x0, 0x0);
+                                                                    (**r26)(r26);
+                                                                    r0 = var_B20;
+                                                                    if (r0 != 0x0) {
+                                                                            operator delete(r0);
+                                                                    }
+                                                            }
+                                                            else {
+                                                                    r20 = 0x0;
+                                                                    var_CD0 = 0x0;
+                                                            }
+                                                            var_CC0 = r20;
+                                                            var_C68 = 0x0;
+                                                            var_C60 = 0x0;
+                                                            r0 = (*(*r24 + 0x238))(r24, "numMobs");
+                                                            r19[0x8] = r0;
+                                                            if (r0 >= 0x1) {
+                                                                    r20 = r0 + 0x1;
+                                                                    do {
+                                                                            bzero(&var_B20, 0x284);
+                                                                            r0 = ReadPmrRec(r24, r25, &var_898, &var_B20);
+                                                                            if ((r0 & 0x1) != 0x0) {
+                                                                                    r0 = std::__1::vector<icsPMRrec_t, std::__1::allocator<icsPMRrec_t> >::push_back(&var_C68);
+                                                                            }
+                                                                            r20 = r20 - 0x1;
+                                                                    } while (r20 > 0x1);
+                                                            }
+                                                            XError::XError();
+                                                            (*(*r24 + 0x238))(r24, "VERSION_UNICODE");
+                                                            r27 = (*(*r24 + 0x238))(r24, "numUnicodeMobs");
+                                                            XError::~XError();
+                                                            var_C80 = 0x0;
+                                                            var_C78 = 0x0;
+                                                            asm { ccmp       w26, #0x10, #0x0, ge };
+                                                            if (!asm { ccmp       w26, #0x10, #0x0, ge }) {
+                                                                    r27 = var_C68;
+                                                                    r26 = var_C60;
+                                                                    r20 = var_CC0;
+                                                            }
+                                                            else {
+                                                                    r19[0x8] = r27;
+                                                                    r20 = r27 + 0x1;
+                                                                    do {
+                                                                            bzero(&var_B20, 0x284);
+                                                                            r0 = ReadPmrRec(r24, 0x10, &var_898, &var_B20);
+                                                                            if ((r0 & 0x1) != 0x0) {
+                                                                                    r0 = std::__1::vector<icsPMRrec_t, std::__1::allocator<icsPMRrec_t> >::push_back(&var_C80);
+                                                                            }
+                                                                            r20 = r20 - 0x1;
+                                                                    } while (r20 > 0x1);
+                                                                    r27 = var_C80;
+                                                                    r26 = var_C78;
+                                                                    r20 = var_CC0;
+                                                                    if (r27 != r26) {
+                                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                                                                    r8 = (SAR(var_C60 - var_C68, 0x2)) * 0xf9a3c6c1fcd1e361;
+                                                                                    r9 = (SAR(var_C78 - var_C80, 0x2)) * 0xf9a3c6c1fcd1e361;
+                                                                                    if (r9 < r8) {
+                                                                                            r11 = var_BD0;
+                                                                                            r10 = &var_BD0;
+                                                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                                                    r10 = r11;
+                                                                                            }
+                                                                                            dprintf1("AMSM::LoadPMR() \"%s\" read more MBCS pmr records [%zu] than Unicode pmr records [%zu]\n");
+                                                                                    }
+                                                                            }
+                                                                    }
+                                                                    else {
+                                                                            r27 = var_C68;
+                                                                            r26 = var_C60;
+                                                                    }
+                                                            }
+                                                            if (r27 != r26) {
+                                                                    var_CC4 = 0x0;
+                                                                    do {
+                                                                            XError::XError();
+                                                                            var_B40 = *r27;
+                                                                            q0 = r27[0x44];
+                                                                            var_B60 = q0;
+                                                                            (*(*r22 + 0x328))(r22, r19, &var_B40, &var_B60, r27 + 0x20, r27 + 0x240, r27[0xa0], 0x0, 0x0, 0x0, 0x1);
+                                                                            r0 = var_C28;
+                                                                            if (r0 != 0x0 && (*(*r0 + 0xa8))() != 0x0) {
+                                                                                    AvDispose(var_B20);
+                                                                            }
+                                                                            XError::~XError();
+                                                                            r27 = r27 + 0x284;
+                                                                    } while (r27 != r26);
+                                                            }
+                                                            else {
+                                                                    var_CC4 = 0x0;
+                                                            }
+                                                            if (var_C28 != 0x0) {
+                                                                    var_C88 = AFileLocator::New();
+                                                                    var_B20 = q0;
+                                                                    var_B10 = q0;
+                                                                    r0 = var_C28;
+                                                                    if (r0 == 0x0) {
+                                                                            r0 = XError::XError(&var_90);
+                                                                            operator+(r0);
+                                                                            XError::~XError();
+                                                                            r0 = var_C28;
+                                                                    }
+                                                                    (*(*r0 + 0xc0))();
+                                                                    r27 = &var_B20;
+                                                                    while (true) {
+                                                                            r0 = var_C28;
+                                                                            if (r0 == 0x0) {
+                                                                                    r0 = XError::XError(&var_90);
+                                                                                    operator+(r0);
+                                                                                    XError::~XError();
+                                                                                    r0 = var_C28;
+                                                                            }
+                                                                            if ((*(*r0 + 0xc8))() == 0x0) {
+                                                                                    break;
+                                                                            }
+                                                                            (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x338))();
+                                                                            r0 = var_C88;
+                                                                            if (r0 == 0x0) {
+                                                                                    r0 = XError::XError(&var_90);
+                                                                                    operator+(r0);
+                                                                                    XError::~XError();
+                                                                                    r0 = var_C88;
+                                                                            }
+                                                                            if ((*(*r0 + 0x148))() != 0x0) {
+                                                                                    var_90 = *(int128_t *)(r27 + 0x14);
+                                                                                    var_B90 = *(int128_t *)(r27 + 0x34);
+                                                                                    r0 = (*(*r22 + 0x328))(r22, r19, &var_90, &var_B90, var_B20, 0x0, var_B10, 0x0, 0x0, 0x0, 0x1);
+                                                                            }
+                                                                            AvDispose(var_B20);
+                                                                    }
+                                                                    AObjSmartPtr<AFileLocator>::~AObjSmartPtr(&var_C88);
+                                                            }
+                                                            r0 = var_C80;
+                                                            if (r0 != 0x0) {
+                                                                    operator delete(r0);
+                                                            }
+                                                            r0 = var_C68;
+                                                            if (r0 != 0x0) {
+                                                                    operator delete(r0);
+                                                            }
+                                                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                            r26 = var_CD0;
+                                                            if (r26 != 0x0) {
+                                                                    (*(*r26 + 0x100))(r26, 0x1);
+                                                                    (**r26)(r26);
+                                                            }
+                                                            if (r20 != 0x0) {
+                                                                    SetMobManProtocol(r20);
+                                                            }
+                                                            if (var_C40 != 0x0) {
+                                                                    r0 = xraisexerror(&var_C50);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            XError::~XError();
+                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                                                    r0 = r19[0x8];
+                                                                    r8 = *r0;
+                                                                    r20 = r0[0x1];
+                                                                    r0 = (r8[0x1e])(r0, &var_B20, &var_C50);
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("MSM::LoadPMR(%s) _fileCache hashtbl: %zd elems, %zd vacant, %zd maxChain \n");
+                                                                    r0 = r22[0x2];
+                                                                    r26 = (*(*r0 + 0x50))(r0);
+                                                                    r0 = r22[0x2];
+                                                                    r0 = (*(*r0 + 0x58))(r0, &var_B20, &var_C50);
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("MSM::LoadPMR(%s) global mobCache: (%zd elems, %zd vacant, %zd maxChain)\n");
+                                                            }
+                                                            AObjSmartPtr<AHashTable>::~AObjSmartPtr();
+                                                            if ((var_CC4 & 0x1) != 0x0) {
+                                                                    (*(*r19 + 0x70))(r19, 0x1);
+                                                                    if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                                                            XError::XError();
+                                                                            AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                                                            XError::~XError();
+                                                                    }
+                                                                    (*(*r22 + 0x318))(r22, r19, 0x0);
+                                                            }
+                                                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                            if (r25 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                                                    (*(*GetMobMan() + 0xf8))();
+                                                            }
+                                                            if (0x0 != 0x0) {
+                                                                    if (0x0 != 0x0) {
+                                                                            AVUnlockFile(0x0);
+                                                                    }
+                                                                    AVCloseFile(0x0);
+                                                            }
+                                                            if (r24 != 0x0) {
+                                                                    (**r24)(r24);
+                                                            }
+                                                            if (r23 != 0x0) {
+                                                                    AvDisposeHandle(r23);
+                                                            }
+                                                            if (var_C10 != 0x0) {
+                                                                    stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                                                    r0 = AvText::operator char const*();
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1(r0);
+                                                                    r0 = xDisplay(&decomp_var_c20);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            XError::~XError();
+                                                            r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                                            if (r21 != 0x0) {
+                                                                    (**r21)(r21);
+                                                            }
+                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                                                    mach_timebase_info(&var_B20);
+                                                                    r0 = mach_absolute_time();
+                                                                    r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = 1.0e-06;
+                                                                    d0 = (r8 >> 0x4) * d1;
+                                                                    r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = (r8 >> 0x4) * d1;
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                                            }
+                                                            if (var_BE8 != 0x0) {
+                                                                    r0 = xraisexerror(&decomp_var_bf8);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            r0 = XError::~XError();
+                                                            if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                                                    r0 = operator delete(var_BD0);
+                                                            }
+                                                            if (**___stack_chk_guard != var_68) {
+                                                                    __stack_chk_fail();
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    r9 = var_BD0;
+                                                    r8 = &var_BD0;
+                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                            r8 = r9;
+                                                    }
+                                                    dprintf1("AMSM::LoadPMR() \"%s\" had the wrong magic number!\n");
+                                                    if (r20 != 0x0) {
+                                                            XError::XError();
+                                                            if (r25 == 0x1) {
+                                                                    r27 = GetMobMan();
+                                                                    r0 = AMobMan::New();
+                                                                    r28 = r0;
+                                                                    SetMobManProtocol(r0);
+                                                                    var_CD0 = r28;
+                                                                    r0 = CAvList::New();
+                                                                    r26 = r0;
+                                                                    (*(*r0 + 0x138))();
+                                                                    var_B20 = 0x0;
+                                                                    r20 = r27;
+                                                                    var_90 = (*(*r19 + 0xd0))(r19);
+                                                                    r0 = std::__1::vector<int, std::__1::allocator<int> >::push_back(&var_B20, &var_90);
+                                                                    r0 = r22[0x3];
+                                                                    r0 = (*(*r0 + 0x18))(r0, r26, &var_B20, 0x0, 0x0);
+                                                                    (**r26)(r26);
+                                                                    r0 = var_B20;
+                                                                    if (r0 != 0x0) {
+                                                                            operator delete(r0);
+                                                                    }
+                                                            }
+                                                            else {
+                                                                    r20 = 0x0;
+                                                                    var_CD0 = 0x0;
+                                                            }
+                                                            var_CC0 = r20;
+                                                            var_C68 = 0x0;
+                                                            var_C60 = 0x0;
+                                                            r0 = (*(*r24 + 0x238))(r24, "numMobs");
+                                                            r19[0x8] = r0;
+                                                            if (r0 >= 0x1) {
+                                                                    r20 = r0 + 0x1;
+                                                                    do {
+                                                                            bzero(&var_B20, 0x284);
+                                                                            r0 = ReadPmrRec(r24, r25, &var_898, &var_B20);
+                                                                            if ((r0 & 0x1) != 0x0) {
+                                                                                    r0 = std::__1::vector<icsPMRrec_t, std::__1::allocator<icsPMRrec_t> >::push_back(&var_C68);
+                                                                            }
+                                                                            r20 = r20 - 0x1;
+                                                                    } while (r20 > 0x1);
+                                                            }
+                                                            XError::XError();
+                                                            (*(*r24 + 0x238))(r24, "VERSION_UNICODE");
+                                                            r27 = (*(*r24 + 0x238))(r24, "numUnicodeMobs");
+                                                            XError::~XError();
+                                                            var_C80 = 0x0;
+                                                            var_C78 = 0x0;
+                                                            asm { ccmp       w26, #0x10, #0x0, ge };
+                                                            if (!asm { ccmp       w26, #0x10, #0x0, ge }) {
+                                                                    r27 = var_C68;
+                                                                    r26 = var_C60;
+                                                                    r20 = var_CC0;
+                                                            }
+                                                            else {
+                                                                    r19[0x8] = r27;
+                                                                    r20 = r27 + 0x1;
+                                                                    do {
+                                                                            bzero(&var_B20, 0x284);
+                                                                            r0 = ReadPmrRec(r24, 0x10, &var_898, &var_B20);
+                                                                            if ((r0 & 0x1) != 0x0) {
+                                                                                    r0 = std::__1::vector<icsPMRrec_t, std::__1::allocator<icsPMRrec_t> >::push_back(&var_C80);
+                                                                            }
+                                                                            r20 = r20 - 0x1;
+                                                                    } while (r20 > 0x1);
+                                                                    r27 = var_C80;
+                                                                    r26 = var_C78;
+                                                                    r20 = var_CC0;
+                                                                    if (r27 != r26) {
+                                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                                                                    r8 = (SAR(var_C60 - var_C68, 0x2)) * 0xf9a3c6c1fcd1e361;
+                                                                                    r9 = (SAR(var_C78 - var_C80, 0x2)) * 0xf9a3c6c1fcd1e361;
+                                                                                    if (r9 < r8) {
+                                                                                            r11 = var_BD0;
+                                                                                            r10 = &var_BD0;
+                                                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                                                    r10 = r11;
+                                                                                            }
+                                                                                            dprintf1("AMSM::LoadPMR() \"%s\" read more MBCS pmr records [%zu] than Unicode pmr records [%zu]\n");
+                                                                                    }
+                                                                            }
+                                                                    }
+                                                                    else {
+                                                                            r27 = var_C68;
+                                                                            r26 = var_C60;
+                                                                    }
+                                                            }
+                                                            if (r27 != r26) {
+                                                                    var_CC4 = 0x0;
+                                                                    do {
+                                                                            XError::XError();
+                                                                            var_B40 = *r27;
+                                                                            q0 = r27[0x44];
+                                                                            var_B60 = q0;
+                                                                            (*(*r22 + 0x328))(r22, r19, &var_B40, &var_B60, r27 + 0x20, r27 + 0x240, r27[0xa0], 0x0, 0x0, 0x0, 0x1);
+                                                                            r0 = var_C28;
+                                                                            if (r0 != 0x0 && (*(*r0 + 0xa8))() != 0x0) {
+                                                                                    AvDispose(var_B20);
+                                                                            }
+                                                                            XError::~XError();
+                                                                            r27 = r27 + 0x284;
+                                                                    } while (r27 != r26);
+                                                            }
+                                                            else {
+                                                                    var_CC4 = 0x0;
+                                                            }
+                                                            if (var_C28 != 0x0) {
+                                                                    var_C88 = AFileLocator::New();
+                                                                    var_B20 = q0;
+                                                                    var_B10 = q0;
+                                                                    r0 = var_C28;
+                                                                    if (r0 == 0x0) {
+                                                                            r0 = XError::XError(&var_90);
+                                                                            operator+(r0);
+                                                                            XError::~XError();
+                                                                            r0 = var_C28;
+                                                                    }
+                                                                    (*(*r0 + 0xc0))();
+                                                                    r27 = &var_B20;
+                                                                    while (true) {
+                                                                            r0 = var_C28;
+                                                                            if (r0 == 0x0) {
+                                                                                    r0 = XError::XError(&var_90);
+                                                                                    operator+(r0);
+                                                                                    XError::~XError();
+                                                                                    r0 = var_C28;
+                                                                            }
+                                                                            if ((*(*r0 + 0xc8))() == 0x0) {
+                                                                                    break;
+                                                                            }
+                                                                            (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x338))();
+                                                                            r0 = var_C88;
+                                                                            if (r0 == 0x0) {
+                                                                                    r0 = XError::XError(&var_90);
+                                                                                    operator+(r0);
+                                                                                    XError::~XError();
+                                                                                    r0 = var_C88;
+                                                                            }
+                                                                            if ((*(*r0 + 0x148))() != 0x0) {
+                                                                                    var_90 = *(int128_t *)(r27 + 0x14);
+                                                                                    var_B90 = *(int128_t *)(r27 + 0x34);
+                                                                                    r0 = (*(*r22 + 0x328))(r22, r19, &var_90, &var_B90, var_B20, 0x0, var_B10, 0x0, 0x0, 0x0, 0x1);
+                                                                            }
+                                                                            AvDispose(var_B20);
+                                                                    }
+                                                                    AObjSmartPtr<AFileLocator>::~AObjSmartPtr(&var_C88);
+                                                            }
+                                                            r0 = var_C80;
+                                                            if (r0 != 0x0) {
+                                                                    operator delete(r0);
+                                                            }
+                                                            r0 = var_C68;
+                                                            if (r0 != 0x0) {
+                                                                    operator delete(r0);
+                                                            }
+                                                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                            r26 = var_CD0;
+                                                            if (r26 != 0x0) {
+                                                                    (*(*r26 + 0x100))(r26, 0x1);
+                                                                    (**r26)(r26);
+                                                            }
+                                                            if (r20 != 0x0) {
+                                                                    SetMobManProtocol(r20);
+                                                            }
+                                                            if (var_C40 != 0x0) {
+                                                                    r0 = xraisexerror(&var_C50);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            XError::~XError();
+                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                                                    r0 = r19[0x8];
+                                                                    r8 = *r0;
+                                                                    r20 = r0[0x1];
+                                                                    r0 = (r8[0x1e])(r0, &var_B20, &var_C50);
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("MSM::LoadPMR(%s) _fileCache hashtbl: %zd elems, %zd vacant, %zd maxChain \n");
+                                                                    r0 = r22[0x2];
+                                                                    r26 = (*(*r0 + 0x50))(r0);
+                                                                    r0 = r22[0x2];
+                                                                    r0 = (*(*r0 + 0x58))(r0, &var_B20, &var_C50);
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("MSM::LoadPMR(%s) global mobCache: (%zd elems, %zd vacant, %zd maxChain)\n");
+                                                            }
+                                                            AObjSmartPtr<AHashTable>::~AObjSmartPtr();
+                                                            if ((var_CC4 & 0x1) != 0x0) {
+                                                                    (*(*r19 + 0x70))(r19, 0x1);
+                                                                    if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                                                            XError::XError();
+                                                                            AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                                                            XError::~XError();
+                                                                    }
+                                                                    (*(*r22 + 0x318))(r22, r19, 0x0);
+                                                            }
+                                                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                            if (r25 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                                                    (*(*GetMobMan() + 0xf8))();
+                                                            }
+                                                            if (0x0 != 0x0) {
+                                                                    if (0x0 != 0x0) {
+                                                                            AVUnlockFile(0x0);
+                                                                    }
+                                                                    AVCloseFile(0x0);
+                                                            }
+                                                            if (r24 != 0x0) {
+                                                                    (**r24)(r24);
+                                                            }
+                                                            if (r23 != 0x0) {
+                                                                    AvDisposeHandle(r23);
+                                                            }
+                                                            if (var_C10 != 0x0) {
+                                                                    stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                                                    r0 = AvText::operator char const*();
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1(r0);
+                                                                    r0 = xDisplay(&decomp_var_c20);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            XError::~XError();
+                                                            r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                                            if (r21 != 0x0) {
+                                                                    (**r21)(r21);
+                                                            }
+                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                                                    mach_timebase_info(&var_B20);
+                                                                    r0 = mach_absolute_time();
+                                                                    r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = 1.0e-06;
+                                                                    d0 = (r8 >> 0x4) * d1;
+                                                                    r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = (r8 >> 0x4) * d1;
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                                            }
+                                                            if (var_BE8 != 0x0) {
+                                                                    r0 = xraisexerror(&decomp_var_bf8);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            r0 = XError::~XError();
+                                                            if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                                                    r0 = operator delete(var_BD0);
+                                                            }
+                                                            if (**___stack_chk_guard != var_68) {
+                                                                    __stack_chk_fail();
+                                                            }
+                                                    }
+                                                    else {
+                                                            AObjSmartPtr<AHashTable>::~AObjSmartPtr();
+                                                            (*(*r19 + 0x70))(r19, 0x1);
+                                                            if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                                                    XError::XError();
+                                                                    AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                                                    XError::~XError();
+                                                            }
+                                                            (*(*r22 + 0x318))(r22, r19, 0x0);
+                                                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                            if (r25 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                                                    (*(*GetMobMan() + 0xf8))();
+                                                            }
+                                                            if (0x0 != 0x0) {
+                                                                    if (0x0 != 0x0) {
+                                                                            AVUnlockFile(0x0);
+                                                                    }
+                                                                    AVCloseFile(0x0);
+                                                            }
+                                                            if (r24 != 0x0) {
+                                                                    (**r24)(r24);
+                                                            }
+                                                            if (r23 != 0x0) {
+                                                                    AvDisposeHandle(r23);
+                                                            }
+                                                            if (var_C10 != 0x0) {
+                                                                    stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                                                    r0 = AvText::operator char const*();
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1(r0);
+                                                                    r0 = xDisplay(&decomp_var_c20);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            XError::~XError();
+                                                            r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                                            if (r21 != 0x0) {
+                                                                    (**r21)(r21);
+                                                            }
+                                                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                                                    mach_timebase_info(&var_B20);
+                                                                    r0 = mach_absolute_time();
+                                                                    r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = 1.0e-06;
+                                                                    d0 = (r8 >> 0x4) * d1;
+                                                                    r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                                                    asm { umulh      x8, x8, x9 };
+                                                                    d1 = (r8 >> 0x4) * d1;
+                                                                    r9 = var_BD0;
+                                                                    r8 = &var_BD0;
+                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                                            }
+                                                            if (var_BE8 != 0x0) {
+                                                                    r0 = xraisexerror(&decomp_var_bf8);
+                                                            }
+                                                            StSetCurrentException::~StSetCurrentException();
+                                                            r0 = XError::~XError();
+                                                            if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                                                    r0 = operator delete(var_BD0);
+                                                            }
+                                                            if (**___stack_chk_guard != var_68) {
+                                                                    __stack_chk_fail();
+                                                            }
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            if (r20 != 0x0) {
+                                                    XError::XError();
+                                                    if (r25 == 0x1) {
+                                                            r27 = GetMobMan();
+                                                            r0 = AMobMan::New();
+                                                            r28 = r0;
+                                                            SetMobManProtocol(r0);
+                                                            var_CD0 = r28;
+                                                            r0 = CAvList::New();
+                                                            r26 = r0;
+                                                            (*(*r0 + 0x138))();
+                                                            var_B20 = 0x0;
+                                                            r20 = r27;
+                                                            var_90 = (*(*r19 + 0xd0))(r19);
+                                                            r0 = std::__1::vector<int, std::__1::allocator<int> >::push_back(&var_B20, &var_90);
+                                                            r0 = r22[0x3];
+                                                            r0 = (*(*r0 + 0x18))(r0, r26, &var_B20, 0x0, 0x0);
+                                                            (**r26)(r26);
+                                                            r0 = var_B20;
+                                                            if (r0 != 0x0) {
+                                                                    operator delete(r0);
+                                                            }
+                                                    }
+                                                    else {
+                                                            r20 = 0x0;
+                                                            var_CD0 = 0x0;
+                                                    }
+                                                    var_CC0 = r20;
+                                                    var_C68 = 0x0;
+                                                    var_C60 = 0x0;
+                                                    r0 = (*(*r24 + 0x238))(r24, "numMobs");
+                                                    r19[0x8] = r0;
+                                                    if (r0 >= 0x1) {
+                                                            r20 = r0 + 0x1;
+                                                            do {
+                                                                    bzero(&var_B20, 0x284);
+                                                                    r0 = ReadPmrRec(r24, r25, &var_898, &var_B20);
+                                                                    if ((r0 & 0x1) != 0x0) {
+                                                                            r0 = std::__1::vector<icsPMRrec_t, std::__1::allocator<icsPMRrec_t> >::push_back(&var_C68);
+                                                                    }
+                                                                    r20 = r20 - 0x1;
+                                                            } while (r20 > 0x1);
+                                                    }
+                                                    XError::XError();
+                                                    (*(*r24 + 0x238))(r24, "VERSION_UNICODE");
+                                                    r27 = (*(*r24 + 0x238))(r24, "numUnicodeMobs");
+                                                    XError::~XError();
+                                                    var_C80 = 0x0;
+                                                    var_C78 = 0x0;
+                                                    asm { ccmp       w26, #0x10, #0x0, ge };
+                                                    if (!asm { ccmp       w26, #0x10, #0x0, ge }) {
+                                                            r27 = var_C68;
+                                                            r26 = var_C60;
+                                                            r20 = var_CC0;
+                                                    }
+                                                    else {
+                                                            r19[0x8] = r27;
+                                                            r20 = r27 + 0x1;
+                                                            do {
+                                                                    bzero(&var_B20, 0x284);
+                                                                    r0 = ReadPmrRec(r24, 0x10, &var_898, &var_B20);
+                                                                    if ((r0 & 0x1) != 0x0) {
+                                                                            r0 = std::__1::vector<icsPMRrec_t, std::__1::allocator<icsPMRrec_t> >::push_back(&var_C80);
+                                                                    }
+                                                                    r20 = r20 - 0x1;
+                                                            } while (r20 > 0x1);
+                                                            r27 = var_C80;
+                                                            r26 = var_C78;
+                                                            r20 = var_CC0;
+                                                            if (r27 != r26) {
+                                                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                                                            r8 = (SAR(var_C60 - var_C68, 0x2)) * 0xf9a3c6c1fcd1e361;
+                                                                            r9 = (SAR(var_C78 - var_C80, 0x2)) * 0xf9a3c6c1fcd1e361;
+                                                                            if (r9 < r8) {
+                                                                                    r11 = var_BD0;
+                                                                                    r10 = &var_BD0;
+                                                                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                                                                            r10 = r11;
+                                                                                    }
+                                                                                    dprintf1("AMSM::LoadPMR() \"%s\" read more MBCS pmr records [%zu] than Unicode pmr records [%zu]\n");
+                                                                            }
+                                                                    }
+                                                            }
+                                                            else {
+                                                                    r27 = var_C68;
+                                                                    r26 = var_C60;
+                                                            }
+                                                    }
+                                                    if (r27 != r26) {
+                                                            var_CC4 = 0x0;
+                                                            do {
+                                                                    XError::XError();
+                                                                    var_B40 = *r27;
+                                                                    q0 = r27[0x44];
+                                                                    var_B60 = q0;
+                                                                    (*(*r22 + 0x328))(r22, r19, &var_B40, &var_B60, r27 + 0x20, r27 + 0x240, r27[0xa0], 0x0, 0x0, 0x0, 0x1);
+                                                                    r0 = var_C28;
+                                                                    if (r0 != 0x0 && (*(*r0 + 0xa8))() != 0x0) {
+                                                                            AvDispose(var_B20);
+                                                                    }
+                                                                    XError::~XError();
+                                                                    r27 = r27 + 0x284;
+                                                            } while (r27 != r26);
+                                                    }
+                                                    else {
+                                                            var_CC4 = 0x0;
+                                                    }
+                                                    if (var_C28 != 0x0) {
+                                                            var_C88 = AFileLocator::New();
+                                                            var_B20 = q0;
+                                                            var_B10 = q0;
+                                                            r0 = var_C28;
+                                                            if (r0 == 0x0) {
+                                                                    r0 = XError::XError(&var_90);
+                                                                    operator+(r0);
+                                                                    XError::~XError();
+                                                                    r0 = var_C28;
+                                                            }
+                                                            (*(*r0 + 0xc0))();
+                                                            r27 = &var_B20;
+                                                            while (true) {
+                                                                    r0 = var_C28;
+                                                                    if (r0 == 0x0) {
+                                                                            r0 = XError::XError(&var_90);
+                                                                            operator+(r0);
+                                                                            XError::~XError();
+                                                                            r0 = var_C28;
+                                                                    }
+                                                                    if ((*(*r0 + 0xc8))() == 0x0) {
+                                                                            break;
+                                                                    }
+                                                                    (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x338))();
+                                                                    r0 = var_C88;
+                                                                    if (r0 == 0x0) {
+                                                                            r0 = XError::XError(&var_90);
+                                                                            operator+(r0);
+                                                                            XError::~XError();
+                                                                            r0 = var_C88;
+                                                                    }
+                                                                    if ((*(*r0 + 0x148))() != 0x0) {
+                                                                            var_90 = *(int128_t *)(r27 + 0x14);
+                                                                            var_B90 = *(int128_t *)(r27 + 0x34);
+                                                                            r0 = (*(*r22 + 0x328))(r22, r19, &var_90, &var_B90, var_B20, 0x0, var_B10, 0x0, 0x0, 0x0, 0x1);
+                                                                    }
+                                                                    AvDispose(var_B20);
+                                                            }
+                                                            AObjSmartPtr<AFileLocator>::~AObjSmartPtr(&var_C88);
+                                                    }
+                                                    r0 = var_C80;
+                                                    if (r0 != 0x0) {
+                                                            operator delete(r0);
+                                                    }
+                                                    r0 = var_C68;
+                                                    if (r0 != 0x0) {
+                                                            operator delete(r0);
+                                                    }
+                                                    r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                    r26 = var_CD0;
+                                                    if (r26 != 0x0) {
+                                                            (*(*r26 + 0x100))(r26, 0x1);
+                                                            (**r26)(r26);
+                                                    }
+                                                    if (r20 != 0x0) {
+                                                            SetMobManProtocol(r20);
+                                                    }
+                                                    if (var_C40 != 0x0) {
+                                                            r0 = xraisexerror(&var_C50);
+                                                    }
+                                                    StSetCurrentException::~StSetCurrentException();
+                                                    XError::~XError();
+                                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                                            r0 = r19[0x8];
+                                                            r8 = *r0;
+                                                            r20 = r0[0x1];
+                                                            r0 = (r8[0x1e])(r0, &var_B20, &var_C50);
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1("MSM::LoadPMR(%s) _fileCache hashtbl: %zd elems, %zd vacant, %zd maxChain \n");
+                                                            r0 = r22[0x2];
+                                                            r26 = (*(*r0 + 0x50))(r0);
+                                                            r0 = r22[0x2];
+                                                            r0 = (*(*r0 + 0x58))(r0, &var_B20, &var_C50);
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1("MSM::LoadPMR(%s) global mobCache: (%zd elems, %zd vacant, %zd maxChain)\n");
+                                                    }
+                                                    AObjSmartPtr<AHashTable>::~AObjSmartPtr();
+                                                    if ((var_CC4 & 0x1) != 0x0) {
+                                                            (*(*r19 + 0x70))(r19, 0x1);
+                                                            if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                                                    XError::XError();
+                                                                    AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                                                    XError::~XError();
+                                                            }
+                                                            (*(*r22 + 0x318))(r22, r19, 0x0);
+                                                    }
+                                                    r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                    if (r25 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                                            (*(*GetMobMan() + 0xf8))();
+                                                    }
+                                                    if (0x0 != 0x0) {
+                                                            if (0x0 != 0x0) {
+                                                                    AVUnlockFile(0x0);
+                                                            }
+                                                            AVCloseFile(0x0);
+                                                    }
+                                                    if (r24 != 0x0) {
+                                                            (**r24)(r24);
+                                                    }
+                                                    if (r23 != 0x0) {
+                                                            AvDisposeHandle(r23);
+                                                    }
+                                                    if (var_C10 != 0x0) {
+                                                            stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                                            r0 = AvText::operator char const*();
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1(r0);
+                                                            r0 = xDisplay(&decomp_var_c20);
+                                                    }
+                                                    StSetCurrentException::~StSetCurrentException();
+                                                    XError::~XError();
+                                                    r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                                    if (r21 != 0x0) {
+                                                            (**r21)(r21);
+                                                    }
+                                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                                            mach_timebase_info(&var_B20);
+                                                            r0 = mach_absolute_time();
+                                                            r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                                            asm { umulh      x8, x8, x9 };
+                                                            d1 = 1.0e-06;
+                                                            d0 = (r8 >> 0x4) * d1;
+                                                            r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                                            asm { umulh      x8, x8, x9 };
+                                                            d1 = (r8 >> 0x4) * d1;
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                                    }
+                                                    if (var_BE8 != 0x0) {
+                                                            r0 = xraisexerror(&decomp_var_bf8);
+                                                    }
+                                                    StSetCurrentException::~StSetCurrentException();
+                                                    r0 = XError::~XError();
+                                                    if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                                            r0 = operator delete(var_BD0);
+                                                    }
+                                                    if (**___stack_chk_guard != var_68) {
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                            else {
+                                                    AObjSmartPtr<AHashTable>::~AObjSmartPtr();
+                                                    (*(*r19 + 0x70))(r19, 0x1);
+                                                    if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                                            XError::XError();
+                                                            AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                                            XError::~XError();
+                                                    }
+                                                    (*(*r22 + 0x318))(r22, r19, 0x0);
+                                                    r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                                    if (r25 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                                            (*(*GetMobMan() + 0xf8))();
+                                                    }
+                                                    if (0x0 != 0x0) {
+                                                            if (0x0 != 0x0) {
+                                                                    AVUnlockFile(0x0);
+                                                            }
+                                                            AVCloseFile(0x0);
+                                                    }
+                                                    if (r24 != 0x0) {
+                                                            (**r24)(r24);
+                                                    }
+                                                    if (r23 != 0x0) {
+                                                            AvDisposeHandle(r23);
+                                                    }
+                                                    if (var_C10 != 0x0) {
+                                                            stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                                            r0 = AvText::operator char const*();
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1(r0);
+                                                            r0 = xDisplay(&decomp_var_c20);
+                                                    }
+                                                    StSetCurrentException::~StSetCurrentException();
+                                                    XError::~XError();
+                                                    r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                                    if (r21 != 0x0) {
+                                                            (**r21)(r21);
+                                                    }
+                                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                                            mach_timebase_info(&var_B20);
+                                                            r0 = mach_absolute_time();
+                                                            r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                                            asm { umulh      x8, x8, x9 };
+                                                            d1 = 1.0e-06;
+                                                            d0 = (r8 >> 0x4) * d1;
+                                                            r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                                            asm { umulh      x8, x8, x9 };
+                                                            d1 = (r8 >> 0x4) * d1;
+                                                            r9 = var_BD0;
+                                                            r8 = &var_BD0;
+                                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                                    r8 = r9;
+                                                            }
+                                                            dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                                    }
+                                                    if (var_BE8 != 0x0) {
+                                                            r0 = xraisexerror(&decomp_var_bf8);
+                                                    }
+                                                    StSetCurrentException::~StSetCurrentException();
+                                                    r0 = XError::~XError();
+                                                    if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                                            r0 = operator delete(var_BD0);
+                                                    }
+                                                    if (**___stack_chk_guard != var_68) {
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                    }
+                            }
+                            else {
+                                    (*(*r19 + 0x70))(r19, 0x1);
+                                    if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                            XError::XError();
+                                            AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                            XError::~XError();
+                                    }
+                                    (*(*r22 + 0x318))(r22, r19, 0x0);
+                                    r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                                    if (0x0 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                            (*(*GetMobMan() + 0xf8))();
+                                    }
+                                    if (r27 != 0x0) {
+                                            if (r20 != 0x0) {
+                                                    AVUnlockFile(r27);
+                                            }
+                                            AVCloseFile(r27);
+                                    }
+                                    if (0x0 != 0x0) {
+                                            (**0x0)(0x0);
+                                    }
+                                    if (0x0 != 0x0) {
+                                            AvDisposeHandle(0x0);
+                                    }
+                                    if (var_C10 != 0x0) {
+                                            stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                            r0 = AvText::operator char const*();
+                                            r9 = var_BD0;
+                                            r8 = &var_BD0;
+                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                    r8 = r9;
+                                            }
+                                            dprintf1(r0);
+                                            r0 = xDisplay(&decomp_var_c20);
+                                    }
+                                    StSetCurrentException::~StSetCurrentException();
+                                    XError::~XError();
+                                    r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                                    if (r21 != 0x0) {
+                                            (**r21)(r21);
+                                    }
+                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                            mach_timebase_info(&var_B20);
+                                            r0 = mach_absolute_time();
+                                            r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                            asm { umulh      x8, x8, x9 };
+                                            d1 = 1.0e-06;
+                                            d0 = (r8 >> 0x4) * d1;
+                                            r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                            asm { umulh      x8, x8, x9 };
+                                            d1 = (r8 >> 0x4) * d1;
+                                            r9 = var_BD0;
+                                            r8 = &var_BD0;
+                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                    r8 = r9;
+                                            }
+                                            dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                                    }
+                                    if (var_BE8 != 0x0) {
+                                            r0 = xraisexerror(&decomp_var_bf8);
+                                    }
+                                    StSetCurrentException::~StSetCurrentException();
+                                    r0 = XError::~XError();
+                                    if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                            r0 = operator delete(var_BD0);
+                                    }
+                                    if (**___stack_chk_guard != var_68) {
+                                            __stack_chk_fail();
+                                    }
+                            }
+                    }
+                    else {
+                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                    r9 = var_BD0;
+                                    r8 = &var_BD0;
+                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                            r8 = r9;
+                                    }
+                                    dprintf1("MSM::LoadPMR() \"%s\" was empty!\n");
+                            }
+                            (*(*r19 + 0x70))(r19, 0x1);
+                            if ((*(*r19 + 0xa8))(r19) != 0x0) {
+                                    XError::XError();
+                                    AVCloseFile((*(*r21 + 0x368))(r21, 0x2, 0x0));
+                                    XError::~XError();
+                            }
+                            (*(*r22 + 0x318))(r22, r19, 0x0);
+                            r0 = StSetCurrentException::StSetCurrentException(&var_B20);
+                            if (0x0 == 0x1 && (*(*GetMobMan() + 0xc8))() != 0x0) {
+                                    (*(*GetMobMan() + 0xf8))();
+                            }
+                            if (r27 != 0x0) {
+                                    if (r20 != 0x0) {
+                                            AVUnlockFile(r27);
+                                    }
+                                    AVCloseFile(r27);
+                            }
+                            if (0x0 != 0x0) {
+                                    (**0x0)(0x0);
+                            }
+                            if (0x0 != 0x0) {
+                                    AvDisposeHandle(0x0);
+                            }
+                            if (var_C10 != 0x0) {
+                                    stx_func("MSM::LoadPMR(%s) PMR NOT LOADED, error: %s\n");
+                                    r0 = AvText::operator char const*();
+                                    r9 = var_BD0;
+                                    r8 = &var_BD0;
+                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                            r8 = r9;
+                                    }
+                                    dprintf1(r0);
+                                    r0 = xDisplay(&decomp_var_c20);
+                            }
+                            StSetCurrentException::~StSetCurrentException();
+                            XError::~XError();
+                            r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                            if (r21 != 0x0) {
+                                    (**r21)(r21);
+                            }
+                            if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                                    mach_timebase_info(&var_B20);
+                                    r0 = mach_absolute_time();
+                                    r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                                    asm { umulh      x8, x8, x9 };
+                                    d1 = 1.0e-06;
+                                    d0 = (r8 >> 0x4) * d1;
+                                    r8 = r0 * var_B20 / var_B1C >> 0x3;
+                                    asm { umulh      x8, x8, x9 };
+                                    d1 = (r8 >> 0x4) * d1;
+                                    r9 = var_BD0;
+                                    r8 = &var_BD0;
+                                    if (sign_extend_64(var_BB9) < 0x0) {
+                                            r8 = r9;
+                                    }
+                                    dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                            }
+                            if (var_BE8 != 0x0) {
+                                    r0 = xraisexerror(&decomp_var_bf8);
+                            }
+                            StSetCurrentException::~StSetCurrentException();
+                            r0 = XError::~XError();
+                            if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                                    r0 = operator delete(var_BD0);
+                            }
+                            if (**___stack_chk_guard != var_68) {
+                                    __stack_chk_fail();
+                            }
+                    }
+            }
+            else {
+                    r0 = r19[0x1];
+                    if (AVolumeIsP2((*(*r0 + 0x1d0))(r0, 0x2), r1 & 0xff) != 0x0) {
+                            r9 = var_BD0;
+                            r8 = &var_BD0;
+                            if (sign_extend_64(var_BB9) < 0x0) {
+                                    r8 = r9;
+                            }
+                            dprintf1("MSM::LoadPMR(%s) ERROR function should not be called on a P2 volume!\n");
+                    }
+                    else {
+                            r0 = (*(*r19 + 0xa8))(r19);
+                            r8 = *r19;
+                            if (r0 != 0x0) {
+                                    if ((r8[0x1a])(r19) == 0x0 && (*(*r19 + 0xb8))(r19) == 0x0) {
+                                            XError::XError();
+                                            var_90 = 0x0;
+                                            r0 = std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t> >::reserve(&var_90);
+                                            r0 = (*(*r22 + 0x2c0))(r22, r19, &var_90);
+                                            r0 = var_90;
+                                            if (r0 != 0x0) {
+                                                    operator delete(r0);
+                                            }
+                                            StSetCurrentException::StSetCurrentException(&var_90);
+                                            StSetCurrentException::~StSetCurrentException();
+                                            XError::~XError();
+                                    }
+                            }
+                            else {
+                                    r19[0x5] = (*(*(r8[0x1c])(r19, 0x1) + 0x2e0))();
+                                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                                            r9 = var_BD0;
+                                            r8 = &var_BD0;
+                                            if (sign_extend_64(var_BB9) < 0x0) {
+                                                    r8 = r9;
+                                            }
+                                            dprintf1("MSM::LoadPMR(%s) Not a writeable directory. No PMR file found.\n");
+                                    }
+                            }
+                    }
+                    r0 = StSetCurrentException::StSetCurrentException(&decomp_var_c20);
+                    if (r21 != 0x0) {
+                            (**r21)(r21);
+                    }
+                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                            mach_timebase_info(&var_B20);
+                            r0 = mach_absolute_time();
+                            r8 = var_CA8 * var_CB8 / var_CB0 >> 0x3;
+                            asm { umulh      x8, x8, x9 };
+                            d1 = 1.0e-06;
+                            d0 = (r8 >> 0x4) * d1;
+                            r8 = r0 * var_B20 / var_B1C >> 0x3;
+                            asm { umulh      x8, x8, x9 };
+                            d1 = (r8 >> 0x4) * d1;
+                            r9 = var_BD0;
+                            r8 = &var_BD0;
+                            if (sign_extend_64(var_BB9) < 0x0) {
+                                    r8 = r9;
+                            }
+                            dprintf1("STATS(msm) LoadPMR() dir '%s', lastPMRSyncDate %zu, took %5.3fs\n");
+                    }
+                    if (var_BE8 != 0x0) {
+                            r0 = xraisexerror(&decomp_var_bf8);
+                    }
+                    StSetCurrentException::~StSetCurrentException();
+                    r0 = XError::~XError();
+                    if ((sign_extend_64(var_BB9) & 0xffffffff80000000) != 0x0) {
+                            r0 = operator delete(var_BD0);
+                    }
+                    if (**___stack_chk_guard != var_68) {
+                            __stack_chk_fail();
+                    }
+            }
+    }
+    else {
+            if (**___stack_chk_guard != var_68) {
+                    __stack_chk_fail();
+            }
+    }
+    return r0;

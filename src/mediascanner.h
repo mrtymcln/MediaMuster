@@ -1,6 +1,7 @@
 #pragma once
 
 #include "backgroundjob.h"
+#include "avidmedialayout.h"
 #include "mdbparser.h"
 #include "mediafile.h"
 #include "pmrparser.h"
@@ -34,8 +35,8 @@ struct LogMsg
 
 // MARK: - MediaScanner
 
-/// Walks volumes, finds `Avid MediaFiles/MXF` roots (and, OMF-era, the
-/// flat `OMFI MediaFiles` root beside them), and builds one MediaFile per
+/// Walks volumes, finds `Avid MediaFiles/MXF` and `OMFI MediaFiles`
+/// roots, and builds one MediaFile per
 /// essence file in two passes:
 ///
 ///   Pass 1 — databases. Per folder: list the files, read `msmFMID.pmr`
@@ -52,16 +53,11 @@ struct LogMsg
 ///            OmfParser), then try the MDB once more by the header's own
 ///            UMID to recover name/bin/source.
 ///
-/// Where it looks (user ruling 2026-09-02, Avid's own placement rule): a
-/// VOLUME path is probed for exactly the two roots at its top level and
-/// nothing deeper — Media Composer only ever writes media at a drive root
-/// or in the fixed system-drive bases VolumeManager hands over as their
-/// own entries. A MANUAL path (File ▸ Add Folder, drag-and-drop) may be
-/// anything — a root, an MXF folder, a numbered subfolder, a project
-/// folder — so it keeps the older shape-guessing cases (the root shape
-/// first, then inside-Avid-MediaFiles, the root folder itself, a single
-/// database folder) and the two-level search. The two never mix, which is
-/// why Options carries them apart.
+/// Volume paths probe only their immediate media roots. Manual additions
+/// accept correctly structured media trees anywhere, including backups;
+/// the selected path must be a root, its media folder, or its immediate
+/// container. Database presence alone never makes a directory eligible.
+/// AvidMediaLayout supplies the shared structure and filename rules.
 ///
 /// Cancellation is cooperative; checked at folder/file boundaries
 /// so work in flight isn't left half-done.
@@ -74,8 +70,8 @@ public:
 		/// Drive roots and the system-drive bases: scanned by
 		/// scanVolumeRoot, top level only.
 		QStringList volumePaths;
-		/// Folders the user added by hand: scanned by scanAddedFolder, which
-		/// keeps the shape cases and the two-level search.
+		/// Correctly structured Avid media roots, their media folders, or
+		/// a directory directly containing those roots, added by the user.
 		QStringList manualPaths;
 		/// Session-only opt-in for OMFI roots and legacy OMF/audio essence.
 		/// MXF and its PMR/MDB metadata remain available by default.
@@ -83,6 +79,10 @@ public:
 	};
 
 	explicit MediaScanner(QObject *parent = nullptr);
+
+	/// Uses the same managed-tree resolution as a manually requested scan.
+	/// OMF roots qualify here even while their session feature is disabled.
+	static bool canScanPath(const QString &path);
 
 	/// Joins the scan worker before any member unwinds. `m_job` is declared
 	/// first (so destroyed last), and the worker touches m_logMutex /
@@ -133,20 +133,15 @@ private:
 	/// `<path>/OMFI MediaFiles`; scan whichever exist; never look deeper.
 	QVector<MediaFile> scanVolumeRoot(const QString &volumePath, const QString &volumeName);
 
-	/// A hand-added folder: the path may be inside an Avid MediaFiles tree,
-	/// may itself be an MXF root or an OMF root, may be one numbered folder
-	/// with its own databases, or may hold media roots up to two levels
-	/// down. Tried in that order; the first shape that fits wins.
+	/// Resolve an explicitly added managed media tree, leaf or immediate
+	/// container. No recursive archive search or database-only fallback.
 	QVector<MediaFile> scanAddedFolder(const QString &folderPath, const QString &volumeName);
 
 	QVector<MediaFile> scanMxfRoot(const QString &mxfRootPath, const QString &volumeName,
 								   const QString &volumePath);
 
-	/// OMF-era: the flat root is ONE folder task — media and its single
-	/// database pair sit at the same level, and the enumeration takes files
-	/// only, so Avid's transient `Creating` subfolder is invisible here.
-	/// Rows carry `mediaFolderName == "OMFI MediaFiles"`, which the rebalancer's
-	/// folder-name rule rejects, keeping OMF media out of its scope.
+	/// Scan the flat OMF root plus one level of legacy workstation folders.
+	/// Each folder uses its own databases; staging/reserved folders are skipped.
 	QVector<MediaFile> scanOmfRoot(const QString &omfRootPath, const QString &volumeName,
 								   const QString &volumePath);
 
@@ -158,6 +153,7 @@ private:
 	/// Self-contained so the parser doesn't reach back into the scanner.
 	struct ScanTask
 	{
+		AvidMediaLayout::Family family = AvidMediaLayout::Family::Mxf;
 		QString folderPath;
 		QString folderNumber;
 		QString volumeName;
@@ -189,14 +185,6 @@ private:
 		bool pmrOk = true;
 		bool mdbExists = false;
 		bool mdbOk = true;
-		/// OMF-era: every key — PMR entries, MDB masters and files — is a
-		/// wrapped 12-byte omfi:UID (OmfUid::isOmfForm), as a version-2 PMR
-		/// and an OMF-era MDB always write them. Then the databases are
-		/// legacy and every legacy-extension file in this folder is OMF
-		/// media, whatever the folder is called. A lone key in that form
-		/// inside an MXF-era database (a legacy clip carried across) does
-		/// not count; empty databases decide nothing.
-		bool omfEra = false;
 	};
 
 	/// Reads and merges the folder's PMR/MDB files, logging into `logs`
@@ -218,19 +206,18 @@ private:
 	/// One row from one directory entry (pass 1). `folderStatus` is the
 	/// status computed by processFolderTask for any file the folder's PMR
 	/// does NOT name: a real miss ("No reference") when the databases were
-	/// readable, else the couldn't-check states. `folderOmfEra` is the
-	/// databases' verdict (FolderDatabases::omfEra); with the extension and
-	/// the folder name it settles MediaFile::omfEra for the row.
+	/// readable, else the couldn't-check states. The accepted layout selects
+	/// the media family independently of what the databases contain.
 	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 							 const QString &volumePath, const QString &folderNumber,
-							 bool folderOmfEra,
+							 AvidMediaLayout::Family family,
 							 const PmrIndex &pmrMap,
 							 const MdbDatabase &mdb,
 							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
 
 	/// Pass 2. Reads the header of every .mxf row pass 1 left without
-	/// technical facts (OMF-era: the Bento tail of every .omf/.aif/.wav/.sd2
-	/// row inside an OMFI MediaFiles root likewise, through OmfParser), in
+	/// technical facts (OMF-era: the Bento tail of every .omf/.aif/.wav
+	/// candidate likewise, through OmfParser), in
 	/// parallel, then re-joins each
 	/// against its folder's cached clip records by the header's UMID (the
 	/// file-in-MDB-but-not-PMR case). Per-folder parallelism alone starves

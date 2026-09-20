@@ -3,8 +3,8 @@
 #include "testbento.h"
 #include "testbento2.h"
 
-// Constructed semantic coverage, not a captured SDII recording. Property
-// names/roles follow OMF 2.1 Appendix A and Avid's SD2D registrations.
+// Constructed object graphs for semantic coverage, using a WAVE descriptor.
+// Property names and object roles follow OMF 2.1 Appendix A.
 // Bento1 is intentional: semantic OMF version and container version differ.
 namespace TestOmf
 {
@@ -53,7 +53,18 @@ namespace TestOmf
 	{
 		return BentoBuilder::le32(42) + BentoBuilder::le32(number) + BentoBuilder::le32(7);
 	}
-	inline QByteArray sdii(bool omf2, bool ambiguousMaster = false, bool badDescriptor = false,
+	// RIFF summary for two seconds of stereo 24-bit PCM at 48 kHz. Summary
+	// properties store the header without the sample bytes. RIFF byte order
+	// is little-endian, independently of the containing OMF object graph.
+	inline QByteArray waveSummary()
+	{
+		const QByteArray format = BentoBuilder::le32(1).left(2) + BentoBuilder::le32(2).left(2) +
+			BentoBuilder::le32(48000) + BentoBuilder::le32(288000) +
+			BentoBuilder::le32(6).left(2) + BentoBuilder::le32(24).left(2);
+		return QByteArray("RIFF") + BentoBuilder::le32(576036) + QByteArray("WAVEfmt ") +
+			BentoBuilder::le32(16) + format + QByteArray("data") + BentoBuilder::le32(576000);
+	}
+	inline QByteArray wave(bool omf2, bool ambiguousMaster = false, bool badDescriptor = false,
 						   bool compact = false, bool big = false)
 	{
 		Writer w(compact, big);
@@ -91,11 +102,11 @@ namespace TestOmf
 		const quint32 master = object(omf2 ? "MMOB" : "MOBJ");
 		const quint32 file = object(omf2 ? "SMOB" : "MOBJ");
 		const quint32 source = object(omf2 ? "SMOB" : "MOBJ");
-		const quint32 desc = object("SD2D");
+		const quint32 desc = object("WAVD");
 		const quint32 tape = object(omf2 ? "MDTP" : "MDES");
 		for (auto pair : {qMakePair(master, 1u), qMakePair(file, 2u), qMakePair(source, 3u)})
 			w.set(pair.first, "OMFI:MOBJ:MobID", encodedUid(pair.second));
-		w.setString(master, omf2 ? "OMFI:MOBJ:Name" : "OMFI:CPNT:Name", "SDII clip");
+		w.setString(master, omf2 ? "OMFI:MOBJ:Name" : "OMFI:CPNT:Name", "WAVE clip");
 		if (!omf2)
 			w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
 		ref(file, omf2 ? "OMFI:SMOB:MediaDescription" : "OMFI:MOBJ:PhysicalMedia", badDescriptor ? 0xfefefefe : desc);
@@ -105,15 +116,14 @@ namespace TestOmf
 		refs(attrs, "OMFI:ATTR:AttrRefs", attr);
 		w.setString(attr, "OMFI:ATTB:Name", "_PJ");
 		w.setU32(attr, "OMFI:ATTB:Kind", 2);
-		w.setString(attr, "OMFI:ATTB:StringAttribute", "SDII project");
+		w.setString(attr, "OMFI:ATTB:StringAttribute", "WAVE project");
 		refs(tape, "OMFI:MDES:Locator", loc);
-		w.setString(loc, "OMFI:WINL:PathName", "C:\\Original\\session.sd2");
-		w.setU16(desc, "OMFI:SD2D:BitsPerSample", 24);
-		w.setU16(desc, "OMFI:SD2D:NumChannels", 2);
+		w.setString(loc, "OMFI:WINL:PathName", "C:\\Original\\session.wav");
+		w.set(desc, "OMFI:WAVD:Summary", waveSummary());
 		w.setRational(desc, "OMFI:MDFL:SampleRate", 48000, 1);
 		w.set(desc, "OMFI:MDFL:Length", omf2 ? w.wide(96000) : w.word(96000));
-		const quint32 data = object("SD2D");
-		w.set(data, omf2 ? "OMFI:MDAT:MobID" : "OMFI:SD2D:MobID", encodedUid(2));
+		const quint32 data = object("WAVE");
+		w.set(data, omf2 ? "OMFI:MDAT:MobID" : "OMFI:WAVE:MobID", encodedUid(2));
 		auto track = [&](quint32 mob, quint32 component)
 		{
 			const quint32 slot = object(omf2 ? "MSLT" : "TRAK");

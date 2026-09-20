@@ -1,0 +1,316 @@
+ScanDirectoryToCache @ 0x44c33c
+Verified procedure entry: 0x44c33c
+    var_60 = d9;
+    decomp_var_58 = d8;
+    var_50 = r28;
+    decomp_var_48 = r27;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r31 = r31 + 0xffffffffffffff90 - 0x940;
+    r21 = r3;
+    r23 = arg2;
+    r19 = arg1;
+    r20 = arg0;
+    var_70 = **___stack_chk_guard;
+    mach_timebase_info(&var_8A4);
+    r22 = mach_absolute_time();
+    r24 = var_8A4;
+    var_958 = var_8A4;
+    r0 = bzero(&var_8A4, "d.72.1.dylib");
+    if (r19 == 0x0) {
+            XError::XError(&var_900);
+            r0 = operator+(&var_900);
+            XError::~XError();
+    }
+    if ((*(*r19 + 0x88))(r19) == 0x0) {
+            XError::XError(&var_900);
+            r0 = operator+(&var_900);
+            XError::~XError();
+    }
+    r0 = (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x148))();
+    if (r0 != 0x0) {
+            r0 = (*(*r19 + 0xd8))(r19);
+            if (r0 != 0x0) {
+                    XError::XError();
+                    var_960 = r21;
+                    var_938 = 0x0;
+                    var_930 = 0x0;
+                    r0 = std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t> >::reserve(&var_938);
+                    r28 = *r23;
+                    r26 = r23[0x1];
+                    if (r28 == r26) {
+                            (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x310))();
+                            r28 = var_938;
+                            r26 = var_930;
+                    }
+                    r0 = bzero(&var_8A4, "d.72.1.dylib");
+                    (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x1a0))();
+                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x2) != 0x0) {
+                            r21 = &var_900;
+                            r0 = UTF16ToCurrentMacMBCSEncodingString(&var_8A4, 0x0);
+                            r9 = var_900;
+                            if (sign_extend_64(var_8E9) >= 0x0) {
+                                    r8 = r21;
+                            }
+                            else {
+                                    r8 = r9;
+                            }
+                            dprintf1("\nMSM::ScanDirectoryToCache(%s)\n");
+                            if ((sign_extend_64(var_8E9) & 0xffffffff80000000) != 0x0) {
+                                    operator delete(var_900);
+                            }
+                    }
+                    r1 = 0x1;
+                    r23 = (*(*r19 + 0xe0))(r19, 0x1);
+                    if ((*(*r19 + 0xd0))(r19) != 0x0) {
+                            r1 = 0x1;
+                    }
+                    r23 = AMediaStreamMgr::GetMediaDirectoryDomainType(r23, r1);
+                    r10 = var_960;
+                    if (r10 != 0x0) {
+                            r21 = (var_930 - var_938 >> 0x4) * 0x3e0f83e1;
+                            r0 = (r10)(r21, 0x0, 0x0, 0x0, &var_8A4, 0x0);
+                    }
+                    else {
+                            r21 = 0x0;
+                    }
+                    var_900 = q0;
+                    r0 = r19[0x8];
+                    var_96C = r21;
+                    r0 = (*(*r0 + 0xc0))(r0, &var_920);
+                    while (true) {
+                            r0 = r19[0x8];
+                            r0 = (*(*r0 + 0xc8))(r0, &var_920, &var_900, &var_948);
+                            if (r0 == 0x0) {
+                                    break;
+                            }
+                            var_8AC = 0x0;
+                            r0 = r19[0x8];
+                            r0 = (*(*r0 + 0x88))(r0, &var_900, var_948);
+                    }
+                    r25 = AFileLocator::New();
+                    if (r28 != r26) {
+                            var_970 = r23;
+                            var_968 = 0x0;
+                            r23 = &var_900;
+                            do {
+                                    r28 = r28 + 0x210;
+                                    while (true) {
+                                            r27 = r28 - 0x210;
+                                            if (MSMDBMediaStreamMgr::MSMIsKnownNonMediaFile(r27, (*(*r19 + 0xd0))(r19)) != 0x0) {
+                                                    bool_27 = r28 != r26;
+                                                    r28 = r28 + 0x210;
+                                                    if (bool_27) {
+                                                            continue;
+                                                    }
+                                                    temp_0 = 0x0;
+                                                    break;
+                                            }
+                                            if (r28[0xfffffffffffffffc] != 0x1) {
+                                                    temp_0 = 0x1;
+                                                    break;
+                                            }
+                                            (*(*(*(*r19 + 0xe0))(r19, 0x1) + 0x338))();
+                                            if (MSMDBMediaStreamMgr::DeleteKnownNotNeededFile(r27, r25) == 0x0) {
+                                                    temp_0 = 0x2;
+                                                    break;
+                                            }
+                                            bool_25 = r28 != r26;
+                                            r28 = r28 + 0x210;
+                                            if (bool_25) {
+                                                    continue;
+                                            }
+                                            temp_0 = 0x0;
+                                            break;
+                                    }
+                                    if (temp_0 == 0x0) {
+                                            break;
+                                    }
+                                    if (temp_0 != 0x1) {
+                                            var_980 = r24;
+                                            decomp_var_978 = r22;
+                                            var_8F0 = q0;
+                                            var_900 = q0;
+                                            r0 = r19[0x8];
+                                            r0 = (*(*r0 + 0x90))(r0, r27, &var_948);
+                                            r24 = 0x0;
+                                            r22 = 0x1;
+                                            r21 = 0x1;
+                                            while (true) {
+                                                    r0 = r19[0x8];
+                                                    r0 = (*(*r0 + 0x98))(r0, r27, &var_900, &var_948, &var_950);
+                                                    if (r0 == 0x0) {
+                                                            break;
+                                                    }
+                                                    if ((r21 & 0x1) == 0x0) {
+                                                            r0 = r19[0x8];
+                                                            (*(*r0 + 0xb0))(r0, r27, &var_900);
+                                                            q0 = *(int128_t *)(r23 + 0x14);
+                                                            var_920 = q0;
+                                                            (*(*r20 + 0x330))(r20, &var_920, var_900, 0x0, 0x1);
+                                                            AvDispose(var_900);
+                                                            r22 = 0x0;
+                                                            r21 = 0x0;
+                                                            var_900 = 0x0;
+                                                            r24 = 0x1;
+                                                            continue;
+                                                    }
+                                                    r8 = var_8F0 - r28[0xffffffffffffffff];
+                                                    if (r8 == 0x0) {
+                                                            r21 = 0x1;
+                                                            var_8AC = 0x1;
+                                                            r0 = r19[0x8];
+                                                            r0 = (*(*r0 + 0x88))(r0, &var_900, var_950);
+                                                            r22 = 0x0;
+                                                            r24 = 0x0;
+                                                            continue;
+                                                    }
+                                                    asm { cneg       w8, w8, mi };
+                                                    if (r8 == "ffects.dylib") {
+                                                            r21 = 0x1;
+                                                            var_8AC = 0x1;
+                                                            r0 = r19[0x8];
+                                                            r0 = (*(*r0 + 0x88))(r0, &var_900, var_950);
+                                                            r22 = 0x0;
+                                                            r24 = 0x0;
+                                                            continue;
+                                                    }
+                                                    r0 = r19[0x8];
+                                                    (*(*r0 + 0xb0))(r0, r27, &var_900);
+                                                    q0 = *(int128_t *)(r23 + 0x14);
+                                                    var_920 = q0;
+                                                    (*(*r20 + 0x330))(r20, &var_920, var_900, 0x0, 0x1);
+                                                    AvDispose(var_900);
+                                                    r22 = 0x0;
+                                                    r21 = 0x0;
+                                                    var_900 = 0x0;
+                                                    r24 = 0x1;
+                                            }
+                                            if (((r22 | r24) & 0x1) != 0x0) {
+                                                    (*(*r20 + 0x2c8))(r20, r19, r27, var_970);
+                                            }
+                                            r1 = var_968 + 0x1;
+                                            r24 = var_980;
+                                            r22 = decomp_var_978;
+                                            var_968 = r1;
+                                            if (var_960 != 0x0) {
+                                                    if ((r1 & 0x7) == 0x0) {
+                                                            (var_960)();
+                                                    }
+                                            }
+                                    }
+                            } while (r28 != r26);
+                    }
+                    else {
+                            var_968 = 0x0;
+                    }
+                    r0 = var_938;
+                    if (r0 != 0x0) {
+                            operator delete(r0);
+                    }
+                    r26 = var_968;
+                    r21 = var_960;
+                    r0 = StSetCurrentException::StSetCurrentException(&var_900);
+                    if (r25 != 0x0) {
+                            (**r25)(r25);
+                    }
+                    if (r21 != 0x0) {
+                            (r21)(var_96C, 0xffffffff, 0x0, 0x0, 0x0, 0x0);
+                    }
+                    if (var_90 != 0x0) {
+                            r0 = xraisexerror(&var_A0);
+                    }
+                    StSetCurrentException::~StSetCurrentException();
+                    XError::~XError();
+                    var_950 = AFileLocator::New();
+                    var_900 = q0;
+                    r0 = r19[0x8];
+                    r0 = (*(*r0 + 0xc0))(r0, &var_938);
+                    r8 = r22 * var_958 / r24 >> 0x3;
+                    asm { umulh      x8, x8, x23 };
+                    d9 = 1.0e-06;
+                    d8 = (r8 >> 0x4) * 1.0e-06;
+                    r24 = &var_900;
+                    while (true) {
+                            r0 = r19[0x8];
+                            r0 = (*(*r0 + 0xc8))(r0, &var_938, &var_900, &var_948);
+                            if (r0 == 0x0) {
+                                    break;
+                            }
+                            if (var_8AC != 0x0) {
+                                    continue;
+                            }
+                            if ((*(*r19 + 0xd0))(r19) == 0x0) {
+                                    r0 = r19[0x8];
+                                    (*(*r0 + 0xa8))(r0, var_900, &var_900);
+                                    var_A0 = *(int128_t *)(r24 + 0x14);
+                                    r0 = (*(*r19 + 0xe0))(r19, 0x1);
+                                    r0 = (*(*r20 + 0x330))(r20, &var_A0, var_900, r0, 0x1);
+                                    AvDispose(var_900);
+                                    var_900 = 0x0;
+                                    continue;
+                            }
+                            r0 = r19[0x1];
+                            (*(*r0 + 0x338))(r0, var_900, var_950);
+                            r0 = var_950;
+                            if (r0 == 0x0) {
+                                    r0 = XError::XError(&var_A0);
+                                    operator+(r0);
+                                    XError::~XError();
+                                    r0 = var_950;
+                            }
+                            if ((*(*r0 + 0x148))() != 0x0) {
+                                    var_8AC = 0x1;
+                                    r0 = r19[0x8];
+                                    r0 = (*(*r0 + 0x88))(r0, &var_900, var_948);
+                                    continue;
+                            }
+                            r0 = r19[0x8];
+                            (*(*r0 + 0xa8))(r0, var_900, &var_900);
+                            var_A0 = *(int128_t *)(r24 + 0x14);
+                            r0 = (*(*r19 + 0xe0))(r19, 0x1);
+                            r0 = (*(*r20 + 0x330))(r20, &var_A0, var_900, r0, 0x1);
+                            AvDispose(var_900);
+                            var_900 = 0x0;
+                    }
+                    AObjSmartPtr<AFileLocator>::~AObjSmartPtr();
+                    (*(*r19 + 0x70))(r19, 0x1);
+                    (*(*r19 + 0xb0))(r19);
+                    r19[0x62] = 0x0;
+                    if (dbgTestFlag(*(int32_t *)AMediaStreamMgr::MSMDbgID, 0x4) != 0x0) {
+                            r0 = mach_timebase_info(&var_900);
+                            mach_absolute_time() * var_900 / var_900 >> 0x3;
+                            asm { umulh      x8, x8, x23 };
+                            dprintf1("(stats): AMSM::ScanDirectoryToCache(%d files), took %5.3lfs\n");
+                    }
+                    r0 = *(int32_t *)AMediaStreamMgr::MSMDbgID;
+                    r0 = dbgTestFlag(r0, 0x2);
+                    if (r0 != 0x0) {
+                            r19 = &var_900;
+                            UTF16ToCurrentMacMBCSEncodingString(&var_8A4, 0x0);
+                            r9 = var_900;
+                            if (sign_extend_64(var_8E9) >= 0x0) {
+                                    r8 = r19;
+                            }
+                            else {
+                                    r8 = r9;
+                            }
+                            r0 = dprintf1("MSM::ScanDirectoryToCache(%s) completed.\n");
+                            if ((sign_extend_64(var_8E9) & 0xffffffff80000000) != 0x0) {
+                                    r0 = operator delete(var_900);
+                            }
+                    }
+            }
+    }
+    if (**___stack_chk_guard != var_70) {
+            __stack_chk_fail();
+    }
+    return r0;

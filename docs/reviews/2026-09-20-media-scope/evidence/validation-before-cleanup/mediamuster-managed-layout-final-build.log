@@ -1,0 +1,7 @@
+[1/7] Automatic MOC for target tst_operationui
+[2/6] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui.cpp.o
+[3/6] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[4/6] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mainwindow.cpp.o
+[5/6] Linking CXX executable tests/tst_operationui
+[6/6] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: replacing existing signature

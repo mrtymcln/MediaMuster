@@ -1,0 +1,104 @@
+ScanFileToCache @ 0x44cea0
+Verified procedure entry: 0x44cea0
+    r31 = r31 - 0xd0;
+    var_50 = r28;
+    decomp_var_48 = r27;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r25 = r3;
+    r21 = arg2;
+    r22 = arg1;
+    r23 = arg0;
+    if (arg1 == 0x0) {
+            XError::XError(&decomp_var_78);
+            r0 = operator+(&decomp_var_78);
+            XError::~XError();
+    }
+    if (MSMDBMediaStreamMgr::MSMIsKnownNonMediaFile(r21, (*(*r22 + 0xd0))(r22)) != 0x0) {
+            r26 = 0x1;
+    }
+    else {
+            XError::XError();
+            r19 = (CheckedCBPointer<ADirLocator* ())(0xe, ADirLocator::New());
+            r24 = (*(*(*(*r22 + 0xe0))(r22, 0x1) + 0x2c8))();
+            r20 = AFileLocator::New();
+            (*(*(*(*r22 + 0xe0))(r22, 0x1) + 0x338))();
+            if (r20 == 0x0 && __FtlAssertFailed("fileLoc", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c", 0x1dc0) != 0x0) {
+                    DebugStr(0xfacca1);
+            }
+            r26 = 0x0;
+            if (r25 > 0x3) {
+                    switch (r25) {
+                        case 6:
+                            if ((IsProxyDomainSupported() & 0x1) != 0x0) {
+                                    r26 = (*(*r23 + 0x2e8))(r23, r22, r21, r20, r24);
+                            }
+                            else {
+                                    r26 = 0x0;
+                            }
+                            break;
+                        case 5:
+                            if ((IsAMAFIDomainSupported() & 0x1) != 0x0) {
+                                    r26 = (*(*r23 + 0x2e0))(r23, r22, r21, r20, r24);
+                            }
+                            else {
+                                    r26 = 0x0;
+                            }
+                            break;
+                        case 4:
+                            if (IsMXFSupported() != 0x0) {
+                                    r8 = guard variable for MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)::profile;
+                                    asm { ldaprb     w8, [x8] };
+                                    if ((r8 & 0x1) == 0x0) {
+                                            if (__cxa_guard_acquire() != 0x0) {
+                                                    TimingProfiler::TimingProfiler(MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)::profile, "msm__ScanMXFFileToCache", 0x1, 0x0);
+                                                    __cxa_atexit(TimingProfiler::~TimingProfiler(), MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)::profile, 0x0);
+                                                    __cxa_guard_release();
+                                            }
+                                    }
+                                    r26 = (*(*r23 + 0x2d8))(r23, r22, r21, r20, r24);
+                            }
+                            else {
+                                    if ((IsAMAFIDomainSupported() & 0x1) != 0x0) {
+                                            r26 = (*(*r23 + 0x2e0))(r23, r22, r21, r20, r24);
+                                    }
+                                    else {
+                                            r26 = 0x0;
+                                    }
+                            }
+                            break;
+                    }
+            }
+            else {
+                    if (r25 != 0x1) {
+                            if (r25 == 0x3) {
+                                    r26 = (*(*r23 + 0x2f0))(r23, r22, r21, r20, r24);
+                            }
+                    }
+                    else {
+                            r26 = (*(*r23 + 0x2d0))(r23, r22, r21, r20, r24);
+                    }
+            }
+            r0 = StSetCurrentException::StSetCurrentException(&decomp_var_a0);
+            if (r19 != 0x0) {
+                    (**r19)(r19);
+            }
+            if (r20 != 0x0) {
+                    (**r20)(r20);
+            }
+            if (var_68 != 0x0) {
+                    r0 = xraisexerror(&decomp_var_78);
+            }
+            StSetCurrentException::~StSetCurrentException();
+            XError::~XError();
+    }
+    r0 = r26;
+    return r0;

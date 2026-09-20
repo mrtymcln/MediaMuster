@@ -1,0 +1,17 @@
+MSMDBMediaStreamMgr vptr+0x2c0: stored=0x1000000044c33c image-offset=0x44c33c MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))
+MSMDBMediaStreamMgr vptr+0x2c8: stored=0x1000000044cea0 image-offset=0x44cea0 MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)
+MSMDBMediaStreamMgr vptr+0x2d0: stored=0x1000000044d3b8 image-offset=0x44d3b8 MSMDBMediaStreamMgr::ScanOMFFileToCache(MSMMediaDirRecord*, char16_t*, AFileLocator*, bool)
+MSMDBMediaStreamMgr vptr+0x2d8: stored=0x1000000044e184 image-offset=0x44e184 MSMDBMediaStreamMgr::ScanMXFFileToCache(MSMMediaDirRecord*, char16_t*, AFileLocator*, bool)
+MSMDBMediaStreamMgr vptr+0x2e0: stored=0x1000000044ef10 image-offset=0x44ef10 MSMDBMediaStreamMgr::ScanAMAFIFileToCache(MSMMediaDirRecord*, char16_t*, AFileLocator*, bool)
+MSMDBMediaStreamMgr vptr+0x2e8: stored=0x1000000044f3c4 image-offset=0x44f3c4 MSMDBMediaStreamMgr::ScanProxyFileToCache(MSMMediaDirRecord*, char16_t*, AFileLocator*, bool)
+MSMDBMediaStreamMgr vptr+0x2f0: stored=0x1000000044f764 image-offset=0x44f764 MSMDBMediaStreamMgr::ScanAAFFileToCache(MSMMediaDirRecord*, char16_t*, AFileLocator*, bool)
+MSMMediaDirRecord vptr+0xd0: stored=0x10000000459788 image-offset=0x459788 MSMMediaDirRecord::isAMA() const
+MSMMediaDirRecord vptr+0xe0: stored=0x10000000434c18 image-offset=0x434c18 MSMMediaDirRecord::GetMetadataDir(bool)
+AMacDirLocator vptr+0x1d0: stored=0x8010000000000b81 image-offset=0xb81 UNKNOWN
+AMacDirLocator vptr+0x2c8: stored=0x8010000000000b62 image-offset=0xb62 UNKNOWN
+ameDomainTypeToStringANSI domain 1: OMF
+ameDomainTypeToStringANSI domain 2: OMF
+ameDomainTypeToStringANSI domain 3: AAF
+ameDomainTypeToStringANSI domain 4: MXF
+MXF FileKind GUID at 0x11b99e4: 13c6313107284a4292dd7a45391ca349
+MXF FileKind GUID at 0x11b99f4: 270378e484fbb64c813af73d8939845f

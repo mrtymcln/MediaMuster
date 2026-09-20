@@ -1,0 +1,7 @@
+Renamed legacy folder row count 1
+  TONE_100A01.6A972974.039700.wav omf true needsHeader true codec WAVE (OMF) rate 48000 name TONE: 1000 Hz @ -14.0 dB.1
+Identical file + unrelated modern PMR row count 1
+  TONE_100A01.6A972974.039700.wav omf false needsHeader false codec  rate 0 name TONE: 1000 Hz @ -14.0 dB.1
+Direct same AIFF bytes valid true codec "AIFF-C (OMF)"
+Canonical OMFI, valid .aiff only row count 0
+Extension .aiff admitted false

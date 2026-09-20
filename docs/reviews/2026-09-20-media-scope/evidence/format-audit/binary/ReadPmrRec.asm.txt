@@ -1,0 +1,346 @@
+
+/tmp/mediamuster-format-audit-2026-09-20/binary/libameLibrary.arm64.dylib:	file format mach-o arm64
+
+Disassembly of section __TEXT,__text:
+
+00000000004474e0 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)>:
+  4474e0: a9ba6ffc     	stp	x28, x27, [sp, #-0x60]!
+  4474e4: a90167fa     	stp	x26, x25, [sp, #0x10]
+  4474e8: a9025ff8     	stp	x24, x23, [sp, #0x20]
+  4474ec: a90357f6     	stp	x22, x21, [sp, #0x30]
+  4474f0: a9044ff4     	stp	x20, x19, [sp, #0x40]
+  4474f4: a9057bfd     	stp	x29, x30, [sp, #0x50]
+  4474f8: 910143fd     	add	x29, sp, #0x50
+  4474fc: d12483ff     	sub	sp, sp, #0x920
+  447500: aa0303f4     	mov	x20, x3
+  447504: aa0203f3     	mov	x19, x2
+  447508: aa0103f6     	mov	x22, x1
+  44750c: aa0003f5     	mov	x21, x0
+  447510: b0006e48     	adrp	x8, 0x1210000 <_write+0x1210000>
+  447514: f946e108     	ldr	x8, [x8, #0xdc0]
+  447518: f9400108     	ldr	x8, [x8]
+  44751c: f81a83a8     	stur	x8, [x29, #-0x58]
+  447520: b0006e28     	adrp	x8, 0x120c000 <_write+0x120c000>
+  447524: f940d508     	ldr	x8, [x8, #0x1a8]
+  447528: 91004108     	add	x8, x8, #0x10
+  44752c: f81683a8     	stur	x8, [x29, #-0x98]
+  447530: 52800048     	mov	w8, #0x2                ; =2
+  447534: 781703a8     	sturh	w8, [x29, #-0x90]
+  447538: 9100e3e0     	add	x0, sp, #0x38
+  44753c: 94292c95     	bl	0xe92790 <_write+0xe92790>
+  447540: 910363fa     	add	x26, sp, #0xd8
+  447544: 71001edf     	cmp	w22, #0x7
+  447548: 5400012c     	b.gt	0x44756c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x8c>
+  44754c: f0005c81     	adrp	x1, 0xfda000 <_write+0xfda000>
+  447550: 91200c21     	add	x1, x1, #0x803
+  447554: 910363e8     	add	x8, sp, #0xd8
+  447558: aa1503e0     	mov	x0, x21
+  44755c: 97f7b916     	bl	0x2359b4 <Read_OMFMobID(AStream*, char const*)>
+  447560: ad400740     	ldp	q0, q1, [x26]
+  447564: ad000680     	stp	q0, q1, [x20]
+  447568: 1400000a     	b	0x447590 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0xb0>
+  44756c: f0005c81     	adrp	x1, 0xfda000 <_write+0xfda000>
+  447570: 91200c21     	add	x1, x1, #0x803
+  447574: 910363e8     	add	x8, sp, #0xd8
+  447578: aa1503e0     	mov	x0, x21
+  44757c: 97f7b99d     	bl	0x235bf0 <Read_AAFMobID(AStream*, char const*)>
+  447580: ad400740     	ldp	q0, q1, [x26]
+  447584: ad000680     	stp	q0, q1, [x20]
+  447588: 71003edf     	cmp	w22, #0xf
+  44758c: 54000408     	b.hi	0x44760c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x12c>
+  447590: 910363e0     	add	x0, sp, #0xd8
+  447594: 52810001     	mov	w1, #0x800              ; =2048
+  447598: 942936ec     	bl	0xe95148 <_write+0xe95148>
+  44759c: f94002a8     	ldr	x8, [x21]
+  4475a0: f9414508     	ldr	x8, [x8, #0x288]
+  4475a4: b0005e21     	adrp	x1, 0x100c000 <_write+0x100c000>
+  4475a8: 9113d021     	add	x1, x1, #0x4f4
+  4475ac: 910363e2     	add	x2, sp, #0xd8
+  4475b0: aa1503e0     	mov	x0, x21
+  4475b4: 52810003     	mov	w3, #0x800              ; =2048
+  4475b8: d63f0100     	blr	x8
+  4475bc: b5000160     	cbnz	x0, 0x4475e8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x108>
+  4475c0: b0005e20     	adrp	x0, 0x100c000 <_write+0x100c000>
+  4475c4: 9113f400     	add	x0, x0, #0x4fd
+  4475c8: f0005e01     	adrp	x1, 0x100a000 <_write+0x100a000>
+  4475cc: 91074021     	add	x1, x1, #0x1d0
+  4475d0: 52806dc2     	mov	w2, #0x36e              ; =878
+  4475d4: 94291efe     	bl	0xe8f1cc <_write+0xe8f1cc>
+  4475d8: 34000080     	cbz	w0, 0x4475e8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x108>
+  4475dc: b0005b20     	adrp	x0, 0xfac000 <GCC_except_table3+0x4>
+  4475e0: 91328400     	add	x0, x0, #0xca1
+  4475e4: 94291b7c     	bl	0xe8e3d4 <_write+0xe8e3d4>
+  4475e8: 910263e8     	add	x8, sp, #0x98
+  4475ec: 910363e0     	add	x0, sp, #0xd8
+  4475f0: 94292107     	bl	0xe8fa0c <_write+0xe8fa0c>
+  4475f4: d10263a0     	sub	x0, x29, #0x98
+  4475f8: 910263e1     	add	x1, sp, #0x98
+  4475fc: 94292380     	bl	0xe903fc <_write+0xe903fc>
+  447600: 910263e0     	add	x0, sp, #0x98
+  447604: 9429237b     	bl	0xe903f0 <_write+0xe903f0>
+  447608: 1400001d     	b	0x44767c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x19c>
+  44760c: 910363e0     	add	x0, sp, #0xd8
+  447610: 52810001     	mov	w1, #0x800              ; =2048
+  447614: 942936cd     	bl	0xe95148 <_write+0xe95148>
+  447618: f94002a8     	ldr	x8, [x21]
+  44761c: f9415508     	ldr	x8, [x8, #0x2a8]
+  447620: b0005e21     	adrp	x1, 0x100c000 <_write+0x100c000>
+  447624: 9114e821     	add	x1, x1, #0x53a
+  447628: 910363e2     	add	x2, sp, #0xd8
+  44762c: aa1503e0     	mov	x0, x21
+  447630: 52808003     	mov	w3, #0x400              ; =1024
+  447634: d63f0100     	blr	x8
+  447638: 910363e0     	add	x0, sp, #0xd8
+  44763c: 942938d0     	bl	0xe9597c <_write+0xe9597c>
+  447640: aa0003f7     	mov	x23, x0
+  447644: d10263a0     	sub	x0, x29, #0x98
+  447648: 94292334     	bl	0xe90318 <_write+0xe90318>
+  44764c: 785703a8     	ldurh	w8, [x29, #-0x90]
+  447650: 13003d09     	sxth	w9, w8
+  447654: 53057d08     	lsr	w8, w8, #5
+  447658: b85743aa     	ldur	w10, [x29, #-0x8c]
+  44765c: 7100013f     	cmp	w9, #0x0
+  447660: 1a88b142     	csel	w2, w10, w8, lt
+  447664: d10263a0     	sub	x0, x29, #0x98
+  447668: 910363e3     	add	x3, sp, #0xd8
+  44766c: 52800001     	mov	w1, #0x0                ; =0
+  447670: 52800004     	mov	w4, #0x0                ; =0
+  447674: aa1703e5     	mov	x5, x23
+  447678: 94292337     	bl	0xe90354 <_write+0xe90354>
+  44767c: 785703a8     	ldurh	w8, [x29, #-0x90]
+  447680: 13003d09     	sxth	w9, w8
+  447684: 53057d08     	lsr	w8, w8, #5
+  447688: b85743aa     	ldur	w10, [x29, #-0x8c]
+  44768c: 7100013f     	cmp	w9, #0x0
+  447690: 1a88b148     	csel	w8, w10, w8, lt
+  447694: 11000517     	add	w23, w8, #0x1
+  447698: 710402ff     	cmp	w23, #0x100
+  44769c: 540000c8     	b.hi	0x4476b4 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x1d4>
+  4476a0: d10263a0     	sub	x0, x29, #0x98
+  4476a4: 9429230b     	bl	0xe902d0 <_write+0xe902d0>
+  4476a8: aa0003e1     	mov	x1, x0
+  4476ac: 91008280     	add	x0, x20, #0x20
+  4476b0: 942938b0     	bl	0xe95970 <_write+0xe95970>
+  4476b4: 91008280     	add	x0, x20, #0x20
+  4476b8: 942938b1     	bl	0xe9597c <_write+0xe9597c>
+  4476bc: 710406ff     	cmp	w23, #0x101
+  4476c0: 7a403804     	ccmp	w0, #0x0, #0x4, lo
+  4476c4: 1a9f07fb     	cset	w27, ne
+  4476c8: 710006df     	cmp	w22, #0x1
+  4476cc: 54000961     	b.ne	0x4477f8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x318>
+  4476d0: 9415c61c     	bl	0x9b8f40 <GetMobMan()>
+  4476d4: ad400680     	ldp	q0, q1, [x20]
+  4476d8: ad0387e0     	stp	q0, q1, [sp, #0x70]
+  4476dc: f9400008     	ldr	x8, [x0]
+  4476e0: f9402d08     	ldr	x8, [x8, #0x58]
+  4476e4: 9101c3e1     	add	x1, sp, #0x70
+  4476e8: d2800002     	mov	x2, #0x0                ; =0
+  4476ec: d63f0100     	blr	x8
+  4476f0: 3909029f     	strb	wzr, [x20, #0x240]
+  4476f4: b40000a0     	cbz	x0, 0x447708 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x228>
+  4476f8: 91090282     	add	x2, x20, #0x240
+  4476fc: 52800001     	mov	w1, #0x0                ; =0
+  447700: 52800803     	mov	w3, #0x40               ; =64
+  447704: 97f95c9c     	bl	0x29e974 <FindProjectName(AComposition*, int, char*, unsigned long)>
+  447708: 9415c60e     	bl	0x9b8f40 <GetMobMan()>
+  44770c: f9400008     	ldr	x8, [x0]
+  447710: f9404908     	ldr	x8, [x8, #0x90]
+  447714: 910183e1     	add	x1, sp, #0x60
+  447718: d63f0100     	blr	x8
+  44771c: 910363e8     	add	x8, sp, #0xd8
+  447720: 97f7b720     	bl	0x2353a0 <NullMobID()>
+  447724: ad400740     	ldp	q0, q1, [x26]
+  447728: ad110680     	stp	q0, q1, [x20, #0x220]
+  44772c: f0ffffd6     	adrp	x22, 0x442000 <msmPMRScanCB(int, int, unsigned char, char16_t*, char16_t*, char const*)+0xb4>
+  447730: 9138d2d6     	add	x22, x22, #0xe34
+  447734: 9415c603     	bl	0x9b8f40 <GetMobMan()>
+  447738: f9400008     	ldr	x8, [x0]
+  44773c: f9405108     	ldr	x8, [x8, #0xa0]
+  447740: 910183e1     	add	x1, sp, #0x60
+  447744: 52800042     	mov	w2, #0x2                ; =2
+  447748: d63f0100     	blr	x8
+  44774c: aa0003f7     	mov	x23, x0
+  447750: b4000820     	cbz	x0, 0x447854 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x374>
+  447754: 94292cde     	bl	0xe92acc <_write+0xe92acc>
+  447758: aa0003f8     	mov	x24, x0
+  44775c: f94002e8     	ldr	x8, [x23]
+  447760: f9425108     	ldr	x8, [x8, #0x4a0]
+  447764: aa1703e0     	mov	x0, x23
+  447768: aa1603e1     	mov	x1, x22
+  44776c: aa1803e2     	mov	x2, x24
+  447770: d63f0100     	blr	x8
+  447774: b4fffe18     	cbz	x24, 0x447734 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x254>
+  447778: f9400308     	ldr	x8, [x24]
+  44777c: f9411d08     	ldr	x8, [x8, #0x238]
+  447780: 910263e1     	add	x1, sp, #0x98
+  447784: aa1803e0     	mov	x0, x24
+  447788: d2800002     	mov	x2, #0x0                ; =0
+  44778c: d63f0100     	blr	x8
+  447790: aa0003f9     	mov	x25, x0
+  447794: b4000219     	cbz	x25, 0x4477d4 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x2f4>
+  447798: 910363e8     	add	x8, sp, #0xd8
+  44779c: aa1903e0     	mov	x0, x25
+  4477a0: 97f4e462     	bl	0x180928 <AComposition::GetMobID() const>
+  4477a4: 910363e0     	add	x0, sp, #0xd8
+  4477a8: aa1403e1     	mov	x1, x20
+  4477ac: 97f7b737     	bl	0x235488 <EqualMobID(_aafMCMobID_t const&, _aafMCMobID_t const&)>
+  4477b0: 35000120     	cbnz	w0, 0x4477d4 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x2f4>
+  4477b4: f9400308     	ldr	x8, [x24]
+  4477b8: f9412108     	ldr	x8, [x8, #0x240]
+  4477bc: 910263e1     	add	x1, sp, #0x98
+  4477c0: aa1803e0     	mov	x0, x24
+  4477c4: d2800002     	mov	x2, #0x0                ; =0
+  4477c8: d63f0100     	blr	x8
+  4477cc: aa0003f9     	mov	x25, x0
+  4477d0: 17fffff1     	b	0x447794 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x2b4>
+  4477d4: f9400308     	ldr	x8, [x24]
+  4477d8: f9400108     	ldr	x8, [x8]
+  4477dc: aa1803e0     	mov	x0, x24
+  4477e0: d63f0100     	blr	x8
+  4477e4: b4fffa99     	cbz	x25, 0x447734 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x254>
+  4477e8: 910363e8     	add	x8, sp, #0xd8
+  4477ec: aa1703e0     	mov	x0, x23
+  4477f0: 97f4e44e     	bl	0x180928 <AComposition::GetMobID() const>
+  4477f4: 14000016     	b	0x44784c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x36c>
+  4477f8: f94002a8     	ldr	x8, [x21]
+  4477fc: f9414508     	ldr	x8, [x8, #0x288]
+  447800: f0005bc1     	adrp	x1, 0xfc2000 <_write+0xfc2000>
+  447804: 9132fc21     	add	x1, x1, #0xcbf
+  447808: 91090282     	add	x2, x20, #0x240
+  44780c: aa1503e0     	mov	x0, x21
+  447810: 52800803     	mov	w3, #0x40               ; =64
+  447814: d63f0100     	blr	x8
+  447818: 71001edf     	cmp	w22, #0x7
+  44781c: 540000ec     	b.gt	0x447838 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x358>
+  447820: f0005c81     	adrp	x1, 0xfda000 <_write+0xfda000>
+  447824: 91200c21     	add	x1, x1, #0x803
+  447828: 910363e8     	add	x8, sp, #0xd8
+  44782c: aa1503e0     	mov	x0, x21
+  447830: 97f7b861     	bl	0x2359b4 <Read_OMFMobID(AStream*, char const*)>
+  447834: 14000006     	b	0x44784c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x36c>
+  447838: f0005c81     	adrp	x1, 0xfda000 <_write+0xfda000>
+  44783c: 91200c21     	add	x1, x1, #0x803
+  447840: 910363e8     	add	x8, sp, #0xd8
+  447844: aa1503e0     	mov	x0, x21
+  447848: 97f7b8ea     	bl	0x235bf0 <Read_AAFMobID(AStream*, char const*)>
+  44784c: ad400740     	ldp	q0, q1, [x26]
+  447850: ad110680     	stp	q0, q1, [x20, #0x220]
+  447854: f94002a8     	ldr	x8, [x21]
+  447858: f9412908     	ldr	x8, [x8, #0x250]
+  44785c: b0005e21     	adrp	x1, 0x100c000 <_write+0x100c000>
+  447860: 91152021     	add	x1, x1, #0x548
+  447864: aa1503e0     	mov	x0, x21
+  447868: d63f0100     	blr	x8
+  44786c: b9028280     	str	w0, [x20, #0x280]
+  447870: 9100e3e0     	add	x0, sp, #0x38
+  447874: 94292bca     	bl	0xe9279c <_write+0xe9279c>
+  447878: 3600101b     	tbz	w27, #0x0, 0x447a78 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x598>
+  44787c: 52800033     	mov	w19, #0x1               ; =1
+  447880: 140000f0     	b	0x447c40 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x760>
+  447884: 14000015     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  447888: 14000014     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  44788c: 14000013     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  447890: 14000012     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  447894: 14000011     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  447898: 14000010     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  44789c: 1400000c     	b	0x4478cc <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3ec>
+  4478a0: 1400000e     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  4478a4: 1400011d     	b	0x447d18 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x838>
+  4478a8: 1400000c     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  4478ac: 1400000b     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  4478b0: aa0103f5     	mov	x21, x1
+  4478b4: aa0003f4     	mov	x20, x0
+  4478b8: 35000175     	cbnz	w21, 0x4478e4 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x404>
+  4478bc: 14000124     	b	0x447d4c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x86c>
+  4478c0: 14000003     	b	0x4478cc <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3ec>
+  4478c4: 14000005     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  4478c8: 14000004     	b	0x4478d8 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x3f8>
+  4478cc: aa0003f4     	mov	x20, x0
+  4478d0: 35000081     	cbnz	w1, 0x4478e0 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x400>
+  4478d4: 1400011e     	b	0x447d4c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x86c>
+  4478d8: aa0003f4     	mov	x20, x0
+  4478dc: 34002381     	cbz	w1, 0x447d4c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x86c>
+  4478e0: aa0103f5     	mov	x21, x1
+  4478e4: aa1403e0     	mov	x0, x20
+  4478e8: 71000ebf     	cmp	w21, #0x3
+  4478ec: 540002a1     	b.ne	0x447940 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x460>
+  4478f0: 942935c8     	bl	0xe95010 <_write+0xe95010>
+  4478f4: aa0003f4     	mov	x20, x0
+  4478f8: 9100e3e8     	add	x8, sp, #0x38
+  4478fc: 91002100     	add	x0, x8, #0x8
+  447900: 91002281     	add	x1, x20, #0x8
+  447904: 97ef9212     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  447908: 3dc00680     	ldr	q0, [x20, #0x10]
+  44790c: b9402288     	ldr	w8, [x20, #0x20]
+  447910: b9005be8     	str	w8, [sp, #0x58]
+  447914: 3c8483e0     	stur	q0, [sp, #0x48]
+  447918: f9400288     	ldr	x8, [x20]
+  44791c: f9400908     	ldr	x8, [x8, #0x10]
+  447920: aa1403e0     	mov	x0, x20
+  447924: d63f0100     	blr	x8
+  447928: f0005e01     	adrp	x1, 0x100a000 <_write+0x100a000>
+  44792c: 91074021     	add	x1, x1, #0x1d0
+  447930: 528075a2     	mov	w2, #0x3ad              ; =941
+  447934: 94291fd6     	bl	0xe8f88c <_write+0xe8f88c>
+  447938: 942935bc     	bl	0xe95028 <_write+0xe95028>
+  44793c: 14000048     	b	0x447a5c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x57c>
+  447940: 942935b4     	bl	0xe95010 <_write+0xe95010>
+  447944: 71000abf     	cmp	w21, #0x2
+  447948: 54000521     	b.ne	0x4479ec <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x50c>
+  44794c: aa0003f4     	mov	x20, x0
+  447950: f9400008     	ldr	x8, [x0]
+  447954: f9400908     	ldr	x8, [x8, #0x10]
+  447958: d63f0100     	blr	x8
+  44795c: a900ffe0     	stp	x0, xzr, [sp, #0x8]
+  447960: 90005b48     	adrp	x8, 0xfaf000 <_write+0xfaf000>
+  447964: 91053d08     	add	x8, x8, #0x14f
+  447968: f90003e8     	str	x8, [sp]
+  44796c: 90005b41     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  447970: 91050021     	add	x1, x1, #0x140
+  447974: 910363f5     	add	x21, sp, #0xd8
+  447978: 910363e0     	add	x0, sp, #0xd8
+  44797c: 94292b82     	bl	0xe92784 <_write+0xe92784>
+  447980: 9100e3e8     	add	x8, sp, #0x38
+  447984: 91002100     	add	x0, x8, #0x8
+  447988: 910022a1     	add	x1, x21, #0x8
+  44798c: 97ef91f0     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  447990: 3dc00740     	ldr	q0, [x26, #0x10]
+  447994: 3c8483e0     	stur	q0, [sp, #0x48]
+  447998: b940fbe8     	ldr	w8, [sp, #0xf8]
+  44799c: b9005be8     	str	w8, [sp, #0x58]
+  4479a0: 910363e0     	add	x0, sp, #0xd8
+  4479a4: 94292b7e     	bl	0xe9279c <_write+0xe9279c>
+  4479a8: f9400288     	ldr	x8, [x20]
+  4479ac: f9400908     	ldr	x8, [x8, #0x10]
+  4479b0: aa1403e0     	mov	x0, x20
+  4479b4: d63f0100     	blr	x8
+  4479b8: f0005e01     	adrp	x1, 0x100a000 <_write+0x100a000>
+  4479bc: 91074021     	add	x1, x1, #0x1d0
+  4479c0: 528075a2     	mov	w2, #0x3ad              ; =941
+  4479c4: 94291ff7     	bl	0xe8f9a0 <_write+0xe8f9a0>
+  4479c8: f0006e28     	adrp	x8, 0x120e000 <_write+0x120e000>
+  4479cc: f9468108     	ldr	x8, [x8, #0xd00]
+  4479d0: f9400108     	ldr	x8, [x8]
+  4479d4: b4000088     	cbz	x8, 0x4479e4 <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x504>
+  4479d8: b0005b40     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  4479dc: 91020c00     	add	x0, x0, #0x83
+  4479e0: d63f0100     	blr	x8
+  4479e4: 94293591     	bl	0xe95028 <_write+0xe95028>
+  4479e8: 1400001d     	b	0x447a5c <ReadPmrRec(AStream*, int, char16_t const*, icsPMRrec_t*)+0x57c>
+  4479ec: f90003ff     	str	xzr, [sp]
+  4479f0: 90005b41     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  4479f4: 91035021     	add	x1, x1, #0xd4
+  4479f8: 910363f4     	add	x20, sp, #0xd8
+  4479fc: 910363e0     	add	x0, sp, #0xd8
+  447a00: 94292b61     	bl	0xe92784 <_write+0xe92784>
+  447a04: 9100e3e8     	add	x8, sp, #0x38
+  447a08: 91002100     	add	x0, x8, #0x8
+  447a0c: 91002281     	add	x1, x20, #0x8
+  447a10: 97ef91cf     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  447a14: 3dc00740     	ldr	q0, [x26, #0x10]
+  447a18: 3c8483e0     	stur	q0, [sp, #0x48]
+  447a1c: b940fbe8     	ldr	w8, [sp, #0xf8]
+  447a20: b9005be8     	str	w8, [sp, #0x58]
+  447a24: 910363e0     	add	x0, sp, #0xd8
+  447a28: 94292b5d     	bl	0xe9279c <_write+0xe9279c>
+  447a2c: f0005e00     	adrp	x0, 0x100a000 <_write+0x100a000>

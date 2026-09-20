@@ -1,7 +1,7 @@
 # Working on MediaMuster
 
 MediaMuster is a C++17 / Qt Widgets application for macOS and Windows. Start with
-[the architecture map](docs/architecture.md) and [the documentation index](docs/README.md).
+[the architecture map](architecture.md) and [the documentation index](README.md).
 
 ## Naming
 
@@ -65,7 +65,7 @@ cmake --build build --parallel 4
 ctest --test-dir build -C Release --parallel 1 --output-on-failure
 ```
 
-The 26 suites are registered in `core`, `media`, `operations` and `ui` groups. Use
+The test suites are registered in `core`, `media`, `operations` and `ui` groups. Use
 `-L operations` (or another label) for a focused run. Labels do not make suites
 depend on each other; CI runs every suite sequentially before packaging.
 
@@ -79,7 +79,7 @@ the version check requires `APP_VERSION` and `QT_VERSION`. CI supplies these.
 including on Windows, while preserving the failing exit status. Packaging requires
 `APP_VERSION` and the platform's deployment tools; Mac release signing also uses
 the existing Apple environment credentials. See the
-[CI cleanup record](docs/ci-cleanup-proposal.md) for the scenario mapping and
+[CI cleanup record](ci-cleanup-proposal.md) for the scenario mapping and
 platform validation status.
 
 Keep application and test logic in C++, and build/test/packaging automation in
@@ -91,7 +91,7 @@ Keep sources and headers flat under `src/`. Dated reviews live with their eviden
 under `docs/reviews/`; archived scripts and captured paths describe the original
 investigation. The standalone Avid catalogue extractor has been retired. Future
 catalogue updates should record new binary research and comparisons against the
-saved [catalogue provenance](docs/evidence/avid-effects-26.8/README.md).
+saved [catalogue provenance](evidence/avid-effects-26.8/README.md).
 
 Run focused tests during a pass and the full suite after integration. A passing Mac
 build does not establish Windows SDK compatibility or real NEXIS behaviour; keep

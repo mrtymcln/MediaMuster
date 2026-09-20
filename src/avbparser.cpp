@@ -498,6 +498,10 @@ namespace
 				retain(kMobAliasEstimate);
 				m_result.mobIds.insert(canonical);
 			}
+			// The legacy OMF wrapper already preserves the PMR's identity
+			// bytes. Swapping its middle fields would invent a different clip.
+			if (OmfUid::isOmfForm(canonical))
+				return canonical;
 			RawMob swapped{};
 			MobId::swapMiddleFields(mob.data(), swapped.data());
 			const auto alias = MobId::format(swapped.data());

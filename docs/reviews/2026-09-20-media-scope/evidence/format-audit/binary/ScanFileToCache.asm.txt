@@ -1,0 +1,306 @@
+
+/tmp/mediamuster-format-audit-2026-09-20/binary/libameLibrary.arm64.dylib:	file format mach-o arm64
+
+Disassembly of section __TEXT,__text:
+
+000000000044cea0 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)>:
+  44cea0: d10343ff     	sub	sp, sp, #0xd0
+  44cea4: a9076ffc     	stp	x28, x27, [sp, #0x70]
+  44cea8: a90867fa     	stp	x26, x25, [sp, #0x80]
+  44ceac: a9095ff8     	stp	x24, x23, [sp, #0x90]
+  44ceb0: a90a57f6     	stp	x22, x21, [sp, #0xa0]
+  44ceb4: a90b4ff4     	stp	x20, x19, [sp, #0xb0]
+  44ceb8: a90c7bfd     	stp	x29, x30, [sp, #0xc0]
+  44cebc: 910303fd     	add	x29, sp, #0xc0
+  44cec0: aa0303f9     	mov	x25, x3
+  44cec4: aa0203f5     	mov	x21, x2
+  44cec8: aa0103f6     	mov	x22, x1
+  44cecc: aa0003f7     	mov	x23, x0
+  44ced0: b5000141     	cbnz	x1, 0x44cef8 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x58>
+  44ced4: f90003ff     	str	xzr, [sp]
+  44ced8: f0005de1     	adrp	x1, 0x100b000 <_write+0x100b000>
+  44cedc: 9125a821     	add	x1, x1, #0x96a
+  44cee0: 910123e0     	add	x0, sp, #0x48
+  44cee4: 94291628     	bl	0xe92784 <_write+0xe92784>
+  44cee8: 910123e0     	add	x0, sp, #0x48
+  44ceec: 94292034     	bl	0xe94fbc <_write+0xe94fbc>
+  44cef0: 910123e0     	add	x0, sp, #0x48
+  44cef4: 9429162a     	bl	0xe9279c <_write+0xe9279c>
+  44cef8: f94002c8     	ldr	x8, [x22]
+  44cefc: f9406908     	ldr	x8, [x8, #0xd0]
+  44cf00: aa1603e0     	mov	x0, x22
+  44cf04: d63f0100     	blr	x8
+  44cf08: aa0003e1     	mov	x1, x0
+  44cf0c: aa1503e0     	mov	x0, x21
+  44cf10: 97ffce03     	bl	0x44071c <MSMDBMediaStreamMgr::MSMIsKnownNonMediaFile(char16_t*, unsigned char)>
+  44cf14: 34000060     	cbz	w0, 0x44cf20 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x80>
+  44cf18: 5280003a     	mov	w26, #0x1               ; =1
+  44cf1c: 140000fd     	b	0x44d310 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x470>
+  44cf20: 910123e0     	add	x0, sp, #0x48
+  44cf24: 9429161b     	bl	0xe92790 <_write+0xe92790>
+  44cf28: d2800013     	mov	x19, #0x0               ; =0
+  44cf2c: d280001b     	mov	x27, #0x0               ; =0
+  44cf30: b0008720     	adrp	x0, 0x1531000 <kEuConSystemTable___TempLogicJoystickTable+0x8>
+  44cf34: 9115c000     	add	x0, x0, #0x570
+  44cf38: 97ff4aaa     	bl	0x41f9e0 <CheckedCBPointer<ADirLocator* (mcFolder_t, ADirLocator*)>::operator*() const>
+  44cf3c: aa0003f4     	mov	x20, x0
+  44cf40: d2800013     	mov	x19, #0x0               ; =0
+  44cf44: d280001b     	mov	x27, #0x0               ; =0
+  44cf48: 94290c4f     	bl	0xe90084 <_write+0xe90084>
+  44cf4c: aa0003e1     	mov	x1, x0
+  44cf50: d2800013     	mov	x19, #0x0               ; =0
+  44cf54: d280001b     	mov	x27, #0x0               ; =0
+  44cf58: 528001c0     	mov	w0, #0xe                ; =14
+  44cf5c: d63f0280     	blr	x20
+  44cf60: aa0003f3     	mov	x19, x0
+  44cf64: f94002c8     	ldr	x8, [x22]
+  44cf68: f9407108     	ldr	x8, [x8, #0xe0]
+  44cf6c: d280001b     	mov	x27, #0x0               ; =0
+  44cf70: aa1603e0     	mov	x0, x22
+  44cf74: 52800021     	mov	w1, #0x1                ; =1
+  44cf78: d63f0100     	blr	x8
+  44cf7c: f9400008     	ldr	x8, [x0]
+  44cf80: f9416508     	ldr	x8, [x8, #0x2c8]
+  44cf84: d280001b     	mov	x27, #0x0               ; =0
+  44cf88: aa1303e1     	mov	x1, x19
+  44cf8c: d63f0100     	blr	x8
+  44cf90: aa0003f8     	mov	x24, x0
+  44cf94: d280001b     	mov	x27, #0x0               ; =0
+  44cf98: 94290d55     	bl	0xe904ec <_write+0xe904ec>
+  44cf9c: aa0003f4     	mov	x20, x0
+  44cfa0: f94002c8     	ldr	x8, [x22]
+  44cfa4: f9407108     	ldr	x8, [x8, #0xe0]
+  44cfa8: aa0003fb     	mov	x27, x0
+  44cfac: aa1603e0     	mov	x0, x22
+  44cfb0: 52800021     	mov	w1, #0x1                ; =1
+  44cfb4: d63f0100     	blr	x8
+  44cfb8: f9400008     	ldr	x8, [x0]
+  44cfbc: f9419d08     	ldr	x8, [x8, #0x338]
+  44cfc0: aa1403fb     	mov	x27, x20
+  44cfc4: aa1503e1     	mov	x1, x21
+  44cfc8: aa1403e2     	mov	x2, x20
+  44cfcc: d63f0100     	blr	x8
+  44cfd0: b50001b4     	cbnz	x20, 0x44d004 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x164>
+  44cfd4: d280001b     	mov	x27, #0x0               ; =0
+  44cfd8: b0005d00     	adrp	x0, 0xfed000 <_write+0xfed000>
+  44cfdc: 9115b400     	add	x0, x0, #0x56d
+  44cfe0: d0005de1     	adrp	x1, 0x100a000 <_write+0x100a000>
+  44cfe4: 91074021     	add	x1, x1, #0x1d0
+  44cfe8: 5283b802     	mov	w2, #0x1dc0             ; =7616
+  44cfec: 94290878     	bl	0xe8f1cc <_write+0xe8f1cc>
+  44cff0: 340000a0     	cbz	w0, 0x44d004 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x164>
+  44cff4: d280001b     	mov	x27, #0x0               ; =0
+  44cff8: 90005b00     	adrp	x0, 0xfac000 <GCC_except_table3+0x4>
+  44cffc: 91328400     	add	x0, x0, #0xca1
+  44d000: 942904f5     	bl	0xe8e3d4 <_write+0xe8e3d4>
+  44d004: 5280001a     	mov	w26, #0x0               ; =0
+  44d008: 71000f3f     	cmp	w25, #0x3
+  44d00c: 5400020d     	b.le	0x44d04c <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1ac>
+  44d010: 71001b3f     	cmp	w25, #0x6
+  44d014: 54000320     	b.eq	0x44d078 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1d8>
+  44d018: 7100173f     	cmp	w25, #0x5
+  44d01c: 54000240     	b.eq	0x44d064 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1c4>
+  44d020: 7100133f     	cmp	w25, #0x4
+  44d024: 540014c1     	b.ne	0x44d2bc <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x41c>
+  44d028: aa1403fb     	mov	x27, x20
+  44d02c: 97f1663e     	bl	0xa6924 <IsMXFSupported()>
+  44d030: 340001a0     	cbz	w0, 0x44d064 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1c4>
+  44d034: 90008628     	adrp	x8, 0x1511000 <LocalVolume::MakeMediaDir(char16_t const*, ameDomainType, unsigned char)::lastDirPath+0x1fad0>
+  44d038: 91268108     	add	x8, x8, #0x9a0
+  44d03c: 38bfc108     	ldaprb	w8, [x8]
+  44d040: 360003e8     	tbz	w8, #0x0, 0x44d0bc <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x21c>
+  44d044: 52805b08     	mov	w8, #0x2d8              ; =728
+  44d048: 14000012     	b	0x44d090 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1f0>
+  44d04c: 7100073f     	cmp	w25, #0x1
+  44d050: 540001e0     	b.eq	0x44d08c <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1ec>
+  44d054: 71000f3f     	cmp	w25, #0x3
+  44d058: 54001321     	b.ne	0x44d2bc <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x41c>
+  44d05c: 52805e08     	mov	w8, #0x2f0              ; =752
+  44d060: 1400000c     	b	0x44d090 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1f0>
+  44d064: aa1403fb     	mov	x27, x20
+  44d068: 97f1665d     	bl	0xa69dc <IsAMAFIDomainSupported()>
+  44d06c: 36001260     	tbz	w0, #0x0, 0x44d2b8 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x418>
+  44d070: 52805c08     	mov	w8, #0x2e0              ; =736
+  44d074: 14000007     	b	0x44d090 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1f0>
+  44d078: aa1403fb     	mov	x27, x20
+  44d07c: 97f16662     	bl	0xa6a04 <IsProxyDomainSupported()>
+  44d080: 360011c0     	tbz	w0, #0x0, 0x44d2b8 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x418>
+  44d084: 52805d08     	mov	w8, #0x2e8              ; =744
+  44d088: 14000002     	b	0x44d090 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1f0>
+  44d08c: 52805a08     	mov	w8, #0x2d0              ; =720
+  44d090: f94002e9     	ldr	x9, [x23]
+  44d094: f8686928     	ldr	x8, [x9, x8]
+  44d098: aa1403fb     	mov	x27, x20
+  44d09c: aa1703e0     	mov	x0, x23
+  44d0a0: aa1603e1     	mov	x1, x22
+  44d0a4: aa1503e2     	mov	x2, x21
+  44d0a8: aa1403e3     	mov	x3, x20
+  44d0ac: aa1803e4     	mov	x4, x24
+  44d0b0: d63f0100     	blr	x8
+  44d0b4: aa0003fa     	mov	x26, x0
+  44d0b8: 14000081     	b	0x44d2bc <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x41c>
+  44d0bc: 90008620     	adrp	x0, 0x1511000 <LocalVolume::MakeMediaDir(char16_t const*, ameDomainType, unsigned char)::lastDirPath+0x1fad0>
+  44d0c0: 91268000     	add	x0, x0, #0x9a0
+  44d0c4: 94291fe5     	bl	0xe95058 <_write+0xe95058>
+  44d0c8: 34fffbe0     	cbz	w0, 0x44d044 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1a4>
+  44d0cc: 90008620     	adrp	x0, 0x1511000 <LocalVolume::MakeMediaDir(char16_t const*, ameDomainType, unsigned char)::lastDirPath+0x1fad0>
+  44d0d0: 91250000     	add	x0, x0, #0x940
+  44d0d4: d0005de1     	adrp	x1, 0x100b000 <_write+0x100b000>
+  44d0d8: 91262021     	add	x1, x1, #0x988
+  44d0dc: 52800022     	mov	w2, #0x1                ; =1
+  44d0e0: 52800003     	mov	w3, #0x0                ; =0
+  44d0e4: 52800004     	mov	w4, #0x0                ; =0
+  44d0e8: 9400343d     	bl	0x45a1dc <TimingProfiler::TimingProfiler(char const*, unsigned int, bool, short)>
+  44d0ec: 90000000     	adrp	x0, 0x44d000 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x160>
+  44d0f0: 910ed000     	add	x0, x0, #0x3b4
+  44d0f4: 90008621     	adrp	x1, 0x1511000 <LocalVolume::MakeMediaDir(char16_t const*, ameDomainType, unsigned char)::lastDirPath+0x1fad0>
+  44d0f8: 91250021     	add	x1, x1, #0x940
+  44d0fc: f0ffdd82     	adrp	x2, 0x0 <_write>
+  44d100: 91000042     	add	x2, x2, #0x0
+  44d104: 94291fba     	bl	0xe94fec <_write+0xe94fec>
+  44d108: 90008620     	adrp	x0, 0x1511000 <LocalVolume::MakeMediaDir(char16_t const*, ameDomainType, unsigned char)::lastDirPath+0x1fad0>
+  44d10c: 91268000     	add	x0, x0, #0x9a0
+  44d110: 94291fd5     	bl	0xe95064 <_write+0xe95064>
+  44d114: 17ffffcc     	b	0x44d044 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x1a4>
+  44d118: aa0103f6     	mov	x22, x1
+  44d11c: aa0003f5     	mov	x21, x0
+  44d120: 90008620     	adrp	x0, 0x1511000 <LocalVolume::MakeMediaDir(char16_t const*, ameDomainType, unsigned char)::lastDirPath+0x1fad0>
+  44d124: 91268000     	add	x0, x0, #0x9a0
+  44d128: 94291fc9     	bl	0xe9504c <_write+0xe9504c>
+  44d12c: 14000005     	b	0x44d140 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x2a0>
+  44d130: 14000098     	b	0x44d390 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x4f0>
+  44d134: aa0103f6     	mov	x22, x1
+  44d138: aa0003f5     	mov	x21, x0
+  44d13c: aa1b03f4     	mov	x20, x27
+  44d140: aa1503e0     	mov	x0, x21
+  44d144: 71000edf     	cmp	w22, #0x3
+  44d148: 540002a1     	b.ne	0x44d19c <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x2fc>
+  44d14c: 94291fb1     	bl	0xe95010 <_write+0xe95010>
+  44d150: aa0003f5     	mov	x21, x0
+  44d154: 910123e8     	add	x8, sp, #0x48
+  44d158: 91002100     	add	x0, x8, #0x8
+  44d15c: 910022a1     	add	x1, x21, #0x8
+  44d160: 97ef7bfb     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  44d164: 3dc006a0     	ldr	q0, [x21, #0x10]
+  44d168: b94022a8     	ldr	w8, [x21, #0x20]
+  44d16c: b9006be8     	str	w8, [sp, #0x68]
+  44d170: 3c8583e0     	stur	q0, [sp, #0x58]
+  44d174: f94002a8     	ldr	x8, [x21]
+  44d178: f9400908     	ldr	x8, [x8, #0x10]
+  44d17c: aa1503e0     	mov	x0, x21
+  44d180: d63f0100     	blr	x8
+  44d184: b0005de1     	adrp	x1, 0x100a000 <_write+0x100a000>
+  44d188: 91074021     	add	x1, x1, #0x1d0
+  44d18c: 5283be22     	mov	w2, #0x1df1             ; =7665
+  44d190: 942909bf     	bl	0xe8f88c <_write+0xe8f88c>
+  44d194: 94291fa5     	bl	0xe95028 <_write+0xe95028>
+  44d198: 14000048     	b	0x44d2b8 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x418>
+  44d19c: 94291f9d     	bl	0xe95010 <_write+0xe95010>
+  44d1a0: 71000adf     	cmp	w22, #0x2
+  44d1a4: 54000521     	b.ne	0x44d248 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x3a8>
+  44d1a8: aa0003f5     	mov	x21, x0
+  44d1ac: f9400008     	ldr	x8, [x0]
+  44d1b0: f9400908     	ldr	x8, [x8, #0x10]
+  44d1b4: d63f0100     	blr	x8
+  44d1b8: a900ffe0     	stp	x0, xzr, [sp, #0x8]
+  44d1bc: d0005b08     	adrp	x8, 0xfaf000 <_write+0xfaf000>
+  44d1c0: 91053d08     	add	x8, x8, #0x14f
+  44d1c4: f90003e8     	str	x8, [sp]
+  44d1c8: d0005b01     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  44d1cc: 91050021     	add	x1, x1, #0x140
+  44d1d0: 910083f6     	add	x22, sp, #0x20
+  44d1d4: 910083e0     	add	x0, sp, #0x20
+  44d1d8: 9429156b     	bl	0xe92784 <_write+0xe92784>
+  44d1dc: 910123e8     	add	x8, sp, #0x48
+  44d1e0: 91002100     	add	x0, x8, #0x8
+  44d1e4: 910022c1     	add	x1, x22, #0x8
+  44d1e8: 97ef7bd9     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  44d1ec: 3dc00fe0     	ldr	q0, [sp, #0x30]
+  44d1f0: 3c8583e0     	stur	q0, [sp, #0x58]
+  44d1f4: b94043e8     	ldr	w8, [sp, #0x40]
+  44d1f8: b9006be8     	str	w8, [sp, #0x68]
+  44d1fc: 910083e0     	add	x0, sp, #0x20
+  44d200: 94291567     	bl	0xe9279c <_write+0xe9279c>
+  44d204: f94002a8     	ldr	x8, [x21]
+  44d208: f9400908     	ldr	x8, [x8, #0x10]
+  44d20c: aa1503e0     	mov	x0, x21
+  44d210: d63f0100     	blr	x8
+  44d214: b0005de1     	adrp	x1, 0x100a000 <_write+0x100a000>
+  44d218: 91074021     	add	x1, x1, #0x1d0
+  44d21c: 5283be22     	mov	w2, #0x1df1             ; =7665
+  44d220: 942909e0     	bl	0xe8f9a0 <_write+0xe8f9a0>
+  44d224: b0006e08     	adrp	x8, 0x120e000 <_write+0x120e000>
+  44d228: f9468108     	ldr	x8, [x8, #0xd00]
+  44d22c: f9400108     	ldr	x8, [x8]
+  44d230: b4000088     	cbz	x8, 0x44d240 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x3a0>
+  44d234: f0005b00     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  44d238: 91020c00     	add	x0, x0, #0x83
+  44d23c: d63f0100     	blr	x8
+  44d240: 94291f7a     	bl	0xe95028 <_write+0xe95028>
+  44d244: 1400001d     	b	0x44d2b8 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x418>
+  44d248: f90003ff     	str	xzr, [sp]
+  44d24c: d0005b01     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  44d250: 91035021     	add	x1, x1, #0xd4
+  44d254: 910083f5     	add	x21, sp, #0x20
+  44d258: 910083e0     	add	x0, sp, #0x20
+  44d25c: 9429154a     	bl	0xe92784 <_write+0xe92784>
+  44d260: 910123e8     	add	x8, sp, #0x48
+  44d264: 91002100     	add	x0, x8, #0x8
+  44d268: 910022a1     	add	x1, x21, #0x8
+  44d26c: 97ef7bb8     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  44d270: 3dc00fe0     	ldr	q0, [sp, #0x30]
+  44d274: 3c8583e0     	stur	q0, [sp, #0x58]
+  44d278: b94043e8     	ldr	w8, [sp, #0x40]
+  44d27c: b9006be8     	str	w8, [sp, #0x68]
+  44d280: 910083e0     	add	x0, sp, #0x20
+  44d284: 94291546     	bl	0xe9279c <_write+0xe9279c>
+  44d288: b0005de0     	adrp	x0, 0x100a000 <_write+0x100a000>
+  44d28c: 91074000     	add	x0, x0, #0x1d0
+  44d290: 5283be21     	mov	w1, #0x1df1             ; =7665
+  44d294: 942909e1     	bl	0xe8fa18 <_write+0xe8fa18>
+  44d298: b0006e08     	adrp	x8, 0x120e000 <_write+0x120e000>
+  44d29c: f9468108     	ldr	x8, [x8, #0xd00]
+  44d2a0: f9400108     	ldr	x8, [x8]
+  44d2a4: b4000088     	cbz	x8, 0x44d2b4 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x414>
+  44d2a8: f0005b00     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  44d2ac: 91020c00     	add	x0, x0, #0x83
+  44d2b0: d63f0100     	blr	x8
+  44d2b4: 94291f5d     	bl	0xe95028 <_write+0xe95028>
+  44d2b8: 5280001a     	mov	w26, #0x0               ; =0
+  44d2bc: 910083e0     	add	x0, sp, #0x20
+  44d2c0: 910123e1     	add	x1, sp, #0x48
+  44d2c4: 9429112b     	bl	0xe91770 <_write+0xe91770>
+  44d2c8: b40000b3     	cbz	x19, 0x44d2dc <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x43c>
+  44d2cc: f9400268     	ldr	x8, [x19]
+  44d2d0: f9400108     	ldr	x8, [x8]
+  44d2d4: aa1303e0     	mov	x0, x19
+  44d2d8: d63f0100     	blr	x8
+  44d2dc: b40000b4     	cbz	x20, 0x44d2f0 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x450>
+  44d2e0: f9400288     	ldr	x8, [x20]
+  44d2e4: f9400108     	ldr	x8, [x8]
+  44d2e8: aa1403e0     	mov	x0, x20
+  44d2ec: d63f0100     	blr	x8
+  44d2f0: f9402fe8     	ldr	x8, [sp, #0x58]
+  44d2f4: b4000068     	cbz	x8, 0x44d300 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x460>
+  44d2f8: 910123e0     	add	x0, sp, #0x48
+  44d2fc: 942905b9     	bl	0xe8e9e0 <_write+0xe8e9e0>
+  44d300: 910083e0     	add	x0, sp, #0x20
+  44d304: 9429111e     	bl	0xe9177c <_write+0xe9177c>
+  44d308: 910123e0     	add	x0, sp, #0x48
+  44d30c: 94291524     	bl	0xe9279c <_write+0xe9279c>
+  44d310: aa1a03e0     	mov	x0, x26
+  44d314: a94c7bfd     	ldp	x29, x30, [sp, #0xc0]
+  44d318: a94b4ff4     	ldp	x20, x19, [sp, #0xb0]
+  44d31c: a94a57f6     	ldp	x22, x21, [sp, #0xa0]
+  44d320: a9495ff8     	ldp	x24, x23, [sp, #0x90]
+  44d324: a94867fa     	ldp	x26, x25, [sp, #0x80]
+  44d328: a9476ffc     	ldp	x28, x27, [sp, #0x70]
+  44d32c: 910343ff     	add	sp, sp, #0xd0
+  44d330: d65f03c0     	ret
+  44d334: 14000017     	b	0x44d390 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x4f0>
+  44d338: aa0003f3     	mov	x19, x0
+  44d33c: 910083e0     	add	x0, sp, #0x20
+  44d340: 94291517     	bl	0xe9279c <_write+0xe9279c>
+  44d344: 14000009     	b	0x44d368 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x4c8>
+  44d348: 14000007     	b	0x44d364 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x4c4>
+  44d34c: 14000011     	b	0x44d390 <MSMDBMediaStreamMgr::ScanFileToCache(MSMMediaDirRecord*, char16_t*, ameDomainType)+0x4f0>

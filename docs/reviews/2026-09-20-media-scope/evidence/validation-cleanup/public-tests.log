@@ -1,0 +1,13 @@
+Test project /Users/martymclean/Developer/MediaMuster/build
+    Start  5: tst_conventions
+1/2 Test  #5: tst_conventions ..................   Passed    0.95 sec
+    Start 27: tst_operationui
+2/2 Test #27: tst_operationui ..................   Passed    3.69 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Label Time Summary:
+core    =   0.95 sec*proc (1 test)
+ui      =   3.69 sec*proc (1 test)
+
+Total Test time (real) =   4.64 sec

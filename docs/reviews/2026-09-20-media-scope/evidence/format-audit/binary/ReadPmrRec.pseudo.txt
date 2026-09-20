@@ -1,0 +1,259 @@
+ReadPmrRec @ 0x4474e0
+Verified procedure entry: 0x4474e0
+    var_50 = r28;
+    decomp_var_48 = r27;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r31 = r31 + 0xffffffffffffffa0 - "/gk.dylib";
+    r20 = arg3;
+    r19 = arg2;
+    r22 = arg1;
+    r21 = arg0;
+    var_58 = **___stack_chk_guard;
+    var_98 = *vtable for icu_72_Avid::UnicodeString + 0x10;
+    XError::XError();
+    r26 = &decomp_var_898;
+    if (r22 <= 0x7) {
+            Read_OMFMobID(r21, "mobID");
+            q0 = *r26;
+            q1 = r26[0x2];
+            *r20 = q0;
+            r20[0x2] = q1;
+            bzero(&decomp_var_898, "vid.72.1.dylib");
+            r0 = (*(*r21 + 0x288))(r21, "filename", &decomp_var_898, "vid.72.1.dylib");
+            if (r0 == 0x0) {
+                    if (__FtlAssertFailed("stream->ReadString( \"filename\", filename, sizeof(filename) )", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c", 0x36e) != 0x0) {
+                            DebugStr(0xfacca1);
+                            r8 = &decomp_var_8d8;
+                            r0 = CurrentMacMBCSEncodingToUnicodeString(&decomp_var_898);
+                            r0 = icu_72_Avid::UnicodeString::operator=(&var_98);
+                            icu_72_Avid::UnicodeString::~UnicodeString();
+                    }
+                    else {
+                            r8 = &decomp_var_8d8;
+                            r0 = CurrentMacMBCSEncodingToUnicodeString(&decomp_var_898);
+                            r0 = icu_72_Avid::UnicodeString::operator=(&var_98);
+                            icu_72_Avid::UnicodeString::~UnicodeString();
+                    }
+            }
+            else {
+                    r8 = &decomp_var_8d8;
+                    r0 = CurrentMacMBCSEncodingToUnicodeString(&decomp_var_898);
+                    r0 = icu_72_Avid::UnicodeString::operator=(&var_98);
+                    icu_72_Avid::UnicodeString::~UnicodeString();
+            }
+    }
+    else {
+            r8 = &decomp_var_898;
+            Read_AAFMobID(r21, "mobID");
+            q0 = *r26;
+            q1 = r26[0x2];
+            *r20 = q0;
+            r20[0x2] = q1;
+            if (r22 <= 0xf) {
+                    bzero(&decomp_var_898, "vid.72.1.dylib");
+                    r0 = (*(*r21 + 0x288))(r21, "filename", &decomp_var_898, "vid.72.1.dylib");
+                    if (r0 == 0x0 && __FtlAssertFailed("stream->ReadString( \"filename\", filename, sizeof(filename) )", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c", 0x36e) != 0x0) {
+                            DebugStr(0xfacca1);
+                    }
+                    r8 = &decomp_var_8d8;
+                    r0 = CurrentMacMBCSEncodingToUnicodeString(&decomp_var_898);
+                    r0 = icu_72_Avid::UnicodeString::operator=(&var_98);
+                    icu_72_Avid::UnicodeString::~UnicodeString();
+            }
+            else {
+                    bzero(&decomp_var_898, "vid.72.1.dylib");
+                    r0 = (*(*r21 + 0x2a8))(r21, "filenameUTF16", &decomp_var_898, 0x400);
+                    r23 = u_strlen_72_Avid();
+                    icu_72_Avid::UnicodeString::unBogus();
+                    asm { ldurh      w8, [fp, var_90] };
+                    r9 = sign_extend_64(r8);
+                    r8 = r8 >> 0x5;
+                    r10 = var_8C;
+                    if (r9 >= 0x0) {
+                            r2 = r8;
+                    }
+                    else {
+                            r2 = r10;
+                    }
+                    r0 = icu_72_Avid::UnicodeString::doReplace(&var_98, 0x0, r2, &decomp_var_898, 0x0);
+            }
+    }
+    asm { ldurh      w8, [fp, var_90] };
+    r9 = sign_extend_64(r8);
+    r8 = r8 >> 0x5;
+    r10 = var_8C;
+    if (r9 < 0x0) {
+            r8 = r10;
+    }
+    if (r8 <= 0xff) {
+            icu_72_Avid::UnicodeString::getTerminatedBuffer();
+            u_strcpy_72_Avid();
+    }
+    u_strlen_72_Avid();
+    asm { ccmp       w0, #0x0, #0x4, lo };
+    if (asm { ccmp       w0, #0x0, #0x4, lo }) {
+            r27 = 0x1;
+    }
+    if (r22 == 0x1) {
+            r0 = GetMobMan();
+            r0 = (*(*r0 + 0x58))();
+            r20[0x240] = 0x0;
+            if (r0 != 0x0) {
+                    FindProjectName(r0, 0x0, r20 + 0x240, 0x40);
+            }
+            (*(*GetMobMan() + 0x90))();
+            NullMobID();
+            q0 = *r26;
+            q1 = r26[0x2];
+            r20[0x44] = q0;
+            r20[0x46] = q1;
+            while (true) {
+                    r0 = (*(*GetMobMan() + 0xa0))();
+                    r23 = r0;
+                    if (r0 == 0x0) {
+                            temp_0 = 0x1;
+                            break;
+                    }
+                    r24 = CAvList::New();
+                    (*(*r23 + 0x4a0))(r23, FindFileMobs(void*, unsigned char, ASourceClip*), r24);
+                    if (r24 == 0x0) {
+                            continue;
+                    }
+                    r0 = (*(*r24 + 0x238))(r24, &decomp_var_8d8, 0x0);
+                    for (r25 = r0; r25 != 0x0; r25 = r0) {
+                            AComposition::GetMobID();
+                            r0 = EqualMobID(&decomp_var_898, r20);
+                            if (r0 != 0x0) {
+                                    break;
+                            }
+                            r0 = (*(*r24 + 0x240))(r24, &decomp_var_8d8, 0x0);
+                    }
+                    (**r24)(r24);
+                    if (r25 == 0x0) {
+                            continue;
+                    }
+                    AComposition::GetMobID();
+                    temp_0 = 0x0;
+                    break;
+            }
+            if (temp_0 == 0x0) {
+                    q0 = *r26;
+                    q1 = r26[0x2];
+                    r20[0x44] = q0;
+                    r20[0x46] = q1;
+            }
+    }
+    else {
+            (*(*r21 + 0x288))(r21, "project", r20 + 0x240, 0x40);
+            if (r22 <= 0x7) {
+                    Read_OMFMobID(r21, "mobID");
+            }
+            else {
+                    Read_AAFMobID(r21, "mobID");
+            }
+            q0 = *r26;
+            q1 = r26[0x2];
+            r20[0x44] = q0;
+            r20[0x46] = q1;
+    }
+    r20[0xa0] = (*(*r21 + 0x250))(r21, 0x100c548);
+    XError::~XError();
+    if ((r27 & 0x1) != 0x0) {
+            r19 = 0x1;
+    }
+    else {
+            if ((*(int8_t *)sDontDisplayWarning & 0x1) == 0x0) {
+                    r0 = bzero(&decomp_var_898, "vid.72.1.dylib");
+                    r0 = UnicodeStringToCurrentMacMBCSString(&var_98, 0x0);
+                    icu_72_Avid::UnicodeString::UnicodeString(&decomp_var_8d8);
+                    UnicodeStringToCurrentMacMBCSString(&decomp_var_8d8, 0x0);
+                    icu_72_Avid::UnicodeString::~UnicodeString();
+                    asm { ldurh      w8, [fp, var_90] };
+                    r9 = sign_extend_64(r8);
+                    r8 = r8 >> 0x5;
+                    r10 = var_8C;
+                    if (r9 < 0x0) {
+                            r8 = r10;
+                    }
+                    if (r8 >= 0x101) {
+                            stx_func("The 'pmr' file in %s contains a %d byte filename,\n'%s'.\nBecause only %d are permiited, it will be ignored.\nIf the media is present in the directory, you may rename it.");
+                            r1 = AvText::operator char const*();
+                            r9 = var_950;
+                            r8 = &var_950;
+                            if (sign_extend_64(var_939) < 0x0) {
+                                    r8 = r9;
+                            }
+                            asm { ldurh      w9, [fp, var_90] };
+                            r10 = sign_extend_64(r9);
+                            r9 = r9 >> 0x5;
+                            r11 = var_8C;
+                            if (r10 < 0x0) {
+                                    r9 = r11;
+                            }
+                            r11 = var_938;
+                            r10 = &var_938;
+                            if (sign_extend_64(var_921) < 0x0) {
+                                    r10 = r11;
+                            }
+                    }
+                    else {
+                            r8 = var_921;
+                            r10 = var_930;
+                            if (sign_extend_64(r8) < 0x0) {
+                                    r8 = r10;
+                            }
+                            if (r8 != 0x0) {
+                                    stx_func("The 'pmr' file in %s contains an invalid entry named:\n'%s'\nThe entry will be ignored.\nIf possible, quit the application, delete the 'pmr' file and relaunch.");
+                                    r1 = AvText::operator char const*();
+                                    r9 = var_950;
+                                    r8 = &var_950;
+                                    if (sign_extend_64(var_939) < 0x0) {
+                                            r8 = r9;
+                                    }
+                                    r10 = var_938;
+                                    r9 = &var_938;
+                                    if (sign_extend_64(var_921) < 0x0) {
+                                            r9 = r10;
+                                    }
+                            }
+                            else {
+                                    stx_func("The 'pmr' file in %s contains an invalid entry and is corrupt.\nIf possible, quit the application, delete the 'pmr' file and relaunch.");
+                                    r1 = AvText::operator char const*();
+                                    r9 = var_950;
+                                    r8 = &var_950;
+                                    if (sign_extend_64(var_939) < 0x0) {
+                                            r8 = r9;
+                                    }
+                            }
+                    }
+                    sprintf(&decomp_var_898, r1);
+                    stx_func("OK|Ignore All");
+                    r0 = AvText::operator char const*();
+                    r0 = UIdialog(&decomp_var_898, r0, 0x1, 0x0, 0x0, 0x1, "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c");
+                    if (r0 == 0x2) {
+                            *(int8_t *)sDontDisplayWarning = 0x1;
+                    }
+                    if ((sign_extend_64(var_939) & 0xffffffff80000000) != 0x0) {
+                            operator delete(var_950);
+                    }
+                    if ((sign_extend_64(var_921) & 0xffffffff80000000) != 0x0) {
+                            operator delete(var_938);
+                    }
+            }
+            r19 = 0x0;
+    }
+    r0 = icu_72_Avid::UnicodeString::~UnicodeString();
+    if (**___stack_chk_guard != var_58) {
+            __stack_chk_fail();
+    }
+    r0 = r19;
+    return r0;

@@ -1,4 +1,5 @@
 #include "conventions.h"
+#include "avidmedialayout.h"
 
 #include <QtTest>
 
@@ -21,8 +22,6 @@ private slots:
 	void mxf_extension_is_case_insensitive();
 	void essence_name_combinations();
 	void avid_media_extensions();
-	void avid_media_name_is_the_table_rule();
-	void unrecognised_suffixes_are_not_media();
 	void folder_budget_thresholds_stay_ordered();
 
 	// MARK: - OMF-era
@@ -31,6 +30,15 @@ private slots:
 	void creating_folder_name_is_case_insensitive();
 	void system_drive_media_bases_per_platform();
 	void database_file_names_cover_both_spellings();
+	void managed_mxf_folder_names_preserve_readable_spellings_data();
+	void managed_mxf_folder_names_preserve_readable_spellings();
+	void managed_roots_require_complete_component_names();
+	void ume_paths_require_complete_component_names();
+	void managed_media_folder_locations_data();
+	void managed_media_folder_locations();
+	void quarantined_mxf_location_is_explicit();
+	void managed_format_families_keep_their_own_suffixes();
+	void omf_workstation_folder_names();
 };
 
 void TestConventions::mxf_root_name_is_case_insensitive()
@@ -103,6 +111,11 @@ void TestConventions::essence_name_combinations()
 	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("._clip.mxf")));
 	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("msmMMOB.mdb")));
 	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral(".DS_Store")));
+	// Replacement and backup files do not occupy the media folder budget.
+	for (const QString &name : {QStringLiteral("clip.mxf.__copyreplace_ab12"),
+								QStringLiteral("clip.mxf.__movereplace_ab12"), QStringLiteral("clip.omf.partial"),
+								QStringLiteral("clip.wav.backup")})
+		QVERIFY2(!Conventions::countsAsEssenceName(name), qPrintable(name));
 }
 
 void TestConventions::avid_media_extensions()
@@ -119,29 +132,6 @@ void TestConventions::avid_media_extensions()
 	// The full filename must end in a supported extension.
 	QVERIFY(!Conventions::hasAvidMediaExtension(
 		QStringLiteral("clip.mxf.__movereplace_ab12")));
-}
-
-void TestConventions::unrecognised_suffixes_are_not_media()
-{
-	// Only actual media extensions qualify; old replacement markers have no special meaning.
-	for (const QString &name : {QStringLiteral("Clip.mxf.__copyreplace_ab12"),
-		QStringLiteral("Clip.mxf.__movereplace_ab12"), QStringLiteral("Clip.omf.partial"),
-		QStringLiteral("Clip.wav.backup")})
-	{
-		QVERIFY2(!Conventions::isAvidMediaName(name), qPrintable(name));
-		QVERIFY2(!Conventions::countsAsEssenceName(name), qPrintable(name));
-	}
-}
-
-void TestConventions::avid_media_name_is_the_table_rule()
-{
-	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("clip.mxf")));
-	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("legacy.omf")));
-	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("tone.wav")));
-	// AppleDouble twins carry a media extension but are junk.
-	QVERIFY(!Conventions::isAvidMediaName(QStringLiteral("._clip.mxf")));
-	QVERIFY(!Conventions::isAvidMediaName(QStringLiteral(".DS_Store")));
-	QVERIFY(!Conventions::isAvidMediaName(QStringLiteral("export.mov")));
 }
 
 void TestConventions::folder_budget_thresholds_stay_ordered()
@@ -162,7 +152,7 @@ void TestConventions::folder_budget_thresholds_stay_ordered()
 	// budget counts .mxf only, the table admits OMF-era audio too.
 	QVERIFY(Conventions::countsAsEssenceName(QStringLiteral("clip.mxf")));
 	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("track.wav")));
-	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("track.wav")));
+	QVERIFY(AvidMediaLayout::acceptsFileName(AvidMediaLayout::Family::Omf, QStringLiteral("track.wav")));
 }
 
 // MARK: - OMF-era
@@ -184,26 +174,18 @@ void TestConventions::omf_root_constant_and_omf_root_under()
 
 void TestConventions::omf_era_extension_set()
 {
-	// The legacy set: .omf video, .aif/.wav/.sd2 audio. Case-insensitive
+	// The v1 legacy set: .omf audio/video, .aif/.wav audio. Case-insensitive
 	// like every other extension test here.
 	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("slate.omf")));
 	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("SLATE.OMF")));
 	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.aif")));
 	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.wav")));
-	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.sd2")));
-	QVERIFY(Conventions::hasOmfEraExtension(QStringLiteral("tone.SD2")));
 	// .mxf is the OTHER era; the scanner dispatches on this split.
 	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("clip.mxf")));
 	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("tone.aiff")));
 	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("export.mov")));
 	QVERIFY(!Conventions::hasOmfEraExtension(QStringLiteral("msmMMOB.mdb")));
 
-	// And the umbrella admits the whole legacy set, .sd2 included, while
-	// the folder budget still counts .mxf only.
-	QVERIFY(Conventions::hasAvidMediaExtension(QStringLiteral("tone.sd2")));
-	QVERIFY(Conventions::isAvidMediaName(QStringLiteral("tone.sd2")));
-	QVERIFY(!Conventions::isAvidMediaName(QStringLiteral("._tone.sd2")));
-	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("tone.sd2")));
 	QVERIFY(!Conventions::countsAsEssenceName(QStringLiteral("slate.omf")));
 }
 
@@ -255,9 +237,187 @@ void TestConventions::database_file_names_cover_both_spellings()
 	QCOMPARE(QString(Conventions::kMdbFileNames[0]), QStringLiteral("msmMMOB.mdb"));
 	QCOMPARE(QString(Conventions::kMdbFileNames[1]), QStringLiteral("amaMMOB.mdb"));
 	for (const QLatin1String name : Conventions::kPmrFileNames)
-		QVERIFY2(!Conventions::isAvidMediaName(QString(name)), name.data());
+		for (const auto family : {AvidMediaLayout::Family::Mxf, AvidMediaLayout::Family::Omf})
+			QVERIFY2(!AvidMediaLayout::acceptsFileName(family, QString(name)), name.data());
 	for (const QLatin1String name : Conventions::kMdbFileNames)
-		QVERIFY2(!Conventions::isAvidMediaName(QString(name)), name.data());
+		for (const auto family : {AvidMediaLayout::Family::Mxf, AvidMediaLayout::Family::Omf})
+			QVERIFY2(!AvidMediaLayout::acceptsFileName(family, QString(name)), name.data());
+}
+
+void TestConventions::managed_mxf_folder_names_preserve_readable_spellings_data()
+{
+	QTest::addColumn<QString>("name");
+	QTest::addColumn<bool>("accepted");
+	QTest::addColumn<QString>("prefix");
+	QTest::addColumn<QString>("digits");
+	QTest::newRow("local") << QStringLiteral("1") << true << QString{} << QStringLiteral("1");
+	QTest::newRow("padded-local") << QStringLiteral("001") << true << QString{} << QStringLiteral("001");
+	QTest::newRow("workstation") << QStringLiteral("EditSuite.12") << true << QStringLiteral("EditSuite") << QStringLiteral("12");
+	QTest::newRow("padded-workstation") << QStringLiteral("EditSuite.001") << true << QStringLiteral("EditSuite") << QStringLiteral("001");
+	QTest::newRow("dotted-workstation") << QStringLiteral("edit.suite.2") << true << QStringLiteral("edit.suite") << QStringLiteral("2");
+	QTest::newRow("temp-workstation") << QStringLiteral("Temp.1") << true << QStringLiteral("Temp") << QStringLiteral("1");
+	QTest::newRow("quarantine-workstation") << QStringLiteral("Quarantine.2") << true << QStringLiteral("Quarantine") << QStringLiteral("2");
+	QTest::newRow("large-number") << QStringLiteral("999999999999999999999999") << true << QString{} << QStringLiteral("999999999999999999999999");
+	for (const QString &name : {QString{}, QStringLiteral("0"), QStringLiteral("000"), QStringLiteral("host.0"),
+								QStringLiteral("host.000"), QStringLiteral(".1"), QStringLiteral(".host.1"), QStringLiteral("host."),
+								QStringLiteral("host"), QStringLiteral("+1"), QStringLiteral("-1"), QStringLiteral(" 1"), QStringLiteral("1 "),
+								QStringLiteral("١"), QStringLiteral("１"), QStringLiteral("one/1"), QStringLiteral("one\\1"),
+								QStringLiteral("Temp"), QStringLiteral("Quarantine"), QStringLiteral("Creating"), QStringLiteral("Quarantined Files")})
+		QTest::newRow(qPrintable(QStringLiteral("reject-%1").arg(name))) << name << false << QString{} << QString{};
+}
+
+void TestConventions::managed_mxf_folder_names_preserve_readable_spellings()
+{
+	QFETCH(QString, name);
+	QFETCH(bool, accepted);
+	QFETCH(QString, prefix);
+	QFETCH(QString, digits);
+	const auto result = AvidMediaLayout::parseMxfFolderName(name);
+	QCOMPARE(result.has_value(), accepted);
+	if (result)
+	{
+		QCOMPARE(result->prefix, prefix);
+		QCOMPARE(result->digits, digits);
+	}
+}
+
+void TestConventions::managed_roots_require_complete_component_names()
+{
+	QVERIFY(AvidMediaLayout::isMxfRoot(QStringLiteral("/project/Avid MediaFiles/MXF")));
+	QVERIFY(AvidMediaLayout::isMxfRoot(QStringLiteral("/project/avid mediafiles/mxf/")));
+	QVERIFY(AvidMediaLayout::isMxfRoot(QStringLiteral("/project/./Avid MediaFiles/other/../MXF")));
+	for (const QString &path : {QStringLiteral("/project/MXF"), QStringLiteral("Avid MediaFiles/MXF"),
+								QStringLiteral("/project/My Avid MediaFiles/MXF"), QStringLiteral("/project/Avid MediaFiles/MXF-backup"),
+								QStringLiteral("/project/OMFI MediaFiles/Avid MediaFiles/MXF"),
+								QStringLiteral("/project/omfi mediafiles/archive/Avid MediaFiles/MXF"),
+								QStringLiteral("/project/Avid MediaFiles/UME/archive/Avid MediaFiles/MXF")})
+		QVERIFY2(!AvidMediaLayout::isMxfRoot(path), qPrintable(path));
+	QVERIFY(AvidMediaLayout::isOmfRoot(QStringLiteral("/project/OMFI MediaFiles")));
+	QVERIFY(AvidMediaLayout::isOmfRoot(QStringLiteral("/project/omfi mediafiles/")));
+	for (const QString &path : {QStringLiteral("/project/OMFI MediaFiles-backup"), QStringLiteral("OMFI MediaFiles"),
+								QStringLiteral("/project/Avid MediaFiles/OMFI MediaFiles"),
+								QStringLiteral("/project/Avid MediaFiles/MXF/1/OMFI MediaFiles"),
+								QStringLiteral("/project/Avid MediaFiles/UME/OMFI MediaFiles")})
+		QVERIFY2(!AvidMediaLayout::isOmfRoot(path), qPrintable(path));
+}
+
+void TestConventions::ume_paths_require_complete_component_names()
+{
+	for (const QString &path : {QStringLiteral("/project/Avid MediaFiles/UME"),
+								QStringLiteral("/project/avid mediafiles/ume/1"),
+								QStringLiteral("/project/Avid MediaFiles/UME/archive/Avid MediaFiles/MXF/1")})
+		QVERIFY2(AvidMediaLayout::isInsideUmeRoot(path), qPrintable(path));
+	for (const QString &path : {QStringLiteral("/project/UME/1"),
+								QStringLiteral("/project/My Avid MediaFiles/UME/1"),
+								QStringLiteral("/project/Avid MediaFiles/UME backup/1"),
+								QStringLiteral("/project/Avid MediaFiles/UME/../MXF/1")})
+		QVERIFY2(!AvidMediaLayout::isInsideUmeRoot(path), qPrintable(path));
+}
+
+void TestConventions::managed_media_folder_locations_data()
+{
+	QTest::addColumn<QString>("path");
+	QTest::addColumn<bool>("accepted");
+	QTest::addColumn<bool>("omf");
+	QTest::addColumn<QString>("root");
+	QTest::addColumn<QString>("folder");
+	QTest::newRow("local-mxf") << QStringLiteral("/project/Avid MediaFiles/MXF/1") << true << false
+							   << QStringLiteral("/project/Avid MediaFiles/MXF") << QStringLiteral("1");
+	QTest::newRow("workstation-mxf") << QStringLiteral("/project/Avid MediaFiles/MXF/EditSuite.001/") << true << false
+									 << QStringLiteral("/project/Avid MediaFiles/MXF") << QStringLiteral("EditSuite.001");
+	QTest::newRow("case-preserved") << QStringLiteral("/project/avid mediafiles/mxf/./003") << true << false
+									<< QStringLiteral("/project/avid mediafiles/mxf") << QStringLiteral("003");
+	QTest::newRow("flat-omf") << QStringLiteral("/project/OMFI MediaFiles") << true << true
+							  << QStringLiteral("/project/OMFI MediaFiles") << QStringLiteral("OMFI MediaFiles");
+	QTest::newRow("workstation-omf") << QStringLiteral("/project/OMFI MediaFiles/EditSuite") << true << true
+									 << QStringLiteral("/project/OMFI MediaFiles") << QStringLiteral("EditSuite");
+	QTest::newRow("temp-workstation-omf") << QStringLiteral("/project/OMFI MediaFiles/Temp") << true << true
+										  << QStringLiteral("/project/OMFI MediaFiles") << QStringLiteral("Temp");
+	QTest::newRow("quarantine-workstation-omf") << QStringLiteral("/project/OMFI MediaFiles/Quarantine") << true << true
+												<< QStringLiteral("/project/OMFI MediaFiles") << QStringLiteral("Quarantine");
+	for (const QString &path : {QStringLiteral("/project/MXF/1"), QStringLiteral("/project/Archived session"),
+								QStringLiteral("/project/Avid MediaFiles/MXF"), QStringLiteral("/project/Avid MediaFiles/MXF/arbitrary"),
+								QStringLiteral("/project/Avid MediaFiles/MXF/0"), QStringLiteral("/project/Avid MediaFiles/MXF/.host.1"),
+								QStringLiteral("/project/Avid MediaFiles/MXF/1/2"), QStringLiteral("/project/OMFI MediaFiles/host/child"),
+								QStringLiteral("/project/OMFI MediaFiles/Creating"), QStringLiteral("/project/OMFI MediaFiles/Quarantined Files"),
+								QStringLiteral("/project/OMFI MediaFiles/.hidden"),
+								QStringLiteral("/project/OMFI MediaFiles/Avid MediaFiles/MXF/1"),
+								QStringLiteral("/project/omfi mediafiles/archive/Avid MediaFiles/MXF/host.1"),
+								QStringLiteral("/project/Avid MediaFiles/UME/archive/OMFI MediaFiles/host"),
+								QStringLiteral("/project/Avid MediaFiles/UME/archive/Avid MediaFiles/MXF/1")})
+		QTest::newRow(qPrintable(QStringLiteral("reject-%1").arg(path))) << path << false << false << QString{} << QString{};
+}
+
+void TestConventions::managed_media_folder_locations()
+{
+	QFETCH(QString, path);
+	QFETCH(bool, accepted);
+	QFETCH(bool, omf);
+	QFETCH(QString, root);
+	QFETCH(QString, folder);
+	const auto result = AvidMediaLayout::locateMediaFolder(path);
+	QCOMPARE(result.has_value(), accepted);
+	if (result)
+	{
+		QCOMPARE(result->family, omf ? AvidMediaLayout::Family::Omf : AvidMediaLayout::Family::Mxf);
+		QCOMPARE(result->rootPath, root);
+		QCOMPARE(result->folderName, folder);
+		QVERIFY(!result->isQuarantined);
+	}
+}
+
+void TestConventions::quarantined_mxf_location_is_explicit()
+{
+	for (const QString &name : {QStringLiteral("Quarantined Files"), QStringLiteral("quarantined files")})
+	{
+		const QString root = QStringLiteral("/project/Avid MediaFiles/MXF");
+		const auto location = AvidMediaLayout::locateMediaFolder(root + QLatin1Char('/') + name);
+		QVERIFY(location);
+		QCOMPARE(location->family, AvidMediaLayout::Family::Mxf);
+		QCOMPARE(location->rootPath, root);
+		QCOMPARE(location->folderName, name);
+		QVERIFY(location->isQuarantined);
+		QVERIFY(!AvidMediaLayout::parseMxfFolderName(name));
+	}
+	for (const QString &path : {QStringLiteral("/project/Quarantined Files"),
+								QStringLiteral("/project/MXF/Quarantined Files"),
+								QStringLiteral("/project/Avid MediaFiles/MXF/Quarantined Files backup"),
+								QStringLiteral("/project/Avid MediaFiles/MXF/1/Quarantined Files"),
+								QStringLiteral("/project/Avid MediaFiles/UME/Quarantined Files")})
+		QVERIFY2(!AvidMediaLayout::locateMediaFolder(path), qPrintable(path));
+}
+
+void TestConventions::managed_format_families_keep_their_own_suffixes()
+{
+	using AvidMediaLayout::Family;
+	QVERIFY(AvidMediaLayout::acceptsFileName(Family::Mxf, QStringLiteral("clip.MXF")));
+	QVERIFY(!AvidMediaLayout::acceptsFileName(Family::Omf, QStringLiteral("clip.mxf")));
+	for (const QString &name : {QStringLiteral("video.OMF"), QStringLiteral("audio.aif"), QStringLiteral("audio.WAV")})
+	{
+		QVERIFY2(AvidMediaLayout::acceptsFileName(Family::Omf, name), qPrintable(name));
+		QVERIFY2(!AvidMediaLayout::acceptsFileName(Family::Mxf, name), qPrintable(name));
+	}
+	for (const QString &name : {QStringLiteral("._clip.mxf"), QStringLiteral(".clip.omf"), QStringLiteral("audio.sd2"),
+								QStringLiteral("audio.aiff"), QStringLiteral("msmMMOB.mdb"), QStringLiteral("nested/clip.mxf"),
+								QStringLiteral("nested\\clip.wav"), QStringLiteral(".mxf"), QStringLiteral(".wav"),
+								QStringLiteral("notes.txt"), QStringLiteral("sheet.xlsx"), QStringLiteral("audio.SD2"),
+								QStringLiteral(".DS_Store"), QStringLiteral("Thumbs.db"), QStringLiteral("desktop.ini"),
+								QStringLiteral("export.mov"), QStringLiteral("clip.mxf.__copyreplace_ab12"),
+								QStringLiteral("clip.mxf.__movereplace_ab12"), QStringLiteral("clip.omf.partial"),
+								QStringLiteral("clip.wav.backup")})
+		for (const auto family : {Family::Mxf, Family::Omf})
+			QVERIFY2(!AvidMediaLayout::acceptsFileName(family, name), qPrintable(name));
+}
+
+void TestConventions::omf_workstation_folder_names()
+{
+	for (const QString &name : {QStringLiteral("Creating"), QStringLiteral("creating"),
+								QStringLiteral("Quarantined Files"), QStringLiteral("quarantined files"),
+								QStringLiteral(".hidden"), QString{}, QStringLiteral("host/child")})
+		QVERIFY2(!AvidMediaLayout::isOmfWorkstationFolderName(name), qPrintable(name));
+	for (const QString &name : {QStringLiteral("EditSuite"), QStringLiteral("1"),
+								QStringLiteral("Temp"), QStringLiteral("QUARANTINE")})
+		QVERIFY2(AvidMediaLayout::isOmfWorkstationFolderName(name), qPrintable(name));
 }
 
 QTEST_APPLESS_MAIN(TestConventions)

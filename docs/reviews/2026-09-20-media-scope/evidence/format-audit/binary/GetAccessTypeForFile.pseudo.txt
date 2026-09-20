@@ -1,0 +1,270 @@
+GetAccessTypeForFile @ 0x44bf30
+Verified procedure entry: 0x44bf30
+    var_50 = r28;
+    decomp_var_48 = r27;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r0 = ___chkstk_darwin_1210d80(arg0);
+    r31 = r31 + 0xffffffffffffffa0 - "x" - 0x900;
+    var_60 = **___stack_chk_guard;
+    if (r0 == 0x0) goto loc_44c008;
+    goto loc_44bf78;
+
+loc_44c008:
+    r19 = 0x5;
+    goto loc_44c2a4;
+
+loc_44bf78:
+    bzero(&arg_69f + 0xee, "d.72.1.dylib");
+    r0 = (*(*r0 + 0x1a0))(r0, &arg_69f + 0xee, 0x401, 0x0);
+    if (r0 == 0x0) goto loc_44c008;
+    goto loc_44bfb0;
+
+loc_44c2a4:
+    if (**___stack_chk_guard != var_60) {
+            __stack_chk_fail();
+    }
+    r0 = r19;
+    return r0;
+
+loc_44bfb0:
+    memcpy(&decomp_var_65, &arg_69f + 0xee, "d.72.1.dylib");
+    NativePathToCanonicalUTF16(&decomp_var_65, 0x401);
+    r0 = icu_72_Avid::UnicodeString::UnicodeString(&decomp_var_a9);
+    var_E9 = *vtable for icu_72_Avid::UnicodeString + 0x10;
+    var_E1 = 0x2;
+    r8 = var_A1;
+    if ((r8 & 0x8000) == 0x0) {
+            r2 = 0x0;
+            r26 = r8 >> 0x5;
+    }
+    else {
+            r26 = var_9D;
+            r2 = r26 & r26 / 0x80000000;
+    }
+    r0 = icu_72_Avid::UnicodeString::doIndexOf(&decomp_var_a9, 0x2f, r2);
+    r24 = r0 + 0x1;
+    r8 = var_A1;
+    r10 = r8 >> 0x5;
+    r11 = var_9D;
+    if (sign_extend_64(r8) >= 0x0) {
+            r9 = r10;
+    }
+    else {
+            r9 = r11;
+    }
+    if (r9 >= r24) {
+            r9 = &decomp_var_a9 + 0xa;
+            r10 = var_91;
+            if ((r8 & 0x2) != 0x0) {
+                    r8 = r9;
+            }
+            else {
+                    r8 = r10;
+            }
+            r9 = r0 + 0x2;
+            if ((*(int16_t *)(r8 + r24 * 0x2) & 0xffff) == 0x2f) {
+                    r24 = r9;
+            }
+    }
+    r27 = r26 + 0x1;
+    r28 = &decomp_var_931 + 0xa;
+    r19 = 0x5;
+    goto loc_44c094;
+
+loc_44c094:
+    r8 = var_A1;
+    if (r24 < -0x1) {
+            r2 = 0x0;
+            if ((r8 & 0x8000) == 0x0) {
+                    r8 = r8 >> 0x5;
+            }
+            else {
+                    r8 = var_9D;
+            }
+    }
+    else {
+            r9 = r24 + 0x1;
+            if ((r8 & 0x8000) == 0x0) {
+                    r8 = r8 >> 0x5;
+                    if (r8 >= r9) {
+                            r2 = r9;
+                    }
+                    else {
+                            r2 = r8;
+                    }
+            }
+            else {
+                    r8 = var_9D;
+                    if (r8 >= r9) {
+                            r2 = r9;
+                    }
+                    else {
+                            r2 = r8;
+                    }
+            }
+    }
+    r0 = icu_72_Avid::UnicodeString::doIndexOf(&decomp_var_a9, 0x2f, r2);
+    if (r0 != -0x1) {
+            r23 = r0;
+    }
+    else {
+            r23 = r27;
+    }
+    asm { csinv      w25, w8, wzr, gt };
+    if (r25 > 0x0) {
+            if ((r24 & 0xffffffff80000000) != 0x0 && __FtlAssertFailed("strIndexStart >= 0", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c", 0x1c66) != 0x0) {
+                    DebugStr(0xfacca1);
+            }
+            if (r24 >= r26 && __FtlAssertFailed("strIndexStart < strLen", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/msm.c", 0x1c67) != 0x0) {
+                    DebugStr(0xfacca1);
+            }
+            r8 = var_E1 >> 0x5;
+            r10 = var_DD;
+            if (sign_extend_64(var_E1) >= 0x0) {
+                    r2 = r8;
+            }
+            else {
+                    r2 = r10;
+            }
+            r0 = icu_72_Avid::UnicodeString::doReplace(&var_E9, 0x0, r2, &decomp_var_a9, r24);
+            r0 = bzero(&decomp_var_8eb, "d.72.1.dylib");
+            var_941 = &decomp_var_8eb;
+            r0 = icu_72_Avid::UnicodeString::extract(&var_E9, &var_941, 0x401);
+            r25 = 0x12;
+            r24 = SupportedMediaDirInfo;
+            while (true) {
+                    r0 = icu_72_Avid::UnicodeString::UnicodeString(&decomp_var_931);
+                    r9 = var_E1;
+                    r8 = var_929;
+                    if ((r8 & 0x1) == 0x0) {
+                            r10 = sign_extend_64(r9);
+                            r11 = var_DD;
+                            r9 = r9 >> 0x5;
+                            if (r10 >= 0x0) {
+                                    r2 = r9;
+                            }
+                            else {
+                                    r2 = r11;
+                            }
+                            r10 = var_925;
+                            r11 = r8 >> 0x5;
+                            if (sign_extend_64(r8) >= 0x0) {
+                                    r9 = r11;
+                            }
+                            else {
+                                    r9 = r10;
+                            }
+                            r4 = r9 & r9 / 0x80000000;
+                            r9 = var_919;
+                            if ((r8 & 0x2) != 0x0) {
+                                    r3 = r28;
+                            }
+                            else {
+                                    r3 = r9;
+                            }
+                            r0 = icu_72_Avid::UnicodeString::doCompare(&var_E9, 0x0, r2, r3, r4);
+                            if (r0 == 0x0) {
+                                    temp_0 = 0x0;
+                                    break;
+                            }
+                            else {
+                                    icu_72_Avid::UnicodeString::~UnicodeString();
+                                    r24 = r24 + 0x10;
+                                    r25 = r25 - 0x1;
+                                    if (r25 != 0x0) {
+                                            continue;
+                                    }
+                                    temp_0 = 0x1;
+                                    break;
+                            }
+                    }
+                    else {
+                            if ((0x1 & !r9) != 0x0) {
+                                    icu_72_Avid::UnicodeString::~UnicodeString();
+                                    r24 = r24 + 0x10;
+                                    r25 = r25 - 0x1;
+                                    if (r25 != 0x0) {
+                                            continue;
+                                    }
+                                    temp_0 = 0x1;
+                                    break;
+                            }
+                            else {
+                                    temp_0 = 0x2;
+                                    break;
+                            }
+                    }
+            }
+            if (temp_0 != 0x0) {
+                    if (temp_0 != 0x1) {
+                            r8 = r24[0x3];
+                            if (r8 >= r19) {
+                                    r9 = r19;
+                            }
+                            else {
+                                    r9 = r8;
+                            }
+                            if (r8 != 0x4) {
+                                    r19 = r9;
+                            }
+                            icu_72_Avid::UnicodeString::~UnicodeString();
+                            r24 = r23 + 0x1;
+                            if (0x2 != 0x2) {
+                                    continue;
+                            }
+                            break;
+                    }
+                    else {
+                            r24 = r23 + 0x1;
+                            if (0x0 != 0x2) {
+                                    continue;
+                            }
+                            break;
+                    }
+            }
+            else {
+                    r8 = r24[0x3];
+                    if (r8 >= r19) {
+                            r9 = r19;
+                    }
+                    else {
+                            r9 = r8;
+                    }
+                    if (r8 != 0x4) {
+                            r19 = r9;
+                    }
+                    icu_72_Avid::UnicodeString::~UnicodeString();
+                    r24 = r23 + 0x1;
+                    if (0x2 != 0x2) {
+                            continue;
+                    }
+                    break;
+            }
+    }
+    else {
+            if (r23 < r26) {
+                    r24 = r23 + 0x1;
+                    if (0x3 != 0x2) {
+                            continue;
+                    }
+                    break;
+            }
+            else {
+                    break;
+            }
+    }
+    goto .l1;
+
+.l1:
+    icu_72_Avid::UnicodeString::~UnicodeString();
+    r0 = icu_72_Avid::UnicodeString::~UnicodeString();
+    goto loc_44c2a4;

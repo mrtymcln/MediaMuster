@@ -1,0 +1,23 @@
+Test project /Users/martymclean/Developer/MediaMuster/build
+    Start  5: tst_conventions
+1/6 Test  #5: tst_conventions ..................   Passed    0.70 sec
+    Start 16: tst_scanner
+2/6 Test #16: tst_scanner ......................   Passed    5.39 sec
+    Start 20: tst_rebalanceplanner
+3/6 Test #20: tst_rebalanceplanner .............   Passed    4.74 sec
+    Start 21: tst_fileoperations
+4/6 Test #21: tst_fileoperations ...............   Passed   19.23 sec
+    Start 24: tst_mediafilterproxy
+5/6 Test #24: tst_mediafilterproxy .............   Passed    0.52 sec
+    Start 27: tst_operationui
+6/6 Test #27: tst_operationui ..................   Passed    3.80 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Label Time Summary:
+core          =   0.70 sec*proc (1 test)
+media         =   5.39 sec*proc (1 test)
+operations    =  23.96 sec*proc (2 tests)
+ui            =   4.32 sec*proc (2 tests)
+
+Total Test time (real) =  34.38 sec

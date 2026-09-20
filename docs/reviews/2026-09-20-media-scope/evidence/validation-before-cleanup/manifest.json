@@ -1,0 +1,200 @@
+{
+  "purpose": "Last completed public/development validation before cleanup, 27 suites / 1203 passing Qt results / 3 skips.",
+  "build_settings": [
+    "CMAKE_BUILD_TYPE:STRING=Debug",
+    "CMAKE_OSX_ARCHITECTURES:STRING=arm64;x86_64",
+    "CMAKE_OSX_DEPLOYMENT_TARGET:STRING=11.0",
+    "CMAKE_PREFIX_PATH:PATH=/Users/martymclean/Qt/6.5.3/macos",
+    "MEDIAMUSTER_BUILD_TESTS:BOOL=ON",
+    "SELF_DESTRUCT:BOOL=OFF",
+    "CMAKE_GENERATOR:INTERNAL=Ninja"
+  ],
+  "preserved": [
+    {
+      "source": "/private/tmp/mediamuster-managed-layout-public-build.log",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/mediamuster-managed-layout-public-build.log",
+      "bytes": 2539,
+      "sha256": "5a3aa4f44ebdfe2767b35c2409b365a230e0f2156b95e081e17ed44b8462978d"
+    },
+    {
+      "source": "/private/tmp/mediamuster-managed-layout-public-tests.log",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/mediamuster-managed-layout-public-tests.log",
+      "bytes": 831,
+      "sha256": "477ced7be4adda9f69c23a42e76fd47b0f614cff2f614412c946703698b8e77d"
+    },
+    {
+      "source": "/private/tmp/mediamuster-managed-layout-final-build.log",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/mediamuster-managed-layout-final-build.log",
+      "bytes": 533,
+      "sha256": "2f86757b99ca484e49610553072a48b9b4b2c513c79cf5c596cda5f3d2deb86c"
+    },
+    {
+      "source": "/private/tmp/mediamuster-managed-layout-final-tests.log",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/mediamuster-managed-layout-final-tests.log",
+      "bytes": 3129,
+      "sha256": "7686cd03652c3b5a9a6bc5629d43f2f5b63727828580bb69e5b63133bd317972"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mobid.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mobid.result.txt",
+      "bytes": 899,
+      "sha256": "3270c87d966f8501877de7eda3b929893149919c1512f41be05e79c106d57d73"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_logfile.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_logfile.result.txt",
+      "bytes": 570,
+      "sha256": "2f64820f5c4c8a69fd703ec2e2627625165b7a09e19110dda223708baaa05e05"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_pathkey.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_pathkey.result.txt",
+      "bytes": 1109,
+      "sha256": "01dc84112b554aaf5879f4b8a30b1748311c5d394bf4c8a8256e3e2d3b302180"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_format.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_format.result.txt",
+      "bytes": 671,
+      "sha256": "122dd719fb6d6c66b1e0566c815919aa8d2ef39402de688bbc1de353cfaf7545"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_conventions.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_conventions.result.txt",
+      "bytes": 5769,
+      "sha256": "c5bbf742e87179898a11b0be868aad56b977f1540554b3153a616dd09e9a6a41"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_crashcollector.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_crashcollector.result.txt",
+      "bytes": 667,
+      "sha256": "4097354f0e932d617f79aacb6a2aabb73b4861c2ab6561739ddb07100cef7dd4"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_omfuid.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_omfuid.result.txt",
+      "bytes": 871,
+      "sha256": "e3d1ef2b7decac5980a6667965611f834ab002ed8e31bb2aac56e72dc534ab0b"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediametadata.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mediametadata.result.txt",
+      "bytes": 1103,
+      "sha256": "bb3f0c9688a52717bdafd7ae3a09c73c948b5ff206d5377bff21fa4d7163d5f1"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_bentofile.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_bentofile.result.txt",
+      "bytes": 1634,
+      "sha256": "2d5b68228baba1409284dab008f4801b23bedd661ecf87720db45ffc0ca52d3f"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_pmrparser.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_pmrparser.result.txt",
+      "bytes": 63650,
+      "sha256": "2e6dd044274348bc2ee725bde907cb418390c2f081ad62142a96beec31a7b29a"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mdbparser.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mdbparser.result.txt",
+      "bytes": 8308,
+      "sha256": "43045fbd4b5c00a230ffc045e752ad90ee1b97083b4a1ede287faaf4f7eae13b"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_omfparser.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_omfparser.result.txt",
+      "bytes": 3244,
+      "sha256": "68e1b52aafb12f326ed9b6524a4d050b20f5afcdba779519d5982f230e88e042"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_avbparser.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_avbparser.result.txt",
+      "bytes": 15888,
+      "sha256": "483fadb70e0bbef7232c20b76e46c5e95d3d7d2a623dea4f8f940e88035bc3c7"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mxfparser.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mxfparser.result.txt",
+      "bytes": 14334,
+      "sha256": "94928a799e22cfb93ae673e4b86be5cd96e5983ba0c6c250d4ee995f01014650"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_avideffects.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_avideffects.result.txt",
+      "bytes": 2776,
+      "sha256": "94ab26e63a9e21a114b1845c4cd2738e7a5668ca8a91c4922713d295e2243f2e"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_scanner.result.txt",
+      "bytes": 18998,
+      "sha256": "2dc3bb7d7babbb0071833236f7b9ab2be4e066361ca523c9d63b14ec162f43ad"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_opcleanup.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_opcleanup.result.txt",
+      "bytes": 1286,
+      "sha256": "eb463b2841429a5e0c510243d847122de0d453a4246abad559a17fec3ee8a5b8"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_volumeidentity.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_volumeidentity.result.txt",
+      "bytes": 815,
+      "sha256": "bd465432a4c906ea1984696ddac0b1a38450e5b61f5a6461cea964dd80710a34"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_opjournal.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_opjournal.result.txt",
+      "bytes": 6212,
+      "sha256": "ca23ba925af704703427c7ab0f403283e5b7b50315e1d2039870f139ee93ae2a"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_rebalanceplanner.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_rebalanceplanner.result.txt",
+      "bytes": 2312,
+      "sha256": "9f7dc23dfb0caf712411046e9ce15d960e3d3baa6a5cfe1021175ecb717e7d3e"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_fileoperations.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_fileoperations.result.txt",
+      "bytes": 10539,
+      "sha256": "0926c0f70db6aa64bc32c7b962770ae8e54e7015b1dc1c76d248de4d33d2d8ff"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediacsv.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mediacsv.result.txt",
+      "bytes": 1117,
+      "sha256": "75e14292d01d7f82ed2b905ef1c78155eb2f5f40b14cb28809df400298c97768"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediatablemodel.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mediatablemodel.result.txt",
+      "bytes": 2563,
+      "sha256": "ec54e999c8869822af8785b3180829e7d6c32a4f658da2afa1ae0fa77c28109d"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediafilterproxy.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_mediafilterproxy.result.txt",
+      "bytes": 2160,
+      "sha256": "ab70ee8c2e81c15f5e3b80c3bc92aa8001d9e564373c17f972dbc2701e005049"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_effectfilterdialog.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_effectfilterdialog.result.txt",
+      "bytes": 909,
+      "sha256": "885c388d814d7edbfb87dbe6855f8aa4c0fd353896870da570dd4be7454baf61"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_binfilterdialog.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_binfilterdialog.result.txt",
+      "bytes": 7645,
+      "sha256": "a44d31781148065d38393901771ac51b9d2ff29f4c8cc22710ceb0a4e59386f5"
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_operationui.result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-before-cleanup/tests/tst_operationui.result.txt",
+      "bytes": 12897,
+      "sha256": "ecc89f5b0460ee36ba8c0320c1b30153e0454dae7a57473fdbf1079bd8b8f680"
+    }
+  ]
+}

@@ -1,12 +1,13 @@
-# OMF-era fixtures
+# Avid OMF fixtures
 
-Real OMF-era (legacy, pre-MXF) Avid media and the databases that describe
-it, captured on 2026-09-02 from Media Composer **26.8.0.58987** on macOS.
-Two folders because both database pairs share the filenames
+Real Avid OMF media and the databases that describe it, captured on 2026-09-02 from Media Composer **26.8.0.58987** on macOS.
+OMF identifies the storage format, not the Media Composer generation; the audio
+fixtures below were created by the current version at capture time. Two folders
+are used because both database pairs share the filenames
 `msmFMID.pmr` / `msmMMOB.mdb`.
 
 | Folder | Contents | Source |
-|---|---|---|
+| --- | --- | --- |
 | `avid_supporting/` | 80 × `*.omf` slates, `msmFMID.pmr` (version 2, 80 pairs, Unicode set present), `msmMMOB.mdb` | `/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/` (its `RAW/` subfolder omitted) |
 | `mc2026_audio/` | `TONE_100A01.6A972974.039700.wav`, `TONE_100A01.6A972997.0C53E0.aif`, `msmFMID.pmr` (version 2, 2 pairs + Unicode set), `msmMMOB.mdb` | `/Users/Shared/AvidMediaComposer/OMFI MediaFiles/` — written fresh by MC 26.8.0.58987 on 2026-09-02 |
 | `mc2026_audio/bins/` | `WAVE(OMF).avb`, `AIFF-C(OMF).avb` | `~/Documents/Avid Projects/zTeßt_PAL_25p/` |
@@ -27,11 +28,6 @@ Bento container (essence first, TOC at the tail) — the same container
 set and the two bins wrap those 8 bytes in a fixed 16-byte prefix and
 8-byte suffix to make the 32-byte form (`src/omfuid.h`). MC 2026
 additionally writes a 32-byte UMID on the physical mob of each file.
-
-**No SD2 specimen exists.** Media Composer's binary still names Sound
-Designer II (`.sd2`) as an OMF-era audio container, but no current
-release writes one, so anything built for it is by name only and marked
-unverified in the code.
 
 **mtimes are not preserved by git.** The PMR trailer is the file's
 modification time in Unix seconds (`mc2026_audio`: 1788291444 and

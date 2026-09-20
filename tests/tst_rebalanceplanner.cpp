@@ -41,6 +41,11 @@ private slots:
 	void oversized_packed_relatives_are_stable();
 	void invalid_master_ids_are_independent();
 	void media_from_another_root_is_excluded();
+	void eligibility_excludes_legacy_loose_and_quarantined();
+	void bare_mxf_root_is_excluded();
+	void file_identity_survives_plan_and_request();
+	void invalid_request_member_rejects_whole_plan();
+	void directory_aliases_cannot_redirect_rebalance();
 	void home_full_falls_back_to_existing_folder();
 	void new_folder_when_all_existing_are_full();
 
@@ -445,6 +450,150 @@ void TestRebalancePlanner::media_from_another_root_is_excluded()
 	const QVector<MediaFile> files{makeMxf(root, "1", "a.mxf", "same"),
 								   makeMxf(other, "2", "b.mxf", "same")};
 	QVERIFY(RebalancePlanner::computePlan(root, "Test", files).ops.isEmpty());
+}
+
+void TestRebalancePlanner::eligibility_excludes_legacy_loose_and_quarantined()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	const MediaFile home = makeMxf(root, "1", "home.mxf", "same");
+	QVERIFY(RebalancePlanner::isEligible(home));
+	QVector<MediaFile> excluded;
+	for (const auto &name : {"legacy.omf", "sound.wav", "sound.aif", "sound.aiff", "notes.txt"})
+		excluded.append(makeMxf(root, "2", QLatin1String(name), "same"));
+	auto legacy = makeMxf(root, "2", "legacy.mxf", "same");
+	legacy.omfEra = true;
+	excluded.append(legacy);
+	auto quarantined = makeMxf(root, "2", "quarantined.mxf", "same");
+	quarantined.isQuarantined = true;
+	excluded.append(quarantined);
+	excluded.append(makeMxf(tmp.path(), "OMFI MediaFiles", "misplaced.mxf", "same"));
+	excluded.append(makeMxf(tmp.path(), "loose", "loose.mxf", "same"));
+	excluded.append(makeMxf(root, "1/Creating", "unfinished.mxf", "same"));
+	for (const auto &file : excluded)
+		QVERIFY2(!RebalancePlanner::isEligible(file), qPrintable(file.filePath));
+
+	excluded.prepend(home);
+	QVERIFY(RebalancePlanner::computePlan(root, "Test", excluded).ops.isEmpty());
+}
+
+void TestRebalancePlanner::bare_mxf_root_is_excluded()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = tmp.path() + "/MXF";
+	const QVector<MediaFile> files{makeMxf(root, "1", "home.mxf", "same"),
+		makeMxf(root, "2", "stray.mxf", "same")};
+	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
+	QVERIFY(plan.ops.isEmpty());
+	QVERIFY(plan.folders.isEmpty());
+	QVERIFY(!RebalancePlanner::isEligible(files.first()));
+}
+
+void TestRebalancePlanner::file_identity_survives_plan_and_request()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	auto moved = makeMxf(root, "2", "stray.mxf", "same");
+	moved.mobId = MobId::format(QCryptographicHash::hash("file identity", QCryptographicHash::Sha256));
+	const auto plan = RebalancePlanner::computePlan(root, "Test",
+		{makeMxf(root, "1", "home.mxf", "same"), moved});
+	QCOMPARE(plan.ops.size(), 1);
+	QCOMPARE(plan.ops.first().fileMobId, moved.mobId);
+	const auto request = RebalancePlanner::requestForPlan(plan);
+	QCOMPARE(request.items.size(), 1);
+	QCOMPARE(request.items.first().mobId, moved.mobId);
+	QCOMPARE(request.items.first().masterMobId, moved.masterMobId);
+}
+
+void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	const auto file = makeMxf(root, "2", "stray.mxf", "same");
+	RebalancePlan valid;
+	valid.mxfRoot = root;
+	valid.ops.append({file.filePath, FolderName{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+	QCOMPARE(RebalancePlanner::requestForPlan(valid).items.size(), 1);
+
+	QVector<RenameOp> invalid;
+	for (const auto &path : {root + "/2/stray.wav", root + "/Quarantined Files/stray.mxf",
+		tmp.path() + "/OMFI MediaFiles/stray.mxf", tmp.path() + "/MXF/2/stray.mxf",
+		tmp.path() + "/other/Avid MediaFiles/MXF/2/stray.mxf"})
+	{
+		auto op = valid.ops.first();
+		op.srcPath = path;
+		invalid.append(op);
+	}
+	for (const auto &dest : {FolderName{{}, 0}, FolderName{"../escape", 1},
+		FolderName{"other-workstation", 1}, FolderName{{}, 2}})
+	{
+		auto op = valid.ops.first();
+		op.dest = dest;
+		invalid.append(op);
+	}
+	for (const auto &op : invalid)
+	{
+		auto plan = valid;
+		plan.ops.append(op);
+		QVERIFY(RebalancePlanner::requestForPlan(plan).items.isEmpty());
+	}
+	valid.mxfRoot = tmp.path() + "/MXF";
+	QVERIFY(RebalancePlanner::requestForPlan(valid).items.isEmpty());
+}
+
+void TestRebalancePlanner::directory_aliases_cannot_redirect_rebalance()
+{
+#ifdef Q_OS_WIN
+	QSKIP("QFile::link does not create directory symlinks on this platform");
+#else
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	const QString umeFolder = tmp.path() + "/Avid MediaFiles/UME/1";
+	QVERIFY(QDir().mkpath(umeFolder));
+	QVERIFY(QFile::link(umeFolder, root + "/1"));
+	const auto home = makeMxf(root, "2", "home.mxf", "same");
+	const auto moved = makeMxf(root, "3", "stray.mxf", "same");
+	makeFillers(root, "2", 4998);
+	const auto plan = RebalancePlanner::computePlan(root, "Test", {home, moved});
+	QCOMPARE(plan.ops.size(), 1);
+	QCOMPARE(plan.ops.first().dest.display(), QStringLiteral("3"));
+	for (const auto &folder : plan.folders)
+		if (folder.name == QStringLiteral("1"))
+			QVERIFY(!folder.inScope);
+	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
+
+	// A handcrafted destination alias is rejected even if the rest of the
+	// plan was valid. A same-root alias to another number is also rejected.
+	auto redirected = plan;
+	redirected.ops.first().dest = FolderName{{}, 1};
+	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
+	QVERIFY(QFile::link(root + "/3", root + "/4"));
+	redirected.ops.first().dest = FolderName{{}, 4};
+	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
+
+	auto aliasedSource = home;
+	aliasedSource.filePath = root + "/1/stray.mxf";
+	aliasedSource.mediaFolderName = "1";
+	QVERIFY(!RebalancePlanner::isEligible(aliasedSource));
+	aliasedSource.filePath = root + "/4/stray.mxf";
+	aliasedSource.mediaFolderName = "4";
+	QVERIFY(!RebalancePlanner::isEligible(aliasedSource));
+	redirected = plan;
+	redirected.ops.first().srcPath = aliasedSource.filePath;
+	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
+	QVERIFY(QFile::link(home.filePath, root + "/2/link.mxf"));
+	aliasedSource = home;
+	aliasedSource.filePath = root + "/2/link.mxf";
+	QVERIFY(!RebalancePlanner::isEligible(aliasedSource));
+	redirected = plan;
+	redirected.ops.first().srcPath = aliasedSource.filePath;
+	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
+#endif
 }
 QTEST_APPLESS_MAIN(TestRebalancePlanner)
 #include "tst_rebalanceplanner.moc"

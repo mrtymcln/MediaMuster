@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-20",
+  "change": "Remove Temp/Quarantine special exclusions from both workflows and recognize the MXF quarantine location in the shared layout.",
+  "build": "C++17, Qt 6.5.3, Debug, arm64/x86_64; test execution arm64; Debug menu enabled",
+  "compiler_warnings": 0,
+  "suites_passed": 6,
+  "suites_failed": 0,
+  "elapsed_seconds": 34.38,
+  "qt_results_including_setup_and_cleanup": {
+    "passed": 417,
+    "failed": 0,
+    "skipped": 1
+  },
+  "skips": [
+    "SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here"
+  ],
+  "evidence": [
+    {
+      "path": "build.log",
+      "sha256": "5f95a6a02ca3d3c9b7239c07391574070d8d2dd4dd452877ef7814534f28075d"
+    },
+    {
+      "path": "tests.log",
+      "sha256": "546bed1d76071c73ffffe4958dae39c2065210cd957ecbd91ffa84c4eb292ac0"
+    },
+    {
+      "path": "tst_conventions.result.txt",
+      "sha256": "e38f1c2d6e653a20ffa30a9f90f6e803a2ee017c69af6c3764d648912bef2364"
+    },
+    {
+      "path": "tst_scanner.result.txt",
+      "sha256": "89aa6bf068c3699d7be690e349a75ecf6063dba2a0243f895491dd8313352225"
+    },
+    {
+      "path": "tst_rebalanceplanner.result.txt",
+      "sha256": "a9d01a5080054dde3473bcab878d601c03844734090c2bc81b9fe4063ec6bbde"
+    },
+    {
+      "path": "tst_fileoperations.result.txt",
+      "sha256": "d61723d99aea27789a8e52e4ab07e1b9f2a085f5d01c697fd4284153794f03df"
+    },
+    {
+      "path": "tst_mediafilterproxy.result.txt",
+      "sha256": "da2f64dece42de27fd6af9c1c35cba73fea779ac0c9e05d957f83ae5c44492ea"
+    },
+    {
+      "path": "tst_operationui.result.txt",
+      "sha256": "d16086a318f8d562ae3f1d078ddc500cb328e2a39eb815ac20cde623429ab59e"
+    }
+  ]
+}

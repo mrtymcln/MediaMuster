@@ -19,7 +19,7 @@
 //
 // The OMF-era extensions live here rather than in a reader of their own
 // because the OMF-era MDB needs every one of them too: 12-byte SourceID
-// hops, WAVD/AIFD/SD2D audio descriptors whose facts sit in a RIFF/AIFF
+// hops, WAVD/AIFD audio descriptors whose facts sit in a RIFF/AIFF
 // header blob, the 4CC + resolution-id codec path (OmfResolutions),
 // WINL/UNXL locators beside MACL, and the _PJ / _MEDIAFILE attributes.
 // Each is tagged "OMF-era:" at the line, so the MXF-era walk can be read
@@ -65,16 +65,16 @@ namespace OmfObjects
 		int essComp, resId, width, height, layout, sampleRate, length, compWidth, bits, channels;
 		int tracks, trackComp, sequence, sourceId, tcFlags;
 
-		// OMF-era: the 4CC codec family, the audio header blobs, the SD2
-		// pair, the timecode start/rate, the media-data MobIDs an essence
+		// OMF-era: the 4CC codec family, the audio header blobs, the
+		// timecode start/rate, the media-data MobIDs an essence
 		// file keys its data object by, the source-descriptor kind, the
 		// UNIX locator's own path property, and the descriptor's locator
 		// list (whose MSML names the last known volume).
-		int compression, wavdSummary, aifdSummary, sd2dBits, sd2dChannels;
+		int compression, wavdSummary, aifdSummary;
 		int tcFps, tcStart;
-		int mdatMobId, waveMobId, aifcMobId, sd2mMobId;
+		int mdatMobId, waveMobId, aifcMobId;
 		int mobKind, unxlPath, locator, lastKnownVolumeUtf8, lastKnownVolume;
-		int sd2dMobId, slotRate, nestedSlots, selected, choices, inputSegment;
+		int slotRate, nestedSlots, selected, choices, inputSegment;
 		int winlPath, maclPath, tiffSummary, rgbaLayout, rgbaStructure;
 
 		explicit Props(const BentoFile &b);
@@ -96,7 +96,7 @@ namespace OmfObjects
 	// MARK: - Descriptor classes
 
 	/// PCMA / MPGA / WAVE — the audio descriptor classes the MDB writes —
-	/// plus, OMF-era, WAVD / AIFD / SD2D (WAVE, AIFF-C and Sound Designer II
+	/// plus, OMF-era, WAVD / AIFD (WAVE and AIFF-C
 	/// essence files, whose facts sit in a header blob rather than in
 	/// MDAU properties).
 	[[nodiscard]] bool isAudioClass(const QByteArray &cls);

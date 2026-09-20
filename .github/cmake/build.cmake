@@ -16,14 +16,6 @@ if("$ENV{GITHUB_REF_NAME}" MATCHES "^v0\\.")
     list(APPEND configure_args -DSELF_DESTRUCT=ON)
 endif()
 
-# Public release tags omit the developer menu. Beta and branch builds keep
-# opt-in features available, even though all CI builds use Release binaries.
-if("$ENV{GITHUB_REF_NAME}" MATCHES "^v[1-9][0-9]*\\.")
-    list(APPEND configure_args -DMEDIAMUSTER_DEBUG_MENU=OFF)
-else()
-    list(APPEND configure_args -DMEDIAMUSTER_DEBUG_MENU=ON)
-endif()
-
 include(ProcessorCount)
 ProcessorCount(processor_count)
 if(NOT processor_count GREATER 0)

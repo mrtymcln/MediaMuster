@@ -1,0 +1,12 @@
+********* Start testing of TestFormat *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestFormat::initTestCase()
+PASS   : TestFormat::bytes_below_kb_in_raw_bytes()
+PASS   : TestFormat::bytes_at_kb_boundary()
+PASS   : TestFormat::bytes_at_mb_boundary()
+PASS   : TestFormat::bytes_at_gb_boundary()
+PASS   : TestFormat::bytes_at_tb_boundary()
+PASS   : TestFormat::bytes_clamps_negative_to_zero()
+PASS   : TestFormat::cleanupTestCase()
+Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestFormat *********

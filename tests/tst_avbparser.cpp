@@ -78,6 +78,8 @@ private slots:
 	void unknown_component_version_is_incomplete();
 	void typed_mob_field_framing_is_validated();
 	void cancelled_read_never_becomes_valid();
+	void omf_identity_does_not_match_a_byte_swapped_clip_data();
+	void omf_identity_does_not_match_a_byte_swapped_clip();
 	void omf_bins_preserve_file_and_master_identities();
 };
 
@@ -366,7 +368,9 @@ void TestAvbParser::native_legacy_words_are_decoded()
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("native-words.avb"), d.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
 	QVERIFY(result.complete);
-	QCOMPARE(result.mobIds, aliases({legacy(TestAvb::Master), legacy(TestAvb::Source), legacy(TestAvb::Other)}));
+	const QSet<QString> expected{MobId::format(legacy(TestAvb::Master)), MobId::format(legacy(TestAvb::Source)),
+		MobId::format(legacy(TestAvb::Other))};
+	QCOMPARE(result.mobIds, expected);
 }
 
 void TestAvbParser::terminal_source_nulls_are_ignored_data()
@@ -505,6 +509,40 @@ void TestAvbParser::cancelled_read_never_becomes_valid()
 	QVERIFY(result.mobIds.isEmpty());
 }
 
+void TestAvbParser::omf_identity_does_not_match_a_byte_swapped_clip_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<bool>("typed");
+	QTest::newRow("LE-native") << false << false;
+	QTest::newRow("LE-typed") << false << true;
+	QTest::newRow("BE-native") << true << false;
+	QTest::newRow("BE-typed") << true << true;
+}
+
+void TestAvbParser::omf_identity_does_not_match_a_byte_swapped_clip()
+{
+	QFETCH(bool, big);
+	QFETCH(bool, typed);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	// These are distinct OMF identities. Pin the bytes directly so the
+	// expectation cannot repeat the parser's byte-order conversion mistake.
+	const QByteArray own = QByteArray::fromHex("060a2b340101010101010f00130000001122334455667788060e2b347f7f2a80");
+	const QString ownKey = QStringLiteral("060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80");
+	const QString unrelatedKey = QStringLiteral("060a2b3401010101.01010f0013000000.4433221166558877.060e2b347f7f2a80");
+	TestAvb::Document document;
+	document.bigEndian = big;
+	document.objects = {{"ABIN", TestAvb::bin(big, {2})},
+		{"CMPO", TestAvb::composition(big, own, "OMF master", 0, {}, 0, typed)}};
+	const auto result = AvbParser::parse(TestAvb::write(temp.filePath("legacy.avb"), document.bytes()));
+	QVERIFY2(result.valid, qPrintable(result.error));
+	QVERIFY2(result.complete, qPrintable(result.warnings.join(';')));
+	QCOMPARE(result.mobIds, QSet<QString>{ownKey});
+	QVERIFY(!result.mobIds.contains(unrelatedKey));
+	QCOMPARE(result.mobs.size(), 1);
+	QCOMPARE(result.mobs.first().mobId, ownKey);
+}
+
 void TestAvbParser::omf_bins_preserve_file_and_master_identities()
 {
 	struct Pin
@@ -527,8 +565,10 @@ void TestAvbParser::omf_bins_preserve_file_and_master_identities()
 		const auto result = AvbParser::parse(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/bins/") + QLatin1String(pin.file));
 		QVERIFY2(result.valid, qPrintable(result.error));
 		QVERIFY2(result.complete, qPrintable(result.warnings.join(';')));
-		QCOMPARE(result.mobIds, aliases({QByteArray::fromHex(pin.fileMob), QByteArray::fromHex(pin.masterMob),
-										 QByteArray::fromHex(pin.physicalMob)}));
+		auto expected = aliases({QByteArray::fromHex(pin.physicalMob)});
+		expected.insert(MobId::format(QByteArray::fromHex(pin.fileMob)));
+		expected.insert(MobId::format(QByteArray::fromHex(pin.masterMob)));
+		QCOMPARE(result.mobIds, expected);
 		QVERIFY(!result.mobs.isEmpty());
 	}
 }

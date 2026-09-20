@@ -1,0 +1,42 @@
+[1/45] Automatic MOC for target MediaMuster
+[2/45] Automatic MOC for target tst_rebalanceplanner
+[3/44] Automatic MOC for target tst_conventions
+[4/43] Automatic MOC for target tst_scanner
+[5/43] Automatic MOC for target tst_fileoperations
+[6/42] Automatic MOC for target tst_operationui
+[7/42] Automatic MOC for target tst_mediafilterproxy
+[8/41] Building CXX object CMakeFiles/MediaMuster.dir/src/main.cpp.o
+[9/41] Building CXX object CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o
+[10/41] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o
+[11/41] Building CXX object CMakeFiles/MediaMuster.dir/src/operationplan.cpp.o
+[12/41] Building CXX object CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o
+[13/41] Building CXX object CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o
+[14/41] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[15/41] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o
+[16/41] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o
+[17/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui_autogen/mocs_compilation.cpp.o
+[18/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui.cpp.o
+[19/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/volumemanager.cpp.o
+[20/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediascanner.cpp.o
+[21/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/operationplan.cpp.o
+[22/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/oprunner.cpp.o
+[23/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mainwindow.cpp.o
+[24/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalanceplanner.cpp.o
+[25/41] Building CXX object tests/CMakeFiles/tst_scanner.dir/tst_scanner_autogen/mocs_compilation.cpp.o
+[26/41] Building CXX object tests/CMakeFiles/tst_conventions.dir/tst_conventions.cpp.o
+[27/41] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalancedialog.cpp.o
+[28/41] Building CXX object tests/CMakeFiles/tst_scanner.dir/tst_scanner.cpp.o
+[29/41] Building CXX object tests/CMakeFiles/tst_rebalanceplanner.dir/__/src/rebalanceplanner.cpp.o
+[30/41] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/rebalanceplanner.cpp.o
+[31/41] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/mediascanner.cpp.o
+[32/41] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/operationplan.cpp.o
+[33/41] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: replacing existing signature
+[34/41] Linking CXX executable tests/tst_conventions
+[35/41] Linking CXX executable tests/tst_scanner
+[36/41] Linking CXX executable tests/tst_rebalanceplanner
+[37/41] Linking CXX executable tests/tst_operationui
+[38/41] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/tst_mediafilterproxy.cpp.o
+[39/41] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/oprunner.cpp.o
+[40/41] Linking CXX executable tests/tst_mediafilterproxy
+[41/41] Linking CXX executable tests/tst_fileoperations

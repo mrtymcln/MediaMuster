@@ -29,6 +29,9 @@
 struct OmfMetadata
 {
 	OmfObjects::Revision revision = OmfObjects::Revision::Unknown;
+	/// A unique file mob owns a recognized OMF essence descriptor. This
+	/// establishes the container even when technical fields are incomplete.
+	bool hasMediaDescriptor = false;
 	/// `umid` = the MASTER mob's canonical hex (the wrapped 32-byte form,
 	/// equal to the v2 PMR's masterMobId); `clipName` = the master's
 	/// OMFI:CPNT:Name with `clipNameFromMaterial` set; `projectName` = the

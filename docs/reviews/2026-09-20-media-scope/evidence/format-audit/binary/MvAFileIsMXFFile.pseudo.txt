@@ -1,0 +1,22 @@
+    r1 = arg1;
+    r31 = r31 - 0x30;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r20 = arg0;
+    r0 = 0x80120164;
+    if (r20 != 0x0) {
+            r19 = r1;
+            if (r1 != 0x0) {
+                    var_14 = 0x0;
+                    r0 = _AAFFileIsAAFFileKind(r20, kAAFFileKind_MxfKlvBinary, &var_14);
+                    if ((r0 | var_14) == 0x0) {
+                            r0 = _AAFFileIsAAFFileKind(r20, kAAFFileKind_AvidAafKlvBinary, &var_14);
+                    }
+                    if (r0 == 0x0) {
+                            *(int32_t *)r19 = var_14;
+                    }
+            }
+    }
+    return r0;

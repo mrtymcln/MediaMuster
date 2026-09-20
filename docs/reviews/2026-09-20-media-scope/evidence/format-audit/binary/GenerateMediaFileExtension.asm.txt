@@ -1,0 +1,161 @@
+
+/tmp/mediamuster-format-audit-2026-09-20/binary/libameLibrary.arm64.dylib:	file format mach-o arm64
+
+Disassembly of section __TEXT,__text:
+
+0000000000351bac <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)>:
+  351bac: d101c3ff     	sub	sp, sp, #0x70
+  351bb0: a9035ff8     	stp	x24, x23, [sp, #0x30]
+  351bb4: a90457f6     	stp	x22, x21, [sp, #0x40]
+  351bb8: a9054ff4     	stp	x20, x19, [sp, #0x50]
+  351bbc: a9067bfd     	stp	x29, x30, [sp, #0x60]
+  351bc0: 910183fd     	add	x29, sp, #0x60
+  351bc4: aa0503f3     	mov	x19, x5
+  351bc8: aa0403f4     	mov	x20, x4
+  351bcc: aa0303f5     	mov	x21, x3
+  351bd0: aa0203f7     	mov	x23, x2
+  351bd4: aa0103f8     	mov	x24, x1
+  351bd8: aa0003f6     	mov	x22, x0
+  351bdc: b4000060     	cbz	x0, 0x351be8 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x3c>
+  351be0: b50002b5     	cbnz	x21, 0x351c34 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x88>
+  351be4: 1400000b     	b	0x351c10 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x64>
+  351be8: f90003ff     	str	xzr, [sp]
+  351bec: b00064e1     	adrp	x1, 0xfee000 <_write+0xfee000>
+  351bf0: 910ab021     	add	x1, x1, #0x2ac
+  351bf4: 910023e0     	add	x0, sp, #0x8
+  351bf8: 942d02e3     	bl	0xe92784 <_write+0xe92784>
+  351bfc: 910023e0     	add	x0, sp, #0x8
+  351c00: 942d0cef     	bl	0xe94fbc <_write+0xe94fbc>
+  351c04: 910023e0     	add	x0, sp, #0x8
+  351c08: 942d02e5     	bl	0xe9279c <_write+0xe9279c>
+  351c0c: b5000155     	cbnz	x21, 0x351c34 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x88>
+  351c10: f90003ff     	str	xzr, [sp]
+  351c14: b00064e1     	adrp	x1, 0xfee000 <_write+0xfee000>
+  351c18: 910bac21     	add	x1, x1, #0x2eb
+  351c1c: 910023e0     	add	x0, sp, #0x8
+  351c20: 942d02d9     	bl	0xe92784 <_write+0xe92784>
+  351c24: 910023e0     	add	x0, sp, #0x8
+  351c28: 942d0ce5     	bl	0xe94fbc <_write+0xe94fbc>
+  351c2c: 910023e0     	add	x0, sp, #0x8
+  351c30: 942d02db     	bl	0xe9279c <_write+0xe9279c>
+  351c34: 12003f08     	and	w8, w24, #0xffff
+  351c38: 7100411f     	cmp	w8, #0x10
+  351c3c: 54000580     	b.eq	0x351cec <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x140>
+  351c40: 7100091f     	cmp	w8, #0x2
+  351c44: 54000701     	b.ne	0x351d24 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x178>
+  351c48: 2a1803e1     	mov	w1, w24
+  351c4c: f94002c8     	ldr	x8, [x22]
+  351c50: f9452908     	ldr	x8, [x8, #0xa50]
+  351c54: aa1603e0     	mov	x0, x22
+  351c58: d63f0100     	blr	x8
+  351c5c: aa0003f6     	mov	x22, x0
+  351c60: b5000160     	cbnz	x0, 0x351c8c <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0xe0>
+  351c64: d0006380     	adrp	x0, 0xfc3000 <_write+0xfc3000>
+  351c68: 911ee400     	add	x0, x0, #0x7b9
+  351c6c: 900064e1     	adrp	x1, 0xfed000 <_write+0xfed000>
+  351c70: 9115d421     	add	x1, x1, #0x575
+  351c74: 528149e2     	mov	w2, #0xa4f              ; =2639
+  351c78: 942cf555     	bl	0xe8f1cc <_write+0xe8f1cc>
+  351c7c: 34000080     	cbz	w0, 0x351c8c <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0xe0>
+  351c80: f00062c0     	adrp	x0, 0xfac000 <GCC_except_table3+0x4>
+  351c84: 91328400     	add	x0, x0, #0xca1
+  351c88: 942cf1d3     	bl	0xe8e3d4 <_write+0xe8e3d4>
+  351c8c: f94002c8     	ldr	x8, [x22]
+  351c90: f9420108     	ldr	x8, [x8, #0x400]
+  351c94: aa1603e0     	mov	x0, x22
+  351c98: d63f0100     	blr	x8
+  351c9c: 710012ff     	cmp	w23, #0x4
+  351ca0: 54000640     	b.eq	0x351d68 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1bc>
+  351ca4: 710006ff     	cmp	w23, #0x1
+  351ca8: 54000921     	b.ne	0x351dcc <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x220>
+  351cac: aa0003f6     	mov	x22, x0
+  351cb0: 528ac8a8     	mov	w8, #0x5645             ; =22085
+  351cb4: 72aae828     	movk	w8, #0x5741, lsl #16
+  351cb8: 6b08001f     	cmp	w0, w8
+  351cbc: 54000820     	b.eq	0x351dc0 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x214>
+  351cc0: 52864cc8     	mov	w8, #0x3266             ; =12902
+  351cc4: 72aa6c88     	movk	w8, #0x5364, lsl #16
+  351cc8: 6b0802df     	cmp	w22, w8
+  351ccc: 54000740     	b.eq	0x351db4 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x208>
+  351cd0: 5288c8c8     	mov	w8, #0x4646             ; =17990
+  351cd4: 72a82928     	movk	w8, #0x4149, lsl #16
+  351cd8: 6b0802df     	cmp	w22, w8
+  351cdc: 54000401     	b.ne	0x351d5c <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1b0>
+  351ce0: d0008ce0     	adrp	x0, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  351ce4: 9124e000     	add	x0, x0, #0x938
+  351ce8: 14000024     	b	0x351d78 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1cc>
+  351cec: 5288ccd6     	mov	w22, #0x4666            ; =18022
+  351cf0: 72a9ab16     	movk	w22, #0x4d58, lsl #16
+  351cf4: 710012ff     	cmp	w23, #0x4
+  351cf8: 540003c0     	b.eq	0x351d70 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1c4>
+  351cfc: f90003ff     	str	xzr, [sp]
+  351d00: 900064e1     	adrp	x1, 0xfed000 <_write+0xfed000>
+  351d04: 911be421     	add	x1, x1, #0x6f9
+  351d08: 910023e0     	add	x0, sp, #0x8
+  351d0c: 942d029e     	bl	0xe92784 <_write+0xe92784>
+  351d10: 910023e0     	add	x0, sp, #0x8
+  351d14: 942d0caa     	bl	0xe94fbc <_write+0xe94fbc>
+  351d18: 910023e0     	add	x0, sp, #0x8
+  351d1c: 942d02a0     	bl	0xe9279c <_write+0xe9279c>
+  351d20: 14000014     	b	0x351d70 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1c4>
+  351d24: 528dacd6     	mov	w22, #0x6d66            ; =28006
+  351d28: 72a82a96     	movk	w22, #0x4154, lsl #16
+  351d2c: 710006ff     	cmp	w23, #0x1
+  351d30: 54000160     	b.eq	0x351d5c <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1b0>
+  351d34: 710012ff     	cmp	w23, #0x4
+  351d38: 540001c0     	b.eq	0x351d70 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1c4>
+  351d3c: f90003ff     	str	xzr, [sp]
+  351d40: 900064e1     	adrp	x1, 0xfed000 <_write+0xfed000>
+  351d44: 911be421     	add	x1, x1, #0x6f9
+  351d48: 910023e0     	add	x0, sp, #0x8
+  351d4c: 942d028e     	bl	0xe92784 <_write+0xe92784>
+  351d50: 910023e0     	add	x0, sp, #0x8
+  351d54: 942d0c9a     	bl	0xe94fbc <_write+0xe94fbc>
+  351d58: 14000024     	b	0x351de8 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x23c>
+  351d5c: d0008ce0     	adrp	x0, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  351d60: 91256000     	add	x0, x0, #0x958
+  351d64: 14000005     	b	0x351d78 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1cc>
+  351d68: 5288ccd6     	mov	w22, #0x4666            ; =18022
+  351d6c: 72a9ab16     	movk	w22, #0x4d58, lsl #16
+  351d70: d0008ce0     	adrp	x0, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  351d74: 9125a000     	add	x0, x0, #0x968
+  351d78: 942146d9     	bl	0xba38dc <acfUTF16LiteralToUTF16::operator unsigned short const*() const>
+  351d7c: 91000801     	add	x1, x0, #0x2
+  351d80: aa1503e0     	mov	x0, x21
+  351d84: aa1403e2     	mov	x2, x20
+  351d88: 942d0f09     	bl	0xe959ac <_write+0xe959ac>
+  351d8c: 8b34c6a8     	add	x8, x21, w20, sxtw #1
+  351d90: 781fe11f     	sturh	wzr, [x8, #-0x2]
+  351d94: b4000053     	cbz	x19, 0x351d9c <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1f0>
+  351d98: b9000276     	str	w22, [x19]
+  351d9c: a9467bfd     	ldp	x29, x30, [sp, #0x60]
+  351da0: a9454ff4     	ldp	x20, x19, [sp, #0x50]
+  351da4: a94457f6     	ldp	x22, x21, [sp, #0x40]
+  351da8: a9435ff8     	ldp	x24, x23, [sp, #0x30]
+  351dac: 9101c3ff     	add	sp, sp, #0x70
+  351db0: d65f03c0     	ret
+  351db4: d0008ce0     	adrp	x0, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  351db8: 91252000     	add	x0, x0, #0x948
+  351dbc: 17ffffef     	b	0x351d78 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1cc>
+  351dc0: d0008ce0     	adrp	x0, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  351dc4: 9124a000     	add	x0, x0, #0x928
+  351dc8: 17ffffec     	b	0x351d78 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x1cc>
+  351dcc: f90003ff     	str	xzr, [sp]
+  351dd0: 900064e1     	adrp	x1, 0xfed000 <_write+0xfed000>
+  351dd4: 911be421     	add	x1, x1, #0x6f9
+  351dd8: 910023e0     	add	x0, sp, #0x8
+  351ddc: 942d026a     	bl	0xe92784 <_write+0xe92784>
+  351de0: 910023e0     	add	x0, sp, #0x8
+  351de4: 942d0c76     	bl	0xe94fbc <_write+0xe94fbc>
+  351de8: 910023e0     	add	x0, sp, #0x8
+  351dec: 942d026c     	bl	0xe9279c <_write+0xe9279c>
+  351df0: d4200020     	brk	#0x1
+  351df4: 14000004     	b	0x351e04 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x258>
+  351df8: 14000003     	b	0x351e04 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x258>
+  351dfc: 14000002     	b	0x351e04 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x258>
+  351e00: 14000001     	b	0x351e04 <ameBaseStream::GenerateMediaFileExtension(AComposition*, _TrackLabel_t, ameDomainType, char16_t*, int, unsigned int*)+0x258>
+  351e04: aa0003f3     	mov	x19, x0
+  351e08: 910023e0     	add	x0, sp, #0x8
+  351e0c: 942d0264     	bl	0xe9279c <_write+0xe9279c>
+  351e10: aa1303e0     	mov	x0, x19
+  351e14: 942cf1d3     	bl	0xe8e560 <_write+0xe8e560>

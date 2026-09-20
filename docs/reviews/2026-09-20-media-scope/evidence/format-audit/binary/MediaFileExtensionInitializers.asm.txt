@@ -1,0 +1,74 @@
+
+/tmp/mediamuster-format-audit-2026-09-20/binary/libameLibrary.arm64.dylib:	file format mach-o arm64
+
+Disassembly of section __TEXT,__text:
+
+0000000000358e18 <__GLOBAL__sub_I_ameBaseStream.c>:
+  358e18: a9bd57f6     	stp	x22, x21, [sp, #-0x30]!
+  358e1c: a9014ff4     	stp	x20, x19, [sp, #0x10]
+  358e20: a9027bfd     	stp	x29, x30, [sp, #0x20]
+  358e24: 910083fd     	add	x29, sp, #0x20
+  358e28: f0008b48     	adrp	x8, 0x14c3000 <_BinStatcol+0x22b6>
+  358e2c: f9426d08     	ldr	x8, [x8, #0x4d8]
+  358e30: f0008b49     	adrp	x9, 0x14c3000 <_BinStatcol+0x22b6>
+  358e34: b944e129     	ldr	w9, [x9, #0x4e0]
+  358e38: 9ac90d08     	sdiv	x8, x8, x9
+  358e3c: f0008ca9     	adrp	x9, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  358e40: f904c128     	str	x8, [x9, #0x980]
+  358e44: f0008cb3     	adrp	x19, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  358e48: 9124a273     	add	x19, x19, #0x928
+  358e4c: d0008b21     	adrp	x1, 0x14be000 <_write+0x14be000>
+  358e50: 9113e021     	add	x1, x1, #0x4f8
+  358e54: aa1303e0     	mov	x0, x19
+  358e58: 94212aa0     	bl	0xba38d8 <acfUTF16LiteralToUTF16::acfUTF16LiteralToUTF16(__acfStringLiteralRef const*)>
+  358e5c: f0004254     	adrp	x20, 0xba3000 <AssistantCommon::GangPan(int, int, int, GangReasons_t, int)+0x98>
+  358e60: 911e7294     	add	x20, x20, #0x79c
+  358e64: 90ffe555     	adrp	x21, 0x0 <_write>
+  358e68: 910002b5     	add	x21, x21, #0x0
+  358e6c: aa1403e0     	mov	x0, x20
+  358e70: aa1303e1     	mov	x1, x19
+  358e74: aa1503e2     	mov	x2, x21
+  358e78: 942cf05d     	bl	0xe94fec <_write+0xe94fec>
+  358e7c: f0008cb3     	adrp	x19, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  358e80: 9124e273     	add	x19, x19, #0x938
+  358e84: d0008b21     	adrp	x1, 0x14be000 <_write+0x14be000>
+  358e88: 91146021     	add	x1, x1, #0x518
+  358e8c: aa1303e0     	mov	x0, x19
+  358e90: 94212a92     	bl	0xba38d8 <acfUTF16LiteralToUTF16::acfUTF16LiteralToUTF16(__acfStringLiteralRef const*)>
+  358e94: aa1403e0     	mov	x0, x20
+  358e98: aa1303e1     	mov	x1, x19
+  358e9c: aa1503e2     	mov	x2, x21
+  358ea0: 942cf053     	bl	0xe94fec <_write+0xe94fec>
+  358ea4: f0008cb3     	adrp	x19, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  358ea8: 91252273     	add	x19, x19, #0x948
+  358eac: d0008b21     	adrp	x1, 0x14be000 <_write+0x14be000>
+  358eb0: 9114e021     	add	x1, x1, #0x538
+  358eb4: aa1303e0     	mov	x0, x19
+  358eb8: 94212a88     	bl	0xba38d8 <acfUTF16LiteralToUTF16::acfUTF16LiteralToUTF16(__acfStringLiteralRef const*)>
+  358ebc: aa1403e0     	mov	x0, x20
+  358ec0: aa1303e1     	mov	x1, x19
+  358ec4: aa1503e2     	mov	x2, x21
+  358ec8: 942cf049     	bl	0xe94fec <_write+0xe94fec>
+  358ecc: f0008cb3     	adrp	x19, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  358ed0: 91256273     	add	x19, x19, #0x958
+  358ed4: d0008b21     	adrp	x1, 0x14be000 <_write+0x14be000>
+  358ed8: 91156021     	add	x1, x1, #0x558
+  358edc: aa1303e0     	mov	x0, x19
+  358ee0: 94212a7e     	bl	0xba38d8 <acfUTF16LiteralToUTF16::acfUTF16LiteralToUTF16(__acfStringLiteralRef const*)>
+  358ee4: aa1403e0     	mov	x0, x20
+  358ee8: aa1303e1     	mov	x1, x19
+  358eec: aa1503e2     	mov	x2, x21
+  358ef0: 942cf03f     	bl	0xe94fec <_write+0xe94fec>
+  358ef4: f0008cb3     	adrp	x19, 0x14ef000 <BIN_TC_TAG_LIST+0xd8>
+  358ef8: 9125a273     	add	x19, x19, #0x968
+  358efc: d0008b21     	adrp	x1, 0x14be000 <_write+0x14be000>
+  358f00: 9115e021     	add	x1, x1, #0x578
+  358f04: aa1303e0     	mov	x0, x19
+  358f08: 94212a74     	bl	0xba38d8 <acfUTF16LiteralToUTF16::acfUTF16LiteralToUTF16(__acfStringLiteralRef const*)>
+  358f0c: aa1403e0     	mov	x0, x20
+  358f10: aa1303e1     	mov	x1, x19
+  358f14: aa1503e2     	mov	x2, x21
+  358f18: a9427bfd     	ldp	x29, x30, [sp, #0x20]
+  358f1c: a9414ff4     	ldp	x20, x19, [sp, #0x10]
+  358f20: a8c357f6     	ldp	x22, x21, [sp], #0x30
+  358f24: 142cf032     	b	0xe94fec <_write+0xe94fec>

@@ -79,6 +79,7 @@ private slots:
 
 	// Bin-derived fallbacks, conflict handling and row refresh notifications.
 	void fills_missing_owned_metadata_in_both_identity_forms();
+	void omf_metadata_does_not_cross_byte_swapped_identities();
 	void preserves_scanner_metadata_and_ignores_source_names();
 	void conflicts_are_independent_and_retractable();
 	void same_bin_name_with_different_uid_is_ambiguous();
@@ -403,6 +404,35 @@ void TestMediaTableModel::fills_missing_owned_metadata_in_both_identity_forms()
 		QVERIFY(file.originalBin.isEmpty());
 		QVERIFY(!file.originalBinFromAvb);
 	}
+}
+
+void TestMediaTableModel::omf_metadata_does_not_cross_byte_swapped_identities()
+{
+	const QString firstId = QStringLiteral("060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80");
+	const QString secondId = QStringLiteral("060a2b3401010101.01010f0013000000.4433221166558877.060e2b347f7f2a80");
+	MediaFile first = row(QStringLiteral("/media/first.omf"));
+	first.masterMobId = firstId;
+	MediaFile second = row(QStringLiteral("/media/second.omf"));
+	second.masterMobId = secondId;
+	AvbBin firstBin = bin(QStringLiteral("First clip"), QStringLiteral("First bin"));
+	firstBin.mobs[0].mobId = firstId;
+	AvbBin secondBin = bin(QStringLiteral("Second clip"), QStringLiteral("Second bin"));
+	secondBin.mobs[0].mobId = secondId;
+	MediaTableModel model;
+	model.setMediaFiles({first, second});
+	model.setAvbBins({firstBin});
+	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("First clip"));
+	QCOMPARE(model.fileAt(0).originalBin, QStringLiteral("First bin"));
+	QCOMPARE(model.fileAt(0).clipNameSource, MediaFile::ClipNameSource::Avb);
+	QVERIFY(model.fileAt(1).clipName.isEmpty());
+	QVERIFY(model.fileAt(1).originalBin.isEmpty());
+	QCOMPARE(model.fileAt(1).clipNameSource, MediaFile::ClipNameSource::None);
+	QVERIFY(!model.fileAt(1).originalBinFromAvb);
+	model.setAvbBins({firstBin, secondBin});
+	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("First clip"));
+	QCOMPARE(model.fileAt(0).originalBin, QStringLiteral("First bin"));
+	QCOMPARE(model.fileAt(1).clipName, QStringLiteral("Second clip"));
+	QCOMPARE(model.fileAt(1).originalBin, QStringLiteral("Second bin"));
 }
 
 void TestMediaTableModel::preserves_scanner_metadata_and_ignores_source_names()

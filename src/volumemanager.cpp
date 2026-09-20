@@ -110,8 +110,8 @@ QStringList VolumeManager::knownAvidLocations()
 	// Avid's placement rule and nothing else (user ruling 2026-09-02): the
 	// fixed system-drive bases Media Composer hard-codes, under which either
 	// media root may sit. The home-directory guesses this list used to carry
-	// matched nothing Avid writes; a user with media there adds the folder
-	// by hand, which is the path the deep search survives on.
+	// matched nothing Avid writes; a user with media there adds the intact
+	// media tree by hand. Manual paths do not trigger a recursive search.
 	return Conventions::systemDriveMediaBases();
 }
 

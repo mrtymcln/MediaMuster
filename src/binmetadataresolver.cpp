@@ -2,6 +2,7 @@
 #include "avbparser.h"
 #include "mediafile.h"
 #include "mobid.h"
+#include "omfuid.h"
 
 void BinMetadataResolver::Metadata::merge(const AvbMob &mob)
 {
@@ -40,9 +41,15 @@ void BinMetadataResolver::setBins(const QVector<AvbBin> &bins)
 			// Source names describe imports/tapes; only master clips supply editor names.
 			if (mob.mobType != AvbMob::masterMobType || mob.mobId.isEmpty())
 				continue;
-			for (const QString &key : QSet<QString>{mob.mobId, MobId::toPmrForm(mob.mobId)})
-				if (!key.isEmpty())
-					m_metadata[key].merge(mob);
+			m_metadata[mob.mobId].merge(mob);
+			// OMF wrappers preserve their identity bytes in both the bin and
+			// the database. Only MXF identities need the byte-order alias.
+			if (!OmfUid::isOmfForm(mob.mobId))
+			{
+				const QString alias = MobId::toPmrForm(mob.mobId);
+				if (!alias.isEmpty() && alias != mob.mobId)
+					m_metadata[alias].merge(mob);
+			}
 		}
 	}
 }

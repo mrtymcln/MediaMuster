@@ -1,0 +1,10 @@
+[1/11] Automatic MOC for target tst_conventions
+[2/10] Automatic MOC for target tst_operationui
+[3/9] Building CXX object tests/CMakeFiles/tst_conventions.dir/tst_conventions.cpp.o
+[4/9] Linking CXX executable tests/tst_conventions
+[5/9] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui.cpp.o
+[6/9] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[7/9] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mainwindow.cpp.o
+[8/9] Linking CXX executable tests/tst_operationui
+[9/9] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: replacing existing signature

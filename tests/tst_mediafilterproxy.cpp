@@ -55,6 +55,7 @@ private slots:
 	// keep matching without a pass of their own.
 	void search_matches_the_path_shown_in_the_location_column();
 	void unknown_classification_does_not_match_known_filters();
+	void quarantined_filter_uses_scanner_flag();
 	void three_state_classification_sort_is_consistent();
 	void hidden_type_classification_does_not_sort_rows();
 	void effect_selection_intersects_volume_and_existing_filters();
@@ -226,6 +227,34 @@ void TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
 	QCOMPARE(proxy.rowCount(), 1); // unresolved files remain accessible
 }
 
+void TestMediaFilterProxy::quarantined_filter_uses_scanner_flag()
+{
+	// Deliberately disagree with the paths: the scanner owns classification,
+	// and the filter must consume its flag without guessing from folder names.
+	MediaFile flagged = rowNamed(QStringLiteral("flagged"));
+	flagged.isQuarantined = true;
+	flagged.mediaFolderName = QStringLiteral("1");
+	flagged.filePath = QStringLiteral("/vol/Avid MediaFiles/MXF/1/flagged.mxf");
+	MediaFile namedOnly = rowNamed(QStringLiteral("folder name only"));
+	namedOnly.mediaFolderName = QStringLiteral("Quarantined Files");
+	namedOnly.filePath = QStringLiteral("/vol/Avid MediaFiles/MXF/Quarantined Files/named.mxf");
+	MediaTableModel model;
+	model.setMediaFiles({flagged, namedOnly});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int name = Enum::to_underlying(MediaTableModel::Column::ClipName);
+	QCOMPARE(proxy.rowCount(), 2);
+
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Quarantined);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.index(0, name).data().toString(), flagged.clipName);
+
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.index(0, name).data().toString(), flagged.clipName);
+	QCOMPARE(proxy.index(1, name).data().toString(), namedOnly.clipName);
+}
+
 void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 {
 	MediaFile audio = rowNamed(QStringLiteral("audio"));
@@ -371,7 +400,7 @@ void TestMediaFilterProxy::effect_gate_resets_filters_and_hidden_search()
 	};
 	const GateCase cases[] = {
 		{{true, {{{}, {}, render.effect}}}, 1}, // A named selection.
-		{{true, {}}, 0},                      // An active empty selection means no matches.
+		{{true, {}}, 0},						// An active empty selection means no matches.
 	};
 	QVERIFY(!proxy.effectDetailsEnabled());
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
@@ -491,11 +520,9 @@ void TestMediaFilterProxy::precompute_hierarchy_filters_intersect_and_unknown_is
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}}}});
 	QVERIFY(!proxy.precomputeTreeFilter().active);
 	proxy.setEffectDetailsEnabled(true);
-	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), {}, {}},
-		{QStringLiteral("Titles and Matte Keys"), {}, {}}}});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), {}, {}}, {QStringLiteral("Titles and Matte Keys"), {}, {}}}});
 	QCOMPARE(proxy.rowCount(), 4);
-	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}},
-		{QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), {}}}});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}}, {QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), {}}}});
 	QCOMPARE(proxy.rowCount(), 3);
 	proxy.setEffectVolumeFilter(warp.volumePath);
 	QCOMPARE(proxy.rowCount(), 2);
