@@ -2,6 +2,7 @@
 #include "mobid.h"
 #include "pathkey.h"
 #include "conventions.h"
+#include "avidmedialayout.h"
 
 #include <QDir>
 #include <QDirIterator>
@@ -11,25 +12,53 @@
 #include <algorithm>
 #include <limits>
 
+namespace
+{
+	QString resolvedMxfRoot(const QString &path)
+	{
+		const QFileInfo root(path);
+		if (!AvidMediaLayout::isMxfRoot(path) || !root.isDir())
+			return {};
+		const QString resolved = root.canonicalFilePath();
+		return AvidMediaLayout::isMxfRoot(resolved) ? resolved : QString{};
+	}
+
+	bool folderBelongsToRoot(const QString &path, const QString &resolvedRoot, bool allowMissing = false)
+	{
+		if (resolvedRoot.isEmpty())
+			return false;
+		const QFileInfo folder(path);
+		const QString expected = QDir(resolvedRoot).filePath(folder.fileName());
+		if (!folder.exists())
+			return allowMissing && !folder.isSymLink() &&
+				PathKey::normalise(path) == PathKey::normalise(expected);
+		if (!folder.isDir())
+			return false;
+		const QString actual = folder.canonicalFilePath();
+		const auto location = AvidMediaLayout::locateMediaFolder(actual);
+		return location && location->family == AvidMediaLayout::Family::Mxf &&
+			PathKey::normalise(actual) == PathKey::normalise(expected);
+	}
+} // namespace
+
 // MARK: - Folder name parsing
 
 std::optional<FolderName> RebalancePlanner::parseFolderName(const QString &name)
 {
-	const int lastDot = name.lastIndexOf('.');
-	const QString prefix = lastDot < 0 ? QString() : name.left(lastDot);
-	const QString tail = lastDot < 0 ? name : name.mid(lastDot + 1);
+	const auto parsed = AvidMediaLayout::parseMxfFolderName(name);
+	if (!parsed)
+		return std::nullopt;
 
 	bool ok = false;
-	const int n = tail.toInt(&ok);
+	const int n = parsed->digits.toInt(&ok);
 	if (!ok || n <= 0)
 		return std::nullopt;
 
-	FolderName fid{prefix, n};
+	FolderName fid{parsed->prefix, n};
 
-	// Round-trip guard. `.5`, `01`, `MartysiMac.005` all parse as
-	// `n=5` but don't survive a canonical re-render; rejecting
-	// them keeps us from 'rebalancing' a folder into a name that
-	// doesn't match what was on disk.
+	// The shared reader accepts padded names such as `01` and
+	// `MartysiMac.005`. Rebalance requires the original spelling to survive
+	// integer conversion so it never plans a rename using a different name.
 	if (fid.display() != name)
 		return std::nullopt;
 	return fid;
@@ -42,6 +71,21 @@ std::optional<FolderName> RebalancePlanner::srcFolderOf(const QString &srcPath)
 	return parseFolderName(QFileInfo(srcPath).dir().dirName());
 }
 
+bool RebalancePlanner::isEligible(const MediaFile &file)
+{
+	const QFileInfo source(file.filePath);
+	if (file.omfEra || file.isQuarantined || !QDir::isAbsolutePath(file.filePath) || source.isSymLink() ||
+		!AvidMediaLayout::acceptsFileName(AvidMediaLayout::Family::Mxf,
+			source.fileName()))
+		return false;
+	const auto location =
+		AvidMediaLayout::locateMediaFolder(source.absolutePath());
+	return location && location->family == AvidMediaLayout::Family::Mxf &&
+		parseFolderName(location->folderName).has_value() &&
+		location->folderName == file.mediaFolderName &&
+		folderBelongsToRoot(source.absolutePath(), resolvedMxfRoot(location->rootPath));
+}
+
 // MARK: - Planning helpers
 
 namespace
@@ -51,9 +95,8 @@ namespace
 	/// Avid's own databases, dot-hidden files, shell junk, and stray
 	/// non-MXF files are not media. Counting them inflated the preview's
 	/// per-folder count and stole slots from the Conventions::kFolderTarget packing.
-	/// The name rule itself lives in Conventions. It is the BUDGET rule,
-	/// deliberately narrower than the table's (see isAvidMediaName): the
-	/// preview counts what Avid counts, not what the table shows.
+	/// The name rule lives in Conventions. Managed-folder admission is
+	/// checked separately before these entries are included in a plan.
 	bool countsTowardFolderBudget(const QString &fileName)
 	{
 		return Conventions::countsAsEssenceName(fileName);
@@ -101,12 +144,14 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 	plan.volumeLabel = volumeLabel;
 
 	QDir mxfDir(mxfRoot);
-	if (!mxfDir.exists())
+	const QString resolvedRoot = resolvedMxfRoot(mxfRoot);
+	if (resolvedRoot.isEmpty())
 		return plan;
 
 	// MARK: Snapshot current folder state on disk
 
 	QHash<QString, QSet<int>> existingByPrefix; // prefix → {n}
+	QHash<QString, QSet<int>> occupiedByPrefix; // Includes aliases that cannot be destinations.
 	QHash<FolderName, int> realCount;
 
 	const QStringList subdirs = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
@@ -126,11 +171,13 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		}
 
 		const auto parsed = parseFolderName(name);
+		if (parsed)
+			occupiedByPrefix[parsed->prefix].insert(parsed->n);
 		FolderState fs;
 		fs.name = name;
 		fs.count = onDiskCount;
-		fs.inScope = parsed.has_value();
-		if (parsed)
+		fs.inScope = parsed.has_value() && folderBelongsToRoot(mxfDir.filePath(name), resolvedRoot);
+		if (fs.inScope)
 		{
 			fs.id = *parsed;
 			existingByPrefix[fs.id.prefix].insert(fs.id.n);
@@ -161,6 +208,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 	QHash<QString, QVector<IndexedMedia>> bucketed;
 	for (const auto &mf : files)
 	{
+		if (!isEligible(mf))
+			continue;
 		const auto parsed = parseFolderName(mf.mediaFolderName);
 		if (!parsed)
 			continue;
@@ -270,7 +319,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 	// state so subsequent passes see it as if already on disk.
 	auto allocateNewFolder = [&](const QString &prefix) -> FolderName
 	{
-		QSet<int> all = allFoldersForPrefix(prefix);
+		QSet<int> all = occupiedByPrefix.value(prefix);
+		all.unite(newByPrefix.value(prefix));
 		int next = 1;
 		for (int n : all)
 			if (n >= next)
@@ -296,7 +346,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		if (m.folder == dest)
 			return;
 		plan.ops.append({m.file->filePath, dest, m.file->masterMobId, m.file->sizeBytes,
-						 m.file->modified.isValid() ? m.file->modified.toMSecsSinceEpoch() : -1});
+						 m.file->modified.isValid() ? m.file->modified.toMSecsSinceEpoch() : -1,
+						 m.file->mobId});
 		projected[m.folder] -= 1;
 		projected[dest] += 1;
 	};
@@ -429,6 +480,32 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 
 OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 {
+	OpRequest req;
+	req.kind = OpKind::Rename;
+	const QString resolvedRoot = resolvedMxfRoot(plan.mxfRoot);
+	if (resolvedRoot.isEmpty())
+		return req;
+
+	// Validate the whole plan before assembling any relatives group. A stale or
+	// malformed member must not silently turn a group move into a partial move.
+	const QString rootKey = PathKey::normalise(resolvedRoot);
+	for (const RenameOp &op : plan.ops)
+	{
+		const QFileInfo source(op.srcPath);
+		const auto location = AvidMediaLayout::locateMediaFolder(source.absolutePath());
+		const auto sourceFolder = srcFolderOf(op.srcPath);
+		const auto destination = parseFolderName(op.dest.display());
+		if (!QDir::isAbsolutePath(op.srcPath) || source.isSymLink() ||
+			!AvidMediaLayout::acceptsFileName(AvidMediaLayout::Family::Mxf, source.fileName()) ||
+			!location || location->family != AvidMediaLayout::Family::Mxf ||
+			PathKey::normalise(resolvedMxfRoot(location->rootPath)) != rootKey || !sourceFolder ||
+			!destination || *destination != op.dest ||
+			sourceFolder->prefix != destination->prefix || *sourceFolder == *destination ||
+			!folderBelongsToRoot(source.absolutePath(), resolvedRoot) ||
+			!folderBelongsToRoot(QDir(plan.mxfRoot).filePath(op.dest.display()), resolvedRoot, true))
+			return req;
+	}
+
 	QHash<QString, QVector<int>> opsByComp;
 	QStringList compOrder;
 	for (int i = 0; i < plan.ops.size(); ++i)
@@ -439,8 +516,6 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 		opsByComp[key].append(i);
 	}
 
-	OpRequest req;
-	req.kind = OpKind::Rename;
 	req.items.reserve(plan.ops.size());
 	for (const QString &compKey : compOrder)
 	{
@@ -454,6 +529,7 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 			it.bytes = op.sizeBytes;
 			it.modifiedMs = op.modifiedMs;
 			it.masterMobId = op.masterMobId;
+			it.mobId = op.fileMobId;
 			it.renameDst =
 				plan.mxfRoot + QLatin1Char('/') + op.dest.display() + QLatin1Char('/') + fileName;
 			it.groupKey = compKey;

@@ -122,17 +122,12 @@ struct MediaFile
 	QString extension;
 	QString volumeName;
 	QString volumePath;
-	/// The numbered subfolder under Avid MediaFiles/MXF. OMF-era: the flat
-	/// legacy root has no numbered folders, so its rows carry the root's own
-	/// name, "OMFI MediaFiles" — which the rebalancer's folder-name rule
-	/// rejects, keeping OMF media out of its scope.
+	/// The media's containing folder: an MXF numbered/workstation folder,
+	/// the OMFI root itself, or a legacy shared OMF workstation folder.
 	QString mediaFolderName;
-	/// OMF-era: legacy media — read by OmfParser, preserved by the copy
-	/// engine to "OMFI MediaFiles". Decided once, in the scanner
-	/// (isOmfEraRow): an .omf extension, Avid's OMFI root, or a folder
-	/// whose own databases carry 12-byte omfi:UIDs. The folder's name is
-	/// not the rule — Avid's bundled slate folder is "Avid_MediaFiles",
-	/// and an archive added by hand can be called anything.
+	/// Set from the accepted OMFI tree, independently of database contents.
+	/// Selects the OMF reader and preserve-structure transfer destination.
+	/// Rebalance explicitly excludes this family.
 	bool omfEra = false;
 	qint64 sizeBytes = 0;
 	/// Filesystem creation (birth) time. Invalid when the file system

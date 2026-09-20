@@ -73,6 +73,7 @@ struct RenameOp
 	QString masterMobId; ///< Empty for files with no relatives group.
 	qint64 sizeBytes = 0;
 	qint64 modifiedMs = -1;
+	QString fileMobId; ///< Essence-file identity retained for the engine's pre-move check.
 };
 
 // MARK: - FolderState

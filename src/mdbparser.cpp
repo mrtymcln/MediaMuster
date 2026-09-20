@@ -75,7 +75,7 @@
 // OMFI:MOBJ:MobID is a 12-byte omfi:UID (MC 2026 additionally writes a
 // 32-byte UMID on the physical mob of the same file, so both widths are
 // accepted and keyed by OmfUid::canonicalHex); the audio descriptors are
-// WAVD/AIFD/SD2D; the codec is a 4CC + resolution id rather than a label;
+// WAVD/AIFD; the codec is a 4CC + resolution id rather than a label;
 // and the project name is a _PJ attribute on the file or source mob, since
 // a version-2 PMR carries no project. A 32-byte physical mob owns an MDES
 // and therefore falls out of the triage as a source mob, as before.
@@ -233,7 +233,11 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				if (a.project.isEmpty())
 				{
 					const quint32 src = OmfObjects::findSourceMob(b, p, mediaObj, objectByMob);
-					OmfObjects::walkAttributes(b, p, b.ref(src, p.attrs), a, seen, 0);
+					const QString sourceHex = OmfUid::canonicalHex(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
+					const auto sourceObjects = objectsByHex.constFind(sourceHex);
+					if (sourceObjects != objectsByHex.cend())
+						for (quint32 obj : *sourceObjects)
+							OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
 				}
 				f.project = a.project;
 			}

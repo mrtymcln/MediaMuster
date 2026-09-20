@@ -7,6 +7,7 @@
 #include "crashcollector.h"
 #include "enumutil.h"
 #include "effectfilterdialog.h"
+#include "featureflags.h"
 #include "formatutil.h"
 #include "icons.h"
 #include "layoututil.h"
@@ -14,6 +15,7 @@
 #include "mediacsv.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
+#include "rebalanceplanner.h"
 #include "revealinfinder.h"
 #include "version.h"
 
@@ -737,7 +739,9 @@ void MainWindow::buildSpecialMenu()
 
 void MainWindow::buildDebugMenu()
 {
-#if MEDIAMUSTER_DEBUG_MENU
+	if constexpr (!FeatureFlags::kDebugMenuEnabled)
+		return;
+
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
 	m_omfAct = debugMenu->addAction(tr("Enable OMF/OMFI"));
@@ -800,7 +804,6 @@ void MainWindow::buildDebugMenu()
 	addDemo(tr("Small"), RebalanceDialog::DemoScenario::Small);
 	addDemo(tr("Big"), RebalanceDialog::DemoScenario::Big);
 	addDemo(tr("Really big"), RebalanceDialog::DemoScenario::ReallyBig);
-#endif
 }
 
 // MARK: Help menu
@@ -1218,17 +1221,10 @@ void MainWindow::onRebalance()
 
 	for (const MediaFile &mf : m_model->allFiles())
 	{
-		if (mf.filePath.isEmpty())
+		if (!RebalancePlanner::isEligible(mf))
 			continue;
 		const QString folderDir = QFileInfo(mf.filePath).absolutePath();
 		const QString mxfRoot = QFileInfo(folderDir).absolutePath();
-
-		// Grandparent must be the MXF folder — any case, matching the
-		// scanner's rule, so a share spelled 'mxf' that scans fine can
-		// also rebalance. OMF roots stay excluded (scan-only; see
-		// Conventions::isOmfRootName).
-		if (!Conventions::isMxfRootName(QFileInfo(mxfRoot).fileName()))
-			continue;
 
 		QString label = labelByRoot.value(mxfRoot);
 		if (label.isEmpty())
@@ -1376,6 +1372,13 @@ void MainWindow::onPathsDropped(const QStringList &paths)
 
 void MainWindow::addVolumePath(const QString &path)
 {
+	if (!MediaScanner::canScanPath(path))
+	{
+		const QString message = tr("Not an Avid media location. Add an Avid MediaFiles or OMFI MediaFiles folder, or its containing folder.");
+		addLog(QtWarningMsg, QStringLiteral("volumes"), message + QLatin1Char(' ') + path);
+		statusBar()->showMessage(message, 10000);
+		return;
+	}
 	for (int i = 0; i < m_volumeList->count(); ++i)
 	{
 		if (m_volumeList->item(i)->data(Qt::UserRole).toString() == path)
@@ -1514,8 +1517,8 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	if (!m_operations->isIdle())
 		return;
 	// Detected volumes and hand-added folders scan differently (see
-	// MediaScanner::Options): a volume is probed at its root only, a folder
-	// keeps the shape cases and the two-level search. Every caller hands in
+	// MediaScanner::Options): a volume is probed at its root only; manual
+	// paths resolve a managed tree or its immediate container. Callers use
 	// one merged list — the ticked rows, Scan All, the post-rebalance
 	// rescan — so the split is made here, once. A path is a volume only
 	// when VolumeManager detected it (a mount, or a system-drive base);
@@ -1523,9 +1526,6 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	// rebalance, whose path is the scanned root the rows derived (".../Avid
 	// MediaFiles" for a hand-added ".../MXF/3"), which is not the string
 	// the user added and would otherwise be probed as a drive and miss.
-	// OMF-era: the split landed with the OMF-era discovery rework (the
-	// volume-vs-manual placement rule), but it is not itself OMF handling —
-	// a future OMF gate leaves it alone.
 	const QStringList detected = m_volumeManager->allScannablePaths();
 	MediaScanner::Options opts;
 	opts.includeOmf = m_omfEnabled;

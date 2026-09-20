@@ -1,0 +1,17 @@
+********* Start testing of TestMediaMetadata *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestMediaMetadata::initTestCase()
+PASS   : TestMediaMetadata::empty_label_returns_empty()
+PASS   : TestMediaMetadata::pcm_audio_ul_resolves()
+PASS   : TestMediaMetadata::prores_422_ul_resolves()
+PASS   : TestMediaMetadata::dnxhd_bitrate_follows_fps()
+PASS   : TestMediaMetadata::dnxhd_hqx_carries_x_suffix()
+PASS   : TestMediaMetadata::vc3_720p_sq_keeps_its_own_name()
+PASS   : TestMediaMetadata::unknown_ul_infers_family_from_structure()
+PASS   : TestMediaMetadata::fully_unknown_ul_falls_back_to_hex()
+PASS   : TestMediaMetadata::applyEditRate_labels_fractional_rates()
+PASS   : TestMediaMetadata::mdb_style_metadata_finalises_like_a_header()
+PASS   : TestMediaMetadata::finalise_is_idempotent_and_does_not_guess()
+PASS   : TestMediaMetadata::cleanupTestCase()
+Totals: 13 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TestMediaMetadata *********

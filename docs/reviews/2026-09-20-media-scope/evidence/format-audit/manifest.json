@@ -1,0 +1,181 @@
+{
+  "purpose": "Preserved evidence before 20 September 2026 housekeeping; captured notes describe their original source state.",
+  "preserved": [
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/audio-extension-evidence.md",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/audio-extension-evidence.md",
+      "bytes": 4301,
+      "sha256": "7d1479e92dc968385afb81ecd6ecb0741ab205ac420124f8639b6393796b0b50"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/DetermineFileType.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/DetermineFileType.pseudo.txt",
+      "bytes": 9654,
+      "sha256": "3317a72e84997b9b17b8e16e3520cd3471dadd31460ec272b2489fdacd460b47"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/GenerateMediaFileExtension.asm.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/GenerateMediaFileExtension.asm.txt",
+      "bytes": 10678,
+      "sha256": "195b1a089fde3e96ca6c3eda7bb0b2a3e768be8d9bd063e23152ffd7c5acf22c"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/GetAccessTypeForFile.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/GetAccessTypeForFile.pseudo.txt",
+      "bytes": 8935,
+      "sha256": "846be2cde9b9d30fb0be9abe4e7ec4d88d918f7e3f8c8b66221f0173c3cc3ac4"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/GetMediaDirectoryDomainType.asm.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/GetMediaDirectoryDomainType.asm.txt",
+      "bytes": 17326,
+      "sha256": "932a8b72b3e1b2eb794554ba44a510ec4e02c98225cfef74010fb502da255422"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/IsMXFFile.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/IsMXFFile.pseudo.txt",
+      "bytes": 1145,
+      "sha256": "2b721769c948bd167a0d29441b540f27e7d9e44f1b62e198b04d764a2b48217f"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/IsOMFIFile_locator.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/IsOMFIFile_locator.pseudo.txt",
+      "bytes": 552,
+      "sha256": "6a33ab41579e7b1d4c4b5c511d38df06d3a7385121796f2e99d8120618a75edf"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/IsOMFIFile_stream.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/IsOMFIFile_stream.pseudo.txt",
+      "bytes": 7056,
+      "sha256": "87e27da6c37561cf46f2358246bf0b0543df4f7f70e6a93ee96b97cebfe96245"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/LoadPMR.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/LoadPMR.pseudo.txt",
+      "bytes": 115413,
+      "sha256": "2d051f36a7f52edc7ff43796480e2d859bbb99e3225a49de42cb7f6d6379711f"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/MediaFileExtensionInitializers.asm.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/MediaFileExtensionInitializers.asm.txt",
+      "bytes": 3801,
+      "sha256": "d5ca5b13d344496a4074e4c84b16f1d554dbce97845768d746f2d1da5af8a750"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/MvAFileIsMXFFile.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/MvAFileIsMXFFile.pseudo.txt",
+      "bytes": 676,
+      "sha256": "300d3d9d5e30f1ee25175c29f8930b0f83725e3a67597f764690e1afd0180937"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/ReadPmrRec.asm.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/ReadPmrRec.asm.txt",
+      "bytes": 18590,
+      "sha256": "2ecc98aa8b9ed15eed886e088eb06cb7b09051a71a487dc9bb54b560e03178d0"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/ReadPmrRec.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/ReadPmrRec.pseudo.txt",
+      "bytes": 11122,
+      "sha256": "55cf4cfd379561feb11abc1a6b3623ab671309db50c9ce2ae9ec167909217f0e"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/Read_OMFMobID.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/Read_OMFMobID.pseudo.txt",
+      "bytes": 788,
+      "sha256": "0f7ac96eb28edacecea3d07ce8f6fa269fd0e63eacfb78660eff66ecd56816bb"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/ScanDirectoryToCache.asm.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/ScanDirectoryToCache.asm.txt",
+      "bytes": 51021,
+      "sha256": "80c06ec44514073a5a58472e5e0cb5ead54862b73e485d1242188ea90873ae18"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/ScanDirectoryToCache.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/ScanDirectoryToCache.pseudo.txt",
+      "bytes": 16334,
+      "sha256": "84bb3b764a27e2ce59a92b8a32aec80c0b72bf1273f1398d24baabe83928eb75"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/ScanFileToCache.asm.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/ScanFileToCache.asm.txt",
+      "bytes": 18114,
+      "sha256": "0e6934c2486fa9a7ce86856ccc663d4112c53fc99f940a01361a8c620265e7e6"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/ScanFileToCache.pseudo.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/ScanFileToCache.pseudo.txt",
+      "bytes": 4473,
+      "sha256": "395ec934efca6c94a22dade9175b8c41511ec4727745439cbaa95dac9837863f"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/decompile-complete.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/decompile-complete.txt",
+      "bytes": 34,
+      "sha256": "64d257a88ffa77f6cece2ba12fa1a1c8d64c533c85fd5f12faa8e1d02c8f04d4"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/decompile-formats.py",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/decompile-formats.py",
+      "bytes": 1442,
+      "sha256": "834a94ef66406bbbd6e8777f2cc2b0497b0dfd3318a92f0e36f64affd2e7b846"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary/dispatch-vtable-evidence.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary/dispatch-vtable-evidence.txt",
+      "bytes": 1962,
+      "sha256": "1cb0cf66adcee41593ca0406431e036100e38a5d548b34f4709a057e4e9868ca"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/binary-dispatch-addendum.md",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/binary-dispatch-addendum.md",
+      "bytes": 5053,
+      "sha256": "21fc995d1260a747ab761d6ef45b53ed6721dc702fb1ff66bd53fd67f0cf329b"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/code-audit.md",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/code-audit.md",
+      "bytes": 11794,
+      "sha256": "3649f6d7afdb40fbe6972eafd7fc2ae7bb9020c9143ecbe735151b6d1ecf80dc"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/probe/CMakeLists.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/probe/CMakeLists.txt",
+      "bytes": 675,
+      "sha256": "7c9fd49dfd37a30d1bea0db16747ae7e4be3442174f4b5d45f9dbc94f207bed2"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/probe/main.cpp",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/probe/main.cpp",
+      "bytes": 2257,
+      "sha256": "c11992d78f3a4e76030074b7d844b983e4c90c36de580f75734d87d36eb42326"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/probe-result.txt",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/probe-result.txt",
+      "bytes": 443,
+      "sha256": "7e84349bac0b210c674ba1d6e78d67094b3afcf690bfbd735c02eff7267a9a51"
+    },
+    {
+      "source": "/private/tmp/mediamuster-format-audit-2026-09-20/public-specs.md",
+      "archive": "docs/reviews/2026-09-20-media-scope/evidence/format-audit/public-specs.md",
+      "bytes": 12054,
+      "sha256": "de9ac297f967a79b9621b022e086f16bf322bf789d0cd35c428ea35b7da50af5"
+    }
+  ],
+  "regenerable_binary": {
+    "source": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "universal_sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "arm64_sha256": "70b6f2810f53dc044a9b6b2d3f9d3e3c50df40c91fcc263e21a2678752566f9e",
+    "arm64_bytes": 36499696,
+    "recreate": "lipo <source> -thin arm64 -output <destination>"
+  },
+  "symbol_listing": {
+    "sha256": "e88fab74120599e1bc7406cb6b38b0fe163dcbd7d7846b8006d3fb3f2f5bf837",
+    "bytes": 14662267,
+    "identical_to_nm_output": false,
+    "archived_compressed": true,
+    "inspection_command": "nm <arm64-slice>"
+  }
+}

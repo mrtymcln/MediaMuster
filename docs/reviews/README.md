@@ -1,5 +1,7 @@
 # Historical reviews
 
+- [Media-scope and format research — 20 September 2026](2026-09-20-media-scope/REVIEW.md)
+- [Implementation validation history](2026-09-20-media-scope/validation-history.md)
 - [Current-code review — 6 September 2026](2026-09-06-current-code/REVIEW.md)
 - [UI, build and test findings](2026-09-06-current-code/ui-build-tests.md)
 - [Evidence and reproduction notes](2026-09-06-current-code/evidence/README.md)

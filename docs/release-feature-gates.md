@@ -1,12 +1,73 @@
 # Release feature gates
 
+## v1 media scope
+
+The supported workflow families are Avid-managed MXF OP-Atom and OMF media.
+MXF OP-Atom is available by default; OMF remains behind **Enable OMF/OMFI** as
+requested for the public release. Enabling OMF does not depend on the version of
+Media Composer that created the files. The OMF gate controls product availability;
+the enabled feature is held to the same v1 correctness and testing requirements
+as the public MXF workflow.
+
+Media Composer's OP1a workflow under `Avid MediaFiles/UME` is deferred. These
+trees are excluded from volume scans and explicitly added paths, including
+canonical aliases. This is a managed-folder scope rule, not a new guarantee that
+every `.mxf` encountered outside UME has been structurally certified as OP-Atom.
+Adding UME/OP1a later will require its own discovery, metadata and destination
+handling rather than treating UME as another MXF OP-Atom folder.
+
+For managed OMF audio, the observed AIFF-C filename suffix is `.aif`, and WAVE
+uses `.wav`. A missing `.aiff` alias is not a v1 requirement for that workflow.
+`.omf` is not restricted to video: the reader also handles supported OMF audio
+descriptors under that suffix. Other suffixes, including `.sd2`, are ignored by
+the filename allowlist just like unrelated documents. There is no SDII-specific
+parser or exclusion path. Historical filename research is archived in the
+[20 September review](reviews/2026-09-20-media-scope/REVIEW.md); retained Media
+Composer code does not define MediaMuster's supported scope.
+
+## Managed media locations
+
+Automatic volume scans look for immediate `Avid MediaFiles/MXF` and enabled
+`OMFI MediaFiles` roots. The documented system-drive bases remain supported.
+Manually added copies may live anywhere, provided their internal Avid structure
+is intact. Add the media root, an eligible media subfolder, or the directory
+directly containing the roots; the scanner does not search arbitrary descendants.
+A bare `MXF` tree or an arbitrary folder containing PMR/MDB files is not enough.
+
+`AvidMediaLayout` supplies common folder and filename rules to scanning and
+Rebalance. MXF media lives under positive numbered or workstation-numbered
+folders in `Avid MediaFiles/MXF`; only `.mxf` files enter that family. OMF media
+lives in `OMFI MediaFiles`, either directly or one level down in a legacy shared
+workstation folder; only `.omf`, `.wav` and `.aif` files enter that family.
+Temporary/reserved folders are excluded from ordinary inventory. The existing
+`MXF/Quarantined Files` diagnostic inventory remains separate from Rebalance.
+Media file symlinks are excluded. Directory aliases must resolve to a supported
+managed location; a quarantine alias cannot grant recursive access to an
+ordinary media folder. Rebalance additionally checks that source and destination
+directories resolve to the intended MXF root and folder number before dispatch.
+
+The managed layout selects the family. There is no mandatory per-file
+Operational Pattern probe and no attempt to authenticate the authoring app.
+Media Composer and compatible third-party media are treated alike. PMR/MDB
+records are read first; missing, unreadable, stale or incomplete records trigger
+the existing header fallback. A current complete database record can avoid
+opening the media entirely. This is a managed-workflow scope rule, not a
+guarantee that a deliberately misplaced or renamed file is format-certified.
+
+OMF bin matching preserves legacy ID bytes. Preserve-structure transfers use
+`OMFI MediaFiles` for OMF alongside `Avid MediaFiles/MXF/<folder>` for MXF.
+Rebalance accepts MXF only, retains its stricter destination-name and mutation
+checks, and carries both file and master identities to the operation engine.
+
+## Session toggles
+
 The Debug menu enables these features for the current session only. Every launch
 starts with all three off; there are no saved preferences to carry into a public
 build.
 
 | Debug command | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
-| Enable OMF/OMFI | Subsequent scans discover and parse legacy OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes legacy rows already in the table. |
+| Enable OMF/OMFI | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
 | Enable Undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
 | Enable Precomputes | Shows Type and precompute detail columns, the Precomputes tab, the filter picker, and those fields in CSV exports. | Hides these controls and fields, clears precompute filters, and resets sorting if its column disappears. Rendered media remains in ordinary scan results. |
 
@@ -18,18 +79,28 @@ a new Undo.
 
 ## Public builds
 
-Configure a public build with the Debug menu omitted:
+The Debug menu is controlled by one line in `src/featureflags.h`:
+
+```cpp
+inline constexpr bool kDebugMenuEnabled = true;
+```
+
+Change `true` to `false`, commit that change with the release, and rebuild:
 
 ```sh
-cmake -S . -B build -DMEDIAMUSTER_DEBUG_MENU=OFF
 cmake --build build --config Release --parallel 4
 ```
 
-This option is independent of the compiler's Debug/Release configuration. It
-defaults to `ON` for local development. CI explicitly uses `OFF` for release tags
-starting with `v1.` or a higher major version, and `ON` for `v0.` tags and branch
-builds. Public builds have no menu command that enables these features. Omitting
-the `buildDebugMenu()` call likewise leaves the new gates off.
+With `false`, the app does not create the Debug menu, so users cannot enable its
+gated features. The value is compiled into the app; no saved preference, CMake
+option, version number, Git tag, or CI setting changes it. It is also independent
+of the compiler's Debug/Release configuration.
 
-To restore the developer menu locally, configure with
-`-DMEDIAMUSTER_DEBUG_MENU=ON` and rebuild. The toggles still start off.
+Change the same line back to `true` and rebuild to restore the developer menu.
+Its feature toggles still start off. Hiding a menu in an already running app does
+not disable features that were enabled earlier in that session; this switch
+determines whether the menu is created when the app starts.
+
+The operation UI tests read this same constant. Before shipping, run them with
+`false` to check that the menu and feature entry points are unavailable; run them
+with `true` to check the developer toggles. Rebuild after each change.

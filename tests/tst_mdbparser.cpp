@@ -130,6 +130,8 @@ private slots:
 	// Shape and merge rules
 	void tiny_fixture_covers_the_tone_file();
 	void duplicate_mobj_objects_are_merged_first_non_empty_wins();
+	void duplicate_source_objects_supply_only_the_linked_project_data();
+	void duplicate_source_objects_supply_only_the_linked_project();
 	void source_mob_is_neither_file_nor_master();
 
 	// Strings
@@ -150,7 +152,6 @@ private slots:
 	void omf_era_mdb_video_facts_by_resolution_id();
 	void omf_era_audio_mdb_describes_both_tone_files();
 	void omf_timecode_is_reached_through_either_mob_width();
-	void omf_sd2d_descriptor_reads_its_two_properties();
 	void omf_winl_and_unxl_locators_yield_the_source_path();
 	void mxf_era_master_keeps_the_macl_only_srcfile_rule();
 };
@@ -308,6 +309,115 @@ void TestMdbParser::duplicate_mobj_objects_are_merged_first_non_empty_wins()
 	QCOMPARE(m.clipName, QStringLiteral("First Name"));
 	QCOMPARE(m.usageCode, 7);
 	QCOMPARE(m.bin, QString::fromUtf8("Café bin"));
+}
+
+void TestMdbParser::duplicate_source_objects_supply_only_the_linked_project_data()
+{
+	QTest::addColumn<bool>("omf2");
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<bool>("linkedProject");
+	QTest::addColumn<bool>("fileProject");
+	for (bool omf2 : {false, true})
+		for (bool big : {false, true})
+			for (int scenario = 0; scenario < 3; ++scenario)
+			{
+				const QByteArray name = QByteArray(omf2 ? "OMF2-" : "OMF1-") + (big ? "BE-" : "LE-") +
+					(scenario == 0 ? "duplicate-project" : scenario == 1 ? "unrelated-only" : "file-precedence");
+				QTest::newRow(name.constData()) << omf2 << big << (scenario != 1) << (scenario == 2);
+			}
+}
+
+void TestMdbParser::duplicate_source_objects_supply_only_the_linked_project()
+{
+	QFETCH(bool, omf2);
+	QFETCH(bool, big);
+	QFETCH(bool, linkedProject);
+	QFETCH(bool, fileProject);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	TestOmf::Writer w(omf2, big);
+	w.setImmediate(1, omf2 ? "OMFI:OOBJ:ObjClass" : "OMFI:ObjID", "HEAD");
+	w.setImmediate(1, omf2 ? "OMFI:HEAD:Version" : "OMFI:Version", QByteArray::fromHex(omf2 ? "0200" : "0100"));
+	w.setImmediate(1, omf2 ? "OMFI:HEAD:ByteOrder" : "OMFI:ByteOrder", big ? "MM" : "II");
+	const auto object = [&](const char *cls)
+	{
+		const quint32 obj = w.addObject(cls);
+		if (omf2)
+			w.setImmediate(obj, "OMFI:OOBJ:ObjClass", QByteArray(cls, 4));
+		return obj;
+	};
+	const auto uid = [&](quint32 number) { return w.word(42) + w.word(number) + w.word(7); };
+	const auto ref = [&](quint32 owner, const char *property, quint32 target)
+	{
+		if (omf2)
+			w.set(owner, property, w.word(target));
+		else
+			// Bento1 reference keys are little-endian even with big-endian
+			// OMF metadata; only array counts use the metadata byte order.
+			w.set(owner, property, BentoBuilder::le32(target) + BentoBuilder::le32(0));
+	};
+	const auto refs = [&](quint32 owner, const char *property, quint32 target)
+	{
+		if (omf2)
+			w.set(owner, property, w.half(1) + w.word(target));
+		else
+			w.set(owner, property, w.half(1) + BentoBuilder::le32(target) + BentoBuilder::le32(0));
+	};
+	const auto project = [&](quint32 owner, const QByteArray &name)
+	{
+		const quint32 attrs = object("ATTR");
+		const quint32 attr = object("ATTB");
+		ref(owner, omf2 ? "OMFI:MOBJ:UserAttributes" : "OMFI:CPNT:Attributes", attrs);
+		refs(attrs, "OMFI:ATTR:AttrRefs", attr);
+		w.setString(attr, "OMFI:ATTB:Name", "_PJ");
+		w.setU16(attr, "OMFI:ATTB:Kind", 2);
+		w.setString(attr, "OMFI:ATTB:StringAttribute", name);
+	};
+	const char *physicalMedia = omf2 ? "OMFI:SMOB:MediaDescription" : "OMFI:MOBJ:PhysicalMedia";
+	const quint32 physical = object(omf2 ? "MDTP" : "MDES");
+	const auto source = [&](quint32 number)
+	{
+		const quint32 obj = object(omf2 ? "SMOB" : "MOBJ");
+		w.set(obj, "OMFI:MOBJ:MobID", uid(number));
+		ref(obj, physicalMedia, physical);
+		return obj;
+	};
+	// The first source in the database is unrelated. The linked source's
+	// project is on its second object; a third object must not overwrite it.
+	project(source(99), "Unrelated project");
+	source(3);
+	const quint32 duplicate = source(3);
+	if (linkedProject)
+	{
+		project(duplicate, "Linked project");
+		project(source(3), "Later project");
+	}
+	const quint32 file = object(omf2 ? "SMOB" : "MOBJ");
+	const quint32 desc = object("CDCI");
+	w.set(file, "OMFI:MOBJ:MobID", uid(2));
+	ref(file, physicalMedia, desc);
+	w.setU32(desc, "OMFI:DIDD:StoredWidth", 1920);
+	w.setU32(desc, "OMFI:DIDD:StoredHeight", 1080);
+	w.setU32(desc, "OMFI:DIDD:DIDResolutionID", 1235);
+	w.setRational(desc, "OMFI:MDFL:SampleRate", 25, 1);
+	w.setU32(desc, "OMFI:MDFL:Length", 100);
+	const quint32 track = object(omf2 ? "MSLT" : "TRAK");
+	const quint32 clip = object("SCLP");
+	refs(file, omf2 ? "OMFI:MOBJ:Slots" : "OMFI:TRKG:Tracks", track);
+	ref(track, omf2 ? "OMFI:MSLT:Segment" : "OMFI:TRAK:TrackComponent", clip);
+	w.set(clip, "OMFI:SCLP:SourceID", uid(3));
+	if (fileProject)
+		project(file, "File project");
+
+	bool ok = false;
+	const MdbDatabase db = MdbParser::load(writeMdb(temp.filePath("duplicate-source.mdb"), w.build()), &ok);
+	QVERIFY(ok);
+	QCOMPARE(db.files.size(), 1);
+	QVERIFY(db.masters.isEmpty());
+	const MdbFileMob record = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
+	QVERIFY(record.essenceComplete);
+	QCOMPARE(record.project, fileProject ? QStringLiteral("File project") :
+		linkedProject ? QStringLiteral("Linked project") : QString());
 }
 
 void TestMdbParser::source_mob_is_neither_file_nor_master()
@@ -993,46 +1103,6 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 	QVERIFY(!OmfObjects::readTimecode(BentoFile(), OmfObjects::Props(BentoFile()), 0).found);
 }
 
-// Sound Designer II: built to the MC binary's property names, UNVERIFIED —
-// no specimen exists (README). The descriptor keeps bits and channels in
-// two u16 properties instead of a header blob.
-void TestMdbParser::omf_sd2d_descriptor_reads_its_two_properties()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	BentoBuilder w;
-	const QByteArray uid = omfUid("0102030405060708");
-	const quint32 file = w.addObject("MOBJ");
-	const quint32 sd2d = w.addObject("SD2D");
-	w.set(file, "OMFI:MOBJ:MobID", uid);
-	w.setU32(file, "OMFI:MOBJ:UsageCode", 0);
-	w.setRational(file, "OMFI:CPNT:EditRate", 25, 1);
-	w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", sd2d);
-	w.setRational(sd2d, "OMFI:MDFL:SampleRate", 48000, 1);
-	w.setU32(sd2d, "OMFI:MDFL:Length", 96000);
-	w.setU16(sd2d, "OMFI:SD2D:BitsPerSample", 16);
-	w.setU16(sd2d, "OMFI:SD2D:NumChannels", 2);
-
-	bool ok = false;
-	const MdbDatabase db = MdbParser::load(writeMdb(tmp.path() + "/msmMMOB.mdb", w.build()), &ok);
-	QVERIFY(ok);
-	QVERIFY(db.masters.isEmpty());
-	QCOMPARE(db.files.size(), 1);
-	const QString key = OmfUid::canonicalHex(uid);
-	QVERIFY(OmfUid::isOmfForm(key));
-	QVERIFY(db.files.contains(key));
-	const MdbFileMob &f = db.files[key];
-	QVERIFY(f.essenceComplete);
-	QVERIFY(f.essence.isAudio);
-	QCOMPARE(f.essence.sampleRate, 48000);
-	QCOMPARE(f.essence.channels, 2);
-	QCOMPARE(f.essence.bitDepth, QStringLiteral("16-bit"));
-	QCOMPARE(f.essence.durationFrames, qint64(50)); // 96000 samples × 25/48000
-	QCOMPARE(f.essence.timecodeBase, 25);
-	// OMF-era: Avid's own label for Sound Designer II media, no wrapper tag.
-	QCOMPARE(f.essence.codec, QStringLiteral("SDII"));
-}
-
 // OMF files written on Windows or UNIX point _SRCFILE at a WINL / UNXL
 // rather than the MACL every MXF-era database uses; the path comes out
 // the same way. The same builder covers _PJ on a master and _MEDIAFILE.
@@ -1215,7 +1285,7 @@ void TestMdbParser::omf2_roles_and_file_master_ancestry()
 	for (bool ambiguous : {false, true})
 	{
 		bool ok = false;
-		const auto db = MdbParser::load(writeMdb(temp.filePath("roles.mdb"), TestOmf::sdii(true, ambiguous)), &ok);
+		const auto db = MdbParser::load(writeMdb(temp.filePath("roles.mdb"), TestOmf::wave(true, ambiguous)), &ok);
 		QVERIFY(ok);
 		QCOMPARE(db.revision, OmfObjects::Revision::Omf2);
 		QCOMPARE(db.files.size(), 1);
@@ -1225,7 +1295,7 @@ void TestMdbParser::omf2_roles_and_file_master_ancestry()
 		QVERIFY(!db.masters.value(OmfUid::canonicalHex(TestOmf::uid(1))).classificationKnown);
 		const auto file = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
 		QVERIFY(file.essenceComplete);
-		QCOMPARE(file.essence.codec, QStringLiteral("SDII"));
+		QCOMPARE(file.essence.codec, QStringLiteral("WAVE (OMF)"));
 		QCOMPARE(file.masterMobId, ambiguous ? QString() : OmfUid::canonicalHex(TestOmf::uid(1)));
 	}
 }
@@ -1267,7 +1337,7 @@ void TestMdbParser::descriptor_failure_never_creates_a_master()
 	for (bool omf2 : {false, true})
 	{
 		bool ok = false;
-		const auto db = MdbParser::load(writeMdb(temp.filePath("bad.mdb"), TestOmf::sdii(omf2, false, true)), &ok);
+		const auto db = MdbParser::load(writeMdb(temp.filePath("bad.mdb"), TestOmf::wave(omf2, false, true)), &ok);
 		QVERIFY(ok);
 		QVERIFY(db.files.isEmpty());
 		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2))));

@@ -11,6 +11,7 @@ namespace RebalancePlanner
 {
 	std::optional<FolderName> parseFolderName(const QString &name);
 	std::optional<FolderName> srcFolderOf(const QString &sourcePath);
+	bool isEligible(const MediaFile &file);
 	RebalancePlan computePlan(const QString &mxfRoot, const QString &volumeLabel,
 							  const QVector<MediaFile> &files);
 	OpRequest requestForPlan(const RebalancePlan &plan);

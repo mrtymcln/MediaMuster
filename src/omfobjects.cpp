@@ -19,8 +19,7 @@
 //  - Audio. WAVD / AIFD carry no MDAU properties; channels, bits and rate
 //    sit in OMFI:WAVD:Summary (a RIFF header, `bext` chunk first, then
 //    `fill`, then `fmt `) and OMFI:AIFD:Summary (FORM/AIFC, `bext` then
-//    `COMM`). Both are chunk-walked. SD2D has two u16 properties instead
-//    (built to the MC binary's names; no specimen exists — UNVERIFIED).
+//    `COMM`). Both are chunk-walked.
 //  - Timecode. The file mob's SCLP points at a source mob whose MobID is
 //    12 bytes (2021 files) or a 32-byte UMID (the physical mob MC 2026
 //    writes), so the hop accepts either width.
@@ -110,15 +109,14 @@ namespace OmfObjects
 		  sourceId(b.propertyId("OMFI:SCLP:SourceID")), tcFlags(b.propertyId("OMFI:TCCP:Flags")),
 		  // OMF-era: the properties only the legacy descriptors and essence files carry.
 		  compression(b.propertyId("OMFI:DIDD:Compression")), wavdSummary(b.propertyId("OMFI:WAVD:Summary")),
-		  aifdSummary(b.propertyId("OMFI:AIFD:Summary")), sd2dBits(b.propertyId("OMFI:SD2D:BitsPerSample")),
-		  sd2dChannels(b.propertyId("OMFI:SD2D:NumChannels")), tcFps(b.propertyId("OMFI:TCCP:FPS")),
+		  aifdSummary(b.propertyId("OMFI:AIFD:Summary")), tcFps(b.propertyId("OMFI:TCCP:FPS")),
 		  tcStart(b.propertyId("OMFI:TCCP:StartTC")), mdatMobId(b.propertyId("OMFI:MDAT:MobID")),
 		  waveMobId(b.propertyId("OMFI:WAVE:MobID")), aifcMobId(b.propertyId("OMFI:AIFC:MobID")),
-		  sd2mMobId(b.propertyId("OMFI:SD2M:MobID")), mobKind(b.propertyId("OMFI:MDES:MobKind")),
+		  mobKind(b.propertyId("OMFI:MDES:MobKind")),
 		  unxlPath(b.propertyId("OMFI:UNXL:PathName")), locator(b.propertyId("OMFI:MDES:Locator")),
 		  lastKnownVolumeUtf8(b.propertyId("OMFI:MSML:LastKnownVolumeUTF8")),
 		  lastKnownVolume(b.propertyId("OMFI:MSML:LastKnownVolume")),
-		  sd2dMobId(b.propertyId("OMFI:SD2D:MobID")), slotRate(b.propertyId("OMFI:MSLT:EditRate")),
+		  slotRate(b.propertyId("OMFI:MSLT:EditRate")),
 		  nestedSlots(b.propertyId("OMFI:NEST:Slots")), selected(b.propertyId("OMFI:SLCT:Selected")),
 		  choices(b.propertyId("OMFI:MGRP:Choices")), inputSegment(b.propertyId("OMFI:ERAT:InputSegment")),
 		  winlPath(b.propertyId("OMFI:WINL:PathName")), maclPath(b.propertyId("OMFI:MACL:PathName")),
@@ -144,7 +142,7 @@ namespace OmfObjects
 	bool isAudioClass(const QByteArray &cls)
 	{
 		return cls == "PCMA" || cls == "MPGA" || cls == "WAVE" ||
-			   cls == "WAVD" || cls == "AIFD" || cls == "SD2D"; // OMF-era: the essence-file audio descriptors.
+			   cls == "WAVD" || cls == "AIFD"; // OMF-era: the essence-file audio descriptors.
 	}
 
 	bool isMediaClass(const QByteArray &cls)
@@ -683,7 +681,7 @@ namespace OmfObjects
 		if (!isMediaClass(cls))
 			return false;
 		e.isAudio = isAudioClass(cls);
-		e.pcmDescriptor = cls == "PCMA" || cls == "WAVE" || cls == "SD2D";
+		e.pcmDescriptor = cls == "PCMA" || cls == "WAVE";
 
 		// Codec label: the stored AUID, else rebuilt from the resolution id.
 		const quint32 resId = b.uintValue(b.bytes(desc, p.resId));
@@ -754,7 +752,7 @@ namespace OmfObjects
 		if (e.isAudio)
 		{
 			// OMF-era: the codec column shows Avid's own label for legacy
-			// audio — "WAVE (OMF)", "AIFF-C (OMF)", "SDII" (see
+			// audio — "WAVE (OMF)", "AIFF-C (OMF)" (see
 			// OmfResolutions::audioName). Pre-filled here because finalise
 			// only names a codec that is still empty, which is also what
 			// keeps verified PCMA/WAVE descriptors on PCM while MPGA stays unknown.
@@ -764,7 +762,7 @@ namespace OmfObjects
 				*codecKnown = true;
 
 			// OMF-era: WAVD / AIFD keep channels, bits and rate in a header
-			// blob; SD2D in two properties of its own. Read them up front so
+			// blob. Read them up front so
 			// a missing MDFL:SampleRate can still fall back to the blob's
 			// rate before the duration maths; every field only fills a gap.
 			int blobRate = 0, blobBits = 0, blobChannels = 0;
@@ -787,12 +785,6 @@ namespace OmfObjects
 					blobBits = s.bits;
 					blobChannels = s.channels;
 				}
-			}
-			else if (cls == "SD2D")
-			{
-				// SD2D fields registered by Media Composer; constructed coverage, no real SDII specimen yet.
-				blobBits = int(b.uintValue(b.bytes(desc, p.sd2dBits)));
-				blobChannels = int(b.uintValue(b.bytes(desc, p.sd2dChannels)));
 			}
 			if (e.sampleRate <= 0 && blobRate > 0)
 				e.sampleRate = blobRate; // OMF-era: the blob's rate when MDFL:SampleRate is absent.

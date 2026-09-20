@@ -1,0 +1,394 @@
+********* Start testing of TestPmrParser *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestPmrParser::initTestCase()
+PASS   : TestPmrParser::filename_key_lowercases()
+PASS   : TestPmrParser::filename_key_normalizes_nfd_to_nfc()
+PASS   : TestPmrParser::filename_key_preserves_already_normalised()
+PASS   : TestPmrParser::parses_one_file_comp_pair()
+PASS   : TestPmrParser::empty_project_still_yields_entry()
+PASS   : TestPmrParser::empty_record_sets_are_valid(1-LE)
+PASS   : TestPmrParser::empty_record_sets_are_valid(1-BE)
+PASS   : TestPmrParser::empty_record_sets_are_valid(2-LE)
+PASS   : TestPmrParser::empty_record_sets_are_valid(2-BE)
+PASS   : TestPmrParser::empty_record_sets_are_valid(8-LE)
+PASS   : TestPmrParser::empty_record_sets_are_valid(8-BE)
+QWARN  : TestPmrParser::implausible_pair_count_is_rejected() mediamuster.pmr: incomplete or invalid PMR record at byte 44 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-nRYNqC/msmFMID.pmr"
+PASS   : TestPmrParser::implausible_pair_count_is_rejected()
+QWARN  : TestPmrParser::file_comp_desync_bails_with_what_it_has() mediamuster.pmr: incomplete or invalid PMR record at byte 130 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Fayuop/msmFMID.pmr"
+PASS   : TestPmrParser::file_comp_desync_bails_with_what_it_has()
+QWARN  : TestPmrParser::truncated_body_stops_cleanly() mediamuster.pmr: incomplete or invalid PMR record at byte 95 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WtVBfj/msmFMID.pmr"
+PASS   : TestPmrParser::truncated_body_stops_cleanly()
+QWARN  : TestPmrParser::too_small_file_returns_empty() mediamuster.pmr: incomplete or invalid PMR record at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gNOJsS/msmFMID.pmr"
+PASS   : TestPmrParser::too_small_file_returns_empty()
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 9 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 9 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 15 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 15 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 16 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 16 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 17 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 17 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 2147483647 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+QWARN  : TestPmrParser::unsupported_version_is_rejected() mediamuster.pmr: unsupported PMR version 2147483647 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sJoKlC/msmFMID.pmr"
+PASS   : TestPmrParser::unsupported_version_is_rejected()
+QWARN  : TestPmrParser::wrong_magic_is_refused() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-IlDdnj/msmFMID.pmr"
+PASS   : TestPmrParser::wrong_magic_is_refused()
+PASS   : TestPmrParser::non_smpte_master_identity_is_preserved()
+PASS   : TestPmrParser::non_smpte_file_identity_is_preserved()
+QWARN  : TestPmrParser::ok_flag_reports_clean_vs_failed_parses() mediamuster.pmr: cannot open "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-BsJmsy/nonexistent.pmr" "No such file or directory"
+QWARN  : TestPmrParser::ok_flag_reports_clean_vs_failed_parses() mediamuster.pmr: not a PMR (bad magic) "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-BsJmsy/small.pmr"
+QWARN  : TestPmrParser::ok_flag_reports_clean_vs_failed_parses() mediamuster.pmr: incomplete or invalid PMR record at byte 130 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-BsJmsy/desync.pmr"
+PASS   : TestPmrParser::ok_flag_reports_clean_vs_failed_parses()
+PASS   : TestPmrParser::macroman_project_names_decode_correctly()
+PASS   : TestPmrParser::unicode_section_names_take_precedence()
+QWARN  : TestPmrParser::malformed_unicode_section_keeps_mbcs_names() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 190 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-vgEPpj/a.pmr"
+QWARN  : TestPmrParser::malformed_unicode_section_keeps_mbcs_names() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 138 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-vgEPpj/b.pmr"
+PASS   : TestPmrParser::malformed_unicode_section_keeps_mbcs_names()
+PASS   : TestPmrParser::trailer_is_the_file_modified_time()
+PASS   : TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
+PASS   : TestPmrParser::real_fixture_metadata_is_unchanged(tone)
+PASS   : TestPmrParser::real_fixture_metadata_is_unchanged(corpus)
+PASS   : TestPmrParser::real_fixture_metadata_is_unchanged(corpus-round3)
+PASS   : TestPmrParser::real_fixture_metadata_is_unchanged(omf-supporting)
+PASS   : TestPmrParser::real_fixture_metadata_is_unchanged(omf-audio)
+PASS   : TestPmrParser::trailer_matches_modified_in_both_epochs()
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--7200)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix--2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-0)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Unix-7200)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--7200)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local--2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-0)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-2)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3598)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3599)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3600)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3601)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-3602)
+PASS   : TestPmrParser::exact_one_hour_clock_exception(Mac-local-7200)
+PASS   : TestPmrParser::omf_v2_pair_parses_with_wrapped_mobs()
+PASS   : TestPmrParser::omf_v2_unicode_set_replaces_names()
+QWARN  : TestPmrParser::omf_v2_file_desync_bails_with_what_it_has() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-JmmgvG/msmFMID.pmr"
+PASS   : TestPmrParser::omf_v2_file_desync_bails_with_what_it_has()
+PASS   : TestPmrParser::omf_v2_real_avid_supporting_fixture()
+PASS   : TestPmrParser::omf_v2_real_mc2026_audio_fixture()
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-2147483648-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-2147483648-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-1-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(-1-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(0-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(0-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(1-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(1-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(2-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(2-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(3-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(3-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(4-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(4-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(5-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(5-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(6-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(6-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(7-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(7-BE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(8-LE)
+PASS   : TestPmrParser::accepted_versions_and_byte_orders(8-BE)
+PASS   : TestPmrParser::independent_unicode_records(LE-0-2)
+PASS   : TestPmrParser::independent_unicode_records(LE-1-2)
+PASS   : TestPmrParser::independent_unicode_records(LE-3-1)
+PASS   : TestPmrParser::independent_unicode_records(LE-1-0)
+PASS   : TestPmrParser::independent_unicode_records(BE-0-2)
+PASS   : TestPmrParser::independent_unicode_records(BE-1-2)
+PASS   : TestPmrParser::independent_unicode_records(BE-3-1)
+PASS   : TestPmrParser::independent_unicode_records(BE-1-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-FEEIQk/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-FEEIQk/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 45 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-amnosj/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 45 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-amnosj/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PehxJO/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PehxJO/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RlEdsN/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RlEdsN/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-mzHtFh/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-mzHtFh/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lmtqMD/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-lmtqMD/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NnOgwv/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NnOgwv/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension-17)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VUHnfX/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VUHnfX/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unknown-extension--1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rVYOsp/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rVYOsp/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iyktHS/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iyktHS/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gTWKtA/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-gTWKtA/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-base-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-qAweei/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-qAweei/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-unicode-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-jPYPgO/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-jPYPgO/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-LE-second-unicode-extension)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rDRnNb/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-rDRnNb/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 45 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-CYvaiY/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 45 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-CYvaiY/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ZZSgDO/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ZZSgDO/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RYPWRp/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RYPWRp/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Zrracy/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-Zrracy/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-mqTFOh/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-mqTFOh/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tWClfZ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tWClfZ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension-17)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-TLQBmG/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-TLQBmG/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unknown-extension--1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-UeTUQK/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-UeTUQK/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-IPeOWp/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-IPeOWp/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tXzoPQ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 37 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-tXzoPQ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-base-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-bmSHzW/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-bmSHzW/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-unicode-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ygZFHU/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 145 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ygZFHU/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(1-BE-second-unicode-extension)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-aYrnHV/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-aYrnHV/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 62 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-QxVIcw/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 62 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-QxVIcw/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-xlKcoo/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-xlKcoo/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WRksyu/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WRksyu/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-JvWrXg/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-JvWrXg/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-nDtqRr/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-nDtqRr/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pvWVMu/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pvWVMu/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension-17)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WuDKKC/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WuDKKC/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unknown-extension--1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-HjAGQW/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-HjAGQW/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-EAVBRP/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-EAVBRP/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-KkoaeA/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-KkoaeA/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-base-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VOnknF/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VOnknF/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-unicode-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-GzGcxV/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-GzGcxV/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-LE-second-unicode-extension)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-UbQSFO/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-UbQSFO/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 62 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NoHFoR/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 62 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NoHFoR/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RXLAmk/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 1788291444 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-RXLAmk/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YNmnXz/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YNmnXz/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PKwRbd/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PKwRbd/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-dixwCT/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-dixwCT/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iYoQcv/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iYoQcv/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension-17)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VJffDD/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-VJffDD/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unknown-extension--1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-AJrPIe/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-AJrPIe/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iHyzhZ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iHyzhZ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hAyZoZ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-hAyZoZ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-base-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-zBueOA/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-zBueOA/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-unicode-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-vvLHlX/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 162 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-vvLHlX/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(2-BE-second-unicode-extension)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 875235846 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-kKUjxX/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 875235846 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-kKUjxX/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 110 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-oioWLP/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 110 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-oioWLP/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 875235846 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-goPqWh/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 875235846 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-goPqWh/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YuEljf/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YuEljf/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-JbaLYT/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-JbaLYT/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-HdmbnR/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-HdmbnR/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-uqjShU/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-uqjShU/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension-17)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-jNnvCi/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-jNnvCi/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unknown-extension--1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NkfRUy/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-NkfRUy/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ZvUJJe/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-ZvUJJe/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-QazoiD/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-QazoiD/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-base-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-IZtMYk/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-IZtMYk/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-unicode-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-chhgOn/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-chhgOn/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-LE-second-unicode-extension)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 101329716 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-LdSVSR/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-undercount-0) mediamuster.pmr: unsupported PMR extension version 101329716 at byte 12 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-LdSVSR/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 110 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PAVhpu/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-undercount-0) mediamuster.pmr: unexpected PMR data at byte 110 remaining bytes 201 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-PAVhpu/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-undercount-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 101329716 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yMBtPq/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-undercount-1) mediamuster.pmr: unsupported PMR extension version 101329716 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yMBtPq/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YQofdk/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-undercount-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 101 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YQofdk/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-undercount-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iiwBpq/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-0) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-iiwBpq/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-0)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-fiGdYJ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-8) mediamuster.pmr: unsupported PMR extension version 8 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-fiGdYJ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-xVpwNZ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-17) mediamuster.pmr: unsupported PMR extension version 17 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-xVpwNZ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension-17)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pWzPgM/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension--1) mediamuster.pmr: unsupported PMR extension version -1 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-pWzPgM/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unknown-extension--1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YLFmwG/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-trailing-1) mediamuster.pmr: incomplete PMR extension header "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-YLFmwG/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-atEvhQ/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-trailing-1) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 1 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-atEvhQ/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-trailing-1)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-GCHqJL/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-trailing-8) mediamuster.pmr: unsupported PMR extension version 0 at byte 102 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-GCHqJL/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-base-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-zwMNWb/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-trailing-8) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-zwMNWb/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-unicode-trailing-8)
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sGkAbq/incomplete.pmr"
+QWARN  : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-second-unicode-extension) mediamuster.pmr: unexpected PMR data at byte 210 remaining bytes 8 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-sGkAbq/incomplete.pmr"
+PASS   : TestPmrParser::unconsumed_records_and_extensions_report_failure(8-BE-second-unicode-extension)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(1-LE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(1-BE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(2-LE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(2-BE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(8-LE)
+PASS   : TestPmrParser::every_truncated_boundary_reports_failure(8-BE)
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 49 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/missing-project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 58 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/project.pmr"
+QWARN  : TestPmrParser::project_lengths_are_checked() mediamuster.pmr: incomplete or invalid PMR record at byte 49 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-WwMqVx/missing-project.pmr"
+PASS   : TestPmrParser::project_lengths_are_checked()
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 66 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 60 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 66 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 60 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+QWARN  : TestPmrParser::unicode_framing_and_encoding_are_checked() mediamuster.pmr: incomplete or invalid PMR Unicode set at byte 54 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-yzmNSF/bad-unicode.pmr"
+PASS   : TestPmrParser::unicode_framing_and_encoding_are_checked()
+PASS   : TestPmrParser::filename_limits_and_null_strings()
+PASS   : TestPmrParser::unicode_filename_limit_counts_utf16_units()
+QWARN  : TestPmrParser::null_identities_are_explicit() mediamuster.pmr: incomplete or invalid PMR record at byte 20 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-CqDPfg/null-file.pmr"
+QWARN  : TestPmrParser::null_identities_are_explicit() mediamuster.pmr: incomplete or invalid PMR record at byte 44 "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/qt_temp-CqDPfg/null-file.pmr"
+PASS   : TestPmrParser::null_identities_are_explicit()
+PASS   : TestPmrParser::cleanupTestCase()
+Totals: 191 passed, 0 failed, 0 skipped, 0 blacklisted, 144ms
+********* Finished testing of TestPmrParser *********

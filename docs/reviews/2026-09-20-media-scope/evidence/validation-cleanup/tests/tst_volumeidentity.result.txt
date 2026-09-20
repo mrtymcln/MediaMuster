@@ -1,0 +1,12 @@
+********* Start testing of TestVolumeIdentity *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestVolumeIdentity::initTestCase()
+PASS   : TestVolumeIdentity::local_volume_round_trip()
+PASS   : TestVolumeIdentity::a_different_volume_never_matches()
+PASS   : TestVolumeIdentity::labels_and_capacity_are_not_identity()
+PASS   : TestVolumeIdentity::local_durability_requests()
+PASS   : TestVolumeIdentity::directory_sync_reports_native_error()
+PASS   : TestVolumeIdentity::unsupported_directory_flush_is_not_an_io_failure()
+PASS   : TestVolumeIdentity::cleanupTestCase()
+Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 10ms
+********* Finished testing of TestVolumeIdentity *********

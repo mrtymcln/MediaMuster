@@ -146,6 +146,8 @@ class TestFileOperations : public QObject
 	void advisory_copy_move_assessment_data();
 	void advisory_copy_move_assessment();
 	void advisory_destination_paths();
+	void mixed_omf_mxf_transfer_preserves_layout_data();
+	void mixed_omf_mxf_transfer_preserves_layout();
 	void advisory_space_estimate_saturates();
 	void move_rechecks_advisory_strategy();
 	void already_at_destination_move_data();
@@ -235,6 +237,7 @@ class TestFileOperations : public QObject
 	void second_runner_cannot_change_files();
 	void facade_refuses_second_job_without_cancelling_first();
 	void invalid_mxf_claims_are_refused_by_adapter();
+	void rebalance_refuses_different_file_from_same_master();
 	void unsupported_directory_flush_preserves_originals();
 	void directory_io_failure_stops_copy();
 	void unsupported_relocation_keeps_media_and_databases();
@@ -335,6 +338,100 @@ void TestFileOperations::advisory_destination_paths()
 	QCOMPARE(*candidate, f.dest + "/clip (3).bin");
 	QVERIFY(!QFile::exists(*candidate)); // Advisory naming never creates/reserves a file.
 }
+void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout_data()
+{
+	QTest::addColumn<bool>("move");
+	QTest::addColumn<bool>("resume");
+	QTest::newRow("copy") << false << false;
+	QTest::newRow("move") << true << false;
+	QTest::newRow("copy-resume") << false << true;
+	QTest::newRow("move-resume") << true << true;
+}
+
+void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
+{
+	QFETCH(bool, move);
+	QFETCH(bool, resume);
+	Fixture f;
+	OpRequest request;
+	request.kind = move ? OpKind::Move : OpKind::Copy;
+	request.destRoot = f.dest;
+	request.preserve = true;
+	request.verifyCopies = true;
+	const QStringList samples{
+		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
+		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif"),
+		QStringLiteral("omf/avid_supporting/BLACK_720x576x1_JFIF30P.omf"),
+		QStringLiteral("TONE_100A01.EA7D504A.611740.mxf")};
+	QVector<QByteArray> payloads;
+	QStringList destinations;
+	for (const QString &sample : samples)
+	{
+		const QByteArray bytes = get(QStringLiteral(FIXTURES_DIR "/") + sample);
+		QVERIFY2(!bytes.isEmpty(), qPrintable(sample));
+		OpItem item;
+		item.name = QFileInfo(sample).fileName();
+		item.src = f.root + QStringLiteral("/archive/") + item.name;
+		item.folder = QStringLiteral("editor.7");
+		item.omfEra = sample.startsWith(QStringLiteral("omf/"));
+		item.bytes = bytes.size();
+		put(item.src, bytes);
+		request.items.append(item);
+		payloads.append(bytes);
+		destinations.append(f.dest + (item.omfEra ? QStringLiteral("/OMFI MediaFiles/")
+			: QStringLiteral("/Avid MediaFiles/MXF/editor.7/")) + item.name);
+	}
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.forceCopy = true;
+	if (resume)
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &entry)
+		{
+			if (stage == QStringLiteral("published") && entry.id == 0)
+				cancel.store(true);
+		};
+	auto totals = runner.run(request, f.journals);
+	QCOMPARE(totals.failed, 0);
+	QCOMPARE(totals.needsAttention, 0);
+	const auto records = OpJournal::scan(f.journals);
+	QCOMPARE(records.size(), 1);
+	const QString journalPath = records.first().path;
+	QVERIFY(records.first().request.preserve);
+	QCOMPARE(records.first().entries.size(), samples.size());
+	for (qsizetype i = 0; i < samples.size(); ++i)
+		QCOMPARE(records.first().entries[i].item.omfEra, request.items[i].omfEra);
+	if (resume)
+	{
+		QVERIFY(totals.cancelled);
+		QVERIFY(!OperationRecovery::pending(f.journals).isEmpty());
+		cancel.store(false);
+		runner.hooks = {};
+		runner.hooks.forceCopy = true;
+		OpRequest continuation;
+		continuation.resumeJournalPath = journalPath;
+		totals = runner.run(continuation, f.journals);
+		QCOMPARE(totals.failed, 0);
+		QCOMPARE(totals.needsAttention, 0);
+	}
+	QVERIFY(!totals.cancelled);
+	for (qsizetype i = 0; i < samples.size(); ++i)
+	{
+		QCOMPARE(get(destinations[i]), payloads[i]);
+		QCOMPARE(QFileInfo::exists(request.items[i].src), !move);
+		if (!move)
+			QCOMPARE(get(request.items[i].src), payloads[i]);
+	}
+	const auto finished = OpJournal::readOne(journalPath);
+	QVERIFY(finished);
+	for (qsizetype i = 0; i < samples.size(); ++i)
+	{
+		QVERIFY(finished->entries[i].complete());
+		QCOMPARE(finished->entries[i].dst, destinations[i]);
+	}
+	QVERIFY(OperationRecovery::pending(f.journals).isEmpty());
+}
+
 void TestFileOperations::advisory_space_estimate_saturates()
 {
 	OpRequest request;
@@ -1467,7 +1564,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	plan.ops.clear();
 	for (const MediaFile &file : files)
 		plan.ops.append(
-			{file.filePath, FolderName{QString(), 2}, file.masterMobId, file.sizeBytes});
+			{file.filePath, FolderName{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.mobId});
 
 	auto rebalancer = std::make_unique<Rebalancer>();
 	QSignalSpy finished(rebalancer.get(), &Rebalancer::finished);
@@ -1488,6 +1585,55 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	QCOMPARE(records.size(), 1);
 	for (const auto &entry : records.first().entries)
 		QVERIFY(entry.step != OpJournal::Step::Done);
+}
+
+void TestFileOperations::rebalance_refuses_different_file_from_same_master()
+{
+	// Two audio tracks from one real master have different essence-file IDs.
+	// Keeping only the master claim would let the wrong track pass validation.
+	const QString first = QStringLiteral(FIXTURES_DIR "/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf");
+	const QString second = QStringLiteral(FIXTURES_DIR "/avid_headers/A02.E683CD74_FF4BEFF4BE93AA.mxf");
+	const auto firstHeader = MxfParser::parseHeader(first);
+	const auto secondHeader = MxfParser::parseHeader(second);
+	QVERIFY(firstHeader.hasMaterialPackage);
+	QVERIFY(secondHeader.hasMaterialPackage);
+	QVERIFY(!firstHeader.fileMobId.isEmpty());
+	QVERIFY(!secondHeader.fileMobId.isEmpty());
+	QCOMPARE(firstHeader.umid, secondHeader.umid);
+	QVERIFY(firstHeader.fileMobId != secondHeader.fileMobId);
+
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const QString base = OpJournal::canonicalPath(temp.path());
+	const QString root = base + "/Avid MediaFiles/MXF";
+	MediaFile home;
+	home.filePath = root + "/1/home.mxf";
+	home.mediaFolderName = "1";
+	home.masterMobId = firstHeader.umid;
+	home.mobId = firstHeader.fileMobId;
+	put(home.filePath, get(first));
+	home.sizeBytes = QFileInfo(home.filePath).size();
+	MediaFile moved = home;
+	moved.filePath = root + "/2/track.mxf";
+	moved.mediaFolderName = "2";
+	put(moved.filePath, get(second));
+	moved.sizeBytes = QFileInfo(moved.filePath).size();
+	const auto plan = RebalancePlanner::computePlan(root, "Test", {home, moved});
+	QCOMPARE(plan.ops.size(), 1);
+	const auto request = RebalancePlanner::requestForPlan(plan);
+	QCOMPARE(request.items.size(), 1);
+	QCOMPARE(request.items.first().mobId, firstHeader.fileMobId);
+
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	const auto totals = runner.run(request, base + "/journals");
+	QCOMPARE(totals.succeeded, 0);
+	QCOMPARE(totals.failed, 1);
+	QVERIFY(QFile::exists(moved.filePath));
+	QVERIFY(!QFile::exists(root + "/1/track.mxf"));
+	QVERIFY(!sink.results.isEmpty());
+	QVERIFY(sink.results.last().message.contains("Avid identity"));
 }
 void TestFileOperations::unsupported_directory_flush_preserves_originals()
 {

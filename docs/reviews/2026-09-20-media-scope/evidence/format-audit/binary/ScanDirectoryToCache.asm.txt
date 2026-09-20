@@ -1,0 +1,735 @@
+
+/tmp/mediamuster-format-audit-2026-09-20/binary/libameLibrary.arm64.dylib:	file format mach-o arm64
+
+Disassembly of section __TEXT,__text:
+
+000000000044c33c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))>:
+  44c33c: 6db923e9     	stp	d9, d8, [sp, #-0x70]!
+  44c340: a9016ffc     	stp	x28, x27, [sp, #0x10]
+  44c344: a90267fa     	stp	x26, x25, [sp, #0x20]
+  44c348: a9035ff8     	stp	x24, x23, [sp, #0x30]
+  44c34c: a90457f6     	stp	x22, x21, [sp, #0x40]
+  44c350: a9054ff4     	stp	x20, x19, [sp, #0x50]
+  44c354: a9067bfd     	stp	x29, x30, [sp, #0x60]
+  44c358: 910183fd     	add	x29, sp, #0x60
+  44c35c: d12503ff     	sub	sp, sp, #0x940
+  44c360: aa0303f5     	mov	x21, x3
+  44c364: aa0203f7     	mov	x23, x2
+  44c368: aa0103f3     	mov	x19, x1
+  44c36c: aa0003f4     	mov	x20, x0
+  44c370: 90006e28     	adrp	x8, 0x1210000 <_write+0x1210000>
+  44c374: f946e108     	ldr	x8, [x8, #0xdc0]
+  44c378: f9400108     	ldr	x8, [x8]
+  44c37c: f81903a8     	stur	x8, [x29, #-0x70]
+  44c380: 9103f3e0     	add	x0, sp, #0xfc
+  44c384: 9429241c     	bl	0xe953f4 <_write+0xe953f4>
+  44c388: 94292418     	bl	0xe953e8 <_write+0xe953e8>
+  44c38c: aa0003f6     	mov	x22, x0
+  44c390: 295fe3e8     	ldp	w8, w24, [sp, #0xfc]
+  44c394: f90027e8     	str	x8, [sp, #0x48]
+  44c398: 9103f3e0     	add	x0, sp, #0xfc
+  44c39c: 52810041     	mov	w1, #0x802              ; =2050
+  44c3a0: 9429236a     	bl	0xe95148 <_write+0xe95148>
+  44c3a4: b5000153     	cbnz	x19, 0x44c3cc <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x90>
+  44c3a8: f90003ff     	str	xzr, [sp]
+  44c3ac: f0005de1     	adrp	x1, 0x100b000 <_write+0x100b000>
+  44c3b0: 91231421     	add	x1, x1, #0x8c5
+  44c3b4: 910283e0     	add	x0, sp, #0xa0
+  44c3b8: 942918f3     	bl	0xe92784 <_write+0xe92784>
+  44c3bc: 910283e0     	add	x0, sp, #0xa0
+  44c3c0: 942922ff     	bl	0xe94fbc <_write+0xe94fbc>
+  44c3c4: 910283e0     	add	x0, sp, #0xa0
+  44c3c8: 942918f5     	bl	0xe9279c <_write+0xe9279c>
+  44c3cc: f9400268     	ldr	x8, [x19]
+  44c3d0: f9404508     	ldr	x8, [x8, #0x88]
+  44c3d4: aa1303e0     	mov	x0, x19
+  44c3d8: d63f0100     	blr	x8
+  44c3dc: 35000140     	cbnz	w0, 0x44c404 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xc8>
+  44c3e0: f90003ff     	str	xzr, [sp]
+  44c3e4: b0005de1     	adrp	x1, 0x1009000 <_write+0x1009000>
+  44c3e8: 9101fc21     	add	x1, x1, #0x7f
+  44c3ec: 910283e0     	add	x0, sp, #0xa0
+  44c3f0: 942918e5     	bl	0xe92784 <_write+0xe92784>
+  44c3f4: 910283e0     	add	x0, sp, #0xa0
+  44c3f8: 942922f1     	bl	0xe94fbc <_write+0xe94fbc>
+  44c3fc: 910283e0     	add	x0, sp, #0xa0
+  44c400: 942918e7     	bl	0xe9279c <_write+0xe9279c>
+  44c404: f9400268     	ldr	x8, [x19]
+  44c408: f9407108     	ldr	x8, [x8, #0xe0]
+  44c40c: aa1303e0     	mov	x0, x19
+  44c410: 52800021     	mov	w1, #0x1                ; =1
+  44c414: d63f0100     	blr	x8
+  44c418: f9400008     	ldr	x8, [x0]
+  44c41c: f940a508     	ldr	x8, [x8, #0x148]
+  44c420: d63f0100     	blr	x8
+  44c424: 34003820     	cbz	w0, 0x44cb28 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x7ec>
+  44c428: f9400268     	ldr	x8, [x19]
+  44c42c: f9406d08     	ldr	x8, [x8, #0xd8]
+  44c430: aa1303e0     	mov	x0, x19
+  44c434: d63f0100     	blr	x8
+  44c438: 34003780     	cbz	w0, 0x44cb28 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x7ec>
+  44c43c: d10283a0     	sub	x0, x29, #0xa0
+  44c440: 942918d4     	bl	0xe92790 <_write+0xe92790>
+  44c444: f90023f5     	str	x21, [sp, #0x40]
+  44c448: a906ffff     	stp	xzr, xzr, [sp, #0x68]
+  44c44c: f9003fff     	str	xzr, [sp, #0x78]
+  44c450: 52800015     	mov	w21, #0x0               ; =0
+  44c454: 9101a3e0     	add	x0, sp, #0x68
+  44c458: 52827101     	mov	w1, #0x1388             ; =5000
+  44c45c: 97fe5214     	bl	0x3e0cac <std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>::reserve(unsigned long)>
+  44c460: a9406afc     	ldp	x28, x26, [x23]
+  44c464: eb1a039f     	cmp	x28, x26
+  44c468: 540001a1     	b.ne	0x44c49c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x160>
+  44c46c: f9400268     	ldr	x8, [x19]
+  44c470: f9407108     	ldr	x8, [x8, #0xe0]
+  44c474: 52800015     	mov	w21, #0x0               ; =0
+  44c478: aa1303e0     	mov	x0, x19
+  44c47c: 52800021     	mov	w1, #0x1                ; =1
+  44c480: d63f0100     	blr	x8
+  44c484: f9400008     	ldr	x8, [x0]
+  44c488: f9418908     	ldr	x8, [x8, #0x310]
+  44c48c: 52800015     	mov	w21, #0x0               ; =0
+  44c490: 9101a3e1     	add	x1, sp, #0x68
+  44c494: d63f0100     	blr	x8
+  44c498: a946ebfc     	ldp	x28, x26, [sp, #0x68]
+  44c49c: 9103f3e0     	add	x0, sp, #0xfc
+  44c4a0: 52810041     	mov	w1, #0x802              ; =2050
+  44c4a4: 94292329     	bl	0xe95148 <_write+0xe95148>
+  44c4a8: f9400268     	ldr	x8, [x19]
+  44c4ac: f9407108     	ldr	x8, [x8, #0xe0]
+  44c4b0: 52800015     	mov	w21, #0x0               ; =0
+  44c4b4: aa1303e0     	mov	x0, x19
+  44c4b8: 52800021     	mov	w1, #0x1                ; =1
+  44c4bc: d63f0100     	blr	x8
+  44c4c0: f9400008     	ldr	x8, [x0]
+  44c4c4: f940d108     	ldr	x8, [x8, #0x1a0]
+  44c4c8: 52800015     	mov	w21, #0x0               ; =0
+  44c4cc: 9103f3e1     	add	x1, sp, #0xfc
+  44c4d0: 52808022     	mov	w2, #0x401              ; =1025
+  44c4d4: d2800003     	mov	x3, #0x0                ; =0
+  44c4d8: d63f0100     	blr	x8
+  44c4dc: f0008768     	adrp	x8, 0x153b000 <LocalVolume::mainDirectoryTag+0x1f6>
+  44c4e0: b9404d00     	ldr	w0, [x8, #0x4c]
+  44c4e4: 52800015     	mov	w21, #0x0               ; =0
+  44c4e8: 52800041     	mov	w1, #0x2                ; =2
+  44c4ec: 942908b9     	bl	0xe8e7d0 <_write+0xe8e7d0>
+  44c4f0: 34000240     	cbz	w0, 0x44c538 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x1fc>
+  44c4f4: 910283f5     	add	x21, sp, #0xa0
+  44c4f8: 910283e8     	add	x8, sp, #0xa0
+  44c4fc: 9103f3e0     	add	x0, sp, #0xfc
+  44c500: d2800001     	mov	x1, #0x0                ; =0
+  44c504: 94290d39     	bl	0xe8f9e8 <_write+0xe8f9e8>
+  44c508: 39c2dfe8     	ldrsb	w8, [sp, #0xb7]
+  44c50c: f94053e9     	ldr	x9, [sp, #0xa0]
+  44c510: 7100011f     	cmp	w8, #0x0
+  44c514: 9a95b128     	csel	x8, x9, x21, lt
+  44c518: f90003e8     	str	x8, [sp]
+  44c51c: f0005de0     	adrp	x0, 0x100b000 <_write+0x100b000>
+  44c520: 91238c00     	add	x0, x0, #0x8e3
+  44c524: 94290ddc     	bl	0xe8fc94 <_write+0xe8fc94>
+  44c528: 39c2dfe8     	ldrsb	w8, [sp, #0xb7]
+  44c52c: 36f80068     	tbz	w8, #0x1f, 0x44c538 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x1fc>
+  44c530: f94053e0     	ldr	x0, [sp, #0xa0]
+  44c534: 9429224e     	bl	0xe94e6c <_write+0xe94e6c>
+  44c538: f9400268     	ldr	x8, [x19]
+  44c53c: f9407108     	ldr	x8, [x8, #0xe0]
+  44c540: 52800015     	mov	w21, #0x0               ; =0
+  44c544: aa1303e0     	mov	x0, x19
+  44c548: 52800021     	mov	w1, #0x1                ; =1
+  44c54c: d63f0100     	blr	x8
+  44c550: aa0003f7     	mov	x23, x0
+  44c554: f9400268     	ldr	x8, [x19]
+  44c558: f9406908     	ldr	x8, [x8, #0xd0]
+  44c55c: 52800015     	mov	w21, #0x0               ; =0
+  44c560: aa1303e0     	mov	x0, x19
+  44c564: d63f0100     	blr	x8
+  44c568: 7100001f     	cmp	w0, #0x0
+  44c56c: 1a9f07e1     	cset	w1, ne
+  44c570: 52800015     	mov	w21, #0x0               ; =0
+  44c574: aa1703e0     	mov	x0, x23
+  44c578: 97ffb04d     	bl	0x4386ac <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)>
+  44c57c: aa0003f7     	mov	x23, x0
+  44c580: f94023ea     	ldr	x10, [sp, #0x40]
+  44c584: b40001ea     	cbz	x10, 0x44c5c0 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x284>
+  44c588: a946a3e9     	ldp	x9, x8, [sp, #0x68]
+  44c58c: cb090108     	sub	x8, x8, x9
+  44c590: d344fd08     	lsr	x8, x8, #4
+  44c594: 52907c29     	mov	w9, #0x83e1             ; =33761
+  44c598: 72a7c1e9     	movk	w9, #0x3e0f, lsl #16
+  44c59c: 1b097d15     	mul	w21, w8, w9
+  44c5a0: 9103f3e4     	add	x4, sp, #0xfc
+  44c5a4: aa1503e0     	mov	x0, x21
+  44c5a8: 52800001     	mov	w1, #0x0                ; =0
+  44c5ac: 52800002     	mov	w2, #0x0                ; =0
+  44c5b0: d2800003     	mov	x3, #0x0                ; =0
+  44c5b4: d2800005     	mov	x5, #0x0                ; =0
+  44c5b8: d63f0140     	blr	x10
+  44c5bc: 14000002     	b	0x44c5c4 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x288>
+  44c5c0: 52800015     	mov	w21, #0x0               ; =0
+  44c5c4: f9007bff     	str	xzr, [sp, #0xf0]
+  44c5c8: 6f00e400     	movi.2d	v0, #0000000000000000
+  44c5cc: ad0683e0     	stp	q0, q0, [sp, #0xd0]
+  44c5d0: ad0583e0     	stp	q0, q0, [sp, #0xb0]
+  44c5d4: 3d802be0     	str	q0, [sp, #0xa0]
+  44c5d8: f9402260     	ldr	x0, [x19, #0x40]
+  44c5dc: f9400008     	ldr	x8, [x0]
+  44c5e0: f9406108     	ldr	x8, [x8, #0xc0]
+  44c5e4: 910203e1     	add	x1, sp, #0x80
+  44c5e8: b90037f5     	str	w21, [sp, #0x34]
+  44c5ec: d63f0100     	blr	x8
+  44c5f0: f9402260     	ldr	x0, [x19, #0x40]
+  44c5f4: f9400008     	ldr	x8, [x0]
+  44c5f8: f9406508     	ldr	x8, [x8, #0xc8]
+  44c5fc: 910203e1     	add	x1, sp, #0x80
+  44c600: 910283e2     	add	x2, sp, #0xa0
+  44c604: 910163e3     	add	x3, sp, #0x58
+  44c608: d63f0100     	blr	x8
+  44c60c: 34000120     	cbz	w0, 0x44c630 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x2f4>
+  44c610: 3903d3ff     	strb	wzr, [sp, #0xf4]
+  44c614: f9402260     	ldr	x0, [x19, #0x40]
+  44c618: f9402fe2     	ldr	x2, [sp, #0x58]
+  44c61c: f9400008     	ldr	x8, [x0]
+  44c620: f9404508     	ldr	x8, [x8, #0x88]
+  44c624: 910283e1     	add	x1, sp, #0xa0
+  44c628: d63f0100     	blr	x8
+  44c62c: 17fffff1     	b	0x44c5f0 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x2b4>
+  44c630: 94290faf     	bl	0xe904ec <_write+0xe904ec>
+  44c634: aa0003f9     	mov	x25, x0
+  44c638: eb1a039f     	cmp	x28, x26
+  44c63c: 54001040     	b.eq	0x44c844 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x508>
+  44c640: b90033f7     	str	w23, [sp, #0x30]
+  44c644: f9001fff     	str	xzr, [sp, #0x38]
+  44c648: 910283f7     	add	x23, sp, #0xa0
+  44c64c: 9108439c     	add	x28, x28, #0x210
+  44c650: f9400268     	ldr	x8, [x19]
+  44c654: f9406908     	ldr	x8, [x8, #0xd0]
+  44c658: aa1303e0     	mov	x0, x19
+  44c65c: d63f0100     	blr	x8
+  44c660: aa0003e1     	mov	x1, x0
+  44c664: d108439b     	sub	x27, x28, #0x210
+  44c668: aa1b03e0     	mov	x0, x27
+  44c66c: 97ffd02c     	bl	0x44071c <MSMDBMediaStreamMgr::MSMIsKnownNonMediaFile(char16_t*, unsigned char)>
+  44c670: 35000240     	cbnz	w0, 0x44c6b8 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x37c>
+  44c674: b85f0388     	ldur	w8, [x28, #-0x10]
+  44c678: 7100051f     	cmp	w8, #0x1
+  44c67c: 54000de1     	b.ne	0x44c838 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x4fc>
+  44c680: f9400268     	ldr	x8, [x19]
+  44c684: f9407108     	ldr	x8, [x8, #0xe0]
+  44c688: aa1303e0     	mov	x0, x19
+  44c68c: 52800021     	mov	w1, #0x1                ; =1
+  44c690: d63f0100     	blr	x8
+  44c694: f9400008     	ldr	x8, [x0]
+  44c698: f9419d08     	ldr	x8, [x8, #0x338]
+  44c69c: aa1b03e1     	mov	x1, x27
+  44c6a0: aa1903e2     	mov	x2, x25
+  44c6a4: d63f0100     	blr	x8
+  44c6a8: aa1b03e0     	mov	x0, x27
+  44c6ac: aa1903e1     	mov	x1, x25
+  44c6b0: 97ff9fcc     	bl	0x4345e0 <MSMDBMediaStreamMgr::DeleteKnownNotNeededFile(char16_t const*, AFileLocator*)>
+  44c6b4: 340000c0     	cbz	w0, 0x44c6cc <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x390>
+  44c6b8: 91084388     	add	x8, x28, #0x210
+  44c6bc: eb1a039f     	cmp	x28, x26
+  44c6c0: aa0803fc     	mov	x28, x8
+  44c6c4: 54fffc61     	b.ne	0x44c650 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x314>
+  44c6c8: 14000060     	b	0x44c848 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x50c>
+  44c6cc: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44c6d0: f9007bff     	str	xzr, [sp, #0xf0]
+  44c6d4: 6f00e400     	movi.2d	v0, #0000000000000000
+  44c6d8: ad0683e0     	stp	q0, q0, [sp, #0xd0]
+  44c6dc: ad0583e0     	stp	q0, q0, [sp, #0xb0]
+  44c6e0: 3d802be0     	str	q0, [sp, #0xa0]
+  44c6e4: f9402260     	ldr	x0, [x19, #0x40]
+  44c6e8: f9400008     	ldr	x8, [x0]
+  44c6ec: f9404908     	ldr	x8, [x8, #0x90]
+  44c6f0: 910163e2     	add	x2, sp, #0x58
+  44c6f4: aa1b03e1     	mov	x1, x27
+  44c6f8: d63f0100     	blr	x8
+  44c6fc: 52800018     	mov	w24, #0x0               ; =0
+  44c700: 52800036     	mov	w22, #0x1               ; =1
+  44c704: 52800035     	mov	w21, #0x1               ; =1
+  44c708: f9402260     	ldr	x0, [x19, #0x40]
+  44c70c: f9400008     	ldr	x8, [x0]
+  44c710: f9404d08     	ldr	x8, [x8, #0x98]
+  44c714: 910283e2     	add	x2, sp, #0xa0
+  44c718: 910163e3     	add	x3, sp, #0x58
+  44c71c: 910143e4     	add	x4, sp, #0x50
+  44c720: aa1b03e1     	mov	x1, x27
+  44c724: d63f0100     	blr	x8
+  44c728: 340005a0     	cbz	w0, 0x44c7dc <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x4a0>
+  44c72c: 36000295     	tbz	w21, #0x0, 0x44c77c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x440>
+  44c730: b940b3e8     	ldr	w8, [sp, #0xb0]
+  44c734: b85fc389     	ldur	w9, [x28, #-0x4]
+  44c738: 6b090108     	subs	w8, w8, w9
+  44c73c: 540000a0     	b.eq	0x44c750 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x414>
+  44c740: 7100011f     	cmp	w8, #0x0
+  44c744: 5a885508     	cneg	w8, w8, mi
+  44c748: 7138411f     	cmp	w8, #0xe10
+  44c74c: 54000181     	b.ne	0x44c77c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x440>
+  44c750: 52800035     	mov	w21, #0x1               ; =1
+  44c754: 3903d3f5     	strb	w21, [sp, #0xf4]
+  44c758: f9402260     	ldr	x0, [x19, #0x40]
+  44c75c: f9402be2     	ldr	x2, [sp, #0x50]
+  44c760: f9400008     	ldr	x8, [x0]
+  44c764: f9404508     	ldr	x8, [x8, #0x88]
+  44c768: 910283e1     	add	x1, sp, #0xa0
+  44c76c: d63f0100     	blr	x8
+  44c770: 52800016     	mov	w22, #0x0               ; =0
+  44c774: 52800018     	mov	w24, #0x0               ; =0
+  44c778: 17ffffe4     	b	0x44c708 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x3cc>
+  44c77c: f9402260     	ldr	x0, [x19, #0x40]
+  44c780: f9400008     	ldr	x8, [x0]
+  44c784: f9405908     	ldr	x8, [x8, #0xb0]
+  44c788: 910283e2     	add	x2, sp, #0xa0
+  44c78c: aa1b03e1     	mov	x1, x27
+  44c790: d63f0100     	blr	x8
+  44c794: 3cc142e0     	ldur	q0, [x23, #0x14]
+  44c798: 3cc242e1     	ldur	q1, [x23, #0x24]
+  44c79c: ad0407e0     	stp	q0, q1, [sp, #0x80]
+  44c7a0: f94053e2     	ldr	x2, [sp, #0xa0]
+  44c7a4: f9400288     	ldr	x8, [x20]
+  44c7a8: f9419908     	ldr	x8, [x8, #0x330]
+  44c7ac: 910203e1     	add	x1, sp, #0x80
+  44c7b0: aa1403e0     	mov	x0, x20
+  44c7b4: d2800003     	mov	x3, #0x0                ; =0
+  44c7b8: 52800024     	mov	w4, #0x1                ; =1
+  44c7bc: d63f0100     	blr	x8
+  44c7c0: f94053e0     	ldr	x0, [sp, #0xa0]
+  44c7c4: 94290d52     	bl	0xe8fd0c <_write+0xe8fd0c>
+  44c7c8: 52800016     	mov	w22, #0x0               ; =0
+  44c7cc: 52800015     	mov	w21, #0x0               ; =0
+  44c7d0: f90053ff     	str	xzr, [sp, #0xa0]
+  44c7d4: 52800038     	mov	w24, #0x1               ; =1
+  44c7d8: 17ffffcc     	b	0x44c708 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x3cc>
+  44c7dc: 2a1802c8     	orr	w8, w22, w24
+  44c7e0: 36000108     	tbz	w8, #0x0, 0x44c800 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x4c4>
+  44c7e4: f9400288     	ldr	x8, [x20]
+  44c7e8: f9416508     	ldr	x8, [x8, #0x2c8]
+  44c7ec: aa1403e0     	mov	x0, x20
+  44c7f0: aa1303e1     	mov	x1, x19
+  44c7f4: aa1b03e2     	mov	x2, x27
+  44c7f8: b94033e3     	ldr	w3, [sp, #0x30]
+  44c7fc: d63f0100     	blr	x8
+  44c800: a943a3e1     	ldp	x1, x8, [sp, #0x38]
+  44c804: 11000421     	add	w1, w1, #0x1
+  44c808: a9425bf8     	ldp	x24, x22, [sp, #0x20]
+  44c80c: b94037e0     	ldr	w0, [sp, #0x34]
+  44c810: f9001fe1     	str	x1, [sp, #0x38]
+  44c814: b4000128     	cbz	x8, 0x44c838 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x4fc>
+  44c818: 12000828     	and	w8, w1, #0x7
+  44c81c: 350000e8     	cbnz	w8, 0x44c838 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x4fc>
+  44c820: 9103f3e4     	add	x4, sp, #0xfc
+  44c824: 52800002     	mov	w2, #0x0                ; =0
+  44c828: aa1b03e3     	mov	x3, x27
+  44c82c: d2800005     	mov	x5, #0x0                ; =0
+  44c830: f94023e8     	ldr	x8, [sp, #0x40]
+  44c834: d63f0100     	blr	x8
+  44c838: eb1a039f     	cmp	x28, x26
+  44c83c: 54fff081     	b.ne	0x44c64c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x310>
+  44c840: 14000002     	b	0x44c848 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x50c>
+  44c844: f9001fff     	str	xzr, [sp, #0x38]
+  44c848: f94037e0     	ldr	x0, [sp, #0x68]
+  44c84c: b4000060     	cbz	x0, 0x44c858 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x51c>
+  44c850: f9003be0     	str	x0, [sp, #0x70]
+  44c854: 94292186     	bl	0xe94e6c <_write+0xe94e6c>
+  44c858: a943d7fa     	ldp	x26, x21, [sp, #0x38]
+  44c85c: 910283e0     	add	x0, sp, #0xa0
+  44c860: d10283a1     	sub	x1, x29, #0xa0
+  44c864: 942913c3     	bl	0xe91770 <_write+0xe91770>
+  44c868: b40000b9     	cbz	x25, 0x44c87c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x540>
+  44c86c: f9400328     	ldr	x8, [x25]
+  44c870: f9400108     	ldr	x8, [x8]
+  44c874: aa1903e0     	mov	x0, x25
+  44c878: d63f0100     	blr	x8
+  44c87c: b4000115     	cbz	x21, 0x44c89c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x560>
+  44c880: b94037e0     	ldr	w0, [sp, #0x34]
+  44c884: 12800001     	mov	w1, #-0x1               ; =-1
+  44c888: 52800002     	mov	w2, #0x0                ; =0
+  44c88c: d2800003     	mov	x3, #0x0                ; =0
+  44c890: d2800004     	mov	x4, #0x0                ; =0
+  44c894: d2800005     	mov	x5, #0x0                ; =0
+  44c898: d63f02a0     	blr	x21
+  44c89c: f85703a8     	ldur	x8, [x29, #-0x90]
+  44c8a0: b4000068     	cbz	x8, 0x44c8ac <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x570>
+  44c8a4: d10283a0     	sub	x0, x29, #0xa0
+  44c8a8: 9429084e     	bl	0xe8e9e0 <_write+0xe8e9e0>
+  44c8ac: 910283e0     	add	x0, sp, #0xa0
+  44c8b0: 942913b3     	bl	0xe9177c <_write+0xe9177c>
+  44c8b4: d10283a0     	sub	x0, x29, #0xa0
+  44c8b8: 942917b9     	bl	0xe9279c <_write+0xe9279c>
+  44c8bc: 94290f0c     	bl	0xe904ec <_write+0xe904ec>
+  44c8c0: f9002be0     	str	x0, [sp, #0x50]
+  44c8c4: 6f00e400     	movi.2d	v0, #0000000000000000
+  44c8c8: ad0503e0     	stp	q0, q0, [sp, #0xa0]
+  44c8cc: ad0603e0     	stp	q0, q0, [sp, #0xc0]
+  44c8d0: 3d803be0     	str	q0, [sp, #0xe0]
+  44c8d4: f9007bff     	str	xzr, [sp, #0xf0]
+  44c8d8: f9402260     	ldr	x0, [x19, #0x40]
+  44c8dc: f9400008     	ldr	x8, [x0]
+  44c8e0: f9406108     	ldr	x8, [x8, #0xc0]
+  44c8e4: 9101a3e1     	add	x1, sp, #0x68
+  44c8e8: d63f0100     	blr	x8
+  44c8ec: f94027e8     	ldr	x8, [sp, #0x48]
+  44c8f0: 9b087ec8     	mul	x8, x22, x8
+  44c8f4: 9ad80908     	udiv	x8, x8, x24
+  44c8f8: d343fd08     	lsr	x8, x8, #3
+  44c8fc: d29ef9f7     	mov	x23, #0xf7cf            ; =63439
+  44c900: f2bc6a77     	movk	x23, #0xe353, lsl #16
+  44c904: f2d374b7     	movk	x23, #0x9ba5, lsl #32
+  44c908: f2e41897     	movk	x23, #0x20c4, lsl #48
+  44c90c: 9bd77d08     	umulh	x8, x8, x23
+  44c910: d344fd08     	lsr	x8, x8, #4
+  44c914: 9e630100     	ucvtf	d0, x8
+  44c918: d00064e8     	adrp	x8, 0x10ea000 <typeinfo name for void (void*, Mac2Qt::GrafPtr, AProject*)+0x17>
+  44c91c: fd42c509     	ldr	d9, [x8, #0x588]
+  44c920: 1e690808     	fmul	d8, d0, d9
+  44c924: 910283f8     	add	x24, sp, #0xa0
+  44c928: 52800039     	mov	w25, #0x1               ; =1
+  44c92c: d0005b55     	adrp	x21, 0xfb6000 <_write+0xfb6000>
+  44c930: 910d8ab5     	add	x21, x21, #0x362
+  44c934: f9402260     	ldr	x0, [x19, #0x40]
+  44c938: f9400008     	ldr	x8, [x0]
+  44c93c: f9406508     	ldr	x8, [x8, #0xc8]
+  44c940: 9101a3e1     	add	x1, sp, #0x68
+  44c944: 910283e2     	add	x2, sp, #0xa0
+  44c948: 910163e3     	add	x3, sp, #0x58
+  44c94c: d63f0100     	blr	x8
+  44c950: 340007e0     	cbz	w0, 0x44ca4c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x710>
+  44c954: 3943d3e8     	ldrb	w8, [sp, #0xf4]
+  44c958: 35fffee8     	cbnz	w8, 0x44c934 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x5f8>
+  44c95c: f9400268     	ldr	x8, [x19]
+  44c960: f9406908     	ldr	x8, [x8, #0xd0]
+  44c964: aa1303e0     	mov	x0, x19
+  44c968: d63f0100     	blr	x8
+  44c96c: 340003a0     	cbz	w0, 0x44c9e0 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x6a4>
+  44c970: f9400660     	ldr	x0, [x19, #0x8]
+  44c974: f94053e1     	ldr	x1, [sp, #0xa0]
+  44c978: f9402be2     	ldr	x2, [sp, #0x50]
+  44c97c: f9400008     	ldr	x8, [x0]
+  44c980: f9419d08     	ldr	x8, [x8, #0x338]
+  44c984: d63f0100     	blr	x8
+  44c988: f9402be0     	ldr	x0, [sp, #0x50]
+  44c98c: b5000120     	cbnz	x0, 0x44c9b0 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x674>
+  44c990: f90003ff     	str	xzr, [sp]
+  44c994: d10283a0     	sub	x0, x29, #0xa0
+  44c998: aa1503e1     	mov	x1, x21
+  44c99c: 9429177a     	bl	0xe92784 <_write+0xe92784>
+  44c9a0: 94292187     	bl	0xe94fbc <_write+0xe94fbc>
+  44c9a4: d10283a0     	sub	x0, x29, #0xa0
+  44c9a8: 9429177d     	bl	0xe9279c <_write+0xe9279c>
+  44c9ac: f9402be0     	ldr	x0, [sp, #0x50]
+  44c9b0: f9400008     	ldr	x8, [x0]
+  44c9b4: f940a508     	ldr	x8, [x8, #0x148]
+  44c9b8: d63f0100     	blr	x8
+  44c9bc: 34000120     	cbz	w0, 0x44c9e0 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x6a4>
+  44c9c0: 3903d3f9     	strb	w25, [sp, #0xf4]
+  44c9c4: f9402260     	ldr	x0, [x19, #0x40]
+  44c9c8: f9402fe2     	ldr	x2, [sp, #0x58]
+  44c9cc: f9400008     	ldr	x8, [x0]
+  44c9d0: f9404508     	ldr	x8, [x8, #0x88]
+  44c9d4: 910283e1     	add	x1, sp, #0xa0
+  44c9d8: d63f0100     	blr	x8
+  44c9dc: 17ffffd6     	b	0x44c934 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x5f8>
+  44c9e0: f9402260     	ldr	x0, [x19, #0x40]
+  44c9e4: f94053e1     	ldr	x1, [sp, #0xa0]
+  44c9e8: f9400008     	ldr	x8, [x0]
+  44c9ec: f9405508     	ldr	x8, [x8, #0xa8]
+  44c9f0: 910283e2     	add	x2, sp, #0xa0
+  44c9f4: d63f0100     	blr	x8
+  44c9f8: 3cc14300     	ldur	q0, [x24, #0x14]
+  44c9fc: 3cc24301     	ldur	q1, [x24, #0x24]
+  44ca00: ad3b07a0     	stp	q0, q1, [x29, #-0xa0]
+  44ca04: f94053f6     	ldr	x22, [sp, #0xa0]
+  44ca08: f9400268     	ldr	x8, [x19]
+  44ca0c: f9407108     	ldr	x8, [x8, #0xe0]
+  44ca10: aa1303e0     	mov	x0, x19
+  44ca14: 52800021     	mov	w1, #0x1                ; =1
+  44ca18: d63f0100     	blr	x8
+  44ca1c: aa0003e3     	mov	x3, x0
+  44ca20: f9400288     	ldr	x8, [x20]
+  44ca24: f9419908     	ldr	x8, [x8, #0x330]
+  44ca28: d10283a1     	sub	x1, x29, #0xa0
+  44ca2c: aa1403e0     	mov	x0, x20
+  44ca30: aa1603e2     	mov	x2, x22
+  44ca34: 52800024     	mov	w4, #0x1                ; =1
+  44ca38: d63f0100     	blr	x8
+  44ca3c: f94053e0     	ldr	x0, [sp, #0xa0]
+  44ca40: 94290cb3     	bl	0xe8fd0c <_write+0xe8fd0c>
+  44ca44: f90053ff     	str	xzr, [sp, #0xa0]
+  44ca48: 17ffffbb     	b	0x44c934 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x5f8>
+  44ca4c: 910143e0     	add	x0, sp, #0x50
+  44ca50: 97f0265a     	bl	0x563b8 <AObjSmartPtr<AFileLocator>::~AObjSmartPtr()>
+  44ca54: f9400268     	ldr	x8, [x19]
+  44ca58: f9403908     	ldr	x8, [x8, #0x70]
+  44ca5c: aa1303e0     	mov	x0, x19
+  44ca60: 52800021     	mov	w1, #0x1                ; =1
+  44ca64: d63f0100     	blr	x8
+  44ca68: f9400268     	ldr	x8, [x19]
+  44ca6c: f9405908     	ldr	x8, [x8, #0xb0]
+  44ca70: aa1303e0     	mov	x0, x19
+  44ca74: d63f0100     	blr	x8
+  44ca78: 39018a7f     	strb	wzr, [x19, #0x62]
+  44ca7c: f0008773     	adrp	x19, 0x153b000 <LocalVolume::mainDirectoryTag+0x1f6>
+  44ca80: b9404e60     	ldr	w0, [x19, #0x4c]
+  44ca84: 52800081     	mov	w1, #0x4                ; =4
+  44ca88: 94290752     	bl	0xe8e7d0 <_write+0xe8e7d0>
+  44ca8c: 34000240     	cbz	w0, 0x44cad4 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x798>
+  44ca90: 910283e0     	add	x0, sp, #0xa0
+  44ca94: 94292258     	bl	0xe953f4 <_write+0xe953f4>
+  44ca98: 94292254     	bl	0xe953e8 <_write+0xe953e8>
+  44ca9c: 295427e8     	ldp	w8, w9, [sp, #0xa0]
+  44caa0: 9b087c08     	mul	x8, x0, x8
+  44caa4: 9ac90908     	udiv	x8, x8, x9
+  44caa8: d343fd08     	lsr	x8, x8, #3
+  44caac: 9bd77d08     	umulh	x8, x8, x23
+  44cab0: d344fd08     	lsr	x8, x8, #4
+  44cab4: 9e630100     	ucvtf	d0, x8
+  44cab8: 1e690800     	fmul	d0, d0, d9
+  44cabc: 1e683800     	fsub	d0, d0, d8
+  44cac0: f90003fa     	str	x26, [sp]
+  44cac4: fd0007e0     	str	d0, [sp, #0x8]
+  44cac8: f0005de0     	adrp	x0, 0x100b000 <_write+0x100b000>
+  44cacc: 91240c00     	add	x0, x0, #0x903
+  44cad0: 94290c71     	bl	0xe8fc94 <_write+0xe8fc94>
+  44cad4: b9404e60     	ldr	w0, [x19, #0x4c]
+  44cad8: 52800041     	mov	w1, #0x2                ; =2
+  44cadc: 9429073d     	bl	0xe8e7d0 <_write+0xe8e7d0>
+  44cae0: 34000240     	cbz	w0, 0x44cb28 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x7ec>
+  44cae4: 910283f3     	add	x19, sp, #0xa0
+  44cae8: 910283e8     	add	x8, sp, #0xa0
+  44caec: 9103f3e0     	add	x0, sp, #0xfc
+  44caf0: d2800001     	mov	x1, #0x0                ; =0
+  44caf4: 94290bbd     	bl	0xe8f9e8 <_write+0xe8f9e8>
+  44caf8: 39c2dfe8     	ldrsb	w8, [sp, #0xb7]
+  44cafc: f94053e9     	ldr	x9, [sp, #0xa0]
+  44cb00: 7100011f     	cmp	w8, #0x0
+  44cb04: 9a93b128     	csel	x8, x9, x19, lt
+  44cb08: f90003e8     	str	x8, [sp]
+  44cb0c: f0005de0     	adrp	x0, 0x100b000 <_write+0x100b000>
+  44cb10: 91250000     	add	x0, x0, #0x940
+  44cb14: 94290c60     	bl	0xe8fc94 <_write+0xe8fc94>
+  44cb18: 39c2dfe8     	ldrsb	w8, [sp, #0xb7]
+  44cb1c: 36f80068     	tbz	w8, #0x1f, 0x44cb28 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x7ec>
+  44cb20: f94053e0     	ldr	x0, [sp, #0xa0]
+  44cb24: 942920d2     	bl	0xe94e6c <_write+0xe94e6c>
+  44cb28: f85903a8     	ldur	x8, [x29, #-0x70]
+  44cb2c: 90006e29     	adrp	x9, 0x1210000 <_write+0x1210000>
+  44cb30: f946e129     	ldr	x9, [x9, #0xdc0]
+  44cb34: f9400129     	ldr	x9, [x9]
+  44cb38: eb08013f     	cmp	x9, x8
+  44cb3c: 54000141     	b.ne	0x44cb64 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x828>
+  44cb40: 912503ff     	add	sp, sp, #0x940
+  44cb44: a9467bfd     	ldp	x29, x30, [sp, #0x60]
+  44cb48: a9454ff4     	ldp	x20, x19, [sp, #0x50]
+  44cb4c: a94457f6     	ldp	x22, x21, [sp, #0x40]
+  44cb50: a9435ff8     	ldp	x24, x23, [sp, #0x30]
+  44cb54: a94267fa     	ldp	x26, x25, [sp, #0x20]
+  44cb58: a9416ffc     	ldp	x28, x27, [sp, #0x10]
+  44cb5c: 6cc723e9     	ldp	d9, d8, [sp], #0x70
+  44cb60: d65f03c0     	ret
+  44cb64: 9429215b     	bl	0xe950d0 <_write+0xe950d0>
+  44cb68: 1400003d     	b	0x44cc5c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x920>
+  44cb6c: 1400003c     	b	0x44cc5c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x920>
+  44cb70: aa0003f7     	mov	x23, x0
+  44cb74: 35000841     	cbnz	w1, 0x44cc7c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x940>
+  44cb78: 140000c8     	b	0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cb7c: aa0003f7     	mov	x23, x0
+  44cb80: 39c2dfe8     	ldrsb	w8, [sp, #0xb7]
+  44cb84: 36f818a8     	tbz	w8, #0x1f, 0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cb88: f94053e0     	ldr	x0, [sp, #0xa0]
+  44cb8c: 942920b8     	bl	0xe94e6c <_write+0xe94e6c>
+  44cb90: 140000c2     	b	0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cb94: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44cb98: aa0003f7     	mov	x23, x0
+  44cb9c: 340017e1     	cbz	w1, 0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cba0: aa0103fb     	mov	x27, x1
+  44cba4: 39c2dfe8     	ldrsb	w8, [sp, #0xb7]
+  44cba8: 36f80108     	tbz	w8, #0x1f, 0x44cbc8 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x88c>
+  44cbac: f94053e0     	ldr	x0, [sp, #0xa0]
+  44cbb0: 942920af     	bl	0xe94e6c <_write+0xe94e6c>
+  44cbb4: 14000005     	b	0x44cbc8 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x88c>
+  44cbb8: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44cbbc: aa0003f7     	mov	x23, x0
+  44cbc0: 340016c1     	cbz	w1, 0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cbc4: aa0103fb     	mov	x27, x1
+  44cbc8: d2800019     	mov	x25, #0x0               ; =0
+  44cbcc: f9001fff     	str	xzr, [sp, #0x38]
+  44cbd0: b90037ff     	str	wzr, [sp, #0x34]
+  44cbd4: 1400002b     	b	0x44cc80 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x944>
+  44cbd8: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44cbdc: aa0003f7     	mov	x23, x0
+  44cbe0: 350004a1     	cbnz	w1, 0x44cc74 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x938>
+  44cbe4: 140000ad     	b	0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cbe8: 140000a9     	b	0x44ce8c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb50>
+  44cbec: aa0003f7     	mov	x23, x0
+  44cbf0: 14000008     	b	0x44cc10 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8d4>
+  44cbf4: 14000001     	b	0x44cbf8 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8bc>
+  44cbf8: aa0003f7     	mov	x23, x0
+  44cbfc: 910283e0     	add	x0, sp, #0xa0
+  44cc00: 14000005     	b	0x44cc14 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8d8>
+  44cc04: aa0003f7     	mov	x23, x0
+  44cc08: 910283e0     	add	x0, sp, #0xa0
+  44cc0c: 942912dc     	bl	0xe9177c <_write+0xe9177c>
+  44cc10: d10283a0     	sub	x0, x29, #0xa0
+  44cc14: 942916e2     	bl	0xe9279c <_write+0xe9279c>
+  44cc18: 140000a0     	b	0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cc1c: aa0003f7     	mov	x23, x0
+  44cc20: d10283a0     	sub	x0, x29, #0xa0
+  44cc24: 942916de     	bl	0xe9279c <_write+0xe9279c>
+  44cc28: 1400009a     	b	0x44ce90 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb54>
+  44cc2c: b90037f5     	str	w21, [sp, #0x34]
+  44cc30: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44cc34: aa0103fb     	mov	x27, x1
+  44cc38: aa0003f7     	mov	x23, x0
+  44cc3c: 340012fb     	cbz	w27, 0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cc40: d2800019     	mov	x25, #0x0               ; =0
+  44cc44: f9001fff     	str	xzr, [sp, #0x38]
+  44cc48: 1400000e     	b	0x44cc80 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x944>
+  44cc4c: 14000004     	b	0x44cc5c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x920>
+  44cc50: aa0003f7     	mov	x23, x0
+  44cc54: 14000091     	b	0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cc58: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44cc5c: aa0003f7     	mov	x23, x0
+  44cc60: 350000e1     	cbnz	w1, 0x44cc7c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x940>
+  44cc64: 1400008d     	b	0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cc68: a9025bf8     	stp	x24, x22, [sp, #0x20]
+  44cc6c: aa0003f7     	mov	x23, x0
+  44cc70: 34001141     	cbz	w1, 0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44cc74: d2800019     	mov	x25, #0x0               ; =0
+  44cc78: f9001fff     	str	xzr, [sp, #0x38]
+  44cc7c: aa0103fb     	mov	x27, x1
+  44cc80: f94037e0     	ldr	x0, [sp, #0x68]
+  44cc84: b4000060     	cbz	x0, 0x44cc90 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x954>
+  44cc88: f9003be0     	str	x0, [sp, #0x70]
+  44cc8c: 94292078     	bl	0xe94e6c <_write+0xe94e6c>
+  44cc90: aa1703e0     	mov	x0, x23
+  44cc94: 71000f7f     	cmp	w27, #0x3
+  44cc98: 540002e1     	b.ne	0x44ccf4 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x9b8>
+  44cc9c: 942920dd     	bl	0xe95010 <_write+0xe95010>
+  44cca0: aa0003f7     	mov	x23, x0
+  44cca4: d10283a8     	sub	x8, x29, #0xa0
+  44cca8: 91002100     	add	x0, x8, #0x8
+  44ccac: 910022e1     	add	x1, x23, #0x8
+  44ccb0: 97ef7d27     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  44ccb4: 3dc006e0     	ldr	q0, [x23, #0x10]
+  44ccb8: b94022e8     	ldr	w8, [x23, #0x20]
+  44ccbc: b81803a8     	stur	w8, [x29, #-0x80]
+  44ccc0: 3c9703a0     	stur	q0, [x29, #-0x90]
+  44ccc4: f94002e8     	ldr	x8, [x23]
+  44ccc8: f9400908     	ldr	x8, [x8, #0x10]
+  44cccc: aa1703e0     	mov	x0, x23
+  44ccd0: d63f0100     	blr	x8
+  44ccd4: d0005de1     	adrp	x1, 0x100a000 <_write+0x100a000>
+  44ccd8: 91074021     	add	x1, x1, #0x1d0
+  44ccdc: 5283ac22     	mov	w2, #0x1d61             ; =7521
+  44cce0: 94290aeb     	bl	0xe8f88c <_write+0xe8f88c>
+  44cce4: 942920d1     	bl	0xe95028 <_write+0xe95028>
+  44cce8: a9425bf8     	ldp	x24, x22, [sp, #0x20]
+  44ccec: a943d7fa     	ldp	x26, x21, [sp, #0x38]
+  44ccf0: 17fffedb     	b	0x44c85c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x520>
+  44ccf4: 942920c7     	bl	0xe95010 <_write+0xe95010>
+  44ccf8: 71000b7f     	cmp	w27, #0x2
+  44ccfc: 54000561     	b.ne	0x44cda8 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xa6c>
+  44cd00: aa0003f7     	mov	x23, x0
+  44cd04: f9400008     	ldr	x8, [x0]
+  44cd08: f9400908     	ldr	x8, [x8, #0x10]
+  44cd0c: d63f0100     	blr	x8
+  44cd10: a900ffe0     	stp	x0, xzr, [sp, #0x8]
+  44cd14: f0005b08     	adrp	x8, 0xfaf000 <_write+0xfaf000>
+  44cd18: 91053d08     	add	x8, x8, #0x14f
+  44cd1c: f90003e8     	str	x8, [sp]
+  44cd20: f0005b01     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  44cd24: 91050021     	add	x1, x1, #0x140
+  44cd28: 910283f5     	add	x21, sp, #0xa0
+  44cd2c: 910283e0     	add	x0, sp, #0xa0
+  44cd30: 94291695     	bl	0xe92784 <_write+0xe92784>
+  44cd34: d10283a8     	sub	x8, x29, #0xa0
+  44cd38: 91002100     	add	x0, x8, #0x8
+  44cd3c: 910022a1     	add	x1, x21, #0x8
+  44cd40: 97ef7d03     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  44cd44: 3dc02fe0     	ldr	q0, [sp, #0xb0]
+  44cd48: 3c9703a0     	stur	q0, [x29, #-0x90]
+  44cd4c: b940c3e8     	ldr	w8, [sp, #0xc0]
+  44cd50: b81803a8     	stur	w8, [x29, #-0x80]
+  44cd54: 910283e0     	add	x0, sp, #0xa0
+  44cd58: 94291691     	bl	0xe9279c <_write+0xe9279c>
+  44cd5c: f94002e8     	ldr	x8, [x23]
+  44cd60: f9400908     	ldr	x8, [x8, #0x10]
+  44cd64: aa1703e0     	mov	x0, x23
+  44cd68: d63f0100     	blr	x8
+  44cd6c: d0005de1     	adrp	x1, 0x100a000 <_write+0x100a000>
+  44cd70: 91074021     	add	x1, x1, #0x1d0
+  44cd74: 5283ac22     	mov	w2, #0x1d61             ; =7521
+  44cd78: 94290b0a     	bl	0xe8f9a0 <_write+0xe8f9a0>
+  44cd7c: d0006e08     	adrp	x8, 0x120e000 <_write+0x120e000>
+  44cd80: f9468108     	ldr	x8, [x8, #0xd00]
+  44cd84: f9400108     	ldr	x8, [x8]
+  44cd88: b4000088     	cbz	x8, 0x44cd98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xa5c>
+  44cd8c: 90005b20     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  44cd90: 91020c00     	add	x0, x0, #0x83
+  44cd94: d63f0100     	blr	x8
+  44cd98: 942920a4     	bl	0xe95028 <_write+0xe95028>
+  44cd9c: a9425bf8     	ldp	x24, x22, [sp, #0x20]
+  44cda0: a943d7fa     	ldp	x26, x21, [sp, #0x38]
+  44cda4: 17fffeae     	b	0x44c85c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x520>
+  44cda8: f90003ff     	str	xzr, [sp]
+  44cdac: f0005b01     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  44cdb0: 91035021     	add	x1, x1, #0xd4
+  44cdb4: 910283f5     	add	x21, sp, #0xa0
+  44cdb8: 910283e0     	add	x0, sp, #0xa0
+  44cdbc: 94291672     	bl	0xe92784 <_write+0xe92784>
+  44cdc0: d10283a8     	sub	x8, x29, #0xa0
+  44cdc4: 91002100     	add	x0, x8, #0x8
+  44cdc8: 910022a1     	add	x1, x21, #0x8
+  44cdcc: 97ef7ce0     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  44cdd0: 3dc02fe0     	ldr	q0, [sp, #0xb0]
+  44cdd4: 3c9703a0     	stur	q0, [x29, #-0x90]
+  44cdd8: b940c3e8     	ldr	w8, [sp, #0xc0]
+  44cddc: b81803a8     	stur	w8, [x29, #-0x80]
+  44cde0: 910283e0     	add	x0, sp, #0xa0
+  44cde4: 9429166e     	bl	0xe9279c <_write+0xe9279c>
+  44cde8: d0005de0     	adrp	x0, 0x100a000 <_write+0x100a000>
+  44cdec: 91074000     	add	x0, x0, #0x1d0
+  44cdf0: 5283ac21     	mov	w1, #0x1d61             ; =7521
+  44cdf4: 94290b09     	bl	0xe8fa18 <_write+0xe8fa18>
+  44cdf8: d0006e08     	adrp	x8, 0x120e000 <_write+0x120e000>
+  44cdfc: f9468108     	ldr	x8, [x8, #0xd00]
+  44ce00: f9400108     	ldr	x8, [x8]
+  44ce04: b4000088     	cbz	x8, 0x44ce14 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xad8>
+  44ce08: 90005b20     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  44ce0c: 91020c00     	add	x0, x0, #0x83
+  44ce10: d63f0100     	blr	x8
+  44ce14: 94292085     	bl	0xe95028 <_write+0xe95028>
+  44ce18: a9425bf8     	ldp	x24, x22, [sp, #0x20]
+  44ce1c: a943d7fa     	ldp	x26, x21, [sp, #0x38]
+  44ce20: 17fffe8f     	b	0x44c85c <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x520>
+  44ce24: 17ffff72     	b	0x44cbec <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8b0>
+  44ce28: aa0003f7     	mov	x23, x0
+  44ce2c: 910283e0     	add	x0, sp, #0xa0
+  44ce30: 9429165b     	bl	0xe9279c <_write+0xe9279c>
+  44ce34: 14000009     	b	0x44ce58 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb1c>
+  44ce38: 14000007     	b	0x44ce54 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb18>
+  44ce3c: 17ffff6c     	b	0x44cbec <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8b0>
+  44ce40: aa0003f7     	mov	x23, x0
+  44ce44: 910283e0     	add	x0, sp, #0xa0
+  44ce48: 94291655     	bl	0xe9279c <_write+0xe9279c>
+  44ce4c: 14000006     	b	0x44ce64 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb28>
+  44ce50: 14000004     	b	0x44ce60 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb24>
+  44ce54: aa0003f7     	mov	x23, x0
+  44ce58: 94292074     	bl	0xe95028 <_write+0xe95028>
+  44ce5c: 17ffff6d     	b	0x44cc10 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8d4>
+  44ce60: aa0003f7     	mov	x23, x0
+  44ce64: 94292071     	bl	0xe95028 <_write+0xe95028>
+  44ce68: 17ffff6a     	b	0x44cc10 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8d4>
+  44ce6c: 17ffff60     	b	0x44cbec <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8b0>
+  44ce70: aa0003f7     	mov	x23, x0
+  44ce74: 9429206d     	bl	0xe95028 <_write+0xe95028>
+  44ce78: 17ffff66     	b	0x44cc10 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0x8d4>
+  44ce7c: aa0003f7     	mov	x23, x0
+  44ce80: 340000c1     	cbz	w1, 0x44ce98 <MSMDBMediaStreamMgr::ScanDirectoryToCache(MSMMediaDirRecord*, std::__1::vector<dirEntry_t, std::__1::allocator<dirEntry_t>>&, void (*)(int, int, unsigned char, char16_t*, char16_t*, char const*))+0xb5c>
+  44ce84: aa1703e0     	mov	x0, x23
+  44ce88: 97eed228     	bl	0x1728 <___clang_call_terminate>
+  44ce8c: aa0003f7     	mov	x23, x0
+  44ce90: 910143e0     	add	x0, sp, #0x50
+  44ce94: 97f02549     	bl	0x563b8 <AObjSmartPtr<AFileLocator>::~AObjSmartPtr()>
+  44ce98: aa1703e0     	mov	x0, x23
+  44ce9c: 942905b1     	bl	0xe8e560 <_write+0xe8e560>

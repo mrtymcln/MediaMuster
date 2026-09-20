@@ -1,0 +1,247 @@
+IsOMFIFile_stream @ 0xddc3c
+Verified procedure entry: 0xddc3c
+    r31 = r31 - 0xb0;
+    var_50 = r28;
+    decomp_var_48 = r27;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r19 = arg0;
+    var_58 = **___stack_chk_guard;
+    var_60 = 0x0;
+    if (arg0 == 0x0) {
+            XError::XError(&var_88);
+            r0 = operator+(&var_88);
+            XError::~XError();
+    }
+    r0 = (*(*r19 + 0x98))(r19);
+    r20 = r0;
+    if (r0 >= 0x80000001) {
+            XError::XError(&var_88);
+            r0 = operator+(&var_88);
+            XError::~XError();
+    }
+    else {
+            if (r20 <= 0x17) {
+                    XError::XError(&var_88);
+                    r0 = operator+(&var_88);
+                    XError::~XError();
+            }
+    }
+    r21 = AStream::IsSwapBytesOn();
+    AStream::SetSwapBytes(r19);
+    (*(*r19 + 0xb0))(r19, r20 - 0x18);
+    r8 = *r19;
+    r8 = r8[0x41];
+    (r8)(r19, "Bento Magic Sequence", &var_60, 0x8);
+    r0 = strncmp(&var_60, knownMagic, 0x8);
+    if (r0 == 0x0) {
+            r22 = 0x1;
+    }
+    FTF_GetToggle("/Media Composer/ProToolsOMFWave");
+    asm { orn        w8, w22, w0 };
+    if ((r8 & 0x1) != 0x0) goto loc_ddfcc;
+    goto loc_ddd84;
+
+loc_ddfcc:
+    r0 = AStream::SetSwapBytes(r19);
+    if (**___stack_chk_guard != var_58) {
+            __stack_chk_fail();
+    }
+    r0 = r22;
+    return r0;
+
+loc_ddd84:
+    (*(*r19 + 0xb0))(r19, 0x0);
+    var_8C = 0x0;
+    r0 = (*(*r19 + 0x208))(r19, "Wave header", &var_8C, 0x4);
+    r8 = var_8C;
+    if (r8 == 0x46464952) goto loc_ddde0;
+    goto loc_dddd0;
+
+loc_ddde0:
+    var_88 = 0x0;
+    (*(*r19 + 0x208))(r19, "RIFF length", &var_8C, 0x4);
+    r0 = (*(*r19 + 0x208))(r19, "Wave header", &var_8C, 0x4);
+    if (var_8C != 0x45564157) goto .l3;
+    goto loc_dde38;
+
+loc_dddd0:
+    if (r8 != 0x34364652) goto .l6;
+    goto .l1;
+
+.l3:
+    r0 = AStream::SetSwapBytes(r19);
+    if (**___stack_chk_guard != var_58) {
+            __stack_chk_fail();
+    }
+    r0 = r22;
+    return r0;
+
+loc_dde38:
+    goto .l7;
+
+.l6:
+    r0 = AStream::SetSwapBytes(r19);
+    if (**___stack_chk_guard != var_58) {
+            __stack_chk_fail();
+    }
+    r0 = r22;
+    return r0;
+
+.l1:
+    var_88 = 0x0;
+    (*(*r19 + 0x208))(r19, "RIFF length", &var_8C, 0x4);
+    r0 = (*(*r19 + 0x208))(r19, "Wave header", &var_8C, 0x4);
+    if (var_8C != 0x45564157) goto .l9;
+    goto .l2;
+
+.l7:
+    r0 = (*(*r19 + 0x208))(r19, "Chunk ID", &var_8C, 0x4);
+    r0 = (*(*r19 + 0x208))(r19, "Chunk Len", &var_90, 0x4);
+    r8 = var_90;
+    if ((r8 & 0x1) != 0x0) {
+            var_90 = r8 + 0x1;
+    }
+    r27 = (*(*r19 + 0x90))(r19) + var_90;
+    r8 = var_8C;
+    if (r8 != 0x34367364) {
+            if (r8 == 0x69666d6f) {
+                    (*(*r19 + 0xb0))(r19, r27 - 0x18);
+                    (*(*r19 + 0x208))(r19, "Bento Magic Sequence", &var_60, 0x8);
+                    r0 = strncmp(&var_60, knownMagic, 0x8);
+                    if (r0 != 0x0) {
+                            temp_0 = 0x0;
+                    }
+                    else {
+                            r22 = 0x1;
+                            temp_0 = 0x0;
+                    }
+                    break;
+            }
+            else {
+                    if (r8 == 0x61746164 && var_88 != 0x0) {
+                            r27 = var_88 + (*(*r19 + 0x90))(r19);
+                    }
+                    if (r27 < r20) {
+                            if (r27 >= (*(*r19 + 0x90))(r19)) {
+                                    (*(*r19 + 0xb0))(r19, r27);
+                                    continue;
+                            }
+                            temp_0 = 0x1;
+                            break;
+                    }
+                    else {
+                            temp_0 = 0x2;
+                            break;
+                    }
+            }
+    }
+    else {
+            (*(*r19 + 0x208))(r19, "RF64 Total length - 8", &var_88, 0x8);
+            r0 = (*(*r19 + 0x208))(r19, "RF64 data length", &var_88, 0x8);
+            r8 = var_8C;
+            if (r8 == 0x61746164 && var_88 != 0x0) {
+                    r27 = var_88 + (*(*r19 + 0x90))(r19);
+            }
+            if (r27 < r20) {
+                    if (r27 >= (*(*r19 + 0x90))(r19)) {
+                            (*(*r19 + 0xb0))(r19, r27);
+                            continue;
+                    }
+                    temp_0 = 0x1;
+                    break;
+            }
+            else {
+                    temp_0 = 0x2;
+                    break;
+            }
+    }
+    goto .l8;
+
+.l9:
+    r0 = AStream::SetSwapBytes(r19);
+    if (**___stack_chk_guard != var_58) {
+            __stack_chk_fail();
+    }
+    r0 = r22;
+    return r0;
+
+.l2:
+    goto loc_dde60;
+
+.l8:
+    goto .l3;
+
+loc_dde60:
+    r0 = (*(*r19 + 0x208))(r19, "Chunk ID", &var_8C, 0x4);
+    r0 = (*(*r19 + 0x208))(r19, "Chunk Len", &var_90, 0x4);
+    r8 = var_90;
+    if ((r8 & 0x1) != 0x0) {
+            var_90 = r8 + 0x1;
+    }
+    r27 = (*(*r19 + 0x90))(r19) + var_90;
+    r8 = var_8C;
+    if (r8 != 0x34367364) {
+            if (r8 == 0x69666d6f) {
+                    (*(*r19 + 0xb0))(r19, r27 - 0x18);
+                    (*(*r19 + 0x208))(r19, "Bento Magic Sequence", &var_60, 0x8);
+                    r0 = strncmp(&var_60, knownMagic, 0x8);
+                    if (r0 != 0x0) {
+                            temp_0 = 0x0;
+                    }
+                    else {
+                            r22 = 0x1;
+                            temp_0 = 0x0;
+                    }
+                    break;
+            }
+            else {
+                    if (r8 == 0x61746164 && var_88 != 0x0) {
+                            r27 = var_88 + (*(*r19 + 0x90))(r19);
+                    }
+                    if (r27 < r20) {
+                            if (r27 >= (*(*r19 + 0x90))(r19)) {
+                                    (*(*r19 + 0xb0))(r19, r27);
+                                    continue;
+                            }
+                            temp_0 = 0x1;
+                            break;
+                    }
+                    else {
+                            temp_0 = 0x2;
+                            break;
+                    }
+            }
+    }
+    else {
+            (*(*r19 + 0x208))(r19, "RF64 Total length - 8", &var_88, 0x8);
+            r0 = (*(*r19 + 0x208))(r19, "RF64 data length", &var_88, 0x8);
+            r8 = var_8C;
+            if (r8 == 0x61746164 && var_88 != 0x0) {
+                    r27 = var_88 + (*(*r19 + 0x90))(r19);
+            }
+            if (r27 < r20) {
+                    if (r27 >= (*(*r19 + 0x90))(r19)) {
+                            (*(*r19 + 0xb0))(r19, r27);
+                            continue;
+                    }
+                    temp_0 = 0x1;
+                    break;
+            }
+            else {
+                    temp_0 = 0x2;
+                    break;
+            }
+    }
+    goto .l4;
+
+.l4:
+    goto .l9;

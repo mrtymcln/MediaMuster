@@ -57,7 +57,7 @@ private slots:
 	void omf_non_bento_input_fails_cleanly();
 	void omf_container_without_a_media_descriptor_is_not_valid();
 	void omf_finalise_parity_with_a_header();
-	void sdii_omf1_and_omf2_semantics();
+	void wave_omf1_and_omf2_semantics();
 	void ambiguous_master_is_not_guessed();
 	void unreadable_descriptor_is_not_media();
 	void multiple_embedded_files_are_not_collapsed();
@@ -148,7 +148,7 @@ void TestOmfParser::omf_master_usage_is_role_specific_and_width_checked()
 	constexpr bool big = false;
 	for (int code : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99, -2})
 		{
-			QByteArray data = TestOmf::sdii(false, false, false, false, big);
+			QByteArray data = TestOmf::wave(false, false, false, false, big);
 			BentoFile b;
 			QVERIFY(b.load(data));
 			const int usage = b.propertyId("OMFI:MOBJ:UsageCode");
@@ -173,30 +173,30 @@ void TestOmfParser::omf_master_usage_is_role_specific_and_width_checked()
 		}
 }
 
-void TestOmfParser::sdii_omf1_and_omf2_semantics()
+void TestOmfParser::wave_omf1_and_omf2_semantics()
 {
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
 	for (int variant : {0, 1, 2, 3})
 	{
 		const bool omf2 = variant != 0, compact = variant >= 2, big = variant == 3;
-		const QString path = temp.filePath(omf2 ? "sdii-2.omf" : "sdii-1.omf");
+		const QString path = temp.filePath(omf2 ? "wave-2.omf" : "wave-1.omf");
 		QFile f(path);
 		QVERIFY(f.open(QIODevice::WriteOnly));
-		f.write(TestOmf::sdii(omf2, false, false, compact, big));
+		f.write(TestOmf::wave(omf2, false, false, compact, big));
 		f.close();
 		const OmfMetadata m = OmfParser::parseHeader(path);
 		QCOMPARE(m.revision, omf2 ? OmfObjects::Revision::Omf2 : OmfObjects::Revision::Omf1);
 		QVERIFY(m.essence.valid);
 		QVERIFY(m.essence.isAudio);
-		QCOMPARE(m.essence.codec, QStringLiteral("SDII"));
+		QCOMPARE(m.essence.codec, QStringLiteral("WAVE (OMF)"));
 		QCOMPARE(m.essence.sampleRate, 48000);
 		QCOMPARE(m.essence.channels, 2);
 		QCOMPARE(m.essence.bitDepth, QStringLiteral("24-bit"));
 		QCOMPARE(m.essence.durationFrames, qint64(50));
-		QCOMPARE(m.essence.clipName, QStringLiteral("SDII clip"));
-		QCOMPARE(m.essence.projectName, QStringLiteral("SDII project"));
-		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.sd2"));
+		QCOMPARE(m.essence.clipName, QStringLiteral("WAVE clip"));
+		QCOMPARE(m.essence.projectName, QStringLiteral("WAVE project"));
+		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.wav"));
 		QCOMPARE(m.essence.classificationKnown, !omf2); // no Avid UsageCode in standard OMF2
 		QVERIFY(m.essence.hasMaterialPackage); // known master identity survives unknown UsageCode.
 		QCOMPARE(m.essence.umid, OmfUid::canonicalHex(TestOmf::uid(1)));
@@ -212,7 +212,7 @@ void TestOmfParser::ambiguous_master_is_not_guessed()
 	const QString path = temp.filePath("ambiguous.omf");
 	QFile f(path);
 	QVERIFY(f.open(QIODevice::WriteOnly));
-	f.write(TestOmf::sdii(true, true));
+	f.write(TestOmf::wave(true, true));
 	f.close();
 	const auto m = OmfParser::parseHeader(path);
 	QVERIFY(m.essence.valid);
@@ -226,7 +226,7 @@ void TestOmfParser::unreadable_descriptor_is_not_media()
 	const QString path = temp.filePath("bad.omf");
 	QFile f(path);
 	QVERIFY(f.open(QIODevice::WriteOnly));
-	f.write(TestOmf::sdii(true, false, true));
+	f.write(TestOmf::wave(true, false, true));
 	f.close();
 	QVERIFY(!OmfParser::parseHeader(path).essence.valid);
 }
@@ -236,9 +236,10 @@ void TestOmfParser::multiple_embedded_files_are_not_collapsed()
 	BentoBuilder w;
 	for (quint32 id : {1u, 2u})
 	{
-		const auto mob = w.addObject("MOBJ"), desc = w.addObject("SD2D");
+		const auto mob = w.addObject("MOBJ"), desc = w.addObject("WAVD");
 		w.set(mob, "OMFI:MOBJ:MobID", TestOmf::uid(id));
 		w.setHandle(mob, "OMFI:MOBJ:PhysicalMedia", desc);
+		w.set(desc, "OMFI:WAVD:Summary", TestOmf::waveSummary());
 		w.setRational(desc, "OMFI:MDFL:SampleRate", 48000, 1);
 	}
 	QTemporaryDir temp;
@@ -708,15 +709,14 @@ void TestOmfParser::omf_precompute_category_follows_the_embedded_master()
 			BentoBuilder w;
 			w.setImmediate(1, "OMFI:ObjID", "HEAD");
 			w.setImmediate(1, "OMFI:Version", QByteArray::fromHex("0100"));
-			const quint32 master = w.addObject("MOBJ"), file = w.addObject("MOBJ"), desc = w.addObject("SD2D");
+			const quint32 master = w.addObject("MOBJ"), file = w.addObject("MOBJ"), desc = w.addObject("WAVD");
 			w.set(master, "OMFI:MOBJ:MobID", TestOmf::uid(1));
 			w.set(file, "OMFI:MOBJ:MobID", TestOmf::uid(2));
 			w.setU32(master, "OMFI:MOBJ:UsageCode", 1);
 			w.setU32(file, "OMFI:MOBJ:UsageCode", 0); // physical code does not choose the subtype.
 			w.setString(master, "OMFI:CPNT:Name", "Use this shot for ending");
 			w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", desc);
-			w.setU16(desc, "OMFI:SD2D:BitsPerSample", 24);
-			w.setU16(desc, "OMFI:SD2D:NumChannels", 1);
+			w.set(desc, "OMFI:WAVD:Summary", TestOmf::waveSummary());
 			w.setRational(desc, "OMFI:MDFL:SampleRate", 48000, 1);
 			w.setU32(desc, "OMFI:MDFL:Length", 48000);
 			QVector<quint32> tracks;

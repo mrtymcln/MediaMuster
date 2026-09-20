@@ -1,0 +1,315 @@
+
+/tmp/mediamuster-format-audit-2026-09-20/binary/libameLibrary.arm64.dylib:	file format mach-o arm64
+
+Disassembly of section __TEXT,__text:
+
+00000000004386ac <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)>:
+  4386ac: a9bc5ff8     	stp	x24, x23, [sp, #-0x40]!
+  4386b0: a90157f6     	stp	x22, x21, [sp, #0x10]
+  4386b4: a9024ff4     	stp	x20, x19, [sp, #0x20]
+  4386b8: a9037bfd     	stp	x29, x30, [sp, #0x30]
+  4386bc: 9100c3fd     	add	x29, sp, #0x30
+  4386c0: d122c3ff     	sub	sp, sp, #0x8b0
+  4386c4: aa0103f4     	mov	x20, x1
+  4386c8: aa0003f3     	mov	x19, x0
+  4386cc: 90006ec8     	adrp	x8, 0x1210000 <_write+0x1210000>
+  4386d0: f946e108     	ldr	x8, [x8, #0xdc0]
+  4386d4: f9400108     	ldr	x8, [x8]
+  4386d8: f81c83a8     	stur	x8, [x29, #-0x38]
+  4386dc: b5000160     	cbnz	x0, 0x438708 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x5c>
+  4386e0: d0005e80     	adrp	x0, 0x100a000 <_write+0x100a000>
+  4386e4: 910cdc00     	add	x0, x0, #0x337
+  4386e8: d0005e81     	adrp	x1, 0x100a000 <_write+0x100a000>
+  4386ec: 91074021     	add	x1, x1, #0x1d0
+  4386f0: 52834582     	mov	w2, #0x1a2c             ; =6700
+  4386f4: 94295ab6     	bl	0xe8f1cc <_write+0xe8f1cc>
+  4386f8: 34000080     	cbz	w0, 0x438708 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x5c>
+  4386fc: 90005ba0     	adrp	x0, 0xfac000 <GCC_except_table3+0x4>
+  438700: 91328400     	add	x0, x0, #0xca1
+  438704: 94295734     	bl	0xe8e3d4 <_write+0xe8e3d4>
+  438708: 91029be0     	add	x0, sp, #0xa6
+  43870c: 52810041     	mov	w1, #0x802              ; =2050
+  438710: 9429728e     	bl	0xe95148 <_write+0xe95148>
+  438714: 910183e0     	add	x0, sp, #0x60
+  438718: 9429681e     	bl	0xe92790 <_write+0xe92790>
+  43871c: f9400268     	ldr	x8, [x19]
+  438720: f940e908     	ldr	x8, [x8, #0x1d0]
+  438724: aa1303e0     	mov	x0, x19
+  438728: d63f0100     	blr	x8
+  43872c: aa0003f5     	mov	x21, x0
+  438730: aa0103f6     	mov	x22, x1
+  438734: d2800017     	mov	x23, #0x0               ; =0
+  438738: 92401c21     	and	x1, x1, #0xff
+  43873c: 94295af8     	bl	0xe8f31c <_write+0xe8f31c>
+  438740: 340000c0     	cbz	w0, 0x438758 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0xac>
+  438744: d2800017     	mov	x23, #0x0               ; =0
+  438748: 92401ec1     	and	x1, x22, #0xff
+  43874c: aa1503e0     	mov	x0, x21
+  438750: 942958fb     	bl	0xe8eb3c <_write+0xe8eb3c>
+  438754: 340002a0     	cbz	w0, 0x4387a8 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0xfc>
+  438758: d2800017     	mov	x23, #0x0               ; =0
+  43875c: b00087c0     	adrp	x0, 0x1531000 <kEuConSystemTable___TempLogicJoystickTable+0x8>
+  438760: 9115c000     	add	x0, x0, #0x570
+  438764: 97ff9c9f     	bl	0x41f9e0 <CheckedCBPointer<ADirLocator* (mcFolder_t, ADirLocator*)>::operator*() const>
+  438768: aa0003f5     	mov	x21, x0
+  43876c: d2800017     	mov	x23, #0x0               ; =0
+  438770: 94295e45     	bl	0xe90084 <_write+0xe90084>
+  438774: aa0003e1     	mov	x1, x0
+  438778: d2800017     	mov	x23, #0x0               ; =0
+  43877c: 528001c0     	mov	w0, #0xe                ; =14
+  438780: d63f02a0     	blr	x21
+  438784: aa0003f6     	mov	x22, x0
+  438788: f9400268     	ldr	x8, [x19]
+  43878c: f9416508     	ldr	x8, [x8, #0x2c8]
+  438790: aa0003f7     	mov	x23, x0
+  438794: aa1303e0     	mov	x0, x19
+  438798: aa1603e1     	mov	x1, x22
+  43879c: d63f0100     	blr	x8
+  4387a0: aa0003f5     	mov	x21, x0
+  4387a4: 14000003     	b	0x4387b0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x104>
+  4387a8: 52800015     	mov	w21, #0x0               ; =0
+  4387ac: d2800016     	mov	x22, #0x0               ; =0
+  4387b0: 910083e0     	add	x0, sp, #0x20
+  4387b4: 910183e1     	add	x1, sp, #0x60
+  4387b8: 942963ee     	bl	0xe91770 <_write+0xe91770>
+  4387bc: b40000b6     	cbz	x22, 0x4387d0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x124>
+  4387c0: f94002c8     	ldr	x8, [x22]
+  4387c4: f9400108     	ldr	x8, [x8]
+  4387c8: aa1603e0     	mov	x0, x22
+  4387cc: d63f0100     	blr	x8
+  4387d0: f9403be8     	ldr	x8, [sp, #0x70]
+  4387d4: b4000068     	cbz	x8, 0x4387e0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x134>
+  4387d8: 910183e0     	add	x0, sp, #0x60
+  4387dc: 94295881     	bl	0xe8e9e0 <_write+0xe8e9e0>
+  4387e0: 910083e0     	add	x0, sp, #0x20
+  4387e4: 942963e6     	bl	0xe9177c <_write+0xe9177c>
+  4387e8: 910183e0     	add	x0, sp, #0x60
+  4387ec: 942967ec     	bl	0xe9279c <_write+0xe9279c>
+  4387f0: 52800068     	mov	w8, #0x3                ; =3
+  4387f4: 710002bf     	cmp	w21, #0x0
+  4387f8: 1a8812a0     	csel	w0, w21, w8, ne
+  4387fc: 350007b5     	cbnz	w21, 0x4388f0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x244>
+  438800: 37000794     	tbnz	w20, #0x0, 0x4388f0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x244>
+  438804: f9400268     	ldr	x8, [x19]
+  438808: f940d108     	ldr	x8, [x8, #0x1a0]
+  43880c: 91029be1     	add	x1, sp, #0xa6
+  438810: aa1303e0     	mov	x0, x19
+  438814: 52808022     	mov	w2, #0x401              ; =1025
+  438818: d2800003     	mov	x3, #0x0                ; =0
+  43881c: d63f0100     	blr	x8
+  438820: 52800013     	mov	w19, #0x0               ; =0
+  438824: 71004a7f     	cmp	w19, #0x12
+  438828: 54000620     	b.eq	0x4388ec <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x240>
+  43882c: aa1303e0     	mov	x0, x19
+  438830: 97ffea56     	bl	0x433188 <GetSupportedMediaDirInfo(int)>
+  438834: aa0003f4     	mov	x20, x0
+  438838: 910183e0     	add	x0, sp, #0x60
+  43883c: 91029be1     	add	x1, sp, #0xa6
+  438840: 94295ed4     	bl	0xe90390 <_write+0xe90390>
+  438844: 910183e0     	add	x0, sp, #0x60
+  438848: 94295eae     	bl	0xe90300 <_write+0xe90300>
+  43884c: aa0003f5     	mov	x21, x0
+  438850: f9400281     	ldr	x1, [x20]
+  438854: 910083e0     	add	x0, sp, #0x20
+  438858: 94295ece     	bl	0xe90390 <_write+0xe90390>
+  43885c: 910083e0     	add	x0, sp, #0x20
+  438860: 94295ea8     	bl	0xe90300 <_write+0xe90300>
+  438864: 79401008     	ldrh	w8, [x0, #0x8]
+  438868: 13003d09     	sxth	w9, w8
+  43886c: 53057d0a     	lsr	w10, w8, #5
+  438870: b9400c0b     	ldr	w11, [x0, #0xc]
+  438874: 7100013f     	cmp	w9, #0x0
+  438878: 1a8ab163     	csel	w3, w11, w10, lt
+  43887c: 12800016     	mov	w22, #-0x1              ; =-1
+  438880: 37000248     	tbnz	w8, #0x0, 0x4388c8 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x21c>
+  438884: 7100047f     	cmp	w3, #0x1
+  438888: 5400020b     	b.lt	0x4388c8 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x21c>
+  43888c: 794012a9     	ldrh	w9, [x21, #0x8]
+  438890: 13003d2a     	sxth	w10, w9
+  438894: b9400eab     	ldr	w11, [x21, #0xc]
+  438898: 53057d29     	lsr	w9, w9, #5
+  43889c: 7100015f     	cmp	w10, #0x0
+  4388a0: 1a89b165     	csel	w5, w11, w9, lt
+  4388a4: 91002809     	add	x9, x0, #0xa
+  4388a8: f9400c0a     	ldr	x10, [x0, #0x18]
+  4388ac: 721f011f     	tst	w8, #0x2
+  4388b0: 9a890141     	csel	x1, x10, x9, eq
+  4388b4: aa1503e0     	mov	x0, x21
+  4388b8: 52800002     	mov	w2, #0x0                ; =0
+  4388bc: 52800004     	mov	w4, #0x0                ; =0
+  4388c0: 94296c55     	bl	0xe93a14 <_write+0xe93a14>
+  4388c4: aa0003f6     	mov	x22, x0
+  4388c8: 910083e0     	add	x0, sp, #0x20
+  4388cc: 94295ec9     	bl	0xe903f0 <_write+0xe903f0>
+  4388d0: 910183e0     	add	x0, sp, #0x60
+  4388d4: 94295ec7     	bl	0xe903f0 <_write+0xe903f0>
+  4388d8: 11000673     	add	w19, w19, #0x1
+  4388dc: 310006df     	cmn	w22, #0x1
+  4388e0: 54fffa20     	b.eq	0x438824 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x178>
+  4388e4: b9400a80     	ldr	w0, [x20, #0x8]
+  4388e8: 14000002     	b	0x4388f0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x244>
+  4388ec: 52800000     	mov	w0, #0x0                ; =0
+  4388f0: f85c83a8     	ldur	x8, [x29, #-0x38]
+  4388f4: 90006ec9     	adrp	x9, 0x1210000 <_write+0x1210000>
+  4388f8: f946e129     	ldr	x9, [x9, #0xdc0]
+  4388fc: f9400129     	ldr	x9, [x9]
+  438900: eb08013f     	cmp	x9, x8
+  438904: 540000e1     	b.ne	0x438920 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x274>
+  438908: 9122c3ff     	add	sp, sp, #0x8b0
+  43890c: a9437bfd     	ldp	x29, x30, [sp, #0x30]
+  438910: a9424ff4     	ldp	x20, x19, [sp, #0x20]
+  438914: a94157f6     	ldp	x22, x21, [sp, #0x10]
+  438918: a8c45ff8     	ldp	x24, x23, [sp], #0x40
+  43891c: d65f03c0     	ret
+  438920: 942971ec     	bl	0xe950d0 <_write+0xe950d0>
+  438924: aa0003f5     	mov	x21, x0
+  438928: 14000009     	b	0x43894c <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x2a0>
+  43892c: aa0003f5     	mov	x21, x0
+  438930: 34001241     	cbz	w1, 0x438b78 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4cc>
+  438934: aa0103f6     	mov	x22, x1
+  438938: d2800017     	mov	x23, #0x0               ; =0
+  43893c: 1400000a     	b	0x438964 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x2b8>
+  438940: aa0003f5     	mov	x21, x0
+  438944: 910083e0     	add	x0, sp, #0x20
+  438948: 9429638d     	bl	0xe9177c <_write+0xe9177c>
+  43894c: 910183e0     	add	x0, sp, #0x60
+  438950: 94296793     	bl	0xe9279c <_write+0xe9279c>
+  438954: 14000089     	b	0x438b78 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4cc>
+  438958: aa0103f6     	mov	x22, x1
+  43895c: aa0003f5     	mov	x21, x0
+  438960: 340010d6     	cbz	w22, 0x438b78 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4cc>
+  438964: aa1503e0     	mov	x0, x21
+  438968: 71000edf     	cmp	w22, #0x3
+  43896c: 540002a1     	b.ne	0x4389c0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x314>
+  438970: 942971a8     	bl	0xe95010 <_write+0xe95010>
+  438974: aa0003f5     	mov	x21, x0
+  438978: 910183e8     	add	x8, sp, #0x60
+  43897c: 91002100     	add	x0, x8, #0x8
+  438980: 910022a1     	add	x1, x21, #0x8
+  438984: 97efcdf2     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  438988: 3dc006a0     	ldr	q0, [x21, #0x10]
+  43898c: b94022a8     	ldr	w8, [x21, #0x20]
+  438990: b90083e8     	str	w8, [sp, #0x80]
+  438994: 3d801fe0     	str	q0, [sp, #0x70]
+  438998: f94002a8     	ldr	x8, [x21]
+  43899c: f9400908     	ldr	x8, [x8, #0x10]
+  4389a0: aa1503e0     	mov	x0, x21
+  4389a4: d63f0100     	blr	x8
+  4389a8: d0005e81     	adrp	x1, 0x100a000 <_write+0x100a000>
+  4389ac: 91074021     	add	x1, x1, #0x1d0
+  4389b0: 52834942     	mov	w2, #0x1a4a             ; =6730
+  4389b4: 94295bb6     	bl	0xe8f88c <_write+0xe8f88c>
+  4389b8: 9429719c     	bl	0xe95028 <_write+0xe95028>
+  4389bc: 14000048     	b	0x438adc <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x430>
+  4389c0: 94297194     	bl	0xe95010 <_write+0xe95010>
+  4389c4: 71000adf     	cmp	w22, #0x2
+  4389c8: 54000521     	b.ne	0x438a6c <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x3c0>
+  4389cc: aa0003f5     	mov	x21, x0
+  4389d0: f9400008     	ldr	x8, [x0]
+  4389d4: f9400908     	ldr	x8, [x8, #0x10]
+  4389d8: d63f0100     	blr	x8
+  4389dc: a900ffe0     	stp	x0, xzr, [sp, #0x8]
+  4389e0: f0005ba8     	adrp	x8, 0xfaf000 <_write+0xfaf000>
+  4389e4: 91053d08     	add	x8, x8, #0x14f
+  4389e8: f90003e8     	str	x8, [sp]
+  4389ec: f0005ba1     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  4389f0: 91050021     	add	x1, x1, #0x140
+  4389f4: 910083f6     	add	x22, sp, #0x20
+  4389f8: 910083e0     	add	x0, sp, #0x20
+  4389fc: 94296762     	bl	0xe92784 <_write+0xe92784>
+  438a00: 910183e8     	add	x8, sp, #0x60
+  438a04: 91002100     	add	x0, x8, #0x8
+  438a08: 910022c1     	add	x1, x22, #0x8
+  438a0c: 97efcdd0     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  438a10: 3dc00fe0     	ldr	q0, [sp, #0x30]
+  438a14: 3d801fe0     	str	q0, [sp, #0x70]
+  438a18: b94043e8     	ldr	w8, [sp, #0x40]
+  438a1c: b90083e8     	str	w8, [sp, #0x80]
+  438a20: 910083e0     	add	x0, sp, #0x20
+  438a24: 9429675e     	bl	0xe9279c <_write+0xe9279c>
+  438a28: f94002a8     	ldr	x8, [x21]
+  438a2c: f9400908     	ldr	x8, [x8, #0x10]
+  438a30: aa1503e0     	mov	x0, x21
+  438a34: d63f0100     	blr	x8
+  438a38: d0005e81     	adrp	x1, 0x100a000 <_write+0x100a000>
+  438a3c: 91074021     	add	x1, x1, #0x1d0
+  438a40: 52834942     	mov	w2, #0x1a4a             ; =6730
+  438a44: 94295bd7     	bl	0xe8f9a0 <_write+0xe8f9a0>
+  438a48: d0006ea8     	adrp	x8, 0x120e000 <_write+0x120e000>
+  438a4c: f9468108     	ldr	x8, [x8, #0xd00]
+  438a50: f9400108     	ldr	x8, [x8]
+  438a54: b4000088     	cbz	x8, 0x438a64 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x3b8>
+  438a58: 90005bc0     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  438a5c: 91020c00     	add	x0, x0, #0x83
+  438a60: d63f0100     	blr	x8
+  438a64: 94297171     	bl	0xe95028 <_write+0xe95028>
+  438a68: 1400001d     	b	0x438adc <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x430>
+  438a6c: f90003ff     	str	xzr, [sp]
+  438a70: f0005ba1     	adrp	x1, 0xfaf000 <_write+0xfaf000>
+  438a74: 91035021     	add	x1, x1, #0xd4
+  438a78: 910083f5     	add	x21, sp, #0x20
+  438a7c: 910083e0     	add	x0, sp, #0x20
+  438a80: 94296741     	bl	0xe92784 <_write+0xe92784>
+  438a84: 910183e8     	add	x8, sp, #0x60
+  438a88: 91002100     	add	x0, x8, #0x8
+  438a8c: 910022a1     	add	x1, x21, #0x8
+  438a90: 97efcdaf     	bl	0x2c14c <RefCountPtr<ErrorStackObj, SplittablePolicy>::operator=(RefCountPtr<ErrorStackObj, SplittablePolicy> const&)>
+  438a94: 3dc00fe0     	ldr	q0, [sp, #0x30]
+  438a98: 3d801fe0     	str	q0, [sp, #0x70]
+  438a9c: b94043e8     	ldr	w8, [sp, #0x40]
+  438aa0: b90083e8     	str	w8, [sp, #0x80]
+  438aa4: 910083e0     	add	x0, sp, #0x20
+  438aa8: 9429673d     	bl	0xe9279c <_write+0xe9279c>
+  438aac: d0005e80     	adrp	x0, 0x100a000 <_write+0x100a000>
+  438ab0: 91074000     	add	x0, x0, #0x1d0
+  438ab4: 52834941     	mov	w1, #0x1a4a             ; =6730
+  438ab8: 94295bd8     	bl	0xe8fa18 <_write+0xe8fa18>
+  438abc: d0006ea8     	adrp	x8, 0x120e000 <_write+0x120e000>
+  438ac0: f9468108     	ldr	x8, [x8, #0xd00]
+  438ac4: f9400108     	ldr	x8, [x8]
+  438ac8: b4000088     	cbz	x8, 0x438ad8 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x42c>
+  438acc: 90005bc0     	adrp	x0, 0xfb0000 <_write+0xfb0000>
+  438ad0: 91020c00     	add	x0, x0, #0x83
+  438ad4: d63f0100     	blr	x8
+  438ad8: 94297154     	bl	0xe95028 <_write+0xe95028>
+  438adc: 52800015     	mov	w21, #0x0               ; =0
+  438ae0: aa1703f6     	mov	x22, x23
+  438ae4: 17ffff33     	b	0x4387b0 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x104>
+  438ae8: 17ffff8f     	b	0x438924 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x278>
+  438aec: aa0003f5     	mov	x21, x0
+  438af0: 910083e0     	add	x0, sp, #0x20
+  438af4: 9429672a     	bl	0xe9279c <_write+0xe9279c>
+  438af8: 14000009     	b	0x438b1c <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x470>
+  438afc: 14000007     	b	0x438b18 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x46c>
+  438b00: 17ffff89     	b	0x438924 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x278>
+  438b04: aa0003f5     	mov	x21, x0
+  438b08: 910083e0     	add	x0, sp, #0x20
+  438b0c: 94296724     	bl	0xe9279c <_write+0xe9279c>
+  438b10: 14000006     	b	0x438b28 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x47c>
+  438b14: 14000004     	b	0x438b24 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x478>
+  438b18: aa0003f5     	mov	x21, x0
+  438b1c: 94297143     	bl	0xe95028 <_write+0xe95028>
+  438b20: 17ffff8b     	b	0x43894c <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x2a0>
+  438b24: aa0003f5     	mov	x21, x0
+  438b28: 94297140     	bl	0xe95028 <_write+0xe95028>
+  438b2c: 17ffff88     	b	0x43894c <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x2a0>
+  438b30: 17ffff7d     	b	0x438924 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x278>
+  438b34: aa0003f5     	mov	x21, x0
+  438b38: 9429713c     	bl	0xe95028 <_write+0xe95028>
+  438b3c: 17ffff84     	b	0x43894c <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x2a0>
+  438b40: aa0003f5     	mov	x21, x0
+  438b44: 340001a1     	cbz	w1, 0x438b78 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4cc>
+  438b48: aa1503e0     	mov	x0, x21
+  438b4c: 97ef22f7     	bl	0x1728 <___clang_call_terminate>
+  438b50: 14000001     	b	0x438b54 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4a8>
+  438b54: aa0003f5     	mov	x21, x0
+  438b58: 14000004     	b	0x438b68 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4bc>
+  438b5c: aa0003f5     	mov	x21, x0
+  438b60: 910083e0     	add	x0, sp, #0x20
+  438b64: 94295e23     	bl	0xe903f0 <_write+0xe903f0>
+  438b68: 910183e0     	add	x0, sp, #0x60
+  438b6c: 94295e21     	bl	0xe903f0 <_write+0xe903f0>
+  438b70: 14000002     	b	0x438b78 <AMediaStreamMgr::GetMediaDirectoryDomainType(ADirLocator*, bool)+0x4cc>
+  438b74: aa0003f5     	mov	x21, x0
+  438b78: aa1503e0     	mov	x0, x21
+  438b7c: 94295679     	bl	0xe8e560 <_write+0xe8e560>

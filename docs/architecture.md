@@ -38,8 +38,14 @@ Undo reverses completed effects and has its own recovery record. See the
 
 ## Scanning and metadata
 
-`VolumeManager` owns detected `VolumeInfo` values. `MediaScanner` discovers media,
-joins database evidence and reads headers. Format-specific readers are separate:
+`VolumeManager` owns detected `VolumeInfo` values. `AvidMediaLayout` defines the
+folder and filename rules shared by the scanner and Rebalance. `MediaScanner`
+applies them to detected volumes and manually added locations, joins PMR/MDB
+records first, and reads media headers when those records are missing, stale or
+incomplete. Correctly structured Avid copies may be added anywhere; loose files
+and unrelated database folders do not qualify. See the
+[current media scope](release-feature-gates.md#managed-media-locations).
+Format-specific readers are separate:
 
 - `MxfParser` reads MXF headers.
 - `PmrParser` reads the filename/MOB index.
@@ -61,7 +67,10 @@ row presentation rules as the table.
 ## Rebalance
 
 `RebalancePlanner` reads folder state and computes redistribution/request values.
-Its folder parsing and planning can be used without constructing a worker.
+It reuses `AvidMediaLayout` for the common MXF rules and adds its own stricter
+source, destination and mutation checks. Its parsing and planning can be used
+without constructing a worker. OMF and quarantine inventory do not enter a
+Rebalance plan.
 `Rebalancer` owns asynchronous request preparation and adapts engine signals for
 `RebalanceDialog`; `OpRunner` performs the mutations. Keep relative groups scoped by
 media root, workstation prefix and valid master MOB identity.

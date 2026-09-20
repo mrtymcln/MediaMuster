@@ -10,15 +10,15 @@
 // the file's MOBJ objects are found through the property dictionary just
 // as in an MDB. Three mobs per file, plus one media-data object:
 //
-//   media-data   (class JPEG / WAVE / AIFC / SD2M; owns the essence value)
-//     OMFI:MDAT:MobID | WAVE:MobID | AIFC:MobID | SD2M:MobID  — the FILE
+//   media-data   (class JPEG / WAVE / AIFC; owns the essence value)
+//     OMFI:MDAT:MobID | WAVE:MobID | AIFC:MobID  — the FILE
 //     mob's 12-byte omfi:UID, which is how the file mob is told apart from
 //     its relatives without trusting usage codes.
 //   master mob   (no PhysicalMedia; UsageCode 7, or 1 for a precompute)
 //     OMFI:CPNT:Name = the clip name; _ORG_BIN → bin; _IMPORTSETTING /
 //     _SRCFILE → the imported file's path (WINL on the 2021 slates).
 //   file mob     (PhysicalMedia → a media descriptor: JPED/CDCI/MPGI video,
-//                 WAVD/AIFD/SD2D audio) — OmfObjects::readDescriptor;
+//                 WAVD/AIFD audio) — OmfObjects::readDescriptor;
 //     _MEDIAFILE → the file's own locator; _PJ here in MC 2026's files.
 //   source mob   (PhysicalMedia → MDES; 12-byte in the 2021 slates, a
 //                 32-byte UMID "physical mob" in MC 2026's) — reached by
@@ -65,7 +65,7 @@ namespace
 	QByteArray mediaDataMobId(const BentoFile &b, const OmfObjects::Props &p, bool &ambiguous)
 	{
 		QSet<QByteArray> ids;
-		for (int prop : {p.mdatMobId, p.waveMobId, p.aifcMobId, p.sd2mMobId, p.sd2dMobId})
+		for (int prop : {p.mdatMobId, p.waveMobId, p.aifcMobId})
 		{
 			if (prop < 0)
 				continue;
@@ -203,6 +203,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	}
 
 	MediaMetadata &e = out.essence;
+	out.hasMediaDescriptor = true;
 	OmfObjects::readDescriptor(b, p, fileMob->mediaObj, fileMob->mediaDesc, objectByMob, e);
 	e.fileMobId = out.fileMobId;
 

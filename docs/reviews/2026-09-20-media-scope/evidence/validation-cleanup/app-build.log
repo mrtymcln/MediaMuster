@@ -1,0 +1,54 @@
+[1/53] Copying OS X Content MediaMuster.app/Contents/Resources/mediamuster-mac.icns
+[2/53] Automatic MOC for target MediaMuster
+[3/53] Automatic RCC for src/resources.qrc
+[4/53] Building CXX object CMakeFiles/MediaMuster.dir/src/main.cpp.o
+[5/53] Building CXX object CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o
+[6/53] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o
+[7/53] Building CXX object CMakeFiles/MediaMuster.dir/src/unfinishedbusinessdialog.cpp.o
+[8/53] Building CXX object CMakeFiles/MediaMuster.dir/src/aboutdialog.cpp.o
+[9/53] Building CXX object CMakeFiles/MediaMuster.dir/src/icons.cpp.o
+[10/53] Building CXX object CMakeFiles/MediaMuster.dir/src/logcategories.cpp.o
+[11/53] Building CXX object CMakeFiles/MediaMuster.dir/src/logfile.cpp.o
+[12/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[13/53] Building CXX object CMakeFiles/MediaMuster.dir/src/macaccessibilityguard.cpp.o
+[14/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o
+[15/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o
+[16/53] Building CXX object CMakeFiles/MediaMuster.dir/src/binmetadataresolver.cpp.o
+[17/53] Building CXX object CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o
+[18/53] Building CXX object CMakeFiles/MediaMuster.dir/src/volumelistwidget.cpp.o
+[19/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediametadata.cpp.o
+[20/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mxfparser.cpp.o
+[21/53] Building CXX object CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o
+[22/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o
+[23/53] Building CXX object CMakeFiles/MediaMuster.dir/src/pmrparser.cpp.o
+[24/53] Building CXX object CMakeFiles/MediaMuster.dir/src/omfparser.cpp.o
+[25/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mdbparser.cpp.o
+[26/53] Building CXX object CMakeFiles/MediaMuster.dir/src/omfobjects.cpp.o
+[27/53] Building CXX object CMakeFiles/MediaMuster.dir/src/omfresolutions.cpp.o
+[28/53] Building CXX object CMakeFiles/MediaMuster.dir/src/avideffects.cpp.o
+[29/53] Building CXX object CMakeFiles/MediaMuster.dir/src/bentofile.cpp.o
+[30/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o
+[31/53] Building CXX object CMakeFiles/MediaMuster.dir/src/volumeidentity.cpp.o
+[32/53] Building CXX object CMakeFiles/MediaMuster.dir/src/nativefile.cpp.o
+[33/53] Building CXX object CMakeFiles/MediaMuster.dir/src/opfile.cpp.o
+[34/53] Building CXX object CMakeFiles/MediaMuster.dir/src/optrash.cpp.o
+[35/53] Building CXX object CMakeFiles/MediaMuster.dir/src/opcopier.cpp.o
+[36/53] Building CXX object CMakeFiles/MediaMuster.dir/src/opjournal.cpp.o
+[37/53] Building CXX object CMakeFiles/MediaMuster.dir/src/operationplan.cpp.o
+[38/53] Building CXX object CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o
+[39/53] Building CXX object CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o
+[40/53] Building CXX object CMakeFiles/MediaMuster.dir/src/operationrecovery.cpp.o
+[41/53] Building CXX object CMakeFiles/MediaMuster.dir/src/avbparser.cpp.o
+[42/53] Building CXX object CMakeFiles/MediaMuster.dir/src/progressdialog.cpp.o
+[43/53] Building CXX object CMakeFiles/MediaMuster.dir/src/effectfilterdialog.cpp.o
+[44/53] Building CXX object CMakeFiles/MediaMuster.dir/src/binfilterdialog.cpp.o
+[45/53] Building CXX object CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o
+[46/53] Building CXX object CMakeFiles/MediaMuster.dir/src/crashcollector.cpp.o
+[47/53] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o
+[48/53] Building C object CMakeFiles/MediaMuster.dir/src/third_party/xxhash.c.o
+[49/53] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o
+[50/53] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/UVLADIE3JM/qrc_resources.cpp.o
+[51/53] Building OBJCXX object CMakeFiles/MediaMuster.dir/src/optrash_mac.mm.o
+[52/53] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o
+[53/53] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: replacing existing signature
