@@ -1111,6 +1111,151 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 
 // MARK: - Header pass (pass 2)
 
+namespace
+{
+	// A reused filename must not inherit metadata from the old media. Keep
+	// filesystem facts and the folder's PMR membership untouched.
+	void clearReplacedMetadata(MediaFile &mf)
+	{
+		mf.project.clear();
+		mf.mobId.clear();
+		mf.masterMobId.clear();
+		mf.clipName.clear();
+		mf.clipNameSource = MediaFile::ClipNameSource::None;
+		mf.originalBin.clear();
+		mf.sourceFilePath.clear();
+		mf.sourceFileName.clear();
+		mf.sourceContainer.clear();
+		mf.isImported = false;
+		mf.codec.clear();
+		mf.codecHex.clear();
+		mf.resolution.clear();
+		mf.fps.clear();
+		mf.bitDepth.clear();
+		mf.sampleRate = 0;
+		mf.channels = 0;
+		mf.durationFrames = 0;
+		mf.timecodeBase = 0;
+		mf.dropFrame = false;
+		mf.kind = MediaFile::Kind::Unknown;
+		mf.type = MediaFile::Type::Unknown;
+		mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
+		mf.databaseMetadataCurrent = false;
+	}
+
+	const MdbMasterMob *findHeaderMaster(const QString &id, bool readingOmf,
+										 const QHash<QString, MdbMasterMob> *masters)
+	{
+		if (!masters)
+			return nullptr;
+		auto record = masters->constFind(id);
+		// MXF permits the PMR byte-order alias. OMF IDs already have the
+		// database representation; swapping them would identify different media.
+		if (record == masters->constEnd() && !readingOmf)
+		{
+			const QString swapped = MobId::toPmrForm(id);
+			if (!swapped.isEmpty())
+				record = masters->constFind(swapped);
+		}
+		return record == masters->constEnd() ? nullptr : &record.value();
+	}
+
+	struct HeaderReadResult
+	{
+		qint64 bytesRead = 0;
+		bool recovered = false;
+	};
+
+	// Owns only this row. Scheduling, cancellation and progress stay with
+	// MediaScanner; the database records remain read-only throughout pass 2.
+	HeaderReadResult readMediaHeader(MediaFile &mf, AvidMediaLayout::Family family,
+									 const QHash<QString, MdbMasterMob> *masters)
+	{
+		const bool readingOmf = family == AvidMediaLayout::Family::Omf;
+		const auto databaseCategory = mf.precomputeCategory;
+		HeaderReadResult out;
+		MediaMetadata metadata;
+		QString headerBin;
+		bool omfIdentityKnown = false;
+		if (readingOmf)
+		{
+			// OMF1/OMF2 return the same essence fields, with the master
+			// bin and file identity obtained from their object graph.
+			const OmfMetadata omf = OmfParser::parseHeader(mf.filePath, &out.bytesRead);
+			omfIdentityKnown = omf.hasMediaDescriptor;
+			metadata = omf.essence;
+			headerBin = omf.bin;
+			metadata.fileMobId = omf.fileMobId;
+		}
+		else
+		{
+			metadata = MxfParser::parseHeader(mf.filePath, &out.bytesRead);
+		}
+		const bool headerUsable = metadata.valid || metadata.classificationKnown;
+		const auto canonicalHeaderId = [&](const QString &id)
+		{
+			if (readingOmf || id.isEmpty())
+				return id;
+			const QString canonical = MobId::toPmrForm(id);
+			return canonical.isEmpty() ? id : canonical;
+		};
+		// A selected OMF file mob can prove identity even when its
+		// descriptor lacks usable technical fields. A different old
+		// file's database details must still be invalidated in that case.
+		const QString headerFileId = headerUsable || omfIdentityKnown ? canonicalHeaderId(metadata.fileMobId) : QString{};
+		const bool headerMasterKnown = readingOmf || metadata.hasMaterialPackage;
+		const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(metadata.umid) : QString{};
+		const auto contradicts = [](const QString &oldId, const QString &actualId)
+		{
+			return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
+		};
+		if (contradicts(mf.mobId, headerFileId) || contradicts(mf.masterMobId, headerMasterId))
+		{
+			// The name was reused for different media. None of the old
+			// clip's editorial/technical fields belongs to the replacement.
+			clearReplacedMetadata(mf);
+		}
+		assignIfMissing(mf.mobId, headerFileId);
+		if (headerUsable)
+		{
+			assignIfMissing(mf.masterMobId, headerMasterId);
+			assignIfMissing(mf.originalBin, headerBin);
+		}
+		applyMetadata(mf, metadata);
+		// Current sources for the same identity must agree. Do not let the
+		// later MDB name/bin re-join restore a disputed category. A stale
+		// database (or one for replaced media) has no say in this decision.
+		if (mf.databaseMetadataCurrent && metadata.classificationKnown && metadata.isPrecompute &&
+			databaseCategory != MediaFile::PrecomputeCategory::Unknown &&
+			metadata.precomputeCategory != MediaFile::PrecomputeCategory::Unknown &&
+			databaseCategory != metadata.precomputeCategory)
+			mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
+
+		// Fill a project still missing after the PMR/MDB pass from usable
+		// media metadata; preserve an existing database value.
+		if (headerUsable && mf.project.isEmpty())
+			mf.project = metadata.projectName;
+
+		// Recover names by the header's master identity without changing the
+		// row's PMR membership status.
+		if (headerUsable && headerMasterKnown && !metadata.umid.isEmpty() && !MobId::isAllZero(metadata.umid))
+		{
+			if (const auto *record = findHeaderMaster(metadata.umid, readingOmf, masters))
+			{
+				applyMdbRecord(mf, *record);
+				if (!record->mobIdHex.isEmpty())
+					mf.masterMobId = record->mobIdHex;
+				out.recovered = true;
+			}
+		}
+		// The header's own identity can be the zero one too.
+		mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
+						   (headerUsable && (MobId::isAllZero(metadata.umid) || MobId::isAllZero(metadata.fileMobId)));
+
+		return out;
+	}
+} // namespace
+
 void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 {
 	// Pass 1 records the single header decision used here and in coverage
@@ -1183,143 +1328,23 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 			if (m_job.isCancelled())
 				return;
 			MediaFile &mf = base[row.index];
+			const auto folder = clipsByFolder.constFind(row.folderKey);
+			const auto read = readMediaHeader(mf, row.family,
+											  folder == clipsByFolder.constEnd() ? nullptr : &folder.value());
+			if (read.recovered)
+				++recovered;
 			const bool readingOmf = row.family == AvidMediaLayout::Family::Omf;
-			const auto databaseCategory = mf.precomputeCategory;
-			qint64 bytesRead = 0;
-			MediaMetadata metadata;
-			QString headerBin;
-			bool omfIdentityKnown = false;
-			if (readingOmf)
-			{
-				// OMF1/OMF2 return the same essence fields, with the master
-				// bin and file identity obtained from their object graph.
-				const OmfMetadata omf = OmfParser::parseHeader(mf.filePath, &bytesRead);
-				omfIdentityKnown = omf.hasMediaDescriptor;
-				metadata = omf.essence;
-				headerBin = omf.bin;
-				metadata.fileMobId = omf.fileMobId;
-			}
-			else
-			{
-				metadata = MxfParser::parseHeader(mf.filePath, &bytesRead);
-			}
-			const bool headerUsable = metadata.valid || metadata.classificationKnown;
-			const auto canonicalHeaderId = [&](const QString &id)
-			{
-				if (readingOmf || id.isEmpty())
-					return id;
-				const QString canonical = MobId::toPmrForm(id);
-				return canonical.isEmpty() ? id : canonical;
-			};
-			// A selected OMF file mob can prove identity even when its
-			// descriptor lacks usable technical fields. A different old
-			// file's database details must still be invalidated in that case.
-			const QString headerFileId = headerUsable || omfIdentityKnown ? canonicalHeaderId(metadata.fileMobId) : QString{};
-			const bool headerMasterKnown = readingOmf || metadata.hasMaterialPackage;
-			const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(metadata.umid) : QString{};
-			const auto contradicts = [](const QString &oldId, const QString &actualId)
-			{
-				return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
-			};
-			if (contradicts(mf.mobId, headerFileId) || contradicts(mf.masterMobId, headerMasterId))
-			{
-				// The name was reused for different media. None of the old
-				// clip's editorial/technical fields belongs to the replacement.
-				mf.project.clear();
-				mf.mobId.clear();
-				mf.masterMobId.clear();
-				mf.clipName.clear();
-				mf.clipNameSource = MediaFile::ClipNameSource::None;
-				mf.originalBin.clear();
-				mf.sourceFilePath.clear();
-				mf.sourceFileName.clear();
-				mf.sourceContainer.clear();
-				mf.isImported = false;
-				mf.codec.clear();
-				mf.codecHex.clear();
-				mf.resolution.clear();
-				mf.fps.clear();
-				mf.bitDepth.clear();
-				mf.sampleRate = 0;
-				mf.channels = 0;
-				mf.durationFrames = 0;
-				mf.timecodeBase = 0;
-				mf.dropFrame = false;
-				mf.kind = MediaFile::Kind::Unknown;
-				mf.type = MediaFile::Type::Unknown;
-				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
-				mf.databaseMetadataCurrent = false;
-			}
-			assignIfMissing(mf.mobId, headerFileId);
-			if (headerUsable)
-			{
-				assignIfMissing(mf.masterMobId, headerMasterId);
-				assignIfMissing(mf.originalBin, headerBin);
-			}
-			applyMetadata(mf, metadata);
-			// Current sources for the same identity must agree. Do not let the
-			// later MDB name/bin re-join restore a disputed category. A stale
-			// database (or one for replaced media) has no say in this decision.
-			if (mf.databaseMetadataCurrent && metadata.classificationKnown && metadata.isPrecompute &&
-				databaseCategory != MediaFile::PrecomputeCategory::Unknown &&
-				metadata.precomputeCategory != MediaFile::PrecomputeCategory::Unknown &&
-				databaseCategory != metadata.precomputeCategory)
-				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
-
-			// Fill a project still missing after the PMR/MDB pass from usable
-			// media metadata; preserve an existing database value.
-			if (headerUsable && mf.project.isEmpty())
-				mf.project = metadata.projectName;
-
-			// Re-join by the header's own UMID (its MaterialPackage UID = the
-			// master MOB in MXF byte order): a file the PMR doesn't name but
-			// the MDB still knows — copied in before Avid re-indexed, another
-			// seat's media, or a PMR that was corrupt while the MDB read fine.
-			// Recovers name/bin/source by the verified master identity. File
-			// identity comes from the owning source package above. Database
-			// status still describes PMR membership, independent of recovery.
-			if (headerUsable && headerMasterKnown && !metadata.umid.isEmpty() && !MobId::isAllZero(metadata.umid))
-			{
-				const auto mapIt = clipsByFolder.constFind(row.folderKey);
-				if (mapIt != clipsByFolder.constEnd() && !mapIt->isEmpty())
-				{
-					// Direct match is rare: the MXF stores the middle fields
-					// little-endian, the MDB big-endian. Try direct (free),
-					// then swapped.
-					auto recIt = mapIt->constFind(metadata.umid);
-					// OMF-era: the wrapped id is already the database's key
-					// form, and swapping its middle fields would name a
-					// DIFFERENT (equally well-formed) OMF id — so no retry.
-					if (recIt == mapIt->constEnd() && !readingOmf)
-					{
-						const QString swapped = MobId::toPmrForm(metadata.umid);
-						if (!swapped.isEmpty())
-							recIt = mapIt->constFind(swapped);
-					}
-					if (recIt != mapIt->constEnd())
-					{
-						applyMdbRecord(mf, recIt.value());
-						if (!recIt->mobIdHex.isEmpty())
-							mf.masterMobId = recIt->mobIdHex;
-						++recovered;
-					}
-				}
-			}
-			// The header's own identity can be the zero one too.
-			mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
-							   (headerUsable && (MobId::isAllZero(metadata.umid) || MobId::isAllZero(metadata.fileMobId)));
-
 			// OMF-era: separate counters, see above.
 			std::atomic<qint64> &sumCounter = readingOmf ? omfBytesRead : totalBytesRead;
 			std::atomic<qint64> &maxCounter = readingOmf ? omfMaxBytesRead : maxBytesRead;
-			sumCounter.fetch_add(bytesRead, std::memory_order_relaxed);
+			sumCounter.fetch_add(read.bytesRead, std::memory_order_relaxed);
 
 			// Lock-free max via CAS loop. Every pool thread fights for
 			// the same atomic, so retry until we win or someone else
 			// sets a bigger value.
 			qint64 prev = maxCounter.load(std::memory_order_relaxed);
-			while (bytesRead > prev &&
-				   !maxCounter.compare_exchange_weak(prev, bytesRead, std::memory_order_relaxed))
+			while (read.bytesRead > prev &&
+				   !maxCounter.compare_exchange_weak(prev, read.bytesRead, std::memory_order_relaxed))
 			{
 			}
 

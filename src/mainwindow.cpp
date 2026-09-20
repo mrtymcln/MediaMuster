@@ -50,7 +50,6 @@
 #include <QShortcut>
 #include <QSignalBlocker>
 #include <QSplitter>
-#include <QStandardItemModel>
 #include <QStatusBar>
 #include <QStorageInfo>
 #include <QStyle>
@@ -703,10 +702,6 @@ void MainWindow::buildSpecialMenu()
 {
 	auto *specialMenu = menuBar()->addMenu(tr("&Special"));
 
-	auto *summaryAct = specialMenu->addAction(tr("&Project Summary"));
-	connect(summaryAct, &QAction::triggered, this, &MainWindow::onProjectSummary);
-
-	specialMenu->addSeparator();
 	auto *binFilterAct = specialMenu->addAction(tr("Filter by &Bin..."));
 	binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
 	connect(binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
@@ -1605,37 +1600,34 @@ void MainWindow::rebuildProjectList()
 		selected.insert(item->data(Qt::UserRole).toString());
 	const QSignalBlocker blocker(m_projectList);
 	m_projectList->clear();
-	// Group by the displayed project name: real projects plus, at most, the
-	// one "No project" row. Database status is NOT a project and is never
-	// listed here — the filter tabs are where it lives.
 	struct ProjectStat
 	{
 		int count = 0;
 		qint64 bytes = 0;
 		bool hasProject = true;
 	};
+	// Sidebar totals describe the whole scan, even when the table is filtered.
 	QHash<QString, ProjectStat> projectStats;
-	for (const auto &f : m_model->allFiles())
+	for (const auto &file : m_model->allFiles())
 	{
-		auto &stat = projectStats[f.projectDisplay()];
-		stat.count++;
-		stat.bytes += f.sizeBytes;
-		stat.hasProject = !f.hasNoProject();
+		auto &stat = projectStats[file.projectDisplay()];
+		++stat.count;
+		stat.bytes += file.sizeBytes;
+		stat.hasProject = !file.hasNoProject();
 	}
-
-	QStringList sorted = projectStats.keys();
-	sorted.sort();
-	for (const QString &p : sorted)
+	QStringList names = projectStats.keys();
+	names.sort();
+	for (const auto &name : names)
 	{
-		const ProjectStat &stat = projectStats[p];
-		auto *item = new QListWidgetItem(Icons::forProject(stat.hasProject), p);
-		item->setData(Qt::UserRole, p);
+		const auto &stat = projectStats[name];
+		auto *item = new QListWidgetItem(Icons::forProject(stat.hasProject), name);
+		item->setData(Qt::UserRole, name);
 		QString tip = tr("%1 files, %2").arg(stat.count).arg(Format::bytes(stat.bytes));
 		if (!stat.hasProject)
 			tip += QStringLiteral("\n\n") + MediaFile::noProjectWhy();
 		item->setToolTip(tip);
 		m_projectList->addItem(item);
-		item->setSelected(selected.contains(p));
+		item->setSelected(selected.contains(name));
 	}
 	QSet<QString> retained;
 	for (auto *item : m_projectList->selectedItems())
@@ -1898,96 +1890,6 @@ void MainWindow::onExportCsv()
 	watcher->setFuture(
 		QtConcurrent::run([path, rows = std::move(rows), csvOptions]()
 						  { return MediaCsv::write(path, rows, csvOptions); }));
-}
-
-// MARK: - Project summary
-
-QDialog *MainWindow::buildProjectSummaryDialog(const QVector<MediaFile> &files)
-{
-	struct ProjectSummary
-	{
-		QString name;
-		bool hasProject = true;
-		int videoCount = 0;
-		int audioCount = 0;
-		int unknownKindCount = 0;
-		qint64 totalBytes = 0;
-		QVector<QString> bins;
-	};
-	QMap<QString, ProjectSummary> map;
-	for (const auto &f : files)
-	{
-		auto &s = map[f.projectDisplay()];
-		s.name = f.projectDisplay();
-		s.hasProject = !f.hasNoProject();
-		if (f.kind == MediaFile::Kind::Video)
-			s.videoCount++;
-		else if (f.kind == MediaFile::Kind::Audio)
-			s.audioCount++;
-		else
-			s.unknownKindCount++;
-		s.totalBytes += f.sizeBytes;
-		if (!f.originalBin.isEmpty() && !s.bins.contains(f.originalBin))
-			s.bins.append(f.originalBin);
-	}
-	auto *dlg = new QDialog(this);
-	dlg->setWindowTitle(tr("Project Summary"));
-	dlg->resize(680, 380);
-	dlg->setAttribute(Qt::WA_DeleteOnClose);
-	auto *t = new QTableView(dlg);
-	auto *sm = new QStandardItemModel(static_cast<int>(map.size()), 6, dlg);
-	// Column-type vocabulary, kept literal to match the main table headers.
-	sm->setHorizontalHeaderLabels({QStringLiteral("Project"), QStringLiteral("Video"),
-								   QStringLiteral("Audio"), QStringLiteral("Unknown Kind"), QStringLiteral("Bins"),
-								   QStringLiteral("Size")});
-	// Sort on UserRole, not the formatted display text: otherwise "1,000" sorts
-	// before "9" and "5.6 GB" before "900 MB".
-	sm->setSortRole(Qt::UserRole);
-
-	// Right-aligned number cell whose sort key is the raw value behind the
-	// formatted text.
-	const auto numItem = [](const QString &text, qint64 sortValue)
-	{
-		auto *item = new QStandardItem(text);
-		item->setData(QVariant::fromValue(sortValue), Qt::UserRole);
-		item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-		return item;
-	};
-
-	int r = 0;
-	for (auto it = map.begin(); it != map.end(); ++it, ++r)
-	{
-		const auto &s = it.value();
-		auto *proj = new QStandardItem(Icons::forProject(s.hasProject), s.name);
-		proj->setData(s.name, Qt::UserRole);
-		sm->setItem(r, 0, proj);
-		sm->setItem(r, 1, numItem(Format::count(s.videoCount), s.videoCount));
-		sm->setItem(r, 2, numItem(Format::count(s.audioCount), s.audioCount));
-		sm->setItem(r, 3, numItem(Format::count(s.unknownKindCount), s.unknownKindCount));
-		sm->setItem(r, 4, numItem(Format::count(s.bins.size()), s.bins.size()));
-		sm->setItem(r, 5, numItem(Format::bytes(s.totalBytes), s.totalBytes));
-	}
-	t->setModel(sm);
-	t->setSortingEnabled(true);
-	t->setAlternatingRowColors(true);
-	t->horizontalHeader()->setStretchLastSection(true);
-	t->setColumnWidth(0, 180);
-	t->verticalHeader()->setVisible(false);
-	auto *l = new QVBoxLayout(dlg);
-	l->addWidget(t);
-	return dlg;
-}
-
-void MainWindow::onProjectSummary()
-{
-	if (m_model->allFiles().isEmpty())
-	{
-		QMessageBox::information(
-			this, tr("Project Summary"),
-			tr("Hold your horses! Scan some media first to see the project summary."));
-		return;
-	}
-	buildProjectSummaryDialog(m_model->allFiles())->show();
 }
 
 // MARK: - Reveal in Finder
@@ -2320,32 +2222,31 @@ void MainWindow::doUpdateStatusBar()
 
 void MainWindow::updateFilterCounts()
 {
-	// Tally per filter using kFilterDefs as the single source of
-	// truth. The order here matches the tab indices the QTabBar
-	// uses, because both were populated from the same array.
+	// Count the whole inventory so totals stay stable when other filters change.
 	std::array<int, kFilterDefs.size()> counts{};
-	for (const MediaFile &f : m_model->allFiles())
+	for (const MediaFile &file : m_model->allFiles())
 	{
 		for (size_t i = 0; i < kFilterDefs.size(); ++i)
 		{
-			if (MediaFilterProxy::matchesMode(kFilterDefs[i].mode, f))
+			if (MediaFilterProxy::matchesMode(kFilterDefs[i].mode, file))
 				++counts[i];
 		}
 	}
 
 	for (size_t i = 0; i < kFilterDefs.size(); ++i)
 	{
-		const int idx = static_cast<int>(i);
+		const int tabIndex = static_cast<int>(i);
 		m_filterTabs->setTabText(
-			idx, QStringLiteral("%1 (%2)").arg(QString::fromLatin1(kFilterDefs[i].label)).arg(counts[i]));
+			tabIndex, QStringLiteral("%1 (%2)").arg(QString::fromLatin1(kFilterDefs[i].label)).arg(counts[i]));
 
-		// "All" stays visible no matter what; the others auto-hide
-		// when empty, unless the editor chose 'Show All Filter Tabs'.
+		// "All" stays visible no matter what; the others auto-hide when empty.
 		const bool isAll = (kFilterDefs[i].mode == MediaFilterProxy::FilterMode::All);
 		const bool available = m_effectDetailsEnabled || kFilterDefs[i].mode != MediaFilterProxy::FilterMode::Precompute;
 		const bool visible = available && (isAll || m_showAllFilterTabs || counts[i] > 0);
-		m_filterTabs->setTabVisible(idx, visible);
+		m_filterTabs->setTabVisible(tabIndex, visible);
 	}
+	// Hidden tabs can leave a cached width; refresh the layout's size hint.
+	m_filterTabs->updateGeometry();
 }
 
 // MARK: - Filter chips

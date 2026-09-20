@@ -121,6 +121,10 @@ Project, tab, search, bin and enabled precompute filters combine: a row must pas
 each active restriction to appear. Choosing several projects includes any of
 those selected projects. Search ignores letter case but keeps accents significant.
 
+Hovering over a project in the sidebar shows its file count and total size across
+the whole inventory, regardless of active table filters. The sidebar includes a
+**No project** entry when files have no recorded project.
+
 Loading `.avb` bins lets the app match file or master identifiers against references
 recovered from those bins. The bin dialog supports an ordered chain:
 
@@ -143,9 +147,8 @@ is removed. Select Relatives selects visible rows sharing a known master-clip
 identifier with the current selection; it does not reveal hidden relatives.
 
 CSV export offers selected rows or all rows in the current filtered view. Its
-**All** choice does not include filtered-out rows. Project Summary, by contrast,
-uses the whole current inventory. Filter-tab counts also use the whole inventory,
-while the status bar's file count and size describe the visible rows.
+**All** choice does not include filtered-out rows. Filter-tab counts use the whole
+inventory, while the status bar's file count and size describe the visible rows.
 
 ## Copy, Move and Delete
 

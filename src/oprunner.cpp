@@ -1298,6 +1298,72 @@ bool OpRunner::retireDatabases(OpJournal &journal, const QSet<QString> &folders,
 	return true;
 }
 
+OpResult OpRunner::executeWithRetries(OpJournal &journal, OpJournal::Entry &e,
+									  OpKind kind, int index, int total, QString &error)
+{
+	bool retryableCopy = false;
+	auto outcome = execute(journal, e, kind, index, total, &retryableCopy);
+	for (int retry = 0; retry < 2 && retryableCopy && outcome.state == State::Failed &&
+						e.step == Step::Failed && journal.healthy() && !m_cancel.load() &&
+						(kind == OpKind::Copy || kind == OpKind::Move);
+		 ++retry)
+	{
+		if (!reconcile(journal, e, error, &m_cancel, hooks.directorySync))
+		{
+			outcome = result(e, State::NeedsAttention, error);
+			break;
+		}
+		m_sink.log(QtInfoMsg, "Retrying " + label(e.item));
+		checkpoint("before-copy-retry", e);
+		for (int remaining = 250 * (retry + 1); remaining > 0 && !m_cancel.load(); remaining -= 25)
+			QThread::msleep(25);
+		if (m_cancel.load())
+		{
+			e.error = "Cancelled before retrying the copy.";
+			const auto state = save(journal, e, Step::Cancelled) ? State::Cancelled : State::NeedsAttention;
+			outcome = result(e, state, e.error);
+			break;
+		}
+		outcome = execute(journal, e, kind, index, total, &retryableCopy);
+	}
+	return outcome;
+}
+
+bool OpRunner::copiesReadyForRemoval(const OpJournal &journal, const OpRequest &request,
+									 const Totals &totals, QString &error) const
+{
+	bool ready = journal.healthy() && !totals.failed && !totals.needsAttention &&
+				 !totals.cancelled && !m_cancel.load();
+	for (const auto &e : journal.record().entries)
+	{
+		if (e.item.maintenance || e.undoAction == "discardCopy" || e.step == Step::NoEffect)
+			continue;
+		if (e.step == Step::Skipped)
+		{
+			if (!e.explicitSkip && request.kind == OpKind::Move)
+				ready = false;
+			continue;
+		}
+		if (e.complete())
+		{
+			if ((request.kind == OpKind::Move || request.kind == OpKind::Undo) &&
+				e.mechanism == "copy" && !copiedDestinationMatches(e, error, &m_cancel))
+				ready = false;
+			if (request.kind == OpKind::Undo && e.undoAction.startsWith("restore") &&
+				!e.landed.unchanged(OpFile::inspect(e.dst)))
+				ready = false;
+			continue;
+		}
+		if (!removesAfterCopy(e, request) ||
+			(e.step != Step::Published && e.step != Step::SourceRetained && e.step != Step::RemovingSource) ||
+			!e.copyDurable || !e.metadataComplete || !copiedDestinationMatches(e, error, &m_cancel))
+			ready = false;
+		if (e.retirement.isEmpty() && !e.source.unchanged(OpFile::inspect(e.item.src)))
+			ready = false;
+	}
+	return ready;
+}
+
 OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 {
 	if (!input.restoreJournalPath.isEmpty())
@@ -1588,31 +1654,8 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 					!journal.touchFolder(QFileInfo(e.item.renameDst).absolutePath()))
 					throw std::runtime_error(journal.error().toStdString());
 			}
-			bool retryableCopy = false;
-			auto outcome = execute(journal, e, request.kind, mediaIndex, workTotal, &retryableCopy);
-			for (int retry = 0; retry < 2 && retryableCopy && outcome.state == State::Failed &&
-								e.step == Step::Failed && journal.healthy() && !m_cancel.load() &&
-								(request.kind == OpKind::Copy || request.kind == OpKind::Move);
-				 ++retry)
-			{
-				if (!reconcile(journal, e, error, &m_cancel, hooks.directorySync))
-				{
-					outcome = result(e, State::NeedsAttention, error);
-					break;
-				}
-				m_sink.log(QtInfoMsg, "Retrying " + label(e.item));
-				checkpoint("before-copy-retry", e);
-				for (int remaining = 250 * (retry + 1); remaining > 0 && !m_cancel.load(); remaining -= 25)
-					QThread::msleep(25);
-				if (m_cancel.load())
-				{
-					e.error = "Cancelled before retrying the copy.";
-					const auto state = save(journal, e, Step::Cancelled) ? State::Cancelled : State::NeedsAttention;
-					outcome = result(e, state, e.error);
-					break;
-				}
-				outcome = execute(journal, e, request.kind, mediaIndex, workTotal, &retryableCopy);
-			}
+			const auto outcome = executeWithRetries(
+				journal, e, request.kind, mediaIndex, workTotal, error);
 			if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
 			{
 				trashFallbacks.append(n);
@@ -1675,35 +1718,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 					break;
 			}
 		}
-		bool ready = journal.healthy() && !totals.failed && !totals.needsAttention &&
-					 !totals.cancelled && !m_cancel.load();
-		for (const auto &e : journal.record().entries)
-		{
-			if (e.item.maintenance || e.undoAction == "discardCopy" || e.step == Step::NoEffect)
-				continue;
-			if (e.step == Step::Skipped)
-			{
-				if (!e.explicitSkip && request.kind == OpKind::Move)
-					ready = false;
-				continue;
-			}
-			if (e.complete())
-			{
-				if ((request.kind == OpKind::Move || request.kind == OpKind::Undo) &&
-					e.mechanism == "copy" && !copiedDestinationMatches(e, error, &m_cancel))
-					ready = false;
-				if (request.kind == OpKind::Undo && e.undoAction.startsWith("restore") &&
-					!e.landed.unchanged(OpFile::inspect(e.dst)))
-					ready = false;
-				continue;
-			}
-			if (!removesAfterCopy(e, request) ||
-				(e.step != Step::Published && e.step != Step::SourceRetained && e.step != Step::RemovingSource) ||
-				!e.copyDurable || !e.metadataComplete || !copiedDestinationMatches(e, error, &m_cancel))
-				ready = false;
-			if (e.retirement.isEmpty() && !e.source.unchanged(OpFile::inspect(e.item.src)))
-				ready = false;
-		}
+		bool ready = copiesReadyForRemoval(journal, request, totals, error);
 		if (ready && !deferred.isEmpty() && !journal.record().copiesComplete)
 		{
 			if (!journal.markCopiesComplete())

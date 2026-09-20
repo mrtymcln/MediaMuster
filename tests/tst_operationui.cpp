@@ -38,45 +38,47 @@
 
 namespace
 {
-bool put(const QString &path, const QByteArray &data)
-{
-	if (!QDir().mkpath(QFileInfo(path).absolutePath())) return false;
-	QFile file(path);
-	return file.open(QIODevice::WriteOnly) && file.write(data) == data.size();
-}
-struct Sink : OpSink
-{
-	std::atomic<bool> *cancelAfterResult = nullptr;
-	void progress(const QString &, int, int, double) override {}
-	void log(QtMsgType, const QString &) override {}
-	void trashUsed(const QString &, int) override {}
-	void result(const OpResult &value) override
+	bool put(const QString &path, const QByteArray &data)
 	{
-		if (cancelAfterResult && value.state == OpResult::State::Completed)
-			cancelAfterResult->store(true);
+		if (!QDir().mkpath(QFileInfo(path).absolutePath()))
+			return false;
+		QFile file(path);
+		return file.open(QIODevice::WriteOnly) && file.write(data) == data.size();
 	}
-};
-// Holds background work deterministically while the dialog receives edits.
-struct BlockPool
-{
-	QThreadPool *pool = QThreadPool::globalInstance();
-	int previousMaximum = pool->maxThreadCount();
-	QSemaphore entered;
-	QSemaphore releaseWorker;
-	QFuture<void> future;
-	BlockPool()
+	struct Sink : OpSink
 	{
-		pool->waitForDone();
-		pool->setMaxThreadCount(1);
-		future = QtConcurrent::run([this] { entered.release(); releaseWorker.acquire(); });
-	}
-	~BlockPool()
+		std::atomic<bool> *cancelAfterResult = nullptr;
+		void progress(const QString &, int, int, double) override {}
+		void log(QtMsgType, const QString &) override {}
+		void trashUsed(const QString &, int) override {}
+		void result(const OpResult &value) override
+		{
+			if (cancelAfterResult && value.state == OpResult::State::Completed)
+				cancelAfterResult->store(true);
+		}
+	};
+	// Holds background work deterministically while the dialog receives edits.
+	struct BlockPool
 	{
-		releaseWorker.release();
-		future.waitForFinished();
-		pool->setMaxThreadCount(previousMaximum);
-	}
-};
+		QThreadPool *pool = QThreadPool::globalInstance();
+		int previousMaximum = pool->maxThreadCount();
+		QSemaphore entered;
+		QSemaphore releaseWorker;
+		QFuture<void> future;
+		BlockPool()
+		{
+			pool->waitForDone();
+			pool->setMaxThreadCount(1);
+			future = QtConcurrent::run([this]
+									   { entered.release(); releaseWorker.acquire(); });
+		}
+		~BlockPool()
+		{
+			releaseWorker.release();
+			future.waitForFinished();
+			pool->setMaxThreadCount(previousMaximum);
+		}
+	};
 
 }
 
@@ -88,6 +90,7 @@ private slots:
 	void init();
 	void cleanup();
 	void cleanupTestCase();
+	void project_sidebar_uses_whole_inventory_totals();
 	void debug_flags_default_off_and_text_undo_works();
 	void precompute_gate_hides_controls_and_clears_filters();
 	void experimental_flags_are_session_only_and_blocked_while_busy();
@@ -125,6 +128,7 @@ private slots:
 	void trash_fallback_controller_destruction_closes_dialog();
 	void preview_background_checks_discard_superseded_results();
 	void preview_policy_changes_refresh_space_and_same_file_is_no_effect();
+
 private:
 	OpRequest request(const QString &name = QStringLiteral("old"), int count = 1);
 	QString makeInterrupted(OpRequest request, bool completeFirst = false);
@@ -137,6 +141,44 @@ private:
 	std::unique_ptr<QTemporaryDir> m_temp;
 	QString m_root;
 };
+
+void TestOperationUi::project_sidebar_uses_whole_inventory_totals()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(4);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		files[i].filePath = QStringLiteral("/media/%1.mxf").arg(i);
+		files[i].sizeBytes = 100;
+	}
+	for (int i : {0, 1, 2})
+		files[i].project = QStringLiteral("Project A");
+	files[0].kind = MediaFile::Kind::Video;
+	files[1].kind = MediaFile::Kind::Audio;
+	files[1].dbStatus = MediaFile::DbStatus::NoReference;
+	files[2].dbStatus = MediaFile::DbStatus::NoDatabase;
+	window.m_model->setMediaFiles(files);
+	window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::Audio);
+	window.rebuildProjectList();
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.m_projectList->count(), 2);
+	QCOMPARE(window.m_projectList->item(0)->text(), QStringLiteral("No project"));
+	QCOMPARE(window.m_projectList->item(0)->toolTip(),
+			 QStringLiteral("1 files, 100 B\n\n") + MediaFile::noProjectWhy());
+	QCOMPARE(window.m_projectList->item(1)->text(), QStringLiteral("Project A"));
+	QCOMPARE(window.m_projectList->item(1)->toolTip(), QStringLiteral("3 files, 300 B"));
+
+	window.m_projectList->item(1)->setSelected(true);
+	window.m_model->removeFilesByPath({files[0].filePath});
+	window.rebuildProjectList();
+	QVERIFY(window.m_projectList->item(1)->isSelected());
+	QCOMPARE(window.m_projectList->item(1)->toolTip(), QStringLiteral("2 files, 200 B"));
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+
+	window.m_model->setMediaFiles({});
+	window.rebuildProjectList();
+	QCOMPARE(window.m_projectList->count(), 0);
+}
 
 void TestOperationUi::initTestCase()
 {
@@ -158,8 +200,10 @@ void TestOperationUi::cleanup()
 }
 void TestOperationUi::cleanupTestCase()
 {
-	if (m_hadJournalDir) qputenv("MEDIAMUSTER_JOURNAL_DIR", m_previousJournalDir);
-	else qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
+	if (m_hadJournalDir)
+		qputenv("MEDIAMUSTER_JOURNAL_DIR", m_previousJournalDir);
+	else
+		qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
 }
 OpRequest TestOperationUi::request(const QString &name, int count)
 {
@@ -187,9 +231,11 @@ QString TestOperationUi::makeInterrupted(OpRequest request, bool completeFirst)
 		sink.cancelAfterResult = &cancel;
 		OpRunner runner(sink, cancel);
 		const auto totals = runner.run(request, path("journals"));
-		if (totals.succeeded != 1) qFatal("Cannot prepare interrupted UI fixture");
+		if (totals.succeeded != 1)
+			qFatal("Cannot prepare interrupted UI fixture");
 		const auto pending = OperationRecovery::pending(path("journals"));
-		if (pending.size() != 1) qFatal("Interrupted UI fixture was not resumable");
+		if (pending.size() != 1)
+			qFatal("Interrupted UI fixture was not resumable");
 		return pending.first().journalPath;
 	}
 	OpJournal journal;
@@ -203,7 +249,7 @@ void TestOperationUi::clickInterrupted(const QString &button)
 	auto *timer = new QTimer(this);
 	timer->setInterval(1);
 	connect(timer, &QTimer::timeout, this, [timer, button]
-	{
+			{
 		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
 		if (!dialog) return; // The asynchronous journal read may still be running.
 		timer->stop();
@@ -218,8 +264,7 @@ void TestOperationUi::clickInterrupted(const QString &button)
 			auto *target = dialog->findChild<QPushButton *>(button);
 			QVERIFY(target);
 			target->click();
-		}
-	});
+		} });
 	timer->start();
 }
 
@@ -232,7 +277,8 @@ QString TestOperationUi::makeRetainedOriginal(const QString &name)
 	old.copyThenRemove = true;
 	const auto mediaPath = path(name + "/Avid MediaFiles/MXF/1/clip-0.mxf");
 	if (!QDir().mkpath(QFileInfo(mediaPath).absolutePath()) ||
-		!QFile::rename(old.items[0].src, mediaPath)) qFatal("Cannot rename UI fixture");
+		!QFile::rename(old.items[0].src, mediaPath))
+		qFatal("Cannot rename UI fixture");
 	old.items[0].src = mediaPath;
 	old.items[0].name = QStringLiteral("clip-0.mxf");
 	OpJournal journal;
@@ -242,7 +288,7 @@ QString TestOperationUi::makeRetainedOriginal(const QString &name)
 	auto entry = journal.record().entries.first();
 	entry.dst = old.destRoot + '/' + entry.item.name;
 	entry.retirement = QFileInfo(entry.item.src).absolutePath() + "/.mediamuster-retire-" +
-		QUuid::createUuid().toString(QUuid::WithoutBraces) + "/payload.retired";
+					   QUuid::createUuid().toString(QUuid::WithoutBraces) + "/payload.retired";
 	if (!QFile::copy(entry.item.src, entry.dst) ||
 		!QDir().mkpath(QFileInfo(entry.retirement).absolutePath()) ||
 		!QFile::rename(entry.item.src, entry.retirement))
@@ -258,12 +304,12 @@ QString TestOperationUi::makeRetainedOriginal(const QString &name)
 }
 
 void TestOperationUi::clickRestoreOriginals(const QString &button,
-										 const OperationRecovery::Restorable &job)
+											const OperationRecovery::Restorable &job)
 {
 	auto *timer = new QTimer(this);
 	timer->setInterval(1);
 	connect(timer, &QTimer::timeout, this, [timer, button, job]
-	{
+			{
 		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
 		if (!dialog) return;
 		timer->stop();
@@ -294,8 +340,7 @@ void TestOperationUi::clickRestoreOriginals(const QString &button,
 			auto *target = dialog->findChild<QPushButton *>(button);
 			QVERIFY(target);
 			target->click();
-		}
-	});
+		} });
 	timer->start();
 }
 
@@ -311,7 +356,7 @@ void TestOperationUi::added_locations_require_managed_media_structure()
 	QVERIFY(QDir().mkpath(path("ume/Avid MediaFiles/UME/1")));
 	const int originalCount = window.m_volumeList->count();
 	for (const QString &rejected : {path("loose"), path("standalone/MXF"),
-		path("ume/Avid MediaFiles/UME/1"), path("Desktop")})
+									path("ume/Avid MediaFiles/UME/1"), path("Desktop")})
 	{
 		window.addVolumePath(rejected);
 		QCOMPARE(window.m_volumeList->count(), originalCount);
@@ -405,13 +450,12 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
 	bool openedPicker = false;
 	QTimer::singleShot(0, &window, [&openedPicker]
-	{
+					   {
 		if (auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget()))
 		{
 			openedPicker = true;
 			dialog->reject();
-		}
-	});
+		} });
 	window.onFilterByEffects(); // Hidden entry point must not open a dialog.
 	QCoreApplication::processEvents();
 	QVERIFY(!openedPicker);
@@ -550,7 +594,8 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 		QTRY_VERIFY(window.m_operations->isIdle());
 		QCOMPARE(window.m_model->rowCount(), 2);
 		QSet<QString> scanned;
-		for (const auto &file : window.m_model->allFiles()) scanned.insert(file.filePath);
+		for (const auto &file : window.m_model->allFiles())
+			scanned.insert(file.filePath);
 		QCOMPARE(scanned, QSet<QString>({mxfPath, omfPath}));
 		window.m_omfAct->trigger();
 		QCOMPARE(window.m_model->rowCount(), 1);
@@ -659,7 +704,8 @@ void TestOperationUi::unfinished_business_is_the_single_file_recovery_command()
 
 	QMenu *fileMenu = nullptr;
 	for (auto *action : window.menuBar()->actions())
-		if (action->text().remove('&') == QStringLiteral("File")) fileMenu = action->menu();
+		if (action->text().remove('&') == QStringLiteral("File"))
+			fileMenu = action->menu();
 	QVERIFY(fileMenu);
 	QCOMPARE(fileMenu->actions().count(recovery), 1);
 	for (auto *action : fileMenu->actions())
@@ -692,7 +738,7 @@ void TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
 	QTimer inspect;
 	inspect.setInterval(1);
 	connect(&inspect, &QTimer::timeout, &window, [&]
-	{
+			{
 		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
 		if (!dialog) return;
 		inspect.stop();
@@ -733,8 +779,7 @@ void TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
 		QVERIFY(restore->isVisible() && restore->isEnabled());
 		QVERIFY(!cancel->isVisible() || !cancel->isEnabled());
 		inspected = true;
-		dialog->close();
-	});
+		dialog->close(); });
 	inspect.start();
 	operations.recoveryAction()->trigger();
 	QVERIFY(inspected);
@@ -759,7 +804,7 @@ void TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_jo
 	QTimer choose;
 	choose.setInterval(1);
 	connect(&choose, &QTimer::timeout, &window, [&]
-	{
+			{
 		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
 		if (!dialog) return;
 		choose.stop();
@@ -772,8 +817,7 @@ void TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_jo
 		// dismissed job also has originals waiting to be restored.
 		QCOMPARE(jobs->currentData().toString(), restorePath);
 		selectedPending = true;
-		restore->click();
-	});
+		restore->click(); });
 	choose.start();
 	QVERIFY(!operations.dispatchRequest(request("attempted")));
 	QVERIFY(selectedPending);
@@ -799,7 +843,7 @@ void TestOperationUi::unfinished_business_gate_cancel_only_dismisses_selected_jo
 	QTimer choose;
 	choose.setInterval(1);
 	connect(&choose, &QTimer::timeout, &window, [&]
-	{
+			{
 		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
 		if (!dialog) return;
 		QTimer::singleShot(0, dialog, &QDialog::reject);
@@ -823,8 +867,7 @@ void TestOperationUi::unfinished_business_gate_cancel_only_dismisses_selected_jo
 		QCOMPARE(jobs->currentData().toString(), firstPath);
 		QVERIFY(!OpJournal::readOne(firstPath)->dismissed);
 		QVERIFY(OpJournal::readOne(secondPath)->dismissed);
-		dialog->close();
-	});
+		dialog->close(); });
 	choose.start();
 	QVERIFY(!operations.dispatchRequest(request("attempted")));
 	QCOMPARE(dialogsSeen, 2);
@@ -1122,9 +1165,9 @@ void TestOperationUi::restore_originals_respects_busy_gate()
 	operations.refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
 	for (auto activity : {FileOperationController::Activity::Scanning,
-		 FileOperationController::Activity::Recovering,
-		 FileOperationController::Activity::RebalanceDialog,
-		 FileOperationController::Activity::FileOperation})
+						  FileOperationController::Activity::Recovering,
+						  FileOperationController::Activity::RebalanceDialog,
+						  FileOperationController::Activity::FileOperation})
 	{
 		operations.setActivity(activity);
 		QVERIFY(!operations.recoveryAction()->isEnabled());
@@ -1376,10 +1419,9 @@ void TestOperationUi::trash_fallback_choice()
 	auto *manager = controller.manager();
 	QSignalSpy requests(manager, &OpManager::trashFallbackRequested);
 	manager->m_job.start([manager, items, &completed, &accepted]
-	{
+						 {
 		accepted.store(manager->confirmTrashFallback(items));
-		completed.store(true);
-	});
+		completed.store(true); });
 	QTRY_VERIFY_WITH_TIMEOUT(controller.m_trashFallbackDialog, 5000);
 	auto *dialog = controller.m_trashFallbackDialog.data();
 	QVERIFY(dialog->isVisible());
@@ -1428,10 +1470,9 @@ void TestOperationUi::trash_fallback_cancel_closes_dialog()
 	FileOperationController controller(&window);
 	auto *manager = controller.manager();
 	manager->m_job.start([manager, &completed, &accepted]
-	{
+						 {
 		accepted.store(manager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
-		completed.store(true);
-	});
+		completed.store(true); });
 	QTRY_VERIFY_WITH_TIMEOUT(controller.m_trashFallbackDialog, 5000);
 	const auto requestId = controller.m_trashFallbackRequest;
 	manager->cancel();
@@ -1451,10 +1492,9 @@ void TestOperationUi::trash_fallback_without_handler_returns_without_waiting()
 	OpManager manager;
 	QSignalSpy requests(&manager, &OpManager::trashFallbackRequested);
 	manager.m_job.start([&]
-	{
+						{
 		accepted.store(manager.confirmTrashFallback({{"source", "trash", "Unavailable"}}));
-		completed.store(true);
-	});
+		completed.store(true); });
 	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
 	QVERIFY(!accepted.load());
 	QCOMPARE(requests.size(), 0);
@@ -1467,14 +1507,13 @@ void TestOperationUi::trash_fallback_destruction_unblocks_without_gui_events()
 	QSemaphore requested;
 	auto manager = std::make_unique<OpManager>();
 	manager->setTrashFallbackHandlerAvailable(true);
-	connect(manager.get(), &OpManager::trashFallbackRequested, this,
-			[&requested] { requested.release(); }, Qt::DirectConnection);
+	connect(manager.get(), &OpManager::trashFallbackRequested, this, [&requested]
+			{ requested.release(); }, Qt::DirectConnection);
 	auto *workerManager = manager.get();
 	manager->m_job.start([workerManager, &completed, &accepted]
-	{
+						 {
 		accepted.store(workerManager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
-		completed.store(true);
-	});
+		completed.store(true); });
 	QVERIFY(requested.tryAcquire(1, 5000));
 	QElapsedTimer timer;
 	timer.start();
@@ -1492,10 +1531,9 @@ void TestOperationUi::trash_fallback_controller_destruction_closes_dialog()
 	auto controller = std::make_unique<FileOperationController>(&window);
 	auto *manager = controller->manager();
 	manager->m_job.start([manager, &completed, &accepted]
-	{
+						 {
 		accepted.store(manager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
-		completed.store(true);
-	});
+		completed.store(true); });
 	QTRY_VERIFY_WITH_TIMEOUT(controller->m_trashFallbackDialog, 5000);
 	QPointer<QMessageBox> dialog = controller->m_trashFallbackDialog;
 	controller.reset();

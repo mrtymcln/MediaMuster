@@ -57,6 +57,12 @@ private:
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
 	OpResult execute(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, int index,
 					 int total, bool *retryableCopy = nullptr);
+	/// Retry only eligible native copy failures, preserving journal and cancel gates.
+	OpResult executeWithRetries(OpJournal &journal, OpJournal::Entry &entry,
+								OpKind kind, int index, int total, QString &error);
+	/// Whole-job barrier shared by Move removal and Undo copy disposal.
+	bool copiesReadyForRemoval(const OpJournal &journal, const OpRequest &request,
+							   const Totals &totals, QString &error) const;
 	OpResult transfer(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, OpFile &source,
 					  int index, int total, bool directoryDurable, bool *retryableCopy);
 	OpResult removeOriginal(OpJournal &, OpJournal::Entry &, int index, int total);

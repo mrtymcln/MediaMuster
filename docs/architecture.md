@@ -41,6 +41,12 @@ read. Header fallback can recover information and reject database details belong
 to a different file. Parser validity, unknown fields, project names and PMR
 membership are separate facts; they must not be collapsed into a single status.
 
+Within the scanner, `readMediaHeadersConcurrently()` owns scheduling, cancellation
+and progress. The local `readMediaHeader()` helper reads and merges one file's
+metadata; `clearReplacedMetadata()` and `findHeaderMaster()` keep identity-reset
+and byte-order lookup rules separate from the worker loop. These helpers share no
+mutable per-run state beyond the row handed to them.
+
 For supported locations and formats, see [release scope](release-feature-gates.md)
 and [parser compatibility](parser-compatibility.md).
 
@@ -56,7 +62,11 @@ The main window remembers selected paths across filter changes. Its
 `selectedFiles()` returns the currently visible selected rows, which are the inputs
 to Manage Media and selected-row export. Select Relatives also operates on visible
 rows. [MediaCsv](../src/mediacsv.cpp) writes a snapshot of selected or all visible
-rows in view order. Project Summary and tab counts use the whole model.
+rows in view order. Project sidebar totals and tab counts use the whole model.
+
+`MainWindow::rebuildProjectList()` groups the inventory by displayed project name
+and counts files and bytes for the sidebar tooltips. It preserves selected
+projects when rebuilding the list.
 
 ## From selection to a file job
 
@@ -82,6 +92,12 @@ The interface serializes scans, recovery, ordinary file jobs and the Rebalance
 dialog through its activity state. The engine additionally uses the journal lock
 to prevent concurrent execution/recovery through another manager. This does not
 lock out changes made by Avid, Finder or another application.
+
+Inside the runner, `executeWithRetries()` owns the bounded retry policy around one
+item. `copiesReadyForRemoval()` evaluates the whole-job checks used before Move
+removal or Undo copy disposal. The main `run()` routine keeps phase ordering,
+journal checkpoints and result accounting; extracting these checks does not create
+another operation engine or another recovery state machine.
 
 ## Operation rules that must survive changes
 

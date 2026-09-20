@@ -15,7 +15,6 @@
 #include <QSet>
 #include <functional>
 
-class QDialog;
 class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
@@ -62,7 +61,6 @@ private slots:
 	void onSelectionChanged();
 	void onFileOperations();
 	void onExportCsv();
-	void onProjectSummary();
 	void onRevealInFinder();
 	void onSelectRelatives();
 	void onInvertSelection();
@@ -127,10 +125,6 @@ private:
 	/// Apply the same presentation to detected volumes and manual folders.
 	/// displayName includes any suffix needed to distinguish duplicate names.
 	class QListWidgetItem *makeVolumeItem(const VolumeInfo &v, const QString &displayName);
-
-	/// Build (without showing) the Project Summary dialog: its slot guards
-	/// on an empty table first, then shows what this returns.
-	QDialog *buildProjectSummaryDialog(const QVector<MediaFile> &files);
 
 	/// Map visible rows back to the inventory before reading their metadata.
 	const MediaFile &fileForProxyIndex(const QModelIndex &proxyIndex) const;
