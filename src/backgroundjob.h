@@ -8,18 +8,9 @@
 #include <atomic>
 #include <utility>
 
-/// Owns at most one live QThread. `start(fn)` cancels the previous
-/// worker and joins it before starting the new one.
-///
-/// The callable polls `isCancelled()` and returns when set. A slow or
-/// blocked OS I/O call can delay restart/shutdown: the owner stays alive
-/// until the worker and any pool work it waits for have actually finished.
-/// Workers must join their own child tasks before returning.
-///
-/// Lifecycle calls belong to the owner's thread; cancel() is thread-safe.
-/// A completed QThread remains owned until the next start()/shutdown(),
-/// avoiding queued cleanup callbacks that could outlive this value member.
-
+/// Owns one worker thread. Start/shutdown belong to the owner's thread;
+/// cancel is thread-safe and cooperative. Workers must finish their own child
+/// tasks before returning. A blocked OS call can delay restart or shutdown.
 class BackgroundJob
 {
 public:
@@ -31,16 +22,9 @@ public:
 
 	~BackgroundJob() { shutdown(); }
 
-	/// Cancel the current worker and block until it has fully exited.
-	/// Idempotent; a blocked OS call can postpone completion.
-	///
-	/// Call this at the *top* of the owner's destructor when the worker
-	/// touches other members of the owner: a plain value `BackgroundJob`
-	/// is destroyed in reverse declaration order, so unless it's the last
-	/// member declared, ~BackgroundJob would otherwise join only after the
-	/// state the worker still reads has already been torn down. Doing the
-	/// join in the destructor body — which runs before any member dies —
-	/// sidesteps that ordering trap entirely.
+	/// Cancel and join before destroying state the worker accesses. Owners
+	/// whose member order does not guarantee this must call shutdown at the
+	/// start of their destructor. Repeated calls are safe.
 	void shutdown()
 	{
 		cancel();
@@ -67,20 +51,16 @@ public:
 		m_thread->start();
 	}
 
-	/// Signal the worker to stop. Cooperative; the worker decides
-	/// when to notice (it polls `isCancelled()` from inside its loop).
-	/// `release` on store pairs with `acquire` on the worker's load to
-	/// guarantee the flag becomes visible promptly on ARM as well as x86.
+	/// Request a stop. The worker polls the flag between units of work;
+	/// this cannot interrupt an OS call already in progress.
 	void cancel() noexcept { m_cancel.store(true, std::memory_order_release); }
 
 	// MARK: - State
 
 	bool isCancelled() const noexcept { return m_cancel.load(std::memory_order_acquire); }
 
-	/// The raw flag, for handing to code that polls cancellation without
-	/// holding a BackgroundJob (the ops engine's runner and copier take a
-	/// `const std::atomic<bool> &` so tests can drive them with a plain
-	/// flag). Read-only; start() still owns the reset.
+	/// Read-only flag for operations that do not hold the BackgroundJob.
+	/// Only start() resets it, after the previous worker has joined.
 	const std::atomic<bool> &cancelFlag() const noexcept { return m_cancel; }
 
 private:

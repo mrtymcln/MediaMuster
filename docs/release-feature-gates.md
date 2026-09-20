@@ -66,12 +66,13 @@ checks, and carries both file and master identities to the operation engine.
 ## Session toggles
 
 The Debug menu enables these features for the current session only. Every launch
-starts with all three off; there are no saved preferences to carry into a public
+starts with all four off; there are no saved preferences to carry into a public
 build.
 
 | Debug command | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
 | Enable OMF/OMFI | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
+| Verify copies | New Copy/Move requests capture the option; transfers compare source and destination checksums after the native copy. | Transfers still check identity, size and storage outcomes, but do not compare full contents. Resume preserves the job's saved option. |
 | Enable Undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
 | Enable Precomputes | Shows Type and precompute detail columns, the Precomputes tab, the filter picker, and those fields in CSV exports. | Hides these controls and fields, clears precompute filters, and resets sorting if its column disappears. Rendered media remains in ordinary scan results. |
 

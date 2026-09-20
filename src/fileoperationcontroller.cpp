@@ -239,8 +239,9 @@ void FileOperationController::runStartupRecovery()
 	setActivity(Activity::Recovering);
 	const quint64 generation = ++m_historyGeneration;
 	m_historyLoading = true;
-	// Journal cleanup and recovery run off the UI thread, each under the
-	// operation lock. Cleanup never resolves or modifies media paths.
+	// Prune journal history, then reconcile interrupted work off the UI thread.
+	// Each phase holds the operation lock. Only pruning is journal-files-only;
+	// recovery also checks media and cleans eligible recorded private artifacts.
 	auto *watcher = new QFutureWatcher<OperationRecovery::Summary>(this);
 	connect(watcher, &QFutureWatcher<OperationRecovery::Summary>::finished, this,
 			[this, watcher, generation]

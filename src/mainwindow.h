@@ -119,31 +119,24 @@ private:
 	void openManageMedia(int initialOp);
 	void updateActivityUi();
 	class ProgressDialog *progressDialog();
+	/// Only visible selected rows become operation/export inputs. Remembered
+	/// hidden selections are restored to the view when filters permit them.
 	QVector<MediaFile> selectedFiles() const;
 	void addVolumePath(const QString &path);
 
-	/// The one place a VolumeInfo becomes a row in the volume list: icon,
-	/// path payload, tooltip, and bold for a volume holding Avid media.
-	/// Detected volumes and manually-added folders both come through here,
-	/// so a row can't mean different things depending on how it arrived.
-	/// `displayName` carries any disambiguating suffix the caller applied.
+	/// Apply the same presentation to detected volumes and manual folders.
+	/// displayName includes any suffix needed to distinguish duplicate names.
 	class QListWidgetItem *makeVolumeItem(const VolumeInfo &v, const QString &displayName);
 
 	/// Build (without showing) the Project Summary dialog: its slot guards
 	/// on an empty table first, then shows what this returns.
 	QDialog *buildProjectSummaryDialog(const QVector<MediaFile> &files);
 
-	/// The MediaFile behind a proxy row/index: maps proxy → source, then
-	/// looks it up in the model. One funnel for the map-then-fetch dance
-	/// that used to be copy-pasted across the selection / status / export
-	/// paths; pairs with MediaTableModel::fileAt's bounds guard.
+	/// Map visible rows back to the inventory before reading their metadata.
 	const MediaFile &fileForProxyIndex(const QModelIndex &proxyIndex) const;
 	const MediaFile &fileAtProxyRow(int proxyRow) const;
 
-	/// A full-width (all columns) selection over the given ascending proxy
-	/// rows, with contiguous runs coalesced into single ranges so the view
-	/// gets one selectionChanged per run, not one per row. Shared by Select
-	/// Relatives, Select Inverse, and the filter-restore path.
+	/// Coalesce ascending visible rows into ranges to reduce selection signals.
 	QItemSelection selectionForRows(const QVector<int> &proxyRows) const;
 
 	/// Sum of sizeBytes over the inclusive proxy-row range [first, last].

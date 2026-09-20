@@ -315,8 +315,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		return all;
 	};
 
-	// Pick the smallest free N and register it in all the per-pass
-	// state so subsequent passes see it as if already on disk.
+	// Allocate above the highest occupied number in this prefix, including
+	// aliases. Register it now so later groups cannot reuse its number.
 	auto allocateNewFolder = [&](const QString &prefix) -> FolderName
 	{
 		QSet<int> all = occupiedByPrefix.value(prefix);
@@ -358,8 +358,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		const FolderName home{prefix, g.homeN};
 		const int size = static_cast<int>(g.members.size());
 
-		// Oversized relatives groups need multiple folders. Keep a completed packing stable.
-		// across new folders.
+		// Split oversized groups only when their existing packing exceeds the
+		// budget or uses more than the minimum number of folders.
 		if (size > Conventions::kFolderTarget)
 		{
 			QSet<FolderName> occupiedFolders;

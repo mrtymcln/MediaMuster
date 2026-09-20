@@ -1,7 +1,8 @@
 # Working on MediaMuster
 
 MediaMuster is a C++17 / Qt Widgets application for macOS and Windows. Start with
-[the architecture map](architecture.md) and [the documentation index](README.md).
+[current behaviour](current-behaviour.md), [the architecture map](architecture.md)
+and [the documentation index](README.md).
 
 ## Naming
 
@@ -27,19 +28,34 @@ ground named `Utils`. Keep `RevealInFinder` as the agreed cross-platform feature
 
 ## Formatting and scope
 
-`.editorconfig` and `.clang-format` define tabs at four columns, Allman braces and a
-100-column target for C++. Format new or deliberately reorganized files with a named
-file list. Keep unrelated formatting out of behavioural fixes. Generated catalogues,
-vendored code and historical evidence retain their own formatting.
+Use the surrounding C++ style: tabs at four columns, Allman braces and a roughly
+100-column target. This checkout has no `.editorconfig` or `.clang-format`; do not
+assume formatter defaults reproduce its style. Keep unrelated formatting out of
+behavioural fixes. Generated catalogues, vendored code and historical evidence
+retain their own formatting.
 
 ```sh
-clang-format -i src/example.h src/example.cpp
 git diff --check
 ```
 
-The formatter settings use [clang-format's documented options](https://clang.llvm.org/docs/ClangFormatStyleOptions.html).
-Comments should explain a current rule, assumption or ownership boundary. Put dated
-investigations and long corpus reports in the relevant documentation and link them.
+## Keeping descriptions accurate
+
+Check the implementation and relevant tests before describing behaviour. Update
+[the behaviour guide](current-behaviour.md) when the user-visible contract changes,
+[feature gates](release-feature-gates.md) when availability changes, and
+[the architecture map](architecture.md) when ownership changes. Keep test results
+separate from intended behaviour, with the platform and source state they cover.
+
+Comments should explain a current rule, its reason, or an ownership boundary.
+Prefer a few sentences beside the decision. For example: “Keep selections by path
+because filtering removes hidden rows from Qt's selection model.”
+
+Remove obsolete descriptions when code changes. Avoid development diaries,
+conversation references, unsupported absolutes and repeating an obvious statement.
+Keep essential details such as journal ordering, identity checks, byte order and
+worker lifetime. Link to evidence for unusual format rules; leave dated reports,
+sample counts and investigation history in documentation rather than copying them
+into multiple comments.
 
 ## Boundaries and behaviour
 

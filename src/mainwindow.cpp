@@ -75,9 +75,7 @@
 
 namespace
 {
-	/// The fixed-pitch face the table and console share. Lived in theme.h
-	/// until 2026-08-31; folded in here as its only consumer (a real theme
-	/// can move it back out the day one exists).
+	/// Shared fixed-pitch font for the table and console.
 	QFont monoFont()
 	{
 #ifdef Q_OS_MAC
@@ -183,9 +181,8 @@ namespace
 		const char *tooltip = nullptr; ///< Optional hover explanation for loaded terms.
 	};
 
-	// The middle three are the local-database ladder, most-known to
-	// least-known: No Project (in the MDB, project gone) > No Reference
-	// (verified in neither database) > No Database (couldn't check).
+	// Project metadata and database membership are independent filters.
+	// One row may match No Project and either database-status filter.
 	constexpr std::array<FilterDef, 10> kFilterDefs{{
 		// Technical Avid/domain vocabulary — invariant, never translated.
 		{MediaFilterProxy::FilterMode::All, "All"},
@@ -194,8 +191,7 @@ namespace
 		{MediaFilterProxy::FilterMode::Precompute, "Precomputes",
 		 "Media whose metadata identifies a precompute master: rendered effects,\n"
 		 "titles and matte keys, or a precompute with an unknown category."},
-		// These three take their labels and tooltips from MediaFile at build
-		// time (statusTabText below), so tab, table tooltip and CSV agree.
+		// MainWindow supplies tab text; MediaFile supplies row-status explanations.
 		{MediaFilterProxy::FilterMode::NoProject, "No Project"},
 		{MediaFilterProxy::FilterMode::NoReference, "No Reference"},
 		{MediaFilterProxy::FilterMode::NoDatabase, "No Database"},
@@ -212,8 +208,7 @@ namespace
 
 MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
-	  // Order needs to match mainwindow.h, otherwise the compiler
-	  // gets cranky. Pass `this` as parent to bind cleanup to the window.
+	  // Match declaration order; QObject parenting binds these services to the window.
 	  m_volumeManager(new VolumeManager(this)),
 	  m_scanner(new MediaScanner(this)),
 	  m_operations(new FileOperationController(this)),
@@ -265,11 +260,8 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	}
 #endif // Q_OS_MAC
 
-	// Deferred to the first event-loop tick so the window shows first. One
-	// sequence, not two racing timers: the crash-report notice (synchronous
-	// box) goes first, THEN the rollback starts on a pool thread and reports
-	// — otherwise its notice and the resume offer would land on top of the
-	// still-open crash box.
+	// Show the window before recovery. Finish any crash-report notice first
+	// so it cannot overlap the recovery prompts.
 	QTimer::singleShot(0, this,
 					   [this]
 					   {
@@ -1035,9 +1027,7 @@ void MainWindow::setOmfEnabled(bool enabled)
 		updateStatusBar();
 		updateActivityUi();
 	}
-	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled
-		? tr("OMF/OMFI enabled for this session. Rescan to include legacy media.")
-		: tr("OMF/OMFI disabled; legacy media removed from the table."));
+	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled ? tr("OMF/OMFI enabled for this session. Rescan to include legacy media.") : tr("OMF/OMFI disabled; legacy media removed from the table."));
 }
 
 // MARK: - Precompute classification, details and filter
@@ -1650,7 +1640,8 @@ void MainWindow::rebuildProjectList()
 	QSet<QString> retained;
 	for (auto *item : m_projectList->selectedItems())
 		retained.insert(item->data(Qt::UserRole).toString());
-	applyFilterPreservingSelection([this, &retained]() { m_proxy->setProjectFilter(retained); });
+	applyFilterPreservingSelection([this, &retained]()
+								   { m_proxy->setProjectFilter(retained); });
 }
 
 // MARK: - Filter / search slots
@@ -1815,10 +1806,6 @@ bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const 
 	req.items = OpManager::itemsFromMediaFiles(files, policies);
 	return m_operations->dispatchRequest(std::move(req));
 }
-
-// The journal is mandatory; the engine independently enforces this before I/O.
-
-// MARK: - Resume an interrupted operation
 
 // MARK: - MediaMuster Trash dialog
 
@@ -2026,7 +2013,7 @@ void MainWindow::onSelectRelatives()
 	if (sel.isEmpty())
 		return;
 
-	// Collect every unique non-empty comp MOB from the selection.
+	// Collect the non-empty master MOB IDs of visible selected files.
 	// Empty MOBs mean the file isn't tied to a master clip we can
 	// follow; they're silently excluded from the seed set but the
 	// other selected MOBs still drive a result.
@@ -2256,16 +2243,8 @@ void MainWindow::addLog(QtMsgType level, const QString &module, const QString &m
 
 void MainWindow::autoFitColumns()
 {
-	// Fit means fit. This used to clamp every column at 300px, which was
-	// invisible while the widest cell was a filename — and then made the
-	// menu item a lie once Location started carrying whole paths, since
-	// they never fit in 300px and the tail is the part worth reading.
-	// A table wider than its window scrolls sideways; that is the normal
-	// way to show wide content, not something to protect the user from.
-	//
-	// The header measures the first 1000 rows by default (setResizeContentsPrecision)
-	// rather than all of them, which is what keeps this instant on a
-	// 300,000-file Nexis scan.
+	// Let wide paths use horizontal scrolling instead of imposing a width cap.
+	// Qt's header samples rows when measuring, keeping large scans responsive.
 	m_tableView->resizeColumnsToContents();
 }
 

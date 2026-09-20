@@ -10,26 +10,9 @@
 
 // MARK: - FolderName
 
-/// An Avid MXF subfolder's name, kept in its two parts so the rebalancer
-/// can do arithmetic on it — "how full is 42?", "what is the next free
-/// number in MartysiMac's range?". You cannot add one to the text
-/// "MartysiMac.42"; you can to the number beside the prefix. display()
-/// puts the two halves back together whenever a real path is needed.
-///
-/// Not unique across the machine — two volumes can each hold a folder
-/// "3" — which is safe because a rebalance runs over one volume at a
-/// time (Marty's ruling 2026-08-31). That is also why it is a Name and
-/// not an Id: nothing issues it, the app reads it off the disk.
-///
-/// Standalone Avid setups name folders just `1`, `2`, `3`, ...; prefix
-/// empty, n is the trailing integer.
-///
-/// In a Nexis environment Avid prepends a hostname so each station gets
-/// its own range: `MartysiMac.1`, `Edit14.88`. Prefix is the hostname.
-///
-/// Anything that doesn't round-trip through `display()` (e.g.
-/// `Quarantined Files`, `.5`, `01`) gets rejected by
-/// `RebalancePlanner::parseFolderName` and falls back to `std::nullopt`.
+/// MXF folder name split into workstation prefix and positive number.
+/// Names are scoped to one MXF root. Rebalance requires display() to preserve
+/// the original spelling, excluding padded names such as "01" and quarantine.
 struct FolderName
 {
 	QString prefix;
@@ -44,9 +27,7 @@ struct FolderName
 
 	bool operator!=(const FolderName &o) const { return !(*this == o); }
 
-	/// Prefix first, then n; gives the preview a stable order:
-	/// `MartysiMac.*` together in numeric order, then `Edit14.*`, then
-	/// unprefixed local folders.
+	/// Lexical prefix order (empty first), then numeric folder order.
 	bool operator<(const FolderName &o) const
 	{
 		if (prefix != o.prefix)
@@ -64,8 +45,8 @@ inline size_t qHash(const FolderName &id, size_t seed = 0) noexcept
 
 // MARK: - RenameOp
 
-/// One file-move planned by the rebalancer. Relatives are
-/// grouped so they always land in the same destination folder.
+/// One planned media relocation. Relatives normally share a destination;
+/// groups larger than the folder target must span folders.
 struct RenameOp
 {
 	QString srcPath;

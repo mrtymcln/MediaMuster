@@ -8,17 +8,12 @@ Rebalancer::Rebalancer(QObject *parent) : QObject(parent)
 {
 	m_engine = new OpManager(this);
 
-	// The Avid per-folder database reset itself lives in the ENGINE's
-	// Rename machine (so an undo of a rebalance resets them too, and the
-	// honest-absence ordering is enforced in one place — see
-	// oprunner.cpp's touchFolder). This hook only counts the folders for
-	// the summary line. (Runs on the engine's worker thread.)
+	// The engine retires Avid databases for rebalance and its Undo. This
+	// worker-thread hook only counts affected folders for the UI summary.
 	m_engine->renameFolderTouched = [this](const QString &)
 	{ m_foldersReset.fetch_add(1, std::memory_order_relaxed); };
 
-	// Signal adaptation, once: the engine speaks OpManager, the dialog
-	// speaks Rebalancer, and RebalanceDialog's four connects stay
-	// exactly as they were.
+	// Adapt shared-engine progress and outcomes to the dialog's signals.
 	connect(m_engine, &OpManager::operationProgress, this,
 			[this](const QString &name, int current, int total, double)
 			{ emit progress(current, total, name); });

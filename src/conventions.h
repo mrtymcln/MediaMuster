@@ -8,33 +8,10 @@
 #include <array>
 
 // MARK: - Conventions
-/// The one home for the agreed spellings and numbers that more than one
-/// feature has to read the same way: what Avid calls its folders, what
-/// counts as media, how full a folder may get, and the names MediaMuster
-/// writes onto a user's drive. One home because they have already drifted
-/// once — the rebalance picker matched 'MXF' case-sensitively while the
-/// scanner didn't (a lowercase 'mxf' share scanned fine, then Rebalance
-/// said nothing was found), and only the rebalancer knew that dot-hidden
-/// "._*.mxf" AppleDouble siblings aren't media.
-///
-/// TWO KINDS LIVE HERE, and the difference matters more than it looks:
-///
-///   [AVID — DO NOT CHANGE]  Facts about someone else's software. Editing
-///                           one doesn't change a policy, it tells a lie:
-///                           the value stops describing what Media
-///                           Composer actually does. Change these only to
-///                           correct a mistake, with evidence.
-///
-///   [OURS — SAFE TO CHANGE] Choices MediaMuster made. Changing one is a
-///                           real decision with real consequences (older
-///                           files on disk keep the old spelling), but it
-///                           breaks nothing outside this app.
-///
-/// Membership test, so this stays a reference and not a junk drawer:
-/// something belongs here only if it is (a) a DECISION rather than a
-/// computation, and (b) read by two or more unrelated places. Logic that
-/// derives an answer belongs with its algorithm; a value only one file
-/// reads belongs in that file.
+/// Shared folder names, filename rules and capacity thresholds.
+/// Keep external Avid spellings distinct from MediaMuster's own choices.
+/// Format evidence and supported scope: docs/parser-compatibility.md and
+/// docs/release-feature-gates.md. Values used by only one feature belong there.
 
 namespace Conventions
 {
@@ -42,7 +19,7 @@ namespace Conventions
 	// MARK: - Avid's folder names
 	// ═══════════════════════════════════════════════════════════════
 
-	/// [AVID — DO NOT CHANGE] The folder Media Composer creates at a
+	/// [AVID] The folder Media Composer creates at a
 	/// volume root, and the essence folder inside it.
 	inline constexpr QLatin1String kAvidMediaFilesDir("Avid MediaFiles");
 	inline constexpr QLatin1String kMxfDir("MXF");
@@ -57,40 +34,10 @@ namespace Conventions
 
 	// MARK: - OMF-era folder
 
-	/// OMF-era: [AVID — DO NOT CHANGE] The legacy (pre-MXF) media folder.
-	/// It is a TOP-LEVEL folder beside "Avid MediaFiles" — NOT a subfolder
-	/// of it. Local media sits directly inside it; older shared-storage
-	/// workgroups also use one level of workstation folders with their own
-	/// databases (Media Composer Adrenaline 1.1.1 ReadMe, Shared Bin and
-	/// Project Limitations). Verified against Media Composer 25.12 and 26.8: the
-	/// binary references "/Shared/AvidMediaComposer/OMFI MediaFiles", no
-	/// string of the form "Avid MediaFiles/OMF..." exists in it, and Avid
-	/// KB en273303 names the two folders as siblings at a volume root. (A
-	/// bare "OMF" was accepted here until 2026-08-14; it came from
-	/// prototyping, matched nothing Avid ever writes, and is gone.)
-	///
-	/// What makes the era different, so nobody re-derives it from MXF
-	/// assumptions (facts corrected 2026-09-02 against real MC 26.8 output):
-	///   - msmFMID.pmr is VERSION 2 — the version-8 grammar with 8-byte
-	///     MOBs, the same optional Unicode set (which carries the MOB in
-	///     Avid's wrapped 32-byte form — see OmfUid), a 4-byte MASTER
-	///     trailer, and a file trailer that is the file's mtime in Unix
-	///     seconds. Avid ships an 80-PAIR specimen in
-	///     SupportingFiles/Avid_MediaFiles/msmFMID.pmr.
-	///   - msmMMOB.mdb keys its mobs by a 12-byte omfi:UID, not a 32-byte
-	///     UMID (MC 2026 also writes a UMID on the physical mob).
-	///   - The known .omf/.aif/.wav specimens carry OMF metadata in an
-	///     Apple Bento container, the same container msmMMOB.mdb uses.
-	///     .omf can describe audio as well as video.
-	/// The readers for all three landed 2026-09-02 (PmrParser's version-2
-	/// path, MdbParser through OmfObjects, and OmfParser for the essence),
-	/// so an OMF folder now scans exactly like an MXF one — databases
-	/// first, the Bento tail only for rows they leave undescribed.
-	///
-	/// An OMF root is deliberately NOT an MXF root: the scanner scans one,
-	/// but rebalancing an OMF root into MXF-numbered folders would be
-	/// wrong. Rebalance explicitly excludes OMF media. Keep the two
-	/// distinct; tst_conventions pins that they never collide.
+	/// Legacy media uses a separate OMFI MediaFiles tree, with files directly
+	/// inside it or one workstation-folder level below. It must not inherit
+	/// MXF numbered-folder rules; Rebalance excludes this family.
+	/// Format details: docs/parser-compatibility.md.
 	inline constexpr QLatin1String kOmfMediaFilesDir("OMFI MediaFiles");
 
 	/// OMF-era: case-insensitive like isMxfRootName, for the same reasons.
@@ -115,7 +62,7 @@ namespace Conventions
 
 	// MARK: - Avid's transient capture folder
 
-	/// [AVID — DO NOT CHANGE] The staging subfolder Media Composer makes
+	/// [AVID] The staging subfolder Media Composer makes
 	/// inside a media root while it is writing new media, in BOTH eras
 	/// (under "Avid MediaFiles/MXF" and under "OMFI MediaFiles"). Its
 	/// contents are half-written files that will be renamed into a real
@@ -135,17 +82,10 @@ namespace Conventions
 
 	// MARK: - Where Avid puts media on the system drive
 
-	/// [AVID — DO NOT CHANGE] Avid's placement rule (user ruling
-	/// 2026-09-02, matching what the MC binary hard-codes): media lives at
-	/// the ROOT of an external drive, or in one fixed place on the system
-	/// drive. These are the fixed places — the bases under which BOTH
-	/// kAvidMediaFilesDir and kOmfMediaFilesDir are probed. A volume scan
-	/// looks exactly here and at drive roots and nowhere deeper. Manual
-	/// selections accept a valid managed tree or its immediate container.
-	///
-	/// Windows keeps the legacy root "C:/" as a base because older Media
-	/// Composers wrote "C:\Avid MediaFiles" directly, and the scanner's
-	/// boot-volume skip would otherwise never look there.
+	/// Fixed system-drive bases probed alongside mounted drive roots.
+	/// Other intact media trees must be added explicitly; automatic scans
+	/// do not search arbitrary descendants. C:/ retains the legacy Windows
+	/// root location because volume discovery skips the boot volume.
 	inline QStringList systemDriveMediaBases()
 	{
 		QStringList bases;
@@ -162,7 +102,7 @@ namespace Conventions
 	// MARK: - Avid's database file names
 	// ═══════════════════════════════════════════════════════════════
 
-	/// [AVID — DO NOT CHANGE] The per-folder index and clip database, in
+	/// [AVID] The per-folder index and clip database, in
 	/// both spellings Media Composer writes: msm* for media it manages,
 	/// ama* for AMA-linked folders. A folder may hold either or both; the
 	/// scanner reads every one present and merges. Same names in both eras;
@@ -201,8 +141,7 @@ namespace Conventions
 			   fileName.endsWith(QLatin1String(".wav"), Qt::CaseInsensitive);
 	}
 
-	/// Extensions that are Avid media (user ruling 2026-08-12): MXF-era
-	/// essence, plus the OMF era.
+	/// Combined filename allowlist; layout and the OMF gate narrow scan admission.
 	inline bool hasAvidMediaExtension(QStringView fileName)
 	{
 		return hasMxfExtension(fileName) || hasOmfEraExtension(fileName);
@@ -212,18 +151,18 @@ namespace Conventions
 	// MARK: - Avid's per-folder file budget
 	// ═══════════════════════════════════════════════════════════════
 
-	/// [AVID — DO NOT CHANGE] Media Composer's own ceiling. A folder
-	/// should never reach this; past it, MC slows down badly.
+	/// Reference ceiling used for folder warnings and the rebalance target.
+	/// This is a file-count budget, not a byte-size limit.
 	inline constexpr int kFolderMax = 5000;
 
-	/// [OURS — SAFE TO CHANGE] What the Rebalancer packs folders up to.
+	/// [MEDIAMUSTER] What the Rebalancer packs folders up to.
 	/// One below Avid's ceiling, sourced from it so the two can't drift.
 	inline constexpr int kFolderTarget = kFolderMax - 1; // 4999
 
-	/// [OURS — SAFE TO CHANGE] Where the folder-card bar turns red.
+	/// [MEDIAMUSTER] Where the folder-card bar turns red.
 	inline constexpr int kFolderCritical = 4800;
 
-	/// [OURS — SAFE TO CHANGE] Where it turns amber.
+	/// [MEDIAMUSTER] Where it turns amber.
 	inline constexpr int kFolderWarn = 4500;
 
 	// ═══════════════════════════════════════════════════════════════

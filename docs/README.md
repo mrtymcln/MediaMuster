@@ -1,24 +1,41 @@
 # Documentation index
 
-## Current design and development
+## Start here
 
-- [Architecture map](architecture.md): module responsibilities and data flow.
+- [How MediaMuster works](current-behaviour.md): current behaviour in plain English,
+  including scan scope, labels, selection, file operations and recovery.
+- [Architecture map](architecture.md): who does what in the code and where to look.
 - [Release feature gates](release-feature-gates.md): session-only Debug features and public builds.
 - [Contributor guide](CONTRIBUTING.md): naming, formatting, build lists and validation.
-- [Cleanup audit](codebase-cleanup-audit.md): accepted decisions and implementation status.
-- [CI and test cleanup](ci-cleanup-proposal.md): implemented before/after, scenario mapping and validation.
-- [Native file-operation design](file-operations-native-api-plan.md).
+
+These are the starting points for current behaviour and responsibilities. Update
+them when those behaviours change. Comments beside code should explain the current
+rule and its reason; dated investigations belong in the records below.
+
+## Technical references and validation
+
 - [Native file-operation validation](file-operations-native-api-validation.md): tested behaviour and outstanding platform checks.
 - [Parser compatibility](parser-compatibility.md) and [implementation validation](implementation-validation.md).
 - [AVB parser](avb-parser.md) and [AVB error examples](avb-error-examples.md).
 - [Usage-code identification](usage-code-identification.md): provenance for Avid classification rules.
+- [PMR completeness](pmr-completeness.md): conditions for trusting the file index.
+- [Precompute details](effect-details-preview.md): classification, display and filter design.
 
-## Historical plans and evidence
+Validation records describe the source revision, platform and scenarios actually
+checked. They do not establish that a later build or another storage system passes.
 
-The [phase-one operation design](file-operations-phase-one.md) and dated review reports
-describe earlier implementations. Use the native-operation design and current source
-for today's behaviour.
+## Design history and evidence
 
+These documents preserve decisions, proposals, implementation follow-ups and past
+findings. A statement of intent or an old finding is not necessarily current
+behaviour. Start with the guide above and follow the source links when checking it.
+
+- [Cleanup audit](codebase-cleanup-audit.md).
+- [CI and test cleanup](ci-cleanup-proposal.md).
+- [Native file-operation design](file-operations-native-api-plan.md).
+- [Phase-one operation design](file-operations-phase-one.md).
+- [Native bin fallback](native-bin-fallback.md).
+- [Operation recovery and cleanup](operation-recovery-cleanup.md).
 - [6 September code review](reviews/2026-09-06-current-code/REVIEW.md), with its
   [evidence and replay notes](reviews/2026-09-06-current-code/evidence/README.md).
 - [5 September AVB review](avb-review-2026-09-05.md).
@@ -26,8 +43,7 @@ for today's behaviour.
   with [earlier validation history](reviews/2026-09-20-media-scope/validation-history.md).
 
 Keep complete dated review bundles under `docs/reviews/`, with each report beside
-its evidence. The duplicate Astra review has been consolidated into the dated code
-review above. Captured logs and manifests preserve the paths and source state from
+its evidence. Captured logs and manifests preserve the paths and source state from
 the original investigation.
 
 Real media fixtures under `tests/fixtures/` remain active regression inputs. The

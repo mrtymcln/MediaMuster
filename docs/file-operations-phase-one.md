@@ -1,10 +1,10 @@
 # File operations: first phase
 
-Historical implementation snapshot. See [the native API implementation](file-operations-native-api-validation.md) for current behaviour, including journal retention.
+Historical implementation snapshot. For current behaviour, read [How MediaMuster works](current-behaviour.md). See [native API validation](file-operations-native-api-validation.md) for recorded test results.
 
 Copy, Move, Delete and Rebalance now use one engine. This is an implementation with local regression coverage, not a claim that every storage configuration has been validated.
 
-## Current behaviour
+## Behaviour at this phase
 
 - **Copy:** stream the source into an exclusively created temporary file, calculating XXH3-64 as the bytes are copied. Request a disk flush, read the destination once, and compare checksums. Only then publish under the final name using a native operation that refuses to overwrite an existing file. There is no clone or native-copy shortcut.
 - **Move within a filesystem:** when directory persistence is supported, relocate the existing file with the native no-overwrite operation. The data is not recopied. Check its identity before and after, and record the original and destination locations. If directory flush is explicitly unsupported, use the verified-copy fallback and retain the original.

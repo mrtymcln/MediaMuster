@@ -4,7 +4,8 @@ Implementation has been completed and tested locally on macOS. See [implementati
 
 Updated: 12 September 2026. This records the agreed implementation plan; descriptions
 of the former implementation below are historical planning context. Current module
-ownership is documented in the [architecture map](architecture.md).
+ownership is documented in the [architecture map](architecture.md); user-visible
+behaviour is described in [How MediaMuster works](current-behaviour.md).
 
 ## What the app should feel like
 

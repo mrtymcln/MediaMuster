@@ -492,13 +492,8 @@ void MediaScanner::doScan()
 
 // MARK: - Scan conclusion
 
-// The one closing-up routine: cancellation and the normal finish
-// all leave through here, so per-scan state can't survive into the next
-// scan whichever door fires. (It used to: only the normal exit cleared,
-// so a cancelled scan's cached MDB maps could attribute the NEXT scan's
-// files from a database that no longer existed on disk, and its over-cap
-// entries duplicated the next summary.) startScan() clears the same
-// state defensively — the second lock on the same door.
+// Clear shared scan state on every exit so cancellation cannot leave stale
+// database records or folder counts for the next scan.
 void MediaScanner::concludeScan(const QVector<MediaFile> &files, bool cancelled)
 {
 	if (cancelled)
@@ -900,13 +895,8 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 	auto bufLog = [&logs](QtMsgType level, const QString &module, const QString &msg)
 	{ logs.append({level, module, msg}); };
 
-	// The msm* spelling is the primary of each kind: it keeps the console
-	// line it always had ("PMR:" / "MDB:"), and it alone decides the
-	// folder's verdict. An ama* twin that fails to parse while its msm*
-	// sibling read fine is logged and ignored — the folder's index still
-	// stands, so an unmatched row is a real miss, exactly as it was before
-	// the twins were read at all. A twin fails the folder only when it is
-	// the only file of its kind that was there.
+	// Read msm* first. Its parse failure affects the folder status even if
+	// ama* succeeds; an ama* failure is ignored when msm* already succeeded.
 	const auto isPrimary = [](QLatin1String name, const auto &names)
 	{ return name == names[0]; };
 
@@ -1017,7 +1007,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 	return dbs;
 }
 
-// MARK: - MediaFile assembly (Stage 1)
+// MARK: - MediaFile assembly (database pass)
 
 MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volumeName,
 									   const QString &volumePath, const QString &folderNumber,
@@ -1040,16 +1030,10 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// MARK: File-level metadata
 
 	mf.sizeBytes = fi.size();
-	// birthTime() is invalid on filesystems that don't record creation
-	// (some network shares, ext4). The column shows blank there — an
-	// unknown must never be silently coerced to a different fact (the
-	// modified-time fallback used to do exactly that).
+	// Preserve an unknown creation time; modification time is a different fact.
 	mf.created = fi.birthTime();
 	mf.modified = fi.lastModified();
-	// No clip-name seed: the filename is not a name Avid gave the clip, and
-	// seeding it here meant an unknown arrived at the table looking like an
-	// answer. The name is filled in by setClipName from the MDB (below) or
-	// the MXF header (Stage 2), and stays empty when neither knows.
+	// Names come from media metadata or MDB, never from the filename.
 	mf.isNonPortable = isNonPortableFilename(mf.fileName);
 
 	// MARK: PMR lookup
@@ -1118,12 +1102,8 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 
 	// MARK: Local-database status
 
-	// The PMR is the folder's index of online files: named there = Listed;
-	// otherwise the row takes the folder's verdict computed above. The
-	// project is a separate fact — whatever the PMR entry said, possibly
-	// nothing — and pass 2 reads the header's own `_PJ` for any row still
-	// without one (the same attribute Media Composer reads when it rebuilds
-	// a PMR), so "No project" ends up meaning exactly that: nothing names one.
+	// PMR membership remains separate from metadata recovered through MDB or
+	// the file itself. A recovered project/name does not make the file listed.
 	mf.dbStatus = pmrHit ? MediaFile::DbStatus::Listed : folderStatus;
 
 	return mf;
@@ -1286,9 +1266,8 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 				databaseCategory != metadata.precomputeCategory)
 				mf.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 
-			// Pass 1 found no project in the PMR (no entry, or a blank one):
-			// take the one Avid wrote into the file — the very attribute
-			// Media Composer reads back when it rebuilds a folder's PMR.
+			// Fill a project still missing after the PMR/MDB pass from usable
+			// media metadata; preserve an existing database value.
 			if (headerUsable && mf.project.isEmpty())
 				mf.project = metadata.projectName;
 

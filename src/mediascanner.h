@@ -18,14 +18,8 @@
 
 // MARK: - LogMsg
 
-/// One coalesced log line. The ONE scanner type that has to sit at file
-/// scope: MediaScanner::scanLogBatch takes a QVector<LogMsg>, and moc
-/// needs the complete type when it processes that signal declaration.
-/// (ScanTask and FolderResult have no such constraint and are nested
-/// inside MediaScanner, where their only users are.)
-///
-/// `module` is the console tag ('scanner', 'mxf', 'pmr', 'mdb', and
-/// 'omf' for the OMF-era reader).
+/// One buffered console line. Kept at file scope so Qt's signal generator
+/// sees the complete type used by scanLogBatch.
 struct LogMsg
 {
 	QtMsgType level = QtInfoMsg;
@@ -35,32 +29,12 @@ struct LogMsg
 
 // MARK: - MediaScanner
 
-/// Walks volumes, finds `Avid MediaFiles/MXF` and `OMFI MediaFiles`
-/// roots, and builds one MediaFile per
-/// essence file in two passes:
-///
-///   Pass 1 — databases. Per folder: list the files, read `msmFMID.pmr`
-///            (filename → MOBs, project) and `msmMMOB.mdb` (everything
-///            else: clip name, bin, source, codec, dims, rates, duration,
-///            bits, channels, type) — plus their `ama*` twins where an
-///            AMA-linked folder wrote them. A row the databases fully
-///            describe is finished here and its file is never opened.
-///   Pass 2 — headers. Only for the rows pass 1 could not cover — no PMR
-///            entry (Interplay keeps records centrally; a file MediaMuster
-///            just copied in), an incomplete MDB record, a file changed since
-///            Avid indexed it, or an unreadable database —
-///            read the MXF header as before (OMF-era: the Bento tail via
-///            OmfParser), then try the MDB once more by the header's own
-///            UMID to recover name/bin/source.
-///
-/// Volume paths probe only their immediate media roots. Manual additions
-/// accept correctly structured media trees anywhere, including backups;
-/// the selected path must be a root, its media folder, or its immediate
-/// container. Database presence alone never makes a directory eligible.
-/// AvidMediaLayout supplies the shared structure and filename rules.
-///
-/// Cancellation is cooperative; checked at folder/file boundaries
-/// so work in flight isn't left half-done.
+/// Builds an inventory of recognised Avid media files in two passes:
+/// directory listings and PMR/MDB joins, then media reads for incomplete or
+/// stale rows. Complete current database metadata can avoid a media read.
+/// AvidMediaLayout defines eligible locations; databases alone do not qualify
+/// a folder. Cancellation returns the partial inventory gathered so far.
+/// Scope and metadata rules: docs/current-behaviour.md.
 class MediaScanner : public QObject
 {
 	Q_OBJECT
@@ -84,10 +58,8 @@ public:
 	/// OMF roots qualify here even while their session feature is disabled.
 	static bool canScanPath(const QString &path);
 
-	/// Joins the scan worker before any member unwinds. `m_job` is declared
-	/// first (so destroyed last), and the worker touches m_logMutex /
-	/// m_mdbMapsByFolder / m_pendingLogs etc. — left to the default dtor it
-	/// would run on against members already gone. shutdown() closes that.
+	/// Join before caches and mutexes are destroyed: the worker accesses them,
+	/// and m_job is declared first, so its own destructor would run too late.
 	~MediaScanner() override { m_job.shutdown(); }
 
 	// MARK: - Public API
@@ -105,9 +77,8 @@ signals:
 
 	void scanProgress(int current, int total, const QString &currentPath);
 
-	/// Enumeration and parse are done; post-walk finalisation (MDB recovery,
-	/// tally) is running. The UI shows an indeterminate "Finalising..." so a
-	/// slow finalise on a big or networked share can't look like a frozen 100%.
+	/// Header reads and MDB recovery are complete. Effect naming and tallying
+	/// remain; the UI switches to indeterminate progress for this final work.
 	void scanFinalising();
 
 	/// Coalesces up to ~50 lines or ~100 ms, whichever hits first.
@@ -124,9 +95,8 @@ private:
 
 	void doScan();
 
-	/// The one closing-up routine for every scan exit — cancel doors and
-	/// the normal finish alike — so per-scan state (over-cap summary,
-	/// cached MDB maps) can't leak into the next scan.
+	/// Clear per-scan caches and flush logs on both completion and cancellation,
+	/// so later scans cannot inherit stale metadata.
 	void concludeScan(const QVector<MediaFile> &files, bool cancelled);
 
 	/// A volume path: probe `<path>/Avid MediaFiles/MXF` and, OMF-era,
@@ -215,13 +185,9 @@ private:
 							 const MdbDatabase &mdb,
 							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
 
-	/// Pass 2. Reads the header of every .mxf row pass 1 left without
-	/// technical facts (OMF-era: the Bento tail of every .omf/.aif/.wav
-	/// candidate likewise, through OmfParser), in
-	/// parallel, then re-joins each
-	/// against its folder's cached clip records by the header's UMID (the
-	/// file-in-MDB-but-not-PMR case). Per-folder parallelism alone starves
-	/// cores on small folders, so this runs over all rows after the walk.
+	/// Read rows marked needsHeaderRead, then rejoin cached MDB records by
+	/// recovered master identity. Parallelise across all rows so a scan with
+	/// few folders can still use multiple workers.
 	void readMediaHeadersConcurrently(QVector<MediaFile> &files);
 
 	// MARK: - Log batching
@@ -245,9 +211,8 @@ private:
 
 	Options m_options;
 
-	/// Guarded by m_logMutex. Orchestrator + shared pool threads
-	/// all append via emitLog. The swap-then-emit dance in flushLogs
-	/// keeps the mutex hold short.
+	/// Guard pending logs while swapping batches out for emission. Folder
+	/// workers return their own buffers for the orchestrator to replay.
 	QMutex m_logMutex;
 	QVector<LogMsg> m_pendingLogs;
 

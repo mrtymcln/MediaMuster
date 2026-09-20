@@ -7,19 +7,8 @@
 
 #include <optional>
 
-// MARK: - Op request types
-//
-// The value types every part of the file-operations engine speaks:
-// what the user asked for (OpRequest), one file's line item (OpItem),
-// and the on-disk names for the enums. Pure data with no I/O — so the
-// journal, runner, recovery can all include
-// this without dragging each other in.
-//
-// The engine deliberately does NOT pass MediaFile around: an OpItem
-// carries only what an operation needs, which is also exactly what the
-// journal's plan record can reconstruct for a resumed run. Anything a
-// MediaFile knows that isn't here (codec, project, duration…) is scanner
-// business the engine must never depend on.
+// Requests contain only the file facts execution and journal replay need.
+// Keeping them separate from MediaFile lets recovery work without a scan or UI.
 
 // MARK: - OpKind
 
@@ -36,11 +25,9 @@ enum class OpKind : int
 
 // MARK: - ConflictPolicy
 
-/// What to do when a destination file already exists. Driven from the
-/// per-file dropdown in ManageMediaDialog. A file absent from the policy
-/// map was never shown as a conflict to the user, so if one turns up on
-/// disk anyway it is skipped, never silently replaced (the NTFS
-/// case-variant incident is why — see the runner's conflict resolution).
+/// Destination conflicts never permit replacement. KeepBoth chooses a free
+/// name; Skip leaves the source alone. An unexpected occupied destination with
+/// no KeepBoth policy fails the item, preserving its source.
 enum class ConflictPolicy : int
 {
 	KeepBoth = 0,
@@ -113,23 +100,15 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 
 // MARK: - OpItem
 
-/// One file's line item in a request — and, verbatim, one entry in the
-/// journal's plan record, which is what makes an interrupted run
-/// resumable without a rescan.
-///
-/// The mob fields are the SCAN'S CLAIMS about the file's Avid identity,
-/// recorded so (a) the runner can cross-check the file it finds on disk
-/// against what the user actually selected, and (b) journal, undo and
-/// recovery messages can name clips ("A001_C002"), not just cryptic MXF
-/// filenames. They are claims, not captures: the runner re-reads the
-/// real identity from the file itself immediately before touching it
-/// (using its handle and freshly parsed header), because the dialog can sit open for minutes while
-/// a shared volume changes underneath it.
+/// One selected file, persisted in the journal so a job can resume without
+/// a rescan. Size, time and Avid IDs are scan claims, not fresh disk evidence.
+/// The runner checks filesystem identity and supplied size/time before acting;
+/// known MXF IDs also receive a header cross-check through the open handle.
 struct OpItem
 {
 	QString src;	///< Absolute source path; the item's identity key.
 	QString name;	///< Destination leaf name (usually the source's).
-	QString folder; ///< Avid MXF subfolder ("1", "hostname.3"…); preserve mode only.
+	QString folder; ///< Source media folder; MXF preserve mode reuses this name.
 	/// OMF-era: the scanner's verdict (MediaFile::omfEra). Preserve mode
 	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `folder`
 	/// says; journaled so a resumed run lands it in the same place.
@@ -161,14 +140,13 @@ struct OpItem
 
 // MARK: - OpRequest
 
-/// Everything the engine needs to run one operation. Built by the
-/// OpManager facade from the UI's selection, by the resume flow from a
-/// journal's plan record.
+/// Complete execution input, assembled from UI choices, a rebalance plan,
+/// or a saved journal. Resume retains the recorded verification choice.
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
 	QString destRoot;			 ///< Copy/Move destination root; empty for Delete/Rename/Undo.
-	bool preserve = false;		 ///< Mirror Avid MediaFiles/MXF/<n> under destRoot.
+	bool preserve = false;		 ///< Recreate the MXF folder path or flat OMFI root under destRoot.
 	bool verifyCopies = false;	 ///< Captured once from Debug; Resume keeps this choice.
 	bool copyThenRemove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
 	bool undoEnabled = false;	 ///< Runtime permission to start a NEW Undo; not persisted.

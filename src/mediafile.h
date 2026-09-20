@@ -8,21 +8,16 @@
 #include <QMetaType>
 #include <cmath>
 
-// Plain data types shared across the app. No logic beyond a
-// couple of derived-display helpers; everything else operates
-// on these as inputs.
-
 // MARK: - MediaFile
 
-/// One row of the main table. `filePath` is the primary identity;
-/// `mobId` and `masterMobId` are secondary identities used by the
-/// bin filter to match against .avb references. Both can legitimately
-/// be empty for unreferenced files.
+/// One physical file in the scan inventory, identified by its path.
+/// File and master MOB IDs connect it to Avid records, bins and relatives;
+/// either ID may be unknown. Display helpers are shared with the table and CSV.
 struct MediaFile
 {
 	// MARK: Identity
 
-	QString mobId;		 ///< Avid MOB ID for this essence file (from MDB/PMR).
+	QString mobId;		 ///< Avid file MOB ID recovered from databases or media metadata.
 	QString masterMobId; ///< Master MOB — the master clip's MOB (AAF MasterMob);
 						 ///< V01/A01/A02 relatives share this.
 
@@ -30,33 +25,10 @@ struct MediaFile
 
 	QString clipName;
 
-	/// Where `clipName` came from, ranked. The scanner only ever replaces a
-	/// name with one from a STRICTLY better source, which is what makes the
-	/// ladder hold no matter what order the passes run in: pass 1 reads the
-	/// MDB, pass 2 the MXF header and then the MDB again after the UMID
-	/// re-join, so a rung can arrive before or after a better one.
-	///
-	///   MaterialPackage — the master-clip name Avid itself displays. Exact,
-	///                     per-file, and present in 1212 of 1212 real files
-	///                     surveyed, so this is the normal answer.
-	///   Mdb             — the record's own name in msmMMOB.mdb. Also exact
-	///                     (360/360 against MaterialPackage names on a real
-	///                     folder), and the only name available when the MXF
-	///                     header can't be read at all.
-	///   Avb             — a matching master clip in the loaded bins. Used
-	///                     only when the scanner has no name and those bins
-	///                     agree; removed when that supporting bin is unloaded.
-	///   None            — genuinely unknown. The Clip Name cell stays blank;
-	///                     the filename is NOT substituted (user ruling
-	///                     2026-08-14). See clipNameDisplay().
-	///
-	/// An MXF SourcePackage name is deliberately NOT a rung. It is the name of
-	/// what the media came FROM — the imported file or the tape — not a name
-	/// Avid gave the clip: measured across those same 1212 files it was the
-	/// source filename ("Avid DNx SQ.mov") on 1191 of them. MediaMuster
-	/// already carries that datum in `sourceFileName`, and letting it into
-	/// this column would put a filename back in the Clip Name cell, which is
-	/// the exact thing the ruling removed.
+	/// Higher-ranked recovered names replace lower-ranked ones. A media
+	/// material-package name outranks MDB; agreeing loaded bins fill gaps.
+	/// Source-package names describe imports/tapes and belong in sourceFileName.
+	/// Unknown clip names stay blank rather than falling back to filenames.
 	enum class ClipNameSource
 	{
 		None = 0,
@@ -66,12 +38,9 @@ struct MediaFile
 	};
 	ClipNameSource clipNameSource = ClipNameSource::None;
 
-	/// The project the media was created in. Avid writes it into the PMR entry
-	/// AND the file's own header at creation, and reads it back from the file
-	/// when it rebuilds a folder's databases — so the scanner takes the PMR's
-	/// copy, else the header's, and leaves this EMPTY when neither names one
-	/// (see projectDisplay / hasNoProject). Independent of dbStatus: a file
-	/// can be unlisted in this folder's databases and still name its project.
+	/// Recorded project name, recovered from PMR, then MDB, then readable
+	/// media metadata when still missing. Empty means unknown, independently
+	/// of whether the folder's PMR currently lists this file.
 	QString project;
 	QString originalBin;			 ///< The recorded import-time _ORG_BIN, from media metadata or a bin reference.
 	bool originalBinFromAvb = false; ///< Loaded-bin fallback; cleared when its supporting bins change.
@@ -164,23 +133,15 @@ struct MediaFile
 	};
 	Type type = Type::Unknown;
 
-	/// Whether this folder's Avid databases (msmFMID.pmr / msmMMOB.mdb) list
-	/// the file — a folder-level fact stamped per row. One enum value, so a
-	/// row is exactly one of these by construction. Kept apart from `project`
-	/// on purpose: Avid treats "which project made this" as a property of the
-	/// media and "is it indexed here" as the state of this folder's databases
-	/// right now, and a file can be unlisted yet still name its project.
+	/// Local PMR membership and database readability, independent of project
+	/// metadata and sequence usage. Recovering a name from MDB or a header
+	/// does not make an unlisted file Listed.
 	enum class DbStatus : int
 	{
-		Listed,		 ///< The folder's PMR names the file.
-		NoReference, ///< Databases present and readable, but no reference to this
-					 ///< file: copied in or created since Avid last indexed the
-					 ///< folder, or its records were removed. Avid re-indexes at launch.
-		NoDatabase, ///< No msmFMID.pmr here — no index to check against: other seats'
-					///< folders on shared storage, Interplay / MediaCentral, Quarantined
-					///< Files, a deleted-and-not-yet-rebuilt database, read-only volumes.
-		DbUnreadable ///< A database exists but could not be read (corrupt, truncated,
-					 ///< or an unsupported older version); Avid rebuilds it at relaunch.
+		Listed,		 ///< The parsed PMR names this file.
+		NoReference, ///< PMR misses the file; no database check failed.
+		NoDatabase,	 ///< No PMR index is available to check.
+		DbUnreadable ///< A present database could not be read reliably.
 	};
 	DbStatus dbStatus = DbStatus::Listed;
 
@@ -190,28 +151,20 @@ struct MediaFile
 	{
 		return dbStatus == DbStatus::NoDatabase || dbStatus == DbStatus::DbUnreadable;
 	}
-	/// Nothing names a project for this file — not the PMR entry, not the
-	/// file's own header. Not a database state: an unlisted file usually still
-	/// knows its project (the header carries it), so the two are independent.
+	/// No project name was recovered; this says nothing about database
+	/// membership or whether a sequence uses the file.
 	bool hasNoProject() const { return project.isEmpty(); }
 
-	/// The file's or its clip's MOB ID is all zeros — Avid never assigned a
-	/// real identity, so the media can't be tracked or relinked reliably.
-	/// (A UMID is what a MOB ID is; the name keeps the domain word.) Never
-	/// seen in 1,155 Avid-written files; catches third-party MXF. MDVx ships
-	/// the same filter as "Bad UMID".
+	/// A recovered file or master MOB ID is all zeros. Missing IDs alone do
+	/// not set this flag; it is not a general identifier-validity check.
 	bool isInvalidUmid = false;
-	bool isNonPortable = false; ///< Filename has Avid illegal chars.
-	bool isQuarantined = false; ///< Lives in Avid's "Quarantined Files" folder. Stamped by
-								///< the scanner, which knows the folder; the filter only
-								///< reads it (it used to re-guess from a path substring).
+	bool isNonPortable = false; ///< Filename falls outside the scanner's character allowlist.
+	bool isQuarantined = false; ///< Scanner-confirmed MXF quarantine location.
 
 	// MARK: Status words
 
-	/// The ONE place that says what each database status is called and why
-	/// it happens. The filter tab, the table tooltip, the sidebar, and the CSV
-	/// all read this, so they cannot drift. `label` doubles as the CSV value;
-	/// the two couldn't-check states share a label (one tab) and differ in `why`.
+	/// Shared database-status labels and explanations. Missing and unreadable
+	/// databases use the same visible label but retain different explanations.
 	struct DbStatusText
 	{
 		QString label;
@@ -324,10 +277,7 @@ struct MediaFile
 		return QStringLiteral("\u2014");
 	}
 
-	/// "Size (MB)" column / CSV string — derived from sizeBytes on every
-	/// call (decimal MB, 1000-based, matching Format::bytes). A stored
-	/// twin field used to sit beside sizeBytes; deriving means the two
-	/// can never disagree. Sorting compares sizeBytes directly.
+	/// Decimal MB for table/CSV display; sorting uses the exact byte count.
 	QString sizeMBDisplay() const { return QString::number(sizeBytes / 1'000'000.0, 'f', 1); }
 
 	/// "Date Created" column AND CSV string — one format for both, with
@@ -347,16 +297,8 @@ struct MediaFile
 								  : QString();
 	}
 
-	/// "Clip Name" column string. Blank when no clip name is known: the
-	/// filename is a fact about the disk, not a name Avid gave the clip, and
-	/// substituting it made an unknown look like an answer (user ruling
-	/// 2026-08-14 — same promise createdDisplay() already makes). The old
-	/// fallback also disagreed with the CSV export, which has always written
-	/// the raw field, and it showed the name WITH its extension where the
-	/// Stage-1 seed showed it without.
-	///
-	/// The sort compares this same string, so order and display can never
-	/// disagree. Returns a reference to the member — no copy per comparison.
+	/// Preserve unknown clip names as blank in the table, sort and CSV.
+	/// The on-disk filename is a separate fact, not a fallback clip name.
 	const QString &clipNameDisplay() const
 	{
 		return clipName;
