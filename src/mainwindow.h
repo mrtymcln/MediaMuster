@@ -116,6 +116,7 @@ private:
 	void updateFilterCounts();
 	void openManageMedia(int initialOp);
 	void updateActivityUi();
+	void updateSelectionActions();
 	class ProgressDialog *progressDialog();
 	/// Only visible selected rows become operation/export inputs. Remembered
 	/// hidden selections are restored to the view when filters permit them.
@@ -155,7 +156,7 @@ private:
 	void rebuildFilterChips();
 	void rebuildProjectList();
 	void setOmfEnabled(bool enabled);
-	void setEffectDetailsEnabled(bool enabled);
+	void setPrecomputesEnabled(bool enabled);
 
 	/// Drop every active filter back to its default after a scan swaps in a
 	/// new dataset, so a stale predicate (a project name or bin MOB from the
@@ -194,6 +195,21 @@ private:
 	QPushButton *m_btnExport;
 	QPushButton *m_btnRebalance;
 
+	// Shared commands keep menu and button availability in sync.
+	class QAction *m_addFolderAct = nullptr;
+	class QAction *m_refreshVolumesAct = nullptr;
+	class QAction *m_scanSelectedAct = nullptr;
+	class QAction *m_scanAllAct = nullptr;
+	class QAction *m_manageMediaAct = nullptr;
+	class QAction *m_binFilterAct = nullptr;
+	class QAction *m_rebalanceAct = nullptr;
+	class QAction *m_exportAct = nullptr;
+	class QAction *m_revealAct = nullptr;
+	class QAction *m_selectRelativesAct = nullptr;
+	class QAction *m_selectInverseAct = nullptr;
+	bool m_exportInProgress = false;
+	bool m_selectionHasMasterMob = false;
+
 	// MARK: - Status-bar labels
 
 	QLabel *m_statusFiles;
@@ -209,9 +225,9 @@ private:
 	QElapsedTimer m_scanTimer;
 	bool m_showAllFilterTabs = false;
 	bool m_omfEnabled = false;
-	class QAction *m_omfAct = nullptr;
-	bool m_effectDetailsEnabled = false;
-	class QAction *m_effectDetailsAct = nullptr;
+	class QAction *m_enableOmfAct = nullptr;
+	bool m_precomputesEnabled = false;
+	class QAction *m_enablePrecomputesAct = nullptr;
 	class QAction *m_effectFilterAct = nullptr;
 	QSet<QString> m_manualVolumes;
 

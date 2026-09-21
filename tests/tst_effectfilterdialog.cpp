@@ -81,7 +81,7 @@ namespace
 		model.setMediaFiles(files);
 		MediaFilterProxy proxy;
 		proxy.setSourceModel(&model);
-		proxy.setEffectDetailsEnabled(true);
+		proxy.setPrecomputesEnabled(true);
 		proxy.setPrecomputeTreeFilter(filter);
 		proxy.setEffectVolumeFilter(volume);
 		QStringList names;

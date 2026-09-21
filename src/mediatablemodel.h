@@ -70,18 +70,18 @@ public:
 
 	/// Debug toggle: Codec column shows the raw 16-byte
 	/// essence-container UL hex instead of the resolved codec name.
-	void setShowRawCodecHex(bool on);
-	bool showRawCodecHex() const { return m_showRawCodecHex; }
+	void setShowCodecHex(bool on);
+	bool showCodecHex() const { return m_showCodecHex; }
 
 	/// Appended experimental columns; changing the gate preserves rows,
 	/// existing column numbers and persistent indexes in those columns.
-	void setEffectDetailsEnabled(bool enabled);
-	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
+	void setPrecomputesEnabled(bool enabled);
+	bool precomputesEnabled() const { return m_precomputesEnabled; }
 
 private:
 	void applyAvbMetadata(bool notify);
 	BinMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
-	bool m_showRawCodecHex = false;
-	bool m_effectDetailsEnabled = false;
+	bool m_showCodecHex = false;
+	bool m_precomputesEnabled = false;
 };

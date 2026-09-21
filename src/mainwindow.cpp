@@ -214,6 +214,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupMenus();
 	setupConnections();
 	updateFilterCounts();
+	updateActivityUi();
 
 	setWindowTitle("MediaMuster");
 	resize(1200, 750);
@@ -242,10 +243,6 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 		addLog(QtWarningMsg, QStringLiteral("app"),
 			   "Full Disk Access not granted. Go to System Preferences > Privacy & Security.");
 	}
-	else
-	{
-		addLog(QtInfoMsg, QStringLiteral("app"), "Full Disk Access: granted!");
-	}
 #endif // Q_OS_MAC
 
 	// Show the window before recovery. Finish any crash-report notice first
@@ -258,7 +255,13 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 					   });
 }
 
-MainWindow::~MainWindow() = default;
+MainWindow::~MainWindow()
+{
+	// Model/selection resets during child destruction must not call back into
+	// a MainWindow whose derived destructor has already finished.
+	for (auto *child : findChildren<QObject *>())
+		disconnect(child, nullptr, this, nullptr);
+}
 
 // MARK: - Crash recovery
 
@@ -272,11 +275,11 @@ void MainWindow::collectCrashReports()
 
 	addLog(QtWarningMsg, QStringLiteral("app"),
 		   QStringLiteral("MediaMuster quit unexpectedly. — %1 report(s) saved. "
-						  "Go to Help > Reveal Logs to send them.")
+						  "Go to Help > Reveal Logs to send them to the developer.")
 			   .arg(collected.size()));
 
 	QMessageBox::information(
-		this, tr("MediaMuster closed unexpectedly"),
+		this, QString(),
 		tr("MediaMuster quit unexpectedly. A crash report has been saved with "
 		   "your logs.\n\nGo to Help > Reveal Logs to send them to the developer."));
 }
@@ -389,14 +392,14 @@ QWidget *MainWindow::buildToolbar()
 	m_searchField->setMinimumWidth(200);
 	m_searchField->setMaximumWidth(320);
 
-	m_btnFileOps = new QPushButton(tr("Manage Media..."));
-	m_btnBinFilter = new QPushButton(tr("Filter by Bin..."));
-	m_btnEffectFilter = new QPushButton(tr("Filter Precomputes..."));
+	m_btnFileOps = new QPushButton(tr("Manage Media…"));
+	m_btnBinFilter = new QPushButton(tr("Filter by Bin…"));
+	m_btnEffectFilter = new QPushButton(tr("Filter Precomputes…"));
 	m_btnEffectFilter->setObjectName(QStringLiteral("filterByEffectButton"));
 	m_btnEffectFilter->setVisible(false);
 	m_btnEffectFilter->setEnabled(false);
-	m_btnExport = new QPushButton(tr("Export CSV..."));
-	m_btnRebalance = new QPushButton(tr("Rebalance..."));
+	m_btnExport = new QPushButton(tr("Export CSV…"));
+	m_btnRebalance = new QPushButton(tr("Rebalance…"));
 	m_btnFileOps->setEnabled(false);
 	m_btnRebalance->setEnabled(false);
 
@@ -564,9 +567,9 @@ void MainWindow::buildFileMenu()
 {
 	auto *fileMenu = menuBar()->addMenu(tr("&File"));
 
-	auto *addFolderAct = fileMenu->addAction(tr("Add &Folder or Volume"));
-	addFolderAct->setShortcut(QKeySequence("Ctrl+O"));
-	connect(addFolderAct, &QAction::triggered, this,
+	m_addFolderAct = fileMenu->addAction(tr("Add &Folder or Volume…"));
+	m_addFolderAct->setShortcut(QKeySequence("Ctrl+O"));
+	connect(m_addFolderAct, &QAction::triggered, this,
 			[this]()
 			{
 				QString dir = QFileDialog::getExistingDirectory(this, tr("Add Volume or Folder"));
@@ -574,35 +577,37 @@ void MainWindow::buildFileMenu()
 					addVolumePath(dir);
 			});
 
-	fileMenu->addSeparator();
-
-	auto *scanSelAct = fileMenu->addAction(tr("Scan &Selected"));
-	connect(scanSelAct, &QAction::triggered, this, &MainWindow::onScanClicked);
-
-	auto *scanAllAct = fileMenu->addAction(tr("Scan &All"));
-	scanAllAct->setShortcut(QKeySequence("Ctrl+Shift+A"));
-	connect(scanAllAct, &QAction::triggered, this, &MainWindow::onScanAllClicked);
-
-	auto *refreshAct = fileMenu->addAction(tr("Refresh &Volumes"));
-	refreshAct->setShortcut(QKeySequence("Ctrl+R"));
-	connect(refreshAct, &QAction::triggered, this, &MainWindow::onDetectVolumes);
+	m_refreshVolumesAct = fileMenu->addAction(tr("Refresh &Volumes List"));
+	m_refreshVolumesAct->setShortcut(QKeySequence("Ctrl+R"));
+	connect(m_refreshVolumesAct, &QAction::triggered, this, &MainWindow::onDetectVolumes);
 
 	fileMenu->addSeparator();
 
-	auto *revealAct = fileMenu->addAction(tr("Reveal in Finder"));
-	revealAct->setShortcut(QKeySequence("Ctrl+Shift+R"));
-	connect(revealAct, &QAction::triggered, this, &MainWindow::onRevealInFinder);
+	m_scanSelectedAct = fileMenu->addAction(tr("Scan &Selected Locations"));
+	m_scanSelectedAct->setObjectName(QStringLiteral("scanSelectedAction"));
+	connect(m_scanSelectedAct, &QAction::triggered, this, &MainWindow::onScanClicked);
 
-	fileMenu->addSeparator();
-
-	auto *exportAct = fileMenu->addAction(tr("&Export CSV..."));
-	exportAct->setShortcut(QKeySequence("Ctrl+E"));
-	connect(exportAct, &QAction::triggered, this, &MainWindow::onExportCsv);
+	m_scanAllAct = fileMenu->addAction(tr("Scan &All Locations"));
+	m_scanAllAct->setObjectName(QStringLiteral("scanAllAction"));
+	m_scanAllAct->setShortcut(QKeySequence("Ctrl+Shift+A"));
+	connect(m_scanAllAct, &QAction::triggered, this, &MainWindow::onScanAllClicked);
 
 	fileMenu->addSeparator();
 
 	// One place for unfinished jobs and originals awaiting restoration.
 	fileMenu->addAction(m_operations->recoveryAction());
+
+	fileMenu->addSeparator();
+
+	m_revealAct = fileMenu->addAction(tr("Reveal in Finder"));
+	m_revealAct->setObjectName(QStringLiteral("revealInFinderAction"));
+	m_revealAct->setShortcut(QKeySequence("Ctrl+Shift+R"));
+	connect(m_revealAct, &QAction::triggered, this, &MainWindow::onRevealInFinder);
+
+	m_exportAct = fileMenu->addAction(tr("&Export CSV…"));
+	m_exportAct->setObjectName(QStringLiteral("exportCsvAction"));
+	m_exportAct->setShortcut(QKeySequence("Ctrl+E"));
+	connect(m_exportAct, &QAction::triggered, this, &MainWindow::onExportCsv);
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
@@ -621,23 +626,21 @@ void MainWindow::buildEditMenu()
 	// Hidden and without a shortcut until Debug enables it, so ordinary
 	// text-field Undo keeps working throughout the default beta workflow.
 	editMenu->addAction(m_operations->undoAction());
-	m_operations->setUndoSeparator(editMenu->addSeparator());
 
 	auto *findAct = editMenu->addAction(tr("&Find"));
 	findAct->setShortcut(QKeySequence::Find);
 	connect(findAct, &QAction::triggered, m_searchField, qOverload<>(&QWidget::setFocus));
 
-	auto *selectAllAct = editMenu->addAction(tr("Select &All"));
-	selectAllAct->setShortcut(QKeySequence::SelectAll);
-	connect(selectAllAct, &QAction::triggered, m_tableView, &QTableView::selectAll);
+	editMenu->addSeparator();
+	m_selectRelativesAct = editMenu->addAction(tr("Select &Relatives"));
+	m_selectRelativesAct->setObjectName(QStringLiteral("selectRelativesAction"));
+	m_selectRelativesAct->setShortcut(QKeySequence("Ctrl+Shift+L"));
+	connect(m_selectRelativesAct, &QAction::triggered, this, &MainWindow::onSelectRelatives);
 
-	auto *relAct = editMenu->addAction(tr("Select &Relatives"));
-	relAct->setShortcut(QKeySequence("Ctrl+Shift+L"));
-	connect(relAct, &QAction::triggered, this, &MainWindow::onSelectRelatives);
-
-	auto *invAct = editMenu->addAction(tr("Select &Inverse"));
-	invAct->setShortcut(QKeySequence("Ctrl+Shift+I"));
-	connect(invAct, &QAction::triggered, this, &MainWindow::onInvertSelection);
+	m_selectInverseAct = editMenu->addAction(tr("Select &Inverse"));
+	m_selectInverseAct->setObjectName(QStringLiteral("selectInverseAction"));
+	m_selectInverseAct->setShortcut(QKeySequence("Ctrl+Shift+I"));
+	connect(m_selectInverseAct, &QAction::triggered, this, &MainWindow::onInvertSelection);
 }
 
 // MARK: View menu
@@ -677,24 +680,24 @@ void MainWindow::buildSpecialMenu()
 {
 	auto *specialMenu = menuBar()->addMenu(tr("&Special"));
 
-	auto *binFilterAct = specialMenu->addAction(tr("Filter by &Bin..."));
-	binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
-	connect(binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
-	m_effectFilterAct = specialMenu->addAction(tr("Filter &Precomputes..."));
+	m_manageMediaAct = specialMenu->addAction(tr("Manage &Media…"));
+	m_manageMediaAct->setObjectName(QStringLiteral("manageMediaAction"));
+	connect(m_manageMediaAct, &QAction::triggered, this, &MainWindow::onFileOperations);
+
+	m_binFilterAct = specialMenu->addAction(tr("Filter by &Bin…"));
+	m_binFilterAct->setObjectName(QStringLiteral("filterByBinAction"));
+	m_binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
+	connect(m_binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
+	m_effectFilterAct = specialMenu->addAction(tr("Filter &Precomputes…"));
 	m_effectFilterAct->setObjectName(QStringLiteral("filterByEffectAction"));
 	m_effectFilterAct->setVisible(false);
 	m_effectFilterAct->setEnabled(false);
 	connect(m_effectFilterAct, &QAction::triggered, this, &MainWindow::onFilterByEffects);
 
 	specialMenu->addSeparator();
-	auto *rebalanceAct = specialMenu->addAction(tr("&Rebalance..."));
-	connect(rebalanceAct, &QAction::triggered, this, &MainWindow::onRebalance);
-
-#ifdef Q_OS_MAC
-	specialMenu->addSeparator();
-	auto *permissionsAct = specialMenu->addAction(tr("Check &Permissions..."));
-	connect(permissionsAct, &QAction::triggered, this, &MainWindow::onCheckPermissions);
-#endif
+	m_rebalanceAct = specialMenu->addAction(tr("&Rebalance…"));
+	m_rebalanceAct->setObjectName(QStringLiteral("rebalanceAction"));
+	connect(m_rebalanceAct, &QAction::triggered, this, &MainWindow::onRebalance);
 }
 
 // MARK: Debug menu
@@ -706,39 +709,42 @@ void MainWindow::buildDebugMenu()
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	m_omfAct = debugMenu->addAction(tr("Enable OMF/OMFI"));
-	m_omfAct->setObjectName(QStringLiteral("omfDebugAction"));
-	m_omfAct->setCheckable(true);
-	connect(m_omfAct, &QAction::toggled, this, &MainWindow::setOmfEnabled);
+	m_enableOmfAct = debugMenu->addAction(tr("Enable OMF"));
+	m_enableOmfAct->setObjectName(QStringLiteral("enableOmfDebugAction"));
+	m_enableOmfAct->setCheckable(true);
+	connect(m_enableOmfAct, &QAction::toggled, this, &MainWindow::setOmfEnabled);
+
+	// One gate covers classification, details, filtering and CSV fields.
+	m_enablePrecomputesAct = debugMenu->addAction(tr("Enable Precomputes"));
+	m_enablePrecomputesAct->setObjectName(QStringLiteral("enablePrecomputesDebugAction"));
+	m_enablePrecomputesAct->setCheckable(true);
+	m_enablePrecomputesAct->setChecked(false);
+	connect(m_enablePrecomputesAct, &QAction::toggled, this, &MainWindow::setPrecomputesEnabled);
+
 	debugMenu->addAction(m_operations->verifyCopiesAction());
 	debugMenu->addAction(m_operations->enableUndoAction());
 	debugMenu->addSeparator();
 
-	auto *codecHexAct = debugMenu->addAction(tr("Codec hex details"));
-	codecHexAct->setCheckable(true);
-	codecHexAct->setChecked(false);
-	connect(codecHexAct, &QAction::triggered, this,
+	auto *showCodecHexAct = debugMenu->addAction(tr("Show codec hex"));
+	showCodecHexAct->setObjectName(QStringLiteral("showCodecHexDebugAction"));
+	showCodecHexAct->setCheckable(true);
+	showCodecHexAct->setChecked(false);
+	connect(showCodecHexAct, &QAction::triggered, this,
 			[this](bool on)
 			{
-				m_model->setShowRawCodecHex(on);
-				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec hex details enabled" : "Codec hex details disabled");
+				m_model->setShowCodecHex(on);
+				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec hex display enabled" : "Codec hex display disabled");
 			});
-
-	// One gate covers classification, details, filtering and CSV fields.
-	m_effectDetailsAct = debugMenu->addAction(tr("Enable Precomputes"));
-	m_effectDetailsAct->setObjectName(QStringLiteral("effectDetailsDebugAction"));
-	m_effectDetailsAct->setCheckable(true);
-	m_effectDetailsAct->setChecked(false);
-	connect(m_effectDetailsAct, &QAction::toggled, this, &MainWindow::setEffectDetailsEnabled);
 
 	// Whatever style main.cpp installed at startup is the one to restore.
 	// Read it here, before the toggle below can change it — main.cpp stays
 	// the single authority on the platform's native style.
 	const QString nativeStyleName = QApplication::style()->name();
-	auto *fusionAct = debugMenu->addAction(tr("Fusion style"));
-	fusionAct->setCheckable(true);
-	fusionAct->setChecked(false);
-	connect(fusionAct, &QAction::triggered, this,
+	auto *fusionStyleAct = debugMenu->addAction(tr("Fusion style"));
+	fusionStyleAct->setObjectName(QStringLiteral("fusionStyleDebugAction"));
+	fusionStyleAct->setCheckable(true);
+	fusionStyleAct->setChecked(false);
+	connect(fusionStyleAct, &QAction::triggered, this,
 			[this, nativeStyleName](bool on)
 			{
 				const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
@@ -746,15 +752,18 @@ void MainWindow::buildDebugMenu()
 				addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("Style: %1").arg(target));
 			});
 
-	// Rebalance Demos: synthetic plans for visual QA. Each opens
+	debugMenu->addSeparator();
+
+	// Rebalance demos: synthetic plans for visual QA. Each opens
 	// the dialog in demo mode against a fabricated RebalancePlan;
 	// clicking Rebalance runs a simulated progress sweep, not real
 	// disk moves.
-	auto *demosMenu = debugMenu->addMenu(tr("Rebalance demos"));
-	const auto addDemo = [this, demosMenu](const QString &label,
-										   RebalanceDialog::DemoScenario scenario)
+	auto *rebalanceDemosMenu = debugMenu->addMenu(tr("Rebalance demos"));
+	rebalanceDemosMenu->setObjectName(QStringLiteral("rebalanceDemosMenu"));
+	const auto addDemo = [this, rebalanceDemosMenu](const QString &label,
+													RebalanceDialog::DemoScenario scenario)
 	{
-		auto *act = demosMenu->addAction(label);
+		auto *act = rebalanceDemosMenu->addAction(label);
 		connect(act, &QAction::triggered, this,
 				[this, scenario]
 				{
@@ -777,6 +786,11 @@ void MainWindow::buildHelpMenu()
 	connect(aboutAct, &QAction::triggered, this, &MainWindow::onAbout);
 
 	helpMenu->addSeparator();
+
+#ifdef Q_OS_MAC
+	auto *permissionsAct = helpMenu->addAction(tr("Full Disk Access"));
+	connect(permissionsAct, &QAction::triggered, this, &MainWindow::onCheckPermissions);
+#endif
 
 	// The diagnostic log always runs; this just surfaces it so the user can
 	// send it in, even though it lives in hidden ~/Library.
@@ -887,13 +901,32 @@ void MainWindow::setupConnections()
 	connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&MainWindow::onSelectionChanged);
 	connect(m_tableView, &QTableView::doubleClicked, this, &MainWindow::onTableDoubleClicked);
-	connect(m_btnFileOps, &QPushButton::clicked, this, &MainWindow::onFileOperations);
-	connect(m_btnBinFilter, &QPushButton::clicked, this, &MainWindow::onFilterByBins);
-	connect(m_btnEffectFilter, &QPushButton::clicked, this, &MainWindow::onFilterByEffects);
-	connect(m_btnExport, &QPushButton::clicked, this, &MainWindow::onExportCsv);
-	connect(m_btnRebalance, &QPushButton::clicked, this, &MainWindow::onRebalance);
-	connect(m_scanButton, &QPushButton::clicked, this, &MainWindow::onScanClicked);
-	connect(m_scanAllButton, &QPushButton::clicked, this, &MainWindow::onScanAllClicked);
+	const auto bindButton = [](QPushButton *button, QAction *action)
+	{
+		QObject::connect(button, &QPushButton::clicked, action, &QAction::trigger);
+		QObject::connect(action, &QAction::changed, button,
+						 [button, action]
+						 { button->setEnabled(action->isEnabled()); });
+		button->setEnabled(action->isEnabled());
+	};
+	bindButton(m_btnFileOps, m_manageMediaAct);
+	bindButton(m_btnBinFilter, m_binFilterAct);
+	bindButton(m_btnEffectFilter, m_effectFilterAct);
+	bindButton(m_btnExport, m_exportAct);
+	bindButton(m_btnRebalance, m_rebalanceAct);
+	bindButton(m_scanButton, m_scanSelectedAct);
+	bindButton(m_scanAllButton, m_scanAllAct);
+
+	connect(m_volumeList, &QListWidget::itemSelectionChanged, this, &MainWindow::updateActivityUi);
+	for (auto *model : {m_volumeList->model(), static_cast<QAbstractItemModel *>(m_proxy)})
+	{
+		connect(model, &QAbstractItemModel::rowsInserted, this, &MainWindow::updateActivityUi);
+		connect(model, &QAbstractItemModel::rowsRemoved, this, &MainWindow::updateActivityUi);
+		connect(model, &QAbstractItemModel::modelReset, this, &MainWindow::updateActivityUi);
+	}
+	connect(m_model, &QAbstractItemModel::modelReset, this, &MainWindow::updateActivityUi);
+	connect(m_model, &QAbstractItemModel::rowsRemoved, this, &MainWindow::updateActivityUi);
+	connect(m_model, &QAbstractItemModel::dataChanged, this, &MainWindow::updateSelectionActions);
 
 	connect(m_volumeList, &VolumeListWidget::pathsDropped, this, &MainWindow::onPathsDropped);
 
@@ -935,7 +968,7 @@ void MainWindow::onCheckPermissions()
 	bool hasFDA = VolumeManager::hasFullDiskAccess();
 	if (hasFDA)
 	{
-		QMessageBox::information(this, tr("Permissions"),
+		QMessageBox::information(this, QString(),
 								 tr("Full Disk Access is <b>granted</b>.<br><br>"
 									"I can muster all volumes and folders on this Mac!"));
 	}
@@ -943,7 +976,6 @@ void MainWindow::onCheckPermissions()
 	{
 		QMessageBox box(this);
 		box.setIcon(QMessageBox::Warning);
-		box.setWindowTitle(tr("Permissions"));
 		box.setText(tr("Full Disk Access is <b>not granted</b>.<br><br>"
 					   "I may not be able to muster all your media.<br><br>"
 					   "<i>After granting access, quit and relaunch MediaMuster.</i>"));
@@ -964,23 +996,23 @@ void MainWindow::onCheckPermissions()
 void MainWindow::setOmfEnabled(bool enabled)
 {
 	// Omitting buildDebugMenu() must leave the feature unavailable too.
-	enabled = enabled && m_omfAct;
+	enabled = enabled && m_enableOmfAct;
 	if (!m_operations->isIdle())
 	{
-		if (m_omfAct)
+		if (m_enableOmfAct)
 		{
-			const QSignalBlocker blocker(m_omfAct);
-			m_omfAct->setChecked(m_omfEnabled);
+			const QSignalBlocker blocker(m_enableOmfAct);
+			m_enableOmfAct->setChecked(m_omfEnabled);
 		}
 		return;
 	}
 	if (m_omfEnabled == enabled)
 		return;
 	m_omfEnabled = enabled;
-	if (m_omfAct)
+	if (m_enableOmfAct)
 	{
-		const QSignalBlocker blocker(m_omfAct);
-		m_omfAct->setChecked(enabled);
+		const QSignalBlocker blocker(m_enableOmfAct);
+		m_enableOmfAct->setChecked(enabled);
 	}
 	if (!enabled)
 	{
@@ -1002,21 +1034,21 @@ void MainWindow::setOmfEnabled(bool enabled)
 
 // MARK: - Precompute classification, details and filter
 
-void MainWindow::setEffectDetailsEnabled(bool enabled)
+void MainWindow::setPrecomputesEnabled(bool enabled)
 {
-	enabled = enabled && m_effectDetailsAct;
+	enabled = enabled && m_enablePrecomputesAct;
 	if (!m_operations->isIdle())
 	{
-		if (m_effectDetailsAct)
+		if (m_enablePrecomputesAct)
 		{
-			const QSignalBlocker blocker(m_effectDetailsAct);
-			m_effectDetailsAct->setChecked(m_effectDetailsEnabled);
+			const QSignalBlocker blocker(m_enablePrecomputesAct);
+			m_enablePrecomputesAct->setChecked(m_precomputesEnabled);
 		}
 		return;
 	}
-	if (m_effectDetailsEnabled == enabled)
+	if (m_precomputesEnabled == enabled)
 		return;
-	m_effectDetailsEnabled = enabled;
+	m_precomputesEnabled = enabled;
 	applyFilterPreservingSelection([this, enabled]()
 								   {
 		// A sort column that is about to disappear must not keep controlling
@@ -1031,19 +1063,17 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 			const QSignalBlocker blocker(m_filterTabs);
 			m_filterTabs->setCurrentIndex(0);
 		}
-		m_proxy->setEffectDetailsEnabled(enabled);
-		m_model->setEffectDetailsEnabled(enabled); });
-	if (m_effectDetailsAct)
+		m_proxy->setPrecomputesEnabled(enabled);
+		m_model->setPrecomputesEnabled(enabled); });
+	if (m_enablePrecomputesAct)
 	{
-		const QSignalBlocker blocker(m_effectDetailsAct);
-		m_effectDetailsAct->setChecked(enabled);
+		const QSignalBlocker blocker(m_enablePrecomputesAct);
+		m_enablePrecomputesAct->setChecked(enabled);
 	}
 	m_tableView->setColumnHidden(Enum::to_underlying(MediaTableModel::Column::Type), !enabled);
 	m_btnEffectFilter->setVisible(enabled);
 	m_effectFilterAct->setVisible(enabled);
-	const bool canFilter = enabled && m_operations->isIdle() && !m_model->allFiles().isEmpty();
-	m_btnEffectFilter->setEnabled(canFilter);
-	m_effectFilterAct->setEnabled(canFilter);
+	updateActivityUi();
 	if (enabled)
 	{
 		// Put the newly enabled details together after Type, ahead of Source
@@ -1066,7 +1096,7 @@ void MainWindow::setEffectDetailsEnabled(bool enabled)
 
 void MainWindow::onFilterByEffects()
 {
-	if (!m_effectDetailsEnabled || !m_operations->isIdle() || m_model->allFiles().isEmpty())
+	if (!m_precomputesEnabled || !m_operations->isIdle() || m_model->allFiles().isEmpty())
 		return;
 	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
 	if (dialog.exec() != QDialog::Accepted)
@@ -1097,6 +1127,8 @@ void MainWindow::onFilterByEffects()
 
 void MainWindow::onFilterByBins()
 {
+	if (!m_operations->isIdle())
+		return;
 	// Lazy construction; the dialog stays parented to the main window
 	// so chain state persists across show/hide.
 	if (!m_binFilterDialog)
@@ -1154,16 +1186,8 @@ void MainWindow::onFilterByBins()
 // picker only shows volumes with scanned data.
 void MainWindow::onRebalance()
 {
-	if (!m_operations->isIdle() || !m_operations->resolvePreviousJob())
+	if (!m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
 		return;
-	if (m_model->allFiles().isEmpty())
-	{
-		QMessageBox::information(this, tr("Rebalance"),
-								 tr("Please scan a volume first. I need to know "
-									"where things are "
-									"before I can rebalance them."));
-		return;
-	}
 
 	// MXF root = grandparent of the file:
 	//   <volume>/Avid MediaFiles/MXF/<folder>/<file.mxf>
@@ -1439,6 +1463,8 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 
 void MainWindow::onScanClicked()
 {
+	if (!m_operations->isIdle())
+		return;
 	// No in-scan cancel branch: a running scan raises the modal progress sheet,
 	// whose Cancel button is the stop control, so neither this button nor its
 	// menu action is reachable mid-scan. (MediaScanner::startScan also self-
@@ -1448,17 +1474,14 @@ void MainWindow::onScanClicked()
 		paths << item->data(Qt::UserRole).toString();
 
 	if (paths.isEmpty())
-	{
-		QMessageBox::information(this, tr("No Volumes Selected"),
-								 tr("Select at least one volume, or use "
-									"\"Scan All Volumes\"."));
 		return;
-	}
 	startScanWithPaths(paths);
 }
 
 void MainWindow::onScanAllClicked()
 {
+	if (!m_operations->isIdle() || m_volumeList->count() == 0)
+		return;
 	// See onScanClicked: cancel is via the modal progress sheet, so there is no
 	// reachable in-scan cancel path here. Only ever begins a scan.
 	QStringList paths = m_volumeManager->allScannablePaths();
@@ -1474,7 +1497,7 @@ void MainWindow::onScanAllClicked()
 
 void MainWindow::startScanWithPaths(const QStringList &paths)
 {
-	if (!m_operations->isIdle())
+	if (!m_operations->isIdle() || paths.isEmpty())
 		return;
 	// Detected volumes and hand-added folders scan differently (see
 	// MediaScanner::Options): a volume is probed at its root only; manual
@@ -1619,7 +1642,7 @@ void MainWindow::onFilterChanged(int index)
 	// fed the tab labels in setupUi.
 	if (index >= 0 && index < static_cast<int>(kFilterDefs.size()))
 	{
-		if (!m_effectDetailsEnabled && kFilterDefs[index].mode == MediaFilterProxy::FilterMode::Precompute)
+		if (!m_precomputesEnabled && kFilterDefs[index].mode == MediaFilterProxy::FilterMode::Precompute)
 		{
 			const QSignalBlocker blocker(m_filterTabs);
 			m_filterTabs->setCurrentIndex(0);
@@ -1663,7 +1686,7 @@ void MainWindow::onSelectionChanged()
 
 	// Background bin metadata can change the selection while a scan or
 	// operation is running. Preserve the busy gate during that restoration.
-	m_btnFileOps->setEnabled(hasSelection && m_operations->isIdle());
+	updateSelectionActions();
 	m_statusSep1->setVisible(hasSelection);
 	m_statusSelected->setVisible(hasSelection);
 	m_statusSep2->setVisible(hasSelection);
@@ -1797,6 +1820,8 @@ void MainWindow::showMediaMusterTrashDialog(const QString &trashFolderPath, int 
 
 void MainWindow::onExportCsv()
 {
+	if (!m_operations->isIdle() || m_exportInProgress || m_proxy->rowCount() == 0)
+		return;
 	const auto sel = selectedFiles();
 	bool exportSelected = false;
 
@@ -1838,10 +1863,11 @@ void MainWindow::onExportCsv()
 	}
 
 	const int count = rows.size();
-	const MediaCsv::Options csvOptions{m_effectDetailsEnabled};
+	const MediaCsv::Options csvOptions{m_precomputesEnabled};
 	const QString label = exportSelected ? "selected records" : "records";
 	addLog(QtInfoMsg, QStringLiteral("export"), QStringLiteral("Exporting %1 %2 to %3").arg(count).arg(label).arg(path));
-	m_btnExport->setEnabled(false);
+	m_exportInProgress = true;
+	updateActivityUi();
 
 	// Dispatch the write to a worker so big exports don't freeze the UI.
 	auto *watcher = new QFutureWatcher<bool>(this);
@@ -1850,7 +1876,8 @@ void MainWindow::onExportCsv()
 			{
 				const bool ok = watcher->result();
 				watcher->deleteLater();
-				m_btnExport->setEnabled(true);
+				m_exportInProgress = false;
+				updateActivityUi();
 				if (ok)
 				{
 					addLog(QtInfoMsg, QStringLiteral("export"),
@@ -2019,37 +2046,34 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 		menu.addSeparator();
 	}
 
-	menu.addAction(tr("Reveal in Finder"), this, &MainWindow::onRevealInFinder);
-	menu.addAction(tr("Copy Path"),
-				   [this]()
-				   {
-					   const auto sel = selectedFiles();
-					   if (sel.isEmpty())
-						   return;
-					   QStringList paths;
-					   for (const auto &f : sel)
-						   paths << f.filePath;
-					   QApplication::clipboard()->setText(paths.join("\n"));
-				   });
+	updateSelectionActions();
+	menu.addAction(m_revealAct);
+	auto *copyPathAct = menu.addAction(tr("Copy Path"),
+									   [this]()
+									   {
+										   const auto sel = selectedFiles();
+										   if (sel.isEmpty())
+											   return;
+										   QStringList paths;
+										   for (const auto &f : sel)
+											   paths << f.filePath;
+										   QApplication::clipboard()->setText(paths.join("\n"));
+									   });
 
-	const auto sel = selectedFiles();
-	const bool hasComp = std::any_of(sel.cbegin(), sel.cend(), [](const MediaFile &f)
-									 { return !f.masterMobId.isEmpty(); });
-	QAction *relAct =
-		menu.addAction(tr("Select Relatives"), this, &MainWindow::onSelectRelatives);
-	relAct->setEnabled(hasComp);
-
-	QAction *invAct =
-		menu.addAction(tr("Select Inverse"), this, &MainWindow::onInvertSelection);
-	invAct->setEnabled(m_proxy->rowCount() > 0);
+	copyPathAct->setEnabled(m_tableView->selectionModel()->hasSelection());
+	menu.addAction(m_selectRelativesAct);
+	menu.addAction(m_selectInverseAct);
 
 	menu.addSeparator();
-	menu.addAction(tr("Copy To..."), this, [this]()
-				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Copy)); });
-	menu.addAction(tr("Move To..."), this, [this]()
-				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Move)); });
-	menu.addAction(tr("Delete..."), this, [this]()
-				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Delete)); });
+	menu.addAction(tr("Copy To…"), this, [this]()
+				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Copy)); })
+		->setEnabled(m_manageMediaAct->isEnabled());
+	menu.addAction(tr("Move To…"), this, [this]()
+				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Move)); })
+		->setEnabled(m_manageMediaAct->isEnabled());
+	menu.addAction(tr("Delete…"), this, [this]()
+				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Delete)); })
+		->setEnabled(m_manageMediaAct->isEnabled());
 	menu.exec(m_tableView->viewport()->mapToGlobal(pos));
 }
 
@@ -2130,26 +2154,51 @@ void MainWindow::autoFitColumns()
 void MainWindow::updateActivityUi()
 {
 	const bool busy = !m_operations->isIdle();
-	m_scanButton->setEnabled(!busy);
-	m_scanAllButton->setEnabled(!busy);
-
-	// Manage Media: always disabled when busy; otherwise follows selection.
-	const bool hasSel =
-		m_tableView->selectionModel() && !m_tableView->selectionModel()->selectedRows().isEmpty();
-	m_btnFileOps->setEnabled(!busy && hasSel);
-	m_btnRebalance->setEnabled(!busy && !m_model->allFiles().isEmpty());
-	m_btnEffectFilter->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
-	m_effectFilterAct->setEnabled(!busy && m_effectDetailsEnabled && !m_model->allFiles().isEmpty());
-	if (m_effectDetailsAct)
-		m_effectDetailsAct->setEnabled(!busy);
-	if (m_omfAct)
-		m_omfAct->setEnabled(!busy);
+	m_addFolderAct->setEnabled(!busy);
+	m_refreshVolumesAct->setEnabled(!busy);
+	m_scanSelectedAct->setEnabled(!busy && m_volumeList->selectionModel()->hasSelection());
+	m_scanAllAct->setEnabled(!busy && m_volumeList->count() > 0);
+	m_binFilterAct->setEnabled(!busy);
+	m_rebalanceAct->setEnabled(!busy && !m_model->allFiles().isEmpty());
+	m_exportAct->setEnabled(!busy && !m_exportInProgress && m_proxy->rowCount() > 0);
+	m_effectFilterAct->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
+	const bool hasSelection = m_tableView->selectionModel()->hasSelection();
+	m_manageMediaAct->setEnabled(!busy && hasSelection);
+	m_revealAct->setEnabled(!busy && hasSelection);
+	m_selectInverseAct->setEnabled(!busy && m_proxy->rowCount() > 0);
+	m_selectRelativesAct->setEnabled(!busy && hasSelection && m_selectionHasMasterMob);
+	if (m_enablePrecomputesAct)
+		m_enablePrecomputesAct->setEnabled(!busy);
+	if (m_enableOmfAct)
+		m_enableOmfAct->setEnabled(!busy);
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();
 
 	// Skip the 5 second polling tick when a scan or op is running.
 	m_volumeManager->setBusy(busy);
+}
+
+void MainWindow::updateSelectionActions()
+{
+	const auto selection = m_tableView->selectionModel()->selection();
+	// Only selection/metadata changes need this walk. Volume-list and activity
+	// updates reuse the result, including for large selections without MOB IDs.
+	m_selectionHasMasterMob = false;
+	for (const auto &range : selection)
+	{
+		for (int row = range.top(); row <= range.bottom(); ++row)
+		{
+			if (!fileAtProxyRow(row).masterMobId.isEmpty())
+			{
+				m_selectionHasMasterMob = true;
+				break;
+			}
+		}
+		if (m_selectionHasMasterMob)
+			break;
+	}
+	updateActivityUi();
 }
 
 // MARK: - Progress dialog
@@ -2216,7 +2265,7 @@ void MainWindow::updateFilterCounts()
 
 		// "All" stays visible no matter what; the others auto-hide when empty.
 		const bool isAll = (kFilterDefs[i].mode == MediaFilterProxy::FilterMode::All);
-		const bool available = m_effectDetailsEnabled || kFilterDefs[i].mode != MediaFilterProxy::FilterMode::Precompute;
+		const bool available = m_precomputesEnabled || kFilterDefs[i].mode != MediaFilterProxy::FilterMode::Precompute;
 		const bool visible = available && (isAll || m_showAllFilterTabs || counts[i] > 0);
 		m_filterTabs->setTabVisible(tabIndex, visible);
 	}
@@ -2261,7 +2310,7 @@ void MainWindow::rebuildFilterChips()
 	};
 
 	const int tabIdx = m_filterTabs->currentIndex();
-	const bool hasPrecomputeSelection = m_effectDetailsEnabled && m_proxy->precomputeTreeFilter().active;
+	const bool hasPrecomputeSelection = m_precomputesEnabled && m_proxy->precomputeTreeFilter().active;
 	// The detail selection already restricts the table to precomputes. When
 	// that tab is also selected, one chip represents both restrictions.
 	const bool combinedPrecomputeChip = hasPrecomputeSelection && tabIdx >= 0 &&
@@ -2294,7 +2343,7 @@ void MainWindow::rebuildFilterChips()
 				{ item->setSelected(false); });
 	}
 
-	if (m_effectDetailsEnabled)
+	if (m_precomputesEnabled)
 	{
 		// Keep complete checked paths together: splitting category/name chips
 		// would change their OR semantics. Volume is an independent filter.

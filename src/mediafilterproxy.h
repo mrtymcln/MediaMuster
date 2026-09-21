@@ -39,8 +39,8 @@ public:
 	/// Experimental precompute features are off by default. Turning them off
 	/// resets Precompute mode to All and clears every detail selection;
 	/// setters cannot activate them while off.
-	void setEffectDetailsEnabled(bool enabled);
-	bool effectDetailsEnabled() const { return m_effectDetailsEnabled; }
+	void setPrecomputesEnabled(bool enabled);
+	bool precomputesEnabled() const { return m_precomputesEnabled; }
 	/// Whole checked paths are ORed; the other filters still have to pass.
 	void setPrecomputeTreeFilter(const PrecomputeFilter &filter);
 	PrecomputeFilter precomputeTreeFilter() const { return m_precomputeTreeFilter; }
@@ -79,7 +79,7 @@ private:
 	/// matches decomposed (NFD) filenames macOS volumes hand back.
 	QString m_searchNfc;
 	QSet<QString> m_selectedProjects;
-	bool m_effectDetailsEnabled = false;
+	bool m_precomputesEnabled = false;
 	PrecomputeFilter m_precomputeTreeFilter;
 	QString m_effectVolumePath;
 	BinFilter m_binFilter;

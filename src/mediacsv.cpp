@@ -47,7 +47,7 @@ namespace MediaCsv
 									  "Duration,Source File,Source Path,Source Container,"
 									  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
 									  "Database Status,");
-		if (options.includeEffectDetails)
+		if (options.includePrecomputeDetails)
 			line += QStringLiteral("Type,Precompute Category,Effect Category,Effect,Effect Sequence,");
 		return line + QStringLiteral("Date Created,Date Modified\n");
 	}
@@ -68,7 +68,7 @@ namespace MediaCsv
 			<< CsvUtil::quoted(f.mobId) << ','
 			<< CsvUtil::quoted(f.masterMobId) << ','
 			<< CsvUtil::quoted(f.dbStatusText().label) << ',';
-		if (options.includeEffectDetails)
+		if (options.includePrecomputeDetails)
 		{
 			const bool precompute = f.type == MediaFile::Type::Precompute;
 			out << CsvUtil::quoted(f.typeDisplay()) << ','

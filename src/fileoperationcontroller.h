@@ -39,7 +39,6 @@ public:
 	QAction *undoAction() const { return m_undoAct; }
 	QAction *verifyCopiesAction() const { return m_verifyCopiesAct; }
 	QAction *enableUndoAction() const { return m_enableUndoAct; }
-	void setUndoSeparator(QAction *separator);
 
 	void runStartupRecovery();
 	void refreshHistory();
@@ -90,7 +89,6 @@ private:
 	QVector<OperationRecovery::Restorable> m_restorable;
 	QAction *m_recoveryAct;
 	QAction *m_undoAct;
-	QAction *m_undoSeparator = nullptr;
 	QAction *m_verifyCopiesAct;
 	QAction *m_enableUndoAct;
 	bool m_operationGateActive = false;

@@ -6,6 +6,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QClipboard>
 #include <QDialog>
 #include <QComboBox>
 #include <QRadioButton>
@@ -92,6 +93,8 @@ private slots:
 	void cleanupTestCase();
 	void project_sidebar_uses_whole_inventory_totals();
 	void debug_flags_default_off_and_text_undo_works();
+	void menu_availability_tracks_locations_selection_and_activity();
+	void text_editing_shortcuts_remain_native();
 	void precompute_gate_hides_controls_and_clears_filters();
 	void experimental_flags_are_session_only_and_blocked_while_busy();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
@@ -382,14 +385,14 @@ void TestOperationUi::debug_flags_default_off_and_text_undo_works()
 		QVERIFY(debugMenu);
 		QVERIFY(window.menuBar()->actions().contains(debugMenu->menuAction()));
 		QVERIFY(debugMenu->actions().contains(window.m_operations->m_enableUndoAct));
-		QVERIFY(debugMenu->actions().contains(window.m_effectDetailsAct));
-		QVERIFY(debugMenu->actions().contains(window.m_omfAct));
+		QVERIFY(debugMenu->actions().contains(window.m_enablePrecomputesAct));
+		QVERIFY(debugMenu->actions().contains(window.m_enableOmfAct));
 	}
 	else
 	{
 		QVERIFY(!debugMenu);
-		QVERIFY(!window.m_effectDetailsAct);
-		QVERIFY(!window.m_omfAct);
+		QVERIFY(!window.m_enablePrecomputesAct);
+		QVERIFY(!window.m_enableOmfAct);
 		for (auto *menu : window.findChildren<QMenu *>())
 			QVERIFY(!menu->actions().contains(window.m_operations->m_enableUndoAct));
 	}
@@ -410,6 +413,145 @@ void TestOperationUi::debug_flags_default_off_and_text_undo_works()
 	window.m_operations->m_enableUndoAct->setChecked(false);
 	QVERIFY(!window.m_operations->m_undoAct->isVisible());
 	QVERIFY(window.m_operations->m_undoAct->shortcut().isEmpty());
+}
+
+void TestOperationUi::menu_availability_tracks_locations_selection_and_activity()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto action = [&window](const char *name)
+	{
+		return window.findChild<QAction *>(QString::fromLatin1(name));
+	};
+	auto *scanSelected = action("scanSelectedAction");
+	auto *scanAll = action("scanAllAction");
+	auto *manage = action("manageMediaAction");
+	auto *rebalance = action("rebalanceAction");
+	auto *exportCsv = action("exportCsvAction");
+	auto *reveal = action("revealInFinderAction");
+	auto *relatives = action("selectRelativesAction");
+	auto *inverse = action("selectInverseAction");
+	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, reveal, relatives, inverse})
+	{
+		QVERIFY(command);
+		QVERIFY(!command->isEnabled());
+	}
+	QVERIFY(!window.m_effectFilterAct->isVisible());
+	QVERIFY(!window.m_effectFilterAct->isEnabled());
+	if constexpr (FeatureFlags::kDebugMenuEnabled)
+	{
+		window.setPrecomputesEnabled(true);
+		QVERIFY(window.m_effectFilterAct->isVisible());
+		QVERIFY(!window.m_effectFilterAct->isEnabled());
+		QVERIFY(!window.m_btnEffectFilter->isEnabled());
+		window.setPrecomputesEnabled(false);
+	}
+
+	auto *location = new QListWidgetItem(QStringLiteral("Media volume"));
+	location->setData(Qt::UserRole, path("volume"));
+	window.m_volumeList->addItem(location);
+	QVERIFY(scanAll->isEnabled());
+	QVERIFY(window.m_scanAllButton->isEnabled());
+	QVERIFY(!scanSelected->isEnabled());
+	location->setSelected(true);
+	QVERIFY(scanSelected->isEnabled());
+	QVERIFY(window.m_scanButton->isEnabled());
+
+	MediaFile file;
+	file.filePath = path("volume/clip.mxf");
+	file.fileName = QStringLiteral("clip.mxf");
+	file.masterMobId = QStringLiteral("master-clip");
+	window.onScanFinished({file});
+	QVERIFY(rebalance->isEnabled());
+	QVERIFY(window.m_btnRebalance->isEnabled());
+	QVERIFY(exportCsv->isEnabled());
+	QVERIFY(window.m_btnExport->isEnabled());
+	QVERIFY(inverse->isEnabled());
+	QVERIFY(!manage->isEnabled());
+	QVERIFY(!reveal->isEnabled());
+	QVERIFY(!relatives->isEnabled());
+
+	window.m_tableView->selectRow(0);
+	QVERIFY(manage->isEnabled());
+	QVERIFY(window.m_btnFileOps->isEnabled());
+	QVERIFY(reveal->isEnabled());
+	QVERIFY(relatives->isEnabled());
+	if constexpr (FeatureFlags::kDebugMenuEnabled)
+	{
+		window.setPrecomputesEnabled(true);
+		QVERIFY(window.m_effectFilterAct->isEnabled());
+		QVERIFY(window.m_btnEffectFilter->isEnabled());
+	}
+
+	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
+	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_effectFilterAct})
+		QVERIFY(!command->isEnabled());
+	for (auto *button : {window.m_scanButton, window.m_scanAllButton, window.m_btnFileOps,
+						window.m_btnRebalance, window.m_btnExport, window.m_btnEffectFilter})
+		QVERIFY(!button->isEnabled());
+	window.m_operations->setActivity(FileOperationController::Activity::Idle);
+	QVERIFY(manage->isEnabled());
+	QVERIFY(exportCsv->isEnabled());
+
+	// Remembered selections hidden by a filter cannot feed commands.
+	window.onSearchChanged(QStringLiteral("no matching media"));
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	QVERIFY(!manage->isEnabled());
+	QVERIFY(!reveal->isEnabled());
+	QVERIFY(!relatives->isEnabled());
+	QVERIFY(!inverse->isEnabled());
+	QVERIFY(!exportCsv->isEnabled());
+	QVERIFY(!window.m_btnExport->isEnabled());
+	QVERIFY(rebalance->isEnabled()); // Rebalance uses the whole inventory.
+	window.onSearchChanged({});
+	QVERIFY(manage->isEnabled());
+	QVERIFY(exportCsv->isEnabled());
+
+	window.m_tableView->clearSelection();
+	QVERIFY(!manage->isEnabled());
+	QVERIFY(!window.m_btnFileOps->isEnabled());
+	QVERIFY(!reveal->isEnabled());
+	QVERIFY(!relatives->isEnabled());
+
+	// Inventory changes must also clear commands seeded by an old selection.
+	window.m_tableView->selectRow(0);
+	window.m_model->removeFilesByPath({file.filePath});
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_effectFilterAct})
+		QVERIFY(!command->isEnabled());
+	window.onScanFinished({file});
+	window.m_tableView->selectRow(0);
+	QVERIFY(manage->isEnabled());
+	QVERIFY(relatives->isEnabled());
+	window.m_model->setMediaFiles({});
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_effectFilterAct})
+		QVERIFY(!command->isEnabled());
+
+	window.m_volumeList->clearSelection();
+	QVERIFY(!scanSelected->isEnabled());
+	QVERIFY(!window.m_scanButton->isEnabled());
+	QVERIFY(scanAll->isEnabled());
+	window.m_volumeList->clear();
+	QVERIFY(!scanAll->isEnabled());
+	QVERIFY(!window.m_scanAllButton->isEnabled());
+}
+
+void TestOperationUi::text_editing_shortcuts_remain_native()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.show();
+	window.activateWindow();
+	window.m_searchField->setFocus();
+	QTRY_COMPARE(QApplication::focusWidget(), window.m_searchField);
+	window.m_searchField->setText(QStringLiteral("native text"));
+	QTest::keySequence(window.m_searchField, QKeySequence::SelectAll);
+	QCOMPARE(window.m_searchField->selectedText(), QStringLiteral("native text"));
+	QTest::keySequence(window.m_searchField, QKeySequence::Copy);
+	QCOMPARE(QApplication::clipboard()->text(), QStringLiteral("native text"));
+	QTest::keySequence(window.m_searchField, QKeySequence::Cut);
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QTest::keySequence(window.m_searchField, QKeySequence::Paste);
+	QCOMPARE(window.m_searchField->text(), QStringLiteral("native text"));
 }
 
 void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
@@ -433,9 +575,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	precompute.effectCategory = QStringLiteral("Image");
 	precompute.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 	window.onScanFinished({media, precompute});
-	QVERIFY(!window.m_effectDetailsEnabled);
-	QVERIFY(!window.m_model->effectDetailsEnabled());
-	QVERIFY(!window.m_proxy->effectDetailsEnabled());
+	QVERIFY(!window.m_precomputesEnabled);
+	QVERIFY(!window.m_model->precomputesEnabled());
+	QVERIFY(!window.m_proxy->precomputesEnabled());
 	QVERIFY(window.m_tableView->isColumnHidden(typeColumn));
 	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory));
 	QVERIFY(window.m_btnEffectFilter->isHidden());
@@ -456,18 +598,18 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 			openedPicker = true;
 			dialog->reject();
 		} });
-	window.onFilterByEffects(); // Hidden entry point must not open a dialog.
+	window.onFilterByEffects(); // Disabled entry point must not open a dialog.
 	QCoreApplication::processEvents();
 	QVERIFY(!openedPicker);
 
 	if constexpr (FeatureFlags::kDebugMenuEnabled)
 	{
-		QVERIFY(window.m_effectDetailsAct);
-		QCOMPARE(window.m_effectDetailsAct->objectName(), QStringLiteral("effectDetailsDebugAction"));
-		QCOMPARE(window.m_effectDetailsAct->text(), QStringLiteral("Enable Precomputes"));
-		QVERIFY(!window.m_effectDetailsAct->isChecked());
-		window.m_effectDetailsAct->trigger();
-		QVERIFY(window.m_effectDetailsEnabled);
+		QVERIFY(window.m_enablePrecomputesAct);
+		QCOMPARE(window.m_enablePrecomputesAct->objectName(), QStringLiteral("enablePrecomputesDebugAction"));
+		QCOMPARE(window.m_enablePrecomputesAct->text(), QStringLiteral("Enable Precomputes"));
+		QVERIFY(!window.m_enablePrecomputesAct->isChecked());
+		window.m_enablePrecomputesAct->trigger();
+		QVERIFY(window.m_precomputesEnabled);
 		QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 		QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
 		QVERIFY(!window.m_btnEffectFilter->isHidden());
@@ -479,8 +621,8 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		window.m_proxy->setPrecomputeTreeFilter({true, {{precompute.precomputeCategoryDisplay(), precompute.effectCategory, precompute.effect}}});
 		window.m_proxy->setEffectVolumeFilter(precompute.volumePath);
 		window.m_tableView->sortByColumn(typeColumn, Qt::DescendingOrder);
-		window.m_effectDetailsAct->trigger();
-		QVERIFY(!window.m_effectDetailsEnabled);
+		window.m_enablePrecomputesAct->trigger();
+		QVERIFY(!window.m_precomputesEnabled);
 		QVERIFY(window.m_tableView->isColumnHidden(typeColumn));
 		QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
 		QCOMPARE(window.m_filterTabs->currentIndex(), 0);
@@ -498,19 +640,19 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		// Sorting by any disappearing detail column also returns to Clip Name.
 		for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
 		{
-			window.setEffectDetailsEnabled(true);
+			window.setPrecomputesEnabled(true);
 			window.m_tableView->sortByColumn(static_cast<int>(column), Qt::DescendingOrder);
-			window.setEffectDetailsEnabled(false);
+			window.setPrecomputesEnabled(false);
 			QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(Column::ClipName));
 			QCOMPARE(window.m_proxy->rowCount(), 2);
 		}
 	}
 	else
 	{
-		window.setEffectDetailsEnabled(true);
-		QVERIFY(!window.m_effectDetailsEnabled);
-		QVERIFY(!window.m_model->effectDetailsEnabled());
-		QVERIFY(!window.m_proxy->effectDetailsEnabled());
+		window.setPrecomputesEnabled(true);
+		QVERIFY(!window.m_precomputesEnabled);
+		QVERIFY(!window.m_model->precomputesEnabled());
+		QVERIFY(!window.m_proxy->precomputesEnabled());
 		QCOMPARE(window.m_proxy->rowCount(), 2);
 	}
 	// A rescan clears both the visible project selection and its predicate.
@@ -527,45 +669,45 @@ void TestOperationUi::experimental_flags_are_session_only_and_blocked_while_busy
 {
 	{
 		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-		QVERIFY(!window.m_effectDetailsEnabled);
+		QVERIFY(!window.m_precomputesEnabled);
 		QVERIFY(!window.m_omfEnabled);
 		if constexpr (FeatureFlags::kDebugMenuEnabled)
 		{
-			QVERIFY(window.m_effectDetailsAct && window.m_omfAct);
-			QCOMPARE(window.m_omfAct->objectName(), QStringLiteral("omfDebugAction"));
-			QCOMPARE(window.m_omfAct->text(), QStringLiteral("Enable OMF/OMFI"));
+			QVERIFY(window.m_enablePrecomputesAct && window.m_enableOmfAct);
+			QCOMPARE(window.m_enableOmfAct->objectName(), QStringLiteral("enableOmfDebugAction"));
+			QCOMPARE(window.m_enableOmfAct->text(), QStringLiteral("Enable OMF"));
 			window.m_operations->setActivity(FileOperationController::Activity::Scanning);
-			QVERIFY(!window.m_effectDetailsAct->isEnabled());
-			QVERIFY(!window.m_omfAct->isEnabled());
-			window.setEffectDetailsEnabled(true);
+			QVERIFY(!window.m_enablePrecomputesAct->isEnabled());
+			QVERIFY(!window.m_enableOmfAct->isEnabled());
+			window.setPrecomputesEnabled(true);
 			window.setOmfEnabled(true);
-			QVERIFY(!window.m_effectDetailsEnabled);
+			QVERIFY(!window.m_precomputesEnabled);
 			QVERIFY(!window.m_omfEnabled);
 			window.m_operations->setActivity(FileOperationController::Activity::Idle);
-			QVERIFY(window.m_effectDetailsAct->isEnabled());
-			QVERIFY(window.m_omfAct->isEnabled());
-			window.m_effectDetailsAct->trigger();
-			window.m_omfAct->trigger();
+			QVERIFY(window.m_enablePrecomputesAct->isEnabled());
+			QVERIFY(window.m_enableOmfAct->isEnabled());
+			window.m_enablePrecomputesAct->trigger();
+			window.m_enableOmfAct->trigger();
 			window.m_operations->m_enableUndoAct->setChecked(true);
-			QVERIFY(window.m_effectDetailsEnabled);
+			QVERIFY(window.m_precomputesEnabled);
 			QVERIFY(window.m_omfEnabled);
 			window.m_operations->setActivity(FileOperationController::Activity::Scanning);
-			window.setEffectDetailsEnabled(false);
+			window.setPrecomputesEnabled(false);
 			window.setOmfEnabled(false);
-			QVERIFY(window.m_effectDetailsEnabled);
+			QVERIFY(window.m_precomputesEnabled);
 			QVERIFY(window.m_omfEnabled);
 			window.m_operations->setActivity(FileOperationController::Activity::Idle);
 		}
 		else
 		{
-			window.setEffectDetailsEnabled(true);
+			window.setPrecomputesEnabled(true);
 			window.setOmfEnabled(true);
-			QVERIFY(!window.m_effectDetailsEnabled);
+			QVERIFY(!window.m_precomputesEnabled);
 			QVERIFY(!window.m_omfEnabled);
 		}
 	}
 	MainWindow restarted(nullptr, MainWindow::StartupMode::UiOnly);
-	QVERIFY(!restarted.m_effectDetailsEnabled);
+	QVERIFY(!restarted.m_precomputesEnabled);
 	QVERIFY(!restarted.m_omfEnabled);
 	QVERIFY(!restarted.m_operations->m_enableUndoAct->isChecked());
 	QVERIFY(!restarted.m_operations->m_undoAct->isVisible());
@@ -588,7 +730,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QVERIFY(!window.m_model->fileAt(0).omfEra);
 	if constexpr (FeatureFlags::kDebugMenuEnabled)
 	{
-		window.m_omfAct->trigger();
+		window.m_enableOmfAct->trigger();
 		window.startScanWithPaths({root});
 		QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
 		QTRY_VERIFY(window.m_operations->isIdle());
@@ -597,7 +739,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 		for (const auto &file : window.m_model->allFiles())
 			scanned.insert(file.filePath);
 		QCOMPARE(scanned, QSet<QString>({mxfPath, omfPath}));
-		window.m_omfAct->trigger();
+		window.m_enableOmfAct->trigger();
 		QCOMPARE(window.m_model->rowCount(), 1);
 		QCOMPARE(window.m_model->fileAt(0).filePath, mxfPath);
 		QVERIFY(QFileInfo::exists(omfPath));

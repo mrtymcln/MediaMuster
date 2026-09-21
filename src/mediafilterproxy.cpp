@@ -91,7 +91,7 @@ void MediaFilterProxy::setSourceModel(QAbstractItemModel *sourceModel)
 
 void MediaFilterProxy::setFilterMode(FilterMode mode)
 {
-	m_mode = !m_effectDetailsEnabled && mode == FilterMode::Precompute
+	m_mode = !m_precomputesEnabled && mode == FilterMode::Precompute
 				 ? FilterMode::All
 				 : mode;
 	invalidateRowsFilter();
@@ -111,11 +111,11 @@ void MediaFilterProxy::setProjectFilter(const QSet<QString> &projects)
 	invalidateRowsFilter();
 }
 
-void MediaFilterProxy::setEffectDetailsEnabled(bool enabled)
+void MediaFilterProxy::setPrecomputesEnabled(bool enabled)
 {
-	if (m_effectDetailsEnabled == enabled)
+	if (m_precomputesEnabled == enabled)
 		return;
-	m_effectDetailsEnabled = enabled;
+	m_precomputesEnabled = enabled;
 	if (!enabled)
 	{
 		if (m_mode == FilterMode::Precompute)
@@ -128,7 +128,7 @@ void MediaFilterProxy::setEffectDetailsEnabled(bool enabled)
 
 void MediaFilterProxy::setPrecomputeTreeFilter(const PrecomputeFilter &filter)
 {
-	if (!m_effectDetailsEnabled)
+	if (!m_precomputesEnabled)
 		return;
 	const PrecomputeFilter selected = filter.active ? filter : PrecomputeFilter{};
 	if (m_precomputeTreeFilter == selected)
@@ -139,7 +139,7 @@ void MediaFilterProxy::setPrecomputeTreeFilter(const PrecomputeFilter &filter)
 
 void MediaFilterProxy::setEffectVolumeFilter(const QString &volumePath)
 {
-	if (!m_effectDetailsEnabled || m_effectVolumePath == volumePath)
+	if (!m_precomputesEnabled || m_effectVolumePath == volumePath)
 		return;
 	m_effectVolumePath = volumePath;
 	invalidateRowsFilter();
@@ -190,10 +190,10 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	if (!m_selectedProjects.isEmpty() && !m_selectedProjects.contains(f.projectDisplay()))
 		return false;
 
-	if (m_effectDetailsEnabled && !m_precomputeTreeFilter.matches(f))
+	if (m_precomputesEnabled && !m_precomputeTreeFilter.matches(f))
 		return false;
 
-	if (m_effectDetailsEnabled && !m_effectVolumePath.isEmpty() &&
+	if (m_precomputesEnabled && !m_effectVolumePath.isEmpty() &&
 		(f.type != MediaFile::Type::Precompute || f.volumePath != m_effectVolumePath))
 		return false;
 
@@ -215,7 +215,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
 			   matches(f.codec) || matches(f.volumeName) || matches(f.filePath) ||
 			   matches(f.sourceFileName) ||
-			   (m_effectDetailsEnabled && f.type == MediaFile::Type::Precompute &&
+			   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&
 				(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||
 				 matches(f.effectCategoryDisplay()) || matches(f.effectSequence)));
 	}
@@ -260,7 +260,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	{
 		// The exact string the column displays (with the model's raw-hex
 		// toggle); shared rule, can't drift.
-		const bool rawHex = m_sourceModel->showRawCodecHex();
+		const bool rawHex = m_sourceModel->showCodecHex();
 		return QString::compare(l.codecDisplay(rawHex), r.codecDisplay(rawHex),
 								Qt::CaseInsensitive) < 0;
 	}
@@ -317,7 +317,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::Location:
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
-		return m_effectDetailsEnabled && typeSortRank(l.type) < typeSortRank(r.type);
+		return m_precomputesEnabled && typeSortRank(l.type) < typeSortRank(r.type);
 	case Col::PrecomputeCategory:
 	case Col::Effect:
 	case Col::EffectCategory:

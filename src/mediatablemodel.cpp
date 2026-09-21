@@ -14,7 +14,7 @@ int MediaTableModel::rowCount(const QModelIndex &) const
 }
 int MediaTableModel::columnCount(const QModelIndex &) const
 {
-	return Enum::to_underlying(m_effectDetailsEnabled ? Column::Count_ : Column::PrecomputeCategory);
+	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
 }
 
 void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
@@ -98,11 +98,11 @@ const MediaFile &MediaTableModel::fileAt(int row) const
 	return m_files[row];
 }
 
-void MediaTableModel::setShowRawCodecHex(bool on)
+void MediaTableModel::setShowCodecHex(bool on)
 {
-	if (m_showRawCodecHex == on)
+	if (m_showCodecHex == on)
 		return;
-	m_showRawCodecHex = on;
+	m_showCodecHex = on;
 	if (!m_files.isEmpty())
 	{
 		const int codecCol = Enum::to_underlying(Column::Codec);
@@ -111,22 +111,22 @@ void MediaTableModel::setShowRawCodecHex(bool on)
 	}
 }
 
-void MediaTableModel::setEffectDetailsEnabled(bool enabled)
+void MediaTableModel::setPrecomputesEnabled(bool enabled)
 {
-	if (m_effectDetailsEnabled == enabled)
+	if (m_precomputesEnabled == enabled)
 		return;
 	const int first = Enum::to_underlying(Column::PrecomputeCategory);
 	const int last = Enum::to_underlying(Column::Count_) - 1;
 	if (enabled)
 	{
 		beginInsertColumns({}, first, last);
-		m_effectDetailsEnabled = true;
+		m_precomputesEnabled = true;
 		endInsertColumns();
 	}
 	else
 	{
 		beginRemoveColumns({}, first, last);
-		m_effectDetailsEnabled = false;
+		m_precomputesEnabled = false;
 		endRemoveColumns();
 	}
 }
@@ -152,7 +152,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::Kind:
 			return f.kindDisplay();
 		case Column::Codec:
-			return f.codecDisplay(m_showRawCodecHex);
+			return f.codecDisplay(m_showCodecHex);
 		case Column::Resolution:
 			return f.resolution;
 		case Column::Fps:

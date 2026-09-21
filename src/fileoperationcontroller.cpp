@@ -32,7 +32,7 @@ FileOperationController::FileOperationController(QWidget *window)
 	  m_recoveryAct(new QAction(tr("Unfinished Business…"), this)),
 	  m_undoAct(new QAction(tr("&Undo"), this)),
 	  m_verifyCopiesAct(new QAction(tr("Verify copies"), this)),
-	  m_enableUndoAct(new QAction(tr("Enable Undo"), this))
+	  m_enableUndoAct(new QAction(tr("Enable undo"), this))
 {
 	m_undoAct->setObjectName(QStringLiteral("undoFileOperationAction"));
 	m_recoveryAct->setObjectName(QStringLiteral("unfinishedBusinessAction"));
@@ -187,12 +187,6 @@ void FileOperationController::closeTrashFallback(quint64 requestId)
 		m_trashFallbackDialog->reject();
 }
 
-void FileOperationController::setUndoSeparator(QAction *separator)
-{
-	m_undoSeparator = separator;
-	updateUndoAction();
-}
-
 void FileOperationController::setActivity(Activity activity)
 {
 	if (m_activity == activity)
@@ -300,8 +294,6 @@ void FileOperationController::updateUndoAction()
 		return;
 	const bool enabled = m_enableUndoAct && m_enableUndoAct->isChecked();
 	m_undoAct->setVisible(enabled);
-	if (m_undoSeparator)
-		m_undoSeparator->setVisible(enabled);
 	m_undoAct->setShortcut(enabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
 	m_undoAct->setEnabled(enabled && !m_historyLoading && !m_undoCandidate.path.isEmpty() &&
 						  isIdle());

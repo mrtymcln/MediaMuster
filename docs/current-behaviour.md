@@ -16,28 +16,65 @@ The app opens its main window, finds storage locations and checks for unfinished
 file operations. It monitors changes to the drive list; this does not continuously
 rescan the media on those drives. You start a media scan with the scan controls.
 
-On macOS, startup and **Special > Check Permissions** probe Full Disk Access by
+On macOS, startup and **Help > Full Disk Access** probe Full Disk Access by
 opening the current user's protected TCC database read-only. The probe does not
-read or change its contents. A successful open reports access granted; any failure
-uses the existing FDA warning. This is a heuristic, and scanning remains available
-regardless of its result. The permission dialog can open the FDA settings pane.
+read or change its contents. Startup logs a warning only if the probe fails; a
+successful probe is silent. The menu command shows the result in a dialog without
+a window title. This is a heuristic, and scanning remains available regardless of
+its result. The permission dialog can open the FDA settings pane.
 
-The current source includes a Debug menu. These four options start **off on every
+When startup collects crash reports, a dialog with an empty window title directs
+the user to **Help > Reveal Logs** to share them with the developer.
+
+The current source includes a Debug menu. These six options start **off on every
 launch**:
 
 | Option | What turning it on does |
 | --- | --- |
-| Enable OMF/OMFI | Includes supported legacy media in subsequent scans. Rescan to discover it. |
-| Verify copies | Reads and compares the source and destination contents when copying. |
-| Enable Undo | Makes the file-operation Undo command available when there is an eligible recorded job. |
+| Enable OMF | Includes supported legacy media in subsequent scans. Rescan to discover it. |
 | Enable Precomputes | Shows precompute classification, detail columns and filtering, and includes those fields in CSV exports. |
+| Verify copies | Reads and compares the source and destination contents when copying. |
+| Enable undo | Makes the file-operation Undo command available when there is an eligible recorded job. |
+| Show codec hex | Displays raw codec identifiers where available in place of readable codec names. |
+| Fusion style | Uses Qt's Fusion widget style; turning it off restores the startup style. |
 
 Rendered media is still scanned while the precompute option is off. That option
-controls the extra interface and export fields. Turning OMF/OMFI off removes
+controls the extra interface and export fields. Turning OMF off removes
 legacy rows from the current table; it does not delete their files.
+
+The menu follows the order above, with a separator before Show codec hex and
+another after Fusion style. **Rebalance demos** comes last, with **Small**,
+**Big** and **Really big** scenarios. These use synthetic media and simulated
+progress without changing files.
 
 The Debug menu can be omitted when building the app. See
 [release feature gates](release-feature-gates.md) for the exact switch and effects.
+
+## Menus
+
+File groups source locations, scanning, Unfinished Business, and reveal/export
+commands. **Refresh Volumes List** refreshes the sidebar without rescanning media.
+Special contains **Manage Media…**, **Filter by Bin…**, **Filter Precomputes…**,
+and **Rebalance…**, in that order. Filter Precomputes is hidden until Debug enables
+Precomputes, then remains disabled without scanned media or while busy. Its toolbar
+button and detail controls also remain hidden while the feature is off.
+
+Edit contains **Find**, **Select Relatives**, and **Select Inverse**, plus
+file-operation Undo immediately before Find when enabled in Debug, with no separator
+between them. Cut, Copy, Paste and Select All are available through the Qt controls'
+built-in keyboard shortcuts and, for text controls, their context menus; they have
+no menu-bar commands. The media table
+retains its cell-copy and Copy Path context commands. View retains the checked
+**Show Console** and **Show All Filter Tabs** options.
+
+Menu commands and their matching buttons share availability. Scanning requires
+an available location; Scan Selected additionally requires a selected location.
+Manage Media and Reveal in Finder require selected visible media; Rebalance and
+precompute filtering require scanned media; exporting requires visible rows and
+cannot start a second export while one is running. Media-operation commands are
+disabled while scanning or performing another operation. Routine empty-selection
+and "scan first" prompts are replaced by disabled commands; operation validation
+and failure messages still apply.
 
 ## Finding media
 
@@ -187,7 +224,7 @@ skipped files remain untouched. A completed copy can also retain its source when
 the app cannot confirm the storage's persistence or metadata requirements. The
 operation log distinguishes completed work, retained sources and unresolved work.
 
-Verify Copies adds source and destination checksum reads. With it off, the app
+Verify copies adds source and destination checksum reads. With it off, the app
 still performs identity, size and storage checks, but it does not compare the full
 contents. A resumed job keeps its recorded verification choice.
 

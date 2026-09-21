@@ -3,7 +3,7 @@
 ## v1 media scope
 
 The supported workflow families are Avid-managed MXF OP-Atom and OMF media.
-MXF OP-Atom is available by default; OMF remains behind **Enable OMF/OMFI** as
+MXF OP-Atom is available by default; OMF remains behind **Enable OMF** as
 requested for the public release. Enabling OMF does not depend on the version of
 Media Composer that created the files. The OMF gate controls product availability;
 the enabled feature is held to the same v1 correctness and testing requirements
@@ -66,17 +66,23 @@ checks, and carries both file and master identities to the operation engine.
 ## Session toggles
 
 The Debug menu enables these features for the current session only. Every launch
-starts with all four off; there are no saved preferences to carry into a public
+starts with all six off; there are no saved preferences to carry into a public
 build.
 
 | Debug command | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
-| Enable OMF/OMFI | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
+| Enable OMF | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
+| Enable Precomputes | Shows Type and precompute detail columns, the Precomputes tab, the filter button, and those fields in CSV exports. Shows Special > Filter Precomputes, enabled when scanned media is available and the app is idle. | Hides the Special menu command, toolbar control and fields, clears precompute filters, and resets sorting if its column disappears. Rendered media remains in ordinary scan results. |
 | Verify copies | New Copy/Move requests capture the option; transfers compare source and destination checksums after the native copy. | Transfers still check identity, size and storage outcomes, but do not compare full contents. Resume preserves the job's saved option. |
-| Enable Undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
-| Enable Precomputes | Shows Type and precompute detail columns, the Precomputes tab, the filter picker, and those fields in CSV exports. | Hides these controls and fields, clears precompute filters, and resets sorting if its column disappears. Rendered media remains in ordinary scan results. |
+| Enable undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
+| Show codec hex | Displays raw codec identifiers where available in place of readable names. | Displays readable codec names. |
+| Fusion style | Uses Qt's Fusion widget style. | Uses the style installed at startup. |
 
-OMF/OMFI and Precomputes toggles cannot change while scanning or performing a media
+The first four commands form one group, followed by the two display options.
+The final group is **Rebalance demos**, whose **Small**, **Big** and **Really big**
+scenarios use synthetic plans and simulated progress without changing files.
+
+OMF and Precomputes toggles cannot change while scanning or performing a media
 operation. Metadata classification and parser implementations remain intact and
 tested. Interrupted operations, including an Undo already started in a developer
 build, remain recoverable through Unfinished Business; the gate prevents starting

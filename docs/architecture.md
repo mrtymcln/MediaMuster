@@ -22,6 +22,10 @@ and filter proxy. It owns selection and presentation; it delegates media reading
 and file execution. Scan completion replaces the model and resets filters and
 selection, including when the scanner returns partial results after cancellation.
 
+Main-window menu actions also drive their matching buttons, so enabled states
+follow the same inventory, selection and activity rules. Text editing uses the
+Qt controls' built-in keyboard shortcuts and context menus.
+
 ## Readers and metadata
 
 | Component | Responsibility |

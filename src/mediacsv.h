@@ -17,7 +17,7 @@ namespace MediaCsv
 	struct Options
 	{
 		/// Includes Type plus the four precompute detail columns.
-		bool includeEffectDetails = false;
+		bool includePrecomputeDetails = false;
 	};
 
 	/// Column headings in emission order, using the same options as rows.
