@@ -12,10 +12,6 @@
 
 #include <algorithm>
 
-#ifdef Q_OS_MAC
-#include <unistd.h>
-#endif
-
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -265,26 +261,13 @@ QStringList VolumeManager::allScannablePaths() const
 	return paths;
 }
 
-// MARK: - macOS Full Disk Access
+// MARK: - Full Disk Access
 
 bool VolumeManager::hasFullDiskAccess()
 {
 #ifdef Q_OS_MAC
-	const QStringList probes = {
-		QDir::homePath() + "/Library/Application Support/com.apple.TCC",
-		QDir::homePath() + "/Library/Safari",
-		QDir::homePath() + "/Library/Mail",
-		QDir::homePath() + "/Library/Calendars",
-	};
-
-	for (const QString &path : probes)
-	{
-		const QByteArray native = QFile::encodeName(path);
-		if (::access(native.constData(), F_OK) != 0)
-			continue;
-		return ::access(native.constData(), R_OK) == 0;
-	}
-	return true;
+	QFile probe(QDir::homePath() + QStringLiteral("/Library/Application Support/com.apple.TCC/TCC.db"));
+	return probe.open(QIODevice::ReadOnly);
 #else
 	return true;
 #endif

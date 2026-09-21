@@ -180,9 +180,7 @@ namespace
 		const char *tooltip = nullptr; ///< Optional hover explanation for loaded terms.
 	};
 
-	// Project metadata and database membership are independent filters.
-	// One row may match No Project and either database-status filter.
-	constexpr std::array<FilterDef, 10> kFilterDefs{{
+	constexpr std::array<FilterDef, 7> kFilterDefs{{
 		// Technical Avid/domain vocabulary — invariant, never translated.
 		{MediaFilterProxy::FilterMode::All, "All"},
 		{MediaFilterProxy::FilterMode::Video, "Video"},
@@ -191,12 +189,7 @@ namespace
 		 "Media whose metadata identifies a precompute master: rendered effects,\n"
 		 "titles and matte keys, or a precompute with an unknown category."},
 		// MainWindow supplies tab text; MediaFile supplies row-status explanations.
-		{MediaFilterProxy::FilterMode::NoProject, "No Project"},
-		{MediaFilterProxy::FilterMode::NoReference, "No Reference"},
 		{MediaFilterProxy::FilterMode::NoDatabase, "No Database"},
-		{MediaFilterProxy::FilterMode::InvalidUmid, "Invalid UMID",
-		 "The file's MOB ID is all zeros — Avid never assigned a real identity,\n"
-		 "so the media can't be tracked or relinked reliably."},
 		{MediaFilterProxy::FilterMode::NonPortable, "Non-Portable"},
 		{MediaFilterProxy::FilterMode::Quarantined, "Quarantined"},
 	}};
@@ -247,11 +240,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	if (!VolumeManager::hasFullDiskAccess())
 	{
 		addLog(QtWarningMsg, QStringLiteral("app"),
-			   "Full Disk Access not granted. Some locations may be "
-			   "inaccessible.");
-		addLog(QtInfoMsg, QStringLiteral("app"),
-			   "Go to System Preferences > Privacy & Security > Full Disk "
-			   "Access, to grant permission.");
+			   "Full Disk Access not granted. Go to System Preferences > Privacy & Security.");
 	}
 	else
 	{
@@ -378,30 +367,16 @@ void MainWindow::buildSidePanel()
 QWidget *MainWindow::buildToolbar()
 {
 	m_filterTabs = new QTabBar;
-	// The project/database-status tabs read their words from MediaFile — the
-	// same sentences the table tooltip and the CSV use — so they can't drift.
-	const auto statusTabText = [](MediaFilterProxy::FilterMode mode) -> QString
-	{
-		using DbStatus = MediaFile::DbStatus;
-		switch (mode)
-		{
-		case MediaFilterProxy::FilterMode::NoProject:
-			return MediaFile::noProjectWhy();
-		case MediaFilterProxy::FilterMode::NoReference:
-			return MediaFile::dbStatusText(DbStatus::NoReference).why;
-		case MediaFilterProxy::FilterMode::NoDatabase:
-			return MediaFile::dbStatusText(DbStatus::NoDatabase).why + QStringLiteral("\n\n") +
-				   MediaFile::dbStatusText(DbStatus::DbUnreadable).why;
-		default:
-			return {};
-		}
-	};
 	for (const auto &fd : kFilterDefs)
 	{
 		const int idx = m_filterTabs->addTab(QString::fromLatin1(fd.label));
-		const QString statusTip = statusTabText(fd.mode);
-		if (!statusTip.isEmpty())
-			m_filterTabs->setTabToolTip(idx, statusTip);
+		if (fd.mode == MediaFilterProxy::FilterMode::NoDatabase)
+		{
+			// Share database explanations with the table tooltip and CSV.
+			using DbStatus = MediaFile::DbStatus;
+			m_filterTabs->setTabToolTip(idx, MediaFile::dbStatusText(DbStatus::NoDatabase).why +
+												 QStringLiteral("\n\n") + MediaFile::dbStatusText(DbStatus::DbUnreadable).why);
+		}
 		else if (fd.tooltip)
 			m_filterTabs->setTabToolTip(idx, QString::fromLatin1(fd.tooltip));
 	}

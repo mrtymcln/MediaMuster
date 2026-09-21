@@ -62,10 +62,9 @@ public:
 	/// promptly.
 	void setBusy(bool busy);
 
-	// MARK: - macOS TCC
+	// MARK: - Full Disk Access
 
-	/// Without Full Disk Access, scanning any
-	/// protected path fails silently with permission errors.
+	/// Read the user's protected TCC database. Any failure returns false.
 	static bool hasFullDiskAccess();
 
 	static void openFullDiskAccessSettings();

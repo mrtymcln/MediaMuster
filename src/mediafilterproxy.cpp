@@ -92,7 +92,8 @@ void MediaFilterProxy::setSourceModel(QAbstractItemModel *sourceModel)
 void MediaFilterProxy::setFilterMode(FilterMode mode)
 {
 	m_mode = !m_effectDetailsEnabled && mode == FilterMode::Precompute
-				 ? FilterMode::All : mode;
+				 ? FilterMode::All
+				 : mode;
 	invalidateRowsFilter();
 }
 
@@ -160,14 +161,8 @@ bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
 		return f.kind == MediaFile::Kind::Video;
 	case FilterMode::Audio:
 		return f.kind == MediaFile::Kind::Audio;
-	case FilterMode::NoReference:
-		return f.dbStatus == MediaFile::DbStatus::NoReference;
-	case FilterMode::NoProject:
-		return f.hasNoProject();
 	case FilterMode::NoDatabase:
 		return f.isNoDatabase(); // both couldn't-check states; the tooltip says which
-	case FilterMode::InvalidUmid:
-		return f.isInvalidUmid;
 	case FilterMode::NonPortable:
 		return f.isNonPortable;
 	case FilterMode::Quarantined:

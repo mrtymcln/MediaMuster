@@ -22,10 +22,7 @@ public:
 		All,
 		Video,
 		Audio,
-		NoReference,
-		NoProject,
 		NoDatabase,
-		InvalidUmid,
 		NonPortable,
 		Quarantined,
 		Precompute

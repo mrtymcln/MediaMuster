@@ -16,6 +16,12 @@ The app opens its main window, finds storage locations and checks for unfinished
 file operations. It monitors changes to the drive list; this does not continuously
 rescan the media on those drives. You start a media scan with the scan controls.
 
+On macOS, startup and **Special > Check Permissions** probe Full Disk Access by
+opening the current user's protected TCC database read-only. The probe does not
+read or change its contents. A successful open reports access granted; any failure
+uses the existing FDA warning. This is a heuristic, and scanning remains available
+regardless of its result. The permission dialog can open the FDA settings pane.
+
 The current source includes a Debug menu. These four options start **off on every
 launch**:
 
@@ -104,7 +110,6 @@ have no database reference.
 | No Reference | The PMR index does not name the file, and the folder's database checks did not report a missing index or an unreadable database. This is not a test of whether a sequence uses the file. |
 | No Database | There is no PMR index to check, or a database could not be read. The internal states are separate even though they share this filter label. |
 | No project | No project name was recovered for the file. This does not mean that the file is unused. |
-| Invalid UMID | A recovered file or master identifier is all zeros. This filter is not a general validator for every possible identifier problem. |
 | Non-Portable | The filename contains a character outside MediaMuster's allowed character set. The app does not rename it automatically. |
 | Quarantined | The scanner found the file in the recognised MXF quarantine location. The app does not perform a new corruption diagnosis to assign this flag. |
 | Precompute | Supported usage metadata identifies rendered media. The clip name alone does not decide this classification. |
@@ -115,6 +120,11 @@ contain the clip. None of these labels, by itself, establishes that media is saf
 to delete.
 
 ## Filtering, selecting and exporting
+
+The filter tabs are All, Video, Audio, No Database, Non-Portable and Quarantined.
+Enabling precompute features also adds Precomputes. Project selection, including
+**No project**, is available in the sidebar. Database membership remains visible
+in Project tooltips, and the scan log reports recovered all-zero media identifiers.
 
 The table's filters work on the current inventory. They do not modify disk files.
 Project, tab, search, bin and enabled precompute filters combine: a row must pass
