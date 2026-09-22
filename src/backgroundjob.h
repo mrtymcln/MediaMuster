@@ -3,7 +3,6 @@
 #include "logcategories.h"
 
 #include <QDebug>
-#include <QObject>
 #include <QThread>
 #include <atomic>
 #include <utility>
@@ -14,9 +13,7 @@
 class BackgroundJob
 {
 public:
-	// Retain the context argument for the existing public API. Thread
-	// ownership is now explicit and requires no callback into that context.
-	explicit BackgroundJob(QObject *) {}
+	BackgroundJob() = default;
 
 	// MARK: - Lifecycle
 

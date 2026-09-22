@@ -21,7 +21,8 @@ class OpManager : public QObject, private OpSink
 {
 	Q_OBJECT
 	friend class TestOperationUi;
-  public:
+
+public:
 	explicit OpManager(QObject *parent = nullptr);
 	~OpManager() override;
 
@@ -56,7 +57,7 @@ class OpManager : public QObject, private OpSink
 	/// action. Set before dispatching; not thread-safe to change mid-run.
 	std::function<void(const QString &folderPath)> renameFolderTouched;
 
-  signals:
+signals:
 	void operationResult(const OpResult &result);
 
 	// MARK: - Progress signals (consumed via QueuedConnection)
@@ -75,7 +76,7 @@ class OpManager : public QObject, private OpSink
 	void trashFallbackRequested(quint64 requestId, const QVector<OpTrashFallbackItem> &items);
 	void trashFallbackFinished(quint64 requestId);
 
-  private:
+private:
 	// MARK: - OpSink (the runner's reporting channel)
 
 	void progress(const QString &name, int current, int total, double pct) override;
@@ -98,5 +99,5 @@ class OpManager : public QObject, private OpSink
 	/// Must stay the LAST member: BackgroundJob's destructor joins the
 	/// worker, and members declared after it would be destroyed first —
 	/// out from under a still-running worker.
-	BackgroundJob m_job{this};
+	BackgroundJob m_job;
 };

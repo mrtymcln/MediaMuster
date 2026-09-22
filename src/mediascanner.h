@@ -206,7 +206,7 @@ private:
 
 	// MARK: - State
 
-	BackgroundJob m_job{this};
+	BackgroundJob m_job;
 	std::atomic<bool> m_running{false};
 
 	Options m_options;

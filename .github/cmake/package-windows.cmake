@@ -19,14 +19,6 @@ execute_process(
     COMMAND_ERROR_IS_FATAL ANY
 )
 
-# Leftovers from custom icons.
-foreach(_item Qt6Network.dll Qt6Svg.dll tls networkinformation generic iconengines imageformats)
-    file(REMOVE_RECURSE "${_dist_dir}/${_item}")
-    if(EXISTS "${_dist_dir}/${_item}")
-        message(FATAL_ERROR "${_item} survived the strip")
-    endif()
-endforeach()
-
 set(_program_files_x86 "$ENV{ProgramFiles\(x86\)}")
 file(TO_CMAKE_PATH "${_program_files_x86}" _program_files_x86)
 set(_vswhere "${_program_files_x86}/Microsoft Visual Studio/Installer/vswhere.exe")

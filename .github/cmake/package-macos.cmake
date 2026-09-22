@@ -44,56 +44,6 @@ endfunction()
 
 runChecked("Qt deployment failed" macdeployqt "${app}")
 
-# Leftovers from custom icons.
-foreach(gone IN ITEMS
-    "${plugins}/imageformats" "${plugins}/iconengines" "${plugins}/generic"
-    "${plugins}/tls" "${plugins}/networkinformation"
-    "${frameworks}/QtSvg.framework" "${frameworks}/QtNetwork.framework")
-    runChecked("Removing unused Qt component failed" "${CMAKE_COMMAND}" -E rm -rf "${gone}")
-    if(EXISTS "${gone}" OR IS_SYMLINK "${gone}")
-        message(FATAL_ERROR "${gone} survived the strip")
-    endif()
-endforeach()
-
-# Inspect real executable files and dylibs, including the versioned binaries
-# inside frameworks. Match find's existing permissions and symlink behaviour.
-execute_process(
-    COMMAND find "${app}" -type f "(" -perm -111 -o -name "*.dylib" ")"
-    OUTPUT_VARIABLE binaries
-    RESULT_VARIABLE result)
-checkResult("${result}" "Enumerating deployed binaries failed")
-string(REPLACE ";" "\\;" binaries "${binaries}")
-string(REPLACE "\n" ";" binaries "${binaries}")
-set(missing FALSE)
-foreach(binary IN LISTS binaries)
-    if("${binary}" STREQUAL "")
-        continue()
-    endif()
-    execute_process(
-        COMMAND otool -L "${binary}"
-        OUTPUT_VARIABLE dependencies
-        RESULT_VARIABLE auditResult
-        ERROR_QUIET)
-    # Non-Mach-O executable files have no Qt dependencies, as in the former audit.
-    # A missing/unlaunchable audit tool is different: dependency checking did not run.
-    if(NOT "${auditResult}" MATCHES "^[0-9]+$")
-        checkResult("${auditResult}" "Inspecting deployed binary dependencies failed")
-    endif()
-    string(REGEX MATCHALL "@rpath/Qt[^ \t\r\n]+" dependencies "${dependencies}")
-    list(REMOVE_DUPLICATES dependencies)
-    foreach(dependency IN LISTS dependencies)
-        string(REGEX REPLACE "^@rpath/" "" dependency "${dependency}")
-        string(REGEX REPLACE "\\.framework.*$" "" dependency "${dependency}")
-        if(NOT IS_DIRECTORY "${frameworks}/${dependency}.framework")
-            message(NOTICE "MISSING framework: ${dependency} (linked by ${binary})")
-            set(missing TRUE)
-        endif()
-    endforeach()
-endforeach()
-if(missing)
-    message(FATAL_ERROR "Qt framework trim broke a dependency")
-endif()
-
 # No usable Developer ID identity is a supported ad-hoc packaging path.
 execute_process(
     COMMAND security find-identity -v -p codesigning
