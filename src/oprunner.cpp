@@ -128,31 +128,11 @@ bool OpRunner::save(OpJournal &j, OpJournal::Entry &e, Step s)
 
 namespace
 {
-	bool copiedDestinationMatches(const OpJournal::Entry &e, QString &error,
-								  const std::atomic<bool> *cancellation = nullptr)
+	bool copiedDestinationUnchanged(const OpJournal::Entry &e, QString &error)
 	{
 		if (!e.landed.unchanged(OpFile::inspect(e.dst)))
 		{
 			error = "The completed destination is missing or changed: " + e.dst;
-			return false;
-		}
-		if (!e.verificationRequested)
-			return true;
-		std::atomic<bool> neverCancel{false};
-		const auto &cancel = cancellation ? *cancellation : neverCancel;
-		if (cancel.load())
-		{
-			error = "Cancelled while checking completed work.";
-			return false;
-		}
-		auto dst = OpFile::open(e.dst, false, error);
-		if (!dst || e.hash.isEmpty())
-			return false;
-		const auto checked = OpCopier::hash(*dst, cancel);
-		if (checked.outcome != OpCopier::Outcome::Succeeded || checked.hash != e.hash ||
-			!dst->stillAt(e.dst, e.landed))
-		{
-			error = "The completed destination no longer passes its saved checksum check: " + e.dst;
 			return false;
 		}
 		return true;
@@ -167,7 +147,7 @@ namespace
 // Recovery examines recorded identities and intent. It never performs a new
 // deletion; explicit Resume performs remaining filesystem mutations afterwards.
 bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error,
-						 const std::atomic<bool> *cancellation, const NativeFile::DirectorySync &directorySync)
+						 const NativeFile::DirectorySync &directorySync)
 {
 	if (e.complete())
 		return true;
@@ -220,7 +200,7 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error,
 	}
 	if (e.step == Step::RemovingSource || !e.retirement.isEmpty())
 	{
-		if (!j.record().copiesComplete || !copiedDestinationMatches(e, error, cancellation))
+		if (!j.record().copiesComplete || !copiedDestinationUnchanged(e, error))
 			return false;
 		const auto src = OpFile::inspect(e.item.src), retired = OpFile::inspect(e.retirement);
 		if ((OpFile::occupied(e.item.src) && !e.source.unchanged(src)) ||
@@ -268,7 +248,7 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error,
 		return false;
 	}
 	if (e.step == Step::Planned || e.step == Step::Failed || e.step == Step::Cancelled ||
-		e.step == Step::Copying || ((e.step == Step::CopyReady || e.step == Step::Verified || e.step == Step::Publishing) && OpFile::occupied(e.temp)))
+		e.step == Step::Copying || ((e.step == Step::CopyReady || e.step == Step::Publishing) && OpFile::occupied(e.temp)))
 	{
 		keepArtifact(e, e.temp);
 		if (!e.temp.isEmpty())
@@ -287,7 +267,7 @@ bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error,
 		e.step = Step::Planned;
 		return j.save(e);
 	}
-	if (e.mechanism == "copy" && copiedDestinationMatches(e, error, cancellation))
+	if (e.mechanism == "copy" && copiedDestinationUnchanged(e, error))
 	{
 		if (removesAfterCopy(e, j.record().request) &&
 			!e.source.unchanged(OpFile::inspect(e.item.src)))
@@ -371,7 +351,7 @@ bool OpRunner::cleanup(OpJournal &j, OpJournal::Entry &e, QString &error, const 
 			if (!pending.file.isEmpty() && OpFile::occupied(pending.file))
 			{
 				const bool unpublished = e.step == Step::Planned || e.step == Step::Copying ||
-										 e.step == Step::CopyReady || e.step == Step::Verified || e.step == Step::Failed ||
+										 e.step == Step::CopyReady || e.step == Step::Failed ||
 										 e.step == Step::Cancelled || e.step == Step::Skipped;
 				const bool originalSafe = e.source.unchanged(OpFile::inspect(e.item.src));
 				const bool copySafe = e.mechanism == "copy" && e.complete() &&
@@ -468,9 +448,7 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 	QString error;
 	const QString tempDir = QFileInfo(e.dst).absolutePath() + "/.mediamuster-stage-" + unique();
 	e.temp = tempDir + "/payload.partial";
-	e.hash.clear();
 	e.mechanism = "copy";
-	e.verificationRequested = j.record().request.verifyCopies;
 	++e.attempts;
 	e.landed = {};
 	if (!save(j, e, Step::Copying))
@@ -503,12 +481,11 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 	if (!save(j, e, Step::Copying))
 		return result(e, State::NeedsAttention,
 					  "Journal failure; temporary file retained at " + e.temp);
-	auto progress = [&](qint64 bytes, qint64 size, bool verifying)
+	auto progress = [&](qint64 bytes, qint64 size)
 	{
-		m_sink.progress((verifying ? QStringLiteral("Checking copies: ") : QStringLiteral("Copying ")) +
-							label(e.item),
-						index, total, j.record().request.verifyCopies ? (verifying ? 80.0 + (size ? 20.0 * bytes / size : 20.0) : (size ? 80.0 * bytes / size : 80.0)) : (size ? 100.0 * bytes / size : 100.0));
-		checkpoint(verifying ? "readback-chunk" : "copy-chunk", e);
+		m_sink.progress(QStringLiteral("Copying ") + label(e.item), index, total,
+						size ? 100.0 * bytes / size : 100.0);
+		checkpoint("copy-chunk", e);
 	};
 	OpCopier copier;
 	OpCopier::Result copied;
@@ -521,8 +498,7 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 						   OpCopier::isRetryableNativeError(injectedError);
 	}
 	else
-		copied = copier.copy(source, *destination, m_cancel, progress, [&]
-							 { checkpoint("before-readback", e); }, j.record().request.verifyCopies);
+		copied = copier.copy(source, *destination, m_cancel, progress);
 	auto abandon = [&](State state, const QString &why)
 	{
 		e.cleanup.last().fileStamp = destination->stamp();
@@ -551,7 +527,6 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 																	  : State::Failed,
 					   copied.error);
 	}
-	e.hash = copied.hash;
 	e.copyDurable = copied.durable && directoryDurable;
 	e.metadataComplete = copied.metadataComplete;
 	e.error = copied.error;
@@ -561,7 +536,7 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 	if (!directoryDurable)
 		e.error += '\n' + directoryWarning;
 	e.landed = destination->stamp();
-	if (!save(j, e, e.verificationRequested ? Step::Verified : Step::CopyReady))
+	if (!save(j, e, Step::CopyReady))
 		return result(e, State::NeedsAttention,
 					  "Journal failure; temporary file retained at " + e.temp);
 	if (m_cancel.load())
@@ -777,7 +752,6 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 	{
 		keepArtifact(e, e.temp);
 		e.temp.clear();
-		e.hash.clear();
 		e.mechanism.clear();
 		e.copyDurable = false;
 		e.metadataComplete = false;
@@ -842,7 +816,6 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 	if (canRelocate)
 	{
 		e.mechanism = "relocate";
-		e.hash.clear();
 		e.landed = {};
 		e.copyDurable = false;
 		e.metadataComplete = false;
@@ -1070,7 +1043,7 @@ OpResult OpRunner::removeOriginal(OpJournal &j, OpJournal::Entry &e, int index, 
 	if (m_cancel.load() && e.needsOriginalRestoration())
 		return restoreOriginal(j, e);
 	if (!j.record().copiesComplete || !e.copyDurable || !e.metadataComplete ||
-		!copiedDestinationMatches(e, error, &m_cancel))
+		!copiedDestinationUnchanged(e, error))
 	{
 		if (m_cancel.load() && e.needsOriginalRestoration())
 			return restoreOriginal(j, e);
@@ -1167,7 +1140,6 @@ OpRequest OpRunner::planUndo(OpJournal::Record &forward, const OpRequest &input)
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
 	undo.undoOf = forward.path;
-	undo.verifyCopies = forward.request.verifyCopies;
 	undo.diagnosticTrashRoot = input.diagnosticTrashRoot.isEmpty() ? forward.request.diagnosticTrashRoot : input.diagnosticTrashRoot;
 	QVector<OpItem> discards;
 	auto add = [&](const OpJournal::Entry &e, const QString &src, const QString &dst,
@@ -1221,7 +1193,7 @@ OpRequest OpRunner::planUndo(OpJournal::Record &forward, const OpRequest &input)
 			 e.step != Step::RestoringSource && e.step != Step::SourceRestored &&
 			 e.step != Step::SourceRemoved && e.step != Step::NeedsAttention))
 			continue;
-		if (!copiedDestinationMatches(e, error, &m_cancel))
+		if (!copiedDestinationUnchanged(e, error))
 		{
 			if ((e.step == Step::Publishing || e.step == Step::NeedsAttention) &&
 				e.landed.unchanged(OpFile::inspect(e.temp)))
@@ -1308,7 +1280,7 @@ OpResult OpRunner::executeWithRetries(OpJournal &journal, OpJournal::Entry &e,
 						(kind == OpKind::Copy || kind == OpKind::Move);
 		 ++retry)
 	{
-		if (!reconcile(journal, e, error, &m_cancel, hooks.directorySync))
+		if (!reconcile(journal, e, error, hooks.directorySync))
 		{
 			outcome = result(e, State::NeedsAttention, error);
 			break;
@@ -1347,7 +1319,7 @@ bool OpRunner::copiesReadyForRemoval(const OpJournal &journal, const OpRequest &
 		if (e.complete())
 		{
 			if ((request.kind == OpKind::Move || request.kind == OpKind::Undo) &&
-				e.mechanism == "copy" && !copiedDestinationMatches(e, error, &m_cancel))
+				e.mechanism == "copy" && !copiedDestinationUnchanged(e, error))
 				ready = false;
 			if (request.kind == OpKind::Undo && e.undoAction.startsWith("restore") &&
 				!e.landed.unchanged(OpFile::inspect(e.dst)))
@@ -1356,7 +1328,7 @@ bool OpRunner::copiesReadyForRemoval(const OpJournal &journal, const OpRequest &
 		}
 		if (!removesAfterCopy(e, request) ||
 			(e.step != Step::Published && e.step != Step::SourceRetained && e.step != Step::RemovingSource) ||
-			!e.copyDurable || !e.metadataComplete || !copiedDestinationMatches(e, error, &m_cancel))
+			!e.copyDurable || !e.metadataComplete || !copiedDestinationUnchanged(e, error))
 			ready = false;
 		if (e.retirement.isEmpty() && !e.source.unchanged(OpFile::inspect(e.item.src)))
 			ready = false;
@@ -1419,10 +1391,10 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 							throw std::runtime_error(restored.message.toStdString());
 						continue;
 					}
-					if (!reconcile(journal, e, error, &m_cancel, hooks.directorySync))
+					if (!reconcile(journal, e, error, hooks.directorySync))
 					{
 						const bool beforePublication = e.step == Step::Failed || e.step == Step::Cancelled ||
-													   e.step == Step::Copying || e.step == Step::CopyReady || e.step == Step::Verified;
+													   e.step == Step::Copying || e.step == Step::CopyReady;
 						if ((request.kind != OpKind::Copy && request.kind != OpKind::Move) ||
 							!beforePublication || !journal.healthy() || m_cancel.load())
 							throw std::runtime_error(error.toStdString());
@@ -1439,7 +1411,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 		{
 			for (const auto &pending : OpJournal::interrupted(lockDirectory))
 				if (request.kind != OpKind::Undo || pending.path != request.undoJournalPath)
-					throw std::runtime_error("The previous job was interrupted. Resume or cancel it first.");
+					throw std::runtime_error("The previous job was interrupted. Resume or stop it first.");
 			std::optional<OpJournal::Record> undoOriginal;
 			if (request.kind == OpKind::Undo)
 			{
@@ -1631,7 +1603,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 
 			if (e.step != Step::Planned)
 			{
-				if (!reconcile(journal, e, error, &m_cancel, hooks.directorySync))
+				if (!reconcile(journal, e, error, hooks.directorySync))
 				{
 					m_sink.result(result(e, State::NeedsAttention, error));
 					++totals.needsAttention;
@@ -1783,7 +1755,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 			auto e = journal.record().entries[n];
 			if (!canDiscard(e))
 				throw std::runtime_error("A restored original changed; its remaining copy was retained.");
-			if (e.step != Step::Planned && !reconcile(journal, e, error, &m_cancel, hooks.directorySync))
+			if (e.step != Step::Planned && !reconcile(journal, e, error, hooks.directorySync))
 			{
 				++totals.needsAttention;
 				m_sink.result(result(e, State::NeedsAttention, error));

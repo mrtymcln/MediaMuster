@@ -83,7 +83,7 @@ projects when rebuilding the list.
 | [OpManager](../src/opmanager.cpp) | Owns the execution worker and passes progress/results between it and the interface. |
 | [OpRunner](../src/oprunner.cpp) | Rechecks the plan, records intent, executes steps, reconciles interrupted steps and plans Undo. |
 | [OpFile](../src/opfile.cpp) | Holds file handles and checks file identity, metadata and relocation outcomes. |
-| [OpCopier](../src/opcopier.cpp), [OpTrash](../src/optrash.cpp) | Perform native copying, optional checksums and platform Trash handling. |
+| [OpCopier](../src/opcopier.cpp), [OpTrash](../src/optrash.cpp) | Perform native copying and platform Trash handling. |
 | [NativeFile](../src/nativefile.cpp), [VolumeIdentity](../src/volumeidentity.cpp) | Request storage persistence and identify volumes for recovery. |
 | [OpJournal](../src/opjournal.cpp), [OperationRecovery](../src/operationrecovery.cpp) | Save plans and outcomes; inspect recorded work, reconcile it and find recovery/Undo candidates. |
 
@@ -116,12 +116,18 @@ another operation engine or another recovery state machine.
 - A Move needing copying completes every required copy before removing originals.
   Failed required copies block removal; explicit skips are excluded. Unconfirmed
   persistence or incomplete metadata can require retaining the source.
-- Verification is optional and defaults off. Resume keeps the saved choice.
-  Persistence requests and checksums establish different facts; neither should be
-  described as an unconditional guarantee against data loss.
-- Recovery reconciles recorded state and cleans eligible private artifacts. Resume,
-  restoring retained originals, cancelling unfinished work and Undo are distinct
-  actions. Cancelling a job keeps its completed effects.
+- Copy completion requires native success, file identity and length checks, plus
+  recorded metadata and persistence outcomes. There is no full-content comparison;
+  these checks must not be described as proof of identical contents or an
+  unconditional guarantee against data loss.
+- Recovery reconciles recorded state and cleans eligible private artifacts. Resuming
+  a job, restoring retained originals, stopping unfinished work and Undo are distinct
+  actions. Stop abandons the remaining work and keeps the job's completed effects.
+
+Beta 3 reads and writes only journal schema 2, without checksum fields. Released
+Beta 2 used schema 1; no migration or legacy-step aliases are supported. Recovery,
+Resume and Undo use the current identity, size, modification-time, metadata and
+persistence checks.
 
 See the [behaviour guide](current-behaviour.md#copy-move-and-delete) for Trash routing
 and the [validation record](file-operations-native-api-validation.md) for tested

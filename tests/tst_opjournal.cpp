@@ -87,9 +87,11 @@ class TestOpJournal : public QObject
 	void saved_policy_and_inverse_identity_survive_restart();
 	void incomplete_moves_are_not_completed_by_source_retention();
 	void no_effect_requires_identity_evidence();
+	void unsupported_schema_is_rejected_data();
+	void unsupported_schema_is_rejected();
 	void missing_required_policy_is_rejected();
 	void missing_required_entry_evidence_is_rejected();
-	void cleanup_evidence_round_trips_and_old_journals_remain_readable();
+	void cleanup_evidence_round_trips();
 	void invalid_cleanup_evidence_is_rejected_data();
 	void invalid_cleanup_evidence_is_rejected();
 	void restoration_states_preserve_intent_and_original_identity();
@@ -176,7 +178,6 @@ void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 	auto request = requestFor(temp.path());
 	request.kind = OpKind::Undo;
 	request.undoOf = temp.path() + "/operation-forward.jsonl";
-	request.verifyCopies = true;
 	request.undoEnabled = true; // Runtime authorization is not a persisted preference.
 	auto &item = request.items[0];
 	item.expectedFileId = "selected-object";
@@ -198,7 +199,6 @@ void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 	}
 	const auto saved = OpJournal::readOne(path);
 	QVERIFY(saved);
-	QVERIFY(saved->request.verifyCopies);
 	QVERIFY(saved->request.copyThenRemove);
 	QVERIFY(!saved->request.undoEnabled);
 	QCOMPARE(saved->request.undoOf, request.undoOf);
@@ -262,6 +262,41 @@ void TestOpJournal::no_effect_requires_identity_evidence()
 	QVERIFY(!OpJournal::Entry::fromJson(invalid));
 }
 
+void TestOpJournal::unsupported_schema_is_rejected_data()
+{
+	QTest::addColumn<int>("savedSchema");
+	QTest::newRow("beta-2") << 1;
+	QTest::newRow("development-3") << 3;
+	QTest::newRow("development-4") << 4;
+}
+
+void TestOpJournal::unsupported_schema_is_rejected()
+{
+	QFETCH(int, savedSchema);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	auto request = requestFor(temp.path());
+	QVERIFY(writeBytes(request.items[0].src, "payload"));
+	QString error;
+	const auto directory = temp.path() + "/journals";
+	const auto path = finishedJournal(request, directory, error);
+	QVERIFY2(!path.isEmpty(), qPrintable(error));
+	QVERIFY(OpJournal::latestUndoable(directory));
+	const auto bytes = readBytes(path);
+	const auto firstLine = bytes.indexOf('\n');
+	QVERIFY(firstLine >= 0);
+	auto begin = QJsonDocument::fromJson(bytes.left(firstLine)).object();
+	QCOMPARE(begin["schema"].toInt(), 2);
+	begin["schema"] = savedSchema;
+	QVERIFY(writeBytes(path, QJsonDocument(begin).toJson(QJsonDocument::Compact) + bytes.mid(firstLine)));
+	QVERIFY(!OpJournal::readOne(path));
+	QVERIFY(OpJournal::scan(directory).isEmpty());
+	QVERIFY(OpJournal::interrupted(directory).isEmpty());
+	QVERIFY(!OpJournal::latestUndoable(directory));
+	QVERIFY(QFile::exists(path));
+	QCOMPARE(readBytes(request.items[0].src), QByteArray("payload"));
+}
+
 void TestOpJournal::missing_required_policy_is_rejected()
 {
 	QTemporaryDir temp;
@@ -274,8 +309,8 @@ void TestOpJournal::missing_required_policy_is_rejected()
 	}
 	const auto bytes = readBytes(path);
 	auto record = QJsonDocument::fromJson(bytes.trimmed()).object();
-	QCOMPARE(record["schema"].toInt(), 3);
-	record.remove("verifyCopies");
+	QCOMPARE(record["schema"].toInt(), 2);
+	record.remove("copyThenRemove");
 	QVERIFY(writeBytes(path, QJsonDocument(record).toJson(QJsonDocument::Compact) + '\n'));
 	QVERIFY(!OpJournal::readOne(path));
 	QVERIFY(OpJournal::interrupted(temp.path() + "/journals").isEmpty());
@@ -288,22 +323,25 @@ void TestOpJournal::missing_required_entry_evidence_is_rejected()
 	OpJournal::Entry entry;
 	entry.id = 0;
 	entry.item.src = "/disposable/source.bin";
-	entry.verificationRequested = false;
 	entry.mechanism = "copy";
 	const auto record = entry.json();
 	QVERIFY(OpJournal::Entry::fromJson(record));
-	for (const auto *field : {"mechanism", "verificationRequested", "sourceRemoved", "undoAction", "attempts"})
+	for (const auto *field : {"mechanism", "sourceRemoved", "undoAction", "attempts",
+							 "trashFallbackApproved", "cleanup"})
 	{
 		auto incomplete = record;
 		incomplete.remove(field);
 		QVERIFY(!OpJournal::Entry::fromJson(incomplete));
 	}
 	auto unknown = record;
-	unknown["mechanism"] = "guess-by-hash";
+	unknown["mechanism"] = "unknown-mechanism";
+	QVERIFY(!OpJournal::Entry::fromJson(unknown));
+	unknown = record;
+	unknown["step"] = "unknown-step";
 	QVERIFY(!OpJournal::Entry::fromJson(unknown));
 }
 
-void TestOpJournal::cleanup_evidence_round_trips_and_old_journals_remain_readable()
+void TestOpJournal::cleanup_evidence_round_trips()
 {
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
@@ -320,11 +358,6 @@ void TestOpJournal::cleanup_evidence_round_trips_and_old_journals_remain_readabl
 	entry.cleanup[0].fileStamp = {};
 	entry.cleanup[0].removeFile = false;
 	QVERIFY(OpJournal::Entry::fromJson(entry.json()));
-	auto old = entry.json();
-	old.remove("cleanup");
-	const auto legacy = OpJournal::Entry::fromJson(old);
-	QVERIFY(legacy);
-	QVERIFY(legacy->cleanup.isEmpty());
 }
 
 void TestOpJournal::invalid_cleanup_evidence_is_rejected_data()
@@ -400,7 +433,7 @@ void TestOpJournal::restoration_states_preserve_intent_and_original_identity()
 	QVERIFY(temp.isValid());
 	auto entry = cleanupEntry(temp.path());
 	entry.step = OpJournal::Step::RemovingSource;
-	QVERIFY(entry.needsOriginalRestoration()); // Includes older journals with a stranded original.
+	QVERIFY(entry.needsOriginalRestoration()); // An interrupted removal can leave the original retained.
 	entry.step = OpJournal::Step::RestoringSource;
 	auto parsed = OpJournal::Entry::fromJson(entry.json());
 	QVERIFY(parsed && parsed->needsOriginalRestoration() && !parsed->complete());

@@ -26,14 +26,13 @@ its result. The permission dialog can open the FDA settings pane.
 When startup collects crash reports, a dialog with an empty window title directs
 the user to **Help > Reveal Logs** to share them with the developer.
 
-The current source includes a Debug menu. These six options start **off on every
+The current source includes a Debug menu. These five options start **off on every
 launch**:
 
 | Option | What turning it on does |
 | --- | --- |
 | Enable OMF | Includes supported legacy media in subsequent scans. Rescan to discover it. |
 | Enable Precomputes | Shows precompute classification, detail columns and filtering, and includes those fields in CSV exports. |
-| Verify copies | Reads and compares the source and destination contents when copying. |
 | Enable undo | Makes the file-operation Undo command available when there is an eligible recorded job. |
 | Show codec hex | Displays raw codec identifiers where available in place of readable codec names. |
 | Fusion style | Uses Qt's Fusion widget style; turning it off restores the startup style. |
@@ -224,9 +223,9 @@ skipped files remain untouched. A completed copy can also retain its source when
 the app cannot confirm the storage's persistence or metadata requirements. The
 operation log distinguishes completed work, retained sources and unresolved work.
 
-Verify copies adds source and destination checksum reads. With it off, the app
-still performs identity, size and storage checks, but it does not compare the full
-contents. A resumed job keeps its recorded verification choice.
+Copying uses the native operating-system APIs, with checks for reported errors,
+file identity, size, metadata and storage persistence. The app does not read and
+compare the complete source and destination contents after copying.
 
 If system Trash explicitly refuses a local file and the app confirms the original
 is unchanged, it asks before using MediaMuster Trash. An uncertain native result
@@ -241,6 +240,8 @@ an updated inventory of destinations and external changes.
 
 Every file job requires a writable journal: a saved record of its plan, file
 identities and progress. If the journal cannot be written, a new job cannot start.
+The upcoming Beta 3 build reads and writes schema-2 journals. Released Beta 2 used
+schema 1; those older journals are not supported for recovery or Undo in this build.
 
 Cancel requests a stop; it does not reverse all completed work. Work already
 finished remains recorded. An operating-system call already in progress may delay
@@ -248,19 +249,23 @@ the stop.
 
 At startup the app checks recorded operations against the disk and cleans up
 eligible recorded temporary artifacts. It does not automatically resume the
-unfinished copy, move or delete work. Unfinished Business offers the applicable
-choices:
+unfinished copy, move or delete work. Unfinished Business asks “Resume the
+interrupted job?” and offers the applicable choices:
 
-- Resume the unfinished job.
-- Restore originals retained in an interrupted removal step, when available.
-- Cancel the unfinished part of a job while keeping its completed results.
+- **Resume:** “Continue the unfinished work.”
+- **Restore Originals:** return originals retained in an interrupted removal step, when available.
+- **Stop:** “Keep the finished work and abandon the rest.”
 
-An unfinished resumable job must be resolved or explicitly cancelled before a new
-file job starts. Closing the recovery dialog does not cancel that job.
+An unfinished resumable job must be resolved or explicitly abandoned before a new
+file job starts. Closing the recovery dialog or pressing Escape leaves the job
+pending; there is no separate Cancel button. Job details call deletion **Delete**.
 
 Undo is separate. When enabled, it attempts to reverse the latest eligible
 recorded job and has its own journal. It checks the recorded files and locations;
 it is not an unlimited history or a guarantee that external changes can be undone.
+The confirmation names the previous Copy, Move, Delete or Rebalance operation and
+describes its reversal: copies go to Trash; moved or deleted files return to their
+original locations; rebalanced files return to their original Avid MediaFiles folders.
 
 ## Rebalancing folders
 

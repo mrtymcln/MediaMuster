@@ -19,7 +19,7 @@ public:
 		Close,
 		Resume,
 		Restore,
-		CancelJob
+		Stop
 	};
 
 	UnfinishedBusinessDialog(const QVector<OperationRecovery::Resumable> &resumable,
@@ -52,7 +52,7 @@ private:
 	QLabel *m_summary = nullptr;
 	QWidget *m_resumeRow = nullptr;
 	QWidget *m_restoreRow = nullptr;
-	QWidget *m_cancelRow = nullptr;
-	QLabel *m_cancelHelp = nullptr;
+	QWidget *m_stopRow = nullptr;
+	QLabel *m_stopHelp = nullptr;
 	QPlainTextEdit *m_restorePaths = nullptr;
 };

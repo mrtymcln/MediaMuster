@@ -12,7 +12,7 @@
 
 namespace
 {
-	constexpr int schema = 3;
+	constexpr int schema = 2;
 	QJsonObject itemJson(const OpItem &i)
 	{
 		return {{"src", i.src},
@@ -75,8 +75,6 @@ QString OpJournal::stepName(Step s)
 		return "copying";
 	case Step::CopyReady:
 		return "copy-ready";
-	case Step::Verified:
-		return "verified";
 	case Step::Publishing:
 		return "publishing";
 	case Step::Published:
@@ -138,14 +136,11 @@ QJsonObject OpJournal::Entry::json() const
 			{"originalRelative", originalRelativePath},
 			{"dst", dst},
 			{"temp", temp},
-			{"algorithm", "XXH3-64"},
-			{"hash", hash},
 			{"mechanism", mechanism},
 			{"retirement", retirement},
 			{"trashProvider", trashProvider},
 			{"trashReceipt", trashReceipt},
 			{"trashFallbackApproved", trashFallbackApproved},
-			{"verificationRequested", verificationRequested},
 			{"explicitSkip", explicitSkip},
 			{"sourceRemoved", sourceRemoved},
 			{"attempts", attempts},
@@ -167,11 +162,9 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	for (const auto *key : {"mechanism", "retirement", "trashProvider", "trashReceipt", "undoAction"})
 		if (!v[key].isString())
 			return {};
-	for (const auto *key : {"verificationRequested", "explicitSkip", "sourceRemoved"})
+	for (const auto *key : {"trashFallbackApproved", "explicitSkip", "sourceRemoved"})
 		if (!v[key].isBool())
 			return {};
-	if (v.contains("trashFallbackApproved") && !v["trashFallbackApproved"].isBool())
-		return {};
 	if (!v["undoEntryId"].isDouble() || !v["attempts"].isDouble() ||
 		v["attempts"].toInt(-1) < 0 || !v["item"].isObject())
 		return {};
@@ -189,7 +182,7 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 			known = true;
 			break;
 		}
-	if (!known || v["algorithm"].toString() != "XXH3-64")
+	if (!known)
 		return {};
 	e.id = v["id"].toInt(-1);
 	e.item = itemFromJson(v["item"].toObject());
@@ -198,7 +191,6 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	e.originalRelativePath = v["originalRelative"].toString();
 	e.dst = v["dst"].toString();
 	e.temp = v["temp"].toString();
-	e.hash = v["hash"].toString();
 	e.mechanism = v["mechanism"].toString();
 	if (!e.mechanism.isEmpty() && e.mechanism != "copy" && e.mechanism != "relocate" &&
 		e.mechanism != "systemTrash")
@@ -207,7 +199,6 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	e.trashProvider = v["trashProvider"].toString();
 	e.trashReceipt = v["trashReceipt"].toString();
 	e.trashFallbackApproved = v["trashFallbackApproved"].toBool();
-	e.verificationRequested = v["verificationRequested"].toBool();
 	e.explicitSkip = v["explicitSkip"].toBool();
 	e.sourceRemoved = v["sourceRemoved"].toBool();
 	e.attempts = v["attempts"].toInt();
@@ -228,65 +219,62 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	if (e.step == Step::SourceRestored && (e.mechanism != "copy" || e.retirement.isEmpty() ||
 										   e.sourceRemoved || !e.source.valid()))
 		return {};
-	if (v.contains("cleanup"))
+	if (!v["cleanup"].isArray())
+		return {};
+	QSet<QString> directories;
+	for (const auto &value : v["cleanup"].toArray())
 	{
-		if (!v["cleanup"].isArray())
+		if (!value.isObject())
 			return {};
-		QSet<QString> directories;
-		for (const auto &value : v["cleanup"].toArray())
+		const auto pending = value.toObject();
+		if (!pending["directory"].isString() || !pending["file"].isString() ||
+			!pending["directoryStamp"].isObject() || !pending["fileStamp"].isObject() ||
+			!pending["removeFile"].isBool())
+			return {};
+		auto stampHasTypes = [](const QJsonObject &stamp)
 		{
-			if (!value.isObject())
-				return {};
-			const auto pending = value.toObject();
-			if (!pending["directory"].isString() || !pending["file"].isString() ||
-				!pending["directoryStamp"].isObject() || !pending["fileStamp"].isObject() ||
-				!pending["removeFile"].isBool())
-				return {};
-			auto stampHasTypes = [](const QJsonObject &stamp)
-			{
-				for (const auto *key : {"file", "volume", "size", "modified"})
-					if (!stamp[key].isString())
-						return false;
-				bool sizeOk = false, modifiedOk = false;
-				stamp["size"].toString().toLongLong(&sizeOk);
-				stamp["modified"].toString().toLongLong(&modifiedOk);
-				return sizeOk && modifiedOk;
-			};
-			if (!stampHasTypes(pending["directoryStamp"].toObject()) ||
-				!stampHasTypes(pending["fileStamp"].toObject()))
-				return {};
-			Cleanup cleanup;
-			cleanup.directory = pending["directory"].toString();
-			cleanup.directoryStamp = OpStamp::fromJson(pending["directoryStamp"].toObject());
-			cleanup.file = pending["file"].toString();
-			cleanup.fileStamp = OpStamp::fromJson(pending["fileStamp"].toObject());
-			cleanup.removeFile = pending["removeFile"].toBool();
-			if (!QDir::isAbsolutePath(cleanup.directory) ||
-				QDir::cleanPath(cleanup.directory) != cleanup.directory ||
-				!cleanup.directoryStamp.valid() || cleanup.directoryStamp.volumeId.isEmpty() ||
-				directories.contains(cleanup.directory))
-				return {};
-			const auto name = QFileInfo(cleanup.directory).fileName();
-			bool privateDirectory = false;
-			for (const auto *prefix : {".mediamuster-stage-", ".mediamuster-retire-", ".mediamuster-"})
-			{
-				const QString start = QString::fromLatin1(prefix);
-				if (!name.startsWith(start))
-					continue;
-				const auto token = name.mid(start.size());
-				const QUuid uuid(token);
-				privateDirectory |= !uuid.isNull() && token == uuid.toString(QUuid::WithoutBraces);
-			}
-			if (!privateDirectory ||
-				(cleanup.file.isEmpty() && (cleanup.removeFile || cleanup.fileStamp.valid())) ||
-				(!cleanup.file.isEmpty() &&
-				 (cleanup.file != cleanup.directory + "/payload.partial" ||
-				  name.startsWith(".mediamuster-retire-") || !cleanup.fileStamp.valid() ||
-				  cleanup.fileStamp.volumeId.isEmpty())))
-				return {};
-			directories.insert(cleanup.directory);
-			e.cleanup.append(cleanup);
+			for (const auto *key : {"file", "volume", "size", "modified"})
+				if (!stamp[key].isString())
+					return false;
+			bool sizeOk = false, modifiedOk = false;
+			stamp["size"].toString().toLongLong(&sizeOk);
+			stamp["modified"].toString().toLongLong(&modifiedOk);
+			return sizeOk && modifiedOk;
+		};
+		if (!stampHasTypes(pending["directoryStamp"].toObject()) ||
+			!stampHasTypes(pending["fileStamp"].toObject()))
+			return {};
+		Cleanup cleanup;
+		cleanup.directory = pending["directory"].toString();
+		cleanup.directoryStamp = OpStamp::fromJson(pending["directoryStamp"].toObject());
+		cleanup.file = pending["file"].toString();
+		cleanup.fileStamp = OpStamp::fromJson(pending["fileStamp"].toObject());
+		cleanup.removeFile = pending["removeFile"].toBool();
+		if (!QDir::isAbsolutePath(cleanup.directory) ||
+			QDir::cleanPath(cleanup.directory) != cleanup.directory ||
+			!cleanup.directoryStamp.valid() || cleanup.directoryStamp.volumeId.isEmpty() ||
+			directories.contains(cleanup.directory))
+			return {};
+		const auto name = QFileInfo(cleanup.directory).fileName();
+		bool privateDirectory = false;
+		for (const auto *prefix : {".mediamuster-stage-", ".mediamuster-retire-", ".mediamuster-"})
+		{
+			const QString start = QString::fromLatin1(prefix);
+			if (!name.startsWith(start))
+				continue;
+			const auto token = name.mid(start.size());
+			const QUuid uuid(token);
+			privateDirectory |= !uuid.isNull() && token == uuid.toString(QUuid::WithoutBraces);
 		}
+		if (!privateDirectory ||
+			(cleanup.file.isEmpty() && (cleanup.removeFile || cleanup.fileStamp.valid())) ||
+			(!cleanup.file.isEmpty() &&
+			 (cleanup.file != cleanup.directory + "/payload.partial" ||
+			  name.startsWith(".mediamuster-retire-") || !cleanup.fileStamp.valid() ||
+			  cleanup.fileStamp.volumeId.isEmpty())))
+			return {};
+		directories.insert(cleanup.directory);
+		e.cleanup.append(cleanup);
 	}
 	for (const auto &a : v["artifacts"].toArray())
 		e.artifacts.append(a.toString());
@@ -394,7 +382,6 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 			e.source.size = e.item.bytes;
 			e.source.modified = e.item.expectedModified;
 		}
-		e.verificationRequested = request.verifyCopies;
 		e.explicitSkip = e.item.policy == "skip";
 		e.undoAction = e.item.undoAction;
 		e.undoEntryId = e.item.undoEntryId;
@@ -417,7 +404,6 @@ bool OpJournal::create(const OpRequest &request, const QString &directory, QStri
 							{"kind", opKindName(request.kind)},
 							{"dest", request.destRoot},
 							{"preserve", request.preserve},
-							{"verifyCopies", request.verifyCopies},
 							{"copyThenRemove", request.copyThenRemove},
 							{"undoOf", request.undoOf},
 							{"copiesComplete", false},
@@ -563,7 +549,7 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 		{
 			if (type != "begin" || v["schema"].toInt() != schema)
 				return {};
-			if (!v["verifyCopies"].isBool() || !v["copyThenRemove"].isBool() ||
+			if (!v["copyThenRemove"].isBool() ||
 				!v["undoOf"].isString() || !v["copiesComplete"].isBool() ||
 				!v["undoPath"].isString())
 				return {};
@@ -571,7 +557,6 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 			if (!kind)
 				return {};
 			rec.request.kind = *kind;
-			rec.request.verifyCopies = v["verifyCopies"].toBool();
 			rec.request.copyThenRemove = v["copyThenRemove"].toBool();
 			rec.request.undoOf = v["undoOf"].toString();
 			rec.copiesComplete = v["copiesComplete"].toBool();

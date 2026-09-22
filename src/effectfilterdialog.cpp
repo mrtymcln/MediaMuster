@@ -32,7 +32,7 @@ EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
 	setMinimumSize(380, 330);
 
 	auto *layout = new QVBoxLayout(this);
-	layout->setContentsMargins(16, 16, 16, 16);
+	layout->setContentsMargins(20, 20, 20, 20);
 	layout->setSpacing(12);
 
 	m_volumes = new QComboBox(this);

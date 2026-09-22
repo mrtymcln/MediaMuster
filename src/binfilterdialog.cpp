@@ -88,8 +88,7 @@ namespace
 		layout->setSpacing(12);
 
 		buttonOut = new QPushButton(label);
-		buttonOut->setMinimumWidth(150);
-		buttonOut->setMinimumHeight(44);
+		buttonOut->setFixedSize(150, 50);
 		layout->addWidget(buttonOut);
 
 		auto *helpLabel = new QLabel(help);
@@ -129,7 +128,7 @@ BinFilterDialog::~BinFilterDialog()
 void BinFilterDialog::setupUi()
 {
 	auto *root = new QVBoxLayout(this);
-	root->setContentsMargins(16, 16, 16, 16);
+	root->setContentsMargins(20, 20, 20, 20);
 	root->setSpacing(12);
 
 	auto *intro = new QLabel(
@@ -214,7 +213,7 @@ void BinFilterDialog::setupUi()
 
 	auto *opsGroup = new QGroupBox(tr("Filter Operations"));
 	auto *opsLayout = new QVBoxLayout(opsGroup);
-	opsLayout->setSpacing(8);
+	opsLayout->setSpacing(12);
 
 	opsLayout->addWidget(makeOperationRow(
 		tr("Intersect"),

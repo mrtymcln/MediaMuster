@@ -1,5 +1,10 @@
 # MediaMuster cleanup audit
 
+**Historical audit:** Verify copies and xxHash were removed on 22 September 2026.
+The optional-checksum policy, dependency references and `verifyCopies` naming
+example below describe the earlier checkout. Current rules are in the
+[contributor guide](CONTRIBUTING.md) and [behaviour guide](current-behaviour.md).
+
 12 September 2026. Initial read-only inspection of the source, test callers, build configuration and repository layout, updated with the user's cleanup decisions. The previous implementation's 29 passing test targets are a useful baseline. Implementation follow-ups are recorded separately below.
 
 ## Cleanup implementation

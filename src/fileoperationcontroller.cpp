@@ -30,18 +30,15 @@ namespace
 FileOperationController::FileOperationController(QWidget *window)
 	: QObject(window), m_window(window), m_fileOps(new OpManager(this)),
 	  m_recoveryAct(new QAction(tr("Unfinished Business…"), this)),
-	  m_undoAct(new QAction(tr("&Undo"), this)),
-	  m_verifyCopiesAct(new QAction(tr("Verify copies"), this)),
+	  m_undoAction(new QAction(tr("&Undo"), this)),
 	  m_enableUndoAct(new QAction(tr("Enable undo"), this))
 {
-	m_undoAct->setObjectName(QStringLiteral("undoFileOperationAction"));
+	m_undoAction->setObjectName(QStringLiteral("undoFileOperationAction"));
 	m_recoveryAct->setObjectName(QStringLiteral("unfinishedBusinessAction"));
-	m_verifyCopiesAct->setObjectName(QStringLiteral("verifyCopiesDebugAction"));
 	m_enableUndoAct->setObjectName(QStringLiteral("enableUndoDebugAction"));
-	m_verifyCopiesAct->setCheckable(true);
 	m_enableUndoAct->setCheckable(true);
 	connect(m_recoveryAct, &QAction::triggered, this, &FileOperationController::offerRecovery);
-	connect(m_undoAct, &QAction::triggered, this, &FileOperationController::undoLastOperation);
+	connect(m_undoAction, &QAction::triggered, this, &FileOperationController::undoLastOperation);
 	connect(m_enableUndoAct, &QAction::toggled, this,
 			[this](bool enabled)
 			{
@@ -290,14 +287,14 @@ bool FileOperationController::confirmCrashProtection()
 
 void FileOperationController::updateUndoAction()
 {
-	if (!m_undoAct)
+	if (!m_undoAction)
 		return;
 	const bool enabled = m_enableUndoAct && m_enableUndoAct->isChecked();
-	m_undoAct->setVisible(enabled);
-	m_undoAct->setShortcut(enabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
-	m_undoAct->setEnabled(enabled && !m_historyLoading && !m_undoCandidate.path.isEmpty() &&
-						  isIdle());
-	m_undoAct->setText(m_undoCandidate.label.isEmpty() ? tr("&Undo") : m_undoCandidate.label);
+	m_undoAction->setVisible(enabled);
+	m_undoAction->setShortcut(enabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
+	m_undoAction->setEnabled(enabled && !m_historyLoading && !m_undoCandidate.journalPath.isEmpty() &&
+							 isIdle());
+	m_undoAction->setText(m_undoCandidate.undoText.isEmpty() ? tr("&Undo") : m_undoCandidate.undoText);
 }
 
 void FileOperationController::undoLastOperation()
@@ -306,20 +303,17 @@ void FileOperationController::undoLastOperation()
 		return;
 	// Resolve the forward remainder before selecting its completed effects
 	// for Undo. Choosing Resume starts only that old job, never this Undo.
-	if (!resolvePreviousJob() || m_undoCandidate.path.isEmpty())
+	if (!resolvePreviousJob() || m_undoCandidate.journalPath.isEmpty())
 		return;
 
-	QString plainLabel = m_undoCandidate.label;
-	plainLabel.remove(QLatin1Char('&'));
+	QString plainUndoText = m_undoCandidate.undoText;
+	plainUndoText.remove(QLatin1Char('&'));
 	QMessageBox confirm(m_window);
 	confirm.setIcon(QMessageBox::Question);
-	confirm.setWindowTitle(tr("Undo"));
-	confirm.setText(tr("%1?").arg(plainLabel));
-	confirm.setInformativeText(
-		tr("Only completed changes will be reversed. Files will be "
-		   "restored to their original locations; copies being removed go to Trash. "
-		   "Changed files and occupied original locations will be reported."));
-	auto *goBtn = confirm.addButton(plainLabel, QMessageBox::AcceptRole);
+	confirm.setWindowTitle(QString());
+	confirm.setText(m_undoCandidate.confirmationHeading);
+	confirm.setInformativeText(m_undoCandidate.confirmationMessage);
+	auto *goBtn = confirm.addButton(plainUndoText, QMessageBox::AcceptRole);
 	confirm.addButton(QMessageBox::Cancel);
 	confirm.exec();
 	if (confirm.clickedButton() != goBtn)
@@ -327,7 +321,7 @@ void FileOperationController::undoLastOperation()
 
 	OpRequest request;
 	request.kind = OpKind::Undo;
-	request.undoJournalPath = m_undoCandidate.path;
+	request.undoJournalPath = m_undoCandidate.journalPath;
 	if (dispatchRequest(std::move(request)))
 		emit logMessage(QtInfoMsg, QStringLiteral("ops"),
 						tr("Undoing the last operation. Rescan afterwards to refresh the table."));
@@ -348,9 +342,6 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 	if (!confirmCrashProtection())
 		return false;
 
-	// Capture only new-job choices. Resume uses the policy saved in its journal.
-	if (!resuming && !restoring && (request.kind == OpKind::Copy || request.kind == OpKind::Move))
-		request.verifyCopies = m_verifyCopiesAct->isChecked();
 	m_pruneSourceRowsAfterOperation =
 		!restoring && (request.kind == OpKind::Move || request.kind == OpKind::Delete);
 	m_restoredOriginalPaths.clear();
@@ -378,20 +369,28 @@ void FileOperationController::applyOperationHistory(const OperationRecovery::Sum
 	m_undoCandidate = {};
 	if (history.undoCandidate)
 	{
-		m_undoCandidate.path = history.undoCandidate->path;
+		m_undoCandidate.journalPath = history.undoCandidate->path;
 		switch (history.undoCandidate->request.kind)
 		{
 		case OpKind::Copy:
-			m_undoCandidate.label = tr("&Undo Copy");
+			m_undoCandidate.undoText = tr("&Undo Copy");
+			m_undoCandidate.confirmationHeading = tr("Undo the last copy operation?");
+			m_undoCandidate.confirmationMessage = tr("The copies will be moved to the trash.");
 			break;
 		case OpKind::Move:
-			m_undoCandidate.label = tr("&Undo Move");
+			m_undoCandidate.undoText = tr("&Undo Move");
+			m_undoCandidate.confirmationHeading = tr("Undo the last move operation?");
+			m_undoCandidate.confirmationMessage = tr("The files will be returned to their original location.");
 			break;
 		case OpKind::Delete:
-			m_undoCandidate.label = tr("&Undo Delete");
+			m_undoCandidate.undoText = tr("&Undo Delete");
+			m_undoCandidate.confirmationHeading = tr("Undo the last delete operation?");
+			m_undoCandidate.confirmationMessage = tr("The files will be returned to their original location.");
 			break;
 		case OpKind::Rename:
-			m_undoCandidate.label = tr("&Undo Rebalance");
+			m_undoCandidate.undoText = tr("&Undo Rebalance");
+			m_undoCandidate.confirmationHeading = tr("Undo the last rebalance?");
+			m_undoCandidate.confirmationMessage = tr("All files will be returned to their original Avid MediaFiles folders.");
 			break;
 		case OpKind::Undo:
 			m_undoCandidate = {};
@@ -446,9 +445,9 @@ bool FileOperationController::resolvePreviousJob()
 	readOperationHistoryForGate();
 	while (!m_resumable.isEmpty())
 	{
-		// Continuing or restoring an old job must never also start the new
-		// request waiting at this gate. Only explicit abandonment clears it.
-		if (showRecoveryDialog(m_resumable.first().journalPath) != RecoveryOutcome::Dismissed)
+		// Resuming an old job must never also start the new
+		// request waiting at this gate. Only choosing Stop allows a new request.
+		if (showRecoveryDialog(m_resumable.first().journalPath) != RecoveryOutcome::Stopped)
 			return false;
 	}
 	return true;
@@ -500,21 +499,21 @@ FileOperationController::RecoveryOutcome FileOperationController::showRecoveryDi
 			}
 		}
 		break;
-	case UnfinishedBusinessDialog::Choice::CancelJob:
+	case UnfinishedBusinessDialog::Choice::Stop:
 		if (resumable != resumableJobs.cend())
 		{
 			QString error;
 			if (!OpJournal::dismiss(path, error))
 			{
 				emit logMessage(QtWarningMsg, QStringLiteral("ops"), error);
-				QMessageBox::warning(m_window, tr("Job could not be cancelled"), error);
+				QMessageBox::warning(m_window, tr("Job could not be stopped"), error);
 				refreshHistory();
 				break;
 			}
 			emit logMessage(QtInfoMsg, QStringLiteral("ops"),
-							tr("Cancelled the unfinished part of the job. Completed results were kept."));
+							tr("Stopped the unfinished job. Completed results were kept."));
 			readOperationHistoryForGate();
-			return RecoveryOutcome::Dismissed;
+			return RecoveryOutcome::Stopped;
 		}
 		break;
 	case UnfinishedBusinessDialog::Choice::Close:

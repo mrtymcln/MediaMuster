@@ -43,7 +43,7 @@ namespace
 			else if (done.undoAction == "restoreMove" && done.dst == entry.item.src &&
 					 done.landed.unchanged(original))
 			{
-				entry.sourceRemoved = true; // Undo replaced the original object with its verified copy.
+				entry.sourceRemoved = true; // Undo replaced the original object with its completed copy.
 				entry.step = OpJournal::Step::SourceRemoved;
 			}
 			else
@@ -64,7 +64,6 @@ std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(con
 	out.kind = rec.request.kind;
 	out.dest = rec.request.destRoot;
 	out.preserve = rec.request.preserve;
-	out.verifyCopies = rec.request.verifyCopies;
 	out.copiesComplete = rec.copiesComplete;
 	out.started = rec.started;
 	for (const auto &e : rec.entries)

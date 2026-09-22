@@ -202,7 +202,6 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)

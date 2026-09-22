@@ -24,8 +24,8 @@ ProgressDialog::ProgressDialog(QWidget *parent)
 	setWindowFlags(Qt::Sheet);
 
 	auto *layout = new QVBoxLayout(this);
-	layout->setContentsMargins(18, 16, 18, 16);
-	layout->setSpacing(10);
+	layout->setContentsMargins(20, 20, 20, 20);
+	layout->setSpacing(12);
 
 	// MARK: Detail row
 

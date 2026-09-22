@@ -36,8 +36,7 @@ public:
 	void setActivity(Activity activity);
 	OpManager *manager() const { return m_fileOps; }
 	QAction *recoveryAction() const { return m_recoveryAct; }
-	QAction *undoAction() const { return m_undoAct; }
-	QAction *verifyCopiesAction() const { return m_verifyCopiesAct; }
+	QAction *undoAction() const { return m_undoAction; }
 	QAction *enableUndoAction() const { return m_enableUndoAct; }
 
 	void runStartupRecovery();
@@ -63,7 +62,7 @@ private:
 	{
 		Closed,
 		Started,
-		Dismissed
+		Stopped
 	};
 	void onRecoveryDone(const OperationRecovery::Summary &summary);
 	void updateUndoAction();
@@ -88,16 +87,17 @@ private:
 	QVector<OperationRecovery::Resumable> m_resumable;
 	QVector<OperationRecovery::Restorable> m_restorable;
 	QAction *m_recoveryAct;
-	QAction *m_undoAct;
-	QAction *m_verifyCopiesAct;
+	QAction *m_undoAction;
 	QAction *m_enableUndoAct;
 	bool m_operationGateActive = false;
 	bool m_historyLoading = false;
 	quint64 m_historyGeneration = 0;
 	struct UndoCandidate
 	{
-		QString path;
-		QString label;
+		QString journalPath;
+		QString undoText;
+		QString confirmationHeading;
+		QString confirmationMessage;
 	};
 	UndoCandidate m_undoCandidate;
 };

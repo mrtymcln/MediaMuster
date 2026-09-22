@@ -94,7 +94,6 @@ struct Fixture
 	{
 		OpRequest r;
 		r.kind = kind;
-		r.verifyCopies = true;
 		r.diagnosticTrashRoot = root + "/_MediaMuster_Trash";
 		r.destRoot = dest;
 		OpItem i;
@@ -142,7 +141,7 @@ class TestFileOperations : public QObject
 {
 	Q_OBJECT
   private slots:
-	void copy_verifies_and_publishes();
+	void copy_publishes_and_preserves_source();
 	void advisory_copy_move_assessment_data();
 	void advisory_copy_move_assessment();
 	void advisory_destination_paths();
@@ -183,8 +182,6 @@ class TestFileOperations : public QObject
 	void undo_rebalance_retires_regenerated_indexes();
 	void undo_original_in_retirement();
 
-	void verification_off_avoids_readback();
-	void move_copies_every_file_before_removal_data();
 	void move_copies_every_file_before_removal();
 	void failed_copy_continues_and_blocks_all_original_removal();
 	void explicit_skip_survives_disappearing_conflict();
@@ -192,7 +189,8 @@ class TestFileOperations : public QObject
 	void undo_copy_is_gated_and_claims_forward();
 	void undo_partial_move_restores_only_completed_changes();
 	void undo_interrupted_copy_and_changed_result();
-	void undo_move_resume_keeps_saved_policy();
+	void undo_move_resumes_after_publication_data();
+	void undo_move_resumes_after_publication();
 	void local_trash_and_undo_roundtrip();
 
 	void keep_both_retains_names_and_handles_late_race();
@@ -200,7 +198,6 @@ class TestFileOperations : public QObject
 	void replace_is_rejected();
 	void source_edit_is_retained();
 	void cancellation_preserves_replacement();
-	void corrupt_readback_never_publishes();
 	void failed_cleanup_remains_journalled();
 	void cancel_during_retirement_restores_original_data();
 	void cancel_during_retirement_restores_original();
@@ -218,7 +215,7 @@ class TestFileOperations : public QObject
 	void undo_settles_interrupted_retirement_cleanup();
 	void journal_failure_stops_publication();
 	void missing_journal_prevents_relocation();
-	void crash_before_verification_is_not_complete();
+	void crash_before_publication_is_not_complete();
 	void crash_after_publication_is_reconciled();
 	void repeated_resume_continues_same_journal();
 	void source_retention_is_explicit();
@@ -244,14 +241,14 @@ class TestFileOperations : public QObject
 	void directory_creation_propagates_durability();
 	void selected_duplicates_keep_both();
 	void regenerated_database_is_retired_on_resume();
-	void torn_tail_retains_verified_prefix();
+	void torn_tail_retains_valid_prefix();
 	void abrupt_process_exit_is_recoverable();
 #ifdef Q_OS_WIN
 	void encrypted_windows_copy_is_refused();
 #endif
 	void rebalance_late_conflict_stops_remaining_members();
 };
-void TestFileOperations::copy_verifies_and_publishes()
+void TestFileOperations::copy_publishes_and_preserves_source()
 {
 	Fixture f;
 	Sink sink;
@@ -264,7 +261,6 @@ void TestFileOperations::copy_verifies_and_publishes()
 	const auto records = OpJournal::scan(f.journals);
 	QCOMPARE(records.size(), 1);
 	QCOMPARE(records[0].entries[0].step, OpJournal::Step::Done);
-	QVERIFY(!records[0].entries[0].hash.isEmpty());
 	QVERIFY(records[0].entries[0].landed.valid());
 	QCOMPARE(records[0].entries[0].originalSource, f.src);
 }
@@ -357,7 +353,6 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 	request.kind = move ? OpKind::Move : OpKind::Copy;
 	request.destRoot = f.dest;
 	request.preserve = true;
-	request.verifyCopies = true;
 	const QStringList samples{
 		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
 		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif"),
@@ -716,7 +711,7 @@ void TestFileOperations::source_edit_is_retained()
 	bool edited = false;
 	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
 	{
-		if (stage == "before-readback")
+		if (stage == "copy-ready")
 		{
 			QFile file(f.src);
 			if (file.open(QIODevice::ReadWrite))
@@ -747,7 +742,7 @@ void TestFileOperations::cancellation_preserves_replacement()
 	OpRunner runner(sink, cancel);
 	runner.hooks.checkpoint = [&](const QString &stage, const auto &e)
 	{
-		if (stage == "before-readback")
+		if (stage == "copy-ready")
 		{
 			put(e.dst, "other writer");
 			cancel = true;
@@ -756,36 +751,6 @@ void TestFileOperations::cancellation_preserves_replacement()
 	auto t = runner.run(f.request(), f.journals);
 	QVERIFY(t.cancelled);
 	QCOMPARE(get(f.dest + "/clip.bin"), QByteArray("other writer"));
-	QCOMPARE(get(f.src), f.bytes);
-}
-void TestFileOperations::corrupt_readback_never_publishes()
-{
-	Fixture f;
-	Sink sink;
-	std::atomic<bool> cancel{false};
-	OpRunner runner(sink, cancel);
-	bool changed = false;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &e)
-	{
-		if (stage == "before-readback")
-		{
-			QFile file(e.temp);
-			if (file.open(QIODevice::ReadWrite))
-			{
-				file.seek(1);
-				changed = file.write("Z", 1) == 1;
-				file.flush();
-			}
-		}
-	};
-	auto t = runner.run(f.request(), f.journals);
-	if (changed)
-	{
-		QCOMPARE(t.succeeded, 0);
-		QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
-	}
-	else
-		QCOMPARE(t.succeeded, 1);
 	QCOMPARE(get(f.src), f.bytes);
 }
 void TestFileOperations::failed_cleanup_remains_journalled()
@@ -822,15 +787,12 @@ void TestFileOperations::failed_cleanup_remains_journalled()
 void TestFileOperations::cancel_during_retirement_restores_original_data()
 {
 	QTest::addColumn<QString>("boundary");
-	QTest::addColumn<bool>("verify");
 	for (const auto *point : {"before-source-retirement", "source-retired"})
-		for (bool verify : {false, true})
-			QTest::newRow(qPrintable(QString(point) + (verify ? "-verified" : "-plain"))) << QString(point) << verify;
+		QTest::newRow(point) << QString(point);
 }
 void TestFileOperations::cancel_during_retirement_restores_original()
 {
 	QFETCH(QString, boundary);
-	QFETCH(bool, verify);
 	Fixture f;
 	Sink sink;
 	std::atomic<bool> cancel{false};
@@ -838,7 +800,6 @@ void TestFileOperations::cancel_during_retirement_restores_original()
 	runner.hooks.forceCopy = true;
 	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == boundary) cancel = true; };
 	auto request = f.request(OpKind::Move);
-	request.verifyCopies = verify;
 	const auto totals = runner.run(request, f.journals);
 	QVERIFY(totals.cancelled);
 	QCOMPARE(totals.needsAttention, 0);
@@ -953,22 +914,18 @@ void TestFileOperations::restoration_crash_boundaries_are_idempotent()
 void TestFileOperations::completed_transfers_remove_private_directories_data()
 {
 	QTest::addColumn<bool>("move");
-	QTest::addColumn<bool>("verify");
 	for (bool move : {false, true})
-		for (bool verify : {false, true})
-			QTest::newRow(qPrintable(QString(move ? "move" : "copy") + (verify ? "-verified" : "-plain"))) << move << verify;
+		QTest::newRow(move ? "move" : "copy") << move;
 }
 void TestFileOperations::completed_transfers_remove_private_directories()
 {
 	QFETCH(bool, move);
-	QFETCH(bool, verify);
 	Fixture f;
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
 	auto request = f.request(move ? OpKind::Move : OpKind::Copy);
-	request.verifyCopies = verify;
 	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	QCOMPARE(QFile::exists(f.src), !move);
@@ -1101,7 +1058,7 @@ void TestFileOperations::undo_settles_interrupted_retirement_cleanup()
 		restore.restoreJournalPath = forward.path;
 		QVERIFY(runner.run(restore, f.journals).needsAttention > 0);
 		// An unsuccessful attempt to find a retained original must not prevent
-		// Undo from recovering it from the still-verified destination copy.
+		// Undo from recovering it from the unchanged destination copy.
 	}
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
@@ -1126,7 +1083,7 @@ void TestFileOperations::journal_failure_stops_publication()
 	bool failed = false;
 	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
 	{
-		if (stage == "before-readback")
+		if (stage == "copy-ready")
 			failed = true;
 	};
 	runner.hooks.fail = [&](const QString &point) { return point == "journal" && failed; };
@@ -1148,7 +1105,7 @@ void TestFileOperations::missing_journal_prevents_relocation()
 	QVERIFY(QFile::exists(f.src));
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 }
-void TestFileOperations::crash_before_verification_is_not_complete()
+void TestFileOperations::crash_before_publication_is_not_complete()
 {
 	Fixture f;
 	Sink sink;
@@ -1156,7 +1113,7 @@ void TestFileOperations::crash_before_verification_is_not_complete()
 	OpRunner runner(sink, cancel);
 	runner.hooks.checkpoint = [](const QString &stage, const auto &)
 	{
-		if (stage == "before-readback")
+		if (stage == "copy-ready")
 			throw std::runtime_error("simulated termination");
 	};
 	runner.run(f.request(), f.journals);
@@ -1190,7 +1147,7 @@ void TestFileOperations::repeated_resume_continues_same_journal()
 	OpRunner runner(sink, cancel);
 	runner.hooks.checkpoint = [](const QString &stage, const auto &)
 	{
-		if (stage == "before-readback")
+		if (stage == "copy-ready")
 			throw std::runtime_error("simulated termination");
 	};
 	runner.run(f.request(), f.journals);
@@ -1524,8 +1481,6 @@ void TestFileOperations::facade_refuses_second_job_without_cancelling_first()
 	QSignalSpy finished(&manager, &OpManager::operationFinished);
 	auto firstRequest = first.request();
 	auto secondRequest = second.request();
-	firstRequest.verifyCopies = false;
-	secondRequest.verifyCopies = false;
 	manager.execute(firstRequest);
 	QVERIFY(manager.isRunning());
 	manager.execute(secondRequest);
@@ -1673,7 +1628,6 @@ void TestFileOperations::unsupported_directory_flush_preserves_originals()
 		QVERIFY(!sink.results.last().sourceRemoved);
 		QVERIFY(sink.results.last().message.contains("does not support"));
 		const auto entry = OpJournal::scan(f.journals)[0].entries[0];
-		QVERIFY(!entry.hash.isEmpty());
 		QVERIFY(!entry.copyDurable);
 		QCOMPARE(entry.attempts, 1); // Late Keep Both conflicts reuse the completed copy.
 		QVERIFY(!entry.source.sameObject(entry.landed));
@@ -1817,7 +1771,7 @@ void TestFileOperations::regenerated_database_is_retired_on_resume()
 	QVERIFY(!QFile::exists(database));
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 }
-void TestFileOperations::torn_tail_retains_verified_prefix()
+void TestFileOperations::torn_tail_retains_valid_prefix()
 {
 	Fixture f;
 	Sink sink;
@@ -1843,7 +1797,7 @@ void TestFileOperations::torn_tail_retains_verified_prefix()
 }
 void TestFileOperations::abrupt_process_exit_is_recoverable()
 {
-	for (const auto &checkpoint : {QString("before-readback"), QString("published")})
+	for (const auto &checkpoint : {QString("copy-ready"), QString("published")})
 	{
 		Fixture f;
 		QProcess child;
@@ -1854,7 +1808,7 @@ void TestFileOperations::abrupt_process_exit_is_recoverable()
 		const auto records = OpJournal::scan(f.journals);
 		QCOMPARE(records.size(), 1);
 		QCOMPARE(get(f.src), f.bytes);
-		if (checkpoint == "before-readback")
+		if (checkpoint == "copy-ready")
 		{
 			QCOMPARE(QFileInfo(records[0].entries[0].temp).size(), qint64(f.bytes.size()));
 			QCOMPARE(OperationRecovery::run(f.journals).resumable.size(), 1);
@@ -1917,37 +1871,10 @@ void TestFileOperations::encrypted_windows_copy_is_refused()
 	QVERIFY(sink.results.last().message.contains("Encrypted"));
 }
 #endif
-void TestFileOperations::verification_off_avoids_readback()
-{
-	Fixture f;
-	Sink sink;
-	std::atomic<bool> cancel{false};
-	OpRunner runner(sink, cancel);
-	bool readback = false;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		readback = readback || stage == "before-readback" || stage == "readback-chunk";
-	};
-	auto request = f.request();
-	request.verifyCopies = false;
-	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
-	QVERIFY(!readback);
-	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
-	const auto record = OpJournal::scan(f.journals).first();
-	QVERIFY(record.entries.first().hash.isEmpty());
-	QVERIFY(!record.request.verifyCopies);
-}
-void TestFileOperations::move_copies_every_file_before_removal_data()
-{
-	QTest::addColumn<bool>("verifyCopies");
-	QTest::newRow("verification-off") << false;
-	QTest::newRow("verification-on") << true;
-}
 void TestFileOperations::move_copies_every_file_before_removal()
 {
-	QFETCH(bool, verifyCopies);
 	Fixture f;
 	auto request = f.request(OpKind::Move);
-	request.verifyCopies = verifyCopies;
 	auto second = request.items[0];
 	second.src = f.root + "/source/audio.bin";
 	second.name = "audio.bin";
@@ -2076,7 +2003,6 @@ void TestFileOperations::removal_crash_boundaries_resume()
 			if (stage == point) throw std::runtime_error("crash boundary");
 		};
 		auto request = f.request(OpKind::Move);
-		request.verifyCopies = false;
 		QVERIFY(runner.run(request, f.journals).needsAttention > 0);
 		auto saved = OpJournal::scan(f.journals).first();
 		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
@@ -2120,7 +2046,6 @@ void TestFileOperations::undo_partial_move_restores_only_completed_changes()
 {
 	Fixture f;
 	auto request = f.request(OpKind::Move);
-	request.verifyCopies = false;
 	auto second = request.items[0];
 	second.src = f.root + "/source/audio.bin";
 	second.name = "audio.bin";
@@ -2187,15 +2112,21 @@ void TestFileOperations::undo_interrupted_copy_and_changed_result()
 	QVERIFY(runner.run(undo, changed.journals).needsAttention > 0);
 	QCOMPARE(get(changed.dest + "/clip.bin"), QByteArray("a changed file"));
 }
-void TestFileOperations::undo_move_resume_keeps_saved_policy()
+void TestFileOperations::undo_move_resumes_after_publication_data()
 {
+	QTest::addColumn<bool>("changedDestination");
+	QTest::newRow("unchanged-destination") << false;
+	QTest::newRow("changed-destination") << true;
+}
+void TestFileOperations::undo_move_resumes_after_publication()
+{
+	QFETCH(bool, changedDestination);
 	Fixture f;
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
 	auto request = f.request(OpKind::Move);
-	request.verifyCopies = false;
 	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
@@ -2209,19 +2140,24 @@ void TestFileOperations::undo_move_resume_keeps_saved_policy()
 	const auto pending = OpJournal::interrupted(f.journals);
 	QCOMPARE(pending.size(), 1);
 	QCOMPARE(pending[0].request.kind, OpKind::Undo);
-	QVERIFY(!pending[0].request.verifyCopies);
+	if (changedDestination)
+		put(f.src, "a changed destination");
 	OpRequest resume;
 	resume.resumeJournalPath = pending[0].path;
-	resume.verifyCopies = true;
-	bool readback = false;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == "before-readback") readback = true;
-	};
+	runner.hooks = {};
 	const auto t = runner.run(resume, f.journals);
-	QVERIFY2(t.needsAttention == 0 && t.failed == 0, qPrintable(sink.messages.join('\n')));
-	QVERIFY(!readback);
-	QCOMPARE(get(f.src), f.bytes);
-	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	if (changedDestination)
+	{
+		QVERIFY(t.needsAttention > 0);
+		QCOMPARE(get(f.src), QByteArray("a changed destination"));
+		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	}
+	else
+	{
+		QVERIFY2(t.needsAttention == 0 && t.failed == 0, qPrintable(sink.messages.join('\n')));
+		QCOMPARE(get(f.src), f.bytes);
+		QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	}
 }
 void TestFileOperations::local_trash_and_undo_roundtrip()
 {
@@ -2314,21 +2250,19 @@ void TestFileOperations::native_copy_error_classification()
 void TestFileOperations::native_copy_retry_policy_data()
 {
 	QTest::addColumn<int>("kind");
-	QTest::addColumn<bool>("verifyCopies");
 	QTest::addColumn<int>("nativeError");
 	QTest::addColumn<int>("failureCount");
 	QTest::addColumn<int>("expectedAttempts");
 	QTest::addColumn<bool>("copiedAll");
-	QTest::newRow("move-transient-recovers") << int(OpKind::Move) << false << transientCopyError << 1 << 2 << true;
-	QTest::newRow("move-permanent-continues") << int(OpKind::Move) << false << permanentCopyError << 1 << 1 << false;
-	QTest::newRow("move-exhausted-continues") << int(OpKind::Move) << false << transientCopyError << 10 << 3 << false;
-	QTest::newRow("verified-copy-transient-recovers") << int(OpKind::Copy) << true << transientCopyError << 1 << 2 << true;
-	QTest::newRow("verified-copy-exhausted-continues") << int(OpKind::Copy) << true << transientCopyError << 10 << 3 << false;
+	QTest::newRow("move-transient-recovers") << int(OpKind::Move) << transientCopyError << 1 << 2 << true;
+	QTest::newRow("move-permanent-continues") << int(OpKind::Move) << permanentCopyError << 1 << 1 << false;
+	QTest::newRow("move-exhausted-continues") << int(OpKind::Move) << transientCopyError << 10 << 3 << false;
+	QTest::newRow("copy-transient-recovers") << int(OpKind::Copy) << transientCopyError << 1 << 2 << true;
+	QTest::newRow("copy-exhausted-continues") << int(OpKind::Copy) << transientCopyError << 10 << 3 << false;
 }
 void TestFileOperations::native_copy_retry_policy()
 {
 	QFETCH(int, kind);
-	QFETCH(bool, verifyCopies);
 	QFETCH(int, nativeError);
 	QFETCH(int, failureCount);
 	QFETCH(int, expectedAttempts);
@@ -2336,7 +2270,6 @@ void TestFileOperations::native_copy_retry_policy()
 	const bool moving = OpKind(kind) == OpKind::Move;
 	Fixture f;
 	auto request = f.request(OpKind(kind));
-	request.verifyCopies = verifyCopies;
 	auto second = request.items[0];
 	second.src = f.root + "/source/audio.bin";
 	second.name = "audio.bin";
@@ -2370,8 +2303,6 @@ void TestFileOperations::native_copy_retry_policy()
 	const auto &record = records[0];
 	QCOMPARE(record.entries[0].attempts, expectedAttempts);
 	QCOMPARE(record.entries[1].attempts, 1);
-	QCOMPARE(record.entries[1].verificationRequested, verifyCopies);
-	QCOMPARE(!record.entries[1].hash.isEmpty(), verifyCopies);
 	QCOMPARE(record.copiesComplete, moving && copiedAll);
 	QCOMPARE(sink.results.size(), 2);
 	QSet<QString> uniqueStaging(stagingPaths.cbegin(), stagingPaths.cend());
@@ -3050,7 +2981,6 @@ int main(int argc, char **argv)
 				std::_Exit(81);
 		};
 		OpRequest request;
-		request.verifyCopies = true;
 		request.destRoot = args[4];
 		OpItem item;
 		item.src = args[3];

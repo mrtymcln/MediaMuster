@@ -569,7 +569,7 @@ void RebalanceDialog::showEvent(QShowEvent *event)
 void RebalanceDialog::setupUi()
 {
 	auto *root = new QVBoxLayout(this);
-	root->setContentsMargins(16, 16, 16, 16);
+	root->setContentsMargins(20, 20, 20, 20);
 	root->setSpacing(12);
 
 	auto *intro = new QLabel;

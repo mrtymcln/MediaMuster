@@ -141,13 +141,12 @@ struct OpItem
 // MARK: - OpRequest
 
 /// Complete execution input, assembled from UI choices, a rebalance plan,
-/// or a saved journal. Resume retains the recorded verification choice.
+/// or a saved journal.
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
 	QString destRoot;			 ///< Copy/Move destination root; empty for Delete/Rename/Undo.
 	bool preserve = false;		 ///< Recreate the MXF folder path or flat OMFI root under destRoot.
-	bool verifyCopies = false;	 ///< Captured once from Debug; Resume keeps this choice.
 	bool copyThenRemove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
 	bool undoEnabled = false;	 ///< Runtime permission to start a NEW Undo; not persisted.
 	QVector<OpItem> items;

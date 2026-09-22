@@ -66,19 +66,18 @@ checks, and carries both file and master identities to the operation engine.
 ## Session toggles
 
 The Debug menu enables these features for the current session only. Every launch
-starts with all six off; there are no saved preferences to carry into a public
+starts with all five off; there are no saved preferences to carry into a public
 build.
 
 | Debug command | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
 | Enable OMF | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
 | Enable Precomputes | Shows Type and precompute detail columns, the Precomputes tab, the filter button, and those fields in CSV exports. Shows Special > Filter Precomputes, enabled when scanned media is available and the app is idle. | Hides the Special menu command, toolbar control and fields, clears precompute filters, and resets sorting if its column disappears. Rendered media remains in ordinary scan results. |
-| Verify copies | New Copy/Move requests capture the option; transfers compare source and destination checksums after the native copy. | Transfers still check identity, size and storage outcomes, but do not compare full contents. Resume preserves the job's saved option. |
 | Enable undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
 | Show codec hex | Displays raw codec identifiers where available in place of readable names. | Displays readable codec names. |
 | Fusion style | Uses Qt's Fusion widget style. | Uses the style installed at startup. |
 
-The first four commands form one group, followed by the two display options.
+The first three commands form one group, followed by the two display options.
 The final group is **Rebalance demos**, whose **Small**, **Big** and **Really big**
 scenarios use synthetic plans and simulated progress without changing files.
 

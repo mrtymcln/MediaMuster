@@ -1,5 +1,11 @@
 # CI and test cleanup — before / after
 
+**Historical cleanup record:** Verify copies, its checksum-specific scenarios and
+the xxHash dependency were removed on 22 September 2026. The scenario counts,
+verification rows and instruction to preserve the C dependency below describe
+the earlier cleanup. Current build requirements are in the
+[contributor guide](CONTRIBUTING.md).
+
 13 September 2026. **Implemented after approval.** This records the agreed before /
 after and test-scenario mapping. The user confirmed that GitHub builds passed after
 the initial cleanup. The subsequent CMake automation conversion is recorded below;

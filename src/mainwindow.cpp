@@ -721,7 +721,6 @@ void MainWindow::buildDebugMenu()
 	m_enablePrecomputesAct->setChecked(false);
 	connect(m_enablePrecomputesAct, &QAction::toggled, this, &MainWindow::setPrecomputesEnabled);
 
-	debugMenu->addAction(m_operations->verifyCopiesAction());
 	debugMenu->addAction(m_operations->enableUndoAction());
 	debugMenu->addSeparator();
 

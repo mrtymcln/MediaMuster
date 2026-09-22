@@ -140,7 +140,6 @@ AboutDialog::AboutDialog(QWidget *parent)
 	addCredit(tr("Script Editor"), QStringLiteral("Cameron Gregg"));
 	addCredit(tr("Icon Designer"), QStringLiteral("Matthew Skiles"));
 	addCredit(tr("Production Designer"), QStringLiteral("Qt 6.5.3"));
-	addCredit(tr("Continuity"), QStringLiteral("xxHash"));
 
 	// Show the account display name of the user.
 	const QString editor = userDisplayName();

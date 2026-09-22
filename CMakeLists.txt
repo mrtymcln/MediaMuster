@@ -19,7 +19,7 @@ if(APPLE)
 endif()
 
 ### App name, version and copyright ###
-project(MediaMuster VERSION 0.0.2 LANGUAGES C CXX)
+project(MediaMuster VERSION 0.0.2 LANGUAGES CXX)
 if(APPLE)
     enable_language(OBJCXX)
     set(CMAKE_OBJCXX_STANDARD 17)
@@ -142,7 +142,6 @@ set(SOURCES
     src/crashcollector.cpp
     src/rebalancedialog.cpp
     src/resources.qrc
-    src/third_party/xxhash.c
 )
 
 ### Target ###

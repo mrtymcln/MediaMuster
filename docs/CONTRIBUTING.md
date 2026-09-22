@@ -17,7 +17,7 @@ and [the documentation index](README.md).
 | File | Lowercase stem, matching header/source | `volumeidentity.h`, `volumeidentity.cpp` |
 
 Use ordinary variable names for local `const` values. Prefer `constexpr` for fixed
-constants. Name booleans as facts or options (`hasPendingJob`, `verifyCopies`). Include
+constants. Name booleans as facts or options (`hasPendingJob`, `precomputesEnabled`). Include
 units when the type does not express them (`retryDelayMs`, `sampleRateHz`). Preserve
 the native unit of opaque platform timestamps. Treat acronyms as words (`MxfParser`,
 `MobId`), while keeping SDK symbols and actual Avid identifiers unchanged.
@@ -37,6 +37,23 @@ retain their own formatting.
 ```sh
 git diff --check
 ```
+
+## UI layout
+
+Use these logical-pixel measurements for custom task dialogs:
+
+| Purpose | Pixels |
+| --- | ---: |
+| Outer margins; gaps between separate unboxed sections | 20 |
+| Ordinary/action row gaps; large action button to supporting text | 12 |
+| Related controls within a group | 8 |
+| Field to its associated helper text | 4 |
+| Extra margins on nested wrappers used only for layout | 0 |
+
+The large action buttons in Filter by Bin and Unfinished Business use 150 × 50
+logical pixels. Preserve Qt's active-style metrics for groups, ordinary controls
+and standard footer buttons, and platform layouts for alerts and file choosers.
+Keep the main window deliberately dense and the About dialog more spacious.
 
 ## Keeping descriptions accurate
 
@@ -99,9 +116,9 @@ the existing Apple environment credentials. See the
 platform validation status.
 
 Keep application and test logic in C++, and build/test/packaging automation in
-CMake. Preserve the upstream xxHash C source and the small Objective-C++ Mac Trash
-bridge. GitHub YAML and native resource/metadata formats retain their platform
-roles; avoid adding shell or PowerShell recipes around CMake commands.
+CMake. Preserve the small Objective-C++ Mac Trash bridge. GitHub YAML and native
+resource/metadata formats retain their platform roles; avoid adding shell or
+PowerShell recipes around CMake commands.
 
 Keep sources and headers flat under `src/`. Dated reviews live with their evidence
 under `docs/reviews/`; archived scripts and captured paths describe the original

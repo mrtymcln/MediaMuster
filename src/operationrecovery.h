@@ -16,7 +16,6 @@ public:
 		OpKind kind = OpKind::Copy;
 		QString dest;
 		bool preserve = false;
-		bool verifyCopies = false;
 		bool copiesComplete = false;
 		QString started;
 		int total = 0;

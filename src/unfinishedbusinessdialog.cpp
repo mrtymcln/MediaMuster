@@ -16,10 +16,10 @@
 
 namespace
 {
-	constexpr int kLayoutMargin = 16;
+	constexpr int kLayoutMargin = 20;
 	constexpr int kRowSpacing = 12;
 	constexpr int kButtonWidth = 150;
-	constexpr int kButtonHeight = 44;
+	constexpr int kButtonHeight = 50;
 	constexpr int kPathsWidth = 560;
 	constexpr int kPathsHeight = 140;
 	constexpr int kJobLabelCharacters = 30;
@@ -40,7 +40,7 @@ namespace
 		layout->setSpacing(kRowSpacing);
 		auto *button = new QPushButton(label, row);
 		button->setObjectName(buttonName);
-		button->setMinimumSize(kButtonWidth, kButtonHeight);
+		button->setFixedSize(kButtonWidth, kButtonHeight);
 		button->setAutoDefault(false);
 		layout->addWidget(button);
 		auto *help = new QLabel(explanation, row);
@@ -59,7 +59,7 @@ namespace
 		case OpKind::Move:
 			return UnfinishedBusinessDialog::tr("Move");
 		case OpKind::Delete:
-			return UnfinishedBusinessDialog::tr("Trash");
+			return UnfinishedBusinessDialog::tr("Delete");
 		case OpKind::Rename:
 			return UnfinishedBusinessDialog::tr("Rebalance");
 		case OpKind::Undo:
@@ -143,6 +143,11 @@ UnfinishedBusinessDialog::UnfinishedBusinessDialog(
 	auto *layout = new QVBoxLayout(this);
 	layout->setContentsMargins(kLayoutMargin, kLayoutMargin, kLayoutMargin, kLayoutMargin);
 	layout->setSpacing(kRowSpacing);
+	auto *heading = new QLabel(tr("Resume the interrupted job?"), this);
+	heading->setObjectName(QStringLiteral("unfinishedBusinessHeading"));
+	heading->setTextFormat(Qt::PlainText);
+	heading->setWordWrap(true);
+	layout->addWidget(heading);
 	auto *jobs = new QComboBox(this);
 	jobs->setObjectName(QStringLiteral("unfinishedBusinessJob"));
 	jobs->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
@@ -164,7 +169,7 @@ UnfinishedBusinessDialog::UnfinishedBusinessDialog(
 	m_summary->setWordWrap(true);
 	layout->addWidget(m_summary);
 
-	const auto resume = makeActionRow(tr("Resume Job"), tr("Continue the unfinished job."),
+	const auto resume = makeActionRow(tr("Resume"), tr("Continue the unfinished work."),
 									  QStringLiteral("resumeInterruptedJobButton"), this);
 	m_resumeRow = resume.widget;
 	layout->addWidget(m_resumeRow);
@@ -178,13 +183,13 @@ UnfinishedBusinessDialog::UnfinishedBusinessDialog(
 	layout->addWidget(m_restoreRow);
 	connect(restore.button, &QPushButton::clicked, this, [this]
 			{ choose(Choice::Restore); });
-	const auto cancel = makeActionRow(tr("Cancel Job"), QString(),
-									  QStringLiteral("cancelInterruptedJobButton"), this);
-	m_cancelRow = cancel.widget;
-	m_cancelHelp = cancel.explanation;
-	layout->addWidget(m_cancelRow);
-	connect(cancel.button, &QPushButton::clicked, this, [this]
-			{ choose(Choice::CancelJob); });
+	const auto stop = makeActionRow(tr("Stop"), QString(),
+									QStringLiteral("stopInterruptedJobButton"), this);
+	m_stopRow = stop.widget;
+	m_stopHelp = stop.explanation;
+	layout->addWidget(m_stopRow);
+	connect(stop.button, &QPushButton::clicked, this, [this]
+			{ choose(Choice::Stop); });
 
 	m_restorePaths = new QPlainTextEdit(this);
 	m_restorePaths->setObjectName(QStringLiteral("restoreOriginalPaths"));
@@ -210,14 +215,14 @@ void UnfinishedBusinessDialog::showJob(int index)
 	const bool canResume = valid && m_jobs[index].canResume;
 	const bool canRestore = valid && !m_jobs[index].restoreLocations.isEmpty();
 	m_summary->setText(valid ? m_jobs[index].summary : QString());
-	m_cancelHelp->setText(canRestore
-							  ? tr("Cancel the remaining work and keep completed results. "
-								   "You can still restore the files listed below, later.")
-							  : tr("Cancel the remaining work and keep completed results."));
+	m_stopHelp->setText(canRestore
+							? tr("Keep the finished work and abandon the rest. "
+								 "You can still restore the originals listed below.")
+							: tr("Keep the finished work and abandon the rest."));
 	m_resumeRow->setVisible(canResume);
 	m_resumeRow->setEnabled(canResume);
-	m_cancelRow->setVisible(canResume);
-	m_cancelRow->setEnabled(canResume);
+	m_stopRow->setVisible(canResume);
+	m_stopRow->setEnabled(canResume);
 	m_restoreRow->setVisible(canRestore);
 	m_restoreRow->setEnabled(canRestore);
 	m_restorePaths->setVisible(canRestore);
@@ -230,7 +235,7 @@ void UnfinishedBusinessDialog::choose(Choice choice)
 		return;
 	const auto &job = m_jobs[m_selectedJob];
 	if ((choice == Choice::Restore && job.restoreLocations.isEmpty()) ||
-		((choice == Choice::Resume || choice == Choice::CancelJob) && !job.canResume))
+		((choice == Choice::Resume || choice == Choice::Stop) && !job.canResume))
 		return;
 	m_choice = choice;
 	accept();

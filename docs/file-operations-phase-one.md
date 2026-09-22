@@ -2,6 +2,12 @@
 
 Historical implementation snapshot. For current behaviour, read [How MediaMuster works](current-behaviour.md). See [native API validation](file-operations-native-api-validation.md) for recorded test results.
 
+**Superseded:** this phase's byte copier and mandatory checksum pass were replaced
+by native copying. The later optional Verify copies feature and xxHash dependency
+were removed on 22 September 2026. The checksum, source-retention and development
+schema-3 descriptions below apply only to this phase. Beta 3 reads and writes only
+schema 2; released Beta 2 used schema 1.
+
 Copy, Move, Delete and Rebalance now use one engine. This is an implementation with local regression coverage, not a claim that every storage configuration has been validated.
 
 ## Behaviour at this phase

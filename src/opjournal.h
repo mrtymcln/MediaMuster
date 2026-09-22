@@ -20,7 +20,6 @@ public:
 		Planned,
 		Copying,
 		CopyReady,
-		Verified,
 		Publishing,
 		Published,
 		Relocating,
@@ -54,13 +53,11 @@ public:
 		QString originalRelativePath;
 		QString dst;
 		QString temp;
-		QString hash;
 		QString mechanism;
 		QString retirement;
 		QString trashProvider;
 		QString trashReceipt;
 		bool trashFallbackApproved = false;
-		bool verificationRequested = false;
 		bool explicitSkip = false;
 		bool sourceRemoved = false;
 		int attempts = 0;

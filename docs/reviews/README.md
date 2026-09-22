@@ -10,6 +10,12 @@ These reports describe the source examined on their stated review date. Findings
 source filenames and line numbers are historical; consult the
 [current architecture](../architecture.md) for the application as it works today.
 
+Verify copies and the application's xxHash dependency were removed on 22 September
+2026. The review bundles still retain their original checksum findings, test logs,
+manifests and upstream xxHash comparison sources as historical evidence. Those
+sources are not part of the application or test build. Their license notices and
+recorded checksums remain intact; replay requires the source revision reviewed.
+
 ## Relocation record
 
 The complete `reviews/2026-09-06-current-code/` bundle moved to

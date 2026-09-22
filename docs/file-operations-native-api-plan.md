@@ -1,5 +1,12 @@
 # Native file operations redesign — agreed direction and implementation plan
 
+**Historical plan, superseded in part on 22 September 2026:** Verify copies and
+xxHash have been removed. Beta 3 reads and writes only journal schema 2; released
+Beta 2 used schema 1. The optional verification requirements and development
+schema-3 numbering below record the earlier design, not current requirements.
+See [current behaviour](current-behaviour.md#copy-move-and-delete)
+and [operation architecture](architecture.md#from-selection-to-a-file-job).
+
 Implementation has been completed and tested locally on macOS. See [implementation and validation results](file-operations-native-api-validation.md), including the remaining Windows and live-storage acceptance checks.
 
 Updated: 12 September 2026. This records the agreed implementation plan; descriptions

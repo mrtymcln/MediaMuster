@@ -1,5 +1,12 @@
 # Native file operations: implementation and validation
 
+**Historical validation record:** the results below describe the September 2026
+implementation tested at the stated dates. Verify copies and xxHash were removed
+on 22 September; Beta 3 reads and writes only schema 2, while released Beta 2 used
+schema 1. Earlier verification scenarios and test counts are
+preserved as evidence, not claims about the current build. See
+[current behaviour](current-behaviour.md#copy-move-and-delete).
+
 Implementation date: 12 September 2026. The agreed design is in [the plan](file-operations-native-api-plan.md).
 
 Updated 13 September: Windows CI now compiles the application and every test target.

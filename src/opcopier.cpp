@@ -1,9 +1,7 @@
 #include "opcopier.h"
-#include "third_party/xxhash.h"
 #include <QByteArray>
 #include <QDir>
 #include <exception>
-#include <limits>
 #include <cerrno>
 #include <cstring>
 #if defined(Q_OS_MAC)
@@ -16,27 +14,6 @@
 
 namespace
 {
-	constexpr qint64 kHashChunkSize = 4 * 1024 * 1024;
-	struct Hash
-	{
-		XXH3_state_t *state = XXH3_createState();
-		Hash()
-		{
-			if (state)
-				XXH3_64bits_reset(state);
-		}
-		~Hash()
-		{
-			if (state)
-				XXH3_freeState(state);
-		}
-		Hash(const Hash &) = delete;
-		Hash &operator=(const Hash &) = delete;
-		QString digest() const
-		{
-			return QStringLiteral("%1").arg(XXH3_64bits_digest(state), 16, 16, QLatin1Char('0'));
-		}
-	};
 #ifdef Q_OS_MAC
 	struct NativeCopyContext
 	{
@@ -57,7 +34,7 @@ namespace
 			{
 				try
 				{
-					context.progress(copied, context.size, false);
+					context.progress(copied, context.size);
 				}
 				catch (...)
 				{
@@ -135,7 +112,7 @@ namespace
 		try
 		{
 			if (context.progress)
-				context.progress(transferred.QuadPart, total.QuadPart, false);
+				context.progress(transferred.QuadPart, total.QuadPart);
 		}
 		catch (...)
 		{
@@ -146,51 +123,6 @@ namespace
 	}
 #endif
 } // namespace
-OpCopier::Result OpCopier::hash(OpFile &file, const std::atomic<bool> &cancel,
-								const Progress &progress)
-{
-	Result out;
-	Hash hash;
-	const auto before = file.stamp();
-	if (!hash.state || !before.valid() || !file.io().seek(0))
-	{
-		out.error = "Cannot start checksum readback.";
-		return out;
-	}
-	QByteArray buffer(int(kHashChunkSize), Qt::Uninitialized);
-	qint64 read = 0;
-	while (read < before.size)
-	{
-		if (cancel.load())
-		{
-			out.outcome = Outcome::Cancelled;
-			return out;
-		}
-		const auto n = file.io().read(buffer.data(), qMin(kHashChunkSize, before.size - read));
-		if (n <= 0)
-		{
-			out.error = "Checksum readback failed before the complete file was read.";
-			return out;
-		}
-		XXH3_64bits_update(hash.state, buffer.constData(), size_t(n));
-		read += n;
-		if (progress)
-			progress(read, before.size, true);
-	}
-	if (cancel.load())
-	{
-		out.outcome = Outcome::Cancelled;
-		return out;
-	}
-	if (!before.unchanged(file.stamp()))
-	{
-		out.error = "The destination changed during checksum readback.";
-		return out;
-	}
-	out.hash = hash.digest();
-	out.outcome = Outcome::Succeeded;
-	return out;
-}
 bool OpCopier::isRetryableNativeError(int error)
 {
 #ifdef Q_OS_WIN
@@ -206,8 +138,7 @@ bool OpCopier::isRetryableNativeError(int error)
 }
 
 OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
-								const std::atomic<bool> &cancel, const Progress &progress,
-								const std::function<void()> &beforeReadback, bool verify)
+								const std::atomic<bool> &cancel, const Progress &progress)
 {
 	Result out;
 	const auto before = source.stamp();
@@ -371,47 +302,9 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		out.error = "The destination length differs from the source.";
 		return out;
 	}
-	if (verify)
-	{
-		auto verificationProgress = [&](qint64 bytes, qint64 size, bool destinationPass)
-		{
-			if (!progress)
-				return;
-			if (size <= (std::numeric_limits<qint64>::max)() / 2)
-				progress((destinationPass ? size : 0) + bytes, size * 2, true);
-			else
-				progress((destinationPass ? size / 2 : 0) + bytes / 2, size, true);
-		};
-		const auto expected = OpCopier::hash(source, cancel,
-											 [&](qint64 bytes, qint64 size, bool)
-											 { verificationProgress(bytes, size, false); });
-		if (expected.outcome != Outcome::Succeeded)
-		{
-			out.outcome = expected.outcome;
-			out.error = expected.error;
-			return out;
-		}
-		if (beforeReadback)
-			beforeReadback();
-		const auto actual = OpCopier::hash(destination, cancel,
-										   [&](qint64 bytes, qint64 size, bool)
-										   { verificationProgress(bytes, size, true); });
-		if (actual.outcome != Outcome::Succeeded)
-		{
-			out.outcome = actual.outcome;
-			out.error = actual.error;
-			return out;
-		}
-		if (actual.hash != expected.hash)
-		{
-			out.error = "Checksum verification failed; the source has been retained.";
-			return out;
-		}
-		out.hash = actual.hash;
-	}
 	if (!source.stillAt(source.path(), before))
 	{
-		out.error = "The source changed before verification finished; it has been retained.";
+		out.error = "The source changed before copying finished; it has been retained.";
 		return out;
 	}
 	out.error = metadataError;

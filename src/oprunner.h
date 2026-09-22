@@ -47,7 +47,6 @@ public:
 	Hooks hooks;
 	std::function<void(const QString &)> onRenameFolderTouched;
 	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error,
-						  const std::atomic<bool> *cancellation = nullptr,
 						  const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
 	// Only recorded private artifacts are eligible; incomplete cleanup stays journalled.
 	static bool cleanup(OpJournal &journal, OpJournal::Entry &entry, QString &error,

@@ -87,7 +87,7 @@ ManageMediaDialog::ManageMediaDialog(const QVector<MediaFile> &files, QWidget *p
 void ManageMediaDialog::setupUi()
 {
 	auto *root = new QVBoxLayout(this);
-	root->setContentsMargins(16, 16, 16, 16);
+	root->setContentsMargins(20, 20, 20, 20);
 	root->setSpacing(12);
 
 	// MARK: Operation group
@@ -139,21 +139,26 @@ void ManageMediaDialog::setupUi()
 
 	m_destWidget = new QGroupBox(tr("Destination"));
 	auto *destOuter = new QVBoxLayout(static_cast<QGroupBox *>(m_destWidget));
-	destOuter->setSpacing(4);
+	destOuter->setSpacing(8);
+	auto *destDetails = new QVBoxLayout;
+	destDetails->setContentsMargins(0, 0, 0, 0);
+	destDetails->setSpacing(4);
 
 	auto *destRow = new QHBoxLayout;
+	destRow->setSpacing(8);
 	m_destPath = new QLineEdit;
 	m_destPath->setPlaceholderText(tr("Choose a destination folder..."));
 	m_destPath->setReadOnly(true);
 	m_btnChoose = new QPushButton(tr("Choose..."));
 	destRow->addWidget(m_destPath, 1);
 	destRow->addWidget(m_btnChoose);
-	destOuter->addLayout(destRow);
+	destDetails->addLayout(destRow);
 
 	m_spaceWarning = new QLabel;
 	m_spaceWarning->setStyleSheet(QStringLiteral("QLabel { color: red; }"));
 	m_spaceWarning->setVisible(false);
-	destOuter->addWidget(m_spaceWarning);
+	destDetails->addWidget(m_spaceWarning);
+	destOuter->addLayout(destDetails);
 
 	m_chkPreserve =
 		new QCheckBox(tr("Preserve Avid folder structure (Avid MediaFiles/MXF/<N>/...)"));
@@ -166,6 +171,7 @@ void ManageMediaDialog::setupUi()
 
 	m_conflictGroup = new QGroupBox(tr("Conflicts"));
 	auto *conflictLayout = new QHBoxLayout(m_conflictGroup);
+	conflictLayout->setSpacing(8);
 
 	auto *conflictLabel =
 		new QLabel(tr("Some files already exist at the destination. Apply to all:"));
@@ -193,6 +199,7 @@ void ManageMediaDialog::setupUi()
 
 	auto *previewGroup = new QGroupBox(tr("Preview"));
 	auto *previewLayout = new QVBoxLayout(previewGroup);
+	previewLayout->setSpacing(8);
 
 	m_previewTree = new QTreeWidget;
 	m_previewTree->setRootIsDecorated(false);

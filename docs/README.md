@@ -23,6 +23,9 @@ rule and its reason; dated investigations belong in the records below.
 
 Validation records describe the source revision, platform and scenarios actually
 checked. They do not establish that a later build or another storage system passes.
+Records predating 22 September 2026 include the former Verify copies option and
+xxHash dependency. Both have been removed; current native-copy and journal behavior
+is described in [the behaviour guide](current-behaviour.md#copy-move-and-delete).
 
 ## Design history and evidence
 
