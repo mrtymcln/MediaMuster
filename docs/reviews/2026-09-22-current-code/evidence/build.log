@@ -1,0 +1,38 @@
+[1/33] Automatic MOC for target tst_fileoperations
+[2/33] Automatic MOC for target MediaMuster
+[3/33] Automatic MOC for target tst_scanner
+[4/33] Automatic MOC for target tst_operationui
+[5/33] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/tst_fileoperations_autogen/mocs_compilation.cpp.o
+[6/33] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/rebalancer.cpp.o
+[7/33] Building CXX object CMakeFiles/MediaMuster.dir/src/main.cpp.o
+[8/33] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o
+[9/33] Building CXX object CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o
+[10/33] Building CXX object CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o
+[11/33] Building CXX object CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o
+[12/33] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o
+[13/33] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[14/33] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/opmanager.cpp.o
+[15/33] Building CXX object CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o
+[16/33] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o
+[17/33] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/tst_fileoperations.cpp.o
+[18/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui_autogen/mocs_compilation.cpp.o
+[19/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/fileoperationcontroller.cpp.o
+[20/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/opmanager.cpp.o
+[21/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui.cpp.o
+[22/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediascanner.cpp.o
+[23/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalancer.cpp.o
+[24/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/managemediadialog.cpp.o
+[25/33] Building CXX object tests/CMakeFiles/tst_scanner.dir/tst_scanner_autogen/mocs_compilation.cpp.o
+[26/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mainwindow.cpp.o
+[27/33] Linking CXX executable tests/tst_fileoperations
+[28/33] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalancedialog.cpp.o
+[29/33] Linking CXX executable tests/tst_operationui
+[30/33] Building CXX object tests/CMakeFiles/tst_scanner.dir/tst_scanner.cpp.o
+[31/33] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/mediascanner.cpp.o
+[32/33] Linking CXX executable tests/tst_scanner
+[33/33] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+FAILED: [code=1] MediaMuster.app/Contents/MacOS/MediaMuster 
+: && /usr/bin/clang++ -g -arch arm64 -arch x86_64 -mmacosx-version-min=11.0 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o CMakeFiles/MediaMuster.dir/src/main.cpp.o CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o CMakeFiles/MediaMuster.dir/src/unfinishedbusinessdialog.cpp.o CMakeFiles/MediaMuster.dir/src/aboutdialog.cpp.o CMakeFiles/MediaMuster.dir/src/icons.cpp.o CMakeFiles/MediaMuster.dir/src/logcategories.cpp.o CMakeFiles/MediaMuster.dir/src/logfile.cpp.o CMakeFiles/MediaMuster.dir/src/macaccessibilityguard.cpp.o CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o CMakeFiles/MediaMuster.dir/src/binmetadataresolver.cpp.o CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o CMakeFiles/MediaMuster.dir/src/volumelistwidget.cpp.o CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o CMakeFiles/MediaMuster.dir/src/mxfparser.cpp.o CMakeFiles/MediaMuster.dir/src/mediametadata.cpp.o CMakeFiles/MediaMuster.dir/src/pmrparser.cpp.o CMakeFiles/MediaMuster.dir/src/mdbparser.cpp.o CMakeFiles/MediaMuster.dir/src/omfparser.cpp.o CMakeFiles/MediaMuster.dir/src/omfobjects.cpp.o CMakeFiles/MediaMuster.dir/src/omfresolutions.cpp.o CMakeFiles/MediaMuster.dir/src/bentofile.cpp.o CMakeFiles/MediaMuster.dir/src/avideffects.cpp.o CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o CMakeFiles/MediaMuster.dir/src/volumeidentity.cpp.o CMakeFiles/MediaMuster.dir/src/nativefile.cpp.o CMakeFiles/MediaMuster.dir/src/opfile.cpp.o CMakeFiles/MediaMuster.dir/src/optrash.cpp.o CMakeFiles/MediaMuster.dir/src/opjournal.cpp.o CMakeFiles/MediaMuster.dir/src/opcopier.cpp.o CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o CMakeFiles/MediaMuster.dir/src/operationplan.cpp.o CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o CMakeFiles/MediaMuster.dir/src/operationrecovery.cpp.o CMakeFiles/MediaMuster.dir/src/avbparser.cpp.o CMakeFiles/MediaMuster.dir/src/binfilterdialog.cpp.o CMakeFiles/MediaMuster.dir/src/effectfilterdialog.cpp.o CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o CMakeFiles/MediaMuster.dir/src/progressdialog.cpp.o CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o CMakeFiles/MediaMuster.dir/src/crashcollector.cpp.o CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o CMakeFiles/MediaMuster.dir/src/optrash_mac.mm.o CMakeFiles/MediaMuster.dir/MediaMuster_autogen/UVLADIE3JM/qrc_resources.cpp.o -o MediaMuster.app/Contents/MacOS/MediaMuster -F/Users/martymclean/Qt/6.5.3/macos/lib -Wl,-rpath,@executable_path/../Frameworks -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib  /Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Versions/A/QtWidgets  /Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Versions/A/QtGui  /Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Versions/A/QtConcurrent  -framework Foundation  -framework OpenGL  -framework AppKit  -framework ImageIO  -framework Metal  /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Versions/A/QtCore  -framework IOKit  -framework DiskArbitration && cd /Users/martymclean/Developer/MediaMuster/build && xattr -cr /Users/martymclean/Developer/MediaMuster/build/MediaMuster.app && codesign --force --sign "Developer ID Application: Martin McLean (RV65KD7NWB)" /Users/martymclean/Developer/MediaMuster/build/MediaMuster.app
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: replacing existing signature
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: A timestamp was expected but was not found.
+ninja: build stopped: subcommand failed.

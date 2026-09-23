@@ -13,6 +13,7 @@
 #include <QTemporaryDir>
 #include <QFileInfo>
 #include <QDirIterator>
+#include <QEvent>
 #include <QProcess>
 #include <QCryptographicHash>
 #include <cstdlib>
@@ -28,119 +29,119 @@
 
 namespace
 {
-void put(const QString &path, const QByteArray &bytes)
-{
-	if (!QDir().mkpath(QFileInfo(path).absolutePath()))
-		throw std::runtime_error("mkdir fixture");
-	QFile f(path);
-	if (!f.open(QIODevice::WriteOnly) || f.write(bytes) != bytes.size())
-		throw std::runtime_error("write fixture");
-}
-QByteArray get(const QString &path)
-{
-	QFile f(path);
-	if (!f.open(QIODevice::ReadOnly))
-		return {};
-	return f.readAll();
-}
-QStringList privateDirectories(const QString &root)
-{
-	QStringList out;
-	QDirIterator it(root, QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot,
-		QDirIterator::Subdirectories);
-	while (it.hasNext())
+	void put(const QString &path, const QByteArray &bytes)
 	{
-		const auto path = it.next();
-		if (QFileInfo(path).fileName().startsWith(".mediamuster-"))
-			out.append(path);
+		if (!QDir().mkpath(QFileInfo(path).absolutePath()))
+			throw std::runtime_error("mkdir fixture");
+		QFile f(path);
+		if (!f.open(QIODevice::WriteOnly) || f.write(bytes) != bytes.size())
+			throw std::runtime_error("write fixture");
 	}
-	return out;
-}
-struct Sink : OpSink
-{
-	QVector<OpResult> results;
-	QStringList messages;
-	QVector<QVector<OpTrashFallbackItem>> trashFallbackPrompts;
-	std::function<bool(const QVector<OpTrashFallbackItem> &)> trashFallbackAnswer;
-	bool confirmTrashFallback(const QVector<OpTrashFallbackItem> &items) override
+	QByteArray get(const QString &path)
 	{
-		trashFallbackPrompts.append(items);
-		return trashFallbackAnswer && trashFallbackAnswer(items);
+		QFile f(path);
+		if (!f.open(QIODevice::ReadOnly))
+			return {};
+		return f.readAll();
 	}
-	void progress(const QString &, int, int, double) override {}
-	void log(QtMsgType, const QString &s) override
+	QStringList privateDirectories(const QString &root)
 	{
-		messages.append(s);
+		QStringList out;
+		QDirIterator it(root, QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot,
+						QDirIterator::Subdirectories);
+		while (it.hasNext())
+		{
+			const auto path = it.next();
+			if (QFileInfo(path).fileName().startsWith(".mediamuster-"))
+				out.append(path);
+		}
+		return out;
 	}
-	void trashUsed(const QString &, int) override {}
-	void result(const OpResult &r) override
+	struct Sink : OpSink
 	{
-		results.append(r);
-	}
-};
-struct Fixture
-{
-	QTemporaryDir dir;
-	QString root = OpJournal::canonicalPath(dir.path());
-	QString src = root + "/source/clip.bin", dest = root + "/destination",
-			journals = root + "/journals";
-	QByteArray bytes = QByteArray(8 * 1024 * 1024, 'x');
-	Fixture()
+		QVector<OpResult> results;
+		QStringList messages;
+		QVector<QVector<OpTrashFallbackItem>> trashFallbackPrompts;
+		std::function<bool(const QVector<OpTrashFallbackItem> &)> trashFallbackAnswer;
+		bool confirmTrashFallback(const QVector<OpTrashFallbackItem> &items) override
+		{
+			trashFallbackPrompts.append(items);
+			return trashFallbackAnswer && trashFallbackAnswer(items);
+		}
+		void progress(const QString &, int, int, double) override {}
+		void log(QtMsgType, const QString &s) override
+		{
+			messages.append(s);
+		}
+		void trashUsed(const QString &, int) override {}
+		void result(const OpResult &r) override
+		{
+			results.append(r);
+		}
+	};
+	struct Fixture
 	{
-		put(src, bytes);
-		QDir().mkpath(dest);
-	}
-	OpRequest request(OpKind kind = OpKind::Copy, QString policy = {}) const
+		QTemporaryDir dir;
+		QString root = OpJournal::canonicalPath(dir.path());
+		QString src = root + "/source/clip.bin", dest = root + "/destination",
+				journals = root + "/journals";
+		QByteArray bytes = QByteArray(8 * 1024 * 1024, 'x');
+		Fixture()
+		{
+			put(src, bytes);
+			QDir().mkpath(dest);
+		}
+		OpRequest request(OpKind kind = OpKind::Copy, QString policy = {}) const
+		{
+			OpRequest r;
+			r.kind = kind;
+			r.diagnosticTrashRoot = root + "/_MediaMuster_Trash";
+			r.destRoot = dest;
+			OpItem i;
+			i.src = src;
+			i.name = "clip.bin";
+			i.bytes = bytes.size();
+			i.policy = policy;
+			r.items.append(i);
+			return r;
+		}
+	};
+	// Scope the asynchronous facades' default journal location to disposable storage.
+	// Facades are destroyed before this guard, so workers finish before it is restored.
+	class ScopedJournalDirectory
 	{
-		OpRequest r;
-		r.kind = kind;
-		r.diagnosticTrashRoot = root + "/_MediaMuster_Trash";
-		r.destRoot = dest;
-		OpItem i;
-		i.src = src;
-		i.name = "clip.bin";
-		i.bytes = bytes.size();
-		i.policy = policy;
-		r.items.append(i);
-		return r;
-	}
-};
-// Scope the asynchronous facades' default journal location to disposable storage.
-// Facades are destroyed before this guard, so workers finish before it is restored.
-class ScopedJournalDirectory
-{
-  public:
-	explicit ScopedJournalDirectory(const QString &path)
-		: m_hadValue(qEnvironmentVariableIsSet("MEDIAMUSTER_JOURNAL_DIR")),
-		  m_previousValue(qgetenv("MEDIAMUSTER_JOURNAL_DIR"))
-	{
-		if (!qputenv("MEDIAMUSTER_JOURNAL_DIR", path.toUtf8()))
-			qFatal("Cannot isolate the operation test journal directory");
-	}
-	~ScopedJournalDirectory()
-	{
-		if (m_hadValue)
-			qputenv("MEDIAMUSTER_JOURNAL_DIR", m_previousValue);
-		else
-			qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
-	}
+	public:
+		explicit ScopedJournalDirectory(const QString &path)
+			: m_hadValue(qEnvironmentVariableIsSet("MEDIAMUSTER_JOURNAL_DIR")),
+			  m_previousValue(qgetenv("MEDIAMUSTER_JOURNAL_DIR"))
+		{
+			if (!qputenv("MEDIAMUSTER_JOURNAL_DIR", path.toUtf8()))
+				qFatal("Cannot isolate the operation test journal directory");
+		}
+		~ScopedJournalDirectory()
+		{
+			if (m_hadValue)
+				qputenv("MEDIAMUSTER_JOURNAL_DIR", m_previousValue);
+			else
+				qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
+		}
 
-  private:
-	bool m_hadValue;
-	QByteArray m_previousValue;
-};
+	private:
+		bool m_hadValue;
+		QByteArray m_previousValue;
+	};
 #ifdef Q_OS_WIN
-constexpr int transientCopyError = ERROR_NETWORK_BUSY;
-constexpr int permanentCopyError = ERROR_ACCESS_DENIED;
+	constexpr int transientCopyError = ERROR_NETWORK_BUSY;
+	constexpr int permanentCopyError = ERROR_ACCESS_DENIED;
 #else
-constexpr int transientCopyError = EBUSY;
-constexpr int permanentCopyError = EACCES;
+	constexpr int transientCopyError = EBUSY;
+	constexpr int permanentCopyError = EACCES;
 #endif
 } // namespace
 class TestFileOperations : public QObject
 {
 	Q_OBJECT
-  private slots:
+private slots:
 	void copy_publishes_and_preserves_source();
 	void advisory_copy_move_assessment_data();
 	void advisory_copy_move_assessment();
@@ -163,6 +164,7 @@ class TestFileOperations : public QObject
 	void native_trash_refusals_share_one_consent_and_undo();
 	void native_trash_fallback_declined_keeps_originals();
 	void native_trash_fallback_rechecks_changed_original();
+	void native_trash_failure_keeps_changed_source_visible();
 	void native_trash_ambiguous_result_never_offers_fallback_data();
 	void native_trash_ambiguous_result_never_offers_fallback();
 	void native_trash_cancellation_never_offers_fallback();
@@ -233,6 +235,7 @@ class TestFileOperations : public QObject
 	void mismatched_volume_is_never_session_matched();
 	void second_runner_cannot_change_files();
 	void facade_refuses_second_job_without_cancelling_first();
+	void rebalance_cancel_before_queued_dispatch_keeps_source();
 	void invalid_mxf_claims_are_refused_by_adapter();
 	void rebalance_refuses_different_file_from_same_master();
 	void unsupported_directory_flush_preserves_originals();
@@ -299,22 +302,23 @@ void TestFileOperations::advisory_copy_move_assessment()
 	second.src = "/other/second.mxf";
 	second.name = "second.mxf";
 	second.bytes = 200;
-	if (skipSecond) second.policy = "skip";
+	if (skipSecond)
+		second.policy = "skip";
 	request.items = {first, second};
 	QStringList probedSources, probedDestinations;
-	const auto assessment = OperationPlan::assessCopyMove(request,
-		[&](const QString &source, const QString &destination) {
+	const auto assessment = OperationPlan::assessCopyMove(request, [&](const QString &source, const QString &destination)
+														  {
 			probedSources.append(source);
 			probedDestinations.append(destination);
-			return source == first.src || secondCanRelocate;
-		}, forceCopy);
+			return source == first.src || secondCanRelocate; }, forceCopy);
 	QCOMPARE(assessment.copyThenRemove, copyThenRemove);
 	QCOMPARE(assessment.temporaryBytes, temporaryBytes);
 	if (request.kind == OpKind::Move)
 	{
 		QCOMPARE(probedSources.size(), skipSecond ? 1 : 2);
 		QCOMPARE(probedDestinations[0], QString("/destination/first.mxf"));
-		if (skipSecond) QVERIFY(!probedSources.contains(second.src));
+		if (skipSecond)
+			QVERIFY(!probedSources.contains(second.src));
 	}
 	else
 		QVERIFY(probedSources.isEmpty());
@@ -322,11 +326,11 @@ void TestFileOperations::advisory_copy_move_assessment()
 void TestFileOperations::advisory_destination_paths()
 {
 	QCOMPARE(OperationPlan::destinationPath("clip.mxf", "7", "/media", false),
-		QString("/media/clip.mxf"));
+			 QString("/media/clip.mxf"));
 	QCOMPARE(OperationPlan::destinationPath("clip.mxf", "7", "/media", true),
-		QString("/media/Avid MediaFiles/MXF/7/clip.mxf"));
+			 QString("/media/Avid MediaFiles/MXF/7/clip.mxf"));
 	QCOMPARE(OperationPlan::destinationPath("clip.omf", "7", "/media", true, true),
-		QString("/media/OMFI MediaFiles/clip.omf"));
+			 QString("/media/OMFI MediaFiles/clip.omf"));
 	Fixture f;
 	put(f.dest + "/clip (2).bin", "occupied");
 	const auto candidate = OperationPlan::findKeepBothPath(f.dest + "/clip.bin");
@@ -373,8 +377,7 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 		put(item.src, bytes);
 		request.items.append(item);
 		payloads.append(bytes);
-		destinations.append(f.dest + (item.omfEra ? QStringLiteral("/OMFI MediaFiles/")
-			: QStringLiteral("/Avid MediaFiles/MXF/editor.7/")) + item.name);
+		destinations.append(f.dest + (item.omfEra ? QStringLiteral("/OMFI MediaFiles/") : QStringLiteral("/Avid MediaFiles/MXF/editor.7/")) + item.name);
 	}
 	Sink sink;
 	std::atomic<bool> cancel{false};
@@ -473,7 +476,8 @@ void TestFileOperations::already_at_destination_move()
 	noEffect.bytes = existingBytes.size();
 	request.items.prepend(noEffect);
 	const auto assessment = OperationPlan::assessCopyMove(request,
-		[](const QString &, const QString &) { return false; });
+														  [](const QString &, const QString &)
+														  { return false; });
 	QVERIFY(assessment.copyThenRemove);
 	QCOMPARE(assessment.temporaryBytes, qint64(f.bytes.size()));
 	Sink sink;
@@ -481,8 +485,10 @@ void TestFileOperations::already_at_destination_move()
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true; // Exercise the mixed-volume Move strategy on disposable local files.
 	if (resume)
-		runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-			if (stage == "no-effect") cancel = true;
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+		{
+			if (stage == "no-effect")
+				cancel = true;
 		};
 	auto totals = runner.run(request, f.journals);
 	QCOMPARE(totals.unchanged, 1);
@@ -577,8 +583,9 @@ void TestFileOperations::already_at_destination_is_rechecked()
 	auto request = f.request();
 	// A stale advisory answer cannot authorize treating a different live file as a no-op.
 	const auto preview = OperationPlan::assessCopyMove(request,
-		OperationPlan::sameVolumeForRename, false,
-		[](const QString &, const QString &) { return true; });
+													   OperationPlan::sameVolumeForRename, false,
+													   [](const QString &, const QString &)
+													   { return true; });
 	QCOMPARE(preview.temporaryBytes, qint64(0));
 	put(f.dest + "/clip.bin", "a different existing file");
 	Sink sink;
@@ -625,8 +632,10 @@ void TestFileOperations::undo_already_restored_object_finishes_without_changes()
 	undo.kind = OpKind::Undo;
 	undo.undoEnabled = true;
 	undo.undoJournalPath = forward.path;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == "copying") cancel = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+	{
+		if (stage == "copying")
+			cancel = true;
 	};
 	QVERIFY(runner.run(undo, f.journals).cancelled);
 	const auto pending = OpJournal::interrupted(f.journals);
@@ -637,7 +646,7 @@ void TestFileOperations::undo_already_restored_object_finishes_without_changes()
 	const QString copied = f.dest + "/clip.bin";
 #ifdef Q_OS_WIN
 	QVERIFY(::CreateHardLinkW(reinterpret_cast<LPCWSTR>(f.src.utf16()),
-		reinterpret_cast<LPCWSTR>(copied.utf16()), nullptr));
+							  reinterpret_cast<LPCWSTR>(copied.utf16()), nullptr));
 #else
 	QVERIFY(::link(QFile::encodeName(copied).constData(), QFile::encodeName(f.src).constData()) == 0);
 #endif
@@ -759,7 +768,8 @@ void TestFileOperations::failed_cleanup_remains_journalled()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.fail = [](const QString &point) { return point == "cleanup"; };
+	runner.hooks.fail = [](const QString &point)
+	{ return point == "cleanup"; };
 	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
 	{
 		if (stage == "copy-chunk")
@@ -798,7 +808,8 @@ void TestFileOperations::cancel_during_retirement_restores_original()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == boundary) cancel = true; };
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{ if (point == boundary) cancel = true; };
 	auto request = f.request(OpKind::Move);
 	const auto totals = runner.run(request, f.journals);
 	QVERIFY(totals.cancelled);
@@ -836,8 +847,13 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
-		if (point == "source-retired") { put(f.src, "other writer"); cancel = true; }
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{
+		if (point == "source-retired")
+		{
+			put(f.src, "other writer");
+			cancel = true;
+		}
 	};
 	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
 	const auto record = OpJournal::scan(f.journals).first();
@@ -856,7 +872,8 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 	QCOMPARE(OperationRecovery::restorable(f.journals).size(), 1);
 	QVERIFY(QFile::remove(f.src)); // Remove only the disposable replacement fixture.
 	QVERIFY(QFile::remove(f.dest + "/clip.bin"));
-	if (!removeDestination) put(f.dest + "/clip.bin", "changed destination");
+	if (!removeDestination)
+		put(f.dest + "/clip.bin", "changed destination");
 	OpRequest restore;
 	restore.restoreJournalPath = record.path;
 	const auto restored = runner.run(restore, f.journals);
@@ -886,9 +903,12 @@ void TestFileOperations::restoration_crash_boundaries_are_idempotent()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
-		if (point == "source-retired") cancel = true;
-		if (point == boundary) throw std::runtime_error("restoration crash");
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{
+		if (point == "source-retired")
+			cancel = true;
+		if (point == boundary)
+			throw std::runtime_error("restoration crash");
 	};
 	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
 	const auto record = OpJournal::scan(f.journals).first();
@@ -953,14 +973,18 @@ void TestFileOperations::cleanup_crash_boundaries_are_recoverable()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
-		if (cancelCopy && point == "copy-chunk") cancel = true;
-		if (point == boundary) throw std::runtime_error("cleanup crash");
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{
+		if (cancelCopy && point == "copy-chunk")
+			cancel = true;
+		if (point == boundary)
+			throw std::runtime_error("cleanup crash");
 	};
 	QVERIFY(runner.run(f.request(), f.journals).needsAttention > 0);
 	const auto record = OpJournal::scan(f.journals).first();
 	QCOMPARE(get(f.src), f.bytes);
-	if (!cancelCopy) QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	if (!cancelCopy)
+		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	for (int repeat = 0; repeat != 2; ++repeat)
 	{
 		const auto recovery = OperationRecovery::run(f.journals);
@@ -979,8 +1003,10 @@ void TestFileOperations::cleanup_retains_replaced_partial_and_unrelated_files()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.fail = [](const QString &point) { return point == "cleanup"; };
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == "copy-chunk") cancel = true; };
+	runner.hooks.fail = [](const QString &point)
+	{ return point == "cleanup"; };
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{ if (point == "copy-chunk") cancel = true; };
 	QVERIFY(runner.run(f.request(), f.journals).cancelled);
 	const auto record = OpJournal::scan(f.journals).first();
 	const auto pending = record.entries[0].cleanup.first();
@@ -1004,8 +1030,10 @@ void TestFileOperations::cleanup_retains_partial_when_original_changes()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.fail = [](const QString &point) { return point == "cleanup"; };
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) { if (point == "copy-chunk") cancel = true; };
+	runner.hooks.fail = [](const QString &point)
+	{ return point == "cleanup"; };
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{ if (point == "copy-chunk") cancel = true; };
 	QVERIFY(runner.run(f.request(), f.journals).cancelled);
 	auto record = OpJournal::scan(f.journals).first();
 	auto entry = record.entries[0];
@@ -1015,8 +1043,10 @@ void TestFileOperations::cleanup_retains_partial_when_original_changes()
 	QVERIFY(journal.resume(record, error));
 	OpRunner::Hooks hooks;
 	bool moved = false;
-	hooks.checkpoint = [&](const QString &point, const auto &) {
-		if (point == "before-partial-cleanup") moved = QFile::rename(f.src, f.src + ".outside");
+	hooks.checkpoint = [&](const QString &point, const auto &)
+	{
+		if (point == "before-partial-cleanup")
+			moved = QFile::rename(f.src, f.src + ".outside");
 	};
 	const bool cleaned = OpRunner::cleanup(journal, entry, error, &hooks);
 	// Windows can hold the surviving original against the rename; Mac must
@@ -1046,8 +1076,10 @@ void TestFileOperations::undo_settles_interrupted_retirement_cleanup()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &point, const auto &) {
-		if (point == boundary) throw std::runtime_error("removal crash before Undo");
+	runner.hooks.checkpoint = [&](const QString &point, const auto &)
+	{
+		if (point == boundary)
+			throw std::runtime_error("removal crash before Undo");
 	};
 	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
 	const auto forward = OpJournal::scan(f.journals).first();
@@ -1086,7 +1118,8 @@ void TestFileOperations::journal_failure_stops_publication()
 		if (stage == "copy-ready")
 			failed = true;
 	};
-	runner.hooks.fail = [&](const QString &point) { return point == "journal" && failed; };
+	runner.hooks.fail = [&](const QString &point)
+	{ return point == "journal" && failed; };
 	const auto t = runner.run(f.request(), f.journals);
 	QVERIFY(t.needsAttention > 0);
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
@@ -1168,8 +1201,10 @@ void TestFileOperations::source_retention_is_explicit()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &s, const auto &) {
-		if (s == "copies-complete") cancel = true;
+	runner.hooks.checkpoint = [&](const QString &s, const auto &)
+	{
+		if (s == "copies-complete")
+			cancel = true;
 	};
 	auto t = runner.run(f.request(OpKind::Move), f.journals);
 	QCOMPARE(t.retained, 1);
@@ -1230,7 +1265,8 @@ void TestFileOperations::rename_failure_stops_group()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.fail = [](const QString &s) { return s == "relocate"; };
+	runner.hooks.fail = [](const QString &s)
+	{ return s == "relocate"; };
 	QCOMPARE(runner.run(req, f.journals).failed, 1);
 	QVERIFY(QFile::exists(f.src));
 	QVERIFY(QFile::exists(a.src));
@@ -1399,7 +1435,7 @@ void TestFileOperations::mxf_parser_borrows_protected_handle()
 	QFile closed;
 	bytesRead = 123;
 	QCOMPARE(MxfParser::parseHeader(closed, &bytesRead).headerStatus,
-		MediaMetadata::HeaderStatus::IoError);
+			 MediaMetadata::HeaderStatus::IoError);
 	QCOMPARE(bytesRead, 0);
 }
 void TestFileOperations::journal_volume_paths_survive_two_resolutions()
@@ -1493,6 +1529,55 @@ void TestFileOperations::facade_refuses_second_job_without_cancelling_first()
 	auto lock = OpJournal::acquire(first.journals, error);
 	QVERIFY2(lock, qPrintable(error));
 }
+void TestFileOperations::rebalance_cancel_before_queued_dispatch_keeps_source()
+{
+	Fixture f;
+	ScopedJournalDirectory journals(f.journals);
+	const QString root = f.root + "/Avid MediaFiles/MXF";
+	const QString source = root + "/1/clip.mxf";
+	const QByteArray bytes("Disposable media");
+	put(source, bytes);
+	RebalancePlan plan;
+	plan.mxfRoot = root;
+	plan.ops.append({source, FolderName{{}, 2}, {}, bytes.size(), -1, {}});
+	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
+
+	Rebalancer rebalancer;
+	class CancelAtDispatch : public QObject
+	{
+	public:
+		explicit CancelAtDispatch(Rebalancer &worker) : m_worker(worker) {}
+		bool cancelled = false;
+
+	protected:
+		bool eventFilter(QObject *watched, QEvent *event) override
+		{
+			// The first queued call is the prepared request's GUI handoff.
+			// Cancel before delivery, after the preflight cancellation check.
+			if (event->type() == QEvent::MetaCall && !cancelled)
+			{
+				cancelled = true;
+				m_worker.cancel();
+			}
+			return QObject::eventFilter(watched, event);
+		}
+
+	private:
+		Rebalancer &m_worker;
+	} cancelAtDispatch(rebalancer);
+	rebalancer.installEventFilter(&cancelAtDispatch);
+	QSignalSpy finished(&rebalancer, &Rebalancer::finished);
+	rebalancer.executeAsync(plan);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
+	QVERIFY(cancelAtDispatch.cancelled);
+	QCOMPARE(finished.first().at(0).toInt(), 0);
+	QCOMPARE(finished.first().at(1).toInt(), 0);
+	QVERIFY(finished.first().at(2).toBool());
+	QCOMPARE(get(source), bytes);
+	QVERIFY(!QFile::exists(root + "/2/clip.mxf"));
+	QVERIFY(OpJournal::scan(f.journals).isEmpty());
+}
+
 void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 {
 	// The adapter must pass the scan claims into the shared identity gate.
@@ -1714,11 +1799,11 @@ void TestFileOperations::directory_creation_propagates_durability()
 		Fixture f;
 		QString error;
 		const auto status = OpFile::makeDirectory(f.root + "/parent/child", error,
-			[&](const QString &path, QString *detail)
-			{
-				*detail = path == f.root ? "parent unsupported" : "child I/O error";
-				return path == f.root ? Sync::OkDegraded : childResult;
-			});
+												  [&](const QString &path, QString *detail)
+												  {
+													  *detail = path == f.root ? "parent unsupported" : "child I/O error";
+													  return path == f.root ? Sync::OkDegraded : childResult;
+												  });
 		QCOMPARE(status, childResult == Sync::Failed ? Sync::Failed : Sync::OkDegraded);
 		QVERIFY(error.contains(childResult == Sync::Failed ? "child I/O error" : "parent unsupported"));
 	}
@@ -1903,10 +1988,12 @@ void TestFileOperations::move_copies_every_file_before_removal()
 			const auto actual = file->io().readAll();
 			if (file->io().error() != QFileDevice::NoError)
 				failures.append(QString("%1: cannot read %2: %3")
-					.arg(stage, path, file->io().errorString()));
+									.arg(stage, path, file->io().errorString()));
 			else if (actual != expected)
 				failures.append(QString("%1: contents changed at %2 (expected %3 bytes, read %4)")
-					.arg(stage, path).arg(expected.size()).arg(actual.size()));
+									.arg(stage, path)
+									.arg(expected.size())
+									.arg(actual.size()));
 		}
 	};
 	runner.hooks.checkpoint = [&](const QString &stage, const auto &entry)
@@ -1918,7 +2005,7 @@ void TestFileOperations::move_copies_every_file_before_removal()
 				readyCopies.insert(entry.id);
 			else
 				failures.append(QString("Published copy %1 is not ready for original removal.")
-					.arg(entry.id));
+									.arg(entry.id));
 			checkContents(f.src, f.bytes, stage);
 			checkContents(second.src, secondBytes, stage);
 		}
@@ -1927,7 +2014,8 @@ void TestFileOperations::move_copies_every_file_before_removal()
 			++retiring;
 			if (published != request.items.size() || readyCopies.size() != request.items.size())
 				failures.append(QString("Original removal started with %1 published and %2 ready copies.")
-					.arg(published).arg(readyCopies.size()));
+									.arg(published)
+									.arg(readyCopies.size()));
 			checkContents(entry.item.src, entry.item.src == f.src ? f.bytes : secondBytes, stage);
 		}
 		if (stage == "source-unlinked")
@@ -1999,8 +2087,10 @@ void TestFileOperations::removal_crash_boundaries_resume()
 		std::atomic<bool> cancel{false};
 		OpRunner runner(sink, cancel);
 		runner.hooks.forceCopy = true;
-		runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-			if (stage == point) throw std::runtime_error("crash boundary");
+		runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+		{
+			if (stage == point)
+				throw std::runtime_error("crash boundary");
 		};
 		auto request = f.request(OpKind::Move);
 		QVERIFY(runner.run(request, f.journals).needsAttention > 0);
@@ -2011,7 +2101,7 @@ void TestFileOperations::removal_crash_boundaries_resume()
 		runner.hooks = {};
 		const auto t = runner.run(resume, f.journals);
 		QVERIFY2(t.needsAttention == 0 && t.failed == 0,
-			qPrintable(QString(point) + ": " + sink.messages.join('\n')));
+				 qPrintable(QString(point) + ": " + sink.messages.join('\n')));
 		QVERIFY(!QFile::exists(f.src));
 		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 		QVERIFY(OpJournal::readOne(saved.path)->entries[0].complete());
@@ -2055,8 +2145,10 @@ void TestFileOperations::undo_partial_move_restores_only_completed_changes()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &e) {
-		if (stage == "source-removed" && e.id == 0) cancel = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &e)
+	{
+		if (stage == "source-removed" && e.id == 0)
+			cancel = true;
 	};
 	const auto first = runner.run(request, f.journals);
 	QVERIFY(first.cancelled);
@@ -2088,8 +2180,10 @@ void TestFileOperations::undo_interrupted_copy_and_changed_result()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &e) {
-		if (stage == "done" && e.id == 0) cancel = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &e)
+	{
+		if (stage == "done" && e.id == 0)
+			cancel = true;
 	};
 	QVERIFY(runner.run(request, f.journals).cancelled);
 	const auto forward = OpJournal::scan(f.journals).first();
@@ -2133,8 +2227,10 @@ void TestFileOperations::undo_move_resumes_after_publication()
 	undo.undoEnabled = true;
 	undo.undoJournalPath = OpJournal::scan(f.journals).first().path;
 	runner.hooks = {};
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == "published") throw std::runtime_error("interrupt Undo");
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+	{
+		if (stage == "published")
+			throw std::runtime_error("interrupt Undo");
 	};
 	QVERIFY(runner.run(undo, f.journals).needsAttention > 0);
 	const auto pending = OpJournal::interrupted(f.journals);
@@ -2163,7 +2259,8 @@ void TestFileOperations::local_trash_and_undo_roundtrip()
 {
 	Fixture f;
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	struct RestoreDisposable
 	{
@@ -2171,15 +2268,17 @@ void TestFileOperations::local_trash_and_undo_roundtrip()
 		std::atomic<bool> &cancel;
 		~RestoreDisposable()
 		{
-			if (QFile::exists(fixture.src)) return;
+			if (QFile::exists(fixture.src))
+				return;
 			cancel.store(false);
 			for (const auto &record : OpJournal::scan(fixture.journals))
 				for (const auto &entry : record.entries)
 					if (!entry.trashReceipt.isEmpty() && entry.landed.valid())
 					{
 						const auto restored = OpTrash::restore(entry.trashReceipt, fixture.src,
-							entry.landed, cancel, entry.dst);
-						if (QFile::exists(fixture.src)) return;
+															   entry.landed, cancel, entry.dst);
+						if (QFile::exists(fixture.src))
+							return;
 						qWarning().noquote() << "Disposable Trash restoration:" << restored.error;
 					}
 			fixture.dir.setAutoRemove(false);
@@ -2281,7 +2380,8 @@ void TestFileOperations::native_copy_retry_policy()
 	runner.hooks.forceCopy = true;
 	int firstCalls = 0, secondCalls = 0;
 	QStringList stagingPaths;
-	runner.hooks.nativeCopyError = [&](const OpJournal::Entry &entry) {
+	runner.hooks.nativeCopyError = [&](const OpJournal::Entry &entry)
+	{
 		if (entry.id != 0)
 		{
 			++secondCalls;
@@ -2345,13 +2445,17 @@ void TestFileOperations::native_copy_retry_cancellation()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int calls = 0;
-	runner.hooks.nativeCopyError = [&](const auto &) {
+	runner.hooks.nativeCopyError = [&](const auto &)
+	{
 		++calls;
-		if (duringCopy) cancel = true;
+		if (duringCopy)
+			cancel = true;
 		return transientCopyError;
 	};
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == "before-copy-retry") cancel = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+	{
+		if (stage == "before-copy-retry")
+			cancel = true;
 	};
 	const auto totals = runner.run(f.request(), f.journals);
 	QVERIFY(totals.cancelled);
@@ -2373,12 +2477,14 @@ void TestFileOperations::native_copy_retry_stops_on_journal_failure()
 	OpRunner runner(sink, cancel);
 	int calls = 0;
 	bool failJournal = false;
-	runner.hooks.nativeCopyError = [&](const auto &) {
+	runner.hooks.nativeCopyError = [&](const auto &)
+	{
 		++calls;
 		failJournal = true;
 		return transientCopyError;
 	};
-	runner.hooks.fail = [&](const QString &stage) { return stage == "journal" && failJournal; };
+	runner.hooks.fail = [&](const QString &stage)
+	{ return stage == "journal" && failJournal; };
 	const auto totals = runner.run(f.request(), f.journals);
 	QVERIFY(totals.needsAttention > 0);
 	QCOMPARE(totals.succeeded, 0);
@@ -2393,7 +2499,8 @@ void TestFileOperations::publication_failure_does_not_recopy()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int publications = 0;
-	runner.hooks.fail = [&](const QString &stage) { return stage == "publish" && ++publications == 1; };
+	runner.hooks.fail = [&](const QString &stage)
+	{ return stage == "publish" && ++publications == 1; };
 	const auto totals = runner.run(f.request(), f.journals);
 	QCOMPARE(totals.failed, 1);
 	QCOMPARE(publications, 1);
@@ -2428,7 +2535,11 @@ void TestFileOperations::undo_rebalance_retires_regenerated_indexes()
 	QVERIFY(inverse);
 	int retired = 0;
 	for (const auto &entry : inverse->entries)
-		if (entry.item.maintenance) { ++retired; QVERIFY(entry.complete()); }
+		if (entry.item.maintenance)
+		{
+			++retired;
+			QVERIFY(entry.complete());
+		}
 	QCOMPARE(retired, 2);
 }
 void TestFileOperations::undo_original_in_retirement()
@@ -2438,9 +2549,12 @@ void TestFileOperations::undo_original_in_retirement()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.fail = [](const QString &point) { return point == "restore-original"; };
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == "source-retired") cancel = true;
+	runner.hooks.fail = [](const QString &point)
+	{ return point == "restore-original"; };
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+	{
+		if (stage == "source-retired")
+			cancel = true;
 	};
 	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).cancelled);
 	const auto forward = OpJournal::scan(f.journals)[0];
@@ -2468,7 +2582,8 @@ void TestFileOperations::network_delete_always_uses_mediamuster_trash()
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceNetworkTrash = true;
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		++nativeCalls;
 		return OpTrash::Result{};
 	};
@@ -2504,7 +2619,8 @@ void TestFileOperations::native_trash_refusals_share_one_consent_and_undo()
 							  "Unrecognized native error 0xDEADBEEF"};
 	Sink sink;
 	bool originalsIntactAtPrompt = true;
-	sink.trashFallbackAnswer = [&](const auto &items) {
+	sink.trashFallbackAnswer = [&](const auto &items)
+	{
 		for (const auto &item : items)
 			originalsIntactAtPrompt &= get(item.source) == f.bytes && !QFile::exists(item.destination);
 		return true;
@@ -2512,7 +2628,8 @@ void TestFileOperations::native_trash_refusals_share_one_consent_and_undo()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		OpTrash::Result refused;
 		refused.outcome = OpTrash::Outcome::Unavailable;
 		refused.error = reasons[nativeCalls++];
@@ -2567,7 +2684,8 @@ void TestFileOperations::native_trash_fallback_declined_keeps_originals()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		++nativeCalls;
 		OpTrash::Result refused;
 		refused.outcome = OpTrash::Outcome::Unavailable;
@@ -2595,14 +2713,16 @@ void TestFileOperations::native_trash_fallback_rechecks_changed_original()
 	auto request = f.request(OpKind::Delete);
 	request.diagnosticTrashRoot.clear();
 	Sink sink;
-	sink.trashFallbackAnswer = [&](const auto &) {
+	sink.trashFallbackAnswer = [&](const auto &)
+	{
 		put(f.src, "A replacement written while the dialog was open");
 		return true;
 	};
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		++nativeCalls;
 		OpTrash::Result refused;
 		refused.outcome = OpTrash::Outcome::Unavailable;
@@ -2620,6 +2740,43 @@ void TestFileOperations::native_trash_fallback_rechecks_changed_original()
 	QVERIFY(!entry.sourceRemoved);
 }
 
+void TestFileOperations::native_trash_failure_keeps_changed_source_visible()
+{
+	Fixture f;
+	auto request = f.request(OpKind::Delete);
+	request.diagnosticTrashRoot.clear();
+	const QByteArray changed("Edited while the native Trash operation was running");
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
+		put(f.src, changed);
+		OpTrash::Result failed;
+		failed.outcome = OpTrash::Outcome::Failed;
+		failed.error = "Native Trash refused the changed file";
+		return failed;
+	};
+
+	const auto totals = runner.run(request, f.journals);
+	QCOMPARE(totals.succeeded, 0);
+	QCOMPARE(totals.needsAttention, 1);
+	QVERIFY(sink.trashFallbackPrompts.isEmpty());
+	QCOMPARE(get(f.src), changed);
+	QCOMPARE(sink.results.size(), 1);
+	QCOMPARE(sink.results.first().state, OpResult::State::NeedsAttention);
+	QVERIFY(!sink.results.first().sourceRemoved);
+
+	const auto records = OpJournal::scan(f.journals);
+	QCOMPARE(records.size(), 1);
+	const auto &entry = records.first().entries.first();
+	QCOMPARE(entry.step, OpJournal::Step::NeedsAttention);
+	QVERIFY(!entry.complete());
+	QVERIFY(!entry.sourceRemoved);
+	QVERIFY(entry.source.sameObject(OpFile::inspect(f.src)));
+	QVERIFY(!entry.source.unchanged(OpFile::inspect(f.src)));
+}
+
 void TestFileOperations::native_trash_ambiguous_result_never_offers_fallback_data()
 {
 	QTest::addColumn<bool>("originalMoved");
@@ -2634,11 +2791,13 @@ void TestFileOperations::native_trash_ambiguous_result_never_offers_fallback()
 	request.diagnosticTrashRoot.clear();
 	const auto landed = f.root + "/native-result.bin";
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &entry) {
+	runner.hooks.nativeTrash = [&](const auto &entry)
+	{
 		++nativeCalls;
 		if (originalMoved)
 		{
@@ -2659,7 +2818,8 @@ void TestFileOperations::native_trash_ambiguous_result_never_offers_fallback()
 	QVERIFY(totals.failed + totals.needsAttention > 0);
 	QCOMPARE(get(landed), f.bytes);
 	QCOMPARE(QFile::exists(f.src), !originalMoved);
-	if (!originalMoved) QCOMPARE(get(f.src), f.bytes);
+	if (!originalMoved)
+		QCOMPARE(get(f.src), f.bytes);
 	const auto entry = OpJournal::scan(f.journals)[0].entries[0];
 	QVERIFY(!entry.trashFallbackApproved);
 	QVERIFY(entry.dst == landed || entry.artifacts.contains(landed));
@@ -2677,10 +2837,12 @@ void TestFileOperations::native_trash_cancellation_never_offers_fallback()
 	auto request = f.request(OpKind::Delete);
 	request.diagnosticTrashRoot.clear();
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.nativeTrash = [](const auto &) {
+	runner.hooks.nativeTrash = [](const auto &)
+	{
 		OpTrash::Result cancelled;
 		cancelled.outcome = OpTrash::Outcome::Cancelled;
 		cancelled.error = "User cancelled the native operation";
@@ -2706,10 +2868,12 @@ void TestFileOperations::native_trash_success_excluded_from_fallback_batch()
 	request.items.append(refused);
 	const auto nativeDestination = f.root + "/native-result.bin";
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.nativeTrash = [&](const auto &entry) {
+	runner.hooks.nativeTrash = [&](const auto &entry)
+	{
 		OpTrash::Result result;
 		if (entry.item.src == refused.src)
 		{
@@ -2752,19 +2916,23 @@ void TestFileOperations::native_trash_fallback_crash_resume()
 	auto request = f.request(OpKind::Delete);
 	request.diagnosticTrashRoot.clear();
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		++nativeCalls;
 		OpTrash::Result refused;
 		refused.outcome = OpTrash::Outcome::Unavailable;
 		refused.error = "Native bin refused this file";
 		return refused;
 	};
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == checkpoint) throw std::runtime_error("Simulated process interruption");
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+	{
+		if (stage == checkpoint)
+			throw std::runtime_error("Simulated process interruption");
 	};
 	QVERIFY(runner.run(request, f.journals).needsAttention > 0);
 	QCOMPARE(get(f.src), f.bytes);
@@ -2800,18 +2968,21 @@ void TestFileOperations::native_trash_fallback_batch_consent_survives_partial_co
 	put(second.src, f.bytes);
 	request.items.append(second);
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		++nativeCalls;
 		OpTrash::Result refused;
 		refused.outcome = OpTrash::Outcome::Unavailable;
 		refused.error = "Native bin refused this file";
 		return refused;
 	};
-	runner.hooks.checkpoint = [](const QString &stage, const auto &entry) {
+	runner.hooks.checkpoint = [](const QString &stage, const auto &entry)
+	{
 		if (stage == "done" && entry.id == 0 && entry.trashFallbackApproved)
 			throw std::runtime_error("Interrupted after the first approved file was moved");
 	};
@@ -2849,13 +3020,15 @@ void TestFileOperations::undo_copy_native_refusal_uses_consented_fallback()
 	auto request = f.request();
 	request.diagnosticTrashRoot.clear();
 	Sink sink;
-	sink.trashFallbackAnswer = [](const auto &) { return true; };
+	sink.trashFallbackAnswer = [](const auto &)
+	{ return true; };
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
 	const auto forward = OpJournal::scan(f.journals)[0];
 	int nativeCalls = 0;
-	runner.hooks.nativeTrash = [&](const auto &) {
+	runner.hooks.nativeTrash = [&](const auto &)
+	{
 		++nativeCalls;
 		OpTrash::Result refused;
 		refused.outcome = OpTrash::Outcome::Unavailable;
@@ -2887,15 +3060,18 @@ void TestFileOperations::resume_flush_failure_stays_unfinished()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &) {
-		if (stage == "published") throw std::runtime_error("interrupted copy");
+	runner.hooks.checkpoint = [](const QString &stage, const auto &)
+	{
+		if (stage == "published")
+			throw std::runtime_error("interrupted copy");
 	};
 	QVERIFY(runner.run(f.request(), f.journals).needsAttention > 0);
 	const auto saved = OpJournal::scan(f.journals)[0];
 	OpRequest resume;
 	resume.resumeJournalPath = saved.path;
 	runner.hooks = {};
-	runner.hooks.directorySync = [](const QString &, QString *error) {
+	runner.hooks.directorySync = [](const QString &, QString *error)
+	{
 		*error = "Injected directory I/O failure";
 		return NativeFile::SyncResult::Failed;
 	};
@@ -2917,8 +3093,10 @@ void TestFileOperations::undo_late_collision_remains_resumable()
 	undo.kind = OpKind::Undo;
 	undo.undoEnabled = true;
 	undo.undoJournalPath = OpJournal::scan(f.journals)[0].path;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &e) {
-		if (stage == "relocating") put(e.dst, "late conflict");
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &e)
+	{
+		if (stage == "relocating")
+			put(e.dst, "late conflict");
 	};
 	const auto failed = runner.run(undo, f.journals);
 	QVERIFY(failed.failed + failed.needsAttention > 0);
@@ -2948,8 +3126,10 @@ void TestFileOperations::resume_continues_past_failed_source()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &) {
-		if (stage == "failed") cancel = true;
+	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
+	{
+		if (stage == "failed")
+			cancel = true;
 	};
 	QVERIFY(runner.run(request, f.journals).cancelled);
 	const auto saved = OpJournal::scan(f.journals)[0];

@@ -43,7 +43,7 @@ namespace MediaCsv
 {
 	QString headerLine(Options options)
 	{
-		QString line = QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,"
+		QString line = QStringLiteral("Clip Name,Filename,Project,Bin,Kind,Codec,Resolution,FPS,Sample Rate,Bit Depth,"
 									  "Duration,Source File,Source Path,Source Container,"
 									  "Imported,Size (MB),Volume,Location,MOB ID,Master MOB,"
 									  "Database Status,");
@@ -60,7 +60,8 @@ namespace MediaCsv
 			<< CsvUtil::quoted(f.projectDisplay()) << ',' << CsvUtil::quoted(f.originalBin) << ','
 			<< CsvUtil::quoted(f.kindDisplay()) << ','
 			<< CsvUtil::quoted(f.codec) << ',' << CsvUtil::quoted(f.resolution) << ','
-			<< CsvUtil::quoted(f.fps) << ',' << CsvUtil::quoted(f.durationDisplay()) << ','
+			<< CsvUtil::quoted(f.fps) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
+			<< CsvUtil::quoted(f.bitDepth) << ',' << CsvUtil::quoted(f.durationDisplay()) << ','
 			<< CsvUtil::quoted(f.sourceFileName) << ','
 			<< CsvUtil::quoted(f.sourceFilePath) << ',' << CsvUtil::quoted(f.sourceContainer) << ','
 			<< (f.isImported ? "yes" : "no") << ',' << f.sizeMBDisplay() << ','

@@ -1,0 +1,3 @@
+TRASH changed source remains: true reported sourceRemoved: true
+REBALANCE cancelled before engine dispatch, finished: true moved: 1 cancelled flag: true source present: false destination present: true
+REBALANCE invalid plan, finished: true moved: 0 failed: 0 aborted signals: 0

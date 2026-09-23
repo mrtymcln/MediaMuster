@@ -66,6 +66,18 @@ namespace
 		return fps.toDouble();
 	}
 
+	// Blank, numbered depths, then other labels. Float has no implied width.
+	std::pair<int, int> bitDepthSortValue(const QString &depth)
+	{
+		if (depth.isEmpty())
+			return {0, 0};
+		bool numeric = false;
+		const int bits = depth.endsWith(QLatin1String("-bit"))
+							 ? depth.first(depth.size() - 4).toInt(&numeric)
+							 : 0;
+		return numeric && bits > 0 ? std::pair{1, bits} : std::pair{2, 0};
+	}
+
 	// Resolution is "WxH" for video and blank for audio. Parse to a QSize so the
 	// sort is by width then height (pixel dimensions), not lexical — otherwise
 	// "720x576" sorts after "1920x1080". Non-video parses to (0, 0).
@@ -313,6 +325,16 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		if (lf != rf)
 			return lf < rf;
 		return QString::compare(l.fps, r.fps, Qt::CaseInsensitive) < 0;
+	}
+	case Col::SampleRate:
+		return qMax(0, l.sampleRate) < qMax(0, r.sampleRate);
+	case Col::BitDepth:
+	{
+		const auto ld = bitDepthSortValue(l.bitDepth);
+		const auto rd = bitDepthSortValue(r.bitDepth);
+		if (ld != rd)
+			return ld < rd;
+		return QString::compare(l.bitDepth, r.bitDepth, Qt::CaseInsensitive) < 0;
 	}
 	case Col::Location:
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;

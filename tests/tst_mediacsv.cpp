@@ -87,6 +87,8 @@ private slots:
 	void created_date_carries_time_of_day();
 	void unknown_created_date_is_blank();
 	void size_column_matches_the_table();
+	void sample_rate_and_bit_depth_are_exported_data();
+	void sample_rate_and_bit_depth_are_exported();
 
 	// Location columns (2026-08-18): the export carries the volume by name
 	// and the whole path, and nothing else. The folder the clip sits in is
@@ -106,14 +108,56 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
 	const int headerFields = fieldCount(MediaCsv::headerLine().trimmed());
-	QCOMPARE(headerFields, 21);
+	QCOMPARE(headerFields, 23);
 	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow()).trimmed()), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}).trimmed()), headerFields);
 	const MediaCsv::Options enabled{true};
-	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 26);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 26);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 26);
+	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 28);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 28);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 28);
+}
+
+void TestMediaCsv::sample_rate_and_bit_depth_are_exported_data()
+{
+	QTest::addColumn<MediaFile::Kind>("kind");
+	QTest::addColumn<int>("sampleRate");
+	QTest::addColumn<QString>("bitDepth");
+	QTest::addColumn<QString>("sampleRateLabel");
+	QTest::newRow("audio-44.1-khz") << MediaFile::Kind::Audio << 44100 << QStringLiteral("16-bit") << QStringLiteral("44.1 kHz");
+	QTest::newRow("audio-48-khz") << MediaFile::Kind::Audio << 48000 << QStringLiteral("24-bit") << QStringLiteral("48 kHz");
+	QTest::newRow("audio-float") << MediaFile::Kind::Audio << 96000 << QStringLiteral("Float") << QStringLiteral("96 kHz");
+	QTest::newRow("video-bit-depth") << MediaFile::Kind::Video << 0 << QStringLiteral("10-bit") << QString();
+	QTest::newRow("unknown") << MediaFile::Kind::Unknown << 0 << QString() << QString();
+}
+
+void TestMediaCsv::sample_rate_and_bit_depth_are_exported()
+{
+	QFETCH(MediaFile::Kind, kind);
+	QFETCH(int, sampleRate);
+	QFETCH(QString, bitDepth);
+	QFETCH(QString, sampleRateLabel);
+	MediaFile f = sampleRow();
+	f.kind = kind;
+	f.sampleRate = sampleRate;
+	f.bitDepth = bitDepth;
+	for (bool enabled : {false, true})
+	{
+		const MediaCsv::Options options{enabled};
+		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
+		QCOMPARE(fields.size(), headers.size());
+		const int fpsIndex = headers.indexOf(QStringLiteral("FPS"));
+		QVERIFY(fpsIndex >= 0);
+		QCOMPARE(headers.at(fpsIndex + 1), QStringLiteral("Sample Rate"));
+		QCOMPARE(headers.at(fpsIndex + 2), QStringLiteral("Bit Depth"));
+		QCOMPARE(headers.at(fpsIndex + 3), QStringLiteral("Duration"));
+		QCOMPARE(fields.at(fpsIndex), f.fps);
+		QCOMPARE(fields.at(fpsIndex + 1), sampleRateLabel);
+		QCOMPARE(fields.at(fpsIndex + 1), f.sampleRateDisplay());
+		QCOMPARE(fields.at(fpsIndex + 2), bitDepth);
+		QCOMPARE(fields.at(fpsIndex + 3), f.durationDisplay());
+	}
 }
 
 void TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()

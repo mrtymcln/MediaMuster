@@ -102,9 +102,9 @@ struct MediaMetadata
 	bool durationFromTrack =
 		false; ///< Top-level owning-track duration, already converted to display frames.
 
-	/// Nominal timecode base (24, 25, 30...). Video: from the 0x3001 edit
-	/// rate. Audio: derived from the frame-track duration against the WAVE
-	/// sample count when available. 0 = underivable.
+	/// Nominal timecode base (24, 25, 30...) from a known edit/timecode rate.
+	/// Audio infers it from frame/sample counts only when that rate is missing.
+	/// 0 = unknown.
 	int timecodeBase = 0;
 
 	/// A timecode component (set 0x14) carried DropFrame=true (tag 0x1503).

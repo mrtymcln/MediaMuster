@@ -1,0 +1,3 @@
+tst_bentofile.result.txt: SKIP   : TestBentoFile::toolkit_corpus() Set MEDIAMUSTER_OMFKT22 to exercise genuine public toolkit files
+tst_mdbparser.result.txt: SKIP   : TestMdbParser::external_toolkit_semantic_regression() Set OMF_TOOLKIT_SAMPLES to validate external toolkit writer outputs
+tst_scanner.result.txt: SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here

@@ -41,13 +41,14 @@ lives in `OMFI MediaFiles`, either directly or one level down in a legacy shared
 workstation folder; only `.omf`, `.wav` and `.aif` files enter that family.
 MXF admission uses that numbered-folder pattern without a `Temp`/`Quarantine`
 exclusion list. `Avid MediaFiles/MXF/Quarantined Files` is also a known location:
-its MXF contents are scanned, flagged **Quarantined**, and shown by the
-Quarantined filter tab. They remain excluded from Rebalance.
+its direct MXF contents are scanned, flagged **Quarantined**, and shown by the
+Quarantined filter tab. Subfolders are not scanned. Quarantined media remains
+excluded from Rebalance.
 OMF workstation folders use plain names, including `Temp` and `Quarantine`;
 hidden folders, `Creating` and `Quarantined Files` remain excluded there.
 Media file symlinks are excluded. Directory aliases must resolve to a supported
-managed location; a quarantine alias cannot grant recursive access to an
-ordinary media folder. Rebalance additionally checks that source and destination
+managed location; an alias cannot change the resolved folder's quarantine status.
+Rebalance additionally checks that source and destination
 directories resolve to the intended MXF root and folder number before dispatch.
 
 The managed layout selects the family. There is no mandatory per-file

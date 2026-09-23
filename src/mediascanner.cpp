@@ -10,7 +10,6 @@
 #include "pmrkey.h"
 #include "progressthrottle.h"
 #include <QDir>
-#include <QDirIterator>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
@@ -784,24 +783,20 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 	// MARK: Enumerate files in this folder
 
-	QFileInfoList entries;
-	QDir folder(task.folderPath);
+	// Managed media folders are flat, including Quarantined Files.
+	const QDir folder(task.folderPath);
+	const QFileInfoList entries = folder.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
 	// Avid's own name for the folder it moves unreadable media into. Decided
 	// once here; every row from this folder is stamped isQuarantined below,
 	// and the table's Quarantined filter reads that flag.
 	if (isQuarantineFolder)
 	{
-		QDirIterator it(task.folderPath, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks,
-						QDirIterator::Subdirectories);
 		int mxfCount = 0;
-		while (it.hasNext())
+		for (const QFileInfo &entry : entries)
 		{
-			it.next();
-			const QFileInfo fi = it.fileInfo();
-			if (Conventions::countsAsEssenceName(fi.fileName()))
+			if (Conventions::countsAsEssenceName(entry.fileName()))
 				++mxfCount;
-			entries.append(fi);
 		}
 
 		if (entries.isEmpty())
@@ -818,11 +813,6 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 					   .arg(task.volumeName)
 					   .arg(entries.size()));
 	}
-	else
-	{
-		// Normal folders are flat; no recursion beneath `<n>/`.
-		entries = folder.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-	}
 
 	// MARK: Build a MediaFile for each entry
 
@@ -836,8 +826,6 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		// The managed tree selects the family; a cheap suffix check keeps
 		// a misplaced file from entering another family's operations.
 		if (!AvidMediaLayout::acceptsFileName(task.family, fileName))
-			continue;
-		if (isQuarantineFolder && (AvidMediaLayout::isInsideUmeRoot(entry.filePath()) || isInsideOmfRoot(entry.filePath())))
 			continue;
 		if (task.family == AvidMediaLayout::Family::Omf && !m_options.includeOmf)
 			continue;

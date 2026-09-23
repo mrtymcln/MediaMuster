@@ -6,6 +6,7 @@
 
 #include "bentofile.h"
 #include "mdbparser.h"
+#include "mediafile.h"
 #include "avidusage.h"
 #include "mobid.h"
 #include "mxfparser.h"
@@ -133,6 +134,8 @@ private slots:
 	void duplicate_source_objects_supply_only_the_linked_project_data();
 	void duplicate_source_objects_supply_only_the_linked_project();
 	void source_mob_is_neither_file_nor_master();
+	void audio_duration_preserves_mob_edit_rate_data();
+	void audio_duration_preserves_mob_edit_rate();
 
 	// Strings
 	void real_accented_bin_mdb_never_yields_mojibake();
@@ -322,7 +325,8 @@ void TestMdbParser::duplicate_source_objects_supply_only_the_linked_project_data
 			for (int scenario = 0; scenario < 3; ++scenario)
 			{
 				const QByteArray name = QByteArray(omf2 ? "OMF2-" : "OMF1-") + (big ? "BE-" : "LE-") +
-					(scenario == 0 ? "duplicate-project" : scenario == 1 ? "unrelated-only" : "file-precedence");
+										(scenario == 0 ? "duplicate-project" : scenario == 1 ? "unrelated-only"
+																							 : "file-precedence");
 				QTest::newRow(name.constData()) << omf2 << big << (scenario != 1) << (scenario == 2);
 			}
 }
@@ -346,7 +350,8 @@ void TestMdbParser::duplicate_source_objects_supply_only_the_linked_project()
 			w.setImmediate(obj, "OMFI:OOBJ:ObjClass", QByteArray(cls, 4));
 		return obj;
 	};
-	const auto uid = [&](quint32 number) { return w.word(42) + w.word(number) + w.word(7); };
+	const auto uid = [&](quint32 number)
+	{ return w.word(42) + w.word(number) + w.word(7); };
 	const auto ref = [&](quint32 owner, const char *property, quint32 target)
 	{
 		if (omf2)
@@ -416,8 +421,8 @@ void TestMdbParser::duplicate_source_objects_supply_only_the_linked_project()
 	QVERIFY(db.masters.isEmpty());
 	const MdbFileMob record = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
 	QVERIFY(record.essenceComplete);
-	QCOMPARE(record.project, fileProject ? QStringLiteral("File project") :
-		linkedProject ? QStringLiteral("Linked project") : QString());
+	QCOMPARE(record.project, fileProject ? QStringLiteral("File project") : linkedProject ? QStringLiteral("Linked project")
+																						  : QString());
 }
 
 void TestMdbParser::source_mob_is_neither_file_nor_master()
@@ -455,6 +460,53 @@ void TestMdbParser::source_mob_is_neither_file_nor_master()
 	QCOMPARE(f.essence.bitDepth, QStringLiteral("24-bit"));
 	QCOMPARE(f.essence.durationFrames, qint64(25)); // 48000 samples × 25/48000
 	QCOMPARE(f.essence.timecodeBase, 25);
+}
+
+void TestMdbParser::audio_duration_preserves_mob_edit_rate_data()
+{
+	QTest::addColumn<quint32>("samples");
+	QTest::addColumn<int>("rateNum");
+	QTest::addColumn<int>("rateDen");
+	QTest::addColumn<qint64>("frames");
+	QTest::addColumn<int>("base");
+	QTest::addColumn<QString>("display");
+	QTest::newRow("whole-second") << quint32(48000) << 25 << 1 << qint64(25) << 25 << QStringLiteral("00:00:01:00");
+	QTest::newRow("short-25") << quint32(47040) << 25 << 1 << qint64(25) << 25 << QStringLiteral("00:00:01:00");
+	QTest::newRow("short-23.976") << quint32(47040) << 24000 << 1001 << qint64(23) << 24 << QStringLiteral("00:00:00:23");
+}
+
+void TestMdbParser::audio_duration_preserves_mob_edit_rate()
+{
+	QFETCH(quint32, samples);
+	QFETCH(int, rateNum);
+	QFETCH(int, rateDen);
+	QFETCH(qint64, frames);
+	QFETCH(int, base);
+	QFETCH(QString, display);
+	QTemporaryDir temp;
+	BentoBuilder w;
+	const quint32 file = w.addObject("MOBJ"), pcma = w.addObject("PCMA");
+	w.set(file, "OMFI:MOBJ:MobID", kToneFileMob);
+	w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", pcma);
+	w.setRational(file, "OMFI:CPNT:EditRate", rateNum, rateDen);
+	w.setRational(pcma, "OMFI:MDFL:SampleRate", 48000, 1);
+	w.setU32(pcma, "OMFI:MDFL:Length", samples);
+	w.setU16(pcma, "OMFI:MDAU:BitsPerSample", 24);
+	w.setU16(pcma, "OMFI:MDAU:NumChannels", 1);
+	bool ok = false;
+	const auto db = MdbParser::load(writeMdb(temp.filePath("msmMMOB.mdb"), w.build()), &ok);
+	QVERIFY(ok);
+	QCOMPARE(db.files.size(), 1);
+	const auto fileMob = db.files.value(MobId::format(kToneFileMob));
+	QVERIFY(fileMob.essenceComplete);
+	QCOMPARE(fileMob.essence.sampleRate, 48000);
+	QCOMPARE(fileMob.essence.descriptorDuration, qint64(samples));
+	QCOMPARE(fileMob.essence.durationFrames, frames);
+	QCOMPARE(fileMob.essence.timecodeBase, base);
+	MediaFile row;
+	row.durationFrames = fileMob.essence.durationFrames;
+	row.timecodeBase = fileMob.essence.timecodeBase;
+	QCOMPARE(row.durationDisplay(), display);
 }
 
 // MARK: - Strings

@@ -157,6 +157,10 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.resolution;
 		case Column::Fps:
 			return f.fps;
+		case Column::SampleRate:
+			return f.sampleRateDisplay();
+		case Column::BitDepth:
+			return f.bitDepth;
 		case Column::Duration:
 			return f.durationDisplay();
 		case Column::SizeMB:
@@ -210,6 +214,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	{
 		if (static_cast<Column>(index.column()) == Column::SizeMB)
 			return f.sizeBytes;
+		if (static_cast<Column>(index.column()) == Column::SampleRate)
+			return f.sampleRate > 0 ? QVariant(f.sampleRate) : QVariant();
 		if (static_cast<Column>(index.column()) == Column::Created)
 			return f.created;
 		if (static_cast<Column>(index.column()) == Column::Modified)
@@ -226,6 +232,10 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	if (role == Qt::ToolTipRole)
 	{
+		if (section == Enum::to_underlying(Column::SampleRate))
+			return QStringLiteral("Audio samples per second, shown in kHz. Blank when unknown or not applicable.");
+		if (section == Enum::to_underlying(Column::BitDepth))
+			return QStringLiteral("Recorded audio or video bit depth. Blank when unknown.");
 		if (section == Enum::to_underlying(Column::OriginalBin))
 		{
 			return QStringLiteral("The bin this clip was originally imported into.");
@@ -257,7 +267,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	// "Bin" matches the CSV export's heading for the same field; the header
 	// tooltip above still explains it is the bin the clip was imported into.
 	const char *headers[] = {"Clip Name", "Filename", "Project", "Bin", "Kind",
-							 "Codec", "Resolution", "FPS", "Duration",
+							 "Codec", "Resolution", "FPS", "Sample Rate", "Bit Depth", "Duration",
 							 "Size (MB)", "Location", "Date Created", "Date Modified",
 							 "Type", "Source File", "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),

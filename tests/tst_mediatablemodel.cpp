@@ -309,14 +309,14 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QSignalSpy inserted(&model, &QAbstractItemModel::columnsInserted);
 	QSignalSpy removed(&model, &QAbstractItemModel::columnsRemoved);
 	QVERIFY(!model.precomputesEnabled());
-	QCOMPARE(model.columnCount(), 15);
+	QCOMPARE(model.columnCount(), 17);
 	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
 	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
 	model.setPrecomputesEnabled(true);
-	QCOMPARE(model.columnCount(), 19);
+	QCOMPARE(model.columnCount(), 21);
 	QCOMPARE(inserted.size(), 1);
-	QCOMPARE(inserted.first().at(1).toInt(), 15);
-	QCOMPARE(inserted.first().at(2).toInt(), 18);
+	QCOMPARE(inserted.first().at(1).toInt(), 17);
+	QCOMPARE(inserted.first().at(2).toInt(), 20);
 	QVERIFY(row.isValid());
 	QCOMPARE(row.data().toString(), path);
 	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
@@ -324,7 +324,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QCOMPARE(inserted.size(), 1);
 	model.setPrecomputesEnabled(false);
 	model.setPrecomputesEnabled(false);
-	QCOMPARE(model.columnCount(), 15);
+	QCOMPARE(model.columnCount(), 17);
 	QCOMPARE(removed.size(), 1);
 	QCOMPARE(reset.size(), 0);
 	QCOMPARE(model.rowCount(), 2);

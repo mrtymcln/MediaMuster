@@ -1,0 +1,29 @@
+{
+  "baseline_commit": "1007954dcd902eac82c16f57c469b9a04c431aee",
+  "baseline_mxfparser_sha256": "6fab155b9d5eb35160f631c66f8d354376cb118dc3581ff08395b3371bb0275d",
+  "current_mxfparser_sha256": "e3b0b943bfbc2f2bceb328f412c54017736141451edbe266787bcf3c4e1a0fe0",
+  "compared_fields": [
+    "fileId",
+    "masterId",
+    "fileZero",
+    "masterZero",
+    "headerStatus",
+    "valid",
+    "hasMaterialPackage",
+    "classificationKnown",
+    "clipName",
+    "sha256",
+    "size"
+  ],
+  "baseline_mxf_paths": 825,
+  "current_mxf_paths": 825,
+  "compared_records": 825,
+  "only_baseline": [],
+  "only_current": [],
+  "changed_records": 0,
+  "changes": [],
+  "current_missing_file_ids": 0,
+  "current_missing_master_ids": 0,
+  "current_zero_file_ids": 0,
+  "current_zero_master_ids": 0
+}

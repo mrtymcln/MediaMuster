@@ -789,14 +789,16 @@ namespace OmfObjects
 			if (e.sampleRate <= 0 && blobRate > 0)
 				e.sampleRate = blobRate; // OMF-era: the blob's rate when MDFL:SampleRate is absent.
 
-			// Length is samples. The frame count comes from the mob's own edit
-			// rate; finalise then re-derives the timecode base from these two
-			// exactly as it does for a header (frames × rate ÷ samples).
+			// Length is samples. Preserve the mob's edit rate for timecode;
+			// inferring it from the rounded frame count can change the base.
 			e.descriptorDuration = length;
 			qint32 erNum = 0, erDen = 0;
 			if (mobEditRate(b, p, mobObj, erNum, erDen) && erDen > 0 && erNum > 0 &&
 				length > 0 && e.sampleRate > 0)
 			{
+				const double editRate = double(erNum) / erDen;
+				if (editRate >= 1.0 && editRate < 1000.0)
+					e.timecodeBase = qRound(editRate);
 				const long double frames = static_cast<long double>(length) * erNum / erDen / e.sampleRate;
 				if (frames <= std::numeric_limits<qint64>::max() - 1.0L)
 					e.durationFrames = qint64(std::round(frames));

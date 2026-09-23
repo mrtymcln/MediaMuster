@@ -89,6 +89,12 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 
 void Rebalancer::startEngineRun(OpRequest request)
 {
+	// Cancel may arrive after preparation queued this handoff.
+	if (m_cancelRequested.load(std::memory_order_acquire))
+	{
+		emit finished(0, 0, /*cancelled=*/true);
+		return;
+	}
 	// The engine takes it from here: write-ahead journal, identity gates,
 	// per-rename recovery coverage, undo candidacy. Its signals were
 	// adapted onto ours in the constructor.

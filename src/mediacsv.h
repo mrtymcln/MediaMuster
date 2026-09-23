@@ -7,7 +7,7 @@
 
 // MARK: - MediaCsv
 /// The CSV shape of the media table: one header line, one line per
-/// MediaFile, 21 columns (26 with experimental precompute details). Lives outside the window class so it can be
+/// MediaFile, 23 columns (28 with experimental precompute details). Lives outside the window class so it can be
 /// tested — the header string and the field-emission chain are two
 /// parallel lists that must stay column-for-column aligned, and nothing
 /// but a test can see that from the inside.
@@ -25,7 +25,7 @@ namespace MediaCsv
 
 	/// One CSV line for `f`, newline included. Every string column goes
 	/// through CsvUtil::quoted (spreadsheet-formula injection is
-	/// neutralised there). Kind, Type, precompute details, Duration, Size (MB)
+	/// neutralised there). Kind, Type, precompute details, Sample Rate, Duration, Size (MB)
 	/// and Date Created route through MediaFile's display helpers so the export and
 	/// the table can't disagree. Clip Name and Codec are written raw: the
 	/// codec column MUST be (codecDisplay carries the debug raw-hex

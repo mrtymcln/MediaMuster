@@ -1,0 +1,29 @@
+-- The CXX compiler identification is AppleClang 17.0.0.17000013
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- The OBJCXX compiler identification is AppleClang 17.0.0.17000013
+-- Detecting OBJCXX compiler ABI info
+-- Detecting OBJCXX compiler ABI info - done
+-- Check for working OBJCXX compiler: /usr/bin/clang++ - skipped
+CMake Warning at CMakeLists.txt:66 (message):
+  SELF_DESTRUCT_DATE 2026-02-31 is already in the past
+
+
+-- SelfDestruct enabled — expires 2026-02-31
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test HAVE_STDATOMIC
+-- Performing Test HAVE_STDATOMIC - Success
+-- Found WrapAtomic: TRUE
+-- Found OpenGL: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework
+-- Found WrapOpenGL: TRUE
+-- Using Qt6 6.5.3
+-- Codesign identity 'ReviewUnavailableIdentity' not in keychain
+-- FDA permissions won't survive rebuilds
+-- Configuring done (1.3s)
+-- Generating done (0.1s)
+-- Build files have been written to: /tmp/mediamuster-review-20260922/invalid-expiry

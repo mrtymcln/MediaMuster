@@ -1,0 +1,42 @@
+--- a/src/mxfparser.cpp
++++ b/src/mxfparser.cpp
+@@ -566,6 +566,9 @@
+ 			descriptors.append(index);
+ 		sets.append(std::move(set));
+ 	}
++	const bool graphDeclared = std::any_of(sets.cbegin(), sets.cend(), [](const Set &set) {
++		return (set.type == kSetMatPkg || set.type == kSetSrcPkg) && set.fields.contains(0x4403);
++	});
+ 	// Decode references only when their shape is valid. Bounded traversal also
+ 	// handles cycles and shared objects without recursive stack growth.
+ 	auto refs = [&](const QByteArray &value)
+@@ -645,7 +648,7 @@
+ 				material = candidate;
+ 			}
+ 	}
+-	if (material == -1 && materials.size() == 1)
++	if (material == -1 && materials.size() == 1 && !graphDeclared)
+ 		material = materials.first();
+ 	// An explicit Preface primary-package reference resolves otherwise
+ 	// ambiguous connected material packages.
+@@ -867,8 +870,6 @@
+ 		scope = descendants(filePackage, true);
+ 	// Standalone metadata lacks graph edges. Retain recovery only when no
+ 	// package declares an object graph, rather than pooling unrelated tracks.
+-	const bool graphDeclared = (material >= 0 && sets[material].fields.contains(0x4403)) ||
+-							   (filePackage >= 0 && sets[filePackage].fields.contains(0x4403));
+ 	if (!graphDeclared)
+ 		for (int n = 0; n < sets.size(); ++n)
+ 			scope.insert(n);
+--- a/src/omfobjects.cpp
++++ b/src/omfobjects.cpp
+@@ -797,6 +797,9 @@
+ 			if (mobEditRate(b, p, mobObj, erNum, erDen) && erDen > 0 && erNum > 0 &&
+ 				length > 0 && e.sampleRate > 0)
+ 			{
++				const double editRate = double(erNum) / erDen;
++				if (editRate >= 1.0 && editRate < 1000.0)
++					e.timecodeBase = qRound(editRate);
+ 				const long double frames = static_cast<long double>(length) * erNum / erDen / e.sampleRate;
+ 				if (frames <= std::numeric_limits<qint64>::max() - 1.0L)
+ 					e.durationFrames = qint64(std::round(frames));

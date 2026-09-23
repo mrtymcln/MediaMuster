@@ -500,6 +500,8 @@ void MainWindow::buildTable()
 	setW(Col::Codec, 100);
 	setW(Col::Resolution, 100);
 	setW(Col::Fps, 50);
+	setW(Col::SampleRate, 100);
+	setW(Col::BitDepth, 85);
 	setW(Col::Duration, 100);
 	setW(Col::SizeMB, 100);
 	setW(Col::Location, 320);

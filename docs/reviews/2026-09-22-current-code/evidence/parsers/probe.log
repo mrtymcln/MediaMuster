@@ -1,0 +1,5 @@
+MDB 4800 ok true complete true frames 3 base 30 display "00:00:00:03"
+MDB 9600 ok true complete true frames 5 base 25 display "00:00:00:05"
+MDB 47040 ok true complete true frames 25 base 26 display "00:00:00:25"
+MDB 48000 ok true complete true frames 25 base 25 display "00:00:01:00"
+MXF unrelated valid true status 1 hasMaterial true classificationKnown true name "Wrong master"

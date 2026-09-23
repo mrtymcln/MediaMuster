@@ -1,0 +1,135 @@
+{
+  "baseline_commit": "1007954dcd902eac82c16f57c469b9a04c431aee",
+  "qt_version": "6.5.3",
+  "platform": "macOS",
+  "scope": "tracked tests/fixtures, public parser APIs",
+  "groups": [
+    {
+      "group": "MXF",
+      "records": 825,
+      "missing_file_id": 0,
+      "missing_master_id": 0,
+      "zero_file_id": 0,
+      "zero_master_id": 0,
+      "unique_sha256": 824,
+      "unique_file_id": 824,
+      "complete_header_status": 825,
+      "valid": 825,
+      "selected_master": 825
+    },
+    {
+      "group": "Avid OMF/audio",
+      "records": 82,
+      "missing_file_id": 0,
+      "missing_master_id": 0,
+      "zero_file_id": 0,
+      "zero_master_id": 0,
+      "unique_sha256": 82,
+      "unique_file_id": 82,
+      "complete_header_status": 82,
+      "valid": 82,
+      "selected_master": 82
+    },
+    {
+      "group": "PMR entries",
+      "records": 878,
+      "missing_file_id": 0,
+      "missing_master_id": 0,
+      "zero_file_id": 0,
+      "zero_master_id": 0
+    },
+    {
+      "group": "MDB file records",
+      "records": 1404,
+      "missing_file_id": 0,
+      "missing_master_id": 0,
+      "zero_file_id": 0,
+      "zero_master_id": 0
+    }
+  ],
+  "databases": [
+    {
+      "files": 2,
+      "kind": "mdb",
+      "masters": 2,
+      "ok": true,
+      "path": "omf/mc2026_audio/msmMMOB.mdb",
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+    },
+    {
+      "kind": "pmr",
+      "ok": true,
+      "path": "omf/mc2026_audio/msmFMID.pmr",
+      "records": 2,
+      "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+    },
+    {
+      "files": 80,
+      "kind": "mdb",
+      "masters": 80,
+      "ok": true,
+      "path": "omf/avid_supporting/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936"
+    },
+    {
+      "kind": "pmr",
+      "ok": true,
+      "path": "omf/avid_supporting/msmFMID.pmr",
+      "records": 80,
+      "sha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe"
+    },
+    {
+      "files": 450,
+      "kind": "mdb",
+      "masters": 178,
+      "ok": true,
+      "path": "corpus_headers/msmMMOB.mdb",
+      "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+    },
+    {
+      "kind": "pmr",
+      "ok": true,
+      "path": "corpus_headers/msmFMID.pmr",
+      "records": 435,
+      "sha256": "f1c0dabb9f0d9cdfa4df8951b46295ab83f90aa2b99ce936bd531093c2641c13"
+    },
+    {
+      "files": 810,
+      "kind": "mdb",
+      "masters": 302,
+      "ok": true,
+      "path": "corpus_headers/msmMMOB_round3.mdb",
+      "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+    },
+    {
+      "kind": "pmr",
+      "ok": true,
+      "path": "corpus_headers/msmFMID_round3.pmr",
+      "records": 360,
+      "sha256": "d56cc87c811040cdb1dc9bc60cb8af4d17c0df3b65325042da6fdd2a73285d69"
+    },
+    {
+      "files": 61,
+      "kind": "mdb",
+      "masters": 23,
+      "ok": true,
+      "path": "msmMMOB_macroman.mdb",
+      "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393"
+    },
+    {
+      "files": 1,
+      "kind": "mdb",
+      "masters": 1,
+      "ok": true,
+      "path": "msmMMOB.mdb",
+      "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d"
+    },
+    {
+      "kind": "pmr",
+      "ok": true,
+      "path": "msmFMID.pmr",
+      "records": 1,
+      "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03"
+    }
+  ]
+}

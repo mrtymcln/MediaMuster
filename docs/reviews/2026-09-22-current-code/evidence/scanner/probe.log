@@ -1,0 +1,10 @@
+ascending duration "DF" "00;10;00;00"
+ascending duration "NDF" "00:09:59:20"
+valid parent rowCount/columnCount 2 15
+qt.modeltest: FAIL! model->hasChildren(topIndex) () returned FALSE (/Users/qt/work/qt/qtbase/src/testlib/qabstractitemmodeltester.cpp:410)
+qt.modeltest: FAIL! Compared values are not the same:
+   Actual (model->parent(childIndex)) QModelIndex(-1,-1,0x0,0x0)
+   Expected (topIndex) QModelIndex(0,0,0x0,0x16bc75f20)
+   (/Users/qt/work/qt/qtbase/src/testlib/qabstractitemmodeltester.cpp:504)
+NFC and NFD same canonical leaf true same path key false
+CSV write with zero-byte file limit returned true file bytes 0

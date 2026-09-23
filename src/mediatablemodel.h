@@ -29,6 +29,8 @@ public:
 		Codec,
 		Resolution,
 		Fps,
+		SampleRate,
+		BitDepth,
 		Duration,
 		SizeMB,
 		Location,

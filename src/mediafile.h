@@ -312,6 +312,12 @@ struct MediaFile
 		return (rawHex && !codecHex.isEmpty()) ? codecHex : codec;
 	}
 
+	/// Audio sample rate shared by the table and CSV; unknown rates stay blank.
+	QString sampleRateDisplay() const
+	{
+		return sampleRate > 0 ? QStringLiteral("%1 kHz").arg(sampleRate / 1000.0, 0, 'g', 10) : QString();
+	}
+
 	/// Timecode base used for duration rendering AND sorting: the
 	/// parser-derived base, or one derived from the fps display string
 	/// (demo data, MDB-only rows). 0 = unknown. A sub-1 rate stays

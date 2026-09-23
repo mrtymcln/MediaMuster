@@ -707,7 +707,7 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 								   !trashed.receipt.isEmpty() || trashed.landed.valid();
 			const auto state = uncertain ? State::NeedsAttention : (trashed.outcome == OpTrash::Outcome::Cancelled ? State::Cancelled : State::Failed);
 			save(j, e, uncertain ? Step::NeedsAttention : (state == State::Cancelled ? Step::Cancelled : Step::Failed));
-			return result(e, state, e.error, !unchanged);
+			return result(e, state, e.error);
 		}
 		source = OpFile::open(e.item.src, false, error);
 		if (!source || !source->stillAt(e.item.src, e.source))

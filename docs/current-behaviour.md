@@ -91,7 +91,7 @@ containing media root, so eligible sibling folders are scanned too.
 | Media family | Recognised layout and files |
 | --- | --- |
 | MXF, available by default | `.mxf` files in numbered or workstation-numbered folders, such as `Avid MediaFiles/MXF/1` or `Avid MediaFiles/MXF/Edit01.1`. |
-| Quarantined MXF | `.mxf` files under `Avid MediaFiles/MXF/Quarantined Files`, including its subfolders. These receive the Quarantined flag. |
+| Quarantined MXF | `.mxf` files directly inside `Avid MediaFiles/MXF/Quarantined Files`. Subfolders are not scanned. These files receive the Quarantined flag. |
 | OMF/OMFI, when enabled | `.omf`, `.aif` and `.wav` files directly in `OMFI MediaFiles` or one workstation-folder level below it. |
 
 `Avid MediaFiles/UME` is excluded. Loose media files, a bare `MXF` folder without
@@ -156,6 +156,14 @@ contain the clip. None of these labels, by itself, establishes that media is saf
 to delete.
 
 ## Filtering, selecting and exporting
+
+The table and CSV include **Sample Rate** (for example, `48 kHz`) and
+**Bit Depth** (for example, `24-bit`) beside FPS. Sample Rate describes audio;
+Bit Depth also shows recorded video depths. Unknown values stay blank.
+
+Audio duration uses the recorded edit rate to convert samples to frames and
+render timecode. The MDB reader retains that rate before rounding the frame
+count, including for MXF scans with OMF support disabled.
 
 The filter tabs are All, Video, Audio, No Database, Non-Portable and Quarantined.
 Enabling precompute features also adds Precomputes. Project selection, including

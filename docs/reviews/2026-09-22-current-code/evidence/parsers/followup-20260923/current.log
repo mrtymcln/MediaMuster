@@ -1,0 +1,6 @@
+direct MXF header valid true frames 25 base 25 display "00:00:01:00"
+scan includeOmf=false rows 1
+"short.mxf" omfEra false databaseMetadataCurrent true needsHeaderRead false frames 25 base 26 display "00:00:00:25"
+connected material graph valid true status 1 material true known true name "Connected clip"
+disconnected material graph valid true status 1 material true known true name "Disconnected clip"
+graphless recovery valid true material true name "Disconnected clip"

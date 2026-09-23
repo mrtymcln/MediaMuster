@@ -1,0 +1,65 @@
+Test project /Users/martymclean/Developer/MediaMuster/build
+      Start  1: tst_mobid
+ 1/27 Test  #1: tst_mobid ........................   Passed    0.01 sec
+      Start  2: tst_logfile
+ 2/27 Test  #2: tst_logfile ......................   Passed    0.01 sec
+      Start  3: tst_pathkey
+ 3/27 Test  #3: tst_pathkey ......................   Passed    0.02 sec
+      Start  4: tst_format
+ 4/27 Test  #4: tst_format .......................   Passed    0.01 sec
+      Start  5: tst_conventions
+ 5/27 Test  #5: tst_conventions ..................   Passed    0.01 sec
+      Start  6: tst_crashcollector
+ 6/27 Test  #6: tst_crashcollector ...............   Passed    0.02 sec
+      Start  7: tst_omfuid
+ 7/27 Test  #7: tst_omfuid .......................   Passed    0.01 sec
+      Start  8: tst_mediametadata
+ 8/27 Test  #8: tst_mediametadata ................   Passed    0.02 sec
+      Start  9: tst_bentofile
+ 9/27 Test  #9: tst_bentofile ....................   Passed    0.37 sec
+      Start 10: tst_pmrparser
+10/27 Test #10: tst_pmrparser ....................   Passed    0.15 sec
+      Start 11: tst_mdbparser
+11/27 Test #11: tst_mdbparser ....................   Passed    3.40 sec
+      Start 12: tst_omfparser
+12/27 Test #12: tst_omfparser ....................   Passed    0.23 sec
+      Start 13: tst_avbparser
+13/27 Test #13: tst_avbparser ....................   Passed    0.12 sec
+      Start 14: tst_mxfparser
+14/27 Test #14: tst_mxfparser ....................   Passed    2.06 sec
+      Start 15: tst_avideffects
+15/27 Test #15: tst_avideffects ..................   Passed    0.02 sec
+      Start 16: tst_scanner
+16/27 Test #16: tst_scanner ......................   Passed    5.48 sec
+      Start 17: tst_opcleanup
+17/27 Test #17: tst_opcleanup ....................   Passed    0.04 sec
+      Start 18: tst_volumeidentity
+18/27 Test #18: tst_volumeidentity ...............   Passed    0.03 sec
+      Start 19: tst_opjournal
+19/27 Test #19: tst_opjournal ....................   Passed    1.36 sec
+      Start 20: tst_rebalanceplanner
+20/27 Test #20: tst_rebalanceplanner .............   Passed    4.09 sec
+      Start 21: tst_fileoperations
+21/27 Test #21: tst_fileoperations ...............   Passed   16.50 sec
+      Start 22: tst_mediacsv
+22/27 Test #22: tst_mediacsv .....................   Passed    0.02 sec
+      Start 23: tst_mediatablemodel
+23/27 Test #23: tst_mediatablemodel ..............   Passed    0.02 sec
+      Start 24: tst_mediafilterproxy
+24/27 Test #24: tst_mediafilterproxy .............   Passed    0.02 sec
+      Start 25: tst_effectfilterdialog
+25/27 Test #25: tst_effectfilterdialog ...........   Passed    0.26 sec
+      Start 26: tst_binfilterdialog
+26/27 Test #26: tst_binfilterdialog ..............   Passed    0.53 sec
+      Start 27: tst_operationui
+27/27 Test #27: tst_operationui ..................   Passed    3.84 sec
+
+100% tests passed, 0 tests failed out of 27
+
+Label Time Summary:
+core          =   0.09 sec*proc (6 tests)
+media         =  11.85 sec*proc (10 tests)
+operations    =  22.01 sec*proc (5 tests)
+ui            =   4.68 sec*proc (6 tests)
+
+Total Test time (real) =  38.64 sec

@@ -48,6 +48,8 @@ private slots:
 	// still order by their real sizes, and no double rounding sits
 	// between the user and the answer.
 	void size_column_sorts_on_exact_bytes();
+	void sample_rate_column_sorts_numerically();
+	void bit_depth_column_sorts_numbers_before_labels();
 
 	// Search covers the path (2026-08-18). The Location column shows the
 	// full path, so the search box has to match it — and because the
@@ -195,6 +197,59 @@ void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
 	// The two neighbours really do render identically — proof the order
 	// above cannot have come from the display string.
 	QCOMPARE(model.fileAt(1).sizeMBDisplay(), model.fileAt(2).sizeMBDisplay());
+}
+
+void TestMediaFilterProxy::sample_rate_column_sorts_numerically()
+{
+	QVector<MediaFile> files;
+	for (const int rate : {192000, 48000, 0, 96000, 44100})
+	{
+		auto file = rowNamed(QString::number(rate));
+		file.kind = MediaFile::Kind::Audio;
+		file.sampleRate = rate;
+		files.append(file);
+	}
+	MediaTableModel model;
+	model.setMediaFiles(files);
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int column = int(MediaTableModel::Column::SampleRate);
+	QVector<int> expected{0, 44100, 48000, 96000, 192000};
+	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+	{
+		proxy.sort(column, direction);
+		QVector<int> actual;
+		for (int row = 0; row < proxy.rowCount(); ++row)
+			actual.append(model.fileAt(proxy.mapToSource(proxy.index(row, column)).row()).sampleRate);
+		QCOMPARE(actual, expected);
+		std::reverse(expected.begin(), expected.end());
+	}
+}
+
+void TestMediaFilterProxy::bit_depth_column_sorts_numbers_before_labels()
+{
+	QVector<MediaFile> files;
+	for (const auto *depth : {"Float", "24-bit", "Unknown", "8-bit", "32-bit", "", "16-bit", "10-bit"})
+	{
+		auto file = rowNamed(QString::number(files.size()));
+		file.bitDepth = QString::fromLatin1(depth);
+		files.append(file);
+	}
+	MediaTableModel model;
+	model.setMediaFiles(files);
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int column = int(MediaTableModel::Column::BitDepth);
+	QStringList expected{"", "8-bit", "10-bit", "16-bit", "24-bit", "32-bit", "Float", "Unknown"};
+	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+	{
+		proxy.sort(column, direction);
+		QStringList actual;
+		for (int row = 0; row < proxy.rowCount(); ++row)
+			actual.append(proxy.index(row, column).data().toString());
+		QCOMPARE(actual, expected);
+		std::reverse(expected.begin(), expected.end());
+	}
 }
 
 void TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
@@ -489,7 +544,7 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	}
 	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.columnCount(), 15);
+	QCOMPARE(proxy.columnCount(), 17);
 	QCOMPARE(proxy.rowCount(), 3);
 }
 
