@@ -71,7 +71,7 @@ void VolumeManager::pollVolumes()
 void VolumeManager::onPollFinished()
 {
 	// Stay silent unless something the volume list actually shows changed: name,
-	// path, the Avid badge/bold/sort-first key, or the type icon. Free space is
+	// path, the Avid badge/bold/sort-first key, or the type label. Free space is
 	// deliberately excluded — it churns by the byte and would rebuild the list on
 	// every poll for no visible gain (it's a hover-only tooltip figure).
 	const auto current = m_pollWatcher.result();

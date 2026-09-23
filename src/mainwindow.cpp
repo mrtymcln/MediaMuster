@@ -9,7 +9,6 @@
 #include "effectfilterdialog.h"
 #include "featureflags.h"
 #include "formatutil.h"
-#include "icons.h"
 #include "layoututil.h"
 #include "managemediadialog.h"
 #include "mediacsv.h"
@@ -28,6 +27,7 @@
 #include <QDialog>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileIconProvider>
 #include <QFileInfo>
 #include <QFont>
 #include <QFutureWatcher>
@@ -1330,7 +1330,10 @@ namespace
 
 QListWidgetItem *MainWindow::makeVolumeItem(const VolumeInfo &v, const QString &displayName)
 {
-	auto *item = new QListWidgetItem(Icons::forVolumeType(v.volumeType, v.path), displayName);
+	// Hand-added folders use their containing volume's native icon too.
+	const QString root = QStorageInfo(v.path).rootPath();
+	const QIcon icon = QFileIconProvider().icon(QFileInfo(root.isEmpty() ? v.path : root));
+	auto *item = new QListWidgetItem(icon, displayName);
 	item->setData(Qt::UserRole, v.path);
 
 	QString tooltip = v.path;
@@ -1617,7 +1620,9 @@ void MainWindow::rebuildProjectList()
 	for (const auto &name : names)
 	{
 		const auto &stat = projectStats[name];
-		auto *item = new QListWidgetItem(Icons::forProject(stat.hasProject), name);
+		const QIcon icon = QApplication::style()->standardIcon(
+			stat.hasProject ? QStyle::SP_DirIcon : QStyle::SP_MessageBoxInformation);
+		auto *item = new QListWidgetItem(icon, name);
 		item->setData(Qt::UserRole, name);
 		QString tip = tr("%1 files, %2").arg(stat.count).arg(Format::bytes(stat.bytes));
 		if (!stat.hasProject)

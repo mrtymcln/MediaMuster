@@ -101,7 +101,6 @@ set(SOURCES
     src/fileoperationcontroller.cpp
     src/unfinishedbusinessdialog.cpp
     src/aboutdialog.cpp
-    src/icons.cpp
     src/logcategories.cpp
     src/logfile.cpp
     src/macaccessibilityguard.cpp

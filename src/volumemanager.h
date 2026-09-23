@@ -69,15 +69,6 @@ public:
 
 	static void openFullDiskAccessSettings();
 
-	// MARK: - Volume type
-
-	/// "Internal", "Network", or "Nexis" for a mount, from its filesystem type
-	/// (with a name/path fallback). Public because Icons::forVolumeType reuses
-	/// it for hand-added paths — one list of network filesystems, so a
-	/// detected volume and the same volume added by hand can't disagree.
-	static QString detectVolumeType(const QString &name, const QString &path,
-									const QStorageInfo &storage);
-
 signals:
 	void volumesChanged(const QVector<VolumeInfo> &volumes);
 
@@ -99,6 +90,8 @@ private:
 
 	static bool hasAvidMediaFolder(const QString &path);
 	static QStringList knownAvidLocations();
+	static QString detectVolumeType(const QString &name, const QString &path,
+									const QStorageInfo &storage);
 
 public:
 	/// Shared metadata mapping for detected volumes and manually added folders.
