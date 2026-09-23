@@ -95,8 +95,8 @@ FileOperationController::FileOperationController(QWidget *window)
 								(result.message.isEmpty() ? QString() : " — " + result.message));
 			if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
 				m_removedSourcePaths.insert(result.source);
-			if (result.state == OpResult::State::OriginalRestored)
-				m_restoredOriginalPaths.insert(result.source);
+			if (!result.restoredOriginalPath.isEmpty())
+				m_restoredOriginalPaths.insert(result.restoredOriginalPath);
 		},
 		Qt::QueuedConnection);
 	connect(
@@ -324,7 +324,7 @@ void FileOperationController::undoLastOperation()
 	request.undoJournalPath = m_undoCandidate.journalPath;
 	if (dispatchRequest(std::move(request)))
 		emit logMessage(QtInfoMsg, QStringLiteral("ops"),
-						tr("Undoing the last operation. Rescan afterwards to refresh the table."));
+						tr("Undoing the last operation."));
 }
 
 bool FileOperationController::dispatchRequest(OpRequest request)
@@ -343,7 +343,7 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 		return false;
 
 	m_pruneSourceRowsAfterOperation =
-		!restoring && (request.kind == OpKind::Move || request.kind == OpKind::Delete);
+		!restoring && (request.kind == OpKind::Move || request.kind == OpKind::Delete || request.kind == OpKind::Undo);
 	m_restoredOriginalPaths.clear();
 	m_removedSourcePaths.clear();
 	++m_historyGeneration; // A previous asynchronous read cannot repopulate stale actions.

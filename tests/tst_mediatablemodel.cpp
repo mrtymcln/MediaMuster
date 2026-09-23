@@ -308,7 +308,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 		QStringLiteral("Kind"), QStringLiteral("Duration"), QStringLiteral("Size (MB)"),
 		QStringLiteral("Codec"), QStringLiteral("Resolution"), QStringLiteral("FPS"),
 		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Type"),
-		QStringLiteral("Filename"), QStringLiteral("Source File"), QStringLiteral("Date Created"),
+		QStringLiteral("Date Created"), QStringLiteral("Filename"), QStringLiteral("Source Filename"),
 		QStringLiteral("Location")};
 	const QPersistentModelIndex row(model.index(1, int(MediaTableModel::Column::Location)));
 	const QString path = row.data().toString();

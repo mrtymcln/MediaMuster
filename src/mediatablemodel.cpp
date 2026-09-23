@@ -98,19 +98,6 @@ const MediaFile &MediaTableModel::fileAt(int row) const
 	return m_files[row];
 }
 
-void MediaTableModel::setShowCodecHex(bool on)
-{
-	if (m_showCodecHex == on)
-		return;
-	m_showCodecHex = on;
-	if (!m_files.isEmpty())
-	{
-		const int codecCol = Enum::to_underlying(Column::Codec);
-		emit dataChanged(index(0, codecCol), index(m_files.size() - 1, codecCol),
-						 {Qt::DisplayRole});
-	}
-}
-
 void MediaTableModel::setPrecomputesEnabled(bool enabled)
 {
 	if (m_precomputesEnabled == enabled)
@@ -154,7 +141,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::SizeMB:
 			return f.sizeMBDisplay();
 		case Column::Codec:
-			return f.codecDisplay(m_showCodecHex);
+			return f.codec;
 		case Column::Resolution:
 			return f.resolution;
 		case Column::Fps:
@@ -165,12 +152,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.bitDepth;
 		case Column::Type:
 			return f.typeDisplay();
+		case Column::Created:
+			return f.createdDisplay();
 		case Column::FileName:
 			return f.fileName;
 		case Column::SourceFile:
 			return f.sourceFileName;
-		case Column::Created:
-			return f.createdDisplay();
 		case Column::Location:
 			return f.filePath;
 		case Column::PrecomputeCategory:
@@ -228,7 +215,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Codec", "Resolution", "FPS", "Sample Rate", "Bit Depth", "Type",
-							 "Filename", "Source File", "Date Created", "Location",
+							 "Date Created", "Filename", "Source Filename", "Location",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "

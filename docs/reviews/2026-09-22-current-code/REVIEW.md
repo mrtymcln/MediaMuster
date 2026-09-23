@@ -18,6 +18,24 @@ The restored MXF parser and operation-UI integration suites also pass after the 
 
 ## Original priority list and implementation status
 
+Sidebar follow-up: the user accepts the existing volume-refresh selection
+behaviour, so U1 is not queued for a change. U5 is fixed: confirmed source removals
+now rebuild project totals and filter chips, preserving remaining project
+selections and clearing filters for projects which no longer have files. The
+status bar already recalculated counts and sizes, but the stale project filter
+could leave it showing zero visible files while another project remained.
+Operation-UI regressions reproduce the stale sidebar count and the misleading
+`0 files (filtered from 1)` result before the fix, and cover partial, whole-project
+and complete-inventory removal afterward.
+
+Undo follow-up, 24 September: the shared `refreshEverything()` now refreshes
+project totals, filter counts/chips and status totals after inventory changes.
+Undo previously restored files on disk without notifying the UI. Operation
+results now carry confirmed restored paths, reusing the existing restoration
+rescan path; Undo also prunes rows for removed copies or relocated inverse
+sources. Regressions cover an empty inventory, another scanned location, Undo
+Delete, failed Undo and resumed Undo Copy.
+
 P2 means a substantive correctness issue worth fixing; P3 means a smaller presentation, contract or maintenance issue. Ordering reflects practical impact rather than whether a defect is new. Reproductions use current code and disposable data, not historical audit claims.
 
 | Priority | Finding and location | Suggested fix / missing regression |

@@ -26,7 +26,7 @@ its result. The permission dialog can open the FDA settings pane.
 When startup collects crash reports, a dialog with an empty window title directs
 the user to **Help > Reveal Logs** to share them with the developer.
 
-The current source includes a Debug menu. These five options start **off on every
+The current source includes a Debug menu. These four options start **off on every
 launch**:
 
 | Option | What turning it on does |
@@ -34,15 +34,14 @@ launch**:
 | Enable OMF | Includes supported legacy media in subsequent scans. Rescan to discover it. |
 | Enable Precomputes | Shows precompute classification, detail columns and filtering, and includes those fields in CSV exports. |
 | Enable undo | Makes the file-operation Undo command available when there is an eligible recorded job. |
-| Show codec hex | Displays raw codec identifiers where available in place of readable codec names. |
 | Fusion style | Uses Qt's Fusion widget style; turning it off restores the startup style. |
 
 Rendered media is still scanned while the precompute option is off. That option
 controls the extra interface and export fields. Turning OMF off removes
 legacy rows from the current table; it does not delete their files.
 
-The menu follows the order above, with a separator before Show codec hex and
-another after Fusion style. **Rebalance demos** comes last, with **Small**,
+The menu follows the order above, with separators before and after Fusion style.
+**Rebalance demos** comes last, with **Small**,
 **Big** and **Really big** scenarios. These use synthetic media and simulated
 progress without changing files.
 
@@ -52,7 +51,8 @@ The Debug menu can be omitted when building the app. See
 ## Menus
 
 File groups source locations, scanning, Unfinished Business, and reveal/export
-commands. **Refresh Volumes List** refreshes the sidebar without rescanning media.
+commands. **Refresh Volumes** refreshes the sidebar without rescanning media.
+**Scan Selected** scans selected locations; **Scan All** scans all available locations.
 Special contains **Manage Media…**, **Filter by Bin…**, **Filter Precomputes…**,
 and **Rebalance…**, in that order. Filter Precomputes is hidden until Debug enables
 Precomputes, then remains disabled without scanned media or while busy. Its toolbar
@@ -158,8 +158,8 @@ to delete.
 ## Filtering, selecting and exporting
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
-Codec, Resolution, FPS, Sample Rate, Bit Depth, Type, Filename, Source File,
-Date Created and Location. Type is always visible. Enabling
+Codec, Resolution, FPS, Sample Rate, Bit Depth, Type, Date Created, Filename,
+Source Filename and Location. Type is always visible. Enabling
 Precomputes inserts Precompute Category, Effect Category, Effect and Effect
 Sequence after Type and exposes the Filter Precomputes dialog.
 
@@ -260,9 +260,12 @@ is unchanged, it asks before using MediaMuster Trash. An uncertain native result
 requires recovery rather than an automatic second attempt elsewhere. Moving into
 MediaMuster Trash does not free disk space.
 
-After Move or Delete, the table removes source rows reported as removed. Copy does
-not add destination rows to the inventory. Rescan the relevant locations to obtain
-an updated inventory of destinations and external changes.
+After Move or Delete, the table removes source rows reported as removed. Project
+counts and sizes refresh, empty projects and their filters disappear, and the
+status bar reflects the remaining visible rows. Selections of remaining projects
+are preserved. Copy does not add destination rows to the inventory. Rescan the
+relevant locations to obtain an updated inventory of destinations and external
+changes.
 
 ## Cancellation, recovery and Undo
 
@@ -294,6 +297,11 @@ it is not an unlimited history or a guarantee that external changes can be undon
 The confirmation names the previous Copy, Move, Delete or Rebalance operation and
 describes its reversal: copies go to Trash; moved or deleted files return to their
 original locations; rebalanced files return to their original Avid MediaFiles folders.
+Confirmed Undo restorations automatically rescan their source locations along
+with locations still represented in the table. The table, Projects list, filters
+and status totals then refresh together; the rescan resets filters and selection
+as an ordinary scan does. Undo Copy removes rows for discarded copies if they
+are in the current inventory. Failed restorations do not add rows.
 
 ## Rebalancing folders
 

@@ -234,7 +234,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 #endif
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("%1 %2 initialised on %3").arg(APP_NAME, APP_VERSION, platform));
 
-	onDetectVolumes();
+	refreshVolumes();
 	m_volumeManager->startMonitoring();
 
 #ifdef Q_OS_MAC
@@ -504,9 +504,9 @@ void MainWindow::buildTable()
 	setW(Col::SampleRate, 110);
 	setW(Col::BitDepth, 100);
 	setW(Col::Type, 110);
+	setW(Col::Created, 165);
 	setW(Col::FileName, 260);
 	setW(Col::SourceFile, 240);
-	setW(Col::Created, 165);
 	setW(Col::Location, 400);
 }
 
@@ -579,20 +579,20 @@ void MainWindow::buildFileMenu()
 					addVolumePath(dir);
 			});
 
-	m_refreshVolumesAct = fileMenu->addAction(tr("Refresh &Volumes List"));
+	m_refreshVolumesAct = fileMenu->addAction(tr("Refresh &Volumes"));
 	m_refreshVolumesAct->setShortcut(QKeySequence("Ctrl+R"));
-	connect(m_refreshVolumesAct, &QAction::triggered, this, &MainWindow::onDetectVolumes);
+	connect(m_refreshVolumesAct, &QAction::triggered, this, &MainWindow::refreshVolumes);
 
 	fileMenu->addSeparator();
 
-	m_scanSelectedAct = fileMenu->addAction(tr("Scan &Selected Locations"));
+	m_scanSelectedAct = fileMenu->addAction(tr("Scan &Selected"));
 	m_scanSelectedAct->setObjectName(QStringLiteral("scanSelectedAction"));
-	connect(m_scanSelectedAct, &QAction::triggered, this, &MainWindow::onScanClicked);
+	connect(m_scanSelectedAct, &QAction::triggered, this, &MainWindow::scanSelected);
 
-	m_scanAllAct = fileMenu->addAction(tr("Scan &All Locations"));
+	m_scanAllAct = fileMenu->addAction(tr("Scan &All"));
 	m_scanAllAct->setObjectName(QStringLiteral("scanAllAction"));
 	m_scanAllAct->setShortcut(QKeySequence("Ctrl+Shift+A"));
-	connect(m_scanAllAct, &QAction::triggered, this, &MainWindow::onScanAllClicked);
+	connect(m_scanAllAct, &QAction::triggered, this, &MainWindow::scanEverything);
 
 	fileMenu->addSeparator();
 
@@ -726,17 +726,6 @@ void MainWindow::buildDebugMenu()
 	debugMenu->addAction(m_operations->enableUndoAction());
 	debugMenu->addSeparator();
 
-	auto *showCodecHexAct = debugMenu->addAction(tr("Show codec hex"));
-	showCodecHexAct->setObjectName(QStringLiteral("showCodecHexDebugAction"));
-	showCodecHexAct->setCheckable(true);
-	showCodecHexAct->setChecked(false);
-	connect(showCodecHexAct, &QAction::triggered, this,
-			[this](bool on)
-			{
-				m_model->setShowCodecHex(on);
-				addLog(QtInfoMsg, QStringLiteral("app"), on ? "Codec hex display enabled" : "Codec hex display disabled");
-			});
-
 	// Whatever style main.cpp installed at startup is the one to restore.
 	// Read it here, before the toggle below can change it — main.cpp stays
 	// the single authority on the platform's native style.
@@ -861,8 +850,7 @@ void MainWindow::setupConnections()
 				const int rowsBefore = m_model->rowCount();
 				m_model->removeFilesByPath(paths);
 				m_persistentSelectedPaths.subtract(paths);
-				updateFilterCounts();
-				updateStatusBar();
+				refreshEverything();
 				addLog(QtInfoMsg, QStringLiteral("ops"),
 					   QStringLiteral("Removed %1 files from table").arg(rowsBefore - m_model->rowCount()));
 			});
@@ -1024,10 +1012,7 @@ void MainWindow::setOmfEnabled(bool enabled)
 				legacyPaths.insert(file.filePath);
 		m_model->removeFilesByPath(legacyPaths);
 		m_persistentSelectedPaths.subtract(legacyPaths);
-		rebuildProjectList();
-		updateFilterCounts();
-		rebuildFilterChips();
-		updateStatusBar();
+		refreshEverything();
 		updateActivityUi();
 	}
 	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled ? tr("OMF/OMFI enabled for this session. Rescan to include legacy media.") : tr("OMF/OMFI disabled; legacy media removed from the table."));
@@ -1076,7 +1061,7 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 	if (enabled)
 	{
 		// Put the newly enabled details together after Type, ahead of
-		// Filename, without moving or resetting the existing columns.
+		// Date Created, without moving or resetting the existing columns.
 		auto *header = m_tableView->horizontalHeader();
 		int position = header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Type)) + 1;
 		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
@@ -1403,7 +1388,7 @@ void MainWindow::addVolumePath(const QString &path)
 	addLog(QtInfoMsg, QStringLiteral("volumes"), QStringLiteral("Added: %1").arg(path));
 }
 
-void MainWindow::onDetectVolumes()
+void MainWindow::refreshVolumes()
 {
 	// Re-detect now, then seed the cache so the next async poll has
 	// something to diff against.
@@ -1464,7 +1449,7 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 
 // MARK: - Scan controls
 
-void MainWindow::onScanClicked()
+void MainWindow::scanSelected()
 {
 	if (!m_operations->isIdle())
 		return;
@@ -1481,11 +1466,11 @@ void MainWindow::onScanClicked()
 	startScanWithPaths(paths);
 }
 
-void MainWindow::onScanAllClicked()
+void MainWindow::scanEverything()
 {
 	if (!m_operations->isIdle() || m_volumeList->count() == 0)
 		return;
-	// See onScanClicked: cancel is via the modal progress sheet, so there is no
+	// See scanSelected: cancel is via the modal progress sheet, so there is no
 	// reachable in-scan cancel path here. Only ever begins a scan.
 	QStringList paths = m_volumeManager->allScannablePaths();
 	for (const QString &mp : m_manualVolumes)
@@ -1581,16 +1566,20 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	QString timeStr = tr("Scan: %1 ms").arg(elapsed);
 	m_statusScanTime->setText(timeStr);
 
-	rebuildProjectList();
-
 	// Fresh dataset: clear any filters left over from the previous scan
 	// before tallying, so the counts and table reflect the full results.
 	resetFiltersForNewScan();
-
-	updateFilterCounts();
-	updateStatusBar();
+	refreshEverything();
 
 	m_operations->setActivity(FileOperationController::Activity::Idle);
+}
+
+void MainWindow::refreshEverything()
+{
+	rebuildProjectList();
+	updateFilterCounts();
+	rebuildFilterChips();
+	updateStatusBar();
 }
 
 void MainWindow::rebuildProjectList()

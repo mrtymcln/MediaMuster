@@ -55,7 +55,15 @@ namespace
 	OpResult result(const OpJournal::Entry &e, State s, const QString &message = {},
 					bool removed = false)
 	{
-		return {s, label(e.item), e.item.src, e.dst, message, removed || e.sourceRemoved || (!e.retirement.isEmpty() && !OpFile::occupied(e.item.src) && e.source.unchanged(OpFile::inspect(e.retirement)))};
+		QString restored;
+		if (s == State::OriginalRestored)
+			restored = e.item.src;
+		else if (e.undoAction.startsWith("restore") &&
+				 (s == State::Completed || s == State::SourceRetained))
+			restored = e.dst;
+		return {s, label(e.item), e.item.src, e.dst, message,
+				removed || e.sourceRemoved || (!e.retirement.isEmpty() && !OpFile::occupied(e.item.src) && e.source.unchanged(OpFile::inspect(e.retirement))),
+				restored};
 	}
 	bool leaf(const QString &s)
 	{

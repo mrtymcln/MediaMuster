@@ -67,7 +67,7 @@ checks, and carries both file and master identities to the operation engine.
 ## Session toggles
 
 The Debug menu enables these features for the current session only. Every launch
-starts with all five off; there are no saved preferences to carry into a public
+starts with all four off; there are no saved preferences to carry into a public
 build.
 
 | Debug command | Enabled behavior | Disabled behavior |
@@ -75,10 +75,9 @@ build.
 | Enable OMF | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
 | Enable Precomputes | Adds Precompute Category, Effect Category, Effect and Effect Sequence to the table and CSV, the Precomputes tab and the filter button. Shows Special > Filter Precomputes, enabled when scanned media is available and the app is idle. | Hides those four detail columns, the Special menu command and toolbar control, clears precompute filters, and resets sorting if its column disappears. Type stays visible and sortable in both modes; rendered media remains in ordinary scan results. |
 | Enable undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
-| Show codec hex | Displays raw codec identifiers where available in place of readable names. | Displays readable codec names. |
 | Fusion style | Uses Qt's Fusion widget style. | Uses the style installed at startup. |
 
-The first three commands form one group, followed by the two display options.
+The first three commands form one group, followed by the Fusion style option.
 The final group is **Rebalance demos**, whose **Small**, **Big** and **Really big**
 scenarios use synthetic plans and simulated progress without changing files.
 

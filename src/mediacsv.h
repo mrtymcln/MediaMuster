@@ -27,10 +27,8 @@ namespace MediaCsv
 	/// through CsvUtil::quoted (spreadsheet-formula injection is
 	/// neutralised there). Kind, Type, precompute details, Sample Rate, Duration, Size (MB)
 	/// and Date Created route through MediaFile's display helpers so the export and
-	/// the table can't disagree. Clip Name and Codec are written raw: the
-	/// codec column MUST be (codecDisplay carries the debug raw-hex
-	/// toggle, which belongs on screen and not in an export), and the clip
-	/// name is byte-identical to its helper today.
+	/// the table can't disagree. Clip Name and Codec use their stored text,
+	/// matching the table's displayed values.
 	QString rowLine(const MediaFile &f, Options options = {});
 
 	/// Writes header + rows to `path`. False on any I/O failure.

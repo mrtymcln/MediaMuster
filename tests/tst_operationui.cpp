@@ -93,6 +93,9 @@ private slots:
 	void cleanup();
 	void cleanupTestCase();
 	void project_sidebar_uses_whole_inventory_totals();
+	void removed_sources_refresh_status_and_project_filters();
+	void undo_restores_inventory_data();
+	void undo_restores_inventory();
 	void debug_flags_default_off_and_text_undo_works();
 	void menu_availability_tracks_locations_selection_and_activity();
 	void text_editing_shortcuts_remain_native();
@@ -173,15 +176,161 @@ void TestOperationUi::project_sidebar_uses_whole_inventory_totals()
 	QCOMPARE(window.m_projectList->item(1)->toolTip(), QStringLiteral("3 files, 300 B"));
 
 	window.m_projectList->item(1)->setSelected(true);
-	window.m_model->removeFilesByPath({files[0].filePath});
-	window.rebuildProjectList();
+	emit window.m_operations->sourcesRemoved({files[0].filePath});
 	QVERIFY(window.m_projectList->item(1)->isSelected());
 	QCOMPARE(window.m_projectList->item(1)->toolTip(), QStringLiteral("2 files, 200 B"));
 	QCOMPARE(window.m_proxy->rowCount(), 1);
 
-	window.m_model->setMediaFiles({});
-	window.rebuildProjectList();
+	emit window.m_operations->sourcesRemoved({files[1].filePath, files[2].filePath, files[3].filePath});
 	QCOMPARE(window.m_projectList->count(), 0);
+}
+
+void TestOperationUi::removed_sources_refresh_status_and_project_filters()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(3);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		files[i].filePath = path(QStringLiteral("%1.mxf").arg(i));
+		files[i].clipName = QString::number(i);
+		files[i].project = i < 2 ? QStringLiteral("Project A") : QStringLiteral("Project B");
+		files[i].sizeBytes = 100 * (1 << i);
+	}
+	window.onScanFinished(files);
+	window.m_projectList->item(0)->setSelected(true);
+	window.m_tableView->selectAll();
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files (filtered from 3)"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("300 B"));
+	QCOMPARE(window.m_statusSelected->text(), QStringLiteral("2 selected"));
+	QTRY_COMPARE(window.m_statusSelSize->text(), QStringLiteral("300 B selected"));
+
+	// Removing only part of the selected project retains its filter and selection.
+	emit window.m_operations->sourcesRemoved({files[0].filePath});
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("1 files (filtered from 2)"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("200 B"));
+	QCOMPARE(window.m_statusSelected->text(), QStringLiteral("1 selected"));
+	QTRY_COMPARE(window.m_statusSelSize->text(), QStringLiteral("200 B selected"));
+	QCOMPARE(window.m_projectList->selectedItems().size(), 1);
+	QCOMPARE(window.m_projectList->selectedItems().first()->text(), QStringLiteral("Project A"));
+	QCOMPARE(window.selectedFiles().size(), 1);
+	QCOMPARE(window.selectedFiles().first().filePath, files[1].filePath);
+	QVERIFY(!window.m_chipsBar->isHidden());
+
+	// Removing its last file clears the dead project filter and reveals Project B.
+	emit window.m_operations->sourcesRemoved({files[1].filePath});
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("1 files"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("400 B"));
+	QCOMPARE(window.m_projectList->count(), 1);
+	QCOMPARE(window.m_projectList->item(0)->text(), QStringLiteral("Project B"));
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QVERIFY(window.m_chipsBar->isHidden());
+	QVERIFY(window.m_statusSelected->isHidden());
+	QVERIFY(window.m_statusSelSize->isHidden());
+	QVERIFY(window.selectedFiles().isEmpty());
+	QCOMPARE(window.fileAtProxyRow(0).filePath, files[2].filePath);
+
+	emit window.m_operations->sourcesRemoved({files[2].filePath});
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("0 files"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("0 B"));
+	QCOMPARE(window.m_projectList->count(), 0);
+}
+
+void TestOperationUi::undo_restores_inventory_data()
+{
+	QTest::addColumn<OpKind>("kind");
+	QTest::addColumn<bool>("keepOtherLocation");
+	QTest::addColumn<bool>("blockUndo");
+	QTest::newRow("move-last-file") << OpKind::Move << false << false;
+	QTest::newRow("move-with-other-location") << OpKind::Move << true << false;
+	QTest::newRow("delete-with-other-location") << OpKind::Delete << true << false;
+	QTest::newRow("failed-undo-does-not-restore-row") << OpKind::Move << true << true;
+}
+
+void TestOperationUi::undo_restores_inventory()
+{
+	QFETCH(OpKind, kind);
+	QFETCH(bool, keepOtherLocation);
+	QFETCH(bool, blockUndo);
+	const QString sourceRoot = path("source");
+	const QString source = sourceRoot + "/Avid MediaFiles/MXF/1/tone.mxf";
+	QVERIFY(QDir().mkpath(QFileInfo(source).absolutePath()));
+	QVERIFY(QFile::copy(QFINDTESTDATA("fixtures/TONE_100A01.EA7D504A.611740.mxf"), source));
+	QStringList roots{sourceRoot};
+	const QString other = path("unaffected/Avid MediaFiles/MXF/1/other.mxf");
+	if (keepOtherLocation)
+	{
+		QVERIFY(put(other, QByteArray(1024, 'u')));
+		roots.append(path("unaffected"));
+	}
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *operations = window.m_operations;
+	// Keep disposable Delete fixtures in the test's private Trash without a popup.
+	disconnect(operations, &FileOperationController::mediaMusterTrashUsed,
+			   &window, &MainWindow::showMediaMusterTrashDialog);
+	operations->enableUndoAction()->setChecked(true);
+	QSignalSpy scanned(window.m_scanner, &MediaScanner::scanFinished);
+	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
+	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
+	window.startScanWithPaths(roots);
+	QTRY_COMPARE_WITH_TIMEOUT(scanned.count(), 1, 15000);
+	QTRY_VERIFY(operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), keepOtherLocation ? 2 : 1);
+	MediaFile original;
+	for (const auto &file : window.m_model->allFiles())
+		if (file.filePath == source)
+			original = file;
+	QCOMPARE(original.filePath, source);
+	QVERIFY(!original.project.isEmpty());
+	window.doUpdateStatusBar();
+	const QString originalCount = window.m_statusFiles->text();
+	const QString originalSize = window.m_statusSize->text();
+
+	OpRequest forward;
+	forward.kind = kind;
+	forward.destRoot = path("destination");
+	forward.diagnosticTrashRoot = path("trash");
+	forward.items = OpManager::itemsFromMediaFiles({original}, {});
+	QVERIFY(QDir().mkpath(forward.destRoot));
+	QVERIFY(operations->dispatchRequest(forward));
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(operations->isIdle() && !operations->m_historyLoading);
+	QVERIFY(!QFileInfo::exists(source));
+	QCOMPARE(window.m_model->rowCount(), keepOtherLocation ? 1 : 0);
+	QVERIFY(window.m_projectList->findItems(original.project, Qt::MatchExactly).isEmpty());
+	QCOMPARE(restored.count(), 0);
+	if (blockUndo)
+		QVERIFY(put(source, QByteArray("different file occupying the original location")));
+
+	OpRequest undo;
+	undo.kind = OpKind::Undo;
+	undo.undoJournalPath = operations->m_undoCandidate.journalPath;
+	undo.diagnosticTrashRoot = path("trash");
+	QVERIFY(!undo.undoJournalPath.isEmpty());
+	QVERIFY(operations->dispatchRequest(undo));
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
+	QVERIFY(QFileInfo::exists(source));
+	if (blockUndo)
+	{
+		QTRY_VERIFY(operations->isIdle() && !operations->m_historyLoading);
+		QCOMPARE(finished.last().at(0).toInt(), 0);
+		QVERIFY(finished.last().at(1).toInt() > 0);
+		QCOMPARE(restored.count(), 0);
+		QCOMPARE(scanned.count(), 1);
+		QCOMPARE(window.m_model->rowCount(), 1);
+		QVERIFY(window.m_projectList->findItems(original.project, Qt::MatchExactly).isEmpty());
+		return;
+	}
+	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 1000);
+	QTRY_COMPARE_WITH_TIMEOUT(scanned.count(), 2, 15000);
+	QTRY_VERIFY(operations->isIdle() && !operations->m_historyLoading);
+	QCOMPARE(window.m_model->rowCount(), keepOtherLocation ? 2 : 1);
+	QSet<QString> displayed;
+	for (const auto &file : window.m_model->allFiles())
+		displayed.insert(file.filePath);
+	QCOMPARE(displayed, keepOtherLocation ? QSet<QString>({source, other}) : QSet<QString>({source}));
+	QCOMPARE(window.m_projectList->findItems(original.project, Qt::MatchExactly).size(), 1);
+	QTRY_COMPARE(window.m_statusFiles->text(), originalCount);
+	QCOMPARE(window.m_statusSize->text(), originalSize);
 }
 
 void TestOperationUi::initTestCase()
@@ -1159,6 +1308,14 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	QCOMPARE(pending.first().kind, OpKind::Undo);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
+	MediaFile copied;
+	copied.filePath = path("original/destination/clip-1.bin");
+	copied.fileName = QStringLiteral("clip-1.bin");
+	copied.project = QStringLiteral("Copied project");
+	copied.sizeBytes = QFileInfo(copied.filePath).size();
+	window.onScanFinished({copied});
+	QCOMPARE(window.m_projectList->count(), 1);
+	QSignalSpy restored(window.m_operations, &FileOperationController::originalsRestored);
 	QSignalSpy finished(window.m_operations->m_fileOps, &OpManager::operationFinished);
 	clickInterrupted("resumeInterruptedJobButton");
 	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
@@ -1169,6 +1326,11 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	QVERIFY(QFileInfo::exists(original.items[0].src));
 	QVERIFY(QFileInfo::exists(original.items[1].src));
 	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QTRY_COMPARE(window.m_model->rowCount(), 0);
+	QCOMPARE(window.m_projectList->count(), 0);
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("0 files"));
+	QTRY_COMPARE(window.m_statusSize->text(), QStringLiteral("0 B"));
+	QCOMPARE(restored.count(), 0); // Undo Copy only removes a copy from the inventory.
 }
 void TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
 {

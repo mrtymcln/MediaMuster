@@ -47,7 +47,7 @@ namespace MediaCsv
 									  "Sample Rate,Bit Depth,Type,");
 		if (options.includePrecomputeDetails)
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
-		return line + QStringLiteral("Filename,Source File,Date Created,Location,Database Status,MobId,MasterMobId\n");
+		return line + QStringLiteral("Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId\n");
 	}
 
 	QString rowLine(const MediaFile &f, Options options)
@@ -68,8 +68,8 @@ namespace MediaCsv
 				<< CsvUtil::quoted(f.effectDisplay()) << ','
 				<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';
 		}
-		out << CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFileName) << ','
-			<< f.createdDisplay() << ','
+		out << f.createdDisplay() << ','
+			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFileName) << ','
 			<< CsvUtil::quoted(f.filePath) << ',' << CsvUtil::quoted(f.dbStatusText().label) << ','
 			<< CsvUtil::quoted(f.mobId) << ',' << CsvUtil::quoted(f.masterMobId)
 			<< '\n';

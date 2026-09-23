@@ -134,16 +134,16 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	for (bool enabled : {false, true})
 	{
 		QStringList expectedHeaders = QStringLiteral(
-			"Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,FPS,Sample Rate,Bit Depth,Type,"
-			"Filename,Source File,Date Created,Location,Database Status,MobId,MasterMobId")
-									  .split(QLatin1Char(','));
+										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,FPS,Sample Rate,Bit Depth,Type,"
+										  "Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId")
+										  .split(QLatin1Char(','));
 		QStringList expectedFields{
 			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),
 			QStringLiteral("Video"), QStringLiteral("00:00:10:00"), QStringLiteral("850.0"),
 			QStringLiteral("Avid DNx SQ (DNxHD 145)"), QStringLiteral("1920x1080"), QStringLiteral("25"),
 			QStringLiteral("48 kHz"), QStringLiteral("10-bit"), QStringLiteral("Precompute"),
-			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("camera-original.mov"),
 			QStringLiteral("2026-07-20 12:30"),
+			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("camera-original.mov"),
 			QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
 			QStringLiteral("No Reference"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id")};
 		if (enabled)
@@ -224,7 +224,7 @@ void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 		QCOMPARE(headers.count(QStringLiteral("Location")), 1);
 		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))), f.filePath);
 		for (const auto &removed : {QStringLiteral("Volume"), QStringLiteral("Source Path"),
-								   QStringLiteral("Source Container"), QStringLiteral("Imported")})
+									QStringLiteral("Source Container"), QStringLiteral("Imported")})
 			QVERIFY(!headers.contains(removed));
 		QVERIFY(!fields.contains(f.volumeName));
 		QVERIFY(!fields.contains(f.sourceFilePath));
@@ -310,7 +310,6 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 	f.effect = QStringLiteral("=Custom,\"Quoted\"\nEffect");
 	f.effectCategory = QStringLiteral("@Category,\"Quoted\"");
 	f.effectSequence = QStringLiteral("+Sequence,\"Quoted\"\nNext");
-	f.codecHex = QStringLiteral("raw-debug-value");
 	for (bool enabled : {false, true})
 	{
 		const MediaCsv::Options options{enabled};

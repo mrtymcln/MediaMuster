@@ -48,7 +48,6 @@ struct MediaFile
 	// MARK: MXF or MDB technical metadata
 
 	QString codec;		///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
-	QString codecHex;	///< Raw hex of the compression/coding UL.
 	QString resolution; ///< "1920x1080". Video only; audio rows stay blank.
 	QString fps;		///< "23.976", "25". Video only; audio rows stay blank.
 	QString bitDepth;	///< "10-bit", "24-bit".
@@ -294,14 +293,6 @@ struct MediaFile
 	const QString &clipNameDisplay() const
 	{
 		return clipName;
-	}
-
-	/// "Codec" column string: the resolved codec name, or the raw
-	/// essence-label hex when the debug toggle is on and hex exists.
-	/// The toggle lives on the table model; callers pass it in.
-	const QString &codecDisplay(bool rawHex) const
-	{
-		return (rawHex && !codecHex.isEmpty()) ? codecHex : codec;
 	}
 
 	/// Audio sample rate shared by the table and CSV; unknown rates stay blank.

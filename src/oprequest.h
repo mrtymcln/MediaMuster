@@ -187,5 +187,6 @@ struct OpResult
 	QString destination;
 	QString message;
 	bool sourceRemoved = false;
+	QString restoredOriginalPath; ///< Confirmed return by Undo or original restoration; empty otherwise.
 };
 Q_DECLARE_METATYPE(OpResult)

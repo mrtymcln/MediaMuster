@@ -50,9 +50,9 @@ private slots:
 
 	// MARK: - User actions
 
-	void onDetectVolumes();
-	void onScanClicked();
-	void onScanAllClicked();
+	void refreshVolumes();
+	void scanSelected();
+	void scanEverything();
 	void onScanProgress(int current, int total, const QString &currentPath);
 	void onScanLogBatch(const QVector<LogMsg> &batch);
 	void onScanFinished(const QVector<MediaFile> &results);
@@ -149,11 +149,13 @@ private:
 
 	/// Preserves the editor's current selection across the refresh
 	/// and merges manually-added paths from m_manualVolumes. Called
-	/// from both onDetectVolumes (sync, startup / menu) and the
+	/// from both refreshVolumes (sync, startup / menu) and the
 	/// volumesChanged handler (hot mount refresh from the async poller).
 	void rebuildVolumeList(const QVector<VolumeInfo> &volumes);
 
 	void rebuildFilterChips();
+	/// Refresh dependent views after the inventory changes; does not scan disk.
+	void refreshEverything();
 	void rebuildProjectList();
 	void setOmfEnabled(bool enabled);
 	void setPrecomputesEnabled(bool enabled);

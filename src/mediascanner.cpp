@@ -226,8 +226,6 @@ namespace
 		{
 			if (!metadata.codec.isEmpty())
 				mf.codec = metadata.codec;
-			if (!metadata.compressionLabel.isEmpty())
-				mf.codecHex = metadata.compressionLabel.toHex().toUpper();
 			if (!metadata.resolution.isEmpty())
 				mf.resolution = metadata.resolution;
 			if (!metadata.fps.isEmpty())
@@ -1116,7 +1114,6 @@ namespace
 		mf.sourceContainer.clear();
 		mf.isImported = false;
 		mf.codec.clear();
-		mf.codecHex.clear();
 		mf.resolution.clear();
 		mf.fps.clear();
 		mf.bitDepth.clear();

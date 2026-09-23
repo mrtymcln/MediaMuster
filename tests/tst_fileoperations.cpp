@@ -2126,6 +2126,7 @@ void TestFileOperations::undo_copy_is_gated_and_claims_forward()
 	QCOMPARE(get(f.src), f.bytes);
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 	QVERIFY(!OpJournal::readOne(forward.path)->undoPath.isEmpty());
+	QVERIFY(sink.results.last().restoredOriginalPath.isEmpty()); // Undo Copy restores no original.
 	QVERIFY(!OpJournal::latestUndoable(f.journals));
 	OpRequest resume;
 	resume.resumeJournalPath = forward.path;
@@ -2161,8 +2162,12 @@ void TestFileOperations::undo_partial_move_restores_only_completed_changes()
 	undo.undoJournalPath = forward.path;
 	cancel = false;
 	runner.hooks = {};
+	sink.results.clear();
 	const auto t = runner.run(undo, f.journals);
 	QVERIFY2(t.succeeded == 2, qPrintable(sink.messages.join('\n')));
+	QCOMPARE(sink.results.size(), 2);
+	QCOMPARE(sink.results[0].restoredOriginalPath, f.src);
+	QVERIFY(sink.results[1].restoredOriginalPath.isEmpty()); // Discarding a redundant copy.
 	QCOMPARE(get(f.src), f.bytes);
 	QCOMPARE(get(second.src), f.bytes);
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
@@ -2241,16 +2246,21 @@ void TestFileOperations::undo_move_resumes_after_publication()
 	OpRequest resume;
 	resume.resumeJournalPath = pending[0].path;
 	runner.hooks = {};
+	sink.results.clear();
 	const auto t = runner.run(resume, f.journals);
 	if (changedDestination)
 	{
 		QVERIFY(t.needsAttention > 0);
+		for (const auto &outcome : sink.results)
+			QVERIFY(outcome.restoredOriginalPath.isEmpty());
 		QCOMPARE(get(f.src), QByteArray("a changed destination"));
 		QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	}
 	else
 	{
 		QVERIFY2(t.needsAttention == 0 && t.failed == 0, qPrintable(sink.messages.join('\n')));
+		QVERIFY(!sink.results.isEmpty());
+		QCOMPARE(sink.results.last().restoredOriginalPath, f.src);
 		QCOMPARE(get(f.src), f.bytes);
 		QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 	}

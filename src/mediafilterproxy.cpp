@@ -267,13 +267,8 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 								Qt::CaseInsensitive) < 0;
 
 	case Col::Codec:
-	{
-		// The exact string the column displays (with the model's raw-hex
-		// toggle); shared rule, can't drift.
-		const bool rawHex = m_sourceModel->showCodecHex();
-		return QString::compare(l.codecDisplay(rawHex), r.codecDisplay(rawHex),
+		return QString::compare(l.codec, r.codec,
 								Qt::CaseInsensitive) < 0;
-	}
 
 	case Col::Kind:
 		return kindSortRank(l.kind) < kindSortRank(r.kind);

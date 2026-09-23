@@ -33,9 +33,9 @@ public:
 		SampleRate,
 		BitDepth,
 		Type,
+		Created,
 		FileName,
 		SourceFile,
-		Created,
 		Location,
 		PrecomputeCategory,
 		EffectCategory,
@@ -69,11 +69,6 @@ public:
 	const MediaFile &fileAt(int row) const;
 	const QVector<MediaFile> &allFiles() const { return m_files; }
 
-	/// Debug toggle: Codec column shows the raw 16-byte
-	/// essence-container UL hex instead of the resolved codec name.
-	void setShowCodecHex(bool on);
-	bool showCodecHex() const { return m_showCodecHex; }
-
 	/// Appended experimental columns; changing the gate preserves rows,
 	/// existing column numbers and persistent indexes in those columns.
 	void setPrecomputesEnabled(bool enabled);
@@ -83,6 +78,5 @@ private:
 	void applyAvbMetadata(bool notify);
 	BinMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
-	bool m_showCodecHex = false;
 	bool m_precomputesEnabled = false;
 };
