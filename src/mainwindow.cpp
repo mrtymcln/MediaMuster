@@ -481,33 +481,33 @@ void MainWindow::buildTable()
 	m_tableView->setTextElideMode(Qt::ElideNone);
 	m_tableView->verticalHeader()->setVisible(false);
 	m_tableView->verticalHeader()->setDefaultSectionSize(24);
-	m_tableView->horizontalHeader()->setStretchLastSection(true);
+	m_tableView->horizontalHeader()->setStretchLastSection(false);
 	m_tableView->horizontalHeader()->setSectionsMovable(true);
 	m_tableView->horizontalHeader()->setHighlightSections(false);
 	m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_tableView->setFont(monoFont());
 
-	// Starting widths. autoFitColumns runs once after the
-	// first scan to size them to actual content.
+	// Every session starts here. Scans leave widths alone; the View menu
+	// provides Qt's native content fitting when requested.
 	using Col = MediaTableModel::Column;
 	auto setW = [this](Col c, int w)
 	{ m_tableView->setColumnWidth(Enum::to_underlying(c), w); };
-	setW(Col::ClipName, 150);
-	setW(Col::FileName, 150);
-	setW(Col::Project, 100);
-	setW(Col::OriginalBin, 100);
-	setW(Col::Kind, 50);
-	setW(Col::Codec, 100);
-	setW(Col::Resolution, 100);
-	setW(Col::Fps, 50);
-	setW(Col::SampleRate, 100);
-	setW(Col::BitDepth, 85);
-	setW(Col::Duration, 100);
-	setW(Col::SizeMB, 100);
-	setW(Col::Location, 320);
-	setW(Col::Created, 100);
-	setW(Col::Type, 50);
-	m_tableView->setColumnHidden(Enum::to_underlying(Col::Type), true);
+	setW(Col::ClipName, 240);
+	setW(Col::Project, 150);
+	setW(Col::OriginalBin, 150);
+	setW(Col::Kind, 75);
+	setW(Col::Duration, 110);
+	setW(Col::SizeMB, 110);
+	setW(Col::Codec, 160);
+	setW(Col::Resolution, 110);
+	setW(Col::Fps, 75);
+	setW(Col::SampleRate, 110);
+	setW(Col::BitDepth, 100);
+	setW(Col::Type, 110);
+	setW(Col::FileName, 260);
+	setW(Col::SourceFile, 240);
+	setW(Col::Created, 165);
+	setW(Col::Location, 400);
 }
 
 // MARK: - Console
@@ -1054,8 +1054,7 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 								   {
 		// A sort column that is about to disappear must not keep controlling
 		// the rows while its heading is no longer available to the editor.
-		if (!enabled && (m_proxy->sortColumn() == Enum::to_underlying(MediaTableModel::Column::Type) ||
-			m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory)))
+		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory))
 			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
 		const int tab = m_filterTabs->currentIndex();
 		if (!enabled && tab >= 0 && tab < static_cast<int>(kFilterDefs.size()) &&
@@ -1071,14 +1070,13 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		const QSignalBlocker blocker(m_enablePrecomputesAct);
 		m_enablePrecomputesAct->setChecked(enabled);
 	}
-	m_tableView->setColumnHidden(Enum::to_underlying(MediaTableModel::Column::Type), !enabled);
 	m_btnEffectFilter->setVisible(enabled);
 	m_effectFilterAct->setVisible(enabled);
 	updateActivityUi();
 	if (enabled)
 	{
-		// Put the newly enabled details together after Type, ahead of Source
-		// File, without moving or resetting the existing columns.
+		// Put the newly enabled details together after Type, ahead of
+		// Filename, without moving or resetting the existing columns.
 		auto *header = m_tableView->horizontalHeader();
 		int position = header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Type)) + 1;
 		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
@@ -1086,13 +1084,14 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		{
 			const int logical = Enum::to_underlying(column);
 			header->moveSection(header->visualIndex(logical), position++);
-			m_tableView->resizeColumnToContents(logical);
+			m_tableView->setColumnWidth(logical,
+										column == MediaTableModel::Column::PrecomputeCategory || column == MediaTableModel::Column::EffectCategory ? 180 : 240);
 		}
 	}
 	updateFilterCounts();
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Precomputes enabled for this session") : QStringLiteral("Precomputes disabled; precompute filters cleared"));
+	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Precompute Details enabled for this session") : QStringLiteral("Precomputes disabled; precompute filters cleared"));
 }
 
 void MainWindow::onFilterByEffects()
@@ -1587,7 +1586,6 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 
 	updateFilterCounts();
 	updateStatusBar();
-	autoFitColumns();
 
 	m_operations->setActivity(FileOperationController::Activity::Idle);
 }

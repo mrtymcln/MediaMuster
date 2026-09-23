@@ -157,6 +157,19 @@ to delete.
 
 ## Filtering, selecting and exporting
 
+The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
+Codec, Resolution, FPS, Sample Rate, Bit Depth, Type, Filename, Source File,
+Date Created and Location. Type is always visible. Enabling
+Precomputes inserts Precompute Category, Effect Category, Effect and Effect
+Sequence after Type and exposes the Filter Precomputes dialog.
+
+Columns start at their default widths each session. Dragging or resizing them
+affects the current window only; scans leave that layout alone. Nothing is saved.
+**View > Resize Columns to Fit** uses Qt's native content-based resizing.
+Column headings have no tooltips. File modification timestamps are retained
+internally for database freshness and operation checks, but are not displayed
+or exported.
+
 The table and CSV include **Sample Rate** (for example, `48 kHz`) and
 **Bit Depth** (for example, `24-bit`) beside FPS. Sample Rate describes audio;
 Bit Depth also shows recorded video depths. Unknown values stay blank.
@@ -203,6 +216,13 @@ identifier with the current selection; it does not reveal hidden relatives.
 CSV export offers selected rows or all rows in the current filtered view. Its
 **All** choice does not include filtered-out rows. Filter-tab counts use the whole
 inventory, while the status bar's file count and size describe the visible rows.
+
+CSV uses the table's default column order, including the four precompute details
+only when enabled, followed by Database Status, MobId and MasterMobId (19 columns
+normally, 23 with Precomputes). Moving table columns does not change export order.
+The exporter maintains its own explicit column list. Location is the managed
+media file's full path; Source File is its recorded original import filename.
+Separate Volume, Source Path, Source Container and Imported fields are not exported.
 
 ## Copy, Move and Delete
 

@@ -258,8 +258,6 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		// rows group together predictably.
 		return l.created < r.created;
 	}
-	case Col::Modified:
-		return l.modified < r.modified;
 	case Col::SourceFile:
 		return QString::compare(l.sourceFileName, r.sourceFileName, Qt::CaseInsensitive) < 0;
 
@@ -339,7 +337,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::Location:
 		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
-		return m_precomputesEnabled && typeSortRank(l.type) < typeSortRank(r.type);
+		return typeSortRank(l.type) < typeSortRank(r.type);
 	case Col::PrecomputeCategory:
 	case Col::Effect:
 	case Col::EffectCategory:

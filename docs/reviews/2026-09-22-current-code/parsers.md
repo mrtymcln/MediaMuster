@@ -13,6 +13,7 @@ Latest follow-up, 23 September: finding 1 is fixed in the working tree by retain
 2. **Withdrawn: constructed disconnected-master case.** The probe deliberately supplied an inconsistent package graph and observed sole-material fallback in `src/mxfparser.cpp:648-649`. That establishes behavior for the generated input, not a bug affecting normal Avid media. No affected genuine Avid sample was found, and assigning this an actionable P2 priority overstated the evidence. The proposed safeguard and its tests were removed at the user's request. The original probe output remains below as historical evidence of what was actually tested.
 
 Probe output:
+
 ```
 MDB 4800 ok true complete true frames 3 base 30 display "00:00:00:03"
 MDB 9600 ok true complete true frames 5 base 25 display "00:00:00:05"

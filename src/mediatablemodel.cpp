@@ -143,14 +143,16 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		{
 		case Column::ClipName:
 			return f.clipNameDisplay();
-		case Column::FileName:
-			return f.fileName;
 		case Column::Project:
 			return f.projectDisplay();
 		case Column::OriginalBin:
 			return f.originalBin;
 		case Column::Kind:
 			return f.kindDisplay();
+		case Column::Duration:
+			return f.durationDisplay();
+		case Column::SizeMB:
+			return f.sizeMBDisplay();
 		case Column::Codec:
 			return f.codecDisplay(m_showCodecHex);
 		case Column::Resolution:
@@ -161,26 +163,22 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sampleRateDisplay();
 		case Column::BitDepth:
 			return f.bitDepth;
-		case Column::Duration:
-			return f.durationDisplay();
-		case Column::SizeMB:
-			return f.sizeMBDisplay();
-		case Column::Location:
-			return f.filePath;
-		case Column::Created:
-			return f.createdDisplay();
-		case Column::Modified:
-			return f.modifiedDisplay();
 		case Column::Type:
 			return f.typeDisplay();
+		case Column::FileName:
+			return f.fileName;
 		case Column::SourceFile:
 			return f.sourceFileName;
+		case Column::Created:
+			return f.createdDisplay();
+		case Column::Location:
+			return f.filePath;
 		case Column::PrecomputeCategory:
 			return f.precomputeCategoryDisplay();
-		case Column::Effect:
-			return f.effectDisplay();
 		case Column::EffectCategory:
 			return f.effectCategoryDisplay();
+		case Column::Effect:
+			return f.effectDisplay();
 		case Column::EffectSequence:
 			return f.type == MediaFile::Type::Precompute ? f.effectSequence : QString();
 		case Column::Count_:
@@ -218,8 +216,6 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sampleRate > 0 ? QVariant(f.sampleRate) : QVariant();
 		if (static_cast<Column>(index.column()) == Column::Created)
 			return f.created;
-		if (static_cast<Column>(index.column()) == Column::Modified)
-			return f.modified;
 		return data(index, Qt::DisplayRole);
 	}
 	return {};
@@ -227,49 +223,13 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 
 QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	if (orientation != Qt::Horizontal || section < 0 || section >= columnCount())
+	if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= columnCount())
 		return {};
 
-	if (role == Qt::ToolTipRole)
-	{
-		if (section == Enum::to_underlying(Column::SampleRate))
-			return QStringLiteral("Audio samples per second, shown in kHz. Blank when unknown or not applicable.");
-		if (section == Enum::to_underlying(Column::BitDepth))
-			return QStringLiteral("Recorded audio or video bit depth. Blank when unknown.");
-		if (section == Enum::to_underlying(Column::OriginalBin))
-		{
-			return QStringLiteral("The bin this clip was originally imported into.");
-		}
-		if (section == Enum::to_underlying(Column::Location))
-		{
-			return QStringLiteral("The filepath for this clip.");
-		}
-		if (section == Enum::to_underlying(Column::Created))
-		{
-			return QStringLiteral("Blank when the file system doesn't record a creation date.");
-		}
-		if (section == Enum::to_underlying(Column::Modified))
-		{
-			return QStringLiteral("The file's modification date, as the file system records it.");
-		}
-		if (section == Enum::to_underlying(Column::SourceFile))
-		{
-			return QStringLiteral("The file this clip was imported from, as Avid recorded it. "
-								  "Blank when Avid recorded none — media it generated itself "
-								  "(renders, tones, mixdowns) or a tape capture.");
-		}
-		return {};
-	}
-
-	if (role != Qt::DisplayRole)
-		return {};
-
-	// "Bin" matches the CSV export's heading for the same field; the header
-	// tooltip above still explains it is the bin the clip was imported into.
-	const char *headers[] = {"Clip Name", "Filename", "Project", "Bin", "Kind",
-							 "Codec", "Resolution", "FPS", "Sample Rate", "Bit Depth", "Duration",
-							 "Size (MB)", "Location", "Date Created", "Date Modified",
-							 "Type", "Source File", "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
+	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
+							 "Codec", "Resolution", "FPS", "Sample Rate", "Bit Depth", "Type",
+							 "Filename", "Source File", "Date Created", "Location",
+							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "
 				  "add or remove a header string when changing the Column enum");

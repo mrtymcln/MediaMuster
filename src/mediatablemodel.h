@@ -11,8 +11,8 @@
 
 struct AvbBin;
 
-/// One row per MediaFile. Columns ordered identity > context >
-/// technical, matching the visual order in the UI.
+/// One row per MediaFile. Base columns follow the default table order;
+/// optional detail columns are appended to keep existing indexes stable.
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -22,22 +22,21 @@ public:
 	enum class Column : int
 	{
 		ClipName,
-		FileName,
 		Project,
 		OriginalBin,
 		Kind,
+		Duration,
+		SizeMB,
 		Codec,
 		Resolution,
 		Fps,
 		SampleRate,
 		BitDepth,
-		Duration,
-		SizeMB,
-		Location,
-		Created,
-		Modified,
 		Type,
+		FileName,
 		SourceFile,
+		Created,
+		Location,
 		PrecomputeCategory,
 		EffectCategory,
 		Effect,

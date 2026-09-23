@@ -6,17 +6,17 @@
 #include <QVector>
 
 // MARK: - MediaCsv
-/// The CSV shape of the media table: one header line, one line per
-/// MediaFile, 23 columns (28 with experimental precompute details). Lives outside the window class so it can be
-/// tested — the header string and the field-emission chain are two
-/// parallel lists that must stay column-for-column aligned, and nothing
-/// but a test can see that from the inside.
+/// One header line, one line per MediaFile: 19 columns, or 23 with
+/// experimental precompute details. The explicit export schema follows
+/// the table's default order, then adds database status and MOB IDs;
+/// it is independent of table presentation and model code. Tests keep
+/// the headings and emitted values aligned.
 
 namespace MediaCsv
 {
 	struct Options
 	{
-		/// Includes Type plus the four precompute detail columns.
+		/// Adds four precompute detail columns after the always-present Type.
 		bool includePrecomputeDetails = false;
 	};
 

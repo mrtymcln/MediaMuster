@@ -102,9 +102,8 @@ struct MediaFile
 	/// Filesystem creation (birth) time. Invalid when the file system
 	/// doesn't record one — displayed blank, never substituted.
 	QDateTime created;
-	/// Filesystem modification time — what Finder shows as "Date Modified".
-	/// The "Date Modified" column; also what the scanner's staleness check
-	/// compares against the PMR's recorded mtime (see PmrEntry).
+	/// Filesystem modification time, retained for database freshness and
+	/// file-operation checks rather than displayed in the table or CSV.
 	QDateTime modified;
 
 	/// Scan decisions carried between database lookup and the header pass.
@@ -288,13 +287,6 @@ struct MediaFile
 	{
 		return created.isValid() ? created.toString(QStringLiteral("yyyy-MM-dd HH:mm"))
 								 : QString();
-	}
-
-	/// "Date Modified" column AND CSV string, same format as createdDisplay.
-	QString modifiedDisplay() const
-	{
-		return modified.isValid() ? modified.toString(QStringLiteral("yyyy-MM-dd HH:mm"))
-								  : QString();
 	}
 
 	/// Preserve unknown clip names as blank in the table, sort and CSV.

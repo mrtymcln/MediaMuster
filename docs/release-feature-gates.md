@@ -73,7 +73,7 @@ build.
 | Debug command | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
 | Enable OMF | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
-| Enable Precomputes | Shows Type and precompute detail columns, the Precomputes tab, the filter button, and those fields in CSV exports. Shows Special > Filter Precomputes, enabled when scanned media is available and the app is idle. | Hides the Special menu command, toolbar control and fields, clears precompute filters, and resets sorting if its column disappears. Rendered media remains in ordinary scan results. |
+| Enable Precomputes | Adds Precompute Category, Effect Category, Effect and Effect Sequence to the table and CSV, the Precomputes tab and the filter button. Shows Special > Filter Precomputes, enabled when scanned media is available and the app is idle. | Hides those four detail columns, the Special menu command and toolbar control, clears precompute filters, and resets sorting if its column disappears. Type stays visible and sortable in both modes; rendered media remains in ordinary scan results. |
 | Enable undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
 | Show codec hex | Displays raw codec identifiers where available in place of readable names. | Displays readable codec names. |
 | Fusion style | Uses Qt's Fusion widget style. | Uses the style installed at startup. |

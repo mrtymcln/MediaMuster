@@ -84,17 +84,14 @@ class TestMediaCsv : public QObject
 	Q_OBJECT
 private slots:
 	void header_and_row_have_the_same_field_count();
+	void header_order_and_values_follow_the_export_schema();
 	void created_date_carries_time_of_day();
 	void unknown_created_date_is_blank();
 	void size_column_matches_the_table();
 	void sample_rate_and_bit_depth_are_exported_data();
 	void sample_rate_and_bit_depth_are_exported();
 
-	// Location columns (2026-08-18): the export carries the volume by name
-	// and the whole path, and nothing else. The folder the clip sits in is
-	// already inside the path, so a separate column for it only invited
-	// the two to disagree.
-	void volume_and_location_columns_carry_name_and_full_path();
+	void location_is_retained_and_removed_columns_are_omitted();
 	void formula_injection_is_neutralised();
 	void write_produces_header_plus_one_line_per_row();
 	void unknown_classification_is_exported_without_guessing();
@@ -108,14 +105,63 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
 	const int headerFields = fieldCount(MediaCsv::headerLine().trimmed());
-	QCOMPARE(headerFields, 23);
+	QCOMPARE(headerFields, 19);
 	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow()).trimmed()), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}).trimmed()), headerFields);
 	const MediaCsv::Options enabled{true};
-	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 28);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 28);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 28);
+	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 23);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 23);
+	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 23);
+}
+
+void TestMediaCsv::header_order_and_values_follow_the_export_schema()
+{
+	MediaFile f = sampleRow();
+	f.sampleRate = 48000;
+	f.bitDepth = QStringLiteral("10-bit");
+	f.type = MediaFile::Type::Precompute;
+	f.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	f.effectCategory = QStringLiteral("Image");
+	f.effect = QStringLiteral("Color Correction");
+	f.effectSequence = QStringLiteral("Opening_Sequence");
+	f.sourceFileName = QStringLiteral("camera-original.mov");
+	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
+	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf");
+	f.dbStatus = MediaFile::DbStatus::NoReference;
+	f.mobId = QStringLiteral("file-mob-id");
+	f.masterMobId = QStringLiteral("master-mob-id");
+	for (bool enabled : {false, true})
+	{
+		QStringList expectedHeaders = QStringLiteral(
+			"Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,FPS,Sample Rate,Bit Depth,Type,"
+			"Filename,Source File,Date Created,Location,Database Status,MobId,MasterMobId")
+									  .split(QLatin1Char(','));
+		QStringList expectedFields{
+			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),
+			QStringLiteral("Video"), QStringLiteral("00:00:10:00"), QStringLiteral("850.0"),
+			QStringLiteral("Avid DNx SQ (DNxHD 145)"), QStringLiteral("1920x1080"), QStringLiteral("25"),
+			QStringLiteral("48 kHz"), QStringLiteral("10-bit"), QStringLiteral("Precompute"),
+			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("camera-original.mov"),
+			QStringLiteral("2026-07-20 12:30"),
+			QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
+			QStringLiteral("No Reference"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id")};
+		if (enabled)
+		{
+			const QStringList detailHeaders{QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"),
+											QStringLiteral("Effect"), QStringLiteral("Effect Sequence")};
+			const QStringList detailFields{QStringLiteral("Rendered Effects"), QStringLiteral("Image"),
+										   QStringLiteral("Color Correction"), QStringLiteral("Opening_Sequence")};
+			for (int i = 0; i < detailHeaders.size(); ++i)
+			{
+				expectedHeaders.insert(12 + i, detailHeaders[i]);
+				expectedFields.insert(12 + i, detailFields[i]);
+			}
+		}
+		const MediaCsv::Options options{enabled};
+		QCOMPARE(readCsvRecord(MediaCsv::headerLine(options)), expectedHeaders);
+		QCOMPARE(readCsvRecord(MediaCsv::rowLine(f, options)), expectedFields);
+	}
 }
 
 void TestMediaCsv::sample_rate_and_bit_depth_are_exported_data()
@@ -151,34 +197,40 @@ void TestMediaCsv::sample_rate_and_bit_depth_are_exported()
 		QVERIFY(fpsIndex >= 0);
 		QCOMPARE(headers.at(fpsIndex + 1), QStringLiteral("Sample Rate"));
 		QCOMPARE(headers.at(fpsIndex + 2), QStringLiteral("Bit Depth"));
-		QCOMPARE(headers.at(fpsIndex + 3), QStringLiteral("Duration"));
+		QCOMPARE(headers.at(fpsIndex + 3), QStringLiteral("Type"));
 		QCOMPARE(fields.at(fpsIndex), f.fps);
 		QCOMPARE(fields.at(fpsIndex + 1), sampleRateLabel);
 		QCOMPARE(fields.at(fpsIndex + 1), f.sampleRateDisplay());
 		QCOMPARE(fields.at(fpsIndex + 2), bitDepth);
-		QCOMPARE(fields.at(fpsIndex + 3), f.durationDisplay());
+		QCOMPARE(fields.at(fpsIndex + 3), f.typeDisplay());
 	}
 }
 
-void TestMediaCsv::volume_and_location_columns_carry_name_and_full_path()
+void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 {
-	const QStringList headers = MediaCsv::headerLine().trimmed().split(QLatin1Char(','));
-	QCOMPARE(headers.count(QStringLiteral("Volume")), 1);
-	QCOMPARE(headers.count(QStringLiteral("Location")), 1);
-	QVERIFY2(!headers.contains(QStringLiteral("Folder")), "Folder is inside Location now");
-	QVERIFY2(!headers.contains(QStringLiteral("Path")), "Path was renamed to Location");
-
 	MediaFile f = sampleRow();
 	f.volumeName = QStringLiteral("EDIT");
 	f.mediaFolderName = QStringLiteral("8646");
 	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/A11B22C33D44.mxf");
-
-	const QStringList fields = MediaCsv::rowLine(f).trimmed().split(QLatin1Char(','));
-	QCOMPARE(fields.size(), headers.size());
-	// Values are CsvUtil::quoted, so they arrive wrapped.
-	QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Volume"))), QStringLiteral("\"EDIT\""));
-	QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))),
-			 QLatin1Char('"') + f.filePath + QLatin1Char('"'));
+	f.sourceFilePath = QStringLiteral("/imports/source.mov");
+	f.sourceContainer = QStringLiteral("QTFF");
+	f.isImported = true;
+	for (bool enabled : {false, true})
+	{
+		const MediaCsv::Options options{enabled};
+		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
+		QCOMPARE(fields.size(), headers.size());
+		QCOMPARE(headers.count(QStringLiteral("Location")), 1);
+		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))), f.filePath);
+		for (const auto &removed : {QStringLiteral("Volume"), QStringLiteral("Source Path"),
+								   QStringLiteral("Source Container"), QStringLiteral("Imported")})
+			QVERIFY(!headers.contains(removed));
+		QVERIFY(!fields.contains(f.volumeName));
+		QVERIFY(!fields.contains(f.sourceFilePath));
+		QVERIFY(!fields.contains(f.sourceContainer));
+		QVERIFY(!fields.contains(QStringLiteral("yes")));
+	}
 }
 
 void TestMediaCsv::created_date_carries_time_of_day()
@@ -192,10 +244,9 @@ void TestMediaCsv::unknown_created_date_is_blank()
 {
 	MediaFile f = sampleRow();
 	f.created = QDateTime(); // filesystem records no birth time
-	const QString line = MediaCsv::rowLine(f);
-	QVERIFY(!line.contains(QStringLiteral("2026")));
-	// Trailing empty field: the line ends with the separator, then EOL.
-	QVERIFY(line.endsWith(QStringLiteral(",\n")));
+	const auto headers = readCsvRecord(MediaCsv::headerLine());
+	const auto fields = readCsvRecord(MediaCsv::rowLine(f));
+	QVERIFY(fields.at(headers.indexOf(QStringLiteral("Date Created"))).isEmpty());
 }
 
 void TestMediaCsv::size_column_matches_the_table()
@@ -238,15 +289,17 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 
 void TestMediaCsv::unknown_classification_is_exported_without_guessing()
 {
-	const MediaCsv::Options options{true};
-	const QStringList headers = MediaCsv::headerLine(options).trimmed().split(QLatin1Char(','));
-	const auto unknown = MediaCsv::rowLine(MediaFile{}, options).trimmed().split(QLatin1Char(','));
-	QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\"\u2014\""));
-	QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\"\u2014\""));
-
-	const auto known = MediaCsv::rowLine(sampleRow(), options).trimmed().split(QLatin1Char(','));
-	QCOMPARE(known.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\"Video\""));
-	QCOMPARE(known.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\"Media\""));
+	for (bool enabled : {false, true})
+	{
+		const MediaCsv::Options options{enabled};
+		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+		const auto unknown = readCsvRecord(MediaCsv::rowLine(MediaFile{}, options));
+		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\u2014"));
+		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\u2014"));
+		const auto known = readCsvRecord(MediaCsv::rowLine(sampleRow(), options));
+		QCOMPARE(known.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("Video"));
+		QCOMPARE(known.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("Media"));
+	}
 }
 
 void TestMediaCsv::effect_details_are_explicit_and_quoted()
@@ -258,7 +311,6 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 	f.effectCategory = QStringLiteral("@Category,\"Quoted\"");
 	f.effectSequence = QStringLiteral("+Sequence,\"Quoted\"\nNext");
 	f.codecHex = QStringLiteral("raw-debug-value");
-	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
 	for (bool enabled : {false, true})
 	{
 		const MediaCsv::Options options{enabled};
@@ -267,10 +319,9 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 		QCOMPARE(fields.size(), headers.size());
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Codec"))], f.codec);
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Date Created"))], f.createdDisplay());
-		QCOMPARE(fields[headers.indexOf(QStringLiteral("Date Modified"))], f.modifiedDisplay());
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Type"))], QStringLiteral("Precompute"));
 		if (enabled)
 		{
-			QCOMPARE(fields[headers.indexOf(QStringLiteral("Type"))], QStringLiteral("Precompute"));
 			QCOMPARE(fields[headers.indexOf(QStringLiteral("Precompute Category"))], QStringLiteral("Rendered Effects"));
 			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect"))], QLatin1Char('\'') + f.effect);
 			QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Category"))], QLatin1Char('\'') + f.effectCategory);
@@ -278,13 +329,11 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 		}
 		else
 		{
-			QVERIFY(!headers.contains(QStringLiteral("Type")));
 			QVERIFY(!headers.contains(QStringLiteral("Precompute Category")));
 			QVERIFY(!headers.contains(QStringLiteral("Effect")));
 			QVERIFY(!headers.contains(QStringLiteral("Effect Category")));
 			QVERIFY(!headers.contains(QStringLiteral("Effect Sequence")));
 			QVERIFY(!MediaCsv::rowLine(f, options).contains(QStringLiteral("Custom")));
-			QVERIFY(!MediaCsv::rowLine(f, options).contains(QStringLiteral("Precompute")));
 		}
 	}
 }

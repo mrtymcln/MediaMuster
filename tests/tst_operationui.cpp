@@ -18,6 +18,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -95,6 +96,7 @@ private slots:
 	void debug_flags_default_off_and_text_undo_works();
 	void menu_availability_tracks_locations_selection_and_activity();
 	void text_editing_shortcuts_remain_native();
+	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
 	void experimental_flags_are_session_only_and_blocked_while_busy();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
@@ -495,7 +497,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_effectFilterAct})
 		QVERIFY(!command->isEnabled());
 	for (auto *button : {window.m_scanButton, window.m_scanAllButton, window.m_btnFileOps,
-						window.m_btnRebalance, window.m_btnExport, window.m_btnEffectFilter})
+						 window.m_btnRebalance, window.m_btnExport, window.m_btnEffectFilter})
 		QVERIFY(!button->isEnabled());
 	window.m_operations->setActivity(FileOperationController::Activity::Idle);
 	QVERIFY(manage->isEnabled());
@@ -563,6 +565,44 @@ void TestOperationUi::text_editing_shortcuts_remain_native()
 	QCOMPARE(window.m_searchField->text(), QStringLiteral("native text"));
 }
 
+void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session()
+{
+	using Column = MediaTableModel::Column;
+	const int clipColumn = static_cast<int>(Column::ClipName);
+	const int fileColumn = static_cast<int>(Column::FileName);
+	{
+		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+		auto *table = window.m_tableView;
+		auto *header = table->horizontalHeader();
+		QCOMPARE(table->columnWidth(clipColumn), 240);
+		QCOMPARE(table->columnWidth(static_cast<int>(Column::Location)), 400);
+		table->setColumnWidth(clipColumn, 333);
+		header->moveSection(header->visualIndex(fileColumn), 1);
+
+		MediaFile file;
+		file.filePath = path("clip.mxf");
+		file.clipName = QString(100, QLatin1Char('W'));
+		window.onScanFinished({file});
+		QCOMPARE(table->columnWidth(clipColumn), 333);
+		QCOMPARE(header->visualIndex(fileColumn), 1);
+
+		QAction *fit = nullptr;
+		for (auto *action : window.findChildren<QAction *>())
+			if (action->text() == QStringLiteral("&Resize Columns to Fit"))
+				fit = action;
+		QVERIFY(fit);
+		fit->trigger();
+		const int fittedWidth = table->columnWidth(clipColumn);
+		QVERIFY(fittedWidth > 333);
+		file.clipName = QStringLiteral("Short");
+		window.onScanFinished({file});
+		QCOMPARE(table->columnWidth(clipColumn), fittedWidth);
+	}
+	MainWindow freshWindow(nullptr, MainWindow::StartupMode::UiOnly);
+	QCOMPARE(freshWindow.m_tableView->columnWidth(clipColumn), 240);
+	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(fileColumn), fileColumn);
+}
+
 void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
@@ -587,7 +627,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(!window.m_precomputesEnabled);
 	QVERIFY(!window.m_model->precomputesEnabled());
 	QVERIFY(!window.m_proxy->precomputesEnabled());
-	QVERIFY(window.m_tableView->isColumnHidden(typeColumn));
+	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory));
 	QVERIFY(window.m_btnEffectFilter->isHidden());
 	QVERIFY(!window.m_effectFilterAct->isVisible());
@@ -621,6 +661,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		QVERIFY(window.m_precomputesEnabled);
 		QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 		QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
+		int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
+		for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
+			QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
 		QVERIFY(!window.m_btnEffectFilter->isHidden());
 		QVERIFY(window.m_effectFilterAct->isVisible());
 		QVERIFY(window.m_effectFilterAct->isEnabled());
@@ -632,10 +675,10 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		window.m_tableView->sortByColumn(typeColumn, Qt::DescendingOrder);
 		window.m_enablePrecomputesAct->trigger();
 		QVERIFY(!window.m_precomputesEnabled);
-		QVERIFY(window.m_tableView->isColumnHidden(typeColumn));
+		QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 		QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
 		QCOMPARE(window.m_filterTabs->currentIndex(), 0);
-		QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(Column::ClipName));
+		QCOMPARE(window.m_proxy->sortColumn(), typeColumn);
 		QVERIFY(!window.m_proxy->precomputeTreeFilter().active);
 		QVERIFY(window.m_proxy->effectVolumeFilter().isEmpty());
 		QCOMPARE(window.m_proxy->rowCount(), 2);

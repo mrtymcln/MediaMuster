@@ -59,7 +59,7 @@ private slots:
 	void unknown_classification_does_not_match_known_filters();
 	void quarantined_filter_uses_scanner_flag();
 	void three_state_classification_sort_is_consistent();
-	void hidden_type_classification_does_not_sort_rows();
+	void type_sorting_survives_precompute_gate_changes();
 	void effect_selection_intersects_volume_and_existing_filters();
 	void precomputes_gate_resets_filters_and_hidden_search();
 	void effect_columns_sort_displayed_values();
@@ -351,7 +351,7 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 	} while (std::next_permutation(order.begin(), order.end()));
 }
 
-void TestMediaFilterProxy::hidden_type_classification_does_not_sort_rows()
+void TestMediaFilterProxy::type_sorting_survives_precompute_gate_changes()
 {
 	MediaFile render = rowNamed(QStringLiteral("render"));
 	render.type = MediaFile::Type::Precompute;
@@ -363,14 +363,18 @@ void TestMediaFilterProxy::hidden_type_classification_does_not_sort_rows()
 	proxy.setSourceModel(&model);
 	const int typeColumn = int(MediaTableModel::Column::Type);
 	proxy.sort(typeColumn);
-	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	model.setPrecomputesEnabled(true);
 	proxy.setPrecomputesEnabled(true);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QCOMPARE(proxy.sortColumn(), typeColumn);
+	QVERIFY(proxy.index(0, typeColumn).isValid());
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	proxy.sort(typeColumn, Qt::DescendingOrder);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
-	QCOMPARE(proxy.rowCount(), 2); // Hidden classification never removes media rows.
+	QCOMPARE(proxy.rowCount(), 2); // Toggling detail columns never removes media rows.
 }
 
 void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filters()
@@ -544,7 +548,7 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	}
 	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.columnCount(), 17);
+	QCOMPARE(proxy.columnCount(), 16);
 	QCOMPARE(proxy.rowCount(), 3);
 }
 

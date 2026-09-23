@@ -1697,7 +1697,6 @@ void TestScanner::modified_is_the_filesystem_mtime()
 	QCOMPARE(results.size(), 1);
 	QVERIFY(results.first().modified.isValid());
 	QCOMPARE(results.first().modified.toSecsSinceEpoch(), qint64(kToneModified));
-	QVERIFY(!results.first().modifiedDisplay().isEmpty());
 }
 
 // MARK: - OMF-era

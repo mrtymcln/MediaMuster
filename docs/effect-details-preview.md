@@ -1,6 +1,6 @@
 # Precompute details preview
 
-MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media), **Precompute** and **Unknown**. Metadata classification remains active internally; its UI and CSV fields require the session-only [Precomputes gate](release-feature-gates.md).
+MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media), **Precompute** and **Unknown**, and is always present in the table and CSV. The extra detail columns and filter controls require the session-only [Precomputes gate](release-feature-gates.md).
 
 The new effect details and picker are a preview, disabled at every launch:
 
@@ -9,7 +9,7 @@ The new effect details and picker are a preview, disabled at every launch:
 3. The **Precompute Category** column shows **Rendered Effects**, **Titles and Matte Keys**, or **unknown** for precomputes.
 4. Choose **Filter Precomputes...**. Choose a **Volume** at the top, expand the outline, and tick the branches or effects you want. For example, expand **Precompute → Rendered Effects → Blend** and tick **3D Warp**. Choose **Apply**.
 
-The table gains **Type**, **Precompute Category**, **Effect Category**, **Effect** and **Effect Sequence** columns, and the **Precomputes** tab becomes available. CSV exports include those same five columns while the feature is enabled (26 columns enabled, 21 disabled). Turning it off removes the columns and clears precompute, category, effect and volume filters. It does not change the underlying metadata classification or remove rendered media from ordinary scan results. The Debug toggle is unavailable while a scan or media operation is busy and is disabled again at the next launch.
+The table gains **Precompute Category**, **Effect Category**, **Effect** and **Effect Sequence** after **Type**, and the **Precomputes** tab becomes available. CSV exports include those same four extra columns while the feature is enabled (23 columns enabled, 19 disabled). Turning it off removes the four detail columns and clears precompute, category, effect and volume filters; Type stays visible and sortable. It does not change the underlying metadata classification or remove rendered media from ordinary scan results. The Debug toggle is unavailable while a scan or media operation is busy and is disabled again at the next launch.
 
 The picker uses a narrow standard dialog and outline. Its **Volume** row follows the Rebalance dialog. **Rendered Effects** expands into effect categories and then individual effects; **Titles and Matte Keys** and **unknown** expand directly into their named effects. The checkboxes show the selection, without separate selected-filter chips. There is no Search field, tree heading or Files column. The matching-file total remains below the outline, alongside **Apply** and **Cancel**.
 

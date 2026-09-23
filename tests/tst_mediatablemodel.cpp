@@ -303,20 +303,31 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 {
 	MediaTableModel model;
 	model.setMediaFiles(makeRows(2));
+	const QStringList baseHeaders{
+		QStringLiteral("Clip Name"), QStringLiteral("Project"), QStringLiteral("Bin"),
+		QStringLiteral("Kind"), QStringLiteral("Duration"), QStringLiteral("Size (MB)"),
+		QStringLiteral("Codec"), QStringLiteral("Resolution"), QStringLiteral("FPS"),
+		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Type"),
+		QStringLiteral("Filename"), QStringLiteral("Source File"), QStringLiteral("Date Created"),
+		QStringLiteral("Location")};
 	const QPersistentModelIndex row(model.index(1, int(MediaTableModel::Column::Location)));
 	const QString path = row.data().toString();
 	QSignalSpy reset(&model, &QAbstractItemModel::modelReset);
 	QSignalSpy inserted(&model, &QAbstractItemModel::columnsInserted);
 	QSignalSpy removed(&model, &QAbstractItemModel::columnsRemoved);
 	QVERIFY(!model.precomputesEnabled());
-	QCOMPARE(model.columnCount(), 17);
+	QCOMPARE(model.columnCount(), 16);
+	for (int column = 0; column < baseHeaders.size(); ++column)
+		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
 	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
 	model.setPrecomputesEnabled(true);
-	QCOMPARE(model.columnCount(), 21);
+	QCOMPARE(model.columnCount(), 20);
+	for (int column = 0; column < baseHeaders.size(); ++column)
+		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QCOMPARE(inserted.size(), 1);
-	QCOMPARE(inserted.first().at(1).toInt(), 17);
-	QCOMPARE(inserted.first().at(2).toInt(), 20);
+	QCOMPARE(inserted.first().at(1).toInt(), 16);
+	QCOMPARE(inserted.first().at(2).toInt(), 19);
 	QVERIFY(row.isValid());
 	QCOMPARE(row.data().toString(), path);
 	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
@@ -324,7 +335,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QCOMPARE(inserted.size(), 1);
 	model.setPrecomputesEnabled(false);
 	model.setPrecomputesEnabled(false);
-	QCOMPARE(model.columnCount(), 17);
+	QCOMPARE(model.columnCount(), 16);
 	QCOMPARE(removed.size(), 1);
 	QCOMPARE(reset.size(), 0);
 	QCOMPARE(model.rowCount(), 2);
@@ -389,6 +400,8 @@ void TestMediaTableModel::fills_missing_owned_metadata_in_both_identity_forms()
 	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
 	model.setAvbBins({bin()});
 	QCOMPARE(changed.size(), 1);
+	QCOMPARE(changed.first().at(0).value<QModelIndex>(), model.index(0, int(MediaTableModel::Column::ClipName)));
+	QCOMPARE(changed.first().at(1).value<QModelIndex>(), model.index(1, int(MediaTableModel::Column::OriginalBin)));
 	for (const MediaFile &file : model.allFiles())
 	{
 		QCOMPARE(file.clipName, QStringLiteral("Edited clip"));
