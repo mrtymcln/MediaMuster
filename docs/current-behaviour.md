@@ -320,5 +320,12 @@ than attempting to edit those databases to describe the new layout. Avid must
 rebuild them. Cancel is honoured between groups; an I/O failure can still interrupt
 a group, with completed changes recorded for recovery.
 
+Folder cards update from confirmed file-operation results. When a run stops,
+the dialog recounts affected folders in the background using directory entries,
+without parsing media or databases. Final cards show the observed counts, including
+after cancellation or failure; a planned folder that was not created is labelled
+accordingly, and unavailable counts stay unknown. Operation failures and recovery
+warnings remain visible even if the recount succeeds.
+
 After a rebalance run, the main window rescans the affected location. That scan
 replaces the table's previous inventory, including other locations it contained.

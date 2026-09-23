@@ -3,6 +3,9 @@
 #include "managemediadialog.h"
 #include "opjournal.h"
 #include "progressdialog.h"
+#include "rebalancedialog.h"
+#include "rebalancer.h"
+#include "formatutil.h"
 
 #include <QAction>
 #include <QApplication>
@@ -18,6 +21,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QFrame>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
@@ -46,6 +50,41 @@ namespace
 			return false;
 		QFile file(path);
 		return file.open(QIODevice::WriteOnly) && file.write(data) == data.size();
+	}
+	RebalancePlan smallRebalancePlan(const QString &root)
+	{
+		RebalancePlan plan;
+		plan.mxfRoot = root;
+		plan.volumeLabel = QStringLiteral("Test media");
+		for (int n = 1; n <= 3; ++n)
+		{
+			FolderState folder;
+			folder.id = {{}, n};
+			folder.name = folder.id.display();
+			folder.count = n == 1 ? 3 : n == 2 ? 1
+											   : 0;
+			folder.filesOut = n == 1 ? 3 : 0;
+			folder.filesIn = n == 2 ? 2 : n == 3 ? 1
+												 : 0;
+			folder.isNew = n == 3;
+			plan.folders.append(folder);
+		}
+		plan.newFolders.append(FolderName{{}, 3});
+		for (int n = 0; n < 3; ++n)
+		{
+			RenameOp op;
+			op.srcPath = root + QStringLiteral("/1/clip-%1.mxf").arg(n);
+			op.dest = {{}, n == 1 ? 3 : 2};
+			plan.ops.append(op);
+		}
+		return plan;
+	}
+	QString folderCountCaption(const RebalanceDialog &dialog, const QString &folderName)
+	{
+		for (const auto *card : dialog.findChildren<QFrame *>(QStringLiteral("folderCard")))
+			if (card->accessibleName() == folderName)
+				return card->accessibleDescription();
+		return QStringLiteral("Missing folder card: ") + folderName;
 	}
 	struct Sink : OpSink
 	{
@@ -122,6 +161,13 @@ private slots:
 	void startup_offers_retained_originals();
 	void restore_originals_respects_busy_gate();
 	void observed_removals_prune_rows_even_when_job_needs_attention();
+	void rebalance_demo_cancel_preserves_original_card_counts();
+	void rebalance_demo_ticks_count_repeated_source_paths();
+	void rebalance_live_counts_follow_confirmed_results();
+	void rebalance_finished_recounts_uncertain_moves_and_absent_folders();
+	void rebalance_finished_marks_unavailable_root();
+	void rebalance_engine_results_and_final_counts_data();
+	void rebalance_engine_results_and_final_counts();
 	void rebalance_dialog_blocks_other_operation_entrypoints();
 	void scan_activity_blocks_operations_even_if_button_state_changes();
 	void rebalance_resume_keeps_running_job_activity();
@@ -1574,6 +1620,225 @@ void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention
 	QTRY_COMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).filePath, retained.filePath);
 }
+void TestOperationUi::rebalance_demo_cancel_preserves_original_card_counts()
+{
+	std::unique_ptr<RebalanceDialog> dialog(RebalanceDialog::createDemo(RebalanceDialog::DemoScenario::Small));
+	dialog->onRebalanceClicked();
+	dialog->onCancelClicked(); // Cancel before the first timer tick.
+	QVERIFY(!dialog->m_running);
+	QCOMPARE(dialog->m_progressBar->value(), 0);
+	QVERIFY(dialog->m_statsLine->text().contains(QStringLiteral("<b>0</b> folders affected")));
+	QVERIFY(dialog->m_statsLine->text().contains(QStringLiteral("<b>0</b> new folders")));
+	for (const auto &folder : dialog->m_currentPlan.folders)
+	{
+		const QString expected = folder.isNew ? QStringLiteral("Not created") : Format::count(folder.count);
+		QCOMPARE(folderCountCaption(*dialog, folder.name), expected);
+	}
+}
+
+void TestOperationUi::rebalance_demo_ticks_count_repeated_source_paths()
+{
+	std::unique_ptr<RebalanceDialog> dialog(RebalanceDialog::createDemo(RebalanceDialog::DemoScenario::Small));
+	dialog->onRebalanceClicked();
+	const auto originalCounts = dialog->m_runningCount;
+	QTRY_VERIFY(dialog->m_nextDemoOp > 1);
+	dialog->onCancelClicked();
+	QCOMPARE(dialog->m_confirmedMoves, dialog->m_nextDemoOp);
+	const FolderName source{{}, 1}, destination{{}, 3};
+	QCOMPARE(folderCountCaption(*dialog, source.display()),
+			 Format::count(originalCounts.value(source) - dialog->m_confirmedMoves));
+	QCOMPARE(folderCountCaption(*dialog, destination.display()),
+			 Format::count(originalCounts.value(destination) + dialog->m_confirmedMoves));
+}
+
+void TestOperationUi::rebalance_live_counts_follow_confirmed_results()
+{
+	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
+	RebalanceDialog dialog(plan);
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	const auto originalCounts = dialog.m_runningCount;
+	dialog.onProgress(3, 3, QStringLiteral("Starting last file"));
+	QVERIFY(dialog.m_runningCount == originalCounts);
+
+	OpResult outcome;
+	outcome.source = plan.ops[0].srcPath;
+	outcome.destination = plan.mxfRoot + QStringLiteral("/2/clip-0.mxf");
+	for (const auto state : {OpResult::State::Completed, OpResult::State::NoEffect,
+							 OpResult::State::Failed, OpResult::State::Skipped,
+							 OpResult::State::Cancelled, OpResult::State::NeedsAttention})
+	{
+		outcome.state = state;
+		dialog.onOperationResult(outcome);
+		QVERIFY(dialog.m_runningCount == originalCounts);
+	}
+
+	// The grouped runner can emit a different order than the preview's ops.
+	outcome.source = plan.ops[2].srcPath;
+	outcome.destination = plan.mxfRoot + QStringLiteral("/2/clip-2.mxf");
+	outcome.state = OpResult::State::Completed;
+	outcome.sourceRemoved = true;
+	dialog.onOperationResult(outcome);
+	const FolderName source{{}, 1}, existingDestination{{}, 2}, newDestination{{}, 3};
+	QCOMPARE(dialog.m_runningCount.value(source), 2);
+	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
+	QCOMPARE(dialog.m_runningCount.value(newDestination), 0);
+	dialog.onOperationResult(outcome); // A repeated receipt must not move the count twice.
+	QCOMPARE(dialog.m_runningCount.value(source), 2);
+	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
+
+	// The rename succeeded, but saving its final journal entry failed.
+	outcome.source = plan.ops[1].srcPath;
+	outcome.destination = plan.mxfRoot + QStringLiteral("/3/clip-1.mxf");
+	outcome.state = OpResult::State::NeedsAttention;
+	dialog.onOperationResult(outcome);
+	QCOMPARE(dialog.m_runningCount.value(source), 1);
+	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
+	QCOMPARE(dialog.m_runningCount.value(newDestination), 1);
+	dialog.onFinished(1, 1, true);
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), QStringLiteral("1"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("2"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("1"));
+}
+
+void TestOperationUi::rebalance_finished_recounts_uncertain_moves_and_absent_folders()
+{
+	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
+	for (const auto &op : plan.ops)
+		QVERIFY(put(op.srcPath, "media"));
+	QVERIFY(put(plan.mxfRoot + QStringLiteral("/2/existing.mxf"), "media"));
+	QVERIFY(put(plan.mxfRoot + QStringLiteral("/1/msmMMOB.mdb"), "database"));
+	QVERIFY(put(plan.mxfRoot + QStringLiteral("/2/.DS_Store"), "metadata"));
+	RebalanceDialog dialog(plan);
+	dialog.m_demoMode = false;
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	const auto originalCounts = dialog.m_runningCount;
+
+	OpResult uncertain;
+	uncertain.state = OpResult::State::NeedsAttention;
+	uncertain.source = plan.ops[0].srcPath;
+	uncertain.destination = plan.mxfRoot + QStringLiteral("/2/clip-0.mxf");
+	QVERIFY(QFile::rename(uncertain.source, uncertain.destination));
+	// A post-rename sync failure has no confirmed sourceRemoved flag.
+	dialog.onOperationResult(uncertain);
+	QVERIFY(dialog.m_runningCount == originalCounts);
+	dialog.onFinished(0, 1, false);
+	QTRY_COMPARE(dialog.m_btnRebalance->text(), QStringLiteral("Close"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), QStringLiteral("2"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("2"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("Not created"));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>2</b> folders affected")));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>0</b> new folders")));
+	QVERIFY(!QFileInfo::exists(plan.mxfRoot + QStringLiteral("/3")));
+	QVERIFY(dialog.m_progressLabel->text().contains(QStringLiteral("1 failed")));
+}
+
+void TestOperationUi::rebalance_finished_marks_unavailable_root()
+{
+	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
+	QVERIFY(put(plan.ops[0].srcPath, "media"));
+	RebalanceDialog dialog(plan);
+	dialog.m_demoMode = false;
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	QDir mediaRoot(QFileInfo(plan.mxfRoot).absolutePath());
+	QVERIFY(mediaRoot.rename(QStringLiteral("MXF"), QStringLiteral("MXF-offline")));
+	dialog.onFinished(0, 1, false);
+	QTRY_COMPARE(dialog.m_btnRebalance->text(), QStringLiteral("Close"));
+	for (const auto &folder : plan.folders)
+		QCOMPARE(folderCountCaption(dialog, folder.name), QStringLiteral("Unavailable"));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("Unknown")));
+	QVERIFY(!dialog.m_statsLine->text().contains(QStringLiteral("<b>-1</b>")));
+}
+
+void TestOperationUi::rebalance_engine_results_and_final_counts_data()
+{
+	QTest::addColumn<bool>("firstDestinationOccupied");
+	QTest::addColumn<bool>("viaAlias");
+	QTest::newRow("all-moved") << false << false;
+	QTest::newRow("first-move-skipped") << true << false;
+#ifdef Q_OS_UNIX
+	QTest::newRow("ancestor-directory-alias") << false << true;
+#endif
+}
+
+void TestOperationUi::rebalance_engine_results_and_final_counts()
+{
+	QFETCH(bool, firstDestinationOccupied);
+	QFETCH(bool, viaAlias);
+	const QString realRoot = path("media/Avid MediaFiles/MXF");
+	auto plan = smallRebalancePlan(realRoot);
+	for (int i = 0; i < plan.ops.size(); ++i)
+	{
+		const auto contents = QByteArray::number(i) + "-media";
+		plan.ops[i].sizeBytes = contents.size();
+		QVERIFY(put(plan.ops[i].srcPath, contents));
+	}
+	QVERIFY(put(plan.mxfRoot + QStringLiteral("/2/existing.mxf"), "existing media"));
+	if (viaAlias)
+	{
+		const QString alias = path("media-alias");
+		QVERIFY(QFile::link(path("media"), alias));
+		plan.mxfRoot = alias + QStringLiteral("/Avid MediaFiles/MXF");
+		for (auto &op : plan.ops)
+			op.srcPath = plan.mxfRoot + QStringLiteral("/1/") + QFileInfo(op.srcPath).fileName();
+	}
+	RebalanceDialog dialog({{plan.volumeLabel, plan.mxfRoot}}, {}, plan.volumeLabel);
+	QTRY_VERIFY(!dialog.m_planWatcher.isRunning());
+	QTRY_COMPARE(dialog.m_currentPlan.mxfRoot, plan.mxfRoot); // onPlanReady has delivered.
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	if (firstDestinationOccupied)
+		QVERIFY(put(plan.mxfRoot + QStringLiteral("/2/clip-0.mxf"), "conflicting media"));
+
+	QSignalSpy results(dialog.m_rebalancer, &Rebalancer::operationResult);
+	QSignalSpy finished(dialog.m_rebalancer, &Rebalancer::finished);
+	QSignalSpy messages(&dialog, &RebalanceDialog::logMessage);
+	dialog.m_rebalancer->executeAsync(plan);
+	QTRY_COMPARE_WITH_TIMEOUT(dialog.m_btnRebalance->text(), QStringLiteral("Close"), 15000);
+	const int moved = firstDestinationOccupied ? 2 : 3;
+	QCOMPARE(finished.count(), 1);
+	QCOMPARE(finished.first().at(0).toInt(), moved);
+	QCOMPARE(finished.first().at(1).toInt(), 0);
+	QCOMPARE(results.count(), 3);
+	for (int i = 0; i < plan.ops.size(); ++i)
+	{
+		const bool skipped = firstDestinationOccupied && i == 0;
+		const auto result = results[i].first().value<OpResult>();
+		QCOMPARE(result.state, skipped ? OpResult::State::Skipped : OpResult::State::Completed);
+		QCOMPARE(result.sourceRemoved, !skipped);
+		const QString fileName = QFileInfo(plan.ops[i].srcPath).fileName();
+		const QString sourcePath = realRoot + QStringLiteral("/1/") + fileName;
+		QCOMPARE(QFileInfo::exists(sourcePath), skipped);
+		QFile destination(realRoot + '/' + plan.ops[i].dest.display() + '/' + fileName);
+		QVERIFY(destination.open(QIODevice::ReadOnly));
+		QCOMPARE(destination.readAll(), skipped ? QByteArray("conflicting media") : QByteArray::number(i) + "-media");
+		if (skipped)
+		{
+			QFile source(sourcePath);
+			QVERIFY(source.open(QIODevice::ReadOnly));
+			QCOMPARE(source.readAll(), QByteArray("0-media"));
+		}
+	}
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), firstDestinationOccupied ? QStringLiteral("1") : QStringLiteral("0"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("3"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("1"));
+	QCOMPARE(dialog.m_progressBar->value(), moved); // Real result forwarding supplied the confirmed-move count.
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>3</b> folders affected")));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>1</b> new folder")));
+	QVERIFY(dialog.m_progressLabel->text().contains(QStringLiteral("%1 moved, 0 failed").arg(moved)));
+	if (firstDestinationOccupied)
+	{
+		bool reportedSkip = false;
+		for (const auto &message : messages)
+			reportedSkip |= message.at(1).toString().contains(QStringLiteral("Rebalance group skipped"));
+		QVERIFY(reportedSkip);
+	}
+}
+
 void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);

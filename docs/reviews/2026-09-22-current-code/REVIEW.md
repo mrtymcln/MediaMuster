@@ -36,6 +36,14 @@ rescan path; Undo also prunes rows for removed copies or relocated inverse
 sources. Regressions cover an empty inventory, another scanned location, Undo
 Delete, failed Undo and resumed Undo Copy.
 
+Rebalance reporting follow-up, 24 September: O3 is fixed. Folder cards now use
+confirmed per-file outcomes instead of progress indexes, then recount affected
+folders off the GUI thread when the run stops. Cancellation and failures no
+longer substitute the complete plan's projected counts. Final folder totals
+distinguish absent planned folders from unavailable locations; operation errors
+remain reported. O4 (rejected preparation reported as an empty successful run)
+is still a separate outstanding finding.
+
 P2 means a substantive correctness issue worth fixing; P3 means a smaller presentation, contract or maintenance issue. Ordering reflects practical impact rather than whether a defect is new. Reproductions use current code and disposable data, not historical audit claims.
 
 | Priority | Finding and location | Suggested fix / missing regression |

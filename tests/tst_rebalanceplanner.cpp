@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QScopeGuard>
 #include <QString>
 #include <QTemporaryDir>
 #include <QTest>
@@ -35,6 +36,8 @@ private slots:
 	// AppleDouble "._*"), and Windows shell junk used to inflate the
 	// preview's count AND steal slots from the 4999-cap packing.
 	void folder_count_excludes_databases_and_hidden_files();
+	void folder_counts_distinguish_empty_absent_and_unavailable();
+	void unreadable_folder_is_not_counted_or_planned();
 	void host_prefix_isolates_consolidation();
 	void same_master_never_crosses_workstation_prefix();
 	void exactly_4999_relatives_are_stable();
@@ -275,7 +278,7 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	// entries occupy Avid's per-folder budget.
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "a.mxf"),
-		makeMxf(root, "1", "b.mxf"),
+		makeMxf(root, "1", "b.MXF"),
 	};
 	for (const char *junk : {"msmFMID.pmr", "msmMMOB.mdb", ".DS_Store", "._a.mxf", "Thumbs.db",
 							 "desktop.ini", "render.mov"})
@@ -288,8 +291,14 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	// Avid's transient capture staging folder must stay out of scope — its
 	// contents never count toward any folder's budget.
 	makeFillers(root, "Creating", 2);
+	makeFillers(root, "1/nested", 1); // The count is flat, like Avid's folder budget.
 
 	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
+	const FolderName one{{}, 1};
+	const auto counts = RebalancePlanner::countFolders(root, {one});
+	QCOMPARE(counts.size(), 1);
+	QVERIFY(counts.value(one).exists);
+	QCOMPARE(counts.value(one).count, 2);
 
 	bool sawOne = false, sawCreating = false;
 	for (const auto &fs : p.folders)
@@ -307,6 +316,66 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	}
 	QVERIFY(sawOne);
 	QVERIFY(sawCreating);
+}
+
+void TestRebalancePlanner::folder_counts_distinguish_empty_absent_and_unavailable()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	QVERIFY(QDir(root).mkdir(QStringLiteral("1")));
+	QFile blocker(QDir(root).filePath(QStringLiteral("3")));
+	QVERIFY(blocker.open(QIODevice::WriteOnly));
+	blocker.close();
+	const FolderName empty{{}, 1}, absent{{}, 2}, blocked{{}, 3};
+	const auto counts = RebalancePlanner::countFolders(root, {empty, absent, blocked});
+	QCOMPARE(counts.size(), 3);
+	QCOMPARE(counts.value(empty).count, 0);
+	QVERIFY(counts.value(empty).exists);
+	QCOMPARE(counts.value(absent).count, 0);
+	QVERIFY(!counts.value(absent).exists);
+	QCOMPARE(counts.value(blocked).count, -1);
+	QVERIFY(counts.value(blocked).exists);
+
+	const QString missingRoot = tmp.path() + QStringLiteral("/unmounted/Avid MediaFiles/MXF");
+	const auto unavailable = RebalancePlanner::countFolders(missingRoot, {empty, absent});
+	QCOMPARE(unavailable.size(), 2);
+	QCOMPARE(unavailable.value(empty).count, -1);
+	QCOMPARE(unavailable.value(absent).count, -1);
+}
+
+void TestRebalancePlanner::unreadable_folder_is_not_counted_or_planned()
+{
+#ifndef Q_OS_UNIX
+	QSKIP("Directory permission removal is only tested on Unix.");
+#else
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString root = stageMxfRoot(tmp);
+	const QVector<MediaFile> files{
+		makeMxf(root, "1", "a.mxf", "C1"),
+		makeMxf(root, "2", "b.mxf", "C1")};
+	const QString folder = QDir(root).filePath(QStringLiteral("1"));
+	const auto permissions = QFileInfo(folder).permissions();
+	const auto restore = qScopeGuard([&]
+									 { QFile::setPermissions(folder, permissions); });
+	QVERIFY(QFile::setPermissions(folder, {}));
+	if (QFileInfo(folder).isReadable())
+		QSKIP("This user or filesystem bypasses directory permission removal.");
+	const FolderName one{{}, 1}, two{{}, 2};
+	const auto counts = RebalancePlanner::countFolders(root, {one, two});
+	QCOMPARE(counts.value(one).count, -1);
+	QVERIFY(counts.value(one).exists);
+	QCOMPARE(counts.value(two).count, 1);
+	const auto plan = RebalancePlanner::computePlan(root, QStringLiteral("Vol"), files);
+	QVERIFY(plan.ops.isEmpty());
+	for (const auto &state : plan.folders)
+		if (state.name == QStringLiteral("1"))
+		{
+			QCOMPARE(state.count, -1);
+			QVERIFY(!state.inScope);
+		}
+#endif
 }
 
 void TestRebalancePlanner::out_of_scope_media_files_dropped()
@@ -382,9 +451,12 @@ void TestRebalancePlanner::new_folder_when_all_existing_are_full()
 	makeFillers(root, "1", 4998);
 	makeFillers(root, "2", 4994);
 	const QVector<MediaFile> files{
-		makeMxf(root, "1", "m1.mxf", "C1"), makeMxf(root, "2", "m2.mxf", "C1"),
-		makeMxf(root, "2", "m3.mxf", "C1"), makeMxf(root, "2", "m4.mxf", "C1"),
-		makeMxf(root, "2", "m5.mxf", "C1"), makeMxf(root, "2", "m6.mxf", "C1"),
+		makeMxf(root, "1", "m1.mxf", "C1"),
+		makeMxf(root, "2", "m2.mxf", "C1"),
+		makeMxf(root, "2", "m3.mxf", "C1"),
+		makeMxf(root, "2", "m4.mxf", "C1"),
+		makeMxf(root, "2", "m5.mxf", "C1"),
+		makeMxf(root, "2", "m6.mxf", "C1"),
 	};
 
 	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
@@ -484,7 +556,7 @@ void TestRebalancePlanner::bare_mxf_root_is_excluded()
 	QVERIFY(tmp.isValid());
 	const QString root = tmp.path() + "/MXF";
 	const QVector<MediaFile> files{makeMxf(root, "1", "home.mxf", "same"),
-		makeMxf(root, "2", "stray.mxf", "same")};
+								   makeMxf(root, "2", "stray.mxf", "same")};
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.folders.isEmpty());
@@ -499,7 +571,7 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	auto moved = makeMxf(root, "2", "stray.mxf", "same");
 	moved.mobId = MobId::format(QCryptographicHash::hash("file identity", QCryptographicHash::Sha256));
 	const auto plan = RebalancePlanner::computePlan(root, "Test",
-		{makeMxf(root, "1", "home.mxf", "same"), moved});
+													{makeMxf(root, "1", "home.mxf", "same"), moved});
 	QCOMPARE(plan.ops.size(), 1);
 	QCOMPARE(plan.ops.first().fileMobId, moved.mobId);
 	const auto request = RebalancePlanner::requestForPlan(plan);
@@ -521,15 +593,15 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 
 	QVector<RenameOp> invalid;
 	for (const auto &path : {root + "/2/stray.wav", root + "/Quarantined Files/stray.mxf",
-		tmp.path() + "/OMFI MediaFiles/stray.mxf", tmp.path() + "/MXF/2/stray.mxf",
-		tmp.path() + "/other/Avid MediaFiles/MXF/2/stray.mxf"})
+							 tmp.path() + "/OMFI MediaFiles/stray.mxf", tmp.path() + "/MXF/2/stray.mxf",
+							 tmp.path() + "/other/Avid MediaFiles/MXF/2/stray.mxf"})
 	{
 		auto op = valid.ops.first();
 		op.srcPath = path;
 		invalid.append(op);
 	}
 	for (const auto &dest : {FolderName{{}, 0}, FolderName{"../escape", 1},
-		FolderName{"other-workstation", 1}, FolderName{{}, 2}})
+							 FolderName{"other-workstation", 1}, FolderName{{}, 2}})
 	{
 		auto op = valid.ops.first();
 		op.dest = dest;

@@ -45,6 +45,7 @@ signals:
 	// MARK: - Progress signals
 
 	void progress(int current, int total, const QString &detail);
+	void operationResult(const OpResult &result);
 	void log(QtMsgType level, const QString &message);
 	void finished(int succeeded, int failed, bool cancelled);
 

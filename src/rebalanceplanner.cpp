@@ -14,6 +14,19 @@
 
 namespace
 {
+	bool accessibleDirectory(const QString &path)
+	{
+		const QFileInfo directory(path);
+		if (!directory.isDir() || !directory.isReadable())
+			return false;
+#ifdef Q_OS_UNIX
+		// Directory search permission is distinct from listing permission.
+		if (!directory.isExecutable())
+			return false;
+#endif
+		return true;
+	}
+
 	QString resolvedMxfRoot(const QString &path)
 	{
 		const QFileInfo root(path);
@@ -102,6 +115,28 @@ namespace
 		return Conventions::countsAsEssenceName(fileName);
 	}
 
+	RebalancePlanner::FolderCount readFolderCount(const QString &path)
+	{
+		const QFileInfo before(path);
+		RebalancePlanner::FolderCount result{-1, before.exists() || before.isSymLink()};
+		if (!accessibleDirectory(path))
+			return result;
+		const QString resolved = before.canonicalFilePath();
+		if (resolved.isEmpty())
+			return result;
+		int count = 0;
+		QDirIterator entries(path, QDir::Files | QDir::NoDotAndDotDot);
+		while (entries.hasNext())
+		{
+			entries.next();
+			if (countsTowardFolderBudget(entries.fileName()))
+				++count;
+		}
+		if (accessibleDirectory(path) && QFileInfo(path).canonicalFilePath() == resolved)
+			result.count = count;
+		return result;
+	}
+
 	// Prefix for synthetic relatives keys assigned to loose files
 	// (no masterMobId). Lets us detect 'this was a loose file'
 	// later via a cheap startsWith check.
@@ -134,6 +169,39 @@ namespace
 
 } // namespace
 
+QHash<FolderName, RebalancePlanner::FolderCount>
+RebalancePlanner::countFolders(const QString &mxfRoot, const QSet<FolderName> &folders)
+{
+	QHash<FolderName, FolderCount> results;
+	for (const FolderName &folder : folders)
+		results.insert(folder, {});
+	const QString resolvedRoot = resolvedMxfRoot(mxfRoot);
+	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRoot))
+		return results;
+
+	const QDir root(mxfRoot);
+	const QStringList entries = root.entryList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+	for (const FolderName &folder : folders)
+	{
+		const QString name = folder.display();
+		const auto parsed = parseFolderName(name);
+		if (!parsed || *parsed != folder)
+			continue;
+		const QString path = root.filePath(name);
+		const QFileInfo info(path);
+		FolderCount &result = results[folder];
+		result.exists = info.exists() || info.isSymLink();
+		if (!result.exists && !entries.contains(name))
+			result.count = 0;
+		else if (folderBelongsToRoot(path, resolvedRoot))
+			result = readFolderCount(path);
+	}
+	if (!accessibleDirectory(mxfRoot) || resolvedMxfRoot(mxfRoot) != resolvedRoot)
+		for (FolderCount &result : results)
+			result.count = -1;
+	return results;
+}
+
 // MARK: - Plan computation
 
 RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QString &volumeLabel,
@@ -145,7 +213,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 
 	QDir mxfDir(mxfRoot);
 	const QString resolvedRoot = resolvedMxfRoot(mxfRoot);
-	if (resolvedRoot.isEmpty())
+	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRoot))
 		return plan;
 
 	// MARK: Snapshot current folder state on disk
@@ -157,33 +225,30 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 	const QStringList subdirs = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 	for (const QString &name : subdirs)
 	{
-		// Count lazily via QDirIterator instead of materialising the whole
-		// filename list — Avid folders run to thousands of files, and this
-		// throwaway list would be one QString allocation per file. Only
-		// files that occupy Avid's budget count (see countsTowardFolderBudget).
-		int onDiskCount = 0;
-		QDirIterator folderFiles(mxfDir.filePath(name), QDir::Files | QDir::NoDotAndDotDot);
-		while (folderFiles.hasNext())
-		{
-			folderFiles.next();
-			if (countsTowardFolderBudget(folderFiles.fileName()))
-				++onDiskCount;
-		}
-
+		const FolderCount onDisk = readFolderCount(mxfDir.filePath(name));
 		const auto parsed = parseFolderName(name);
 		if (parsed)
 			occupiedByPrefix[parsed->prefix].insert(parsed->n);
 		FolderState fs;
 		fs.name = name;
-		fs.count = onDiskCount;
-		fs.inScope = parsed.has_value() && folderBelongsToRoot(mxfDir.filePath(name), resolvedRoot);
+		fs.count = onDisk.count;
+		fs.inScope = onDisk.count >= 0 && parsed.has_value() && folderBelongsToRoot(mxfDir.filePath(name), resolvedRoot);
 		if (fs.inScope)
 		{
 			fs.id = *parsed;
 			existingByPrefix[fs.id.prefix].insert(fs.id.n);
-			realCount[fs.id] = onDiskCount;
+			realCount[fs.id] = onDisk.count;
 		}
 		plan.folders.append(fs);
+	}
+	if (!accessibleDirectory(mxfRoot) || resolvedMxfRoot(mxfRoot) != resolvedRoot)
+	{
+		for (FolderState &folder : plan.folders)
+		{
+			folder.count = -1;
+			folder.inScope = false;
+		}
+		return plan;
 	}
 
 	// MARK: Pre-parse each file's mediaFolderName once
@@ -211,7 +276,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		if (!isEligible(mf))
 			continue;
 		const auto parsed = parseFolderName(mf.mediaFolderName);
-		if (!parsed)
+		if (!parsed || !realCount.contains(*parsed))
 			continue;
 		if (PathKey::normalise(QFileInfo(mf.filePath).absolutePath()) !=
 			PathKey::normalise(QDir(mxfRoot).filePath(mf.mediaFolderName)))

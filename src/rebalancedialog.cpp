@@ -1,5 +1,6 @@
 #include "rebalanceplanner.h"
 #include "rebalancedialog.h"
+#include "opjournal.h"
 #include "conventions.h"
 #include "formatutil.h"
 #include "layoututil.h"
@@ -266,7 +267,7 @@ public:
 	explicit FolderCard(QWidget *parent = nullptr);
 	void setFolder(const FolderState &fs);
 	void setCurrentCount(int current);
-	void markFinished();
+	void markFinished(int count, bool exists);
 	QSize sizeHint() const override;
 	QSize minimumSizeHint() const override;
 
@@ -274,10 +275,12 @@ protected:
 	void paintEvent(QPaintEvent *event) override;
 
 private:
+	QString countCaption() const;
 	QString m_folderName;
 	bool m_inScope = true;
 	bool m_isNew = false;
 	bool m_finished = false;
+	bool m_exists = true;
 	int m_currentCount = 0;
 	int m_projectedCount = 0;
 	int m_initialCount = 0;
@@ -298,12 +301,15 @@ FolderCard::FolderCard(QWidget *parent)
 void FolderCard::setFolder(const FolderState &fs)
 {
 	m_folderName = fs.name;
+	setAccessibleName(m_folderName);
 	m_inScope = fs.inScope;
 	m_isNew = fs.isNew;
 	m_finished = false;
+	m_exists = !fs.isNew;
 	m_currentCount = fs.count;
 	m_initialCount = fs.count;
 	m_projectedCount = fs.count + fs.filesIn - fs.filesOut;
+	setAccessibleDescription(countCaption());
 	update();
 }
 
@@ -312,14 +318,30 @@ void FolderCard::setCurrentCount(int current)
 	if (current == m_currentCount)
 		return;
 	m_currentCount = current;
+	setAccessibleDescription(countCaption());
 	update();
 }
 
-void FolderCard::markFinished()
+void FolderCard::markFinished(int count, bool exists)
 {
-	m_currentCount = m_projectedCount;
+	m_currentCount = count;
+	m_projectedCount = count;
+	m_exists = exists;
 	m_finished = true;
+	setAccessibleDescription(countCaption());
 	update();
+}
+
+QString FolderCard::countCaption() const
+{
+	if (m_currentCount < 0)
+		return tr("Unavailable");
+	if (m_finished && !m_exists)
+		return m_isNew ? tr("Not created") : tr("Missing");
+	if (!m_inScope || m_currentCount == m_projectedCount)
+		return Format::count(m_currentCount);
+	return QStringLiteral("%1 → %2").arg(Format::count(m_currentCount),
+										 Format::count(m_projectedCount));
 }
 
 QSize FolderCard::sizeHint() const
@@ -356,7 +378,7 @@ void FolderCard::paintEvent(QPaintEvent *event)
 	QString displayName = m_folderName;
 	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderTarget)
 		displayName = QStringLiteral("⚠️ ") + displayName;
-	if (m_isNew)
+	if (m_isNew && (!m_finished || m_exists))
 		displayName = QStringLiteral("🆕 ") + displayName;
 	p.drawText(QRect(content.left(), y, content.width(), fmName.height()),
 			   Qt::AlignLeft | Qt::AlignVCenter,
@@ -412,14 +434,8 @@ void FolderCard::paintEvent(QPaintEvent *event)
 	p.setFont(countFont);
 	p.setPen(palette().color(QPalette::WindowText));
 
-	QString countText;
-	if (!m_inScope || m_currentCount == m_projectedCount)
-		countText = Format::count(m_currentCount);
-	else
-		countText = QStringLiteral("%1 → %2").arg(Format::count(m_currentCount),
-												  Format::count(m_projectedCount));
 	p.drawText(QRect(content.left(), y, content.width(), fmCount.height()),
-			   Qt::AlignLeft | Qt::AlignVCenter, countText);
+			   Qt::AlignLeft | Qt::AlignVCenter, countCaption());
 	y += fmCount.height() + 2;
 
 	// MARK: Delta caption
@@ -475,6 +491,7 @@ RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
 
 	m_rebalancer = new Rebalancer(this);
 	connect(m_rebalancer, &Rebalancer::progress, this, &RebalanceDialog::onProgress);
+	connect(m_rebalancer, &Rebalancer::operationResult, this, &RebalanceDialog::onOperationResult);
 	connect(m_rebalancer, &Rebalancer::log, this, &RebalanceDialog::logMessage);
 	connect(m_rebalancer, &Rebalancer::finished, this, &RebalanceDialog::onFinished);
 	connect(m_rebalancer, &Rebalancer::aborted, this, &RebalanceDialog::onAborted);
@@ -892,6 +909,13 @@ void RebalanceDialog::onDemoTick()
 	const double frac = qMin(1.0, double(elapsed) / kDemoDurationMs);
 	const int current = int(frac * total);
 
+	// Only the demo knows that its progress represents completed moves.
+	// Synthetic ops reuse source paths, so apply each simulated move directly.
+	while (m_nextDemoOp < current)
+	{
+		const auto &op = m_currentPlan.ops[m_nextDemoOp++];
+		applyMove(m_pendingSources.value(op.srcPath), op.dest);
+	}
 	onProgress(current, total, tr("(simulated)"));
 
 	if (frac >= 1.0)
@@ -910,45 +934,110 @@ void RebalanceDialog::onProgress(int current, int total, const QString &detail)
 	m_progressBar->setValue(current);
 	m_progressLabel->setText(
 		QStringLiteral("%1 / %2  %3").arg(Format::count(current), Format::count(total), detail));
+}
 
-	// Push the running counts forward to match the ops that have
-	// completed since the last tick, and refresh the affected cards.
-	applyOpsUpTo(current);
+void RebalanceDialog::onOperationResult(const OpResult &result)
+{
+	if (!result.sourceRemoved)
+		return;
+	const auto source = m_pendingSources.constFind(result.source);
+	const auto destination = RebalancePlanner::srcFolderOf(result.destination);
+	if (source == m_pendingSources.cend() || !destination)
+		return;
+
+	const FolderName from = source.value();
+	m_pendingSources.remove(result.source);
+	applyMove(from, *destination);
+}
+
+void RebalanceDialog::applyMove(const FolderName &from, const FolderName &to)
+{
+	--m_runningCount[from];
+	++m_runningCount[to];
+	++m_confirmedMoves;
+	m_changedFolders.insert(from);
+	m_changedFolders.insert(to);
+	for (const auto &folder : {from, to})
+		if (auto *card = m_cards.value(folder))
+			card->setCurrentCount(m_runningCount.value(folder));
 }
 
 void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 {
 	m_running = false;
-	setBusy(false);
-
+	m_btnCancel->setVisible(false);
+	m_btnRebalance->setEnabled(false);
+	m_statsLine->setText(tr("Updating folder counts…"));
 	m_progressLabel->setText(cancelled ? tr("Cancelled — %1 moved, %2 failed")
 											 .arg(Format::count(succeeded), Format::count(failed))
 									   : tr("Done — %1 moved, %2 failed")
 											 .arg(Format::count(succeeded), Format::count(failed)));
+	m_progressBar->setValue(m_confirmedMoves);
 
-	// Repaint the cards in past tense with the actual succeeded
-	// count.
-	const QSet<FolderName> affected = affectedFolders();
-	buildSummaryLine(succeeded, affected.size(), m_currentPlan.newFolders.size(), /*past=*/true);
+	if (m_demoMode)
+	{
+		QHash<FolderName, RebalancePlanner::FolderCount> counts;
+		for (const auto &folder : m_currentPlan.folders)
+			if (folder.inScope)
+				counts.insert(folder.id, {m_runningCount.value(folder.id),
+										  !folder.isNew || m_changedFolders.contains(folder.id)});
+		finishDisplay(succeeded, counts);
+		return;
+	}
 
-	// Snap every card to its final projected state and drop the
-	// in-flight delta label so the dialog reads as 'done'.
-	for (auto it = m_cards.constBegin(); it != m_cards.constEnd(); ++it)
-		it.value()->markFinished();
+	// OpManager has joined the operation worker before finished. Count only
+	// directory entries here: a move can land before a later journal/sync
+	// error, so even confirmed-result deltas are not a final disk snapshot.
+	using Counts = QHash<FolderName, RebalancePlanner::FolderCount>;
+	auto *watcher = new QFutureWatcher<Counts>(this);
+	connect(watcher, &QFutureWatcher<Counts>::finished, this,
+			[this, watcher, succeeded]
+			{
+				finishDisplay(succeeded, watcher->result());
+				watcher->deleteLater();
+			});
+	const QString root = m_currentPlan.mxfRoot;
+	const QSet<FolderName> folders = affectedFolders();
+	// Value captures let the read-only task finish safely if the dialog closes.
+	watcher->setFuture(QtConcurrent::run([root, folders]
+										 { return RebalancePlanner::countFolders(root, folders); }));
+}
 
-	// Repurpose the Rebalance button as Close. Must disconnect the
-	// old handler so a click doesn't try to start another plan.
+void RebalanceDialog::finishDisplay(
+	int succeeded, const QHash<FolderName, RebalancePlanner::FolderCount> &counts)
+{
+	setBusy(false);
+
+	QSet<FolderName> changed = m_changedFolders;
+	int newFolders = 0;
+	bool affectedUnknown = false;
+	bool newFoldersUnknown = false;
+	for (const auto &folder : m_currentPlan.folders)
+	{
+		if (!folder.inScope)
+			continue;
+		const auto actual = counts.value(folder.id, {m_runningCount.value(folder.id), !folder.isNew});
+		m_runningCount[folder.id] = actual.count;
+		if (auto *card = m_cards.value(folder.id))
+			card->markFinished(actual.count, actual.exists);
+		if (actual.count < 0)
+		{
+			affectedUnknown = true;
+			newFoldersUnknown |= folder.isNew;
+			continue;
+		}
+		if (actual.count != folder.count || (folder.isNew && actual.exists))
+			changed.insert(folder.id);
+		if (folder.isNew && actual.exists)
+			++newFolders;
+	}
+	buildSummaryLine(succeeded, affectedUnknown ? -1 : changed.size(),
+					 newFoldersUnknown ? -1 : newFolders, /*past=*/true);
+
 	m_btnRebalance->setText(tr("Close"));
 	m_btnRebalance->setEnabled(true);
 	disconnect(m_btnRebalance, &QPushButton::clicked, this, &RebalanceDialog::onRebalanceClicked);
 	connect(m_btnRebalance, &QPushButton::clicked, this, &QDialog::accept);
-	m_btnCancel->setVisible(false);
-
-	// No completion popup: the cards snap to their final counts, the summary
-	// line flips to past tense, and the progress label shows "Done — N moved,
-	// N failed", so the outcome is fully reported inline. (The reminder that
-	// Avid rebuilds its database on next launch lives in the intro, which stays
-	// visible.) A modal acknowledgement would only add a click.
 }
 
 void RebalanceDialog::onAborted(const QString &reason)
@@ -981,22 +1070,31 @@ void RebalanceDialog::setBusy(bool busy)
 
 void RebalanceDialog::primeLiveState()
 {
-	m_lastProcessedOp = 0;
+	m_nextDemoOp = 0;
+	m_confirmedMoves = 0;
 	m_runningCount.clear();
-	m_srcFolderByOp.clear();
-	m_srcFolderByOp.reserve(m_currentPlan.ops.size());
-
-	// Seed running counts from each folder's starting state.
-	for (const auto &fs : m_currentPlan.folders)
-	{
-		if (fs.inScope)
-			m_runningCount.insert(fs.id, fs.count);
-	}
-
-	// Pre-parse each op's source FolderName once. The hot path (live
-	// updates) reuses this without re-parsing srcPath.
+	m_pendingSources.clear();
+	m_changedFolders.clear();
+	for (const auto &folder : m_currentPlan.folders)
+		if (folder.inScope)
+			m_runningCount.insert(folder.id, folder.count);
+	QHash<QString, QString> canonicalParents;
 	for (const auto &op : m_currentPlan.ops)
-		m_srcFolderByOp.append(RebalancePlanner::srcFolderOf(op.srcPath).value_or(FolderName{}));
+		if (const auto folder = RebalancePlanner::srcFolderOf(op.srcPath))
+		{
+			QString sourcePath = op.srcPath;
+			if (!m_demoMode)
+			{
+				// Match the engine's canonical source paths, including volume
+				// aliases. Resolve once per folder, not once per media file.
+				const QFileInfo source(op.srcPath);
+				const QString parent = source.absolutePath();
+				if (!canonicalParents.contains(parent))
+					canonicalParents.insert(parent, QFileInfo(OpJournal::canonicalPath(op.srcPath)).absolutePath());
+				sourcePath = QDir(canonicalParents.value(parent)).filePath(source.fileName());
+			}
+			m_pendingSources.insert(sourcePath, *folder);
+		}
 }
 
 QSet<FolderName> RebalanceDialog::affectedFolders() const
@@ -1009,41 +1107,6 @@ QSet<FolderName> RebalanceDialog::affectedFolders() const
 			affected.insert(*src);
 	}
 	return affected;
-}
-
-void RebalanceDialog::applyOpsUpTo(int upTo)
-{
-	if (upTo <= m_lastProcessedOp)
-		return;
-	upTo = qMin(upTo, int(m_currentPlan.ops.size()));
-
-	// Walk just the new ops, accumulate per-folder deltas, then push
-	// final counts to the cards in one pass. Avoids touching the same
-	// card N times when many ops on the same folder arrive together.
-	QSet<FolderName> touched;
-	for (int i = m_lastProcessedOp; i < upTo; ++i)
-	{
-		const FolderName &src = m_srcFolderByOp[i];
-		const FolderName &dest = m_currentPlan.ops[i].dest;
-		// n == 0 is the unparsed-source sentinel from primeLiveState's
-		// value_or(FolderName{}); real Avid folders are numbered from 1, so a
-		// parsed source always has n >= 1. Skip the sentinel so an unparseable
-		// source can't decrement a stray running-count entry.
-		if (src.n > 0)
-		{
-			--m_runningCount[src];
-			touched.insert(src);
-		}
-		++m_runningCount[dest];
-		touched.insert(dest);
-	}
-	m_lastProcessedOp = upTo;
-
-	for (const FolderName &fid : touched)
-	{
-		if (auto *card = m_cards.value(fid))
-			card->setCurrentCount(m_runningCount.value(fid));
-	}
 }
 
 // MARK: - Summary line builder
@@ -1061,8 +1124,10 @@ void RebalanceDialog::buildSummaryLine(int files, int foldersAffected, int newFo
 	const QString sep = QStringLiteral("&nbsp;&nbsp;|&nbsp;&nbsp;");
 	const QString text =
 		QStringLiteral("<b>%1</b> %2%3<b>%4</b> %5%6<b>%7</b> %8")
-			.arg(Format::count(files), filesCaption, sep, Format::count(foldersAffected),
-				 affectedCaption, sep, Format::count(newFolders), newCaption);
+			.arg(Format::count(files), filesCaption, sep,
+				 foldersAffected < 0 ? tr("Unknown") : Format::count(foldersAffected),
+				 affectedCaption, sep,
+				 newFolders < 0 ? tr("Unknown") : Format::count(newFolders), newCaption);
 	m_statsLine->setText(text);
 	m_statsLine->setStyleSheet({});
 }

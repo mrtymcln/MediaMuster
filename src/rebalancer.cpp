@@ -23,6 +23,7 @@ Rebalancer::Rebalancer(QObject *parent) : QObject(parent)
 	connect(m_engine, &OpManager::operationResult, this,
 			[this](const OpResult &result)
 			{
+				emit operationResult(result);
 				if (result.state != OpResult::State::Completed)
 					emit log(QtWarningMsg, result.name + ": " + result.message);
 			});

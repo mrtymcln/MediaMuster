@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mediafile.h"
-#include "rebalanceplan.h"
+#include "rebalanceplanner.h"
 
 #include <QDialog>
 #include <QElapsedTimer>
@@ -37,15 +37,16 @@ class Rebalancer;
 ///     happen. No disk changes yet.
 ///
 ///   - **Running**: Rebalance is in flight. The picker is disabled,
-///     the progress bar tracks completed moves, and Cancel turns
+///     the progress bar tracks execution, and Cancel turns
 ///     into a cooperative cancel for the worker.
 ///
-/// On close, callers can read `didRebalance()` to know whether any
-/// work was actually performed (so the mainwindow can trigger a
-/// rescan of the affected volume).
+/// On close, callers can read `didRebalance()` to know whether a run
+/// started (so the mainwindow can rescan even after cancellation).
 class RebalanceDialog : public QDialog
 {
 	Q_OBJECT
+	friend class TestOperationUi;
+
 public:
 	RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
 					const QHash<QString, QVector<MediaFile>> &filesByMxfRoot,
@@ -100,6 +101,7 @@ private slots:
 	void onCancelClicked();
 	void onPlanReady();
 	void onProgress(int current, int total, const QString &detail);
+	void onOperationResult(const OpResult &result);
 	void onFinished(int succeeded, int failed, bool cancelled);
 	void onAborted(const QString &reason);
 
@@ -116,6 +118,8 @@ private:
 	void recomputePlan();
 	void renderPlan();
 	void setBusy(bool busy);
+	void finishDisplay(int succeeded,
+					   const QHash<FolderName, RebalancePlanner::FolderCount> &counts);
 
 	/// Rebuild the inline summary line from explicit counts.
 	/// `past=true` shifts captions to 'moved' / 'files moved' for
@@ -123,8 +127,7 @@ private:
 	void buildSummaryLine(int files, int foldersAffected, int newFolders, bool past);
 
 	/// Every folder that's a source or destination of a planned move in
-	/// `m_currentPlan` — the "folders affected" headline count, shared by
-	/// the plan render and the post-run summary.
+	/// `m_currentPlan` — used for the preview and final folder recount.
 	QSet<FolderName> affectedFolders() const;
 
 	QHash<QString, QString> m_mxfRootsByLabel;
@@ -179,21 +182,14 @@ private:
 	/// at rebalance start; decremented/incremented as ops complete.
 	QHash<FolderName, int> m_runningCount;
 
-	/// Source FolderName for each op in `m_currentPlan.ops`, computed
-	/// once on plan ingestion. Saves re-parsing srcPath thousands of
-	/// times per second during live updates.
-	QVector<FolderName> m_srcFolderByOp;
+	/// Remove each planned source after its confirmed move, so a result
+	/// cannot be counted twice and engine group order need not match the plan.
+	QHash<QString, FolderName> m_pendingSources;
+	QSet<FolderName> m_changedFolders;
+	int m_confirmedMoves = 0;
+	int m_nextDemoOp = 0;
 
-	/// Index of the next op whose effect hasn't yet been applied to
-	/// `m_runningCount`. Bumped forward on each onProgress.
-	int m_lastProcessedOp = 0;
-
-	/// Reset running state, populate m_srcFolderByOp, prime
-	/// m_runningCount from the current plan. Called when starting
-	/// a rebalance.
+	/// Seed the counts and pending sources from the current plan.
 	void primeLiveState();
-
-	/// Apply all ops in [m_lastProcessedOp, upTo) to the running
-	/// counts, refresh the affected cards.
-	void applyOpsUpTo(int upTo);
+	void applyMove(const FolderName &from, const FolderName &to);
 };
