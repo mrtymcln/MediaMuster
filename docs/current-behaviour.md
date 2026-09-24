@@ -314,6 +314,9 @@ keeping files with the same valid master identifier together. A relatives group
 larger than that target must be spread across folders. OMF media, quarantine
 contents and folders that fail the stricter rebalance checks are excluded.
 
+If a location becomes unavailable or the planned folder layout is no longer valid
+after preview, Rebalance preparation aborts and asks you to rescan. No operation starts.
+
 The shared operation engine checks the plan again before executing it. It retires
 the affected Avid databases to MediaMuster Trash before moving a group, rather
 than attempting to edit those databases to describe the new layout. Avid must

@@ -41,8 +41,12 @@ confirmed per-file outcomes instead of progress indexes, then recount affected
 folders off the GUI thread when the run stops. Cancellation and failures no
 longer substitute the complete plan's projected counts. Final folder totals
 distinguish absent planned folders from unavailable locations; operation errors
-remain reported. O4 (rejected preparation reported as an empty successful run)
-is still a separate outstanding finding.
+remain reported.
+
+Rebalance preparation follow-up, 24 September: O4 is now fixed using the existing
+`aborted` signal. If a nonempty plan produces an empty prepared request, execution
+stops before engine dispatch and the existing dialog asks the user to rescan.
+Cancellation handling and legitimate empty-plan behaviour are preserved.
 
 P2 means a substantive correctness issue worth fixing; P3 means a smaller presentation, contract or maintenance issue. Ordering reflects practical impact rather than whether a defect is new. Reproductions use current code and disposable data, not historical audit claims.
 
@@ -80,7 +84,7 @@ Two additional items need a narrower follow-up: Windows discovery skips the actu
 - [MediaFilterProxy::m_search](/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.h:76): keep one normalized search string; the extra original string only provides `isEmpty()`.
 - [MediaFile::effectInstance](/Users/martymclean/Developer/MediaMuster/src/mediafile.h:83) and `extension`: remove redundant stored inventory state where there is no actual UI/export/operation consumer. Preserve local parsing needed to derive the visible effect name.
 - [BinFilterDialog::m_btnDone](/Users/martymclean/Developer/MediaMuster/src/binfilterdialog.h:167): make this a local parent-owned widget pointer; no later member access needs it.
-- [Rebalancer::aborted](/Users/martymclean/Developer/MediaMuster/src/rebalancer.h:53) has no producer. Restore it for rejected preparation rather than deleting the error path.
+- [Rebalancer::aborted](/Users/martymclean/Developer/MediaMuster/src/rebalancer.h:53) is now used for rejected preparation; the existing error path was retained.
 
 The detailed reports also identify a duplicate MXF property row, an unused final `seenPaths` insertion and private CSV helper linkage. Retained journal provenance and historical evidence are not automatically dead code.
 

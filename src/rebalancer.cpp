@@ -77,6 +77,11 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 				emit finished(0, 0, /*cancelled=*/true);
 				return;
 			}
+			if (!plan.ops.isEmpty() && req.items.isEmpty())
+			{
+				emit aborted(tr("The media files are unavailable. Rescan and try again."));
+				return;
+			}
 
 			// Phase 2 must start from the GUI thread — BackgroundJob's
 			// start() manages its worker from its owner's thread — so

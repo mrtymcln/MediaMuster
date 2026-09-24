@@ -236,6 +236,9 @@ private slots:
 	void second_runner_cannot_change_files();
 	void facade_refuses_second_job_without_cancelling_first();
 	void rebalance_cancel_before_queued_dispatch_keeps_source();
+	void rebalance_rejected_preparation_aborts_data();
+	void rebalance_rejected_preparation_aborts();
+	void rebalance_empty_plan_finishes_without_aborting();
 	void invalid_mxf_claims_are_refused_by_adapter();
 	void rebalance_refuses_different_file_from_same_master();
 	void unsupported_directory_flush_preserves_originals();
@@ -1576,6 +1579,67 @@ void TestFileOperations::rebalance_cancel_before_queued_dispatch_keeps_source()
 	QCOMPARE(get(source), bytes);
 	QVERIFY(!QFile::exists(root + "/2/clip.mxf"));
 	QVERIFY(OpJournal::scan(f.journals).isEmpty());
+}
+
+void TestFileOperations::rebalance_rejected_preparation_aborts_data()
+{
+	QTest::addColumn<bool>("rootVanishes");
+	QTest::newRow("mxf-root-disappears") << true;
+	QTest::newRow("source-folder-disappears") << false;
+}
+
+void TestFileOperations::rebalance_rejected_preparation_aborts()
+{
+	QFETCH(bool, rootVanishes);
+	Fixture f;
+	ScopedJournalDirectory journals(f.journals);
+	const QString root = f.root + "/Avid MediaFiles/MXF";
+	const QString source = root + "/1/clip.mxf";
+	const QByteArray bytes("Disposable media");
+	put(source, bytes);
+	RebalancePlan plan;
+	plan.mxfRoot = root;
+	plan.ops.append({source, FolderName{{}, 2}, {}, bytes.size(), -1, {}});
+	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
+	const QString originalFolder = rootVanishes ? root : root + "/1";
+	const QString aside = originalFolder + "-offline";
+	QVERIFY(QDir().rename(originalFolder, aside));
+	const QString retainedSource = aside + (rootVanishes ? "/1/clip.mxf" : "/clip.mxf");
+
+	Rebalancer rebalancer;
+	QSignalSpy aborted(&rebalancer, &Rebalancer::aborted);
+	QSignalSpy finished(&rebalancer, &Rebalancer::finished);
+	QSignalSpy results(&rebalancer, &Rebalancer::operationResult);
+	QSignalSpy progress(&rebalancer, &Rebalancer::progress);
+	rebalancer.executeAsync(plan);
+	QTRY_VERIFY(!aborted.isEmpty() || !finished.isEmpty());
+	QCOMPARE(aborted.size(), 1);
+	QVERIFY(!aborted.first().first().toString().isEmpty());
+	QVERIFY(finished.isEmpty());
+	QVERIFY(results.isEmpty());
+	QVERIFY(progress.isEmpty());
+	QVERIFY(OpJournal::scan(f.journals).isEmpty());
+	QCOMPARE(get(retainedSource), bytes);
+	QVERIFY(!QFileInfo::exists(root + "/2/clip.mxf"));
+}
+
+void TestFileOperations::rebalance_empty_plan_finishes_without_aborting()
+{
+	Fixture f;
+	ScopedJournalDirectory journals(f.journals);
+	RebalancePlan plan;
+	plan.mxfRoot = f.root + "/Avid MediaFiles/MXF";
+	QVERIFY(QDir().mkpath(plan.mxfRoot));
+	Rebalancer rebalancer;
+	QSignalSpy aborted(&rebalancer, &Rebalancer::aborted);
+	QSignalSpy finished(&rebalancer, &Rebalancer::finished);
+	rebalancer.executeAsync(plan);
+	QTRY_VERIFY(!aborted.isEmpty() || !finished.isEmpty());
+	QVERIFY(aborted.isEmpty());
+	QCOMPARE(finished.size(), 1);
+	QCOMPARE(finished.first().at(0).toInt(), 0);
+	QCOMPARE(finished.first().at(1).toInt(), 0);
+	QVERIFY(!finished.first().at(2).toBool());
 }
 
 void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
