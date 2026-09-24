@@ -101,9 +101,8 @@ set(SOURCES
     src/fileoperationcontroller.cpp
     src/unfinishedbusinessdialog.cpp
     src/aboutdialog.cpp
-    src/logcategories.cpp
-    src/logfile.cpp
-    src/macaccessibilityguard.cpp
+    src/diagnostics.cpp
+    src/qtaccessibilityfix.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
     src/binmetadataresolver.cpp
@@ -138,7 +137,6 @@ set(SOURCES
     src/progressdialog.cpp
     src/rebalancer.cpp
     src/rebalanceplanner.cpp
-    src/crashcollector.cpp
     src/rebalancedialog.cpp
     src/resources.qrc
 )

@@ -7,7 +7,7 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Test)
 function(mediamuster_add_test name label)
     add_executable(${name}
         ${name}.cpp
-        ${CMAKE_SOURCE_DIR}/src/logcategories.cpp
+        ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
         ${ARGN}
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
@@ -24,20 +24,17 @@ endfunction()
 
 ### Core ###
 
+# Diagnostic messages and crash-report collection.
+mediamuster_add_test(tst_diagnostics core)
+
 # Header-only namespaces.
 mediamuster_add_test(tst_mobid core)
-mediamuster_add_test(tst_logfile core ${CMAKE_SOURCE_DIR}/src/logfile.cpp)
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
 
 # Conventions: the agreed folder names, essence-name rules and folder
 # limits every feature keys on (header-only).
 mediamuster_add_test(tst_conventions core)
-
-# Collect macOS crash reports into the logs folder.
-mediamuster_add_test(tst_crashcollector core
-    ${CMAKE_SOURCE_DIR}/src/crashcollector.cpp
-)
 
 ### Media ###
 
@@ -252,7 +249,7 @@ set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM
 
 # Production UI and coordinator behavior, with no alternate operation model.
 set(_operation_ui_sources ${SOURCES})
-list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)(main|logcategories)\\.cpp$")
+list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)(main|diagnostics)\\.cpp$")
 list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
 list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
 mediamuster_add_test(tst_operationui ui ${_operation_ui_sources})

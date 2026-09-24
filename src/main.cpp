@@ -1,6 +1,6 @@
-#include "logfile.h"
-#include "macaccessibilityguard.h"
+#include "diagnostics.h"
 #include "mainwindow.h"
+#include "qtaccessibilityfix.h"
 #include "version.h"
 #include <QApplication>
 #include <QDate>
@@ -20,12 +20,12 @@ int main(int argc, char *argv[])
 	app.setOrganizationDomain("com.McLean.MediaMuster");
 	app.setWindowIcon(QIcon(":/res/mediamuster.png"));
 
-	// Start the diagnostic log first, which needes the above info.
-	AppLog::install();
+	// Start logging after setting the app details used in the path and header.
+	Diagnostics::install();
 
 	// Before any window exists: the macOS accessibility bridge builds its
 	// element tree from the first view it sees (see the header).
-	MacAccessibilityGuard::install();
+	QtAccessibilityFix::install();
 
 #ifdef Q_OS_MAC
 	app.setStyle(QStyleFactory::create("macos"));

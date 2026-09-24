@@ -1,5 +1,5 @@
 #include "mediametadata.h"
-#include "logcategories.h"
+#include "diagnostics.h"
 
 #include <QHash>
 #include <iterator>

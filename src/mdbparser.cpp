@@ -1,7 +1,7 @@
 #include "mdbparser.h"
 #include "avidusage.h"
 #include "bentofile.h"
-#include "logcategories.h"
+#include "diagnostics.h"
 #include "omfobjects.h"
 #include "omfuid.h" // OMF-era: widens the 12-byte omfi:UID to the 32-byte key form.
 

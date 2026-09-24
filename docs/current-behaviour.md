@@ -26,6 +26,21 @@ its result. The permission dialog can open the FDA settings pane.
 When startup collects crash reports, a dialog with an empty window title directs
 the user to **Help > Reveal Logs** to share them with the developer.
 
+The application log, `mediamuster.log`, and collected crash reports live in the
+application-data folder. On macOS this is
+`~/Library/Application Support/Martin McLean/MediaMuster/`.
+Startup enables all levels of MediaMuster diagnostic messages, including
+information messages, and clears the log if it was created at least 30 days ago.
+The Console receives live activity messages from the app and also writes them
+to the log. The file additionally receives detailed Qt diagnostic messages;
+the Console does not read back the file. Collected crash reports are kept
+separately and existing copies are left untouched.
+
+On macOS, an accessibility workaround hides list, table and tree rows from
+VoiceOver to avoid a documented Qt crash. Mouse interaction is unchanged.
+The workaround has no automatic Qt-version cutoff; it must be removed manually.
+Accessibility warnings are logged normally. Windows is unaffected.
+
 The current source includes a Debug menu. These four options start **off on every
 launch**:
 

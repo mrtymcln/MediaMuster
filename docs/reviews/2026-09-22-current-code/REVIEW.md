@@ -48,6 +48,23 @@ Rebalance preparation follow-up, 24 September: O4 is now fixed using the existin
 stops before engine dispatch and the existing dialog asks the user to rescan.
 Cancellation handling and legitimate empty-plan behaviour are preserved.
 
+Logging cleanup follow-up, 24 September: U2 is resolved by removing the
+log-folder migration block and its comments entirely. Logging opens
+`mediamuster.log` directly in the application's data directory.
+The logger now shares formatting and write locking, removes the unused Bento
+category, and relies on Qt to preserve existing crash-report copies. Names and
+comments are simplified. The startup rule enables all MediaMuster message
+levels, correcting the previously disabled information messages. The macOS
+app build and both logging/crash-collection test suites pass.
+
+Diagnostics consolidation follow-up, 24 September: logging, Qt categories and
+crash-report collection now share `diagnostics.cpp` / `diagnostics.h` and the
+`Diagnostics` namespace. Their existing tests are combined in `tst_diagnostics`.
+The Console still receives live activity messages and also writes them to the
+file; detailed Qt diagnostics remain additional file output.
+The full macOS build and all 26 CTest suites pass after consolidation; three
+existing fixture/filesystem-dependent cases remain skipped.
+
 P2 means a substantive correctness issue worth fixing; P3 means a smaller presentation, contract or maintenance issue. Ordering reflects practical impact rather than whether a defect is new. Reproductions use current code and disposable data, not historical audit claims.
 
 | Priority | Finding and location | Suggested fix / missing regression |

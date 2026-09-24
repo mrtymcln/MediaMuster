@@ -1,6 +1,6 @@
 #include "mxfparser.h"
 #include "avidusage.h"
-#include "logcategories.h"
+#include "diagnostics.h"
 #include "mobid.h"
 #include "mxfproperties.h"
 #include <QByteArrayView>

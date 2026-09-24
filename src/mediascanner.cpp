@@ -3,7 +3,7 @@
 #include "avidusage.h"
 #include "conventions.h"
 #include "testpause.h"
-#include "logcategories.h"
+#include "diagnostics.h"
 #include "mobid.h"
 #include "mxfparser.h"
 #include "omfparser.h" // OMF-era: the Bento-tail twin of MxfParser for legacy essence

@@ -1,10 +1,9 @@
 #include "mainwindow.h"
 
 #include "aboutdialog.h"
-#include "logfile.h"
+#include "diagnostics.h"
 #include "conventions.h"
 #include "binfilterdialog.h"
-#include "crashcollector.h"
 #include "enumutil.h"
 #include "effectfilterdialog.h"
 #include "featureflags.h"
@@ -86,7 +85,7 @@ namespace
 
 	// Fixed-width tags so the console's [ ] column stays aligned. QtFatalMsg
 	// is never emitted by us; it folds to the error tag defensively.
-	const char *logPfx(QtMsgType level)
+	const char *consoleLevelLabel(QtMsgType level)
 	{
 		switch (level)
 		{
@@ -108,7 +107,7 @@ namespace
 						  const QString &message)
 	{
 		return QStringLiteral("%1 [%2] [%3] %4")
-			.arg(time, QLatin1String(logPfx(level)), module, message);
+			.arg(time, QLatin1String(consoleLevelLabel(level)), module, message);
 	}
 
 	QString mediaTreeForFolder(const QString &parent)
@@ -267,9 +266,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::collectCrashReports()
 {
-	const QString logsDir = QFileInfo(AppLog::logPath()).absolutePath();
+	const QString logsDir = QFileInfo(Diagnostics::logPath()).absolutePath();
 	const QStringList collected =
-		CrashCollector::collect(CrashCollector::systemReportsDir(), logsDir);
+		Diagnostics::collectCrashReports(Diagnostics::systemCrashReportsDir(), logsDir);
 	if (collected.isEmpty())
 		return;
 
@@ -788,7 +787,7 @@ void MainWindow::buildHelpMenu()
 	connect(revealLogAct, &QAction::triggered, this,
 			[this]
 			{
-				RevealInFinder::reveal(AppLog::logPath(), [this](QtMsgType level, const QString &msg)
+				RevealInFinder::reveal(Diagnostics::logPath(), [this](QtMsgType level, const QString &msg)
 									   { addLog(level, QStringLiteral("app"), msg); });
 			});
 }
@@ -1551,8 +1550,8 @@ void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 		if (i > 0)
 			combined += QLatin1Char('\n');
 		combined += formatLogLine(now, batch[i].level, batch[i].module, batch[i].message);
-		// Same tee as addLog(): every console line lands in the log file.
-		AppLog::appendConsoleLine(batch[i].level, batch[i].module, batch[i].message);
+		// Also write each console message to the diagnostic log.
+		Diagnostics::appendConsoleLine(batch[i].level, batch[i].module, batch[i].message);
 	}
 	m_console->appendPlainText(combined);
 }
@@ -2128,9 +2127,8 @@ void MainWindow::addLog(QtMsgType level, const QString &module, const QString &m
 {
 	m_console->appendPlainText(
 		formatLogLine(QTime::currentTime().toString("HH:mm:ss"), level, module, message));
-	// Tee the console into the diagnostic log so one file carries both the
-	// user-facing story and the dev categories.
-	AppLog::appendConsoleLine(level, module, message);
+	// Also write the console message to the diagnostic log.
+	Diagnostics::appendConsoleLine(level, module, message);
 }
 
 // MARK: - Column auto-fit

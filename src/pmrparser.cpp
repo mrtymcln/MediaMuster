@@ -1,6 +1,6 @@
 #include "pmrparser.h"
 #include "avidtext.h"
-#include "logcategories.h"
+#include "diagnostics.h"
 #include "mobid.h"
 #include "omfuid.h"
 #include "pmrkey.h"

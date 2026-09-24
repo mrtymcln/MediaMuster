@@ -155,6 +155,19 @@ affected databases. The main window rescans the affected location after a run.
 
 ## Background work and maintenance
 
+[Diagnostics](../src/diagnostics.cpp), declared in
+[diagnostics.h](../src/diagnostics.h), owns the log file, Qt logging categories,
+message formatting, startup retention check and macOS crash-report collection.
+MainWindow receives live activity messages from scans and file operations,
+displays them in the Console and passes them to Diagnostics for writing.
+Qt diagnostic messages also go to the file; the Console does not read the file.
+
+[QtAccessibilityFix](../src/qtaccessibilityfix.cpp) works around the
+documented Qt row-selection crash by hiding list, table and tree rows from
+macOS accessibility. VoiceOver cannot navigate those rows. The guard stays
+active on macOS until explicitly removed, has no effect on Windows, and its
+accessibility warnings use the normal diagnostic logging path.
+
 [BackgroundJob](../src/backgroundjob.h) owns a worker thread with cooperative
 cancellation. Qt's shared pool is also used for folder/header work, bin loads,
 previews, exports and history reads. The owner must join a worker before destroying

@@ -33,7 +33,7 @@
 #include "omfparser.h"
 #include "avidusage.h"
 #include "bentofile.h"
-#include "logcategories.h"
+#include "diagnostics.h"
 #include "omfobjects.h"
 #include "omfuid.h"
 
