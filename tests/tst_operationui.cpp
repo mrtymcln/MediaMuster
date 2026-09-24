@@ -88,7 +88,7 @@ namespace
 	}
 	QStringList relativeMessages(const QPlainTextEdit *console)
 	{
-		const QString prefix = QStringLiteral("[relatives] ");
+		const QString prefix = QStringLiteral("relatives: ");
 		QStringList messages;
 		for (const QString &line : console->toPlainText().split('\n'))
 		{
@@ -765,15 +765,15 @@ void TestOperationUi::select_relatives_counts_all_visible_matches_data()
 	QTest::addColumn<bool>("hideLastRelative");
 	QTest::addColumn<QString>("expectedMessage");
 	QTest::newRow("solo-file") << 1 << 1 << false
-		<< QStringLiteral("Selected 1 file across 1 master clip.");
+							   << QStringLiteral("Selected 1 file across 1 master clip.");
 	QTest::newRow("audio-pair") << 2 << 1 << false
-		<< QStringLiteral("Selected 2 files across 1 master clip.");
+								<< QStringLiteral("Selected 2 files across 1 master clip.");
 	QTest::newRow("trio") << 3 << 1 << false
-		<< QStringLiteral("Selected 3 files across 1 master clip.");
+						  << QStringLiteral("Selected 3 files across 1 master clip.");
 	QTest::newRow("partly-selected-trio") << 3 << 2 << false
-		<< QStringLiteral("Selected 3 files across 1 master clip.");
+										  << QStringLiteral("Selected 3 files across 1 master clip.");
 	QTest::newRow("filtered-relative") << 2 << 1 << true
-		<< QStringLiteral("Selected 1 file across 1 master clip.");
+									   << QStringLiteral("Selected 1 file across 1 master clip.");
 }
 
 void TestOperationUi::select_relatives_counts_all_visible_matches()
@@ -851,8 +851,9 @@ void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
 		file.filePath = path(file.fileName);
 		file.clipName = QStringLiteral("Same clip name");
 		file.mobId = QStringLiteral("file-%1").arg(i);
-		file.masterMobId = i < 2 ? QStringLiteral("master-a")
-			: i < 5 ? QStringLiteral("master-b") : QStringLiteral("unrelated-master");
+		file.masterMobId = i < 2   ? QStringLiteral("master-a")
+						   : i < 5 ? QStringLiteral("master-b")
+								   : QStringLiteral("unrelated-master");
 		file.kind = MediaFile::Kind::Audio;
 	}
 	window.onScanFinished(files);

@@ -69,11 +69,9 @@
 #include <cmath>
 #include <functional>
 
-// MARK: - Console Log prefixes
-
 namespace
 {
-	/// Shared fixed-pitch font for the table and console.
+	/// Shared font for the table and console.
 	QFont monoFont()
 	{
 #ifdef Q_OS_MAC
@@ -83,31 +81,10 @@ namespace
 #endif
 	}
 
-	// Fixed-width tags so the console's [ ] column stays aligned. QtFatalMsg
-	// is never emitted by us; it folds to the error tag defensively.
-	const char *consoleLevelLabel(QtMsgType level)
+	QString formatConsoleLine(const QString &module, const QString &message)
 	{
-		switch (level)
-		{
-		case QtInfoMsg:
-			return "INFO";
-		case QtWarningMsg:
-			return "WARN";
-		case QtCriticalMsg:
-			return "ERR ";
-		case QtDebugMsg:
-			return "DBG ";
-		case QtFatalMsg:
-			return "ERR ";
-		}
-		return "INFO";
-	}
-
-	QString formatLogLine(const QString &time, QtMsgType level, const QString &module,
-						  const QString &message)
-	{
-		return QStringLiteral("%1 [%2] [%3] %4")
-			.arg(time, QLatin1String(consoleLevelLabel(level)), module, message);
+		return QStringLiteral("%1 %2: %3")
+			.arg(QTime::currentTime().toString("HH:mm:ss"), module, message);
 	}
 
 	QString mediaTreeForFolder(const QString &parent)
@@ -1537,7 +1514,6 @@ void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 	if (batch.isEmpty())
 		return;
 
-	const QString now = QTime::currentTime().toString("HH:mm:ss");
 	QString combined;
 	combined.reserve(batch.size() * 80);
 
@@ -1545,7 +1521,7 @@ void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 	{
 		if (i > 0)
 			combined += QLatin1Char('\n');
-		combined += formatLogLine(now, batch[i].level, batch[i].module, batch[i].message);
+		combined += formatConsoleLine(batch[i].module, batch[i].message);
 		// Also write each console message to the diagnostic log.
 		Diagnostics::appendConsoleLine(batch[i].level, batch[i].module, batch[i].message);
 	}
@@ -2099,8 +2075,7 @@ qint64 MainWindow::sumBytesInProxyRange(int first, int last) const
 
 void MainWindow::addLog(QtMsgType level, const QString &module, const QString &message)
 {
-	m_console->appendPlainText(
-		formatLogLine(QTime::currentTime().toString("HH:mm:ss"), level, module, message));
+	m_console->appendPlainText(formatConsoleLine(module, message));
 	// Also write the console message to the diagnostic log.
 	Diagnostics::appendConsoleLine(level, module, message);
 }

@@ -13,6 +13,7 @@ namespace Diagnostics
 {
 	/// Open the log and install the handler. Call once, early in main(), after
 	/// the application/organisation name is set (the path depends on them).
+	/// Sets Qt's message pattern to include date, time, severity and category.
 	/// Writes a header with the app version and system details for each session.
 	void install();
 
@@ -22,15 +23,15 @@ namespace Diagnostics
 	/// Also write a console message to the file, labelled with its module.
 	void appendConsoleLine(QtMsgType level, const QString &module, const QString &message);
 
-	/// Formats one handler message into a log line. Exposed for testing.
+	/// Uses Qt's message pattern, appending available warning/error source locations.
 	QString formatMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
 
 	/// macOS crash-report location. Empty on Windows, where collection is disabled.
 	QString systemCrashReportsDir();
 
-	/// Copy recent crash reports beside the log, leaving existing copies untouched.
-	QStringList collectCrashReports(const QString &reportsDir, const QString &logsDir,
-									int maxAgeDays = 30);
+	/// Copy crash reports from the last 30 days beside the log.
+	/// Existing copies are left untouched.
+	QStringList collectCrashReports(const QString &reportsDir, const QString &logsDir);
 } // namespace Diagnostics
 
 // Categories default to warnings and errors; install() enables all levels.

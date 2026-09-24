@@ -20,14 +20,14 @@ This is a source-based inventory of text that the in-app Console can receive in 
 
 The Console receives app messages, scanner batches, file-operation results and recovery notes, Rebalance messages, forwarded bin-loading failures, and Reveal-in-Finder/Explorer failures. These were followed through their lower-level reasons. System and Qt error descriptions are open-ended; the catalogue records where they are inserted and preserves them in the alternatives rather than inventing a finite list of OS messages.
 
-Each displayed event uses **`HH:mm:ss [LEVEL] [module] message`**. Levels are `INFO`, `WARN`, `ERR ` or `DBG `, with padding for alignment; fatal values also map to `ERR `. This wrapper is **Good**: it provides the time, severity and source. Five optional presentations are `HH:mm:ss [LEVEL] module: message`, `HH:mm:ss LEVEL module — message`, `HH:mm:ss · LEVEL · module · message`, `[HH:mm:ss] LEVEL module: message`, and `HH:mm:ss message (LEVEL, module)`. There is little benefit in changing the existing wrapper. It is not counted as a message-body entry. [Formatting source](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:88).
+Each displayed event uses **`HH:mm:ss [LEVEL] [module] message`**. Levels are `INFO`, `WARN`, `ERR` or `DBG`, with padding for alignment; fatal values also map to `ERR`. This wrapper is **Good**: it provides the time, severity and source. Five optional presentations are `HH:mm:ss [LEVEL] module: message`, `HH:mm:ss LEVEL module — message`, `HH:mm:ss · LEVEL · module · message`, `[HH:mm:ss] LEVEL module: message`, and `HH:mm:ss message (LEVEL, module)`. There is little benefit in changing the existing wrapper. It is not counted as a message-body entry. [Formatting source](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:88).
 
 The diagnostic log also receives Qt logging-category messages that never appear in this Console. Those file-only messages, dialog-only text, status/progress labels, test fault injections and compile-time branches for unsupported platforms are outside this Console inventory. Important near-misses are listed at the ends of the relevant sections. [Console routing](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:2126), [diagnostic log routing](/Users/martymclean/Developer/MediaMuster/src/diagnostics.cpp:141).
 
 ## Most useful wording corrections
 
 | Current wording | What is wrong | Straightforward correction |
-|---|---|---|
+| --- | --- | --- |
 | “Selected … relatives across … master clips” | Counts all matching selected files, including the original selection. | “Selected {files} files from {clips} master clips.” |
 | “Recovered … files via MDB / UMID lookup” | A metadata record was matched; no file was restored. | “Matched {files} files to MDB records by MasterMobId.” |
 | “Precomputes disabled” | The media remains; extra details and filters are disabled. | “Precompute details hidden; precompute filters cleared.” |
@@ -42,7 +42,7 @@ Some corrections need a small condition or count change as well as wording. Each
 ## Catalogue totals
 
 | Area | IDs | Entries | Good | Misleading |
-|---|---|---:|---:|---:|
+| --- | --- | ---: | ---: | ---: |
 | App, selections, filters, exports and status | M001–M051 | 51 | 40 | 11 |
 | Scanning and media metadata | S001–S038 | 38 | 25 | 13 |
 | Bin-loading errors and their context | B001–B047 | 47 | 40 | 7 |
@@ -55,7 +55,7 @@ Some corrections need a small condition or count change as well as wording. Each
 Click an ID for its full assessment and wording choices. Leading spaces and line breaks are easier to see in the detailed entry.
 
 | ID | Current message or component | Verdict |
-|---|---|---|
+| --- | --- | --- |
 | [M001](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:406) | `%1 %2 initialised on %3` | **Good** |
 | [M002](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:424) | `Full Disk Access not granted. Go to System Preferences > Privacy & Security.` | **Misleading** |
 | [M003](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:438) | `MediaMuster quit unexpectedly. — %1 report(s) saved. Go to Help > Reveal Logs to send them to the developer.` | **Misleading** |
@@ -112,7 +112,7 @@ Click an ID for its full assessment and wording choices. Leading spaces and line
 | [S003](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1298) | `Permission denied: %1 /   Permission denied: %1` | **Misleading** |
 | [S004](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1308) | `Grant Full Disk Access in System Preferences > Privacy & Security` | **Misleading** |
 | [S005](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1318) | `Scanning: %1 (%2)` | **Good** |
-| [S006](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1332) | `  %1: %2 media files found` | **Good** |
+| [S006](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1332) | `%1: %2 media files found` | **Good** |
 | [S007](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1346) | `No media files found.` | **Good** |
 | [S008](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1360) | `Scan complete: %1 files found` | **Good** |
 | [S009](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1374) | `%1 file%2 with no local database reference` | **Misleading** |
@@ -122,24 +122,24 @@ Click an ID for its full assessment and wording choices. Leading spaces and line
 | [S013](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1418) | `%1 non-portable filename%2` | **Misleading** |
 | [S014](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1428) | `Scan cancelled by user` | **Good** |
 | [S015](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1442) | `%1 folder(s) over %2 files (Avid recommends staying under %3):` | **Misleading** |
-| [S016](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1454) | `  Found Avid MediaFiles/MXF` | **Good** |
-| [S017](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1468) | `  Found OMFI MediaFiles` | **Good** |
-| [S018](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1482) | `  No %1 at the root of %2 (media in a subfolder is found via File > Add Folder or Volume)` | **Misleading** |
+| [S016](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1454) | `Found Avid MediaFiles/MXF` | **Good** |
+| [S017](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1468) | `Found OMFI MediaFiles` | **Good** |
+| [S018](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1482) | `No %1 at the root of %2 (media in a subfolder is found via File > Add Folder or Volume)` | **Misleading** |
 | [S019](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1492) | `Not an Avid media location: %1. Add an Avid MediaFiles or OMFI MediaFiles folder, or its containing folder.` | **Good** |
-| [S020](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1506) | `  %1 subfolders queued for concurrent scanning` | **Good** |
-| [S021](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1520) | `  Quarantined Files folder on %1 is empty` | **Good** |
+| [S020](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1506) | `%1 subfolders queued for concurrent scanning` | **Good** |
+| [S021](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1520) | `Quarantined Files folder on %1 is empty` | **Good** |
 | [S022](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1534) | `⚠️ Avid Quarantined Files folder on %1 contains %2 MXF file(s)!` | **Good** |
-| [S023](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1548) | `  Quarantined Files folder on %1 contains %2 non-MXF file(s)` | **Good** |
-| [S024](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1562) | `  /%1: %2 media file(s), %3 described by the databases, %4 need a header read` | **Good** |
-| [S025](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1576) | ` (%1 changed since Avid indexed them)` | **Misleading** |
-| [S026](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1586) | `  %1: %2 file entries in /%3` | **Good** |
-| [S027](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1600) | `  %1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'` | **Good** |
-| [S028](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1614) | `  %1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands` | **Good** |
-| [S029](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1628) | `  No msmFMID.pmr in /%1` | **Good** |
-| [S030](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1642) | `  %1: %2 clips, %3 files in /%4` | **Good** |
-| [S031](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1656) | `  %1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'` | **Good** |
-| [S032](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1670) | `  %1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand` | **Good** |
-| [S033](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1684) | `  No msmMMOB.mdb in /%1` | **Good** |
+| [S023](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1548) | `Quarantined Files folder on %1 contains %2 non-MXF file(s)` | **Good** |
+| [S024](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1562) | `/%1: %2 media file(s), %3 described by the databases, %4 need a header read` | **Good** |
+| [S025](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1576) | `(%1 changed since Avid indexed them)` | **Misleading** |
+| [S026](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1586) | `%1: %2 file entries in /%3` | **Good** |
+| [S027](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1600) | `%1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'` | **Good** |
+| [S028](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1614) | `%1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands` | **Good** |
+| [S029](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1628) | `No msmFMID.pmr in /%1` | **Good** |
+| [S030](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1642) | `%1: %2 clips, %3 files in /%4` | **Good** |
+| [S031](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1656) | `%1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'` | **Good** |
+| [S032](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1670) | `%1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand` | **Good** |
+| [S033](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1684) | `No msmMMOB.mdb in /%1` | **Good** |
 | [S034](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1698) | `Reading MXF headers for %1 file(s) needing metadata verification` | **Good** |
 | [S035](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1712) | `Reading MXF/OMF headers for %1 file(s) needing metadata verification (%2 MXF, %3 OMF)` | **Misleading** |
 | [S036](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:1722) | `MXF parse: %1 files, avg %2 KB/file, max %3 KB, total %4 MB read` | **Misleading** |
@@ -218,7 +218,7 @@ Click an ID for its full assessment and wording choices. Leading spaces and line
 | [O024](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2688) | `Journal failure; source retained.` | **Good** |
 | [O025](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2702) | `Journal failure; temporary folder retained at {temporary folder}` | **Good** |
 | [O026](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2716) | `Journal failure; temporary file retained at {temporary file}` | **Good** |
-| [O027](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2730) | ` Copy finished; the storage did not confirm the full durability request.` | **Good** |
+| [O027](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2730) | `Copy finished; the storage did not confirm the full durability request.` | **Good** |
 | [O028](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2744) | `Cancelled before publication.` | **Good** |
 | [O029](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2758) | `A file changed before publication; source retained.` | **Misleading** |
 | [O030](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:2768) | `The temporary file changed before publication.` | **Misleading** |
@@ -399,7 +399,7 @@ Click an ID for its full assessment and wording choices. Leading spaces and line
 
 ## App, selections, filters, exports and status
 
-Read-only review of the current working tree, 24 September 2026. These are message templates, not every possible filename/count. Placeholders in alternatives use `{name}` notation. Current `%1` etc. are exact positional placeholders unless noted. Optional ` — %2` is shown as `[ — %2]`; `{detail}` means retain that optional explanation, including its separator. Five alternatives are supplied for every **Good** template. A message can be accurate but still too technical. Some one-word statuses are already minimal, so alternatives are plain-language variants rather than all being shorter.
+Read-only review of the current working tree, 24 September 2026. These are message templates, not every possible filename/count. Placeholders in alternatives use `{name}` notation. Current `%1` etc. are exact positional placeholders unless noted. Optional `— %2` is shown as `[ — %2]`; `{detail}` means retain that optional explanation, including its separator. Five alternatives are supplied for every **Good** template. A message can be accurate but still too technical. Some one-word statuses are already minimal, so alternatives are plain-language variants rather than all being shorter.
 
 Sources flow through `MainWindow::addLog`; operation result bodies use the same wrapper. Raw recovery notes, journal-dismiss errors and manager logs are catalogued in the operations/file-errors sections rather than duplicated here. Reveal messages use `[app]` for Help > Reveal Logs and `[reveal]` for a selected media file. RebalanceDialog adds no console literals of its own; its aborted reason is dialog-only.
 
@@ -1297,7 +1297,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S003 — Misleading — Unreadable location or folder
 
-**Current variants:** `Permission denied: %1` and `  Permission denied: %1`
+**Current variants:** `Permission denied: %1` and `Permission denied: %1`
 
 [Location source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:367), [OMF root](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:607), [MXF root](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:650), [MXF subfolder](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:669). Critical for locations/roots, Warning for MXF subfolders; `scanner`. `%1` is a full path except the last case, which supplies just the folder name.
 
@@ -1331,7 +1331,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S006 — Good — Files found at one location
 
-**Current:** `  %1: %2 media files found`
+**Current:** `%1: %2 media files found`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:383). Info, `scanner`. `%1` is the location display name; `%2` is the number of recognised media files returned for it, greater than zero. This may be a partial count if cancellation happened during that location.
 
@@ -1453,7 +1453,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S016 — Good — MXF root found
 
-**Current:** `  Found Avid MediaFiles/MXF`
+**Current:** `Found Avid MediaFiles/MXF`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:545). Info, `scanner`. An MXF root was found directly beneath the current volume/base location.
 
@@ -1467,7 +1467,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S017 — Good — OMF root found
 
-**Current:** `  Found OMFI MediaFiles`
+**Current:** `Found OMFI MediaFiles`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:554). Info, `scanner`. **OMF feature enabled only**; an OMF root was found directly beneath the current volume/base location.
 
@@ -1481,7 +1481,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S018 — Misleading — No media at the volume root
 
-**Current:** `  No %1 at the root of %2 (media in a subfolder is found via File > Add Folder or Volume)`
+**Current:** `No %1 at the root of %2 (media in a subfolder is found via File > Add Folder or Volume)`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:563). Warning, `scanner`. `%1` is `Avid MediaFiles` with OMF off, or `Avid MediaFiles or OMFI MediaFiles` with OMF on. `%2` is the location name.
 
@@ -1505,7 +1505,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S020 — Good — MXF folder queue
 
-**Current:** `  %1 subfolders queued for concurrent scanning`
+**Current:** `%1 subfolders queued for concurrent scanning`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:683). Info, `scanner`. `%1` is the number of recognised, readable MXF child folders placed in the task list, including Quarantined Files. Can be zero.
 
@@ -1519,7 +1519,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S021 — Good — Empty quarantine folder
 
-**Current:** `  Quarantined Files folder on %1 is empty`
+**Current:** `Quarantined Files folder on %1 is empty`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:802). Info, `scanner`. `%1` is the location name. The folder's non-hidden, non-symlink regular-file listing is empty; this does not recursively scan anything.
 
@@ -1547,7 +1547,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S023 — Good — Quarantine contains only other file types
 
-**Current:** `  Quarantined Files folder on %1 contains %2 non-MXF file(s)`
+**Current:** `Quarantined Files folder on %1 contains %2 non-MXF file(s)`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:811). Info, `scanner`. `%1` is the location; `%2` is the visible regular-file count. No MXF files were found, but other files were present. This can include database files; it does not claim that those are quarantined media.
 
@@ -1561,7 +1561,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S024 — Good — Per-folder metadata coverage
 
-**Current:** `  /%1: %2 media file(s), %3 described by the databases, %4 need a header read`
+**Current:** `/%1: %2 media file(s), %3 described by the databases, %4 need a header read`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:843). Info, `scanner`. `%1` is the folder name; `%2` is all recognised files collected there; `%3` can use current database metadata without reading the media; `%4` requires a media metadata read. Zero-byte files are counted in `%2` but neither `%3` nor `%4`, so those two counts need not add to the total. Can have the S025 suffix.
 
@@ -1575,17 +1575,17 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S025 — Misleading — Optional changed-since-indexing suffix
 
-**Current:** ` (%1 changed since Avid indexed them)`
+**Current:** `(%1 changed since Avid indexed them)`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:849). Appended to S024 when `tally.stale` is greater than zero. `%1` counts files described by MDB and PMR whose database freshness could not be established.
 
 **Misleading.** The test includes a **missing PMR timestamp**, as well as a mismatch with the filesystem timestamp. Neither a missing timestamp nor a timestamp change proves that the media bytes changed. [Counter condition](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:1062).
 
-**Recommended:** ` ({n} need their database metadata checked against the media)`.
+**Recommended:** `({n} need their database metadata checked against the media)`.
 
 ### S026 — Good — PMR entries read
 
-**Current:** `  %1: %2 file entries in /%3`
+**Current:** `%1: %2 file entries in /%3`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:907). Info, `pmr`. `%1` is `PMR` for msmFMID.pmr, or `amaFMID.pmr` for the alternate file; `%2` is the number of filename keys in the parsed index; `%3` is the folder name. It counts indexed names, not files verified to exist on disk.
 
@@ -1599,7 +1599,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S027 — Good — PMR unreadable, status affected
 
-**Current:** `  %1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'`
+**Current:** `%1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:919). Warning, `pmr`. `%1` is `msmFMID.pmr` or `amaFMID.pmr`; `%2` is the folder name. Triggered if the primary PMR fails to parse, or the alternate fails without a successfully read primary. “Unmatched” means not listed by the successfully parsed PMR entries, if any.
 
@@ -1613,7 +1613,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S028 — Good — Alternate PMR unreadable, primary retained
 
-**Current:** `  %1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands`
+**Current:** `%1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:927). Info, `pmr`. In the current filename list, `%1` can only be `amaFMID.pmr`; `%2` is the folder name. The alternate could not be parsed, but msmFMID.pmr was read successfully.
 
@@ -1627,7 +1627,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S029 — Good — No PMR found
 
-**Current:** `  No msmFMID.pmr in /%1`
+**Current:** `No msmFMID.pmr in /%1`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:933). Info, `pmr`. `%1` is the folder name. This only appears when **neither** msmFMID.pmr nor amaFMID.pmr exists.
 
@@ -1641,7 +1641,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S030 — Good — MDB records read
 
-**Current:** `  %1: %2 clips, %3 files in /%4`
+**Current:** `%1: %2 clips, %3 files in /%4`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:953). Info, `mdb`. `%1` is `MDB` for msmMMOB.mdb, or `amaMMOB.mdb` for the alternate; `%2` is the number of master-mob records, `%3` is the number of file-mob records; `%4` is the folder name. These are database record counts, not a count of files currently on disk.
 
@@ -1655,7 +1655,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S031 — Good — MDB unreadable, status affected
 
-**Current:** `  %1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'`
+**Current:** `%1 in /%2 is unreadable; unmatched files here surface as 'No database', not 'No reference'`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:977). Warning, `mdb`. `%1` is `msmMMOB.mdb` or `amaMMOB.mdb`; `%2` is the folder. Triggered if the primary MDB fails to parse, or the alternate fails without a successfully read primary. The status change applies to files not listed by the available PMR index.
 
@@ -1669,7 +1669,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S032 — Good — Alternate MDB unreadable, primary retained
 
-**Current:** `  %1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand`
+**Current:** `%1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:985). Info, `mdb`. In the current filename list, `%1` can only be `amaMMOB.mdb`; `%2` is the folder name. msmMMOB.mdb was successfully read first.
 
@@ -1683,7 +1683,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 ### S033 — Good — No MDB found
 
-**Current:** `  No msmMMOB.mdb in /%1`
+**Current:** `No msmMMOB.mdb in /%1`
 
 [Source](/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:991). Info, `mdb`. `%1` is the folder name. This appears when neither msmMMOB.mdb nor amaMMOB.mdb exists.
 
@@ -1753,7 +1753,7 @@ There are **38 entries: 25 Good and 13 Misleading**, counting the optional chang
 
 There are **47 entries: 40 Good and 7 Misleading**. These are the reasons inserted into MainWindow's `Cannot load bin "%1": %2` message, rather than separate Console events. The outer message is inventoried in the MainWindow section.
 
-[BinFilterDialog joins the error and warnings with `; `](/Users/martymclean/Developer/MediaMuster/src/binfilterdialog.cpp:549). Unsupported-data failures may contain the B002 prefix, up to 32 unique warnings, and nested B009/B010 context. An error after earlier warnings can include both. The first two header-inspection paths report a drag rejection before a drop occurs. No parser `qCWarning` line is included: the separately forwarded parser reason is what reaches the Console.
+[BinFilterDialog joins the error and warnings with `;`](/Users/martymclean/Developer/MediaMuster/src/binfilterdialog.cpp:549). Unsupported-data failures may contain the B002 prefix, up to 32 unique warnings, and nested B009/B010 context. An error after earlier warnings can include both. The first two header-inspection paths report a drag rejection before a drop occurs. No parser `qCWarning` line is included: the separately forwarded parser reason is what reaches the Console.
 
 The list preserves all app-owned reason text, including duplicate variants and reporting fallbacks. B006 is an open-ended Qt/OS error family, not a promise that every OS-generated translation can be enumerated. B008 normally does not reach the Console because cancelled, removed rows have no remaining receiver. All Good entries have five wording alternatives; low-level identifiers and numbers are retained where they aid diagnosis. No production text was changed.
 
@@ -2729,17 +2729,17 @@ Identity-check messages were checked against `OpFile::inspect`, `inspectDirector
 
 ### O027 — Good
 
-**Current:** ` Copy finished; the storage did not confirm the full durability request.`
+**Current:** `Copy finished; the storage did not confirm the full durability request.`
 
 **When:** Appended to copier detail after copying completes with reduced file-sync guarantees. Leading space is literal. Source: [oprunner.cpp:542](/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp:542).
 
 **Five simpler alternatives:**
 
-1.  Copy finished; storage could not fully confirm it was saved.
-2.  Copied, but the drive could not fully confirm the write.
-3.  Copy complete; a full save confirmation was unavailable.
-4.  Copied; storage did not confirm protection against a crash.
-5.  Copy complete, but a crash could still affect the saved result.
+1. Copy finished; storage could not fully confirm it was saved.
+2. Copied, but the drive could not fully confirm the write.
+3. Copy complete; a full save confirmation was unavailable.
+4. Copied; storage did not confirm protection against a crash.
+5. Copy complete, but a crash could still affect the saved result.
 
 ### O028 — Good
 
@@ -4470,7 +4470,7 @@ Source paths are linked to the current workspace. No production changes were mad
 
 **Current:** `Cannot remove expired journal: {path}. {Qt file error}` — [opjournal.cpp:805](/Users/martymclean/Developer/MediaMuster/src/opjournal.cpp:805)
 
-**When:** Removing an eligible expired operation record fails. The controller adds `Journal cleanup: `.
+**When:** Removing an eligible expired operation record fails. The controller adds `Journal cleanup:`.
 
 **Five simpler alternatives:**
 
@@ -4664,7 +4664,7 @@ The ordinary “system Trash unavailable” path defers to a choice dialog and o
 
 **Current:** `%1 (%2, code %3)` — [optrash_mac.mm:19](/Users/martymclean/Developer/MediaMuster/src/optrash_mac.mm:19)
 
-**When:** macOS returns an `NSError`. `%1` is its localised description, `%2` its error domain, `%3` its code. Up to four nested error descriptions are joined with `; `. Their prose is supplied by macOS and cannot be exhaustively enumerated as app text.
+**When:** macOS returns an `NSError`. `%1` is its localised description, `%2` its error domain, `%3` its code. Up to four nested error descriptions are joined with `;`. Their prose is supplied by macOS and cannot be exhaustively enumerated as app text.
 
 **Five simpler alternatives:**
 
@@ -5100,3 +5100,7 @@ Validation covers the app build, the UI suite and the file-operation suite. Rela
 Further selected wording was applied for M028, M030, M032, M034–M036, M038, M041–M043, M050 and M051. Skipped, Cancelled and Failed now precede the item name; an absent detail does not leave a trailing colon. Done and Original returned keep the optional explanation after a dash. Sentence punctuation does not duplicate an existing final full stop. The Resume notice is emitted only after dispatch accepts the request.
 
 M031 now reads `{name}: Source kept: {detail}.` SourceRetained means the source file was kept, including declined Trash cases where no copy occurred. Without a detail, it reads `{name}: Source kept.` The detail separator is omitted when there is no detail, and an existing final full stop is not duplicated.
+
+The Console now displays `HH:mm:ss module: message`, using a small formatter without severity labels or brackets. The diagnostic log uses Qt's `qSetMessagePattern` and `qFormatLogMessage` for `yyyy-MM-dd HH:mm:ss.zzz severity category: message`, with Qt's full severity names. Available warning/error source locations are still appended. Qt's application-wide message pattern belongs to the diagnostic log, so it does not change the Console presentation. Both outputs share the original message data; scanner batching and the Console's line limit are unchanged.
+
+The 30-day ages are written directly at each use in the diagnostic log (including saved Console messages), crash-report collection and journal cleanup, with no shared retention constant. Crash reports are selected for copying by age; this does not delete old reports. Journal cleanup retains its recovery and Undo protections. The duplicate diagnostic-log path storage and redundant existence check before reading the log creation date were removed; the Console's session-only 2,000-line limit is separate from retention.

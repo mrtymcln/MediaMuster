@@ -34,23 +34,28 @@ class TestDiagnostics : public QObject
 {
 	Q_OBJECT
 private slots:
+	void initTestCase();
 	void warning_line_has_level_category_and_location();
 	void debug_line_omits_location();
-	void unknown_category_falls_back_to_default();
+	void default_category_omits_prefix();
 	void collects_recent_mediamuster_reports();
 	void ignores_other_apps_and_old_reports();
 	void dedups_on_second_run();
 	void missing_reports_dir_is_noop();
 };
 
+void TestDiagnostics::initTestCase()
+{
+	// Exercise the Qt formatter and source suffix without a clock-dependent prefix.
+	qSetMessagePattern(QStringLiteral("%{type} %{if-category}%{category}: %{endif}%{message}"));
+}
+
 void TestDiagnostics::warning_line_has_level_category_and_location()
 {
 	QMessageLogContext ctx("scanner.cpp", 42, "doScan", "mediamuster.scanner");
 	const QString line = Diagnostics::formatMessage(QtWarningMsg, ctx, QStringLiteral("disk full"));
 
-	QVERIFY(line.contains(QStringLiteral(" W [mediamuster.scanner] disk full")));
-	QVERIFY(line.contains(QStringLiteral("scanner.cpp:42")));
-	QVERIFY(line.endsWith(QLatin1Char('\n')));
+	QCOMPARE(line, QStringLiteral("warning mediamuster.scanner: disk full  (scanner.cpp:42)\n"));
 }
 
 void TestDiagnostics::debug_line_omits_location()
@@ -58,16 +63,15 @@ void TestDiagnostics::debug_line_omits_location()
 	QMessageLogContext ctx("x.cpp", 7, "f", "mediamuster.app");
 	const QString line = Diagnostics::formatMessage(QtDebugMsg, ctx, QStringLiteral("hello"));
 
-	QVERIFY(line.contains(QStringLiteral(" D [mediamuster.app] hello")));
-	QVERIFY(!line.contains(QStringLiteral("x.cpp")));
+	QCOMPARE(line, QStringLiteral("debug mediamuster.app: hello\n"));
 }
 
-void TestDiagnostics::unknown_category_falls_back_to_default()
+void TestDiagnostics::default_category_omits_prefix()
 {
 	QMessageLogContext ctx;
 	const QString line = Diagnostics::formatMessage(QtInfoMsg, ctx, QStringLiteral("plain qInfo"));
 
-	QVERIFY(line.contains(QStringLiteral(" I [default] plain qInfo")));
+	QCOMPARE(line, QStringLiteral("info plain qInfo\n"));
 }
 
 void TestDiagnostics::collects_recent_mediamuster_reports()
