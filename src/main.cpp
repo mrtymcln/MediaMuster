@@ -1,6 +1,5 @@
 #include "diagnostics.h"
 #include "mainwindow.h"
-#include "qtaccessibilityfix.h"
 #include "version.h"
 #include <QApplication>
 #include <QDate>
@@ -22,10 +21,6 @@ int main(int argc, char *argv[])
 
 	// Start logging after setting the app details used in the path and header.
 	Diagnostics::install();
-
-	// Before any window exists: the macOS accessibility bridge builds its
-	// element tree from the first view it sees (see the header).
-	QtAccessibilityFix::install();
 
 #ifdef Q_OS_MAC
 	app.setStyle(QStyleFactory::create("macos"));

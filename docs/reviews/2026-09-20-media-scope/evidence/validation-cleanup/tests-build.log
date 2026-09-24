@@ -37,7 +37,6 @@
 [37/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/icons.cpp.o
 [38/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/logfile.cpp.o
 [39/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mainwindow.cpp.o
-[40/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/macaccessibilityguard.cpp.o
 [41/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediafilterproxy.cpp.o
 [42/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediatablemodel.cpp.o
 [43/255] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/binmetadataresolver.cpp.o

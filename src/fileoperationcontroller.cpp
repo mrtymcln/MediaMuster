@@ -64,10 +64,10 @@ FileOperationController::FileOperationController(QWidget *window)
 			switch (result.state)
 			{
 			case OpResult::State::Completed:
-				state = tr("Completed");
+				state = tr("Done");
 				break;
 			case OpResult::State::SourceRetained:
-				state = tr("Copied; source retained");
+				state = tr("Source kept");
 				break;
 			case OpResult::State::OriginalRestored:
 				state = tr("Original restored");
@@ -90,9 +90,19 @@ FileOperationController::FileOperationController(QWidget *window)
 			}
 			const bool problem = result.state == OpResult::State::Failed ||
 								 result.state == OpResult::State::NeedsAttention;
+			const bool stateFirst = result.state == OpResult::State::Skipped ||
+									result.state == OpResult::State::Cancelled ||
+									result.state == OpResult::State::Failed;
+			const bool colonDetail = stateFirst || result.state == OpResult::State::SourceRetained;
+			QString message = stateFirst ? state + ": " + result.name : result.name + ": " + state;
+			if (!result.message.isEmpty())
+				message += (colonDetail ? ": " : " — ") + result.message;
+			if ((colonDetail || result.state == OpResult::State::Completed ||
+				 result.state == OpResult::State::OriginalRestored) &&
+				!message.endsWith(QLatin1Char('.')))
+				message += QLatin1Char('.');
 			emit logMessage(problem ? QtWarningMsg : QtInfoMsg, QStringLiteral("ops"),
-							result.name + ": " + state +
-								(result.message.isEmpty() ? QString() : " — " + result.message));
+							message);
 			if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
 				m_removedSourcePaths.insert(result.source);
 			if (!result.restoredOriginalPath.isEmpty())
@@ -251,7 +261,12 @@ void FileOperationController::runStartupRecovery()
 		const bool cleaned = OpJournal::prune({}, cleanupError);
 		auto summary = OperationRecovery::run();
 		if (!cleaned)
-			summary.notes.prepend("Journal cleanup: " + cleanupError);
+		{
+			QString message = "Journal cleanup failed: " + cleanupError;
+			if (!message.endsWith(QLatin1Char('.')))
+				message += QLatin1Char('.');
+			summary.notes.prepend(message);
+		}
 		return summary; }));
 }
 
@@ -324,7 +339,7 @@ void FileOperationController::undoLastOperation()
 	request.undoJournalPath = m_undoCandidate.journalPath;
 	if (dispatchRequest(std::move(request)))
 		emit logMessage(QtInfoMsg, QStringLiteral("ops"),
-						tr("Undoing the last operation."));
+						tr("Undoing the previous operation."));
 }
 
 bool FileOperationController::dispatchRequest(OpRequest request)
@@ -530,6 +545,8 @@ bool FileOperationController::resumeOperation(const OperationRecovery::Resumable
 	request.preserve = job.preserve;
 	request.items = job.remaining;
 	request.resumeJournalPath = job.journalPath;
-	emit logMessage(QtInfoMsg, QStringLiteral("ops"), tr("Resuming the previous job."));
-	return dispatchRequest(std::move(request));
+	if (!dispatchRequest(std::move(request)))
+		return false;
+	emit logMessage(QtInfoMsg, QStringLiteral("ops"), tr("Resuming the unfinished job."));
+	return true;
 }

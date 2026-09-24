@@ -1,5 +1,7 @@
 # Current-code review evidence — 6 September 2026
 
+Later cleanup removed obsolete component references from this bundle. `[removed component]` marks redaction within a retained log line. Recorded test totals and original provenance describe the earlier, complete capture.
+
 This bundle preserves the probes and raw output produced during this review. It contains no application build directory, compiled executable/object, or 256 MiB parser input. The original review ran on this Mac with AppleClang 17, Qt 6.5.3, and C++17. These are bounded reproductions and source-control-flow proofs, not certification that every file format, filesystem, network share, or Windows branch is correct.
 
 ## Contents and provenance
@@ -13,7 +15,7 @@ This bundle preserves the probes and raw output produced during this review. It 
 - `source-manifest.tsv`: SHA-256, logical line count and byte count for 147 current source/configuration files (55,928 logical lines). This is a fingerprint manifest, not a full copy of those sources. It covers `src` including `.inc`, vendor, resource list and version template; root-level test code/helpers/CMake; root CMake; `.github`; and `tools` code. Binary fixtures and all previous documentation/notes are excluded.
 - `source-symbol-search.txt`: captured `rg` commands/results for unused state, compatibility setter APIs and the unused test helper. Same-named fields in different classes must be distinguished.
 - `git-head.txt`, `git-status.txt`, `snapshot-metadata.json`: capture identity and scope. Status excludes the new `reviews/2026-09-06-current-code/` tree. Pre-existing documentation modifications are recorded as status entries only; those documents were not copied or used as review evidence.
-- `copy-provenance.tsv`: original temporary location/hash, bundled hash, and whether each copied file is byte-identical. Raw logs and upstream provenance data are preserved unchanged. Reports have durable evidence links and incorporate the final reviewer priority, scope and exact-line rulings. Helper scripts redirect source/output paths; the parser harness now emits its small generated inputs beside its executable. Executable adaptations change paths only and were inspected but were **not rebuilt or rerun during bundling**. The captured raw logs came from the originals.
+- `copy-provenance.tsv`: original temporary location/hash, bundled hash, and whether each copied file is byte-identical. Raw logs and upstream provenance data were preserved unchanged when first bundled; later cleanup is recorded above and in the provenance table. Reports have durable evidence links and incorporate the final reviewer priority, scope and exact-line rulings. Helper scripts redirect source/output paths; the parser harness now emits its small generated inputs beside its executable. Executable adaptations change paths only and were inspected but were **not rebuilt or rerun during bundling**. The captured raw logs came from the originals.
 
 The reports are detailed review contributions, including caveats and hypotheses explicitly excluded from findings. Read the root `REVIEW.md` for the consolidated assessment. `scanner_filters/independent_audit.md` narrows the safety language where a proof establishes lost recovery tracking or an unverified destination while media bytes remain available.
 

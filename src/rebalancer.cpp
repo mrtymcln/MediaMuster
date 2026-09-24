@@ -104,5 +104,6 @@ void Rebalancer::startEngineRun(OpRequest request)
 	// The engine takes it from here: write-ahead journal, identity gates,
 	// per-rename recovery coverage, undo candidacy. Its signals were
 	// adapted onto ours in the constructor.
+	emit log(QtInfoMsg, tr("Rebalance started."));
 	m_engine->execute(std::move(request));
 }

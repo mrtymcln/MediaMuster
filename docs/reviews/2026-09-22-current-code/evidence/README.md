@@ -1,5 +1,7 @@
 # Reproduction evidence
 
+Later cleanup removed obsolete component references from this bundle. `[removed component]` marks redaction within a retained log line. Recorded test totals and original provenance describe the earlier, complete capture.
+
 Snapshot: `1007954dcd902eac82c16f57c469b9a04c431aee`, initially clean, macOS, Qt 6.5.3, C++17. `source-manifest.tsv` records reviewed source/configuration hashes. The review adds reports and evidence only; it does not implement the suggested fixes.
 
 | Evidence | What it establishes |

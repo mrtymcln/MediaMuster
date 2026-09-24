@@ -136,14 +136,6 @@ The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects
 
 **Fix:** Use explicit conditional checks with a clear exception or fatal error for external-input validation. Reserve `assert` for internal conditions whose removal is acceptable.
 
-## Verified product limitation: macOS item rows are hidden from accessibility
-
-**Source:** [macaccessibilityguard.cpp:11](/Users/martymclean/Developer/MediaMuster/src/macaccessibilityguard.cpp:11), [main.cpp:28](/Users/martymclean/Developer/MediaMuster/src/main.cpp:28), exact Qt pin at [CMakeLists.txt:74](/Users/martymclean/Developer/MediaMuster/CMakeLists.txt:74).
-
-This is an intentional workaround with a material product cost, not an accidental omission. On the pinned macOS Qt 6.5.3 build, the installed factory replaces list/table/tree accessibility interfaces with a childless widget. The real probe creates a list with one row and obtains `accessible-children=0 table-interface=0`. The same factory covers the media table and other item views. Screen readers cannot enumerate their rows through those interfaces.
-
-The code says the workaround addresses a Qt bridge issue; this review did not reproduce that original issue or prove a safe framework upgrade. Do not simply remove the guard. Validate a fixed supported Qt version or a narrower workaround, then verify row navigation and selection with VoiceOver. Windows does not enter this compile-time branch. This limitation is excluded from the accidental-defect count.
-
 ## FS12 — P2: Resume deletes its old journal before the replacement plan is durable
 
 **Source:** [mainwindow.cpp:2063](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:2063), [opmanager.cpp:94](/Users/martymclean/Developer/MediaMuster/src/opmanager.cpp:94), [backgroundjob.h:61](/Users/martymclean/Developer/MediaMuster/src/backgroundjob.h:61), [oprunner.cpp:471](/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp:471).

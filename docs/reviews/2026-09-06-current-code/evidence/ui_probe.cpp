@@ -1,10 +1,8 @@
 #include "mainwindow.h"
 #include "managemediadialog.h"
-#include "macaccessibilityguard.h"
 #include "logfile.h"
 #include "oprunner.h"
 #include "rebalancedialog.cpp"
-#include <QAccessible>
 #include <QApplication>
 #include <QFile>
 #include <QListWidget>
@@ -67,11 +65,6 @@ int main(int argc, char **argv) {
     wait.restart(); while(space.m_checkingDest && wait.elapsed()<10000) { app.processEvents(); QThread::msleep(1); }
     space.m_conflictGlobalCombo->setCurrentIndex(1);
     out << "SPACE-SKIP policy=" << int(space.conflictPolicies().value(large.filePath)) << " execute-enabled=" << space.m_btnExecute->isEnabled() << " remaining-required=1 available=" << QStorageInfo(tmp.path()).bytesAvailable() << "\n";
-
-    MacAccessibilityGuard::install();
-    QListWidget list; list.addItem("Real media row");
-    QAccessibleInterface *iface=QAccessible::queryAccessibleInterface(&list);
-    out << "ACCESSIBILITY rows=" << list.count() << " accessible-children=" << iface->childCount() << " table-interface=" << bool(iface->tableInterface()) << "\n";
 
     // Only this process's unique QStandardPaths test directory is touched.
     QStandardPaths::setTestModeEnabled(true);

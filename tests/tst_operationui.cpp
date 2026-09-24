@@ -86,6 +86,18 @@ namespace
 				return card->accessibleDescription();
 		return QStringLiteral("Missing folder card: ") + folderName;
 	}
+	QStringList relativeMessages(const QPlainTextEdit *console)
+	{
+		const QString prefix = QStringLiteral("[relatives] ");
+		QStringList messages;
+		for (const QString &line : console->toPlainText().split('\n'))
+		{
+			const int start = line.indexOf(prefix);
+			if (start >= 0)
+				messages.append(line.mid(start + prefix.size()));
+		}
+		return messages;
+	}
 	struct Sink : OpSink
 	{
 		std::atomic<bool> *cancelAfterResult = nullptr;
@@ -137,6 +149,10 @@ private slots:
 	void undo_restores_inventory();
 	void debug_flags_default_off_and_text_undo_works();
 	void menu_availability_tracks_locations_selection_and_activity();
+	void select_relatives_counts_all_visible_matches_data();
+	void select_relatives_counts_all_visible_matches();
+	void select_relatives_counts_master_ids_even_when_names_match();
+	void select_relatives_preserves_hidden_selections_without_using_them_as_seeds();
 	void text_editing_shortcuts_remain_native();
 	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
@@ -740,6 +756,176 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	window.m_volumeList->clear();
 	QVERIFY(!scanAll->isEnabled());
 	QVERIFY(!window.m_scanAllButton->isEnabled());
+}
+
+void TestOperationUi::select_relatives_counts_all_visible_matches_data()
+{
+	QTest::addColumn<int>("total");
+	QTest::addColumn<int>("initiallySelected");
+	QTest::addColumn<bool>("hideLastRelative");
+	QTest::addColumn<QString>("expectedMessage");
+	QTest::newRow("solo-file") << 1 << 1 << false
+		<< QStringLiteral("Selected 1 file across 1 master clip.");
+	QTest::newRow("audio-pair") << 2 << 1 << false
+		<< QStringLiteral("Selected 2 files across 1 master clip.");
+	QTest::newRow("trio") << 3 << 1 << false
+		<< QStringLiteral("Selected 3 files across 1 master clip.");
+	QTest::newRow("partly-selected-trio") << 3 << 2 << false
+		<< QStringLiteral("Selected 3 files across 1 master clip.");
+	QTest::newRow("filtered-relative") << 2 << 1 << true
+		<< QStringLiteral("Selected 1 file across 1 master clip.");
+}
+
+void TestOperationUi::select_relatives_counts_all_visible_matches()
+{
+	QFETCH(int, total);
+	QFETCH(int, initiallySelected);
+	QFETCH(bool, hideLastRelative);
+	QFETCH(QString, expectedMessage);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(total + 1);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		auto &file = files[i];
+		file.fileName = QStringLiteral("audio-%1.mxf").arg(i);
+		file.filePath = path(file.fileName);
+		file.clipName = QStringLiteral("Interview");
+		file.mobId = QStringLiteral("file-%1").arg(i);
+		file.masterMobId = i < total ? QStringLiteral("master-a") : QStringLiteral("unrelated-master");
+		file.kind = MediaFile::Kind::Audio;
+	}
+	// The unrelated file deliberately shares the clip name, but not the master ID.
+	if (hideLastRelative)
+		files[total - 1].kind = MediaFile::Kind::Video;
+	window.onScanFinished(files);
+	if (hideLastRelative)
+		window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::Audio);
+	const int visibleRelatives = total - (hideLastRelative ? 1 : 0);
+	QCOMPARE(window.m_proxy->rowCount(), visibleRelatives + 1);
+	for (int row = 0; row < initiallySelected; ++row)
+	{
+		const auto index = window.m_proxy->mapFromSource(window.m_model->index(row, 0));
+		QVERIFY(index.isValid());
+		window.m_tableView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	}
+	auto *command = window.findChild<QAction *>(QStringLiteral("selectRelativesAction"));
+	QVERIFY(command && command->isEnabled());
+	window.m_console->clear();
+	command->trigger();
+	QCOMPARE(relativeMessages(window.m_console), QStringList{expectedMessage});
+	QSet<QString> expectedPaths;
+	for (int row = 0; row < visibleRelatives; ++row)
+		expectedPaths.insert(files[row].filePath);
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> paths;
+		for (const auto &file : window.selectedFiles())
+			paths.insert(file.filePath);
+		return paths;
+	};
+	QCOMPARE(selectedPaths(), expectedPaths);
+	QCOMPARE(window.m_proxy->rowCount(), visibleRelatives + 1);
+
+	// Repeating the command reports the same totals, including existing selections.
+	window.m_console->clear();
+	command->trigger();
+	QCOMPARE(relativeMessages(window.m_console), QStringList{expectedMessage});
+	QCOMPARE(selectedPaths(), expectedPaths);
+	if (hideLastRelative)
+	{
+		QVERIFY(!window.m_proxy->mapFromSource(window.m_model->index(total - 1, 0)).isValid());
+		window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::All);
+		QCOMPARE(window.m_proxy->rowCount(), total + 1);
+		QCOMPARE(selectedPaths(), expectedPaths);
+	}
+}
+
+void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(6);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		auto &file = files[i];
+		file.fileName = QStringLiteral("channel-%1.mxf").arg(i);
+		file.filePath = path(file.fileName);
+		file.clipName = QStringLiteral("Same clip name");
+		file.mobId = QStringLiteral("file-%1").arg(i);
+		file.masterMobId = i < 2 ? QStringLiteral("master-a")
+			: i < 5 ? QStringLiteral("master-b") : QStringLiteral("unrelated-master");
+		file.kind = MediaFile::Kind::Audio;
+	}
+	window.onScanFinished(files);
+	for (int row : {0, 2})
+	{
+		const auto index = window.m_proxy->mapFromSource(window.m_model->index(row, 0));
+		QVERIFY(index.isValid());
+		window.m_tableView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	}
+	window.m_console->clear();
+	window.onSelectRelatives();
+	const QStringList expectedMessages{QStringLiteral("Selected 5 files across 2 master clips.")};
+	QCOMPARE(relativeMessages(window.m_console), expectedMessages);
+	QSet<QString> selectedPaths;
+	for (const auto &file : window.selectedFiles())
+		selectedPaths.insert(file.filePath);
+	QSet<QString> expectedPaths;
+	for (int row = 0; row < 5; ++row)
+		expectedPaths.insert(files[row].filePath);
+	QCOMPARE(selectedPaths, expectedPaths);
+
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QCOMPARE(relativeMessages(window.m_console), expectedMessages);
+	QCOMPARE(window.selectedFiles().size(), 5);
+}
+
+void TestOperationUi::select_relatives_preserves_hidden_selections_without_using_them_as_seeds()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	const QStringList names{
+		QStringLiteral("visible-seed-a.mxf"), QStringLiteral("visible-relative-a.mxf"),
+		QStringLiteral("hidden-seed-b.mxf"), QStringLiteral("visible-relative-b.mxf")};
+	QVector<MediaFile> files(names.size());
+	for (int i = 0; i < files.size(); ++i)
+	{
+		auto &file = files[i];
+		file.fileName = names[i];
+		file.filePath = path(file.fileName);
+		file.clipName = i < 2 ? QStringLiteral("Interview") : QStringLiteral("Cutaway");
+		file.mobId = QStringLiteral("file-%1").arg(i);
+		file.masterMobId = i < 2 ? QStringLiteral("master-a") : QStringLiteral("master-b");
+		file.kind = MediaFile::Kind::Audio;
+	}
+	window.onScanFinished(files);
+	for (int row : {0, 2})
+		window.m_tableView->selectionModel()->select(
+			window.m_proxy->mapFromSource(window.m_model->index(row, 0)),
+			QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> paths;
+		for (const auto &file : window.selectedFiles())
+			paths.insert(file.filePath);
+		return paths;
+	};
+	QCOMPARE(selectedPaths(), QSet<QString>({files[0].filePath, files[2].filePath}));
+
+	// Hide B's selected seed, but leave its unselected relative visible.
+	window.onSearchChanged(QStringLiteral("visible-"));
+	QCOMPARE(window.m_proxy->rowCount(), 3);
+	QCOMPARE(selectedPaths(), QSet<QString>{files[0].filePath});
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QCOMPARE(relativeMessages(window.m_console),
+			 QStringList{QStringLiteral("Selected 2 files across 1 master clip.")});
+	QCOMPARE(selectedPaths(), QSet<QString>({files[0].filePath, files[1].filePath}));
+	QCOMPARE(window.m_proxy->rowCount(), 3);
+
+	// B's earlier selection returns, but its relative was never selected.
+	window.onSearchChanged({});
+	QCOMPARE(window.m_proxy->rowCount(), 4);
+	QCOMPARE(selectedPaths(), QSet<QString>({files[0].filePath, files[1].filePath, files[2].filePath}));
 }
 
 void TestOperationUi::text_editing_shortcuts_remain_native()

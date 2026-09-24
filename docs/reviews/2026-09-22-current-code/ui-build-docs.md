@@ -66,7 +66,6 @@ Confidence: high, reproduced. Evidence: [UI output](evidence/ui_probe.log).
 
 | Location | Suggested correction |
 | --- | --- |
-| [logfile.cpp:54](/Users/martymclean/Developer/MediaMuster/src/logfile.cpp:54), [macaccessibilityguard.h:38](/Users/martymclean/Developer/MediaMuster/src/macaccessibilityguard.h:38) | “Exactly two messages” is inaccurate: the filter drops every message in `qt.accessibility.core`, regardless of text/severity, plus a prefix outside that category. Narrow it to the intended known noise; keep other diagnostics. |
 | [managemediadialog.h:26](/Users/martymclean/Developer/MediaMuster/src/managemediadialog.h:26) | “Drives OpManager” predates the controller boundary. It collects choices; MainWindow/controller dispatch the operation. |
 | [managemediadialog.h:60](/Users/martymclean/Developer/MediaMuster/src/managemediadialog.h:60) | An unapproved late conflict fails the item; it is not the explicit Skip outcome. Match the current runner and behavior guide. |
 | [managemediadialog.cpp:289](/Users/martymclean/Developer/MediaMuster/src/managemediadialog.cpp:289) | Remove the obsolete Delete-key shortcut example; MainWindow explicitly has no Delete shortcut. |
@@ -91,7 +90,7 @@ No broad replacement of parent-owned Qt pointers with smart pointers is recommen
 
 ## Validation and coverage
 
-- Reviewed the remaining production main-window/dialog, formatting, logging, crash collection, accessibility, reveal, layout, icon, enum, feature/version/resource and worker helpers; checked application/test CMake source lists and all six CI CMake recipes plus the workflow.
+- Reviewed the remaining production main-window/dialog, formatting, logging, crash collection, reveal, layout, icon, enum, feature/version/resource and worker helpers; checked application/test CMake source lists and all six CI CMake recipes plus the workflow.
 - Cross-checked current behavior, architecture, release gates, contributor guide, documentation indexes and status banners in historical audits. Test inspection checked relevant scenarios and gaps; it was not an independent audit of every assertion or every binary fixture byte.
 - `cmake --build build -j 6` compiled and linked the app and tests. The app's post-build Developer ID signing failed with `A timestamp was expected but was not found`. No compiler diagnostic was recorded. Do not call this a successful signed application build.
 - `ctest --test-dir build -C Debug --parallel 1 --output-on-failure`: all 27 suites passed in 38.64 seconds. Optional external-corpus cases may skip within passing suites.

@@ -13,14 +13,13 @@ Additional reproduced cases: a fully balanced 4,999-item group is relocated repe
 
 # UI probe challenge
 
-Read all ui_probe.cpp and ui_probe.log and associated production paths. All seven observations are supported by production code:
+Read all ui_probe.cpp and ui_probe.log and associated production paths. All six retained observations are supported by production code:
 
 - Newly constructed QListWidgetItem selection is set before insertion, so initial/refresh/new manual-path selection is lost. Selection of an already-owned existing item is a different successful path.
 - Removing model rows after move/delete does not rebuild project sidebar items/counts.
 - Rebalance completion displays projected folder totals even for cancellation or failure. The UI probe supplies a cancellation result; it proves presentation error, not incorrect filesystem changes.
 - Destination preview independently chooses the same '(2)' name for third and later same-name files. Execution reserves destinations, so this is a preview error, not demonstrated overwrite.
 - Capacity calculation includes skipped rows; per-row conflict changes also do not recalculate summary. The probe's large file size is synthetic metadata fed to the real UI calculation; no large file copy or real full-disk condition is tested.
-- The installed macOS Qt 6.5.3 accessibility guard deliberately suppresses table/list/tree children and table interface. This is a current accessibility limitation caused by a documented crash workaround; removing the guard alone is not a justified fix.
 - Log migration unconditionally removes the old log directory after optionally moving the old current log. Existing history and crash reports are lost when the new current log already exists. These are log/report bytes, not media.
 
 # Final additional test coverage

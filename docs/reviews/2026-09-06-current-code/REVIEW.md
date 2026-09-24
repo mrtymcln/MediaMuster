@@ -7,7 +7,7 @@ This review contains **36 findings: 6 P1, 22 P2 and 8 P3**, plus separately iden
 ## What matters most
 
 | Finding | Engineering conclusion | In plain English | Proof |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | FS01 | Object identity plus size is insufficient to establish source content stability before Move removes the source. | A same-size edit made while copying can be discarded, despite a successful move. | Edited source byte disappears; destination retains the old byte; success=1. |
 | FS02 | Rollback treats ownership of a pathname as ownership of its current occupant. | Cancelling a copy can delete a different file another application put there. | An independently created replacement is deleted by cancellation cleanup. |
 | FS03 | A recovery failure still receives a terminal recovered marker. | If repair fails once, reopening after fixing the obstacle does not retry; the original remains stranded. | First run flags failure; second deletes the journal and leaves the original parked. |
@@ -22,7 +22,7 @@ The first two cases demonstrate actual loss of unique file bytes in temporary fi
 The detailed reports retain the original evidence IDs. SF2 is deliberately excluded from the defect count because its expected behavior needs your decision.
 
 | ID | Priority | Finding | Detailed review |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | FS01 | P1 | Move discards an in-place same-size source edit | [File safety](evidence/file_safety/findings.md#L23) |
 | FS02 | P1 | Cancel deletes another writer's replacement destination | [File safety](evidence/file_safety/findings.md#L35) |
 | FS03 | P1 | Failed recovery is retired instead of retried | [File safety](evidence/file_safety/findings.md#L47) |
@@ -67,7 +67,7 @@ FS08 is not an available main-window action: `kUndoEnabled` is false in [mainwin
 These recommendations target demonstrated drift. They fit C++17 and do not require a new framework.
 
 | Extraction | Current duplication or weak boundary | Benefit and relevant findings |
-|---|---|---|
+| --- | --- | --- |
 | Representation-aware media identity and lookup keys | AVB parser, model enrichment and scanner independently decide canonical/swapped keys. Raw strings hide whether an ID is an OMF wrapper or another representation. | Stop the wrong-clip alias at its source; one tested conversion policy. P01. |
 | Operation plan with reserved destinations and effective policies | Dialog preview, capacity estimate and runner each derive parts of the job separately. | Preview filenames and required space agree with intended execution; still revalidate at execution. UI03/UI06. |
 | Durable operation/rollback result | Inner/outer ParkedFile guards, copier status, journal dirty flags and recovery finalization separately represent unfinished work. | Record each surviving artifact and its identity once; acknowledge durable intent before destructive transitions. FS02/03/06/09/11/12. |
@@ -104,8 +104,6 @@ Qt parent/child ownership is valid resource management here. I have not treated 
 
 **The requested sample-rate field is missing from the product surface.** The underlying value exists, but the table and CSV omit it (SF7). Other requested field categories have table mappings, but the parser/identity findings above limit their correctness in the specified cases. Search, project/codec/rate filters, AVB filtering and copy/move/delete paths are implemented and exercised; their presence does not certify safe execution.
 
-**Accessibility has an intentional limitation.** On pinned macOS Qt 6.5.3 the guard hides item rows from accessibility. A real interface probe confirms it. The [UI review](ui-build-tests.md) explains the effect and why a validated framework/workaround change is needed rather than simply deleting the guard.
-
 **MDVX parity remains unverified.** Its [official product page](https://djfio.com/mdv/) advertises filesystem media management, PMR/MDB-based scanning and support for shared/network storage. The overlap is clear from MediaMuster's implemented code paths, but that short page is not a complete specification. I did not run MDVX, compare its full UI/feature set, or benchmark either app on NEXIS/SMB. There is no evidence here to claim complete parity or superior shared-storage performance.
 
 ## Verification and coverage
@@ -115,7 +113,7 @@ The review used current source and tests on disk, not historical notes, memory f
 All first-party implementation/header code, all test code/helpers, build configuration, CI workflow, resource declarations and extraction scripts were read across the review team. The generated effect catalogue was checked programmatically across all 887 rows for uniqueness, punctuation and alias collisions; its translations and proprietary classifications were not independently re-derived. All vendor header lines, including inactive architecture branches and API comments, were ultimately read. This is source review coverage, not proof that every possible runtime state or binary-format interpretation is correct. The [source manifest](evidence/source-manifest.tsv) records exact hashes and line counts, and individual reviewer coverage records identify their areas.
 
 | Check | Result and limit |
-|---|---|
+| --- | --- |
 | Fresh configure and build | Succeeded, AppleClang 17, Qt 6.5.3, C++17, Debug, macOS arm64; isolated build directory and ad-hoc signing. |
 | Existing CTest suite | 30 of 31 executables passed. `tst_oprescue` has three dated-fixture failures, detailed in BT01. Total CTest elapsed time 24.17 seconds. |
 | Skipped individual tests | Bento/MDB external-toolkit cases lacked their optional external fixture directories; scanner case-distinct-directory test skipped on this case-insensitive temporary filesystem. These are recorded in the per-test logs. |

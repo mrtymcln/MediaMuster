@@ -273,14 +273,12 @@ void MainWindow::collectCrashReports()
 		return;
 
 	addLog(QtWarningMsg, QStringLiteral("app"),
-		   QStringLiteral("MediaMuster quit unexpectedly. — %1 report(s) saved. "
-						  "Go to Help > Reveal Logs to send them to the developer.")
-			   .arg(collected.size()));
+		   QStringLiteral("I quit unexpectedly. Go to Help > Reveal Logs and send them to developer."));
 
 	QMessageBox::information(
 		this, QString(),
-		tr("MediaMuster quit unexpectedly. A crash report has been saved with "
-		   "your logs.\n\nGo to Help > Reveal Logs to send them to the developer."));
+		tr("I quit unexpectedly. A crash report has been saved "
+		   "with your logs.\n\nGo to Help > Reveal Logs to send them to the developer."));
 }
 
 // MARK: - UI layout
@@ -738,7 +736,7 @@ void MainWindow::buildDebugMenu()
 			{
 				const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
 				QApplication::setStyle(QStyleFactory::create(target));
-				addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("Style: %1").arg(target));
+				addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("Using %1 style for appearance.").arg(target));
 			});
 
 	debugMenu->addSeparator();
@@ -851,7 +849,7 @@ void MainWindow::setupConnections()
 				m_persistentSelectedPaths.subtract(paths);
 				refreshEverything();
 				addLog(QtInfoMsg, QStringLiteral("ops"),
-					   QStringLiteral("Removed %1 files from table").arg(rowsBefore - m_model->rowCount()));
+					   QStringLiteral("Removed %1 rows from the table.").arg(rowsBefore - m_model->rowCount()));
 			});
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
@@ -1014,7 +1012,7 @@ void MainWindow::setOmfEnabled(bool enabled)
 		refreshEverything();
 		updateActivityUi();
 	}
-	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled ? tr("OMF/OMFI enabled for this session. Rescan to include legacy media.") : tr("OMF/OMFI disabled; legacy media removed from the table."));
+	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled ? tr("Legacy media files are ON for this session. Rescan to include OMFI MediaFiles.") : tr("Legacy media files are OFF for this session."));
 }
 
 // MARK: - Precompute classification, details and filter
@@ -1075,7 +1073,7 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 	updateFilterCounts();
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Precompute Details enabled for this session") : QStringLiteral("Precomputes disabled; precompute filters cleared"));
+	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Precompute filters are ON for this session.") : QStringLiteral("Precompute filters are OFF for this session."));
 }
 
 void MainWindow::onFilterByEffects()
@@ -1102,9 +1100,13 @@ void MainWindow::onFilterByEffects()
 				names.append(name);
 		checkedPaths.append(names.isEmpty() ? QStringLiteral("all precomputes") : names.join(QStringLiteral(" / ")));
 	}
-	addLog(QtInfoMsg, QStringLiteral("effects"), !filter.active && volume.isEmpty() ? QStringLiteral("Precompute filter cleared") : QStringLiteral("Precompute filter: %1; volume: %2").arg(!filter.active ? QStringLiteral("all precomputes") : checkedPaths.isEmpty() ? QStringLiteral("no checked branches")
-																																																																		: checkedPaths.join(QStringLiteral("; ")),
-																																															volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume));
+	const QString choices = !filter.active			 ? QStringLiteral("all precomputes")
+							: checkedPaths.isEmpty() ? QStringLiteral("no checked branches")
+													 : checkedPaths.join(QStringLiteral("; "));
+	const QString location = volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume;
+	addLog(QtInfoMsg, QStringLiteral("effects"),
+		   !filter.active && volume.isEmpty() ? QStringLiteral("Precompute filter removed.")
+											  : QStringLiteral("Precompute filter active: %1 in %2.").arg(choices, location));
 }
 
 // MARK: - Bin filter
@@ -1122,7 +1124,7 @@ void MainWindow::onFilterByBins()
 				[this](const QString &path, const QString &reason)
 				{
 					addLog(QtWarningMsg, QStringLiteral("binfilter"),
-						   tr("Cannot load bin \"%1\": %2").arg(path, reason));
+						   tr("Bin unavailable: %1: %2").arg(path, reason));
 				});
 		connect(m_binFilterDialog, &BinFilterDialog::binsChanged, this,
 				[this](const QVector<AvbBin> &bins)
@@ -1150,12 +1152,12 @@ void MainWindow::onFilterByBins()
 
 				if (!filter.isActive())
 				{
-					addLog(QtInfoMsg, QStringLiteral("binfilter"), "Bin filter cleared");
+					addLog(QtInfoMsg, QStringLiteral("binfilter"), "Bin filter removed.");
 					updateStatusBar();
 					return;
 				}
 				addLog(QtInfoMsg, QStringLiteral("binfilter"),
-					   QStringLiteral("Bin filter active — %1 operations").arg(filter.steps.size()));
+					   QStringLiteral("Bin filter active: %1 steps.").arg(filter.steps.size()));
 				updateStatusBar();
 			});
 	}
@@ -1239,11 +1241,6 @@ void MainWindow::onRebalance()
 		}
 	}
 
-	addLog(QtInfoMsg, QStringLiteral("rebalance"),
-		   QStringLiteral("Opening rebalance dialog (%1 volume(s), default '%2')")
-			   .arg(mxfRootsByLabel.size())
-			   .arg(initialLabel));
-
 	RebalanceDialog dlg(mxfRootsByLabel, filesByMxfRoot, initialLabel, this);
 	dlg.beforeRebalance = [this, &dlg]
 	{
@@ -1269,8 +1266,7 @@ void MainWindow::onRebalance()
 	if (volumePath.isEmpty())
 	{
 		addLog(QtWarningMsg, QStringLiteral("rebalance"),
-			   "Couldn't determine volume path for re-scan; please scan "
-			   "manually");
+			   "Couldn't determine volume path for rescan; please scan manually.");
 		return;
 	}
 	addLog(QtInfoMsg, QStringLiteral("rebalance"), QStringLiteral("Re-scanning '%1' after rebalance").arg(volumePath));
@@ -1345,8 +1341,8 @@ void MainWindow::addVolumePath(const QString &path)
 {
 	if (!MediaScanner::canScanPath(path))
 	{
-		const QString message = tr("Not an Avid media location. Add an Avid MediaFiles or OMFI MediaFiles folder, or its containing folder.");
-		addLog(QtWarningMsg, QStringLiteral("volumes"), message + QLatin1Char(' ') + path);
+		const QString message = tr("Please add a recognised Avid folder, or its parent.");
+		addLog(QtWarningMsg, QStringLiteral("volumes"), message);
 		statusBar()->showMessage(message, 10000);
 		return;
 	}
@@ -1443,7 +1439,7 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 		if (d.hasAvidMedia)
 			++ac;
 	addLog(QtInfoMsg, QStringLiteral("volumes"),
-		   QStringLiteral("Found %1 volumes (%2 with Avid MediaFiles)").arg(volumes.size()).arg(ac));
+		   QStringLiteral("Found %1 volumes; %2 contain Avid media.").arg(volumes.size()).arg(ac));
 }
 
 // MARK: - Scan controls
@@ -1856,29 +1852,22 @@ void MainWindow::onExportCsv()
 
 	const int count = rows.size();
 	const MediaCsv::Options csvOptions{m_precomputesEnabled};
-	const QString label = exportSelected ? "selected records" : "records";
-	addLog(QtInfoMsg, QStringLiteral("export"), QStringLiteral("Exporting %1 %2 to %3").arg(count).arg(label).arg(path));
+	const QString label = exportSelected ? "selected" : "visible";
+	addLog(QtInfoMsg, QStringLiteral("export"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
 	m_exportInProgress = true;
 	updateActivityUi();
 
 	// Dispatch the write to a worker so big exports don't freeze the UI.
 	auto *watcher = new QFutureWatcher<bool>(this);
 	connect(watcher, &QFutureWatcher<bool>::finished, this,
-			[this, watcher, path, count, label]()
+			[this, watcher, path]()
 			{
 				const bool ok = watcher->result();
 				watcher->deleteLater();
 				m_exportInProgress = false;
 				updateActivityUi();
-				if (ok)
-				{
-					addLog(QtInfoMsg, QStringLiteral("export"),
-						   QStringLiteral("Exported %1 %2 to %3").arg(count).arg(label).arg(path));
-				}
-				else
-				{
-					addLog(QtCriticalMsg, QStringLiteral("export"), QStringLiteral("Failed to write %1").arg(path));
-				}
+				if (!ok)
+					addLog(QtCriticalMsg, QStringLiteral("export"), QStringLiteral("CSV export failed: %1.").arg(path));
 			});
 
 	watcher->setFuture(
@@ -1902,65 +1891,50 @@ void MainWindow::onRevealInFinder()
 
 void MainWindow::onSelectRelatives()
 {
-	// Selects every visible row sharing a master MOB with
-	// anything currently selected; V01 + A01 + A02 of each clip.
-	// Hidden or filtered rows stay hidden.
-	auto sel = selectedFiles();
+	// Add visible files sharing a MasterMobId with the current selection.
+	// The total includes files that were already selected.
+	const auto sel = selectedFiles();
 	if (sel.isEmpty())
 		return;
 
-	// Collect the non-empty master MOB IDs of visible selected files.
-	// Empty MOBs mean the file isn't tied to a master clip we can
-	// follow; they're silently excluded from the seed set but the
-	// other selected MOBs still drive a result.
-	QSet<QString> seedMobs;
+	QSet<QString> masterIds;
 	for (const MediaFile &f : sel)
 	{
 		if (!f.masterMobId.isEmpty())
-			seedMobs.insert(f.masterMobId);
+			masterIds.insert(f.masterMobId);
 	}
 
-	if (seedMobs.isEmpty())
+	if (masterIds.isEmpty())
 	{
-		addLog(QtWarningMsg, QStringLiteral("relatives"), "No master MOBs in selection — nothing to follow");
+		addLog(QtWarningMsg, QStringLiteral("relatives"),
+			   "No MasterMobId found in the selected files. Relatives can't be matched.");
 		return;
 	}
 
-	auto *selModel = m_tableView->selectionModel();
-	const int rowCount = m_proxy->rowCount();
-
 	QVector<int> rows;
-	for (int row = 0; row < rowCount; ++row)
+	for (int row = 0; row < m_proxy->rowCount(); ++row)
 	{
 		const MediaFile &f = fileAtProxyRow(row);
-		if (!f.masterMobId.isEmpty() && seedMobs.contains(f.masterMobId))
+		if (masterIds.contains(f.masterMobId))
 			rows.append(row);
 	}
 
-	if (rows.isEmpty())
-	{
-		addLog(QtWarningMsg, QStringLiteral("relatives"), "No relatives found (the relatives may be filtered out)");
-		return;
-	}
-
-	const int matched = rows.size();
-	const QItemSelection newSelection = selectionForRows(rows);
-
-	// Replace the existing selection with the relatives set and
-	// scroll so the first match is in view; saves the editor
-	// hunting for what just got selected.
-	selModel->clearSelection();
-	selModel->select(newSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	// The selection-change handler records visible rows; retain earlier
+	// selections hidden by filters while selecting these visible relatives.
+	const auto previousPaths = m_persistentSelectedPaths;
+	auto *selModel = m_tableView->selectionModel();
+	selModel->select(selectionForRows(rows), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	m_persistentSelectedPaths.unite(previousPaths);
 	const QModelIndex first = m_proxy->index(rows.first(), 0);
 	selModel->setCurrentIndex(first, QItemSelectionModel::NoUpdate);
 	m_tableView->scrollTo(first, QAbstractItemView::EnsureVisible);
 
 	addLog(QtInfoMsg, QStringLiteral("relatives"),
-		   QStringLiteral("Selected %1 relative%2 across %3 master clip%4")
-			   .arg(matched)
-			   .arg(matched == 1 ? "" : "s")
-			   .arg(seedMobs.size())
-			   .arg(seedMobs.size() == 1 ? "" : "s"));
+		   QStringLiteral("Selected %1 file%2 across %3 master clip%4.")
+			   .arg(rows.size())
+			   .arg(rows.size() == 1 ? "" : "s")
+			   .arg(masterIds.size())
+			   .arg(masterIds.size() == 1 ? "" : "s"));
 }
 
 // MARK: - Select inverse
@@ -1996,7 +1970,7 @@ void MainWindow::onInvertSelection()
 		selModel->select(newSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
 	addLog(QtInfoMsg, QStringLiteral("selection"),
-		   QStringLiteral("Inverted selection: %1 of %2 visible row%3 selected")
+		   QStringLiteral("Selection inverted: %1 of %2 visible row%3 selected.")
 			   .arg(newCount)
 			   .arg(rowCount)
 			   .arg(rowCount == 1 ? "" : "s"));

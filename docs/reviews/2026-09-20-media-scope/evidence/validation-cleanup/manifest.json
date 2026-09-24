@@ -71,14 +71,20 @@
     {
       "source": "/private/tmp/mediamuster-cleanup-app-build.log",
       "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-cleanup/app-build.log",
-      "bytes": 4242,
-      "sha256": "ac08dc1f601a5a58494885137224671d876ea2b65f6d0174ca9c052d512bedeb"
+      "bytes": 4155,
+      "sha256": "cbb469b7bd648b30ba3bed3f85369cce3c057e1803cb44ebdacc204c2980a44a",
+      "original_bytes": 4242,
+      "original_sha256": "ac08dc1f601a5a58494885137224671d876ea2b65f6d0174ca9c052d512bedeb",
+      "transformation": "obsolete component-only lines removed"
     },
     {
       "source": "/private/tmp/mediamuster-cleanup-tests-build.log",
       "archive": "docs/reviews/2026-09-20-media-scope/evidence/validation-cleanup/tests-build.log",
-      "bytes": 21931,
-      "sha256": "6c48d8d8d984e601460aa1a11cc8d4387d9d2cfbef0a9abe9c4d7697081f9ca9"
+      "bytes": 21830,
+      "sha256": "253cc9dad4d3778e6fb8e7b4d605f202610dc84659ffb489817c6d36eaf1ad7d",
+      "original_bytes": 21931,
+      "original_sha256": "6c48d8d8d984e601460aa1a11cc8d4387d9d2cfbef0a9abe9c4d7697081f9ca9",
+      "transformation": "obsolete component-only lines removed"
     },
     {
       "source": "/private/tmp/mediamuster-cleanup-public-build.log",

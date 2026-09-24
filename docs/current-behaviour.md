@@ -36,11 +36,6 @@ to the log. The file additionally receives detailed Qt diagnostic messages;
 the Console does not read back the file. Collected crash reports are kept
 separately and existing copies are left untouched.
 
-On macOS, an accessibility workaround hides list, table and tree rows from
-VoiceOver to avoid a documented Qt crash. Mouse interaction is unchanged.
-The workaround has no automatic Qt-version cutoff; it must be removed manually.
-Accessibility warnings are logged normally. Windows is unaffected.
-
 The current source includes a Debug menu. These four options start **off on every
 launch**:
 
@@ -225,8 +220,11 @@ those bins, while information recovered during scanning takes precedence.
 
 Selections are remembered across filter changes, but **file operations use only
 currently visible selected rows**. Hidden selections can reappear when the filter
-is removed. Select Relatives selects visible rows sharing a known master-clip
+is removed. Select Relatives adds visible rows sharing a known master-clip
 identifier with the current selection; it does not reveal hidden relatives.
+The Console reports the total matching visible files and master clips, including
+the original selection: "Selected 2 files across 1 master clip." Repeating the
+command reports the same totals; existing and hidden selections are retained.
 
 CSV export offers selected rows or all rows in the current filtered view. Its
 **All** choice does not include filtered-out rows. Filter-tab counts use the whole

@@ -1,5 +1,7 @@
 # Preserved evidence
 
+Later cleanup removed obsolete component references from this bundle. `[removed component]` marks redaction within a retained log line. Recorded test totals and original provenance describe the earlier, complete capture.
+
 This archive preserves the research and validation surrounding the final
 20 September 2026 housekeeping pass. Earlier items are historical records, including
 recommendations that were superseded by the user's final scope decisions.

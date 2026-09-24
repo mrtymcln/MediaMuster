@@ -27,11 +27,11 @@ namespace RevealInFinder
 		{
 			if (parentDir.isEmpty() || !QFileInfo(parentDir).exists())
 			{
-				log(QtCriticalMsg, QStringLiteral("Cannot reveal: file and parent folder are both unreachable"));
+				log(QtCriticalMsg, QStringLiteral("Failed to open the parent folder; its location is unavailable."));
 				return;
 			}
 			if (!QDesktopServices::openUrl(QUrl::fromLocalFile(parentDir)))
-				log(QtWarningMsg, QStringLiteral("Couldn't open the parent folder: %1").arg(parentDir));
+				log(QtWarningMsg, QStringLiteral("Failed to open: %1.").arg(parentDir));
 		}
 
 #ifdef Q_OS_MAC
@@ -150,7 +150,7 @@ namespace RevealInFinder
 		// File gone, so open parent unhighlighted.
 		if (!fi.exists())
 		{
-			log(QtWarningMsg, QStringLiteral("File not found, opening parent folder: %1").arg(parentDir));
+			log(QtWarningMsg, QStringLiteral("File not found. Trying its parent folder: %1.").arg(parentDir));
 			openParentFolder(parentDir, log);
 			return;
 		}

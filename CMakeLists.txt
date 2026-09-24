@@ -102,7 +102,6 @@ set(SOURCES
     src/unfinishedbusinessdialog.cpp
     src/aboutdialog.cpp
     src/diagnostics.cpp
-    src/qtaccessibilityfix.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
     src/binmetadataresolver.cpp

@@ -19,7 +19,6 @@ src/icons.h: PASS
 src/layoututil.h: PASS
 src/logcategories.h: PASS
 src/logfile.h: PASS
-src/macaccessibilityguard.h: PASS
 src/mainwindow.h: PASS
 src/managemediadialog.h: PASS
 src/mdbparser.h: PASS

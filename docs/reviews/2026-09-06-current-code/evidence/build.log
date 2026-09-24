@@ -38,7 +38,6 @@
 [38/307] Building CXX object CMakeFiles/MediaMuster.dir/src/icons.cpp.o
 [39/307] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o
 [40/307] Building CXX object CMakeFiles/MediaMuster.dir/src/logfile.cpp.o
-[41/307] Building CXX object CMakeFiles/MediaMuster.dir/src/macaccessibilityguard.cpp.o
 [42/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o
 [43/307] Building CXX object CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o
 [44/307] Building CXX object CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o

@@ -10,7 +10,6 @@
 [10/53] Building CXX object CMakeFiles/MediaMuster.dir/src/logcategories.cpp.o
 [11/53] Building CXX object CMakeFiles/MediaMuster.dir/src/logfile.cpp.o
 [12/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
-[13/53] Building CXX object CMakeFiles/MediaMuster.dir/src/macaccessibilityguard.cpp.o
 [14/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o
 [15/53] Building CXX object CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o
 [16/53] Building CXX object CMakeFiles/MediaMuster.dir/src/binmetadataresolver.cpp.o

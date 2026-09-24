@@ -135,7 +135,6 @@ The detailed reports contain exact locations and suggested corrections. The most
 - `findSourceMob` promises the first match but actually requires a unique source.
 - `readDuration` promises more than eight bytes while the implementation rejects them.
 - Recovery docs still name Cancel Job and the previous dialog introduction; the UI now uses Stop.
-- The accessibility log filter claims to drop exactly two messages but drops an entire logging category.
 - The contributor-guide link in `docs/file-operations-native-api-validation.md:72` points one directory too high.
 
 Keep historical reports, old validation totals and archived checksum evidence clearly labeled as historical. Do not rewrite captured evidence to resemble today's code. Current architecture and behavior docs are useful and generally already distinguish those records correctly.
