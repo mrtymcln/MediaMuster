@@ -22,8 +22,7 @@ public:
 	/// recovery path when the header-partition pack is absent.
 	///
 	/// `bytesRead`, if non-null, receives the number of bytes the
-	/// parser actually read from disk; useful for telemetry in the
-	/// scanner's "MXF parse" summary log line.
+	/// parser actually read from disk.
 	[[nodiscard]] static MediaMetadata parseHeader(const QString &filePath,
 												   qint64 *bytesRead = nullptr);
 

@@ -52,18 +52,18 @@ void TestDiagnostics::initTestCase()
 
 void TestDiagnostics::warning_line_has_level_category_and_location()
 {
-	QMessageLogContext ctx("scanner.cpp", 42, "doScan", "mediamuster.scanner");
+	QMessageLogContext ctx("scanner.cpp", 42, "doScan", "scanner");
 	const QString line = Diagnostics::formatMessage(QtWarningMsg, ctx, QStringLiteral("disk full"));
 
-	QCOMPARE(line, QStringLiteral("warning mediamuster.scanner: disk full  (scanner.cpp:42)\n"));
+	QCOMPARE(line, QStringLiteral("warning scanner: disk full  (scanner.cpp:42)\n"));
 }
 
 void TestDiagnostics::debug_line_omits_location()
 {
-	QMessageLogContext ctx("x.cpp", 7, "f", "mediamuster.app");
+	QMessageLogContext ctx("x.cpp", 7, "f", "app");
 	const QString line = Diagnostics::formatMessage(QtDebugMsg, ctx, QStringLiteral("hello"));
 
-	QCOMPARE(line, QStringLiteral("debug mediamuster.app: hello\n"));
+	QCOMPARE(line, QStringLiteral("debug app: hello\n"));
 }
 
 void TestDiagnostics::default_category_omits_prefix()

@@ -81,11 +81,11 @@ private:
 		m_thread->quit();
 		if (!m_thread->wait(warningMs))
 		{
-			qCWarning(lcWorker, "worker still running after %d ms; waiting for cooperative shutdown.", warningMs);
+			qCWarning(lcApp, "worker still running after %d ms; waiting for cooperative shutdown.", warningMs);
 			// A lifecycle call from the worker itself is a programming error;
 			// never continue into owner destruction without a successful join.
 			if (!m_thread->wait())
-				qFatal("BackgroundJob cannot join its own worker thread");
+				qCFatal(lcApp, "BackgroundJob cannot join its own worker thread");
 		}
 		delete m_thread;
 		m_thread = nullptr;

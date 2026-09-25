@@ -38,7 +38,7 @@ VolumeManager::~VolumeManager()
 
 void VolumeManager::startMonitoring(int intervalMs)
 {
-	qCDebug(lcVolume) << "monitoring volumes, polling every" << intervalMs << "ms";
+	qCDebug(lcVolumes) << "monitoring volumes, polling every" << intervalMs << "ms";
 	m_timer.start(intervalMs);
 }
 
@@ -92,7 +92,7 @@ void VolumeManager::onPollFinished()
 		summary << QStringLiteral("%1[%2%3]")
 					   .arg(v.name, v.volumeType,
 							v.hasAvidMedia ? QStringLiteral(",avid") : QString());
-	qCInfo(lcVolume).noquote() << "volumes changed:" << current.size() << "mounted —"
+	qCInfo(lcVolumes).noquote() << "volumes changed:" << current.size() << "mounted —"
 							   << summary.join(QStringLiteral("  "));
 
 	m_lastVolumes = current;

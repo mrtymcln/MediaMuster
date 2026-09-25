@@ -244,18 +244,15 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 
 			// OMF-era: the descriptor's locator list may name the volume the
 			// file was last seen on (MSML). Diagnostic only — never a fact.
-			if (lcMdb().isDebugEnabled())
+			for (quint32 loc : b.refs(mediaDesc, p.locator))
 			{
-				for (quint32 loc : b.refs(mediaDesc, p.locator))
-				{
-					if (b.objectClass(loc) != "MSML")
-						continue;
-					QString volume = BentoFile::utf8String(b.value(loc, p.lastKnownVolumeUtf8));
-					if (volume.isEmpty())
-						volume = BentoFile::string(b.value(loc, p.lastKnownVolume));
-					if (!volume.isEmpty())
-						qCDebug(lcMdb) << hex << "last known volume" << volume;
-				}
+				if (b.objectClass(loc) != "MSML")
+					continue;
+				QString volume = BentoFile::utf8String(b.value(loc, p.lastKnownVolumeUtf8));
+				if (volume.isEmpty())
+					volume = BentoFile::string(b.value(loc, p.lastKnownVolume));
+				if (!volume.isEmpty())
+					qCDebug(lcMdb) << hex << "last known volume" << volume;
 			}
 			db.files.insert(hex, f);
 			continue;

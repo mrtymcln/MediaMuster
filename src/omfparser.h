@@ -72,8 +72,7 @@ class OmfParser
 public:
 	/// Parse the file's tail. `essence.valid` is false when the file is not
 	/// a Bento container, carries no mobs, or has no media descriptor the
-	/// walker recognises; whatever was read stays in the struct. `bytesRead`
-	/// (optional) receives BentoFile::bytesRead() for the scanner's summary
-	/// log line, exactly as MxfParser::parseHeader reports it.
+	/// walker recognises; whatever was read stays in the struct. `bytesRead`,
+	/// if non-null, receives BentoFile::bytesRead().
 	[[nodiscard]] static OmfMetadata parseHeader(const QString &filePath, qint64 *bytesRead = nullptr);
 };

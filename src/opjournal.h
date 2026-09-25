@@ -128,10 +128,17 @@ public:
 	// Journal-only discovery: disconnected storage must not hide an unfinished job.
 	static QVector<Record> interrupted(const QString &directory = {});
 	static std::optional<Record> latestUndoable(const QString &directory = {});
+	// Loaded records retain the chronological order supplied by scan().
+	static std::optional<Record> latestUndoable(const QVector<Record> &records);
 	// Acquires the operation lock; removes completed journals last updated over
 	// 30 days ago, preserving recovery evidence and Undo dependencies.
 	static bool prune(const QString &directory, QString &error,
 					  const QDateTime &now = QDateTime::currentDateTimeUtc());
+	// Caller must hold this directory's operation lock from before loading records
+	// until pruning finishes. Each successful deletion is removed from records,
+	// including when a later deletion or directory sync fails.
+	static bool pruneRecords(const QString &directory, QVector<Record> &records, QString &error,
+							 const QDateTime &now = QDateTime::currentDateTimeUtc());
 	static std::optional<Record> readOne(const QString &path);
 	static bool dismiss(const QString &path, QString &error);
 	static QString canonicalPath(const QString &path);

@@ -16,6 +16,7 @@
 #include <QFuture>
 #include <QMutexLocker>
 #include <QSet>
+#include <QStringList>
 #include <QtConcurrent>
 #include <algorithm>
 #include <array>
@@ -365,9 +366,6 @@ void MediaScanner::doScan()
 		if (!canReadPath(path))
 		{
 			emitLog(QtCriticalMsg, QStringLiteral("scanner"), QStringLiteral("Permission denied: %1").arg(path));
-			emitLog(QtWarningMsg, QStringLiteral("scanner"),
-					"Grant Full Disk Access in System Preferences > Privacy & "
-					"Security");
 			return;
 		}
 
@@ -462,27 +460,30 @@ void MediaScanner::doScan()
 		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scan complete: %1 files found").arg(allFiles.size()));
 	}
 
+	QStringList notes;
 	if (noReference > 0)
-		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("%1 file%2 with no local database reference")
-					.arg(noReference)
-					.arg(noReference == 1 ? "" : "s"));
+		notes.append(QStringLiteral("%1 file%2 without a local database reference")
+					 .arg(noReference)
+					 .arg(noReference == 1 ? "" : "s"));
 	if (noDatabase > 0)
-		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("%1 file%2 in folders with no readable database")
-					.arg(noDatabase)
-					.arg(noDatabase == 1 ? "" : "s"));
+		notes.append(QStringLiteral("%1 file%2 with missing or unreadable databases")
+					 .arg(noDatabase)
+					 .arg(noDatabase == 1 ? "" : "s"));
 	if (invalidUmid > 0)
-		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("%1 file%2 with an invalid (all-zero) UMID").arg(invalidUmid).arg(invalidUmid == 1 ? "" : "s"));
+		notes.append(QStringLiteral("%1 file%2 with an all-zero UMID")
+					 .arg(invalidUmid)
+					 .arg(invalidUmid == 1 ? "" : "s"));
 	if (noProject > 0)
-		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("%1 file%2 with no project name anywhere").arg(noProject).arg(noProject == 1 ? "" : "s"));
+		notes.append(QStringLiteral("%1 file%2 without a project name")
+					 .arg(noProject)
+					 .arg(noProject == 1 ? "" : "s"));
 	if (nonPortable > 0)
+		notes.append(QStringLiteral("%1 non-portable filename%2")
+					 .arg(nonPortable)
+					 .arg(nonPortable == 1 ? "" : "s"));
+	if (!notes.isEmpty())
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("%1 non-portable filename%2")
-					.arg(nonPortable)
-					.arg(nonPortable == 1 ? "" : "s"));
+				QStringLiteral("Scan notes: %1").arg(notes.join(QStringLiteral("; "))));
 
 	concludeScan(allFiles, /*cancelled=*/false);
 }
@@ -542,7 +543,7 @@ QVector<MediaFile> MediaScanner::scanVolumeRoot(const QString &volumePath, const
 	const QString mxfViaRoot = avidRoot.isEmpty() ? QString{} : childDirectory(avidRoot, Conventions::kMxfDir);
 	if (!mxfViaRoot.isEmpty())
 	{
-		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found Avid MediaFiles/MXF"));
+		qCInfo(lcScanner).noquote() << "Found Avid MediaFiles/MXF:" << mxfViaRoot;
 		files.append(scanMxfRoot(mxfViaRoot, volumeName, volumePath));
 	}
 
@@ -551,7 +552,7 @@ QVector<MediaFile> MediaScanner::scanVolumeRoot(const QString &volumePath, const
 	const QString omfViaRoot = m_options.includeOmf ? childDirectory(volumePath, Conventions::kOmfMediaFilesDir) : QString{};
 	if (!omfViaRoot.isEmpty())
 	{
-		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("  Found OMFI MediaFiles"));
+		qCInfo(lcScanner).noquote() << "Found OMFI MediaFiles:" << omfViaRoot;
 		files.append(scanOmfRoot(omfViaRoot, volumeName, volumePath));
 	}
 
@@ -679,8 +680,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 		tasks.append(t);
 	}
 
-	emitLog(QtInfoMsg, QStringLiteral("scanner"),
-			QStringLiteral("  %1 subfolders queued for concurrent scanning").arg(tasks.size()));
+	qCInfo(lcScanner).noquote() << tasks.size() << "subfolders queued for concurrent scanning in" << mxfRootPath;
 
 	std::atomic<int> completedFolders{0};
 	const int totalFolders = tasks.size();
@@ -797,24 +797,15 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 				++mxfCount;
 		}
 
-		if (entries.isEmpty())
-			bufLog(QtInfoMsg, QStringLiteral("scanner"),
-				   QStringLiteral("  Quarantined Files folder on %1 is empty").arg(task.volumeName));
-		else if (mxfCount > 0)
+		if (mxfCount > 0)
 			bufLog(QtWarningMsg, QStringLiteral("scanner"),
 				   QStringLiteral("⚠️ Avid Quarantined Files folder on %1 contains %2 MXF file(s)!")
 					   .arg(task.volumeName)
 					   .arg(mxfCount));
-		else
-			bufLog(QtInfoMsg, QStringLiteral("scanner"),
-				   QStringLiteral("  Quarantined Files folder on %1 contains %2 non-MXF file(s)")
-					   .arg(task.volumeName)
-					   .arg(entries.size()));
 	}
 
 	// MARK: Build a MediaFile for each entry
 
-	CoverageTally tally;
 	for (const QFileInfo &entry : entries)
 	{
 		if (m_job.isCancelled())
@@ -829,25 +820,10 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 			continue;
 
 		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, task.family, pmrMap, mdb,
-									  folderStatus, tally);
+									  folderStatus);
 		mf.isQuarantined = isQuarantineFolder;
 
 		result.files.append(mf);
-	}
-
-	// What the databases did for this folder. The header count is the work
-	// pass 2 inherits; the stale count is files whose bytes changed since
-	// Avid indexed them (sent to pass 2 rather than trusted).
-	if (tally.covered + tally.header > 0)
-	{
-		QString line = QStringLiteral("  /%1: %2 media file(s), %3 described by the databases, %4 need a header read")
-						   .arg(task.folderNumber)
-						   .arg(result.files.size())
-						   .arg(tally.covered)
-						   .arg(tally.header);
-		if (tally.stale > 0)
-			line += QStringLiteral(" (%1 changed since Avid indexed them)").arg(tally.stale);
-		bufLog(QtInfoMsg, QStringLiteral("scanner"), line);
 	}
 
 	if (task.family == AvidMediaLayout::Family::Mxf && result.files.size() > Conventions::kFolderWarn)
@@ -904,18 +880,14 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		if (ok)
 		{
 			anyPmrOk = true;
-			bufLog(QtInfoMsg, QStringLiteral("pmr"),
-				   QStringLiteral("  %1: %2 file entries in /%3")
-					   .arg(primary ? QStringLiteral("PMR") : QString(name))
-					   .arg(index.size())
-					   .arg(task.folderNumber));
+			qCInfo(lcPmr).noquote() << pmrPath << ':' << index.size() << "file entries";
 			for (auto it = index.constBegin(); it != index.constEnd(); ++it)
 				dbs.pmr[it.key()].append(it.value());
 		}
 		else if (primary || !anyPmrOk)
 		{
 			dbs.pmrOk = false;
-			bufLog(QtWarningMsg, QStringLiteral("pmr"),
+			bufLog(QtWarningMsg, QStringLiteral("scanner"),
 				   QStringLiteral("  %1 in /%2 is unreadable; unmatched files here "
 								  "surface as 'No database', not 'No reference'")
 					   .arg(name)
@@ -923,15 +895,12 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		}
 		else
 		{
-			bufLog(QtInfoMsg, QStringLiteral("pmr"),
+			bufLog(QtInfoMsg, QStringLiteral("scanner"),
 				   QStringLiteral("  %1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands")
 					   .arg(name)
 					   .arg(task.folderNumber));
 		}
 	}
-	if (!dbs.pmrExists)
-		bufLog(QtInfoMsg, QStringLiteral("pmr"), QStringLiteral("  No msmFMID.pmr in /%1").arg(task.folderNumber));
-
 	// MARK: The MDBs
 
 	// Records insert only when the mob is new, so the msm* database — read
@@ -950,12 +919,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		if (ok)
 		{
 			anyMdbOk = true;
-			bufLog(QtInfoMsg, QStringLiteral("mdb"),
-				   QStringLiteral("  %1: %2 clips, %3 files in /%4")
-					   .arg(primary ? QStringLiteral("MDB") : QString(name))
-					   .arg(db.masters.size())
-					   .arg(db.files.size())
-					   .arg(task.folderNumber));
+			qCInfo(lcMdb).noquote() << mdbPath << ':' << db.masters.size() << "clips," << db.files.size() << "files";
 			if (dbs.mdb.isEmpty())
 			{
 				dbs.mdb = std::move(db);
@@ -973,7 +937,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		else if (primary || !anyMdbOk)
 		{
 			dbs.mdbOk = false;
-			bufLog(QtWarningMsg, QStringLiteral("mdb"),
+			bufLog(QtWarningMsg, QStringLiteral("scanner"),
 				   QStringLiteral("  %1 in /%2 is unreadable; unmatched files here "
 								  "surface as 'No database', not 'No reference'")
 					   .arg(name)
@@ -981,14 +945,20 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		}
 		else
 		{
-			bufLog(QtInfoMsg, QStringLiteral("mdb"),
+			bufLog(QtInfoMsg, QStringLiteral("scanner"),
 				   QStringLiteral("  %1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand")
 					   .arg(name)
 					   .arg(task.folderNumber));
 		}
 	}
+	QStringList missingDatabases;
+	if (!dbs.pmrExists)
+		missingDatabases.append(QStringLiteral("PMR"));
 	if (!dbs.mdbExists)
-		bufLog(QtInfoMsg, QStringLiteral("mdb"), QStringLiteral("  No msmMMOB.mdb in /%1").arg(task.folderNumber));
+		missingDatabases.append(QStringLiteral("MDB"));
+	if (!missingDatabases.isEmpty())
+		qCInfo(lcScanner).noquote() << QStringLiteral("Missing databases in %1: %2")
+									 .arg(task.folderPath, missingDatabases.join(QStringLiteral(", ")));
 
 	return dbs;
 }
@@ -1000,7 +970,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 									   AvidMediaLayout::Family family,
 									   const PmrIndex &pmrMap,
 									   const MdbDatabase &mdb,
-									   MediaFile::DbStatus folderStatus, CoverageTally &tally)
+									   MediaFile::DbStatus folderStatus)
 {
 	// `fi` is the directory listing's own entry — its size and times are
 	// already known, so nothing here stats the file again.
@@ -1055,16 +1025,14 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	if (fileIt != mdb.files.constEnd())
 		assignIfMissing(mf.project, fileIt->project);
 
-	// One stored decision drives both the log and pass2. Missing timestamps
-	// are unknown freshness, not permission to skip checking the actual file.
+	// Missing timestamps leave database freshness unknown, so the media must
+	// be checked rather than relying on the database alone.
 	const bool headerReadable = Conventions::hasAvidMediaExtension(mf.extension) && mf.sizeBytes > 0;
 	const bool described = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
 						   masterIt != mdb.masters.constEnd();
 	const bool indexedFileCurrent = pmrHit && pmrHit->fileModifiedSecs != 0 &&
 									PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
 	mf.databaseMetadataCurrent = described && indexedFileCurrent;
-	if (described && pmrHit && !mf.databaseMetadataCurrent)
-		++tally.stale;
 	if (headerReadable && mf.databaseMetadataCurrent)
 	{
 		MediaMetadata essence = fileIt->essence;
@@ -1077,10 +1045,6 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	mf.needsHeaderRead = headerReadable && (!mf.databaseMetadataCurrent ||
 											mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
 											(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
-	if (mf.needsHeaderRead)
-		++tally.header;
-	else if (headerReadable)
-		++tally.covered;
 
 	// An all-zero MOB ID means Avid never wrote a real identity for the file
 	// or its clip; the media can't be tracked or relinked reliably.
@@ -1145,20 +1109,13 @@ namespace
 		return record == masters->constEnd() ? nullptr : &record.value();
 	}
 
-	struct HeaderReadResult
-	{
-		qint64 bytesRead = 0;
-		bool recovered = false;
-	};
-
 	// Owns only this row. Scheduling, cancellation and progress stay with
 	// MediaScanner; the database records remain read-only throughout pass 2.
-	HeaderReadResult readMediaHeader(MediaFile &mf, AvidMediaLayout::Family family,
-									 const QHash<QString, MdbMasterMob> *masters)
+	void readMediaHeader(MediaFile &mf, AvidMediaLayout::Family family,
+						 const QHash<QString, MdbMasterMob> *masters)
 	{
 		const bool readingOmf = family == AvidMediaLayout::Family::Omf;
 		const auto databaseCategory = mf.precomputeCategory;
-		HeaderReadResult out;
 		MediaMetadata metadata;
 		QString headerBin;
 		bool omfIdentityKnown = false;
@@ -1166,7 +1123,7 @@ namespace
 		{
 			// OMF1/OMF2 return the same essence fields, with the master
 			// bin and file identity obtained from their object graph.
-			const OmfMetadata omf = OmfParser::parseHeader(mf.filePath, &out.bytesRead);
+			const OmfMetadata omf = OmfParser::parseHeader(mf.filePath);
 			omfIdentityKnown = omf.hasMediaDescriptor;
 			metadata = omf.essence;
 			headerBin = omf.bin;
@@ -1174,7 +1131,7 @@ namespace
 		}
 		else
 		{
-			metadata = MxfParser::parseHeader(mf.filePath, &out.bytesRead);
+			metadata = MxfParser::parseHeader(mf.filePath);
 		}
 		const bool headerUsable = metadata.valid || metadata.classificationKnown;
 		const auto canonicalHeaderId = [&](const QString &id)
@@ -1230,22 +1187,19 @@ namespace
 				applyMdbRecord(mf, *record);
 				if (!record->mobIdHex.isEmpty())
 					mf.masterMobId = record->mobIdHex;
-				out.recovered = true;
 			}
 		}
 		// The header's own identity can be the zero one too.
 		mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
 						   (headerUsable && (MobId::isAllZero(metadata.umid) || MobId::isAllZero(metadata.fileMobId)));
-
-		return out;
 	}
 } // namespace
 
 void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 {
-	// Pass 1 records the single header decision used here and in coverage
-	// logs: incomplete/stale database facts or missing identity. Resolve a
-	// case-preserving cache key once per folder.
+	// Pass 1 records which files need a header read for incomplete/stale
+	// database facts or missing identity. Resolve a case-preserving cache
+	// key once per folder.
 	struct HeaderRow
 	{
 		int index;
@@ -1278,23 +1232,17 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 	const int total = rows.size();
 	const int mxfRows = total - omfRows;
 	if (omfRows == 0)
-		emitLog(QtInfoMsg, QStringLiteral("scanner"),
-				QStringLiteral("Reading MXF headers for %1 file(s) needing metadata verification").arg(total));
-	else // OMF-era: name both kinds so the console says what is being opened; the MXF-only line above is unchanged
-		emitLog(QtInfoMsg, QStringLiteral("scanner"),
-				QStringLiteral("Reading MXF/OMF headers for %1 file(s) needing metadata verification (%2 MXF, %3 OMF)")
-					.arg(total)
-					.arg(mxfRows)
-					.arg(omfRows));
+		qCInfo(lcScanner).noquote()
+			<< QStringLiteral("Reading MXF headers for %1 file(s) needing metadata verification").arg(total);
+	else
+		qCInfo(lcScanner).noquote()
+			<< QStringLiteral("Reading MXF/OMF headers for %1 file(s) needing metadata verification (%2 MXF, %3 OMF)")
+				   .arg(total)
+				   .arg(mxfRows)
+				   .arg(omfRows);
 	emit scanProgress(0, total, {});
 
 	std::atomic<int> done{0};
-	std::atomic<int> recovered{0};
-	std::atomic<qint64> totalBytesRead{0};
-	std::atomic<qint64> maxBytesRead{0};
-	// Tally the actual bounded reads separately for MXF and OMF containers.
-	std::atomic<qint64> omfBytesRead{0};
-	std::atomic<qint64> omfMaxBytesRead{0};
 	ProgressThrottle throttle;
 
 	// Pass 1 has joined, so nobody writes the cache any more: plain
@@ -1314,60 +1262,12 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 				return;
 			MediaFile &mf = base[row.index];
 			const auto folder = clipsByFolder.constFind(row.folderKey);
-			const auto read = readMediaHeader(mf, row.family,
-											  folder == clipsByFolder.constEnd() ? nullptr : &folder.value());
-			if (read.recovered)
-				++recovered;
-			const bool readingOmf = row.family == AvidMediaLayout::Family::Omf;
-			// OMF-era: separate counters, see above.
-			std::atomic<qint64> &sumCounter = readingOmf ? omfBytesRead : totalBytesRead;
-			std::atomic<qint64> &maxCounter = readingOmf ? omfMaxBytesRead : maxBytesRead;
-			sumCounter.fetch_add(read.bytesRead, std::memory_order_relaxed);
-
-			// Lock-free max via CAS loop. Every pool thread fights for
-			// the same atomic, so retry until we win or someone else
-			// sets a bigger value.
-			qint64 prev = maxCounter.load(std::memory_order_relaxed);
-			while (read.bytesRead > prev &&
-				   !maxCounter.compare_exchange_weak(prev, read.bytesRead, std::memory_order_relaxed))
-			{
-			}
+			readMediaHeader(mf, row.family, folder == clipsByFolder.constEnd() ? nullptr : &folder.value());
 
 			const int n = ++done;
 			if (n == total || throttle.shouldEmit())
 				emit scanProgress(n, total, mf.fileName);
 		});
-
-	// MARK: Pass 2 summary log
-
-	if (mxfRows > 0)
-	{
-		const qint64 totalBytes = totalBytesRead.load();
-		const qint64 maxBytes = maxBytesRead.load();
-		const qint64 avgKB = (totalBytes / mxfRows) / 1024;
-		emitLog(QtInfoMsg, QStringLiteral("mxf"),
-				QStringLiteral("MXF parse: %1 files, avg %2 KB/file, max %3 KB, total %4 MB read")
-					.arg(mxfRows)
-					.arg(avgKB)
-					.arg(maxBytes / 1024)
-					.arg(totalBytes / (1024 * 1024)));
-	}
-	if (omfRows > 0)
-	{
-		// OMF-era: the legacy reader's own line, on its own console tag.
-		const qint64 totalBytes = omfBytesRead.load();
-		const qint64 maxBytes = omfMaxBytesRead.load();
-		const qint64 avgKB = (totalBytes / omfRows) / 1024;
-		emitLog(QtInfoMsg, QStringLiteral("omf"),
-				QStringLiteral("OMF parse: %1 files, avg %2 KB/file, max %3 KB, total %4 KB read")
-					.arg(omfRows)
-					.arg(avgKB)
-					.arg(maxBytes / 1024)
-					.arg(totalBytes / 1024));
-	}
-	if (recovered > 0)
-		emitLog(QtInfoMsg, QStringLiteral("mdb"),
-				QStringLiteral("Recovered %1 file(s) via MDB / UMID lookup").arg(recovered.load()));
 }
 
 // MARK: - Portable filename test

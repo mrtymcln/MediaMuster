@@ -91,8 +91,11 @@ QVector<OperationRecovery::Resumable> OperationRecovery::pending(const QString &
 }
 QVector<OperationRecovery::Restorable> OperationRecovery::restorable(const QString &directory)
 {
+	return restorableFrom(OpJournal::scan(directory));
+}
+QVector<OperationRecovery::Restorable> OperationRecovery::restorableFrom(const QVector<OpJournal::Record> &records)
+{
 	QVector<Restorable> out;
-	const auto records = OpJournal::scan(directory);
 	QSet<QString> claimed;
 	for (const auto &record : records)
 		if (!record.corrupt && record.request.kind == OpKind::Undo)
@@ -128,13 +131,23 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 				}
 	};
 	QString error;
-	auto lock = OpJournal::acquire(directory, error);
+	const auto dir = directory.isEmpty() ? OpJournal::standardJournalDir() : OpJournal::canonicalPath(directory);
+	auto lock = OpJournal::acquire(dir, error);
 	if (!lock)
 	{
 		out.notes.append(error);
 		return out;
 	}
-	const auto records = OpJournal::scan(directory);
+	auto records = OpJournal::scan(dir);
+	QString cleanupError;
+	if (!OpJournal::pruneRecords(dir, records, cleanupError))
+	{
+		QString message = "Journal cleanup failed: " + cleanupError;
+		if (!message.endsWith(QLatin1Char('.')))
+			message += QLatin1Char('.');
+		out.notes.append(message);
+	}
+	bool journalsChanged = false;
 	QHash<QString, OpJournal::Record> inverses;
 	for (const auto &record : records)
 		if (!record.corrupt && record.request.kind == OpKind::Undo)
@@ -169,6 +182,9 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 			continue;
 		}
 		OpJournal journal;
+		// Resume can truncate a torn tail or partially append even on failure.
+		// Refresh the shared history once after any attempted journal update.
+		journalsChanged = true;
 		if (!journal.resume(rec, error))
 		{
 			++out.opsFlagged;
@@ -215,7 +231,9 @@ OperationRecovery::Summary OperationRecovery::run(const QString &directory, cons
 			out.resumable.append(*r);
 		reportArtifacts(journal.record());
 	}
-	out.undoCandidate = OpJournal::latestUndoable(directory);
-	out.restorable = restorable(directory);
+	if (journalsChanged)
+		records = OpJournal::scan(dir);
+	out.undoCandidate = OpJournal::latestUndoable(records);
+	out.restorable = restorableFrom(records);
 	return out;
 }

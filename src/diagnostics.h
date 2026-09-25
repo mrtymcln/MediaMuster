@@ -7,8 +7,8 @@
 // MARK: - Diagnostics
 //
 // Writes Qt diagnostic messages and in-app console messages to
-// <AppData>/mediamuster.log. Startup enables all MediaMuster log levels
-// and clears the log if it was created at least 30 days ago.
+// <AppData>/mediamuster.log.
+// Startup clears the log if it was created at least 30 days ago.
 namespace Diagnostics
 {
 	/// Open the log and install the handler. Call once, early in main(), after
@@ -17,7 +17,7 @@ namespace Diagnostics
 	/// Writes a header with the app version and system details for each session.
 	void install();
 
-	/// Absolute path to the current log file, for 'Reveal Logs'.
+	/// Absolute path to the current log file, for Help > Reveal Diagnostics.
 	QString logPath();
 
 	/// Also write a console message to the file, labelled with its module.
@@ -34,9 +34,8 @@ namespace Diagnostics
 	QStringList collectCrashReports(const QString &reportsDir, const QString &logsDir);
 } // namespace Diagnostics
 
-// Categories default to warnings and errors; install() enables all levels.
-// Qt's logging rules can override these settings, for example:
-// QT_LOGGING_RULES="mediamuster.scanner.debug=true"
+// Technical messages use the same category names as the Console where they overlap.
+Q_DECLARE_LOGGING_CATEGORY(lcApp)
 Q_DECLARE_LOGGING_CATEGORY(lcAvb)
 Q_DECLARE_LOGGING_CATEGORY(lcMdb)
 Q_DECLARE_LOGGING_CATEGORY(lcMetadata)
@@ -44,5 +43,4 @@ Q_DECLARE_LOGGING_CATEGORY(lcMxf)
 Q_DECLARE_LOGGING_CATEGORY(lcOmf)
 Q_DECLARE_LOGGING_CATEGORY(lcPmr)
 Q_DECLARE_LOGGING_CATEGORY(lcScanner)
-Q_DECLARE_LOGGING_CATEGORY(lcVolume)
-Q_DECLARE_LOGGING_CATEGORY(lcWorker)
+Q_DECLARE_LOGGING_CATEGORY(lcVolumes)

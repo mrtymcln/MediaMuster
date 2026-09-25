@@ -1039,7 +1039,10 @@ void TestOpJournal::pruning_keeps_linked_history()
 	QVERIFY(setJournalTimes(candidate, now.addDays(-60), now.addDays(-40)));
 	const auto forwardBefore = readBytes(forward);
 	const auto inverseBefore = readBytes(inverse);
-	QVERIFY2(OpJournal::prune(directory, error, now), qPrintable(error));
+	auto lock = OpJournal::acquire(directory, error);
+	QVERIFY2(lock, qPrintable(error));
+	auto records = OpJournal::scan(directory);
+	QVERIFY2(OpJournal::pruneRecords(directory, records, error, now), qPrintable(error));
 	const bool retained = !retainedReason.isEmpty();
 	QCOMPARE(QFile::exists(forward), retained);
 	QCOMPARE(QFile::exists(inverse), retained);
@@ -1048,9 +1051,21 @@ void TestOpJournal::pruning_keeps_linked_history()
 		QCOMPARE(readBytes(forward), forwardBefore);
 		QCOMPARE(readBytes(inverse), inverseBefore);
 	}
-	const auto after = OpJournal::latestUndoable(directory);
+	QStringList remaining;
+	for (const auto &record : records)
+		remaining.append(record.path);
+	QStringList expected{candidate};
+	if (retained)
+		expected.append({forward, inverse});
+	remaining.sort();
+	expected.sort();
+	QCOMPARE(remaining, expected);
+	const auto after = OpJournal::latestUndoable(records);
 	QVERIFY(after);
 	QCOMPARE(after->path, candidate);
+	const auto fromDisk = OpJournal::latestUndoable(directory);
+	QVERIFY(fromDisk);
+	QCOMPARE(fromDisk->path, after->path);
 }
 
 void TestOpJournal::pruning_preserves_missing_links_data()

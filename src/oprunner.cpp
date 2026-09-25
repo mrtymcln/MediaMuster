@@ -1489,7 +1489,6 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 			undoRebalance = forward && forward->request.kind == OpKind::Rename;
 		}
 		QString group;
-		QSet<QString> touched;
 		int mediaIndex = 0, mediaTotal = 0;
 		QSet<int> deferred;
 		QVector<int> discards;
@@ -1666,15 +1665,6 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 					trash.cdUp();
 					++trashCounts[trash.path()];
 				}
-				if (request.kind == OpKind::Rename && !e.item.maintenance)
-					for (const auto &folder :
-						 {QFileInfo(e.item.src).absolutePath(), QFileInfo(e.dst).absolutePath()})
-						if (!touched.contains(folder))
-						{
-							touched.insert(folder);
-							if (onRenameFolderTouched)
-								onRenameFolderTouched(folder);
-						}
 			}
 			else if (outcome.state == State::NoEffect)
 				++totals.unchanged;
@@ -1899,18 +1889,6 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 					   .arg(QString::fromUtf8(e.what()), journal.path()));
 	}
 	totals.cancelled = totals.cancelled || m_cancel.load();
-	m_sink.log(totals.failed || totals.needsAttention ? QtWarningMsg : QtInfoMsg,
-			   QStringLiteral("%1: %2 completed, %3 unchanged, %4 source retained, %5 skipped, %6 failed, %7 "
-							  "need attention%8. Journal: %9")
-				   .arg(opKindName(request.kind))
-				   .arg(totals.succeeded)
-				   .arg(totals.unchanged)
-				   .arg(totals.retained)
-				   .arg(totals.skipped)
-				   .arg(totals.failed)
-				   .arg(totals.needsAttention)
-				   .arg(totals.cancelled ? QStringLiteral("; cancelled") : QString())
-				   .arg(journal.path()));
 	for (auto it = trashCounts.cbegin(); it != trashCounts.cend(); ++it)
 		m_sink.trashUsed(it.key(), it.value());
 	return totals;

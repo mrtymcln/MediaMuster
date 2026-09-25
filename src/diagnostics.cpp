@@ -11,15 +11,15 @@
 #include <QSysInfo>
 #include <QtLogging>
 
-Q_LOGGING_CATEGORY(lcAvb, "mediamuster.avb", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcMdb, "mediamuster.mdb", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcMetadata, "mediamuster.metadata", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcMxf, "mediamuster.mxf", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcOmf, "mediamuster.omf", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcPmr, "mediamuster.pmr", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcScanner, "mediamuster.scanner", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcVolume, "mediamuster.volume", QtWarningMsg)
-Q_LOGGING_CATEGORY(lcWorker, "mediamuster.worker", QtWarningMsg)
+Q_LOGGING_CATEGORY(lcApp, "app")
+Q_LOGGING_CATEGORY(lcAvb, "avb")
+Q_LOGGING_CATEGORY(lcMdb, "mdb")
+Q_LOGGING_CATEGORY(lcMetadata, "metadata")
+Q_LOGGING_CATEGORY(lcMxf, "mxf")
+Q_LOGGING_CATEGORY(lcOmf, "omf")
+Q_LOGGING_CATEGORY(lcPmr, "pmr")
+Q_LOGGING_CATEGORY(lcScanner, "scanner")
+Q_LOGGING_CATEGORY(lcVolumes, "volumes")
 
 namespace
 {
@@ -75,17 +75,14 @@ void Diagnostics::install()
 	const QString path = dir + QStringLiteral("/mediamuster.log");
 	g_file->setFileName(path);
 
-	// At startup, clear the log if it was created at least 30 days ago.
+	// At startup, clear the log if 30 days or older.
 	const QDateTime born = QFileInfo(path).birthTime();
 	if (born.isValid() && born.daysTo(QDateTime::currentDateTime()) >= 30)
 		QFile::remove(path);
 
 	g_file->open(QIODevice::Append | QIODevice::Text);
 
-	// Enable every level of MediaMuster diagnostic messages.
-	QLoggingCategory::setFilterRules(QStringLiteral("mediamuster.*=true"));
-
-	// Record the app version and system details for this session.
+	// Record the App and System details for this session.
 	const QString separator(56, QLatin1Char('='));
 	QStringList headerLines;
 	headerLines << QString() << separator;
@@ -100,8 +97,7 @@ void Diagnostics::install()
 	headerLines << QStringLiteral("host      %1").arg(QSysInfo::machineHostName());
 	headerLines << QStringLiteral("locale    %1").arg(QLocale::system().name());
 	headerLines << QStringLiteral("log       %1").arg(path);
-	headerLines << QStringLiteral("detail    all levels (mediamuster.*=true)");
-	headerLines << QStringLiteral("cleared at startup when at least 30 days old");
+	headerLines << QStringLiteral("Cleared at startup when 30 days old or older.");
 	headerLines << separator << QString();
 	writeRaw((headerLines.join(QLatin1Char('\n')) + QLatin1Char('\n')).toUtf8());
 
@@ -115,7 +111,7 @@ QString Diagnostics::logPath()
 
 void Diagnostics::appendConsoleLine(QtMsgType level, const QString &module, const QString &message)
 {
-	const QByteArray category = QByteArrayLiteral("console/") + module.toUtf8();
+	const QByteArray category = module.toUtf8();
 	const QMessageLogContext context(nullptr, 0, nullptr, category.constData());
 	writeRaw(formatMessage(level, context, message).toUtf8());
 }

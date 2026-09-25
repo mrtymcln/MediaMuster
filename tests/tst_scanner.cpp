@@ -2578,15 +2578,12 @@ void TestScanner::current_omf_database_does_not_open_media()
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), folder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), folder);
 	// The current database is sufficient; parsing these payloads cannot
-	// supply any metadata. The log also asserts no header pass was started.
+	// supply any metadata, and the rows must not request a header read.
 	writeJunk(folder + QLatin1Char('/') + kOmfWav, 4096);
 	writeJunk(folder + QLatin1Char('/') + kOmfAif, 4096);
 	setModified(folder + QLatin1Char('/') + kOmfWav, kOmfWavModified);
 	setModified(folder + QLatin1Char('/') + kOmfAif, kOmfAifModified);
 	MediaScanner scanner;
-	QVector<LogMsg> logs;
-	connect(&scanner, &MediaScanner::scanLogBatch, this, [&logs](const QVector<LogMsg> &batch)
-			{ logs += batch; });
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options options;
 	options.manualPaths = {root};
@@ -2603,12 +2600,6 @@ void TestScanner::current_omf_database_does_not_open_media()
 		QCOMPARE(row.sampleRate, 48000);
 		QCOMPARE(row.channels, 1);
 		QVERIFY(row.omfEra);
-	}
-	QVERIFY(!logs.isEmpty());
-	for (const LogMsg &log : logs)
-	{
-		QVERIFY2(!log.message.contains(QStringLiteral("needing metadata verification")), qPrintable(log.message));
-		QVERIFY2(!log.message.contains(QStringLiteral("header bytes")), qPrintable(log.message));
 	}
 }
 

@@ -38,8 +38,12 @@ public:
 			return notes.join('\n');
 		}
 	};
+	// Prune and recover under one journal lock, sharing the loaded history.
 	static Summary run(const QString &directory = {}, const QVector<VolumeIdentity> &mounted = {});
 	static QVector<Resumable> pending(const QString &directory = {});
 	static QVector<Restorable> restorable(const QString &directory = {});
 	static std::optional<Resumable> resumableFrom(const OpJournal::Record &record);
+
+private:
+	static QVector<Restorable> restorableFrom(const QVector<OpJournal::Record> &records);
 };

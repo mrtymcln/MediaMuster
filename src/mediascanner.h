@@ -157,21 +157,11 @@ private:
 		bool mdbOk = true;
 	};
 
-	/// Reads and merges the folder's PMR/MDB files, logging into `logs`
-	/// (pool threads buffer; see FolderResult). PMR entries append per
+	/// Reads and merges the folder's PMR/MDB files, buffering Console notices
+	/// in `logs` (see FolderResult). PMR entries append per
 	/// filename; MDB records insert only when the key is new, so the msm*
 	/// pair — read first — wins over an ama* twin describing the same mob.
 	static FolderDatabases readFolderDatabases(const ScanTask &task, QVector<LogMsg> &logs);
-
-	/// Per-folder counts for the console: rows the databases described,
-	/// rows left for the header pass, and rows whose file changed since Avid
-	/// indexed it (the staleness guard sent them to the header pass).
-	struct CoverageTally
-	{
-		int covered = 0;
-		int header = 0;
-		int stale = 0;
-	};
 
 	/// One row from one directory entry (pass 1). `folderStatus` is the
 	/// status computed by processFolderTask for any file the folder's PMR
@@ -183,7 +173,7 @@ private:
 							 AvidMediaLayout::Family family,
 							 const PmrIndex &pmrMap,
 							 const MdbDatabase &mdb,
-							 MediaFile::DbStatus folderStatus, CoverageTally &tally);
+							 MediaFile::DbStatus folderStatus);
 
 	/// Read rows marked needsHeaderRead, then rejoin cached MDB records by
 	/// recovered master identity. Parallelise across all rows so a scan with

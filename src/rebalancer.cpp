@@ -1,17 +1,11 @@
 #include "rebalancer.h"
 #include "rebalanceplanner.h"
-#include "formatutil.h"
 
 // MARK: - Construction
 
 Rebalancer::Rebalancer(QObject *parent) : QObject(parent)
 {
 	m_engine = new OpManager(this);
-
-	// The engine retires Avid databases for rebalance and its Undo. This
-	// worker-thread hook only counts affected folders for the UI summary.
-	m_engine->renameFolderTouched = [this](const QString &)
-	{ m_foldersReset.fetch_add(1, std::memory_order_relaxed); };
 
 	// Adapt shared-engine progress and outcomes to the dialog's signals.
 	connect(m_engine, &OpManager::operationProgress, this,
@@ -30,11 +24,6 @@ Rebalancer::Rebalancer(QObject *parent) : QObject(parent)
 	connect(m_engine, &OpManager::operationFinished, this,
 			[this](int succeeded, int failed)
 			{
-				const int reset = m_foldersReset.load(std::memory_order_relaxed);
-				if (reset > 0)
-					emit log(QtInfoMsg, QStringLiteral("Avid databases reset in %1 folder(s); Avid "
-													   "rebuilds them on next launch.")
-											.arg(Format::count(reset)));
 				emit finished(succeeded, failed, m_cancelRequested.load(std::memory_order_acquire));
 			});
 }
@@ -55,7 +44,6 @@ Rebalancer::~Rebalancer()
 void Rebalancer::executeAsync(const RebalancePlan &plan)
 {
 	m_cancelRequested.store(false, std::memory_order_release);
-	m_foldersReset.store(0, std::memory_order_relaxed);
 
 	// Build the grouped request off the GUI thread. The engine owns every
 	// filesystem change, including folder creation and database retirement.

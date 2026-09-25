@@ -58,7 +58,7 @@ Click an ID for its full assessment and wording choices. Leading spaces and line
 | --- | --- | --- |
 | [M001](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:406) | `%1 %2 initialised on %3` | **Good** |
 | [M002](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:424) | `Full Disk Access not granted. Go to System Preferences > Privacy & Security.` | **Misleading** |
-| [M003](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:438) | `MediaMuster quit unexpectedly. — %1 report(s) saved. Go to Help > Reveal Logs to send them to the developer.` | **Misleading** |
+| [M003](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:438) | `MediaMuster quit unexpectedly. — %1 report(s) saved. Go to Help > Reveal Diagnostics to send them to the developer.` | **Misleading** |
 | [M004](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:450) | `Style: %1` | **Good** |
 | [M005](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:468) | `Removed %1 files from table` | **Good** |
 | [M006](/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-09-24-console/console-review.md:486) | `OMF/OMFI enabled for this session. Rescan to include legacy media.` | **Good** |
@@ -401,7 +401,7 @@ Click an ID for its full assessment and wording choices. Leading spaces and line
 
 Read-only review of the current working tree, 24 September 2026. These are message templates, not every possible filename/count. Placeholders in alternatives use `{name}` notation. Current `%1` etc. are exact positional placeholders unless noted. Optional `— %2` is shown as `[ — %2]`; `{detail}` means retain that optional explanation, including its separator. Five alternatives are supplied for every **Good** template. A message can be accurate but still too technical. Some one-word statuses are already minimal, so alternatives are plain-language variants rather than all being shorter.
 
-Sources flow through `MainWindow::addLog`; operation result bodies use the same wrapper. Raw recovery notes, journal-dismiss errors and manager logs are catalogued in the operations/file-errors sections rather than duplicated here. Reveal messages use `[app]` for Help > Reveal Logs and `[reveal]` for a selected media file. RebalanceDialog adds no console literals of its own; its aborted reason is dialog-only.
+Sources flow through `MainWindow::addLog`; operation result bodies use the same wrapper. Raw recovery notes, journal-dismiss errors and manager logs are catalogued in the operations/file-errors sections rather than duplicated here. Reveal messages use `[app]` for Help > Reveal Diagnostics and `[reveal]` for a selected media file. RebalanceDialog adds no console literals of its own; its aborted reason is dialog-only.
 
 ### M001 — Good
 
@@ -437,7 +437,7 @@ The app's own shortcut is **Help > Full Disk Access**. The current macOS setting
 
 ### M003 — Misleading
 
-**Current:** `MediaMuster quit unexpectedly. — %1 report(s) saved. Go to Help > Reveal Logs to send them to the developer.`
+**Current:** `MediaMuster quit unexpectedly. — %1 report(s) saved. Go to Help > Reveal Diagnostics to send them to the developer.`
 
 **Source:** [src/mainwindow.cpp:275](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:275) · app / WARN / macOS.
 
@@ -445,7 +445,7 @@ The app's own shortcut is **Help > Full Disk Access**. The current macOS setting
 
 **Assessment:** It can sound like the immediately preceding session crashed. The collection may instead have found older reports. 'report(s)' is also awkward.
 
-**Recommended correction:** Found {count} crash reports. Saved with your logs; use Help > Reveal Logs to share them.
+**Recommended correction:** Found {count} crash reports. Saved with your logs; use Help > Reveal Diagnostics to share them.
 
 ### M004 — Good
 
@@ -5086,7 +5086,7 @@ This is a source-based inventory of reachable message families, not evidence tha
 
 The original catalogue and IDs above are retained for the ongoing review. The following choices were subsequently implemented in the application:
 
-- M003–M009, M011–M014, M016, M018, M020, M022, M024 and M025: selected wording applied. M003 retains the later workspace edit: `I quit unexpectedly. Go to Help > Reveal Logs and send them to developer.`
+- M003–M009, M011–M014, M016, M018, M020, M022, M024 and M025: selected wording applied. M003 retains the later workspace edit: `I quit unexpectedly. Go to Help > Reveal Diagnostics and send them to developer.`
 - M015: the dialog-opening message was removed. `Rebalance started.` is now emitted by `Rebalancer` when execution begins. Existing outcomes remain.
 - M023: the CSV completion message was removed. The initial message distinguishes selected from visible rows; the failure message remains.
 - M008/M009: subsequently renamed to `Precompute filters are ON for this session.` and `Precompute filters are OFF for this session.`
@@ -5104,3 +5104,58 @@ M031 now reads `{name}: Source kept: {detail}.` SourceRetained means the source 
 The Console now displays `HH:mm:ss module: message`, using a small formatter without severity labels or brackets. The diagnostic log uses Qt's `qSetMessagePattern` and `qFormatLogMessage` for `yyyy-MM-dd HH:mm:ss.zzz severity category: message`, with Qt's full severity names. Available warning/error source locations are still appended. Qt's application-wide message pattern belongs to the diagnostic log, so it does not change the Console presentation. Both outputs share the original message data; scanner batching and the Console's line limit are unchanged.
 
 The 30-day ages are written directly at each use in the diagnostic log (including saved Console messages), crash-report collection and journal cleanup, with no shared retention constant. Crash reports are selected for copying by age; this does not delete old reports. Journal cleanup retains its recovery and Undo protections. The duplicate diagnostic-log path storage and redundant existence check before reading the log creation date were removed; the Console's session-only 2,000-line limit is separate from retention.
+
+### Selected message removals
+
+The following choices were approved after reviewing the cut proposals:
+
+- Removed entirely: **M005, M021, S004, S021, O004, S023, S024 and S025**. The row-removal count, per-folder metadata coverage counters and Rebalance folder-count callback existed only for these messages and were removed with them. File operations, database retirement, quarantine detection and metadata-reading decisions are unchanged.
+- Retained only in the diagnostic log: **M004, M046, M047, S016, S017, S020, S026 and S030**. These use ordinary Qt logging through the installed diagnostic handler; their information/warning levels are preserved.
+
+The original catalogue above remains a historical reference. Messages not selected in this list retain their existing routing.
+
+Validation: the universal macOS app built and signed successfully. The scanner, file-operation and operation-UI suites passed; the scanner's existing case-distinct-folder test was skipped on the case-insensitive temporary filesystem. Windows-only reveal logging changes were reviewed in source, not run on Windows.
+
+### Further selected removals and consolidations
+
+- **O108**: removed the final operation-summary log line entirely. The operation's totals and completion signals still serve the UI and operation control.
+- **M030**: removed the `Done` wrapper and plain per-file success messages. Nonempty result details remain visible as `{name}: {detail}`, including warnings that can accompany a successful copy. Result bookkeeping still updates removed rows and restored originals.
+- **M033 + O045**: consolidated to `{name}: Already at destination.`
+- **M032 + O065**: consolidated to `{name}: Original restored to {path}. Completed copies were kept.`
+- **S009–S013**: consolidated into one `Scan notes: …` line, with semicolon-separated nonzero counts. The counts retain their existing meanings and may overlap; they are not added into a total of affected files.
+
+Validation: the universal macOS app built and signed. The scanner, file-operation and operation-UI suites passed, including a regression check that silent successes still emit removal/restoration notifications and nonempty successful-result details remain visible. The case-distinct-folder test remains skipped on the case-insensitive temporary filesystem.
+
+### Selected scanner diagnostic cleanup
+
+- **S036, S037 and S038**: removed the MXF/OMF read-statistics messages and the MDB lookup recovery count entirely, together with scanner bookkeeping used only to produce those messages. Media parsing, metadata recovery and scan progress are unchanged.
+- **S034 and S035**: retained their existing header-reading announcement text only in the diagnostic log, using `qCInfo(lcScanner)`.
+- **S029 and S033**: replaced the separate missing-database Console messages with one diagnostic notice per affected folder: `Missing databases in {full path}: PMR, MDB`. The list includes only absent database families; either recognised filename variant counts as present. Existing unreadable-database notices remain unchanged.
+
+Diagnostic category defaults and the startup rule enabling all MediaMuster levels are unchanged. The original catalogue entries remain above for reference.
+
+Validation: the universal macOS app built and signed. The scanner suite passed 120 checks, with the existing case-sensitive-folder check skipped on the temporary filesystem. With scanner information logging enabled, its output included both header-reading variants and the PMR-only, MDB-only and combined missing-database notices. The legacy database test retains its metadata and header-read decision checks; obsolete assertions about Console-only messages were removed.
+
+### Approved message categories
+
+Both outputs now use the same bare shared labels: `app`, `volumes`, `scanner`,
+`operations`, `rebalance` and `filters`. Diagnostic-only parser categories are
+`avb`, `pmr`, `mdb`, `mxf`, `omf` and `metadata`. The `console/` and `mediamuster.`
+prefixes are removed.
+
+Selection, relatives, export, reveal and worker messages use `app`; effects and
+bin-filter messages use `filters`. File-operation messages and startup operation
+recovery use `operations`. Scan cancellation uses `scanner`, as do the high-level
+PMR/MDB notices sent to the Console; parser messages retain `pmr` and `mdb`.
+This changes labels only, preserving message visibility, severity and content.
+
+The categories now use Qt's native all-level defaults. The explicit
+`QtWarningMsg` defaults and the startup `mediamuster.*=true` filter rule are
+removed; Qt logging configuration can still override the defaults. This
+supersedes the earlier implementation notes about category defaults and the
+startup rule. The original catalogue remains a historical reference.
+
+Validation: the universal macOS app built and signed. Diagnostics, scanner and
+operation-UI suites passed 194 checks; the existing case-sensitive-folder check
+was skipped on the temporary filesystem. Scanner output included both debug and
+information messages under the bare category names without a logging-rule override.

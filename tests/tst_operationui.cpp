@@ -86,9 +86,9 @@ namespace
 				return card->accessibleDescription();
 		return QStringLiteral("Missing folder card: ") + folderName;
 	}
-	QStringList relativeMessages(const QPlainTextEdit *console)
+	QStringList appMessages(const QPlainTextEdit *console)
 	{
-		const QString prefix = QStringLiteral("relatives: ");
+		const QString prefix = QStringLiteral("app: ");
 		QStringList messages;
 		for (const QString &line : console->toPlainText().split('\n'))
 		{
@@ -177,6 +177,7 @@ private slots:
 	void startup_offers_retained_originals();
 	void restore_originals_respects_busy_gate();
 	void observed_removals_prune_rows_even_when_job_needs_attention();
+	void completed_results_preserve_details_and_refresh_signals();
 	void rebalance_demo_cancel_preserves_original_card_counts();
 	void rebalance_demo_ticks_count_repeated_source_paths();
 	void rebalance_live_counts_follow_confirmed_results();
@@ -812,7 +813,7 @@ void TestOperationUi::select_relatives_counts_all_visible_matches()
 	QVERIFY(command && command->isEnabled());
 	window.m_console->clear();
 	command->trigger();
-	QCOMPARE(relativeMessages(window.m_console), QStringList{expectedMessage});
+	QCOMPARE(appMessages(window.m_console), QStringList{expectedMessage});
 	QSet<QString> expectedPaths;
 	for (int row = 0; row < visibleRelatives; ++row)
 		expectedPaths.insert(files[row].filePath);
@@ -829,7 +830,7 @@ void TestOperationUi::select_relatives_counts_all_visible_matches()
 	// Repeating the command reports the same totals, including existing selections.
 	window.m_console->clear();
 	command->trigger();
-	QCOMPARE(relativeMessages(window.m_console), QStringList{expectedMessage});
+	QCOMPARE(appMessages(window.m_console), QStringList{expectedMessage});
 	QCOMPARE(selectedPaths(), expectedPaths);
 	if (hideLastRelative)
 	{
@@ -866,7 +867,7 @@ void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
 	window.m_console->clear();
 	window.onSelectRelatives();
 	const QStringList expectedMessages{QStringLiteral("Selected 5 files across 2 master clips.")};
-	QCOMPARE(relativeMessages(window.m_console), expectedMessages);
+	QCOMPARE(appMessages(window.m_console), expectedMessages);
 	QSet<QString> selectedPaths;
 	for (const auto &file : window.selectedFiles())
 		selectedPaths.insert(file.filePath);
@@ -877,7 +878,7 @@ void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
 
 	window.m_console->clear();
 	window.onSelectRelatives();
-	QCOMPARE(relativeMessages(window.m_console), expectedMessages);
+	QCOMPARE(appMessages(window.m_console), expectedMessages);
 	QCOMPARE(window.selectedFiles().size(), 5);
 }
 
@@ -918,7 +919,7 @@ void TestOperationUi::select_relatives_preserves_hidden_selections_without_using
 	QCOMPARE(selectedPaths(), QSet<QString>{files[0].filePath});
 	window.m_console->clear();
 	window.onSelectRelatives();
-	QCOMPARE(relativeMessages(window.m_console),
+	QCOMPARE(appMessages(window.m_console),
 			 QStringList{QStringLiteral("Selected 2 files across 1 master clip.")});
 	QCOMPARE(selectedPaths(), QSet<QString>({files[0].filePath, files[1].filePath}));
 	QCOMPARE(window.m_proxy->rowCount(), 3);
@@ -1807,6 +1808,43 @@ void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention
 	QTRY_COMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).filePath, retained.filePath);
 }
+void TestOperationUi::completed_results_preserve_details_and_refresh_signals()
+{
+	QWidget window;
+	FileOperationController operations(&window);
+	QSignalSpy messages(&operations, &FileOperationController::logMessage);
+	QSignalSpy removed(&operations, &FileOperationController::sourcesRemoved);
+	QSignalSpy restored(&operations, &FileOperationController::originalsRestored);
+	operations.m_pruneSourceRowsAfterOperation = true;
+
+	OpResult plain;
+	plain.state = OpResult::State::Completed;
+	plain.name = QStringLiteral("moved.mxf");
+	plain.source = path(plain.name);
+	plain.sourceRemoved = true;
+	emit operations.manager()->operationResult(plain);
+
+	OpResult detailed;
+	detailed.state = OpResult::State::Completed;
+	detailed.name = QStringLiteral("copied.mxf");
+	detailed.message = QStringLiteral("Copy finished; the storage did not confirm the full durability request.");
+	emit operations.manager()->operationResult(detailed);
+
+	OpResult returned;
+	returned.state = OpResult::State::Completed;
+	returned.name = QStringLiteral("returned.mxf");
+	returned.restoredOriginalPath = path(returned.name);
+	emit operations.manager()->operationResult(returned);
+	emit operations.manager()->operationFinished(3, 0);
+
+	QTRY_COMPARE(restored.count(), 1);
+	QCOMPARE(removed.count(), 1);
+	QCOMPARE(removed.first().first().value<QSet<QString>>(), QSet<QString>{plain.source});
+	QCOMPARE(restored.first().first().value<QSet<QString>>(), QSet<QString>{returned.restoredOriginalPath});
+	QCOMPARE(messages.count(), 1);
+	QCOMPARE(messages.first().at(2).toString(), detailed.name + QStringLiteral(": ") + detailed.message);
+}
+
 void TestOperationUi::rebalance_demo_cancel_preserves_original_card_counts()
 {
 	std::unique_ptr<RebalanceDialog> dialog(RebalanceDialog::createDemo(RebalanceDialog::DemoScenario::Small));

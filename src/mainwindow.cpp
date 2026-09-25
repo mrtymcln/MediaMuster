@@ -250,12 +250,12 @@ void MainWindow::collectCrashReports()
 		return;
 
 	addLog(QtWarningMsg, QStringLiteral("app"),
-		   QStringLiteral("I quit unexpectedly. Go to Help > Reveal Logs and send them to developer."));
+		   QStringLiteral("I quit unexpectedly. Go to Help > Reveal Diagnostics and send them to developer."));
 
 	QMessageBox::information(
 		this, QString(),
 		tr("I quit unexpectedly. A crash report has been saved "
-		   "with your logs.\n\nGo to Help > Reveal Logs to send them to the developer."));
+		   "with your logs.\n\nGo to Help > Reveal Diagnostics to send them to the developer."));
 }
 
 // MARK: - UI layout
@@ -709,11 +709,11 @@ void MainWindow::buildDebugMenu()
 	fusionStyleAct->setCheckable(true);
 	fusionStyleAct->setChecked(false);
 	connect(fusionStyleAct, &QAction::triggered, this,
-			[this, nativeStyleName](bool on)
+			[nativeStyleName](bool on)
 			{
 				const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
 				QApplication::setStyle(QStyleFactory::create(target));
-				addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("Using %1 style for appearance.").arg(target));
+				qCInfo(lcApp).noquote() << QStringLiteral("Using %1 style for appearance.").arg(target);
 			});
 
 	debugMenu->addSeparator();
@@ -758,12 +758,21 @@ void MainWindow::buildHelpMenu()
 
 	// The diagnostic log always runs; this just surfaces it so the user can
 	// send it in, even though it lives in hidden ~/Library.
-	auto *revealLogAct = helpMenu->addAction(tr("Reveal Logs"));
-	connect(revealLogAct, &QAction::triggered, this,
+	auto *diagnosticsAct = helpMenu->addAction(tr("Reveal Diagnostics"));
+	connect(diagnosticsAct, &QAction::triggered, this,
 			[this]
 			{
 				RevealInFinder::reveal(Diagnostics::logPath(), [this](QtMsgType level, const QString &msg)
 									   { addLog(level, QStringLiteral("app"), msg); });
+			});
+
+	auto *feedbackAct = helpMenu->addAction(tr("Send feedback…"));
+	connect(feedbackAct, &QAction::triggered, this,
+			[this]
+			{
+				if (!QDesktopServices::openUrl(QUrl(QStringLiteral("mailto:mrtymcln.dev@gmail.com"))))
+					QMessageBox::warning(this, tr("Send feedback"),
+										 tr("Couldn't open your email app. Please email mrtymcln.dev@gmail.com."));
 			});
 }
 
@@ -821,12 +830,9 @@ void MainWindow::setupConnections()
 	connect(m_operations, &FileOperationController::sourcesRemoved, this,
 			[this](const QSet<QString> &paths)
 			{
-				const int rowsBefore = m_model->rowCount();
 				m_model->removeFilesByPath(paths);
 				m_persistentSelectedPaths.subtract(paths);
 				refreshEverything();
-				addLog(QtInfoMsg, QStringLiteral("ops"),
-					   QStringLiteral("Removed %1 rows from the table.").arg(rowsBefore - m_model->rowCount()));
 			});
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
@@ -1050,7 +1056,7 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 	updateFilterCounts();
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("effects"), enabled ? QStringLiteral("Precompute filters are ON for this session.") : QStringLiteral("Precompute filters are OFF for this session."));
+	addLog(QtInfoMsg, QStringLiteral("filters"), enabled ? QStringLiteral("Precompute filters are ON for this session.") : QStringLiteral("Precompute filters are OFF for this session."));
 }
 
 void MainWindow::onFilterByEffects()
@@ -1081,7 +1087,7 @@ void MainWindow::onFilterByEffects()
 							: checkedPaths.isEmpty() ? QStringLiteral("no checked branches")
 													 : checkedPaths.join(QStringLiteral("; "));
 	const QString location = volume.isEmpty() ? QStringLiteral("all scanned volumes") : volume;
-	addLog(QtInfoMsg, QStringLiteral("effects"),
+	addLog(QtInfoMsg, QStringLiteral("filters"),
 		   !filter.active && volume.isEmpty() ? QStringLiteral("Precompute filter removed.")
 											  : QStringLiteral("Precompute filter active: %1 in %2.").arg(choices, location));
 }
@@ -1100,7 +1106,7 @@ void MainWindow::onFilterByBins()
 		connect(m_binFilterDialog, &BinFilterDialog::loadError, this,
 				[this](const QString &path, const QString &reason)
 				{
-					addLog(QtWarningMsg, QStringLiteral("binfilter"),
+					addLog(QtWarningMsg, QStringLiteral("filters"),
 						   tr("Bin unavailable: %1: %2").arg(path, reason));
 				});
 		connect(m_binFilterDialog, &BinFilterDialog::binsChanged, this,
@@ -1129,11 +1135,11 @@ void MainWindow::onFilterByBins()
 
 				if (!filter.isActive())
 				{
-					addLog(QtInfoMsg, QStringLiteral("binfilter"), "Bin filter removed.");
+					addLog(QtInfoMsg, QStringLiteral("filters"), "Bin filter removed.");
 					updateStatusBar();
 					return;
 				}
-				addLog(QtInfoMsg, QStringLiteral("binfilter"),
+				addLog(QtInfoMsg, QStringLiteral("filters"),
 					   QStringLiteral("Bin filter active: %1 steps.").arg(filter.steps.size()));
 				updateStatusBar();
 			});
@@ -1451,7 +1457,6 @@ void MainWindow::scanEverything()
 			paths.append(mp);
 	}
 
-	addLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scan All: %1 locations").arg(paths.size()));
 	startScanWithPaths(paths);
 }
 
@@ -1829,7 +1834,7 @@ void MainWindow::onExportCsv()
 	const int count = rows.size();
 	const MediaCsv::Options csvOptions{m_precomputesEnabled};
 	const QString label = exportSelected ? "selected" : "visible";
-	addLog(QtInfoMsg, QStringLiteral("export"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
+	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
 	m_exportInProgress = true;
 	updateActivityUi();
 
@@ -1843,7 +1848,7 @@ void MainWindow::onExportCsv()
 				m_exportInProgress = false;
 				updateActivityUi();
 				if (!ok)
-					addLog(QtCriticalMsg, QStringLiteral("export"), QStringLiteral("CSV export failed: %1.").arg(path));
+					addLog(QtCriticalMsg, QStringLiteral("app"), QStringLiteral("CSV export failed: %1.").arg(path));
 			});
 
 	watcher->setFuture(
@@ -1860,7 +1865,7 @@ void MainWindow::onRevealInFinder()
 		return;
 
 	RevealInFinder::reveal(sel.first().filePath, [this](QtMsgType level, const QString &message)
-						   { addLog(level, QStringLiteral("reveal"), message); });
+						   { addLog(level, QStringLiteral("app"), message); });
 }
 
 // MARK: - Select relatives
@@ -1882,7 +1887,7 @@ void MainWindow::onSelectRelatives()
 
 	if (masterIds.isEmpty())
 	{
-		addLog(QtWarningMsg, QStringLiteral("relatives"),
+		addLog(QtWarningMsg, QStringLiteral("app"),
 			   "No MasterMobId found in the selected files. Relatives can't be matched.");
 		return;
 	}
@@ -1905,7 +1910,7 @@ void MainWindow::onSelectRelatives()
 	selModel->setCurrentIndex(first, QItemSelectionModel::NoUpdate);
 	m_tableView->scrollTo(first, QAbstractItemView::EnsureVisible);
 
-	addLog(QtInfoMsg, QStringLiteral("relatives"),
+	addLog(QtInfoMsg, QStringLiteral("app"),
 		   QStringLiteral("Selected %1 file%2 across %3 master clip%4.")
 			   .arg(rows.size())
 			   .arg(rows.size() == 1 ? "" : "s")
@@ -1945,7 +1950,7 @@ void MainWindow::onInvertSelection()
 	if (newCount > 0)
 		selModel->select(newSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
-	addLog(QtInfoMsg, QStringLiteral("selection"),
+	addLog(QtInfoMsg, QStringLiteral("app"),
 		   QStringLiteral("Selection inverted: %1 of %2 visible row%3 selected.")
 			   .arg(newCount)
 			   .arg(rowCount)
@@ -2153,7 +2158,7 @@ ProgressDialog *MainWindow::progressDialog()
 				[this]()
 				{
 					m_scanner->cancelScan();
-					addLog(QtWarningMsg, QStringLiteral("app"), "Cancel requested");
+					addLog(QtWarningMsg, QStringLiteral("scanner"), "Cancel requested");
 				});
 	}
 	return m_progressDialog;

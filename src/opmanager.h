@@ -11,7 +11,6 @@
 #include <QVector>
 #include <QWaitCondition>
 
-#include <functional>
 #include <optional>
 
 // Qt facade for the shared engine. Requests run on one owned worker; results
@@ -49,13 +48,6 @@ public:
 	/// cross-checks and the journal records.
 	static QVector<OpItem> itemsFromMediaFiles(const QVector<MediaFile> &files,
 											   const QHash<QString, ConflictPolicy> &policies);
-
-	/// Rename runs only: called on the WORKER thread after the first
-	/// successful rename touching each folder (the engine's own Avid-
-	/// database reset for that folder has already run). The Rebalance
-	/// adapter wires its summary counting here; unset means no extra
-	/// action. Set before dispatching; not thread-safe to change mid-run.
-	std::function<void(const QString &folderPath)> renameFolderTouched;
 
 signals:
 	void operationResult(const OpResult &result);

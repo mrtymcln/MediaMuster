@@ -917,7 +917,12 @@ void TestFileOperations::restoration_crash_boundaries_are_idempotent()
 	const auto record = OpJournal::scan(f.journals).first();
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	const auto recovery = OperationRecovery::run(f.journals);
-	Q_UNUSED(recovery);
+	QVERIFY(recovery.undoCandidate);
+	QCOMPARE(recovery.undoCandidate->path, record.path);
+	const bool returnedBeforeRecovery = boundary == "source-restored-on-disk" || boundary == "source-restored";
+	QCOMPARE(recovery.restorable.size(), returnedBeforeRecovery ? 0 : 1);
+	if (returnedBeforeRecovery)
+		QCOMPARE(recovery.undoCandidate->entries[0].step, OpJournal::Step::SourceRestored);
 	cancel = false;
 	runner.hooks = {};
 	OpRequest restore;
@@ -1173,6 +1178,10 @@ void TestFileOperations::crash_after_publication_is_reconciled()
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	auto a = OperationRecovery::run(f.journals);
 	QVERIFY(a.resumable.isEmpty());
+	QVERIFY(a.restorable.isEmpty());
+	QVERIFY(a.undoCandidate);
+	QCOMPARE(a.undoCandidate->entries[0].step, OpJournal::Step::Done);
+	QVERIFY(a.undoCandidate->entries[0].cleanup.isEmpty());
 	QCOMPARE(OpJournal::scan(f.journals)[0].entries[0].step, OpJournal::Step::Done);
 }
 void TestFileOperations::repeated_resume_continues_same_journal()

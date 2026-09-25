@@ -176,7 +176,6 @@ void OpManager::startRun(OpRequest request)
 		[this, request = std::move(request)]
 		{
 			OpRunner runner(*this, m_job.cancelFlag());
-			runner.onRenameFolderTouched = renameFolderTouched;
 			const OpRunner::Totals totals = runner.run(request);
 			// Join before announcing completion: the next recovery scan must
 			// see a released journal lock and a worker that has fully exited.

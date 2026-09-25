@@ -24,17 +24,33 @@ a window title. This is a heuristic, and scanning remains available regardless o
 its result. The permission dialog can open the FDA settings pane.
 
 When startup collects crash reports, a dialog with an empty window title directs
-the user to **Help > Reveal Logs** to share them with the developer.
+the user to **Help > Reveal Diagnostics** to share them with the developer.
 
 The application log, `mediamuster.log`, and collected crash reports live in the
 application-data folder. On macOS this is
 `~/Library/Application Support/Martin McLean/MediaMuster/`.
-Startup enables all levels of MediaMuster diagnostic messages, including
-information messages, and clears the log if it was created at least 30 days ago.
+Startup clears the log if it was created at least 30 days ago.
 The Console receives live activity messages from the app and also writes them
 to the log. The file additionally receives detailed Qt diagnostic messages;
 the Console does not read back the file. Collected crash reports are kept
 separately and existing copies are left untouched.
+
+The Console and diagnostic log use the same bare category labels:
+
+| Shared category | Messages |
+| --- | --- |
+| `app` | Startup, permissions, crashes, selection, CSV export, revealing files and background-task problems |
+| `volumes` | Finding, adding and refreshing storage locations |
+| `scanner` | Scanning, cancellation and high-level database notices |
+| `operations` | File operations, Undo and startup recovery |
+| `rebalance` | Rebalance and its automatic rescan |
+| `filters` | Bin and Precompute filters |
+
+The diagnostic log also uses `avb`, `pmr`, `mdb`, `mxf`, `omf` and `metadata`
+for parser and metadata details. High-level PMR/MDB notices shown in the Console
+use `scanner`; the parsers retain their own diagnostic categories. Neither output
+adds a `console/` or `mediamuster.` prefix to these labels. The category identifies
+the source of a message; its severity is separate.
 
 The current source includes a Debug menu. These four options start **off on every
 launch**:
@@ -75,6 +91,10 @@ built-in keyboard shortcuts and, for text controls, their context menus; they ha
 no menu-bar commands. The media table
 retains its cell-copy and Copy Path context commands. View retains the checked
 **Show Console** and **Show All Filter Tabs** options.
+
+**Help > Reveal Diagnostics** reveals the diagnostic log in the system's file browser.
+**Help > Send feedback…** opens the default email client with a message addressed
+to `mrtymcln.dev@gmail.com`.
 
 Menu commands and their matching buttons share availability. Scanning requires
 an available location; Scan Selected additionally requires a selected location.
@@ -262,7 +282,9 @@ is already at its destination, it records an unchanged result.
 For a Move that copies, a failed required copy prevents original removal. Explicitly
 skipped files remain untouched. A completed copy can also retain its source when
 the app cannot confirm the storage's persistence or metadata requirements. The
-operation log distinguishes completed work, retained sources and unresolved work.
+Console reports retained sources, unchanged destinations, restored originals and
+problems, along with any additional details from completed work. Plain per-file
+success messages and final operation totals are not logged.
 
 Copying uses the native operating-system APIs, with checks for reported errors,
 file identity, size, metadata and storage persistence. The app does not read and
@@ -292,8 +314,10 @@ finished remains recorded. An operating-system call already in progress may dela
 the stop.
 
 At startup the app checks recorded operations against the disk and cleans up
-eligible recorded temporary artifacts. It does not automatically resume the
-unfinished copy, move or delete work. Unfinished Business asks “Resume the
+eligible recorded temporary artifacts. Journal cleanup and the recovery, Undo
+and restoration checks share one loaded history under the operation lock. The
+history is read again only if recovery may have updated journals. It does not
+automatically resume the unfinished copy, move or delete work. Unfinished Business asks “Resume the
 interrupted job?” and offers the applicable choices:
 
 - **Resume:** “Continue the unfinished work.”

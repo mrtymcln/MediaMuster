@@ -1,5 +1,7 @@
 #include "revealinfinder.h"
+#include "diagnostics.h"
 
+#include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
@@ -105,14 +107,14 @@ namespace RevealInFinder
 				shellApiSucceeded = SUCCEEDED(openHr);
 				if (!shellApiSucceeded)
 				{
-					log(QtWarningMsg, QStringLiteral("SHOpenFolderAndSelectItems failed: 0x%1")
-										  .arg(static_cast<quint32>(openHr), 8, 16, QChar('0')));
+					qCWarning(lcApp).noquote() << QStringLiteral("SHOpenFolderAndSelectItems failed: 0x%1")
+												.arg(static_cast<quint32>(openHr), 8, 16, QChar('0'));
 				}
 			}
 			else
 			{
-				log(QtWarningMsg, QStringLiteral("SHParseDisplayName failed: 0x%1")
-									  .arg(static_cast<quint32>(parseHr), 8, 16, QChar('0')));
+				qCWarning(lcApp).noquote() << QStringLiteral("SHParseDisplayName failed: 0x%1")
+											.arg(static_cast<quint32>(parseHr), 8, 16, QChar('0'));
 			}
 
 			if (needCoUninit)

@@ -62,11 +62,6 @@ private:
 	/// not MainWindow's). Signal adaptation happens once, in the ctor.
 	OpManager *m_engine = nullptr;
 
-	/// Folders whose Avid databases this run has reset, for the summary
-	/// line. Written from the engine's worker thread via the
-	/// folder-touched hook; read on the GUI thread after finished.
-	std::atomic<int> m_foldersReset{0};
-
 	std::atomic<bool> m_cancelRequested{false};
 
 	/// Request preparation runs here so it cannot freeze the GUI. The

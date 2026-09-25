@@ -45,7 +45,6 @@ public:
 	OpRunner(OpSink &sink, const std::atomic<bool> &cancel) : m_sink(sink), m_cancel(cancel) {}
 	Totals run(const OpRequest &request, const QString &journalDir = {});
 	Hooks hooks;
-	std::function<void(const QString &)> onRenameFolderTouched;
 	static bool reconcile(OpJournal &journal, OpJournal::Entry &entry, QString &error,
 						  const NativeFile::DirectorySync &directorySync = NativeFile::syncDirectory);
 	// Only recorded private artifacts are eligible; incomplete cleanup stays journalled.

@@ -734,7 +734,11 @@ namespace
 
 std::optional<OpJournal::Record> OpJournal::latestUndoable(const QString &directory)
 {
-	const auto records = scan(directory);
+	return latestUndoable(scan(directory));
+}
+
+std::optional<OpJournal::Record> OpJournal::latestUndoable(const QVector<Record> &records)
+{
 	const auto selection = selectUndo(records);
 	return selection.canUndo ? std::optional<Record>(records[selection.index]) : std::nullopt;
 }
@@ -751,7 +755,20 @@ bool OpJournal::prune(const QString &directory, QString &error, const QDateTime 
 	auto lock = acquire(dir, error);
 	if (!lock)
 		return false;
-	const auto records = scan(dir);
+	auto records = scan(dir);
+	return pruneRecords(dir, records, error, now);
+}
+
+bool OpJournal::pruneRecords(const QString &directory, QVector<Record> &records, QString &error,
+							const QDateTime &now)
+{
+	error.clear();
+	if (!now.isValid())
+	{
+		error = "Cannot determine the journal retention date.";
+		return false;
+	}
+	const auto dir = directory.isEmpty() ? standardJournalDir() : canonicalPath(directory);
 	const auto cutoff = now.addDays(-30);
 	QSet<QString> retained, known;
 	for (const auto &record : records)
@@ -795,17 +812,21 @@ bool OpJournal::prune(const QString &directory, QString &error, const QDateTime 
 			}
 	} while (changed);
 	bool removed = false;
-	for (const auto &record : records)
+	for (auto it = records.begin(); it != records.end();)
 	{
-		if (retained.contains(record.path))
+		if (retained.contains(it->path))
+		{
+			++it;
 			continue;
-		QFile file(record.path);
+		}
+		QFile file(it->path);
 		if (!file.remove())
 		{
-			error = "Cannot remove expired journal: " + record.path + ". " + file.errorString();
+			error = "Cannot remove expired journal: " + it->path + ". " + file.errorString();
 			return false;
 		}
 		removed = true;
+		it = records.erase(it);
 	}
 	return !removed || NativeFile::syncDirectory(dir, &error) == NativeFile::SyncResult::Ok;
 }
