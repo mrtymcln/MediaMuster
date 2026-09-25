@@ -70,15 +70,13 @@
 // the master/file/source triage — and the decode notes above, which is
 // where every rule the walker applies was verified.
 //
-// OMF-era: the msmMMOB.mdb inside an "OMFI MediaFiles" folder is the same
-// store with three differences, all handled below or in OmfObjects:
-// OMFI:MOBJ:MobID is a 12-byte omfi:UID (MC 2026 additionally writes a
-// 32-byte UMID on the physical mob of the same file, so both widths are
-// accepted and keyed by OmfUid::canonicalHex); the audio descriptors are
-// WAVD/AIFD; the codec is a 4CC + resolution id rather than a label;
-// and the project name is a _PJ attribute on the file or source mob, since
-// a version-2 PMR carries no project. A 32-byte physical mob owns an MDES
-// and therefore falls out of the triage as a source mob, as before.
+// In the OMF-era fixtures, msmMMOB.mdb uses 12-byte omfi:UIDs; MC 2026
+// also writes a 32-byte UMID on the physical mob. Both widths are keyed
+// through OmfUid::canonicalHex. Legacy audio uses WAVD/AIFD descriptors,
+// and picture codecs use a 4CC plus resolution id. _PJ on the file or
+// source mob supplies the project when the PMR field is empty, as in the
+// shipped SupportingFiles fixtures. Version-2 PMRs can store projects;
+// version 1 omits them. A physical mob owning an MDES is a source mob.
 //
 // Three traps that produced confidently wrong "it's not in there" readings
 // before this parser existed, kept here so nobody re-learns them:

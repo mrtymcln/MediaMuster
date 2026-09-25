@@ -1,4 +1,4 @@
-#include "effectfilterdialog.h"
+#include "precomputefilterdialog.h"
 
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -24,8 +24,8 @@ namespace
 	}
 }
 
-EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
-									   const PrecomputeFilter &selection, const QString &selectedVolume, QWidget *parent)
+PrecomputeFilterDialog::PrecomputeFilterDialog(const QVector<MediaFile> &files,
+											   const PrecomputeFilter &selection, const QString &selectedVolume, QWidget *parent)
 	: QDialog(parent)
 {
 	setWindowTitle(tr("Filter Precomputes"));
@@ -36,7 +36,7 @@ EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
 	layout->setSpacing(12);
 
 	m_volumes = new QComboBox(this);
-	m_volumes->setObjectName(QStringLiteral("effectVolume"));
+	m_volumes->setObjectName(QStringLiteral("precomputeVolume"));
 	m_volumes->setMinimumWidth(220);
 	m_volumes->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
 	m_volumes->setMinimumContentsLength(14);
@@ -73,31 +73,31 @@ EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
 	volumeRow->addStretch();
 	layout->addLayout(volumeRow);
 
-	m_effects = new QTreeWidget(this);
-	m_effects->setObjectName(QStringLiteral("effectChoices"));
-	m_effects->setAccessibleName(tr("Precompute hierarchy"));
-	m_effects->setColumnCount(1);
-	m_effects->setHeaderHidden(true);
-	m_effects->setRootIsDecorated(true);
-	m_effects->setAlternatingRowColors(false);
-	m_effects->setUniformRowHeights(true);
-	m_effects->setIndentation(18);
-	m_effects->setSelectionMode(QAbstractItemView::SingleSelection);
-	m_effects->setAllColumnsShowFocus(true);
-	m_effects->header()->setStretchLastSection(false);
-	m_effects->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-	layout->addWidget(m_effects, 1);
+	m_tree = new QTreeWidget(this);
+	m_tree->setObjectName(QStringLiteral("precomputeChoices"));
+	m_tree->setAccessibleName(tr("Precompute hierarchy"));
+	m_tree->setColumnCount(1);
+	m_tree->setHeaderHidden(true);
+	m_tree->setRootIsDecorated(true);
+	m_tree->setAlternatingRowColors(false);
+	m_tree->setUniformRowHeights(true);
+	m_tree->setIndentation(18);
+	m_tree->setSelectionMode(QAbstractItemView::SingleSelection);
+	m_tree->setAllColumnsShowFocus(true);
+	m_tree->header()->setStretchLastSection(false);
+	m_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+	layout->addWidget(m_tree, 1);
 
 	auto *footer = new QHBoxLayout;
 	m_matchCount = new QLabel(this);
-	m_matchCount->setObjectName(QStringLiteral("effectMatchingCount"));
+	m_matchCount->setObjectName(QStringLiteral("precomputeMatchingCount"));
 	footer->addWidget(m_matchCount);
 	footer->addStretch();
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 	buttons->button(QDialogButtonBox::Ok)->setText(tr("Apply"));
-	buttons->button(QDialogButtonBox::Ok)->setObjectName(QStringLiteral("applyEffectFilter"));
+	buttons->button(QDialogButtonBox::Ok)->setObjectName(QStringLiteral("applyPrecomputeFilter"));
 	buttons->button(QDialogButtonBox::Ok)->setDefault(true);
-	buttons->button(QDialogButtonBox::Cancel)->setObjectName(QStringLiteral("cancelEffectFilter"));
+	buttons->button(QDialogButtonBox::Cancel)->setObjectName(QStringLiteral("cancelPrecomputeFilter"));
 	connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
 	connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 	footer->addWidget(buttons);
@@ -107,21 +107,21 @@ EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
 	applySelection(selection);
 	connect(m_volumes, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int)
 			{ updateMatchingCount(); });
-	connect(m_effects, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem *item, int column)
+	connect(m_tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem *item, int column)
 			{
 		if (column != 0) return;
-		const QSignalBlocker blocker(m_effects);
+		const QSignalBlocker blocker(m_tree);
 		setSubtreeChecked(item, item->checkState(0) == Qt::Unchecked ? Qt::Unchecked : Qt::Checked);
 		for (auto *parentItem = item->parent(); parentItem; parentItem = parentItem->parent())
 			updateParentChecks(parentItem);
 		updateMatchingCount(); });
 	for (const bool expand : {false, true})
 	{
-		auto *shortcut = new QShortcut(QKeySequence(expand ? Qt::CTRL | Qt::Key_Right : Qt::CTRL | Qt::Key_Left), m_effects);
+		auto *shortcut = new QShortcut(QKeySequence(expand ? Qt::CTRL | Qt::Key_Right : Qt::CTRL | Qt::Key_Left), m_tree);
 		shortcut->setContext(Qt::WidgetShortcut);
 		connect(shortcut, &QShortcut::activated, this, [this, expand]
 				{
-			if (auto *item = m_effects->currentItem()) item->setExpanded(expand); });
+			if (auto *item = m_tree->currentItem()) item->setExpanded(expand); });
 	}
 	auto *cancelShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Period), this);
 	connect(cancelShortcut, &QShortcut::activated, this, &QDialog::reject);
@@ -129,10 +129,10 @@ EffectFilterDialog::EffectFilterDialog(const QVector<MediaFile> &files,
 	m_volumes->setFocus();
 }
 
-QTreeWidgetItem *EffectFilterDialog::addChoice(QTreeWidgetItem *parent, const QString &label,
-											   const PrecomputeFilterPath &path)
+QTreeWidgetItem *PrecomputeFilterDialog::addChoice(QTreeWidgetItem *parent, const QString &label,
+												   const PrecomputeFilterPath &path)
 {
-	auto *item = parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(m_effects);
+	auto *item = parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(m_tree);
 	item->setText(0, label);
 	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
 	item->setCheckState(0, Qt::Unchecked);
@@ -141,9 +141,9 @@ QTreeWidgetItem *EffectFilterDialog::addChoice(QTreeWidgetItem *parent, const QS
 	return item;
 }
 
-void EffectFilterDialog::buildTree(const QVector<MediaFile> &files)
+void PrecomputeFilterDialog::buildTree(const QVector<MediaFile> &files)
 {
-	const QSignalBlocker blocker(m_effects);
+	const QSignalBlocker blocker(m_tree);
 	auto *root = addChoice(nullptr, tr("Precomputes"), {});
 	const QString rendered = QStringLiteral("Rendered Effects");
 	const QString titles = QStringLiteral("Titles and Matte Keys");
@@ -190,9 +190,9 @@ void EffectFilterDialog::buildTree(const QVector<MediaFile> &files)
 	typeItems.value(rendered)->setExpanded(true);
 }
 
-void EffectFilterDialog::applySelection(const PrecomputeFilter &selection)
+void PrecomputeFilterDialog::applySelection(const PrecomputeFilter &selection)
 {
-	const QSignalBlocker blocker(m_effects);
+	const QSignalBlocker blocker(m_tree);
 	const QVector<PrecomputeFilterPath> paths = selection.active ? selection.paths : QVector<PrecomputeFilterPath>{{}};
 	for (auto it = m_paths.cbegin(); it != m_paths.cend(); ++it)
 	{
@@ -210,17 +210,17 @@ void EffectFilterDialog::applySelection(const PrecomputeFilter &selection)
 			self(self, item->child(i));
 		updateParentChecks(item);
 	};
-	update(update, m_effects->topLevelItem(0));
+	update(update, m_tree->topLevelItem(0));
 }
 
-void EffectFilterDialog::setSubtreeChecked(QTreeWidgetItem *item, Qt::CheckState state)
+void PrecomputeFilterDialog::setSubtreeChecked(QTreeWidgetItem *item, Qt::CheckState state)
 {
 	item->setCheckState(0, state);
 	for (int i = 0; i < item->childCount(); ++i)
 		setSubtreeChecked(item->child(i), state);
 }
 
-void EffectFilterDialog::updateParentChecks(QTreeWidgetItem *item)
+void PrecomputeFilterDialog::updateParentChecks(QTreeWidgetItem *item)
 {
 	if (item->childCount() == 0)
 		return;
@@ -236,7 +236,7 @@ void EffectFilterDialog::updateParentChecks(QTreeWidgetItem *item)
 												   : Qt::Unchecked);
 }
 
-void EffectFilterDialog::collectSelection(QTreeWidgetItem *item, QVector<PrecomputeFilterPath> &paths) const
+void PrecomputeFilterDialog::collectSelection(QTreeWidgetItem *item, QVector<PrecomputeFilterPath> &paths) const
 {
 	if (item->checkState(0) == Qt::Checked)
 		paths.append(m_paths.value(item));
@@ -245,20 +245,20 @@ void EffectFilterDialog::collectSelection(QTreeWidgetItem *item, QVector<Precomp
 			collectSelection(item->child(i), paths);
 }
 
-PrecomputeFilter EffectFilterDialog::precomputeFilter() const
+PrecomputeFilter PrecomputeFilterDialog::precomputeFilter() const
 {
 	PrecomputeFilter filter;
 	filter.active = true;
-	collectSelection(m_effects->topLevelItem(0), filter.paths);
+	collectSelection(m_tree->topLevelItem(0), filter.paths);
 	return filter;
 }
 
-QString EffectFilterDialog::selectedVolume() const
+QString PrecomputeFilterDialog::selectedVolume() const
 {
 	return m_volumes->currentData().toString();
 }
 
-qint64 EffectFilterDialog::matchingCount(QTreeWidgetItem *item) const
+qint64 PrecomputeFilterDialog::matchingCount(QTreeWidgetItem *item) const
 {
 	if (item->checkState(0) == Qt::Checked)
 	{
@@ -271,8 +271,8 @@ qint64 EffectFilterDialog::matchingCount(QTreeWidgetItem *item) const
 	return count;
 }
 
-void EffectFilterDialog::updateMatchingCount()
+void PrecomputeFilterDialog::updateMatchingCount()
 {
-	const qint64 count = matchingCount(m_effects->topLevelItem(0));
+	const qint64 count = matchingCount(m_tree->topLevelItem(0));
 	m_matchCount->setText(count == 1 ? tr("1 matching file") : tr("%1 matching files").arg(count));
 }

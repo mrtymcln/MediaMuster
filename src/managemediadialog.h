@@ -23,14 +23,13 @@ class QShowEvent;
 
 // MARK: - ManageMediaDialog
 
-/// Drives OpManager. Lets the editor pick Copy / Move / Delete,
-/// choose a destination, decide whether to preserve the Avid folder
-/// structure, and resolve per-file conflicts before the op happens.
+/// Collects Copy / Move / Delete choices and previews destinations and conflicts.
+/// MainWindow passes the accepted choices to FileOperationController for execution.
 ///
 /// Preview tree shows source + destination per file. Conflicting
 /// rows gain a per-row policy combo (Keep Both / Skip).
 /// A global combo applies the same policy to every conflicting row;
-/// syncing goes both ways via syncGlobalFromPerFile.
+/// Per-file choices also update the global combo.
 class ManageMediaDialog : public QDialog
 {
 	Q_OBJECT
@@ -44,9 +43,7 @@ public:
 		Delete
 	};
 
-	/// Aliased so dialog clients don't need to include oprequest.h.
-	/// The engine-wide policy enum (oprequest.h); the alias keeps the
-	/// dialog's call sites reading as before.
+	/// The file-operation engine's conflict policy.
 	using ConflictPolicy = ::ConflictPolicy;
 
 	explicit ManageMediaDialog(const QVector<MediaFile> &files, QWidget *parent = nullptr,
@@ -58,11 +55,9 @@ public:
 	QString destination() const;
 	bool preserveStructure() const;
 
-	/// Keyed by source file path. Only contains entries for rows
-	/// that actually conflicted with an existing destination. A file absent
-	/// from the map was never flagged as a conflict; the engine skips it
-	/// rather than replace, should one appear. The caller passes this
-	/// straight through.
+	/// Choices for previewed conflicts, keyed by source path.
+	/// A later conflict without an approved policy fails the item;
+	/// the engine never overwrites the destination.
 	QHash<QString, ConflictPolicy> conflictPolicies() const;
 
 protected:

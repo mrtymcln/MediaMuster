@@ -6,7 +6,7 @@
 
 // MARK: - DragDropUtil
 
-/// Centralising stops `dragEnter` accepting a drop that `drop` later rejects.
+/// Shared local-URL check; callers supply their own acceptance predicate.
 namespace DragDropUtil
 {
 	/// True iff any URL in `mime` is a local file path that

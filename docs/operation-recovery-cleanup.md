@@ -24,7 +24,7 @@ Successful restoration refreshes the media table by scanning the actual media
 roots. A claimed Undo remains the sole recovery owner of its forward job; its
 completed inverse evidence can settle the forward retirement-folder cleanup.
 
-Resume Job and Restore Originals remain distinct actions in the same dialog:
+Resume and Restore Originals remain distinct actions in the same dialog:
 Resume continues an unfinished job;
 Restore returns stranded originals, including those from dismissed jobs, while
 keeping completed copies. Both report an explicit `OriginalRestored` result so
@@ -32,15 +32,14 @@ the UI refreshes restored media regardless of which route performed the return.
 The refresh preserves the scan roots already represented in the table.
 
 The dialog merges each job's available choices into one entry and uses the same
-button-and-description rows as Filter by Bin. Cancel Job explicitly abandons
+button-and-description rows as Filter by Bin. Stop explicitly abandons
 unfinished work while preserving completed results and restoration records.
 Escape and window close dismiss the dialog without changing the job. There is
-no footer button or default action; Enter leaves the dialog open. Cancel Job is
-the separate action that abandons unfinished work. The dialog starts with Job
-and Files remaining details, without an introductory instruction. Files remaining
+no footer button or default action; Enter leaves the dialog open. The dialog asks
+"Resume the interrupted job?" before showing the job details. Files remaining
 excludes resolved entries such as skipped files and originals already restored.
 Started dates and job-selector dates use local time in `yyyy-MM-dd HH:mm`, matching
-the main table. Cancel Job mentions restoring files listed below only when the
+the main table. Stop mentions restoring files listed below only when the
 selected job has recorded original locations to show.
 Recorded original paths appear in a plain read-only list without a group heading.
 If no selectable job remains, the controller returns without opening a dialog.

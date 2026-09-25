@@ -5,10 +5,9 @@
 #include <QString>
 #include <QStringList>
 
-// Normalise paths before using them as hash keys. File and directory APIs disagree on
-// trailing slashes, `.`/`..`, symlinks/firmlinks (`/var` vs `/private/var`),
-// and Unicode form (NFC vs NFD — SMB vs APFS). canonicalFilePath settles all
-// of these, but only for a path that exists.
+// Normalise paths for hash keys by cleaning "."/".." and trailing slashes,
+// and resolving existing ancestors through canonicalFilePath. The leaf is
+// not resolved, and Unicode normalization forms (NFC/NFD) are not unified.
 //
 // THE RULE THAT MATTERS: the key for a path must not change the moment the
 // file appears. So the LEAF is never resolved — only the deepest part of the

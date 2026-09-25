@@ -1,15 +1,15 @@
 # Precompute details preview
 
-MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media), **Precompute** and **Unknown**, and is always present in the table and CSV. The extra detail columns and filter controls require the session-only [Precomputes gate](release-feature-gates.md).
+MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media), **Precompute** and an em dash when unknown, and is always present in the table and CSV. The extra detail columns and filter controls require the session-only [Precomputes gate](release-feature-gates.md).
 
 The new effect details and picker are a preview, disabled at every launch:
 
 1. Launch a build with the Debug menu and choose **Debug → Enable Precomputes**.
 2. Scan the volumes you want to examine. Rescan results collected by an older build.
 3. The **Precompute Category** column shows **Rendered Effects**, **Titles and Matte Keys**, or **unknown** for precomputes.
-4. Choose **Filter Precomputes...**. Choose a **Volume** at the top, expand the outline, and tick the branches or effects you want. For example, expand **Precompute → Rendered Effects → Blend** and tick **3D Warp**. Choose **Apply**.
+4. Choose **Filter Precomputes...**. Choose a **Volume** at the top, expand the outline, and tick the branches or effects you want. For example, expand **Precomputes → Rendered Effects → Blend** and tick **3D Warp**. Choose **Apply**.
 
-The table gains **Precompute Category**, **Effect Category**, **Effect** and **Effect Sequence** after **Type**, and the **Precomputes** tab becomes available. CSV exports include those same four extra columns while the feature is enabled (23 columns enabled, 19 disabled). Turning it off removes the four detail columns and clears precompute, category, effect and volume filters; Type stays visible and sortable. It does not change the underlying metadata classification or remove rendered media from ordinary scan results. The Debug toggle is unavailable while a scan or media operation is busy and is disabled again at the next launch.
+The table gains **Precompute Category**, **Effect Category**, **Effect** and **Effect Sequence**, and the **Precomputes** tab becomes available. CSV exports include those same four extra columns while the feature is enabled (23 columns enabled, 19 disabled). Turning it off removes the four detail columns and clears precompute, category, effect and volume filters; Type stays visible and sortable. It does not change the underlying metadata classification or remove rendered media from ordinary scan results. The Debug toggle is unavailable while a scan or media operation is busy and is disabled again at the next launch.
 
 The picker uses a narrow standard dialog and outline. Its **Volume** row follows the Rebalance dialog. **Rendered Effects** expands into effect categories and then individual effects; **Titles and Matte Keys** and **unknown** expand directly into their named effects. The checkboxes show the selection, without separate selected-filter chips. There is no Search field, tree heading or Files column. The matching-file total remains below the outline, alongside **Apply** and **Cancel**.
 
@@ -17,7 +17,7 @@ The dialog inherits the application's style, palette and font, and uses the stan
 
 Ticking a branch selects its contents. Different checked branches are alternatives: selecting all **Titles and Matte Keys** together with **Rendered Effects → Blend → 3D Warp** shows both groups. A named effect matches its complete branch, so another effect with the same label elsewhere is not added accidentally. The word **unknown** is a selectable value, not a wildcard.
 
-The outline contains choices found among all scanned precomputes. The matching-file total honours the chosen volume, and changing volume preserves the selection, including choices with no files on that volume. With no previous filter, every branch starts checked. Leave **Precompute** checked to show all precomputes on the chosen volume; untick it to clear every checkbox, then pick specific branches. Leaving everything unticked deliberately shows no files.
+The outline contains choices found among all scanned precomputes. The matching-file total honours the chosen volume, and changing volume preserves the selection, including choices with no files on that volume. With no previous filter, every branch starts checked. Leave **Precomputes** checked to show all precomputes on the chosen volume; untick it to clear every checkbox, then pick specific branches. Leaving everything unticked deliberately shows no files.
 
 **Apply** applies the checked branches and volume, then closes the dialog. **Cancel** closes it without changing the existing filter. Project, bin, main-table search and table-tab filters also apply to the final table. The main table shows separate removable indicators for the chosen precompute branches or effects and the precompute volume. Removing either indicator preserves the other selection; a new scan clears both.
 
@@ -49,7 +49,7 @@ Effect details continue to come from the clip name, as requested. A name shared 
 
 The exact historical token `3DWarp` maps to **3D Warp / Blend** as a documented compatibility alias. The [Avid 2026 Effects Guide](https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf), pages 287–288, also places 3D Warp in Blend. **3D Warp Legacy / Legacy** remains a separate catalogue entry. The inspected effect registry describes names Media Composer recognizes; it is not proof that every listed plug-in is installed or licensed.
 
-The [catalogue evidence and regeneration instructions](evidence/avid-effects-26.8/README.md) distinguish direct registration facts, translated aliases, and the additional Motion Effect/Timewarp and D-Verb/AudioSuite groupings.
+The [catalogue evidence and historical extraction method](evidence/avid-effects-26.8/README.md) distinguish direct registration facts, translated aliases, and the additional Motion Effect/Timewarp and D-Verb/AudioSuite groupings.
 
 ## Combined precompute indicator validation — 5 September 2026
 

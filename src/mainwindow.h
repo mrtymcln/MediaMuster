@@ -69,7 +69,7 @@ private slots:
 	void onPathsDropped(const QStringList &paths);
 	void onCheckPermissions();
 	void onFilterByBins();
-	void onFilterByEffects();
+	void onFilterPrecomputes();
 	void onRebalance();
 	void onAbout();
 	void showMediaMusterTrashDialog(const QString &trashFolderPath, int fileCount);
@@ -193,7 +193,7 @@ private:
 
 	QPushButton *m_btnFileOps;
 	QPushButton *m_btnBinFilter;
-	QPushButton *m_btnEffectFilter = nullptr;
+	QPushButton *m_btnPrecomputeFilter = nullptr;
 	QPushButton *m_btnExport;
 	QPushButton *m_btnRebalance;
 
@@ -230,7 +230,7 @@ private:
 	class QAction *m_enableOmfAct = nullptr;
 	bool m_precomputesEnabled = false;
 	class QAction *m_enablePrecomputesAct = nullptr;
-	class QAction *m_effectFilterAct = nullptr;
+	class QAction *m_precomputeFilterAct = nullptr;
 	QSet<QString> m_manualVolumes;
 
 	// MARK: - Selection persistence

@@ -1,4 +1,4 @@
-#include "effectfilterdialog.h"
+#include "precomputefilterdialog.h"
 #include "mediafilterproxy.h"
 #include "mediatablemodel.h"
 
@@ -54,9 +54,9 @@ namespace
 		return files;
 	}
 
-	QTreeWidgetItem *choice(EffectFilterDialog &dialog, const QStringList &path)
+	QTreeWidgetItem *choice(PrecomputeFilterDialog &dialog, const QStringList &path)
 	{
-		auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("effectChoices"));
+		auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("precomputeChoices"));
 		if (!tree || tree->topLevelItemCount() != 1) return nullptr;
 		auto *item = tree->topLevelItem(0);
 		for (const auto &name : path)
@@ -70,9 +70,9 @@ namespace
 		return item;
 	}
 
-	QString matchingText(EffectFilterDialog &dialog)
+	QString matchingText(PrecomputeFilterDialog &dialog)
 	{
-		return dialog.findChild<QLabel *>(QStringLiteral("effectMatchingCount"))->text();
+		return dialog.findChild<QLabel *>(QStringLiteral("precomputeMatchingCount"))->text();
 	}
 
 	QStringList matchingFiles(const QVector<MediaFile> &files, const PrecomputeFilter &filter, const QString &volume = {})
@@ -92,7 +92,7 @@ namespace
 	}
 }
 
-class TestEffectFilterDialog : public QObject
+class TestPrecomputeFilterDialog : public QObject
 {
 	Q_OBJECT
 private slots:
@@ -104,9 +104,9 @@ private slots:
 	void apply_cancel_and_keyboard_actions();
 };
 
-void TestEffectFilterDialog::initial_all_and_empty_are_distinct()
+void TestPrecomputeFilterDialog::initial_all_and_empty_are_distinct()
 {
-	EffectFilterDialog dialog(rows(), {}, {});
+	PrecomputeFilterDialog dialog(rows(), {}, {});
 	auto *root = choice(dialog, {});
 	QVERIFY(root);
 	QCOMPARE(root->childCount(), 3);
@@ -118,15 +118,15 @@ void TestEffectFilterDialog::initial_all_and_empty_are_distinct()
 	QVERIFY(dialog.precomputeFilter().paths.isEmpty());
 	QCOMPARE(matchingText(dialog), QStringLiteral("0 matching files"));
 	QVERIFY(matchingFiles(rows(), dialog.precomputeFilter()).isEmpty());
-	QVERIFY(dialog.findChild<QPushButton *>(QStringLiteral("applyEffectFilter"))->isEnabled());
+	QVERIFY(dialog.findChild<QPushButton *>(QStringLiteral("applyPrecomputeFilter"))->isEnabled());
 	root->setCheckState(0, Qt::Checked);
 	QCOMPARE(dialog.precomputeFilter().paths.size(), 1);
 	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()).size(), 8);
 }
 
-void TestEffectFilterDialog::branches_combine_and_reopen_without_crossing_subtypes()
+void TestPrecomputeFilterDialog::branches_combine_and_reopen_without_crossing_subtypes()
 {
-	EffectFilterDialog dialog(rows(), {true, {}}, {});
+	PrecomputeFilterDialog dialog(rows(), {true, {}}, {});
 	auto *warp = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")});
 	auto *titles = choice(dialog, {QStringLiteral("Titles and Matte Keys")});
 	QVERIFY(warp && titles);
@@ -139,15 +139,15 @@ void TestEffectFilterDialog::branches_combine_and_reopen_without_crossing_subtyp
 	const QStringList expected{QStringLiteral("renamed-title.mxf"), QStringLiteral("title.mxf"),
 		QStringLiteral("warp1.mxf"), QStringLiteral("warp2.mxf"), QStringLiteral("warp3.mxf")};
 	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()), expected);
-	EffectFilterDialog reopened(rows(), dialog.precomputeFilter(), {});
+	PrecomputeFilterDialog reopened(rows(), dialog.precomputeFilter(), {});
 	QCOMPARE(matchingFiles(rows(), reopened.precomputeFilter()), expected);
 	QCOMPARE(choice(reopened, {QStringLiteral("Titles and Matte Keys")})->checkState(0), Qt::Checked);
 	QCOMPARE(choice(reopened, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("Dissolve")})->checkState(0), Qt::Unchecked);
 }
 
-void TestEffectFilterDialog::collapsed_branch_selects_all_descendants()
+void TestPrecomputeFilterDialog::collapsed_branch_selects_all_descendants()
 {
-	EffectFilterDialog dialog(rows(), {true, {}}, {});
+	PrecomputeFilterDialog dialog(rows(), {true, {}}, {});
 	auto *resize = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Image"), QStringLiteral("Resize")});
 	auto *blend = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend")});
 	auto *warp = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")});
@@ -170,10 +170,10 @@ void TestEffectFilterDialog::collapsed_branch_selects_all_descendants()
 	QCOMPARE(matchingText(dialog), QStringLiteral("1 matching file"));
 }
 
-void TestEffectFilterDialog::volume_changes_preserve_zero_match_choices()
+void TestPrecomputeFilterDialog::volume_changes_preserve_zero_match_choices()
 {
-	EffectFilterDialog dialog(rows(), {true, {}}, {});
-	auto *volumes = dialog.findChild<QComboBox *>(QStringLiteral("effectVolume"));
+	PrecomputeFilterDialog dialog(rows(), {true, {}}, {});
+	auto *volumes = dialog.findChild<QComboBox *>(QStringLiteral("precomputeVolume"));
 	auto *dissolve = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("Dissolve")});
 	QVERIFY(volumes && dissolve);
 	QCOMPARE(volumes->count(), 3);
@@ -186,18 +186,18 @@ void TestEffectFilterDialog::volume_changes_preserve_zero_match_choices()
 	volumes->setCurrentIndex(volumes->findData(QStringLiteral("/Volumes/EDIT2")));
 	QCOMPARE(matchingText(dialog), QStringLiteral("1 matching file"));
 	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter(), dialog.selectedVolume()), QStringList{QStringLiteral("dissolve.mxf")});
-	EffectFilterDialog disconnected(rows(), dialog.precomputeFilter(), QStringLiteral("/Volumes/Disconnected"));
+	PrecomputeFilterDialog disconnected(rows(), dialog.precomputeFilter(), QStringLiteral("/Volumes/Disconnected"));
 	QCOMPARE(disconnected.selectedVolume(), QStringLiteral("/Volumes/Disconnected"));
 	QCOMPARE(matchingText(disconnected), QStringLiteral("0 matching files"));
 }
 
-void TestEffectFilterDialog::unknown_effect_and_unknown_subtype_remain_distinct()
+void TestPrecomputeFilterDialog::unknown_effect_and_unknown_subtype_remain_distinct()
 {
 	auto files = rows();
 	auto unknownEffect = render({}, QStringLiteral("/Volumes/EDIT"), QStringLiteral("renamed-render.mxf"));
 	unknownEffect.effectCategory.clear();
 	files.append(unknownEffect);
-	EffectFilterDialog dialog(files, {true, {}}, {});
+	PrecomputeFilterDialog dialog(files, {true, {}}, {});
 	auto *renderUnknown = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), QStringLiteral("unknown")});
 	auto *subtypeUnknown = choice(dialog, {QStringLiteral("unknown")});
 	QVERIFY(renderUnknown && subtypeUnknown);
@@ -208,13 +208,13 @@ void TestEffectFilterDialog::unknown_effect_and_unknown_subtype_remain_distinct(
 	QCOMPARE(matchingFiles(files, dialog.precomputeFilter()).size(), 2);
 }
 
-void TestEffectFilterDialog::apply_cancel_and_keyboard_actions()
+void TestPrecomputeFilterDialog::apply_cancel_and_keyboard_actions()
 {
 	PrecomputeFilter initial{true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}};
-	EffectFilterDialog dialog(rows(), initial, {});
+	PrecomputeFilterDialog dialog(rows(), initial, {});
 	QSignalSpy accepted(&dialog, &QDialog::accepted);
 	QSignalSpy rejected(&dialog, &QDialog::rejected);
-	auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("effectChoices"));
+	auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("precomputeChoices"));
 	auto *warp = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")});
 	dialog.show();
 	tree->setCurrentItem(warp);
@@ -228,12 +228,12 @@ void TestEffectFilterDialog::apply_cancel_and_keyboard_actions()
 	QCOMPARE(accepted.size(), 0);
 	QCOMPARE(initial.paths.size(), 1); // the caller's applied filter stays unchanged
 
-	EffectFilterDialog apply(rows(), initial, {});
+	PrecomputeFilterDialog apply(rows(), initial, {});
 	apply.show();
 	QTest::keyClick(&apply, Qt::Key_Return);
 	QCOMPARE(apply.result(), int(QDialog::Accepted));
 	QCOMPARE(matchingFiles(rows(), apply.precomputeFilter()).size(), 3);
 }
 
-QTEST_MAIN(TestEffectFilterDialog)
-#include "tst_effectfilterdialog.moc"
+QTEST_MAIN(TestPrecomputeFilterDialog)
+#include "tst_precomputefilterdialog.moc"

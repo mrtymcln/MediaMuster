@@ -10,8 +10,8 @@
 
 namespace
 {
-	// Shared by dragEnterEvent and dragMoveEvent so both honour the
-	// same drop-accept rules.
+	// Drag entry and movement accept local directories; dropEvent also
+	// checks readability before emitting pathsDropped.
 	bool dragHasLocalDir(const QMimeData *mime)
 	{
 		return DragDropUtil::hasAnyLocalUrl(mime, [](const QString &path)

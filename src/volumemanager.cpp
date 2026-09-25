@@ -154,11 +154,9 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 		if (vol.bytesTotal() < kMinAvidVolumeBytes)
 			continue;
 
-		// Skip the system/boot volume: MC 2020.4 or later can no longer write media
-		// to a system-volume root (macOS SIP / Windows protection), so it never holds
-		// Avid media there. Real system-drive media lives in Users/Shared or
-		// Public\Documents and is surfaced by pass 3; a user who needs the system
-		// volume itself can still add it via File > Add Folder or Volume.
+		// Skip system-volume roots in the general mount list. Pass 3 adds the
+		// known Avid locations, including the legacy C:/ media base on Windows.
+		// Users can also add a folder or volume manually.
 #if defined(Q_OS_MAC)
 		if (mountPath == "/" || mountPath.startsWith("/System/Volumes/") ||
 			mountPath == "/private/var/vm")
@@ -205,10 +203,9 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 
 	// MARK: Pass 3 — Avid directories on existing mounts
 
-	// Guarded against the LISTED volumes, not seenPaths: the Windows legacy
-	// base is the system drive's own root ("C:/"), which pass 1 marked seen
-	// and then skipped as the boot volume. It still has to be probed here,
-	// because older Media Composers wrote "C:\Avid MediaFiles" directly.
+	// Check listed locations rather than seen mounts: C:/ may have been
+	// skipped as the Windows system drive, but its legacy Avid folders
+	// still need this explicit probe.
 	const auto alreadyListed = [&volumes](const QString &path)
 	{
 		return std::any_of(volumes.cbegin(), volumes.cend(),
@@ -297,8 +294,8 @@ QString VolumeManager::detectVolumeType(const QString &name, const QString &path
 	// dead SMB/Nexis mount that stat can block for seconds, every 5 s poll.
 	const QString fsType = QString::fromLatin1(storage.fileSystemType()).toLower();
 
-	// Nexis has "AvidFOS" as filesystem. Name substring is a
-	// fallback when the filesystem-type query is empty.
+	// Recognise Avid filesystem types or a volume name containing "NEXIS".
+	// The name heuristic applies even when the filesystem type is known.
 	if (fsType == "avidfos" || fsType == "avidfs" || upper.contains("NEXIS"))
 		return QStringLiteral("Nexis");
 
@@ -324,9 +321,7 @@ QString VolumeManager::detectVolumeType(const QString &name, const QString &path
 
 bool VolumeManager::hasAvidMediaFolder(const QString &path)
 {
-	// The system root's own `<root>/Avid MediaFiles` case is gone now that the
-	// boot volume is skipped; the known Avid locations are surfaced directly by
-	// detectVolumes' pass 3, each of which matches here on its own path.
+	// Check a mount or known Avid base, including legacy Windows root media.
 	const QDir dir(path);
 	// OMF-era: an OMF-only drive is still an Avid drive.
 	return dir.exists(Conventions::kAvidMediaFilesDir) || dir.exists(Conventions::kOmfMediaFilesDir);

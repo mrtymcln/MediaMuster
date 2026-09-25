@@ -125,7 +125,7 @@ private:
 	{
 		AvidMediaLayout::Family family = AvidMediaLayout::Family::Mxf;
 		QString folderPath;
-		QString folderNumber;
+		QString mediaFolderName;
 		QString volumeName;
 		QString volumePath;
 	};
@@ -169,7 +169,7 @@ private:
 	/// readable, else the couldn't-check states. The accepted layout selects
 	/// the media family independently of what the databases contain.
 	MediaFile buildMediaFile(const QFileInfo &fi, const QString &volumeName,
-							 const QString &volumePath, const QString &folderNumber,
+							 const QString &volumePath, const QString &mediaFolderName,
 							 AvidMediaLayout::Family family,
 							 const PmrIndex &pmrMap,
 							 const MdbDatabase &mdb,

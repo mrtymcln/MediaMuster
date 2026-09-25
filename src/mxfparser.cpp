@@ -102,15 +102,9 @@ static bool isUsefulMetadataSet(quint8 type)
 
 // MARK: - Byte-level helpers
 
-/// Read a duration value: a big-endian integer whose recorded length
-/// varies by MXF flavour (4 and 8 bytes in the wild; any length from 4
-/// up reads exactly). A big-endian value's low bytes are the LAST bytes
-/// of the field, so taking a fixed-width slice from the FRONT of a
-/// longer field divides the value by 2^(8×extra) — the trailing bytes
-/// are the ones that matter, and a field longer than 8 reads its
-/// trailing 8 (the lead bytes are zero for anything that fits 64 bits).
-/// Caller must have already bounds-checked that `pos + len` fits inside
-/// the buffer.
+/// Read a big-endian duration encoded in 4–8 bytes. Other lengths and
+/// values above qint64's maximum return -1. The caller must have checked
+/// that the whole field fits inside the buffer.
 static qint64 readDuration(const QByteArray &data, qint64 pos, quint16 len)
 {
 	if (len < 4 || len > 8)

@@ -69,7 +69,7 @@ The accepted cleanup removes the unused parked-file writer and old filename reco
 obsolete filter interfaces and unused helpers. Shared metadata, bin fallback rules,
 operation UI coordination and Rebalance planning now have focused owners. The
 [architecture map](architecture.md) records the new names and boundaries; the
-[contributor guide](../CONTRIBUTING.md) records naming and formatting rules. CMake
+[contributor guide](CONTRIBUTING.md) records naming and formatting rules. CMake
 continues to list sources explicitly, and `RevealInFinder` is unchanged.
 
 `NativeFile` now exposes the existing full-flush operation without an unused durability

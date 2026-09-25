@@ -17,11 +17,11 @@ struct MdbMasterMob
 	QString mobIdHex;
 	QString clipName;				  ///< OMFI:CPNT:Name — what Avid displays. Equal to the
 									  ///< MXF MaterialPackage name on 360/360 + 795/795 files.
-	QString bin;					  ///< _ORG_BIN → the bin's UTF-8 name. Exists nowhere else.
+	QString bin;					  ///< _ORG_BIN → original bin name; AVB and OMF readers can also supply it.
 	QString sourceFilePath;			  ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
 	QString sourceFileName;			  ///< Basename of sourceFilePath.
 	QString sourceContainer;		  ///< _USER/Video — "QTFF" for a QuickTime import.
-	QString project;				  ///< OMF-era: _PJ on the master mob, for when the PMR has no project. Usually empty.
+	QString project;				  ///< _PJ on the master mob; fallback when the PMR project is empty.
 	bool isImported = false;		  ///< An _IMPORTSETTING attribute exists.
 	bool classificationKnown = false; ///< Avid usage1/7 establishes precompute/media; absent OMF2 usage stays unknown.
 	int usageCode = -1;				  ///< OMFI:MOBJ:UsageCode: 7 = master clip, 1 = precompute.
@@ -40,13 +40,12 @@ struct MdbFileMob
 {
 	QString mobIdHex;
 	QString masterMobId; ///< Unique master whose source-clip graph references this file; empty if ambiguous.
-	int usageCode = -1;	 ///< 0 = media, 9 = precompute.
+	int usageCode = -1;	 ///< 0 = NoSpecialUsage, 9 = PrecomputeFile; classification comes from the master.
 	MediaMetadata essence;
 	bool essenceComplete = false;
-	/// OMF-era: _PJ from the file mob, else from the source mob its SCLP
-	/// points at — the two places OMF files keep the project (MC 2026 and
-	/// the 2021 slates respectively). An OMF-era PMR has no project of its
-	/// own, so this is where the scanner gets it. Empty on MXF-era rows.
+	/// _PJ from the file mob, else its unique linked source mob. Used when
+	/// the PMR project is empty. PMR version 1 omits that field; version 2
+	/// stores it, although the shipped SupportingFiles fixtures leave it empty.
 	QString project;
 };
 
@@ -57,10 +56,10 @@ struct MdbFileMob
 ///
 /// Split the way the scanner consumes it:
 /// `files` is looked up once per row during the folder walk and dropped;
-/// `masters` is kept for the header pass's UMID re-join. Both are keyed by
-/// MediaMuster's dotted MOB hex (MobId::format). OMF-era: a 12-byte
-/// omfi:UID is keyed by its wrapped 32-byte form (OmfUid::canonicalHex),
-/// the same string the v2 PMR yields, so the join needs no second form.
+/// `masters` is kept for the header pass's ID lookup. Keys use
+/// OmfUid::canonicalHex: 32-byte IDs retain their dotted MOB form; Avid's
+/// prefix-42 OMF IDs use the same wrapper as legacy PMRs; other 12-byte
+/// IDs preserve all three words in an `omf:` namespace.
 struct MdbDatabase
 {
 	OmfObjects::Revision revision = OmfObjects::Revision::Unknown;

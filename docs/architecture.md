@@ -59,7 +59,7 @@ and [parser compatibility](parser-compatibility.md).
 [BinFilterDialog](../src/binfilterdialog.cpp) loads bins and builds an ordered
 [BinFilter](../src/binfilter.h) expression. The proxy evaluates each step against a
 row's file or master identifier. Other filters still apply to the resulting rows.
-[EffectFilterDialog](../src/effectfilterdialog.cpp) builds the optional
+[PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).
 
 The main window remembers selected paths across filter changes. Its

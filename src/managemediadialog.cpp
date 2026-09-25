@@ -283,11 +283,8 @@ void ManageMediaDialog::onOperationChanged()
 		break;
 	}
 
-	// A destructive action must never be the default (Return) button.
-	// For Delete, Return lands on Cancel instead; Copy/Move restore the
-	// affirmative default. Matters because the dialog can open straight
-	// into Delete mode (⌦ shortcut, context menu) and this dialog is
-	// the only confirmation before the operation runs.
+	// Delete can be opened directly from the context menu, so Return
+	// defaults to Cancel. Copy and Move use the affirmative default.
 	m_btnExecute->setDefault(!isDel);
 	m_btnCancel->setDefault(isDel);
 

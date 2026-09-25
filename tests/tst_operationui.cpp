@@ -658,14 +658,14 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 		QVERIFY(command);
 		QVERIFY(!command->isEnabled());
 	}
-	QVERIFY(!window.m_effectFilterAct->isVisible());
-	QVERIFY(!window.m_effectFilterAct->isEnabled());
+	QVERIFY(!window.m_precomputeFilterAct->isVisible());
+	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
 	if constexpr (FeatureFlags::kDebugMenuEnabled)
 	{
 		window.setPrecomputesEnabled(true);
-		QVERIFY(window.m_effectFilterAct->isVisible());
-		QVERIFY(!window.m_effectFilterAct->isEnabled());
-		QVERIFY(!window.m_btnEffectFilter->isEnabled());
+		QVERIFY(window.m_precomputeFilterAct->isVisible());
+		QVERIFY(!window.m_precomputeFilterAct->isEnabled());
+		QVERIFY(!window.m_btnPrecomputeFilter->isEnabled());
 		window.setPrecomputesEnabled(false);
 	}
 
@@ -701,15 +701,15 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	if constexpr (FeatureFlags::kDebugMenuEnabled)
 	{
 		window.setPrecomputesEnabled(true);
-		QVERIFY(window.m_effectFilterAct->isEnabled());
-		QVERIFY(window.m_btnEffectFilter->isEnabled());
+		QVERIFY(window.m_precomputeFilterAct->isEnabled());
+		QVERIFY(window.m_btnPrecomputeFilter->isEnabled());
 	}
 
 	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
-	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_effectFilterAct})
+	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_precomputeFilterAct})
 		QVERIFY(!command->isEnabled());
 	for (auto *button : {window.m_scanButton, window.m_scanAllButton, window.m_btnFileOps,
-						 window.m_btnRebalance, window.m_btnExport, window.m_btnEffectFilter})
+						 window.m_btnRebalance, window.m_btnExport, window.m_btnPrecomputeFilter})
 		QVERIFY(!button->isEnabled());
 	window.m_operations->setActivity(FileOperationController::Activity::Idle);
 	QVERIFY(manage->isEnabled());
@@ -739,7 +739,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	window.m_tableView->selectRow(0);
 	window.m_model->removeFilesByPath({file.filePath});
 	QCOMPARE(window.m_proxy->rowCount(), 0);
-	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_effectFilterAct})
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAct})
 		QVERIFY(!command->isEnabled());
 	window.onScanFinished({file});
 	window.m_tableView->selectRow(0);
@@ -747,7 +747,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	QVERIFY(relatives->isEnabled());
 	window.m_model->setMediaFiles({});
 	QCOMPARE(window.m_proxy->rowCount(), 0);
-	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_effectFilterAct})
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAct})
 		QVERIFY(!command->isEnabled());
 
 	window.m_volumeList->clearSelection();
@@ -1012,9 +1012,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(!window.m_proxy->precomputesEnabled());
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory));
-	QVERIFY(window.m_btnEffectFilter->isHidden());
-	QVERIFY(!window.m_effectFilterAct->isVisible());
-	QVERIFY(!window.m_effectFilterAct->isEnabled());
+	QVERIFY(window.m_btnPrecomputeFilter->isHidden());
+	QVERIFY(!window.m_precomputeFilterAct->isVisible());
+	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
 	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
 	QCOMPARE(window.m_proxy->rowCount(), 2); // Rendered media remains manageable.
 	window.onFilterChanged(precomputeTab);
@@ -1030,7 +1030,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 			openedPicker = true;
 			dialog->reject();
 		} });
-	window.onFilterByEffects(); // Disabled entry point must not open a dialog.
+	window.onFilterPrecomputes(); // Disabled entry point must not open a dialog.
 	QCoreApplication::processEvents();
 	QVERIFY(!openedPicker);
 
@@ -1047,9 +1047,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
 		for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
 			QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
-		QVERIFY(!window.m_btnEffectFilter->isHidden());
-		QVERIFY(window.m_effectFilterAct->isVisible());
-		QVERIFY(window.m_effectFilterAct->isEnabled());
+		QVERIFY(!window.m_btnPrecomputeFilter->isHidden());
+		QVERIFY(window.m_precomputeFilterAct->isVisible());
+		QVERIFY(window.m_precomputeFilterAct->isEnabled());
 		QVERIFY(window.m_filterTabs->isTabVisible(precomputeTab));
 		window.m_filterTabs->setCurrentIndex(precomputeTab);
 		QCOMPARE(window.m_proxy->rowCount(), 1);
@@ -1068,9 +1068,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		QCOMPARE(window.m_model->rowCount(), 2);
 		QCOMPARE(window.m_model->fileAt(1).type, MediaFile::Type::Precompute);
 		QCOMPARE(window.m_model->fileAt(1).effect, precompute.effect);
-		QVERIFY(window.m_btnEffectFilter->isHidden());
-		QVERIFY(!window.m_effectFilterAct->isVisible());
-		QVERIFY(!window.m_effectFilterAct->isEnabled());
+		QVERIFY(window.m_btnPrecomputeFilter->isHidden());
+		QVERIFY(!window.m_precomputeFilterAct->isVisible());
+		QVERIFY(!window.m_precomputeFilterAct->isEnabled());
 
 		// Sorting by any disappearing detail column also returns to Clip Name.
 		for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})

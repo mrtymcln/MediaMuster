@@ -1,13 +1,7 @@
 #pragma once
 
-// OMF-era (legacy Avid media, pre-MXF). An OMF essence file is an Apple
-// Bento container with the essence first and the object table of contents
-// at the tail; it lives flat in "OMFI MediaFiles" beside a version-2
-// msmFMID.pmr (8-byte MOBs) and a msmMMOB.mdb whose mobs carry 12-byte
-// omfi:UIDs instead of the 32-byte UMIDs every MXF-era source writes.
-// This header is the ID bridge between those widths. MXF-era handling
-// (MobId, MxfParser, PmrParser's version-8 path) lives elsewhere and is
-// unaffected.
+// Canonical identities for 12-byte OMF UIDs and legacy Avid PMR IDs.
+// Avid's prefix-42 wrapper and the general OMF namespace are handled below.
 
 #include "mobid.h"
 

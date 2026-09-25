@@ -63,7 +63,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 	VolumeIdentity v;
 	const QStorageInfo info(anyPathOnVolume);
 	if (!info.isValid() || !info.isReady())
-		return v; // confidence None: nothing mounted there to identify
+		return v; // Low: volume identity is unavailable.
 
 	v.rootPath = info.rootPath();
 	v.label = info.name();
@@ -102,8 +102,7 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 			0 &&
 		reply.length >= sizeof(reply))
 	{
-		// An all-zero UUID is "this filesystem has none" (some network
-		// mounts) — Weak, honestly, rather than a fake Full.
+		// An all-zero UUID supplies no stable volume ID; confidence stays Med.
 		uuid_t zero{};
 		if (uuid_compare(reply.uuid, zero) != 0)
 		{
@@ -157,9 +156,8 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 		return v;
 	}
 
-	// The \\?\Volume{GUID}\ path is the volume's permanent address — it
-	// survives drive-letter changes, which is the whole point. Network
-	// shares have none and the call fails, leaving confidence at Weak.
+	// Local volume GUIDs survive drive-letter changes. If unavailable,
+	// confidence stays Med. Network mounts returned above.
 	wchar_t guidPath[64] = {};
 	if (::GetVolumeNameForVolumeMountPointW(reinterpret_cast<const wchar_t *>(root.utf16()),
 											guidPath, 64))

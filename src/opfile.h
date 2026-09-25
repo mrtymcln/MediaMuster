@@ -5,13 +5,14 @@
 #include <QJsonObject>
 #include <memory>
 
-// A handle, not a pathname, owns an open file. Destruction only closes it.
-// Paths are used for presentation and for native no-overwrite relocation.
+// Native object identity and metadata captured for later comparison.
 struct OpStamp
 {
 	QString fileId;
 	QString volumeId;
-	qint64 size = -1;
+	qint64 size = -1; // Bytes; -1 when unavailable.
+	// Native modification value: POSIX nanoseconds or Windows FILETIME ticks,
+	// distinct from OpItem::modifiedMs (milliseconds).
 	qint64 modified = 0;
 	bool valid() const
 	{
@@ -23,6 +24,8 @@ struct OpStamp
 	static OpStamp fromJson(const QJsonObject &value);
 };
 
+// Owns an open file handle and closes it on destruction.
+// Paths are used for presentation and native no-overwrite relocation.
 class OpFile
 {
 public:

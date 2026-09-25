@@ -49,7 +49,7 @@ public:
 		int id = -1;
 		OpItem item;
 		QString originalSource;
-		VolumeIdentity originalVolume; // Never re-anchored; future Undo's original location.
+		VolumeIdentity originalVolume; // Original-volume provenance; never re-anchored.
 		QString originalRelativePath;
 		QString dst;
 		QString temp;

@@ -131,7 +131,7 @@ set(SOURCES
     src/operationrecovery.cpp
     src/avbparser.cpp
     src/binfilterdialog.cpp
-    src/effectfilterdialog.cpp
+    src/precomputefilterdialog.cpp
     src/managemediadialog.cpp
     src/progressdialog.cpp
     src/rebalancer.cpp

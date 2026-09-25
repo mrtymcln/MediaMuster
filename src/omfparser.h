@@ -1,15 +1,9 @@
 #pragma once
 
-// OMF-era (legacy Avid media, pre-MXF). An OMF essence file is an Apple
-// Bento container with the essence first and the object table of contents
-// at the tail; it lives flat in "OMFI MediaFiles" beside a version-2
-// msmFMID.pmr (8-byte MOBs) and a msmMMOB.mdb whose mobs carry 12-byte
-// omfi:UIDs instead of the 32-byte UMIDs every MXF-era source writes.
-// This is the reader for ONE such file: the OMF-era twin of
-// MxfParser::parseHeader, producing the same MediaMetadata so the table
-// cannot tell which era a row came from. MXF header handling (MxfParser)
-// lives elsewhere and is unaffected; the object walks are shared with the
-// MDB reader through OmfObjects.
+// Reads OMF1/OMF2 metadata from Bento containers, including supported
+// embedded omfi chunks in RIFF/RF64 WAVE files. Produces one essence row
+// using the same MediaMetadata as MxfParser. Object walks are shared
+// with the MDB reader through OmfObjects.
 
 #include "mediametadata.h"
 #include "omfobjects.h"
@@ -22,29 +16,26 @@
 /// way MxfParser fills it from a header and run through the same
 /// MediaMetadataUtil::finalise, so codec / resolution / fps / duration / bit
 /// depth / audio facts are derived by one piece of code for both eras.
-/// The extra fields are the facts an OMF file carries that a header does
-/// not surface: the master's bin (the MDB is the only MXF-era source of
-/// it), the file's own locator, and the start timecode (read because it
-/// is free here; held back from MediaFile until a column wants it).
+/// Extra fields hold original-bin metadata, the file's recorded locator
+/// and start timecode. Original-bin metadata can also come from MDBs or AVBs;
+/// the MXF header reader does not expose it.
 struct OmfMetadata
 {
 	OmfObjects::Revision revision = OmfObjects::Revision::Unknown;
 	/// A unique file mob owns a recognized OMF essence descriptor. This
 	/// establishes the container even when technical fields are incomplete.
 	bool hasMediaDescriptor = false;
-	/// `umid` = the MASTER mob's canonical hex (the wrapped 32-byte form,
-	/// equal to the v2 PMR's masterMobId); `clipName` = the master's
-	/// OMFI:CPNT:Name with `clipNameFromMaterial` set; `projectName` = the
-	/// `_PJ` attribute searched master → file → source mob (the 2021 slates
-	/// keep it on the source mob, MC 2026 on the file mob); `isPrecompute`
-	/// = master UsageCode 1; `dropFrame` = TCCP Flags != 0.
+	/// `umid` and `clipName` come from the linked master mob. IDs use
+	/// OmfUid::canonicalHex, including the Avid wrapper and general OMF
+	/// namespace. `_PJ` is searched master → file → source mob; precompute
+	/// classification comes from the master's usage code.
 	MediaMetadata essence;
 
-	/// The media-data object's MobID in canonical hex — the FILE mob, equal
-	/// to the v2 PMR's mobId. Never equal to `essence.umid`.
+	/// Canonical file-mob ID, selected by embedded media identity or a
+	/// unique media descriptor. Avid prefix-42 IDs use the legacy PMR wrapper.
 	QString fileMobId;
 
-	/// `_ORG_BIN` → MCBR → OMFI:MCBR:MC:binName on the master mob.
+	/// `_ORG_BIN` → MCBR → OMFI:MCBR:MC:binNameUTF8, else MC:binName.
 	QString bin;
 
 	/// `_MEDIAFILE` locator on the file mob — where the writer thought the
@@ -59,18 +50,17 @@ struct OmfMetadata
 
 // MARK: - OmfParser
 
-/// Reads an OMF essence file the cheap way — BentoFile::open reads the
-/// label, the TOC and the property dictionary (a few KB regardless of file
-/// size) and every value after that by seek+read — then follows the three
-/// mob records (master, file, source) the way MdbParser does for a
-/// database row. Both OMF1 and OMF2 schemas are read. A plain audio file
+/// BentoFile::open reads the label, TOC and property dictionary, then
+/// fetches requested metadata values on demand. Work scales with the
+/// metadata and mob graph, not the essence payload. Both OMF1 and OMF2
+/// schemas are read. A plain audio file
 /// without a Bento tail or supported embedded omfi chunk yields no OMF
 /// metadata. A file containing several independent media objects does not
 /// have one unambiguous essence row and is not collapsed into the first one.
 class OmfParser
 {
 public:
-	/// Parse the file's tail. `essence.valid` is false when the file is not
+	/// Parse supported OMF metadata. `essence.valid` is false when the file is not
 	/// a Bento container, carries no mobs, or has no media descriptor the
 	/// walker recognises; whatever was read stays in the struct. `bytesRead`,
 	/// if non-null, receives BentoFile::bytesRead().

@@ -36,8 +36,7 @@ struct FolderName
 	}
 };
 
-/// qHashMulti mixes both fields through the hash state; XOR-ing
-/// two qHash results would collide for every n on matching prefixes.
+/// Hash the workstation prefix and folder number as an ordered pair.
 inline size_t qHash(const FolderName &id, size_t seed = 0) noexcept
 {
 	return qHashMulti(seed, id.prefix, id.n);

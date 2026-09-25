@@ -67,9 +67,8 @@ protected:
 	bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
-	/// Cached on setSourceModel; avoids per-row qobject_cast in
-	/// filterAcceptsRow and lessThan. Null if the source model
-	/// isn't a MediaTableModel; the hot paths fall back gracefully.
+	/// Cached concrete model pointer for filtering and sorting. Other model
+	/// types have all rows rejected; sorting falls back to QSortFilterProxyModel.
 	MediaTableModel *m_sourceModel = nullptr;
 
 	FilterMode m_mode = FilterMode::All;

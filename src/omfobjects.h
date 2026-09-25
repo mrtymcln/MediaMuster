@@ -1,30 +1,9 @@
 #pragma once
 
-// OMF-era (legacy Avid media, pre-MXF). An OMF essence file is an Apple
-// Bento container with the essence first and the object table of contents
-// at the tail; it lives flat in "OMFI MediaFiles" beside a version-2
-// msmFMID.pmr (8-byte MOBs) and a msmMMOB.mdb whose mobs carry 12-byte
-// omfi:UIDs instead of the 32-byte UMIDs every MXF-era source writes.
-//
-// This module is the OMF Interchange object walker — the code that, given
-// an open BentoFile, follows a mob to its attributes (bin, source path,
-// project, import flag), its media descriptor (codec, dims, rate, length,
-// bits, channels) and its timecode component (drop frame, start, fps). It
-// is SHARED with the MXF-era MDB reader: an MXF-era msmMMOB.mdb is the
-// same OMF Interchange object store, so MdbParser delegates every walk
-// here and owns only the file load, the MobID grouping and the
-// master/file/source triage. Nothing in this file is MXF-specific; MXF
-// header handling (MxfParser) and the MobID byte-order rules (MobId) live
-// elsewhere and are unaffected.
-//
-// The OMF-era extensions live here rather than in a reader of their own
-// because the OMF-era MDB needs every one of them too: 12-byte SourceID
-// hops, WAVD/AIFD audio descriptors whose facts sit in a RIFF/AIFF
-// header blob, the 4CC + resolution-id codec path (OmfResolutions),
-// WINL/UNXL locators beside MACL, and the _PJ / _MEDIAFILE attributes.
-// Each is tagged "OMF-era:" at the line, so the MXF-era walk can be read
-// past them. Every value is fetched through BentoFile::bytes(), which
-// works in both the load (MDB) and the tail-first (essence file) modes.
+// Shared OMF1/OMF2 object walks for MdbParser and OmfParser: mob attributes,
+// media descriptors, source links and timecode. Schema revision is
+// independent of the Bento container version. BentoFile supplies values
+// from either an in-memory database or metadata read on demand.
 
 #include "bentofile.h"
 #include "avidprecompute.h"
@@ -217,9 +196,9 @@ namespace OmfObjects
 	[[nodiscard]] quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob,
 												const ObjectByMob &objectByMob, QSet<quint32> &seen, int depth);
 
-	/// The first mob a SCLP on `mob`'s tracks refers to, or 0 — the file
-	/// mob's source mob (tape/import), which is where OMF-era files of one
-	/// generation keep the _PJ project attribute. Follows SEQU; no hop.
+	/// The unique source mob referenced by SCLPs in `mob`'s segment graph;
+	/// 0 when none or several are found. Does not follow further source mobs.
+	/// Used to find source-level metadata such as the _PJ project attribute.
 	[[nodiscard]] quint32 findSourceMob(const BentoFile &b, const Props &p, quint32 mob,
 										const ObjectByMob &objectByMob);
 

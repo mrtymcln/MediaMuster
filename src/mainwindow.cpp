@@ -5,7 +5,7 @@
 #include "conventions.h"
 #include "binfilterdialog.h"
 #include "enumutil.h"
-#include "effectfilterdialog.h"
+#include "precomputefilterdialog.h"
 #include "featureflags.h"
 #include "formatutil.h"
 #include "layoututil.h"
@@ -368,10 +368,10 @@ QWidget *MainWindow::buildToolbar()
 
 	m_btnFileOps = new QPushButton(tr("Manage Media…"));
 	m_btnBinFilter = new QPushButton(tr("Filter by Bin…"));
-	m_btnEffectFilter = new QPushButton(tr("Filter Precomputes…"));
-	m_btnEffectFilter->setObjectName(QStringLiteral("filterByEffectButton"));
-	m_btnEffectFilter->setVisible(false);
-	m_btnEffectFilter->setEnabled(false);
+	m_btnPrecomputeFilter = new QPushButton(tr("Filter Precomputes…"));
+	m_btnPrecomputeFilter->setObjectName(QStringLiteral("filterPrecomputesButton"));
+	m_btnPrecomputeFilter->setVisible(false);
+	m_btnPrecomputeFilter->setEnabled(false);
 	m_btnExport = new QPushButton(tr("Export CSV…"));
 	m_btnRebalance = new QPushButton(tr("Rebalance…"));
 	m_btnFileOps->setEnabled(false);
@@ -393,7 +393,7 @@ QWidget *MainWindow::buildToolbar()
 	actionsRow->setSpacing(8);
 	actionsRow->addWidget(m_btnFileOps);
 	actionsRow->addWidget(m_btnBinFilter);
-	actionsRow->addWidget(m_btnEffectFilter);
+	actionsRow->addWidget(m_btnPrecomputeFilter);
 	actionsRow->addWidget(m_btnRebalance);
 	actionsRow->addWidget(m_btnExport);
 	actionsRow->addStretch();
@@ -664,11 +664,11 @@ void MainWindow::buildSpecialMenu()
 	m_binFilterAct->setObjectName(QStringLiteral("filterByBinAction"));
 	m_binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
 	connect(m_binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
-	m_effectFilterAct = specialMenu->addAction(tr("Filter &Precomputes…"));
-	m_effectFilterAct->setObjectName(QStringLiteral("filterByEffectAction"));
-	m_effectFilterAct->setVisible(false);
-	m_effectFilterAct->setEnabled(false);
-	connect(m_effectFilterAct, &QAction::triggered, this, &MainWindow::onFilterByEffects);
+	m_precomputeFilterAct = specialMenu->addAction(tr("Filter &Precomputes…"));
+	m_precomputeFilterAct->setObjectName(QStringLiteral("filterPrecomputesAction"));
+	m_precomputeFilterAct->setVisible(false);
+	m_precomputeFilterAct->setEnabled(false);
+	connect(m_precomputeFilterAct, &QAction::triggered, this, &MainWindow::onFilterPrecomputes);
 
 	specialMenu->addSeparator();
 	m_rebalanceAct = specialMenu->addAction(tr("&Rebalance…"));
@@ -880,7 +880,7 @@ void MainWindow::setupConnections()
 	};
 	bindButton(m_btnFileOps, m_manageMediaAct);
 	bindButton(m_btnBinFilter, m_binFilterAct);
-	bindButton(m_btnEffectFilter, m_effectFilterAct);
+	bindButton(m_btnPrecomputeFilter, m_precomputeFilterAct);
 	bindButton(m_btnExport, m_exportAct);
 	bindButton(m_btnRebalance, m_rebalanceAct);
 	bindButton(m_scanButton, m_scanSelectedAct);
@@ -1035,8 +1035,8 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		const QSignalBlocker blocker(m_enablePrecomputesAct);
 		m_enablePrecomputesAct->setChecked(enabled);
 	}
-	m_btnEffectFilter->setVisible(enabled);
-	m_effectFilterAct->setVisible(enabled);
+	m_btnPrecomputeFilter->setVisible(enabled);
+	m_precomputeFilterAct->setVisible(enabled);
 	updateActivityUi();
 	if (enabled)
 	{
@@ -1059,11 +1059,11 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 	addLog(QtInfoMsg, QStringLiteral("filters"), enabled ? QStringLiteral("Precompute filters are ON for this session.") : QStringLiteral("Precompute filters are OFF for this session."));
 }
 
-void MainWindow::onFilterByEffects()
+void MainWindow::onFilterPrecomputes()
 {
 	if (!m_precomputesEnabled || !m_operations->isIdle() || m_model->allFiles().isEmpty())
 		return;
-	EffectFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
+	PrecomputeFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
 	if (dialog.exec() != QDialog::Accepted)
 		return;
 	const PrecomputeFilter filter = dialog.precomputeFilter();
@@ -1666,10 +1666,8 @@ void MainWindow::onSelectionChanged()
 
 	m_statusSelected->setText(tr("%1 selected").arg(Format::count(selectedCount)));
 
-	// Defer the byte-sum walk. For Cmd-A on a big table it's
-	// O(N × log N): one mapToSource per row, each one hitting the
-	// proxy's index. Debouncing coalesces rapid selection changes
-	// (arrow keys, shift-click ranges) into one tally.
+	// Summing bytes walks the selected rows. Debounce rapid selection
+	// changes so arrow keys and shift-clicks share one tally.
 	m_selectionBytesTimer->start();
 }
 
@@ -1935,8 +1933,7 @@ void MainWindow::onInvertSelection()
 	for (const QModelIndex &idx : selModel->selectedRows())
 		currentlySelected.insert(idx.row());
 
-	// Everything not currently selected; the helper coalesces contiguous
-	// runs so a big table gets one event per run, not one per row.
+	// Select the remaining rows using contiguous ranges.
 	QVector<int> rows;
 	for (int row = 0; row < rowCount; ++row)
 	{
@@ -2050,9 +2047,8 @@ const MediaFile &MainWindow::fileAtProxyRow(int proxyRow) const
 
 QItemSelection MainWindow::selectionForRows(const QVector<int> &proxyRows) const
 {
-	// Coalesce contiguous runs into single full-width ranges so the view
-	// fires one selectionChanged per run, not one per row. `proxyRows` must
-	// be ascending — every caller iterates rows in order.
+	// Group ascending rows into full-width ranges. Callers submit the
+	// resulting selection in one select() call.
 	QItemSelection sel;
 	const int lastCol = m_proxy->columnCount() - 1;
 	const int n = proxyRows.size();
@@ -2106,7 +2102,7 @@ void MainWindow::updateActivityUi()
 	m_binFilterAct->setEnabled(!busy);
 	m_rebalanceAct->setEnabled(!busy && !m_model->allFiles().isEmpty());
 	m_exportAct->setEnabled(!busy && !m_exportInProgress && m_proxy->rowCount() > 0);
-	m_effectFilterAct->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
+	m_precomputeFilterAct->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
 	const bool hasSelection = m_tableView->selectionModel()->hasSelection();
 	m_manageMediaAct->setEnabled(!busy && hasSelection);
 	m_revealAct->setEnabled(!busy && hasSelection);

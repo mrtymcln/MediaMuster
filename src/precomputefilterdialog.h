@@ -14,13 +14,13 @@ class QTreeWidgetItem;
 
 /// A draft, branch-based filter for already classified precomputes. Checking a
 /// branch includes all its descendants; separate checked branches are ORed.
-class EffectFilterDialog : public QDialog
+class PrecomputeFilterDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	explicit EffectFilterDialog(const QVector<MediaFile> &files,
-								const PrecomputeFilter &selection, const QString &selectedVolume,
-								QWidget *parent = nullptr);
+	explicit PrecomputeFilterDialog(const QVector<MediaFile> &files,
+									const PrecomputeFilter &selection, const QString &selectedVolume,
+									QWidget *parent = nullptr);
 
 	PrecomputeFilter precomputeFilter() const;
 	QString selectedVolume() const;
@@ -46,5 +46,5 @@ private:
 	QHash<QTreeWidgetItem *, Counts> m_counts;
 	QComboBox *m_volumes = nullptr;
 	QLabel *m_matchCount = nullptr;
-	QTreeWidget *m_effects = nullptr;
+	QTreeWidget *m_tree = nullptr;
 };

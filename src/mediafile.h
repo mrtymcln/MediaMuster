@@ -88,8 +88,8 @@ struct MediaFile
 	QString fileName;
 	QString volumeName;
 	QString volumePath;
-	/// The media's containing folder: an MXF numbered/workstation folder,
-	/// the OMFI root itself, or a legacy shared OMF workstation folder.
+	/// Managed media folder name: an MXF numbered/workstation folder,
+	/// Quarantined Files, the OMFI root, or a shared OMF workstation folder.
 	QString mediaFolderName;
 	/// Set from the accepted OMFI tree, independently of database contents.
 	/// Selects the OMF reader and preserve-structure transfer destination.

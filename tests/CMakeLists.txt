@@ -226,14 +226,14 @@ mediamuster_add_test(tst_mediafilterproxy ui
     ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
 
-# Effect picker: choose names and a volume, then use the actual table filter.
-mediamuster_add_test(tst_effectfilterdialog ui
-    ${CMAKE_SOURCE_DIR}/src/effectfilterdialog.cpp
+# Precompute picker: choose branches and a volume, then use the table filter.
+mediamuster_add_test(tst_precomputefilterdialog ui
+    ${CMAKE_SOURCE_DIR}/src/precomputefilterdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
     ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
 )
-target_link_libraries(tst_effectfilterdialog PRIVATE Qt6::Widgets)
+target_link_libraries(tst_precomputefilterdialog PRIVATE Qt6::Widgets)
 
 # Bin picker: asynchronous loading/status and ordered expressions through the
 # actual proxy, including empty operands and removed pending reads.

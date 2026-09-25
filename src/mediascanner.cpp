@@ -166,11 +166,9 @@ namespace
 	// only after classification, so a title or renamed clip cannot establish
 	// that the underlying media is a precompute.
 
-	/// The one place a clip name is ever assigned. Takes only when the new
-	/// name comes from a STRICTLY better source, so the rungs of the ladder
-	/// can arrive in any order — which they do: pass 1 reads the MDB, pass 2
-	/// the MXF header and then the MDB again via the UMID re-join.
-	/// Strictly-better also means the first of two equal-ranked sources wins.
+	/// Applies ranked clip names within the scanner; higher-ranked non-empty names win.
+	/// The first of two equally ranked names is retained. Loaded-bin fallback
+	/// is applied later by the table.
 	void setClipName(MediaFile &mf, const QString &name, MediaFile::ClipNameSource src)
 	{
 		if (name.isEmpty() || int(src) <= int(mf.clipNameSource))
@@ -188,14 +186,12 @@ namespace
 			dst = src;
 	}
 
-	// Copy non-empty MDB fields onto the MediaFile. Shared by pass 1 (the
-	// master-MOB lookup) and pass 2's UMID re-join. assignIfMissing means
-	// call order doesn't matter; first non-empty wins.
+	// Fill missing fields from MDB during the database pass and header rejoin.
+	// Existing non-empty values from earlier sources are retained; clip names
+	// use the separate source ranking.
 	//
-	// The clip name is the MDB rung of the ladder (see
-	// MediaFile::ClipNameSource): setClipName ranks it below a
-	// MaterialPackage name, so it only ever shows for files whose MXF
-	// header can't be read.
+	// MDB clip names rank below material-package names. They can remain on the
+	// database fast path, which skips reading the media header.
 	//
 	// PMR carries a project but no bin. Header metadata can also supply the
 	// recorded original bin. After scanning, the table may fill a remaining
@@ -622,7 +618,7 @@ QVector<MediaFile> MediaScanner::scanOmfRoot(const QString &omfRootPath, const Q
 		ScanTask task;
 		task.family = AvidMediaLayout::Family::Omf;
 		task.folderPath = folder;
-		task.folderNumber = QFileInfo(folder).fileName();
+		task.mediaFolderName = QFileInfo(folder).fileName();
 		task.volumeName = volumeName;
 		task.volumePath = volumePath;
 		auto result = processFolderTask(task);
@@ -673,7 +669,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 		MediaScanner::ScanTask t;
 		t.family = AvidMediaLayout::Family::Mxf;
 		t.folderPath = folderPath;
-		t.folderNumber = folder;
+		t.mediaFolderName = folder;
 		t.volumeName = volumeName;
 		t.volumePath = volumePath;
 		tasks.append(t);
@@ -818,7 +814,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		if (task.family == AvidMediaLayout::Family::Omf && !m_options.includeOmf)
 			continue;
 
-		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.folderNumber, task.family, pmrMap, mdb,
+		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.mediaFolderName, task.family, pmrMap, mdb,
 									  folderStatus);
 		mf.isQuarantined = isQuarantineFolder;
 
@@ -832,7 +828,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		// doScan emit one summary at the end.
 		QMutexLocker lock(&m_overfullMutex);
 		m_overfullFolders.append(
-			{task.volumeName + QLatin1Char('/') + task.folderNumber, int(result.files.size())});
+			{task.volumeName + QLatin1Char('/') + task.mediaFolderName, int(result.files.size())});
 	}
 
 	// Cache the clip records for pass 2's UMID re-join — only the masters;
@@ -890,14 +886,14 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 				   QStringLiteral("  %1 in /%2 is unreadable; unmatched files here "
 								  "surface as 'No database', not 'No reference'")
 					   .arg(name)
-					   .arg(task.folderNumber));
+					   .arg(task.mediaFolderName));
 		}
 		else
 		{
 			bufLog(QtInfoMsg, QStringLiteral("scanner"),
 				   QStringLiteral("  %1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands")
 					   .arg(name)
-					   .arg(task.folderNumber));
+					   .arg(task.mediaFolderName));
 		}
 	}
 	// MARK: The MDBs
@@ -940,14 +936,14 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 				   QStringLiteral("  %1 in /%2 is unreadable; unmatched files here "
 								  "surface as 'No database', not 'No reference'")
 					   .arg(name)
-					   .arg(task.folderNumber));
+					   .arg(task.mediaFolderName));
 		}
 		else
 		{
 			bufLog(QtInfoMsg, QStringLiteral("scanner"),
 				   QStringLiteral("  %1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand")
 					   .arg(name)
-					   .arg(task.folderNumber));
+					   .arg(task.mediaFolderName));
 		}
 	}
 	QStringList missingDatabases;
@@ -965,7 +961,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 // MARK: - MediaFile assembly (database pass)
 
 MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volumeName,
-									   const QString &volumePath, const QString &folderNumber,
+									   const QString &volumePath, const QString &mediaFolderName,
 									   AvidMediaLayout::Family family,
 									   const PmrIndex &pmrMap,
 									   const MdbDatabase &mdb,
@@ -978,7 +974,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	mf.fileName = fi.fileName();
 	mf.volumeName = volumeName;
 	mf.volumePath = volumePath;
-	mf.mediaFolderName = folderNumber;
+	mf.mediaFolderName = mediaFolderName;
 	mf.omfEra = family == AvidMediaLayout::Family::Omf;
 
 	// MARK: File-level metadata
