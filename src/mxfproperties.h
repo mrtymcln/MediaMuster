@@ -44,11 +44,13 @@ struct MxfPropertyIdentifier
 	unsigned short tag;
 };
 inline constexpr MxfPropertyIdentifier kMxfProperties[] = {
-	{"060e2b34010101010101150200000000", 0x3c0a},					// InterchangeObject::InstanceUID
-	{"060e2b34010101040601010401080000", 0x3b08},					// Preface::PrimaryPackage
-	{"060e2b34010101020601010405020000", 0x1902},					// ContentStorage::EssenceContainerData
-	{"060e2b34010101020601010601000000", 0x2701},					// EssenceContainerData::LinkedPackageUID
-	{"060e2b34010101040103040400000000", 0x3f07},					// EssenceContainerData::BodySID
+	{"060e2b34010101010101150200000000", 0x3c0a}, // InterchangeObject::InstanceUID
+	{"060e2b34010101040601010401080000", 0x3b08}, // Preface::PrimaryPackage
+	{"060e2b34010101020601010405020000", 0x1902}, // ContentStorage::EssenceContainerData
+	{"060e2b34010101020601010601000000", 0x2701}, // EssenceContainerData::LinkedPackageUID
+	// EssenceContainerData::BodySID and
+	// DCTimedTextResourceSubDescriptor::EssenceStreamID use the same identifier.
+	{"060e2b34010101040103040400000000", 0x3f07},
 	{"060e2b34010101010101151000000000", 0x4401},					// GenericPackage::PackageUID
 	{"060e2b34010101010103030201000000", 0x4402},					// GenericPackage::Name
 	{"060e2b34010101020601010406050000", 0x4403},					// GenericPackage::Tracks
@@ -78,7 +80,6 @@ inline constexpr MxfPropertyIdentifier kMxfProperties[] = {
 	{"060e2b34010101040402030304000000", 0x3d01},					// GenericSoundEssenceDescriptor::QuantizationBits
 	{"060e2b34010101020402040200000000", 0x3d06},					// GenericSoundEssenceDescriptor::SoundEssenceCompression
 	{"060e2b340101010406010104060b0000", 0x3f01},					// MultipleDescriptor::SubDescriptorUIDs
-	{"060e2b34010101040103040400000000", 0x3f07},					// DCTimedTextResourceSubDescriptor::EssenceStreamID
 	{"060e2b3401010102030201020c000000", 0x4406},					// GenericPackage::UserComments
 	{"060e2b34010101020302010209010000", 0x5001},					// TaggedValue::Name
 	{"060e2b3401010102030201020a010000", 0x5003},					// TaggedValue::Value

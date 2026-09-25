@@ -8,12 +8,14 @@ MediaTableModel::MediaTableModel(QObject *parent)
 {
 }
 
-int MediaTableModel::rowCount(const QModelIndex &) const
+int MediaTableModel::rowCount(const QModelIndex &parent) const
 {
-	return m_files.size();
+	return parent.isValid() ? 0 : m_files.size();
 }
-int MediaTableModel::columnCount(const QModelIndex &) const
+int MediaTableModel::columnCount(const QModelIndex &parent) const
 {
+	if (parent.isValid())
+		return 0;
 	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
 }
 

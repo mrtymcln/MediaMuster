@@ -1200,7 +1200,6 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 		MediaFile legacySuffix = modern;
 		legacySuffix.filePath = path("legacy.omf");
 		legacySuffix.fileName = QStringLiteral("legacy.omf");
-		legacySuffix.extension = QStringLiteral("omf");
 		legacySuffix.project = legacyMetadata.project;
 		window.onScanFinished({modern, otherModern, legacyMetadata, legacySuffix});
 		for (const auto &project : {modern.project, legacyMetadata.project})

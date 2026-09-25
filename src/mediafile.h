@@ -75,11 +75,10 @@ struct MediaFile
 	/// ("Image"; "A / B" when ambiguous; "unknown" when
 	/// unknown — a user-typed title, an unregistered plug-in, a renamed
 	/// template); the sequence the render belongs to (as Avid wrote it, spaces
-	/// as underscores); and the +N render instance. Empty / 0 on every Media row.
+	/// as underscores). Empty on every Media row.
 	QString effect;
 	QString effectCategory;
 	QString effectSequence;
-	int effectInstance = 0;
 	using PrecomputeCategory = AvidPrecompute::Category;
 	PrecomputeCategory precomputeCategory = PrecomputeCategory::Unknown;
 
@@ -87,7 +86,6 @@ struct MediaFile
 
 	QString filePath;
 	QString fileName;
-	QString extension;
 	QString volumeName;
 	QString volumePath;
 	/// The media's containing folder: an MXF numbered/workstation folder,

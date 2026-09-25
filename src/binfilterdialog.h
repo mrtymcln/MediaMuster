@@ -164,5 +164,4 @@ private:
 	QPushButton *m_btnIntersect = nullptr;
 	QPushButton *m_btnSubtract = nullptr;
 	QPushButton *m_btnAdd = nullptr;
-	QPushButton *m_btnDone = nullptr;
 };

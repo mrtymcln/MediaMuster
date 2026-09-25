@@ -429,7 +429,6 @@ void MediaScanner::doScan()
 		f.effect = hit.name;
 		f.effectCategory = hit.category;
 		f.effectSequence = hit.sequence;
-		f.effectInstance = hit.instance;
 	}
 
 	int noReference = 0, noDatabase = 0, invalidUmid = 0, noProject = 0, nonPortable = 0;
@@ -463,24 +462,24 @@ void MediaScanner::doScan()
 	QStringList notes;
 	if (noReference > 0)
 		notes.append(QStringLiteral("%1 file%2 without a local database reference")
-					 .arg(noReference)
-					 .arg(noReference == 1 ? "" : "s"));
+						 .arg(noReference)
+						 .arg(noReference == 1 ? "" : "s"));
 	if (noDatabase > 0)
 		notes.append(QStringLiteral("%1 file%2 with missing or unreadable databases")
-					 .arg(noDatabase)
-					 .arg(noDatabase == 1 ? "" : "s"));
+						 .arg(noDatabase)
+						 .arg(noDatabase == 1 ? "" : "s"));
 	if (invalidUmid > 0)
 		notes.append(QStringLiteral("%1 file%2 with an all-zero UMID")
-					 .arg(invalidUmid)
-					 .arg(invalidUmid == 1 ? "" : "s"));
+						 .arg(invalidUmid)
+						 .arg(invalidUmid == 1 ? "" : "s"));
 	if (noProject > 0)
 		notes.append(QStringLiteral("%1 file%2 without a project name")
-					 .arg(noProject)
-					 .arg(noProject == 1 ? "" : "s"));
+						 .arg(noProject)
+						 .arg(noProject == 1 ? "" : "s"));
 	if (nonPortable > 0)
 		notes.append(QStringLiteral("%1 non-portable filename%2")
-					 .arg(nonPortable)
-					 .arg(nonPortable == 1 ? "" : "s"));
+						 .arg(nonPortable)
+						 .arg(nonPortable == 1 ? "" : "s"));
 	if (!notes.isEmpty())
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
 				QStringLiteral("Scan notes: %1").arg(notes.join(QStringLiteral("; "))));
@@ -958,7 +957,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		missingDatabases.append(QStringLiteral("MDB"));
 	if (!missingDatabases.isEmpty())
 		qCInfo(lcScanner).noquote() << QStringLiteral("Missing databases in %1: %2")
-									 .arg(task.folderPath, missingDatabases.join(QStringLiteral(", ")));
+										   .arg(task.folderPath, missingDatabases.join(QStringLiteral(", ")));
 
 	return dbs;
 }
@@ -977,7 +976,6 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	MediaFile mf;
 	mf.filePath = fi.filePath();
 	mf.fileName = fi.fileName();
-	mf.extension = "." + fi.suffix().toLower();
 	mf.volumeName = volumeName;
 	mf.volumePath = volumePath;
 	mf.mediaFolderName = folderNumber;
@@ -1027,7 +1025,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 
 	// Missing timestamps leave database freshness unknown, so the media must
 	// be checked rather than relying on the database alone.
-	const bool headerReadable = Conventions::hasAvidMediaExtension(mf.extension) && mf.sizeBytes > 0;
+	const bool headerReadable = mf.sizeBytes > 0;
 	const bool described = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
 						   masterIt != mdb.masters.constEnd();
 	const bool indexedFileCurrent = pmrHit && pmrHit->fileModifiedSecs != 0 &&

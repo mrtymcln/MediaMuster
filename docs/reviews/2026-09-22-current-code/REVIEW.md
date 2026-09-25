@@ -65,6 +65,12 @@ file; detailed Qt diagnostics remain additional file output.
 The full macOS build and all 26 CTest suites pass after consolidation; three
 existing fixture/filesystem-dependent cases remain skipped.
 
+Table-model follow-up, 25 September: the flat-table count inconsistency is fixed.
+`rowCount()` and `columnCount()` now return zero for valid parent indexes.
+Qt's `QAbstractItemModelTester` reproduced the failure before the fix and now
+checks the existing row-removal and Precompute-column tests. The macOS app builds,
+and the table-model, filter-proxy and operation-UI suites all pass.
+
 P2 means a substantive correctness issue worth fixing; P3 means a smaller presentation, contract or maintenance issue. Ordering reflects practical impact rather than whether a defect is new. Reproductions use current code and disposable data, not historical audit claims.
 
 | Priority | Finding and location | Suggested fix / missing regression |
@@ -93,6 +99,19 @@ P2 means a substantive correctness issue worth fixing; P3 means a smaller presen
 Two additional items need a narrower follow-up: Windows discovery skips the actual system drive but adds literal `C:/` locations, omitting boot-root media on non-C: installations; and `PathKey` promises Unicode equivalence its leaf keys do not provide. The former is established by static Windows-branch inspection, not a Windows run. The latter is reproduced on APFS, but its full operation-level consequences were not established. See [platform/key notes](scanner-filters.md#platform-issue-established-by-code-not-windows-execution); do not blindly normalize paths on filesystems that distinguish Unicode forms.
 
 ## Dead code and redundant state
+
+Follow-up, 25 September: removed the unused Bento setters and context-free handle
+readers, duplicate search state, unused inventory fields, Done-button member,
+redundant Rebalance prefix election, duplicate MXF property row and final unused
+volume-path insertion. Existing Bento rejection tests now exercise `ref`/`refs`.
+Filename admission and effect-name parsing remain in their existing locations.
+The oversized-group branch is retained: a stale scan can make projected counts
+negative, so the original claim that it was unreachable was too broad. Private
+CSV helper linkage remains a separate proposal. The list below records the
+original recommendations.
+
+Validation: the macOS app and all test targets build; all 26 CTest suites pass.
+Three existing external-corpus/filesystem-dependent cases remain skipped.
 
 - [BentoFile setters](/Users/martymclean/Developer/MediaMuster/src/bentofile.h:59): remove unused `setMetadataBigEndian` and `setOmf2References`. Reader initialization already determines the state.
 - [Bento handle readers](/Users/martymclean/Developer/MediaMuster/src/bentofile.h:65): retire context-free `handleValue`/`handlesValue` after moving useful malformed-reference tests onto production `ref`/`refs` APIs.

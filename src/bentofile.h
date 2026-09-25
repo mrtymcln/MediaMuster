@@ -56,15 +56,11 @@ public:
 	[[nodiscard]] bool isBigEndian() const { return m_metadataBigEndian; }
 	[[nodiscard]] bool containerIsBigEndian() const { return m_containerBigEndian; }
 	[[nodiscard]] quint16 containerVersion() const { return m_major; }
-	void setMetadataBigEndian(bool big) { m_metadataBigEndian = big; }
-	void setOmf2References(bool omf2) { m_omf2References = omf2; }
 	[[nodiscard]] quint32 uintValue(QByteArrayView v) const;
 	[[nodiscard]] quint64 uint64Value(QByteArrayView v) const;
 	[[nodiscard]] qint64 int64Value(QByteArrayView v) const;
 	bool rationalValue(QByteArrayView v, qint32 &num, qint32 &den) const;
-	[[nodiscard]] quint32 handleValue(QByteArrayView v) const;
-	[[nodiscard]] QVector<quint32> handlesValue(QByteArrayView v) const;
-	/// Context-aware references also resolve Bento2 reference-list keys.
+	/// Resolve object references, including Bento2 reference-list keys.
 	[[nodiscard]] quint32 ref(quint32 object, int property, ReadStatus *status = nullptr) const;
 	[[nodiscard]] QVector<quint32> refs(quint32 object, int property, ReadStatus *status = nullptr) const;
 

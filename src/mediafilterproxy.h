@@ -73,8 +73,7 @@ private:
 	MediaTableModel *m_sourceModel = nullptr;
 
 	FilterMode m_mode = FilterMode::All;
-	QString m_search;
-	/// `m_search` in Unicode NFC, precomputed by setSearchText.
+	/// Search text in Unicode NFC, precomputed by setSearchText.
 	/// filterAcceptsRow compares NFC-on-NFC so composed keyboard input
 	/// matches decomposed (NFD) filenames macOS volumes hand back.
 	QString m_searchNfc;

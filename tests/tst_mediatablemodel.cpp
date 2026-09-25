@@ -6,6 +6,7 @@
 #include "mediatablemodel.h"
 #include "mobid.h"
 
+#include <QAbstractItemModelTester>
 #include <QDateTime>
 #include <QPersistentModelIndex>
 #include <QSet>
@@ -158,6 +159,7 @@ void TestMediaTableModel::row_removal_preserves_rows_and_notifications()
 	QFETCH(QList<int>, ranges);
 	QFETCH(QStringList, remainingPaths);
 	MediaTableModel model;
+	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
 	model.setMediaFiles(makeRows(initialCount));
 	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
 	QSignalSpy doneSpy(&model, &QAbstractItemModel::rowsRemoved);
@@ -302,6 +304,7 @@ void TestMediaTableModel::unknown_classification_displays_without_guessing()
 void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 {
 	MediaTableModel model;
+	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
 	model.setMediaFiles(makeRows(2));
 	const QStringList baseHeaders{
 		QStringLiteral("Clip Name"), QStringLiteral("Project"), QStringLiteral("Bin"),

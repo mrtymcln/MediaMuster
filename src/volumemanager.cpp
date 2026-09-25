@@ -93,7 +93,7 @@ void VolumeManager::onPollFinished()
 					   .arg(v.name, v.volumeType,
 							v.hasAvidMedia ? QStringLiteral(",avid") : QString());
 	qCInfo(lcVolumes).noquote() << "volumes changed:" << current.size() << "mounted —"
-							   << summary.join(QStringLiteral("  "));
+								<< summary.join(QStringLiteral("  "));
 
 	m_lastVolumes = current;
 	emit volumesChanged(current);
@@ -221,7 +221,6 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 		if (!avidDir.exists() || alreadyListed(avidPath) || !hasAvidMediaFolder(avidPath))
 			continue;
 
-		seenPaths.insert(avidPath);
 		// Path is a known Avid location (loop guard above), so hasAvidMedia
 		// resolves true via hasAvidMediaFolder — no need to force it here.
 		// A drive root has no dirName; show the path itself.

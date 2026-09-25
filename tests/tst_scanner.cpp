@@ -218,7 +218,6 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 
 	QCOMPARE(mf.fileName, QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
 	QCOMPARE(mf.mediaFolderName, QStringLiteral("1"));
-	QCOMPARE(mf.extension, QStringLiteral(".mxf"));
 	QVERIFY(mf.sizeBytes > 0);
 
 	// From PMR
@@ -1667,7 +1666,6 @@ void TestScanner::precompute_row_gets_effect_fields()
 	QCOMPARE(mf.effect, QStringLiteral("1.85 Mask"));
 	QCOMPARE(mf.effectCategory, QStringLiteral("Film"));
 	QCOMPARE(mf.effectSequence, QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq"));
-	QCOMPARE(mf.effectInstance, 2);
 
 	// And a Media row carries none of it.
 	const QString folder2 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/2");
@@ -1680,7 +1678,6 @@ void TestScanner::precompute_row_gets_effect_fields()
 		{
 			QVERIFY(f.effect.isEmpty());
 			QVERIFY(f.effectCategory.isEmpty());
-			QCOMPARE(f.effectInstance, 0);
 		}
 }
 

@@ -207,6 +207,8 @@ void TestBentoFile::typed_readers()
 	w.setRational(a, "OMFI:CPNT:EditRate", 2997, 100);
 	w.setHandle(a, "OMFI:MOBJ:PhysicalMedia", t);
 	w.setHandles(a, "OMFI:TRKG:Tracks", {t, secondTrack});
+	w.set(a, "OMFI:MalformedReference", "abc");
+	w.set(a, "OMFI:MalformedReferences", QByteArray::fromHex("05007a7a"));
 	w.setString(a, "OMFI:CPNT:Name", QByteArray("zT_\xa7t", 5)); // MacRoman ß
 	w.setString(a, "OMFI:MCBR:MC:binNameUTF8", QByteArray("zT_\xc3\x9ft", 6));
 	const QByteArray mob = QByteArray::fromHex("060a2b340101010501010f1013000000"
@@ -227,8 +229,11 @@ void TestBentoFile::typed_readers()
 	QCOMPARE(OmfUid::canonicalHex(b.value(a, b.propertyId("OMFI:MOBJ:MobID"))),
 			 QStringLiteral("060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613"));
 	// Malformed shapes read as nothing rather than something.
-	QCOMPARE(b.handleValue(QByteArrayView("abc")), 0u);
-	QVERIFY(b.handlesValue(QByteArrayView("\x05\x00zz")).isEmpty());
+	BentoFile::ReadStatus status;
+	QCOMPARE(b.ref(a, b.propertyId("OMFI:MalformedReference"), &status), 0u);
+	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
+	QVERIFY(b.refs(a, b.propertyId("OMFI:MalformedReferences"), &status).isEmpty());
+	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 	QVERIFY(!b.rationalValue(QByteArrayView("1234"), num, den));
 	QVERIFY(OmfUid::canonicalHex(QByteArrayView("short")).isEmpty());
 }
@@ -435,7 +440,9 @@ void TestBentoFile::omf_open_reads_only_the_tail()
 	QCOMPARE(firstUid.mid(4).toHex(), QByteArray("7429976a70397047"));
 	QCOMPARE(again.objectClass(firstObject), QByteArray("MOBJ"));
 	QCOMPARE(again.bytes(firstObject, mobIdProp), firstUid);
-	QVERIFY(again.handlesValue(srcMobs).isEmpty());
+	BentoFile::ReadStatus status;
+	QVERIFY(again.refs(heads[0], srcProp, &status).isEmpty());
+	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 
 	// A small .omf: the same budget, and the picture is only read when asked.
 	BentoFile omf;

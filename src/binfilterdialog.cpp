@@ -304,15 +304,15 @@ void BinFilterDialog::setupUi()
 
 	auto *footer = new QHBoxLayout;
 	footer->addStretch(1);
-	m_btnDone = new QPushButton(tr("Done"));
-	m_btnDone->setDefault(true);
-	footer->addWidget(m_btnDone);
+	auto *btnDone = new QPushButton(tr("Done"));
+	btnDone->setDefault(true);
+	footer->addWidget(btnDone);
 	root->addLayout(footer);
 
 	connect(m_btnIntersect, &QPushButton::clicked, this, &BinFilterDialog::onIntersectClicked);
 	connect(m_btnSubtract, &QPushButton::clicked, this, &BinFilterDialog::onSubtractClicked);
 	connect(m_btnAdd, &QPushButton::clicked, this, &BinFilterDialog::onAddClicked);
-	connect(m_btnDone, &QPushButton::clicked, this, &QDialog::hide);
+	connect(btnDone, &QPushButton::clicked, this, &QDialog::hide);
 
 	// Tickbox changes drive the summary text and op-button enable state.
 	connect(m_binList, &QListWidget::itemChanged, this,

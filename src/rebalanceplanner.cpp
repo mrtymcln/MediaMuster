@@ -10,7 +10,6 @@
 #include <QHash>
 #include <QSet>
 #include <algorithm>
-#include <limits>
 
 namespace
 {
@@ -312,35 +311,12 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		g.masterMobId =
 			it.key().startsWith(kLoneKeyPrefix) ? QString() : g.members.first().file->masterMobId;
 
-		QHash<QString, int> prefixCount;
+		// relativesKey already separates workstation prefixes. Home is
+		// the lowest-numbered folder containing a member of this group.
+		g.homePrefix = g.members.first().folder.prefix;
+		g.homeN = g.members.first().folder.n;
 		for (const auto &m : g.members)
-			prefixCount[m.folder.prefix] += 1;
-
-		// Most-populous prefix wins; tie broken by sorted prefix, which
-		// keeps the home choice deterministic so reruns on the same
-		// project produce the same plan.
-		QStringList prefixes = prefixCount.keys();
-		std::sort(prefixes.begin(), prefixes.end());
-		int best = -1;
-		for (const QString &p : prefixes)
-		{
-			if (prefixCount[p] > best)
-			{
-				best = prefixCount[p];
-				g.homePrefix = p;
-			}
-		}
-
-		// Home N = smallest N within the home prefix that contains
-		// a member. Prefer existing folders over new ones, and lower
-		// numbers over higher.
-		int home = std::numeric_limits<int>::max();
-		for (const auto &m : g.members)
-		{
-			if (m.folder.prefix == g.homePrefix)
-				home = qMin(home, m.folder.n);
-		}
-		g.homeN = (home == std::numeric_limits<int>::max() ? 1 : home);
+			g.homeN = qMin(g.homeN, m.folder.n);
 
 		groups.append(g);
 	}

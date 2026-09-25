@@ -625,30 +625,6 @@ bool BentoFile::rationalValue(QByteArrayView v, qint32 &num, qint32 &den) const
 	den = qint32(uintValue(v.sliced(4)));
 	return true;
 }
-quint32 BentoFile::handleValue(QByteArrayView v) const
-{
-	if (v.size() != (m_omf2References ? 4 : 8))
-		return 0;
-	// Reference keys are container-order data (OMF marks ObjRef never-swab).
-	return word(v.data(), m_containerBigEndian);
-}
-QVector<quint32> BentoFile::handlesValue(QByteArrayView v) const
-{
-	QVector<quint32> out;
-	if (v.size() < 2)
-		return out;
-	const quint32 count = half(v.data(), m_metadataBigEndian);
-	const int stride = m_omf2References ? 4 : 8;
-	if (v.size() != 2 + qsizetype(count) * stride)
-		return out;
-	for (quint32 i = 0; i < count; ++i)
-	{
-		const quint32 id = handleValue(v.sliced(2 + i * stride, stride));
-		if (id)
-			out.append(id);
-	}
-	return out;
-}
 quint32 BentoFile::mappedReference(const Entry &e, QByteArrayView raw, ReadStatus &status) const
 {
 	if (raw.size() != 4)

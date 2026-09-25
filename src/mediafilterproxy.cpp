@@ -111,7 +111,6 @@ void MediaFilterProxy::setFilterMode(FilterMode mode)
 
 void MediaFilterProxy::setSearchText(const QString &text)
 {
-	m_search = text;
 	// Normalised once here, not per row in filterAcceptsRow.
 	m_searchNfc = searchForm(text);
 	invalidateRowsFilter();
@@ -212,7 +211,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	if (!m_binFilter.matches(f.mobId, f.masterMobId))
 		return false;
 
-	if (!m_search.isEmpty())
+	if (!m_searchNfc.isEmpty())
 	{
 		// Case-insensitive comparison folds on the fly. Both
 		// sides go through searchForm so an NFD filename matches NFC
