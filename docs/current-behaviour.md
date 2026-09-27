@@ -96,6 +96,12 @@ retains its cell-copy and Copy Path context commands. View retains the checked
 **Help > Send feedback…** opens the default email client with a message addressed
 to `mrtymcln.dev@gmail.com`.
 
+On macOS, Reveal in Finder asks Finder to select the file. Failure is logged;
+there are no fallbacks. On Windows, the app tries to open the parent folder if
+the file is missing. Otherwise, it tries the Shell API, then Explorer. If Explorer cannot start,
+it tries the parent folder. Explorer and folder-opening requests can fail later
+without reporting back to MediaMuster.
+
 Menu commands and their matching buttons share availability. Scanning requires
 an available location; Scan Selected additionally requires a selected location.
 Manage Media and Reveal in Finder require selected visible media; Rebalance and

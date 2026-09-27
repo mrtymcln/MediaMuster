@@ -126,6 +126,16 @@ The detailed reports also identify a duplicate MXF property row, an unused final
 
 ## Names worth changing
 
+Follow-up, 28 September: `PrecomputeFilterDialog` now names the dialog, source
+files, test target and associated UI controls. Scanner folder fields/parameters
+now use `mediaFolderName`. The reviewed stale comments about dialog ownership,
+metadata precedence, parser formats, selection batching, paths and operation
+provenance are corrected, along with current documentation references. The
+remaining renames below are still proposals; captured historical evidence keeps
+its original names. The macOS app builds, and the scanner, filter-proxy,
+Precompute-dialog and operation-UI suites pass, with the existing scanner
+filesystem-dependent skip.
+
 | Current | Proposed | Why |
 | --- | --- | --- |
 | `EffectFilterDialog`, `effectfilterdialog.*`, associated UI members | `PrecomputeFilterDialog`, `precomputefilterdialog.*` | The dialog selects precompute branches and volume; filter types and UI already use this term. |

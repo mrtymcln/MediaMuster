@@ -52,6 +52,14 @@ Use an asynchronously owned `QProcess`, inspect its exit result and run the next
 
 Confidence: high for the fallback defect; field occurrence unmeasured.
 
+Follow-up, 28 September: replaced the macOS command/AppleScript chain with
+`NSWorkspace`'s `selectFile:inFileViewerRootedAtPath:`. At the user's request,
+macOS no longer falls back to opening the parent; a native failure is logged.
+Windows is unchanged. The app builds and the operation-UI suite passes. Live
+Finder checks selected ordinary and quoted/Unicode filenames; a missing file
+logged failure without opening its parent. Network and Windows execution were
+not tested.
+
 ## U5 — P3: project sidebar totals outlive removed media
 
 Location: [sourcesRemoved handler](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:856).

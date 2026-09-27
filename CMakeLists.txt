@@ -143,6 +143,7 @@ set(SOURCES
 ### Target ###
 if(APPLE)
     list(APPEND SOURCES src/optrash_mac.mm)
+    set_source_files_properties(src/revealinfinder.cpp PROPERTIES LANGUAGE OBJCXX)
     set(MACOS_ICON res/mediamuster-mac.icns)
     set_source_files_properties(${MACOS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     list(APPEND SOURCES ${MACOS_ICON})
@@ -203,7 +204,9 @@ function(mediamuster_link_native_operations target)
 endfunction()
 mediamuster_link_native_operations(MediaMuster)
 
-if(WIN32)
+if(APPLE)
+    target_link_libraries(MediaMuster PRIVATE "-framework AppKit")
+elseif(WIN32)
     ### Shell reveal (revealinfinder.cpp) and GetUserNameEx (aboutdialog.cpp) ###
     target_link_libraries(MediaMuster PRIVATE shell32 ole32 secur32)
 endif()

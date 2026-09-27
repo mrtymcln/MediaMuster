@@ -1,30 +1,33 @@
 #include "revealinfinder.h"
-#include "diagnostics.h"
 
-#include <QDebug>
-#include <QDesktopServices>
-#include <QDir>
 #include <QFileInfo>
-#include <QProcess>
+
+#ifdef Q_OS_MAC
+#import <AppKit/AppKit.h>
+#else
+#include <QDesktopServices>
 #include <QUrl>
+#endif
 
 #ifdef Q_OS_WIN
+#include "diagnostics.h"
+#include <QDebug>
+#include <QDir>
+#include <QProcess>
 #include <windows.h>
-#include <shlobj.h>	 // SHOpenFolderAndSelectItems, SHParseDisplayName
-#include <objbase.h> // CoInitializeEx — Shell API needs COM apartment
+#include <shlobj.h>
+#include <objbase.h>
 #include <string>
 #endif
 
 namespace RevealInFinder
 {
 
+#ifndef Q_OS_MAC
 	namespace
 	{
 
-		// Last-resort fallback. Called when the file no longer exists, or
-		// when a platform-specific reveal failed. Plain "show this folder" —
-		// The desktop service picks Finder or Explorer, so no per-platform branch here (the
-		// reveal-and-highlight tiers below are the genuinely platform-bound part).
+		// Request a parent-folder window. Later failures aren't reported.
 		void openParentFolder(const QString &parentDir, const Logger &log)
 		{
 			if (parentDir.isEmpty() || !QFileInfo(parentDir).exists())
@@ -36,47 +39,13 @@ namespace RevealInFinder
 				log(QtWarningMsg, QStringLiteral("Failed to open: %1.").arg(parentDir));
 		}
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_WIN
 
-		// Three-tier reveal:
-		//   1. `open -R <path>`: fast and reliable for local paths.
-		//   2. AppleScript `tell Finder to reveal`: survives network mounts
-		//      where `open -R` sometimes loses the file.
-		//   3. Parent-folder fallback if both fail.
-		void revealOnMac(const QString &path, const QString &parentDir, const Logger &log)
-		{
-			if (QProcess::startDetached(QStringLiteral("open"), {"-R", path}))
-				return;
-
-			QString escapedPath = path;
-			escapedPath.replace(QLatin1String("\\"), QLatin1String("\\\\"))
-				.replace(QLatin1String("\""), QLatin1String("\\\""));
-			const QString revealScript =
-				QStringLiteral("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(escapedPath);
-			const QStringList args = {QStringLiteral("-e"), revealScript, QStringLiteral("-e"),
-									  QStringLiteral("tell application \"Finder\" to activate")};
-			if (QProcess::startDetached(QStringLiteral("osascript"), args))
-				return;
-
-			log(QtWarningMsg, QStringLiteral("open(1) and osascript both failed; opening parent"));
-			openParentFolder(parentDir, log);
-		}
-
-#elif defined(Q_OS_WIN)
-
-		// Three-tier reveal:
-		//   1. Shell API (SHParseDisplayName + SHOpenFolderAndSelectItems).
-		//   2. `explorer.exe /select,"<path>"` fallback.
-		//   3. Parent-folder fallback.
-		//
-		// Explorer needs `/select,"<path>"` with the comma; `setNativeArguments`
-		// preserves the exact quoting Explorer expects.
+		// Try the Shell API, then Explorer. If Explorer can't start, open the parent.
 		void revealOnWindows(const QString &path, const QString &parentDir, const Logger &log)
 		{
 			const QString nativePath = QDir::toNativeSeparators(path);
 
-			// `GetFullPathNameW` handles relative and long paths in one
-			// call. 4096 wchars is well above `MAX_PATH`.
 			std::wstring fullPath(4096, L'\0');
 			const DWORD fullPathLen =
 				GetFullPathNameW(reinterpret_cast<LPCWSTR>(nativePath.utf16()),
@@ -90,9 +59,7 @@ namespace RevealInFinder
 			fullPath.resize(fullPathLen);
 			const QString canonicalPath = QString::fromWCharArray(fullPath.data());
 
-			// CoInitializeEx defensively: the framework may have already initialised
-			// COM with a different model (RPC_E_CHANGED_MODE). Skip the
-			// matching CoUninitialize in that case.
+			// Only undo COM initialisation if this call succeeds.
 			const HRESULT coHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 			const bool needCoUninit = (coHr == S_OK || coHr == S_FALSE);
 
@@ -108,13 +75,13 @@ namespace RevealInFinder
 				if (!shellApiSucceeded)
 				{
 					qCWarning(lcApp).noquote() << QStringLiteral("SHOpenFolderAndSelectItems failed: 0x%1")
-												.arg(static_cast<quint32>(openHr), 8, 16, QChar('0'));
+													  .arg(static_cast<quint32>(openHr), 8, 16, QChar('0'));
 				}
 			}
 			else
 			{
 				qCWarning(lcApp).noquote() << QStringLiteral("SHParseDisplayName failed: 0x%1")
-											.arg(static_cast<quint32>(parseHr), 8, 16, QChar('0'));
+												  .arg(static_cast<quint32>(parseHr), 8, 16, QChar('0'));
 			}
 
 			if (needCoUninit)
@@ -123,10 +90,11 @@ namespace RevealInFinder
 			if (shellApiSucceeded)
 				return;
 
-			// Tier 2: explorer.exe /select,"path".
 			QProcess explorer;
 			explorer.setProgram(QStringLiteral("explorer.exe"));
+			// Preserve Explorer's required comma and quotes.
 			explorer.setNativeArguments(QStringLiteral("/select,\"%1\"").arg(canonicalPath));
+			// Starting Explorer does not confirm that it selected the file.
 			if (explorer.startDetached())
 				return;
 
@@ -137,6 +105,7 @@ namespace RevealInFinder
 #endif
 
 	} // namespace
+#endif
 
 	void reveal(const QString &path, const Logger &log)
 	{
@@ -147,9 +116,17 @@ namespace RevealInFinder
 		}
 
 		const QFileInfo fi(path);
+#ifdef Q_OS_MAC
+		@autoreleasepool
+		{
+			if (![[NSWorkspace sharedWorkspace] selectFile:fi.absoluteFilePath().toNSString()
+								  inFileViewerRootedAtPath:@""])
+				log(QtWarningMsg, QStringLiteral("Failed to reveal: %1.").arg(path));
+		}
+#else
 		const QString parentDir = fi.absolutePath();
 
-		// File gone, so open parent unhighlighted.
+		// If the file is missing, try its parent folder.
 		if (!fi.exists())
 		{
 			log(QtWarningMsg, QStringLiteral("File not found. Trying its parent folder: %1.").arg(parentDir));
@@ -157,12 +134,11 @@ namespace RevealInFinder
 			return;
 		}
 
-#ifdef Q_OS_MAC
-		revealOnMac(path, parentDir, log);
-#elif defined(Q_OS_WIN)
+#ifdef Q_OS_WIN
 		revealOnWindows(path, parentDir, log);
 #else
 		openParentFolder(parentDir, log);
+#endif
 #endif
 	}
 
