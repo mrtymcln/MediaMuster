@@ -274,19 +274,9 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 
 	case Col::Duration:
 	{
-		// Sort by the same timecode arithmetic the column displays — frames
-		// over the nominal base — so order and display can never disagree.
-		// (Drop-frame changes rendering only, not the count, so it can't
-		// affect ordering.) Ties break audio-first for stable grouping.
-		auto tcSeconds = [](const MediaFile &f) -> double
-		{
-			if (f.durationFrames <= 0)
-				return 0.0;
-			const int base = f.effectiveTimecodeBase();
-			return base > 0 ? double(f.durationFrames) / base : 0.0;
-		};
-		const double ls = tcSeconds(l);
-		const double rs = tcSeconds(r);
+		// Compare the displayed HH, MM, SS, FF; equal values sort audio first.
+		const auto ls = l.durationTimecode();
+		const auto rs = r.durationTimecode();
 		if (ls != rs)
 			return ls < rs;
 		return kindSortRank(l.kind) < kindSortRank(r.kind);

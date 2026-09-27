@@ -7,6 +7,7 @@
 #include <QVector>
 #include <QMetaType>
 #include <cmath>
+#include <tuple>
 
 // MARK: - MediaFile
 
@@ -60,8 +61,7 @@ struct MediaFile
 	/// Parser-derived; 0 = unknown (durationDisplay falls back to the fps
 	/// display string, and shows blank when neither is available).
 	int timecodeBase = 0;
-	/// Drop-frame material (29.97/59.94 families). Affects duration
-	/// RENDERING only — the frame count itself never changes.
+	/// Drop-frame numbering (29.97/59.94). The stored frame count stays unchanged.
 	bool dropFrame = false;
 	QString sourceFilePath; ///< Path Avid recorded when the media was first imported.
 	QString sourceFileName;
@@ -299,14 +299,7 @@ struct MediaFile
 		return sampleRate > 0 ? QStringLiteral("%1 kHz").arg(sampleRate / 1000.0, 0, 'g', 10) : QString();
 	}
 
-	/// Timecode base used for duration rendering AND sorting: the
-	/// parser-derived base, or one derived from the fps display string
-	/// (demo data, MDB-only rows). 0 = unknown. A sub-1 rate stays
-	/// unknown — rounded to 0 it would integer-divide-by-zero (SIGFPE)
-	/// in the timecode arithmetic; no sane video runs under 1 fps.
-	/// Bounds mirror the parser's clamp (mxfparser.cpp): a garbage rate
-	/// >= 1000 the parser refused must not be resurrected from the
-	/// display string into a nonsense duration.
+	/// Recorded timecode base, or the rounded FPS when valid. 0 means unknown.
 	int effectiveTimecodeBase() const
 	{
 		if (timecodeBase > 0)
@@ -315,28 +308,20 @@ struct MediaFile
 		return (rate >= 1.0 && rate < 1000.0) ? static_cast<int>(std::round(rate)) : 0;
 	}
 
-	/// Timecode duration — HH:MM:SS:FF at the clip's edit rate, matching
-	/// what the Avid bin shows, for audio as much as video. Never wall
-	/// clock. Drop-frame material counts SMPTE drop-frame style and renders
-	/// with Avid's semicolon separators. Empty when the frame count or the
-	/// rate is unknown — an unknown is never coerced into a guess.
-	QString durationDisplay() const
+	/// Numeric HH, MM, SS, FF for display and sorting. Hour -1 means unknown.
+	std::tuple<qint64, int, int, int> durationTimecode() const
 	{
 		if (durationFrames <= 0)
-			return {};
+			return {-1, 0, 0, 0};
 		const int base = effectiveTimecodeBase();
 		if (base < 1)
-			return {};
+			return {-1, 0, 0, 0};
 
 		qint64 minutes;
 		int secs, frames;
-		QChar sep(':');
 		if (dropFrame && (base == 30 || base == 60))
 		{
-			// SMPTE drop-frame: 2 frame NUMBERS per minute are skipped (4
-			// at base 60) except every tenth minute. Only the rendering
-			// changes; the stored frame count is untouched.
-			sep = QLatin1Char(';');
+			// Skip 2 frame numbers per minute (4 at base 60), except every tenth minute.
 			const int dropPerMin = base / 15;
 			const qint64 perTenMin = qint64(base) * 600 - 9 * dropPerMin;
 			const qint64 perMin = qint64(base) * 60 - dropPerMin;
@@ -365,13 +350,22 @@ struct MediaFile
 			secs = static_cast<int>(totalSecs % 60);
 			minutes = totalSecs / 60;
 		}
-		// Sequential markers, sep filled in order: reusing one %N marker for
-		// every separator would merge with neighbouring substituted digits
-		// ("%5" + "30" parses as marker %53).
+		return {minutes / 60, static_cast<int>(minutes % 60), secs, frames};
+	}
+
+	/// Duration as timecode; drop-frame uses semicolons. Unknown stays blank.
+	QString durationDisplay() const
+	{
+		const auto [hours, minutes, secs, frames] = durationTimecode();
+		if (hours < 0)
+			return {};
+		const int base = effectiveTimecodeBase();
+		const QChar sep = dropFrame && (base == 30 || base == 60) ? QLatin1Char(';') : QLatin1Char(':');
+		// Separate placeholders keep separators from merging with numbered %N markers.
 		return QStringLiteral("%1%2%3%4%5%6%7")
-			.arg(minutes / 60, 2, 10, QChar('0'))
+			.arg(hours, 2, 10, QChar('0'))
 			.arg(sep)
-			.arg(minutes % 60, 2, 10, QChar('0'))
+			.arg(minutes, 2, 10, QChar('0'))
 			.arg(sep)
 			.arg(secs, 2, 10, QChar('0'))
 			.arg(sep)

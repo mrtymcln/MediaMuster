@@ -214,6 +214,10 @@ Audio duration uses the recorded edit rate to convert samples to frames and
 render timecode. The MDB reader retains that rate before rounding the frame
 count, including for MXF scans with OMF support disabled.
 
+Duration sorts by the displayed hours, minutes, seconds and frame number,
+including across different frame rates. Colons and semicolons do not affect
+the order. Blank durations come first when sorting upwards and last downwards.
+
 The filter tabs are All, Video, Audio, No Database, Non-Portable and Quarantined.
 Enabling precompute features also adds Precomputes. Project selection, including
 **No project**, is available in the sidebar. Database membership remains visible

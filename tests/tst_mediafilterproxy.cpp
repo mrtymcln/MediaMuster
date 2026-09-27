@@ -50,6 +50,7 @@ private slots:
 	void size_column_sorts_on_exact_bytes();
 	void sample_rate_column_sorts_numerically();
 	void bit_depth_column_sorts_numbers_before_labels();
+	void duration_column_sorts_displayed_timecode();
 
 	// Search covers the path (2026-08-18). The Location column shows the
 	// full path, so the search box has to match it — and because the
@@ -308,6 +309,78 @@ void TestMediaFilterProxy::quarantined_filter_uses_scanner_flag()
 	QCOMPARE(proxy.rowCount(), 2);
 	QCOMPARE(proxy.index(0, name).data().toString(), flagged.clipName);
 	QCOMPARE(proxy.index(1, name).data().toString(), namedOnly.clipName);
+}
+
+void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
+{
+	using Kind = MediaFile::Kind;
+	// Expected ascending order compares the displayed fields numerically.
+	// Equal fields use the existing Audio, Video, Unknown order, regardless
+	// of rate or whether the displayed separator is a colon or semicolon.
+	const struct
+	{
+		const char *name;
+		qint64 frames;
+		int base;
+		bool drop;
+		Kind kind;
+		const char *display;
+		const char *fps = "";
+	} cases[] = {
+		{"blank frames", 0, 25, false, Kind::Audio, ""},
+		{"blank rate", 250, 0, false, Kind::Video, ""},
+		{"negative frames", -25, 25, false, Kind::Unknown, ""},
+		{"30 fps", 10, 30, false, Kind::Video, "00:00:00:10"},
+		{"25 fps", 11, 25, false, Kind::Video, "00:00:00:11"},
+		{"equal audio", 12, 24, false, Kind::Audio, "00:00:00:12"},
+		{"equal video", 12, 60, false, Kind::Video, "00:00:00:12"},
+		{"equal unknown", 12, 25, false, Kind::Unknown, "00:00:00:12"},
+		// Raw FF order, not FF/base: 12 at 24 fps precedes 20 at 60 fps.
+		{"60 fps", 20, 60, false, Kind::Video, "00:00:00:20"},
+		{"two digit frame field", 99, 120, false, Kind::Video, "00:00:00:99"},
+		{"three digit frame field", 100, 120, false, Kind::Video, "00:00:00:100"},
+		{"fps fallback", 25, 0, false, Kind::Video, "00:00:01:00", "25"},
+		{"60 DF before drop", 3599, 60, true, Kind::Video, "00;00;59;59"},
+		{"60 NDF at drop", 3603, 60, false, Kind::Video, "00:01:00:03"},
+		{"60 DF at drop", 3600, 60, true, Kind::Audio, "00;01;00;04"},
+		{"60 NDF equal fields", 3604, 60, false, Kind::Video, "00:01:00:04"},
+		// The original mixed DF/NDF regression: the larger raw frame count
+		// displays a shorter timecode and must sort first.
+		{"30 NDF before ten minutes", 17990, 30, false, Kind::Video, "00:09:59:20"},
+		{"30 DF ten minutes", 17982, 30, true, Kind::Video, "00;10;00;00"},
+		{"99 hours", 8'999'999, 25, false, Kind::Video, "99:59:59:24"},
+		{"100 hours", 9'000'000, 25, false, Kind::Video, "100:00:00:00"},
+	};
+	QVector<MediaFile> rows;
+	QStringList ascending;
+	for (const auto &c : cases)
+	{
+		MediaFile row = rowNamed(QString::fromLatin1(c.name));
+		row.durationFrames = c.frames;
+		row.timecodeBase = c.base;
+		row.dropFrame = c.drop;
+		row.kind = c.kind;
+		row.fps = QString::fromLatin1(c.fps);
+		QCOMPARE(row.durationDisplay(), QString::fromLatin1(c.display));
+		rows.append(row);
+		ascending.append(row.clipName);
+	}
+	std::reverse(rows.begin(), rows.end());
+	MediaTableModel model;
+	model.setMediaFiles(rows);
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+	{
+		proxy.sort(int(MediaTableModel::Column::Duration), direction);
+		QStringList actual;
+		for (int i = 0; i < proxy.rowCount(); ++i)
+			actual.append(proxy.index(i, int(MediaTableModel::Column::ClipName)).data().toString());
+		QStringList expected = ascending;
+		if (direction == Qt::DescendingOrder)
+			std::reverse(expected.begin(), expected.end());
+		QCOMPARE(actual, expected);
+	}
 }
 
 void TestMediaFilterProxy::three_state_classification_sort_is_consistent()

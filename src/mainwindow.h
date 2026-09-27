@@ -1,5 +1,6 @@
 #pragma once
 
+#include "managemediadialog.h"
 #include "mediafile.h"
 #include "mediafilterproxy.h"
 #include "mediascanner.h"
@@ -114,7 +115,7 @@ private:
 	void doUpdateSelectionBytes();
 
 	void updateFilterCounts();
-	void openManageMedia(int initialOp);
+	void openManageMedia(ManageMediaDialog::Operation initialOp);
 	void updateActivityUi();
 	void updateSelectionActions();
 	class ProgressDialog *progressDialog();

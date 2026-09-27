@@ -136,6 +136,10 @@ its original names. The macOS app builds, and the scanner, filter-proxy,
 Precompute-dialog and operation-UI suites pass, with the existing scanner
 filesystem-dependent skip.
 
+Follow-up, 28 September: `openManageMedia` now accepts the existing dialog
+operation enum directly. Removed four enum-to-integer conversions and the
+conversion back; the dialog-to-engine operation mapping is unchanged.
+
 | Current | Proposed | Why |
 | --- | --- | --- |
 | `EffectFilterDialog`, `effectfilterdialog.*`, associated UI members | `PrecomputeFilterDialog`, `precomputefilterdialog.*` | The dialog selects precompute branches and volume; filter types and UI already use this term. |

@@ -9,7 +9,6 @@
 #include "featureflags.h"
 #include "formatutil.h"
 #include "layoututil.h"
-#include "managemediadialog.h"
 #include "mediacsv.h"
 #include "progressdialog.h"
 #include "rebalancedialog.h"
@@ -1718,10 +1717,10 @@ void MainWindow::applyFilterPreservingSelection(const std::function<void()> &mut
 
 void MainWindow::onFileOperations()
 {
-	openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Copy));
+	openManageMedia(ManageMediaDialog::Operation::Copy);
 }
 
-void MainWindow::openManageMedia(int initialOp)
+void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 {
 	if (!m_operations->isIdle())
 		return;
@@ -1729,7 +1728,7 @@ void MainWindow::openManageMedia(int initialOp)
 	if (files.isEmpty())
 		return;
 
-	ManageMediaDialog dlg(files, this, static_cast<ManageMediaDialog::Operation>(initialOp));
+	ManageMediaDialog dlg(files, this, initialOp);
 	if (dlg.exec() != QDialog::Accepted)
 		return;
 
@@ -2010,13 +2009,13 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 
 	menu.addSeparator();
 	menu.addAction(tr("Copy To…"), this, [this]()
-				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Copy)); })
+				   { openManageMedia(ManageMediaDialog::Operation::Copy); })
 		->setEnabled(m_manageMediaAct->isEnabled());
 	menu.addAction(tr("Move To…"), this, [this]()
-				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Move)); })
+				   { openManageMedia(ManageMediaDialog::Operation::Move); })
 		->setEnabled(m_manageMediaAct->isEnabled());
 	menu.addAction(tr("Delete…"), this, [this]()
-				   { openManageMedia(Enum::to_underlying(ManageMediaDialog::Operation::Delete)); })
+				   { openManageMedia(ManageMediaDialog::Operation::Delete); })
 		->setEnabled(m_manageMediaAct->isEnabled());
 	menu.exec(m_tableView->viewport()->mapToGlobal(pos));
 }
