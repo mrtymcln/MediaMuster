@@ -212,7 +212,7 @@ private:
 	qint64 m_lastFlushElapsed = 0;
 
 	/// Watch list for folders over kFolderWarn (4,500) files, near Avid's
-	/// 5,000 ceiling. Pool threads append under m_overfullMutex. Drained to
+	/// 5,000 rollover threshold. Pool threads append under m_overfullMutex. Drained to
 	/// one summary line at end of scan.
 	QMutex m_overfullMutex;
 	QVector<QPair<QString, int>> m_overfullFolders;

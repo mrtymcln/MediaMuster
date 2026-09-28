@@ -180,6 +180,8 @@ private slots:
 	void completed_results_preserve_details_and_refresh_signals();
 	void rebalance_demo_cancel_preserves_original_card_counts();
 	void rebalance_demo_ticks_count_repeated_source_paths();
+	void rebalance_demo_moves_stay_within_workstations_data();
+	void rebalance_demo_moves_stay_within_workstations();
 	void rebalance_live_counts_follow_confirmed_results();
 	void rebalance_finished_recounts_uncertain_moves_and_absent_folders();
 	void rebalance_finished_marks_unavailable_root();
@@ -1868,11 +1870,58 @@ void TestOperationUi::rebalance_demo_ticks_count_repeated_source_paths()
 	QTRY_VERIFY(dialog->m_nextDemoOp > 1);
 	dialog->onCancelClicked();
 	QCOMPARE(dialog->m_confirmedMoves, dialog->m_nextDemoOp);
-	const FolderName source{{}, 1}, destination{{}, 3};
+	const FolderName source{QStringLiteral("MartyiMac"), 1}, destination{QStringLiteral("MartyiMac"), 3};
 	QCOMPARE(folderCountCaption(*dialog, source.display()),
 			 Format::count(originalCounts.value(source) - dialog->m_confirmedMoves));
 	QCOMPARE(folderCountCaption(*dialog, destination.display()),
 			 Format::count(originalCounts.value(destination) + dialog->m_confirmedMoves));
+}
+
+void TestOperationUi::rebalance_demo_moves_stay_within_workstations_data()
+{
+	QTest::addColumn<int>("scenario");
+	QTest::addColumn<int>("moves");
+	QTest::newRow("big") << int(RebalanceDialog::DemoScenario::Big) << 7490;
+	QTest::newRow("really-big") << int(RebalanceDialog::DemoScenario::ReallyBig) << 666666;
+}
+
+void TestOperationUi::rebalance_demo_moves_stay_within_workstations()
+{
+	QFETCH(int, scenario);
+	QFETCH(int, moves);
+	std::unique_ptr<RebalanceDialog> dialog(
+		RebalanceDialog::createDemo(static_cast<RebalanceDialog::DemoScenario>(scenario)));
+	const auto &plan = dialog->m_currentPlan;
+	QCOMPARE(plan.ops.size(), moves);
+	QHash<FolderName, int> counts;
+	QSet<QString> workstations;
+	for (const auto &folder : plan.folders)
+	{
+		if (!folder.inScope)
+			continue;
+		QVERIFY(!counts.contains(folder.id));
+		counts.insert(folder.id, folder.count);
+		workstations.insert(folder.id.prefix);
+	}
+	QCOMPARE(workstations, (QSet<QString>{QStringLiteral("MartyiMac"), QStringLiteral("JamieiMac"),
+											QStringLiteral("ClaireiMac")}));
+	for (const auto &op : plan.ops)
+	{
+		const auto source = RebalancePlanner::srcFolderOf(op.srcPath);
+		QVERIFY(source.has_value());
+		QCOMPARE(source->prefix, op.dest.prefix);
+		QVERIFY(counts.contains(op.dest));
+		QVERIFY(counts.value(*source) > 0);
+		--counts[*source];
+		++counts[op.dest];
+	}
+	for (const auto &folder : plan.folders)
+	{
+		if (!folder.inScope)
+			continue;
+		QCOMPARE(counts.value(folder.id), folder.count + folder.filesIn - folder.filesOut);
+		QVERIFY(counts.value(folder.id) <= 5000);
+	}
 }
 
 void TestOperationUi::rebalance_live_counts_follow_confirmed_results()

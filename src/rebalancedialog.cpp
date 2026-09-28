@@ -110,10 +110,7 @@ namespace
 
 	// MARK: - Demo plans (Debug ▸ Rebalance demos)
 	//
-	// Synthetic plans for visual QA, reachable only through createDemo().
-	// One generator behind all three sizes (it replaced three hand-built
-	// scenarios — a bespoke cohort table and a two-phase greedy matcher —
-	// that painted the same three pictures).
+	// Synthetic plans for visual checks; no files are moved.
 
 	constexpr qint64 kDemoFileBytes = qint64(10) * 1024 * 1024; // 10 MB per file
 
@@ -128,9 +125,7 @@ namespace
 		return fs;
 	}
 
-	/// Append `count` RenameOps src → dest and keep the folder tallies in
-	/// step. One shared srcPath QString per call: implicit sharing makes
-	/// appending the same path 666K times nearly free.
+	// Append simulated moves and update the folder counts.
 	void demoMoves(RebalancePlan &plan, const FolderName &src, const FolderName &dest, int count)
 	{
 		if (count <= 0)
@@ -162,23 +157,13 @@ namespace
 		}
 	}
 
-	/// Existing folders get a fullness ramp from `maxCount` down to
-	/// `minCount` (deterministic jitter keeps the bars off a perfect
-	/// staircase; the top of a tall ramp deliberately overshoots the Avid
-	/// cap so the ⚠️ state shows). New folders start empty. Ops then level
-	/// every folder toward the mean — above-mean drains into below-mean,
-	/// two cursors, in folder order — and if levelling runs dry before
-	/// `opCount`, net-zero neighbour swaps (A→B then B→A) make up the
-	/// difference: the run feels as big as opCount says without bending
-	/// any folder's final count.
-	RebalancePlan demoPlan(const QString &label, const QString &prefix, int folderCount,
-						   int newFolderCount, int minCount, int maxCount, int opCount)
+	// Balance one workstation's synthetic counts, then add back-and-forth
+	// moves to reach the requested operation count.
+	void addDemoWorkstation(RebalancePlan &plan, const QString &prefix, int folderCount,
+							int newFolderCount, int minCount, int maxCount, int opCount)
 	{
-		RebalancePlan plan;
-		plan.mxfRoot = QStringLiteral("/demo/Avid MediaFiles/MXF");
-		plan.volumeLabel = label;
-
-		plan.folders.reserve(folderCount + newFolderCount + 1);
+		const qsizetype firstFolder = plan.folders.size();
+		plan.folders.reserve(firstFolder + folderCount + newFolderCount);
 		for (int i = 0; i < folderCount; ++i)
 		{
 			const double t = folderCount > 1 ? double(i) / (folderCount - 1) : 0.0;
@@ -191,36 +176,23 @@ namespace
 			plan.folders.append(demoFolder({prefix, n}, 0, /*isNew=*/true));
 			plan.newFolders.append({prefix, n});
 		}
-		if (folderCount >= 100)
-		{
-			// The stress scenario keeps its out-of-scope cameo.
-			FolderState q;
-			q.name = QStringLiteral("Quarantined Files");
-			q.count = 47;
-			q.bytes = 47 * kDemoFileBytes;
-			q.inScope = false;
-			plan.folders.append(q);
-		}
-
 		// Per-folder surplus/deficit against the mean.
 		qint64 total = 0;
-		for (const FolderState &fs : plan.folders)
-			if (fs.inScope)
-				total += fs.count;
+		for (qsizetype i = firstFolder; i < plan.folders.size(); ++i)
+			total += plan.folders[i].count;
 		const int mean = int(total / qMax(1, folderCount + newFolderCount));
 
 		QVector<QPair<FolderName, int>> sources, dests;
-		for (const FolderState &fs : plan.folders)
+		for (qsizetype i = firstFolder; i < plan.folders.size(); ++i)
 		{
-			if (!fs.inScope)
-				continue;
+			const FolderState &fs = plan.folders[i];
 			if (fs.count > mean)
 				sources.append({fs.id, fs.count - mean});
 			else if (fs.count < mean)
 				dests.append({fs.id, mean - fs.count});
 		}
 
-		plan.ops.reserve(opCount);
+		plan.ops.reserve(plan.ops.size() + opCount);
 		int remaining = opCount;
 		auto srcIt = sources.begin();
 		auto destIt = dests.begin();
@@ -247,8 +219,6 @@ namespace
 			remaining -= out + back;
 			slot = (slot + 1) % (folderCount - 1);
 		}
-
-		return plan;
 	}
 
 } // namespace
@@ -376,7 +346,7 @@ void FolderCard::paintEvent(QPaintEvent *event)
 	// ⚠️ for bloated folders.
 	// 🆕 for new folders.
 	QString displayName = m_folderName;
-	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderTarget)
+	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderMax)
 		displayName = QStringLiteral("⚠️ ") + displayName;
 	if (m_isNew && (!m_finished || m_exists))
 		displayName = QStringLiteral("🆕 ") + displayName;
@@ -523,20 +493,32 @@ RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
 RebalanceDialog *RebalanceDialog::createDemo(DemoScenario scenario, QWidget *parent)
 {
 	RebalancePlan plan;
+	plan.mxfRoot = QStringLiteral("/demo/Avid MediaFiles/MXF");
+	const QStringList workstations{QStringLiteral("MartyiMac"), QStringLiteral("JamieiMac"),
+								   QStringLiteral("ClaireiMac")};
 	switch (scenario)
 	{
 	case DemoScenario::Small:
-		// A modest, healthy volume with one small migration.
-		plan = demoPlan(QStringLiteral("Demo · Small"), QString(), 4, 0, 60, 3500, 47);
+		plan.volumeLabel = QStringLiteral("Demo · Small");
+		addDemoWorkstation(plan, workstations.first(), 4, 0, 60, 3500, 47);
 		break;
 	case DemoScenario::Big:
-		// Three over-stuffed folders draining into three new ones.
-		plan = demoPlan(QStringLiteral("Demo · Big"), QStringLiteral("Edit14"), 3, 3, 4200, 4990,
-						7490);
+		plan.volumeLabel = QStringLiteral("Demo · Big");
+		for (int i = 0; i < workstations.size(); ++i)
+			addDemoWorkstation(plan, workstations[i], 2, 1, 4200, 4990, 2496 + (i < 2));
 		break;
 	case DemoScenario::ReallyBig:
-		plan = demoPlan(QStringLiteral("Demo · Really Big"), QStringLiteral("MartysiMac"), 200, 60,
-						200, 5600, 666666);
+		plan.volumeLabel = QStringLiteral("Demo · Really Big");
+		for (int i = 0; i < workstations.size(); ++i)
+			addDemoWorkstation(plan, workstations[i], 66 + (i < 2), 20, 200, 5600, 222222);
+		{
+			FolderState quarantined;
+			quarantined.name = QStringLiteral("Quarantined Files");
+			quarantined.count = 47;
+			quarantined.bytes = 47 * kDemoFileBytes;
+			quarantined.inScope = false;
+			plan.folders.append(quarantined);
+		}
 		break;
 	}
 	return new RebalanceDialog(plan, parent);

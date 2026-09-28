@@ -223,6 +223,8 @@ private slots:
 	void source_retention_is_explicit();
 	void same_volume_move_preserves_identity();
 	void rename_group_conflict_skips_every_member();
+	void rename_respects_folder_capacity_data();
+	void rename_respects_folder_capacity();
 	void rename_failure_stops_group();
 	void different_source_on_resume_is_refused();
 	void corrupt_journal_is_preserved();
@@ -1259,6 +1261,67 @@ void TestFileOperations::rename_group_conflict_skips_every_member()
 	QCOMPARE(runner.run(req, f.journals).skipped, 2);
 	QVERIFY(QFile::exists(f.src));
 	QVERIFY(QFile::exists(a.src));
+}
+void TestFileOperations::rename_respects_folder_capacity_data()
+{
+	QTest::addColumn<int>("existingFiles");
+	QTest::addColumn<bool>("accepted");
+	QTest::newRow("final-count-5000") << 4999 << true;
+	QTest::newRow("final-count-5001") << 5000 << false;
+}
+void TestFileOperations::rename_respects_folder_capacity()
+{
+	QFETCH(int, existingFiles);
+	QFETCH(bool, accepted);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const QString base = OpJournal::canonicalPath(temp.path());
+	const QString root = base + "/Avid MediaFiles/MXF";
+	const QString sourceFolder = root + "/Ingest1.1";
+	const QString destinationFolder = root + "/Ingest1.2";
+	const QByteArray media("media"), database("database");
+	put(sourceFolder + "/clip.mxf", media);
+	put(sourceFolder + "/msmMMOB.mdb", database);
+	put(destinationFolder + "/msmMMOB.mdb", database);
+	for (int n = 0; n < existingFiles; ++n)
+	{
+		QFile filler(destinationFolder + QStringLiteral("/filler-%1.mxf").arg(n));
+		QVERIFY(filler.open(QIODevice::WriteOnly));
+	}
+	OpRequest request;
+	request.kind = OpKind::Rename;
+	request.diagnosticTrashRoot = base + "/_MediaMuster_Trash";
+	OpItem item;
+	item.src = sourceFolder + "/clip.mxf";
+	item.name = "clip.mxf";
+	item.bytes = media.size();
+	item.renameDst = destinationFolder + "/clip.mxf";
+	item.groupKey = "relatives";
+	request.items.append(item);
+	Sink sink;
+	std::atomic<bool> cancel{false};
+	OpRunner runner(sink, cancel);
+	const auto totals = runner.run(request, base + "/journals");
+	QCOMPARE(totals.succeeded, accepted ? 1 : 0);
+	QCOMPARE(totals.skipped, accepted ? 0 : 1);
+	QCOMPARE(totals.failed, 0);
+	QCOMPARE(totals.needsAttention, 0);
+	QCOMPARE(sink.results.size(), 1);
+	QCOMPARE(sink.results.first().state, accepted ? OpResult::State::Completed : OpResult::State::Skipped);
+	QCOMPARE(sink.results.first().sourceRemoved, accepted);
+	QCOMPARE(get(accepted ? item.renameDst : item.src), media);
+	QVERIFY(!QFile::exists(accepted ? item.src : item.renameDst));
+	QCOMPARE(QDir(destinationFolder).entryList({"*.mxf"}, QDir::Files).size(), 5000);
+	const auto records = OpJournal::scan(base + "/journals");
+	QCOMPARE(records.size(), 1);
+	QCOMPARE(records.first().entries.first().step,
+			 accepted ? OpJournal::Step::Done : OpJournal::Step::Skipped);
+	if (!accepted)
+	{
+		QCOMPARE(get(sourceFolder + "/msmMMOB.mdb"), database);
+		QCOMPARE(get(destinationFolder + "/msmMMOB.mdb"), database);
+		QCOMPARE(records.first().entries.size(), 1); // No database retirement before a capacity skip.
+	}
 }
 void TestFileOperations::rename_failure_stops_group()
 {

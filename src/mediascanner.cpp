@@ -36,13 +36,6 @@ namespace
 		return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
 	}
 
-	bool isInsideOmfRoot(const QString &path)
-	{
-		const auto parts = QDir::cleanPath(QDir::fromNativeSeparators(path)).split(QLatin1Char('/'));
-		return std::any_of(parts.cbegin(), parts.cend(), [](const QString &part)
-						   { return Conventions::isOmfRootName(part); });
-	}
-
 	QString childDirectory(const QString &parent, QLatin1String name)
 	{
 		const QDir dir(parent);
@@ -348,8 +341,6 @@ void MediaScanner::doScan()
 					QStringLiteral("Skipping unsupported UME media folder: %1").arg(path));
 			return;
 		}
-		if (!m_options.includeOmf && isInsideOmfRoot(path))
-			return;
 		if (scanned.contains(path))
 			return;
 		scanned.insert(path);
@@ -553,14 +544,11 @@ QVector<MediaFile> MediaScanner::scanVolumeRoot(const QString &volumePath, const
 
 	if (files.isEmpty())
 	{
-		// Name the enabled roots and explain how to reach media buried
-		// deeper, since a volume scan will not look for it.
+		// An empty result does not mean the media roots themselves are absent.
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
-				QStringLiteral("  No %1 at the root of %2 "
-							   "(media in a subfolder is found via File > Add Folder or Volume)")
-					.arg(m_options.includeOmf ? QStringLiteral("Avid MediaFiles or OMFI MediaFiles")
-											  : QStringLiteral("Avid MediaFiles"),
-						 volumeName));
+				QStringLiteral("  No supported media found at the root of %1 "
+							   "(use File > Add Folder or Volume for media trees elsewhere)")
+					.arg(volumeName));
 	}
 
 	return files;
@@ -655,7 +643,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 		if (m_job.isCancelled())
 			break;
 
-		// Numbered media folders and Quarantined Files are the known MXF locations.
+		// Direct MXF children may be numbered or named; layout rules exclude staging folders.
 		const QString folderPath = mxfDir.filePath(folder);
 		if (!AvidMediaLayout::locateMediaFolder(folderPath))
 			continue;
@@ -726,7 +714,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 {
 	FolderResult result;
 
-	if (m_job.isCancelled())
+	if (m_job.isCancelled() || (task.family == AvidMediaLayout::Family::Omf && !m_options.includeOmf))
 		return result;
 	const auto requested = AvidMediaLayout::locateMediaFolder(task.folderPath);
 	if (!requested || requested->family != task.family)
@@ -736,8 +724,6 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		const QString key = scannerFolderKey(task.folderPath);
 		// Also cover UME folders reached through a link beneath a supported root.
 		if (AvidMediaLayout::isInsideUmeRoot(task.folderPath) || AvidMediaLayout::isInsideUmeRoot(key))
-			return result;
-		if (!m_options.includeOmf && (isInsideOmfRoot(task.folderPath) || isInsideOmfRoot(key)))
 			return result;
 		const auto actual = AvidMediaLayout::locateMediaFolder(key);
 		if (!actual || actual->family != task.family || actual->isQuarantined != isQuarantineFolder)
@@ -810,8 +796,6 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		// The managed tree selects the family; a cheap suffix check keeps
 		// a misplaced file from entering another family's operations.
 		if (!AvidMediaLayout::acceptsFileName(task.family, fileName))
-			continue;
-		if (task.family == AvidMediaLayout::Family::Omf && !m_options.includeOmf)
 			continue;
 
 		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.mediaFolderName, task.family, pmrMap, mdb,

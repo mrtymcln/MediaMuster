@@ -16,8 +16,8 @@ class TestRebalancePlanner : public QObject
 {
 	Q_OBJECT
 private slots:
-	void parseFolderName_plain_number();
-	void parseFolderName_with_host_prefix();
+	void parseFolderName_supported_names_data();
+	void parseFolderName_supported_names();
 	void parseFolderName_rejects_quarantined();
 	void parseFolderName_rejects_leading_dot();
 	void parseFolderName_rejects_zero_padded();
@@ -34,13 +34,14 @@ private slots:
 	// Only real media files occupy Avid's per-folder budget. The folder's
 	// own databases (msmFMID.pmr / msmMMOB.mdb), dot-hidden files (incl.
 	// AppleDouble "._*"), and Windows shell junk used to inflate the
-	// preview's count AND steal slots from the 4999-cap packing.
+	// preview's count AND steal slots from the 5000-file packing target.
 	void folder_count_excludes_databases_and_hidden_files();
 	void folder_counts_distinguish_empty_absent_and_unavailable();
 	void unreadable_folder_is_not_counted_or_planned();
 	void host_prefix_isolates_consolidation();
 	void same_master_never_crosses_workstation_prefix();
-	void exactly_4999_relatives_are_stable();
+	void exactly_5000_relatives_are_stable();
+	void over_5000_relatives_split_across_new_folders();
 	void oversized_packed_relatives_are_stable();
 	void invalid_master_ids_are_independent();
 	void media_from_another_root_is_excluded();
@@ -138,22 +139,28 @@ int TestRebalancePlanner::opsBetween(const RebalancePlan &p, const QString &srcF
 
 // MARK: - Tests
 
-void TestRebalancePlanner::parseFolderName_plain_number()
+void TestRebalancePlanner::parseFolderName_supported_names_data()
 {
-	const auto id = RebalancePlanner::parseFolderName(QStringLiteral("5"));
-	QVERIFY(id.has_value());
-	QCOMPARE(id->prefix, QString());
-	QCOMPARE(id->n, 5);
-	QCOMPARE(id->display(), QStringLiteral("5"));
+	QTest::addColumn<QString>("name");
+	QTest::addColumn<QString>("prefix");
+	QTest::addColumn<int>("number");
+	QTest::newRow("local") << QStringLiteral("1") << QString{} << 1;
+	QTest::newRow("large-local") << QStringLiteral("8243") << QString{} << 8243;
+	QTest::newRow("workstation") << QStringLiteral("MartysiMac.42") << QStringLiteral("MartysiMac") << 42;
+	QTest::newRow("digit-in-workstation") << QStringLiteral("Ingest1.32") << QStringLiteral("Ingest1") << 32;
+	QTest::newRow("edit-suite") << QStringLiteral("EditSuite2.1") << QStringLiteral("EditSuite2") << 1;
 }
 
-void TestRebalancePlanner::parseFolderName_with_host_prefix()
+void TestRebalancePlanner::parseFolderName_supported_names()
 {
-	const auto id = RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.42"));
+	QFETCH(QString, name);
+	QFETCH(QString, prefix);
+	QFETCH(int, number);
+	const auto id = RebalancePlanner::parseFolderName(name);
 	QVERIFY(id.has_value());
-	QCOMPARE(id->prefix, QStringLiteral("MartysiMac"));
-	QCOMPARE(id->n, 42);
-	QCOMPARE(id->display(), QStringLiteral("MartysiMac.42"));
+	QCOMPARE(id->prefix, prefix);
+	QCOMPARE(id->n, number);
+	QCOMPARE(id->display(), name);
 }
 
 void TestRebalancePlanner::parseFolderName_rejects_quarantined()
@@ -163,8 +170,7 @@ void TestRebalancePlanner::parseFolderName_rejects_quarantined()
 
 void TestRebalancePlanner::parseFolderName_rejects_leading_dot()
 {
-	// '.5' parses tail '5' as n=5, but display would render as '5'
-	// (empty prefix), which doesn't match the original '.5'.
+	// A workstation name cannot be empty before the separating dot.
 	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral(".5")).has_value());
 }
 
@@ -172,6 +178,7 @@ void TestRebalancePlanner::parseFolderName_rejects_zero_padded()
 {
 	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("05")).has_value());
 	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.005")).has_value());
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("Ingest1.032")).has_value());
 }
 
 void TestRebalancePlanner::parseFolderName_rejects_zero()
@@ -188,6 +195,7 @@ void TestRebalancePlanner::parseFolderName_rejects_negative()
 void TestRebalancePlanner::parseFolderName_rejects_non_numeric_tail()
 {
 	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.abc")).has_value());
+	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("EditSuite2")).has_value());
 }
 
 void TestRebalancePlanner::missing_root_yields_empty_plan()
@@ -404,15 +412,15 @@ void TestRebalancePlanner::host_prefix_isolates_consolidation()
 	// Two prefixes; each balances within itself. The cross-prefix
 	// move never happens.
 	const QVector<MediaFile> files{
-		makeMxf(root, "MartysiMac.1", "a.mxf", "C1"),
-		makeMxf(root, "MartysiMac.1", "b.mxf", "C1"),
-		makeMxf(root, "MartysiMac.2", "c.mxf", "C1"),
-		makeMxf(root, "Edit14.5", "d.mxf", "C2"),
+		makeMxf(root, "Ingest1.1", "a.mxf", "C1"),
+		makeMxf(root, "Ingest1.1", "b.mxf", "C1"),
+		makeMxf(root, "Ingest1.32", "c.mxf", "C1"),
+		makeMxf(root, "EditSuite2.1", "d.mxf", "C2"),
 	};
 
 	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
 	QCOMPARE(p.ops.size(), 1);
-	QCOMPARE(opsBetween(p, "MartysiMac.2", "MartysiMac.1"), 1);
+	QCOMPARE(opsBetween(p, "Ingest1.32", "Ingest1.1"), 1);
 }
 
 void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
@@ -421,11 +429,11 @@ void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 
-	// "1" is at the cap minus 1 (4998 fillers + 1 C1 member = 4999).
+	// "1" is at the target (4999 fillers + 1 C1 member = 5000).
 	// "2" holds 3 C1 strays + 0 fillers (3 on disk). The C1 group of
-	// 4 members can't all fit in home "1" (would be 5002). First-fit
+	// 4 members can't all fit in home "1" (would be 5003). First-fit
 	// finds "2" (3 + 4 = 7). Plan moves the "1" member to "2".
-	makeFillers(root, "1", 4998);
+	makeFillers(root, "1", 4999);
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "home_member.mxf", "C1"),
 		makeMxf(root, "2", "stray_a.mxf", "C1"),
@@ -448,8 +456,8 @@ void TestRebalancePlanner::new_folder_when_all_existing_are_full()
 	// Both '1' and '2' are at the cap. A 6-member C1 group can't
 	// fit anywhere existing, so the planner allocates '3' and routes all
 	// members into it.
-	makeFillers(root, "1", 4998);
-	makeFillers(root, "2", 4994);
+	makeFillers(root, "1", 4999);
+	makeFillers(root, "2", 4995);
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "m1.mxf", "C1"),
 		makeMxf(root, "2", "m2.mxf", "C1"),
@@ -479,24 +487,46 @@ void TestRebalancePlanner::same_master_never_crosses_workstation_prefix()
 	QCOMPARE(opsBetween(plan, "Mac.2", "Mac.1"), 1);
 	QCOMPARE(opsBetween(plan, "PC.2", "PC.1"), 1);
 }
-void TestRebalancePlanner::exactly_4999_relatives_are_stable()
+void TestRebalancePlanner::exactly_5000_relatives_are_stable()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
 	QVector<MediaFile> files;
-	for (int n = 0; n < 4999; ++n)
+	for (int n = 0; n < 5000; ++n)
 		files.append(makeMxf(root, "1", QString::number(n) + ".mxf", "same", 0));
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.newFolders.isEmpty());
+}
+void TestRebalancePlanner::over_5000_relatives_split_across_new_folders()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const auto root = stageMxfRoot(tmp);
+	QVector<MediaFile> files;
+	for (int n = 0; n < 5001; ++n)
+		files.append(makeMxf(root, "Ingest1.32", QString::number(n) + ".mxf", "same", 0));
+	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
+	QCOMPARE(plan.ops.size(), 5001);
+	QCOMPARE(plan.newFolders.size(), 2);
+	QCOMPARE(plan.newFolders[0].display(), QStringLiteral("Ingest1.33"));
+	QCOMPARE(plan.newFolders[1].display(), QStringLiteral("Ingest1.34"));
+	QCOMPARE(opsBetween(plan, "Ingest1.32", "Ingest1.33"), 5000);
+	QCOMPARE(opsBetween(plan, "Ingest1.32", "Ingest1.34"), 1);
+	for (const auto &folder : plan.folders)
+	{
+		const int finalCount = folder.count + folder.filesIn - folder.filesOut;
+		QVERIFY(finalCount >= 0);
+		QVERIFY(finalCount <= 5000);
+	}
 }
 void TestRebalancePlanner::oversized_packed_relatives_are_stable()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
 	QVector<MediaFile> files;
-	for (int n = 0; n < 5000; ++n)
-		files.append(makeMxf(root, n < 4999 ? "1" : "2", QString::number(n) + ".mxf", "same", 0));
+	for (int n = 0; n < 5001; ++n)
+		files.append(makeMxf(root, n < 5000 ? "1" : "2", QString::number(n) + ".mxf", "same", 0));
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QVERIFY(plan.ops.isEmpty());
 	QVERIFY(plan.newFolders.isEmpty());
@@ -630,7 +660,7 @@ void TestRebalancePlanner::directory_aliases_cannot_redirect_rebalance()
 	QVERIFY(QFile::link(umeFolder, root + "/1"));
 	const auto home = makeMxf(root, "2", "home.mxf", "same");
 	const auto moved = makeMxf(root, "3", "stray.mxf", "same");
-	makeFillers(root, "2", 4998);
+	makeFillers(root, "2", 4999);
 	const auto plan = RebalancePlanner::computePlan(root, "Test", {home, moved});
 	QCOMPARE(plan.ops.size(), 1);
 	QCOMPARE(plan.ops.first().dest.display(), QStringLiteral("3"));

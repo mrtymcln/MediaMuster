@@ -57,29 +57,11 @@ namespace
 
 std::optional<FolderName> RebalancePlanner::parseFolderName(const QString &name)
 {
-	const auto parsed = AvidMediaLayout::parseMxfFolderName(name);
-	if (!parsed)
-		return std::nullopt;
-
-	bool ok = false;
-	const int n = parsed->digits.toInt(&ok);
-	if (!ok || n <= 0)
-		return std::nullopt;
-
-	FolderName fid{parsed->prefix, n};
-
-	// The shared reader accepts padded names such as `01` and
-	// `MartysiMac.005`. Rebalance requires the original spelling to survive
-	// integer conversion so it never plans a rename using a different name.
-	if (fid.display() != name)
-		return std::nullopt;
-	return fid;
+	return AvidMediaLayout::parseMxfFolderName(name);
 }
 
 std::optional<FolderName> RebalancePlanner::srcFolderOf(const QString &srcPath)
 {
-	// dir().dirName() pulls the parent folder name straight off, no second
-	// QFileInfo allocation.
 	return parseFolderName(QFileInfo(srcPath).dir().dirName());
 }
 
@@ -102,13 +84,8 @@ bool RebalancePlanner::isEligible(const MediaFile &file)
 
 namespace
 {
-	/// True when a directory entry occupies Avid's per-folder file budget.
-	/// In an `Avid MediaFiles/MXF/<n>` folder only MXF essence counts:
-	/// Avid's own databases, dot-hidden files, shell junk, and stray
-	/// non-MXF files are not media. Counting them inflated the preview's
-	/// per-folder count and stole slots from the Conventions::kFolderTarget packing.
-	/// The name rule lives in Conventions. Managed-folder admission is
-	/// checked separately before these entries are included in a plan.
+	/// Only MXF essence counts toward capacity; databases, dot-hidden files
+	/// and unrelated files do not. Folder admission is checked separately.
 	bool countsTowardFolderBudget(const QString &fileName)
 	{
 		return Conventions::countsAsEssenceName(fileName);
@@ -342,9 +319,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 
 	// MARK: Pack groups into folders
 
-	// One host (one prefix) at a time. `projected` tracks the
-	// running per-folder count as we plan moves into it, so we can
-	// check Conventions::kFolderTarget against future state, not on-disk state.
+	// Track planned counts separately from current disk counts.
 	QHash<FolderName, int> projected = realCount;
 	QHash<QString, QSet<int>> newByPrefix;
 
@@ -401,7 +376,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 
 		// Split oversized groups only when their existing packing exceeds the
 		// budget or uses more than the minimum number of folders.
-		if (size > Conventions::kFolderTarget)
+		if (size > Conventions::kFolderMax)
 		{
 			QSet<FolderName> occupiedFolders;
 			bool withinBudget = true;
@@ -409,22 +384,22 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 			{
 				occupiedFolders.insert(member.folder);
 				withinBudget =
-					withinBudget && projected.value(member.folder) <= Conventions::kFolderTarget;
+					withinBudget && projected.value(member.folder) <= Conventions::kFolderMax;
 			}
 			const int minimumFolders =
-				(size + Conventions::kFolderTarget - 1) / Conventions::kFolderTarget;
+				(size + Conventions::kFolderMax - 1) / Conventions::kFolderMax;
 			if (withinBudget && occupiedFolders.size() == minimumFolders)
 				continue;
 			int idx = 0;
 			while (idx < size)
 			{
 				FolderName target;
-				const int slackHome = Conventions::kFolderTarget - projected.value(home, 0);
+				const int slackHome = Conventions::kFolderMax - projected.value(home, 0);
 				if (idx == 0 && slackHome >= (size - idx))
 					target = home;
 				else
 					target = allocateNewFolder(prefix);
-				const int slack = Conventions::kFolderTarget - projected.value(target, 0);
+				const int slack = Conventions::kFolderMax - projected.value(target, 0);
 				const int chunk = qMin(slack, size - idx);
 				for (int i = 0; i < chunk; ++i, ++idx)
 					pushOp(g.members[idx], target);
@@ -440,13 +415,12 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		}
 		const int neededAtHome = size - membersAtHome;
 
-		// Already entirely at home and home isn't over Conventions::kFolderTarget, so
-		// leave it. Common case for a mildly fragmented project.
-		if (membersAtHome == size && projected.value(home, 0) <= Conventions::kFolderTarget)
+		// Leave groups already together in a folder within the limit.
+		if (membersAtHome == size && projected.value(home, 0) <= Conventions::kFolderMax)
 			continue;
 
 		// Strays fit in home? Pull them in.
-		if (projected.value(home, 0) + neededAtHome <= Conventions::kFolderTarget)
+		if (projected.value(home, 0) + neededAtHome <= Conventions::kFolderMax)
 		{
 			for (const auto &m : g.members)
 			{
@@ -468,7 +442,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		for (int n : sortedNs)
 		{
 			FolderName cand{prefix, n};
-			if (projected.value(cand, 0) + size <= Conventions::kFolderTarget)
+			if (projected.value(cand, 0) + size <= Conventions::kFolderMax)
 			{
 				dest = cand;
 				found = true;

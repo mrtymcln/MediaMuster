@@ -34,13 +34,15 @@ is intact. Add the media root, an eligible media subfolder, or the directory
 directly containing the roots; the scanner does not search arbitrary descendants.
 A bare `MXF` tree or an arbitrary folder containing PMR/MDB files is not enough.
 
-`AvidMediaLayout` supplies common folder and filename rules to scanning and
-Rebalance. MXF media lives under positive numbered or workstation-numbered
-folders in `Avid MediaFiles/MXF`; only `.mxf` files enter that family. OMF media
+`AvidMediaLayout` supplies folder and filename rules to scanning and Rebalance.
+MXF scans read `.mxf` files directly inside ordinary child folders of
+`Avid MediaFiles/MXF`. This includes numbered, workstation-numbered and named
+ingest folders. Hidden folders and `Creating` are excluded; nested folders are
+not scanned. OMF media
 lives in `OMFI MediaFiles`, either directly or one level down in a legacy shared
 workstation folder; only `.omf`, `.wav` and `.aif` files enter that family.
-MXF admission uses that numbered-folder pattern without a `Temp`/`Quarantine`
-exclusion list. `Avid MediaFiles/MXF/Quarantined Files` is also a known location:
+Names such as `Temp` and `Quarantine` do not exclude an ordinary MXF folder.
+`Avid MediaFiles/MXF/Quarantined Files` is a known location:
 its direct MXF contents are scanned, flagged **Quarantined**, and shown by the
 Quarantined filter tab. Subfolders are not scanned. Quarantined media remains
 excluded from Rebalance.
@@ -48,8 +50,20 @@ OMF workstation folders use plain names, including `Temp` and `Quarantine`;
 hidden folders, `Creating` and `Quarantined Files` remain excluded there.
 Media file symlinks are excluded. Directory aliases must resolve to a supported
 managed location; an alias cannot change the resolved folder's quarantine status.
-Rebalance additionally checks that source and destination
-directories resolve to the intended MXF root and folder number before dispatch.
+Rebalance accepts only positive numbered or workstation-numbered MXF folders.
+It checks that source and destination directories resolve to the intended MXF
+root and folder number before dispatch. Other named MXF folders remain available
+for scanning and ordinary media operations.
+
+Avid's [MediaCentral Production Management best practices](https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2023_7_0_Best_Practices_Guide.pdf#page=130)
+describe named ingest folders in a Media Indexer workflow. MediaMuster supports
+reading their accessible files and folder databases; it does not connect to the
+MediaCentral server or its catalogue. Its direct-child discovery rule does not
+claim to reproduce Media Indexer's storage configuration or recursive indexing.
+
+Rebalance uses a **5,000-file target**, matching Avid's documented
+[folder performance threshold](https://kb.avid.com/pkb/articles/en_US/Knowledge/Avid-MediaFiles-MXF-folder-size-limit).
+This is not a scan limit: folders containing more files are still read.
 
 The managed layout selects the family. There is no mandatory per-file
 Operational Pattern probe and no attempt to authenticate the authoring app.

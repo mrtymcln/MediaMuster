@@ -1,6 +1,6 @@
 # Media Composer compatibility: implemented changes
 
-Updated 20 September 2026. This describes the implementation following the independent review of the proposed rebuild, with the subsequent v1 OMF completion, managed-layout rules and removal of unsupported-format handling. The attached proposal was treated as a set of claims to check, rather than automatic authority to rewrite every subsystem. Existing interfaces and measured behaviour were retained where the evidence supported them.
+Updated 28 September 2026. This describes the implementation following the independent review of the proposed rebuild, with the subsequent v1 OMF completion, managed-layout rules and removal of unsupported-format handling. The attached proposal was treated as a set of claims to check, rather than automatic authority to rewrite every subsystem. Existing interfaces and measured behaviour were retained where the evidence supported them.
 
 MediaMuster now follows more of the database and media-reading rules found in the installed Media Composer. This is a substantial compatibility improvement, not proof that the two applications are identical. Tests distinguish real Avid files, external OMF specimens, and independently constructed cases for formats for which no real specimen was available.
 
@@ -22,11 +22,17 @@ MediaMuster now follows more of the database and media-reading rules found in th
 | Stale databases | A missing or mismatched indexed modification time triggers a header check. If the header proves that a filename now belongs to different media, old clip details are cleared before the replacement is described. |
 | Failed reads | A failed header read preserves an already established classification. Otherwise Kind and Type show an em dash for unknown, including in filters, sorting and export. |
 | DNx names | When the tier is known but a legacy bitrate name cannot be established, the display uses the tier alone, for example **Avid DNx SQ**. Supported legacy rate/size combinations use the whitepaper tables. |
-| Shared storage | Scans cover MXF workstation-numbered folders and legacy OMF workstation folders. They use readable local databases and check headers where necessary. Overlapping selected roots enumerate the same canonical folder once. |
+| Shared storage | MXF scans include numbered, workstation-numbered and named ingest folders directly below `Avid MediaFiles/MXF`. Legacy OMF workstation folders remain supported when OMF is enabled. Scans use readable folder databases and check headers where necessary. Overlapping selected roots enumerate the same canonical folder once. |
 | Debug menu | The obsolete **Force header scan** control has been removed. Header checks happen automatically when database information needs verification. |
 | Closing the app | Workers cancel cooperatively and are joined before their owners are destroyed. A blocked operating-system read can delay closing; the app no longer force-kills a worker while other work may still refer to its data. |
 
 Database status still means membership in the local PMR. Recovering an identity from a media header does not turn an unlisted file into a listed one. Scanning opens media and databases for reading; it does not rebuild databases, claim a shared-storage workstation's ownership, or ask another editing seat to rescan. Volume searches retain the existing top-level locations. Manual additions accept correctly structured Avid media trees anywhere, their media folders or their immediate containing directory. Loose database folders, standalone MXF trees and arbitrary recursive archive searches are excluded. See [release-feature-gates.md](release-feature-gates.md) for the current scope contract.
+
+Named Interplay and MediaCentral MXF folders use the same file and database readers.
+This support does not include a connection to the MediaCentral server or its catalogue.
+Only direct child folders of the MXF root are scanned; hidden folders and `Creating`
+are excluded. Direct contents of `Quarantined Files` retain their quarantine flag.
+Rebalance retains its narrower numbered or workstation-numbered folder rules.
 
 ## What the evidence establishes
 

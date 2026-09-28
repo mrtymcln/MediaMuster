@@ -1558,7 +1558,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 								 QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot))
 							if (Conventions::countsAsEssenceName(name))
 								++count;
-						if (count + it.value() > Conventions::kFolderTarget)
+						if (count + it.value() > Conventions::kFolderMax)
 							full = true;
 					}
 					if (conflict || full)
@@ -1572,8 +1572,8 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 								++totals.skipped;
 								m_sink.result(result(
 									skipped, State::Skipped,
-									full ? "Rebalance group skipped: a destination folder no "
-										   "longer has room below 5,000 files. Rescan and replan."
+									full ? "Rebalance group skipped: a destination folder would "
+										   "exceed 5,000 files. Rescan and replan."
 										 : "Rebalance group skipped: a destination is occupied. "
 										   "Rescan and replan."));
 							}

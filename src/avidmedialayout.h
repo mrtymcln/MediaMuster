@@ -3,25 +3,46 @@
 #include "conventions.h"
 
 #include <QDir>
+#include <QHash>
 #include <QString>
 #include <QStringList>
 #include <QStringView>
 #include <optional>
 
-// Shared, lexical rules for managed media placement. These functions never
-// inspect the filesystem; callers resolve aliases and check accessibility.
+// A numbered MXF folder, with an optional workstation name before the dot.
+struct FolderName
+{
+	QString prefix;
+	int n = 0;
+
+	QString display() const
+	{
+		return prefix.isEmpty() ? QString::number(n) : prefix + QLatin1Char('.') + QString::number(n);
+	}
+
+	bool operator==(const FolderName &o) const { return prefix == o.prefix && n == o.n; }
+	bool operator!=(const FolderName &o) const { return !(*this == o); }
+
+	bool operator<(const FolderName &o) const
+	{
+		if (prefix != o.prefix)
+			return prefix < o.prefix;
+		return n < o.n;
+	}
+};
+
+inline size_t qHash(const FolderName &id, size_t seed = 0) noexcept
+{
+	return qHashMulti(seed, id.prefix, id.n);
+}
+
+// Folder and filename rules. Callers check the filesystem and resolve aliases.
 namespace AvidMediaLayout
 {
 	enum class Family
 	{
 		Mxf,
 		Omf
-	};
-
-	struct MxfFolderName
-	{
-		QString prefix; ///< Workstation name, without the separating dot.
-		QString digits; ///< Original positive ASCII number, including any padding.
 	};
 
 	struct Location
@@ -71,25 +92,23 @@ namespace AvidMediaLayout
 			   name.compare(Conventions::kQuarantinedDir, Qt::CaseInsensitive) != 0;
 	}
 
-	[[nodiscard]] inline std::optional<MxfFolderName> parseMxfFolderName(QStringView name)
+	[[nodiscard]] inline std::optional<FolderName> parseMxfFolderName(QStringView name)
 	{
 		if (!Detail::isLeafName(name) || Conventions::isDotHidden(name))
 			return std::nullopt;
 		const qsizetype dot = name.lastIndexOf(QLatin1Char('.'));
 		const QStringView prefix = dot < 0 ? QStringView{} : name.first(dot);
 		const QStringView digits = dot < 0 ? name : name.sliced(dot + 1);
-		if ((dot >= 0 && prefix.isEmpty()) || digits.isEmpty())
+		if ((dot >= 0 && prefix.isEmpty()) || digits.isEmpty() || digits.front() == QLatin1Char('0'))
 			return std::nullopt;
-		bool positive = false;
 		for (const QChar digit : digits)
-		{
 			if (digit < QLatin1Char('0') || digit > QLatin1Char('9'))
 				return std::nullopt;
-			positive |= digit != QLatin1Char('0');
-		}
-		if (!positive)
+		bool ok = false;
+		const int number = digits.toInt(&ok);
+		if (!ok)
 			return std::nullopt;
-		return MxfFolderName{prefix.toString(), digits.toString()};
+		return FolderName{prefix.toString(), number};
 	}
 
 	[[nodiscard]] inline bool isMxfRoot(const QString &path)
@@ -133,9 +152,10 @@ namespace AvidMediaLayout
 		const QString parent = clean.left(clean.lastIndexOf(QLatin1Char('/')));
 		if (isMxfRoot(parent))
 		{
+			if (!Detail::isLeafName(name) || Conventions::isDotHidden(name) || Conventions::isCreatingFolderName(name))
+				return std::nullopt;
 			const bool quarantined = name.compare(Conventions::kQuarantinedDir, Qt::CaseInsensitive) == 0;
-			if (quarantined || parseMxfFolderName(name))
-				return Location{Family::Mxf, parent, name, quarantined};
+			return Location{Family::Mxf, parent, name, quarantined};
 		}
 		if (isOmfRoot(parent) && isOmfWorkstationFolderName(name))
 			return Location{Family::Omf, parent, name};

@@ -151,13 +151,9 @@ namespace Conventions
 	// MARK: - Avid's per-folder file budget
 	// ═══════════════════════════════════════════════════════════════
 
-	/// Reference ceiling used for folder warnings and the rebalance target.
+	/// Avid's automatic rollover threshold, used for folder warnings and Rebalance.
 	/// This is a file-count budget, not a byte-size limit.
 	inline constexpr int kFolderMax = 5000;
-
-	/// [MEDIAMUSTER] What the Rebalancer packs folders up to.
-	/// One below Avid's ceiling, sourced from it so the two can't drift.
-	inline constexpr int kFolderTarget = kFolderMax - 1; // 4999
 
 	/// [MEDIAMUSTER] Where the folder-card bar turns red.
 	inline constexpr int kFolderCritical = 4800;

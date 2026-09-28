@@ -126,17 +126,20 @@ containing media root, so eligible sibling folders are scanned too.
 
 | Media family | Recognised layout and files |
 | --- | --- |
-| MXF, available by default | `.mxf` files in numbered or workstation-numbered folders, such as `Avid MediaFiles/MXF/1` or `Avid MediaFiles/MXF/Edit01.1`. |
+| MXF, available by default | `.mxf` files directly inside ordinary child folders of `Avid MediaFiles/MXF`, including numbered folders (`1`), workstation-numbered folders (`Edit01.1`) and named ingest folders (`Monday`). |
 | Quarantined MXF | `.mxf` files directly inside `Avid MediaFiles/MXF/Quarantined Files`. Subfolders are not scanned. These files receive the Quarantined flag. |
 | OMF/OMFI, when enabled | `.omf`, `.aif` and `.wav` files directly in `OMFI MediaFiles` or one workstation-folder level below it. |
 
 `Avid MediaFiles/UME` is excluded. Loose media files, a bare `MXF` folder without
 its `Avid MediaFiles` parent, and an arbitrary folder containing Avid databases
-do not qualify. Media file symlinks and dot-hidden files are excluded. The full
+do not qualify. MXF scans do not descend into nested folders; hidden folders and
+`Creating` are excluded. Media file symlinks and dot-hidden files are excluded. The full
 folder and alias rules are in [managed media locations](release-feature-gates.md#managed-media-locations).
 
 These are discovery rules. A recognised location and filename do not establish
 that the contents are valid media; reading the metadata may still fail.
+For Interplay and MediaCentral storage, MediaMuster reads accessible media files
+and folder databases. It does not connect to the MediaCentral server or its catalogue.
 
 ## Building the inventory
 
@@ -354,12 +357,15 @@ are in the current inventory. Failed restorations do not add rows.
 
 Rebalance uses eligible MXF files from the whole current scan, regardless of table
 filters or selection. You choose one MXF root in its dialog. It plans moves among
-numbered folders within that root, keeping workstation prefixes separate.
+positive numbered or workstation-numbered folders within that root, keeping
+workstation prefixes separate. Other named MXF folders can be scanned but are
+excluded from Rebalance.
 
-It aims to keep each folder at or below **4,999 counted media files**, normally
+It aims to keep each folder at or below **5,000 counted media files**, normally
 keeping files with the same valid master identifier together. A relatives group
 larger than that target must be spread across folders. OMF media, quarantine
 contents and folders that fail the stricter rebalance checks are excluded.
+The target is for folder performance; scans still read folders above that count.
 
 If a location becomes unavailable or the planned folder layout is no longer valid
 after preview, Rebalance preparation aborts and asks you to rescan. No operation starts.

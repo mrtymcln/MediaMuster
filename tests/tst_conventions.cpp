@@ -30,8 +30,8 @@ private slots:
 	void creating_folder_name_is_case_insensitive();
 	void system_drive_media_bases_per_platform();
 	void database_file_names_cover_both_spellings();
-	void managed_mxf_folder_names_preserve_readable_spellings_data();
-	void managed_mxf_folder_names_preserve_readable_spellings();
+	void numbered_mxf_folder_names_data();
+	void numbered_mxf_folder_names();
 	void managed_roots_require_complete_component_names();
 	void ume_paths_require_complete_component_names();
 	void managed_media_folder_locations_data();
@@ -136,15 +136,9 @@ void TestConventions::avid_media_extensions()
 
 void TestConventions::folder_budget_thresholds_stay_ordered()
 {
-	// Avid's ceiling is the fixed point; everything else is ours and must
-	// stay strictly below it, in warning order. A future edit that puts
-	// the amber line above the red one, or lets the packing target reach
-	// Avid's limit, fails here rather than in a user's project.
-	static_assert(Conventions::kFolderMax == 5000, "Avid's own ceiling");
-	static_assert(Conventions::kFolderTarget < Conventions::kFolderMax,
-				  "packing must stop below Avid's ceiling");
-	static_assert(Conventions::kFolderCritical < Conventions::kFolderTarget,
-				  "red must come before the packing target");
+	static_assert(Conventions::kFolderMax == 5000, "Avid's rollover threshold");
+	static_assert(Conventions::kFolderCritical < Conventions::kFolderMax,
+				  "red must come before the file limit");
 	static_assert(Conventions::kFolderWarn < Conventions::kFolderCritical,
 				  "amber must come before red");
 
@@ -244,40 +238,42 @@ void TestConventions::database_file_names_cover_both_spellings()
 			QVERIFY2(!AvidMediaLayout::acceptsFileName(family, QString(name)), name.data());
 }
 
-void TestConventions::managed_mxf_folder_names_preserve_readable_spellings_data()
+void TestConventions::numbered_mxf_folder_names_data()
 {
 	QTest::addColumn<QString>("name");
 	QTest::addColumn<bool>("accepted");
 	QTest::addColumn<QString>("prefix");
-	QTest::addColumn<QString>("digits");
-	QTest::newRow("local") << QStringLiteral("1") << true << QString{} << QStringLiteral("1");
-	QTest::newRow("padded-local") << QStringLiteral("001") << true << QString{} << QStringLiteral("001");
-	QTest::newRow("workstation") << QStringLiteral("EditSuite.12") << true << QStringLiteral("EditSuite") << QStringLiteral("12");
-	QTest::newRow("padded-workstation") << QStringLiteral("EditSuite.001") << true << QStringLiteral("EditSuite") << QStringLiteral("001");
-	QTest::newRow("dotted-workstation") << QStringLiteral("edit.suite.2") << true << QStringLiteral("edit.suite") << QStringLiteral("2");
-	QTest::newRow("temp-workstation") << QStringLiteral("Temp.1") << true << QStringLiteral("Temp") << QStringLiteral("1");
-	QTest::newRow("quarantine-workstation") << QStringLiteral("Quarantine.2") << true << QStringLiteral("Quarantine") << QStringLiteral("2");
-	QTest::newRow("large-number") << QStringLiteral("999999999999999999999999") << true << QString{} << QStringLiteral("999999999999999999999999");
-	for (const QString &name : {QString{}, QStringLiteral("0"), QStringLiteral("000"), QStringLiteral("host.0"),
-								QStringLiteral("host.000"), QStringLiteral(".1"), QStringLiteral(".host.1"), QStringLiteral("host."),
-								QStringLiteral("host"), QStringLiteral("+1"), QStringLiteral("-1"), QStringLiteral(" 1"), QStringLiteral("1 "),
-								QStringLiteral("١"), QStringLiteral("１"), QStringLiteral("one/1"), QStringLiteral("one\\1"),
+	QTest::addColumn<int>("number");
+	QTest::newRow("local") << QStringLiteral("1") << true << QString{} << 1;
+	QTest::newRow("local-large") << QStringLiteral("8243") << true << QString{} << 8243;
+	QTest::newRow("workstation") << QStringLiteral("EditSuite2.1") << true << QStringLiteral("EditSuite2") << 1;
+	QTest::newRow("workstation-number") << QStringLiteral("Ingest1.32") << true << QStringLiteral("Ingest1") << 32;
+	QTest::newRow("dotted-workstation") << QStringLiteral("edit.suite.2") << true << QStringLiteral("edit.suite") << 2;
+	QTest::newRow("literal-workstation") << QStringLiteral("Edit%1.2") << true << QStringLiteral("Edit%1") << 2;
+	QTest::newRow("temp-workstation") << QStringLiteral("Temp.1") << true << QStringLiteral("Temp") << 1;
+	QTest::newRow("quarantine-workstation") << QStringLiteral("Quarantine.2") << true << QStringLiteral("Quarantine") << 2;
+	for (const QString &name : {QString{}, QStringLiteral("0"), QStringLiteral("001"), QStringLiteral("host.001"),
+								QStringLiteral("host.0"), QStringLiteral(".1"), QStringLiteral(".host.1"), QStringLiteral("host."),
+								QStringLiteral("host"), QStringLiteral("EditSuite2"), QStringLiteral("+1"), QStringLiteral("-1"),
+								QStringLiteral(" 1"), QStringLiteral("1 "), QStringLiteral("١"), QStringLiteral("１"),
+								QStringLiteral("one/1"), QStringLiteral("one\\1"), QStringLiteral("2147483648"),
 								QStringLiteral("Temp"), QStringLiteral("Quarantine"), QStringLiteral("Creating"), QStringLiteral("Quarantined Files")})
-		QTest::newRow(qPrintable(QStringLiteral("reject-%1").arg(name))) << name << false << QString{} << QString{};
+		QTest::newRow(qPrintable(QStringLiteral("reject-%1").arg(name))) << name << false << QString{} << 0;
 }
 
-void TestConventions::managed_mxf_folder_names_preserve_readable_spellings()
+void TestConventions::numbered_mxf_folder_names()
 {
 	QFETCH(QString, name);
 	QFETCH(bool, accepted);
 	QFETCH(QString, prefix);
-	QFETCH(QString, digits);
+	QFETCH(int, number);
 	const auto result = AvidMediaLayout::parseMxfFolderName(name);
 	QCOMPARE(result.has_value(), accepted);
 	if (result)
 	{
 		QCOMPARE(result->prefix, prefix);
-		QCOMPARE(result->digits, digits);
+		QCOMPARE(result->n, number);
+		QCOMPARE(result->display(), name);
 	}
 }
 
@@ -323,10 +319,15 @@ void TestConventions::managed_media_folder_locations_data()
 	QTest::addColumn<QString>("folder");
 	QTest::newRow("local-mxf") << QStringLiteral("/project/Avid MediaFiles/MXF/1") << true << false
 							   << QStringLiteral("/project/Avid MediaFiles/MXF") << QStringLiteral("1");
-	QTest::newRow("workstation-mxf") << QStringLiteral("/project/Avid MediaFiles/MXF/EditSuite.001/") << true << false
-									 << QStringLiteral("/project/Avid MediaFiles/MXF") << QStringLiteral("EditSuite.001");
-	QTest::newRow("case-preserved") << QStringLiteral("/project/avid mediafiles/mxf/./003") << true << false
-									<< QStringLiteral("/project/avid mediafiles/mxf") << QStringLiteral("003");
+	QTest::newRow("workstation-mxf") << QStringLiteral("/project/Avid MediaFiles/MXF/EditSuite2.1/") << true << false
+									 << QStringLiteral("/project/Avid MediaFiles/MXF") << QStringLiteral("EditSuite2.1");
+	QTest::newRow("case-preserved") << QStringLiteral("/project/avid mediafiles/mxf/./8243") << true << false
+									<< QStringLiteral("/project/avid mediafiles/mxf") << QStringLiteral("8243");
+	for (const QString &name : {QStringLiteral("Interview"), QStringLiteral("EditSuite2"), QStringLiteral("Ingest1.32"),
+								QStringLiteral("Temp"), QStringLiteral("Quarantine"), QStringLiteral("001")})
+		QTest::newRow(qPrintable(QStringLiteral("named-mxf-%1").arg(name)))
+			<< QStringLiteral("/project/Avid MediaFiles/MXF/") + name << true << false
+			<< QStringLiteral("/project/Avid MediaFiles/MXF") << name;
 	QTest::newRow("flat-omf") << QStringLiteral("/project/OMFI MediaFiles") << true << true
 							  << QStringLiteral("/project/OMFI MediaFiles") << QStringLiteral("OMFI MediaFiles");
 	QTest::newRow("workstation-omf") << QStringLiteral("/project/OMFI MediaFiles/EditSuite") << true << true
@@ -336,8 +337,8 @@ void TestConventions::managed_media_folder_locations_data()
 	QTest::newRow("quarantine-workstation-omf") << QStringLiteral("/project/OMFI MediaFiles/Quarantine") << true << true
 												<< QStringLiteral("/project/OMFI MediaFiles") << QStringLiteral("Quarantine");
 	for (const QString &path : {QStringLiteral("/project/MXF/1"), QStringLiteral("/project/Archived session"),
-								QStringLiteral("/project/Avid MediaFiles/MXF"), QStringLiteral("/project/Avid MediaFiles/MXF/arbitrary"),
-								QStringLiteral("/project/Avid MediaFiles/MXF/0"), QStringLiteral("/project/Avid MediaFiles/MXF/.host.1"),
+								QStringLiteral("/project/Avid MediaFiles/MXF"), QStringLiteral("/project/Avid MediaFiles/MXF/Creating"),
+								QStringLiteral("/project/Avid MediaFiles/MXF/.host.1"),
 								QStringLiteral("/project/Avid MediaFiles/MXF/1/2"), QStringLiteral("/project/OMFI MediaFiles/host/child"),
 								QStringLiteral("/project/OMFI MediaFiles/Creating"), QStringLiteral("/project/OMFI MediaFiles/Quarantined Files"),
 								QStringLiteral("/project/OMFI MediaFiles/.hidden"),
@@ -379,9 +380,12 @@ void TestConventions::quarantined_mxf_location_is_explicit()
 		QVERIFY(location->isQuarantined);
 		QVERIFY(!AvidMediaLayout::parseMxfFolderName(name));
 	}
+	const auto ordinary = AvidMediaLayout::locateMediaFolder(
+		QStringLiteral("/project/Avid MediaFiles/MXF/Quarantined Files backup"));
+	QVERIFY(ordinary);
+	QVERIFY(!ordinary->isQuarantined);
 	for (const QString &path : {QStringLiteral("/project/Quarantined Files"),
 								QStringLiteral("/project/MXF/Quarantined Files"),
-								QStringLiteral("/project/Avid MediaFiles/MXF/Quarantined Files backup"),
 								QStringLiteral("/project/Avid MediaFiles/MXF/1/Quarantined Files"),
 								QStringLiteral("/project/Avid MediaFiles/UME/Quarantined Files")})
 		QVERIFY2(!AvidMediaLayout::locateMediaFolder(path), qPrintable(path));

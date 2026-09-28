@@ -121,7 +121,7 @@ private slots:
 	void unrelated_database_cannot_reclassify_omf_audio();
 	void incomplete_omf_audio_in_a_shared_folder_keeps_its_format();
 	void incomplete_omf_identity_clears_unrelated_stale_database_metadata();
-	void mxf_folder_pattern_and_omf_staging_rules();
+	void mxf_and_omf_staging_rules();
 	void current_omf_database_does_not_open_media_data();
 	void current_omf_database_does_not_open_media();
 	void ama_databases_are_read();
@@ -1849,26 +1849,41 @@ void TestScanner::omf_is_disabled_for_all_path_shapes()
 void TestScanner::omf_disabled_preserves_mxf_and_its_databases_data()
 {
 	QTest::addColumn<QString>("shape");
-	QTest::newRow("volume-root") << QStringLiteral("volume");
-	QTest::newRow("manual-root") << QStringLiteral("manual");
-	QTest::newRow("manual-nested") << QStringLiteral("nested");
-	QTest::newRow("manual-numbered-folder") << QStringLiteral("numbered");
-	QTest::newRow("manual-shared-folder") << QStringLiteral("shared");
+	QTest::addColumn<QString>("folderName");
+	QTest::addColumn<bool>("withDatabases");
+	QTest::newRow("volume-root") << QStringLiteral("volume") << QStringLiteral("1") << true;
+	QTest::newRow("manual-root") << QStringLiteral("manual") << QStringLiteral("1") << true;
+	QTest::newRow("manual-nested") << QStringLiteral("nested") << QStringLiteral("1") << true;
+	QTest::newRow("manual-numbered-folder") << QStringLiteral("direct") << QStringLiteral("1") << true;
+	QTest::newRow("manual-shared-folder") << QStringLiteral("direct") << QStringLiteral("Editor.3") << true;
+	for (const QString &name : {QStringLiteral("Interview"), QStringLiteral("EditSuite2"), QStringLiteral("8243"),
+							   QStringLiteral("Ingest1.32"), QStringLiteral("EditSuite2.1"), QStringLiteral("Archive"),
+							   QStringLiteral("OMFI MediaFiles")})
+		for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("mxf-root"), QStringLiteral("direct")})
+			QTest::newRow(qPrintable(shape + QLatin1Char('-') + name)) << shape << name << true;
+	for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("direct")})
+		QTest::newRow(qPrintable(shape + QStringLiteral("-named-without-databases")))
+			<< shape << QStringLiteral("Interview") << false;
 }
 
 void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 {
 	QFETCH(QString, shape);
+	QFETCH(QString, folderName);
+	QFETCH(bool, withDatabases);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString project = shape == QStringLiteral("nested")
 								? tmp.path() + QStringLiteral("/Archive/Project")
 								: tmp.path();
-	const QString folder = Conventions::mxfRootUnder(project) +
-						   (shape == QStringLiteral("shared") ? QStringLiteral("/Editor.3") : QStringLiteral("/1"));
+	const QString folder = Conventions::mxfRootUnder(project) + QLatin1Char('/') + folderName;
 	QVERIFY(QDir().mkpath(folder));
-	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
-	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	QVERIFY(MediaScanner::canScanPath(folder));
+	if (withDatabases)
+	{
+		copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+		copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	}
 	copyFixture(kToneName, folder);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
@@ -1879,21 +1894,33 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfi);
 
 	MediaScanner::Options options;
+	QVERIFY(!options.includeOmf);
 	if (shape == QStringLiteral("volume"))
 		options.volumePaths = QStringList{tmp.path()};
 	else
-		options.manualPaths = QStringList{
-			shape == QStringLiteral("numbered") || shape == QStringLiteral("shared") ? folder : project};
+	{
+		QString selected = project;
+		if (shape == QStringLiteral("direct"))
+			selected = folder;
+		else if (shape == QStringLiteral("mxf-root"))
+			selected = Conventions::mxfRootUnder(project);
+		options.manualPaths = QStringList{selected};
+	}
 	const auto results = runScanWith(options);
 	QCOMPARE(results.size(), 1);
 	const auto &mxf = results.first();
 	QCOMPARE(mxf.fileName, kToneName);
+	QCOMPARE(QFileInfo(mxf.filePath).canonicalFilePath(),
+			 QFileInfo(folder + QLatin1Char('/') + kToneName).canonicalFilePath());
+	QCOMPARE(mxf.mediaFolderName, folderName);
 	QVERIFY(!mxf.omfEra);
-	QVERIFY(mxf.databaseMetadataCurrent);
-	QVERIFY(!mxf.needsHeaderRead);
-	QCOMPARE(mxf.dbStatus, MediaFile::DbStatus::Listed);
+	QVERIFY(!mxf.isQuarantined);
+	QCOMPARE(mxf.databaseMetadataCurrent, withDatabases);
+	QCOMPARE(mxf.needsHeaderRead, !withDatabases);
+	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
-	QCOMPARE(mxf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(mxf.clipNameSource, withDatabases ? MediaFile::ClipNameSource::Mdb
+												 : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mxf.sampleRate, 48000);
 }
 
@@ -2514,16 +2541,17 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QCOMPARE(row.timecodeBase, 0);
 }
 
-void TestScanner::mxf_folder_pattern_and_omf_staging_rules()
+void TestScanner::mxf_and_omf_staging_rules()
 {
-	// MXF uses numbered names. OMF permits plain workstation names, while
-	// its staging and Quarantined Files folders remain outside ordinary media.
+	// Both families admit named folders, but staging and hidden folders are
+	// excluded. Quarantined Files is handled separately for MXF only.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString mxfRoot = Conventions::mxfRootUnder(tmp.path());
 	QVERIFY(QDir().mkpath(mxfRoot + QStringLiteral("/1")));
 	copyFixture(kToneName, mxfRoot + QStringLiteral("/1"));
-	for (const QString &name : {QStringLiteral("Creating"), QStringLiteral("Temp"), QStringLiteral("Quarantine")})
+	for (const QString &name : {QStringLiteral("cReAtInG"), QStringLiteral(".hidden"),
+							   QStringLiteral("Temp"), QStringLiteral("Quarantine")})
 	{
 		QVERIFY(QDir().mkpath(mxfRoot + QLatin1Char('/') + name));
 		copyFixture(kToneName, mxfRoot + QLatin1Char('/') + name);
@@ -2547,14 +2575,19 @@ void TestScanner::mxf_folder_pattern_and_omf_staging_rules()
 	}
 
 	const auto results = runScan(tmp.path(), true);
-	QCOMPARE(results.size(), 4);
+	QCOMPARE(results.size(), 6);
 	QVERIFY(rowNamed(results, kToneName) != nullptr);
 	QVERIFY(rowNamed(results, kOmfWav) != nullptr);
+	QSet<QString> mxfFolders;
 	for (const MediaFile &f : results)
 	{
 		QVERIFY2(!Conventions::isCreatingFolderName(f.mediaFolderName), qPrintable(f.filePath));
+		QVERIFY(!Conventions::isDotHidden(f.mediaFolderName));
 		QVERIFY(!f.isQuarantined);
+		if (!f.omfEra)
+			mxfFolders.insert(f.mediaFolderName);
 	}
+	QCOMPARE(mxfFolders, (QSet<QString>{QStringLiteral("1"), QStringLiteral("Temp"), QStringLiteral("Quarantine")}));
 }
 
 void TestScanner::current_omf_database_does_not_open_media_data()
@@ -2707,8 +2740,7 @@ void TestScanner::ume_paths_are_ignored()
 	const QString ume = tmp.path() + QStringLiteral("/Avid MediaFiles/UME");
 	const QString mediaFolder = ume + QStringLiteral("/1");
 	QVERIFY(QDir().mkpath(mediaFolder));
-	// These readable databases and media would otherwise be admitted by
-	// the manual database-folder fallback. UME is excluded by location.
+	// Readable databases do not make the unsupported UME location eligible.
 	copyFixture(QStringLiteral("msmFMID.pmr"), mediaFolder);
 	copyFixture(QStringLiteral("msmMMOB.mdb"), mediaFolder);
 	copyFixture(kToneName, mediaFolder);
@@ -2855,8 +2887,10 @@ void TestScanner::unsupported_manual_locations_are_rejected_data()
 	QTest::newRow("standalone-mxf-leaf") << QStringLiteral("MXF/1") << true << false;
 	QTest::newRow("partial-avid-path-component") << QStringLiteral("Avid MediaFiles backup/MXF/1") << true << false;
 	QTest::newRow("partial-omfi-path-component") << QStringLiteral("OMFI MediaFiles backup") << true << false;
-	QTest::newRow("unsupported-mxf-leaf") << QStringLiteral("Avid MediaFiles/MXF/Archive") << true << false;
+	QTest::newRow("mxf-staging-folder") << QStringLiteral("Avid MediaFiles/MXF/cReAtInG") << true << false;
+	QTest::newRow("mxf-hidden-folder") << QStringLiteral("Avid MediaFiles/MXF/.hidden") << true << false;
 	QTest::newRow("mxf-leaf-grandchild") << QStringLiteral("Avid MediaFiles/MXF/1/Extra") << true << false;
+	QTest::newRow("named-mxf-leaf-grandchild") << QStringLiteral("Avid MediaFiles/MXF/Archive/Extra") << true << false;
 	QTest::newRow("omfi-workstation-grandchild") << QStringLiteral("OMFI MediaFiles/Editor/Extra") << true << false;
 }
 

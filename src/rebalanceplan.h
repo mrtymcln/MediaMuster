@@ -1,46 +1,11 @@
 #pragma once
 
-#include <QHash>
+#include "avidmedialayout.h"
+
 #include <QString>
 #include <QVector>
 
-// Data shapes for the rebalancer: folder identity, planned move,
-// and a complete plan. Separate header so the dialog can include
-// the types without Rebalancer's signal/slot logic.
-
-// MARK: - FolderName
-
-/// MXF folder name split into workstation prefix and positive number.
-/// Names are scoped to one MXF root. Rebalance requires display() to preserve
-/// the original spelling, excluding padded names such as "01" and quarantine.
-struct FolderName
-{
-	QString prefix;
-	int n = 0;
-
-	QString display() const
-	{
-		return prefix.isEmpty() ? QString::number(n) : QStringLiteral("%1.%2").arg(prefix).arg(n);
-	}
-
-	bool operator==(const FolderName &o) const { return prefix == o.prefix && n == o.n; }
-
-	bool operator!=(const FolderName &o) const { return !(*this == o); }
-
-	/// Lexical prefix order (empty first), then numeric folder order.
-	bool operator<(const FolderName &o) const
-	{
-		if (prefix != o.prefix)
-			return prefix < o.prefix;
-		return n < o.n;
-	}
-};
-
-/// Hash the workstation prefix and folder number as an ordered pair.
-inline size_t qHash(const FolderName &id, size_t seed = 0) noexcept
-{
-	return qHashMulti(seed, id.prefix, id.n);
-}
+// Planned moves and folder counts shared by Rebalance's planner and dialog.
 
 // MARK: - RenameOp
 
@@ -61,8 +26,7 @@ struct RenameOp
 /// Per-folder snapshot for the rebalance dialog: current on-disk count
 /// and bytes, plus the projected delta if the plan runs.
 ///
-/// `inScope=false` marks folders with non-conforming names
-/// (e.g. `Quarantined Files`); shown read-only; never touched.
+/// Folders outside Rebalance's numbered series are shown read-only.
 struct FolderState
 {
 	QString name;  ///< Matches FolderName::display() when in scope.

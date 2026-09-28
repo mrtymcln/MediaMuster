@@ -22,6 +22,14 @@ and filter proxy. It owns selection and presentation; it delegates media reading
 and file execution. Scan completion replaces the model and resets filters and
 selection, including when the scanner returns partial results after cancellation.
 
+MXF discovery admits ordinary direct child folders of `Avid MediaFiles/MXF`,
+including named ingest folders. It excludes hidden folders and `Creating`, and
+does not recurse. Direct contents of `Quarantined Files` are scanned and flagged.
+The numbered-folder parser is used for Rebalance's stricter eligibility and
+destination rules, rather than as a gate for MXF scanning. Interplay and
+MediaCentral locations use the same accessible-file and folder-database readers;
+there is no server catalogue integration.
+
 Main-window menu actions also drive their matching buttons, so enabled states
 follow the same inventory, selection and activity rules. Text editing uses the
 Qt controls' built-in keyboard shortcuts and context menus.
@@ -138,9 +146,11 @@ preserves design history rather than serving as the current user guide.
 
 [RebalancePlanner](../src/rebalanceplanner.cpp) takes eligible files from the whole
 scan for one MXF root, inspects folder occupancy and computes a proposed plan. Its
-stricter name and resolved-path checks exclude OMF and quarantine media. Relatives
+stricter name and resolved-path checks accept positive numbered or
+workstation-numbered folders and exclude OMF and quarantine media. Relatives
 are grouped within a media root and workstation prefix using valid master IDs;
-oversized groups may span folders to respect the 4,999-file target.
+oversized groups may span folders to respect the 5,000-file target. This target
+guides folder performance and planning; it does not limit scanning.
 
 [RebalanceDialog](../src/rebalancedialog.cpp) shows that plan.
 [Rebalancer](../src/rebalancer.cpp) prepares the request asynchronously and adapts
