@@ -1614,7 +1614,7 @@ void TestFileOperations::rebalance_cancel_before_queued_dispatch_keeps_source()
 	put(source, bytes);
 	RebalancePlan plan;
 	plan.mxfRootPath = root;
-	plan.ops.append({source, FolderName{{}, 2}, {}, bytes.size(), -1, {}});
+	plan.ops.append({source, NumberedMxfFolder{{}, 2}, {}, bytes.size(), -1, {}});
 	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
 
 	Rebalancer rebalancer;
@@ -1671,7 +1671,7 @@ void TestFileOperations::rebalance_rejected_preparation_aborts()
 	put(source, bytes);
 	RebalancePlan plan;
 	plan.mxfRootPath = root;
-	plan.ops.append({source, FolderName{{}, 2}, {}, bytes.size(), -1, {}});
+	plan.ops.append({source, NumberedMxfFolder{{}, 2}, {}, bytes.size(), -1, {}});
 	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
 	const QString originalFolder = rootVanishes ? root : root + "/1";
 	const QString aside = originalFolder + "-offline";
@@ -1740,7 +1740,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	plan.ops.clear();
 	for (const MediaFile &file : files)
 		plan.ops.append(
-			{file.mediaFilePath, FolderName{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+			{file.mediaFilePath, NumberedMxfFolder{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.mobId});
 
 	auto rebalancer = std::make_unique<Rebalancer>();
 	QSignalSpy finished(rebalancer.get(), &Rebalancer::finished);

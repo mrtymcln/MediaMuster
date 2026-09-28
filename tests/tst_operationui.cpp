@@ -69,7 +69,7 @@ namespace
 			folder.isNew = n == 3;
 			plan.folders.append(folder);
 		}
-		plan.newFolders.append(FolderName{{}, 3});
+		plan.newFolders.append(NumberedMxfFolder{{}, 3});
 		for (int n = 0; n < 3; ++n)
 		{
 			RebalanceMove op;
@@ -1056,7 +1056,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		window.m_filterTabs->setCurrentIndex(precomputeTab);
 		QCOMPARE(window.m_proxy->rowCount(), 1);
 		window.m_proxy->setPrecomputeTreeFilter({true, {{precompute.precomputeCategoryDisplay(), precompute.effectCategory, precompute.effect}}});
-		window.m_proxy->setEffectVolumeFilter(precompute.volumePath);
+		window.m_proxy->setPrecomputeVolumeFilter(precompute.volumePath);
 		window.m_tableView->sortByColumn(typeColumn, Qt::DescendingOrder);
 		window.m_enablePrecomputesAct->trigger();
 		QVERIFY(!window.m_precomputesEnabled);
@@ -1065,7 +1065,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		QCOMPARE(window.m_filterTabs->currentIndex(), 0);
 		QCOMPARE(window.m_proxy->sortColumn(), typeColumn);
 		QVERIFY(!window.m_proxy->precomputeTreeFilter().active);
-		QVERIFY(window.m_proxy->effectVolumeFilter().isEmpty());
+		QVERIFY(window.m_proxy->precomputeVolumeFilter().isEmpty());
 		QCOMPARE(window.m_proxy->rowCount(), 2);
 		QCOMPARE(window.m_model->rowCount(), 2);
 		QCOMPARE(window.m_model->fileAt(1).type, MediaFile::Type::Precompute);
@@ -1870,7 +1870,7 @@ void TestOperationUi::rebalance_demo_ticks_count_repeated_source_paths()
 	QTRY_VERIFY(dialog->m_nextDemoOp > 1);
 	dialog->onCancelClicked();
 	QCOMPARE(dialog->m_confirmedMoves, dialog->m_nextDemoOp);
-	const FolderName source{QStringLiteral("MartyiMac"), 1}, destination{QStringLiteral("MartyiMac"), 3};
+	const NumberedMxfFolder source{QStringLiteral("MartyiMac"), 1}, destination{QStringLiteral("MartyiMac"), 3};
 	QCOMPARE(folderCountCaption(*dialog, source.display()),
 			 Format::count(originalCounts.value(source) - dialog->m_confirmedMoves));
 	QCOMPARE(folderCountCaption(*dialog, destination.display()),
@@ -1893,7 +1893,7 @@ void TestOperationUi::rebalance_demo_moves_stay_within_workstations()
 		RebalanceDialog::createDemo(static_cast<RebalanceDialog::DemoScenario>(scenario)));
 	const auto &plan = dialog->m_currentPlan;
 	QCOMPARE(plan.ops.size(), moves);
-	QHash<FolderName, int> counts;
+	QHash<NumberedMxfFolder, int> counts;
 	QSet<QString> workstations;
 	for (const auto &folder : plan.folders)
 	{
@@ -1904,7 +1904,7 @@ void TestOperationUi::rebalance_demo_moves_stay_within_workstations()
 		workstations.insert(folder.id.prefix);
 	}
 	QCOMPARE(workstations, (QSet<QString>{QStringLiteral("MartyiMac"), QStringLiteral("JamieiMac"),
-											QStringLiteral("ClaireiMac")}));
+										  QStringLiteral("ClaireiMac")}));
 	for (const auto &op : plan.ops)
 	{
 		const auto source = RebalancePlanner::srcFolderOf(op.srcPath);
@@ -1952,7 +1952,7 @@ void TestOperationUi::rebalance_live_counts_follow_confirmed_results()
 	outcome.state = OpResult::State::Completed;
 	outcome.sourceRemoved = true;
 	dialog.onOperationResult(outcome);
-	const FolderName source{{}, 1}, existingDestination{{}, 2}, newDestination{{}, 3};
+	const NumberedMxfFolder source{{}, 1}, existingDestination{{}, 2}, newDestination{{}, 3};
 	QCOMPARE(dialog.m_runningCount.value(source), 2);
 	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
 	QCOMPARE(dialog.m_runningCount.value(newDestination), 0);

@@ -51,12 +51,8 @@ QString MediaMetadataUtil::bitDepthLabel(quint32 bits)
 /// Derive display facts from the raw values supplied by any media reader.
 void MediaMetadataUtil::finalise(MediaMetadata &meta)
 {
-	// Audio-ness can be visible in the essence label alone, with no
-	// sound descriptor set in the header. Decide it FIRST — the duration
-	// derivation, the validity rule, and the codec fallback below all
-	// branch on isAudio. (This used to leak into the scanner as a
-	// compare against the display name "PCM Audio", which covered only
-	// PCM and would have broken silently on a codec rebrand.)
+	// An essence label can identify audio without a sound descriptor.
+	// Set isAudio before deriving duration, validity and codec names.
 	if (!meta.isAudio && isAudioCompressionLabel(meta.compressionLabel))
 		meta.isAudio = true;
 
@@ -87,15 +83,14 @@ void MediaMetadataUtil::finalise(MediaMetadata &meta)
 	// for 1080i), so a field height doubles to the full frame. Only layout 1
 	// (Separate Fields) is a half height: Avid's own raster filters pair the
 	// half heights {540,544} with layouts {1,4} and the FULL heights
-	// {1080,1088} with layouts {2,3}, so layout 3 must NOT be doubled — it
-	// was, and five corpus files reported 1920x2160.
+	// {1080,1088} with layouts {2,3}, so layout 3 must not be doubled.
 	// (Layout 4 is deliberately not added: Avid's 4K filter groups it with
 	// the full heights, contradicting its own 1080i filter, and no file in
 	// the corpus uses it. Left alone until a real file settles it.)
 	// Source: SupportingFiles/DynamicRelinkUI/DRUI.xml, cbxRaster filters.
 	// A producer that already normalised to the full frame says so with
 	// heightIsFrameHeight (the MDB stores half heights for layouts 1 AND 3
-	// and doubles them itself before handing over).
+	// and normalises them before handing over).
 	if (meta.frameLayout == 1 && !meta.heightIsFrameHeight)
 	{
 		meta.height = meta.height > 0 && meta.height <= std::numeric_limits<int>::max() / 2

@@ -159,7 +159,7 @@ void TestRebalancePlanner::parseMxfFolderName_supported_names()
 	const auto id = AvidMediaLayout::parseMxfFolderName(name);
 	QVERIFY(id.has_value());
 	QCOMPARE(id->prefix, prefix);
-	QCOMPARE(id->n, number);
+	QCOMPARE(id->number, number);
 	QCOMPARE(id->display(), name);
 }
 
@@ -302,7 +302,7 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	makeFillers(root, "1/nested", 1); // The count is flat, like Avid's folder budget.
 
 	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
-	const FolderName one{{}, 1};
+	const NumberedMxfFolder one{{}, 1};
 	const auto counts = RebalancePlanner::countFolders(root, {one});
 	QCOMPARE(counts.size(), 1);
 	QVERIFY(counts.value(one).exists);
@@ -335,7 +335,7 @@ void TestRebalancePlanner::folder_counts_distinguish_empty_absent_and_unavailabl
 	QFile blocker(QDir(root).filePath(QStringLiteral("3")));
 	QVERIFY(blocker.open(QIODevice::WriteOnly));
 	blocker.close();
-	const FolderName empty{{}, 1}, absent{{}, 2}, blocked{{}, 3};
+	const NumberedMxfFolder empty{{}, 1}, absent{{}, 2}, blocked{{}, 3};
 	const auto counts = RebalancePlanner::countFolders(root, {empty, absent, blocked});
 	QCOMPARE(counts.size(), 3);
 	QCOMPARE(counts.value(empty).count, 0);
@@ -370,7 +370,7 @@ void TestRebalancePlanner::unreadable_folder_is_not_counted_or_planned()
 	QVERIFY(QFile::setPermissions(folder, {}));
 	if (QFileInfo(folder).isReadable())
 		QSKIP("This user or filesystem bypasses directory permission removal.");
-	const FolderName one{{}, 1}, two{{}, 2};
+	const NumberedMxfFolder one{{}, 1}, two{{}, 2};
 	const auto counts = RebalancePlanner::countFolders(root, {one, two});
 	QCOMPARE(counts.value(one).count, -1);
 	QVERIFY(counts.value(one).exists);
@@ -618,7 +618,7 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 	const auto file = makeMxf(root, "2", "stray.mxf", "same");
 	RebalancePlan valid;
 	valid.mxfRootPath = root;
-	valid.ops.append({file.mediaFilePath, FolderName{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+	valid.ops.append({file.mediaFilePath, NumberedMxfFolder{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
 	QCOMPARE(RebalancePlanner::requestForPlan(valid).items.size(), 1);
 
 	QVector<RebalanceMove> invalid;
@@ -630,8 +630,8 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 		op.srcPath = path;
 		invalid.append(op);
 	}
-	for (const auto &dest : {FolderName{{}, 0}, FolderName{"../escape", 1},
-							 FolderName{"other-workstation", 1}, FolderName{{}, 2}})
+	for (const auto &dest : {NumberedMxfFolder{{}, 0}, NumberedMxfFolder{"../escape", 1},
+							 NumberedMxfFolder{"other-workstation", 1}, NumberedMxfFolder{{}, 2}})
 	{
 		auto op = valid.ops.first();
 		op.dest = dest;
@@ -672,10 +672,10 @@ void TestRebalancePlanner::directory_aliases_cannot_redirect_rebalance()
 	// A handcrafted destination alias is rejected even if the rest of the
 	// plan was valid. A same-root alias to another number is also rejected.
 	auto redirected = plan;
-	redirected.ops.first().dest = FolderName{{}, 1};
+	redirected.ops.first().dest = NumberedMxfFolder{{}, 1};
 	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
 	QVERIFY(QFile::link(root + "/3", root + "/4"));
-	redirected.ops.first().dest = FolderName{{}, 4};
+	redirected.ops.first().dest = NumberedMxfFolder{{}, 4};
 	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
 
 	auto aliasedSource = home;

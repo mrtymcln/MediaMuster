@@ -16,38 +16,21 @@ struct PmrEntry
 						 ///< from the paired MASTER record; shared by all
 						 ///< V01/A01/A02 relatives of the same clip. Empty for
 						 ///< version 1 (stored in the MOB database) or a null master.
-	QString fileName;	 ///< From the UTF-8 record set when the PMR has one (MC 2025
-						 ///< does); else the MacRoman set, decoded.
+	QString fileName;	 ///< From the UTF-8 record set when present; otherwise decoded from MBCS.
 	QString project;	 ///< MBCS project text, decoded with the MacRoman/UTF-8
 						 ///< compatibility policy. Not stored in version 1 records.
-	/// The essence file's modification time when Avid indexed it, as the
-	/// raw u32 Avid wrote (0 when absent). Two spellings exist — MC 2025
-	/// writes Unix seconds UTC; older folders hold Mac 1904-epoch seconds in
-	/// the writing machine's LOCAL time. PmrParser::trailerMatchesModified
-	/// handles both spellings and Avid's exact one-hour clock exception. The
-	/// scanner's staleness check: a file whose mtime no longer matches is
-	/// one this record describes only by name, so its header is read instead
-	/// of trusting the database's technical facts.
+	/// Modification time when indexed, as Unix UTC or Mac 1904-epoch local
+	/// seconds; zero means absent. PmrParser::trailerMatchesModified handles
+	/// both forms and Avid's one-hour clock exception. A mismatch requires a
+	/// header read to check the database metadata.
 	quint32 fileModifiedSecs = 0;
 };
 
 // MARK: - PmrIndex
 
-/// What a parsed `msmFMID.pmr` is, in one type: a filename-keyed lookup —
-/// PmrKey::primary (NFC-normalised, lower-cased) onto the records carrying
-/// that name. "Index" is the right word and belongs to the PMR specifically:
-/// this is the ONLY Avid file in a media folder that ties a filename to its
-/// MOBs. Its neighbour msmMMOB.mdb holds no filenames at all (see MdbParser).
-///
-/// ONE key, not two. A looser second key - extension dropped, remaining
-/// dots turned to underscores - was carried from the prototype on the
-/// belief that Avid renames files on import. It does not: an import
-/// produces a NEW file whose name Avid generates from the track and MOB
-/// (`A01.E6968417_1BD321BD32270A.mxf`), and the source name is kept in a
-/// separate field, so there is no spelling to reconcile. Measured over
-/// 2,412 real files in four projects - 2,298 of them imports, and 2,397
-/// carrying the dotted shape the loose key existed to repair - it matched
-/// nothing the exact name had missed. Removed 2026-08-28.
+/// PMR records keyed by PmrKey::primary: NFC-normalised, lower-case filenames.
+/// Names retain their punctuation and extension. The PMR links filenames to
+/// MOB IDs; the MDB supplies metadata for those IDs.
 using PmrIndex = QHash<QString, QVector<PmrEntry>>;
 
 // MARK: - PmrParser

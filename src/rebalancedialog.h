@@ -33,7 +33,7 @@ class Rebalancer;
 /// Two state phases:
 ///
 ///   - **Planning**: the volume picker computes a fresh plan via
-///     `RebalancePlanner::computePlan` and the table reflects what *would*
+///     `RebalancePlanner::computePlan` and the folder cards show what would
 ///     happen. No disk changes yet.
 ///
 ///   - **Running**: Rebalance is in flight. The picker is disabled,
@@ -119,7 +119,7 @@ private:
 	void renderPlan();
 	void setBusy(bool busy);
 	void finishDisplay(int succeeded,
-					   const QHash<FolderName, RebalancePlanner::FolderCount> &counts);
+					   const QHash<NumberedMxfFolder, RebalancePlanner::FolderCount> &counts);
 
 	/// Rebuild the inline summary line from explicit counts.
 	/// `past=true` shifts captions to 'moved' / 'files moved' for
@@ -128,7 +128,7 @@ private:
 
 	/// Every folder that's a source or destination of a planned move in
 	/// `m_currentPlan` — used for the preview and final folder recount.
-	QSet<FolderName> affectedFolders() const;
+	QSet<NumberedMxfFolder> affectedFolders() const;
 
 	QHash<QString, QString> m_mxfRootPathsByLabel;
 	QHash<QString, QVector<MediaFile>> m_filesByMxfRootPath;
@@ -157,19 +157,16 @@ private:
 
 	QComboBox *m_volumePicker = nullptr;
 
-	/// Single-line summary above the card grid. Holds three states:
-	/// the inline stats ("<b>N</b> files moving | …"), the
-	/// "Computing plan…" busy hint, and the "Already balanced"
-	/// empty state. State swap = setText + setStyleSheet only.
+	/// Shows the plan summary, planning progress or an empty-plan message.
 	QLabel *m_statsLine = nullptr;
 
 	/// Scrollable container for the folder cards. renderPlan() wipes
 	/// the grid and rebuilds it; live updates touch only the affected
-	/// cards by FolderName lookup.
+	/// cards by NumberedMxfFolder lookup.
 	QScrollArea *m_cardScroll = nullptr;
 	QWidget *m_cardContainer = nullptr;
 	QGridLayout *m_cardGrid = nullptr;
-	QHash<FolderName, FolderCard *> m_cards;
+	QHash<NumberedMxfFolder, FolderCard *> m_cards;
 
 	QProgressBar *m_progressBar = nullptr;
 	QLabel *m_progressLabel = nullptr;
@@ -180,16 +177,16 @@ private:
 
 	/// Running per-folder counts. Initialised from FolderState.count
 	/// at rebalance start; decremented/incremented as ops complete.
-	QHash<FolderName, int> m_runningCount;
+	QHash<NumberedMxfFolder, int> m_runningCount;
 
 	/// Remove each planned source after its confirmed move, so a result
 	/// cannot be counted twice and engine group order need not match the plan.
-	QHash<QString, FolderName> m_pendingSources;
-	QSet<FolderName> m_changedFolders;
+	QHash<QString, NumberedMxfFolder> m_pendingSources;
+	QSet<NumberedMxfFolder> m_changedFolders;
 	int m_confirmedMoves = 0;
 	int m_nextDemoOp = 0;
 
 	/// Seed the counts and pending sources from the current plan.
 	void primeLiveState();
-	void applyMove(const FolderName &from, const FolderName &to);
+	void applyMove(const NumberedMxfFolder &from, const NumberedMxfFolder &to);
 };

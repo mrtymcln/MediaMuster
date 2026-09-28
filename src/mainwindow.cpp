@@ -1062,7 +1062,7 @@ void MainWindow::onFilterPrecomputes()
 {
 	if (!m_precomputesEnabled || !m_operations->isIdle() || m_model->allFiles().isEmpty())
 		return;
-	PrecomputeFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->effectVolumeFilter(), this);
+	PrecomputeFilterDialog dialog(m_model->allFiles(), m_proxy->precomputeTreeFilter(), m_proxy->precomputeVolumeFilter(), this);
 	if (dialog.exec() != QDialog::Accepted)
 		return;
 	const PrecomputeFilter filter = dialog.precomputeFilter();
@@ -1070,7 +1070,7 @@ void MainWindow::onFilterPrecomputes()
 	applyFilterPreservingSelection([this, &filter, &volume]()
 								   {
 		m_proxy->setPrecomputeTreeFilter(filter);
-		m_proxy->setEffectVolumeFilter(volume); });
+		m_proxy->setPrecomputeVolumeFilter(volume); });
 	rebuildFilterChips();
 	updateStatusBar();
 	QStringList checkedPaths;
@@ -1338,9 +1338,7 @@ void MainWindow::addVolumePath(const QString &path)
 	if (name.isEmpty())
 		name = path;
 
-	// Through the same factory the detected volumes use, so a folder added
-	// by hand gets its real volume type, its size, and the bold that says
-	// "there is Avid media in here" — all of which it used to go without.
+	// Give added folders the same storage details and Avid-media indicator as detected volumes.
 	const VolumeInfo info = VolumeManager::makeVolumeInfo(name, path, QStorageInfo(path));
 
 	// Disambiguate against whatever is already listed, for the same reason
@@ -2318,7 +2316,7 @@ void MainWindow::rebuildFilterChips()
 				rebuildFilterChips();
 				updateStatusBar(); });
 
-		const QString volumePath = m_proxy->effectVolumeFilter();
+		const QString volumePath = m_proxy->precomputeVolumeFilter();
 		if (!volumePath.isEmpty())
 		{
 			QHash<QString, QString> volumeNames;
@@ -2336,7 +2334,7 @@ void MainWindow::rebuildFilterChips()
 			addChip(tr("Precompute volume: %1").arg(volumeLabel), [this]()
 					{
 				applyFilterPreservingSelection([this]() {
-					m_proxy->setEffectVolumeFilter({});
+					m_proxy->setPrecomputeVolumeFilter({});
 				});
 				rebuildFilterChips();
 				updateStatusBar(); });
@@ -2417,7 +2415,7 @@ void MainWindow::resetFiltersForNewScan()
 	m_proxy->setProjectFilter({});
 	m_proxy->setBinFilter({});
 	m_proxy->setPrecomputeTreeFilter({});
-	m_proxy->setEffectVolumeFilter({});
+	m_proxy->setPrecomputeVolumeFilter({});
 
 	rebuildFilterChips();
 }

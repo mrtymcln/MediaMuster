@@ -15,8 +15,7 @@
 struct MdbMasterMob
 {
 	QString mobIdHex;
-	QString clipName;				  ///< OMFI:CPNT:Name — what Avid displays. Equal to the
-									  ///< MXF MaterialPackage name on 360/360 + 795/795 files.
+	QString clipName;				  ///< OMFI:CPNT:Name — the clip name recorded by Avid.
 	QString bin;					  ///< _ORG_BIN → original bin name; AVB and OMF readers can also supply it.
 	QString sourceFilePath;			  ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
 	QString sourceFileName;			  ///< Basename of sourceFilePath.
@@ -28,14 +27,10 @@ struct MdbMasterMob
 	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
 };
 
-/// One essence file as the MDB describes it. Keyed by the file MOB — the
-/// PMR's FILE record. `essence` is filled the way MxfParser fills it from
-/// a header, then run through the same MediaMetadataUtil::finalise, so a row built
-/// from the database shows the same codec / resolution / fps / duration /
-/// bit depth the header path would. `essenceComplete` is the scanner's
-/// permission to skip the header read — false when the database cannot
-/// name the codec (MPEG audio has no label in the MDB) or the descriptor
-/// isn't a media descriptor.
+/// One essence file, keyed by the file MOB from the PMR's FILE record.
+/// Metadata uses the same finalisation as media headers. `essenceComplete`
+/// tells the scanner whether the descriptor supplies the required technical
+/// fields, helping it decide whether a header read is needed.
 struct MdbFileMob
 {
 	QString mobIdHex;
@@ -43,20 +38,13 @@ struct MdbFileMob
 	int usageCode = -1;	 ///< 0 = NoSpecialUsage, 9 = PrecomputeFile; classification comes from the master.
 	MediaMetadata essence;
 	bool essenceComplete = false;
-	/// _PJ from the file mob, else its unique linked source mob. Used when
-	/// the PMR project is empty. PMR version 1 omits that field; version 2
-	/// stores it, although the shipped SupportingFiles fixtures leave it empty.
+	/// _PJ from the file mob, else its unique linked source mob.
+	/// Used when the PMR project is empty.
 	QString project;
 };
 
-/// The parsed contents of ONE msmMMOB.mdb — this is the database itself,
-/// which is why it keeps the plain name. Its two members hold many records
-/// each: MdbMasterMob for master clips, MdbFileMob for essence files, named
-/// after Avid's own master mob / file mob (see the walk in mdbparser.cpp).
-///
-/// Split the way the scanner consumes it:
-/// `files` is looked up once per row during the folder walk and dropped;
-/// `masters` is kept for the header pass's ID lookup. Keys use
+/// Master and file records from one msmMMOB.mdb. The scanner consumes `files`
+/// during the folder walk and retains `masters` for header lookups. Keys use
 /// OmfUid::canonicalHex: 32-byte IDs retain their dotted MOB form; Avid's
 /// prefix-42 OMF IDs use the same wrapper as legacy PMRs; other 12-byte
 /// IDs preserve all three words in an `omf:` namespace.
@@ -70,27 +58,16 @@ struct MdbDatabase
 
 // MARK: - MdbParser
 
-/// Reads `msmMMOB.mdb`, the per-folder Avid clip database — an OMF
-/// Interchange object store in a Bento container (see BentoFile). Walks the
-/// table of contents, not the bytes: every value is reached by its property
-/// name, resolved from the dictionary the file itself carries.
-///
-/// What it reads and how it was verified (360 live files + 795 archived
-/// headers, MXF as ground truth — see the decode notes in mdbparser.cpp):
-/// clip name, bin, source path/container, import flag, usage codes; and per
-/// file mob the descriptor class (audio/video), codec label (two spellings),
-/// stored dims + layout, sample rate, length, bits, channels, drop frame.
-///
-/// Two facts about the database the caller must respect: it holds NO
-/// filenames (the PMR is the filename→MOB index; this is MOB→facts), and
-/// it is stale-inclusive (records for media deleted long ago stay in it),
-/// so nothing here says what exists on disk.
+/// Reads msmMMOB.mdb, an OMF object store in a Bento container. Properties
+/// are resolved through the file's dictionary and table of contents.
+/// Supplies clip details and per-file audio/video metadata, but no media
+/// filenames. Records may outlive their files; check the filesystem separately.
 class MdbParser
 {
 public:
 	/// Load and index the database. `ok` (optional) is false when the file
 	/// can't be opened or isn't a Bento container whose label and table of
-	/// contents agree — a stronger gate than the old marker scan. ok=true with
-	/// empty maps is a valid, empty database. Never throws.
+	/// contents agree. ok=true with empty maps is a valid, empty database.
+	/// Never throws.
 	[[nodiscard]] static MdbDatabase load(const QString &mdbFilePath, bool *ok = nullptr);
 };

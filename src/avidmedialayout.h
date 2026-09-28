@@ -9,31 +9,31 @@
 #include <QStringView>
 #include <optional>
 
-// A numbered MXF folder, with an optional workstation name before the dot.
-struct FolderName
+// A numbered MXF folder, e.g. "1" or "MartyiMac.2".
+struct NumberedMxfFolder
 {
 	QString prefix;
-	int n = 0;
+	int number = 0;
 
 	QString display() const
 	{
-		return prefix.isEmpty() ? QString::number(n) : prefix + QLatin1Char('.') + QString::number(n);
+		return prefix.isEmpty() ? QString::number(number) : prefix + QLatin1Char('.') + QString::number(number);
 	}
 
-	bool operator==(const FolderName &o) const { return prefix == o.prefix && n == o.n; }
-	bool operator!=(const FolderName &o) const { return !(*this == o); }
+	bool operator==(const NumberedMxfFolder &o) const { return prefix == o.prefix && number == o.number; }
+	bool operator!=(const NumberedMxfFolder &o) const { return !(*this == o); }
 
-	bool operator<(const FolderName &o) const
+	bool operator<(const NumberedMxfFolder &o) const
 	{
 		if (prefix != o.prefix)
 			return prefix < o.prefix;
-		return n < o.n;
+		return number < o.number;
 	}
 };
 
-inline size_t qHash(const FolderName &id, size_t seed = 0) noexcept
+inline size_t qHash(const NumberedMxfFolder &id, size_t seed = 0) noexcept
 {
-	return qHashMulti(seed, id.prefix, id.n);
+	return qHashMulti(seed, id.prefix, id.number);
 }
 
 // Folder and filename rules. Callers check the filesystem and resolve aliases.
@@ -92,7 +92,7 @@ namespace AvidMediaLayout
 			   name.compare(Conventions::kQuarantinedDir, Qt::CaseInsensitive) != 0;
 	}
 
-	[[nodiscard]] inline std::optional<FolderName> parseMxfFolderName(QStringView name)
+	[[nodiscard]] inline std::optional<NumberedMxfFolder> parseMxfFolderName(QStringView name)
 	{
 		if (!Detail::isLeafName(name) || Conventions::isDotHidden(name))
 			return std::nullopt;
@@ -108,7 +108,7 @@ namespace AvidMediaLayout
 		const int number = digits.toInt(&ok);
 		if (!ok)
 			return std::nullopt;
-		return FolderName{prefix.toString(), number};
+		return NumberedMxfFolder{prefix.toString(), number};
 	}
 
 	[[nodiscard]] inline bool isMxfRoot(const QString &path)

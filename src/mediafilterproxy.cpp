@@ -132,7 +132,7 @@ void MediaFilterProxy::setPrecomputesEnabled(bool enabled)
 		if (m_mode == FilterMode::Precompute)
 			m_mode = FilterMode::All;
 		m_precomputeTreeFilter = {};
-		m_effectVolumePath.clear();
+		m_precomputeVolumePath.clear();
 	}
 	invalidate();
 }
@@ -148,11 +148,11 @@ void MediaFilterProxy::setPrecomputeTreeFilter(const PrecomputeFilter &filter)
 	invalidateRowsFilter();
 }
 
-void MediaFilterProxy::setEffectVolumeFilter(const QString &volumePath)
+void MediaFilterProxy::setPrecomputeVolumeFilter(const QString &volumePath)
 {
-	if (!m_precomputesEnabled || m_effectVolumePath == volumePath)
+	if (!m_precomputesEnabled || m_precomputeVolumePath == volumePath)
 		return;
-	m_effectVolumePath = volumePath;
+	m_precomputeVolumePath = volumePath;
 	invalidateRowsFilter();
 }
 
@@ -204,8 +204,8 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	if (m_precomputesEnabled && !m_precomputeTreeFilter.matches(f))
 		return false;
 
-	if (m_precomputesEnabled && !m_effectVolumePath.isEmpty() &&
-		(f.type != MediaFile::Type::Precompute || f.volumePath != m_effectVolumePath))
+	if (m_precomputesEnabled && !m_precomputeVolumePath.isEmpty() &&
+		(f.type != MediaFile::Type::Precompute || f.volumePath != m_precomputeVolumePath))
 		return false;
 
 	if (!m_binFilter.matches(f.mobId, f.masterMobId))

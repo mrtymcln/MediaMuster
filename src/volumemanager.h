@@ -36,11 +36,11 @@ public:
 
 	// MARK: - Detection
 
-	/// Synchronous; only call from the UI thread when blocking is
-	/// acceptable (startup, 'Scan All'). The 5 second poll tick runs this
-	/// off-thread via the shared pool; see pollVolumes / onPollFinished.
+	/// Synchronous detection; may block on slow mounts. Startup and Refresh
+	/// Volumes call this on the UI thread; polling runs it in the shared pool.
 	QVector<VolumeInfo> detectVolumes() const;
 
+	/// Returns cached paths, detecting volumes only when the cache is empty.
 	QStringList allScannablePaths() const;
 
 	/// Prime the polling identity cache. Call from the UI thread after a

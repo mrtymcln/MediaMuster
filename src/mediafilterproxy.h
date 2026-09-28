@@ -45,8 +45,8 @@ public:
 	void setPrecomputeTreeFilter(const PrecomputeFilter &filter);
 	PrecomputeFilter precomputeTreeFilter() const { return m_precomputeTreeFilter; }
 	/// The row's stored volumePath, not its display label. Empty means all.
-	void setEffectVolumeFilter(const QString &volumePath);
-	QString effectVolumeFilter() const { return m_effectVolumePath; }
+	void setPrecomputeVolumeFilter(const QString &volumePath);
+	QString precomputeVolumeFilter() const { return m_precomputeVolumePath; }
 
 	/// Caches the concrete model pointer for the hot
 	/// filterAcceptsRow / lessThan paths; see m_sourceModel.
@@ -79,6 +79,6 @@ private:
 	QSet<QString> m_selectedProjects;
 	bool m_precomputesEnabled = false;
 	PrecomputeFilter m_precomputeTreeFilter;
-	QString m_effectVolumePath;
+	QString m_precomputeVolumePath;
 	BinFilter m_binFilter;
 };

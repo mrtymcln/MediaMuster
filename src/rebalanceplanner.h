@@ -21,9 +21,9 @@ namespace RebalancePlanner
 	/// count with exists=false means absent under an accessible MXF root.
 	/// QDirIterator exposes no enumeration error: accessibility is checked
 	/// before and after reading, but this is not an atomic filesystem snapshot.
-	QHash<FolderName, FolderCount> countFolders(const QString &mxfRootPath, const QSet<FolderName> &folders);
+	QHash<NumberedMxfFolder, FolderCount> countFolders(const QString &mxfRootPath, const QSet<NumberedMxfFolder> &folders);
 
-	std::optional<FolderName> srcFolderOf(const QString &sourcePath);
+	std::optional<NumberedMxfFolder> srcFolderOf(const QString &sourcePath);
 	bool isEligible(const MediaFile &file);
 	RebalancePlan computePlan(const QString &mxfRootPath, const QString &volumeLabel,
 							  const QVector<MediaFile> &files);

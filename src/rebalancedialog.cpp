@@ -42,17 +42,14 @@
 namespace
 {
 
-	// Total wall-clock duration for the simulated demo run. Same value
-	// regardless of file count, so massive demos and tiny ones both
-	// feel responsive.
+	// All demo sizes run for five seconds.
 	constexpr int kDemoDurationMs = 5000;
 	constexpr int kDemoTickMs = 33; // ~30 Hz, matches real worker cadence
 
-	// Card grid columns. Fixed for the first iteration; a flow layout could
-	// reflow on dialog resize, but the dialog is narrow-ish anyway.
+	// Fixed number of columns in the folder-card grid.
 	constexpr int kCardColumns = 3;
 
-	// MARK: - Card painting helpers (folded in from foldercard.* 2026-08-31)
+	// MARK: - Card painting helpers
 
 	QColor capColor(int fileCount)
 	{
@@ -114,7 +111,7 @@ namespace
 
 	constexpr qint64 kDemoFileBytes = qint64(10) * 1024 * 1024; // 10 MB per file
 
-	FolderState demoFolder(const FolderName &id, int count, bool isNew = false)
+	FolderState demoFolder(const NumberedMxfFolder &id, int count, bool isNew = false)
 	{
 		FolderState fs;
 		fs.id = id;
@@ -126,7 +123,7 @@ namespace
 	}
 
 	// Append simulated moves and update the folder counts.
-	void demoMoves(RebalancePlan &plan, const FolderName &src, const FolderName &dest, int count)
+	void demoMoves(RebalancePlan &plan, const NumberedMxfFolder &src, const NumberedMxfFolder &dest, int count)
 	{
 		if (count <= 0)
 			return;
@@ -182,7 +179,7 @@ namespace
 			total += plan.folders[i].count;
 		const int mean = int(total / qMax(1, folderCount + newFolderCount));
 
-		QVector<QPair<FolderName, int>> sources, dests;
+		QVector<QPair<NumberedMxfFolder, int>> sources, dests;
 		for (qsizetype i = firstFolder; i < plan.folders.size(); ++i)
 		{
 			const FolderState &fs = plan.folders[i];
@@ -210,8 +207,8 @@ namespace
 		int slot = 0;
 		while (remaining > 0 && folderCount > 1)
 		{
-			const FolderName a{prefix, slot + 1};
-			const FolderName b{prefix, slot + 2};
+			const NumberedMxfFolder a{prefix, slot + 1};
+			const NumberedMxfFolder b{prefix, slot + 2};
 			const int out = qMin((remaining + 1) / 2, 500);
 			const int back = qMin(remaining - out, out);
 			demoMoves(plan, a, b, out);
@@ -225,11 +222,7 @@ namespace
 
 // MARK: - FolderCard
 //
-// The per-folder before/after card in the plan grid: name, capacity bar
-// against the Avid limits, count and delta captions. Folded in from
-// foldercard.* (2026-08-31) as this dialog's only consumer. No signals,
-// slots or properties, so no Q_OBJECT — the header's forward declaration
-// stays valid and moc never needs to see this file.
+// One folder's name, capacity bar and before/after counts.
 
 class FolderCard : public QFrame
 {
@@ -718,12 +711,12 @@ void RebalanceDialog::onPlanReady()
 void RebalanceDialog::renderPlan()
 {
 	QStringList newFolderNames;
-	for (const FolderName &fid : m_currentPlan.newFolders)
+	for (const NumberedMxfFolder &fid : m_currentPlan.newFolders)
 		newFolderNames << fid.display();
 
 	// MARK: Compute affected-folder set
 
-	const QSet<FolderName> affected = affectedFolders();
+	const QSet<NumberedMxfFolder> affected = affectedFolders();
 
 	// MARK: Summary line
 
@@ -745,8 +738,7 @@ void RebalanceDialog::renderPlan()
 	LayoutUtil::clearLayout(m_cardGrid);
 	m_cards.clear();
 
-	// In-scope first (sorted by FolderName), out-of-scope after
-	// (sorted by name).
+	// Eligible folders first, ordered by prefix and number; other folders by name.
 	QVector<FolderState> sorted = m_currentPlan.folders;
 	std::sort(sorted.begin(), sorted.end(),
 			  [](const FolderState &a, const FolderState &b)
@@ -927,12 +919,12 @@ void RebalanceDialog::onOperationResult(const OpResult &result)
 	if (source == m_pendingSources.cend() || !destination)
 		return;
 
-	const FolderName from = source.value();
+	const NumberedMxfFolder from = source.value();
 	m_pendingSources.remove(result.source);
 	applyMove(from, *destination);
 }
 
-void RebalanceDialog::applyMove(const FolderName &from, const FolderName &to)
+void RebalanceDialog::applyMove(const NumberedMxfFolder &from, const NumberedMxfFolder &to)
 {
 	--m_runningCount[from];
 	++m_runningCount[to];
@@ -958,7 +950,7 @@ void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 
 	if (m_demoMode)
 	{
-		QHash<FolderName, RebalancePlanner::FolderCount> counts;
+		QHash<NumberedMxfFolder, RebalancePlanner::FolderCount> counts;
 		for (const auto &folder : m_currentPlan.folders)
 			if (folder.inScope)
 				counts.insert(folder.id, {m_runningCount.value(folder.id),
@@ -970,7 +962,7 @@ void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 	// OpManager has joined the operation worker before finished. Count only
 	// directory entries here: a move can land before a later journal/sync
 	// error, so even confirmed-result deltas are not a final disk snapshot.
-	using Counts = QHash<FolderName, RebalancePlanner::FolderCount>;
+	using Counts = QHash<NumberedMxfFolder, RebalancePlanner::FolderCount>;
 	auto *watcher = new QFutureWatcher<Counts>(this);
 	connect(watcher, &QFutureWatcher<Counts>::finished, this,
 			[this, watcher, succeeded]
@@ -979,18 +971,18 @@ void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 				watcher->deleteLater();
 			});
 	const QString mxfRootPath = m_currentPlan.mxfRootPath;
-	const QSet<FolderName> folders = affectedFolders();
+	const QSet<NumberedMxfFolder> folders = affectedFolders();
 	// Value captures let the read-only task finish safely if the dialog closes.
 	watcher->setFuture(QtConcurrent::run([mxfRootPath, folders]
 										 { return RebalancePlanner::countFolders(mxfRootPath, folders); }));
 }
 
 void RebalanceDialog::finishDisplay(
-	int succeeded, const QHash<FolderName, RebalancePlanner::FolderCount> &counts)
+	int succeeded, const QHash<NumberedMxfFolder, RebalancePlanner::FolderCount> &counts)
 {
 	setBusy(false);
 
-	QSet<FolderName> changed = m_changedFolders;
+	QSet<NumberedMxfFolder> changed = m_changedFolders;
 	int newFolders = 0;
 	bool affectedUnknown = false;
 	bool newFoldersUnknown = false;
@@ -1079,9 +1071,9 @@ void RebalanceDialog::primeLiveState()
 		}
 }
 
-QSet<FolderName> RebalanceDialog::affectedFolders() const
+QSet<NumberedMxfFolder> RebalanceDialog::affectedFolders() const
 {
-	QSet<FolderName> affected;
+	QSet<NumberedMxfFolder> affected;
 	for (const RebalanceMove &op : m_currentPlan.ops)
 	{
 		affected.insert(op.dest);

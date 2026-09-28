@@ -5,10 +5,7 @@
 #include <QTextStream>
 
 // MARK: - Field escaping
-//
-// Folded in from csvutil.h (2026-08-31): this exporter is the one
-// producer of CSV in the app, so the escaping rules live beside the
-// columns they protect. Covered by tst_mediacsv through rowLine().
+
 namespace CsvUtil
 {
 	/// Doubles every literal `"` inside the field to escape it.

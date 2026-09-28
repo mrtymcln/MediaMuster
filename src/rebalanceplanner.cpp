@@ -55,7 +55,7 @@ namespace
 
 // MARK: - Folder name parsing
 
-std::optional<FolderName> RebalancePlanner::srcFolderOf(const QString &srcPath)
+std::optional<NumberedMxfFolder> RebalancePlanner::srcFolderOf(const QString &srcPath)
 {
 	return AvidMediaLayout::parseMxfFolderName(QFileInfo(srcPath).dir().dirName());
 }
@@ -140,11 +140,11 @@ namespace
 
 } // namespace
 
-QHash<FolderName, RebalancePlanner::FolderCount>
-RebalancePlanner::countFolders(const QString &mxfRootPath, const QSet<FolderName> &folders)
+QHash<NumberedMxfFolder, RebalancePlanner::FolderCount>
+RebalancePlanner::countFolders(const QString &mxfRootPath, const QSet<NumberedMxfFolder> &folders)
 {
-	QHash<FolderName, FolderCount> results;
-	for (const FolderName &folder : folders)
+	QHash<NumberedMxfFolder, FolderCount> results;
+	for (const NumberedMxfFolder &folder : folders)
 		results.insert(folder, {});
 	const QString resolvedRoot = resolvedMxfRoot(mxfRootPath);
 	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRootPath))
@@ -152,7 +152,7 @@ RebalancePlanner::countFolders(const QString &mxfRootPath, const QSet<FolderName
 
 	const QDir root(mxfRootPath);
 	const QStringList entries = root.entryList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-	for (const FolderName &folder : folders)
+	for (const NumberedMxfFolder &folder : folders)
 	{
 		const QString name = folder.display();
 		const auto parsed = AvidMediaLayout::parseMxfFolderName(name);
@@ -189,9 +189,9 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// MARK: Snapshot current folder state on disk
 
-	QHash<QString, QSet<int>> existingByPrefix; // prefix → {n}
+	QHash<QString, QSet<int>> existingByPrefix; // prefix → folder numbers
 	QHash<QString, QSet<int>> occupiedByPrefix; // Includes aliases that cannot be destinations.
-	QHash<FolderName, int> realCount;
+	QHash<NumberedMxfFolder, int> realCount;
 
 	const QStringList subdirs = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 	for (const QString &name : subdirs)
@@ -199,7 +199,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		const FolderCount onDisk = readFolderCount(mxfDir.filePath(name));
 		const auto parsed = AvidMediaLayout::parseMxfFolderName(name);
 		if (parsed)
-			occupiedByPrefix[parsed->prefix].insert(parsed->n);
+			occupiedByPrefix[parsed->prefix].insert(parsed->number);
 		FolderState fs;
 		fs.mediaFolderName = name;
 		fs.count = onDisk.count;
@@ -207,7 +207,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		if (fs.inScope)
 		{
 			fs.id = *parsed;
-			existingByPrefix[fs.id.prefix].insert(fs.id.n);
+			existingByPrefix[fs.id.prefix].insert(fs.id.number);
 			realCount[fs.id] = onDisk.count;
 		}
 		plan.folders.append(fs);
@@ -228,14 +228,14 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 	struct IndexedMedia
 	{
 		const MediaFile *file;
-		FolderName folder;
+		NumberedMxfFolder folder;
 	};
 
 	// MARK: Tally bytes + bucket files into relatives groups
 
 	// One pass over `files` does both: tallies bytes per source folder,
 	// and groups files by master MOB so relatives stay together.
-	QHash<FolderName, qint64> realBytes;
+	QHash<NumberedMxfFolder, qint64> realBytes;
 	QHash<QString, QVector<IndexedMedia>> bucketed;
 	for (const auto &mf : files)
 	{
@@ -258,9 +258,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// MARK: Build group descriptors with chosen home folder
 
-	// One relatives group (or one lone file) plus the `<prefix, n>` we
-	// want to consolidate it into. Members carry their pre-parsed
-	// FolderName so all downstream loops are re-parse-free.
+	// Relatives and their preferred destination. Each member keeps its parsed folder.
 	struct Group
 	{
 		QString homePrefix;
@@ -281,9 +279,9 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		// relativesKey already separates workstation prefixes. Home is
 		// the lowest-numbered folder containing a member of this group.
 		g.homePrefix = g.members.first().folder.prefix;
-		g.homeN = g.members.first().folder.n;
+		g.homeN = g.members.first().folder.number;
 		for (const auto &m : g.members)
-			g.homeN = qMin(g.homeN, m.folder.n);
+			g.homeN = qMin(g.homeN, m.folder.number);
 
 		groups.append(g);
 	}
@@ -310,7 +308,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 	// MARK: Pack groups into folders
 
 	// Track planned counts separately from current disk counts.
-	QHash<FolderName, int> projected = realCount;
+	QHash<NumberedMxfFolder, int> projected = realCount;
 	QHash<QString, QSet<int>> newByPrefix;
 
 	auto allFoldersForPrefix = [&](const QString &prefix)
@@ -323,7 +321,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// Allocate above the highest occupied number in this prefix, including
 	// aliases. Register it now so later groups cannot reuse its number.
-	auto allocateNewFolder = [&](const QString &prefix) -> FolderName
+	auto allocateNewFolder = [&](const QString &prefix) -> NumberedMxfFolder
 	{
 		QSet<int> all = occupiedByPrefix.value(prefix);
 		all.unite(newByPrefix.value(prefix));
@@ -332,7 +330,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 			if (n >= next)
 				next = n + 1;
 		newByPrefix[prefix].insert(next);
-		FolderName id{prefix, next};
+		NumberedMxfFolder id{prefix, next};
 		projected[id] = 0;
 		plan.newFolders.append(id);
 
@@ -347,7 +345,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// No-op when src == dest (already where we want it). Takes
 	// IndexedMedia so the source folder is free; no re-parse.
-	auto pushOp = [&](const IndexedMedia &m, FolderName dest)
+	auto pushOp = [&](const IndexedMedia &m, NumberedMxfFolder dest)
 	{
 		if (m.folder == dest)
 			return;
@@ -361,14 +359,14 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 	for (const Group &g : groups)
 	{
 		const QString &prefix = g.homePrefix;
-		const FolderName home{prefix, g.homeN};
+		const NumberedMxfFolder home{prefix, g.homeN};
 		const int size = static_cast<int>(g.members.size());
 
 		// Split oversized groups only when their existing packing exceeds the
 		// budget or uses more than the minimum number of folders.
 		if (size > Conventions::kFolderMax)
 		{
-			QSet<FolderName> occupiedFolders;
+			QSet<NumberedMxfFolder> occupiedFolders;
 			bool withinBudget = true;
 			for (const auto &member : g.members)
 			{
@@ -383,7 +381,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 			int idx = 0;
 			while (idx < size)
 			{
-				FolderName target;
+				NumberedMxfFolder target;
 				const int slackHome = Conventions::kFolderMax - projected.value(home, 0);
 				if (idx == 0 && slackHome >= (size - idx))
 					target = home;
@@ -424,14 +422,14 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		// nothing existing has room, allocate a new folder.
 		// First-fit (not best-fit) keeps low Ns denser, matching
 		// editor intuition that "1" is the busiest folder.
-		FolderName dest;
+		NumberedMxfFolder dest;
 		bool found = false;
 		QSet<int> all = allFoldersForPrefix(prefix);
 		QList<int> sortedNs(all.constBegin(), all.constEnd());
 		std::sort(sortedNs.begin(), sortedNs.end());
 		for (int n : sortedNs)
 		{
-			FolderName cand{prefix, n};
+			NumberedMxfFolder cand{prefix, n};
 			if (projected.value(cand, 0) + size <= Conventions::kFolderMax)
 			{
 				dest = cand;
@@ -451,11 +449,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// MARK: Tally per-folder filesIn / filesOut / bytesIn / bytesOut
 
-	// Indices, not pointers. A future post-tally append to
-	// plan.folders (via allocateNewFolder or similar) would silently
-	// invalidate every pointer in this hash; indices survive
-	// QVector reallocations.
-	QHash<FolderName, int> stateByFid;
+	// Folder indices stay valid if the vector reallocates.
+	QHash<NumberedMxfFolder, int> stateByFid;
 	for (int i = 0; i < plan.folders.size(); ++i)
 	{
 		if (plan.folders[i].inScope)

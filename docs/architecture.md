@@ -42,6 +42,10 @@ Media paths use these names (with `/Volumes/MediaSSD` omitted below):
 `AvidMediaLayout::Location::rootPath` can identify either the MXF folder or
 `OMFI MediaFiles`, so its name stays generic.
 
+`NumberedMxfFolder` holds the `prefix` and `number` used by Rebalance: for
+`MartyiMac.2`, these are `MartyiMac` and `2`. Ordinary names such as `Interview`
+remain strings in `mediaFolderName`.
+
 Main-window menu actions also drive their matching buttons, so enabled states
 follow the same inventory, selection and activity rules. Text editing uses the
 Qt controls' built-in keyboard shortcuts and context menus.

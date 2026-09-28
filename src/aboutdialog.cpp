@@ -28,8 +28,7 @@
 
 namespace
 {
-	/// The account's human display name, for the credits-roll easter egg —
-	/// this dialog is its only consumer (folded in from userinfo.* 2026-08-31).
+	/// The account's display name, used in the rolling credits.
 	QString userDisplayName()
 	{
 #if defined(Q_OS_UNIX)

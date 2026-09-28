@@ -272,7 +272,7 @@ void TestConventions::numbered_mxf_folder_names()
 	if (result)
 	{
 		QCOMPARE(result->prefix, prefix);
-		QCOMPARE(result->n, number);
+		QCOMPARE(result->number, number);
 		QCOMPARE(result->display(), name);
 	}
 }

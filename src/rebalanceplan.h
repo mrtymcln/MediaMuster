@@ -14,7 +14,7 @@
 struct RebalanceMove
 {
 	QString srcPath;
-	FolderName dest;
+	NumberedMxfFolder dest;
 	QString masterMobId; ///< Empty for files with no relatives group.
 	qint64 sizeBytes = 0;
 	qint64 modifiedMs = -1;
@@ -29,8 +29,8 @@ struct RebalanceMove
 /// Folders outside Rebalance's numbered series are shown read-only.
 struct FolderState
 {
-	QString mediaFolderName; ///< Matches FolderName::display() when in scope.
-	FolderName id;           ///< Valid only when `inScope` is true.
+	QString mediaFolderName; ///< Matches NumberedMxfFolder::display() when in scope.
+	NumberedMxfFolder id;	 ///< Valid only when `inScope` is true.
 	int count = 0;
 	qint64 bytes = 0;
 	int filesIn = 0;
@@ -52,7 +52,7 @@ struct RebalancePlan
 
 	QVector<FolderState> folders;
 	QVector<RebalanceMove> ops;
-	QVector<FolderName> newFolders;
+	QVector<NumberedMxfFolder> newFolders;
 
 	int moveCount() const { return static_cast<int>(ops.size()); }
 };

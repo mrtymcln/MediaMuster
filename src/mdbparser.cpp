@@ -3,7 +3,7 @@
 #include "bentofile.h"
 #include "diagnostics.h"
 #include "omfobjects.h"
-#include "omfuid.h" // OMF-era: widens the 12-byte omfi:UID to the 32-byte key form.
+#include "omfuid.h"
 
 #include <QByteArrayView>
 #include <QFile>
@@ -52,8 +52,8 @@
 //     OMFI:TRKG:Tracks → TRAK → TrackComponent → SEQU/SCLP/TCCP: drop frame
 //                                    from OMFI:TCCP:Flags, reached through the
 //                                    source mobs a SCLP points at
-//   source mob   (PhysicalMedia → MDES; the import/tape source) — not needed:
-//                 the master's attributes carry the source path.
+//   source mob   (PhysicalMedia → MDES; the import/tape source)
+//                 supplies linked timecode and a fallback project name.
 //
 // Verified 2026-08-19..22 against 360 whole MXF files with their own
 // databases plus 795 archived headers across two database generations: clip
@@ -63,12 +63,8 @@
 // audio (MPGA), which carries no codec label in the MDB — such a file is
 // reported essenceComplete=false and the scanner reads its header instead.
 //
-// The object walks themselves (attribute tree, descriptor, timecode hop)
-// live in OmfObjects (omfobjects.{h,cpp}) since 2026-09-02: an OMF-era
-// essence file is the same object store, so one walker serves both. This
-// file keeps what is database-specific — the load, the MobID grouping and
-// the master/file/source triage — and the decode notes above, which is
-// where every rule the walker applies was verified.
+// OmfObjects shares the attribute, descriptor and timecode walks with the
+// OMF media reader. This parser loads and groups database records by MobID.
 //
 // In the OMF-era fixtures, msmMMOB.mdb uses 12-byte omfi:UIDs; MC 2026
 // also writes a 32-byte UMID on the physical mob. Both widths are keyed
@@ -78,15 +74,11 @@
 // shipped SupportingFiles fixtures. Version-2 PMRs can store projects;
 // version 1 omits them. A physical mob owning an MDES is a source mob.
 //
-// Three traps that produced confidently wrong "it's not in there" readings
-// before this parser existed, kept here so nobody re-learns them:
-//  - The codec label is stored in GUID order; searched in MXF order it scores
-//    0/41. Un-rotate it (auidToUl) and it is byte-identical on 104/104 files.
-//  - A property NAME appears once in the whole file — in the dictionary.
-//    Presence of values is only visible through the table of contents.
-//  - The same MobID is written on more than one MOBJ object (the TONE clip's
-//    name sits on one, its _ORG_BIN on another). Records must be MERGED across
-//    duplicates, first non-empty per field; first-wins-per-MobID loses the bin.
+// Parsing rules:
+//  - Codec labels use GUID order; auidToUl converts them to MXF byte order.
+//  - Property names are dictionary entries; values are reached through the TOC.
+//  - Multiple objects may share a MobID. Merge their first non-empty fields
+//    so a clip's name and bin can come from different objects.
 
 namespace
 {
@@ -146,9 +138,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		if (!OmfObjects::isMobClass(b.objectClass(obj)))
 			continue;
 		const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, p.mobId));
-		// OMF-era: canonicalHex accepts a 12-byte omfi:UID (wrapped to the
-		// 32-byte form the v2 PMR yields) beside the 32-byte UMID, and reads
-		// empty for any other width; a 32-byte id formats exactly as before.
+		// Canonical keys support 12-byte OMF IDs and 32-byte UMIDs.
 		const QString hex = OmfUid::canonicalHex(raw);
 		if (hex.isEmpty() || raw == QByteArrayView(placeholderMob()))
 			continue;
@@ -169,8 +159,8 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 	{
 		const QVector<quint32> &objs = objectsByHex[hex];
 
-		// A file mob owns a media descriptor; a source mob owns an MDES (the
-		// import/tape source — not needed); a master mob owns nothing.
+		// A file mob owns a media descriptor; a source mob owns an MDES;
+		// a master mob has no physical-media descriptor.
 		quint32 mediaObj = 0, mediaDesc = 0;
 		bool anyPhysical = false;
 		bool explicitMaster = false;
@@ -263,9 +253,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		m.mobIdHex = hex;
 		m.usageCode = usageCode;
 		OmfObjects::Attributes a;
-		// OMF-era: a 12-byte mob may point _SRCFILE at a WINL/UNXL; a 32-byte
-		// (MXF-era) mob keeps the MACL-only rule, so its Source File is
-		// exactly what it was before the walker learned the other locators.
+		// OMF mobs allow WINL/UNXL source locators; MXF-era mobs use MACL only.
 		a.omfEra = b.value(objs.first(), p.mobId).size() == OmfUid::kUidSize;
 		QSet<quint32> seen;
 		for (quint32 obj : objs)

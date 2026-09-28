@@ -57,14 +57,17 @@ namespace
 	QTreeWidgetItem *choice(PrecomputeFilterDialog &dialog, const QStringList &path)
 	{
 		auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("precomputeChoices"));
-		if (!tree || tree->topLevelItemCount() != 1) return nullptr;
+		if (!tree || tree->topLevelItemCount() != 1)
+			return nullptr;
 		auto *item = tree->topLevelItem(0);
 		for (const auto &name : path)
 		{
 			QTreeWidgetItem *next = nullptr;
 			for (int i = 0; i < item->childCount(); ++i)
-				if (item->child(i)->text(0) == name) next = item->child(i);
-			if (!next) return nullptr;
+				if (item->child(i)->text(0) == name)
+					next = item->child(i);
+			if (!next)
+				return nullptr;
 			item = next;
 		}
 		return item;
@@ -83,7 +86,7 @@ namespace
 		proxy.setSourceModel(&model);
 		proxy.setPrecomputesEnabled(true);
 		proxy.setPrecomputeTreeFilter(filter);
-		proxy.setEffectVolumeFilter(volume);
+		proxy.setPrecomputeVolumeFilter(volume);
 		QStringList names;
 		for (int i = 0; i < proxy.rowCount(); ++i)
 			names.append(model.fileAt(proxy.mapToSource(proxy.index(i, 0)).row()).fileName);
@@ -137,7 +140,7 @@ void TestPrecomputeFilterDialog::branches_combine_and_reopen_without_crossing_su
 	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()).size(), 3);
 	titles->setCheckState(0, Qt::Checked);
 	const QStringList expected{QStringLiteral("renamed-title.mxf"), QStringLiteral("title.mxf"),
-		QStringLiteral("warp1.mxf"), QStringLiteral("warp2.mxf"), QStringLiteral("warp3.mxf")};
+							   QStringLiteral("warp1.mxf"), QStringLiteral("warp2.mxf"), QStringLiteral("warp3.mxf")};
 	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()), expected);
 	PrecomputeFilterDialog reopened(rows(), dialog.precomputeFilter(), {});
 	QCOMPARE(matchingFiles(rows(), reopened.precomputeFilter()), expected);

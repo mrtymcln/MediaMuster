@@ -6,7 +6,7 @@
 #include "diagnostics.h"
 #include "mobid.h"
 #include "mxfparser.h"
-#include "omfparser.h" // OMF-era: the Bento-tail twin of MxfParser for legacy essence
+#include "omfparser.h"
 #include "pmrkey.h"
 #include "progressthrottle.h"
 #include <QDir>
@@ -93,7 +93,7 @@ bool MediaScanner::canScanPath(const QString &path)
 
 void MediaScanner::startScan(const Options &options)
 {
-	// CAS against rapid double-clicks on Scan.
+	// Ignore another scan request while one is running.
 	bool expected = false;
 	if (!m_running.compare_exchange_strong(expected, true))
 		return;
@@ -105,8 +105,7 @@ void MediaScanner::startScan(const Options &options)
 		QMutexLocker lock(&m_logMutex);
 		m_pendingLogs.clear();
 	}
-	// Belt to concludeScan's brace: even if a future exit path forgets
-	// the closing-up routine, stale per-scan state can't cross scans.
+	// Start with fresh folder counts and database records.
 	{
 		QMutexLocker lock(&m_overfullMutex);
 		m_overfullFolders.clear();
@@ -153,11 +152,9 @@ namespace
 	// LowerLevel alone also covers groups and motion effects in MC 26.8.
 	// See AvidUsage for the shared definitions and conflict handling.
 	//
-	// File-mob codes are not a verdict: the 2,493-file corpus includes 107
-	// precomputes with file code 9 and another 64 with file code 0. Unknown or
-	// conflicting master usage stays Unknown. Catalogue/name lookup happens
-	// only after classification, so a title or renamed clip cannot establish
-	// that the underlying media is a precompute.
+	// Precomputes may have file-mob code 0 or 9; classification needs the
+	// master usage. Unknown or conflicting usage stays Unknown. Name lookup
+	// supplies effect details only after classification.
 
 	/// Applies ranked clip names within the scanner; higher-ranked non-empty names win.
 	/// The first of two equally ranked names is retained. Loaded-bin fallback
@@ -170,8 +167,7 @@ namespace
 		mf.clipNameSource = src;
 	}
 
-	// Assign only when src is non-empty and dst is empty. Keeps MDB
-	// from thrashing values an earlier pass (PMR, MXF) set.
+	// Fill an empty field without replacing an earlier source's value.
 	template <typename T>
 	void assignIfMissing(T &dst, const T &src)
 	{
@@ -200,10 +196,7 @@ namespace
 			mf.isImported = true;
 	}
 
-	/// Technical facts → the row. Shared by both producers: pass 1 hands in
-	/// what msmMMOB.mdb says about the file, pass 2 what the file's own header
-	/// says. Every value has already been through MediaMetadataUtil::finalise, so the
-	/// two cannot disagree on a derived field.
+	/// Applies database or header metadata after MediaMetadataUtil::finalise.
 	void applyMetadata(MediaFile &mf, const MediaMetadata &metadata)
 	{
 		// A failed/incomplete header read cannot negate an earlier database
@@ -232,18 +225,14 @@ namespace
 				mf.timecodeBase = metadata.timecodeBase;
 			if (metadata.dropFrame)
 				mf.dropFrame = true;
-			// The producer owns audio-ness end to end (descriptor sets or the
-			// essence label's own bytes in a header; the descriptor class in
-			// the MDB). No display-name comparisons here.
+			// Parsers identify audio from descriptors or essence labels.
 			if (metadata.isAudio)
 				mf.kind = MediaFile::Kind::Audio;
 			else if (metadata.width > 0 && metadata.height > 0)
 				mf.kind = MediaFile::Kind::Video;
 		}
 
-		// Import facts a header carries as TaggedValues (UNC Path, Video,
-		// _IMPORTSETTING). The MDB usually supplied them in pass 1; this is
-		// what gives a row WITHOUT a database — Interplay — the same columns.
+		// Header import metadata can fill fields missing from the database pass.
 		assignIfMissing(mf.sourceFilePath, metadata.sourceFilePath);
 		assignIfMissing(mf.sourceContainer, metadata.sourceContainer);
 		if (mf.sourceFileName.isEmpty() && !mf.sourceFilePath.isEmpty())
@@ -501,8 +490,7 @@ void MediaScanner::concludeScan(const QVector<MediaFile> &files, bool cancelled)
 		m_overfullFolders.clear();
 	}
 
-	// Drop the cached clip records (only the masters were kept — a few
-	// strings per clip), but staleness is the real reason to clear.
+	// Discard cached records so the next scan reads current metadata.
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
 		m_mdbMapsByFolder.clear();
@@ -983,8 +971,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		mf.masterMobId = pmr.masterMobId;
 	};
 
-	// The PMR records the on-disk filename verbatim; an exact match is the
-	// only match there is (see PmrIndex).
+	// Match the normalised filename, including its punctuation and extension.
 	const auto pmrIt = pmrMap.constFind(primaryKey);
 	if (pmrIt != pmrMap.constEnd() && !pmrIt->isEmpty())
 		applyPmrHit(pmrIt->first());
@@ -1191,8 +1178,7 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 	for (int i = 0; i < files.size(); ++i)
 	{
 		const MediaFile &f = files[i];
-		// A row needs its header when the databases left it without technical
-		// facts — or without a project name, which the header also carries.
+		// Pass 1 marks rows with stale, incomplete or unknown database metadata.
 		const bool omfCandidate = f.omfEra;
 		if (!f.needsHeaderRead)
 			continue;

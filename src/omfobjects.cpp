@@ -1,12 +1,7 @@
-// OMF-era (legacy Avid media, pre-MXF). The OMF Interchange object walker
-// shared by the MXF-era MDB reader and the OMF-era readers — see
-// omfobjects.h for what it covers. The walks below are the ones MdbParser
-// carried privately until 2026-09-02, moved here and then taught the
-// OMF-era cases (each tagged at the line); the decode notes that justify
-// the MXF-era rules stay in mdbparser.cpp's header comment, which is where
-// they were verified.
+// OMF object walks shared by the MDB and legacy media readers.
+// See omfobjects.h for the interface and mdbparser.cpp for database decode notes.
 //
-// MARK: - OMF-era facts the additions rest on (read from the fixtures)
+// MARK: - OMF format details observed in the fixtures
 //
 //  - Codec. The .omf files carry NO EssenceCompression; their identity is
 //    (DIDResolutionID, Compression 4CC). The msmMMOB.mdb MC 26.8 regenerates
@@ -14,8 +9,8 @@
 //    table does not know, and a SMPTE "uncompressed" label on ids 151/152/
 //    2500 — so for an OMF-era (12-byte) file mob the OmfResolutions table
 //    is consulted FIRST and the label only when the table has no row. That
-//    keeps the database and the file naming a clip identically. An MXF-era
-//    (32-byte) mob never reaches the table: its behaviour is unchanged.
+//    keeps the database and file codec names consistent. MXF-era (32-byte)
+//    mobs use the label directly.
 //  - Audio. WAVD / AIFD carry no MDAU properties; channels, bits and rate
 //    sit in OMFI:WAVD:Summary (a RIFF header, `bext` chunk first, then
 //    `fill`, then `fmt `) and OMFI:AIFD:Summary (FORM/AIFC, `bext` then
@@ -177,9 +172,8 @@ namespace OmfObjects
 	{
 		if (resId <= 1234 || resId >= 1490)
 			return {};
-		// Gap fix: 1244 (DNx TR, 1440x540i) was registered under version
-		// byte 0x0D, not 0x0A — the only DNxHD id whose 0x0A spelling names
-		// nothing in the shared codec table. Both eras hit this.
+		// Resolution 1244 (DNx TR, 1440x540i) uses label version 0x0D;
+		// the other DNxHD IDs here use 0x0A.
 		if (resId == 1244)
 			return QByteArray::fromHex("060E2B340401010D04010202710A0000");
 		QByteArray ul = QByteArray::fromHex("060e2b340401010a04010202");

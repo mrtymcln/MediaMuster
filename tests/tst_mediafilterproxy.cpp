@@ -482,7 +482,7 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	proxy.setPrecomputesEnabled(true);
 	proxy.setPrecomputeTreeFilter({true, {{{}, {}, QStringLiteral("Title")}, {{}, {}, QStringLiteral("Custom, exact name")}}});
 	QCOMPARE(proxy.rowCount(), 4); // OR across names, proven precomputes only
-	proxy.setEffectVolumeFilter(title.volumePath);
+	proxy.setPrecomputeVolumeFilter(title.volumePath);
 	QCOMPARE(proxy.rowCount(), 3);
 	proxy.setProjectFilter({title.project});
 	QCOMPARE(proxy.rowCount(), 2);
@@ -504,8 +504,8 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	QCOMPARE(proxy.rowCount(), 0); // names are exact, not fuzzy or case folded
 	proxy.setPrecomputeTreeFilter({});
 	QCOMPARE(proxy.rowCount(), 3); // volume alone still means precomputes
-	proxy.setEffectVolumeFilter({});
-	QCOMPARE(proxy.rowCount(), 6); // neither selection means no effect filter
+	proxy.setPrecomputeVolumeFilter({});
+	QCOMPARE(proxy.rowCount(), 6); // neither selection means no precompute filter
 }
 
 void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
@@ -540,10 +540,10 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 	for (const auto &test : cases)
 	{
 		proxy.setPrecomputeTreeFilter(test.filter);
-		proxy.setEffectVolumeFilter(render.volumePath);
+		proxy.setPrecomputeVolumeFilter(render.volumePath);
 		QVERIFY(!proxy.precomputeTreeFilter().active);
 		QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty());
-		QVERIFY(proxy.effectVolumeFilter().isEmpty());
+		QVERIFY(proxy.precomputeVolumeFilter().isEmpty());
 		QCOMPARE(proxy.rowCount(), 2);
 	}
 	for (const auto &text : {render.precomputeCategoryDisplay(), render.effect, render.effectCategory, render.effectSequence})
@@ -564,13 +564,13 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 		proxy.setPrecomputeTreeFilter(test.filter);
 		QVERIFY(proxy.precomputeTreeFilter().active);
 		QCOMPARE(proxy.precomputeTreeFilter().paths.size(), test.filter.paths.size());
-		proxy.setEffectVolumeFilter(render.volumePath);
+		proxy.setPrecomputeVolumeFilter(render.volumePath);
 		QCOMPARE(proxy.rowCount(), test.expectedRows);
 		proxy.setPrecomputesEnabled(false);
 		QCOMPARE(proxy.rowCount(), 2);
 		QVERIFY(!proxy.precomputeTreeFilter().active);
 		QVERIFY(proxy.precomputeTreeFilter().paths.isEmpty());
-		QVERIFY(proxy.effectVolumeFilter().isEmpty());
+		QVERIFY(proxy.precomputeVolumeFilter().isEmpty());
 		proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
 		QCOMPARE(proxy.rowCount(), 2); // Hidden mode remains inactive.
 		proxy.setPrecomputesEnabled(true);
@@ -656,7 +656,7 @@ void TestMediaFilterProxy::precompute_hierarchy_filters_intersect_and_unknown_is
 	QCOMPARE(proxy.rowCount(), 4);
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}}, {QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), {}}}});
 	QCOMPARE(proxy.rowCount(), 3);
-	proxy.setEffectVolumeFilter(warp.volumePath);
+	proxy.setPrecomputeVolumeFilter(warp.volumePath);
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}});
 	QCOMPARE(proxy.rowCount(), 1);
@@ -716,7 +716,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	QCOMPARE(proxy.rowCount(), 1); // same effect text in another branch does not match
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), {}, {}}, warpPath}});
 	QCOMPARE(proxy.rowCount(), 4); // all title/matte branches OR this rendered effect
-	proxy.setEffectVolumeFilter(warp.volumePath);
+	proxy.setPrecomputeVolumeFilter(warp.volumePath);
 	QCOMPARE(proxy.rowCount(), 3);
 	proxy.setProjectFilter({warp.project});
 	QCOMPARE(proxy.rowCount(), 2);
@@ -730,7 +730,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setSearchText(QStringLiteral("Matte Key"));
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setEffectVolumeFilter(QStringLiteral("/Volumes/NOT SCANNED"));
+	proxy.setPrecomputeVolumeFilter(QStringLiteral("/Volumes/NOT SCANNED"));
 	QCOMPARE(proxy.rowCount(), 0);
 	QCOMPARE(proxy.precomputeTreeFilter().paths.size(), 2); // volume never erases choices
 }
@@ -757,7 +757,7 @@ void TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
 	proxy.setPrecomputeTreeFilter({true, {}});
 	QCOMPARE(proxy.rowCount(), 0);
 	QVERIFY(proxy.precomputeTreeFilter().active);
-	proxy.setEffectVolumeFilter(render.volumePath);
+	proxy.setPrecomputeVolumeFilter(render.volumePath);
 	QCOMPARE(proxy.rowCount(), 0); // no ticks remains no matches, even on a chosen volume
 	proxy.setPrecomputeTreeFilter({true, {{}}});
 	QCOMPARE(proxy.rowCount(), 2); // root means proven precomputes only
@@ -771,7 +771,7 @@ void TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
 	QCOMPARE(proxy.rowCount(), 0); // display values, including unknown, are exact
 	proxy.setPrecomputeTreeFilter({});
 	QCOMPARE(proxy.rowCount(), 2); // the independent volume still requires a precompute
-	proxy.setEffectVolumeFilter({});
+	proxy.setPrecomputeVolumeFilter({});
 	QCOMPARE(proxy.rowCount(), 4);
 }
 
