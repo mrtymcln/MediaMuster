@@ -7,7 +7,6 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Test)
 function(mediamuster_add_test name label)
     add_executable(${name}
         ${name}.cpp
-        ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
         ${ARGN}
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
@@ -25,7 +24,9 @@ endfunction()
 ### Core ###
 
 # Diagnostic messages and crash-report collection.
-mediamuster_add_test(tst_diagnostics core)
+mediamuster_add_test(tst_diagnostics core
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
+)
 
 # Header-only namespaces.
 mediamuster_add_test(tst_mobid core)
@@ -48,6 +49,7 @@ target_compile_definitions(tst_omfuid PRIVATE
 # Shared codec lookup and metadata derivation, without binary parser dependencies.
 mediamuster_add_test(tst_mediametadata media
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 
 # BentoFile: the container primitive under msmMMOB.mdb — label, TOC,
@@ -63,6 +65,7 @@ target_compile_definitions(tst_bentofile PRIVATE
 # PMR filename normalization and fixed-layout parsing, driven by hand-crafted byte buffers.
 mediamuster_add_test(tst_pmrparser media
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_pmrparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -80,6 +83,7 @@ mediamuster_add_test(tst_mdbparser media
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_mdbparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -98,6 +102,7 @@ mediamuster_add_test(tst_omfparser media
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_omfparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -108,6 +113,7 @@ target_compile_definitions(tst_omfparser PRIVATE
 # the two real OMF-era bins in fixtures/omf.
 mediamuster_add_test(tst_avbparser media
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_avbparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -118,6 +124,7 @@ target_compile_definitions(tst_avbparser PRIVATE
 mediamuster_add_test(tst_mxfparser media
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_mxfparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
@@ -140,6 +147,7 @@ mediamuster_add_test(tst_scanner media
     ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
     ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent)
 target_compile_definitions(tst_scanner PRIVATE
@@ -154,16 +162,10 @@ mediamuster_add_test(tst_opcleanup operations
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
 )
 
-# Volume identity plus the NativeFile
-# platform primitives, over real temp files and fixture MXF headers.
+# Volume identity and native durability primitives over real temporary files.
 mediamuster_add_test(tst_volumeidentity operations
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-)
-target_compile_definitions(tst_volumeidentity PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
 # Journal state/claim contracts and serialized operation/policy names, without a runner.
@@ -172,10 +174,7 @@ mediamuster_add_test(tst_opjournal operations
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
 )
-mediamuster_link_native_operations(tst_opjournal)
 
 # Rebalance folder naming and redistribution plans over synthetic Avid folders.
 # Execution contracts live in tst_fileoperations, keeping this planner-only.
@@ -199,6 +198,7 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)
@@ -243,13 +243,14 @@ mediamuster_add_test(tst_binfilterdialog ui
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
     ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent)
 set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
 # Production UI and coordinator behavior, with no alternate operation model.
 set(_operation_ui_sources ${SOURCES})
-list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)(main|diagnostics)\\.cpp$")
+list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)main\\.cpp$")
 list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
 list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
 mediamuster_add_test(tst_operationui ui ${_operation_ui_sources})

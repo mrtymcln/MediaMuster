@@ -18,12 +18,8 @@ class TestRebalancePlanner : public QObject
 private slots:
 	void parseMxfFolderName_supported_names_data();
 	void parseMxfFolderName_supported_names();
-	void parseMxfFolderName_rejects_quarantined();
-	void parseMxfFolderName_rejects_leading_dot();
-	void parseMxfFolderName_rejects_zero_padded();
-	void parseMxfFolderName_rejects_zero();
-	void parseMxfFolderName_rejects_negative();
-	void parseMxfFolderName_rejects_non_numeric_tail();
+	void parseMxfFolderName_rejects_invalid_names_data();
+	void parseMxfFolderName_rejects_invalid_names();
 
 	void missing_root_yields_empty_plan();
 	void noop_when_already_balanced();
@@ -163,39 +159,24 @@ void TestRebalancePlanner::parseMxfFolderName_supported_names()
 	QCOMPARE(id->display(), name);
 }
 
-void TestRebalancePlanner::parseMxfFolderName_rejects_quarantined()
+void TestRebalancePlanner::parseMxfFolderName_rejects_invalid_names_data()
 {
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("Quarantined Files")).has_value());
+	QTest::addColumn<QString>("name");
+	QTest::newRow("quarantined") << QStringLiteral("Quarantined Files");
+	QTest::newRow("empty-workstation") << QStringLiteral(".5");
+	QTest::newRow("zero-padded-local") << QStringLiteral("05");
+	QTest::newRow("zero-padded-workstation") << QStringLiteral("MartysiMac.005");
+	QTest::newRow("zero-padded-digit-workstation") << QStringLiteral("Ingest1.032");
+	QTest::newRow("zero") << QStringLiteral("0");
+	QTest::newRow("negative") << QStringLiteral("-1");
+	QTest::newRow("non-numeric-tail") << QStringLiteral("MartysiMac.abc");
+	QTest::newRow("missing-folder-number") << QStringLiteral("EditSuite2");
 }
 
-void TestRebalancePlanner::parseMxfFolderName_rejects_leading_dot()
+void TestRebalancePlanner::parseMxfFolderName_rejects_invalid_names()
 {
-	// A workstation name cannot be empty before the separating dot.
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral(".5")).has_value());
-}
-
-void TestRebalancePlanner::parseMxfFolderName_rejects_zero_padded()
-{
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("05")).has_value());
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("MartysiMac.005")).has_value());
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("Ingest1.032")).has_value());
-}
-
-void TestRebalancePlanner::parseMxfFolderName_rejects_zero()
-{
-	// Folder numbers must be positive.
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("0")).has_value());
-}
-
-void TestRebalancePlanner::parseMxfFolderName_rejects_negative()
-{
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("-1")).has_value());
-}
-
-void TestRebalancePlanner::parseMxfFolderName_rejects_non_numeric_tail()
-{
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("MartysiMac.abc")).has_value());
-	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("EditSuite2")).has_value());
+	QFETCH(QString, name);
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(name).has_value());
 }
 
 void TestRebalancePlanner::missing_root_yields_empty_plan()

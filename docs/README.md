@@ -15,7 +15,7 @@ rule and its reason; dated investigations belong in the records below.
 ## Technical references and validation
 
 - [Native file-operation validation](file-operations-native-api-validation.md): tested behaviour and outstanding platform checks.
-- [Parser compatibility](parser-compatibility.md) and [implementation validation](implementation-validation.md).
+- [Parser compatibility](parser-compatibility.md) and [dated validation results](reviews/2026-09-20-media-scope/validation-history.md).
 - [AVB parser](avb-parser.md) and [AVB error examples](avb-error-examples.md).
 - [Usage-code identification](usage-code-identification.md): provenance for Avid classification rules.
 - [PMR completeness](pmr-completeness.md): conditions for trusting the file index.
@@ -33,7 +33,6 @@ These documents preserve decisions, proposals, implementation follow-ups and pas
 findings. A statement of intent or an old finding is not necessarily current
 behaviour. Start with the guide above and follow the source links when checking it.
 
-- [Cleanup audit](codebase-cleanup-audit.md).
 - [Native bin fallback](native-bin-fallback.md).
 - [Operation recovery and cleanup](operation-recovery-cleanup.md).
 - [Historical reviews](reviews/README.md): dated findings, research and validation summaries.

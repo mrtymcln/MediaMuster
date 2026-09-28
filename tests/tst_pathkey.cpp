@@ -20,12 +20,9 @@ class TestPathKey : public QObject
 	Q_OBJECT
 private slots:
 	void normalise_empty_input_returns_empty();
-	void normalise_strips_trailing_slash();
 	void normalise_preserves_root_slash();
-	void normalise_resolves_dot_components();
-	void normalise_resolves_dotdot_components();
-	void normalise_equates_trailing_slash_variants();
-	void normalise_equates_dot_and_plain_forms();
+	void normalise_equates_path_spellings_data();
+	void normalise_equates_path_spellings();
 	void normalise_non_existent_path_falls_back_to_absolute();
 	void normalise_case_folds_on_case_insensitive_platforms();
 	void normalise_key_is_stable_when_the_file_appears();
@@ -35,18 +32,6 @@ private slots:
 void TestPathKey::normalise_empty_input_returns_empty()
 {
 	QCOMPARE(PathKey::normalise(QString()), QString());
-}
-
-void TestPathKey::normalise_strips_trailing_slash()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	// canonicalFilePath itself doesn't leave a trailing slash on a
-	// real directory, but the input might. Either way, output should
-	// not end with '/'.
-	const QString withSlash = tmp.path() + QLatin1Char('/');
-	const QString out = PathKey::normalise(withSlash);
-	QVERIFY(!out.endsWith(QLatin1Char('/')));
 }
 
 void TestPathKey::normalise_preserves_root_slash()
@@ -64,55 +49,31 @@ void TestPathKey::normalise_preserves_root_slash()
 #endif
 }
 
-void TestPathKey::normalise_resolves_dot_components()
+void TestPathKey::normalise_equates_path_spellings_data()
 {
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString plain = tmp.path();
-	const QString withDot = tmp.path() + QStringLiteral("/.");
-	QCOMPARE(PathKey::normalise(withDot), PathKey::normalise(plain));
+	QTest::addColumn<QString>("plain");
+	QTest::addColumn<QString>("alternate");
+	QTest::newRow("trailing-slash") << QString{} << QStringLiteral("/");
+	QTest::newRow("dot") << QString{} << QStringLiteral("/.");
+	QTest::newRow("dotdot") << QString{} << QStringLiteral("/a/..");
+	QTest::newRow("combined") << QStringLiteral("/a/b") << QStringLiteral("/a/./b/../b");
 }
 
-void TestPathKey::normalise_resolves_dotdot_components()
+void TestPathKey::normalise_equates_path_spellings()
 {
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	QVERIFY(QDir(tmp.path()).mkpath(QStringLiteral("child")));
-	// "<tmp>/child/.." should normalise to "<tmp>".
-	const QString viaDotdot = tmp.path() + QStringLiteral("/child/..");
-	QCOMPARE(PathKey::normalise(viaDotdot), PathKey::normalise(tmp.path()));
-}
-
-void TestPathKey::normalise_equates_trailing_slash_variants()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString plain = tmp.path();
-	const QString withSlash = tmp.path() + QLatin1Char('/');
-	QCOMPARE(PathKey::normalise(plain), PathKey::normalise(withSlash));
-}
-
-void TestPathKey::normalise_equates_dot_and_plain_forms()
-{
-	// The whole point of normalise: differently-spelled paths that
-	// point to the same place should compare equal after the call.
+	QFETCH(QString, plain);
+	QFETCH(QString, alternate);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	QVERIFY(QDir(tmp.path()).mkpath(QStringLiteral("a/b")));
-	const QString direct = tmp.path() + QStringLiteral("/a/b");
-	const QString indirect = tmp.path() + QStringLiteral("/a/./b/../b");
-	QCOMPARE(PathKey::normalise(direct), PathKey::normalise(indirect));
+	const QString key = PathKey::normalise(tmp.path() + alternate);
+	QCOMPARE(key, PathKey::normalise(tmp.path() + plain));
+	QVERIFY(!key.endsWith(QLatin1Char('/')));
 }
 
 void TestPathKey::normalise_non_existent_path_falls_back_to_absolute()
 {
-	// Path that doesn't exist on disk. canonicalFilePath returns
-	// empty; normalise must fall back to absoluteFilePath rather
-	// than silently dropping the input. Rooted via QDir::rootPath()
-	// ("/" on Unix, "C:/" on Windows) so the expectation is portable:
-	// an already-absolute, dot-free input survives the fallback —
-	// modulo the case-fold keys get on Windows/macOS (which lowercases
-	// even the drive letter; that cost this pin its first Windows run).
+	// Missing paths retain their absolute spelling, with platform case folding.
 	const QString nope = QDir::rootPath() + QStringLiteral("this/definitely/does/not/exist");
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 	QCOMPARE(PathKey::normalise(nope), nope.toCaseFolded());
@@ -121,11 +82,7 @@ void TestPathKey::normalise_non_existent_path_falls_back_to_absolute()
 #endif
 }
 
-// Two spellings of one on-disk name must produce ONE key on the
-// platforms whose default filesystems are case-insensitive — Windows'
-// canonicalFilePath keeps the caller's spelling (unlike macOS, which
-// resolves to the on-disk casing), and that mismatch made a case-variant
-// flatten silently skip a file on the first Windows CI run.
+// Case variants must collide even before the destination file exists.
 void TestPathKey::normalise_case_folds_on_case_insensitive_platforms()
 {
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
@@ -136,12 +93,7 @@ void TestPathKey::normalise_case_folds_on_case_insensitive_platforms()
 #endif
 }
 
-// THE invariant these keys exist for: the answer must not change the
-// instant the file turns up. The runner inserts a destination's key
-// before it writes the file and looks the same path up again after, so a
-// key that moves under it means the lookup misses — which is how the
-// second of two same-named files came to be silently skipped instead of
-// diverted to "name (2)".
+// The runner inserts keys before writing and looks them up after creation.
 void TestPathKey::normalise_key_is_stable_when_the_file_appears()
 {
 	QTemporaryDir tmp;
@@ -154,9 +106,7 @@ void TestPathKey::normalise_key_is_stable_when_the_file_appears()
 
 	QCOMPARE(afterCreate, beforeCreate);
 
-	// And the same for a whole missing branch, which is what a Copy into a
-	// destination folder that does not exist yet looks like: the folder is
-	// created between the two calls.
+	// Copy may also create the destination folder between lookups.
 	const QString deep = tmp.path() + QStringLiteral("/made/later/clip.mxf");
 	const QString beforeMkdir = PathKey::normalise(deep);
 	QVERIFY(QDir().mkpath(QFileInfo(deep).absolutePath()));
@@ -164,10 +114,7 @@ void TestPathKey::normalise_key_is_stable_when_the_file_appears()
 	QCOMPARE(PathKey::normalise(deep), beforeMkdir);
 }
 
-// The same invariant where it actually broke: any symlink in the path
-// ("/tmp" -> "/private/tmp" on macOS, or a user's own symlink to a
-// project drive) makes the canonical and absolute spellings differ, so a
-// key computed on one side of the file's creation did not match the other.
+// A symlinked ancestor must not change the key when the leaf appears.
 void TestPathKey::normalise_key_is_stable_through_a_symlinked_parent()
 {
 #ifdef Q_OS_WIN
@@ -186,8 +133,7 @@ void TestPathKey::normalise_key_is_stable_through_a_symlinked_parent()
 	const QString afterCreate = PathKey::normalise(viaLink);
 	QCOMPARE(afterCreate, beforeCreate);
 
-	// Both spellings of the one folder still key the same, which is the
-	// property canonicalisation was there for in the first place.
+	// The symlink and real parent still identify the same destination.
 	QCOMPARE(PathKey::normalise(viaLink),
 			 PathKey::normalise(real + QStringLiteral("/clip.mxf")));
 #endif

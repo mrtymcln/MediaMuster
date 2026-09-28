@@ -27,11 +27,6 @@ codec-table bug by construction. Projects are named `<name>_<raster>_<rate>`
 AVC Long GOP, DVCPro HD, J2K, XDCAM, H.264 proxy, PCM and MP2 audio, plus
 timeline effect renders. Known gap: no drop-frame project.
 
-`corpus_manifest.txt` is the machine-readable answer key: one `ROW|` line
-per file with the parsed codec/rate/duration/clip fields as of capture
-(format produced by `review/probes/mxfsweep`; regenerate after parser
-changes rather than trusting it blindly).
-
 The two database pairs are also ground truth for `tst_mdbparser`: every PMR
 pair is joined to its MDB records and every technical field compared to the
 slice's own header (795 files, two database generations).

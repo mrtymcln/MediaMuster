@@ -9,24 +9,12 @@
 
 namespace
 {
-	void writeReport(const QString &path, const QDateTime &mtime = {})
+	bool writeReport(const QString &path, const QDateTime &mtime = {})
 	{
-		QDir().mkpath(QFileInfo(path).absolutePath());
-		{
-			QFile f(path);
-			f.open(QIODevice::WriteOnly);
-			f.write("crash");
-			f.close();
-		}
-		if (mtime.isValid())
-		{
-			QFile f(path);
-			if (f.open(QIODevice::ReadWrite))
-			{
-				f.setFileTime(mtime, QFileDevice::FileModificationTime);
-				f.close();
-			}
-		}
+		QFile file(path);
+		return QDir().mkpath(QFileInfo(path).absolutePath()) &&
+			   file.open(QIODevice::WriteOnly) && file.write("crash") == 5 && file.flush() &&
+			   (!mtime.isValid() || file.setFileTime(mtime, QFileDevice::FileModificationTime));
 	}
 } // namespace
 
@@ -81,7 +69,7 @@ void TestDiagnostics::collects_recent_mediamuster_reports()
 	const QString reports = tmp.path() + QStringLiteral("/DiagnosticReports");
 	const QString logs = tmp.path() + QStringLiteral("/logs");
 
-	writeReport(reports + QStringLiteral("/MediaMuster-2026-05-31-141233.ips"));
+	QVERIFY(writeReport(reports + QStringLiteral("/MediaMuster-2026-05-31-141233.ips")));
 
 	const QStringList got = Diagnostics::collectCrashReports(reports, logs);
 	QCOMPARE(got.size(), 1);
@@ -95,9 +83,9 @@ void TestDiagnostics::ignores_other_apps_and_old_reports()
 	const QString reports = tmp.path() + QStringLiteral("/DiagnosticReports");
 	const QString logs = tmp.path() + QStringLiteral("/logs");
 
-	writeReport(reports + QStringLiteral("/SomeOtherApp-2026-05-31.ips")); // not ours
-	writeReport(reports + QStringLiteral("/MediaMuster-old.ips"),
-				QDateTime::currentDateTime().addDays(-90)); // too old
+	QVERIFY(writeReport(reports + QStringLiteral("/SomeOtherApp-2026-05-31.ips"))); // not ours
+	QVERIFY(writeReport(reports + QStringLiteral("/MediaMuster-old.ips"),
+						QDateTime::currentDateTime().addDays(-90))); // too old
 
 	const QStringList got = Diagnostics::collectCrashReports(reports, logs);
 	QVERIFY(got.isEmpty());
@@ -110,7 +98,7 @@ void TestDiagnostics::dedups_on_second_run()
 	QVERIFY(tmp.isValid());
 	const QString reports = tmp.path() + QStringLiteral("/DiagnosticReports");
 	const QString logs = tmp.path() + QStringLiteral("/logs");
-	writeReport(reports + QStringLiteral("/MediaMuster-2026-05-31-141233.ips"));
+	QVERIFY(writeReport(reports + QStringLiteral("/MediaMuster-2026-05-31-141233.ips")));
 
 	QCOMPARE(Diagnostics::collectCrashReports(reports, logs).size(), 1);
 	QVERIFY(Diagnostics::collectCrashReports(reports, logs).isEmpty()); // already have it

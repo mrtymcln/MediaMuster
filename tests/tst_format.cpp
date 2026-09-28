@@ -6,46 +6,31 @@ class TestFormat : public QObject
 {
 	Q_OBJECT
 private slots:
-	void bytes_below_kb_in_raw_bytes();
-	void bytes_at_kb_boundary();
-	void bytes_at_mb_boundary();
-	void bytes_at_gb_boundary();
-	void bytes_at_tb_boundary();
-	void bytes_clamps_negative_to_zero();
+	void bytes_data();
+	void bytes();
 };
 
-void TestFormat::bytes_below_kb_in_raw_bytes()
+void TestFormat::bytes_data()
 {
-	QCOMPARE(Format::bytes(0), QStringLiteral("0 B"));
-	QCOMPARE(Format::bytes(1), QStringLiteral("1 B"));
-	QCOMPARE(Format::bytes(999), QStringLiteral("999 B"));
+	QTest::addColumn<qint64>("size");
+	QTest::addColumn<QString>("expected");
+	QTest::newRow("zero") << qint64(0) << QStringLiteral("0 B");
+	QTest::newRow("one-byte") << qint64(1) << QStringLiteral("1 B");
+	QTest::newRow("below-kb") << qint64(999) << QStringLiteral("999 B");
+	QTest::newRow("kb") << qint64(1000) << QStringLiteral("1 KB");
+	QTest::newRow("mb") << qint64(1000000) << QStringLiteral("1.0 MB");
+	QTest::newRow("fractional-mb") << qint64(1500000) << QStringLiteral("1.5 MB");
+	QTest::newRow("gb") << qint64(1000000000) << QStringLiteral("1.0 GB");
+	QTest::newRow("tb") << qint64(1000000000000) << QStringLiteral("1.0 TB");
+	QTest::newRow("negative-one") << qint64(-1) << QStringLiteral("0 B");
+	QTest::newRow("negative-large") << qint64(-12345) << QStringLiteral("0 B");
 }
 
-void TestFormat::bytes_at_kb_boundary()
+void TestFormat::bytes()
 {
-	QCOMPARE(Format::bytes(1000), QStringLiteral("1 KB"));
-}
-
-void TestFormat::bytes_at_mb_boundary()
-{
-	QCOMPARE(Format::bytes(qint64(1000) * 1000), QStringLiteral("1.0 MB"));
-	QCOMPARE(Format::bytes(qint64(1500) * 1000), QStringLiteral("1.5 MB"));
-}
-
-void TestFormat::bytes_at_gb_boundary()
-{
-	QCOMPARE(Format::bytes(qint64(1000) * 1000 * 1000), QStringLiteral("1.0 GB"));
-}
-
-void TestFormat::bytes_at_tb_boundary()
-{
-	QCOMPARE(Format::bytes(qint64(1000) * 1000 * 1000 * 1000), QStringLiteral("1.0 TB"));
-}
-
-void TestFormat::bytes_clamps_negative_to_zero()
-{
-	QCOMPARE(Format::bytes(-1), QStringLiteral("0 B"));
-	QCOMPARE(Format::bytes(-12345), QStringLiteral("0 B"));
+	QFETCH(qint64, size);
+	QFETCH(QString, expected);
+	QCOMPARE(Format::bytes(size), expected);
 }
 
 QTEST_APPLESS_MAIN(TestFormat)

@@ -57,6 +57,14 @@ namespace
 		}
 		return out;
 	}
+	auto interruptAt(const QString &checkpoint)
+	{
+		return [checkpoint](const QString &stage, const auto &)
+		{
+			if (stage == checkpoint)
+				throw std::runtime_error("simulated termination at " + checkpoint.toStdString());
+		};
+	}
 	struct Sink : OpSink
 	{
 		QVector<OpResult> results;
@@ -1086,11 +1094,7 @@ void TestFileOperations::undo_settles_interrupted_retirement_cleanup()
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
 	runner.hooks.forceCopy = true;
-	runner.hooks.checkpoint = [&](const QString &point, const auto &)
-	{
-		if (point == boundary)
-			throw std::runtime_error("removal crash before Undo");
-	};
+	runner.hooks.checkpoint = interruptAt(boundary);
 	QVERIFY(runner.run(f.request(OpKind::Move), f.journals).needsAttention > 0);
 	const auto forward = OpJournal::scan(f.journals).first();
 	runner.hooks = {};
@@ -1154,11 +1158,7 @@ void TestFileOperations::crash_before_publication_is_not_complete()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &)
-	{
-		if (stage == "copy-ready")
-			throw std::runtime_error("simulated termination");
-	};
+	runner.hooks.checkpoint = interruptAt("copy-ready");
 	runner.run(f.request(), f.journals);
 	auto a = OperationRecovery::run(f.journals);
 	QCOMPARE(a.resumable.size(), 1);
@@ -1171,11 +1171,7 @@ void TestFileOperations::crash_after_publication_is_reconciled()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &)
-	{
-		if (stage == "published")
-			throw std::runtime_error("simulated termination");
-	};
+	runner.hooks.checkpoint = interruptAt("published");
 	runner.run(f.request(), f.journals);
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	auto a = OperationRecovery::run(f.journals);
@@ -1192,11 +1188,7 @@ void TestFileOperations::repeated_resume_continues_same_journal()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &)
-	{
-		if (stage == "copy-ready")
-			throw std::runtime_error("simulated termination");
-	};
+	runner.hooks.checkpoint = interruptAt("copy-ready");
 	runner.run(f.request(), f.journals);
 	auto records = OpJournal::scan(f.journals);
 	QCOMPARE(records.size(), 1);
@@ -1352,11 +1344,7 @@ void TestFileOperations::different_source_on_resume_is_refused()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &)
-	{
-		if (stage == "copying")
-			throw std::runtime_error("stop");
-	};
+	runner.hooks.checkpoint = interruptAt("copying");
 	runner.run(f.request(), f.journals);
 	QFile::remove(f.src);
 	put(f.src, QByteArray(f.bytes.size(), 'z'));
@@ -1998,11 +1986,7 @@ void TestFileOperations::torn_tail_retains_valid_prefix()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &)
-	{
-		if (stage == "published")
-			throw std::runtime_error("interrupted");
-	};
+	runner.hooks.checkpoint = interruptAt("published");
 	runner.run(f.request(), f.journals);
 	const auto record = OpJournal::scan(f.journals)[0];
 	const auto prefix = get(record.path);
@@ -2223,11 +2207,7 @@ void TestFileOperations::removal_crash_boundaries_resume()
 		std::atomic<bool> cancel{false};
 		OpRunner runner(sink, cancel);
 		runner.hooks.forceCopy = true;
-		runner.hooks.checkpoint = [&](const QString &stage, const auto &)
-		{
-			if (stage == point)
-				throw std::runtime_error("crash boundary");
-		};
+		runner.hooks.checkpoint = interruptAt(point);
 		auto request = f.request(OpKind::Move);
 		QVERIFY(runner.run(request, f.journals).needsAttention > 0);
 		auto saved = OpJournal::scan(f.journals).first();
@@ -2368,11 +2348,7 @@ void TestFileOperations::undo_move_resumes_after_publication()
 	undo.undoEnabled = true;
 	undo.undoJournalPath = OpJournal::scan(f.journals).first().path;
 	runner.hooks = {};
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
-	{
-		if (stage == "published")
-			throw std::runtime_error("interrupt Undo");
-	};
+	runner.hooks.checkpoint = interruptAt("published");
 	QVERIFY(runner.run(undo, f.journals).needsAttention > 0);
 	const auto pending = OpJournal::interrupted(f.journals);
 	QCOMPARE(pending.size(), 1);
@@ -3075,11 +3051,7 @@ void TestFileOperations::native_trash_fallback_crash_resume()
 		refused.error = "Native bin refused this file";
 		return refused;
 	};
-	runner.hooks.checkpoint = [&](const QString &stage, const auto &)
-	{
-		if (stage == checkpoint)
-			throw std::runtime_error("Simulated process interruption");
-	};
+	runner.hooks.checkpoint = interruptAt(checkpoint);
 	QVERIFY(runner.run(request, f.journals).needsAttention > 0);
 	QCOMPARE(get(f.src), f.bytes);
 	QCOMPARE(nativeCalls, 1);
@@ -3206,11 +3178,7 @@ void TestFileOperations::resume_flush_failure_stays_unfinished()
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
-	runner.hooks.checkpoint = [](const QString &stage, const auto &)
-	{
-		if (stage == "published")
-			throw std::runtime_error("interrupted copy");
-	};
+	runner.hooks.checkpoint = interruptAt("published");
 	QVERIFY(runner.run(f.request(), f.journals).needsAttention > 0);
 	const auto saved = OpJournal::scan(f.journals)[0];
 	OpRequest resume;

@@ -38,9 +38,8 @@ class TestMediaFilterProxy : public QObject
 {
 	Q_OBJECT
 private slots:
-	void nfc_search_finds_nfd_row();
-	void nfd_search_finds_nfc_row();
-	void folding_and_normalisation_compose();
+	void unicode_search_normalises_and_folds_data();
+	void unicode_search_normalises_and_folds();
 	void plain_ascii_never_matches_accents();
 
 	// Sorting. The Size column sorts on exact byte counts, not the
@@ -76,39 +75,26 @@ private slots:
 	void bin_expression_intersects_search_and_survives_model_refresh();
 };
 
-void TestMediaFilterProxy::nfc_search_finds_nfd_row()
+void TestMediaFilterProxy::unicode_search_normalises_and_folds_data()
 {
-	MediaTableModel model;
-	model.setMediaFiles({rowNamed(kCafeNfd)});
-	MediaFilterProxy proxy;
-	proxy.setSourceModel(&model);
-
-	QVERIFY(kCafeNfc != kCafeNfd); // the two forms really are different code points
-	proxy.setSearchText(kCafeNfc); // composed keyboard input
-	QCOMPARE(proxy.rowCount(), 1); // used to be 0 — the invisible-file bug
+	QVERIFY(kCafeNfc != kCafeNfd);
+	QTest::addColumn<QString>("name");
+	QTest::addColumn<QString>("search");
+	QTest::newRow("nfc-search-finds-nfd-row") << kCafeNfd << kCafeNfc;
+	QTest::newRow("nfd-search-finds-nfc-row") << kCafeNfc << kCafeNfd;
+	QTest::newRow("case-fold-and-normalise") << QStringLiteral("CAFÉ REEL 7") << kCafeNfc;
 }
 
-void TestMediaFilterProxy::nfd_search_finds_nfc_row()
+void TestMediaFilterProxy::unicode_search_normalises_and_folds()
 {
+	QFETCH(QString, name);
+	QFETCH(QString, search);
 	MediaTableModel model;
-	model.setMediaFiles({rowNamed(kCafeNfc)});
+	model.setMediaFiles({rowNamed(name)});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 
-	proxy.setSearchText(kCafeNfd); // e.g. pasted from an NFD path
-	QCOMPARE(proxy.rowCount(), 1);
-}
-
-void TestMediaFilterProxy::folding_and_normalisation_compose()
-{
-	// Uppercase decomposed row, lowercase composed needle: both the case
-	// fold and the normalisation have to apply for this to hit.
-	MediaTableModel model;
-	model.setMediaFiles({rowNamed(QStringLiteral("CAFÉ REEL 7"))});
-	MediaFilterProxy proxy;
-	proxy.setSourceModel(&model);
-
-	proxy.setSearchText(kCafeNfc);
+	proxy.setSearchText(search);
 	QCOMPARE(proxy.rowCount(), 1);
 }
 

@@ -43,6 +43,15 @@ namespace
 		return b;
 	}
 
+	// Metadata set framing for the short (< 128-byte) synthetic values below.
+	QByteArray shortSet(quint8 setType, const QByteArray &value)
+	{
+		QByteArray out = QByteArray::fromHex("060e2b34025301010d01010101010000");
+		out[14] = char(setType);
+		out.append(char(value.size()));
+		return out + value;
+	}
+
 	// One MXF metadata Set: 16-byte key (kUlSetPrefix's 13-byte match region + a
 	// set-type byte at [14]) + BER short-form length + a value carrying the package
 	// UID (tag 0x4401) and the package name (tag 0x4402, UTF-16BE).
@@ -53,15 +62,7 @@ namespace
 		const QByteArray nameBytes = utf16be(name);
 		value += QByteArray::fromHex("4402") + u16be(quint16(nameBytes.size())) + nameBytes;
 
-		QByteArray key = QByteArray::fromHex("060e2b34025301010d01010101"); // 13-byte prefix region
-		key.append(char(0x01));												// byte[13], arbitrary
-		key.append(char(setType));											// byte[14], the set type
-		key.append(char(0x00));												// byte[15], arbitrary
-
-		QByteArray out = key;
-		out.append(char(value.size())); // BER short form (value < 128 bytes)
-		out += value;
-		return out;
+		return shortSet(setType, value);
 	}
 
 	QByteArray u32be(quint32 v)
@@ -83,15 +84,7 @@ namespace
 		if (rateNum > 0)
 			value += u16be(0x3001) + u16be(8) + u32be(rateNum) + u32be(rateDen);
 
-		QByteArray key = QByteArray::fromHex("060e2b34025301010d01010101");
-		key.append(char(0x01));
-		key.append(char(0x28)); // CDCI descriptor set type
-		key.append(char(0x00));
-
-		QByteArray out = key;
-		out.append(char(value.size())); // BER short form
-		out += value;
-		return out;
+		return shortSet(0x28, value); // CDCI descriptor set type
 	}
 
 	// A CDCI-typed descriptor set carrying ONLY an essence label in tag
@@ -102,15 +95,7 @@ namespace
 		QByteArray value;
 		value += u16be(0x3201) + u16be(quint16(label16.size())) + label16;
 
-		QByteArray key = QByteArray::fromHex("060e2b34025301010d01010101");
-		key.append(char(0x01));
-		key.append(char(0x28)); // CDCI descriptor set type
-		key.append(char(0x00));
-
-		QByteArray out = key;
-		out.append(char(value.size())); // BER short form
-		out += value;
-		return out;
+		return shortSet(0x28, value); // CDCI descriptor set type
 	}
 
 	// A well-formed KLV item with a key matching no known set: the walk steps
@@ -936,7 +921,7 @@ void TestMxfParser::tagged_values_yield_source_path_and_import_flag()
 	QVERIFY(tone.sourceContainer.isEmpty());
 
 	const MediaMetadata render =
-		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/zT_ßt_1080i_50_seqDD866C6BV.mxf"));
+		MxfParser::parseHeader(QStringLiteral(FIXTURES_DIR "/corpus_headers/zT_ßt_1080i_50_seqDD866C6BV.mxf"));
 	QVERIFY(render.valid);
 	QVERIFY(render.isPrecompute);
 	QVERIFY(!render.hasImportSetting);

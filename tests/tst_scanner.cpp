@@ -505,7 +505,7 @@ void TestScanner::effect_render_names_classify_as_precompute()
 	// it is the ONE file of 823 that stores the UsageCode UL with its two
 	// 8-byte halves swapped (the AAF AUID form), so it also pins the fact that
 	// isPrecomputeUsage accepts both byte orders.
-	copyFixture(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
+	copyFixture(QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
 
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
@@ -1391,7 +1391,7 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
-	const QString replacement = fixturesDir() + QString::fromUtf8("/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
+	const QString replacement = fixturesDir() + QString::fromUtf8("/corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
 	const MediaMetadata header = MxfParser::parseHeader(replacement);
 	QVERIFY(header.valid && header.classificationKnown && header.isPrecompute);
 	const QString newFileId = MobId::toPmrForm(header.fileMobId);
@@ -1465,7 +1465,7 @@ void TestScanner::precompute_category_conflict_and_stale_database()
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
-	const QString fixture = QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
+	const QString fixture = QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
 	const auto header = MxfParser::parseHeader(fixturesDir() + QLatin1Char('/') + fixture);
 	QCOMPARE(header.precomputeCategory, MediaFile::PrecomputeCategory::RenderedEffects);
 	const QByteArray fileId = QByteArray::fromHex(MobId::toPmrForm(header.fileMobId).toLatin1());
@@ -1656,7 +1656,7 @@ void TestScanner::precompute_row_gets_effect_fields()
 	QVERIFY(QDir().mkpath(folder));
 	// A real render slice, no databases: the header's usage code says
 	// Precompute, and the catalogue names the effect from the clip name.
-	copyFixture(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
+	copyFixture(QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
 
 	const auto results = runScan(tmp.path());
 	QCOMPARE(results.size(), 1);
@@ -1857,8 +1857,8 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases_data()
 	QTest::newRow("manual-numbered-folder") << QStringLiteral("direct") << QStringLiteral("1") << true;
 	QTest::newRow("manual-shared-folder") << QStringLiteral("direct") << QStringLiteral("Editor.3") << true;
 	for (const QString &name : {QStringLiteral("Interview"), QStringLiteral("EditSuite2"), QStringLiteral("8243"),
-							   QStringLiteral("Ingest1.32"), QStringLiteral("EditSuite2.1"), QStringLiteral("Archive"),
-							   QStringLiteral("OMFI MediaFiles")})
+								QStringLiteral("Ingest1.32"), QStringLiteral("EditSuite2.1"), QStringLiteral("Archive"),
+								QStringLiteral("OMFI MediaFiles")})
 		for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("mxf-root"), QStringLiteral("direct")})
 			QTest::newRow(qPrintable(shape + QLatin1Char('-') + name)) << shape << name << true;
 	for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("direct")})
@@ -1920,7 +1920,7 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
 	QCOMPARE(mxf.clipNameSource, withDatabases ? MediaFile::ClipNameSource::Mdb
-												 : MediaFile::ClipNameSource::MaterialPackage);
+											   : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mxf.sampleRate, 48000);
 }
 
@@ -2551,7 +2551,7 @@ void TestScanner::mxf_and_omf_staging_rules()
 	QVERIFY(QDir().mkpath(mxfRootPath + QStringLiteral("/1")));
 	copyFixture(kToneName, mxfRootPath + QStringLiteral("/1"));
 	for (const QString &name : {QStringLiteral("cReAtInG"), QStringLiteral(".hidden"),
-							   QStringLiteral("Temp"), QStringLiteral("Quarantine")})
+								QStringLiteral("Temp"), QStringLiteral("Quarantine")})
 	{
 		QVERIFY(QDir().mkpath(mxfRootPath + QLatin1Char('/') + name));
 		copyFixture(kToneName, mxfRootPath + QLatin1Char('/') + name);

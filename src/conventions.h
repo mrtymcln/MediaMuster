@@ -141,12 +141,6 @@ namespace Conventions
 			   fileName.endsWith(QLatin1String(".wav"), Qt::CaseInsensitive);
 	}
 
-	/// Combined filename allowlist; layout and the OMF gate narrow scan admission.
-	inline bool hasAvidMediaExtension(QStringView fileName)
-	{
-		return hasMxfExtension(fileName) || hasOmfEraExtension(fileName);
-	}
-
 	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Avid's per-folder file budget
 	// ═══════════════════════════════════════════════════════════════

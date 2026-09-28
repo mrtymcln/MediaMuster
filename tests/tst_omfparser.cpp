@@ -87,7 +87,7 @@ void TestOmfParser::avid_legacy_version_alias_data()
 				<< compact << big << true << QByteArray::fromHex("0200") << int(OmfObjects::Revision::Omf2);
 		}
 	for (const QByteArray &raw : {QByteArray(), QByteArray::fromHex("00"), QByteArray::fromHex("0000"),
-		QByteArray::fromHex("0002"), QByteArray::fromHex("0300"), QByteArray::fromHex("000100")})
+								  QByteArray::fromHex("0002"), QByteArray::fromHex("0300"), QByteArray::fromHex("000100")})
 		QTest::newRow(("unknown-" + raw.toHex()).constData())
 			<< false << false << false << raw << int(OmfObjects::Revision::Unknown);
 	QTest::newRow("alias-does-not-apply-to-omf2-head")
@@ -134,8 +134,8 @@ void TestOmfParser::avid_legacy_version_excludes_compositions()
 	const MdbDatabase db = MdbParser::load(path);
 	QCOMPARE(db.revision, OmfObjects::Revision::Omf1);
 	QCOMPARE(db.masters.size(), 2);
-	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2)))); // usage1 precompute
-	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(8)))); // usage7 master
+	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2))));  // usage1 precompute
+	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(8))));  // usage7 master
 	QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(1)))); // usage0 composition
 	QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(100))));
 }
@@ -147,30 +147,31 @@ void TestOmfParser::omf_master_usage_is_role_specific_and_width_checked()
 	// The MDB usage cases separately cover II/MM scalar decoding.
 	constexpr bool big = false;
 	for (int code : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99, -2})
-		{
-			QByteArray data = TestOmf::wave(false, false, false, false, big);
-			BentoFile b;
-			QVERIFY(b.load(data));
-			const int usage = b.propertyId("OMFI:MOBJ:UsageCode");
-			int changed = 0;
-			TestOmf::Writer encoding(false, big);
-			for (const auto &entry : b.entries())
-				if (int(entry.property) == usage)
-				{
-					QVERIFY(entry.immediate);
-					QCOMPARE(entry.length, quint64(4));
-					data.replace(qsizetype(entry.tocPos + 12), 4, encoding.word(quint32(code == -2 ? 1 : code)));
-					if (code == -2) data.replace(qsizetype(entry.tocPos + 16), 4, BentoBuilder::le32(2));
-					++changed;
-				}
-			QCOMPARE(changed, 1);
-			const QString path = temp.filePath("usage.omf");
-			QVERIFY(tryWriteFile(path, data));
-			const auto m = OmfParser::parseHeader(path);
-			QVERIFY(m.essence.valid);
-			QCOMPARE(m.essence.classificationKnown, code == 1 || code == 7);
-			QCOMPARE(m.essence.isPrecompute, code == 1);
-		}
+	{
+		QByteArray data = TestOmf::wave(false, false, false, false, big);
+		BentoFile b;
+		QVERIFY(b.load(data));
+		const int usage = b.propertyId("OMFI:MOBJ:UsageCode");
+		int changed = 0;
+		TestOmf::Writer encoding(false, big);
+		for (const auto &entry : b.entries())
+			if (int(entry.property) == usage)
+			{
+				QVERIFY(entry.immediate);
+				QCOMPARE(entry.length, quint64(4));
+				data.replace(qsizetype(entry.tocPos + 12), 4, encoding.word(quint32(code == -2 ? 1 : code)));
+				if (code == -2)
+					data.replace(qsizetype(entry.tocPos + 16), 4, BentoBuilder::le32(2));
+				++changed;
+			}
+		QCOMPARE(changed, 1);
+		const QString path = temp.filePath("usage.omf");
+		QVERIFY(tryWriteFile(path, data));
+		const auto m = OmfParser::parseHeader(path);
+		QVERIFY(m.essence.valid);
+		QCOMPARE(m.essence.classificationKnown, code == 1 || code == 7);
+		QCOMPARE(m.essence.isPrecompute, code == 1);
+	}
 }
 
 void TestOmfParser::wave_omf1_and_omf2_semantics()
@@ -181,10 +182,7 @@ void TestOmfParser::wave_omf1_and_omf2_semantics()
 	{
 		const bool omf2 = variant != 0, compact = variant >= 2, big = variant == 3;
 		const QString path = temp.filePath(omf2 ? "wave-2.omf" : "wave-1.omf");
-		QFile f(path);
-		QVERIFY(f.open(QIODevice::WriteOnly));
-		f.write(TestOmf::wave(omf2, false, false, compact, big));
-		f.close();
+		QVERIFY(tryWriteFile(path, TestOmf::wave(omf2, false, false, compact, big)));
 		const OmfMetadata m = OmfParser::parseHeader(path);
 		QCOMPARE(m.revision, omf2 ? OmfObjects::Revision::Omf2 : OmfObjects::Revision::Omf1);
 		QVERIFY(m.essence.valid);
@@ -198,7 +196,7 @@ void TestOmfParser::wave_omf1_and_omf2_semantics()
 		QCOMPARE(m.essence.projectName, QStringLiteral("WAVE project"));
 		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.wav"));
 		QCOMPARE(m.essence.classificationKnown, !omf2); // no Avid UsageCode in standard OMF2
-		QVERIFY(m.essence.hasMaterialPackage); // known master identity survives unknown UsageCode.
+		QVERIFY(m.essence.hasMaterialPackage);			// known master identity survives unknown UsageCode.
 		QCOMPARE(m.essence.umid, OmfUid::canonicalHex(TestOmf::uid(1)));
 		QCOMPARE(m.fileMobId, OmfUid::canonicalHex(TestOmf::uid(2)));
 		QCOMPARE(m.startTimecode, omf2 ? qint64(0x10000002aULL) : qint64(90000));
@@ -210,10 +208,7 @@ void TestOmfParser::ambiguous_master_is_not_guessed()
 {
 	QTemporaryDir temp;
 	const QString path = temp.filePath("ambiguous.omf");
-	QFile f(path);
-	QVERIFY(f.open(QIODevice::WriteOnly));
-	f.write(TestOmf::wave(true, true));
-	f.close();
+	QVERIFY(tryWriteFile(path, TestOmf::wave(true, true)));
 	const auto m = OmfParser::parseHeader(path);
 	QVERIFY(m.essence.valid);
 	QVERIFY(m.essence.umid.isEmpty());
@@ -224,10 +219,7 @@ void TestOmfParser::unreadable_descriptor_is_not_media()
 {
 	QTemporaryDir temp;
 	const QString path = temp.filePath("bad.omf");
-	QFile f(path);
-	QVERIFY(f.open(QIODevice::WriteOnly));
-	f.write(TestOmf::wave(true, false, true));
-	f.close();
+	QVERIFY(tryWriteFile(path, TestOmf::wave(true, false, true)));
 	QVERIFY(!OmfParser::parseHeader(path).essence.valid);
 }
 
@@ -409,27 +401,27 @@ void TestOmfParser::omf_video_facts_by_resolution_id()
 	};
 	const Pin kPins[] = {
 		// JFIF: 78 and 110 are single-field (layout 2) rasters shown as stored
-		{"BLACK_352x243x1_JFIF12S.omf", "15:1s", "352x248", "29.97", 2},		 // 78  JFIF, 352x248 layout 2
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x496", "29.97", 1},		 // 82  JFIF, 720x248 layout 1 → doubled
-		{"BLACK_720x486x1_JFIF25P.omf", "28:1", "720x496", "24", 0},			 // 104 JFIF, 720x496 layout 0
-		{"BLACK_288x243x1_JFIF15m.omf", "10:1m", "288x248", "29.97", 2},		 // 110 JFIF, 288x248 layout 2
-		{"BLACK_288x288x1_JFIF20mP.omf", "8:1m", "288x296", "24", 0},		 // 112 JFIF, 288x296 layout 0
+		{"BLACK_352x243x1_JFIF12S.omf", "15:1s", "352x248", "29.97", 2}, // 78  JFIF, 352x248 layout 2
+		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x496", "29.97", 1},	 // 82  JFIF, 720x248 layout 1 → doubled
+		{"BLACK_720x486x1_JFIF25P.omf", "28:1", "720x496", "24", 0},	 // 104 JFIF, 720x496 layout 0
+		{"BLACK_288x243x1_JFIF15m.omf", "10:1m", "288x248", "29.97", 2}, // 110 JFIF, 288x248 layout 2
+		{"BLACK_288x288x1_JFIF20mP.omf", "8:1m", "288x296", "24", 0},	 // 112 JFIF, 288x296 layout 0
 		// DV: finalise's i/p(PAL/NTSC) suffix, from layout + fps/height
 		{"BLACK_720x480x1_DV411.omf", "DV 25 411 i(NTSC)", "720x480", "29.97", 1}, // 140 DV/C, 720x240 layout 1, NTSC
-		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", 1},	 // 141 DV/C, 720x288 layout 1, PAL
-		{"BLACK_720x480x1_DV50.omf", "DV 50 i(NTSC)", "720x480", "29.97", 1},	 // 142 DV/C, 720x240 layout 1, NTSC
-		{"BLACK_720x480x1_DV411P.omf", "DV25P 411", "720x480", "24", 0},		 // 143 DV/C, no space → no suffix
-		{"BLACK_720x576x1_DV420P.omf", "DV 25P 420 p(PAL)", "720x576", "25", 0}, // 144 DV/C, layout 0 → p, PAL
+		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", 1},	   // 141 DV/C, 720x288 layout 1, PAL
+		{"BLACK_720x480x1_DV50.omf", "DV 50 i(NTSC)", "720x480", "29.97", 1},	   // 142 DV/C, 720x240 layout 1, NTSC
+		{"BLACK_720x480x1_DV411P.omf", "DV25P 411", "720x480", "24", 0},		   // 143 DV/C, no space → no suffix
+		{"BLACK_720x576x1_DV420P.omf", "DV 25P 420 p(PAL)", "720x576", "25", 0},   // 144 DV/C, layout 0 → p, PAL
 		// Uncompressed and MPEG 50
-		{"BLACK_720x243x2_UNCOMP.omf", "1:1", "720x496", "29.97", 1},			// 151 AUNC, 720x248 layout 1
-		{"BLACK_720x576x1_UNCOMP_24P.omf", "1:1", "720x592", "24", 0},			// 152 AUNC, 720x592 layout 0
-		{"BLACK_720x576x1_MPEG50.omf", "MPEG 50", "720x608", "25", 1},			// 160 MPG2, 720x304 layout 1
+		{"BLACK_720x243x2_UNCOMP.omf", "1:1", "720x496", "29.97", 1},  // 151 AUNC, 720x248 layout 1
+		{"BLACK_720x576x1_UNCOMP_24P.omf", "1:1", "720x592", "24", 0}, // 152 AUNC, 720x592 layout 0
+		{"BLACK_720x576x1_MPEG50.omf", "MPEG 50", "720x608", "25", 1}, // 160 MPG2, 720x304 layout 1
 		// DNxHD-era ids: the MXF path's names for the rebuilt label
 		{"BLACK_1920x1080x1_DNxHD_115.omf", "Avid DNx SQ (DNxHD 115)", "1920x1080", "23.976", 0}, // 1237 at 23.976
-		{"BLACK_1920x540x2_AVHD_145.omf", "Avid DNx SQ (DNxHD 145)", "1920x1080", "29.97", 1},	// 1242 at 29.97
-		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ (DNxHD 220)", "1920x1080", "29.97", 1},	// 1243 at 29.97
-		{"BLACK_1440x540x2_DNxHD.omf", "Avid DNx TR", "1920x1080", "29.97", 1},					// 1244 (the 0x0D spelling)
-		{"BLACK_1280x720x1_DNxHD_145.omf", "Avid DNx SQ (DNxHD 145)", "1280x720", "59.94", 0}, // 2012 DNxHD whitepaper: 720p SQ at 59.94
+		{"BLACK_1920x540x2_AVHD_145.omf", "Avid DNx SQ (DNxHD 145)", "1920x1080", "29.97", 1},	  // 1242 at 29.97
+		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ (DNxHD 220)", "1920x1080", "29.97", 1},	  // 1243 at 29.97
+		{"BLACK_1440x540x2_DNxHD.omf", "Avid DNx TR", "1920x1080", "29.97", 1},					  // 1244 (the 0x0D spelling)
+		{"BLACK_1280x720x1_DNxHD_145.omf", "Avid DNx SQ (DNxHD 145)", "1280x720", "59.94", 0},	  // 2012 DNxHD whitepaper: 720p SQ at 59.94
 		// DV 100 (UNVERIFIED names; already qualified, so no suffix)
 		{"BLACK_1920x540x2_DV100_115.omf", "DV 100 1080i", "1920x1080", "25", 1}, // 2500 DV/C, 1920x540 layout 1
 		{"BLACK_1280x720x1_DV100_90.omf", "DV 100 720p", "1280x720", "59.94", 0}, // 2502 DV/C, 1280x720 layout 0
@@ -748,7 +740,7 @@ void TestOmfParser::omf_precompute_category_follows_the_embedded_master()
 			QVERIFY(parsed.essence.classificationKnown);
 			QVERIFY(parsed.essence.isPrecompute);
 			QCOMPARE(parsed.essence.precomputeCategory,
-				imported && videoTracks >= 2 ? Category::TitlesAndMatteKeys : Category::RenderedEffects);
+					 imported && videoTracks >= 2 ? Category::TitlesAndMatteKeys : Category::RenderedEffects);
 		}
 }
 

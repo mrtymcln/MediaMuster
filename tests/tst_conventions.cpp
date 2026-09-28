@@ -21,7 +21,6 @@ private slots:
 	void dot_hidden_names();
 	void mxf_extension_is_case_insensitive();
 	void essence_name_combinations();
-	void avid_media_extensions();
 	void folder_budget_thresholds_stay_ordered();
 
 	// MARK: - OMF-era
@@ -116,22 +115,6 @@ void TestConventions::essence_name_combinations()
 								QStringLiteral("clip.mxf.__movereplace_ab12"), QStringLiteral("clip.omf.partial"),
 								QStringLiteral("clip.wav.backup")})
 		QVERIFY2(!Conventions::countsAsEssenceName(name), qPrintable(name));
-}
-
-void TestConventions::avid_media_extensions()
-{
-	QVERIFY(Conventions::hasAvidMediaExtension(QStringLiteral("clip.mxf")));
-	QVERIFY(Conventions::hasAvidMediaExtension(QStringLiteral("legacy.OMF")));
-	QVERIFY(Conventions::hasAvidMediaExtension(QStringLiteral("audio.aif")));
-	QVERIFY(Conventions::hasAvidMediaExtension(QStringLiteral("audio.WAV")));
-	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("export.mov")));
-	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("msmMMOB.mdb")));
-	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("msmFMID.pmr")));
-	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("Thumbs.db")));
-	QVERIFY(!Conventions::hasAvidMediaExtension(QStringLiteral("desktop.ini")));
-	// The full filename must end in a supported extension.
-	QVERIFY(!Conventions::hasAvidMediaExtension(
-		QStringLiteral("clip.mxf.__movereplace_ab12")));
 }
 
 void TestConventions::folder_budget_thresholds_stay_ordered()
@@ -402,7 +385,8 @@ void TestConventions::managed_format_families_keep_their_own_suffixes()
 		QVERIFY2(!AvidMediaLayout::acceptsFileName(Family::Mxf, name), qPrintable(name));
 	}
 	for (const QString &name : {QStringLiteral("._clip.mxf"), QStringLiteral(".clip.omf"), QStringLiteral("audio.sd2"),
-								QStringLiteral("audio.aiff"), QStringLiteral("msmMMOB.mdb"), QStringLiteral("nested/clip.mxf"),
+								QStringLiteral("audio.aiff"), QStringLiteral("msmMMOB.mdb"), QStringLiteral("msmFMID.pmr"),
+								QStringLiteral("nested/clip.mxf"),
 								QStringLiteral("nested\\clip.wav"), QStringLiteral(".mxf"), QStringLiteral(".wav"),
 								QStringLiteral("notes.txt"), QStringLiteral("sheet.xlsx"), QStringLiteral("audio.SD2"),
 								QStringLiteral(".DS_Store"), QStringLiteral("Thumbs.db"), QStringLiteral("desktop.ini"),

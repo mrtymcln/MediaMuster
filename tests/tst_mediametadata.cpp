@@ -10,22 +10,18 @@
 
 namespace
 {
-QByteArray ul(const char *hex)
-{
-	return QByteArray::fromHex(hex);
-}
+	QByteArray ul(const char *hex)
+	{
+		return QByteArray::fromHex(hex);
+	}
 } // namespace
 
 class TestMediaMetadata : public QObject
 {
 	Q_OBJECT
 private slots:
-	void empty_label_returns_empty();
-	void pcm_audio_ul_resolves();
-	void prores_422_ul_resolves();
-	void dnxhd_bitrate_follows_fps();
-	void dnxhd_hqx_carries_x_suffix();
-	void vc3_720p_sq_keeps_its_own_name();
+	void codec_labels_data();
+	void codec_labels();
 	void unknown_ul_infers_family_from_structure();
 	void fully_unknown_ul_falls_back_to_hex();
 	void applyEditRate_labels_fractional_rates();
@@ -33,78 +29,49 @@ private slots:
 	void finalise_is_idempotent_and_does_not_guess();
 };
 
-void TestMediaMetadata::empty_label_returns_empty()
+void TestMediaMetadata::codec_labels_data()
 {
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel({}, QStringLiteral("25")), QString());
+	QTest::addColumn<QByteArray>("label");
+	QTest::addColumn<QString>("fps");
+	QTest::addColumn<QString>("expected");
+	const auto add = [](const char *tag, const char *hex, const char *fps, const char *expected)
+	{
+		QTest::newRow(tag) << ul(hex) << QString::fromLatin1(fps) << QString::fromLatin1(expected);
+	};
+	add("empty", "", "25", "");
+	add("pcm", "060E2B34040101010D01030102060100", "", "PCM");
+	add("prores-422", "060E2B34040101010D010301020C0301", "", "Apple ProRes 422");
+
+	// DNxHD keeps its rate-dependent technical bitrate beside the current Avid tier.
+	const char *sq = "060E2B34040101010D01030102060101";
+	add("dnxhd-sq-25", sq, "25", "Avid DNx SQ (DNxHD 120)");
+	add("dnxhd-sq-29.97", sq, "29.97", "Avid DNx SQ (DNxHD 145)");
+	add("dnxhd-sq-50", sq, "50", "Avid DNx SQ (DNxHD 240)");
+	add("dnxhd-sq-59.94", sq, "59.94", "Avid DNx SQ (DNxHD 290)");
+	add("dnxhd-sq-unsupported-rate", sq, "48", "Avid DNx SQ");
+	add("dnxhd-sq-no-rate", sq, "", "Avid DNx SQ");
+	add("dnxhd-hqx", "060E2B34040101010D01030102060202", "25", "Avid DNx HQX (DNxHD 185X)");
+
+	// The 720p CIDs use their own bitrate table, distinct from 1080-line DNxHD.
+	const char *sq720 = "060E2B340401010A0401020271120000";
+	add("720p-sq-29.97", sq720, "29.97", "Avid DNx SQ (DNxHD 75)");
+	add("720p-sq-25", sq720, "25", "Avid DNx SQ (DNxHD 60)");
+	add("720p-sq-23.976", sq720, "23.976", "Avid DNx SQ (DNxHD 60)");
+	add("720p-sq-59.94", sq720, "59.94", "Avid DNx SQ (DNxHD 145)");
+	add("720p-hq", "060E2B340401010A0401020271110000", "25", "Avid DNx HQ (DNxHD 90)");
+	add("720p-hqx", "060E2B340401010A0401020271100000", "29.97", "Avid DNx HQX (DNxHD 110x)");
+
+	// DNxHR names contain the tier alone, regardless of rate.
+	add("dnxhr-sq", "060E2B34040101010D01030102110201", "25", "Avid DNx SQ");
+	add("dnxhr-444", "060E2B34040101010D01030102110501", "50", "Avid DNx 444");
 }
 
-void TestMediaMetadata::pcm_audio_ul_resolves()
+void TestMediaMetadata::codec_labels()
 {
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102060100"),
-														  QString()),
-			 QStringLiteral("PCM"));
-}
-
-void TestMediaMetadata::prores_422_ul_resolves()
-{
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D010301020C0301"),
-														  QString()),
-			 QStringLiteral("Apple ProRes 422"));
-}
-
-void TestMediaMetadata::dnxhd_bitrate_follows_fps()
-{
-	// Same UL (DNxHD SQ tier); current Avid branding leads, the legacy
-	// technical bitrate name (rate-dependent) stays in the parenthesis.
-	const QByteArray sq = ul("060E2B34040101010D01030102060101");
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, QStringLiteral("25")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 120)"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, QStringLiteral("29.97")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 145)"));
-	// Unsupported or absent fps retains the known tier without a guessed bitrate.
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, QStringLiteral("48")),
-			 QStringLiteral("Avid DNx SQ"));
-}
-
-void TestMediaMetadata::dnxhd_hqx_carries_x_suffix()
-{
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102060202"),
-														  QStringLiteral("25")),
-			 QStringLiteral("Avid DNx HQX (DNxHD 185X)"));
-}
-
-void TestMediaMetadata::vc3_720p_sq_keeps_its_own_name()
-{
-	// CID 1252 (UL byte 0x12): 720p 8-bit 4:2:2 SQ. Its technical bitrate
-	// names come from the 2012 whitepaper's 720p table — NOT the 1080-line
-	// numbers (75 at 29.97, not 145). Display leads with current branding.
-	const QByteArray sq720 = ul("060E2B340401010A0401020271120000");
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("29.97")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 75)"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("25")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 60)"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("23.976")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 60)"));
-	// The 720p 50/59.94 rows are at the bottom of p9, before p10.
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq720, QStringLiteral("59.94")),
-			 QStringLiteral("Avid DNx SQ (DNxHD 145)"));
-
-	// Sibling 720p tiers (CIDs 1251/1250), same whitepaper table.
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B340401010A0401020271110000"),
-														  QStringLiteral("25")),
-			 QStringLiteral("Avid DNx HQ (DNxHD 90)"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B340401010A0401020271100000"),
-														  QStringLiteral("29.97")),
-			 QStringLiteral("Avid DNx HQX (DNxHD 110x)"));
-
-	// DNxHR is under the same brand with no bitrate names — level only,
-	// bare at every rate ("HR" is communicated by the Resolution column).
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102110201"),
-														  QStringLiteral("25")),
-			 QStringLiteral("Avid DNx SQ"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(ul("060E2B34040101010D01030102110501"),
-														  QStringLiteral("50")),
-			 QStringLiteral("Avid DNx 444"));
+	QFETCH(QByteArray, label);
+	QFETCH(QString, fps);
+	QFETCH(QString, expected);
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(label, fps), expected);
 }
 
 void TestMediaMetadata::unknown_ul_infers_family_from_structure()
@@ -135,9 +102,14 @@ void TestMediaMetadata::applyEditRate_labels_fractional_rates()
 		int base;
 	};
 	const Case cases[] = {
-		{24000, 1001, "23.976", 24}, {2997, 100, "29.97", 30},   {60000, 2002, "29.97", 30},
-		{30000, 1001, "29.97", 30},  {25, 1, "25", 25},          {23976, 1000, "23.976", 24},
-		{50, 1, "50", 50},           {60000, 1001, "59.94", 60},
+		{24000, 1001, "23.976", 24},
+		{2997, 100, "29.97", 30},
+		{60000, 2002, "29.97", 30},
+		{30000, 1001, "29.97", 30},
+		{25, 1, "25", 25},
+		{23976, 1000, "23.976", 24},
+		{50, 1, "50", 50},
+		{60000, 1001, "59.94", 60},
 	};
 	for (const Case &c : cases)
 	{
@@ -207,7 +179,7 @@ void TestMediaMetadata::mdb_style_metadata_finalises_like_a_header()
 	au.sampleRate = 48000;
 	au.pcmDescriptor = true;
 	au.descriptorDuration = 2880002; // samples
-	au.durationFrames = 1500;        // frames at 25
+	au.durationFrames = 1500;		 // frames at 25
 	MediaMetadataUtil::finalise(au);
 	QVERIFY(au.valid);
 	QCOMPARE(au.timecodeBase, 25);
@@ -243,12 +215,6 @@ void TestMediaMetadata::finalise_is_idempotent_and_does_not_guess()
 	sound.pcmDescriptor = true;
 	MediaMetadataUtil::finalise(sound);
 	QCOMPARE(sound.codec, QString::fromLatin1(kPcmAudioName));
-	const QByteArray sq = ul("060E2B34040101010D01030102060101");
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, {}), QStringLiteral("Avid DNx SQ"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, "50"),
-			 QStringLiteral("Avid DNx SQ (DNxHD 240)"));
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(sq, "59.94"),
-			 QStringLiteral("Avid DNx SQ (DNxHD 290)"));
 	QVERIFY(
 		!MediaMetadataUtil::codecFromCompressionLabel(ul("060e2b34040101010d99111111111111"), {})
 			 .startsWith("Avid"));

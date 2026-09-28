@@ -2,13 +2,13 @@
 
 #include <QByteArray>
 #include <QTest>
+#include <algorithm>
 
 class TestMobId : public QObject
 {
 	Q_OBJECT
 private slots:
 	void format_renders_canonical_dotted_hex();
-	void format_renders_lowercase();
 	void format_too_short_buffer_returns_empty();
 	void isAllZero_detects_all_zero_pattern();
 	void isAllZero_rejects_real_mob();
@@ -16,7 +16,6 @@ private slots:
 	void toPmrForm_swaps_middle_fields();
 	void toPmrForm_is_involution();
 	void toPmrForm_rejects_malformed();
-	void toPmrForm_rejects_empty();
 };
 
 void TestMobId::format_renders_canonical_dotted_hex()
@@ -57,15 +56,9 @@ void TestMobId::format_renders_canonical_dotted_hex()
 	};
 	QCOMPARE(MobId::format(raw), QStringLiteral("0011223344556677.8899aabbccddeeff."
 												"0123456789abcdef.fedcba9876543210"));
-}
-
-void TestMobId::format_renders_lowercase()
-{
-	unsigned char raw[MobId::kRawSize];
-	for (int i = 0; i < MobId::kRawSize; ++i)
-		raw[i] = 0xAB;
-	const QString out = MobId::format(raw);
-	QCOMPARE(out, out.toLower());
+	std::fill_n(raw, MobId::kRawSize, 0xab);
+	const QString lowercase = MobId::format(raw);
+	QCOMPARE(lowercase, lowercase.toLower());
 }
 
 void TestMobId::format_too_short_buffer_returns_empty()
@@ -112,10 +105,6 @@ void TestMobId::toPmrForm_rejects_malformed()
 {
 	QCOMPARE(MobId::toPmrForm(QStringLiteral("not hex at all")), QString());
 	QCOMPARE(MobId::toPmrForm(QStringLiteral("0011223344556677")), QString());
-}
-
-void TestMobId::toPmrForm_rejects_empty()
-{
 	QCOMPARE(MobId::toPmrForm(QString()), QString());
 }
 

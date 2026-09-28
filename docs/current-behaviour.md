@@ -6,8 +6,8 @@ This guide describes the current implementation. It is not a record of proposed
 features or a claim that every storage system has been tested.
 
 For the names and responsibilities of the code components, see the
-[architecture map](architecture.md). For platform test results, see
-[implementation validation](implementation-validation.md) and
+[architecture map](architecture.md). For dated platform test results, see
+[validation history](reviews/2026-09-20-media-scope/validation-history.md) and
 [file-operation validation](file-operations-native-api-validation.md).
 
 ## Starting the app
@@ -67,12 +67,12 @@ File groups source locations, scanning, Unfinished Business, and reveal/export
 commands. **Refresh Volumes** refreshes the sidebar without rescanning media.
 **Scan Selected** scans selected locations; **Scan All** scans all available locations.
 Special contains **Manage Media…**, **Filter by Bin…**, **Filter Precomputes…**,
-and **Rebalance…**, in that order. Filter Precomputes is hidden until Debug enables
-Precomputes, then remains disabled without scanned media or while busy. Its toolbar
+and **Rebalance…**, in that order. Filter Precomputes is hidden unless its build
+flag is enabled, then remains disabled without scanned media or while busy. Its toolbar
 button and detail controls also remain hidden while the feature is off.
 
 Edit contains **Find**, **Select Relatives**, and **Select Inverse**, plus
-file-operation Undo immediately before Find when enabled in Debug, with no separator
+file-operation Undo immediately before Find when its build flag is enabled, with no separator
 between them. Cut, Copy, Paste and Select All are available through the Qt controls'
 built-in keyboard shortcuts and, for text controls, their context menus; they have
 no menu-bar commands. The media table

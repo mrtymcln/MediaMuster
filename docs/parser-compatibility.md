@@ -83,4 +83,6 @@ OMF_TOOLKIT_SAMPLES=/path/to/omfkt22/NTProjects_VS10 build/tests/tst_mdbparser e
 
 The tests cover real Avid PMR/MDB/header joins, 82 Avid OMF essence specimens, all 65 available external OMF container specimens, independently authored OMF1/OMF2 structures, malformed lengths/references, PMR version/byte-order/Unicode boundaries, stale and reused-filename scanner behaviour, and unknown-value consumers. The optional external-fixture checks skip when their environment variables are absent. The case-sensitive directory test skips on case-insensitive storage.
 
-Current build and test outcomes are recorded in [the implementation validation note](implementation-validation.md). Earlier full-suite and sanitizer results are preserved in its linked history.
+Dated full-suite, targeted and sanitizer outcomes are recorded in the
+[validation history](reviews/2026-09-20-media-scope/validation-history.md). They
+describe the revisions and platforms tested, not the status of later builds.

@@ -3,8 +3,8 @@
 These are dated outcomes from earlier working trees. They preserve the evidence
 and limits of each pass, including behaviour superseded by the final managed-media
 scope and cleanup. SDII experiments mentioned in historical results were removed;
-they are not current support. See [current validation](../../implementation-validation.md)
-and [the scope contract](../../release-feature-gates.md) for the maintained status.
+they are not current support. See [current behaviour](../../current-behaviour.md)
+and [the scope contract](../../release-feature-gates.md) for the maintained rules.
 
 5 September 2026. These results apply to the local implementation described in [parser-compatibility.md](../../parser-compatibility.md). The original audit examined baseline commit `54094642e9f2b6d33c223db2407cb2940cbcde98`; its original line references describe that baseline. Changes have been left in the working tree; no commit or release was created.
 
@@ -150,3 +150,46 @@ Validation:
   sanitizer or live NEXIS/NAS, Windows or native Intel run was performed.
 
 These are historical results from before cleanup, not validation of later source changes.
+
+## Cleanup and follow-up validation — 20 September 2026
+
+The cleanup removed SDII-specific reader/discovery handling and its artificial
+fixture, while retaining real Avid MXF/OMF inputs and constructed OMF1/OMF2
+byte-order, identity, malformed-object, ancestry and precompute coverage using
+WAVE graphs. The shared managed-folder rules remained in use.
+
+The fresh build used C++17, Qt 6.5.3, Ninja Debug, macOS deployment target 11.0
+and both arm64/x86_64 targets, with tests enabled and `SELF_DESTRUCT` off. Tests
+ran natively on Apple Silicon. The cleanup build reported no compiler warnings
+and passed strict, deep application-signature verification.
+
+| Revision tested | Result |
+| --- | --- |
+| Cleanup with the Debug menu disabled | Shared-rule and production-UI suites: 2/2 passed in 4.64 seconds. |
+| Cleanup with the Debug menu restored | Full suite: 27/27 passed in 40.88 seconds; 1,206 passing Qt results, zero failures and three skips. |
+| Folder-rule follow-up | Conventions, scanner, Rebalance planner, file operations, media filtering and production UI: 6/6 passed in 34.38 seconds. |
+| Scanner/runner helper extraction and initial summary consolidation | Full suite: 27/27 passed in 39.06 seconds, with the same three skips. |
+| Project Summary removal and sidebar regression updates | Full suite: 27/27 passed in 44.34 seconds, with the same three skips. |
+
+Qt result totals include setup and cleanup. The three full-suite skips were the
+two optional external-toolkit corpora without their environment variables and
+the case-sensitive-directory check on case-insensitive storage. The focused
+folder-rule run skipped that same filesystem-dependent check. The folder-rule
+and helper-extraction app/test builds reported no compiler warnings; the later
+Project Summary removal also built successfully. Documentation links and diff
+whitespace checks passed.
+
+The folder-rule tests covered volume/manual discovery, quarantine flags, nested
+files, ordinary siblings and directory aliases in both directions. Those results
+predate the later flat-quarantine and broader MXF-folder admission rules. The
+helper extraction retained scanner scheduling/cancellation and runner phase
+ordering, journal checkpoints and result accounting. After Project Summary was
+removed, UI coverage retained sidebar totals under filtering, unknown-project
+text, row removal, selection and empty inventory.
+
+No new sanitizer, Windows runtime, native Intel or live NEXIS/NAS run was performed
+in these passes. A universal build does not establish native Intel execution.
+Reported field testing on real Avid systems and NEXIS/NAS was not an independent
+automated certification of every server or concurrent-writer scenario. These
+outcomes describe their dated revisions; feature gates, supported folder rules
+and suite counts have since changed.

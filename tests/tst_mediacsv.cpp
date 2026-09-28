@@ -43,22 +43,6 @@ namespace
 		return fields;
 	}
 
-	int fieldCount(const QString &line)
-	{
-		// Split on commas outside quotes; CsvUtil quotes every string
-		// column, and quoted values may contain commas.
-		int n = 1;
-		bool inQuotes = false;
-		for (const QChar c : line)
-		{
-			if (c == QLatin1Char('"'))
-				inQuotes = !inQuotes;
-			else if (c == QLatin1Char(',') && !inQuotes)
-				++n;
-		}
-		return n;
-	}
-
 	MediaFile sampleRow()
 	{
 		MediaFile f;
@@ -104,15 +88,15 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 {
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
-	const int headerFields = fieldCount(MediaCsv::headerLine().trimmed());
+	const auto headerFields = readCsvRecord(MediaCsv::headerLine()).size();
 	QCOMPARE(headerFields, 19);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow()).trimmed()), headerFields);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow())).size(), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
-	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}).trimmed()), headerFields);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{})).size(), headerFields);
 	const MediaCsv::Options enabled{true};
-	QCOMPARE(fieldCount(MediaCsv::headerLine(enabled)), 23);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(sampleRow(), enabled)), 23);
-	QCOMPARE(fieldCount(MediaCsv::rowLine(MediaFile{}, enabled)), 23);
+	QCOMPARE(readCsvRecord(MediaCsv::headerLine(enabled)).size(), 23);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow(), enabled)).size(), 23);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, enabled)).size(), 23);
 }
 
 void TestMediaCsv::header_order_and_values_follow_the_export_schema()

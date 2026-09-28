@@ -199,4 +199,10 @@ include `tst_scanner`, the individual parser suites, `tst_mediafilterproxy`,
 and `tst_operationui`. Test scenarios document intended guarantees; passing results
 must still identify the tested platform and source state.
 
+Further separation of per-scan state from scanner orchestration, and recovery/Undo
+planning from runner execution, remains a possible later refactor. Establish a
+documented Windows and NEXIS behaviour baseline before changing those boundaries,
+so regressions can be distinguished from existing platform issues. The local
+helper extractions described above do not complete that broader work.
+
 See [CONTRIBUTING](CONTRIBUTING.md) for development and documentation conventions.

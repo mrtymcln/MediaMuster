@@ -77,14 +77,7 @@ namespace
 	}
 	QByteArray unicodeFileRecord(const QByteArray &mob, const QByteArray &utf8Name, const QByteArray &project)
 	{
-		QByteArray b = mob;
-		u16le(b, quint16(utf8Name.size() + 2));
-		b.append(char(0));
-		b.append(char(0));
-		b.append(utf8Name);
-		u16le(b, quint16(project.size()));
-		b.append(project);
-		return b;
+		return fileRecord(mob, QByteArray(2, '\0') + utf8Name, project);
 	}
 
 	QByteArray fileMob()
@@ -628,15 +621,15 @@ void TestPmrParser::real_fixture_metadata_is_unchanged_data()
 	// Baselines captured before the completeness repair, covering every field
 	// of all 878 records across modern and OMF-era real Avid databases.
 	QTest::newRow("tone") << QStringLiteral("msmFMID.pmr") << 1
-		<< QByteArray("c86f7ec6386c88ce23714f15c7a8ea7733cd7b86fe0b44d760ac1c24adb6d9ac");
+						  << QByteArray("c86f7ec6386c88ce23714f15c7a8ea7733cd7b86fe0b44d760ac1c24adb6d9ac");
 	QTest::newRow("corpus") << QStringLiteral("corpus_headers/msmFMID.pmr") << 435
-		<< QByteArray("9f085e78fcc014a77f52cc6737699e8a70efac211cd3d161a152391533a5a5b9");
+							<< QByteArray("9f085e78fcc014a77f52cc6737699e8a70efac211cd3d161a152391533a5a5b9");
 	QTest::newRow("corpus-round3") << QStringLiteral("corpus_headers/msmFMID_round3.pmr") << 360
-		<< QByteArray("88fa7ee35ff7811a7eba1911412e53253d222bc72511ce5e73893b495e4ac912");
+								   << QByteArray("88fa7ee35ff7811a7eba1911412e53253d222bc72511ce5e73893b495e4ac912");
 	QTest::newRow("omf-supporting") << QStringLiteral("omf/avid_supporting/msmFMID.pmr") << 80
-		<< QByteArray("f49d8c6c1496ea3194a59c1864fd70d0948868a57fdcab4b82440197046652a9");
+									<< QByteArray("f49d8c6c1496ea3194a59c1864fd70d0948868a57fdcab4b82440197046652a9");
 	QTest::newRow("omf-audio") << QStringLiteral("omf/mc2026_audio/msmFMID.pmr") << 2
-		<< QByteArray("372165c9b880b4e1ca3f81e9d634d349eb49ed740f7557eb5bfda83637863bcc");
+							   << QByteArray("372165c9b880b4e1ca3f81e9d634d349eb49ed740f7557eb5bfda83637863bcc");
 }
 
 void TestPmrParser::real_fixture_metadata_is_unchanged()
