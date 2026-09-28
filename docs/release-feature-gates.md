@@ -3,7 +3,7 @@
 ## v1 media scope
 
 The supported workflow families are Avid-managed MXF OP-Atom and OMF media.
-MXF OP-Atom is available by default; OMF remains behind **Enable OMF** as
+MXF OP-Atom is available by default; OMF remains behind `FeatureFlags::kOmfEnabled` as
 requested for the public release. Enabling OMF does not depend on the version of
 Media Composer that created the files. The OMF gate controls product availability;
 the enabled feature is held to the same v1 correctness and testing requirements
@@ -78,53 +78,44 @@ OMF bin matching preserves legacy ID bytes. Preserve-structure transfers use
 Rebalance accepts MXF only, retains its stricter destination-name and mutation
 checks, and carries both file and master identities to the operation engine.
 
-## Session toggles
+## Build flags
 
-The Debug menu enables these features for the current session only. Every launch
-starts with all four off; there are no saved preferences to carry into a public
-build.
-
-| Debug command | Enabled behavior | Disabled behavior |
-| --- | --- | --- |
-| Enable OMF | Subsequent scans discover and parse managed OMF essence. Rescan after enabling. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. Turning it off also removes OMF rows already in the table. |
-| Enable Precomputes | Adds Precompute Category, Effect Category, Effect and Effect Sequence to the table and CSV, the Precomputes tab and the filter button. Shows Special > Filter Precomputes, enabled when scanned media is available and the app is idle. | Hides those four detail columns, the Special menu command and toolbar control, clears precompute filters, and resets sorting if its column disappears. Type stays visible and sortable in both modes; rendered media remains in ordinary scan results. |
-| Enable undo | Makes file-operation Undo available in Edit, with its shortcut. | Hides file-operation Undo, removes its shortcut, and rejects new Undo requests. Normal text-editing Undo still works. |
-| Fusion style | Uses Qt's Fusion widget style. | Uses the style installed at startup. |
-
-The first three commands form one group, followed by the Fusion style option.
-The final group is **Rebalance demos**, whose **Small**, **Big** and **Really big**
-scenarios use synthetic plans and simulated progress without changing files.
-
-OMF and Precomputes toggles cannot change while scanning or performing a media
-operation. Metadata classification and parser implementations remain intact and
-tested. Interrupted operations, including an Undo already started in a developer
-build, remain recoverable through Unfinished Business; the gate prevents starting
-a new Undo.
-
-## Public builds
-
-The Debug menu is controlled by one line in `src/featureflags.h`:
+`src/featureflags.h` contains independent compile-time switches:
 
 ```cpp
 inline constexpr bool kDebugMenuEnabled = true;
+inline constexpr bool kOmfEnabled = false;
+inline constexpr bool kPrecomputesEnabled = false;
+inline constexpr bool kUndoEnabled = false;
 ```
 
-Change `true` to `false`, commit that change with the release, and rebuild:
+| Flag | Enabled behavior | Disabled behavior |
+| --- | --- | --- |
+| kOmfEnabled | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
+| kPrecomputesEnabled | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
+| kUndoEnabled | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
+| kDebugMenuEnabled | Shows Fusion style and Rebalance demos in the Debug menu. | Omits the Debug menu. |
+
+OMF, Precomputes and Undo have no Debug menu controls. Their availability is
+independent of whether the Debug menu is included. Fusion style starts off on
+each launch. Rebalance demos use synthetic plans and simulated progress.
+
+Interrupted operations, including an Undo already started in another build,
+remain recoverable through Unfinished Business even when Undo is disabled.
+Metadata classification and parser implementations remain intact and tested.
+
+## Public builds
+
+Set the desired flags, commit the change with the release, and rebuild:
 
 ```sh
 cmake --build build --config Release --parallel 4
 ```
 
-With `false`, the app does not create the Debug menu, so users cannot enable its
-gated features. The value is compiled into the app; no saved preference, CMake
-option, version number, Git tag, or CI setting changes it. It is also independent
-of the compiler's Debug/Release configuration.
+These values are compiled into the app. No saved preference, CMake option,
+version number, Git tag, or CI setting changes them. They are also independent
+of the compiler's Debug/Release configuration. Set `kDebugMenuEnabled` to `false`
+to omit the developer menu; select each feature's availability separately.
 
-Change the same line back to `true` and rebuild to restore the developer menu.
-Its feature toggles still start off. Hiding a menu in an already running app does
-not disable features that were enabled earlier in that session; this switch
-determines whether the menu is created when the app starts.
-
-The operation UI tests read this same constant. Before shipping, run them with
-`false` to check that the menu and feature entry points are unavailable; run them
-with `true` to check the developer toggles. Rebuild after each change.
+The operation UI tests check startup configuration against these constants and
+verify that the removed feature toggles are absent. Rebuild after changing flags.

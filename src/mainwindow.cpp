@@ -188,6 +188,8 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupUi();
 	setupMenus();
 	setupConnections();
+	setOmfEnabled(FeatureFlags::kOmfEnabled);
+	setPrecomputesEnabled(FeatureFlags::kPrecomputesEnabled);
 	updateFilterCounts();
 	updateActivityUi();
 
@@ -684,21 +686,6 @@ void MainWindow::buildDebugMenu()
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	m_enableOmfAct = debugMenu->addAction(tr("Enable OMF"));
-	m_enableOmfAct->setObjectName(QStringLiteral("enableOmfDebugAction"));
-	m_enableOmfAct->setCheckable(true);
-	connect(m_enableOmfAct, &QAction::toggled, this, &MainWindow::setOmfEnabled);
-
-	// One gate covers classification, details, filtering and CSV fields.
-	m_enablePrecomputesAct = debugMenu->addAction(tr("Enable Precomputes"));
-	m_enablePrecomputesAct->setObjectName(QStringLiteral("enablePrecomputesDebugAction"));
-	m_enablePrecomputesAct->setCheckable(true);
-	m_enablePrecomputesAct->setChecked(false);
-	connect(m_enablePrecomputesAct, &QAction::toggled, this, &MainWindow::setPrecomputesEnabled);
-
-	debugMenu->addAction(m_operations->enableUndoAction());
-	debugMenu->addSeparator();
-
 	// Whatever style main.cpp installed at startup is the one to restore.
 	// Read it here, before the toggle below can change it — main.cpp stays
 	// the single authority on the platform's native style.
@@ -959,29 +946,15 @@ void MainWindow::onCheckPermissions()
 #endif // Q_OS_MAC
 }
 
-// MARK: - Session-only developer features
+// MARK: - Feature configuration
 
 void MainWindow::setOmfEnabled(bool enabled)
 {
-	// Omitting buildDebugMenu() must leave the feature unavailable too.
-	enabled = enabled && m_enableOmfAct;
 	if (!m_operations->isIdle())
-	{
-		if (m_enableOmfAct)
-		{
-			const QSignalBlocker blocker(m_enableOmfAct);
-			m_enableOmfAct->setChecked(m_omfEnabled);
-		}
 		return;
-	}
 	if (m_omfEnabled == enabled)
 		return;
 	m_omfEnabled = enabled;
-	if (m_enableOmfAct)
-	{
-		const QSignalBlocker blocker(m_enableOmfAct);
-		m_enableOmfAct->setChecked(enabled);
-	}
 	if (!enabled)
 	{
 		QSet<QString> legacyPaths;
@@ -994,23 +967,14 @@ void MainWindow::setOmfEnabled(bool enabled)
 		refreshEverything();
 		updateActivityUi();
 	}
-	addLog(QtInfoMsg, QStringLiteral("scanner"), enabled ? tr("Legacy media files are ON for this session. Rescan to include OMFI MediaFiles.") : tr("Legacy media files are OFF for this session."));
 }
 
 // MARK: - Precompute classification, details and filter
 
 void MainWindow::setPrecomputesEnabled(bool enabled)
 {
-	enabled = enabled && m_enablePrecomputesAct;
 	if (!m_operations->isIdle())
-	{
-		if (m_enablePrecomputesAct)
-		{
-			const QSignalBlocker blocker(m_enablePrecomputesAct);
-			m_enablePrecomputesAct->setChecked(m_precomputesEnabled);
-		}
 		return;
-	}
 	if (m_precomputesEnabled == enabled)
 		return;
 	m_precomputesEnabled = enabled;
@@ -1029,11 +993,6 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		}
 		m_proxy->setPrecomputesEnabled(enabled);
 		m_model->setPrecomputesEnabled(enabled); });
-	if (m_enablePrecomputesAct)
-	{
-		const QSignalBlocker blocker(m_enablePrecomputesAct);
-		m_enablePrecomputesAct->setChecked(enabled);
-	}
 	m_btnPrecomputeFilter->setVisible(enabled);
 	m_precomputeFilterAct->setVisible(enabled);
 	updateActivityUi();
@@ -1055,7 +1014,6 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 	updateFilterCounts();
 	rebuildFilterChips();
 	updateStatusBar();
-	addLog(QtInfoMsg, QStringLiteral("filters"), enabled ? QStringLiteral("Precompute filters are ON for this session.") : QStringLiteral("Precompute filters are OFF for this session."));
 }
 
 void MainWindow::onFilterPrecomputes()
@@ -2102,10 +2060,6 @@ void MainWindow::updateActivityUi()
 	m_revealAct->setEnabled(!busy && hasSelection);
 	m_selectInverseAct->setEnabled(!busy && m_proxy->rowCount() > 0);
 	m_selectRelativesAct->setEnabled(!busy && hasSelection && m_selectionHasMasterMob);
-	if (m_enablePrecomputesAct)
-		m_enablePrecomputesAct->setEnabled(!busy);
-	if (m_enableOmfAct)
-		m_enableOmfAct->setEnabled(!busy);
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();

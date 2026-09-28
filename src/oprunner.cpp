@@ -1139,7 +1139,7 @@ OpResult OpRunner::removeOriginal(OpJournal &j, OpJournal::Entry &e, int index, 
 OpRequest OpRunner::planUndo(OpJournal::Record &forward, const OpRequest &input)
 {
 	if (!input.undoEnabled)
-		throw std::runtime_error("Enable undo in the Debug menu before starting an Undo.");
+		throw std::runtime_error("Undo is disabled in this build.");
 	if (!forward.undoPath.isEmpty() || forward.request.kind == OpKind::Undo || forward.corrupt)
 		throw std::runtime_error("This job cannot start another Undo.");
 	QString error;

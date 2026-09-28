@@ -147,7 +147,7 @@ private slots:
 	void removed_sources_refresh_status_and_project_filters();
 	void undo_restores_inventory_data();
 	void undo_restores_inventory();
-	void debug_flags_default_off_and_text_undo_works();
+	void feature_flags_configure_startup_and_text_undo_works();
 	void menu_availability_tracks_locations_selection_and_activity();
 	void select_relatives_counts_all_visible_matches_data();
 	void select_relatives_counts_all_visible_matches();
@@ -156,7 +156,6 @@ private slots:
 	void text_editing_shortcuts_remain_native();
 	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
-	void experimental_flags_are_session_only_and_blocked_while_busy();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
 	void added_locations_require_managed_media_structure();
 	void startup_prunes_expired_journals_with_undo_disabled();
@@ -332,7 +331,7 @@ void TestOperationUi::undo_restores_inventory()
 	// Keep disposable Delete fixtures in the test's private Trash without a popup.
 	disconnect(operations, &FileOperationController::mediaMusterTrashUsed,
 			   &window, &MainWindow::showMediaMusterTrashDialog);
-	operations->enableUndoAction()->setChecked(true);
+	operations->setUndoEnabled(true);
 	QSignalSpy scanned(window.m_scanner, &MediaScanner::scanFinished);
 	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
 	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
@@ -597,52 +596,41 @@ void TestOperationUi::added_locations_require_managed_media_structure()
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 	QVERIFY(window.m_manualVolumes.contains(copiedRoot));
 	QVERIFY(window.m_manualVolumes.contains(legacyRoot));
-	QVERIFY(!window.m_omfEnabled); // Adding the location never enables its feature.
+	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfEnabled); // Adding a location preserves the build setting.
 	window.addVolumePath(copiedRoot);
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 }
 
-void TestOperationUi::debug_flags_default_off_and_text_undo_works()
+void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.show();
 	auto *debugMenu = window.findChild<QMenu *>(QStringLiteral("debugMenu"));
-	if constexpr (FeatureFlags::kDebugMenuEnabled)
-	{
-		QVERIFY(debugMenu);
-		QVERIFY(window.menuBar()->actions().contains(debugMenu->menuAction()));
-		QVERIFY(debugMenu->actions().contains(window.m_operations->m_enableUndoAct));
-		QVERIFY(debugMenu->actions().contains(window.m_enablePrecomputesAct));
-		QVERIFY(debugMenu->actions().contains(window.m_enableOmfAct));
-	}
-	else
-	{
-		QVERIFY(!debugMenu);
-		QVERIFY(!window.m_enablePrecomputesAct);
-		QVERIFY(!window.m_enableOmfAct);
-		for (auto *menu : window.findChildren<QMenu *>())
-			QVERIFY(!menu->actions().contains(window.m_operations->m_enableUndoAct));
-	}
-	QVERIFY(window.m_operations->m_enableUndoAct->isCheckable());
-	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
-	QVERIFY(!window.m_operations->m_undoAction->isVisible());
-	QVERIFY(window.m_operations->m_undoAction->shortcut().isEmpty());
+	QCOMPARE(debugMenu != nullptr, FeatureFlags::kDebugMenuEnabled);
+	for (const auto *name : {"enableOmfDebugAction", "enablePrecomputesDebugAction", "enableUndoDebugAction"})
+		QVERIFY(!window.findChild<QAction *>(QString::fromLatin1(name)));
+	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfEnabled);
+	QCOMPARE(window.m_precomputesEnabled, FeatureFlags::kPrecomputesEnabled);
+	QCOMPARE(window.m_model->precomputesEnabled(), FeatureFlags::kPrecomputesEnabled);
+	QCOMPARE(window.m_proxy->precomputesEnabled(), FeatureFlags::kPrecomputesEnabled);
+	QCOMPARE(window.m_precomputeFilterAct->isVisible(), FeatureFlags::kPrecomputesEnabled);
+	QCOMPARE(window.m_operations->m_undoEnabled, FeatureFlags::kUndoEnabled);
+	QCOMPARE(window.m_operations->m_undoAction->isVisible(), FeatureFlags::kUndoEnabled);
+	QCOMPARE(window.m_operations->m_undoAction->shortcut(),
+			 FeatureFlags::kUndoEnabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
 	window.m_searchField->setFocus();
 	QTest::keyClicks(window.m_searchField, "typed search");
 	QVERIFY(window.m_searchField->isUndoAvailable());
 	QTest::keySequence(window.m_searchField, QKeySequence::Undo);
 	QVERIFY(window.m_searchField->text().isEmpty());
-	window.m_operations->m_enableUndoAct->setChecked(true);
-	QVERIFY(window.m_operations->m_undoAction->isVisible());
-	QCOMPARE(window.m_operations->m_undoAction->shortcut(), QKeySequence(QKeySequence::Undo));
-	window.m_operations->m_enableUndoAct->setChecked(false);
-	QVERIFY(!window.m_operations->m_undoAction->isVisible());
-	QVERIFY(window.m_operations->m_undoAction->shortcut().isEmpty());
 }
 
 void TestOperationUi::menu_availability_tracks_locations_selection_and_activity()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfEnabled(false);
+	window.m_operations->setUndoEnabled(false);
 	auto action = [&window](const char *name)
 	{
 		return window.findChild<QAction *>(QString::fromLatin1(name));
@@ -662,14 +650,11 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	}
 	QVERIFY(!window.m_precomputeFilterAct->isVisible());
 	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
-	if constexpr (FeatureFlags::kDebugMenuEnabled)
-	{
-		window.setPrecomputesEnabled(true);
-		QVERIFY(window.m_precomputeFilterAct->isVisible());
-		QVERIFY(!window.m_precomputeFilterAct->isEnabled());
-		QVERIFY(!window.m_btnPrecomputeFilter->isEnabled());
-		window.setPrecomputesEnabled(false);
-	}
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_precomputeFilterAct->isVisible());
+	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(!window.m_btnPrecomputeFilter->isEnabled());
+	window.setPrecomputesEnabled(false);
 
 	auto *location = new QListWidgetItem(QStringLiteral("Media volume"));
 	location->setData(Qt::UserRole, path("volume"));
@@ -700,12 +685,9 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	QVERIFY(window.m_btnFileOps->isEnabled());
 	QVERIFY(reveal->isEnabled());
 	QVERIFY(relatives->isEnabled());
-	if constexpr (FeatureFlags::kDebugMenuEnabled)
-	{
-		window.setPrecomputesEnabled(true);
-		QVERIFY(window.m_precomputeFilterAct->isEnabled());
-		QVERIFY(window.m_btnPrecomputeFilter->isEnabled());
-	}
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(window.m_btnPrecomputeFilter->isEnabled());
 
 	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
 	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_precomputeFilterAct})
@@ -955,10 +937,12 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 	using Column = MediaTableModel::Column;
 	const int clipColumn = static_cast<int>(Column::ClipName);
 	const int fileColumn = static_cast<int>(Column::FileName);
+	int initialFilePosition = -1;
 	{
 		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 		auto *table = window.m_tableView;
 		auto *header = table->horizontalHeader();
+		initialFilePosition = header->visualIndex(fileColumn);
 		QCOMPARE(table->columnWidth(clipColumn), 240);
 		QCOMPARE(table->columnWidth(static_cast<int>(Column::Location)), 400);
 		table->setColumnWidth(clipColumn, 333);
@@ -985,12 +969,15 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 	}
 	MainWindow freshWindow(nullptr, MainWindow::StartupMode::UiOnly);
 	QCOMPARE(freshWindow.m_tableView->columnWidth(clipColumn), 240);
-	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(fileColumn), fileColumn);
+	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(fileColumn), initialFilePosition);
 }
 
 void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfEnabled(false);
+	window.m_operations->setUndoEnabled(false);
 	using Column = MediaTableModel::Column;
 	const int typeColumn = static_cast<int>(Column::Type);
 	const int precomputeTab = 3;
@@ -1036,60 +1023,45 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QCoreApplication::processEvents();
 	QVERIFY(!openedPicker);
 
-	if constexpr (FeatureFlags::kDebugMenuEnabled)
-	{
-		QVERIFY(window.m_enablePrecomputesAct);
-		QCOMPARE(window.m_enablePrecomputesAct->objectName(), QStringLiteral("enablePrecomputesDebugAction"));
-		QCOMPARE(window.m_enablePrecomputesAct->text(), QStringLiteral("Enable Precomputes"));
-		QVERIFY(!window.m_enablePrecomputesAct->isChecked());
-		window.m_enablePrecomputesAct->trigger();
-		QVERIFY(window.m_precomputesEnabled);
-		QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
-		QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
-		int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
-		for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
-			QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
-		QVERIFY(!window.m_btnPrecomputeFilter->isHidden());
-		QVERIFY(window.m_precomputeFilterAct->isVisible());
-		QVERIFY(window.m_precomputeFilterAct->isEnabled());
-		QVERIFY(window.m_filterTabs->isTabVisible(precomputeTab));
-		window.m_filterTabs->setCurrentIndex(precomputeTab);
-		QCOMPARE(window.m_proxy->rowCount(), 1);
-		window.m_proxy->setPrecomputeTreeFilter({true, {{precompute.precomputeCategoryDisplay(), precompute.effectCategory, precompute.effect}}});
-		window.m_proxy->setPrecomputeVolumeFilter(precompute.volumePath);
-		window.m_tableView->sortByColumn(typeColumn, Qt::DescendingOrder);
-		window.m_enablePrecomputesAct->trigger();
-		QVERIFY(!window.m_precomputesEnabled);
-		QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
-		QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
-		QCOMPARE(window.m_filterTabs->currentIndex(), 0);
-		QCOMPARE(window.m_proxy->sortColumn(), typeColumn);
-		QVERIFY(!window.m_proxy->precomputeTreeFilter().active);
-		QVERIFY(window.m_proxy->precomputeVolumeFilter().isEmpty());
-		QCOMPARE(window.m_proxy->rowCount(), 2);
-		QCOMPARE(window.m_model->rowCount(), 2);
-		QCOMPARE(window.m_model->fileAt(1).type, MediaFile::Type::Precompute);
-		QCOMPARE(window.m_model->fileAt(1).effect, precompute.effect);
-		QVERIFY(window.m_btnPrecomputeFilter->isHidden());
-		QVERIFY(!window.m_precomputeFilterAct->isVisible());
-		QVERIFY(!window.m_precomputeFilterAct->isEnabled());
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_precomputesEnabled);
+	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
+	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
+	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
+		QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
+	QVERIFY(!window.m_btnPrecomputeFilter->isHidden());
+	QVERIFY(window.m_precomputeFilterAct->isVisible());
+	QVERIFY(window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(window.m_filterTabs->isTabVisible(precomputeTab));
+	window.m_filterTabs->setCurrentIndex(precomputeTab);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	window.m_proxy->setPrecomputeTreeFilter({true, {{precompute.precomputeCategoryDisplay(), precompute.effectCategory, precompute.effect}}});
+	window.m_proxy->setPrecomputeVolumeFilter(precompute.volumePath);
+	window.m_tableView->sortByColumn(typeColumn, Qt::DescendingOrder);
+	window.setPrecomputesEnabled(false);
+	QVERIFY(!window.m_precomputesEnabled);
+	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
+	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
+	QCOMPARE(window.m_filterTabs->currentIndex(), 0);
+	QCOMPARE(window.m_proxy->sortColumn(), typeColumn);
+	QVERIFY(!window.m_proxy->precomputeTreeFilter().active);
+	QVERIFY(window.m_proxy->precomputeVolumeFilter().isEmpty());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(window.m_model->fileAt(1).type, MediaFile::Type::Precompute);
+	QCOMPARE(window.m_model->fileAt(1).effect, precompute.effect);
+	QVERIFY(window.m_btnPrecomputeFilter->isHidden());
+	QVERIFY(!window.m_precomputeFilterAct->isVisible());
+	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
 
-		// Sorting by any disappearing detail column also returns to Clip Name.
-		for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
-		{
-			window.setPrecomputesEnabled(true);
-			window.m_tableView->sortByColumn(static_cast<int>(column), Qt::DescendingOrder);
-			window.setPrecomputesEnabled(false);
-			QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(Column::ClipName));
-			QCOMPARE(window.m_proxy->rowCount(), 2);
-		}
-	}
-	else
+	// Sorting by any disappearing detail column also returns to Clip Name.
+	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
 	{
 		window.setPrecomputesEnabled(true);
-		QVERIFY(!window.m_precomputesEnabled);
-		QVERIFY(!window.m_model->precomputesEnabled());
-		QVERIFY(!window.m_proxy->precomputesEnabled());
+		window.m_tableView->sortByColumn(static_cast<int>(column), Qt::DescendingOrder);
+		window.setPrecomputesEnabled(false);
+		QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(Column::ClipName));
 		QCOMPARE(window.m_proxy->rowCount(), 2);
 	}
 	// A rescan clears both the visible project selection and its predicate.
@@ -1102,54 +1074,6 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QCOMPARE(window.m_proxy->rowCount(), 2);
 }
 
-void TestOperationUi::experimental_flags_are_session_only_and_blocked_while_busy()
-{
-	{
-		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-		QVERIFY(!window.m_precomputesEnabled);
-		QVERIFY(!window.m_omfEnabled);
-		if constexpr (FeatureFlags::kDebugMenuEnabled)
-		{
-			QVERIFY(window.m_enablePrecomputesAct && window.m_enableOmfAct);
-			QCOMPARE(window.m_enableOmfAct->objectName(), QStringLiteral("enableOmfDebugAction"));
-			QCOMPARE(window.m_enableOmfAct->text(), QStringLiteral("Enable OMF"));
-			window.m_operations->setActivity(FileOperationController::Activity::Scanning);
-			QVERIFY(!window.m_enablePrecomputesAct->isEnabled());
-			QVERIFY(!window.m_enableOmfAct->isEnabled());
-			window.setPrecomputesEnabled(true);
-			window.setOmfEnabled(true);
-			QVERIFY(!window.m_precomputesEnabled);
-			QVERIFY(!window.m_omfEnabled);
-			window.m_operations->setActivity(FileOperationController::Activity::Idle);
-			QVERIFY(window.m_enablePrecomputesAct->isEnabled());
-			QVERIFY(window.m_enableOmfAct->isEnabled());
-			window.m_enablePrecomputesAct->trigger();
-			window.m_enableOmfAct->trigger();
-			window.m_operations->m_enableUndoAct->setChecked(true);
-			QVERIFY(window.m_precomputesEnabled);
-			QVERIFY(window.m_omfEnabled);
-			window.m_operations->setActivity(FileOperationController::Activity::Scanning);
-			window.setPrecomputesEnabled(false);
-			window.setOmfEnabled(false);
-			QVERIFY(window.m_precomputesEnabled);
-			QVERIFY(window.m_omfEnabled);
-			window.m_operations->setActivity(FileOperationController::Activity::Idle);
-		}
-		else
-		{
-			window.setPrecomputesEnabled(true);
-			window.setOmfEnabled(true);
-			QVERIFY(!window.m_precomputesEnabled);
-			QVERIFY(!window.m_omfEnabled);
-		}
-	}
-	MainWindow restarted(nullptr, MainWindow::StartupMode::UiOnly);
-	QVERIFY(!restarted.m_precomputesEnabled);
-	QVERIFY(!restarted.m_omfEnabled);
-	QVERIFY(!restarted.m_operations->m_enableUndoAct->isChecked());
-	QVERIFY(!restarted.m_operations->m_undoAction->isVisible());
-}
-
 void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 {
 	const QString root = path("scan");
@@ -1158,6 +1082,9 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QVERIFY(put(mxfPath, QByteArray(4096, '\0')));
 	QVERIFY(put(omfPath, QByteArray(4096, '\0')));
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfEnabled(false);
+	window.m_operations->setUndoEnabled(false);
 	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
 	window.startScanWithPaths({root});
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
@@ -1165,76 +1092,63 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QCOMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 	QVERIFY(!window.m_model->fileAt(0).omfEra);
-	if constexpr (FeatureFlags::kDebugMenuEnabled)
-	{
-		window.m_enableOmfAct->trigger();
-		window.startScanWithPaths({root});
-		QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
-		QTRY_VERIFY(window.m_operations->isIdle());
-		QCOMPARE(window.m_model->rowCount(), 2);
-		QSet<QString> scanned;
-		for (const auto &file : window.m_model->allFiles())
-			scanned.insert(file.mediaFilePath);
-		QCOMPARE(scanned, QSet<QString>({mxfPath, omfPath}));
-		window.m_enableOmfAct->trigger();
-		QCOMPARE(window.m_model->rowCount(), 1);
-		QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
-		QVERIFY(QFileInfo::exists(omfPath));
-		window.startScanWithPaths({root});
-		QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 3, 15000);
-		QTRY_VERIFY(window.m_operations->isIdle());
-		QCOMPARE(window.m_model->rowCount(), 1);
-		QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+	window.setOmfEnabled(true);
+	window.startScanWithPaths({root});
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QSet<QString> scanned;
+	for (const auto &file : window.m_model->allFiles())
+		scanned.insert(file.mediaFilePath);
+	QCOMPARE(scanned, QSet<QString>({mxfPath, omfPath}));
+	window.setOmfEnabled(false);
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+	QVERIFY(QFileInfo::exists(omfPath));
+	window.startScanWithPaths({root});
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 3, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 
-		// Legacy metadata and suffixes must both be removed when the gate closes.
-		window.setOmfEnabled(true);
-		MediaFile modern = window.m_model->fileAt(0);
-		modern.type = MediaFile::Type::Precompute;
-		modern.project = QStringLiteral("Retained project");
-		MediaFile otherModern = modern;
-		otherModern.mediaFilePath = path("another.mxf");
-		otherModern.fileName = QStringLiteral("another.mxf");
-		otherModern.project = QStringLiteral("Another project");
-		MediaFile legacyMetadata = modern;
-		legacyMetadata.mediaFilePath = path("legacy.mxf");
-		legacyMetadata.omfEra = true;
-		legacyMetadata.project = QStringLiteral("Legacy project");
-		MediaFile legacySuffix = modern;
-		legacySuffix.mediaFilePath = path("legacy.omf");
-		legacySuffix.fileName = QStringLiteral("legacy.omf");
-		legacySuffix.project = legacyMetadata.project;
-		window.onScanFinished({modern, otherModern, legacyMetadata, legacySuffix});
-		for (const auto &project : {modern.project, legacyMetadata.project})
-		{
-			const auto matches = window.m_projectList->findItems(project, Qt::MatchExactly);
-			QCOMPARE(matches.size(), 1);
-			matches.first()->setSelected(true);
-		}
-		QCOMPARE(window.m_proxy->rowCount(), 3);
-		window.setOmfEnabled(false);
-		QCOMPARE(window.m_model->rowCount(), 2);
-		QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
-		QCOMPARE(window.m_model->fileAt(0).type, MediaFile::Type::Precompute);
-		QCOMPARE(window.m_projectList->count(), 2);
-		QVERIFY(window.m_projectList->findItems(legacyMetadata.project, Qt::MatchExactly).isEmpty());
-		QCOMPARE(window.m_projectList->selectedItems().size(), 1);
-		QCOMPARE(window.m_projectList->selectedItems().first()->text(), modern.project);
-		QCOMPARE(window.m_proxy->rowCount(), 1);
-		QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, modern.mediaFilePath);
-		window.onScanFinished({modern, otherModern});
-		QVERIFY(window.m_projectList->selectedItems().isEmpty());
-		QCOMPARE(window.m_proxy->rowCount(), 2);
-	}
-	else
+	// Legacy metadata and suffixes must both be removed when the gate closes.
+	window.setOmfEnabled(true);
+	MediaFile modern = window.m_model->fileAt(0);
+	modern.type = MediaFile::Type::Precompute;
+	modern.project = QStringLiteral("Retained project");
+	MediaFile otherModern = modern;
+	otherModern.mediaFilePath = path("another.mxf");
+	otherModern.fileName = QStringLiteral("another.mxf");
+	otherModern.project = QStringLiteral("Another project");
+	MediaFile legacyMetadata = modern;
+	legacyMetadata.mediaFilePath = path("legacy.mxf");
+	legacyMetadata.omfEra = true;
+	legacyMetadata.project = QStringLiteral("Legacy project");
+	MediaFile legacySuffix = modern;
+	legacySuffix.mediaFilePath = path("legacy.omf");
+	legacySuffix.fileName = QStringLiteral("legacy.omf");
+	legacySuffix.project = legacyMetadata.project;
+	window.onScanFinished({modern, otherModern, legacyMetadata, legacySuffix});
+	for (const auto &project : {modern.project, legacyMetadata.project})
 	{
-		window.setOmfEnabled(true);
-		QVERIFY(!window.m_omfEnabled);
-		window.startScanWithPaths({root});
-		QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
-		QTRY_VERIFY(window.m_operations->isIdle());
-		QCOMPARE(window.m_model->rowCount(), 1);
-		QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+		const auto matches = window.m_projectList->findItems(project, Qt::MatchExactly);
+		QCOMPARE(matches.size(), 1);
+		matches.first()->setSelected(true);
 	}
+	QCOMPARE(window.m_proxy->rowCount(), 3);
+	window.setOmfEnabled(false);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+	QCOMPARE(window.m_model->fileAt(0).type, MediaFile::Type::Precompute);
+	QCOMPARE(window.m_projectList->count(), 2);
+	QVERIFY(window.m_projectList->findItems(legacyMetadata.project, Qt::MatchExactly).isEmpty());
+	QCOMPARE(window.m_projectList->selectedItems().size(), 1);
+	QCOMPARE(window.m_projectList->selectedItems().first()->text(), modern.project);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, modern.mediaFilePath);
+	window.onScanFinished({modern, otherModern});
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
 }
 
 void TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
@@ -1258,7 +1172,10 @@ void TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
 	}
 	QVERIFY(journals[0] != journals[1]);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
+	window.setPrecomputesEnabled(false);
+	window.setOmfEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	QVERIFY(!window.m_operations->m_undoEnabled);
 	window.m_operations->runStartupRecovery();
 	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 10000);
 	QVERIFY(!QFileInfo::exists(journals[0]));
@@ -1542,7 +1459,8 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	QCOMPARE(pending.size(), 1);
 	QCOMPARE(pending.first().kind, OpKind::Undo);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	QVERIFY(!window.m_operations->m_enableUndoAct->isChecked());
+	window.m_operations->setUndoEnabled(false);
+	QVERIFY(!window.m_operations->m_undoEnabled);
 	MediaFile copied;
 	copied.mediaFilePath = path("original/destination/clip-1.bin");
 	copied.fileName = QStringLiteral("clip-1.bin");
@@ -1577,10 +1495,13 @@ void TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
 	OpRunner later(sink, cancel);
 	QCOMPARE(later.run(request("later"), path("journals")).succeeded, 1);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfEnabled(false);
+	window.m_operations->setUndoEnabled(false);
 	auto *operations = window.m_operations;
 	operations->refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
-	QVERIFY(!operations->enableUndoAction()->isChecked());
+	QVERIFY(!operations->m_undoEnabled);
 	QVERIFY(!operations->undoAction()->isVisible());
 	QVERIFY(operations->recoveryAction()->isEnabled());
 	QCOMPARE(operations->m_restorable.size(), 1);
@@ -2115,7 +2036,7 @@ void TestOperationUi::rebalance_engine_results_and_final_counts()
 void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	window.m_operations->m_enableUndoAct->setChecked(true);
+	window.m_operations->setUndoEnabled(true);
 	window.m_operations->m_undoCandidate.journalPath = path("earlier-journal.jsonl");
 	OperationRecovery::Resumable interrupted;
 	interrupted.journalPath = path("interrupted-journal.jsonl");

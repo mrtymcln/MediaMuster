@@ -37,7 +37,6 @@ public:
 	OpManager *manager() const { return m_fileOps; }
 	QAction *recoveryAction() const { return m_recoveryAct; }
 	QAction *undoAction() const { return m_undoAction; }
-	QAction *enableUndoAction() const { return m_enableUndoAct; }
 
 	void runStartupRecovery();
 	void refreshHistory();
@@ -65,6 +64,7 @@ private:
 		Stopped
 	};
 	void onRecoveryDone(const OperationRecovery::Summary &summary);
+	void setUndoEnabled(bool enabled);
 	void updateUndoAction();
 	void updateRecoveryAction();
 	RecoveryOutcome showRecoveryDialog(const QString &preferredJournalPath = {});
@@ -88,7 +88,7 @@ private:
 	QVector<OperationRecovery::Restorable> m_restorable;
 	QAction *m_recoveryAct;
 	QAction *m_undoAction;
-	QAction *m_enableUndoAct;
+	bool m_undoEnabled = false;
 	bool m_operationGateActive = false;
 	bool m_historyLoading = false;
 	quint64 m_historyGeneration = 0;

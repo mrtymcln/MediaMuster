@@ -1,4 +1,5 @@
 #include "fileoperationcontroller.h"
+#include "featureflags.h"
 #include "opjournal.h"
 #include "progressdialog.h"
 #include "unfinishedbusinessdialog.h"
@@ -30,21 +31,13 @@ namespace
 FileOperationController::FileOperationController(QWidget *window)
 	: QObject(window), m_window(window), m_fileOps(new OpManager(this)),
 	  m_recoveryAct(new QAction(tr("Unfinished Business…"), this)),
-	  m_undoAction(new QAction(tr("&Undo"), this)),
-	  m_enableUndoAct(new QAction(tr("Enable undo"), this))
+	  m_undoAction(new QAction(tr("&Undo"), this))
 {
 	m_undoAction->setObjectName(QStringLiteral("undoFileOperationAction"));
 	m_recoveryAct->setObjectName(QStringLiteral("unfinishedBusinessAction"));
-	m_enableUndoAct->setObjectName(QStringLiteral("enableUndoDebugAction"));
-	m_enableUndoAct->setCheckable(true);
+	setUndoEnabled(FeatureFlags::kUndoEnabled);
 	connect(m_recoveryAct, &QAction::triggered, this, &FileOperationController::offerRecovery);
 	connect(m_undoAction, &QAction::triggered, this, &FileOperationController::undoLastOperation);
-	connect(m_enableUndoAct, &QAction::toggled, this,
-			[this](bool enabled)
-			{
-				m_fileOps->setUndoEnabled(enabled);
-				updateUndoAction();
-			});
 	connect(
 		m_fileOps, &OpManager::operationProgress, this,
 		[this](const QString &name, int current, int total, double pct)
@@ -291,11 +284,18 @@ bool FileOperationController::confirmCrashProtection()
 	return false;
 }
 
+void FileOperationController::setUndoEnabled(bool enabled)
+{
+	m_undoEnabled = enabled;
+	m_fileOps->setUndoEnabled(enabled);
+	updateUndoAction();
+}
+
 void FileOperationController::updateUndoAction()
 {
 	if (!m_undoAction)
 		return;
-	const bool enabled = m_enableUndoAct && m_enableUndoAct->isChecked();
+	const bool enabled = m_undoEnabled;
 	m_undoAction->setVisible(enabled);
 	m_undoAction->setShortcut(enabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
 	m_undoAction->setEnabled(enabled && !m_historyLoading && !m_undoCandidate.journalPath.isEmpty() &&
@@ -305,7 +305,7 @@ void FileOperationController::updateUndoAction()
 
 void FileOperationController::undoLastOperation()
 {
-	if (!m_enableUndoAct->isChecked() || !isIdle())
+	if (!m_undoEnabled || !isIdle())
 		return;
 	// Resolve the forward remainder before selecting its completed effects
 	// for Undo. Choosing Resume starts only that old job, never this Undo.
@@ -343,7 +343,7 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 		return false;
 	if (!resuming && !restoring && !resolvePreviousJob())
 		return false;
-	if (request.kind == OpKind::Undo && !resuming && !restoring && !m_enableUndoAct->isChecked())
+	if (request.kind == OpKind::Undo && !resuming && !restoring && !m_undoEnabled)
 		return false;
 	if (!confirmCrashProtection())
 		return false;

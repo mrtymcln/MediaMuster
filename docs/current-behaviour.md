@@ -52,27 +52,16 @@ use `scanner`; the parsers retain their own diagnostic categories. Neither outpu
 adds a `console/` or `mediamuster.` prefix to these labels. The category identifies
 the source of a message; its severity is separate.
 
-The current source includes a Debug menu. These four options start **off on every
-launch**:
+OMF support, precompute classification/filtering and file-operation Undo are
+controlled independently by compile-time flags in `src/featureflags.h`. All three
+default to off. Change a flag and rebuild to enable it; these controls do not
+appear in the Debug menu. Rendered media remains in ordinary scan results when
+precompute details and filtering are disabled.
 
-| Option | What turning it on does |
-| --- | --- |
-| Enable OMF | Includes supported legacy media in subsequent scans. Rescan to discover it. |
-| Enable Precomputes | Shows precompute classification, detail columns and filtering, and includes those fields in CSV exports. |
-| Enable undo | Makes the file-operation Undo command available when there is an eligible recorded job. |
-| Fusion style | Uses Qt's Fusion widget style; turning it off restores the startup style. |
-
-Rendered media is still scanned while the precompute option is off. That option
-controls the extra interface and export fields. Turning OMF off removes
-legacy rows from the current table; it does not delete their files.
-
-The menu follows the order above, with separators before and after Fusion style.
-**Rebalance demos** comes last, with **Small**,
-**Big** and **Really big** scenarios. These use synthetic media and simulated
-progress without changing files.
-
-The Debug menu can be omitted when building the app. See
-[release feature gates](release-feature-gates.md) for the exact switch and effects.
+The Debug menu contains **Fusion style** (off at launch) and **Rebalance demos**,
+with **Small**, **Big** and **Really big** scenarios. The demos use synthetic media
+and simulated progress without changing files. The menu has its own independent
+build flag. See [release feature gates](release-feature-gates.md).
 
 ## Menus
 

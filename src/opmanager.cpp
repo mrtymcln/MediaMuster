@@ -165,7 +165,7 @@ void OpManager::startRun(OpRequest request)
 	{
 		if (!m_undoEnabled)
 		{
-			emit operationLog(QtWarningMsg, QStringLiteral("Enable undo in the Debug menu first."));
+			emit operationLog(QtWarningMsg, QStringLiteral("Undo is disabled in this build."));
 			emit operationFinished(0, 1);
 			return;
 		}

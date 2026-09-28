@@ -228,9 +228,7 @@ private:
 	QElapsedTimer m_scanTimer;
 	bool m_showAllFilterTabs = false;
 	bool m_omfEnabled = false;
-	class QAction *m_enableOmfAct = nullptr;
 	bool m_precomputesEnabled = false;
-	class QAction *m_enablePrecomputesAct = nullptr;
 	class QAction *m_precomputeFilterAct = nullptr;
 	QSet<QString> m_manualVolumes;
 
