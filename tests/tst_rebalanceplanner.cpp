@@ -57,16 +57,16 @@ private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
 	static QString stageMxfRoot(const QTemporaryDir &tmp);
 
-	/// Fills <mxfRoot>/<folderName>/ with `fillerCount` empty .mxf-named
+	/// Fills <mxfRootPath>/<mediaFolderName>/ with `fillerCount` empty .mxf-named
 	/// files. Bumps the on-disk count without producing MediaFiles —
 	/// only .mxf entries count toward the folder budget, so cap tests
 	/// use these to make a folder 'full' without indexing thousands of
 	/// MediaFiles.
-	static void makeFillers(const QString &mxfRoot, const QString &folderName, int fillerCount);
+	static void makeFillers(const QString &mxfRootPath, const QString &mediaFolderName, int fillerCount);
 
-	/// Creates one sparse file under <mxfRoot>/<folderName>/<name>
+	/// Creates one sparse file under <mxfRootPath>/<mediaFolderName>/<name>
 	/// and returns a MediaFile pointing at it.
-	static MediaFile makeMxf(const QString &mxfRoot, const QString &folderName, const QString &name,
+	static MediaFile makeMxf(const QString &mxfRootPath, const QString &mediaFolderName, const QString &name,
 							 const QString &masterMobId = {}, qint64 sizeBytes = 1000);
 
 	/// Counts ops with this src-to-dest folder pair.
@@ -82,10 +82,10 @@ QString TestRebalancePlanner::stageMxfRoot(const QTemporaryDir &tmp)
 	return root;
 }
 
-void TestRebalancePlanner::makeFillers(const QString &mxfRoot, const QString &folderName,
+void TestRebalancePlanner::makeFillers(const QString &mxfRootPath, const QString &mediaFolderName,
 									   int fillerCount)
 {
-	const QString folder = mxfRoot + QLatin1Char('/') + folderName;
+	const QString folder = mxfRootPath + QLatin1Char('/') + mediaFolderName;
 	QDir().mkpath(folder);
 	for (int i = 0; i < fillerCount; ++i)
 	{
@@ -96,11 +96,11 @@ void TestRebalancePlanner::makeFillers(const QString &mxfRoot, const QString &fo
 	}
 }
 
-MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRoot, const QString &folderName,
+MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRootPath, const QString &mediaFolderName,
 										const QString &name, const QString &masterMobId,
 										qint64 sizeBytes)
 {
-	const QString folder = mxfRoot + QLatin1Char('/') + folderName;
+	const QString folder = mxfRootPath + QLatin1Char('/') + mediaFolderName;
 	QDir().mkpath(folder);
 	const QString path = folder + QLatin1Char('/') + name;
 	QFile f(path);
@@ -115,8 +115,8 @@ MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRoot, const QString &f
 	f.close();
 
 	MediaFile mf;
-	mf.filePath = path;
-	mf.mediaFolderName = folderName;
+	mf.mediaFilePath = path;
+	mf.mediaFolderName = mediaFolderName;
 	mf.masterMobId = masterMobId.isEmpty() ? QString()
 										   : MobId::format(QCryptographicHash::hash(
 												 masterMobId.toUtf8(), QCryptographicHash::Sha256));
@@ -264,7 +264,7 @@ void TestRebalancePlanner::quarantined_folder_left_alone()
 	bool quarantinedSeen = false;
 	for (const auto &fs : p.folders)
 	{
-		if (fs.name == QStringLiteral("Quarantined Files"))
+		if (fs.mediaFolderName == QStringLiteral("Quarantined Files"))
 		{
 			QVERIFY(!fs.inScope);
 			QCOMPARE(fs.count, 3);
@@ -311,12 +311,12 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	bool sawOne = false, sawCreating = false;
 	for (const auto &fs : p.folders)
 	{
-		if (fs.name == QStringLiteral("1"))
+		if (fs.mediaFolderName == QStringLiteral("1"))
 		{
 			QCOMPARE(fs.count, 2); // media only; databases and junk invisible
 			sawOne = true;
 		}
-		if (fs.name == QStringLiteral("Creating"))
+		if (fs.mediaFolderName == QStringLiteral("Creating"))
 		{
 			QVERIFY(!fs.inScope);
 			sawCreating = true;
@@ -378,7 +378,7 @@ void TestRebalancePlanner::unreadable_folder_is_not_counted_or_planned()
 	const auto plan = RebalancePlanner::computePlan(root, QStringLiteral("Vol"), files);
 	QVERIFY(plan.ops.isEmpty());
 	for (const auto &state : plan.folders)
-		if (state.name == QStringLiteral("1"))
+		if (state.mediaFolderName == QStringLiteral("1"))
 		{
 			QCOMPARE(state.count, -1);
 			QVERIFY(!state.inScope);
@@ -574,7 +574,7 @@ void TestRebalancePlanner::eligibility_excludes_legacy_loose_and_quarantined()
 	excluded.append(makeMxf(tmp.path(), "loose", "loose.mxf", "same"));
 	excluded.append(makeMxf(root, "1/Creating", "unfinished.mxf", "same"));
 	for (const auto &file : excluded)
-		QVERIFY2(!RebalancePlanner::isEligible(file), qPrintable(file.filePath));
+		QVERIFY2(!RebalancePlanner::isEligible(file), qPrintable(file.mediaFilePath));
 
 	excluded.prepend(home);
 	QVERIFY(RebalancePlanner::computePlan(root, "Test", excluded).ops.isEmpty());
@@ -617,8 +617,8 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 	const QString root = stageMxfRoot(tmp);
 	const auto file = makeMxf(root, "2", "stray.mxf", "same");
 	RebalancePlan valid;
-	valid.mxfRoot = root;
-	valid.ops.append({file.filePath, FolderName{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+	valid.mxfRootPath = root;
+	valid.ops.append({file.mediaFilePath, FolderName{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
 	QCOMPARE(RebalancePlanner::requestForPlan(valid).items.size(), 1);
 
 	QVector<RenameOp> invalid;
@@ -643,7 +643,7 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 		plan.ops.append(op);
 		QVERIFY(RebalancePlanner::requestForPlan(plan).items.isEmpty());
 	}
-	valid.mxfRoot = tmp.path() + "/MXF";
+	valid.mxfRootPath = tmp.path() + "/MXF";
 	QVERIFY(RebalancePlanner::requestForPlan(valid).items.isEmpty());
 }
 
@@ -665,7 +665,7 @@ void TestRebalancePlanner::directory_aliases_cannot_redirect_rebalance()
 	QCOMPARE(plan.ops.size(), 1);
 	QCOMPARE(plan.ops.first().dest.display(), QStringLiteral("3"));
 	for (const auto &folder : plan.folders)
-		if (folder.name == QStringLiteral("1"))
+		if (folder.mediaFolderName == QStringLiteral("1"))
 			QVERIFY(!folder.inScope);
 	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
 
@@ -679,21 +679,21 @@ void TestRebalancePlanner::directory_aliases_cannot_redirect_rebalance()
 	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
 
 	auto aliasedSource = home;
-	aliasedSource.filePath = root + "/1/stray.mxf";
+	aliasedSource.mediaFilePath = root + "/1/stray.mxf";
 	aliasedSource.mediaFolderName = "1";
 	QVERIFY(!RebalancePlanner::isEligible(aliasedSource));
-	aliasedSource.filePath = root + "/4/stray.mxf";
+	aliasedSource.mediaFilePath = root + "/4/stray.mxf";
 	aliasedSource.mediaFolderName = "4";
 	QVERIFY(!RebalancePlanner::isEligible(aliasedSource));
 	redirected = plan;
-	redirected.ops.first().srcPath = aliasedSource.filePath;
+	redirected.ops.first().srcPath = aliasedSource.mediaFilePath;
 	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
-	QVERIFY(QFile::link(home.filePath, root + "/2/link.mxf"));
+	QVERIFY(QFile::link(home.mediaFilePath, root + "/2/link.mxf"));
 	aliasedSource = home;
-	aliasedSource.filePath = root + "/2/link.mxf";
+	aliasedSource.mediaFilePath = root + "/2/link.mxf";
 	QVERIFY(!RebalancePlanner::isEligible(aliasedSource));
 	redirected = plan;
-	redirected.ops.first().srcPath = aliasedSource.filePath;
+	redirected.ops.first().srcPath = aliasedSource.mediaFilePath;
 	QVERIFY(RebalancePlanner::requestForPlan(redirected).items.isEmpty());
 #endif
 }

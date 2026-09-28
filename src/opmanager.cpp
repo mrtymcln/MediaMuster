@@ -119,13 +119,13 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 	for (const MediaFile &mf : files)
 	{
 		OpItem it;
-		it.src = mf.filePath;
+		it.src = mf.mediaFilePath;
 		it.name = mf.fileName;
-		it.folder = mf.mediaFolderName;
+		it.mediaFolderName = mf.mediaFolderName;
 		it.omfEra = mf.omfEra; // OMF-era: travels with the item, and through the journal
 		it.bytes = mf.sizeBytes;
 		it.modifiedMs = mf.modified.isValid() ? mf.modified.toMSecsSinceEpoch() : -1;
-		if (const auto p = policies.constFind(mf.filePath); p != policies.constEnd())
+		if (const auto p = policies.constFind(mf.mediaFilePath); p != policies.constEnd())
 			it.policy = conflictPolicyName(p.value());
 		// The scan's Avid identity claims. The runner cross-checks the
 		// file on disk against these before touching it, and every

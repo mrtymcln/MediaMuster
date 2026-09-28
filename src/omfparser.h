@@ -64,5 +64,5 @@ public:
 	/// a Bento container, carries no mobs, or has no media descriptor the
 	/// walker recognises; whatever was read stays in the struct. `bytesRead`,
 	/// if non-null, receives BentoFile::bytesRead().
-	[[nodiscard]] static OmfMetadata parseHeader(const QString &filePath, qint64 *bytesRead = nullptr);
+	[[nodiscard]] static OmfMetadata parseHeader(const QString &mediaFilePath, qint64 *bytesRead = nullptr);
 };

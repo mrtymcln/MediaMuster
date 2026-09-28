@@ -108,9 +108,9 @@ struct OpItem
 {
 	QString src;	///< Absolute source path; the item's identity key.
 	QString name;	///< Destination leaf name (usually the source's).
-	QString folder; ///< Source media folder; MXF preserve mode reuses this name.
+	QString mediaFolderName; ///< Source folder name, reused when preserving MXF structure.
 	/// OMF-era: the scanner's verdict (MediaFile::omfEra). Preserve mode
-	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `folder`
+	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `mediaFolderName`
 	/// says; journaled so a resumed run lands it in the same place.
 	bool omfEra = false;
 	qint64 bytes = 0;

@@ -52,12 +52,12 @@ namespace
 		Harness() : errors(&dialog, &BinFilterDialog::loadError)
 		{
 			MediaFile hit;
-			hit.filePath = QStringLiteral("/media/hit.mxf");
+			hit.mediaFilePath = QStringLiteral("/media/hit.mxf");
 			hit.fileName = QStringLiteral("hit.mxf");
 			hit.mobId = MobId::format(TestAvb::Source);
 			hit.masterMobId = MobId::format(TestAvb::Master);
 			MediaFile outside;
-			outside.filePath = QStringLiteral("/media/outside.mxf");
+			outside.mediaFilePath = QStringLiteral("/media/outside.mxf");
 			outside.fileName = QStringLiteral("outside.mxf");
 			outside.mobId = MobId::format(TestAvb::Other);
 			model.setMediaFiles({hit, outside});

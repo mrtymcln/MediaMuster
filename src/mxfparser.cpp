@@ -193,16 +193,16 @@ static QString readUtf16BE(const QByteArray &data, qint64 pos, quint16 len)
 // Avid's GetHeaderFromFile feeds its parser incrementally; header allocation
 // (256/512 KiB in many specimens) is not a format limit. Walk KLV framing and
 // skip padding/unknown payloads without loading essence into memory.
-MediaMetadata MxfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
+MediaMetadata MxfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRead)
 {
 	if (bytesRead)
 		*bytesRead = 0;
-	QFile file(filePath);
+	QFile file(mediaFilePath);
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		MediaMetadata result;
 		result.headerStatus = MediaMetadata::HeaderStatus::IoError;
-		qCWarning(lcMxf) << "cannot open" << filePath << file.errorString();
+		qCWarning(lcMxf) << "cannot open" << mediaFilePath << file.errorString();
 		return result;
 	}
 	return parseHeader(file, bytesRead);

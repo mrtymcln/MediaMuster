@@ -49,7 +49,7 @@ namespace AvidMediaLayout
 	{
 		Family family;
 		QString rootPath;
-		QString folderName;
+		QString mediaFolderName;
 		bool isQuarantined = false;
 	};
 

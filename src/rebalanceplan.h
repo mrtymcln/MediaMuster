@@ -29,8 +29,8 @@ struct RenameOp
 /// Folders outside Rebalance's numbered series are shown read-only.
 struct FolderState
 {
-	QString name;  ///< Matches FolderName::display() when in scope.
-	FolderName id; ///< Valid only when `inScope` is true.
+	QString mediaFolderName; ///< Matches FolderName::display() when in scope.
+	FolderName id;           ///< Valid only when `inScope` is true.
 	int count = 0;
 	qint64 bytes = 0;
 	int filesIn = 0;
@@ -47,7 +47,7 @@ struct FolderState
 /// dialog or passed to Rebalancer::executeAsync to perform the moves.
 struct RebalancePlan
 {
-	QString mxfRoot;	 ///< Path to `.../Avid MediaFiles/MXF`.
+	QString mxfRootPath; ///< Path to `.../Avid MediaFiles/MXF`.
 	QString volumeLabel; ///< Volume display name, for dialog headings.
 
 	QVector<FolderState> folders;

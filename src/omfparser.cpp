@@ -83,18 +83,18 @@ namespace
 
 // MARK: - Parse
 
-OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
+OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRead)
 {
 	OmfMetadata out;
 	BentoFile b;
 	QString why;
-	const bool opened = b.open(filePath, &why);
+	const bool opened = b.open(mediaFilePath, &why);
 	if (bytesRead)
 		*bytesRead = b.bytesRead();
 	if (!opened)
 	{
 		// No supported Bento tail or embedded omfi chunk was found.
-		qCDebug(lcOmf) << filePath << "is not an OMF container:" << why;
+		qCDebug(lcOmf) << mediaFilePath << "is not an OMF container:" << why;
 		return out;
 	}
 
@@ -103,7 +103,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	out.essence.headerStatus = MediaMetadata::HeaderStatus::Incomplete;
 	if (p.mobId < 0)
 	{
-		qCDebug(lcOmf) << filePath << "carries no MobID property — a Bento container without mobs";
+		qCDebug(lcOmf) << mediaFilePath << "carries no MobID property — a Bento container without mobs";
 		return out;
 	}
 
@@ -173,7 +173,7 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 	}
 	if (!fileMob)
 	{
-		qCWarning(lcOmf) << "no media descriptor in" << filePath << "(read" << b.bytesRead() << "bytes)";
+		qCWarning(lcOmf) << "no media descriptor in" << mediaFilePath << "(read" << b.bytesRead() << "bytes)";
 		if (bytesRead)
 			*bytesRead = b.bytesRead();
 		return out;
@@ -312,9 +312,9 @@ OmfMetadata OmfParser::parseHeader(const QString &filePath, qint64 *bytesRead)
 						 ? MediaMetadata::HeaderStatus::Complete
 						 : MediaMetadata::HeaderStatus::Incomplete;
 	if (!e.valid)
-		qCWarning(lcOmf) << "no usable OMF metadata in" << filePath << "(read" << b.bytesRead() << "bytes)";
+		qCWarning(lcOmf) << "no usable OMF metadata in" << mediaFilePath << "(read" << b.bytesRead() << "bytes)";
 	else
-		qCDebug(lcOmf) << filePath << ":" << e.codec << e.resolution << e.fps << "clip" << e.clipName << "project"
+		qCDebug(lcOmf) << mediaFilePath << ":" << e.codec << e.resolution << e.fps << "clip" << e.clipName << "project"
 					   << e.projectName << "bin" << out.bin << "(read" << b.bytesRead() << "bytes)";
 	return out;
 }

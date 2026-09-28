@@ -124,7 +124,7 @@ private:
 	struct ScanTask
 	{
 		AvidMediaLayout::Family family = AvidMediaLayout::Family::Mxf;
-		QString folderPath;
+		QString mediaFolderPath;
 		QString mediaFolderName;
 		QString volumeName;
 		QString volumePath;

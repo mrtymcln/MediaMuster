@@ -43,7 +43,7 @@ public:
 	void respondTrashFallback(quint64 requestId, bool accepted);
 
 	/// The engine's entire read of a MediaFile, in one place: path,
-	/// name, folder, size, the per-file conflict policy, and the scan's
+	/// name, folder name, size, the per-file conflict policy, and the scan's
 	/// Avid identity claims (mob ids + clip name) that the runner
 	/// cross-checks and the journal records.
 	static QVector<OpItem> itemsFromMediaFiles(const QVector<MediaFile> &files,

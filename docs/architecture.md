@@ -30,6 +30,18 @@ destination rules, rather than as a gate for MXF scanning. Interplay and
 MediaCentral locations use the same accessible-file and folder-database readers;
 there is no server catalogue integration.
 
+Media paths use these names (with `/Volumes/MediaSSD` omitted below):
+
+| Name | Example |
+| --- | --- |
+| `mxfRootPath` | `Avid MediaFiles/MXF` |
+| `mediaFolderPath` | `Avid MediaFiles/MXF/MartyiMac.2` |
+| `mediaFolderName` | `MartyiMac.2` |
+| `mediaFilePath` | `Avid MediaFiles/MXF/MartyiMac.2/Interview.mxf` |
+
+`AvidMediaLayout::Location::rootPath` can identify either the MXF folder or
+`OMFI MediaFiles`, so its name stays generic.
+
 Main-window menu actions also drive their matching buttons, so enabled states
 follow the same inventory, selection and activity rules. Text editing uses the
 Qt controls' built-in keyboard shortcuts and context menus.

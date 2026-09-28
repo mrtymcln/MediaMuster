@@ -48,8 +48,8 @@ class RebalanceDialog : public QDialog
 	friend class TestOperationUi;
 
 public:
-	RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
-					const QHash<QString, QVector<MediaFile>> &filesByMxfRoot,
+	RebalanceDialog(const QHash<QString, QString> &mxfRootPathsByLabel,
+					const QHash<QString, QVector<MediaFile>> &filesByMxfRootPath,
 					const QString &initialLabel, QWidget *parent = nullptr);
 
 	/// Debug ▸ Rebalance demos: a dialog over a synthetic plan, skipping
@@ -130,8 +130,8 @@ private:
 	/// `m_currentPlan` — used for the preview and final folder recount.
 	QSet<FolderName> affectedFolders() const;
 
-	QHash<QString, QString> m_mxfRootsByLabel;
-	QHash<QString, QVector<MediaFile>> m_filesByMxfRoot;
+	QHash<QString, QString> m_mxfRootPathsByLabel;
+	QHash<QString, QVector<MediaFile>> m_filesByMxfRootPath;
 
 	RebalancePlan m_currentPlan;
 

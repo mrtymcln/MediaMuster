@@ -376,7 +376,7 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 		OpItem item;
 		item.name = QFileInfo(sample).fileName();
 		item.src = f.root + QStringLiteral("/archive/") + item.name;
-		item.folder = QStringLiteral("editor.7");
+		item.mediaFolderName = QStringLiteral("editor.7");
 		item.omfEra = sample.startsWith(QStringLiteral("omf/"));
 		item.bytes = bytes.size();
 		put(item.src, bytes);
@@ -1613,7 +1613,7 @@ void TestFileOperations::rebalance_cancel_before_queued_dispatch_keeps_source()
 	const QByteArray bytes("Disposable media");
 	put(source, bytes);
 	RebalancePlan plan;
-	plan.mxfRoot = root;
+	plan.mxfRootPath = root;
 	plan.ops.append({source, FolderName{{}, 2}, {}, bytes.size(), -1, {}});
 	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
 
@@ -1670,7 +1670,7 @@ void TestFileOperations::rebalance_rejected_preparation_aborts()
 	const QByteArray bytes("Disposable media");
 	put(source, bytes);
 	RebalancePlan plan;
-	plan.mxfRoot = root;
+	plan.mxfRootPath = root;
 	plan.ops.append({source, FolderName{{}, 2}, {}, bytes.size(), -1, {}});
 	QCOMPARE(RebalancePlanner::requestForPlan(plan).items.size(), 1);
 	const QString originalFolder = rootVanishes ? root : root + "/1";
@@ -1700,8 +1700,8 @@ void TestFileOperations::rebalance_empty_plan_finishes_without_aborting()
 	Fixture f;
 	ScopedJournalDirectory journals(f.journals);
 	RebalancePlan plan;
-	plan.mxfRoot = f.root + "/Avid MediaFiles/MXF";
-	QVERIFY(QDir().mkpath(plan.mxfRoot));
+	plan.mxfRootPath = f.root + "/Avid MediaFiles/MXF";
+	QVERIFY(QDir().mkpath(plan.mxfRootPath));
 	Rebalancer rebalancer;
 	QSignalSpy aborted(&rebalancer, &Rebalancer::aborted);
 	QSignalSpy finished(&rebalancer, &Rebalancer::finished);
@@ -1727,12 +1727,12 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	for (const auto &name : {QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")})
 	{
 		MediaFile file;
-		file.filePath = root + "/1/" + name + ".mxf";
+		file.mediaFilePath = root + "/1/" + name + ".mxf";
 		file.mediaFolderName = "1";
 		file.masterMobId = MobId::format(QCryptographicHash::hash(
 			("mob" + name.toUpper()).toUtf8(), QCryptographicHash::Sha256));
 		file.sizeBytes = 1000;
-		put(file.filePath, QByteArray(int(file.sizeBytes), '\0'));
+		put(file.mediaFilePath, QByteArray(int(file.sizeBytes), '\0'));
 		files.append(file);
 	}
 	QVERIFY(QDir().mkpath(root + "/2"));
@@ -1740,7 +1740,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	plan.ops.clear();
 	for (const MediaFile &file : files)
 		plan.ops.append(
-			{file.filePath, FolderName{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+			{file.mediaFilePath, FolderName{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.mobId});
 
 	auto rebalancer = std::make_unique<Rebalancer>();
 	QSignalSpy finished(rebalancer.get(), &Rebalancer::finished);
@@ -1751,8 +1751,8 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	int landed = 0;
 	for (const MediaFile &file : files)
 	{
-		const bool atSource = QFile::exists(file.filePath);
-		const bool atDest = QFile::exists(root + "/2/" + QFileInfo(file.filePath).fileName());
+		const bool atSource = QFile::exists(file.mediaFilePath);
+		const bool atDest = QFile::exists(root + "/2/" + QFileInfo(file.mediaFilePath).fileName());
 		QVERIFY(atSource != atDest);
 		landed += atDest;
 	}
@@ -1783,17 +1783,17 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	const QString base = OpJournal::canonicalPath(temp.path());
 	const QString root = base + "/Avid MediaFiles/MXF";
 	MediaFile home;
-	home.filePath = root + "/1/home.mxf";
+	home.mediaFilePath = root + "/1/home.mxf";
 	home.mediaFolderName = "1";
 	home.masterMobId = firstHeader.umid;
 	home.mobId = firstHeader.fileMobId;
-	put(home.filePath, get(first));
-	home.sizeBytes = QFileInfo(home.filePath).size();
+	put(home.mediaFilePath, get(first));
+	home.sizeBytes = QFileInfo(home.mediaFilePath).size();
 	MediaFile moved = home;
-	moved.filePath = root + "/2/track.mxf";
+	moved.mediaFilePath = root + "/2/track.mxf";
 	moved.mediaFolderName = "2";
-	put(moved.filePath, get(second));
-	moved.sizeBytes = QFileInfo(moved.filePath).size();
+	put(moved.mediaFilePath, get(second));
+	moved.sizeBytes = QFileInfo(moved.mediaFilePath).size();
 	const auto plan = RebalancePlanner::computePlan(root, "Test", {home, moved});
 	QCOMPARE(plan.ops.size(), 1);
 	const auto request = RebalancePlanner::requestForPlan(plan);
@@ -1806,7 +1806,7 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	const auto totals = runner.run(request, base + "/journals");
 	QCOMPARE(totals.succeeded, 0);
 	QCOMPARE(totals.failed, 1);
-	QVERIFY(QFile::exists(moved.filePath));
+	QVERIFY(QFile::exists(moved.mediaFilePath));
 	QVERIFY(!QFile::exists(root + "/1/track.mxf"));
 	QVERIFY(!sink.results.isEmpty());
 	QVERIFY(sink.results.last().message.contains("Avid identity"));

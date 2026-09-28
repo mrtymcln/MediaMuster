@@ -1849,7 +1849,7 @@ void TestScanner::omf_is_disabled_for_all_path_shapes()
 void TestScanner::omf_disabled_preserves_mxf_and_its_databases_data()
 {
 	QTest::addColumn<QString>("shape");
-	QTest::addColumn<QString>("folderName");
+	QTest::addColumn<QString>("mediaFolderName");
 	QTest::addColumn<bool>("withDatabases");
 	QTest::newRow("volume-root") << QStringLiteral("volume") << QStringLiteral("1") << true;
 	QTest::newRow("manual-root") << QStringLiteral("manual") << QStringLiteral("1") << true;
@@ -1869,14 +1869,14 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases_data()
 void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 {
 	QFETCH(QString, shape);
-	QFETCH(QString, folderName);
+	QFETCH(QString, mediaFolderName);
 	QFETCH(bool, withDatabases);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString project = shape == QStringLiteral("nested")
 								? tmp.path() + QStringLiteral("/Archive/Project")
 								: tmp.path();
-	const QString folder = Conventions::mxfRootUnder(project) + QLatin1Char('/') + folderName;
+	const QString folder = Conventions::mxfRootUnder(project) + QLatin1Char('/') + mediaFolderName;
 	QVERIFY(QDir().mkpath(folder));
 	QVERIFY(MediaScanner::canScanPath(folder));
 	if (withDatabases)
@@ -1910,9 +1910,9 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QCOMPARE(results.size(), 1);
 	const auto &mxf = results.first();
 	QCOMPARE(mxf.fileName, kToneName);
-	QCOMPARE(QFileInfo(mxf.filePath).canonicalFilePath(),
+	QCOMPARE(QFileInfo(mxf.mediaFilePath).canonicalFilePath(),
 			 QFileInfo(folder + QLatin1Char('/') + kToneName).canonicalFilePath());
-	QCOMPARE(mxf.mediaFolderName, folderName);
+	QCOMPARE(mxf.mediaFolderName, mediaFolderName);
 	QVERIFY(!mxf.omfEra);
 	QVERIFY(!mxf.isQuarantined);
 	QCOMPARE(mxf.databaseMetadataCurrent, withDatabases);
@@ -2364,7 +2364,7 @@ void TestScanner::shared_omf_folder_without_any_database_is_scanned()
 		{
 			QCOMPARE(row.dbStatus, MediaFile::DbStatus::NoDatabase);
 			QCOMPARE(row.mediaFolderName, QStringLiteral("EditorOne"));
-			QCOMPARE(QFileInfo(row.filePath).absolutePath(), folder);
+			QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), folder);
 			QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 		}
 		QVERIFY(runManualScan(selected).isEmpty());
@@ -2547,14 +2547,14 @@ void TestScanner::mxf_and_omf_staging_rules()
 	// excluded. Quarantined Files is handled separately for MXF only.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString mxfRoot = Conventions::mxfRootUnder(tmp.path());
-	QVERIFY(QDir().mkpath(mxfRoot + QStringLiteral("/1")));
-	copyFixture(kToneName, mxfRoot + QStringLiteral("/1"));
+	const QString mxfRootPath = Conventions::mxfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(mxfRootPath + QStringLiteral("/1")));
+	copyFixture(kToneName, mxfRootPath + QStringLiteral("/1"));
 	for (const QString &name : {QStringLiteral("cReAtInG"), QStringLiteral(".hidden"),
 							   QStringLiteral("Temp"), QStringLiteral("Quarantine")})
 	{
-		QVERIFY(QDir().mkpath(mxfRoot + QLatin1Char('/') + name));
-		copyFixture(kToneName, mxfRoot + QLatin1Char('/') + name);
+		QVERIFY(QDir().mkpath(mxfRootPath + QLatin1Char('/') + name));
+		copyFixture(kToneName, mxfRootPath + QLatin1Char('/') + name);
 	}
 
 	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
@@ -2581,7 +2581,7 @@ void TestScanner::mxf_and_omf_staging_rules()
 	QSet<QString> mxfFolders;
 	for (const MediaFile &f : results)
 	{
-		QVERIFY2(!Conventions::isCreatingFolderName(f.mediaFolderName), qPrintable(f.filePath));
+		QVERIFY2(!Conventions::isCreatingFolderName(f.mediaFolderName), qPrintable(f.mediaFilePath));
 		QVERIFY(!Conventions::isDotHidden(f.mediaFolderName));
 		QVERIFY(!f.isQuarantined);
 		if (!f.omfEra)
@@ -2771,8 +2771,8 @@ void TestScanner::ume_exclusion_preserves_supported_siblings()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString mxfRoot = Conventions::mxfRootUnder(tmp.path());
-	const QString mxf = mxfRoot + QStringLiteral("/1");
+	const QString mxfRootPath = Conventions::mxfRootUnder(tmp.path());
+	const QString mxf = mxfRootPath + QStringLiteral("/1");
 	const QString ume = tmp.path() + QStringLiteral("/Avid MediaFiles/UME/1");
 	const QString omf = Conventions::omfRootUnder(tmp.path());
 	for (const QString &folder : {mxf, ume, omf})
@@ -2782,7 +2782,7 @@ void TestScanner::ume_exclusion_preserves_supported_siblings()
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omf);
 #ifdef Q_OS_UNIX
 	// The per-folder guard must also reject a UME target reached beneath MXF.
-	QVERIFY(QFile::link(ume, mxfRoot + QStringLiteral("/2")));
+	QVERIFY(QFile::link(ume, mxfRootPath + QStringLiteral("/2")));
 #endif
 	for (bool manual : {false, true})
 	{
@@ -2796,12 +2796,12 @@ void TestScanner::ume_exclusion_preserves_supported_siblings()
 		QCOMPARE(rows.size(), 2);
 		const MediaFile *mxfRow = rowNamed(rows, kToneName);
 		QVERIFY(mxfRow);
-		QCOMPARE(mxfRow->filePath, mxf + QLatin1Char('/') + kToneName);
+		QCOMPARE(mxfRow->mediaFilePath, mxf + QLatin1Char('/') + kToneName);
 		QVERIFY(rowNamed(rows, kOmfWav));
 	}
 	const auto avidRows = runManualScan(tmp.path() + QStringLiteral("/Avid MediaFiles"));
 	QCOMPARE(avidRows.size(), 1);
-	QCOMPARE(avidRows.first().filePath, mxf + QLatin1Char('/') + kToneName);
+	QCOMPARE(avidRows.first().mediaFilePath, mxf + QLatin1Char('/') + kToneName);
 }
 
 void TestScanner::overlapping_volume_and_manual_roots_scan_each_folder_once()
@@ -2816,7 +2816,7 @@ void TestScanner::overlapping_volume_and_manual_roots_scan_each_folder_once()
 	opts.manualPaths = {tmp.path(), folder, folder + QLatin1Char('/')};
 	const auto rows = runScanWith(opts);
 	QCOMPARE(rows.size(), 1);
-	QCOMPARE(rows.first().filePath, folder + QLatin1Char('/') + kToneName);
+	QCOMPARE(rows.first().mediaFilePath, folder + QLatin1Char('/') + kToneName);
 }
 
 void TestScanner::case_distinct_shared_folders_remain_distinct()
@@ -2835,7 +2835,7 @@ void TestScanner::case_distinct_shared_folders_remain_distinct()
 	QCOMPARE(rows.size(), 2);
 	QSet<QString> paths;
 	for (const MediaFile &row : rows)
-		paths.insert(row.filePath);
+		paths.insert(row.mediaFilePath);
 	QVERIFY(paths.contains(upper + QLatin1Char('/') + kToneName));
 	QVERIFY(paths.contains(lower + QLatin1Char('/') + kToneName));
 }
@@ -2860,20 +2860,20 @@ void TestScanner::cross_format_files_are_excluded_even_with_omf_enabled()
 	{
 		if (row.fileName == kToneName)
 		{
-			QCOMPARE(QFileInfo(row.filePath).absolutePath(), mxf);
+			QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), mxf);
 			QVERIFY(!row.omfEra);
 			QCOMPARE(row.clipName, kToneClip);
 		}
 		else
 		{
-			QCOMPARE(QFileInfo(row.filePath).absolutePath(), omfi);
+			QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), omfi);
 			QVERIFY(row.omfEra);
 			QVERIFY(!row.codec.isEmpty());
 		}
 	}
 	const auto publicRows = runScan(tmp.path());
 	QCOMPARE(publicRows.size(), 1);
-	QCOMPARE(publicRows.first().filePath, mxf + QLatin1Char('/') + kToneName);
+	QCOMPARE(publicRows.first().mediaFilePath, mxf + QLatin1Char('/') + kToneName);
 }
 
 void TestScanner::unsupported_manual_locations_are_rejected_data()
@@ -2945,9 +2945,9 @@ void TestScanner::mxf_quarantined_files_remain_diagnostic()
 	int quarantineCount = 0;
 	for (const auto &row : rows)
 	{
-		const bool inQuarantine = row.filePath.startsWith(quarantined + QLatin1Char('/'));
+		const bool inQuarantine = row.mediaFilePath.startsWith(quarantined + QLatin1Char('/'));
 		QCOMPARE(row.fileName, kToneName);
-		QCOMPARE(QFileInfo(row.filePath).absolutePath(), inQuarantine ? quarantined : root + QStringLiteral("/1"));
+		QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), inQuarantine ? quarantined : root + QStringLiteral("/1"));
 		QCOMPARE(row.isQuarantined, inQuarantine);
 		QCOMPARE(row.mediaFolderName, inQuarantine ? QStringLiteral("Quarantined Files") : QStringLiteral("1"));
 		QVERIFY(!row.omfEra);
@@ -3024,7 +3024,7 @@ void TestScanner::quarantine_alias_cannot_expand_a_normal_media_folder()
 	// target, but its label must never change that target's quarantine status.
 	const auto aliasRows = runManualScan(alias, true);
 	QCOMPARE(aliasRows.size(), 1);
-	QCOMPARE(aliasRows.first().filePath, folder + QLatin1Char('/') + kToneName);
+	QCOMPARE(aliasRows.first().mediaFilePath, folder + QLatin1Char('/') + kToneName);
 	QVERIFY(!aliasRows.first().isQuarantined);
 #else
 	QSKIP("QFile::link does not create directory symlinks on this platform");
@@ -3050,7 +3050,7 @@ void TestScanner::numbered_alias_cannot_hide_quarantined_status()
 	// A manual alias resolves to its known location and retains the flag.
 	const auto rows = runManualScan(alias, true);
 	QCOMPARE(rows.size(), 1);
-	QCOMPARE(rows.first().filePath, quarantined + QLatin1Char('/') + kToneName);
+	QCOMPARE(rows.first().mediaFilePath, quarantined + QLatin1Char('/') + kToneName);
 	QVERIFY(rows.first().isQuarantined);
 #else
 	QSKIP("QFile::link does not create directory symlinks on this platform");

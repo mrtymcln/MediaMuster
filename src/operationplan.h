@@ -7,7 +7,7 @@
 // reserve paths or authorize mutations; the runner rechecks live storage.
 namespace OperationPlan
 {
-	QString destinationPath(const QString &name, const QString &folder, const QString &root,
+	QString destinationPath(const QString &name, const QString &mediaFolderName, const QString &root,
 							bool preserve, bool omfEra = false);
 	std::optional<QString> findKeepBothPath(const QString &path);
 	bool sameVolumeForRename(const QString &source, const QString &destination);

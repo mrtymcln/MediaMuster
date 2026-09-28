@@ -17,7 +17,7 @@ namespace
 	{
 		return {{"src", i.src},
 				{"name", i.name},
-				{"folder", i.folder},
+				{"folder", i.mediaFolderName},
 				{"omf", i.omfEra},
 				{"bytes", QString::number(i.bytes)},
 				{"modifiedMs", QString::number(i.modifiedMs)},
@@ -40,7 +40,7 @@ namespace
 		OpItem i;
 		i.src = v["src"].toString();
 		i.name = v["name"].toString();
-		i.folder = v["folder"].toString();
+		i.mediaFolderName = v["folder"].toString();
 		i.modifiedMs = v["modifiedMs"].toString("-1").toLongLong();
 		i.maintenance = v["maintenance"].toBool();
 		i.omfEra = v["omf"].toBool();

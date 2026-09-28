@@ -64,7 +64,7 @@ void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
 	int rangeEnd = -1; // -1 means "no range in progress"
 	for (int i = m_files.size() - 1; i >= 0; --i)
 	{
-		const bool removeThis = paths.contains(m_files[i].filePath);
+		const bool removeThis = paths.contains(m_files[i].mediaFilePath);
 		if (removeThis && rangeEnd == -1)
 		{
 			rangeEnd = i;
@@ -161,7 +161,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::SourceFile:
 			return f.sourceFileName;
 		case Column::Location:
-			return f.filePath;
+			return f.mediaFilePath;
 		case Column::PrecomputeCategory:
 			return f.precomputeCategoryDisplay();
 		case Column::EffectCategory:

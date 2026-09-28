@@ -351,7 +351,7 @@ void ManageMediaDialog::updatePreview()
 		m_previewTree->setHeaderLabels({tr("Source")});
 		m_previewTree->setColumnCount(1);
 		for (const MediaFile &mf : m_files)
-			m_previewTree->addTopLevelItem(new QTreeWidgetItem({mf.filePath}));
+			m_previewTree->addTopLevelItem(new QTreeWidgetItem({mf.mediaFilePath}));
 		m_conflictGroup->setVisible(false);
 	}
 	else
@@ -363,7 +363,7 @@ void ManageMediaDialog::updatePreview()
 		{
 			for (const MediaFile &mf : m_files)
 			{
-				auto *item = new QTreeWidgetItem({mf.filePath, tr("(choose destination)")});
+				auto *item = new QTreeWidgetItem({mf.mediaFilePath, tr("(choose destination)")});
 				item->setForeground(1, Qt::gray);
 				m_previewTree->addTopLevelItem(item);
 			}
@@ -396,7 +396,7 @@ void ManageMediaDialog::updatePreview()
 			{
 				const MediaFile &mf = m_files[idx];
 				const QString &dp = destPaths[idx];
-				auto *item = new QTreeWidgetItem({mf.filePath, dp});
+				auto *item = new QTreeWidgetItem({mf.mediaFilePath, dp});
 				// Stash baseDest on the item so the global-cascade handler
 				// can recompute the preview without a per-row closure.
 				item->setData(1, Qt::UserRole, dp);
@@ -404,7 +404,7 @@ void ManageMediaDialog::updatePreview()
 
 				PendingRow row;
 				row.item = item;
-				row.sourcePath = mf.filePath;
+				row.sourcePath = mf.mediaFilePath;
 				row.destPath = dp;
 				const bool dup = destCounts.value(dp) > 1;
 				row.dupFirst = dup && seenSoFar.value(dp, 0) == 0;

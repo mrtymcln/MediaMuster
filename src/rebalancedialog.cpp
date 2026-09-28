@@ -118,7 +118,7 @@ namespace
 	{
 		FolderState fs;
 		fs.id = id;
-		fs.name = id.display();
+		fs.mediaFolderName = id.display();
 		fs.count = count;
 		fs.bytes = qint64(count) * kDemoFileBytes;
 		fs.isNew = isNew;
@@ -246,7 +246,7 @@ protected:
 
 private:
 	QString countCaption() const;
-	QString m_folderName;
+	QString m_mediaFolderName;
 	bool m_inScope = true;
 	bool m_isNew = false;
 	bool m_finished = false;
@@ -270,8 +270,8 @@ FolderCard::FolderCard(QWidget *parent)
 
 void FolderCard::setFolder(const FolderState &fs)
 {
-	m_folderName = fs.name;
-	setAccessibleName(m_folderName);
+	m_mediaFolderName = fs.mediaFolderName;
+	setAccessibleName(m_mediaFolderName);
 	m_inScope = fs.inScope;
 	m_isNew = fs.isNew;
 	m_finished = false;
@@ -345,7 +345,7 @@ void FolderCard::paintEvent(QPaintEvent *event)
 	p.setPen(palette().color(QPalette::WindowText));
 	// ⚠️ for bloated folders.
 	// 🆕 for new folders.
-	QString displayName = m_folderName;
+	QString displayName = m_mediaFolderName;
 	if (m_inScope && qMax(m_currentCount, m_projectedCount) > Conventions::kFolderMax)
 		displayName = QStringLiteral("⚠️ ") + displayName;
 	if (m_isNew && (!m_finished || m_exists))
@@ -446,12 +446,12 @@ void FolderCard::paintEvent(QPaintEvent *event)
 
 // MARK: - Construction
 
-RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
-								 const QHash<QString, QVector<MediaFile>> &filesByMxfRoot,
+RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootPathsByLabel,
+								 const QHash<QString, QVector<MediaFile>> &filesByMxfRootPath,
 								 const QString &initialLabel, QWidget *parent)
 	: QDialog(parent),
-	  m_mxfRootsByLabel(mxfRootsByLabel),
-	  m_filesByMxfRoot(filesByMxfRoot)
+	  m_mxfRootPathsByLabel(mxfRootPathsByLabel),
+	  m_filesByMxfRootPath(filesByMxfRootPath)
 {
 	setWindowTitle(tr("Rebalance"));
 	setWindowFlags(windowFlags() | Qt::Tool);
@@ -473,7 +473,7 @@ RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
 
 	// Populate the picker with the available volumes, sorted
 	// alphabetically, then select the volume the caller asked for.
-	QStringList labels = m_mxfRootsByLabel.keys();
+	QStringList labels = m_mxfRootPathsByLabel.keys();
 	std::sort(labels.begin(), labels.end());
 	{
 		const QSignalBlocker blocker(m_volumePicker);
@@ -493,7 +493,7 @@ RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootsByLabel,
 RebalanceDialog *RebalanceDialog::createDemo(DemoScenario scenario, QWidget *parent)
 {
 	RebalancePlan plan;
-	plan.mxfRoot = QStringLiteral("/demo/Avid MediaFiles/MXF");
+	plan.mxfRootPath = QStringLiteral("/demo/Avid MediaFiles/MXF");
 	const QStringList workstations{QStringLiteral("MartyiMac"), QStringLiteral("JamieiMac"),
 								   QStringLiteral("ClaireiMac")};
 	switch (scenario)
@@ -513,7 +513,7 @@ RebalanceDialog *RebalanceDialog::createDemo(DemoScenario scenario, QWidget *par
 			addDemoWorkstation(plan, workstations[i], 66 + (i < 2), 20, 200, 5600, 222222);
 		{
 			FolderState quarantined;
-			quarantined.name = QStringLiteral("Quarantined Files");
+			quarantined.mediaFolderName = QStringLiteral("Quarantined Files");
 			quarantined.count = 47;
 			quarantined.bytes = 47 * kDemoFileBytes;
 			quarantined.inScope = false;
@@ -685,8 +685,8 @@ void RebalanceDialog::recomputePlan()
 		return;
 
 	const QString label = m_volumePicker->currentText();
-	const QString mxfRoot = m_mxfRootsByLabel.value(label);
-	const QVector<MediaFile> files = m_filesByMxfRoot.value(mxfRoot);
+	const QString mxfRootPath = m_mxfRootPathsByLabel.value(label);
+	const QVector<MediaFile> files = m_filesByMxfRootPath.value(mxfRootPath);
 
 	// Lock the card grid + Rebalance button until the new plan lands.
 	// Volume picker stays live so the user can flip volumes; a
@@ -702,8 +702,8 @@ void RebalanceDialog::recomputePlan()
 	// take seconds on a slow network volume, so it runs off
 	// the main thread.
 	m_planWatcher.setFuture(QtConcurrent::run(
-		[mxfRoot, label, files]
-		{ return RebalancePlanner::computePlan(mxfRoot, label, files); }));
+		[mxfRootPath, label, files]
+		{ return RebalancePlanner::computePlan(mxfRootPath, label, files); }));
 }
 
 void RebalanceDialog::onPlanReady()
@@ -754,7 +754,7 @@ void RebalanceDialog::renderPlan()
 				  if (a.inScope != b.inScope)
 					  return a.inScope > b.inScope;
 				  if (!a.inScope)
-					  return a.name < b.name;
+					  return a.mediaFolderName < b.mediaFolderName;
 				  return a.id < b.id;
 			  });
 
@@ -978,11 +978,11 @@ void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 				finishDisplay(succeeded, watcher->result());
 				watcher->deleteLater();
 			});
-	const QString root = m_currentPlan.mxfRoot;
+	const QString mxfRootPath = m_currentPlan.mxfRootPath;
 	const QSet<FolderName> folders = affectedFolders();
 	// Value captures let the read-only task finish safely if the dialog closes.
-	watcher->setFuture(QtConcurrent::run([root, folders]
-										 { return RebalancePlanner::countFolders(root, folders); }));
+	watcher->setFuture(QtConcurrent::run([mxfRootPath, folders]
+										 { return RebalancePlanner::countFolders(mxfRootPath, folders); }));
 }
 
 void RebalanceDialog::finishDisplay(

@@ -552,7 +552,7 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 	if (!source.stillAt(e.item.src, e.source) || !destination->stillAt(e.temp, e.landed))
 		return abandon(State::Failed, "A file changed before publication; source retained.");
 	const auto originalDestination =
-		(e.undoAction == "restoreMove" ? e.item.renameDst : OperationPlan::destinationPath(e.item.name, e.item.folder, j.record().request.destRoot, j.record().request.preserve, e.item.omfEra));
+		(e.undoAction == "restoreMove" ? e.item.renameDst : OperationPlan::destinationPath(e.item.name, e.item.mediaFolderName, j.record().request.destRoot, j.record().request.preserve, e.item.omfEra));
 	for (int attempts = 0; attempts < 999; ++attempts)
 	{
 		if (!save(j, e, Step::Publishing))
@@ -750,7 +750,7 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 	else if (kind == OpKind::Rename || !e.undoAction.isEmpty())
 		e.dst = e.item.renameDst;
 	else
-		e.dst = OperationPlan::destinationPath(e.item.name, e.item.folder, j.record().request.destRoot,
+		e.dst = OperationPlan::destinationPath(e.item.name, e.item.mediaFolderName, j.record().request.destRoot,
 											   j.record().request.preserve, e.item.omfEra);
 	e.dst = OpJournal::canonicalPath(e.dst);
 	const auto originalDestination = e.dst;
@@ -1443,14 +1443,14 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 				i.renameDst = OpJournal::canonicalPath(i.renameDst);
 				if (i.name.isEmpty())
 					i.name = QFileInfo(i.src).fileName();
-				if (!leaf(i.name) || (!i.folder.isEmpty() && !leaf(i.folder)) ||
+				if (!leaf(i.name) || (!i.mediaFolderName.isEmpty() && !leaf(i.mediaFolderName)) ||
 					(!i.policy.isEmpty() && i.policy != "keepboth" && i.policy != "skip"))
 					throw std::runtime_error(
 						"Unsupported name, folder or conflict policy. Replace is not supported.");
 				if (request.kind == OpKind::Copy || request.kind == OpKind::Move)
 				{
 					const auto key = PathKey::normalise(OperationPlan::destinationPath(
-						i.name, i.folder, request.destRoot, request.preserve, i.omfEra));
+						i.name, i.mediaFolderName, request.destRoot, request.preserve, i.omfEra));
 					if (i.policy.isEmpty() && batchDestinations.contains(key))
 						i.policy = "keepboth";
 					batchDestinations.insert(key);

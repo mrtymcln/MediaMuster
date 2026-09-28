@@ -23,7 +23,7 @@ public:
 	///
 	/// `bytesRead`, if non-null, receives the number of bytes the
 	/// parser actually read from disk.
-	[[nodiscard]] static MediaMetadata parseHeader(const QString &filePath,
+	[[nodiscard]] static MediaMetadata parseHeader(const QString &mediaFilePath,
 												   qint64 *bytesRead = nullptr);
 
 	/// Read through a caller-owned handle without reopening or closing it.

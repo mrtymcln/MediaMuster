@@ -219,12 +219,12 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		// significant ("cafe" does not match "café" in either form).
 		const auto matches = [this](const QString &s)
 		{ return searchForm(s).contains(m_searchNfc, Qt::CaseInsensitive); };
-		// filePath covers the filename and the Avid folder — both are
+		// mediaFilePath covers the filename and the Avid folder — both are
 		// substrings of it — so the visible Location cell is searchable
 		// and the two narrower fields need no separate pass. volumeName
 		// stays: a Windows path ("E:/...") need not contain the label.
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
-			   matches(f.codec) || matches(f.volumeName) || matches(f.filePath) ||
+			   matches(f.codec) || matches(f.volumeName) || matches(f.mediaFilePath) ||
 			   matches(f.sourceFileName) ||
 			   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&
 				(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||
@@ -319,7 +319,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return QString::compare(l.bitDepth, r.bitDepth, Qt::CaseInsensitive) < 0;
 	}
 	case Col::Location:
-		return QString::compare(l.filePath, r.filePath, Qt::CaseInsensitive) < 0;
+		return QString::compare(l.mediaFilePath, r.mediaFilePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
 		return typeSortRank(l.type) < typeSortRank(r.type);
 	case Col::PrecomputeCategory:

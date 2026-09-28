@@ -362,7 +362,7 @@ void TestConventions::managed_media_folder_locations()
 	{
 		QCOMPARE(result->family, omf ? AvidMediaLayout::Family::Omf : AvidMediaLayout::Family::Mxf);
 		QCOMPARE(result->rootPath, root);
-		QCOMPARE(result->folderName, folder);
+		QCOMPARE(result->mediaFolderName, folder);
 		QVERIFY(!result->isQuarantined);
 	}
 }
@@ -376,7 +376,7 @@ void TestConventions::quarantined_mxf_location_is_explicit()
 		QVERIFY(location);
 		QCOMPARE(location->family, AvidMediaLayout::Family::Mxf);
 		QCOMPARE(location->rootPath, root);
-		QCOMPARE(location->folderName, name);
+		QCOMPARE(location->mediaFolderName, name);
 		QVERIFY(location->isQuarantined);
 		QVERIFY(!AvidMediaLayout::parseMxfFolderName(name));
 	}

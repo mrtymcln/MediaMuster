@@ -7,13 +7,13 @@
 
 namespace OperationPlan
 {
-	QString destinationPath(const QString &name, const QString &folder, const QString &root,
+	QString destinationPath(const QString &name, const QString &mediaFolderName, const QString &root,
 							bool preserve, bool omfEra)
 	{
 		if (preserve && omfEra)
 			return Conventions::omfRootUnder(root) + '/' + name;
 		if (preserve)
-			return Conventions::mxfRootUnder(root) + '/' + folder + '/' + name;
+			return Conventions::mxfRootUnder(root) + '/' + mediaFolderName + '/' + name;
 		return root + '/' + name;
 	}
 
@@ -67,7 +67,7 @@ namespace OperationPlan
 			if (item.policy == "skip")
 				continue;
 			const auto destination = destinationPath(
-				item.name, item.folder, request.destRoot, request.preserve, item.omfEra);
+				item.name, item.mediaFolderName, request.destRoot, request.preserve, item.omfEra);
 			if (sameFile(item.src, destination))
 				continue;
 			if (item.bytes > 0)

@@ -69,9 +69,9 @@ namespace
 		QVector<MediaRoot> roots;
 		const bool isAvidRoot = QFileInfo(path).fileName().compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0;
 		const QString avidRoot = isAvidRoot ? path : childDirectory(path, Conventions::kAvidMediaFilesDir);
-		const QString mxfRoot = avidRoot.isEmpty() ? QString{} : childDirectory(avidRoot, Conventions::kMxfDir);
-		if (!mxfRoot.isEmpty() && AvidMediaLayout::isMxfRoot(scannerFolderKey(mxfRoot)))
-			roots.append({AvidMediaLayout::Family::Mxf, mxfRoot, path});
+		const QString mxfRootPath = avidRoot.isEmpty() ? QString{} : childDirectory(avidRoot, Conventions::kMxfDir);
+		if (!mxfRootPath.isEmpty() && AvidMediaLayout::isMxfRoot(scannerFolderKey(mxfRootPath)))
+			roots.append({AvidMediaLayout::Family::Mxf, mxfRootPath, path});
 		const QString omfRoot = childDirectory(path, Conventions::kOmfMediaFilesDir);
 		if (!omfRoot.isEmpty() && AvidMediaLayout::isOmfRoot(scannerFolderKey(omfRoot)))
 			roots.append({AvidMediaLayout::Family::Omf, omfRoot, path});
@@ -599,21 +599,21 @@ QVector<MediaFile> MediaScanner::scanOmfRoot(const QString &omfRootPath, const Q
 
 	QVector<MediaFile> files;
 	int completed = 0;
-	for (const QString &folder : folders)
+	for (const QString &mediaFolderPath : folders)
 	{
 		if (m_job.isCancelled())
 			break;
 		ScanTask task;
 		task.family = AvidMediaLayout::Family::Omf;
-		task.folderPath = folder;
-		task.mediaFolderName = QFileInfo(folder).fileName();
+		task.mediaFolderPath = mediaFolderPath;
+		task.mediaFolderName = QFileInfo(mediaFolderPath).fileName();
 		task.volumeName = volumeName;
 		task.volumePath = volumePath;
 		auto result = processFolderTask(task);
 		for (const auto &msg : result.logs)
 			emitLog(msg.level, msg.module, msg.message);
 		files.append(result.files);
-		emit scanProgress(++completed, folders.size(), folder);
+		emit scanProgress(++completed, folders.size(), mediaFolderPath);
 	}
 	return files;
 }
@@ -638,26 +638,26 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 	QStringList subFolders = mxfDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 
 	QList<MediaScanner::ScanTask> tasks;
-	for (const QString &folder : subFolders)
+	for (const QString &mediaFolderName : subFolders)
 	{
 		if (m_job.isCancelled())
 			break;
 
 		// Direct MXF children may be numbered or named; layout rules exclude staging folders.
-		const QString folderPath = mxfDir.filePath(folder);
-		if (!AvidMediaLayout::locateMediaFolder(folderPath))
+		const QString mediaFolderPath = mxfDir.filePath(mediaFolderName);
+		if (!AvidMediaLayout::locateMediaFolder(mediaFolderPath))
 			continue;
 
-		if (!canReadPath(folderPath))
+		if (!canReadPath(mediaFolderPath))
 		{
-			emitLog(QtWarningMsg, QStringLiteral("scanner"), QStringLiteral("  Permission denied: %1").arg(folder));
+			emitLog(QtWarningMsg, QStringLiteral("scanner"), QStringLiteral("  Permission denied: %1").arg(mediaFolderName));
 			continue;
 		}
 
 		MediaScanner::ScanTask t;
 		t.family = AvidMediaLayout::Family::Mxf;
-		t.folderPath = folderPath;
-		t.mediaFolderName = folder;
+		t.mediaFolderPath = mediaFolderPath;
+		t.mediaFolderName = mediaFolderName;
 		t.volumeName = volumeName;
 		t.volumePath = volumePath;
 		tasks.append(t);
@@ -687,7 +687,7 @@ QVector<MediaFile> MediaScanner::scanMxfRoot(const QString &mxfRootPath, const Q
 								 // gate the rest.
 								 if (done == totalFolders || throttle.shouldEmit())
 								 {
-									 emit scanProgress(done, totalFolders, t.folderPath);
+									 emit scanProgress(done, totalFolders, t.mediaFolderPath);
 								 }
 								 return res;
 							 });
@@ -716,14 +716,14 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 	if (m_job.isCancelled() || (task.family == AvidMediaLayout::Family::Omf && !m_options.includeOmf))
 		return result;
-	const auto requested = AvidMediaLayout::locateMediaFolder(task.folderPath);
+	const auto requested = AvidMediaLayout::locateMediaFolder(task.mediaFolderPath);
 	if (!requested || requested->family != task.family)
 		return result;
 	const bool isQuarantineFolder = requested->isQuarantined;
 	{
-		const QString key = scannerFolderKey(task.folderPath);
+		const QString key = scannerFolderKey(task.mediaFolderPath);
 		// Also cover UME folders reached through a link beneath a supported root.
-		if (AvidMediaLayout::isInsideUmeRoot(task.folderPath) || AvidMediaLayout::isInsideUmeRoot(key))
+		if (AvidMediaLayout::isInsideUmeRoot(task.mediaFolderPath) || AvidMediaLayout::isInsideUmeRoot(key))
 			return result;
 		const auto actual = AvidMediaLayout::locateMediaFolder(key);
 		if (!actual || actual->family != task.family || actual->isQuarantined != isQuarantineFolder)
@@ -763,7 +763,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	// MARK: Enumerate files in this folder
 
 	// Managed media folders are flat, including Quarantined Files.
-	const QDir folder(task.folderPath);
+	const QDir folder(task.mediaFolderPath);
 	const QFileInfoList entries = folder.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
 	// Avid's own name for the folder it moves unreadable media into. Decided
@@ -822,7 +822,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	if (!mdb.masters.isEmpty())
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
-		m_mdbMapsByFolder.insert(scannerFolderKey(task.folderPath), std::move(mdb.masters));
+		m_mdbMapsByFolder.insert(scannerFolderKey(task.mediaFolderPath), std::move(mdb.masters));
 	}
 
 	return result;
@@ -848,7 +848,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 	bool anyPmrOk = false;
 	for (const QLatin1String name : Conventions::kPmrFileNames)
 	{
-		const QString pmrPath = task.folderPath + QLatin1Char('/') + name;
+		const QString pmrPath = task.mediaFolderPath + QLatin1Char('/') + name;
 		if (!QFile::exists(pmrPath))
 			continue;
 		dbs.pmrExists = true;
@@ -887,7 +887,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 	bool anyMdbOk = false;
 	for (const QLatin1String name : Conventions::kMdbFileNames)
 	{
-		const QString mdbPath = task.folderPath + QLatin1Char('/') + name;
+		const QString mdbPath = task.mediaFolderPath + QLatin1Char('/') + name;
 		if (!QFile::exists(mdbPath))
 			continue;
 		dbs.mdbExists = true;
@@ -937,7 +937,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		missingDatabases.append(QStringLiteral("MDB"));
 	if (!missingDatabases.isEmpty())
 		qCInfo(lcScanner).noquote() << QStringLiteral("Missing databases in %1: %2")
-										   .arg(task.folderPath, missingDatabases.join(QStringLiteral(", ")));
+										   .arg(task.mediaFolderPath, missingDatabases.join(QStringLiteral(", ")));
 
 	return dbs;
 }
@@ -954,7 +954,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	// `fi` is the directory listing's own entry — its size and times are
 	// already known, so nothing here stats the file again.
 	MediaFile mf;
-	mf.filePath = fi.filePath();
+	mf.mediaFilePath = fi.filePath();
 	mf.fileName = fi.fileName();
 	mf.volumeName = volumeName;
 	mf.volumePath = volumePath;
@@ -1101,7 +1101,7 @@ namespace
 		{
 			// OMF1/OMF2 return the same essence fields, with the master
 			// bin and file identity obtained from their object graph.
-			const OmfMetadata omf = OmfParser::parseHeader(mf.filePath);
+			const OmfMetadata omf = OmfParser::parseHeader(mf.mediaFilePath);
 			omfIdentityKnown = omf.hasMediaDescriptor;
 			metadata = omf.essence;
 			headerBin = omf.bin;
@@ -1109,7 +1109,7 @@ namespace
 		}
 		else
 		{
-			metadata = MxfParser::parseHeader(mf.filePath);
+			metadata = MxfParser::parseHeader(mf.mediaFilePath);
 		}
 		const bool headerUsable = metadata.valid || metadata.classificationKnown;
 		const auto canonicalHeaderId = [&](const QString &id)
@@ -1196,10 +1196,10 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 		const bool omfCandidate = f.omfEra;
 		if (!f.needsHeaderRead)
 			continue;
-		const QString rawFolder = QFileInfo(f.filePath).absolutePath();
-		auto cacheIt = folderKeyCache.find(rawFolder);
+		const QString mediaFolderPath = QFileInfo(f.mediaFilePath).absolutePath();
+		auto cacheIt = folderKeyCache.find(mediaFolderPath);
 		if (cacheIt == folderKeyCache.end())
-			cacheIt = folderKeyCache.insert(rawFolder, scannerFolderKey(rawFolder));
+			cacheIt = folderKeyCache.insert(mediaFolderPath, scannerFolderKey(mediaFolderPath));
 		rows.append({i, cacheIt.value(), omfCandidate ? AvidMediaLayout::Family::Omf : AvidMediaLayout::Family::Mxf});
 		if (omfCandidate)
 			++omfRows;

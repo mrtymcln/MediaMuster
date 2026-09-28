@@ -44,7 +44,7 @@ namespace
 	MediaFile row(const QString &path = QStringLiteral("/media/clip.mxf"))
 	{
 		MediaFile file;
-		file.filePath = path;
+		file.mediaFilePath = path;
 		file.masterMobId = MobId::toPmrForm(masterId());
 		return file;
 	}
@@ -101,7 +101,7 @@ QVector<MediaFile> TestMediaTableModel::makeRows(int n)
 	for (int i = 0; i < n; ++i)
 	{
 		MediaFile mf;
-		mf.filePath = QStringLiteral("/fake/row%1.mxf").arg(i);
+		mf.mediaFilePath = QStringLiteral("/fake/row%1.mxf").arg(i);
 		v.push_back(std::move(mf));
 	}
 	return v;
@@ -113,7 +113,7 @@ QStringList TestMediaTableModel::pathsOf(const MediaTableModel &m)
 	const auto &all = m.allFiles();
 	paths.reserve(all.size());
 	for (const auto &mf : all)
-		paths << mf.filePath;
+		paths << mf.mediaFilePath;
 	return paths;
 }
 
@@ -185,14 +185,14 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 	f.fileName = QStringLiteral("V01.abc.mxf");
 	f.volumeName = QStringLiteral("EDIT");
 	f.mediaFolderName = QStringLiteral("8646");
-	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
+	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
 
 	MediaTableModel model;
 	model.setMediaFiles({f});
 	const QModelIndex idx =
 		model.index(0, Enum::to_underlying(MediaTableModel::Column::Location));
 
-	QCOMPARE(model.data(idx, Qt::DisplayRole).toString(), f.filePath);
+	QCOMPARE(model.data(idx, Qt::DisplayRole).toString(), f.mediaFilePath);
 	QCOMPARE(model.headerData(Enum::to_underlying(MediaTableModel::Column::Location),
 							  Qt::Horizontal, Qt::DisplayRole)
 				 .toString(),
@@ -202,11 +202,11 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 void TestMediaTableModel::unknown_created_date_displays_blank()
 {
 	MediaFile withDate;
-	withDate.filePath = QStringLiteral("/vol/a.mxf");
+	withDate.mediaFilePath = QStringLiteral("/vol/a.mxf");
 	withDate.created = QDateTime(QDate(2026, 7, 20), QTime(12, 30));
 
 	MediaFile withoutDate;
-	withoutDate.filePath = QStringLiteral("/vol/b.mxf");
+	withoutDate.mediaFilePath = QStringLiteral("/vol/b.mxf");
 	// created left invalid — a filesystem that records no birth time.
 
 	MediaTableModel m;

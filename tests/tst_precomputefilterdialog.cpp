@@ -22,7 +22,7 @@ namespace
 		row.volumeName = QStringLiteral("EDIT");
 		row.volumePath = volume;
 		row.fileName = name;
-		row.filePath = volume + QLatin1Char('/') + name;
+		row.mediaFilePath = volume + QLatin1Char('/') + name;
 		return row;
 	}
 
@@ -42,7 +42,7 @@ namespace
 		files.append(title);
 		title.effect = QStringLiteral("3D Warp"); // same inferred name must not change its proven subtype
 		title.fileName = QStringLiteral("renamed-title.mxf");
-		title.filePath = QStringLiteral("/Volumes/EDIT/renamed-title.mxf");
+		title.mediaFilePath = QStringLiteral("/Volumes/EDIT/renamed-title.mxf");
 		files.append(title);
 		auto unknown = render(QStringLiteral("Renamed"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("unknown.mxf"));
 		unknown.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;

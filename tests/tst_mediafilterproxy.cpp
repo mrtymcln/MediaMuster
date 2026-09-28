@@ -23,7 +23,7 @@ namespace
 		MediaFile f;
 		f.clipName = clipName;
 		f.fileName = clipName + QStringLiteral(".mxf");
-		f.filePath = QStringLiteral("/vol/") + f.fileName;
+		f.mediaFilePath = QStringLiteral("/vol/") + f.fileName;
 		return f;
 	}
 
@@ -136,12 +136,12 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 {
 	MediaTableModel model;
 	MediaFile a = rowNamed(QStringLiteral("Scene 1"));
-	a.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
+	a.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
 	a.fileName = QStringLiteral("V01.abc.mxf");
 	a.mediaFolderName = QStringLiteral("8646");
 	a.volumeName = QStringLiteral("EDIT");
 	MediaFile b = rowNamed(QStringLiteral("Scene 2"));
-	b.filePath = QStringLiteral("/Volumes/BACKUP/Avid MediaFiles/MXF/1/V02.def.mxf");
+	b.mediaFilePath = QStringLiteral("/Volumes/BACKUP/Avid MediaFiles/MXF/1/V02.def.mxf");
 	b.fileName = QStringLiteral("V02.def.mxf");
 	b.mediaFolderName = QStringLiteral("1");
 	b.volumeName = QStringLiteral("BACKUP");
@@ -151,7 +151,7 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 	proxy.setSourceModel(&model);
 
 	// A folder name, a filename fragment and a whole path segment all live
-	// inside filePath, so one match pass covers them.
+	// inside mediaFilePath, so one match pass covers them.
 	proxy.setSearchText(QStringLiteral("8646"));
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText(QStringLiteral("V02.def"));
@@ -290,10 +290,10 @@ void TestMediaFilterProxy::quarantined_filter_uses_scanner_flag()
 	MediaFile flagged = rowNamed(QStringLiteral("flagged"));
 	flagged.isQuarantined = true;
 	flagged.mediaFolderName = QStringLiteral("1");
-	flagged.filePath = QStringLiteral("/vol/Avid MediaFiles/MXF/1/flagged.mxf");
+	flagged.mediaFilePath = QStringLiteral("/vol/Avid MediaFiles/MXF/1/flagged.mxf");
 	MediaFile namedOnly = rowNamed(QStringLiteral("folder name only"));
 	namedOnly.mediaFolderName = QStringLiteral("Quarantined Files");
-	namedOnly.filePath = QStringLiteral("/vol/Avid MediaFiles/MXF/Quarantined Files/named.mxf");
+	namedOnly.mediaFilePath = QStringLiteral("/vol/Avid MediaFiles/MXF/Quarantined Files/named.mxf");
 	MediaTableModel model;
 	model.setMediaFiles({flagged, namedOnly});
 	MediaFilterProxy proxy;
@@ -463,7 +463,7 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	MediaFile custom = title;
 	custom.clipName = QStringLiteral("sound");
 	custom.fileName = QStringLiteral("sound.mxf");
-	custom.filePath = QStringLiteral("/vol/sound.mxf");
+	custom.mediaFilePath = QStringLiteral("/vol/sound.mxf");
 	custom.kind = MediaFile::Kind::Audio;
 	custom.effect = QStringLiteral("Custom, exact name");
 	custom.masterMobId = QStringLiteral("custom-master");

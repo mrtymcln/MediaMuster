@@ -127,7 +127,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	f.effectSequence = QStringLiteral("Opening_Sequence");
 	f.sourceFileName = QStringLiteral("camera-original.mov");
 	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
-	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf");
+	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf");
 	f.dbStatus = MediaFile::DbStatus::NoReference;
 	f.mobId = QStringLiteral("file-mob-id");
 	f.masterMobId = QStringLiteral("master-mob-id");
@@ -211,7 +211,7 @@ void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 	MediaFile f = sampleRow();
 	f.volumeName = QStringLiteral("EDIT");
 	f.mediaFolderName = QStringLiteral("8646");
-	f.filePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/A11B22C33D44.mxf");
+	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/A11B22C33D44.mxf");
 	f.sourceFilePath = QStringLiteral("/imports/source.mov");
 	f.sourceContainer = QStringLiteral("QTFF");
 	f.isImported = true;
@@ -222,7 +222,7 @@ void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
 		QCOMPARE(fields.size(), headers.size());
 		QCOMPARE(headers.count(QStringLiteral("Location")), 1);
-		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))), f.filePath);
+		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))), f.mediaFilePath);
 		for (const auto &removed : {QStringLiteral("Volume"), QStringLiteral("Source Path"),
 									QStringLiteral("Source Container"), QStringLiteral("Imported")})
 			QVERIFY(!headers.contains(removed));

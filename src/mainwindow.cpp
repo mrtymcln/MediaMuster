@@ -89,7 +89,7 @@ namespace
 	QString mediaTreeForFolder(const QString &parent)
 	{
 		QString folder = parent;
-		QString mxfRoot;
+		QString mxfRootPath;
 		for (;;)
 		{
 			const QFileInfo info(folder);
@@ -98,13 +98,13 @@ namespace
 				Conventions::isOmfRootName(name))
 				return folder;
 			if (Conventions::isMxfRootName(name))
-				mxfRoot = folder;
+				mxfRootPath = folder;
 			const auto ancestor = info.absolutePath();
 			if (ancestor == folder)
 				break;
 			folder = ancestor;
 		}
-		return mxfRoot.isEmpty() ? parent : mxfRoot;
+		return mxfRootPath.isEmpty() ? parent : mxfRootPath;
 	}
 
 	bool isStandardMediaTree(const QString &path)
@@ -121,7 +121,7 @@ namespace
 		// is available so a drive is not relabelled "Avid MediaFiles".
 		QHash<QString, QString> originsByFolder;
 		for (const auto &file : files)
-			originsByFolder.insert(QFileInfo(file.filePath).absolutePath(), file.volumePath);
+			originsByFolder.insert(QFileInfo(file.mediaFilePath).absolutePath(), file.volumePath);
 		QSet<QString> trees;
 		QSet<QString> roots;
 		for (auto it = originsByFolder.cbegin(); it != originsByFolder.cend(); ++it)
@@ -988,7 +988,7 @@ void MainWindow::setOmfEnabled(bool enabled)
 		for (const auto &file : m_model->allFiles())
 			if (file.omfEra || Conventions::isOmfRootName(file.mediaFolderName) ||
 				Conventions::hasOmfEraExtension(file.fileName))
-				legacyPaths.insert(file.filePath);
+				legacyPaths.insert(file.mediaFilePath);
 		m_model->removeFilesByPath(legacyPaths);
 		m_persistentSelectedPaths.subtract(legacyPaths);
 		refreshEverything();
@@ -1150,35 +1150,32 @@ void MainWindow::onFilterByBins()
 
 // MARK: - Rebalance
 
-// Gathers the volume > mxfRoot map from the indexed files so the
-// picker only shows volumes with scanned data.
+// Offer MXF roots containing eligible scanned media.
 void MainWindow::onRebalance()
 {
 	if (!m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
 		return;
 
-	// MXF root = grandparent of the file:
-	//   <volume>/Avid MediaFiles/MXF/<folder>/<file.mxf>
-	//                              ^^^^^^^^ this is the root we want
-	QHash<QString, QString> mxfRootsByLabel;
-	QHash<QString, QVector<MediaFile>> filesByMxfRoot;
+	// Each file lives in <mxfRootPath>/<mediaFolderName>/<filename>.
+	QHash<QString, QString> mxfRootPathsByLabel;
+	QHash<QString, QVector<MediaFile>> filesByMxfRootPath;
 	QHash<QString, int> countByLabel;
 	QHash<QString, QString> volumePathByLabel;
 
 	// Each MXF root gets one stable, unique label so the label→root map stays
 	// 1:1. Without this, two volumes sharing a name (two 'Backup' mounts)
 	// would collide and one root would silently vanish from the picker.
-	QHash<QString, QString> labelByRoot;
+	QHash<QString, QString> labelByMxfRootPath;
 	QSet<QString> usedLabels;
 
 	for (const MediaFile &mf : m_model->allFiles())
 	{
 		if (!RebalancePlanner::isEligible(mf))
 			continue;
-		const QString folderDir = QFileInfo(mf.filePath).absolutePath();
-		const QString mxfRoot = QFileInfo(folderDir).absolutePath();
+		const QString mediaFolderPath = QFileInfo(mf.mediaFilePath).absolutePath();
+		const QString mxfRootPath = QFileInfo(mediaFolderPath).absolutePath();
 
-		QString label = labelByRoot.value(mxfRoot);
+		QString label = labelByMxfRootPath.value(mxfRootPath);
 		if (label.isEmpty())
 		{
 			// First file from this root — settle its label once.
@@ -1186,23 +1183,23 @@ void MainWindow::onRebalance()
 			if (base.isEmpty())
 				base = QFileInfo(mf.volumePath).fileName();
 			if (base.isEmpty())
-				base = mxfRoot;
+				base = mxfRootPath;
 
 			label = base;
 			for (int n = 2; usedLabels.contains(label); ++n)
 				label = QStringLiteral("%1 (%2)").arg(base).arg(n);
 
-			labelByRoot.insert(mxfRoot, label);
+			labelByMxfRootPath.insert(mxfRootPath, label);
 			usedLabels.insert(label);
-			mxfRootsByLabel.insert(label, mxfRoot);
+			mxfRootPathsByLabel.insert(label, mxfRootPath);
 			volumePathByLabel.insert(label, mf.volumePath);
 		}
 
-		filesByMxfRoot[mxfRoot].append(mf);
+		filesByMxfRootPath[mxfRootPath].append(mf);
 		countByLabel[label] += 1;
 	}
 
-	if (filesByMxfRoot.isEmpty())
+	if (filesByMxfRootPath.isEmpty())
 	{
 		QMessageBox::warning(this, tr("Rebalance"),
 							 tr("No 'Avid MediaFiles/MXF' folders were found in "
@@ -1223,7 +1220,7 @@ void MainWindow::onRebalance()
 		}
 	}
 
-	RebalanceDialog dlg(mxfRootsByLabel, filesByMxfRoot, initialLabel, this);
+	RebalanceDialog dlg(mxfRootPathsByLabel, filesByMxfRootPath, initialLabel, this);
 	dlg.beforeRebalance = [this, &dlg]
 	{
 		if (m_operations->resolveBeforeRebalance())
@@ -1642,7 +1639,7 @@ void MainWindow::onSelectionChanged()
 		m_persistentSelectedPaths.clear();
 		const auto rows = m_tableView->selectionModel()->selectedRows();
 		for (const QModelIndex &idx : rows)
-			m_persistentSelectedPaths.insert(fileForProxyIndex(idx).filePath);
+			m_persistentSelectedPaths.insert(fileForProxyIndex(idx).mediaFilePath);
 	}
 
 	// Counting via ranges is O(ranges), not O(rows), so it's faster.
@@ -1699,7 +1696,7 @@ void MainWindow::applyFilterPreservingSelection(const std::function<void()> &mut
 		const int rowCount = m_proxy->rowCount();
 		for (int row = 0; row < rowCount; ++row)
 		{
-			if (m_persistentSelectedPaths.contains(fileAtProxyRow(row).filePath))
+			if (m_persistentSelectedPaths.contains(fileAtProxyRow(row).mediaFilePath))
 				rows.append(row);
 		}
 		const QItemSelection newSelection = selectionForRows(rows);
@@ -1861,7 +1858,7 @@ void MainWindow::onRevealInFinder()
 	if (sel.isEmpty())
 		return;
 
-	RevealInFinder::reveal(sel.first().filePath, [this](QtMsgType level, const QString &message)
+	RevealInFinder::reveal(sel.first().mediaFilePath, [this](QtMsgType level, const QString &message)
 						   { addLog(level, QStringLiteral("app"), message); });
 }
 
@@ -1999,7 +1996,7 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 											   return;
 										   QStringList paths;
 										   for (const auto &f : sel)
-											   paths << f.filePath;
+											   paths << f.mediaFilePath;
 										   QApplication::clipboard()->setText(paths.join("\n"));
 									   });
 

@@ -67,16 +67,16 @@ std::optional<FolderName> RebalancePlanner::srcFolderOf(const QString &srcPath)
 
 bool RebalancePlanner::isEligible(const MediaFile &file)
 {
-	const QFileInfo source(file.filePath);
-	if (file.omfEra || file.isQuarantined || !QDir::isAbsolutePath(file.filePath) || source.isSymLink() ||
+	const QFileInfo source(file.mediaFilePath);
+	if (file.omfEra || file.isQuarantined || !QDir::isAbsolutePath(file.mediaFilePath) || source.isSymLink() ||
 		!AvidMediaLayout::acceptsFileName(AvidMediaLayout::Family::Mxf,
 										  source.fileName()))
 		return false;
 	const auto location =
 		AvidMediaLayout::locateMediaFolder(source.absolutePath());
 	return location && location->family == AvidMediaLayout::Family::Mxf &&
-		   parseFolderName(location->folderName).has_value() &&
-		   location->folderName == file.mediaFolderName &&
+		   parseFolderName(location->mediaFolderName).has_value() &&
+		   location->mediaFolderName == file.mediaFolderName &&
 		   folderBelongsToRoot(source.absolutePath(), resolvedMxfRoot(location->rootPath));
 }
 
@@ -135,7 +135,7 @@ namespace
 
 	QString relativesKey(const MediaFile &mf)
 	{
-		return relativesKey(mf.masterMobId, mf.filePath);
+		return relativesKey(mf.masterMobId, mf.mediaFilePath);
 	}
 
 	QString relativesKey(const RenameOp &op)
@@ -146,16 +146,16 @@ namespace
 } // namespace
 
 QHash<FolderName, RebalancePlanner::FolderCount>
-RebalancePlanner::countFolders(const QString &mxfRoot, const QSet<FolderName> &folders)
+RebalancePlanner::countFolders(const QString &mxfRootPath, const QSet<FolderName> &folders)
 {
 	QHash<FolderName, FolderCount> results;
 	for (const FolderName &folder : folders)
 		results.insert(folder, {});
-	const QString resolvedRoot = resolvedMxfRoot(mxfRoot);
-	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRoot))
+	const QString resolvedRoot = resolvedMxfRoot(mxfRootPath);
+	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRootPath))
 		return results;
 
-	const QDir root(mxfRoot);
+	const QDir root(mxfRootPath);
 	const QStringList entries = root.entryList(QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
 	for (const FolderName &folder : folders)
 	{
@@ -172,7 +172,7 @@ RebalancePlanner::countFolders(const QString &mxfRoot, const QSet<FolderName> &f
 		else if (folderBelongsToRoot(path, resolvedRoot))
 			result = readFolderCount(path);
 	}
-	if (!accessibleDirectory(mxfRoot) || resolvedMxfRoot(mxfRoot) != resolvedRoot)
+	if (!accessibleDirectory(mxfRootPath) || resolvedMxfRoot(mxfRootPath) != resolvedRoot)
 		for (FolderCount &result : results)
 			result.count = -1;
 	return results;
@@ -180,16 +180,16 @@ RebalancePlanner::countFolders(const QString &mxfRoot, const QSet<FolderName> &f
 
 // MARK: - Plan computation
 
-RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QString &volumeLabel,
+RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QString &volumeLabel,
 											const QVector<MediaFile> &files)
 {
 	RebalancePlan plan;
-	plan.mxfRoot = mxfRoot;
+	plan.mxfRootPath = mxfRootPath;
 	plan.volumeLabel = volumeLabel;
 
-	QDir mxfDir(mxfRoot);
-	const QString resolvedRoot = resolvedMxfRoot(mxfRoot);
-	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRoot))
+	QDir mxfDir(mxfRootPath);
+	const QString resolvedRoot = resolvedMxfRoot(mxfRootPath);
+	if (resolvedRoot.isEmpty() || !accessibleDirectory(mxfRootPath))
 		return plan;
 
 	// MARK: Snapshot current folder state on disk
@@ -206,7 +206,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		if (parsed)
 			occupiedByPrefix[parsed->prefix].insert(parsed->n);
 		FolderState fs;
-		fs.name = name;
+		fs.mediaFolderName = name;
 		fs.count = onDisk.count;
 		fs.inScope = onDisk.count >= 0 && parsed.has_value() && folderBelongsToRoot(mxfDir.filePath(name), resolvedRoot);
 		if (fs.inScope)
@@ -217,7 +217,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		}
 		plan.folders.append(fs);
 	}
-	if (!accessibleDirectory(mxfRoot) || resolvedMxfRoot(mxfRoot) != resolvedRoot)
+	if (!accessibleDirectory(mxfRootPath) || resolvedMxfRoot(mxfRootPath) != resolvedRoot)
 	{
 		for (FolderState &folder : plan.folders)
 		{
@@ -254,8 +254,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 		const auto parsed = parseFolderName(mf.mediaFolderName);
 		if (!parsed || !realCount.contains(*parsed))
 			continue;
-		if (PathKey::normalise(QFileInfo(mf.filePath).absolutePath()) !=
-			PathKey::normalise(QDir(mxfRoot).filePath(mf.mediaFolderName)))
+		if (PathKey::normalise(QFileInfo(mf.mediaFilePath).absolutePath()) !=
+			PathKey::normalise(QDir(mxfRootPath).filePath(mf.mediaFolderName)))
 			continue;
 		realBytes[*parsed] += mf.sizeBytes;
 		bucketed[relativesKey(mf)].append({&mf, *parsed});
@@ -314,7 +314,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 					  return a.members.size() > b.members.size();
 				  if (a.masterMobId != b.masterMobId)
 					  return a.masterMobId < b.masterMobId;
-				  return a.members.first().file->filePath < b.members.first().file->filePath;
+				  return a.members.first().file->mediaFilePath < b.members.first().file->mediaFilePath;
 			  });
 
 	// MARK: Pack groups into folders
@@ -348,7 +348,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 
 		FolderState fs;
 		fs.id = id;
-		fs.name = id.display();
+		fs.mediaFolderName = id.display();
 		fs.isNew = true;
 		fs.inScope = true;
 		plan.folders.append(fs);
@@ -361,7 +361,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRoot, const QStrin
 	{
 		if (m.folder == dest)
 			return;
-		plan.ops.append({m.file->filePath, dest, m.file->masterMobId, m.file->sizeBytes,
+		plan.ops.append({m.file->mediaFilePath, dest, m.file->masterMobId, m.file->sizeBytes,
 						 m.file->modified.isValid() ? m.file->modified.toMSecsSinceEpoch() : -1,
 						 m.file->mobId});
 		projected[m.folder] -= 1;
@@ -497,7 +497,7 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 {
 	OpRequest req;
 	req.kind = OpKind::Rename;
-	const QString resolvedRoot = resolvedMxfRoot(plan.mxfRoot);
+	const QString resolvedRoot = resolvedMxfRoot(plan.mxfRootPath);
 	if (resolvedRoot.isEmpty())
 		return req;
 
@@ -517,7 +517,7 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 			!destination || *destination != op.dest ||
 			sourceFolder->prefix != destination->prefix || *sourceFolder == *destination ||
 			!folderBelongsToRoot(source.absolutePath(), resolvedRoot) ||
-			!folderBelongsToRoot(QDir(plan.mxfRoot).filePath(op.dest.display()), resolvedRoot, true))
+			!folderBelongsToRoot(QDir(plan.mxfRootPath).filePath(op.dest.display()), resolvedRoot, true))
 			return req;
 	}
 
@@ -546,7 +546,7 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 			it.masterMobId = op.masterMobId;
 			it.mobId = op.fileMobId;
 			it.renameDst =
-				plan.mxfRoot + QLatin1Char('/') + op.dest.display() + QLatin1Char('/') + fileName;
+				plan.mxfRootPath + QLatin1Char('/') + op.dest.display() + QLatin1Char('/') + fileName;
 			it.groupKey = compKey;
 			req.items.append(it);
 		}
