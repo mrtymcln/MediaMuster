@@ -14,7 +14,7 @@
 ///
 /// Names/categories come from the installed Media Composer 26.8.0.58987 ARM64
 /// registrations and shipped resources. Distinct AlphaFlex variants and
-/// ambiguous categories are retained. See docs/evidence/avid-effects-26.8.
+/// ambiguous categories are retained. See docs/avid-effects-catalogue.md.
 namespace AvidEffects
 {
 	struct Hit

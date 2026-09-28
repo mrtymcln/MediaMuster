@@ -701,30 +701,6 @@ void MainWindow::buildDebugMenu()
 				QApplication::setStyle(QStyleFactory::create(target));
 				qCInfo(lcApp).noquote() << QStringLiteral("Using %1 style for appearance.").arg(target);
 			});
-
-	debugMenu->addSeparator();
-
-	// Rebalance demos: synthetic plans for visual QA. Each opens
-	// the dialog in demo mode against a fabricated RebalancePlan;
-	// clicking Rebalance runs a simulated progress sweep, not real
-	// disk moves.
-	auto *rebalanceDemosMenu = debugMenu->addMenu(tr("Rebalance demos"));
-	rebalanceDemosMenu->setObjectName(QStringLiteral("rebalanceDemosMenu"));
-	const auto addDemo = [this, rebalanceDemosMenu](const QString &label,
-													RebalanceDialog::DemoScenario scenario)
-	{
-		auto *act = rebalanceDemosMenu->addAction(label);
-		connect(act, &QAction::triggered, this,
-				[this, scenario]
-				{
-					auto *dlg = RebalanceDialog::createDemo(scenario, this);
-					dlg->setAttribute(Qt::WA_DeleteOnClose);
-					dlg->show();
-				});
-	};
-	addDemo(tr("Small"), RebalanceDialog::DemoScenario::Small);
-	addDemo(tr("Big"), RebalanceDialog::DemoScenario::Big);
-	addDemo(tr("Really big"), RebalanceDialog::DemoScenario::ReallyBig);
 }
 
 // MARK: Help menu

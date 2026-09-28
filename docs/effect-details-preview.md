@@ -49,7 +49,7 @@ Effect details continue to come from the clip name, as requested. A name shared 
 
 The exact historical token `3DWarp` maps to **3D Warp / Blend** as a documented compatibility alias. The [Avid 2026 Effects Guide](https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf), pages 287–288, also places 3D Warp in Blend. **3D Warp Legacy / Legacy** remains a separate catalogue entry. The inspected effect registry describes names Media Composer recognizes; it is not proof that every listed plug-in is installed or licensed.
 
-The [catalogue evidence and historical extraction method](evidence/avid-effects-26.8/README.md) distinguish direct registration facts, translated aliases, and the additional Motion Effect/Timewarp and D-Verb/AudioSuite groupings.
+The [catalogue evidence and historical extraction method](avid-effects-catalogue.md) distinguish direct registration facts, translated aliases, and the additional Motion Effect/Timewarp and D-Verb/AudioSuite groupings.
 
 ## Combined precompute indicator validation — 5 September 2026
 

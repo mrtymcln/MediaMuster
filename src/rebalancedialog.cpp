@@ -31,7 +31,6 @@
 #include <QStyleFactory>
 #include <QShowEvent>
 #include <QSignalBlocker>
-#include <QTimer>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 
@@ -41,10 +40,6 @@
 
 namespace
 {
-
-	// All demo sizes run for five seconds.
-	constexpr int kDemoDurationMs = 5000;
-	constexpr int kDemoTickMs = 33; // ~30 Hz, matches real worker cadence
 
 	// Fixed number of columns in the folder-card grid.
 	constexpr int kCardColumns = 3;
@@ -104,119 +99,6 @@ namespace
 	constexpr int kPad = 12;
 	constexpr int kBarHeight = 14;
 	constexpr int kBarRadius = 4;
-
-	// MARK: - Demo plans (Debug ▸ Rebalance demos)
-	//
-	// Synthetic plans for visual checks; no files are moved.
-
-	constexpr qint64 kDemoFileBytes = qint64(10) * 1024 * 1024; // 10 MB per file
-
-	FolderState demoFolder(const NumberedMxfFolder &id, int count, bool isNew = false)
-	{
-		FolderState fs;
-		fs.id = id;
-		fs.mediaFolderName = id.display();
-		fs.count = count;
-		fs.bytes = qint64(count) * kDemoFileBytes;
-		fs.isNew = isNew;
-		return fs;
-	}
-
-	// Append simulated moves and update the folder counts.
-	void demoMoves(RebalancePlan &plan, const NumberedMxfFolder &src, const NumberedMxfFolder &dest, int count)
-	{
-		if (count <= 0)
-			return;
-		const QString sharedSrcPath =
-			QStringLiteral("/demo/Avid MediaFiles/MXF/%1/clip.mxf").arg(src.display());
-		for (int i = 0; i < count; ++i)
-		{
-			RebalanceMove op;
-			op.srcPath = sharedSrcPath;
-			op.dest = dest;
-			op.sizeBytes = kDemoFileBytes;
-			plan.ops.append(op);
-		}
-		for (FolderState &fs : plan.folders)
-		{
-			if (!fs.inScope)
-				continue;
-			if (fs.id == src)
-			{
-				fs.filesOut += count;
-				fs.bytesOut += qint64(count) * kDemoFileBytes;
-			}
-			else if (fs.id == dest)
-			{
-				fs.filesIn += count;
-				fs.bytesIn += qint64(count) * kDemoFileBytes;
-			}
-		}
-	}
-
-	// Balance one workstation's synthetic counts, then add back-and-forth
-	// moves to reach the requested operation count.
-	void addDemoWorkstation(RebalancePlan &plan, const QString &prefix, int folderCount,
-							int newFolderCount, int minCount, int maxCount, int opCount)
-	{
-		const qsizetype firstFolder = plan.folders.size();
-		plan.folders.reserve(firstFolder + folderCount + newFolderCount);
-		for (int i = 0; i < folderCount; ++i)
-		{
-			const double t = folderCount > 1 ? double(i) / (folderCount - 1) : 0.0;
-			const int jitter = (i * 97) % 241 - 120;
-			const int count = qMax(0, int(maxCount - t * (maxCount - minCount)) + jitter);
-			plan.folders.append(demoFolder({prefix, i + 1}, count));
-		}
-		for (int n = folderCount + 1; n <= folderCount + newFolderCount; ++n)
-		{
-			plan.folders.append(demoFolder({prefix, n}, 0, /*isNew=*/true));
-			plan.newFolders.append({prefix, n});
-		}
-		// Per-folder surplus/deficit against the mean.
-		qint64 total = 0;
-		for (qsizetype i = firstFolder; i < plan.folders.size(); ++i)
-			total += plan.folders[i].count;
-		const int mean = int(total / qMax(1, folderCount + newFolderCount));
-
-		QVector<QPair<NumberedMxfFolder, int>> sources, dests;
-		for (qsizetype i = firstFolder; i < plan.folders.size(); ++i)
-		{
-			const FolderState &fs = plan.folders[i];
-			if (fs.count > mean)
-				sources.append({fs.id, fs.count - mean});
-			else if (fs.count < mean)
-				dests.append({fs.id, mean - fs.count});
-		}
-
-		plan.ops.reserve(plan.ops.size() + opCount);
-		int remaining = opCount;
-		auto srcIt = sources.begin();
-		auto destIt = dests.begin();
-		while (remaining > 0 && srcIt != sources.end() && destIt != dests.end())
-		{
-			const int amount = qMin(qMin(srcIt->second, destIt->second), remaining);
-			demoMoves(plan, srcIt->first, destIt->first, amount);
-			remaining -= amount;
-			if ((srcIt->second -= amount) == 0)
-				++srcIt;
-			if ((destIt->second -= amount) == 0)
-				++destIt;
-		}
-
-		int slot = 0;
-		while (remaining > 0 && folderCount > 1)
-		{
-			const NumberedMxfFolder a{prefix, slot + 1};
-			const NumberedMxfFolder b{prefix, slot + 2};
-			const int out = qMin((remaining + 1) / 2, 500);
-			const int back = qMin(remaining - out, out);
-			demoMoves(plan, a, b, out);
-			demoMoves(plan, b, a, back);
-			remaining -= out + back;
-			slot = (slot + 1) % (folderCount - 1);
-		}
-	}
 
 } // namespace
 
@@ -481,72 +363,6 @@ RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootPathsByLa
 	recomputePlan();
 }
 
-// MARK: - Demo-mode construction
-
-RebalanceDialog *RebalanceDialog::createDemo(DemoScenario scenario, QWidget *parent)
-{
-	RebalancePlan plan;
-	plan.mxfRootPath = QStringLiteral("/demo/Avid MediaFiles/MXF");
-	const QStringList workstations{QStringLiteral("MartyiMac"), QStringLiteral("JamieiMac"),
-								   QStringLiteral("ClaireiMac")};
-	switch (scenario)
-	{
-	case DemoScenario::Small:
-		plan.volumeLabel = QStringLiteral("Demo · Small");
-		addDemoWorkstation(plan, workstations.first(), 4, 0, 60, 3500, 47);
-		break;
-	case DemoScenario::Big:
-		plan.volumeLabel = QStringLiteral("Demo · Big");
-		for (int i = 0; i < workstations.size(); ++i)
-			addDemoWorkstation(plan, workstations[i], 2, 1, 4200, 4990, 2496 + (i < 2));
-		break;
-	case DemoScenario::ReallyBig:
-		plan.volumeLabel = QStringLiteral("Demo · Really Big");
-		for (int i = 0; i < workstations.size(); ++i)
-			addDemoWorkstation(plan, workstations[i], 66 + (i < 2), 20, 200, 5600, 222222);
-		{
-			FolderState quarantined;
-			quarantined.mediaFolderName = QStringLiteral("Quarantined Files");
-			quarantined.count = 47;
-			quarantined.bytes = 47 * kDemoFileBytes;
-			quarantined.inScope = false;
-			plan.folders.append(quarantined);
-		}
-		break;
-	}
-	return new RebalanceDialog(plan, parent);
-}
-
-RebalanceDialog::RebalanceDialog(const RebalancePlan &precomputedPlan, QWidget *parent)
-	: QDialog(parent),
-	  m_currentPlan(precomputedPlan),
-	  m_demoMode(true)
-{
-	setWindowTitle(tr("Rebalance (Demo)"));
-	setWindowFlags(windowFlags() | Qt::Tool);
-	setAttribute(Qt::WA_MacAlwaysShowToolWindow, true);
-	setMinimumSize(720, 540);
-	resize(860, 640);
-
-	// No Rebalancer connection needed; execution is simulated.
-	m_demoTimer = new QTimer(this);
-	m_demoTimer->setInterval(kDemoTickMs);
-	connect(m_demoTimer, &QTimer::timeout, this, &RebalanceDialog::onDemoTick);
-
-	setupUi();
-
-	// Single picker item labelled with the demo scenario.
-	{
-		const QSignalBlocker blocker(m_volumePicker);
-		m_volumePicker->addItem(precomputedPlan.volumeLabel);
-		m_volumePicker->setCurrentIndex(0);
-		m_volumePicker->setEnabled(false);
-	}
-
-	// Render straight away; no compute step.
-	renderPlan();
-}
-
 // MARK: - Window lifecycle
 
 void RebalanceDialog::showEvent(QShowEvent *event)
@@ -674,7 +490,7 @@ void RebalanceDialog::onVolumeChanged(int)
 
 void RebalanceDialog::recomputePlan()
 {
-	if (m_demoMode || m_volumePicker->count() == 0)
+	if (m_volumePicker->count() == 0)
 		return;
 
 	const QString label = m_volumePicker->currentText();
@@ -782,28 +598,25 @@ void RebalanceDialog::onRebalanceClicked()
 	if (m_currentPlan.moveCount() == 0)
 		return;
 
-	if (!m_demoMode)
-	{
-		// Verb-labelled action button ("Rebalance") so the choice is legible
-		// without re-reading the body; Cancel stays default for the big move.
-		QMessageBox confirm(this);
-		confirm.setIcon(QMessageBox::Question);
-		confirm.setWindowTitle(tr("Confirm Rebalance"));
-		confirm.setText(tr("This will move %1 file(s) and create %2 new folder(s) on '%3'.\n\n"
-						   "Quit Avid Media Composer first — it must not have these files "
-						   "open. Avid will rebuild its media database on next project open.")
-							.arg(Format::count(m_currentPlan.moveCount()),
-								 Format::count(m_currentPlan.newFolders.size()),
-								 m_currentPlan.volumeLabel));
-		auto *goBtn = confirm.addButton(tr("Rebalance"), QMessageBox::AcceptRole);
-		confirm.addButton(QMessageBox::Cancel);
-		confirm.setDefaultButton(QMessageBox::Cancel);
-		confirm.exec();
-		if (confirm.clickedButton() != goBtn)
-			return;
-		if (beforeRebalance && !beforeRebalance())
-			return;
-	}
+	// Verb-labelled action button ("Rebalance") so the choice is legible
+	// without re-reading the body; Cancel stays default for the big move.
+	QMessageBox confirm(this);
+	confirm.setIcon(QMessageBox::Question);
+	confirm.setWindowTitle(tr("Confirm Rebalance"));
+	confirm.setText(tr("This will move %1 file(s) and create %2 new folder(s) on '%3'.\n\n"
+					   "Quit Avid Media Composer first — it must not have these files "
+					   "open. Avid will rebuild its media database on next project open.")
+						.arg(Format::count(m_currentPlan.moveCount()),
+							 Format::count(m_currentPlan.newFolders.size()),
+							 m_currentPlan.volumeLabel));
+	auto *goBtn = confirm.addButton(tr("Rebalance"), QMessageBox::AcceptRole);
+	confirm.addButton(QMessageBox::Cancel);
+	confirm.setDefaultButton(QMessageBox::Cancel);
+	confirm.exec();
+	if (confirm.clickedButton() != goBtn)
+		return;
+	if (beforeRebalance && !beforeRebalance())
+		return;
 
 	m_running = true;
 	// Set the flag now, not in onFinished; a mid-run cancel still
@@ -824,37 +637,18 @@ void RebalanceDialog::onRebalanceClicked()
 
 	primeLiveState();
 
-	if (m_demoMode)
-	{
-		m_demoElapsed.start();
-		m_demoTimer->start();
-	}
-	else
-	{
-		m_rebalancer->executeAsync(m_currentPlan);
-	}
+	m_rebalancer->executeAsync(m_currentPlan);
 }
 
 void RebalanceDialog::onCancelClicked()
 {
 	if (m_running)
 	{
-		if (m_demoMode)
-		{
-			// Demo cancel: stop the timer, fire finished with the
-			// progress reached so far.
-			m_demoTimer->stop();
-			const int done = m_progressBar->value();
-			onFinished(done, 0, /*cancelled=*/true);
-		}
-		else
-		{
-			// Cooperative cancel: the worker checks the flag between
-			// relatives groups. Disable Cancel after one click.
-			m_rebalancer->cancel();
-			m_btnCancel->setEnabled(false);
-			m_btnCancel->setText(tr("Cancelling..."));
-		}
+		// Cooperative cancel: the worker checks the flag between
+		// relatives groups. Disable Cancel after one click.
+		m_rebalancer->cancel();
+		m_btnCancel->setEnabled(false);
+		m_btnCancel->setText(tr("Cancelling..."));
 	}
 	else
 	{
@@ -874,29 +668,6 @@ void RebalanceDialog::reject()
 		return;
 	}
 	QDialog::reject();
-}
-
-void RebalanceDialog::onDemoTick()
-{
-	const qint64 elapsed = m_demoElapsed.elapsed();
-	const int total = m_currentPlan.moveCount();
-	const double frac = qMin(1.0, double(elapsed) / kDemoDurationMs);
-	const int current = int(frac * total);
-
-	// Only the demo knows that its progress represents completed moves.
-	// Synthetic ops reuse source paths, so apply each simulated move directly.
-	while (m_nextDemoOp < current)
-	{
-		const auto &op = m_currentPlan.ops[m_nextDemoOp++];
-		applyMove(m_pendingSources.value(op.srcPath), op.dest);
-	}
-	onProgress(current, total, tr("(simulated)"));
-
-	if (frac >= 1.0)
-	{
-		m_demoTimer->stop();
-		onFinished(total, 0, /*cancelled=*/false);
-	}
 }
 
 // MARK: - Worker signal handlers
@@ -947,17 +718,6 @@ void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 									   : tr("Done — %1 moved, %2 failed")
 											 .arg(Format::count(succeeded), Format::count(failed)));
 	m_progressBar->setValue(m_confirmedMoves);
-
-	if (m_demoMode)
-	{
-		QHash<NumberedMxfFolder, RebalancePlanner::FolderCount> counts;
-		for (const auto &folder : m_currentPlan.folders)
-			if (folder.inScope)
-				counts.insert(folder.id, {m_runningCount.value(folder.id),
-										  !folder.isNew || m_changedFolders.contains(folder.id)});
-		finishDisplay(succeeded, counts);
-		return;
-	}
 
 	// OpManager has joined the operation worker before finished. Count only
 	// directory entries here: a move can land before a later journal/sync
@@ -1044,7 +804,6 @@ void RebalanceDialog::setBusy(bool busy)
 
 void RebalanceDialog::primeLiveState()
 {
-	m_nextDemoOp = 0;
 	m_confirmedMoves = 0;
 	m_runningCount.clear();
 	m_pendingSources.clear();
@@ -1056,17 +815,13 @@ void RebalanceDialog::primeLiveState()
 	for (const auto &op : m_currentPlan.ops)
 		if (const auto folder = RebalancePlanner::srcFolderOf(op.srcPath))
 		{
-			QString sourcePath = op.srcPath;
-			if (!m_demoMode)
-			{
-				// Match the engine's canonical source paths, including volume
-				// aliases. Resolve once per folder, not once per media file.
-				const QFileInfo source(op.srcPath);
-				const QString parent = source.absolutePath();
-				if (!canonicalParents.contains(parent))
-					canonicalParents.insert(parent, QFileInfo(OpJournal::canonicalPath(op.srcPath)).absolutePath());
-				sourcePath = QDir(canonicalParents.value(parent)).filePath(source.fileName());
-			}
+			// Match the engine's canonical source paths, including volume
+			// aliases. Resolve once per folder, not once per media file.
+			const QFileInfo source(op.srcPath);
+			const QString parent = source.absolutePath();
+			if (!canonicalParents.contains(parent))
+				canonicalParents.insert(parent, QFileInfo(OpJournal::canonicalPath(op.srcPath)).absolutePath());
+			const QString sourcePath = QDir(canonicalParents.value(parent)).filePath(source.fileName());
 			m_pendingSources.insert(sourcePath, *folder);
 		}
 }

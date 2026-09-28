@@ -112,19 +112,20 @@ the version check requires `APP_VERSION` and `QT_VERSION`. CI supplies these.
 including on Windows, while preserving the failing exit status. Packaging requires
 `APP_VERSION` and the platform's deployment tools; Mac release signing also uses
 the existing Apple environment credentials. See the
-[CI cleanup record](ci-cleanup-proposal.md) for the scenario mapping and
-platform validation status.
+[native-operation validation record](file-operations-native-api-validation.md)
+for historical platform results and outstanding acceptance checks.
 
 Keep application and test logic in C++, and build/test/packaging automation in
 CMake. Preserve the small Objective-C++ Mac Trash bridge. GitHub YAML and native
 resource/metadata formats retain their platform roles; avoid adding shell or
 PowerShell recipes around CMake commands.
 
-Keep sources and headers flat under `src/`. Dated reviews live with their evidence
-under `docs/reviews/`; archived scripts and captured paths describe the original
-investigation. The standalone Avid catalogue extractor has been retired. Future
+Keep sources and headers flat under `src/`. Dated written reviews live under
+`docs/reviews/`. Keep temporary probes, copied code, generated output and logs out
+of the documentation tree; put durable regression coverage under `tests/`.
+The standalone Avid catalogue extractor has been retired. Future
 catalogue updates should record new binary research and comparisons against the
-saved [catalogue provenance](evidence/avid-effects-26.8/README.md).
+saved [catalogue provenance](avid-effects-catalogue.md).
 
 Run focused tests during a pass and the full suite after integration. A passing Mac
 build does not establish Windows SDK compatibility or real NEXIS behaviour; keep

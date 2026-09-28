@@ -177,10 +177,6 @@ private slots:
 	void restore_originals_respects_busy_gate();
 	void observed_removals_prune_rows_even_when_job_needs_attention();
 	void completed_results_preserve_details_and_refresh_signals();
-	void rebalance_demo_cancel_preserves_original_card_counts();
-	void rebalance_demo_ticks_count_repeated_source_paths();
-	void rebalance_demo_moves_stay_within_workstations_data();
-	void rebalance_demo_moves_stay_within_workstations();
 	void rebalance_live_counts_follow_confirmed_results();
 	void rebalance_finished_recounts_uncertain_moves_and_absent_folders();
 	void rebalance_finished_marks_unavailable_root();
@@ -1767,88 +1763,12 @@ void TestOperationUi::completed_results_preserve_details_and_refresh_signals()
 	QCOMPARE(messages.first().at(2).toString(), detailed.name + QStringLiteral(": ") + detailed.message);
 }
 
-void TestOperationUi::rebalance_demo_cancel_preserves_original_card_counts()
-{
-	std::unique_ptr<RebalanceDialog> dialog(RebalanceDialog::createDemo(RebalanceDialog::DemoScenario::Small));
-	dialog->onRebalanceClicked();
-	dialog->onCancelClicked(); // Cancel before the first timer tick.
-	QVERIFY(!dialog->m_running);
-	QCOMPARE(dialog->m_progressBar->value(), 0);
-	QVERIFY(dialog->m_statsLine->text().contains(QStringLiteral("<b>0</b> folders affected")));
-	QVERIFY(dialog->m_statsLine->text().contains(QStringLiteral("<b>0</b> new folders")));
-	for (const auto &folder : dialog->m_currentPlan.folders)
-	{
-		const QString expected = folder.isNew ? QStringLiteral("Not created") : Format::count(folder.count);
-		QCOMPARE(folderCountCaption(*dialog, folder.mediaFolderName), expected);
-	}
-}
-
-void TestOperationUi::rebalance_demo_ticks_count_repeated_source_paths()
-{
-	std::unique_ptr<RebalanceDialog> dialog(RebalanceDialog::createDemo(RebalanceDialog::DemoScenario::Small));
-	dialog->onRebalanceClicked();
-	const auto originalCounts = dialog->m_runningCount;
-	QTRY_VERIFY(dialog->m_nextDemoOp > 1);
-	dialog->onCancelClicked();
-	QCOMPARE(dialog->m_confirmedMoves, dialog->m_nextDemoOp);
-	const NumberedMxfFolder source{QStringLiteral("MartyiMac"), 1}, destination{QStringLiteral("MartyiMac"), 3};
-	QCOMPARE(folderCountCaption(*dialog, source.display()),
-			 Format::count(originalCounts.value(source) - dialog->m_confirmedMoves));
-	QCOMPARE(folderCountCaption(*dialog, destination.display()),
-			 Format::count(originalCounts.value(destination) + dialog->m_confirmedMoves));
-}
-
-void TestOperationUi::rebalance_demo_moves_stay_within_workstations_data()
-{
-	QTest::addColumn<int>("scenario");
-	QTest::addColumn<int>("moves");
-	QTest::newRow("big") << int(RebalanceDialog::DemoScenario::Big) << 7490;
-	QTest::newRow("really-big") << int(RebalanceDialog::DemoScenario::ReallyBig) << 666666;
-}
-
-void TestOperationUi::rebalance_demo_moves_stay_within_workstations()
-{
-	QFETCH(int, scenario);
-	QFETCH(int, moves);
-	std::unique_ptr<RebalanceDialog> dialog(
-		RebalanceDialog::createDemo(static_cast<RebalanceDialog::DemoScenario>(scenario)));
-	const auto &plan = dialog->m_currentPlan;
-	QCOMPARE(plan.ops.size(), moves);
-	QHash<NumberedMxfFolder, int> counts;
-	QSet<QString> workstations;
-	for (const auto &folder : plan.folders)
-	{
-		if (!folder.inScope)
-			continue;
-		QVERIFY(!counts.contains(folder.id));
-		counts.insert(folder.id, folder.count);
-		workstations.insert(folder.id.prefix);
-	}
-	QCOMPARE(workstations, (QSet<QString>{QStringLiteral("MartyiMac"), QStringLiteral("JamieiMac"),
-										  QStringLiteral("ClaireiMac")}));
-	for (const auto &op : plan.ops)
-	{
-		const auto source = RebalancePlanner::srcFolderOf(op.srcPath);
-		QVERIFY(source.has_value());
-		QCOMPARE(source->prefix, op.dest.prefix);
-		QVERIFY(counts.contains(op.dest));
-		QVERIFY(counts.value(*source) > 0);
-		--counts[*source];
-		++counts[op.dest];
-	}
-	for (const auto &folder : plan.folders)
-	{
-		if (!folder.inScope)
-			continue;
-		QCOMPARE(counts.value(folder.id), folder.count + folder.filesIn - folder.filesOut);
-		QVERIFY(counts.value(folder.id) <= 5000);
-	}
-}
-
 void TestOperationUi::rebalance_live_counts_follow_confirmed_results()
 {
 	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
-	RebalanceDialog dialog(plan);
+	RebalanceDialog dialog({}, {}, {});
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
 	dialog.primeLiveState();
 	dialog.m_running = true;
 	const auto originalCounts = dialog.m_runningCount;
@@ -1889,7 +1809,7 @@ void TestOperationUi::rebalance_live_counts_follow_confirmed_results()
 	QCOMPARE(dialog.m_runningCount.value(source), 1);
 	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
 	QCOMPARE(dialog.m_runningCount.value(newDestination), 1);
-	dialog.onFinished(1, 1, true);
+	dialog.finishDisplay(1, {{source, {1, true}}, {existingDestination, {2, true}}, {newDestination, {1, true}}});
 	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), QStringLiteral("1"));
 	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("2"));
 	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("1"));
@@ -1903,8 +1823,9 @@ void TestOperationUi::rebalance_finished_recounts_uncertain_moves_and_absent_fol
 	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/2/existing.mxf"), "media"));
 	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/1/msmMMOB.mdb"), "database"));
 	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/2/.DS_Store"), "metadata"));
-	RebalanceDialog dialog(plan);
-	dialog.m_demoMode = false;
+	RebalanceDialog dialog({}, {}, {});
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
 	dialog.primeLiveState();
 	dialog.m_running = true;
 	const auto originalCounts = dialog.m_runningCount;
@@ -1932,8 +1853,9 @@ void TestOperationUi::rebalance_finished_marks_unavailable_root()
 {
 	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
 	QVERIFY(put(plan.ops[0].srcPath, "media"));
-	RebalanceDialog dialog(plan);
-	dialog.m_demoMode = false;
+	RebalanceDialog dialog({}, {}, {});
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
 	dialog.primeLiveState();
 	dialog.m_running = true;
 	QDir mediaRoot(QFileInfo(plan.mxfRootPath).absolutePath());

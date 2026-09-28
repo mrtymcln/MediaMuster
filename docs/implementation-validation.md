@@ -23,8 +23,8 @@ inputs.
   predicate and reused the shared media-family enum for header dispatch.
 - Corrected stale discovery comments and documentation links. Moved the format
   review and accumulated validation narrative into the dated review archive.
-- Preserved useful research and previous final test evidence with SHA-256
-  manifests. Removed the temporary copied Avid library only after verifying it
+- Preserved useful research and validation summaries in the dated reports.
+  Removed the temporary copied Avid library only after verifying it
   against the installed library's arm64 slice. Discarded the generated probe
   build and intermediate phase logs, then replaced the old app build directory
   with a fresh build. The installed Avid app and media fixtures were retained.
@@ -48,8 +48,7 @@ The app and tests built without compiler warnings. All six affected suites
 passed in 34.38 seconds: conventions, scanner, Rebalance planner, file operations,
 media filtering and production UI. The scanner's case-sensitive-filesystem check
 skipped on this case-insensitive filesystem. Build settings remain as below;
-the Debug menu remains enabled. [Follow-up evidence](reviews/2026-09-20-media-scope/evidence/quarantine-layout/manifest.json)
-records the logs and individual results. Diff whitespace checks passed.
+the Debug menu remains enabled. Diff whitespace checks passed.
 
 The earlier full-suite and public-menu results below precede this follow-up.
 
@@ -77,10 +76,7 @@ obsolete `MEDIAMUSTER_DEBUG_MENU` option. Source and test searches found no
 SDII descriptor/class handling. Diff whitespace checks and local links across
 the maintained/review documents passed.
 
-Final logs, individual Qt results, build settings and hashes are preserved in
-[cleanup evidence](reviews/2026-09-20-media-scope/evidence/validation-cleanup/manifest.json).
-Their temporary log copies were removed after verification; the clean tested
-`build/` directory remains available.
+The results above summarize the checks performed on that revision.
 
 The [validation history](reviews/2026-09-20-media-scope/validation-history.md)
 retains earlier full-suite, public-menu and sanitizer outcomes with their limits.

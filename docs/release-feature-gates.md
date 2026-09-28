@@ -94,11 +94,11 @@ inline constexpr bool kUndoEnabled = false;
 | kOmfEnabled | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
 | kPrecomputesEnabled | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
 | kUndoEnabled | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
-| kDebugMenuEnabled | Shows Fusion style and Rebalance demos in the Debug menu. | Omits the Debug menu. |
+| kDebugMenuEnabled | Shows Fusion style in the Debug menu. | Omits the Debug menu. |
 
 OMF, Precomputes and Undo have no Debug menu controls. Their availability is
 independent of whether the Debug menu is included. Fusion style starts off on
-each launch. Rebalance demos use synthetic plans and simulated progress.
+each launch.
 
 Interrupted operations, including an Undo already started in another build,
 remain recoverable through Unfinished Business even when Undo is disabled.

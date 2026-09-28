@@ -1,26 +1,20 @@
 # Current parser review — 22 September 2026
 
-Originally a read-only review of commit `1007954dcd902eac82c16f57c469b9a04c431aee`. A fresh standalone C++17/Qt 6.5.3 probe compiled directly against those sources; probe source, generated fixtures and output are in [evidence/parsers](evidence/parsers/); compiled binaries are not retained. The follow-ups below distinguish subsequent implementation from captured pre-fix evidence.
+Originally a read-only review of commit `1007954dcd902eac82c16f57c469b9a04c431aee`. Validation compiled directly against those sources with C++17/Qt 6.5.3. The follow-ups below distinguish subsequent implementation from the pre-fix findings.
 
 ## Reproduced bugs
 
-Follow-up, 23 September: [new probe evidence](evidence/parsers/followup-20260923/README.md) demonstrates the audio defect through the full scanner for `Avid MediaFiles/MXF/1/short.mxf` with `includeOmf=false`; the same authored fixture's direct MXF header read uses the correct base 25. The disconnected-master proof now includes connected/disconnected track-graph controls. These are constructed fixtures; no affected real Avid file has been established for the disconnected-master case.
+Follow-up, 23 September: [follow-up validation](parser-followup.md) demonstrates the audio defect through the full scanner for `Avid MediaFiles/MXF/1/short.mxf` with `includeOmf=false`; the same authored fixture's direct MXF header read uses the correct base 25. The disconnected-master proof now includes connected/disconnected track-graph controls. These are constructed fixtures; no affected real Avid file has been established for the disconnected-master case.
 
 Latest follow-up, 23 September: finding 1 is fixed in the working tree by retaining the known mob edit rate as the nominal timecode base before rounding frames. MDB regressions cover 25 fps, 23.976 fps and a whole-second control; scanner coverage verifies the current-MDB MXF path with OMF disabled. MDB: 76 passed, one optional external-corpus skip; OMF: 37 passed; scanner: 120 passed, one filesystem-specific skip. Finding 2 is withdrawn; its added safeguard and regression tests have been removed at the user's request.
 
 1. **P2, high confidence: preserve the known audio timecode rate instead of deriving it from rounded frames.** `src/omfobjects.cpp:797-803` computes display frames from the mob's known edit rate but leaves `timecodeBase` unset. `src/mediametadata.cpp:72-77` then estimates that rate again from the rounded frame count. A PCMA database descriptor with 47,040 samples at 48,000 Hz and mob edit rate 25/1 returns `essenceComplete=true`, 25 frames, base 26, and `MediaFile::durationDisplay()` returns `00:00:00:25`; retaining the recorded base 25 would display `00:00:01:00`. A 4,800-sample example returns base 30. Controls 9,600/48,000 samples both retain base 25. This also affects the shared OMF reader. Fix by setting nominal timecode base directly from validated mob rate (same supported bounds as `applyEditRate`) and reserving inference for truly graphless recovery. Add short/non-frame-aligned audio regression cases.
 
-2. **Withdrawn: constructed disconnected-master case.** The probe deliberately supplied an inconsistent package graph and observed sole-material fallback in `src/mxfparser.cpp:648-649`. That establishes behavior for the generated input, not a bug affecting normal Avid media. No affected genuine Avid sample was found, and assigning this an actionable P2 priority overstated the evidence. The proposed safeguard and its tests were removed at the user's request. The original probe output remains below as historical evidence of what was actually tested.
+2. **Withdrawn: constructed disconnected-master case.** The probe deliberately supplied an inconsistent package graph and observed sole-material fallback in `src/mxfparser.cpp:648-649`. That establishes behavior for the generated input, not a bug affecting normal Avid media. No affected genuine Avid sample was found, and assigning this an actionable P2 priority overstated the evidence. The proposed safeguard and its tests were removed at the user's request.
 
-Probe output:
-
-```
-MDB 4800 ok true complete true frames 3 base 30 display "00:00:00:03"
-MDB 9600 ok true complete true frames 5 base 25 display "00:00:00:05"
-MDB 47040 ok true complete true frames 25 base 26 display "00:00:00:25"
-MDB 48000 ok true complete true frames 25 base 25 display "00:00:01:00"
-MXF unrelated valid true status 1 hasMaterial true classificationKnown true name "Wrong master"
-```
+The authored audio cases returned nominal bases 30, 25, 26 and 25 for 4,800,
+9,600, 47,040 and 48,000 samples respectively; all had a recorded rate of 25 fps.
+The constructed disconnected MXF case returned the unrelated material name.
 
 ## Dead code / simplification
 
@@ -50,6 +44,6 @@ MXF unrelated valid true status 1 hasMaterial true classificationKnown true name
 
 ## Coverage and limitations
 
-Read all executable parser/walker logic in avbparser, bentofile, mdbparser, pmrparser, mxfparser, omfparser, omfobjects, omfresolutions, mediametadata, avideffects and binmetadataresolver; all assigned public/helper headers (avidtext/usage/precompute, mobid, pmrkey, mxfproperties, omfuid). Checked related test cases/builders for expected behavior and missing boundaries; root ran the full current test suite. Programmatically compared all 887 compiled effect catalogue rows (name/category/localised aliases) with retained catalogue.json: zero field differences, 887 distinct pairs.
+Read all executable parser/walker logic in avbparser, bentofile, mdbparser, pmrparser, mxfparser, omfparser, omfobjects, omfresolutions, mediametadata, avideffects and binmetadataresolver; all assigned public/helper headers (avidtext/usage/precompute, mobid, pmrkey, mxfproperties, omfuid). Checked related test cases/builders for expected behavior and missing boundaries; root ran the full current test suite. Programmatically compared all 887 compiled effect catalogue rows (name/category/localised aliases) with the catalogue captured during the earlier review: zero field differences, 887 distinct pairs.
 
 Read current parser-compatibility, pmr-completeness, avb-parser, usage-code-identification, effect-details-preview and effect catalogue evidence docs; checked parser portions of architecture/current-behaviour/README. No current independent live Media Composer equivalence or fresh real-corpus re-extraction was attempted. Existing tests and historical measurements are evidence of their stated fixtures, not proof against the two newly authored boundary cases. No fresh external-toolkit corpus/environment was requested by this subtask.

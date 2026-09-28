@@ -58,10 +58,8 @@ default to off. Change a flag and rebuild to enable it; these controls do not
 appear in the Debug menu. Rendered media remains in ordinary scan results when
 precompute details and filtering are disabled.
 
-The Debug menu contains **Fusion style** (off at launch) and **Rebalance demos**,
-with **Small**, **Big** and **Really big** scenarios. The demos use synthetic media
-and simulated progress without changing files. The menu has its own independent
-build flag. See [release feature gates](release-feature-gates.md).
+The Debug menu contains **Fusion style** (off at launch). The menu has its own
+independent build flag. See [release feature gates](release-feature-gates.md).
 
 ## Menus
 

@@ -155,8 +155,7 @@ persistence checks.
 
 See the [behaviour guide](current-behaviour.md#copy-move-and-delete) for Trash routing
 and the [validation record](file-operations-native-api-validation.md) for tested
-platform behaviour. The [native-operation plan](file-operations-native-api-plan.md)
-preserves design history rather than serving as the current user guide.
+platform behaviour.
 
 ## Rebalance
 

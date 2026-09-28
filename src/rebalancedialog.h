@@ -4,7 +4,6 @@
 #include "rebalanceplanner.h"
 
 #include <QDialog>
-#include <QElapsedTimer>
 #include <QFutureWatcher>
 #include <QHash>
 #include <QSet>
@@ -21,7 +20,6 @@ class QProgressBar;
 class QPushButton;
 class QScrollArea;
 class QShowEvent;
-class QTimer;
 class Rebalancer;
 
 // MARK: - RebalanceDialog
@@ -51,19 +49,6 @@ public:
 	RebalanceDialog(const QHash<QString, QString> &mxfRootPathsByLabel,
 					const QHash<QString, QVector<MediaFile>> &filesByMxfRootPath,
 					const QString &initialLabel, QWidget *parent = nullptr);
-
-	/// Debug ▸ Rebalance demos: a dialog over a synthetic plan, skipping
-	/// the disk scan. Clicking Rebalance runs a fake QTimer-driven
-	/// progress sequence instead of touching disk. Shows the visual
-	/// states to beta testers without a real Avid project.
-	enum class DemoScenario
-	{
-		Small,	  ///< ~50 files between 4 folders.
-		Big,	  ///< ~7,500 files, red/amber bars, 3 new folders.
-		ReallyBig ///< 666,666 files across hundreds of folders — a
-				  ///< rendering-path stress test; also fun to watch.
-	};
-	static RebalanceDialog *createDemo(DemoScenario scenario, QWidget *parent = nullptr);
 
 	// MARK: - Result accessors
 
@@ -105,15 +90,7 @@ private slots:
 	void onFinished(int succeeded, int failed, bool cancelled);
 	void onAborted(const QString &reason);
 
-	/// Demo-mode tick. Advances fake progress proportional to
-	/// elapsed time and fires onFinished when the run is done.
-	void onDemoTick();
-
 private:
-	/// Demo-mode constructor behind createDemo(): shows `precomputedPlan`
-	/// directly, no Rebalancer wired.
-	explicit RebalanceDialog(const RebalancePlan &precomputedPlan, QWidget *parent = nullptr);
-
 	void setupUi();
 	void recomputePlan();
 	void renderPlan();
@@ -144,14 +121,6 @@ private:
 	bool m_running = false;
 	bool m_didRebalance = false;
 	QString m_rebalancedLabel;
-
-	// MARK: - Demo mode
-
-	/// True when this dialog was constructed with a precomputed
-	/// plan. Disables the real disk scan + worker execution.
-	bool m_demoMode = false;
-	QTimer *m_demoTimer = nullptr;
-	QElapsedTimer m_demoElapsed;
 
 	// MARK: - Widgets
 
@@ -184,7 +153,6 @@ private:
 	QHash<QString, NumberedMxfFolder> m_pendingSources;
 	QSet<NumberedMxfFolder> m_changedFolders;
 	int m_confirmedMoves = 0;
-	int m_nextDemoOp = 0;
 
 	/// Seed the counts and pending sources from the current plan.
 	void primeLiveState();

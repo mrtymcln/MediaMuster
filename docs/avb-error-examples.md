@@ -52,24 +52,10 @@ Cannot load bin "/Projects/Example/Newer bin format.avb": This bin contains data
 
 Only valid, complete bins contribute filter operands or metadata. A valid empty bin displays “No media references.” in normal text and remains usable: Intersect with it matches zero rows. Removing a loading bin cancels its work and removes the row without a console failure warning; late results for that removed row are ignored. Loading failures alone do not reactivate a cleared filter.
 
-## Current validation
+## Recorded validation
 
-All four affected test targets pass: 98 parser cases, 34 bin-dialog cases, 24 proxy cases and eight metadata cases (164 total), with no failures or skips. The universal macOS app rebuilt and passed strict bundle signature verification outside the sandbox.
+At the console-only revision, all four affected test targets passed: 98 parser cases, 34 bin-dialog cases, 24 proxy cases and eight metadata cases (164 total), with no failures or skips. The universal macOS application rebuilt and passed strict bundle signature verification.
 
-An additional check of the actual main window and application Open dialog passed all 20 checks using temporary fixtures and the offscreen platform. It verified rejected-drag console output, selecting renamed text through Open, removing its failed loading row, accepting a valid empty uppercase `.AVB`, reporting unsupported data, and creating no error message boxes. This checks application event handling and the file-picker code path; it does not exercise Finder's drag animation or the native macOS file panel.
+An additional check of the actual main window and application Open dialog passed all 20 checks using temporary fixtures and the offscreen platform. It verified rejected-drag console output, selecting renamed text through Open, removal of failed loading rows, acceptance of a valid empty uppercase `.AVB`, reporting of unsupported data and the absence of error message boxes. This covered application event handling and the file-picker code path, not Finder's drag animation or the native macOS file panel.
 
-![Actual main-window console after fixture attempts](evidence/avb-implementation-2026-09-06/console-errors.png)
-
-The two warnings for `Renamed text.avb` show separate attempts: first dragging, then selecting it through Open. [Validation results](evidence/avb-implementation-2026-09-06/console-validation.json) and [main-window checks](evidence/avb-implementation-2026-09-06/console-mainwindow-results.json) record the current revision.
-
-## Historical validation
-
-Before the console-only revision, all four affected test targets passed: 98 parser cases, 31 bin-dialog cases, 24 proxy cases and eight metadata cases, with no failures or skips. The universal macOS application rebuilt and passed strict bundle signature verification. The then-current single-file, grouped-failure and expanded-details dialogs were rendered and visually checked. These counts and screenshots describe the earlier message-box design.
-
-## Historical screenshots
-
-The [red error row examples](evidence/avb-implementation-2026-09-06/bin-error-states.png) and [full dialog screenshot](evidence/avb-implementation-2026-09-06/bin-error-dialog.png) show the earlier retained-error-row design.
-
-The [single rejected file](evidence/avb-implementation-2026-09-06/error-dialog-single.png), [grouped rejected files](evidence/avb-implementation-2026-09-06/error-dialog-batch.png) and [expanded Show Details](evidence/avb-implementation-2026-09-06/error-dialog-batch-details.png) screenshots show the subsequent message-box design. They were rendered from actual widgets with deliberately constructed inputs.
-
-All of these screenshots are preserved as historical evidence and do not show the current console-only reporting.
+These results describe validation of that revision, not a fresh run against the current checkout. Earlier designs retained error rows or displayed message boxes; their validation does not establish the current console-reporting behavior.

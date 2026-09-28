@@ -10,7 +10,7 @@
 
 namespace
 {
-	// A catalogue of effects from Media Composer 2026.8 — see docs/evidence/avid-effects-26.8/README.md
+	// A catalogue of effects from Media Composer 2026.8 — see docs/avid-effects-catalogue.md
 	struct Entry
 	{
 		const char *name;

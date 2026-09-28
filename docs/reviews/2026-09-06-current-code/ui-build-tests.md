@@ -1,8 +1,10 @@
 # UI, build and test review — 6 September 2026
 
+Historical review of the 6 September 2026 checkout. Findings, source locations and validation results describe that snapshot and may have been superseded.
+
 These findings refer to the unchanged source on disk at commit `7fcfe7b24afa96069a04a07d119ff68138934905`. They supplement the file-operation, parser and scanner reviews. P2 means a correctness or reliability issue to fix; P3 means a smaller defect or maintenance problem.
 
-The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects, excluding the application entry point. It uses `MainWindow::StartupMode::UiOnly`, Qt's offscreen platform, and `-fno-access-control` to inspect internal state. Rebalance's implementation is included in that probe to inspect its folder cards. This does not modify production code. The [output](evidence/ui_probe.log) records real Qt widget/model behavior. Synthetic completion signals and sizes are identified below; they establish UI behavior, not successful execution of a filesystem operation. An independent reviewer also checked the production call paths: [audit](evidence/scanner_filters/independent_audit.md).
+The UI probe links the freshly built production objects, excluding the application entry point. It uses `MainWindow::StartupMode::UiOnly`, Qt's offscreen platform, and `-fno-access-control` to inspect internal state. This does not modify production code. The output records real Qt widget/model behavior. Synthetic completion signals and sizes are identified below; they establish UI behavior, not successful execution of a filesystem operation. An independent reviewer also checked the production call paths: [audit](independent-audit.md).
 
 ## UI01 — P2: adding or refreshing volumes loses their selection
 
@@ -22,8 +24,6 @@ The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects
 
 **Engineer:** `onFinished()` receives succeeded, failed and cancelled, but calls `markFinished()` on every card regardless. `markFinished()` assigns `m_currentCount = m_projectedCount`. Consequently the cards display the fully applied plan even after cancellation before the first move. The summary also takes affected/new folder counts from the plan.
 
-**Proof:** Build the real dialog's existing Small demo plan, prime its live state, and invoke `onFinished(0, 0, true)`. A source card changes from 3,380 files to its projected 3,333, despite zero successful moves: `REBALANCE cancelled moved=0 source-before=3380 projected=3333 displayed-after=3333`. This intentionally simulates the completion callback; it does not physically move 47 files.
-
 **Plain English:** After you cancel, the folder diagram can say the reorganization happened even though none of the files moved. Its numbers disagree with “0 moved.”
 
 **Fix:** Update counts from acknowledged successful operations, or rescan the affected folders. Keep planned values visibly separate until actual results are known. Do not derive completed counts from the attempted-operation progress counter.
@@ -42,7 +42,7 @@ The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects
 
 ## UI04 — P2: log migration deletes unmigrated history and crash reports
 
-**Source:** [logfile.cpp:123](/Users/martymclean/Developer/MediaMuster/src/logfile.cpp:123).
+**Source:** `logfile.cpp:123`.
 
 **Engineer:** The old log is renamed only if the new log does not exist, and that rename's result is ignored. The entire old `logs/` directory is then removed recursively regardless. This deletes unique old history when a current log already exists, and also deletes other files in the old directory even when the log migration succeeds.
 
@@ -78,11 +78,11 @@ The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects
 
 ## BT01 — P2: three recovery tests fail as their fixed date ages
 
-**Source:** [tst_oprescue.cpp:24](/Users/martymclean/Developer/MediaMuster/tests/tst_oprescue.cpp:24), retention at [oprescue.cpp:870](/Users/martymclean/Developer/MediaMuster/src/oprescue.cpp:870).
+**Source:** `tst_oprescue.cpp:24`, retention at `oprescue.cpp:870`.
 
 **Engineer:** The common fixture's start timestamp is fixed at 29 August 2026. Production intentionally prunes completed undo candidates older than seven days. By this review date, three cases expecting a fresh retained candidate instead exercise aged retention.
 
-**Proof:** The clean C++17 build succeeds, but [CTest output](evidence/ctest.log) records failures at test lines 238, 255 and 759: `clean_journal_is_kept_as_undo_candidate`, `superseded_finished_journals_are_pruned`, and `cancelled_run_is_not_resumable_but_is_undo_candidate`. All three use that shared timestamp and the retention branch. `tst_oprescue` has 39 passing cases and three failures; all other 30 CTest executables pass.
+**Proof:** The clean C++17 build succeeds, but CTest output records failures at test lines 238, 255 and 759: `clean_journal_is_kept_as_undo_candidate`, `superseded_finished_journals_are_pruned`, and `cancelled_run_is_not_resumable_but_is_undo_candidate`. All three use that shared timestamp and the retention branch. `tst_oprescue` has 39 passing cases and three failures; all other 30 CTest executables pass.
 
 **Plain English:** The test suite has started failing because the calendar advanced. These failures do not establish a bug in the app's intended seven-day retention policy.
 
@@ -118,7 +118,7 @@ The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects
 
 **Engineer:** CMake validates only date shape, month 1–12 and day 1–31. It accepts an impossible calendar date. At runtime `QDate::fromString()` returns invalid, and `expiry.isValid() && ...` prevents expiry from being enforced.
 
-**Proof:** A separate configure with `-DSELF_DESTRUCT=ON -DSELF_DESTRUCT_DATE=2027-02-31` succeeds and prints that it expires on that date: [configure log](evidence/invalid-expiry.log). The actual Qt date parser returns invalid in the UI probe: `EXPIRY configured=2027-02-31 QDate-valid=0`.
+**Proof:** A separate configure with `-DSELF_DESTRUCT=ON -DSELF_DESTRUCT_DATE=2027-02-31` succeeds and prints that it expires on that date. The actual Qt date parser returns invalid in the UI probe: `EXPIRY configured=2027-02-31 QDate-valid=0`.
 
 **Plain English:** A typo such as February 31 silently creates a beta that never expires, despite the build saying expiry is enabled. The current default date is valid, so this is conditional on an invalid supplied date.
 
@@ -126,11 +126,11 @@ The [UI probe](evidence/ui_probe.cpp) links the freshly built production objects
 
 ## BT05 — P3: Python optimization removes extractor input-integrity checks
 
-**Source:** [extract.py:83](/Users/martymclean/Developer/MediaMuster/tools/avid_effects/extract.py:83), [extract.py:112](/Users/martymclean/Developer/MediaMuster/tools/avid_effects/extract.py:112).
+**Source:** `extract.py:83`, `extract.py:112`.
 
 **Engineer:** The pinned binary digest check and supplied-disassembly byte check use Python `assert`. They validate external inputs rather than programmer-only invariants, but Python removes them under `-O`, `-OO`, or corresponding optimization settings.
 
-**Proof:** [tooling_probe.py](evidence/tooling_probe.py) compiles the exact extractor source at optimization levels 0, 1 and 2 and inspects all nested code objects. [Output](evidence/tooling_probe.log): eight assertion-error instructions at level 0; zero at levels 1 and 2. AST locations include both input checks. The extractor was not run against altered Avid binaries; no claim is made that every changed binary would otherwise extract successfully.
+**Proof:** The review compiled the exact extractor source at optimization levels 0, 1 and 2 and inspected all nested code objects. Output: eight assertion-error instructions at level 0; zero at levels 1 and 2. AST locations include both input checks. The extractor was not run against altered Avid binaries; no claim is made that every changed binary would otherwise extract successfully.
 
 **Plain English:** An optimized Python run can bypass the checks intended to stop the effect catalogue being generated from the wrong binary or stale disassembly.
 

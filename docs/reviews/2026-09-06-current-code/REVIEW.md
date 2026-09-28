@@ -1,5 +1,7 @@
 # MediaMuster — current-code review, 6 September 2026
 
+Historical review of the 6 September 2026 checkout. Findings, source locations and validation results describe that snapshot and may have been superseded.
+
 **Recommendation:** fix the media-loss, identity-selection and recovery defects before releasing destructive operations for production media. Two controlled reproductions deleted unique bytes. Other reproductions established lost recovery tracking, acceptance of an unverified damaged copy, and inclusion of an unrelated legacy clip in a bin filter. These are concrete failures in the current implementation; their frequency in real editing environments was not measured.
 
 This review contains **36 findings: 6 P1, 22 P2 and 8 P3**, plus separately identified scope questions, intentional limitations and maintenance nits. Every numbered finding includes its source, technical explanation, plain-English impact, proof and fix direction in the linked detailed report. P1 means a high-impact issue to address before trusting affected operations; P2 means a correctness/reliability issue to fix; P3 means a smaller defect or test/tooling weakness. These priorities are engineering judgments about consequence, not estimates of prevalence.
@@ -19,46 +21,46 @@ The first two cases demonstrate actual loss of unique file bytes in temporary fi
 
 ## Complete findings index
 
-The detailed reports retain the original evidence IDs. SF2 is deliberately excluded from the defect count because its expected behavior needs your decision.
+The detailed reports retain the original finding IDs. SF2 was excluded from the defect count because its expected behavior remained a scope question at the time.
 
 | ID | Priority | Finding | Detailed review |
 | --- | --- | --- | --- |
-| FS01 | P1 | Move discards an in-place same-size source edit | [File safety](evidence/file_safety/findings.md#L23) |
-| FS02 | P1 | Cancel deletes another writer's replacement destination | [File safety](evidence/file_safety/findings.md#L35) |
-| FS03 | P1 | Failed recovery is retired instead of retried | [File safety](evidence/file_safety/findings.md#L47) |
-| FS04 | P2 | Later resume offers revert to a remounted volume's old paths | [File safety](evidence/file_safety/findings.md#L59) |
-| FS05 | P1 | Recovery accepts an unverified full-size copy | [File safety](evidence/file_safety/findings.md#L71) |
-| FS06 | P2 | Cancelled Move leaves a partial destination but records clean cleanup | [File safety](evidence/file_safety/findings.md#L83) |
-| FS07 | P2 | Rebalance moves an already packed 4,999-file relatives group repeatedly | [File safety](evidence/file_safety/findings.md#L95) |
-| FS08 | P2, dormant | Retrying Undo Move-Replace abandons the replaced original in trash | [File safety](evidence/file_safety/findings.md#L107) |
-| FS09 | P2 | Rebalance bypasses the journal-unavailable confirmation | [File safety](evidence/file_safety/findings.md#L119) |
-| FS10 | P2 | A failed group member splits relatives despite the dialog's promise | [File safety](evidence/file_safety/findings.md#L131) |
-| FS11 | P1 | Rename continues after its journal fails, without a final-item warning | [Additional safety evidence](evidence/file_safety/additional-coverage.md#L3) |
-| FS12 | P2 | Resume retires the old journal before the replacement plan is durable | [UI/build/test review](ui-build-tests.md#L147) |
-| P01 | P1 | OMF alias conflates two distinct identities in AVB filtering/enrichment | [Parsers, finding 1](evidence/parsers/REPORT.md#L7) |
-| P02 | P2 | MXF audio sample rate changes with metadata-property order | [Parsers, finding 2](evidence/parsers/REPORT.md#L21) |
-| P03 | P2 | MDB misses project attributes on duplicate source objects | [Parsers, finding 3](evidence/parsers/REPORT.md#L35) |
-| P04 | P2 | MDB/PMR allocate entire invalid files before validation | [Parsers, finding 4](evidence/parsers/REPORT.md#L47) |
-| P05 | P2 | Malformed audio coding metadata becomes a confident PCM result | [Parsers, finding 5](evidence/parsers/REPORT.md#L67) |
-| P06 | P3, gated UI | Effect-token splitting cannot recognize a catalogue name containing a comma | [Parsers, finding 6](evidence/parsers/REPORT.md#L79) |
-| P07 | P3, gated UI | Ambiguous localized effect alias silently chooses one effect | [Parsers, finding 7](evidence/parsers/REPORT.md#L91) |
-| SF1 | P2 | CSV failure reports success and destroys an existing export | [Scanner/table review](evidence/scanner_filters/review.md#L19) |
-| SF3 | P2 | Literal project “No project” and absent project share a selection key | [Scanner/table review](evidence/scanner_filters/review.md#L43) |
-| SF4 | P2 | Parked media is admitted to scanning but not parsed as its actual media type | [Scanner/table review](evidence/scanner_filters/review.md#L55) |
-| SF5 | P2 | Removing separated table rows has measured quadratic UI cost | [Scanner/table review](evidence/scanner_filters/review.md#L67) |
-| SF6 | P2 | Mixed-rate Duration sorting reverses both elapsed-duration and displayed order | [Scanner/table review](evidence/scanner_filters/review.md#L81) |
-| SF7 | P2, goal gap | Sample rate is parsed but absent from the table and CSV | [Scanner/table review](evidence/scanner_filters/review.md#L93) |
-| UI01 | P2 | Volume selection is attempted before items join their list | [UI/build/test review](ui-build-tests.md#L7) |
-| UI02 | P2 | Rebalance displays its projected counts after cancellation/failure | [UI/build/test review](ui-build-tests.md#L19) |
-| UI03 | P2 | Capacity checks count files explicitly marked Skip | [UI/build/test review](ui-build-tests.md#L31) |
-| UI04 | P2 | Log migration recursively deletes unmigrated diagnostic files | [UI/build/test review](ui-build-tests.md#L43) |
-| UI05 | P3 | Project sidebar counts/names remain stale after row removal | [UI/build/test review](ui-build-tests.md#L55) |
-| UI06 | P3 | Batch destination previews promise duplicate output names | [UI/build/test review](ui-build-tests.md#L67) |
-| BT01 | P2 | Date-dependent recovery fixtures now fail three test cases | [UI/build/test review](ui-build-tests.md#L79) |
-| BT02 | P3 | Unchecked fixture writes can produce false passing negative tests | [UI/build/test review](ui-build-tests.md#L91) |
-| BT03 | P3 | Three test assertions do not cover what their names/comments claim | [UI/build/test review](ui-build-tests.md#L103) |
-| BT04 | P3 | Impossible configured expiry dates silently disable expiry | [UI/build/test review](ui-build-tests.md#L115) |
-| BT05 | P3 | Python optimization removes extractor input-integrity checks | [UI/build/test review](ui-build-tests.md#L127) |
+| FS01 | P1 | Move discards an in-place same-size source edit | [File safety](file-operations.md#fs01--p1-move-discards-same-size-in-place-source-changes) |
+| FS02 | P1 | Cancel deletes another writer's replacement destination | [File safety](file-operations.md#fs02--p1-cancel-can-permanently-delete-another-writers-replacement) |
+| FS03 | P1 | Failed recovery is retired instead of retried | [File safety](file-operations.md#fs03--p1-a-failed-recovery-is-marked-complete-and-never-retried) |
+| FS04 | P2 | Later resume offers revert to a remounted volume's old paths | [File safety](file-operations.md#fs04--p2-resume-forgets-remounted-volume-resolution-after-the-first-recovery) |
+| FS05 | P1 | Recovery accepts an unverified full-size copy | [File safety](file-operations.md#fs05--p1-recovery-declares-an-unverified-full-size-copy-finished) |
+| FS06 | P2 | Cancelled Move leaves a partial destination but records clean cleanup | [File safety](file-operations.md#fs06--p2-move-loses-the-inner-partial-copy-rollback-failure) |
+| FS07 | P2 | Rebalance moves an already packed 4,999-file relatives group repeatedly | [File safety](file-operations.md#fs07--p2-a-full-relatives-group-is-moved-again-on-every-rebalance) |
+| FS08 | P2, dormant | Retrying Undo Move-Replace abandons the replaced original in trash | [File safety](file-operations.md#fs08--p2-dormant-feature-retry-of-undo-move-replace-abandons-the-replaced-original) |
+| FS09 | P2 | Rebalance bypasses the journal-unavailable confirmation | [File safety](file-operations.md#fs09--p2-rebalance-moves-files-when-its-journal-cannot-be-created) |
+| FS10 | P2 | A failed group member splits relatives despite the dialog's promise | [File safety](file-operations.md#fs10--p2-a-failure-splits-the-clip-relatives-rebalance-promises-to-keep-together) |
+| FS11 | P1 | Rename continues after its journal fails, without a final-item warning | [Additional safety evidence](file-operation-coverage.md#fs11--p1-destructive-operation-continues-after-its-wal-write-fails-a-one-item-rename-emits-no-degraded-warning) |
+| FS12 | P2 | Resume retires the old journal before the replacement plan is durable | [UI/build/test review](ui-build-tests.md#fs12--p2-resume-deletes-its-old-journal-before-the-replacement-plan-is-durable) |
+| P01 | P1 | OMF alias conflates two distinct identities in AVB filtering/enrichment | [Parsers, finding 1](parsers.md#1-p1--an-omf-bin-also-selects-a-different-omf-identity-after-an-unnecessary-byte-swap) |
+| P02 | P2 | MXF audio sample rate changes with metadata-property order | [Parsers, finding 2](parsers.md#2-p2--audio-sample-rate-depends-on-the-order-of-two-independent-mxf-properties) |
+| P03 | P2 | MDB misses project attributes on duplicate source objects | [Parsers, finding 3](parsers.md#3-p2--mdb-source-attributes-are-not-merged-across-duplicate-source-objects) |
+| P04 | P2 | MDB/PMR allocate entire invalid files before validation | [Parsers, finding 4](parsers.md#4-p2--pmr-and-mdb-allocate-the-complete-file-before-validating-it) |
+| P05 | P2 | Malformed audio coding metadata becomes a confident PCM result | [Parsers, finding 5](parsers.md#5-p2--a-present-but-malformed-audio-coding-value-becomes-a-confident-pcm-label) |
+| P06 | P3, gated UI | Effect-token splitting cannot recognize a catalogue name containing a comma | [Parsers, finding 6](parsers.md#6-p3--the-german-comma-bearing-effect-token-is-split-incorrectly-opt-in-effects-ui) |
+| P07 | P3, gated UI | Ambiguous localized effect alias silently chooses one effect | [Parsers, finding 7](parsers.md#7-p3--a-localized-alias-shared-by-two-effects-silently-chooses-the-first-effect-opt-in-effects-ui) |
+| SF1 | P2 | CSV failure reports success and destroys an existing export | [Scanner/table review](scanner-filters.md) |
+| SF3 | P2 | Literal project “No project” and absent project share a selection key | [Scanner/table review](scanner-filters.md) |
+| SF4 | P2 | Parked media is admitted to scanning but not parsed as its actual media type | [Scanner/table review](scanner-filters.md) |
+| SF5 | P2 | Removing separated table rows has measured quadratic UI cost | [Scanner/table review](scanner-filters.md) |
+| SF6 | P2 | Mixed-rate Duration sorting reverses both elapsed-duration and displayed order | [Scanner/table review](scanner-filters.md) |
+| SF7 | P2, goal gap | Sample rate is parsed but absent from the table and CSV | [Scanner/table review](scanner-filters.md) |
+| UI01 | P2 | Volume selection is attempted before items join their list | [UI/build/test review](ui-build-tests.md#ui01--p2-adding-or-refreshing-volumes-loses-their-selection) |
+| UI02 | P2 | Rebalance displays its projected counts after cancellation/failure | [UI/build/test review](ui-build-tests.md#ui02--p2-cancelled-or-failed-rebalance-shows-planned-counts-as-actual-counts) |
+| UI03 | P2 | Capacity checks count files explicitly marked Skip | [UI/build/test review](ui-build-tests.md#ui03--p2-skipped-conflicts-still-block-copy-for-insufficient-space) |
+| UI04 | P2 | Log migration recursively deletes unmigrated diagnostic files | [UI/build/test review](ui-build-tests.md#ui04--p2-log-migration-deletes-unmigrated-history-and-crash-reports) |
+| UI05 | P3 | Project sidebar counts/names remain stale after row removal | [UI/build/test review](ui-build-tests.md#ui05--p3-project-names-and-totals-remain-stale-after-movedelete) |
+| UI06 | P3 | Batch destination previews promise duplicate output names | [UI/build/test review](ui-build-tests.md#ui06--p3-destination-preview-repeats-names-that-execution-must-disambiguate) |
+| BT01 | P2 | Date-dependent recovery fixtures now fail three test cases | [UI/build/test review](ui-build-tests.md#bt01--p2-three-recovery-tests-fail-as-their-fixed-date-ages) |
+| BT02 | P3 | Unchecked fixture writes can produce false passing negative tests | [UI/build/test review](ui-build-tests.md#bt02--p3-failed-fixture-writes-can-make-malformed-input-tests-pass-accidentally) |
+| BT03 | P3 | Three test assertions do not cover what their names/comments claim | [UI/build/test review](ui-build-tests.md#bt03--p3-three-test-names-promise-checks-their-assertions-do-not-perform) |
+| BT04 | P3 | Impossible configured expiry dates silently disable expiry | [UI/build/test review](ui-build-tests.md#bt04--p3-an-impossible-expiry-date-passes-configuration-and-disables-expiry) |
+| BT05 | P3 | Python optimization removes extractor input-integrity checks | [UI/build/test review](ui-build-tests.md#bt05--p3-python-optimization-removes-extractor-input-integrity-checks) |
 
 FS08 is not an available main-window action: `kUndoEnabled` is false in [mainwindow.cpp:87](/Users/martymclean/Developer/MediaMuster/src/mainwindow.cpp:87). It is a verified engine problem to fix before enabling that feature. P06/P07 concern the opt-in effect functionality; their localized inputs are constructed catalogue-consistency cases, not observed German production bins.
 
@@ -86,13 +88,12 @@ In plain English: the best refactoring is to make each important decision once�
 
 These are verified maintenance observations, outside the 36-finding count. They do not establish crashes or media loss.
 
-- `OpRequest::undoesJournalPath` is declared but never used; `OpJournal::m_finished` is assigned but never read; `TrashRouter::Landing::usedMediaMusterTrash` is assigned but never consumed. The similarly named field in `OpRescue::Resumable` **is** used and should not be confused with the unused Landing field. See the symbol-search evidence and [file-safety maintenance notes](evidence/file_safety/findings.md).
-- The flat effect setter APIs and `setBinFilterMobs()` have test callers but no production setter callers. They preserve a second compatibility/filter state model alongside the current tree UI. Remove them if compatibility is unnecessary, or explicitly designate and test that contract; do not call externally useful public API dead without that decision. See [scanner maintenance notes](evidence/scanner_filters/review.md).
+- `OpRequest::undoesJournalPath` is declared but never used; `OpJournal::m_finished` is assigned but never read; `TrashRouter::Landing::usedMediaMusterTrash` is assigned but never consumed. The similarly named field in `OpRescue::Resumable` **is** used and should not be confused with the unused Landing field. See the [file-safety maintenance notes](file-operations.md).
+- The flat effect setter APIs and `setBinFilterMobs()` have test callers but no production setter callers. They preserve a second compatibility/filter state model alongside the current tree UI. Remove them if compatibility is unnecessary, or explicitly designate and test that contract; do not call externally useful public API dead without that decision. See [scanner maintenance notes](scanner-filters.md).
 - `BackgroundJob(QObject*)` ignores its context argument even though all three production owners pass `this`. Its actual ownership is independent RAII, with thread shutdown/join; this is misleading API shape, not a leak. A no-argument constructor would express it accurately.
 - `mediacsv.h` says effect exports contain 25 columns; implementation and tests produce 26. A scanner cancellation comment also counts three exits where the current function has two. Update comments when changing the corresponding code.
 - A flat model's `rowCount()`/`columnCount()` ignore a valid parent. Returning zero for valid parents would make the flat hierarchy explicit. The probe establishes the current values; no user-visible failure was found, so this is not presented as a crash bug.
 - The fresh build reports an unused `skipRec` helper in `tst_oprescue.cpp:90`. Remove it if no forthcoming test needs it.
-- Two examples in upstream xxHash comments contain errors. They are not compiled into MediaMuster. The [dependency review](evidence/parsers/XXHASH_REVIEW.md) records them separately; they are not application findings or a reason to fork the hash implementation.
 
 Qt parent/child ownership is valid resource management here. I have not treated ordinary parent-owned widgets, signals/slots, Qt containers, or use of C++17 rather than C++20 as defects. Suggestions emphasize explicit identity, ownership and error state rather than mechanical style churn.
 
@@ -108,15 +109,15 @@ Qt parent/child ownership is valid resource management here. I have not treated 
 
 ## Verification and coverage
 
-The review used current source and tests on disk, not historical notes, memory files, previous reviews, or existing evidence documents. It applied [cpp-coding-standards](</Users/martymclean/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/261a42ee-04f4-418b-bcbd-15972106e9f2/3570da96-5bf5-4d45-b72e-ce0d75a7d870/skills/cpp-coding-standards/SKILL.md>) with a **C++17 ceiling**.
+The review inspected the source and tests then on disk, applying C++17-compatible guidance and Qt ownership conventions.
 
-All first-party implementation/header code, all test code/helpers, build configuration, CI workflow, resource declarations and extraction scripts were read across the review team. The generated effect catalogue was checked programmatically across all 887 rows for uniqueness, punctuation and alias collisions; its translations and proprietary classifications were not independently re-derived. All vendor header lines, including inactive architecture branches and API comments, were ultimately read. This is source review coverage, not proof that every possible runtime state or binary-format interpretation is correct. The [source manifest](evidence/source-manifest.tsv) records exact hashes and line counts, and individual reviewer coverage records identify their areas.
+All first-party implementation/header code, all test code/helpers, build configuration, CI workflow, resource declarations and extraction scripts were read across the review team. The generated effect catalogue was checked programmatically across all 887 rows for uniqueness, punctuation and alias collisions; its translations and proprietary classifications were not independently re-derived. All vendor header lines, including inactive architecture branches and API comments, were ultimately read. This is source review coverage, not proof that every possible runtime state or binary-format interpretation is correct. The detailed reports identify the areas covered by each review.
 
 | Check | Result and limit |
 | --- | --- |
 | Fresh configure and build | Succeeded, AppleClang 17, Qt 6.5.3, C++17, Debug, macOS arm64; isolated build directory and ad-hoc signing. |
 | Existing CTest suite | 30 of 31 executables passed. `tst_oprescue` has three dated-fixture failures, detailed in BT01. Total CTest elapsed time 24.17 seconds. |
-| Skipped individual tests | Bento/MDB external-toolkit cases lacked their optional external fixture directories; scanner case-distinct-directory test skipped on this case-insensitive temporary filesystem. These are recorded in the per-test logs. |
+| Skipped individual tests | Bento/MDB external-toolkit cases lacked their optional external fixture directories; scanner case-distinct-directory test skipped on this case-insensitive temporary filesystem. |
 | Header self-containment | All 62 source headers compiled individually as sole includes with actual C++17 application flags. Active macOS branches only. |
 | Safety fault probes | Ten original scenarios plus mid-run journal failure use unchanged production code and disposable files. Copy cases force the existing buffered Move/copy paths; APFS native identity/immutable-file behavior was exercised. |
 | Parser and model probes | Constructed AVB/MXF/Bento inputs reproduce the seven parser findings; scanner/model probes independently confirm wrong OMF enrichment and selection behavior. |
@@ -126,7 +127,7 @@ All first-party implementation/header code, all test code/helpers, build configu
 
 Windows branches were read but not compiled or executed here. No live network disconnection, NEXIS topology, actual remount or full power-loss test was performed. Volume remount cases use injected volume tables; recovery cases use genuine journal schemas representing interrupted states. Source-ordering proofs are explicitly labelled, including FS12. The padded copy fixture preserves a real parsed Avid header/UMID but is synthetic payload, not a claim of a complete playable MXF. No production media was modified.
 
-The review itself adds only these reports and evidence. Application source, tests, existing notes and pre-existing working-tree edits were not changed. Evidence sources, outputs and reproduction instructions are in [the evidence bundle](evidence/README.md).
+The review did not change application source or tests. These reports preserve its findings and validation conclusions.
 
 ## Suggested repair order
 

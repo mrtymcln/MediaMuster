@@ -8,7 +8,7 @@ certification of every parser or every Media Composer release.
 This is a historical research record. Source line numbers and reproduced
 behaviour refer to the reviewed implementation, including intermediate changes
 that have since been superseded. Today's accepted locations, media families and
-manual release switch are documented in the
+release flags are documented in the
 [current scope contract](../../release-feature-gates.md). The later cleanup also
 removed the speculative SDII parser and exclusion logic; retained Avid binary
 observations below are research evidence, not a supported MediaMuster workflow.
@@ -37,12 +37,11 @@ limitations. Neither
 database-ID shape nor an all-legacy-ID folder establishes the actual format of
 every file.
 
-## Manual release switch
+## Release configuration at the time of review
 
-The source-controlled Debug switch and session gates remain the chosen release
-mechanism. Their instructions are maintained only in
-[Release feature gates](../../release-feature-gates.md#public-builds). Both switch
-settings were tested during this audit; the historical outcomes are below.
+This audit tested the then-current Debug switch and session gates in both
+settings. Those historical outcomes are below. Current configuration is
+documented in [Release feature gates](../../release-feature-gates.md).
 
 ## What the databases tell us
 
@@ -248,11 +247,10 @@ limitations. Real PMR specimens cover little-endian versions 2 and 8; other
 layouts use constructed tests. Existing additional parser limits remain in
 [the compatibility note](../../parser-compatibility.md).
 
-The retained probe source/output, source audit, research notes and focused
-decompiler output are archived under
-[`evidence/format-audit/`](evidence/format-audit/). Captured files may still name
-the original temporary directory; that is historical provenance rather than a
-current storage location. The installed binary was not modified.
+Supporting reports: [source audit](code-audit.md),
+[binary dispatch](binary-dispatch.md), [audio filename conventions](audio-extensions.md),
+[primary-source research](public-specs.md) and [validation history](validation-history.md).
+The installed binary was not modified.
 
 The research inspected relevant portions of the sources above, plus
 [SMPTE OP-Atom ST 390](https://pub.smpte.org/pub/st390/st0390-2011_stable2016.pdf),

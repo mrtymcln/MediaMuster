@@ -7,7 +7,8 @@ schema 1. Earlier verification scenarios and test counts are
 preserved as evidence, not claims about the current build. See
 [current behaviour](current-behaviour.md#copy-move-and-delete).
 
-Implementation date: 12 September 2026. The agreed design is in [the plan](file-operations-native-api-plan.md).
+Implementation date: 12 September 2026. Current operation responsibilities are
+described in the [architecture guide](architecture.md#from-selection-to-a-file-job).
 
 Updated 13 September: Windows CI now compiles the application and every test target.
 One test assertion failed after compilation; its diagnosis and local correction are
@@ -143,7 +144,7 @@ claimed from the local Mac result.
 
 ## CI and test consolidation
 
-13 September 2026. The approved [CI cleanup](ci-cleanup-proposal.md) reorganises the
+13 September 2026. The CI cleanup reorganised the
 suite into 28 labelled targets. Rebalance planning and shared metadata have focused
 suites; adapter/coordinator cases now live with file operations, and bin metadata
 cases live with the table model. Retry, row-removal and filter-reset scenarios are
