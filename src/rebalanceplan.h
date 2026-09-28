@@ -7,11 +7,11 @@
 
 // Planned moves and folder counts shared by Rebalance's planner and dialog.
 
-// MARK: - RenameOp
+// MARK: - RebalanceMove
 
 /// One planned media relocation. Relatives normally share a destination;
 /// groups larger than the folder target must span folders.
-struct RenameOp
+struct RebalanceMove
 {
 	QString srcPath;
 	FolderName dest;
@@ -51,8 +51,8 @@ struct RebalancePlan
 	QString volumeLabel; ///< Volume display name, for dialog headings.
 
 	QVector<FolderState> folders;
-	QVector<RenameOp> ops;
+	QVector<RebalanceMove> ops;
 	QVector<FolderName> newFolders;
 
-	int totalFiles() const { return static_cast<int>(ops.size()); }
+	int moveCount() const { return static_cast<int>(ops.size()); }
 };

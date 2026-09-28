@@ -72,7 +72,7 @@ namespace
 		plan.newFolders.append(FolderName{{}, 3});
 		for (int n = 0; n < 3; ++n)
 		{
-			RenameOp op;
+			RebalanceMove op;
 			op.srcPath = root + QStringLiteral("/1/clip-%1.mxf").arg(n);
 			op.dest = {{}, n == 1 ? 3 : 2};
 			plan.ops.append(op);

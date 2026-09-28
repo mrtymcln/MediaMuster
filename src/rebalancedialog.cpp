@@ -134,7 +134,7 @@ namespace
 			QStringLiteral("/demo/Avid MediaFiles/MXF/%1/clip.mxf").arg(src.display());
 		for (int i = 0; i < count; ++i)
 		{
-			RenameOp op;
+			RebalanceMove op;
 			op.srcPath = sharedSrcPath;
 			op.dest = dest;
 			op.sizeBytes = kDemoFileBytes;
@@ -727,7 +727,7 @@ void RebalanceDialog::renderPlan()
 
 	// MARK: Summary line
 
-	if (m_currentPlan.totalFiles() == 0)
+	if (m_currentPlan.moveCount() == 0)
 	{
 		m_statsLine->setText(tr("The Force is balanced..."));
 		// Standard palette text, matching the "N files moving..." summary and
@@ -736,7 +736,7 @@ void RebalanceDialog::renderPlan()
 	}
 	else
 	{
-		buildSummaryLine(m_currentPlan.totalFiles(), affected.size(), newFolderNames.size(),
+		buildSummaryLine(m_currentPlan.moveCount(), affected.size(), newFolderNames.size(),
 						 /*past=*/false);
 	}
 
@@ -777,7 +777,7 @@ void RebalanceDialog::renderPlan()
 
 	// Disable Rebalance when the plan is a no-op. The stats line already
 	// reads "The Force is balanced..." in that state, so no tooltip is needed.
-	const bool hasWork = m_currentPlan.totalFiles() > 0;
+	const bool hasWork = m_currentPlan.moveCount() > 0;
 	m_btnRebalance->setEnabled(hasWork && !m_running);
 }
 
@@ -787,7 +787,7 @@ void RebalanceDialog::onRebalanceClicked()
 {
 	if (m_running)
 		return;
-	if (m_currentPlan.totalFiles() == 0)
+	if (m_currentPlan.moveCount() == 0)
 		return;
 
 	if (!m_demoMode)
@@ -800,7 +800,7 @@ void RebalanceDialog::onRebalanceClicked()
 		confirm.setText(tr("This will move %1 file(s) and create %2 new folder(s) on '%3'.\n\n"
 						   "Quit Avid Media Composer first — it must not have these files "
 						   "open. Avid will rebuild its media database on next project open.")
-							.arg(Format::count(m_currentPlan.totalFiles()),
+							.arg(Format::count(m_currentPlan.moveCount()),
 								 Format::count(m_currentPlan.newFolders.size()),
 								 m_currentPlan.volumeLabel));
 		auto *goBtn = confirm.addButton(tr("Rebalance"), QMessageBox::AcceptRole);
@@ -820,7 +820,7 @@ void RebalanceDialog::onRebalanceClicked()
 	m_rebalancedLabel = m_currentPlan.volumeLabel;
 	setBusy(true);
 
-	m_progressBar->setRange(0, m_currentPlan.totalFiles());
+	m_progressBar->setRange(0, m_currentPlan.moveCount());
 	m_progressBar->setValue(0);
 	m_progressBar->setVisible(true);
 	m_progressLabel->setVisible(true);
@@ -887,7 +887,7 @@ void RebalanceDialog::reject()
 void RebalanceDialog::onDemoTick()
 {
 	const qint64 elapsed = m_demoElapsed.elapsed();
-	const int total = m_currentPlan.totalFiles();
+	const int total = m_currentPlan.moveCount();
 	const double frac = qMin(1.0, double(elapsed) / kDemoDurationMs);
 	const int current = int(frac * total);
 
@@ -1033,7 +1033,7 @@ void RebalanceDialog::onAborted(const QString &reason)
 	m_progressLabel->setVisible(false);
 
 	m_btnRebalance->setText(tr("Rebalance"));
-	m_btnRebalance->setEnabled(m_currentPlan.totalFiles() > 0);
+	m_btnRebalance->setEnabled(m_currentPlan.moveCount() > 0);
 	m_btnCancel->setEnabled(true);
 	m_btnCancel->setText(tr("Cancel"));
 
@@ -1082,7 +1082,7 @@ void RebalanceDialog::primeLiveState()
 QSet<FolderName> RebalanceDialog::affectedFolders() const
 {
 	QSet<FolderName> affected;
-	for (const RenameOp &op : m_currentPlan.ops)
+	for (const RebalanceMove &op : m_currentPlan.ops)
 	{
 		affected.insert(op.dest);
 		if (const auto src = RebalancePlanner::srcFolderOf(op.srcPath))

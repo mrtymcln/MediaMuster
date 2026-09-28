@@ -16,7 +16,7 @@ struct VolumeInfo
 	QString path;
 	qint64 totalBytes = 0;
 	qint64 usedBytes = 0;
-	QString volumeType; ///< "Internal", "Network", or "Nexis".
+	QString volumeType; ///< "Local", "Network", or "Nexis".
 	bool hasAvidMedia = false;
 };
 

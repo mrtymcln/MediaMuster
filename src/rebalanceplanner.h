@@ -23,7 +23,6 @@ namespace RebalancePlanner
 	/// before and after reading, but this is not an atomic filesystem snapshot.
 	QHash<FolderName, FolderCount> countFolders(const QString &mxfRootPath, const QSet<FolderName> &folders);
 
-	std::optional<FolderName> parseFolderName(const QString &name);
 	std::optional<FolderName> srcFolderOf(const QString &sourcePath);
 	bool isEligible(const MediaFile &file);
 	RebalancePlan computePlan(const QString &mxfRootPath, const QString &volumeLabel,

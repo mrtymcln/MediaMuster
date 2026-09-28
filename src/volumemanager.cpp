@@ -315,8 +315,8 @@ QString VolumeManager::detectVolumeType(const QString &name, const QString &path
 	Q_UNUSED(path);
 #endif
 
-	// Everything else — fixed and local disks — is Internal.
-	return QStringLiteral("Internal");
+	// Local includes internal and external disks.
+	return QStringLiteral("Local");
 }
 
 bool VolumeManager::hasAvidMediaFolder(const QString &path)

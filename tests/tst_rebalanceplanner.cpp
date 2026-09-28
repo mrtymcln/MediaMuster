@@ -16,14 +16,14 @@ class TestRebalancePlanner : public QObject
 {
 	Q_OBJECT
 private slots:
-	void parseFolderName_supported_names_data();
-	void parseFolderName_supported_names();
-	void parseFolderName_rejects_quarantined();
-	void parseFolderName_rejects_leading_dot();
-	void parseFolderName_rejects_zero_padded();
-	void parseFolderName_rejects_zero();
-	void parseFolderName_rejects_negative();
-	void parseFolderName_rejects_non_numeric_tail();
+	void parseMxfFolderName_supported_names_data();
+	void parseMxfFolderName_supported_names();
+	void parseMxfFolderName_rejects_quarantined();
+	void parseMxfFolderName_rejects_leading_dot();
+	void parseMxfFolderName_rejects_zero_padded();
+	void parseMxfFolderName_rejects_zero();
+	void parseMxfFolderName_rejects_negative();
+	void parseMxfFolderName_rejects_non_numeric_tail();
 
 	void missing_root_yields_empty_plan();
 	void noop_when_already_balanced();
@@ -139,7 +139,7 @@ int TestRebalancePlanner::opsBetween(const RebalancePlan &p, const QString &srcF
 
 // MARK: - Tests
 
-void TestRebalancePlanner::parseFolderName_supported_names_data()
+void TestRebalancePlanner::parseMxfFolderName_supported_names_data()
 {
 	QTest::addColumn<QString>("name");
 	QTest::addColumn<QString>("prefix");
@@ -151,51 +151,51 @@ void TestRebalancePlanner::parseFolderName_supported_names_data()
 	QTest::newRow("edit-suite") << QStringLiteral("EditSuite2.1") << QStringLiteral("EditSuite2") << 1;
 }
 
-void TestRebalancePlanner::parseFolderName_supported_names()
+void TestRebalancePlanner::parseMxfFolderName_supported_names()
 {
 	QFETCH(QString, name);
 	QFETCH(QString, prefix);
 	QFETCH(int, number);
-	const auto id = RebalancePlanner::parseFolderName(name);
+	const auto id = AvidMediaLayout::parseMxfFolderName(name);
 	QVERIFY(id.has_value());
 	QCOMPARE(id->prefix, prefix);
 	QCOMPARE(id->n, number);
 	QCOMPARE(id->display(), name);
 }
 
-void TestRebalancePlanner::parseFolderName_rejects_quarantined()
+void TestRebalancePlanner::parseMxfFolderName_rejects_quarantined()
 {
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("Quarantined Files")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("Quarantined Files")).has_value());
 }
 
-void TestRebalancePlanner::parseFolderName_rejects_leading_dot()
+void TestRebalancePlanner::parseMxfFolderName_rejects_leading_dot()
 {
 	// A workstation name cannot be empty before the separating dot.
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral(".5")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral(".5")).has_value());
 }
 
-void TestRebalancePlanner::parseFolderName_rejects_zero_padded()
+void TestRebalancePlanner::parseMxfFolderName_rejects_zero_padded()
 {
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("05")).has_value());
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.005")).has_value());
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("Ingest1.032")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("05")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("MartysiMac.005")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("Ingest1.032")).has_value());
 }
 
-void TestRebalancePlanner::parseFolderName_rejects_zero()
+void TestRebalancePlanner::parseMxfFolderName_rejects_zero()
 {
-	// Folder "0" is non-canonical for Avid. Rejected by the n > 0 guard.
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("0")).has_value());
+	// Folder numbers must be positive.
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("0")).has_value());
 }
 
-void TestRebalancePlanner::parseFolderName_rejects_negative()
+void TestRebalancePlanner::parseMxfFolderName_rejects_negative()
 {
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("-1")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("-1")).has_value());
 }
 
-void TestRebalancePlanner::parseFolderName_rejects_non_numeric_tail()
+void TestRebalancePlanner::parseMxfFolderName_rejects_non_numeric_tail()
 {
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("MartysiMac.abc")).has_value());
-	QVERIFY(!RebalancePlanner::parseFolderName(QStringLiteral("EditSuite2")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("MartysiMac.abc")).has_value());
+	QVERIFY(!AvidMediaLayout::parseMxfFolderName(QStringLiteral("EditSuite2")).has_value());
 }
 
 void TestRebalancePlanner::missing_root_yields_empty_plan()
@@ -621,7 +621,7 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 	valid.ops.append({file.mediaFilePath, FolderName{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
 	QCOMPARE(RebalancePlanner::requestForPlan(valid).items.size(), 1);
 
-	QVector<RenameOp> invalid;
+	QVector<RebalanceMove> invalid;
 	for (const auto &path : {root + "/2/stray.wav", root + "/Quarantined Files/stray.mxf",
 							 tmp.path() + "/OMFI MediaFiles/stray.mxf", tmp.path() + "/MXF/2/stray.mxf",
 							 tmp.path() + "/other/Avid MediaFiles/MXF/2/stray.mxf"})

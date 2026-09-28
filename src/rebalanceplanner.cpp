@@ -55,14 +55,9 @@ namespace
 
 // MARK: - Folder name parsing
 
-std::optional<FolderName> RebalancePlanner::parseFolderName(const QString &name)
-{
-	return AvidMediaLayout::parseMxfFolderName(name);
-}
-
 std::optional<FolderName> RebalancePlanner::srcFolderOf(const QString &srcPath)
 {
-	return parseFolderName(QFileInfo(srcPath).dir().dirName());
+	return AvidMediaLayout::parseMxfFolderName(QFileInfo(srcPath).dir().dirName());
 }
 
 bool RebalancePlanner::isEligible(const MediaFile &file)
@@ -75,7 +70,7 @@ bool RebalancePlanner::isEligible(const MediaFile &file)
 	const auto location =
 		AvidMediaLayout::locateMediaFolder(source.absolutePath());
 	return location && location->family == AvidMediaLayout::Family::Mxf &&
-		   parseFolderName(location->mediaFolderName).has_value() &&
+		   AvidMediaLayout::parseMxfFolderName(location->mediaFolderName).has_value() &&
 		   location->mediaFolderName == file.mediaFolderName &&
 		   folderBelongsToRoot(source.absolutePath(), resolvedMxfRoot(location->rootPath));
 }
@@ -128,7 +123,7 @@ namespace
 			MobId::toPmrForm(masterMobId).isEmpty())
 			return kLoneKeyPrefix + fallbackPath;
 		const QFileInfo parent(QFileInfo(fallbackPath).absolutePath());
-		const auto folder = RebalancePlanner::parseFolderName(parent.fileName());
+		const auto folder = AvidMediaLayout::parseMxfFolderName(parent.fileName());
 		const QString prefix = folder ? folder->prefix : QString();
 		return parent.absolutePath() + QChar(0x1f) + prefix + QChar(0x1f) + masterMobId;
 	}
@@ -138,7 +133,7 @@ namespace
 		return relativesKey(mf.masterMobId, mf.mediaFilePath);
 	}
 
-	QString relativesKey(const RenameOp &op)
+	QString relativesKey(const RebalanceMove &op)
 	{
 		return relativesKey(op.masterMobId, op.srcPath);
 	}
@@ -160,7 +155,7 @@ RebalancePlanner::countFolders(const QString &mxfRootPath, const QSet<FolderName
 	for (const FolderName &folder : folders)
 	{
 		const QString name = folder.display();
-		const auto parsed = parseFolderName(name);
+		const auto parsed = AvidMediaLayout::parseMxfFolderName(name);
 		if (!parsed || *parsed != folder)
 			continue;
 		const QString path = root.filePath(name);
@@ -202,7 +197,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 	for (const QString &name : subdirs)
 	{
 		const FolderCount onDisk = readFolderCount(mxfDir.filePath(name));
-		const auto parsed = parseFolderName(name);
+		const auto parsed = AvidMediaLayout::parseMxfFolderName(name);
 		if (parsed)
 			occupiedByPrefix[parsed->prefix].insert(parsed->n);
 		FolderState fs;
@@ -229,12 +224,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// MARK: Pre-parse each file's mediaFolderName once
 
-	// parseFolderName tokenises "MartysiMac.42" into prefix+n on every
-	// call; doing it inline in each per-file loop below adds up to
-	// ~250k allocations on a 50k-file project. Pair each file with
-	// its parsed folder here so the inner loops can read directly.
-	// Files in out-of-scope folders (Quarantined, malformed names)
-	// are dropped; they're excluded from rebalancing anyway.
+	// Keep each file's parsed folder for the packing loops.
 	struct IndexedMedia
 	{
 		const MediaFile *file;
@@ -251,7 +241,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 	{
 		if (!isEligible(mf))
 			continue;
-		const auto parsed = parseFolderName(mf.mediaFolderName);
+		const auto parsed = AvidMediaLayout::parseMxfFolderName(mf.mediaFolderName);
 		if (!parsed || !realCount.contains(*parsed))
 			continue;
 		if (PathKey::normalise(QFileInfo(mf.mediaFilePath).absolutePath()) !=
@@ -504,12 +494,12 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 	// Validate the whole plan before assembling any relatives group. A stale or
 	// malformed member must not silently turn a group move into a partial move.
 	const QString rootKey = PathKey::normalise(resolvedRoot);
-	for (const RenameOp &op : plan.ops)
+	for (const RebalanceMove &op : plan.ops)
 	{
 		const QFileInfo source(op.srcPath);
 		const auto location = AvidMediaLayout::locateMediaFolder(source.absolutePath());
 		const auto sourceFolder = srcFolderOf(op.srcPath);
-		const auto destination = parseFolderName(op.dest.display());
+		const auto destination = AvidMediaLayout::parseMxfFolderName(op.dest.display());
 		if (!QDir::isAbsolutePath(op.srcPath) || source.isSymLink() ||
 			!AvidMediaLayout::acceptsFileName(AvidMediaLayout::Family::Mxf, source.fileName()) ||
 			!location || location->family != AvidMediaLayout::Family::Mxf ||
@@ -536,7 +526,7 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 	{
 		for (int idx : opsByComp[compKey])
 		{
-			const RenameOp &op = plan.ops[idx];
+			const RebalanceMove &op = plan.ops[idx];
 			const QString fileName = QFileInfo(op.srcPath).fileName();
 			OpItem it;
 			it.src = op.srcPath;
