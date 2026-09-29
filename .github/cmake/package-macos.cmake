@@ -44,7 +44,7 @@ function(runChecked description)
     checkResult("${result}" "${description}")
 endfunction()
 
-# Use the app's configured identity, never the first unrelated certificate.
+# Use the app's configured identity.
 load_cache("${buildDir}" READ_WITH_PREFIX signing_ MEDIAMUSTER_CODESIGN_IDENTITY)
 set(identity "${signing_MEDIAMUSTER_CODESIGN_IDENTITY}")
 if(NOT identity MATCHES "^Developer ID Application: .+ \\(([A-Z0-9]+)\\)$")
@@ -67,7 +67,7 @@ set(signArgs --force --options runtime --timestamp --sign "${identity}")
 
 runChecked("Qt deployment failed" macdeployqt "${app}")
 
-# Sign nested components before the app. Inventory packaged files, not sources.
+# Sign nested components before the app.
 file(GLOB frameworkBundles "${frameworks}/*.framework")
 foreach(component IN LISTS frameworkBundles)
     runChecked("Framework signing failed" codesign ${signArgs} "${component}")
@@ -105,7 +105,7 @@ runChecked("Flushing DMG staging failed" sync)
 runChecked("Waiting for DMG staging failed" "${CMAKE_COMMAND}" -E sleep 4)
 runChecked("Removing previous DMG failed" "${CMAKE_COMMAND}" -E rm -f "${dmg}")
 runChecked("Creating DMG failed"
-    hdiutil create -volname MediaMuster -srcfolder "${staging}" -ov -format UDZO "${dmg}")
+    hdiutil create -volname MediaMuster -srcfolder "${staging}" -ov -format ULMO "${dmg}")
 
 runChecked("Disk image signing failed"
     codesign --force --timestamp --sign "${identity}"
@@ -113,8 +113,7 @@ runChecked("Disk image signing failed"
 runChecked("Disk image signature verification failed"
     codesign --verify --strict --verbose=2 "${dmg}")
 
-# Notarize the final container and its enclosed app together. Never publish a
-# package merely because submission succeeded: require Apple's Accepted status.
+# Notarise the container and its enclosed app together.
 execute_process(
     COMMAND xcrun notarytool submit "${dmg}"
         --apple-id "$ENV{APPLE_ID_USERNAME}"
