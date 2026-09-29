@@ -147,7 +147,6 @@ QStringList Diagnostics::collectCrashReports(const QString &reportsDir, const QS
 		if (fi.lastModified() < cutoff)
 			continue;
 		const QString dest = logsDir + QLatin1Char('/') + name;
-		// QFile::copy leaves existing reports untouched.
 		if (QFile::copy(fi.filePath(), dest))
 			collected << dest;
 	}

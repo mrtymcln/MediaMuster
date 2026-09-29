@@ -31,7 +31,7 @@ application-data folder. On macOS this is
 `~/Library/Application Support/Martin McLean/MediaMuster/`.
 Startup clears the log if it was created at least 30 days ago.
 The Console receives live activity messages from the app and also writes them
-to the log. The file additionally receives detailed Qt diagnostic messages;
+to the log. The file additionally receives detailed diagnostic messages;
 the Console does not read back the file. Collected crash reports are kept
 separately and existing copies are left untouched.
 
@@ -73,7 +73,7 @@ button and detail controls also remain hidden while the feature is off.
 
 Edit contains **Find**, **Select Relatives**, and **Select Inverse**, plus
 file-operation Undo immediately before Find when its build flag is enabled, with no separator
-between them. Cut, Copy, Paste and Select All are available through the Qt controls'
+between them. Cut, Copy, Paste and Select All are available through the controls'
 built-in keyboard shortcuts and, for text controls, their context menus; they have
 no menu-bar commands. The media table
 retains its cell-copy and Copy Path context commands. View retains the checked
@@ -191,7 +191,7 @@ Sequence after Type and exposes the Filter Precomputes dialog.
 
 Columns start at their default widths each session. Dragging or resizing them
 affects the current window only; scans leave that layout alone. Nothing is saved.
-**View > Resize Columns to Fit** uses Qt's native content-based resizing.
+**View > Resize Columns to Fit** uses content-based resizing.
 Column headings have no tooltips. File modification timestamps are retained
 internally for database freshness and operation checks, but are not displayed
 or exported.
