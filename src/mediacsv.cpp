@@ -1,6 +1,6 @@
 #include "mediacsv.h"
 
-#include <QFile>
+#include <QSaveFile>
 #include <QLatin1Char>
 #include <QTextStream>
 
@@ -75,7 +75,7 @@ namespace MediaCsv
 
 	bool write(const QString &path, const QVector<MediaFile> &rows, Options options)
 	{
-		QFile file(path);
+		QSaveFile file(path);
 		// Binary, deliberately: headerLine()/rowLine() already end every
 		// line with '\n', and QIODevice::Text would rewrite those to CRLF
 		// on Windows — including the newlines inside quoted effect fields.
@@ -88,6 +88,7 @@ namespace MediaCsv
 		out << headerLine(options);
 		for (const MediaFile &f : rows)
 			out << rowLine(f, options);
-		return out.status() == QTextStream::Ok;
+		out.flush();
+		return out.status() == QTextStream::Ok && file.commit();
 	}
 } // namespace MediaCsv

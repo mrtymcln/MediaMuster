@@ -33,20 +33,7 @@ namespace
 										 "DomainOBJD\x00\x07"
 										 "AObjDoc"sv;
 	static_assert(kLittleEndianAvbHeader.size() == kBigEndianAvbHeader.size());
-	constexpr qint64 kMaxBinBytes = 256LL * 1024 * 1024;
-	constexpr quint32 kMaxObjects = 1'000'000;
-	constexpr quint32 kMaxEntries = 1'000'000;
 	constexpr int kMaxWarnings = 32;
-	// Conservative accounting for retained container nodes/strings, in addition to the
-	// file-size bound. Skipped blobs and temporary strings do not accumulate.
-	constexpr qint64 kMaxRetainedBytes = 192LL * 1024 * 1024;
-	// These estimates include container/node allocation overhead, MOB strings,
-	// and the final metadata vector. Variable name storage is charged separately.
-	constexpr qint64 kObjectIndexEstimate = 96;
-	constexpr qint64 kMobAliasEstimate = 256;
-	constexpr qint64 kCompositionEstimate = 384;
-	constexpr qint64 kAttributeRefEstimate = 64;
-	constexpr qint64 kBinRefEstimate = 192;
 	constexpr quint16 kNullStringLength = 0xffff;
 	constexpr int kMobLabelBytes = 12;
 	constexpr int kMobMaterialOffset = 16;
@@ -138,7 +125,7 @@ namespace
 		}
 		QByteArray bytes(qint64 size)
 		{
-			if (size < 0 || size > remaining() || size > kNullStringLength)
+			if (size < 0 || size > remaining())
 				fail(QStringLiteral("Invalid AVB string or byte-array length"));
 			QByteArray out(size, Qt::Uninitialized);
 			read(out.data(), size);
@@ -272,7 +259,7 @@ namespace
 		}
 		quint32 count(qint64 value, quint32 minimumBytes)
 		{
-			if (value < 0 || value > kMaxEntries || value > remaining() / minimumBytes)
+			if (value < 0 || value > remaining() / minimumBytes)
 				fail(QStringLiteral("Invalid AVB entry count"));
 			return static_cast<quint32>(value);
 		}
@@ -358,14 +345,14 @@ namespace
 		{
 			index();
 			m_result.complete = true;
-			for (quint32 id = 1; id < static_cast<quint32>(m_objects.size()); ++id)
+			for (qsizetype id = 1; id < m_objects.size(); ++id)
 			{
 				const auto &object = m_objects[id];
 				Reader r(m_file, object.offset, object.offset + object.size, m_little, m_cancelled);
 				r.checkCancelled();
 				try
 				{
-					parseObject(r, object.type, id);
+					parseObject(r, object.type, static_cast<quint32>(id));
 				}
 				catch (const Unsupported &problem)
 				{
@@ -412,13 +399,6 @@ namespace
 		}
 
 	private:
-		void retain(qint64 bytes)
-		{
-			if (bytes < 0 || bytes > kMaxRetainedBytes - m_retainedBytes)
-				throw ParseFailure{
-					QStringLiteral("AVB identity and metadata inventory exceeds the 192 MiB memory budget.")};
-			m_retainedBytes += bytes;
-		}
 		void warn(const QString &message)
 		{
 			m_result.complete = false;
@@ -429,9 +409,9 @@ namespace
 		{
 			m_size = m_file.size();
 			m_modified = m_file.fileTime(QFileDevice::FileModificationTime);
-			if (m_size < 2 || m_size > kMaxBinBytes)
+			if (m_size < 2)
 				throw ParseFailure{
-					QStringLiteral("AVB file is empty, truncated, or exceeds the 256 MiB limit.")};
+					QStringLiteral("AVB file is empty or truncated.")};
 			const auto order = m_file.read(2);
 			if (order == QByteArray::fromHex("0600"))
 				m_little = true;
@@ -446,7 +426,7 @@ namespace
 			r.string();
 			const auto count = r.u32();
 			m_root = r.u32();
-			if (!count || count > kMaxObjects || count > static_cast<quint64>(r.remaining()) / 9 || !m_root || m_root > count)
+			if (!count || count > static_cast<quint64>(r.remaining()) / 9 || !m_root || m_root > count)
 				r.fail(QStringLiteral("Invalid AVB object count or root reference"));
 			if (r.u32() != (m_little ? 0x49494949U : 0x4d4d4d4dU))
 				r.fail(QStringLiteral("AVB header byte order is inconsistent"));
@@ -455,10 +435,9 @@ namespace
 				r.fail(QStringLiteral("Invalid AVB document format identifiers"));
 			r.string();
 			r.skip(16);
-			retain((static_cast<qint64>(count) + 1) * kObjectIndexEstimate);
-			m_objects.reserve(count + 1);
+			m_objects.reserve(qsizetype(count) + 1);
 			m_objects.append(Object{}); // Index zero is the null reference.
-			for (quint32 id = 1; id <= count; ++id)
+			for (qsizetype id = 1; id <= count; ++id)
 			{
 				const auto type = r.fourcc();
 				const auto size = r.u32();
@@ -480,7 +459,7 @@ namespace
 		quint32 ref(Reader &r, const char *expected = nullptr, bool required = false)
 		{
 			const auto value = r.u32();
-			if (value >= static_cast<quint32>(m_objects.size()) || (required && !value))
+			if (value >= m_objects.size() || (required && !value))
 				r.fail(QStringLiteral("Invalid AVB object reference %1").arg(value));
 			if (value && expected && m_objects[value].type != expected)
 				r.fail(QStringLiteral("AVB reference %1 must identify %2")
@@ -493,11 +472,7 @@ namespace
 			if (isNullMob(mob))
 				return {};
 			const auto canonical = MobId::format(mob.data());
-			if (!m_result.mobIds.contains(canonical))
-			{
-				retain(kMobAliasEstimate);
-				m_result.mobIds.insert(canonical);
-			}
+			m_result.mobIds.insert(canonical);
 			// The legacy OMF wrapper already preserves the PMR's identity
 			// bytes. Swapping its middle fields would invent a different clip.
 			if (OmfUid::isOmfForm(canonical))
@@ -505,11 +480,7 @@ namespace
 			RawMob swapped{};
 			MobId::swapMiddleFields(mob.data(), swapped.data());
 			const auto alias = MobId::format(swapped.data());
-			if (!m_result.mobIds.contains(alias))
-			{
-				retain(kMobAliasEstimate);
-				m_result.mobIds.insert(alias);
-			}
+			m_result.mobIds.insert(alias);
 			return canonical;
 		}
 		Component component(Reader &r)
@@ -609,10 +580,7 @@ namespace
 			r.finish();
 			value.mob.mobId = addMob(mob);
 			if (!value.mob.mobId.isEmpty())
-			{
-				retain(kCompositionEstimate + value.mob.name.size() * sizeof(QChar));
 				m_compositions.insert(id, std::move(value));
-			}
 		}
 		void sourceClip(Reader &r)
 		{
@@ -718,10 +686,7 @@ namespace
 			}
 			r.finish();
 			if (originalBin)
-			{
-				retain(kAttributeRefEstimate);
 				m_originalBinRefs.insert(id, originalBin);
-			}
 		}
 		void binReference(Reader &r, quint32 id)
 		{
@@ -742,7 +707,6 @@ namespace
 					value.name = utf8;
 			}
 			r.finish();
-			retain(kBinRefEstimate + value.name.size() * sizeof(QChar));
 			m_binReferences.insert(id, std::move(value));
 		}
 		void mobReference(Reader &r, const QByteArray &type)
@@ -1055,7 +1019,6 @@ namespace
 		const std::atomic_bool *m_cancelled;
 		bool m_little = true;
 		qint64 m_size = 0;
-		qint64 m_retainedBytes = 0;
 		QDateTime m_modified;
 		quint32 m_root = 0;
 		QVector<Object> m_objects;

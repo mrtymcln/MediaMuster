@@ -238,10 +238,10 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	QSet<quint32> seen;
 	if (master)
 		for (quint32 obj : master->objects)
-			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
+			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 	e.hasImportSetting = a.isImported; // the master's flag only, as the MDB reads it
 	for (quint32 obj : fileMob->objects)
-		OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
+		OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 
 	// The source mob and every object sharing its id, resolved once for the
 	// two facts below that may live there.
@@ -255,7 +255,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	}
 	if (a.project.isEmpty())
 		for (quint32 obj : srcObjs)
-			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
+			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 
 	// The oldest slates (15 of the 80 shipped: the JFIF12S/14S/35/42 and
 	// DV411 families, 2001-era) carry no _SRCFILE at all; their import path
@@ -292,10 +292,10 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	// component). The master's tracks are the fallback route.
 	{
 		QSet<quint32> tcSeen;
-		quint32 tccp = OmfObjects::findTimecodeComponent(b, p, fileMob->mediaObj, objectByMob, tcSeen, 0);
+		quint32 tccp = OmfObjects::findTimecodeComponent(b, p, fileMob->mediaObj, objectByMob, tcSeen);
 		if (tccp == 0 && master)
 			for (quint32 obj : master->objects)
-				if ((tccp = OmfObjects::findTimecodeComponent(b, p, obj, objectByMob, tcSeen, 0)) != 0)
+				if ((tccp = OmfObjects::findTimecodeComponent(b, p, obj, objectByMob, tcSeen)) != 0)
 					break;
 		const OmfObjects::Timecode tc = OmfObjects::readTimecode(b, p, tccp);
 		if (tc.found)

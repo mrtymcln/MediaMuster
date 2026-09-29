@@ -241,6 +241,8 @@ private slots:
 
 	void tagged_values_yield_source_path_and_import_flag();
 	void metadata_beyond_512k_and_essence_are_not_bulk_read();
+	void metadata_beyond_64m_is_parsed();
+	void metadata_after_one_million_items_is_parsed();
 	void dynamic_primer_tags_are_resolved_by_property();
 	void usage_requires_unambiguous_master_evidence_data();
 	void usage_requires_unambiguous_master_evidence();
@@ -977,6 +979,55 @@ void TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read()
 	QCOMPARE(result.clipName, QStringLiteral("Late material"));
 	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
 	QVERIFY2(bytes < 64 * 1024, qPrintable(QString::number(bytes)));
+}
+
+void TestMxfParser::metadata_beyond_64m_is_parsed()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	QFile file(temp.filePath("large-metadata.mxf"));
+	QVERIFY(file.open(QIODevice::WriteOnly));
+	// Resolve the synthetic private property to an unknown UL. Its payload
+	// is valid local-set framing that the parser does not need to interpret.
+	const QByteArray entry = u16be(0x9001) + ul("060e2b3401010101010101017f7f7f7f");
+	const QByteArray primer = klv(ul("060e2b34020501010d01020101050100"), u32be(1) + u32be(18) + entry);
+	const QByteArray header = partitionPack() + primer + cdciSet(1920, 1080, 25);
+	QCOMPARE(file.write(header), qint64(header.size()));
+	const QByteArray item = klv(ul("060e2b34025301010d01010101013f00"),
+								localProperty(0x9001, QByteArray(65532, '\0')));
+	// Write each set separately to avoid a second 64 MiB test-fixture buffer.
+	for (int n = 0; n < 1025; ++n)
+		QCOMPARE(file.write(item), qint64(item.size()));
+	const QByteArray material = packageSet(0x36, QByteArray(32, 'm'), QStringLiteral("Beyond 64 MiB"));
+	QCOMPARE(file.write(material), qint64(material.size()));
+	QVERIFY(file.size() > 64 * 1024 * 1024);
+	file.close();
+	const auto result = MxfParser::parseHeader(file.fileName());
+	QVERIFY(result.valid);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.clipName, QStringLiteral("Beyond 64 MiB"));
+	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+}
+
+void TestMxfParser::metadata_after_one_million_items_is_parsed()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	QFile file(temp.filePath("many-items.mxf"));
+	QVERIFY(file.open(QIODevice::WriteOnly));
+	const QByteArray header = partitionPack() + cdciSet(1920, 1080, 25);
+	QCOMPARE(file.write(header), qint64(header.size()));
+	const QByteArray block = klv(QByteArray(16, '\x11'), {}).repeated(10000);
+	for (int n = 0; n < 100; ++n)
+		QCOMPARE(file.write(block), qint64(block.size()));
+	const QByteArray material = packageSet(0x36, QByteArray(32, 'm'), QStringLiteral("After one million items"));
+	QCOMPARE(file.write(material), qint64(material.size()));
+	file.close();
+	const auto result = MxfParser::parseHeader(file.fileName());
+	QVERIFY(result.valid);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.clipName, QStringLiteral("After one million items"));
+	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
 }
 
 void TestMxfParser::dynamic_primer_tags_are_resolved_by_property()

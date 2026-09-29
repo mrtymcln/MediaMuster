@@ -38,7 +38,7 @@ namespace
 		return BentoBuilder::le32(0x2a) + core8 + BentoBuilder::le32(object) + BentoBuilder::le32(junk);
 	}
 
-	constexpr qint64 kTailBudget = 64 * 1024; ///< open() must stay under this on any file.
+	constexpr qint64 kTailBudget = 64 * 1024; ///< open() budget for the small-metadata real fixtures below.
 } // namespace
 
 class TestBentoFile : public QObject
@@ -54,6 +54,8 @@ private slots:
 	void typed_readers();
 	void real_fixtures_load_with_the_expected_shape();
 	void continued_values_assemble_or_fail_explicitly();
+	void large_values_and_dictionary_names_are_read();
+	void large_compact_toc_is_read();
 	void label_versions_select_real_toc_decoders();
 	void omf_open_matches_load_on_real_fixtures();
 	void omf_open_reads_only_the_tail();
@@ -310,6 +312,69 @@ void TestBentoFile::continued_values_assemble_or_fail_explicitly()
 	QVERIFY(!opened.open(writeTemp(tmp, "broken.bento", broken.build()), &why));
 }
 
+void TestBentoFile::large_values_and_dictionary_names_are_read()
+{
+	// Fragmented metadata may exceed the old 1 MiB default read ceiling.
+	BentoBuilder w;
+	const quint32 object = w.addObject("MOBJ");
+	const QByteArray part(700 * 1024, 'x');
+	w.set(object, "OMFI:LargeValue", part, 2);
+	w.set(object, "OMFI:LargeValue", part);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	QString why;
+	const QByteArray file = w.build();
+	for (bool fromFile : {false, true})
+	{
+		BentoFile b;
+		QVERIFY2(fromFile ? b.open(writeTemp(tmp, "large-value.bento", file), &why) : b.load(file, &why), qPrintable(why));
+		const int property = b.propertyId("OMFI:LargeValue");
+		QCOMPARE(b.bytes(object, property), part + part);
+		QCOMPARE(b.read(object, property, part.size()).status, BentoFile::ReadStatus::TooLarge);
+	}
+
+	// A large dictionary span takes the individual-read path in open().
+	// The name is a valid NUL-terminated value with no format length limit.
+	QByteArray dictionary(64 * 1024 * 1024 + 1, 'n');
+	const QByteArray name = dictionary;
+	dictionary += '\0';
+	const quint32 tocOffset = quint32(dictionary.size());
+	dictionary += BentoBuilder::le32(1000) + BentoBuilder::le32(24) + BentoBuilder::le32(0);
+	dictionary += BentoBuilder::le32(0) + BentoBuilder::le32(tocOffset) + QByteArray(4, '\0');
+	dictionary += BentoBuilder::label(tocOffset, 24);
+	const QString path = writeTemp(tmp, "large-dictionary.bento", dictionary);
+	for (bool fromFile : {false, true})
+	{
+		BentoFile b;
+		QVERIFY2(fromFile ? b.open(path, &why) : b.load(dictionary, &why), qPrintable(why));
+		QCOMPARE(b.propertyNameCount(), 1);
+		QCOMPARE(b.propertyId(name), 1000);
+	}
+}
+
+void TestBentoFile::large_compact_toc_is_read()
+{
+	// Padding is part of a compact TOC. A valid table can exceed 64 MiB
+	// without needing millions of objects to exercise that boundary.
+	Bento2Builder w;
+	QByteArray file(64 * 1024 * 1024 + 1, char(255));
+	file += char(1) + w.word(20) + w.word(40) + w.word(0) + char(13) + "ABCD";
+	const quint32 tocLength = quint32(file.size());
+	file += QByteArray::fromHex("a4434da5486472d7") + w.half(0x0101) + w.half(0) + w.half(2) + w.half(0);
+	file += w.word(0) + w.word(tocLength);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString path = writeTemp(tmp, "large-toc.bento", file);
+	QString why;
+	for (bool fromFile : {false, true})
+	{
+		BentoFile b;
+		QVERIFY2(fromFile ? b.open(path, &why) : b.load(file, &why), qPrintable(why));
+		QCOMPARE(b.entryCount(), 1);
+		QCOMPARE(b.bytes(20, 40), QByteArray("ABCD"));
+	}
+}
+
 void TestBentoFile::label_versions_select_real_toc_decoders()
 {
 	BentoBuilder w;
@@ -393,7 +458,7 @@ void TestBentoFile::omf_open_matches_load_on_real_fixtures()
 void TestBentoFile::omf_open_reads_only_the_tail()
 {
 	// 8.7 MB of audio: open() reads the label, the TOC and the dictionary
-	// span — nothing else — and the essence entry can never be materialised.
+	// span. Large essence values are read only when explicitly requested.
 	BentoFile wav;
 	QString why;
 	QVERIFY2(wav.open(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"), &why),
@@ -406,10 +471,9 @@ void TestBentoFile::omf_open_reads_only_the_tail()
 	QVERIFY(essenceProp > 0);
 	const QVector<quint32> essenceObjs = wav.objectsWithProperty(essenceProp);
 	QCOMPARE(essenceObjs.size(), 1);
-	QVERIFY(wav.bytes(essenceObjs[0], essenceProp).isEmpty());
-	QVERIFY(wav.bytes(essenceObjs[0], essenceProp, 16 * 1024 * 1024).size() > 8 * 1024 * 1024); // only when asked
-	// value() is a view over the load-mode buffer; after open() there is none.
-	QVERIFY(wav.value(essenceObjs[0], essenceProp).isEmpty());
+	QVERIFY(wav.bytes(essenceObjs[0], essenceProp).size() > 8 * 1024 * 1024);
+	QVERIFY(wav.bytes(essenceObjs[0], essenceProp, 1024 * 1024).isEmpty());
+	QVERIFY(wav.value(essenceObjs[0], essenceProp).size() > 8 * 1024 * 1024);
 
 	// Metadata does come through, by seek+read: three MOBJ objects with names.
 	BentoFile again;
@@ -668,7 +732,12 @@ void TestBentoFile::riff_embedded_label_uses_file_relative_offsets()
 			prefix += QByteArray("data") + BentoBuilder::le32(0xffffffffu) + "abcd";
 		}
 		else
+		{
 			prefix = QByteArray("RIFF") + BentoBuilder::le32(0) + "WAVEJUNK" + BentoBuilder::le32(3) + QByteArray("abc\0", 4);
+			// A valid omfi chunk may occur after more than 65,536 other chunks.
+			for (int chunk = 0; chunk < 65536; ++chunk)
+				prefix += QByteArray("JUNK") + BentoBuilder::le32(0);
+		}
 		const QByteArray inner = relocate(quint32(prefix.size() + 8));
 		QByteArray file = prefix + "omfi" + BentoBuilder::le32(quint32(inner.size())) + inner + "JUNK" + BentoBuilder::le32(2) + "zz";
 		if (rf64)

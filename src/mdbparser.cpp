@@ -217,7 +217,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				a.omfEra = b.value(mediaObj, p.mobId).size() == OmfUid::kUidSize; // OMF-era: 12-byte mob
 				QSet<quint32> seen;
 				for (quint32 obj : objs)
-					OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
+					OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 				if (a.project.isEmpty())
 				{
 					const quint32 src = OmfObjects::findSourceMob(b, p, mediaObj, objectByMob);
@@ -225,7 +225,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 					const auto sourceObjects = objectsByHex.constFind(sourceHex);
 					if (sourceObjects != objectsByHex.cend())
 						for (quint32 obj : *sourceObjects)
-							OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
+							OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 				}
 				f.project = a.project;
 			}
@@ -260,7 +260,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		{
 			if (m.clipName.isEmpty())
 				m.clipName = BentoFile::string(b.value(obj, p.name));
-			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen, 0);
+			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 		}
 		m.bin = a.bin;
 		m.classificationKnown = AvidUsage::isMasterCode(m.usageCode);

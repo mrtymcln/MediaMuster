@@ -67,6 +67,9 @@ private slots:
 	void strict_prefixes_are_invalid();
 	void malformed_counts_lengths_and_references_data();
 	void malformed_counts_lengths_and_references();
+	void file_larger_than_256_mib_preserves_identities();
+	void large_object_inventory_has_no_policy_limit();
+	void reference_list_above_one_million_entries();
 	void native_legacy_words_are_decoded_data();
 	void native_legacy_words_are_decoded();
 	void terminal_source_nulls_are_ignored_data();
@@ -349,6 +352,83 @@ void TestAvbParser::malformed_counts_lengths_and_references()
 	QVERIFY(result.mobs.isEmpty());
 }
 
+void TestAvbParser::file_larger_than_256_mib_preserves_identities()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	TestAvb::Document document;
+	document.objects = {{"ABIN", TestAvb::bin(false, {3})},
+						{"FILE", QByteArray(1, '\x03')},
+						{"CMPO", TestAvb::composition(false)}};
+	auto bytes = document.bytes();
+	constexpr quint32 payloadSize = 256 * 1024 * 1024 + 1;
+	TestAvb::replaceU32(bytes, document.chunkOffsets[1] + 4, payloadSize);
+	const auto payloadStart = document.chunkOffsets[1] + 8;
+	QFile file(tmp.filePath("large.avb"));
+	QVERIFY(file.open(QIODevice::WriteOnly));
+	QCOMPARE(file.write(bytes.first(payloadStart)), payloadStart);
+	// A sparse opaque payload exercises large offsets without a large allocation.
+	QVERIFY(file.seek(payloadStart + payloadSize - 1));
+	QCOMPARE(file.write("\x03", 1), qint64(1));
+	const auto tail = bytes.sliced(document.chunkOffsets[2]);
+	QCOMPARE(file.write(tail), tail.size());
+	file.close();
+	const auto result = AvbParser::parse(file.fileName());
+	QVERIFY2(result.valid, qPrintable(result.error));
+	QVERIFY(result.complete);
+	QCOMPARE(result.mobIds, aliases({TestAvb::Master}));
+	QCOMPARE(result.mobs.size(), 1);
+}
+
+void TestAvbParser::large_object_inventory_has_no_policy_limit()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	TestAvb::Document document;
+	document.objects = {{"ABIN", TestAvb::bin(false, {2})},
+						{"CMPO", TestAvb::composition(false)}};
+	auto bytes = document.bytes();
+	// Cross both the former million-object cap and the 192 MiB estimate budget.
+	constexpr quint32 extraObjects = 2'097'152;
+	TestAvb::replaceU32(bytes, document.countOffset, extraObjects + 2);
+	TestAvb::Bytes object(false);
+	object.fourcc("FILE");
+	object.u32(1);
+	object.u8(3);
+	QFile file(tmp.filePath("many-objects.avb"));
+	QVERIFY(file.open(QIODevice::WriteOnly));
+	QCOMPARE(file.write(bytes), bytes.size());
+	const auto objects = object.data.repeated(extraObjects);
+	QCOMPARE(file.write(objects), objects.size());
+	file.close();
+	const auto result = AvbParser::parse(file.fileName());
+	QVERIFY2(result.valid, qPrintable(result.error));
+	QVERIFY(result.complete);
+	QCOMPARE(result.mobIds, aliases({TestAvb::Master}));
+}
+
+void TestAvbParser::reference_list_above_one_million_entries()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	constexpr quint32 count = 1'000'001;
+	TestAvb::Bytes reference(false);
+	reference.u32(2);
+	TestAvb::Bytes payload(false);
+	payload.tags(2, 1);
+	payload.u32(count);
+	payload.data += reference.data.repeated(count);
+	payload.u8(3);
+	TestAvb::Document document;
+	document.objects = {{"ABIN", TestAvb::bin(false, {2})},
+						{"CMPO", TestAvb::composition(false)},
+						{"PRLS", payload.data}};
+	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("many-references.avb"), document.bytes()));
+	QVERIFY2(result.valid, qPrintable(result.error));
+	QVERIFY(result.complete);
+	QCOMPARE(result.mobIds, aliases({TestAvb::Master}));
+}
+
 void TestAvbParser::native_legacy_words_are_decoded_data()
 {
 	QTest::addColumn<bool>("big");
@@ -369,7 +449,7 @@ void TestAvbParser::native_legacy_words_are_decoded()
 	QVERIFY2(result.valid, qPrintable(result.error));
 	QVERIFY(result.complete);
 	const QSet<QString> expected{MobId::format(legacy(TestAvb::Master)), MobId::format(legacy(TestAvb::Source)),
-		MobId::format(legacy(TestAvb::Other))};
+								 MobId::format(legacy(TestAvb::Other))};
 	QCOMPARE(result.mobIds, expected);
 }
 
@@ -533,7 +613,7 @@ void TestAvbParser::omf_identity_does_not_match_a_byte_swapped_clip()
 	TestAvb::Document document;
 	document.bigEndian = big;
 	document.objects = {{"ABIN", TestAvb::bin(big, {2})},
-		{"CMPO", TestAvb::composition(big, own, "OMF master", 0, {}, 0, typed)}};
+						{"CMPO", TestAvb::composition(big, own, "OMF master", 0, {}, 0, typed)}};
 	const auto result = AvbParser::parse(TestAvb::write(temp.filePath("legacy.avb"), document.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
 	QVERIFY2(result.complete, qPrintable(result.warnings.join(';')));

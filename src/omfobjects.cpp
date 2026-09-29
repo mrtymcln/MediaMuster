@@ -225,15 +225,16 @@ namespace OmfObjects
 				const qsizetype e = ifd + 2 + n * 12;
 				const quint16 tag = u16(e), type = u16(e + 2);
 				const quint32 items = u32(e + 4), value = u32(e + 8);
-				if (tag == 258 && type == 3 && items > 0 && items <= 16)
+				if (tag == 258 && type == 3 && items > 0)
 				{
-					const qsizetype start = items * 2 <= 4 ? e + 8 : value;
-					if (start <= raw.size() && items * 2 <= quint64(raw.size() - start))
+					const quint64 byteCount = quint64(items) * 2;
+					const qsizetype start = byteCount <= 4 ? e + 8 : value;
+					if (start <= raw.size() && byteCount <= quint64(raw.size() - start))
 					{
 						const int bits = items == 1 && avid ? int(value) : int(u16(start));
 						bool uniform = true;
 						for (quint32 i = 1; i < items; ++i)
-							uniform &= u16(start + i * 2) == bits;
+							uniform &= u16(start + qsizetype(i) * 2) == bits;
 						if (uniform)
 							result.bits = bits;
 					}
@@ -359,15 +360,24 @@ namespace OmfObjects
 		return path;
 	}
 
-	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen,
-						int depth)
+	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen)
 	{
-		if (attrObj == 0 || depth > 4 || seen.contains(attrObj))
-			return;
-		seen.insert(attrObj);
-		const QVector<quint32> attbs = b.refs(attrObj, p.attrRefs);
-		for (quint32 attb : attbs)
+		QVector<quint32> pending;
+		const auto appendAttributes = [&](quint32 object)
 		{
+			if (!object || seen.contains(object))
+				return;
+			seen.insert(object);
+			const auto attributes = b.refs(object, p.attrRefs);
+			// A stack preserves the recursive walk's first-non-empty order
+			// without making graph depth depend on the process call stack.
+			for (auto it = attributes.crbegin(); it != attributes.crend(); ++it)
+				pending.append(*it);
+		};
+		appendAttributes(attrObj);
+		while (!pending.isEmpty())
+		{
+			const quint32 attb = pending.takeLast();
 			const QString name = BentoFile::string(b.bytes(attb, p.attbName));
 			const quint32 kind = b.uintValue(b.bytes(attb, p.attbKind));
 			if (kind == 3)
@@ -389,7 +399,7 @@ namespace OmfObjects
 				{
 					a.isImported = true;
 					if (cls == "ATTR")
-						walkAttributes(b, p, target, a, seen, depth + 1);
+						appendAttributes(target);
 				}
 				else if (name == QLatin1String("_SRCFILE") && (cls == "MACL" || (a.omfEra && isLocatorClass(cls))))
 				{
@@ -406,7 +416,7 @@ namespace OmfObjects
 				}
 				else if (name == QLatin1String("_USER") && cls == "ATTR")
 				{
-					walkAttributes(b, p, target, a, seen, depth + 1);
+					appendAttributes(target);
 				}
 			}
 			else if (kind == 2)
@@ -568,7 +578,7 @@ namespace OmfObjects
 			for (quint32 track : b.refs(mob, p.tracks))
 				stack.append(b.ref(track, p.trackComp));
 			QSet<quint32> seen;
-			while (!stack.isEmpty() && seen.size() < 100000)
+			while (!stack.isEmpty())
 			{
 				const quint32 obj = stack.takeLast();
 				if (!obj || seen.contains(obj))
@@ -587,7 +597,7 @@ namespace OmfObjects
 				else if (p.omf2 && cls == "ERAT")
 					stack.append(b.ref(obj, p.inputSegment));
 			}
-			return stack.isEmpty() ? out : QVector<quint32>(); // never treat a bounded partial walk as complete
+			return out;
 		}
 	}
 
@@ -609,17 +619,22 @@ namespace OmfObjects
 	}
 
 	quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob, const ObjectByMob &objectByMob,
-								  QSet<quint32> &seen, int depth)
+								  QSet<quint32> &seen)
 	{
-		if (!mob || depth > 64 || seen.contains(mob))
-			return 0;
-		seen.insert(mob);
-		for (quint32 c : components(b, p, mob))
-			if (b.objectClass(c) == "TCCP")
-				return c;
-		for (quint32 source : sourceMobs(b, p, mob, objectByMob))
-			if (const quint32 tc = findTimecodeComponent(b, p, source, objectByMob, seen, depth + 1))
-				return tc;
+		QVector<quint32> pending{mob};
+		while (!pending.isEmpty())
+		{
+			const quint32 current = pending.takeLast();
+			if (!current || seen.contains(current))
+				continue;
+			seen.insert(current);
+			for (quint32 c : components(b, p, current))
+				if (b.objectClass(c) == "TCCP")
+					return c;
+			const auto sources = sourceMobs(b, p, current, objectByMob);
+			for (auto it = sources.crbegin(); it != sources.crend(); ++it)
+				pending.append(*it);
+		}
 		return 0;
 	}
 
@@ -840,7 +855,7 @@ namespace OmfObjects
 		// Drop frame: the timecode component is on a source mob, reached
 		// through the file mob's SCLP references.
 		QSet<quint32> seen;
-		if (const quint32 tccp = findTimecodeComponent(b, p, mobObj, objectByMob, seen, 0))
+		if (const quint32 tccp = findTimecodeComponent(b, p, mobObj, objectByMob, seen))
 			e.dropFrame = b.uintValue(b.bytes(tccp, p.tcFlags)) != 0;
 
 		MediaMetadataUtil::finalise(e);

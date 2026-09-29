@@ -1,6 +1,7 @@
 #include "mediacsv.h"
 
 #include <QFile>
+#include <QScopeGuard>
 #include <QTemporaryDir>
 #include <QTest>
 
@@ -78,6 +79,7 @@ private slots:
 	void location_is_retained_and_removed_columns_are_omitted();
 	void formula_injection_is_neutralised();
 	void write_produces_header_plus_one_line_per_row();
+	void write_failure_preserves_existing_export();
 	void unknown_classification_is_exported_without_guessing();
 	void effect_details_are_explicit_and_quoted();
 	void non_precompute_effect_fields_stay_blank();
@@ -254,6 +256,11 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString path = tmp.path() + QStringLiteral("/export.csv");
+	{
+		QFile previous(path);
+		QVERIFY(previous.open(QIODevice::WriteOnly));
+		QCOMPARE(previous.write(QByteArray(4096, '#')), qint64(4096));
+	}
 
 	for (bool enabled : {false, true})
 	{
@@ -269,6 +276,25 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 								 .toUtf8());
 		QCOMPARE(QString::fromUtf8(raw).count(QLatin1Char('\n')), 3);
 	}
+}
+
+void TestMediaCsv::write_failure_preserves_existing_export()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString path = tmp.filePath(QStringLiteral("export.csv"));
+	const QByteArray original("previous export\n");
+	QFile file(path);
+	QVERIFY(file.open(QIODevice::WriteOnly));
+	QCOMPARE(file.write(original), qint64(original.size()));
+	file.close();
+	const auto permissions = file.permissions();
+	const auto restorePermissions = qScopeGuard([&]
+												{ file.setPermissions(permissions); });
+	QVERIFY(file.setPermissions(QFileDevice::ReadOwner | QFileDevice::ReadUser));
+	QVERIFY(!MediaCsv::write(path, {sampleRow()}));
+	QVERIFY(file.open(QIODevice::ReadOnly));
+	QCOMPARE(file.readAll(), original);
 }
 
 void TestMediaCsv::unknown_classification_is_exported_without_guessing()

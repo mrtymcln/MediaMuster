@@ -8,8 +8,7 @@
 
 namespace
 {
-	constexpr quint64 kMaxTailBytes = 64 * 1024 * 1024;
-	constexpr qsizetype kMaxEntries = qsizetype(kMaxTailBytes / 24);
+	constexpr quint64 kDictionaryPrefetchBytes = 64 * 1024 * 1024;
 	constexpr unsigned char kMagic[] = {0xA4, 0x43, 0x4D, 0xA5, 0x48, 0x64, 0x72, 0xD7};
 	quint32 u32At(const char *p) { return qFromLittleEndian<quint32>(p); }
 	quint16 u16At(const char *p) { return qFromLittleEndian<quint16>(p); }
@@ -69,11 +68,6 @@ bool BentoFile::checkLabel(QByteArrayView label, qint64 fileSize, QString &reaso
 					 .arg(fileSize);
 		return false;
 	}
-	if (m_tocLength > kMaxTailBytes)
-	{
-		reason = QStringLiteral("TOC exceeds the 64 MiB metadata limit");
-		return false;
-	}
 	if (m_major == 1 && m_tocLength % 24 != 0)
 	{
 		reason = QStringLiteral("Bento1 TOC length is not a multiple of 24");
@@ -81,7 +75,7 @@ bool BentoFile::checkLabel(QByteArrayView label, qint64 fileSize, QString &reaso
 	}
 	// The toolkit treats a zero block size as one buffer covering this TOC.
 	if (m_major == 2 && m_tocBlockSize == 0)
-		m_tocBlockSize = quint32((m_tocLength / 1024 + 1) * 1024);
+		m_tocBlockSize = (m_tocLength / 1024 + 1) * 1024;
 	return true;
 }
 
@@ -241,8 +235,6 @@ bool BentoFile::indexToc(QByteArrayView toc, QString &reason)
 				e.value = (quint64(w(0)) << 32) | w(1);
 				e.length = code >= 25 ? (quint64(w(2)) << 32) | w(3) : w(2);
 			}
-			if (m_entries.size() >= kMaxEntries)
-				return fail(start, QStringLiteral("too many TOC value segments"));
 			m_entries.append(e);
 			awaitingValue = allowGeneration = allowReference = false;
 		}
@@ -266,7 +258,7 @@ bool BentoFile::indexToc(QByteArrayView toc, QString &reason)
 					 { return a.object != b.object ? a.object < b.object : a.property < b.property; });
 	for (qsizetype i = 0; i < m_entries.size(); ++i)
 		if (m_entries[i].continued)
-			m_entries[i].nextSegment = int(i + 1);
+			m_entries[i].nextSegment = i + 1;
 	return true;
 }
 
@@ -321,8 +313,7 @@ bool BentoFile::locateLabel(qint64 fileSize, QByteArray &label, quint64 &labelEn
 		}
 	}
 	quint64 pos = 12;
-	constexpr int kMaxChunks = 65536;
-	for (int chunks = 0; chunks < kMaxChunks && pos <= end && end - pos >= 8; ++chunks)
+	while (pos <= end && end - pos >= 8)
 	{
 		if (!at(pos, 8, header))
 		{
@@ -462,7 +453,7 @@ bool BentoFile::open(const QString &path, QString *why)
 		lo = qMin(lo, e.value);
 		hi = qMax(hi, e.value + e.length);
 	}
-	if (hi > lo && hi - lo <= kMaxTailBytes)
+	if (hi > lo && hi - lo <= kDictionaryPrefetchBytes)
 	{
 		m_dictOffset = lo;
 		if (!fetch(lo, hi - lo, m_dict))
@@ -480,7 +471,6 @@ bool BentoFile::open(const QString &path, QString *why)
 
 bool BentoFile::indexNames(QString &reason)
 {
-	quint64 total = 0;
 	for (const Entry &e : m_entries)
 	{
 		if (e.property != 24)
@@ -489,12 +479,6 @@ bool BentoFile::indexNames(QString &reason)
 		if (!result.ok())
 		{
 			reason = QStringLiteral("unreadable property-name dictionary entry %1").arg(e.object);
-			return false;
-		}
-		total += result.data.size();
-		if (total > kMaxTailBytes)
-		{
-			reason = QStringLiteral("property-name dictionary exceeds 64 MiB");
 			return false;
 		}
 		const QByteArray name = untilNul(result.data).toByteArray();
@@ -538,12 +522,16 @@ BentoFile::ReadResult BentoFile::read(quint32 object, int property, qint64 cap) 
 	const Entry *first = property < 0 ? nullptr : find(object, quint32(property));
 	if (!first)
 		return {{}, ReadStatus::Missing};
+	if (cap < 0)
+		return {{}, ReadStatus::TooLarge};
+	// QByteArray uses qsizetype and needs room for its trailing NUL byte.
+	const quint64 maxSize = quint64(qMin<qint64>(cap, std::numeric_limits<qsizetype>::max() - 1));
 	quint64 total = 0;
 	for (const Entry *e = first; e; e = e->nextSegment < 0 ? nullptr : &m_entries[e->nextSegment])
 	{
 		if (e->immediate ? e->length > quint64(e->immediateData.size()) : (e->value > m_tocOffset || e->length > m_tocOffset - e->value))
 			return {{}, ReadStatus::Malformed};
-		if (cap < 0 || e->length > quint64(cap) - total)
+		if (e->length > maxSize - total)
 			return {{}, ReadStatus::TooLarge};
 		total += e->length;
 	}

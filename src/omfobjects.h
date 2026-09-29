@@ -177,8 +177,7 @@ namespace OmfObjects
 	/// the shared nodes Avid writes and must persist across every object
 	/// walked into the same `a`. `attrObj` is the handle from
 	/// OMFI:CPNT:Attributes; 0 is a no-op.
-	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen,
-						int depth);
+	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen);
 
 	/// Media Composer 26.8's precompute display predicate, evaluated on each
 	/// logical master separately. No recursive import search or combining
@@ -192,9 +191,9 @@ namespace OmfObjects
 	/// The first TCCP reachable from `mob`'s tracks: through SEQU
 	/// components, and through SCLP source references into other mobs (the
 	/// timecode lives on the tape/import source mob, not the file mob). 0
-	/// if none. `seen` is shared with the recursion; pass a fresh set.
+	/// if none. `seen` prevents cycles; pass a fresh set for each search.
 	[[nodiscard]] quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob,
-												const ObjectByMob &objectByMob, QSet<quint32> &seen, int depth);
+												const ObjectByMob &objectByMob, QSet<quint32> &seen);
 
 	/// The unique source mob referenced by SCLPs in `mob`'s segment graph;
 	/// 0 when none or several are found. Does not follow further source mobs.

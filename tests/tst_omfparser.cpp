@@ -66,6 +66,10 @@ private slots:
 	void avid_legacy_version_excludes_compositions();
 	void omf_master_usage_is_role_specific_and_width_checked();
 	void omf_precompute_category_follows_the_embedded_master();
+	void attributes_follow_deep_graphs_and_preserve_first_value();
+	void timecode_follows_deep_source_graphs_and_stops_cycles();
+	void segment_graphs_exceed_one_hundred_thousand_components();
+	void tiff_summary_accepts_more_than_sixteen_samples();
 };
 
 void TestOmfParser::avid_legacy_version_alias_data()
@@ -741,6 +745,124 @@ void TestOmfParser::omf_precompute_category_follows_the_embedded_master()
 			QVERIFY(parsed.essence.isPrecompute);
 			QCOMPARE(parsed.essence.precomputeCategory,
 					 imported && videoTracks >= 2 ? Category::TitlesAndMatteKeys : Category::RenderedEffects);
+		}
+}
+
+void TestOmfParser::attributes_follow_deep_graphs_and_preserve_first_value()
+{
+	BentoBuilder w;
+	const quint32 root = w.addObject("ATTR");
+	const auto project = [&](const QByteArray &name)
+	{
+		const quint32 attr = w.addObject("ATTB");
+		w.setString(attr, "OMFI:ATTB:Name", "_PJ");
+		w.setU16(attr, "OMFI:ATTB:Kind", 2);
+		w.setString(attr, "OMFI:ATTB:StringAttribute", name);
+		return attr;
+	};
+	const quint32 fallback = project("Root fallback");
+	quint32 current = root;
+	for (int depth = 0; depth < 256; ++depth)
+	{
+		const quint32 nested = w.addObject("ATTR"), link = w.addObject("ATTB");
+		w.setString(link, "OMFI:ATTB:Name", depth % 2 ? "_IMPORTSETTING" : "_USER");
+		w.setU16(link, "OMFI:ATTB:Kind", 3);
+		w.setHandle(link, "OMFI:ATTB:ObjAttribute", nested);
+		w.setHandles(current, "OMFI:ATTR:AttrRefs",
+					 current == root ? QVector<quint32>{link, fallback} : QVector<quint32>{link});
+		current = nested;
+	}
+	const quint32 cycle = w.addObject("ATTB");
+	w.setString(cycle, "OMFI:ATTB:Name", "_USER");
+	w.setU16(cycle, "OMFI:ATTB:Kind", 3);
+	w.setHandle(cycle, "OMFI:ATTB:ObjAttribute", root);
+	w.setHandles(current, "OMFI:ATTR:AttrRefs", {cycle, project("Deep project")});
+	BentoFile b;
+	QVERIFY(b.load(w.build()));
+	OmfObjects::Attributes attributes;
+	QSet<quint32> seen;
+	OmfObjects::walkAttributes(b, OmfObjects::Props(b), root, attributes, seen);
+	QCOMPARE(attributes.project, QStringLiteral("Deep project"));
+	QVERIFY(attributes.isImported);
+	QCOMPARE(seen.size(), 257);
+}
+
+void TestOmfParser::timecode_follows_deep_source_graphs_and_stops_cycles()
+{
+	for (bool hasTimecode : {false, true})
+	{
+		BentoBuilder w;
+		QVector<quint32> mobs;
+		OmfObjects::ObjectByMob objectByMob;
+		for (quint32 n = 0; n < 256; ++n)
+		{
+			const quint32 mob = w.addObject("MOBJ");
+			mobs.append(mob);
+			w.set(mob, "OMFI:MOBJ:MobID", TestOmf::uid(n));
+			objectByMob.insert(TestOmf::uid(n), mob);
+		}
+		const quint32 timecode = w.addObject("TCCP");
+		for (qsizetype n = 0; n < mobs.size(); ++n)
+		{
+			const quint32 track = w.addObject("TRAK"), clip = w.addObject("SCLP"), sequence = w.addObject("SEQU");
+			w.setHandles(mobs[n], "OMFI:TRKG:Tracks", {track});
+			w.setHandle(track, "OMFI:TRAK:TrackComponent", sequence);
+			w.set(clip, "OMFI:SCLP:SourceID", TestOmf::uid(quint32((n + 1) % mobs.size())));
+			w.setHandles(sequence, "OMFI:SEQU:Sequence",
+						 hasTimecode && n == mobs.size() - 1 ? QVector<quint32>{clip, timecode} : QVector<quint32>{clip});
+		}
+		BentoFile b;
+		QVERIFY(b.load(w.build()));
+		QSet<quint32> seen;
+		QCOMPARE(OmfObjects::findTimecodeComponent(b, OmfObjects::Props(b), mobs.first(), objectByMob, seen),
+				 hasTimecode ? timecode : 0u);
+		QCOMPARE(seen.size(), mobs.size());
+	}
+}
+
+void TestOmfParser::segment_graphs_exceed_one_hundred_thousand_components()
+{
+	BentoBuilder w;
+	const quint32 mob = w.addObject("MOBJ"), track = w.addObject("TRAK"), source = w.addObject("MOBJ");
+	w.setHandles(mob, "OMFI:TRKG:Tracks", {track});
+	const quint32 root = w.addObject("SEQU");
+	w.setHandle(track, "OMFI:TRAK:TrackComponent", root);
+	quint32 current = root;
+	for (int n = 0; n < 100000; ++n)
+	{
+		const quint32 next = w.addObject("SEQU");
+		w.setHandles(current, "OMFI:SEQU:Sequence", {next});
+		current = next;
+	}
+	const quint32 clip = w.addObject("SCLP"), timecode = w.addObject("TCCP");
+	w.set(clip, "OMFI:SCLP:SourceID", TestOmf::uid(7));
+	w.setHandles(current, "OMFI:SEQU:Sequence", {root, clip, timecode});
+	BentoFile b;
+	QVERIFY(b.load(w.build()));
+	const OmfObjects::Props p(b);
+	const OmfObjects::ObjectByMob objectByMob{{TestOmf::uid(7), source}};
+	QCOMPARE(OmfObjects::sourceMobs(b, p, mob, objectByMob), QVector<quint32>{source});
+	QSet<quint32> seen;
+	QCOMPARE(OmfObjects::findTimecodeComponent(b, p, mob, objectByMob, seen), timecode);
+}
+
+void TestOmfParser::tiff_summary_accepts_more_than_sixteen_samples()
+{
+	for (bool big : {false, true})
+		for (quint32 sampleCount : {17u, 0x80000000u})
+		{
+			TestOmf::Writer w(true, big);
+			const quint32 mob = w.addObject("MOBJ"), desc = w.addObject("TIFD");
+			QByteArray tiff = QByteArray(big ? "MM" : "II") + w.half(42) + w.word(8) + w.half(1);
+			tiff += w.half(258) + w.half(3) + w.word(sampleCount) + w.word(26) + w.word(0);
+			for (int n = 0; n < 17; ++n)
+				tiff += w.half(8);
+			w.set(desc, "OMFI:TIFD:Summary", tiff);
+			BentoFile b;
+			QVERIFY(b.load(w.build()));
+			MediaMetadata metadata;
+			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, metadata));
+			QCOMPARE(metadata.bitDepth, sampleCount == 17 ? QStringLiteral("8-bit") : QString());
 		}
 }
 

@@ -26,8 +26,7 @@ struct MediaMetadata
 		Complete,
 		Incomplete,
 		Malformed,
-		IoError,
-		LimitExceeded
+		IoError
 	};
 	HeaderStatus headerStatus = HeaderStatus::NotRead;
 	QString fileMobId; ///< Owning file SourcePackage, distinct from the material/master UMID.

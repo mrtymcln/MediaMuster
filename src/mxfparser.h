@@ -9,8 +9,8 @@ class QFile;
 /// Reads an MXF file's header partition and pulls out the metadata
 /// the table needs (codec, resolution, fps, duration, UMID, clip
 /// name). Walks complete metadata KLVs, skipping padding and stopping at
-/// essence or the next partition. Metadata allocation is bounded; reaching
-/// that bound is reported explicitly rather than treated as success.
+/// essence or the next partition. Header metadata has no application-defined
+/// size or item-count ceiling; framing must fit within the file.
 class MxfParser
 {
 public:

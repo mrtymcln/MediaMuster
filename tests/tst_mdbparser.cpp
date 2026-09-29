@@ -1139,7 +1139,7 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 
 		// The file mob itself carries no TCCP; only the hop reaches one.
 		QSet<quint32> seen;
-		const quint32 tccp = OmfObjects::findTimecodeComponent(b, p, fileMob, objectByMob, seen, 0);
+		const quint32 tccp = OmfObjects::findTimecodeComponent(b, p, fileMob, objectByMob, seen);
 		QVERIFY2(tccp != 0, pin.file);
 		const OmfObjects::Timecode tc = OmfObjects::readTimecode(b, p, tccp);
 		QVERIFY(tc.found);
@@ -1237,7 +1237,7 @@ void TestMdbParser::omf_winl_and_unxl_locators_yield_the_source_path()
 	OmfObjects::Attributes attrs;
 	attrs.omfEra = true; // as MdbParser sets it for a 12-byte mob: the UNXL is admitted
 	QSet<quint32> seen;
-	OmfObjects::walkAttributes(bf, p, bf.ref(b, p.attrs), attrs, seen, 0);
+	OmfObjects::walkAttributes(bf, p, bf.ref(b, p.attrs), attrs, seen);
 	QCOMPARE(attrs.mediaFilePath, QStringLiteral("/Volumes/Media/OMFI MediaFiles/tone.aif"));
 	QCOMPARE(attrs.sourceFilePath, QStringLiteral("/mnt/clips/tone.aif"));
 }

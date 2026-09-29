@@ -82,9 +82,7 @@ jobs:
 
       ### Code signing certificate (macOS) ###
       - name: Import code-signing cert
-        if: runner.os == 'macOS' && env.MAC_CERTS_BASE64 != ''
-        env:
-          MAC_CERTS_BASE64: ${{ secrets.MAC_CERTS_BASE64 }}
+        if: runner.os == 'macOS' && github.event_name != 'pull_request'
         uses: Apple-Actions/import-codesign-certs@v7
         with:
           p12-file-base64: ${{ secrets.MAC_CERTS_BASE64 }}
@@ -92,7 +90,7 @@ jobs:
 
       ### Package (macOS) ###
       - name: Package (macOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && github.event_name != 'pull_request'
         env:
           APPLE_TEAM_ID:     ${{ secrets.APPLE_TEAM_ID }}
           APPLE_ID_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
@@ -106,11 +104,12 @@ jobs:
 
       ### Upload artefacts ###
       - name: Upload macOS artefact
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: MediaMuster-${{ env.APP_VERSION }}-Mac
           path: build/MediaMuster-${{ env.APP_VERSION }}-Mac.dmg
+          if-no-files-found: error
 
       - name: Upload Windows artefact
         if: runner.os == 'Windows'
@@ -142,6 +141,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
+          fail_on_unmatched_files: true
           files: |
             release-assets/MediaMuster-*-Mac/*.dmg
             release-assets/MediaMuster-*-Win.zip
