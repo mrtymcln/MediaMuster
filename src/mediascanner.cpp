@@ -1,4 +1,5 @@
 #include "mediascanner.h"
+#include "featureflags.h"
 #include "avideffects.h"
 #include "avidusage.h"
 #include "conventions.h"
@@ -211,16 +212,24 @@ namespace
 				mf.codec = metadata.codec;
 			if (!metadata.resolution.isEmpty())
 				mf.resolution = metadata.resolution;
-			if (!metadata.fps.isEmpty())
-				mf.fps = metadata.fps;
+			if (!metadata.frameRate.isEmpty())
+				mf.frameRate = metadata.frameRate;
+			if (metadata.frameRateRatio.valid())
+				mf.frameRateRatio = metadata.frameRateRatio;
 			if (!metadata.bitDepth.isEmpty())
 				mf.bitDepth = metadata.bitDepth;
 			if (metadata.sampleRate > 0)
 				mf.sampleRate = metadata.sampleRate;
+			if (metadata.sampleRateRatio.valid())
+				mf.sampleRateRatio = metadata.sampleRateRatio;
+			if (!metadata.sampleRateEncoding.isEmpty())
+				mf.sampleRateEncoding = metadata.sampleRateEncoding;
 			if (metadata.channels > 0)
 				mf.channels = metadata.channels;
-			if (metadata.durationFrames > 0)
-				mf.durationFrames = metadata.durationFrames;
+			if (!metadata.clipDurations.isEmpty())
+				mf.clipDurations = metadata.clipDurations;
+			if (metadata.duration.units > 0)
+				mf.duration = metadata.duration;
 			if (metadata.timecodeBase > 0)
 				mf.timecodeBase = metadata.timecodeBase;
 			if (metadata.dropFrame)
@@ -1007,7 +1016,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		essence.precomputeCategory = masterIt->precomputeCategory;
 		applyMetadata(mf, essence);
 	}
-	mf.needsHeaderRead = headerReadable && (!mf.databaseMetadataCurrent ||
+	mf.needsHeaderRead = headerReadable && ((FeatureFlags::kClipDurationEnabled && !mf.omfEra) || !mf.databaseMetadataCurrent ||
 											mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
 											(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
 
@@ -1044,11 +1053,15 @@ namespace
 		mf.isImported = false;
 		mf.codec.clear();
 		mf.resolution.clear();
-		mf.fps.clear();
+		mf.frameRate.clear();
+		mf.frameRateRatio = {};
 		mf.bitDepth.clear();
 		mf.sampleRate = 0;
+		mf.sampleRateRatio = {};
+		mf.sampleRateEncoding.clear();
 		mf.channels = 0;
-		mf.durationFrames = 0;
+		mf.duration = {};
+		mf.clipDurations.clear();
 		mf.timecodeBase = 0;
 		mf.dropFrame = false;
 		mf.kind = MediaFile::Kind::Unknown;

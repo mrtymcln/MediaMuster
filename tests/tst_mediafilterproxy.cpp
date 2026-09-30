@@ -311,21 +311,21 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 		bool drop;
 		Kind kind;
 		const char *display;
-		const char *fps = "";
+		const char *frameRate = "";
 	} cases[] = {
 		{"blank frames", 0, 25, false, Kind::Audio, ""},
 		{"blank rate", 250, 0, false, Kind::Video, ""},
 		{"negative frames", -25, 25, false, Kind::Unknown, ""},
-		{"30 fps", 10, 30, false, Kind::Video, "00:00:00:10"},
-		{"25 fps", 11, 25, false, Kind::Video, "00:00:00:11"},
+		{"30 frames/s", 10, 30, false, Kind::Video, "00:00:00:10"},
+		{"25 frames/s", 11, 25, false, Kind::Video, "00:00:00:11"},
 		{"equal audio", 12, 24, false, Kind::Audio, "00:00:00:12"},
 		{"equal video", 12, 60, false, Kind::Video, "00:00:00:12"},
 		{"equal unknown", 12, 25, false, Kind::Unknown, "00:00:00:12"},
-		// Raw FF order, not FF/base: 12 at 24 fps precedes 20 at 60 fps.
-		{"60 fps", 20, 60, false, Kind::Video, "00:00:00:20"},
+		// Raw FF order, not FF/base: 12 at 24 frames/s precedes 20 at 60 frames/s.
+		{"60 frames/s", 20, 60, false, Kind::Video, "00:00:00:20"},
 		{"two digit frame field", 99, 120, false, Kind::Video, "00:00:00:99"},
 		{"three digit frame field", 100, 120, false, Kind::Video, "00:00:00:100"},
-		{"fps fallback", 25, 0, false, Kind::Video, "00:00:01:00", "25"},
+		{"frameRate fallback", 25, 0, false, Kind::Video, "00:00:01:00", "25"},
 		{"60 DF before drop", 3599, 60, true, Kind::Video, "00;00;59;59"},
 		{"60 NDF at drop", 3603, 60, false, Kind::Video, "00:01:00:03"},
 		{"60 DF at drop", 3600, 60, true, Kind::Audio, "00;01;00;04"},
@@ -342,11 +342,12 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 	for (const auto &c : cases)
 	{
 		MediaFile row = rowNamed(QString::fromLatin1(c.name));
-		row.durationFrames = c.frames;
+		const int durationBase = c.base > 0 ? c.base : QString::fromLatin1(c.frameRate).toInt();
+		row.duration = {c.frames, {durationBase, 1}, {durationBase, 1}, MediaDuration::Source::Descriptor};
 		row.timecodeBase = c.base;
 		row.dropFrame = c.drop;
 		row.kind = c.kind;
-		row.fps = QString::fromLatin1(c.fps);
+		row.frameRate = QString::fromLatin1(c.frameRate);
 		QCOMPARE(row.durationDisplay(), QString::fromLatin1(c.display));
 		rows.append(row);
 		ascending.append(row.clipName);
@@ -381,7 +382,7 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 	std::array<MediaFile, 3> rows{audio, video, unknown};
 	for (auto &row : rows)
 	{
-		row.durationFrames = 250;
+		row.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
 		row.timecodeBase = 25;
 	}
 	std::array<int, 3> order{0, 1, 2};

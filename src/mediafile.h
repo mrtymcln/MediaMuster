@@ -1,8 +1,10 @@
 #pragma once
 
 #include "avidprecompute.h"
+#include "mediaduration.h"
 
 #include <QString>
+#include <QStringList>
 #include <QDateTime>
 #include <QVector>
 #include <QMetaType>
@@ -50,15 +52,19 @@ struct MediaFile
 
 	QString codec;		///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
 	QString resolution; ///< "1920x1080". Video only; audio rows stay blank.
-	QString fps;		///< "23.976", "25". Video only; audio rows stay blank.
+	QString frameRate;		///< Display label: "23.976", "25". Video only; audio rows stay blank.
+	MediaRate frameRateRatio; ///< Original video fraction; never recovered from the display label.
 	QString bitDepth;	///< "10-bit", "24-bit".
-	int sampleRate = 0; ///< Audio only.
+	int sampleRate = 0; ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
+	MediaRate sampleRateRatio; ///< Original audio sampling fraction, separate from duration's unit rate.
+	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate, retained even when no exact fraction fits.
 	int channels = 0;	///< Audio only.
-	/// Frames at the clip's edit rate — video and audio alike (the Avid-bin
-	/// timecode model). 0 = unknown.
-	qint64 durationFrames = 0;
+	/// File duration with exact source units/rate and provenance. Master and
+	/// sibling lengths may differ; association never depends on equal duration.
+	MediaDuration duration;
+	QVector<ClipTrackDuration> clipDurations; ///< Separate per-track clip values, not an aggregate.
 	/// Nominal timecode base for duration rendering (24, 25, 30, 60...).
-	/// Parser-derived; 0 = unknown (durationDisplay falls back to the fps
+	/// Parser-derived; 0 = unknown (durationDisplay falls back to the frameRate
 	/// display string, and shows blank when neither is available).
 	int timecodeBase = 0;
 	/// Drop-frame numbering (29.97/59.94). The stored frame count stays unchanged.
@@ -293,24 +299,32 @@ struct MediaFile
 		return clipName;
 	}
 
+	/// Numeric audio rate for presentation; calculations use the original fraction.
+	double sampleRateHz() const
+	{
+		return sampleRateRatio.valid() ? sampleRateRatio.value() : qMax(0, sampleRate);
+	}
+
 	/// Audio sample rate shared by the table and CSV; unknown rates stay blank.
 	QString sampleRateDisplay() const
 	{
-		return sampleRate > 0 ? QStringLiteral("%1 kHz").arg(sampleRate / 1000.0, 0, 'g', 10) : QString();
+		const double rate = sampleRateHz();
+		return rate > 0 ? QStringLiteral("%1 kHz").arg(rate / 1000.0, 0, 'g', 10) : QString();
 	}
 
-	/// Recorded timecode base, or the rounded FPS when valid. 0 means unknown.
+	/// Recorded timecode base, or the rounded Frame Rate when valid. 0 means unknown.
 	int effectiveTimecodeBase() const
 	{
 		if (timecodeBase > 0)
 			return timecodeBase;
-		const double rate = fps.toDouble();
+		const double rate = frameRate.toDouble();
 		return (rate >= 1.0 && rate < 1000.0) ? static_cast<int>(std::round(rate)) : 0;
 	}
 
 	/// Numeric HH, MM, SS, FF for display and sorting. Hour -1 means unknown.
 	std::tuple<qint64, int, int, int> durationTimecode() const
 	{
+		const qint64 durationFrames = duration.displayFrames();
 		if (durationFrames <= 0)
 			return {-1, 0, 0, 0};
 		const int base = effectiveTimecodeBase();
@@ -351,6 +365,26 @@ struct MediaFile
 			minutes = totalSecs / 60;
 		}
 		return {minutes / 60, static_cast<int>(minutes % 60), secs, frames};
+	}
+
+	/// Experimental Clip Duration column: preserve per-track distinctions, never sum.
+	QString clipDurationDisplay() const
+	{
+		QStringList values;
+		for (const auto &track : clipDurations)
+		{
+			if (!track.duration.known())
+				continue;
+			MediaFile display;
+			display.duration = track.duration;
+			display.timecodeBase = qRound(track.duration.displayRate.value());
+			display.dropFrame = track.dropFrame;
+			QString text = display.durationDisplay();
+			if (text.isEmpty())
+				text = QStringLiteral("%1 units @ %2/%3").arg(track.duration.units).arg(track.duration.rate.numerator).arg(track.duration.rate.denominator);
+			values.append(QStringLiteral("Track %1: %2").arg(track.trackId).arg(text));
+		}
+		return values.join(QStringLiteral("; "));
 	}
 
 	/// Duration as timecode; drop-frame uses semicolons. Unknown stays blank.

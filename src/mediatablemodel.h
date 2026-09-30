@@ -11,8 +11,8 @@
 
 struct AvbBin;
 
-/// One row per MediaFile. Base columns follow the default table order;
-/// optional detail columns are appended to keep existing indexes stable.
+/// One row per MediaFile. Optional columns are appended to keep logical indexes
+/// stable; the view positions Clip Duration beside Duration and details beside Type.
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -29,7 +29,7 @@ public:
 		SizeMB,
 		Codec,
 		Resolution,
-		Fps,
+		FrameRate,
 		SampleRate,
 		BitDepth,
 		Type,
@@ -74,9 +74,16 @@ public:
 	void setPrecomputesEnabled(bool enabled);
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 
+	/// Logically appended after active columns; the view places it beside Duration.
+	/// Its logical index moves when precompute details toggle.
+	void setClipDurationEnabled(bool enabled);
+	int clipDurationColumn() const;
+	bool clipDurationEnabled() const { return m_clipDurationEnabled; }
+
 private:
 	void applyAvbMetadata(bool notify);
 	BinMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
+	bool m_clipDurationEnabled = false;
 };

@@ -75,6 +75,7 @@ private slots:
 	void status_words_come_from_one_table();
 	void unknown_classification_displays_without_guessing();
 	void precomputes_gate_preserves_rows_and_existing_indexes();
+	void clip_duration_is_separate_and_gated();
 	void effect_columns_only_display_precompute_details();
 	void precompute_categories_and_unknown_effects_display_consistently();
 
@@ -301,6 +302,33 @@ void TestMediaTableModel::unknown_classification_displays_without_guessing()
 	QCOMPARE(model.index(2, type).data().toString(), QStringLiteral("Precompute"));
 }
 
+void TestMediaTableModel::clip_duration_is_separate_and_gated()
+{
+	MediaTableModel model;
+	MediaFile file = row();
+	file.duration = {19, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
+	file.timecodeBase = 25;
+	file.clipDurations = {{1, {344, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference}, false},
+						  {2, {250, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference}, false}};
+	model.setMediaFiles({file});
+	const int base = model.columnCount();
+	QCOMPARE(model.headerData(int(MediaTableModel::Column::Duration), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("Duration"));
+	model.setClipDurationEnabled(true);
+	QCOMPARE(model.columnCount(), base + 1);
+	QCOMPARE(model.headerData(model.clipDurationColumn(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("Clip Duration"));
+	QPersistentModelIndex clip(model.index(0, model.clipDurationColumn()));
+	QCOMPARE(clip.data().toString(), QStringLiteral("Track 1: 00:00:13:19; Track 2: 00:00:10:00"));
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::Duration)).data().toString(), QStringLiteral("00:00:00:19"));
+	model.setPrecomputesEnabled(true);
+	QCOMPARE(clip.column(), model.clipDurationColumn());
+	QCOMPARE(clip.data().toString(), file.clipDurationDisplay());
+	model.setPrecomputesEnabled(false);
+	QCOMPARE(clip.column(), model.clipDurationColumn());
+	model.setClipDurationEnabled(false);
+	QCOMPARE(model.columnCount(), base);
+	QVERIFY(!clip.isValid());
+}
+
 void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 {
 	MediaTableModel model;
@@ -309,7 +337,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	const QStringList baseHeaders{
 		QStringLiteral("Clip Name"), QStringLiteral("Project"), QStringLiteral("Bin"),
 		QStringLiteral("Kind"), QStringLiteral("Duration"), QStringLiteral("Size (MB)"),
-		QStringLiteral("Codec"), QStringLiteral("Resolution"), QStringLiteral("FPS"),
+		QStringLiteral("Codec"), QStringLiteral("Resolution"), QStringLiteral("Frame Rate"),
 		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Type"),
 		QStringLiteral("Date Created"), QStringLiteral("Filename"), QStringLiteral("Source Filename"),
 		QStringLiteral("Location")};

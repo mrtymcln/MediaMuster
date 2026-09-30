@@ -262,7 +262,7 @@ void TestMdbParser::tiny_fixture_covers_the_tone_file()
 	QCOMPARE(f.essence.sampleRate, hdr.sampleRate);
 	QCOMPARE(f.essence.channels, hdr.channels);
 	QCOMPARE(f.essence.bitDepth, hdr.bitDepth);
-	QCOMPARE(f.essence.durationFrames, hdr.durationFrames);
+	QCOMPARE(f.essence.duration.displayFrames(), hdr.duration.displayFrames());
 	QCOMPARE(f.essence.timecodeBase, hdr.timecodeBase);
 	QCOMPARE(f.essence.codec, hdr.codec);
 
@@ -458,7 +458,7 @@ void TestMdbParser::source_mob_is_neither_file_nor_master()
 	QCOMPARE(f.essence.sampleRate, 48000);
 	QCOMPARE(f.essence.channels, 2);
 	QCOMPARE(f.essence.bitDepth, QStringLiteral("24-bit"));
-	QCOMPARE(f.essence.durationFrames, qint64(25)); // 48000 samples × 25/48000
+	QCOMPARE(f.essence.duration.displayFrames(), qint64(25)); // 48000 samples × 25/48000
 	QCOMPARE(f.essence.timecodeBase, 25);
 }
 
@@ -501,10 +501,15 @@ void TestMdbParser::audio_duration_preserves_mob_edit_rate()
 	QVERIFY(fileMob.essenceComplete);
 	QCOMPARE(fileMob.essence.sampleRate, 48000);
 	QCOMPARE(fileMob.essence.descriptorDuration, qint64(samples));
-	QCOMPARE(fileMob.essence.durationFrames, frames);
+	QCOMPARE(fileMob.essence.duration.displayFrames(), frames);
+	QCOMPARE(fileMob.essence.duration.units, qint64(samples));
+	QCOMPARE(fileMob.essence.duration.rate.numerator, 48000);
+	QCOMPARE(fileMob.essence.duration.displayRate.numerator, rateNum);
+	QCOMPARE(fileMob.essence.duration.displayRate.denominator, rateDen);
+	QCOMPARE(fileMob.essence.duration.source, MediaDuration::Source::Descriptor);
 	QCOMPARE(fileMob.essence.timecodeBase, base);
 	MediaFile row;
-	row.durationFrames = fileMob.essence.durationFrames;
+	row.duration = fileMob.essence.duration;
 	row.timecodeBase = fileMob.essence.timecodeBase;
 	QCOMPARE(row.durationDisplay(), display);
 }
@@ -651,7 +656,7 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 // the database yields equals the one the file's own header yields. Both
 // database generations, 795 files. Codec label byte-identical (which covers
 // the AUID reorder and the DIDResolutionID fallback), resolution (which
-// covers the layout-3 half-height rule), fps label, durations, bits,
+// covers the layout-3 half-height rule), frame-rate label, durations, bits,
 // channels, sample rate, kind, clip name.
 void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 {
@@ -707,16 +712,16 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 			QVERIFY2(db_.resolution == hdr.resolution,
 					 qPrintable(e.fileName + QStringLiteral(": res ") + db_.resolution + QStringLiteral(" vs ") +
 								hdr.resolution));
-			QVERIFY2(db_.fps == hdr.fps,
-					 qPrintable(e.fileName + QStringLiteral(": fps ") + db_.fps + QStringLiteral(" vs ") + hdr.fps));
+			QVERIFY2(db_.frameRate == hdr.frameRate,
+					 qPrintable(e.fileName + QStringLiteral(": frameRate ") + db_.frameRate + QStringLiteral(" vs ") + hdr.frameRate));
 			QVERIFY2(db_.bitDepth == hdr.bitDepth,
 					 qPrintable(e.fileName + QStringLiteral(": bits ") + db_.bitDepth + QStringLiteral(" vs ") +
 								hdr.bitDepth));
 			QVERIFY2(db_.sampleRate == hdr.sampleRate, fn);
 			QVERIFY2(db_.channels == hdr.channels, fn);
-			QVERIFY2(db_.durationFrames == hdr.durationFrames,
-					 qPrintable(e.fileName + QStringLiteral(": dur ") + QString::number(db_.durationFrames) +
-								QStringLiteral(" vs ") + QString::number(hdr.durationFrames)));
+			QVERIFY2(db_.duration.displayFrames() == hdr.duration.displayFrames(),
+					 qPrintable(e.fileName + QStringLiteral(": dur ") + QString::number(db_.duration.displayFrames()) +
+								QStringLiteral(" vs ") + QString::number(hdr.duration.displayFrames())));
 			QVERIFY2(db_.timecodeBase == hdr.timecodeBase, fn);
 			QVERIFY2(db_.dropFrame == hdr.dropFrame, fn);
 			++compared;
@@ -857,6 +862,29 @@ void TestMdbParser::omf_aifc_summary_is_chunk_walked()
 	QCOMPARE(s.bits, 24);
 	QCOMPARE(s.sampleRate, 48000);
 	QCOMPARE(s.compressionType, QByteArray("in24"));
+	QCOMPARE(s.sampleRateRatio.numerator, 48000);
+	QCOMPARE(s.sampleRateRatio.denominator, 1);
+	QCOMPARE(s.sampleRateEncoding, rate48k);
+
+	const QByteArray fractionalRate = QByteArray::fromHex("400ebb80800000000000");
+	QByteArray fractional = blob;
+	fractional.replace(rate48k, fractionalRate);
+	const auto fraction = OmfObjects::readAifcSummary(fractional);
+	QVERIFY(fraction.valid);
+	QCOMPARE(fraction.sampleRateRatio.numerator, 96001);
+	QCOMPARE(fraction.sampleRateRatio.denominator, 2);
+	QCOMPARE(fraction.sampleRateEncoding, fractionalRate);
+	QCOMPARE(fraction.frames, qint64(2880002));
+
+	// Too precise for MediaRate: preserve bytes instead of claiming a rounded
+	// whole-Hz value is the exact source rate.
+	const QByteArray preciseRate = QByteArray::fromHex("400ebb80000000000001");
+	QByteArray precise = blob;
+	precise.replace(rate48k, preciseRate);
+	const auto encoded = OmfObjects::readAifcSummary(precise);
+	QVERIFY(encoded.valid);
+	QVERIFY(!encoded.sampleRateRatio.valid());
+	QCOMPARE(encoded.sampleRateEncoding, preciseRate);
 
 	// A plain AIFF COMM is 18 bytes: no compression type.
 	QByteArray comm18 = be16(2) + be32(100) + be16(16) + QByteArray::fromHex("400eac44000000000000");
@@ -932,8 +960,8 @@ void TestMdbParser::omf_era_mdb_describes_every_pmr_pair_with_wrapped_ids()
 		QVERIFY2(!f.essence.codec.isEmpty(), fn);
 		QVERIFY2(!f.essence.codec.startsWith(QLatin1String("Unknown")), qPrintable(f.essence.codec));
 		QVERIFY2(!f.essence.resolution.isEmpty(), fn);
-		QVERIFY2(!f.essence.fps.isEmpty(), fn);
-		QCOMPARE(f.essence.durationFrames, qint64(1));
+		QVERIFY2(!f.essence.frameRate.isEmpty(), fn);
+		QCOMPARE(f.essence.duration.displayFrames(), qint64(1));
 		QCOMPARE(f.essence.bitDepth, QStringLiteral("8-bit"));
 		QCOMPARE(f.usageCode, 0);
 		// The v2 PMR has no project column; the _PJ attribute on the file or
@@ -966,7 +994,7 @@ void TestMdbParser::omf_era_mdb_video_facts_by_resolution_id()
 		const char *file;
 		const char *codec;
 		const char *resolution;
-		const char *fps;
+		const char *frameRate;
 		const char *project;
 		bool dropFrame;
 	};
@@ -1008,7 +1036,7 @@ void TestMdbParser::omf_era_mdb_video_facts_by_resolution_id()
 				 qPrintable(name + QStringLiteral(": codec ") + f.essence.codec));
 		QVERIFY2(f.essence.resolution == QLatin1String(pin.resolution),
 				 qPrintable(name + QStringLiteral(": res ") + f.essence.resolution));
-		QVERIFY2(f.essence.fps == QLatin1String(pin.fps), qPrintable(name + QStringLiteral(": fps ") + f.essence.fps));
+		QVERIFY2(f.essence.frameRate == QLatin1String(pin.frameRate), qPrintable(name + QStringLiteral(": frameRate ") + f.essence.frameRate));
 		QVERIFY2(f.project == QLatin1String(pin.project), qPrintable(name + QStringLiteral(": project ") + f.project));
 		QCOMPARE(f.essence.dropFrame, pin.dropFrame);
 		QVERIFY2(f.essenceComplete, pin.file);
@@ -1072,7 +1100,7 @@ void TestMdbParser::omf_era_audio_mdb_describes_both_tone_files()
 		QCOMPARE(f.essence.sampleRate, 48000);
 		QCOMPARE(f.essence.channels, 1);
 		QCOMPARE(f.essence.bitDepth, QStringLiteral("24-bit"));
-		QCOMPARE(f.essence.durationFrames, qint64(1500)); // 2,880,002 samples × 25 ÷ 48000
+		QCOMPARE(f.essence.duration.displayFrames(), qint64(1500)); // 2,880,002 samples × 25 ÷ 48000
 		QCOMPARE(f.essence.timecodeBase, 25);
 		// OMF-era: the database names legacy audio the way Avid's own menus
 		// do ("WAVE (OMF)" / "AIFF-C (OMF)"); "PCM" is the MXF-era name.
@@ -1106,7 +1134,7 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 		int pairs;
 		const char *file;
 		qint64 start;
-		int fps;
+		int frameRate;
 		bool drop;
 		int sourceIdWidth;
 	};
@@ -1144,7 +1172,7 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 		const OmfObjects::Timecode tc = OmfObjects::readTimecode(b, p, tccp);
 		QVERIFY(tc.found);
 		QCOMPARE(tc.start, pin.start);
-		QCOMPARE(tc.fps, pin.fps);
+		QCOMPARE(tc.frameRate, pin.frameRate);
 		QCOMPARE(tc.dropFrame, pin.drop);
 
 		// And the mob the hop went through is of the width this pin claims.
@@ -1482,8 +1510,8 @@ void TestMdbParser::omf2_video_uses_full_mixed_field_height_and_64_bit_length()
 		QCOMPARE(m.codec, QStringLiteral("JPEG"));
 		QCOMPARE(m.width, 1920);
 		QCOMPARE(m.height, 1080);
-		QCOMPARE(m.durationFrames, qint64(0x10000002aULL));
-		QCOMPARE(m.fps, QStringLiteral("25"));
+		QCOMPARE(m.duration.displayFrames(), qint64(0x10000002aULL));
+		QCOMPARE(m.frameRate, QStringLiteral("25"));
 	}
 }
 
@@ -1580,7 +1608,7 @@ void TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arra
 				{
 					QVERIFY(known);
 					QCOMPARE(meta.bitDepth, QStringLiteral("8-bit"));
-					QCOMPARE(meta.fps, QStringLiteral("24"));
+					QCOMPARE(meta.frameRate, QStringLiteral("24"));
 				}
 			}
 }

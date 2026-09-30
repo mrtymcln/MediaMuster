@@ -709,7 +709,8 @@ namespace
 		struct MxfMaterialTrack
 		{
 			qsizetype componentIndex;
-			double editRate;
+			quint32 trackId;
+			MediaRate editRate;
 			qint64 durationUnits;
 			bool referencesFile;
 		};
@@ -736,7 +737,11 @@ namespace
 					(linkedTrack.isEmpty() || child.fields.value(0x1102) == linkedTrack))
 					owns = true;
 			}
-			timing.append({component, double(num) / den, length, owns});
+			if (header.objects[component].type != kSetTimecode)
+			{
+				const QByteArray trackId = header.objects[track].fields.value(0x4801);
+				timing.append({component, trackId.size() == 4 ? readUint32BE(trackId, 0) : 0, {qint32(num), qint32(den)}, length, owns});
+			}
 		}
 		const MxfMaterialTrack *owning = nullptr;
 		for (const auto &track : timing)
@@ -751,14 +756,14 @@ namespace
 			}
 		if (!owning && filePackageIndex < 0 && timing.size() == 1)
 			owning = &timing.first();
-		double displayRate = owning && owning->editRate < 1000.0 ? owning->editRate : 0.0;
-		if (displayRate == 0.0)
+		MediaRate displayRate = owning && owning->editRate.value() < 1000.0 ? owning->editRate : MediaRate{};
+		if (!displayRate.valid())
 			for (const auto &track : timing)
-				if (track.editRate >= 1.0 && track.editRate < 1000.0)
+				if (track.editRate.value() >= 1.0 && track.editRate.value() < 1000.0)
 				{
-					if (displayRate > 0 && qAbs(displayRate - track.editRate) > 0.00001)
+					if (displayRate.valid() && !displayRate.sameRate(track.editRate))
 					{
-						displayRate = 0;
+						displayRate = {};
 						break;
 					}
 					displayRate = track.editRate;
@@ -766,7 +771,7 @@ namespace
 		// Audio-only material packages can have sample-rate tracks only.
 		// Their linked source/timecode tracks establish the project's frame
 		// rate; use it only when that ancestry offers one consistent rate.
-		if (displayRate == 0.0 && owning && owning->editRate >= 1000.0)
+		if (!displayRate.valid() && owning && owning->editRate.value() >= 1000.0)
 		{
 			for (qsizetype index : scope)
 			{
@@ -776,19 +781,19 @@ namespace
 				const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
 				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
 					continue;
-				const double candidate = double(num) / den;
-				if (candidate < 1.0 || candidate >= 1000.0)
+				const MediaRate candidate{qint32(num), qint32(den)};
+				if (candidate.value() < 1.0 || candidate.value() >= 1000.0)
 					continue;
-				if (displayRate > 0 && qAbs(displayRate - candidate) > 0.00001)
+				if (displayRate.valid() && !displayRate.sameRate(candidate))
 				{
-					displayRate = 0;
+					displayRate = {};
 					break;
 				}
 				displayRate = candidate;
 			}
 		}
-		if (displayRate > 0)
-			meta.timecodeBase = qRound(displayRate);
+		if (displayRate.valid())
+			meta.timecodeBase = qRound(displayRate.value());
 		// Avid can put the timecode track on the linked source package.
 		// Prefer the material package's timecode; consult its ancestry only
 		// when absent, and require a consistent drop-frame flag at this base.
@@ -814,6 +819,21 @@ namespace
 		if (drop == -1)
 			drop = readDropFrame(scope);
 		meta.dropFrame = drop == 1;
+		// Does the AVB give us the same Clip Duration as the MXF? Needs more
+		// testing. Can't bank on the user loading the matching bin, either.
+		// The experimental column requires a proven connection to this file.
+		// A sole, unrelated material package is not evidence of its master length.
+		if (filePackageIndex >= 0 &&
+			reachableObjectIndexes(header, materialPackageIndex, true).contains(filePackageIndex))
+		{
+			for (const auto &track : timing)
+			{
+				const MediaRate frameRate = track.editRate.value() < 1000.0 ? track.editRate : displayRate;
+				meta.clipDurations.append({track.trackId,
+										   {track.durationUnits, track.editRate, frameRate, MediaDuration::Source::ClipReference},
+										   drop == 1 && frameRate.sameRate(displayRate)});
+			}
+		}
 
 		// The MaterialPackage can concatenate several physical files. Its
 		// full sequence length belongs to the master, not to each file row.
@@ -822,7 +842,8 @@ namespace
 		// to that track only when the descriptor lacks a usable duration/rate.
 		// Keep edit units paired with their rate for audio sample conversion.
 		qint64 fileDuration = 0;
-		double fileRate = 0.0;
+		MediaRate fileRate;
+		MediaDuration::Source durationSource = MediaDuration::Source::Unknown;
 		if (descriptorIndex >= 0 && meta.descriptorDuration > 0)
 		{
 			const QByteArray rate = header.objects[descriptorIndex].fields.value(0x3001);
@@ -832,7 +853,8 @@ namespace
 				if (num > 0 && den > 0 && num <= quint32(INT_MAX) && den <= quint32(INT_MAX))
 				{
 					fileDuration = meta.descriptorDuration;
-					fileRate = double(num) / den;
+					fileRate = {qint32(num), qint32(den)};
+					durationSource = MediaDuration::Source::Descriptor;
 				}
 			}
 		}
@@ -860,12 +882,14 @@ namespace
 					break;
 				}
 				fileDuration = length;
-				fileRate = double(num) / den;
+				fileRate = {qint32(num), qint32(den)};
+				durationSource = MediaDuration::Source::FileTrack;
 			}
 			if (ambiguous)
 			{
 				fileDuration = 0;
-				fileRate = 0;
+				fileRate = {};
+				durationSource = MediaDuration::Source::Unknown;
 			}
 		}
 		bool materialDescribesOnlyThisFile = owning != nullptr;
@@ -877,16 +901,12 @@ namespace
 		{
 			fileDuration = owning->durationUnits;
 			fileRate = owning->editRate;
+			durationSource = MediaDuration::Source::ClipReference;
 		}
-		if (fileDuration > 0 && fileRate > 0 && displayRate > 0)
-		{
-			const double frames = double(fileDuration) * displayRate / fileRate;
-			if (frames >= 1.0 && frames < double(std::numeric_limits<qint64>::max()))
-			{
-				meta.durationFrames = qRound64(frames);
-				meta.durationFromTrack = true;
-			}
-		}
+		// Retain source units even without a usable display rate. Conversion is
+		// a presentation concern, not a reason to discard known sample counts.
+		meta.duration = {fileDuration, fileRate, displayRate, durationSource};
+		meta.durationIsResolved = true;
 	}
 } // namespace
 
@@ -1230,29 +1250,28 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, MediaMetadata &out)
 			if (len >= 1)
 				out.frameLayout = static_cast<quint8>(data[pos]);
 			break;
-		case 0x3001: // sample rate — fps for video, Hz for audio
+		case 0x3001: // Descriptor edit-unit rate; preserve its fraction independently of audio sampling.
 			if (len >= 8)
 				MediaMetadataUtil::applyEditRate(out, readUint32BE(data, pos), readUint32BE(data, pos + 4));
 			break;
 		case 0x3002: // container duration (4–8 bytes)
-			// Kept apart from the structural-component durations: this one is
-			// in the DESCRIPTOR's edit units (frames for video, samples for
-			// audio), and the two pools only merge unit-aware in
-			// timing calculation. Min-wins within the pool:
-			// a container can legitimately run longer than the essence it
-			// holds (asymmetrical files), so the shortest positive duration
-			// is the accurate one.
+			// This belongs to the selected descriptor, in its own units.
+			// Master/reference lengths can be shorter or longer; neither
+			// overrides the stored essence length.
+
 			if (const qint64 d = readDuration(data, pos, len); d > 0)
-				if (out.descriptorDuration == 0 || d < out.descriptorDuration)
-					out.descriptorDuration = d;
+				out.descriptorDuration = d;
 			break;
-		case 0x3D03: // audio sampling rate (alternate to 0x3001 for Wave/AES3 descriptors)
+		case 0x3D03: // Audio sampling rate, separate from the descriptor's edit-unit rate.
 			if (out.isAudio && len >= 8)
 			{
 				const quint32 num = readUint32BE(data, pos);
 				const quint32 den = readUint32BE(data, pos + 4);
-				if (den > 0)
+				if (num > 0 && den > 0 && num <= quint32(INT_MAX) && den <= quint32(INT_MAX))
+				{
+					out.sampleRateRatio = {qint32(num), qint32(den)};
 					out.sampleRate = static_cast<int>(num / den);
+				}
 			}
 			break;
 		case 0x3301: // video quantisation bits
@@ -1340,8 +1359,8 @@ void MxfParser::parseStructuralComponent(const QByteArray &data, MediaMetadata &
 			// positive component duration. For audio, finalise combines this
 			// frame count with the descriptor's sample count to infer the rate.
 			if (const qint64 d = readDuration(data, pos, len); d > 0)
-				if (out.durationFrames == 0 || d < out.durationFrames)
-					out.durationFrames = d;
+				if (out.structuralDuration == 0 || d < out.structuralDuration)
+					out.structuralDuration = d;
 		}
 		else if (tag == 0x1503 && len >= 1)
 		{

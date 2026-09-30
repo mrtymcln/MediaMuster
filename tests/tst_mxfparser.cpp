@@ -75,7 +75,7 @@ namespace
 
 	// A CDCI picture-descriptor Set carrying stored width/height and, when
 	// `rateNum` is non-zero, a sample-rate rational (tag 0x3001) — the field
-	// the fps display string is derived from.
+	// the frame-rate display string is derived from.
 	QByteArray cdciSet(quint32 width, quint32 height, quint32 rateNum = 0, quint32 rateDen = 1)
 	{
 		QByteArray value;
@@ -160,9 +160,10 @@ private slots:
 	// Rates must be recognised by the speed the fraction works out to, not
 	// the digits used to write it: 60000/2002 and 2997/100 are both 29.97,
 	// but the exact-digit whitelist dropped them into the round-to-integer
-	// fallback and the FPS column silently read "30". A rate matching no
+	// fallback and the Frame Rate column silently read "30". A rate matching no
 	// known family must display its real value, never a rounded neighbour.
 	void equivalent_rate_fractions_resolve_by_value();
+	void audio_sampling_rate_retains_fraction_and_distinct_unit_clock();
 
 	// Duration fields are big-endian integers whose recorded length varies
 	// by flavour. The old reader handled only 4 and 8 exactly; a 5-7 byte
@@ -182,7 +183,7 @@ private slots:
 	// HH:MM:SS; the settled rule is HH:MM:SS:FF at the clip's edit rate,
 	// with the rate derived from the frame-track duration against the WAVE
 	// sample count.
-	void audio_duration_displays_bin_timecode();
+	void audio_duration_displays_timecode();
 
 	// Drop-frame material renders with SMPTE drop-frame counting and Avid's
 	// semicolon separators; non-drop keeps colons. Duration rendering only —
@@ -252,6 +253,7 @@ private slots:
 	void precompute_categories_scope_and_incomplete_headers();
 	void owning_package_selects_descriptor();
 	void split_master_uses_individual_file_duration();
+	void extra_audio_samples_survive_display_conversion();
 	void malformed_local_property_invalidates_header();
 };
 
@@ -407,7 +409,7 @@ void TestMxfParser::fractional_frame_rates_are_never_rounded()
 		const MediaMetadata meta =
 			MxfParser::parseHeader(writeMxf(path, cdciSet(1920, 1080, r.num, r.den)));
 		QVERIFY(meta.valid);
-		QCOMPARE(meta.fps, QString::fromLatin1(r.expected));
+		QCOMPARE(meta.frameRate, QString::fromLatin1(r.expected));
 	}
 }
 
@@ -436,7 +438,33 @@ void TestMxfParser::equivalent_rate_fractions_resolve_by_value()
 		const MediaMetadata meta =
 			MxfParser::parseHeader(writeMxf(path, cdciSet(1920, 1080, r.num, r.den)));
 		QVERIFY(meta.valid);
-		QCOMPARE(meta.fps, QString::fromLatin1(r.expected));
+		QCOMPARE(meta.frameRate, QString::fromLatin1(r.expected));
+		QCOMPARE(meta.frameRateRatio.numerator, qint32(r.num));
+		QCOMPARE(meta.frameRateRatio.denominator, qint32(r.den));
+	}
+}
+
+void TestMxfParser::audio_sampling_rate_retains_fraction_and_distinct_unit_clock()
+{
+	QTemporaryDir tmp;
+	const QByteArray sampling = u16be(0x3d03) + u16be(8) + u32be(96001) + u32be(2);
+	const QByteArray units = u16be(0x3001) + u16be(8) + u32be(30000) + u32be(1001);
+	for (const bool samplingFirst : {false, true})
+	{
+		const auto meta = MxfParser::parseHeader(writeMxf(tmp.filePath("rates.mxf"),
+			shortSet(0x48, samplingFirst ? sampling + units : units + sampling)));
+		QVERIFY(meta.valid);
+		QCOMPARE(meta.sampleRateRatio.numerator, 96001);
+		QCOMPARE(meta.sampleRateRatio.denominator, 2);
+		QCOMPARE(meta.descriptorRate.numerator, 30000);
+		QCOMPARE(meta.descriptorRate.denominator, 1001);
+		QVERIFY(meta.frameRate.isEmpty());
+		QVERIFY(!meta.frameRateRatio.valid());
+		QCOMPARE(meta.duration.units, qint64(0)); // Rates survive even without a length.
+		MediaFile file;
+		file.sampleRate = meta.sampleRate;
+		file.sampleRateRatio = meta.sampleRateRatio;
+		QCOMPARE(file.sampleRateDisplay(), QStringLiteral("48.0005 kHz"));
 	}
 }
 
@@ -463,7 +491,8 @@ void TestMxfParser::odd_width_duration_fields_read_exactly()
 	const MediaMetadata meta =
 		MxfParser::parseHeader(writeMxf(tmp.path() + "/sixbyte.mxf", set));
 	QVERIFY(meta.valid);
-	QCOMPARE(meta.durationFrames, qint64(300));
+	QCOMPARE(meta.duration.units, qint64(300));
+	QCOMPARE(meta.duration.displayFrames(), qint64(0)); // No rate was recorded.
 }
 
 void TestMxfParser::mp2_audio_descriptor_recognised()
@@ -481,12 +510,12 @@ void TestMxfParser::mp2_audio_descriptor_recognised()
 	QCOMPARE(m.bitDepth, QStringLiteral("16-bit"));
 	QCOMPARE(m.clipName, QStringLiteral("TONE: 1000 Hz @ -20.0 dB.4.new.10"));
 	QVERIFY(m.clipNameFromMaterial);
-	QCOMPARE(m.durationFrames, qint64(1800));
+	QCOMPARE(m.duration.displayFrames(), qint64(1800));
 	QCOMPARE(m.timecodeBase, 30); // 1800 frames vs 2,883,456 samples @48k → 29.96 → 30
 
 	MediaFile mf;
 	mf.kind = MediaFile::Kind::Audio;
-	mf.durationFrames = m.durationFrames;
+	mf.duration = m.duration;
 	mf.timecodeBase = m.timecodeBase;
 	QCOMPARE(mf.durationDisplay(), QStringLiteral("00:01:00:00"));
 }
@@ -504,7 +533,7 @@ void TestMxfParser::label_only_audio_classifies_from_ul()
 	QVERIFY(pcm.valid);
 	QVERIFY(pcm.isAudio);
 	QCOMPARE(pcm.codec, QStringLiteral("PCM"));
-	QCOMPARE(pcm.durationFrames, qint64(0));
+	QCOMPARE(pcm.duration.displayFrames(), qint64(0));
 
 	// MPEG-1 Layer II sound-coding UL (bytes 8-9 = 04 02).
 	const MediaMetadata mp2 = MxfParser::parseHeader(writeMxf(
@@ -605,7 +634,7 @@ void TestMxfParser::uhd_corpus_codec_entries_resolve()
 		{"V01.E68C04FE_7430E07430E4AV.mxf", "Avid DNx SQ", "8-bit"},
 		{"V01.E68C04CC_71CC7071CC76BV.mxf", "Avid DNx LB", "8-bit"},
 		// MC 2025's HD SQ flavour (Avid-private namespace, CID byte 0x08),
-		// 1080i50 — the DNxHD bitrate table applies: SQ at 25 fps = 120.
+		// 1080i50 — the DNxHD bitrate table applies: SQ at 25 frames/s = 120.
 		{"V01.E68E7FE8_7A59107A591A7V.mxf", "Avid DNx SQ (DNxHD 120)", "8-bit"},
 		{"V01.E68C0302_5C17705C17776V.mxf", "JPEG 2000 IMF", "10-bit"},
 		{"V01.E690E7A6_DAB26DAB26AE8V.mxf", "AVC Intra", "10-bit"},
@@ -706,11 +735,10 @@ void TestMxfParser::archived_corpus_all_parses_with_no_unknowns()
 
 void TestMxfParser::real_avid_headers_parse_exactly()
 {
-	// name, expected MaterialPackage clip name, expected fps ("" = audio,
-	// which never sets fps), expected resolved codec, expected isAudio,
-	// expected durationFrames, expected timecodeBase. Durations are FRAMES
-	// at the clip's edit rate for video AND audio — the Avid-bin timecode
-	// model. Audio's base is derived by the parser from the frame-track
+	// name, expected MaterialPackage clip name, expected frame rate ("" = audio,
+	// which never sets frameRate), expected resolved codec, expected isAudio,
+	// expected display frames and timecode base. Source units and rates
+	// are retained; these assertions check presentation only. Audio's base is derived by the parser from the frame-track
 	// duration against the WAVE sample count, so it's pinned per file here.
 	// The video codec pins UL 71.12 (DNxHD SQ at 720p) against real files —
 	// it displayed as "VC-3 (unknown variant)" until 2026-07.
@@ -718,7 +746,7 @@ void TestMxfParser::real_avid_headers_parse_exactly()
 	{
 		const char *name;
 		const char *clip;
-		const char *fps;
+		const char *frameRate;
 		const char *codec;
 		bool isAudio;
 		qint64 duration;
@@ -790,17 +818,17 @@ void TestMxfParser::real_avid_headers_parse_exactly()
 		QVERIFY2(meta.valid, f.name);
 		QCOMPARE(meta.clipName, QString::fromLatin1(f.clip));
 		QVERIFY2(meta.clipNameFromMaterial, f.name);
-		QCOMPARE(meta.fps, QString::fromLatin1(f.fps));
+		QCOMPARE(meta.frameRate, QString::fromLatin1(f.frameRate));
 		QCOMPARE(meta.codec, QString::fromLatin1(f.codec));
 		QCOMPARE(meta.isAudio, f.isAudio);
 		if (f.isAudio)
 			QCOMPARE(meta.sampleRate, 48000);
-		QCOMPARE(meta.durationFrames, f.duration);
+		QCOMPARE(meta.duration.displayFrames(), f.duration);
 		QCOMPARE(meta.timecodeBase, f.base);
 	}
 }
 
-void TestMxfParser::audio_duration_displays_bin_timecode()
+void TestMxfParser::audio_duration_displays_timecode()
 {
 	// End to end through the same steps the scanner takes: parse the real
 	// header, copy the fields applyMediaMetadata copies, and format with
@@ -824,8 +852,8 @@ void TestMxfParser::audio_duration_displays_bin_timecode()
 
 		MediaFile mf;
 		mf.kind = MediaFile::Kind::Audio;
-		if (meta.durationFrames > 0)
-			mf.durationFrames = meta.durationFrames;
+		if (meta.duration.displayFrames() > 0)
+			mf.duration = meta.duration;
 		if (meta.timecodeBase > 0)
 			mf.timecodeBase = meta.timecodeBase;
 		if (meta.dropFrame)
@@ -833,12 +861,12 @@ void TestMxfParser::audio_duration_displays_bin_timecode()
 		QCOMPARE(mf.durationDisplay(), QString::fromLatin1(a.display));
 	}
 
-	// Video through the same path: 765 frames at 25 fps.
+	// Video through the same path: 765 frames at 25 frames/s.
 	const MediaMetadata v = MxfParser::parseHeader(
 		QStringLiteral(FIXTURES_DIR "/avid_headers/V01.E683CD72_FF4BEFF4BE92DV.mxf"));
 	MediaFile vf;
-	vf.fps = v.fps;
-	vf.durationFrames = v.durationFrames;
+	vf.frameRate = v.frameRate;
+	vf.duration = v.duration;
 	vf.timecodeBase = v.timecodeBase;
 	QCOMPARE(vf.durationDisplay(), QStringLiteral("00:00:30:15"));
 }
@@ -866,7 +894,7 @@ void TestMxfParser::drop_frame_durations_render_like_avid()
 	for (const auto &c : kCases)
 	{
 		MediaFile mf;
-		mf.durationFrames = c.frames;
+		mf.duration = {c.frames, {c.base, 1}, {c.base, 1}, MediaDuration::Source::Descriptor};
 		mf.timecodeBase = c.base;
 		mf.dropFrame = c.drop;
 		QCOMPARE(mf.durationDisplay(), QString::fromLatin1(c.display));
@@ -884,9 +912,9 @@ void TestMxfParser::drop_frame_durations_render_like_avid()
 	QVERIFY(m.valid);
 	QVERIFY(m.dropFrame);
 	QCOMPARE(m.timecodeBase, 30);
-	QCOMPARE(m.durationFrames, qint64(18340));
+	QCOMPARE(m.duration.displayFrames(), qint64(18340));
 	MediaFile mf;
-	mf.durationFrames = m.durationFrames;
+	mf.duration = m.duration;
 	mf.timecodeBase = m.timecodeBase;
 	mf.dropFrame = m.dropFrame;
 	QCOMPARE(mf.durationDisplay(), QStringLiteral("00;10;11;28"));
@@ -1155,9 +1183,34 @@ void TestMxfParser::owning_package_selects_descriptor()
 	QCOMPARE(result.umid, MobId::format(masterId));
 	QCOMPARE(result.clipName, QStringLiteral("Selected master"));
 	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
-	QCOMPARE(result.fps, QStringLiteral("25"));
-	QCOMPARE(result.durationFrames, qint64(250));
+	QCOMPARE(result.frameRate, QStringLiteral("25"));
+	QCOMPARE(result.duration.displayFrames(), qint64(250));
+	QCOMPARE(result.duration.source, MediaDuration::Source::ClipReference);
 	QVERIFY(result.classificationKnown);
+}
+
+void TestMxfParser::extra_audio_samples_survive_display_conversion()
+{
+	const auto path = QStringLiteral(FIXTURES_DIR "/corpus_headers/A01.E69CED82_F8DF1F8DF1DD1A.mxf");
+	const auto m = MxfParser::parseHeader(path);
+	QVERIFY(m.valid);
+	QCOMPARE(m.duration.source, MediaDuration::Source::Descriptor);
+	QCOMPARE(m.duration.units, qint64(1468800));
+	QCOMPARE(m.duration.rate.numerator, 48000);
+	QCOMPARE(m.duration.rate.denominator, 1);
+	QCOMPARE(m.sampleRateRatio.numerator, 48000);
+	QCOMPARE(m.sampleRateRatio.denominator, 1);
+	QCOMPARE(m.duration.displayRate.numerator, 30000);
+	QCOMPARE(m.duration.displayRate.denominator, 1001);
+	QCOMPARE(m.duration.displayFrames(), qint64(917));
+	bool found = false;
+	for (const auto &track : m.clipDurations)
+		if (track.duration.rate.sameRate({48000, 1}))
+		{
+			QCOMPARE(track.duration.units, qint64(1468667));
+			found = true;
+		}
+	QVERIFY(found); // The shorter master never truncates the stored sample count.
 }
 
 void TestMxfParser::split_master_uses_individual_file_duration()
@@ -1201,8 +1254,18 @@ void TestMxfParser::split_master_uses_individual_file_duration()
 				content += objectSet(0x23, 'e', localProperty(0x2701, fileId));
 				const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("split.mxf"), content));
 				QVERIFY(result.valid);
-				QCOMPARE(result.durationFrames, qint64(19));
+				QCOMPARE(result.duration.displayFrames(), qint64(19));
+				QCOMPARE(result.duration.units, qint64(19 * units));
+				QCOMPARE(result.duration.rate.numerator, qint32(rate));
+				QCOMPARE(result.duration.source, descriptorDuration ? MediaDuration::Source::Descriptor : MediaDuration::Source::FileTrack);
+				QCOMPARE(result.clipDurations.size(), 1);
+				QCOMPARE(result.clipDurations.first().duration.units, qint64(344 * units));
 				QCOMPARE(result.timecodeBase, 25);
+				// An unrelated sole material package must not populate Clip Duration.
+				QByteArray disconnected = content;
+				disconnected.replace(localProperty(0x1101, fileId), localProperty(0x1101, QByteArray(32, 'x')));
+				const auto unrelated = MxfParser::parseHeader(writeMxf(temp.filePath("unrelated.mxf"), disconnected));
+				QVERIFY(unrelated.clipDurations.isEmpty());
 			}
 }
 
@@ -1285,7 +1348,7 @@ void TestMxfParser::avid_alpha_requires_positive_container_and_layout()
 	if (alpha)
 	{
 		QCOMPARE(result.bitDepth, QStringLiteral("8-bit"));
-		QCOMPARE(result.fps, QStringLiteral("24"));
+		QCOMPARE(result.frameRate, QStringLiteral("24"));
 	}
 }
 

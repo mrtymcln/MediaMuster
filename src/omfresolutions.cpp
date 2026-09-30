@@ -43,8 +43,8 @@
 //        160  MPG2  MPEG50    MP50     MPEG 50
 //
 //   UNVERIFIED — token only, no .vr exists for them in the bundle:
-//        2500 DV/C  DV100_115 (1920x540x2, 25 fps)     DV 100 1080i
-//        2502 DV/C  DV100_90  (1280x720x1, 59.94 fps)  DV 100 720p
+//        2500 DV/C  DV100_115 (1920x540x2, 25 frames/s)     DV 100 1080i
+//        2502 DV/C  DV100_90  (1280x720x1, 59.94 frames/s)  DV 100 720p
 //        2402 DV/C  the same DV100_90 files as MC 26.8's regenerated
 //                   msmMMOB.mdb re-ids them (the .omf says 2502)  DV 100 720p
 //

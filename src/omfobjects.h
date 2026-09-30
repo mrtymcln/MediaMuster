@@ -50,7 +50,7 @@ namespace OmfObjects
 		// UNIX locator's own path property, and the descriptor's locator
 		// list (whose MSML names the last known volume).
 		int compression, wavdSummary, aifdSummary;
-		int tcFps, tcStart;
+		int tcFrameRate, tcStart;
 		int mdatMobId, waveMobId, aifcMobId;
 		int mobKind, unxlPath, locator, lastKnownVolumeUtf8, lastKnownVolume;
 		int slotRate, nestedSlots, selected, choices, inputSegment;
@@ -134,6 +134,8 @@ namespace OmfObjects
 		qint64 frames = 0;
 		int bits = 0;
 		int sampleRate = 0;
+		MediaRate sampleRateRatio; ///< Exact fraction when representable by MediaRate.
+		QByteArray sampleRateEncoding; ///< Preserve all ten bytes, including rates beyond rational storage bounds.
 		QByteArray compressionType; ///< Empty for a plain AIFF `COMM`.
 		bool valid = false;
 	};
@@ -202,7 +204,7 @@ namespace OmfObjects
 										const ObjectByMob &objectByMob);
 
 	/// What a TCCP carries. `dropFrame` is OMFI:TCCP:Flags != 0 (the MDB
-	/// path's rule); OMF-era: `start` and `fps` are OMFI:TCCP:StartTC (in
+	/// path's rule); OMF-era: `start` and `frameRate` are OMFI:TCCP:StartTC (in
 	/// frames) and OMFI:TCCP:FPS, which an OMF essence file surfaces and an
 	/// MXF-era MDB row does not need.
 	struct Timecode
@@ -210,7 +212,7 @@ namespace OmfObjects
 		bool found = false;
 		bool dropFrame = false;
 		qint64 start = -1; ///< Frames; −1 when the property is absent.
-		int fps = 0;
+		int frameRate = 0;
 	};
 	[[nodiscard]] Timecode readTimecode(const BentoFile &b, const Props &p, quint32 tccp);
 

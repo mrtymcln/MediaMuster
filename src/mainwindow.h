@@ -160,6 +160,7 @@ private:
 	void rebuildProjectList();
 	void setOmfEnabled(bool enabled);
 	void setPrecomputesEnabled(bool enabled);
+	void setClipDurationEnabled(bool enabled);
 
 	/// Drop every active filter back to its default after a scan swaps in a
 	/// new dataset, so a stale predicate (a project name or bin MOB from the

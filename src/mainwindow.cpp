@@ -190,6 +190,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupConnections();
 	setOmfEnabled(FeatureFlags::kOmfEnabled);
 	setPrecomputesEnabled(FeatureFlags::kPrecomputesEnabled);
+	setClipDurationEnabled(FeatureFlags::kClipDurationEnabled);
 	updateFilterCounts();
 	updateActivityUi();
 
@@ -467,22 +468,22 @@ void MainWindow::buildTable()
 	using Col = MediaTableModel::Column;
 	auto setW = [this](Col c, int w)
 	{ m_tableView->setColumnWidth(Enum::to_underlying(c), w); };
-	setW(Col::ClipName, 240);
+	setW(Col::ClipName, 250);
 	setW(Col::Project, 150);
 	setW(Col::OriginalBin, 150);
 	setW(Col::Kind, 75);
-	setW(Col::Duration, 110);
-	setW(Col::SizeMB, 110);
-	setW(Col::Codec, 160);
-	setW(Col::Resolution, 110);
-	setW(Col::Fps, 75);
-	setW(Col::SampleRate, 110);
+	setW(Col::Duration, 100);
+	setW(Col::SizeMB, 100);
+	setW(Col::Codec, 150);
+	setW(Col::Resolution, 100);
+	setW(Col::FrameRate, 100);
+	setW(Col::SampleRate, 100);
 	setW(Col::BitDepth, 100);
-	setW(Col::Type, 110);
-	setW(Col::Created, 165);
-	setW(Col::FileName, 260);
-	setW(Col::SourceFile, 240);
-	setW(Col::Location, 400);
+	setW(Col::Type, 100);
+	setW(Col::Created, 150);
+	setW(Col::FileName, 250);
+	setW(Col::SourceFile, 250);
+	setW(Col::Location, 250);
 }
 
 // MARK: - Console
@@ -947,6 +948,23 @@ void MainWindow::setOmfEnabled(bool enabled)
 
 // MARK: - Precompute classification, details and filter
 
+void MainWindow::setClipDurationEnabled(bool enabled)
+{
+	if (!m_operations->isIdle() || m_model->clipDurationEnabled() == enabled)
+		return;
+	if (!enabled && m_proxy->sortColumn() == m_model->clipDurationColumn())
+		m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
+	m_model->setClipDurationEnabled(enabled);
+	if (enabled)
+	{
+		m_tableView->setColumnWidth(m_model->clipDurationColumn(), 260);
+		// Keep logical column indexes stable; place the optional column beside Duration visually.
+		auto *header = m_tableView->horizontalHeader();
+		header->moveSection(header->visualIndex(m_model->clipDurationColumn()),
+							header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Duration)) + 1);
+	}
+}
+
 void MainWindow::setPrecomputesEnabled(bool enabled)
 {
 	if (!m_operations->isIdle())
@@ -958,7 +976,8 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 								   {
 		// A sort column that is about to disappear must not keep controlling
 		// the rows while its heading is no longer available to the editor.
-		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory))
+		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory) &&
+			m_proxy->sortColumn() < Enum::to_underlying(MediaTableModel::Column::Count_))
 			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
 		const int tab = m_filterTabs->currentIndex();
 		if (!enabled && tab >= 0 && tab < static_cast<int>(kFilterDefs.size()) &&
@@ -1758,7 +1777,7 @@ void MainWindow::onExportCsv()
 	}
 
 	const int count = rows.size();
-	const MediaCsv::Options csvOptions{m_precomputesEnabled};
+	const MediaCsv::Options csvOptions{m_model->precomputesEnabled(), m_model->clipDurationEnabled()};
 	const QString label = exportSelected ? "selected" : "visible";
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
 	m_exportInProgress = true;

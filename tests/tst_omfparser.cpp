@@ -195,7 +195,7 @@ void TestOmfParser::wave_omf1_and_omf2_semantics()
 		QCOMPARE(m.essence.sampleRate, 48000);
 		QCOMPARE(m.essence.channels, 2);
 		QCOMPARE(m.essence.bitDepth, QStringLiteral("24-bit"));
-		QCOMPARE(m.essence.durationFrames, qint64(50));
+		QCOMPARE(m.essence.duration.displayFrames(), qint64(50));
 		QCOMPARE(m.essence.clipName, QStringLiteral("WAVE clip"));
 		QCOMPARE(m.essence.projectName, QStringLiteral("WAVE project"));
 		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.wav"));
@@ -204,7 +204,7 @@ void TestOmfParser::wave_omf1_and_omf2_semantics()
 		QCOMPARE(m.essence.umid, OmfUid::toIdText(TestOmf::uid(1)));
 		QCOMPARE(m.fileMobId, OmfUid::toIdText(TestOmf::uid(2)));
 		QCOMPARE(m.startTimecode, omf2 ? qint64(0x10000002aULL) : qint64(90000));
-		QCOMPARE(m.timecodeFps, 25);
+		QCOMPARE(m.timecodeFrameRate, 25);
 	}
 }
 
@@ -264,9 +264,9 @@ void TestOmfParser::omf_every_slate_parses_with_a_named_codec()
 		QVERIFY2(!e.codec.startsWith(QLatin1String("Unknown")), qPrintable(name + QStringLiteral(": ") + e.codec));
 		QVERIFY2(!e.codec.contains(QLatin1String("unknown variant")), qPrintable(name + QStringLiteral(": ") + e.codec));
 		QVERIFY2(!e.resolution.isEmpty(), fn);
-		QVERIFY2(!e.fps.isEmpty(), fn);
+		QVERIFY2(!e.frameRate.isEmpty(), fn);
 		// Every slate is one frame of 8-bit video.
-		QCOMPARE(e.durationFrames, qint64(1));
+		QCOMPARE(e.duration.displayFrames(), qint64(1));
 		QCOMPARE(e.bitDepth, QStringLiteral("8-bit"));
 		// Identity: the master's name is the clip name, and it is the
 		// material name (a rung of the clip-name ladder), never a fallback.
@@ -355,8 +355,8 @@ void TestOmfParser::omf_mdb_row_agrees_with_the_file()
 					 qPrintable(entry.fileName + QStringLiteral(": file ") + e.codec + QStringLiteral(" mdb ") +
 								row.essence.codec));
 			QCOMPARE(e.resolution, row.essence.resolution);
-			QCOMPARE(e.fps, row.essence.fps);
-			QCOMPARE(e.durationFrames, row.essence.durationFrames);
+			QCOMPARE(e.frameRate, row.essence.frameRate);
+			QCOMPARE(e.duration.displayFrames(), row.essence.duration.displayFrames());
 			QCOMPARE(e.bitDepth, row.essence.bitDepth);
 			QCOMPARE(e.sampleRate, row.essence.sampleRate);
 			QCOMPARE(e.channels, row.essence.channels);
@@ -391,7 +391,7 @@ void TestOmfParser::omf_mdb_row_agrees_with_the_file()
 //   resolution  StoredWidth x StoredHeight, the height DOUBLED for layout 1
 //               (separate fields) and reported AS STORED for layout 2
 //               (single field) and layout 0 (full frame).
-//   fps         OMFI:MDFL:SampleRate through applyEditRate's speed matcher:
+//   frameRate         OMFI:MDFL:SampleRate through applyEditRate's speed matcher:
 //               2997/100 → 29.97, 23976/1000 → 23.976, 59940/1000 → 59.94.
 void TestOmfParser::omf_video_facts_by_resolution_id()
 {
@@ -400,7 +400,7 @@ void TestOmfParser::omf_video_facts_by_resolution_id()
 		const char *file;
 		const char *codec;
 		const char *resolution;
-		const char *fps;
+		const char *frameRate;
 		int frameLayout;
 	};
 	const Pin kPins[] = {
@@ -410,7 +410,7 @@ void TestOmfParser::omf_video_facts_by_resolution_id()
 		{"BLACK_720x486x1_JFIF25P.omf", "28:1", "720x496", "24", 0},	 // 104 JFIF, 720x496 layout 0
 		{"BLACK_288x243x1_JFIF15m.omf", "10:1m", "288x248", "29.97", 2}, // 110 JFIF, 288x248 layout 2
 		{"BLACK_288x288x1_JFIF20mP.omf", "8:1m", "288x296", "24", 0},	 // 112 JFIF, 288x296 layout 0
-		// DV: finalise's i/p(PAL/NTSC) suffix, from layout + fps/height
+		// DV: finalise's i/p(PAL/NTSC) suffix, from layout + frame rate/height
 		{"BLACK_720x480x1_DV411.omf", "DV 25 411 i(NTSC)", "720x480", "29.97", 1}, // 140 DV/C, 720x240 layout 1, NTSC
 		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", 1},	   // 141 DV/C, 720x288 layout 1, PAL
 		{"BLACK_720x480x1_DV50.omf", "DV 50 i(NTSC)", "720x480", "29.97", 1},	   // 142 DV/C, 720x240 layout 1, NTSC
@@ -440,7 +440,7 @@ void TestOmfParser::omf_video_facts_by_resolution_id()
 		QVERIFY2(e.codec == QLatin1String(pin.codec), qPrintable(name + QStringLiteral(": codec ") + e.codec));
 		QVERIFY2(e.resolution == QLatin1String(pin.resolution),
 				 qPrintable(name + QStringLiteral(": res ") + e.resolution));
-		QVERIFY2(e.fps == QLatin1String(pin.fps), qPrintable(name + QStringLiteral(": fps ") + e.fps));
+		QVERIFY2(e.frameRate == QLatin1String(pin.frameRate), qPrintable(name + QStringLiteral(": frameRate ") + e.frameRate));
 		QCOMPARE(e.frameLayout, pin.frameLayout);
 		QVERIFY2(e.heightIsFrameHeight, pin.file);
 	}
@@ -468,7 +468,7 @@ void TestOmfParser::omf_attributes_come_from_master_file_and_source_mobs()
 	QVERIFY(!jfif35.essence.hasImportSetting);
 	QCOMPARE(jfif35.essence.sourceFilePath,
 			 QStringLiteral("C:\\WINNT\\Profiles\\dhoag\\DESKTOP\\Avid Media Slides\\720wide\\Black 720x486.PICT"));
-	QCOMPARE(jfif35.timecodeFps, 30);
+	QCOMPARE(jfif35.timecodeFrameRate, 30);
 	QCOMPARE(jfif35.startTimecode, qint64(108000)); // 01:00:00:00 at 30
 	QVERIFY(!jfif35.essence.dropFrame);
 	QCOMPARE(jfif35.essence.umid,
@@ -487,7 +487,7 @@ void TestOmfParser::omf_attributes_come_from_master_file_and_source_mobs()
 	QCOMPARE(dnx.mediaFilePath, QStringLiteral("C//OMFI MediaFiles/Black 1920 x 1080.p412CADC5.omf"));
 	QCOMPARE(dnx.essence.projectName, QStringLiteral("1080p 23.976"));
 	QVERIFY(dnx.bin.isEmpty()); // no _ORG_BIN on this master
-	QCOMPARE(dnx.timecodeFps, 24);
+	QCOMPARE(dnx.timecodeFrameRate, 24);
 	QCOMPARE(dnx.startTimecode, qint64(86400)); // 01:00:00:00 at 24
 	QVERIFY(!dnx.essence.dropFrame);
 
@@ -496,13 +496,13 @@ void TestOmfParser::omf_attributes_come_from_master_file_and_source_mobs()
 	QVERIFY(dv411.essence.valid);
 	QVERIFY(dv411.essence.dropFrame);
 	QCOMPARE(dv411.startTimecode, qint64(900));
-	QCOMPARE(dv411.timecodeFps, 30);
+	QCOMPARE(dv411.timecodeFrameRate, 30);
 }
 
 // MARK: - MC 2026 audio
 
 // Two one-minute tones MC 26.8 wrote fresh: WAVE and AIFF-C, 48 kHz,
-// 24-bit, mono, 25 fps, in project zTeßt_PAL_25p. The essence file carries
+// 24-bit, mono, 25 frames/s, in project zTeßt_PAL_25p. The essence file carries
 // no _ORG_BIN (the MDB is the only source of the bin), and MC 2026 keeps
 // _PJ on the file mob.
 void TestOmfParser::omf_audio_files_describe_the_tones()
@@ -535,7 +535,7 @@ void TestOmfParser::omf_audio_files_describe_the_tones()
 		QCOMPARE(e.sampleRate, 48000);
 		QCOMPARE(e.channels, 1);
 		QCOMPARE(e.bitDepth, QStringLiteral("24-bit"));
-		QCOMPARE(e.durationFrames, qint64(1500)); // 2,880,002 samples × 25 ÷ 48000
+		QCOMPARE(e.duration.displayFrames(), qint64(1500)); // 2,880,002 samples × 25 ÷ 48000
 		QCOMPARE(e.timecodeBase, 25);
 		// OMF-era: Avid labels legacy audio by container (its format menus:
 		// "WAVE (OMF)", "AIFF-C (OMF)"), never "PCM" — that name stays with
@@ -545,7 +545,7 @@ void TestOmfParser::omf_audio_files_describe_the_tones()
 									  : QStringLiteral("AIFF-C (OMF)");
 		QCOMPARE(e.codec, avidLabel);
 		QVERIFY2(e.resolution.isEmpty(), pin.file);
-		QVERIFY2(e.fps.isEmpty(), pin.file);
+		QVERIFY2(e.frameRate.isEmpty(), pin.file);
 		QCOMPARE(e.clipName, QString::fromLatin1(pin.clipName));
 		QVERIFY2(e.clipNameFromMaterial, pin.file);
 		QCOMPARE(e.projectName, project);
@@ -555,7 +555,7 @@ void TestOmfParser::omf_audio_files_describe_the_tones()
 		QCOMPARE(e.umid, QLatin1String(pin.umid));
 		QCOMPARE(m.fileMobId, QLatin1String(pin.fileMobId));
 		// The TCCP sits on the 32-byte physical mob the file mob's SCLP names.
-		QCOMPARE(m.timecodeFps, 25);
+		QCOMPARE(m.timecodeFrameRate, 25);
 		QCOMPARE(m.startTimecode, qint64(90000)); // 01:00:00:00 at 25
 		QVERIFY2(!e.dropFrame, pin.file);
 		// 8.7 MB of essence, read as a few KB of tail.
@@ -659,7 +659,7 @@ void TestOmfParser::omf_finalise_parity_with_a_header()
 		QCOMPARE(hdr.valid, m.essence.valid);
 		QCOMPARE(hdr.resolution, m.essence.resolution);
 		QCOMPARE(hdr.codec, m.essence.codec);
-		QCOMPARE(hdr.fps, m.essence.fps);
+		QCOMPARE(hdr.frameRate, m.essence.frameRate);
 	}
 
 	// A DNxHD label rebuilt from the resolution id, and the DV suffix rule.

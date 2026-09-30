@@ -22,7 +22,7 @@
 //     _MEDIAFILE → the file's own locator; _PJ here in MC 2026's files.
 //   source mob   (PhysicalMedia → MDES; 12-byte in the 2021 slates, a
 //                 32-byte UMID "physical mob" in MC 2026's) — reached by
-//     the file mob's SCLP. Owns the TCCP (start, fps, drop) and, in the
+//     the file mob's SCLP. Owns the TCCP (start, frame rate, drop) and, in the
 //     2021 slates, the _PJ project attribute; on the oldest 15 slates its
 //     MDES locator (a WINL) is the only place the import path is written.
 //
@@ -301,7 +301,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		if (tc.found)
 		{
 			out.startTimecode = tc.start;
-			out.timecodeFps = tc.fps;
+			out.timecodeFrameRate = tc.frameRate;
 			e.dropFrame = tc.dropFrame;
 		}
 	}
@@ -314,7 +314,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	if (!e.valid)
 		qCWarning(lcOmf) << "no usable OMF metadata in" << mediaFilePath << "(read" << b.bytesRead() << "bytes)";
 	else
-		qCDebug(lcOmf) << mediaFilePath << ":" << e.codec << e.resolution << e.fps << "clip" << e.clipName << "project"
+		qCDebug(lcOmf) << mediaFilePath << ":" << e.codec << e.resolution << e.frameRate << "clip" << e.clipName << "project"
 					   << e.projectName << "bin" << out.bin << "(read" << b.bytesRead() << "bytes)";
 	return out;
 }

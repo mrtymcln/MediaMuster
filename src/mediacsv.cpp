@@ -40,11 +40,14 @@ namespace MediaCsv
 {
 	QString headerLine(Options options)
 	{
-		QString line = QStringLiteral("Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,FPS,"
-									  "Sample Rate,Bit Depth,Type,");
+		QString line = QStringLiteral("Clip Name,Project,Bin,Kind,Duration,");
+		if (options.includeClipDuration)
+			line += QStringLiteral("Clip Duration,");
+		line += QStringLiteral("Size (MB),Codec,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
 		if (options.includePrecomputeDetails)
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
-		return line + QStringLiteral("Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId\n");
+		line += QStringLiteral("Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId");
+		return line + QLatin1Char('\n');
 	}
 
 	QString rowLine(const MediaFile &f, Options options)
@@ -53,9 +56,11 @@ namespace MediaCsv
 		QTextStream out(&line);
 		out << CsvUtil::quoted(f.clipName) << ',' << CsvUtil::quoted(f.projectDisplay()) << ','
 			<< CsvUtil::quoted(f.originalBin) << ',' << CsvUtil::quoted(f.kindDisplay()) << ','
-			<< CsvUtil::quoted(f.durationDisplay()) << ',' << f.sizeMBDisplay() << ','
-			<< CsvUtil::quoted(f.codec) << ',' << CsvUtil::quoted(f.resolution) << ','
-			<< CsvUtil::quoted(f.fps) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
+			<< CsvUtil::quoted(f.durationDisplay()) << ',';
+		if (options.includeClipDuration)
+			out << CsvUtil::quoted(f.clipDurationDisplay()) << ',';
+		out << f.sizeMBDisplay() << ',' << CsvUtil::quoted(f.codec) << ',' << CsvUtil::quoted(f.resolution) << ','
+			<< CsvUtil::quoted(f.frameRate) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
 			<< CsvUtil::quoted(f.bitDepth) << ',' << CsvUtil::quoted(f.typeDisplay()) << ',';
 		if (options.includePrecomputeDetails)
 		{
@@ -68,8 +73,8 @@ namespace MediaCsv
 		out << f.createdDisplay() << ','
 			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFileName) << ','
 			<< CsvUtil::quoted(f.mediaFilePath) << ',' << CsvUtil::quoted(f.dbStatusText().label) << ','
-			<< CsvUtil::quoted(f.mobId) << ',' << CsvUtil::quoted(f.masterMobId)
-			<< '\n';
+			<< CsvUtil::quoted(f.mobId) << ',' << CsvUtil::quoted(f.masterMobId);
+		out << '\n';
 		return line;
 	}
 

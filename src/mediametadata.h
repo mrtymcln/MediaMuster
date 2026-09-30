@@ -1,9 +1,11 @@
 #pragma once
 
 #include "avidprecompute.h"
+#include "mediaduration.h"
 
 #include <QByteArray>
 #include <QString>
+#include <QVector>
 
 // MARK: - Shared codec names
 
@@ -44,7 +46,8 @@ struct MediaMetadata
 		false;			///< An identified material/master package supplied a usage verdict.
 	QString codec;		///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
 	QString resolution; ///< '1920x1080', or empty for audio.
-	QString fps;		///< '23.976', '25', '29.97', etc.
+	QString frameRate;		///< Display label: '23.976', '25', '29.97', etc.
+	MediaRate frameRateRatio; ///< Original video rate, retained independently of duration availability.
 	QString bitDepth;	///< '8-bit', '10-bit', '24-bit'.
 	QString
 		umid;		  ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
@@ -81,7 +84,9 @@ struct MediaMetadata
 	int width = 0;
 	int height = 0;		///< Stored value; interlaced files store one field height.
 	int channels = 0;	///< Audio only.
-	int sampleRate = 0; ///< Audio Hz.
+	int sampleRate = 0; ///< Whole-Hz compatibility value; exact rate is sampleRateRatio.
+	MediaRate sampleRateRatio; ///< Original audio sampling fraction; may differ from descriptor edit rate.
+	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate when the legacy header supplies it.
 
 	/// 0 = Full Frame, 1 = Separate Fields, 2 = Single Field, 3 = Mixed Fields.
 	/// Used to decide whether to double `height` and to pick `i` vs `p`
@@ -95,11 +100,13 @@ struct MediaMetadata
 	/// `frameLayout` still carries the real value for the DV i/p suffix.
 	bool heightIsFrameHeight = false;
 
-	/// Duration in frames at the clip's edit rate, for video AND audio —
-	/// the Avid-bin timecode model. 0 = unknown.
-	qint64 durationFrames = 0;
-	bool durationFromTrack =
-		false; ///< Top-level owning-track duration, already converted to display frames.
+	/// Selected file length and original rational rate, retained through scanning.
+	/// Display frames are derived only for presentation; master holds can differ.
+	MediaDuration duration;
+	QVector<ClipTrackDuration> clipDurations; ///< Selected master's non-timecode tracks, when recovered.
+	bool durationIsResolved = false;		  ///< Selection is complete; do not apply graphless recovery.
+	qint64 structuralDuration = 0;			  ///< Scratch value used only by graphless legacy recovery.
+	MediaRate descriptorRate;				  ///< Original descriptor edit/sample rate, before display formatting.
 
 	/// Nominal timecode base (24, 25, 30...) from a known edit/timecode rate.
 	/// Audio infers it from frame/sample counts only when that rate is missing.
@@ -110,10 +117,9 @@ struct MediaMetadata
 	bool dropFrame = false;
 
 	/// Duration from the essence descriptor's ContainerDuration (tag 0x3002),
-	/// in the descriptor's edit units — frames for video, samples for audio.
+	/// in the descriptor's edit units; audio uses samples when its unit clock is the sample rate.
 	/// Collected separately from the structural-component durations because
-	/// an audio header mixes units; the producer resolves them into
-	/// `durationFrames` using the owning track's rate.
+	/// an audio header mixes units. The selected duration retains its own rate.
 	qint64 descriptorDuration = 0;
 
 	bool isAudio = false;
@@ -126,7 +132,7 @@ namespace MediaMetadataUtil
 	/// Shared by all producers so a database and a file header use the same rules.
 	void finalise(MediaMetadata &metadata);
 
-	/// Apply a positive sample/edit-rate rational: audio Hz or video fps/timecode base.
+	/// Apply a positive descriptor unit-rate rational and derive rate display fields.
 	void applyEditRate(MediaMetadata &metadata, quint32 numerator, quint32 denominator);
 
 	/// Avid's quantization sentinel 254 is displayed as Float.
@@ -134,7 +140,7 @@ namespace MediaMetadataUtil
 
 	/// Resolve a compression/coding UL, including rate-dependent DNxHD names.
 	/// Unknown labels retain their hex value and any recognizable coding family.
-	[[nodiscard]] QString codecFromCompressionLabel(const QByteArray &label, const QString &fps);
+	[[nodiscard]] QString codecFromCompressionLabel(const QByteArray &label, const QString &frameRate);
 
 	/// A recorded import path may use either OS's separators, regardless of this host.
 	[[nodiscard]] QString sourceFileBaseName(const QString &path);

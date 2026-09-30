@@ -184,8 +184,10 @@ to delete.
 ## Filtering, selecting and exporting
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
-Codec, Resolution, FPS, Sample Rate, Bit Depth, Type, Date Created, Filename,
+Codec, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
 Source Filename and Location. Type is always visible. Enabling
+the Clip Duration feature flag places Clip Duration immediately after Duration
+in both the table and CSV. Enabling
 Precomputes inserts Precompute Category, Effect Category, Effect and Effect
 Sequence after Type and exposes the Filter Precomputes dialog.
 
@@ -197,12 +199,49 @@ internally for database freshness and operation checks, but are not displayed
 or exported.
 
 The table and CSV include **Sample Rate** (for example, `48 kHz`) and
-**Bit Depth** (for example, `24-bit`) beside FPS. Sample Rate describes audio;
+**Bit Depth** (for example, `24-bit`) beside Frame Rate. Sample Rate describes audio;
 Bit Depth also shows recorded video depths. Unknown values stay blank.
 
-Audio duration uses the recorded edit rate to convert samples to frames and
-render timecode. The MDB reader retains that rate before rounding the frame
-count, including for MXF scans with OMF support disabled.
+**Duration** describes the selected physical file. Readers retain the original
+length and rational rate (audio samples or video/edit units), plus the separate
+frame rate used for display. Conversion and rounding happen only when formatting
+the table/CSV or comparing their displayed timecodes. The scanner retains these
+values for both database and header results, including with OMF support disabled.
+
+The Frame Rate and Sample Rate display labels are separate from the original
+fractions retained on each file, even when no duration is available. An MXF audio
+sampling rate is retained separately from its descriptor's edit-unit rate; those
+clocks need not be identical. Legacy AIFF rates retain their original ten-byte
+encoding; an exactly representable fraction is also kept. An unsupported fraction
+does not become an exact duration rate merely by rounding it to whole Hz.
+
+The selected descriptor takes priority over the file track; a linked master
+reference is a last fallback and does not establish complete stored essence
+length. Graphless legacy recovery is recorded as heuristic evidence. Duration
+provenance remains attached to the value. A missing display rate leaves the
+source measurement intact and the timecode blank.
+
+A title/image can store one frame while its master holds it for minutes. A master
+can span several shorter files, and stored audio can extend past its reference.
+These differences do not invalidate files, identities or bin/master associations.
+No master length is copied over a known descriptor length or calculated by
+summing associated files.
+
+`FeatureFlags::kClipDurationEnabled` controls this experiment. When enabled, an
+experimental **Clip Duration** column and CSV field show separately
+recovered MXF material-package track lengths, labelled by track ID. It preserves
+multiple track lengths rather than inventing one aggregate. MXF headers are read
+even with current database metadata when this flag is enabled. OMF/MDB-only and
+AVB Clip Duration recovery is not implemented by this experiment; unavailable
+clip lengths stay blank. Headerless/graphless media also stays blank in this
+column. The ordinary **Duration** heading and meaning remain unchanged.
+
+Does the AVB give us the same Clip Duration as the MXF? Needs more testing.
+Can't bank on the user loading the matching bin, either.
+
+Exact file counts and rates cannot by themselves answer how a bin entry uses
+the media. CSV durations remain display timecodes; they do not export the raw
+counts, fractions or original rate bytes.
 
 Duration sorts by the displayed hours, minutes, seconds and frame number,
 including across different frame rates. Colons and semicolons do not affect
@@ -250,10 +289,13 @@ CSV export offers selected rows or all rows in the current filtered view. Its
 **All** choice does not include filtered-out rows. Filter-tab counts use the whole
 inventory, while the status bar's file count and size describe the visible rows.
 
-CSV uses the table's default column order, including the four precompute details
-only when enabled, followed by Database Status, MobId and MasterMobId (19 columns
-normally, 23 with Precomputes). Moving table columns does not change export order.
-The exporter maintains its own explicit column list. Location is the managed
+CSV uses the table's default column order, followed by Database Status, MobId
+and MasterMobId. Both optional column groups follow the table's active settings:
+19 columns with both off, 20 with Clip Duration only, 23 with Precomputes only,
+and 24 with both on. Disabled columns are absent, not exported as blank fields.
+Moving table columns does not change export order. The exporter maintains its
+own explicit column list; a UI test compares its headings against the table's
+visual order for all four flag combinations. Location is the managed
 media file's full path; Source File is its recorded original import filename.
 Separate Volume, Source Path, Source Container and Imported fields are not exported.
 

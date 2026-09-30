@@ -104,7 +104,7 @@ namespace OmfObjects
 		  sourceId(b.propertyId("OMFI:SCLP:SourceID")), tcFlags(b.propertyId("OMFI:TCCP:Flags")),
 		  // OMF-era: the properties only the legacy descriptors and essence files carry.
 		  compression(b.propertyId("OMFI:DIDD:Compression")), wavdSummary(b.propertyId("OMFI:WAVD:Summary")),
-		  aifdSummary(b.propertyId("OMFI:AIFD:Summary")), tcFps(b.propertyId("OMFI:TCCP:FPS")),
+		  aifdSummary(b.propertyId("OMFI:AIFD:Summary")), tcFrameRate(b.propertyId("OMFI:TCCP:FPS")),
 		  tcStart(b.propertyId("OMFI:TCCP:StartTC")), mdatMobId(b.propertyId("OMFI:MDAT:MobID")),
 		  waveMobId(b.propertyId("OMFI:WAVE:MobID")), aifcMobId(b.propertyId("OMFI:AIFC:MobID")),
 		  mobKind(b.propertyId("OMFI:MDES:MobKind")),
@@ -272,6 +272,32 @@ namespace OmfObjects
 			double v = std::ldexp(double(mantissa), exponent - 16383 - 63);
 			return (x[0] & 0x80) ? -v : v;
 		}
+
+		/// Decode without floating-point rounding. Keep the original bytes when
+		/// the exact fraction exceeds MediaRate's signed 32-bit storage bounds.
+		MediaRate extendedToRate(const unsigned char *x)
+		{
+			const int exponent = ((x[0] & 0x7F) << 8) | x[1];
+			quint64 mantissa = qFromBigEndian<quint64>(x + 2);
+			if ((x[0] & 0x80) || exponent == 0x7FFF || mantissa == 0)
+				return {};
+			int power = (exponent == 0 ? 1 : exponent) - 16383 - 63;
+			while ((mantissa & 1) == 0)
+			{
+				mantissa >>= 1;
+				++power;
+			}
+			constexpr quint64 limit = quint64(std::numeric_limits<qint32>::max());
+			if (power >= 0)
+			{
+				if (power > 30 || mantissa > (limit >> power))
+					return {};
+				return {qint32(mantissa << power), 1};
+			}
+			if (power < -30 || mantissa > limit)
+				return {};
+			return {qint32(mantissa), qint32(quint32(1) << -power)};
+		}
 	} // namespace
 
 	WaveSummary readWaveSummary(QByteArrayView blob)
@@ -328,6 +354,8 @@ namespace OmfObjects
 				s.frames = qFromBigEndian<quint32>(c + 2);
 				s.bits = qFromBigEndian<qint16>(c + 6);
 				const double rate = extendedToDouble(c + 8);
+				s.sampleRateRatio = extendedToRate(c + 8);
+				s.sampleRateEncoding = QByteArray(reinterpret_cast<const char *>(c + 8), 10);
 				if (std::isfinite(rate) && rate > 0 && rate <= std::numeric_limits<int>::max())
 					s.sampleRate = int(std::llround(rate));
 				if (size >= 22 && pos + 8 + 22 <= blob.size())
@@ -675,7 +703,7 @@ namespace OmfObjects
 		const QByteArray start = b.bytes(tccp, p.tcStart);
 		if (!start.isEmpty())
 			t.start = b.int64Value(start);
-		t.fps = int(b.uintValue(b.bytes(tccp, p.tcFps)));
+		t.frameRate = int(b.uintValue(b.bytes(tccp, p.tcFrameRate)));
 		return t;
 	}
 
@@ -775,12 +803,15 @@ namespace OmfObjects
 			// a missing MDFL:SampleRate can still fall back to the blob's
 			// rate before the duration maths; every field only fills a gap.
 			int blobRate = 0, blobBits = 0, blobChannels = 0;
+			MediaRate blobRateRatio;
+			QByteArray blobRateEncoding;
 			if (cls == "WAVD")
 			{
 				const WaveSummary s = readWaveSummary(b.bytes(desc, p.wavdSummary));
 				if (s.valid)
 				{
 					blobRate = s.sampleRate;
+					blobRateRatio = {s.sampleRate, 1};
 					blobBits = s.bits;
 					blobChannels = s.channels;
 				}
@@ -791,27 +822,37 @@ namespace OmfObjects
 				if (s.valid)
 				{
 					blobRate = s.sampleRate;
+					blobRateRatio = s.sampleRateRatio;
+					blobRateEncoding = s.sampleRateEncoding;
 					blobBits = s.bits;
 					blobChannels = s.channels;
 				}
 			}
-			if (e.sampleRate <= 0 && blobRate > 0)
-				e.sampleRate = blobRate; // OMF-era: the blob's rate when MDFL:SampleRate is absent.
+			if (!e.descriptorRate.valid() && blobRate > 0)
+			{
+				e.sampleRate = blobRate;
+				e.sampleRateRatio = blobRateRatio;
+				e.sampleRateEncoding = blobRateEncoding;
+				e.descriptorRate = blobRateRatio;
+			}
 
-			// Length is samples. Preserve the mob's edit rate for timecode;
-			// inferring it from the rounded frame count can change the base.
+			// Keep every sample and the original sample/edit-rate fractions.
+			// A master/reference may legitimately end before or after this file.
 			e.descriptorDuration = length;
+			MediaRate displayRate;
 			qint32 erNum = 0, erDen = 0;
-			if (mobEditRate(b, p, mobObj, erNum, erDen) && erDen > 0 && erNum > 0 &&
-				length > 0 && e.sampleRate > 0)
+			if (mobEditRate(b, p, mobObj, erNum, erDen) && erDen > 0 && erNum > 0)
 			{
 				const double editRate = double(erNum) / erDen;
 				if (editRate >= 1.0 && editRate < 1000.0)
+				{
 					e.timecodeBase = qRound(editRate);
-				const long double frames = static_cast<long double>(length) * erNum / erDen / e.sampleRate;
-				if (frames <= std::numeric_limits<qint64>::max() - 1.0L)
-					e.durationFrames = qint64(std::round(frames));
+					displayRate = {erNum, erDen};
+				}
 			}
+			e.duration = {length, e.descriptorRate, displayRate, MediaDuration::Source::Descriptor};
+			e.durationIsResolved = true;
+
 			if (const quint32 bits = b.uintValue(b.bytes(desc, p.bits)))
 				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
 			e.channels = int(b.uintValue(b.bytes(desc, p.channels)));
@@ -825,7 +866,9 @@ namespace OmfObjects
 		else
 		{
 			const TiffSummary tiff = cls == "TIFD" ? readTiffSummary(b.bytes(desc, p.tiffSummary)) : TiffSummary();
-			e.durationFrames = length;
+			e.descriptorDuration = length;
+			e.duration = {length, e.descriptorRate, e.descriptorRate, MediaDuration::Source::Descriptor};
+			e.durationIsResolved = true;
 			e.width = int(b.uintValue(b.bytes(desc, p.width)));
 			int height = int(b.uintValue(b.bytes(desc, p.height)));
 			const QByteArray layoutV = b.bytes(desc, p.layout);

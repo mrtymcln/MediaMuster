@@ -55,8 +55,8 @@ namespace
 		f.originalBin = QStringLiteral("Rushes");
 		f.codec = QStringLiteral("Avid DNx SQ (DNxHD 145)");
 		f.resolution = QStringLiteral("1920x1080");
-		f.fps = QStringLiteral("25");
-		f.durationFrames = 250;
+		f.frameRate = QStringLiteral("25");
+		f.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
 		f.timecodeBase = 25;
 		f.sizeBytes = 850'000'000;
 		f.created = QDateTime(QDate(2026, 7, 20), QTime(12, 30));
@@ -68,6 +68,7 @@ class TestMediaCsv : public QObject
 {
 	Q_OBJECT
 private slots:
+	void clip_duration_column_is_explicit();
 	void header_and_row_have_the_same_field_count();
 	void header_order_and_values_follow_the_export_schema();
 	void created_date_carries_time_of_day();
@@ -120,7 +121,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	for (bool enabled : {false, true})
 	{
 		QStringList expectedHeaders = QStringLiteral(
-										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,FPS,Sample Rate,Bit Depth,Type,"
+										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
 										  "Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
@@ -179,16 +180,16 @@ void TestMediaCsv::sample_rate_and_bit_depth_are_exported()
 		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
 		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
 		QCOMPARE(fields.size(), headers.size());
-		const int fpsIndex = headers.indexOf(QStringLiteral("FPS"));
-		QVERIFY(fpsIndex >= 0);
-		QCOMPARE(headers.at(fpsIndex + 1), QStringLiteral("Sample Rate"));
-		QCOMPARE(headers.at(fpsIndex + 2), QStringLiteral("Bit Depth"));
-		QCOMPARE(headers.at(fpsIndex + 3), QStringLiteral("Type"));
-		QCOMPARE(fields.at(fpsIndex), f.fps);
-		QCOMPARE(fields.at(fpsIndex + 1), sampleRateLabel);
-		QCOMPARE(fields.at(fpsIndex + 1), f.sampleRateDisplay());
-		QCOMPARE(fields.at(fpsIndex + 2), bitDepth);
-		QCOMPARE(fields.at(fpsIndex + 3), f.typeDisplay());
+		const int frameRateIndex = headers.indexOf(QStringLiteral("Frame Rate"));
+		QVERIFY(frameRateIndex >= 0);
+		QCOMPARE(headers.at(frameRateIndex + 1), QStringLiteral("Sample Rate"));
+		QCOMPARE(headers.at(frameRateIndex + 2), QStringLiteral("Bit Depth"));
+		QCOMPARE(headers.at(frameRateIndex + 3), QStringLiteral("Type"));
+		QCOMPARE(fields.at(frameRateIndex), f.frameRate);
+		QCOMPARE(fields.at(frameRateIndex + 1), sampleRateLabel);
+		QCOMPARE(fields.at(frameRateIndex + 1), f.sampleRateDisplay());
+		QCOMPARE(fields.at(frameRateIndex + 2), bitDepth);
+		QCOMPARE(fields.at(frameRateIndex + 3), f.typeDisplay());
 	}
 }
 
@@ -380,6 +381,30 @@ void TestMediaCsv::precompute_categories_preserve_unknown_details()
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Category"))], QStringLiteral("unknown"));
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect"))], QStringLiteral("unknown"));
 	}
+}
+
+void TestMediaCsv::clip_duration_column_is_explicit()
+{
+	MediaFile file;
+	file.duration = {1, {24, 1}, {24, 1}, MediaDuration::Source::Descriptor};
+	file.timecodeBase = 24;
+	file.clipDurations = {{1, {2880, {24, 1}, {24, 1}, MediaDuration::Source::ClipReference}, false}};
+	for (bool precomputes : {false, true})
+	{
+		auto headers = readCsvRecord(MediaCsv::headerLine({precomputes, true}));
+		auto fields = readCsvRecord(MediaCsv::rowLine(file, {precomputes, true}));
+		QCOMPARE(fields.size(), headers.size());
+		const int duration = headers.indexOf(QStringLiteral("Duration"));
+		QVERIFY(duration >= 0);
+		QCOMPARE(headers.at(duration + 1), QStringLiteral("Clip Duration"));
+		QCOMPARE(fields.at(duration + 1), QStringLiteral("Track 1: 00:02:00:00"));
+		QCOMPARE(fields.at(duration), QStringLiteral("00:00:00:01"));
+		headers.removeAt(duration + 1);
+		fields.removeAt(duration + 1);
+		QCOMPARE(headers, readCsvRecord(MediaCsv::headerLine({precomputes, false})));
+		QCOMPARE(fields, readCsvRecord(MediaCsv::rowLine(file, {precomputes, false})));
+	}
+	QVERIFY(!MediaCsv::headerLine().contains(QStringLiteral("Clip Duration")));
 }
 
 QTEST_APPLESS_MAIN(TestMediaCsv)

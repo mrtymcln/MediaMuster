@@ -58,12 +58,12 @@ namespace
 	{
 		return isAsciiOnly(s) ? s : s.normalized(QString::NormalizationForm_C);
 	}
-	// FPS column holds "23.976", "25", "29.97"... for video and stays blank for
+	// Frame Rate column holds "23.976", "25", "29.97"... for video and stays blank for
 	// audio. Sort numerically so 100 sorts after 25 rather than lexically
 	// before it; blank audio rows parse to 0 and group together.
-	double fpsSortValue(const QString &fps)
+	double frameRateSortValue(const QString &frameRate)
 	{
-		return fps.toDouble();
+		return frameRate.toDouble();
 	}
 
 	// Blank, numbered depths, then other labels. Float has no implied width.
@@ -244,6 +244,9 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	const MediaFile &l = m_sourceModel->fileAt(left.row());
 	const MediaFile &r = m_sourceModel->fileAt(right.row());
 
+	if (m_sourceModel->clipDurationEnabled() && left.column() == m_sourceModel->clipDurationColumn())
+		return QString::compare(l.clipDurationDisplay(), r.clipDurationDisplay(), Qt::CaseInsensitive) < 0;
+
 	using Col = MediaTableModel::Column;
 	switch (static_cast<Col>(left.column()))
 	{
@@ -300,16 +303,16 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 			return ls.height() < rs.height();
 		return QString::compare(l.resolution, r.resolution, Qt::CaseInsensitive) < 0;
 	}
-	case Col::Fps:
+	case Col::FrameRate:
 	{
-		const double lf = fpsSortValue(l.fps);
-		const double rf = fpsSortValue(r.fps);
+		const double lf = frameRateSortValue(l.frameRate);
+		const double rf = frameRateSortValue(r.frameRate);
 		if (lf != rf)
 			return lf < rf;
-		return QString::compare(l.fps, r.fps, Qt::CaseInsensitive) < 0;
+		return QString::compare(l.frameRate, r.frameRate, Qt::CaseInsensitive) < 0;
 	}
 	case Col::SampleRate:
-		return qMax(0, l.sampleRate) < qMax(0, r.sampleRate);
+		return l.sampleRateHz() < r.sampleRateHz();
 	case Col::BitDepth:
 	{
 		const auto ld = bitDepthSortValue(l.bitDepth);

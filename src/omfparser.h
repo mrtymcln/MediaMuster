@@ -14,7 +14,7 @@
 
 /// What one OMF essence file says about itself. `essence` is filled the
 /// way MxfParser fills it from a header and run through the same
-/// MediaMetadataUtil::finalise, so codec / resolution / fps / duration / bit
+/// MediaMetadataUtil::finalise, so codec / resolution / frame rate / duration / bit
 /// depth / audio facts are derived by one piece of code for both eras.
 /// Extra fields hold original-bin metadata, the file's recorded locator
 /// and start timecode. Original-bin metadata can also come from MDBs or AVBs;
@@ -45,7 +45,7 @@ struct OmfMetadata
 	/// OMFI:TCCP:StartTC in frames (−1 when no timecode component is
 	/// reachable) and OMFI:TCCP:FPS. Not surfaced in MediaFile.
 	qint64 startTimecode = -1;
-	int timecodeFps = 0;
+	int timecodeFrameRate = 0;
 };
 
 // MARK: - OmfParser

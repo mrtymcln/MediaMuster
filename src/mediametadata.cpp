@@ -56,28 +56,30 @@ void MediaMetadataUtil::finalise(MediaMetadata &meta)
 	if (!meta.isAudio && isAudioCompressionLabel(meta.compressionLabel))
 		meta.isAudio = true;
 
-	// Graph-based MXF parsing supplies the selected file's duration already
-	// converted to display frames. MDB/OMF readers likewise derive frames
-	// from the descriptor and owning mob's rate. Only graphless legacy
-	// recovery infers an audio timecode base from the structural frame count
-	// and descriptor sample count; an unresolvable rate stays blank.
-	if (meta.isAudio)
+	// Graph-based readers already selected a duration and retained its rate.
+	// Graphless legacy recovery is explicitly weaker evidence. Never take a
+	// minimum across master and file lengths: both shorter and longer essence
+	// are legitimate. A missing rate leaves the original units intact.
+	if (!meta.durationIsResolved)
 	{
-		const qint64 frames = meta.durationFrames;
-		const qint64 samples = meta.descriptorDuration; // WAVE ContainerDuration
-		if (meta.timecodeBase <= 0 && frames > 0 && samples > 0 && meta.sampleRate > 0)
+		MediaRate rate = meta.descriptorRate;
+		MediaRate display = meta.isAudio ? MediaRate{} : rate;
+		if (meta.isAudio)
 		{
-			const double base = double(frames) * meta.sampleRate / double(samples);
-			// Bounds mirrored in MediaFile::effectiveTimecodeBase.
-			if (base >= 1.0 && base < 1000.0)
-				meta.timecodeBase = qRound(base);
+			if (!rate.valid())
+				rate = meta.sampleRateRatio.valid() ? meta.sampleRateRatio : MediaRate{meta.sampleRate, 1};
+			if (meta.structuralDuration > 0 && meta.descriptorDuration > 0 && rate.valid())
+			{
+				const double inferred = double(meta.structuralDuration) * rate.value() / double(meta.descriptorDuration);
+				if (inferred >= 1.0 && inferred < 1000.0)
+					meta.timecodeBase = qRound(inferred);
+			}
+			if (meta.timecodeBase > 0)
+				display = {meta.timecodeBase, 1};
 		}
-		if (meta.timecodeBase <= 0)
-			meta.durationFrames = 0;
+		const qint64 units = meta.descriptorDuration > 0 ? meta.descriptorDuration : meta.structuralDuration;
+		meta.duration = {units, rate, display, MediaDuration::Source::LegacyHeuristic};
 	}
-	else if (!meta.durationFromTrack && meta.descriptorDuration > 0 &&
-			 (meta.durationFrames == 0 || meta.descriptorDuration < meta.durationFrames))
-		meta.durationFrames = meta.descriptorDuration;
 
 	// Interlaced sources store one field height in the descriptor (e.g. 540
 	// for 1080i), so a field height doubles to the full frame. Only layout 1
@@ -132,14 +134,14 @@ void MediaMetadataUtil::finalise(MediaMetadata &meta)
 	}
 
 	// Codec lookup is deferred until here so the framerate has been
-	// finalised; DNxHD bitrate names depend on fps.
+	// finalised; DNxHD bitrate names depend on frame rate.
 	if (meta.valid && meta.codec.isEmpty() && !meta.compressionLabel.isEmpty())
-		meta.codec = codecFromCompressionLabel(meta.compressionLabel, meta.fps);
+		meta.codec = codecFromCompressionLabel(meta.compressionLabel, meta.frameRate);
 	if (meta.valid && meta.codec.isEmpty() && meta.isAudio && meta.pcmDescriptor)
 		meta.codec = QString::fromLatin1(kPcmAudioName);
 
 	// Avid displays DV as 'DV 25 420 i(PAL)' etc. Scan type and
-	// broadcast standard come from MXF metadata (frame layout + fps
+	// broadcast standard come from MXF metadata (frame layout + frame rate
 	// + height) rather than the codec UL itself. Skipped when the name
 	// already states them — Avid's own config names do ("DV PAL 25Mbps
 	// 4:1:1", "DV 1080 50i"), and appending would print them twice.
@@ -153,9 +155,9 @@ void MediaMetadataUtil::finalise(MediaMetadata &meta)
 		const QString scan = (meta.frameLayout == 1 || meta.frameLayout == 3) ? QStringLiteral("i")
 																			  : QStringLiteral("p");
 		QString standard;
-		if (meta.fps == QLatin1String("25") || meta.height == 576 || meta.height == 288)
+		if (meta.frameRate == QLatin1String("25") || meta.height == 576 || meta.height == 288)
 			standard = QStringLiteral("PAL");
-		else if (meta.fps == QLatin1String("29.97") || meta.height == 480 || meta.height == 486)
+		else if (meta.frameRate == QLatin1String("29.97") || meta.height == 480 || meta.height == 486)
 			standard = QStringLiteral("NTSC");
 		if (!standard.isEmpty())
 			meta.codec += QStringLiteral(" %1(%2)").arg(scan, standard);
@@ -169,12 +171,20 @@ void MediaMetadataUtil::applyEditRate(MediaMetadata &out, quint32 num, quint32 d
 	if (den == 0 || num == 0 || num > quint32(std::numeric_limits<qint32>::max()) ||
 		den > quint32(std::numeric_limits<qint32>::max()))
 		return;
+	out.descriptorRate = {qint32(num), qint32(den)};
 	if (out.isAudio)
 	{
-		out.sampleRate = static_cast<int>(num / den);
+		// An explicit audio sampling rate takes precedence over the descriptor's
+		// unit rate; retain both clocks when a container counts audio edit units.
+		if (!out.sampleRateRatio.valid())
+		{
+			out.sampleRateRatio = {qint32(num), qint32(den)};
+			out.sampleRate = static_cast<int>(num / den);
+		}
 	}
 	else
 	{
+		out.frameRateRatio = {qint32(num), qint32(den)};
 		// Rates are judged by the SPEED the fraction works
 		// out to, never by its exact digits: the same 29.97
 		// arrives as 30000/1001 (Avid), 60000/2002
@@ -210,14 +220,14 @@ void MediaMetadataUtil::applyEditRate(MediaMetadata &out, quint32 num, quint32 d
 			}
 		}
 		if (label)
-			out.fps = QLatin1String(label);
+			out.frameRate = QLatin1String(label);
 		else if (rate < 1000.0 && qAbs(rate - qRound(rate)) < 0.01)
-			out.fps = QString::number(qRound(rate));
+			out.frameRate = QString::number(qRound(rate));
 		else
 			// No known family: show the real value. Rounding
 			// an unrecognised rate to a neighbouring integer
 			// is a wrong answer delivered with no warning.
-			out.fps = QString::number(rate, 'g', 6);
+			out.frameRate = QString::number(rate, 'g', 6);
 
 		// Nominal base for timecode duration rendering
 		// (23.976 counts in base 24, 29.97 in base 30...).
@@ -231,7 +241,7 @@ void MediaMetadataUtil::applyEditRate(MediaMetadata &out, quint32 num, quint32 d
 
 /// Maps compression/coding ULs to display codec names. Tested against real files
 /// from MC 2025.12 –– see tst_mxfparser::real_avid_headers_parse_exactly.
-QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, const QString &fps)
+QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, const QString &frameRate)
 {
 	if (label.isEmpty())
 		return {};
@@ -492,15 +502,15 @@ QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, co
 		if (baseName != QLatin1String(e.technical))
 			continue;
 		const char *bitrate;
-		if (fps == QLatin1String("29.97") || fps == QLatin1String("30"))
+		if (frameRate == QLatin1String("29.97") || frameRate == QLatin1String("30"))
 			bitrate = e.r30;
-		else if (fps == QLatin1String("25"))
+		else if (frameRate == QLatin1String("25"))
 			bitrate = e.r25;
-		else if (fps == QLatin1String("50"))
+		else if (frameRate == QLatin1String("50"))
 			bitrate = e.r50;
-		else if (fps == QLatin1String("59.94") || fps == QLatin1String("60"))
+		else if (frameRate == QLatin1String("59.94") || frameRate == QLatin1String("60"))
 			bitrate = e.r60;
-		else if (fps == QLatin1String("23.976") || fps == QLatin1String("24"))
+		else if (frameRate == QLatin1String("23.976") || frameRate == QLatin1String("24"))
 			bitrate = e.r24;
 		else
 			bitrate = ""; // unknown/unsupported rate cannot establish a bitrate name

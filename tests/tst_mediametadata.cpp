@@ -20,6 +20,7 @@ class TestMediaMetadata : public QObject
 {
 	Q_OBJECT
 private slots:
+	void exact_duration_conversion();
 	void codec_labels_data();
 	void codec_labels();
 	void unknown_ul_infers_family_from_structure();
@@ -29,14 +30,46 @@ private slots:
 	void finalise_is_idempotent_and_does_not_guess();
 };
 
+void TestMediaMetadata::exact_duration_conversion()
+{
+	using Source = MediaDuration::Source;
+	MediaDuration samples{1468800, {48000, 1}, {30000, 1001}, Source::Descriptor};
+	QCOMPARE(samples.displayFrames(), qint64(917));
+	QCOMPARE(samples.units, qint64(1468800)); // The 133 extra samples are not discarded.
+	QCOMPARE(samples.rate.numerator, 48000);
+	QCOMPARE(samples.displayRate.denominator, 1001);
+	MediaDuration fractional{48000, {96000, 2}, {60000, 2002}, Source::Descriptor};
+	QCOMPARE(fractional.displayFrames(), qint64(30));
+	QCOMPARE(fractional.rate.denominator, 2); // Preserve original, unreduced fractions.
+	MediaDuration half{1, {2, 1}, {1, 1}, Source::Descriptor};
+	QCOMPARE(half.displayFrames(), qint64(1));
+	MediaDuration large{9007199254740993LL, {1, 1}, {1, 1}, Source::Descriptor};
+	QCOMPARE(large.displayFrames(), large.units); // Above double's exact integer range.
+	large.units = std::numeric_limits<qint64>::max();
+	large.rate = {2147483647, 2147483646};
+	large.displayRate = large.rate;
+	QCOMPARE(large.displayFrames(), large.units); // Wide products, exact cancellation.
+	large.rate = {2147483647, 30000};
+	large.displayRate = {24000, 1001};
+	large.units = 9223372036854775000LL;
+	QCOMPARE(large.displayFrames(), qint64(3089287167392607));
+	large.rate = {1, 1};
+	large.displayRate = {2, 1};
+	QCOMPARE(large.displayFrames(), qint64(0)); // Overflow is unknown, not wrapping.
+	samples.displayRate = {};
+	QVERIFY(samples.known());
+	QCOMPARE(samples.displayFrames(), qint64(0));
+	QCOMPARE(samples.units, qint64(1468800));
+}
+
 void TestMediaMetadata::codec_labels_data()
 {
 	QTest::addColumn<QByteArray>("label");
-	QTest::addColumn<QString>("fps");
+	QTest::addColumn<QString>("frameRate");
 	QTest::addColumn<QString>("expected");
-	const auto add = [](const char *tag, const char *hex, const char *fps, const char *expected)
+	const auto add = [](const char *tag, const char *hex, const char *frameRate, const char *expected)
 	{
-		QTest::newRow(tag) << ul(hex) << QString::fromLatin1(fps) << QString::fromLatin1(expected);
+		QTest::newRow(tag) << ul(hex) << QString::fromLatin1(frameRate) << QString::fromLatin1(expected);
 	};
 	add("empty", "", "25", "");
 	add("pcm", "060E2B34040101010D01030102060100", "", "PCM");
@@ -69,9 +102,9 @@ void TestMediaMetadata::codec_labels_data()
 void TestMediaMetadata::codec_labels()
 {
 	QFETCH(QByteArray, label);
-	QFETCH(QString, fps);
+	QFETCH(QString, frameRate);
 	QFETCH(QString, expected);
-	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(label, fps), expected);
+	QCOMPARE(MediaMetadataUtil::codecFromCompressionLabel(label, frameRate), expected);
 }
 
 void TestMediaMetadata::unknown_ul_infers_family_from_structure()
@@ -98,7 +131,7 @@ void TestMediaMetadata::applyEditRate_labels_fractional_rates()
 	struct Case
 	{
 		quint32 num, den;
-		const char *fps;
+		const char *frameRate;
 		int base;
 	};
 	const Case cases[] = {
@@ -115,7 +148,9 @@ void TestMediaMetadata::applyEditRate_labels_fractional_rates()
 	{
 		MediaMetadata m;
 		MediaMetadataUtil::applyEditRate(m, c.num, c.den);
-		QCOMPARE(m.fps, QString::fromLatin1(c.fps));
+		QCOMPARE(m.frameRate, QString::fromLatin1(c.frameRate));
+		QCOMPARE(m.frameRateRatio.numerator, qint32(c.num));
+		QCOMPARE(m.frameRateRatio.denominator, qint32(c.den));
 		QCOMPARE(m.timecodeBase, c.base);
 		QCOMPARE(m.sampleRate, 0);
 	}
@@ -123,15 +158,17 @@ void TestMediaMetadata::applyEditRate_labels_fractional_rates()
 	a.isAudio = true;
 	MediaMetadataUtil::applyEditRate(a, 48000, 1);
 	QCOMPARE(a.sampleRate, 48000);
-	QVERIFY(a.fps.isEmpty());
+	QCOMPARE(a.sampleRateRatio.numerator, 48000);
+	QCOMPARE(a.sampleRateRatio.denominator, 1);
+	QVERIFY(a.frameRate.isEmpty());
 
 	MediaMetadata z;
 	MediaMetadataUtil::applyEditRate(z, 25, 0); // zero denominator: ignored, not a crash
-	QVERIFY(z.fps.isEmpty());
+	QVERIFY(z.frameRate.isEmpty());
 }
 
 // A struct filled from msmMMOB.mdb instead of a header: already full-frame
-// height, real frame layout, label, fps. finalise() must derive exactly what
+// height, real frame layout, label, frame rate. finalise() must derive exactly what
 // the header path derives — and must NOT double a layout-1 height twice.
 void TestMediaMetadata::mdb_style_metadata_finalises_like_a_header()
 {
@@ -179,11 +216,11 @@ void TestMediaMetadata::mdb_style_metadata_finalises_like_a_header()
 	au.sampleRate = 48000;
 	au.pcmDescriptor = true;
 	au.descriptorDuration = 2880002; // samples
-	au.durationFrames = 1500;		 // frames at 25
+	au.structuralDuration = 1500;	 // frames at 25
 	MediaMetadataUtil::finalise(au);
 	QVERIFY(au.valid);
 	QCOMPARE(au.timecodeBase, 25);
-	QCOMPARE(au.durationFrames, qint64(1500));
+	QCOMPARE(au.duration.displayFrames(), qint64(1500));
 	QCOMPARE(au.codec, QString::fromLatin1(kPcmAudioName));
 	QCOMPARE(MediaMetadataUtil::bitDepthLabel(24), QStringLiteral("24-bit"));
 	QCOMPARE(MediaMetadataUtil::bitDepthLabel(254), QStringLiteral("Float"));

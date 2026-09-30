@@ -206,3 +206,25 @@ so regressions can be distinguished from existing platform issues. The local
 helper extractions described above do not complete that broader work.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for development and documentation conventions.
+
+## Duration ownership
+
+`MediaDuration` carries original units, their rational rate, a separate display
+frame rate, and descriptor/file-track/clip-reference/legacy provenance through
+`MediaMetadata` into `MediaFile`. Frame rounding is confined to display and the
+existing sort-by-displayed-timecode rule. Exact integer conversion avoids losing
+sample precision or overflowing intermediate products on supported platforms.
+
+`frameRateRatio` and `sampleRateRatio` preserve original per-file rates independently
+of a duration count or rounded display label. MXF audio sampling and descriptor
+edit-unit clocks remain distinct. AIFF header fallback also retains its 80-bit
+sample-rate encoding and only sets a duration fraction when it fits exactly.
+
+`durationIsResolved` prevents graphless recovery from replacing a reader's
+selected value; it does not imply that duration came from a top-level track.
+Clip Duration entries live in a separate vector and never establish a file's
+stored length or a duration-based association constraint. The optional Clip Duration
+column is logically appended after currently enabled columns, while the view places
+it immediately after Duration. Toggling precompute details moves that logical index
+without changing base column indexes or its visual position. CSV also places
+Clip Duration immediately after Duration when enabled.

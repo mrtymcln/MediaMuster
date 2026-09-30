@@ -2,6 +2,7 @@
 // PMR/MDB/MXF fixtures. Covers Stage 1 + 2 + the join.
 
 #include "conventions.h"
+#include "featureflags.h"
 #include "mediafile.h"
 #include "testpause.h"
 #include "mediascanner.h"
@@ -247,11 +248,11 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QVERIFY(mf.sampleRate > 0);
 	QVERIFY(mf.channels > 0);
 
-	// Audio rows leave Resolution and FPS blank — those columns are video
+	// Audio rows leave Resolution and Frame Rate blank — those columns are video
 	// facts. (An early prototype filled them with an em-dash and the sample
 	// rate; both ideas were dropped, 23 July 2026.)
 	QVERIFY2(mf.resolution.isEmpty(), qPrintable(mf.resolution));
-	QVERIFY2(mf.fps.isEmpty(), qPrintable(mf.fps));
+	QVERIFY2(mf.frameRate.isEmpty(), qPrintable(mf.frameRate));
 }
 
 // An unattributed MXF — no PMR entry — whose UMID is present in the folder's
@@ -1162,7 +1163,8 @@ void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
 	// record has a matching timestamp. The intact header/MDB still recover
 	// descriptive metadata; the MDB-only bin name proves the re-join ran.
 	QCOMPARE(tone->databaseMetadataCurrent, listsTone);
-	QCOMPARE(tone->clipNameSource, listsTone ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(tone->clipNameSource, listsTone && !FeatureFlags::kClipDurationEnabled
+									  ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(tone->clipName, kToneClip);
 	QCOMPARE(tone->project, QStringLiteral("block 1729"));
 	QCOMPARE(tone->masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613"));
@@ -1195,7 +1197,7 @@ void TestScanner::database_described_row_never_reads_its_header()
 	QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
 	QCOMPARE(mf.sampleRate, 48000);
 	QVERIFY(mf.channels > 0);
-	QVERIFY(mf.durationFrames > 0);
+	QVERIFY(mf.duration.displayFrames() > 0);
 	QVERIFY(mf.timecodeBase > 0);
 	QVERIFY(!mf.bitDepth.isEmpty());
 	QVERIFY(mf.resolution.isEmpty());
@@ -1210,13 +1212,14 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
-	copyFixture(kToneName, folder);
+	// Isolate database duration recovery from any usable MXF header, including
+	// the extra header read requested when Clip Duration is enabled.
+	writeJunk(folder + QLatin1Char('/') + kToneName, 1024);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 
-	// A generated database duration, not a claim about this genuine tone's
-	// length: 47040 samples at 48 kHz and 25 fps is 24.5 timeline frames.
-	// Current PMR/MDB metadata must round it to 25 without reading the MXF.
-	// Rounding the duration must not change the declared 25 fps timecode base.
+	// A generated database duration: 47040 samples at 48 kHz and 25 frames/s is
+	// 24.5 timeline frames. Preserve the samples and round only for display.
+	// Rounding the duration must not change the declared 25 frames/s timecode base.
 	const QByteArray masterId = QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613");
 	BentoBuilder w;
 	const quint32 head = w.addObject("HEAD"), master = w.addObject("MOBJ"), file = w.addObject("MOBJ");
@@ -1231,7 +1234,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	w.set(file, "OMFI:MOBJ:MobID", kToneFileId);
 	w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", desc);
 	w.setRational(file, "OMFI:CPNT:EditRate", 25, 1);
-	w.setRational(desc, "OMFI:MDFL:SampleRate", 48000, 1);
+	w.setRational(desc, "OMFI:MDFL:SampleRate", 96000, 2); // Preserve the original unreduced fraction.
 	w.setU32(desc, "OMFI:MDFL:Length", 47040);
 	w.setU16(desc, "OMFI:MDAU:BitsPerSample", 24);
 	w.setU16(desc, "OMFI:MDAU:NumChannels", 2);
@@ -1244,13 +1247,20 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	const MediaFile &row = rows.first();
 	QCOMPARE(row.dbStatus, MediaFile::DbStatus::Listed);
 	QVERIFY(row.databaseMetadataCurrent);
-	QVERIFY(!row.needsHeaderRead);
+	QCOMPARE(row.needsHeaderRead, FeatureFlags::kClipDurationEnabled);
 	QVERIFY(!row.omfEra);
 	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(row.clipName, QStringLiteral("Partial frame duration"));
 	QCOMPARE(row.kind, MediaFile::Kind::Audio);
 	QCOMPARE(row.sampleRate, 48000);
-	QCOMPARE(row.durationFrames, qint64(25));
+	QCOMPARE(row.duration.displayFrames(), qint64(25));
+	QCOMPARE(row.duration.units, qint64(47040)); // Partial samples survive database -> scan -> display.
+	QCOMPARE(row.duration.rate.numerator, 96000);
+	QCOMPARE(row.duration.rate.denominator, 2);
+	QCOMPARE(row.sampleRateRatio.numerator, 96000);
+	QCOMPARE(row.sampleRateRatio.denominator, 2);
+	QCOMPARE(row.duration.source, MediaDuration::Source::Descriptor);
+	QCOMPARE(row.masterMobId, MobId::format(masterId));
 	QCOMPARE(row.timecodeBase, 25);
 	QCOMPARE(row.durationDisplay(), QStringLiteral("00:00:01:00"));
 }
@@ -1266,11 +1276,12 @@ void TestScanner::stale_header_and_current_database_agree()
 	copyFixture(kToneName, folder);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 
-	// Current timestamps use the database, with no header read.
+	// Current timestamps can skip the header unless Clip Duration needs it.
 	const auto normal = runScan(tmp.path());
 	QCOMPARE(normal.size(), 1);
-	QCOMPARE(normal.first().clipNameSource, MediaFile::ClipNameSource::Mdb);
-	QVERIFY(!normal.first().needsHeaderRead);
+	QCOMPARE(normal.first().clipNameSource, FeatureFlags::kClipDurationEnabled
+											   ? MediaFile::ClipNameSource::MaterialPackage : MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(normal.first().needsHeaderRead, FeatureFlags::kClipDurationEnabled);
 
 	// Changing the timestamp triggers automatic verification. The actual
 	// header still describes the same clip and must agree with the database.
@@ -1287,7 +1298,7 @@ void TestScanner::stale_header_and_current_database_agree()
 	QCOMPARE(normal.first().sampleRate, fromHeader.first().sampleRate);
 	QCOMPARE(normal.first().channels, fromHeader.first().channels);
 	QCOMPARE(normal.first().bitDepth, fromHeader.first().bitDepth);
-	QCOMPARE(normal.first().durationFrames, fromHeader.first().durationFrames);
+	QCOMPARE(normal.first().duration.displayFrames(), fromHeader.first().duration.displayFrames());
 	QCOMPARE(normal.first().timecodeBase, fromHeader.first().timecodeBase);
 	QCOMPARE(normal.first().originalBin, fromHeader.first().originalBin);
 	QCOMPARE(normal.first().mobId, fromHeader.first().mobId);
@@ -1779,10 +1790,10 @@ namespace
 		QCOMPARE(mf.sampleRate, 48000);
 		QCOMPARE(mf.channels, 1);
 		QCOMPARE(mf.bitDepth, QStringLiteral("24-bit"));
-		QCOMPARE(mf.durationFrames, qint64(1500));
+		QCOMPARE(mf.duration.displayFrames(), qint64(1500));
 		QCOMPARE(mf.timecodeBase, 25);
 		QVERIFY2(mf.resolution.isEmpty(), qPrintable(mf.resolution));
-		QVERIFY2(mf.fps.isEmpty(), qPrintable(mf.fps));
+		QVERIFY2(mf.frameRate.isEmpty(), qPrintable(mf.frameRate));
 	}
 
 	void checkOmfAudioRow(const MediaFile &mf, const QString &clip, const QString &bin, const QString &fileMob,
@@ -1916,11 +1927,11 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QVERIFY(!mxf.omfEra);
 	QVERIFY(!mxf.isQuarantined);
 	QCOMPARE(mxf.databaseMetadataCurrent, withDatabases);
-	QCOMPARE(mxf.needsHeaderRead, !withDatabases);
+	QCOMPARE(mxf.needsHeaderRead, FeatureFlags::kClipDurationEnabled || !withDatabases);
 	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
-	QCOMPARE(mxf.clipNameSource, withDatabases ? MediaFile::ClipNameSource::Mdb
-											   : MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(mxf.clipNameSource, withDatabases && !FeatureFlags::kClipDurationEnabled
+									   ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mxf.sampleRate, 48000);
 }
 
@@ -2192,7 +2203,7 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 		const char *file;
 		const char *codec;
 		const char *resolution;
-		const char *fps;
+		const char *frameRate;
 		bool stamp; ///< true: mtime = PMR trailer, database-covered; false: fresh, header path
 	};
 	const Pin kPins[] = {
@@ -2226,8 +2237,8 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 		QCOMPARE(mf->type, MediaFile::Type::Media);
 		QCOMPARE(mf->codec, QLatin1String(pin.codec));
 		QCOMPARE(mf->resolution, QLatin1String(pin.resolution));
-		QCOMPARE(mf->fps, QLatin1String(pin.fps));
-		QCOMPARE(mf->durationFrames, qint64(1));
+		QCOMPARE(mf->frameRate, QLatin1String(pin.frameRate));
+		QCOMPARE(mf->duration.displayFrames(), qint64(1));
 		QCOMPARE(mf->bitDepth, QStringLiteral("8-bit"));
 		QVERIFY2(!mf->clipName.isEmpty(), pin.file);
 		QVERIFY2(!mf->project.isEmpty(), pin.file); // the v2 PMR has none; the MDB's _PJ fills it
@@ -2248,7 +2259,7 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		const char *file;
 		const char *codec;
 		const char *resolution;
-		const char *fps;
+		const char *frameRate;
 		bool stamp; ///< true: mtime = PMR trailer, database-covered; false: fresh, header path
 	};
 	const Pin kPins[] = {
@@ -2285,8 +2296,8 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		QCOMPARE(mf->kind, MediaFile::Kind::Video);
 		QCOMPARE(mf->codec, QLatin1String(pin.codec));
 		QCOMPARE(mf->resolution, QLatin1String(pin.resolution));
-		QCOMPARE(mf->fps, QLatin1String(pin.fps));
-		QCOMPARE(mf->durationFrames, qint64(1));
+		QCOMPARE(mf->frameRate, QLatin1String(pin.frameRate));
+		QCOMPARE(mf->duration.displayFrames(), qint64(1));
 		QVERIFY2(!mf->clipName.isEmpty(), pin.file);
 		QVERIFY2(!mf->project.isEmpty(), pin.file);
 		QVERIFY(OmfUid::isWrappedOmfId(mf->mobId));
@@ -2537,7 +2548,7 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QVERIFY(row.bitDepth.isEmpty());
 	QCOMPARE(row.sampleRate, 0);
 	QCOMPARE(row.channels, 0);
-	QCOMPARE(row.durationFrames, qint64(0));
+	QCOMPARE(row.duration.displayFrames(), qint64(0));
 	QCOMPARE(row.timecodeBase, 0);
 }
 

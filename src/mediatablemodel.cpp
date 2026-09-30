@@ -16,7 +16,28 @@ int MediaTableModel::columnCount(const QModelIndex &parent) const
 {
 	if (parent.isValid())
 		return 0;
+	return clipDurationColumn() + (m_clipDurationEnabled ? 1 : 0);
+}
+
+int MediaTableModel::clipDurationColumn() const
+{
 	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
+}
+
+void MediaTableModel::setClipDurationEnabled(bool enabled)
+{
+	if (m_clipDurationEnabled == enabled)
+		return;
+	const int column = clipDurationColumn();
+	if (enabled)
+		beginInsertColumns({}, column, column);
+	else
+		beginRemoveColumns({}, column, column);
+	m_clipDurationEnabled = enabled;
+	if (enabled)
+		endInsertColumns();
+	else
+		endRemoveColumns();
 }
 
 void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
@@ -125,6 +146,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid() || index.row() >= m_files.size() || index.column() >= columnCount())
 		return {};
 	const MediaFile &f = m_files[index.row()];
+	if (m_clipDurationEnabled && index.column() == clipDurationColumn())
+		return role == Qt::DisplayRole ? QVariant(f.clipDurationDisplay()) : QVariant{};
 
 	if (role == Qt::DisplayRole)
 	{
@@ -146,8 +169,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.codec;
 		case Column::Resolution:
 			return f.resolution;
-		case Column::Fps:
-			return f.fps;
+		case Column::FrameRate:
+			return f.frameRate;
 		case Column::SampleRate:
 			return f.sampleRateDisplay();
 		case Column::BitDepth:
@@ -202,7 +225,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		if (static_cast<Column>(index.column()) == Column::SizeMB)
 			return f.sizeBytes;
 		if (static_cast<Column>(index.column()) == Column::SampleRate)
-			return f.sampleRate > 0 ? QVariant(f.sampleRate) : QVariant();
+			return f.sampleRateHz() > 0 ? QVariant(f.sampleRateHz()) : QVariant();
 		if (static_cast<Column>(index.column()) == Column::Created)
 			return f.created;
 		return data(index, Qt::DisplayRole);
@@ -215,8 +238,11 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= columnCount())
 		return {};
 
+	if (m_clipDurationEnabled && section == clipDurationColumn())
+		return QStringLiteral("Clip Duration");
+
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
-							 "Codec", "Resolution", "FPS", "Sample Rate", "Bit Depth", "Type",
+							 "Codec", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
 							 "Date Created", "Filename", "Source Filename", "Location",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
