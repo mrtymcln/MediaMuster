@@ -138,10 +138,10 @@ void TestOmfParser::avid_legacy_version_excludes_compositions()
 	const MdbDatabase db = MdbParser::load(path);
 	QCOMPARE(db.revision, OmfObjects::Revision::Omf1);
 	QCOMPARE(db.masters.size(), 2);
-	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2))));  // usage1 precompute
-	QVERIFY(db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(8))));  // usage7 master
-	QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(1)))); // usage0 composition
-	QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(100))));
+	QVERIFY(db.masters.contains(OmfUid::toIdText(TestOmf::uid(2))));  // usage1 precompute
+	QVERIFY(db.masters.contains(OmfUid::toIdText(TestOmf::uid(8))));  // usage7 master
+	QVERIFY(!db.masters.contains(OmfUid::toIdText(TestOmf::uid(1)))); // usage0 composition
+	QVERIFY(!db.masters.contains(OmfUid::toIdText(TestOmf::uid(100))));
 }
 
 void TestOmfParser::omf_master_usage_is_role_specific_and_width_checked()
@@ -201,8 +201,8 @@ void TestOmfParser::wave_omf1_and_omf2_semantics()
 		QCOMPARE(m.essence.sourceFilePath, QStringLiteral("C:\\Original\\session.wav"));
 		QCOMPARE(m.essence.classificationKnown, !omf2); // no Avid UsageCode in standard OMF2
 		QVERIFY(m.essence.hasMaterialPackage);			// known master identity survives unknown UsageCode.
-		QCOMPARE(m.essence.umid, OmfUid::canonicalHex(TestOmf::uid(1)));
-		QCOMPARE(m.fileMobId, OmfUid::canonicalHex(TestOmf::uid(2)));
+		QCOMPARE(m.essence.umid, OmfUid::toIdText(TestOmf::uid(1)));
+		QCOMPARE(m.fileMobId, OmfUid::toIdText(TestOmf::uid(2)));
 		QCOMPARE(m.startTimecode, omf2 ? qint64(0x10000002aULL) : qint64(90000));
 		QCOMPARE(m.timecodeFps, 25);
 	}
@@ -278,8 +278,8 @@ void TestOmfParser::omf_every_slate_parses_with_a_named_codec()
 		QVERIFY2(!e.sourceFilePath.isEmpty(), fn);
 		QVERIFY2(!e.isPrecompute, fn);
 		// Two distinct wrapped ids: the master (umid) and the file mob.
-		QVERIFY2(OmfUid::isOmfForm(e.umid), qPrintable(name + QStringLiteral(": ") + e.umid));
-		QVERIFY2(OmfUid::isOmfForm(m.fileMobId), qPrintable(name + QStringLiteral(": ") + m.fileMobId));
+		QVERIFY2(OmfUid::isWrappedOmfId(e.umid), qPrintable(name + QStringLiteral(": ") + e.umid));
+		QVERIFY2(OmfUid::isWrappedOmfId(m.fileMobId), qPrintable(name + QStringLiteral(": ") + m.fileMobId));
 		QVERIFY2(m.fileMobId != e.umid, fn);
 		// Tail-first: the essence is never materialised.
 		QVERIFY2(read > 0 && read < kTailBudget, qPrintable(name + QStringLiteral(": read ") + QString::number(read)));

@@ -13,9 +13,9 @@ private slots:
 	void isAllZero_detects_all_zero_pattern();
 	void isAllZero_rejects_real_mob();
 	void isAllZero_rejects_empty();
-	void toPmrForm_swaps_middle_fields();
-	void toPmrForm_is_involution();
-	void toPmrForm_rejects_malformed();
+	void swapMaterialByteOrder_swaps_middle_fields();
+	void swapMaterialByteOrder_is_involution();
+	void swapMaterialByteOrder_rejects_malformed();
 };
 
 void TestMobId::format_renders_canonical_dotted_hex()
@@ -84,28 +84,28 @@ void TestMobId::isAllZero_rejects_empty()
 	QVERIFY(!MobId::isAllZero(QString()));
 }
 
-void TestMobId::toPmrForm_swaps_middle_fields()
+void TestMobId::swapMaterialByteOrder_swaps_middle_fields()
 {
 	// Endian swap on bytes [16..23] only.
 	const QString avb = QStringLiteral("0011223344556677.8899aabbccddeeff."
 									   "0123456789abcdef.0123456789abcdef");
 	const QString expected = QStringLiteral("0011223344556677.8899aabbccddeeff."
 											"67452301ab89efcd.0123456789abcdef");
-	QCOMPARE(MobId::toPmrForm(avb), expected);
+	QCOMPARE(MobId::swapMaterialByteOrder(avb), expected);
 }
 
-void TestMobId::toPmrForm_is_involution()
+void TestMobId::swapMaterialByteOrder_is_involution()
 {
 	const QString original = QStringLiteral("060a2b3401010105.01010f1013000000."
 											"a4bb7f1311399006.6d01ce4ff0f5d57a");
-	QCOMPARE(MobId::toPmrForm(MobId::toPmrForm(original)), original);
+	QCOMPARE(MobId::swapMaterialByteOrder(MobId::swapMaterialByteOrder(original)), original);
 }
 
-void TestMobId::toPmrForm_rejects_malformed()
+void TestMobId::swapMaterialByteOrder_rejects_malformed()
 {
-	QCOMPARE(MobId::toPmrForm(QStringLiteral("not hex at all")), QString());
-	QCOMPARE(MobId::toPmrForm(QStringLiteral("0011223344556677")), QString());
-	QCOMPARE(MobId::toPmrForm(QString()), QString());
+	QCOMPARE(MobId::swapMaterialByteOrder(QStringLiteral("not hex at all")), QString());
+	QCOMPARE(MobId::swapMaterialByteOrder(QStringLiteral("0011223344556677")), QString());
+	QCOMPARE(MobId::swapMaterialByteOrder(QString()), QString());
 }
 
 QTEST_APPLESS_MAIN(TestMobId)

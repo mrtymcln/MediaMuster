@@ -44,9 +44,9 @@ void BinMetadataResolver::setBins(const QVector<AvbBin> &bins)
 			m_metadata[mob.mobId].merge(mob);
 			// OMF wrappers preserve their identity bytes in both the bin and
 			// the database. Only MXF identities need the byte-order alias.
-			if (!OmfUid::isOmfForm(mob.mobId))
+			if (!OmfUid::isWrappedOmfId(mob.mobId))
 			{
-				const QString alias = MobId::toPmrForm(mob.mobId);
+				const QString alias = MobId::swapMaterialByteOrder(mob.mobId);
 				if (!alias.isEmpty() && alias != mob.mobId)
 					m_metadata[alias].merge(mob);
 			}

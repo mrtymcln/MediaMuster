@@ -22,7 +22,7 @@ namespace
 		{
 			const auto formatted = MobId::format(id);
 			result.insert(formatted);
-			result.insert(MobId::toPmrForm(formatted));
+			result.insert(MobId::swapMaterialByteOrder(formatted));
 		}
 		return result;
 	}

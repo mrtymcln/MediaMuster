@@ -336,7 +336,7 @@ namespace
 		std::array<uchar, OmfUid::kPmrSize> core{};
 		qToLittleEndian(low, core.data());
 		qToLittleEndian(high, core.data() + sizeof(low));
-		return OmfUid::wrap8(core.data());
+		return OmfUid::toMobIdBytes(core.data());
 	}
 
 	RawMobId typedMobId(AvbValueParser &r)
@@ -367,13 +367,15 @@ namespace
 
 	bool isNullMobId(const RawMobId &mob) noexcept
 	{
-		if (std::all_of(mob.begin(), mob.end(), [](uchar b) { return b == 0; }))
+		if (std::all_of(mob.begin(), mob.end(), [](uchar b)
+						{ return b == 0; }))
 			return true;
 
 		return std::memcmp(mob.data(), OmfUid::kPrefix, sizeof OmfUid::kPrefix) == 0 &&
 			   std::memcmp(mob.data() + kMobTailOffset, OmfUid::kSuffix, sizeof OmfUid::kSuffix) == 0 &&
 			   std::all_of(mob.begin() + kMobMaterialOffset, mob.begin() + kMobTailOffset,
-						   [](uchar b) { return b == 0; });
+						   [](uchar b)
+						   { return b == 0; });
 	}
 
 	class AvbFileParser
@@ -496,7 +498,7 @@ namespace
 				if (!size || size > r.remaining())
 					r.fail(QStringLiteral("Invalid AVB chunk length"));
 				if (std::any_of(type.begin(), type.end(), [](char c)
-					{ return static_cast<quint8>(c) < 32 || static_cast<quint8>(c) > 126; }))
+								{ return static_cast<quint8>(c) < 32 || static_cast<quint8>(c) > 126; }))
 					r.fail(QStringLiteral("Invalid AVB class identifier"));
 				m_objects.append({type, r.pos(), size});
 				r.skip(size - 1);
@@ -528,10 +530,10 @@ namespace
 			m_result.mobIds.insert(canonical);
 			// Leave wrapped OMF MobIds as they are.
 			// Swapping their bytes could match the wrong clip.
-			if (OmfUid::isOmfForm(canonical))
+			if (OmfUid::isWrappedOmfId(canonical))
 				return canonical;
 			RawMobId swapped{};
-			MobId::swapMiddleFields(mob.data(), swapped.data());
+			MobId::swapMaterialByteOrder(mob.data(), swapped.data());
 			const auto alias = MobId::format(swapped.data());
 			m_result.mobIds.insert(alias);
 			return canonical;

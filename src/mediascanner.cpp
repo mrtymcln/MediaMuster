@@ -1067,7 +1067,7 @@ namespace
 		// database representation; swapping them would identify different media.
 		if (record == masters->constEnd() && !readingOmf)
 		{
-			const QString swapped = MobId::toPmrForm(id);
+			const QString swapped = MobId::swapMaterialByteOrder(id);
 			if (!swapped.isEmpty())
 				record = masters->constFind(swapped);
 		}
@@ -1103,7 +1103,7 @@ namespace
 		{
 			if (readingOmf || id.isEmpty())
 				return id;
-			const QString canonical = MobId::toPmrForm(id);
+			const QString canonical = MobId::swapMaterialByteOrder(id);
 			return canonical.isEmpty() ? id : canonical;
 		};
 		// A selected OMF file mob can prove identity even when its

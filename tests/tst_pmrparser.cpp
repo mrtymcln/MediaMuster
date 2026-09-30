@@ -117,12 +117,12 @@ namespace
 	// 8 bytes inside its fixed prefix and suffix.
 	QByteArray wrapped(const QByteArray &eight)
 	{
-		const auto raw = OmfUid::wrap8(reinterpret_cast<const unsigned char *>(eight.constData()));
+		const auto raw = OmfUid::toMobIdBytes(reinterpret_cast<const unsigned char *>(eight.constData()));
 		return QByteArray(reinterpret_cast<const char *>(raw.data()), int(raw.size()));
 	}
 	QString canonical8(const QByteArray &eight)
 	{
-		return OmfUid::canonicalFromPmr8(reinterpret_cast<const unsigned char *>(eight.constData()));
+		return OmfUid::toMobIdText(reinterpret_cast<const unsigned char *>(eight.constData()));
 	}
 
 	void ordered16(QByteArray &bytes, quint16 value, bool bigEndian)
@@ -724,8 +724,8 @@ void TestPmrParser::omf_v2_pair_parses_with_wrapped_mobs()
 	QCOMPARE(entries[0].mobId, canonical8(fileMob8()));
 	QCOMPARE(entries[0].masterMobId, canonical8(masterMob8()));
 	QCOMPARE(entries[0].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
-	QVERIFY(OmfUid::isOmfForm(entries[0].mobId));
-	QVERIFY(OmfUid::isOmfForm(entries[0].masterMobId));
+	QVERIFY(OmfUid::isWrappedOmfId(entries[0].mobId));
+	QVERIFY(OmfUid::isWrappedOmfId(entries[0].masterMobId));
 	QCOMPARE(entries[0].fileModifiedSecs, 1788291444u);
 
 	// A one-pair version-2 file is 37 bytes — under the 44 the version-8
@@ -793,8 +793,8 @@ void TestPmrParser::omf_v2_real_avid_supporting_fixture()
 	QSet<QString> fileMobs;
 	for (const PmrEntry &e : entries)
 	{
-		QVERIFY2(OmfUid::isOmfForm(e.mobId), qPrintable(e.fileName + ' ' + e.mobId));
-		QVERIFY2(OmfUid::isOmfForm(e.masterMobId), qPrintable(e.fileName + ' ' + e.masterMobId));
+		QVERIFY2(OmfUid::isWrappedOmfId(e.mobId), qPrintable(e.fileName + ' ' + e.mobId));
+		QVERIFY2(OmfUid::isWrappedOmfId(e.masterMobId), qPrintable(e.fileName + ' ' + e.masterMobId));
 		QVERIFY2(e.mobId != e.masterMobId, qPrintable(e.fileName));
 		QVERIFY2(e.project.isEmpty(), qPrintable(e.project));
 		QVERIFY2(e.fileName.endsWith(QLatin1String(".omf")), qPrintable(e.fileName));

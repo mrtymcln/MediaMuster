@@ -321,7 +321,7 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
 	// A one-clip MDB: the tone's MOB (PMR/MDB byte order — what
-	// MobId::toPmrForm(umid) resolves to) as a master mob carrying a WRONG
+	// MobId::swapMaterialByteOrder(umid) resolves to) as a master mob carrying a WRONG
 	// clip name.
 	BentoBuilder w;
 	const quint32 master = w.addObject("MOBJ");
@@ -1394,8 +1394,8 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	const QString replacement = fixturesDir() + QString::fromUtf8("/corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
 	const MediaMetadata header = MxfParser::parseHeader(replacement);
 	QVERIFY(header.valid && header.classificationKnown && header.isPrecompute);
-	const QString newFileId = MobId::toPmrForm(header.fileMobId);
-	const QString newMasterId = MobId::toPmrForm(header.umid);
+	const QString newFileId = MobId::swapMaterialByteOrder(header.fileMobId);
+	const QString newMasterId = MobId::swapMaterialByteOrder(header.umid);
 	QVERIFY(!newFileId.isEmpty() && newFileId != MobId::format(kToneFileId));
 	QVERIFY(!newMasterId.isEmpty() && newMasterId != MobId::format(kLadderMob));
 	QVERIFY(QFile::copy(replacement, folder + QLatin1Char('/') + kToneName));
@@ -1468,8 +1468,8 @@ void TestScanner::precompute_category_conflict_and_stale_database()
 	const QString fixture = QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
 	const auto header = MxfParser::parseHeader(fixturesDir() + QLatin1Char('/') + fixture);
 	QCOMPARE(header.precomputeCategory, MediaFile::PrecomputeCategory::RenderedEffects);
-	const QByteArray fileId = QByteArray::fromHex(MobId::toPmrForm(header.fileMobId).toLatin1());
-	const QByteArray masterId = QByteArray::fromHex(MobId::toPmrForm(header.umid).toLatin1());
+	const QByteArray fileId = QByteArray::fromHex(MobId::swapMaterialByteOrder(header.fileMobId).toLatin1());
+	const QByteArray masterId = QByteArray::fromHex(MobId::swapMaterialByteOrder(header.umid).toLatin1());
 	QVERIFY(QFile::copy(fixturesDir() + QLatin1Char('/') + fixture, folder + QStringLiteral("/render.mxf")));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), categoryDatabase(masterId, fileId, true, 2)));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), singlePmr("render.mxf", fileId, masterId, {}, kToneModified)));
@@ -1500,8 +1500,8 @@ void TestScanner::pmr_v1_recovers_unique_master_from_mdb()
 	const auto rows = runScan(tmp.path(), true);
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &mf = rows.first();
-	QCOMPARE(mf.mobId, OmfUid::canonicalHex(TestOmf::uid(2)));
-	QCOMPARE(mf.masterMobId, OmfUid::canonicalHex(TestOmf::uid(1)));
+	QCOMPARE(mf.mobId, OmfUid::toIdText(TestOmf::uid(2)));
+	QCOMPARE(mf.masterMobId, OmfUid::toIdText(TestOmf::uid(1)));
 	QCOMPARE(mf.project, QStringLiteral("WAVE project"));
 	QCOMPARE(mf.type, MediaFile::Type::Media);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
@@ -1519,8 +1519,8 @@ void TestScanner::omf2_header_keeps_master_identity_with_unknown_classification(
 	const auto rows = runScan(tmp.path(), true);
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &mf = rows.first();
-	QCOMPARE(mf.masterMobId, OmfUid::canonicalHex(TestOmf::uid(1)));
-	QCOMPARE(mf.mobId, OmfUid::canonicalHex(TestOmf::uid(2)));
+	QCOMPARE(mf.masterMobId, OmfUid::toIdText(TestOmf::uid(1)));
+	QCOMPARE(mf.mobId, OmfUid::toIdText(TestOmf::uid(2)));
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.type, MediaFile::Type::Unknown); // MMOB identity and Avid render classification are separate
 	QCOMPARE(mf.project, QStringLiteral("WAVE project"));
@@ -1563,8 +1563,8 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	const auto rows = runScan(tmp.path());
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &mf = rows.first();
-	QCOMPARE(mf.masterMobId, MobId::toPmrForm(parsed.umid));
-	QCOMPARE(mf.mobId, MobId::toPmrForm(parsed.fileMobId));
+	QCOMPARE(mf.masterMobId, MobId::swapMaterialByteOrder(parsed.umid));
+	QCOMPARE(mf.mobId, MobId::swapMaterialByteOrder(parsed.fileMobId));
 	QCOMPARE(mf.kind, MediaFile::Kind::Video);
 	QCOMPARE(mf.type, MediaFile::Type::Unknown);
 	QCOMPARE(mf.clipName, QStringLiteral("Sequence,3D_Warp+1"));
@@ -1772,8 +1772,8 @@ namespace
 		QCOMPARE(mf.originalBin, bin);
 		QCOMPARE(mf.mobId, fileMob);
 		QCOMPARE(mf.masterMobId, masterMob);
-		QVERIFY(OmfUid::isOmfForm(mf.mobId));
-		QVERIFY(OmfUid::isOmfForm(mf.masterMobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf.mobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf.masterMobId));
 		QVERIFY(!mf.isInvalidUmid);
 		QVERIFY(!mf.hasNoProject());
 		QCOMPARE(mf.sampleRate, 48000);
@@ -1969,7 +1969,7 @@ void TestScanner::stale_omf_database_does_not_describe_replacement()
 	QCOMPARE(rows.first().fileName, QStringLiteral("replaced.omf"));
 	QVERIFY(!rows.first().databaseMetadataCurrent);
 	QVERIFY(rows.first().needsHeaderRead);
-	QCOMPARE(rows.first().mobId, OmfUid::canonicalHex(TestOmf::uid(4)));
+	QCOMPARE(rows.first().mobId, OmfUid::toIdText(TestOmf::uid(4)));
 	QCOMPARE(rows.first().codec, QStringLiteral("WAVE (OMF)"));
 	QCOMPARE(rows.first().sampleRate, 48000);
 }
@@ -1999,7 +1999,7 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 	// technical description requires a header read. The actual
 	// WAVE is usable yet lacks a master, so HeaderStatus stays Incomplete.
 	const MdbDatabase database = MdbParser::load(mdbPath);
-	const QString oldFileId = OmfUid::canonicalHex(TestOmf::uid(2));
+	const QString oldFileId = OmfUid::toIdText(TestOmf::uid(2));
 	QVERIFY(database.files.contains(oldFileId));
 	QVERIFY(!database.files.value(oldFileId).essenceComplete);
 	QVERIFY(PmrParser::trailerMatchesModified(kToneModified, QFileInfo(path).lastModified()));
@@ -2007,7 +2007,7 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 	QVERIFY(header.essence.valid);
 	QCOMPARE(header.essence.headerStatus, MediaMetadata::HeaderStatus::Incomplete);
 	QVERIFY(header.essence.umid.isEmpty());
-	QCOMPARE(header.fileMobId, OmfUid::canonicalHex(TestOmf::uid(fileUid)));
+	QCOMPARE(header.fileMobId, OmfUid::toIdText(TestOmf::uid(fileUid)));
 	QCOMPARE(header.fileMobId == oldFileId, fileUid == 2);
 	QCOMPARE(header.essence.codec, QStringLiteral("WAVE (OMF)"));
 
@@ -2231,8 +2231,8 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 		QCOMPARE(mf->bitDepth, QStringLiteral("8-bit"));
 		QVERIFY2(!mf->clipName.isEmpty(), pin.file);
 		QVERIFY2(!mf->project.isEmpty(), pin.file); // the v2 PMR has none; the MDB's _PJ fills it
-		QVERIFY(OmfUid::isOmfForm(mf->mobId));
-		QVERIFY(OmfUid::isOmfForm(mf->masterMobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf->mobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf->masterMobId));
 		QCOMPARE(mf->clipNameSource,
 				 pin.stamp ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	}
@@ -2289,8 +2289,8 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		QCOMPARE(mf->durationFrames, qint64(1));
 		QVERIFY2(!mf->clipName.isEmpty(), pin.file);
 		QVERIFY2(!mf->project.isEmpty(), pin.file);
-		QVERIFY(OmfUid::isOmfForm(mf->mobId));
-		QVERIFY(OmfUid::isOmfForm(mf->masterMobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf->mobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf->masterMobId));
 		QCOMPARE(mf->type, MediaFile::Type::Media);
 		QCOMPARE(mf->bitDepth, QStringLiteral("8-bit"));
 		QCOMPARE(mf->clipNameSource,
@@ -2327,7 +2327,7 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 		QVERIFY2(mf.omfEra, qPrintable(mf.fileName));
 		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
 		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
-		QVERIFY(OmfUid::isOmfForm(mf.mobId));
+		QVERIFY(OmfUid::isWrappedOmfId(mf.mobId));
 	}
 	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
 	QVERIFY(slate != nullptr);
@@ -2479,7 +2479,7 @@ void TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format()
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &row = rows.first();
 	QVERIFY(row.omfEra);
-	QCOMPARE(row.mobId, OmfUid::canonicalHex(TestOmf::uid(2)));
+	QCOMPARE(row.mobId, OmfUid::toIdText(TestOmf::uid(2)));
 	QVERIFY(row.masterMobId.isEmpty());
 	QVERIFY(row.clipName.isEmpty());
 	QCOMPARE(row.type, MediaFile::Type::Unknown);
@@ -2514,7 +2514,7 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QVERIFY(!header.essence.valid);
 	QVERIFY(!header.essence.classificationKnown);
 	QCOMPARE(header.essence.headerStatus, MediaMetadata::HeaderStatus::Incomplete);
-	QCOMPARE(header.fileMobId, OmfUid::canonicalHex(TestOmf::uid(replacementUid)));
+	QCOMPARE(header.fileMobId, OmfUid::toIdText(TestOmf::uid(replacementUid)));
 	QVERIFY(header.fileMobId != kOmfWavFileMob);
 
 	const auto rows = runManualScan(folder, true);

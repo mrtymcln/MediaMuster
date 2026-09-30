@@ -45,7 +45,7 @@ namespace
 	{
 		MediaFile file;
 		file.mediaFilePath = path;
-		file.masterMobId = MobId::toPmrForm(masterId());
+		file.masterMobId = MobId::swapMaterialByteOrder(masterId());
 		return file;
 	}
 }

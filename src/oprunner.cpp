@@ -100,7 +100,7 @@ namespace
 		auto matches = [](const QString &expected, const QString &actual)
 		{
 			return !actual.isEmpty() && !MobId::isAllZero(actual) &&
-				   (expected == actual || expected == MobId::toPmrForm(actual));
+				   (expected == actual || expected == MobId::swapMaterialByteOrder(actual));
 		};
 		if ((fileKnown && !matches(item.mobId, h.fileMobId)) ||
 			(masterKnown && (!h.hasMaterialPackage || !matches(item.masterMobId, h.umid))))

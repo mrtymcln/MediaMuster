@@ -154,7 +154,7 @@ namespace
 			}
 		}
 		const auto *raw = reinterpret_cast<const unsigned char *>(normalized.constData());
-		value = omf ? OmfUid::canonicalFromPmr8(raw) : MobId::format(raw);
+		value = omf ? OmfUid::toMobIdText(raw) : MobId::format(raw);
 		return true;
 	}
 

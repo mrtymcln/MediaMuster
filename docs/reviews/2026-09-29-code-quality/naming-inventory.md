@@ -4,6 +4,8 @@ Source snapshot: `39c04c558a88260b178c2cf636be410231cb7d69`, reviewed 29 Septemb
 
 AVB update, 30 September 2026: the ten internal AVB type renames and four identifier-helper renames (`nativeMobId`, `typedMobId`, `isNullMobId`, `addMobId`) are implemented. Their final names appear in rows marked **Implemented**. The source snapshot, original names, scopes and line numbers below remain the 29 September baseline; “Recommended” is the current name for implemented rows. Earlier type-row reasons record the initial type-only decision; the four helper rows record the subsequent authorized change. All AVB data members, properties, parameters, locals and other functions remain unchanged, including `m_objects`, `type`, `offset`, `size` and `attributes`. Public `AvbParser`, `AvbBin`, `AvbMob` and `AvbHeaderCheck`, AVB source/test filenames, parser behaviour and journal version 2 are unchanged. Comment cleanup is a separate applied change. Other recommendations remain proposals.
 
+Identifier-helper update, 30 September 2026: the approved MobId and OmfUid names are implemented, together with the ten matching Qt test-method prefixes. `swapMiddleFields` and `toPmrForm` now share the name `swapMaterialByteOrder` as raw-byte and text overloads; `avbFormHex` is now `mobIdHex`. `wrap8`, `canonicalFromPmr8`, the `canonicalHex` function and `isOmfForm` are now `toMobIdBytes`, `toMobIdText`, `toIdText` and `isWrappedOmfId`. The `canonicalHex` parameter of the last function stays unchanged. All snapshot names, scopes and locations are preserved. This is a naming change; stricter malformed-hex validation remains deferred. Build and test validation for this change is pending.
+
 12,879 code-name records and 1,116 tracked filenames. Every record has a recommendation, including an explicit decision to keep a good name. Constructor names follow their class. Repeated local names are separate records. Header/implementation declarations of one compiler symbol are combined where Clang provides a shared identity. Build-variable records also include first observed references to built-ins or external inputs.
 
 **Implemented** records an agreed change now applied. **Rename** means a pending specific semantic improvement. **Candidate** means a systematic suggestion that needs confirmation in its local scope. **Keep** means no better name is justified by this review. Keep decisions for ordinary locals are rule-based, not a claim that every local was separately inspected by a human. Filename changes are optional, because the repository currently documents concatenated lowercase stems. Unimplemented recommendations are proposals, not an automatically applicable patch.
@@ -3388,11 +3390,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 57 | Function | MobId | isAllZero | isAllZero | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 57 | Parameter | MobId::isAllZero | formatted | formatted | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | MobId::isAllZero::(lambda at src/mobid.h:62:10)::operator() | c | c | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 80 | Function | MobId | swapMiddleFields | swapMiddleFields | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 80 | Function | MobId | swapMiddleFields | swapMaterialByteOrder | Implemented | Implemented 30 September 2026: Names the material-field byte-order swap; the raw-byte and text forms are overloads of the same operation. |
 | 80 | Parameter | MobId::swapMiddleFields | src | src | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 80 | Parameter | MobId::swapMiddleFields | dst | dst | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 94 | Function | MobId | toPmrForm | toPmrForm | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 94 | Parameter | MobId::toPmrForm | avbFormHex | avbFormHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 94 | Function | MobId | toPmrForm | swapMaterialByteOrder | Implemented | Implemented 30 September 2026: Names the reversible material-field byte-order swap without implying a one-way PMR conversion. |
+| 94 | Parameter | MobId::toPmrForm | avbFormHex | mobIdHex | Implemented | Implemented 30 September 2026: Identifies the input as MobId text without tying it to AVB. |
 | 100 | Variable | MobId::toPmrForm | clean | clean | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 104 | Variable | MobId::toPmrForm | raw | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 108 | Variable | MobId::toPmrForm | swapped | swapped | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4353,17 +4355,17 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 36 | Variable | OmfUid | kPmrSize | kPmrSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 46 | Variable | OmfUid | kPrefix | kPrefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 54 | Variable | OmfUid | kSuffix | kSuffix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 60 | Function | OmfUid | wrap8 | wrap8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 60 | Function | OmfUid | wrap8 | toMobIdBytes | Implemented | Implemented 30 September 2026: Names the 32-byte MobId output produced from the supported eight-byte Avid identifier. |
 | 60 | Parameter | OmfUid::wrap8 | eight | eight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Variable | OmfUid::wrap8 | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 72 | Function | OmfUid | canonicalFromPmr8 | canonicalFromPmr8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 72 | Function | OmfUid | canonicalFromPmr8 | toMobIdText | Implemented | Implemented 30 September 2026: Names the MobId text output produced from the supported eight-byte Avid identifier. |
 | 72 | Parameter | OmfUid::canonicalFromPmr8 | eight | eight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 82 | Function | OmfUid | canonicalHex | canonicalHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 82 | Function | OmfUid | canonicalHex | toIdText | Implemented | Implemented 30 September 2026: Names the identifier text output, which may be a wrapped MobId or a full OMF UID in the omf: namespace. |
 | 82 | Parameter | OmfUid::canonicalHex | uid | uid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Variable | OmfUid::canonicalHex | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 87 | Variable | OmfUid::canonicalHex | nullUid | nullUid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 88 | Variable | OmfUid::canonicalHex | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 109 | Function | OmfUid | isOmfForm | isOmfForm | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 109 | Function | OmfUid | isOmfForm | isWrappedOmfId | Implemented | Implemented 30 September 2026: Identifies the supported wrapped OMF form, rather than claiming to recognize every OMF identifier. |
 | 109 | Parameter | OmfUid::isOmfForm | canonicalHex | canonicalHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 111 | Variable | OmfUid::isOmfForm | zeroWrap | zeroWrap | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 113 | Variable | OmfUid::isOmfForm::(lambda at src/omfuid.h:111:35)::operator() | zeros | zeros | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -10528,9 +10530,9 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 13 | Method | TestMobId | isAllZero_detects_all_zero_pattern | isAllZero_detects_all_zero_pattern | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 14 | Method | TestMobId | isAllZero_rejects_real_mob | isAllZero_rejects_real_mob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 15 | Method | TestMobId | isAllZero_rejects_empty | isAllZero_rejects_empty | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 16 | Method | TestMobId | toPmrForm_swaps_middle_fields | toPmrForm_swaps_middle_fields | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 17 | Method | TestMobId | toPmrForm_is_involution | toPmrForm_is_involution | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 18 | Method | TestMobId | toPmrForm_rejects_malformed | toPmrForm_rejects_malformed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 16 | Method | TestMobId | toPmrForm_swaps_middle_fields | swapMaterialByteOrder_swaps_middle_fields | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 17 | Method | TestMobId | toPmrForm_is_involution | swapMaterialByteOrder_is_involution | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 18 | Method | TestMobId | toPmrForm_rejects_malformed | swapMaterialByteOrder_rejects_malformed | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
 | 23 | Variable | TestMobId::format_renders_canonical_dotted_hex | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 60 | Variable | TestMobId::format_renders_canonical_dotted_hex | lowercase | lowercase | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 90 | Variable | TestMobId::toPmrForm_swaps_middle_fields | avb | avb | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -11177,13 +11179,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 20 | Variable | readAll | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 28 | Variable |  | kPmrV2HeaderSize | kPmrV2HeaderSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Class |  | TestOmfUid | TestOmfUid | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 36 | Method | TestOmfUid | wrap8_is_prefix_core_suffix | wrap8_is_prefix_core_suffix | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 37 | Method | TestOmfUid | wrap8_matches_the_unicode_set_in_the_real_pmrs | wrap8_matches_the_unicode_set_in_the_real_pmrs | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 38 | Method | TestOmfUid | wrap8_does_not_swap_middle_fields | wrap8_does_not_swap_middle_fields | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 39 | Method | TestOmfUid | canonicalHex_12_bytes_wraps_the_core | canonicalHex_12_bytes_wraps_the_core | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 40 | Method | TestOmfUid | canonicalHex_32_bytes_formats_unchanged | canonicalHex_32_bytes_formats_unchanged | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 41 | Method | TestOmfUid | canonicalHex_other_widths_are_empty | canonicalHex_other_widths_are_empty | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 42 | Method | TestOmfUid | isOmfForm_recognises_only_the_wrap | isOmfForm_recognises_only_the_wrap | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 36 | Method | TestOmfUid | wrap8_is_prefix_core_suffix | toMobIdBytes_is_prefix_core_suffix | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 37 | Method | TestOmfUid | wrap8_matches_the_unicode_set_in_the_real_pmrs | toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 38 | Method | TestOmfUid | wrap8_does_not_swap_middle_fields | toMobIdBytes_does_not_swap_middle_fields | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 39 | Method | TestOmfUid | canonicalHex_12_bytes_wraps_the_core | toIdText_12_bytes_wraps_the_core | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 40 | Method | TestOmfUid | canonicalHex_32_bytes_formats_unchanged | toIdText_32_bytes_formats_unchanged | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 41 | Method | TestOmfUid | canonicalHex_other_widths_are_empty | toIdText_other_widths_are_empty | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
+| 42 | Method | TestOmfUid | isOmfForm_recognises_only_the_wrap | isWrappedOmfId_recognises_only_the_wrap | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
 | 43 | Method | TestOmfUid | omf_form_never_collides_with_mxf_form | omf_form_never_collides_with_mxf_form | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 48 | Variable | TestOmfUid::wrap8_is_prefix_core_suffix | core | core | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Variable | TestOmfUid::wrap8_is_prefix_core_suffix | wrapped | wrapped | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |

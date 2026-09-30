@@ -4,7 +4,7 @@ Reviewed on 29 September 2026 at commit `39c04c558a88260b178c2cf636be410231cb7d6
 
 Practical-priority clarification, 30 September 2026: the filename-collision and named-pipe probes used deliberately constructed inputs. They establish conditional weaknesses, not defects demonstrated in ordinary Media Composer workflows or the user's real media. Their original medium priority overstated the evidence of everyday impact. Both are now classified as low-priority defensive hardening; the recovery-warning correction is the most directly actionable of the three. Application source was unchanged during the initial review.
 
-Current scope, 30 September 2026: the recovery-warning change and its tests have been reverted at the user's request. Subsequent authorized changes implement the ten internal AVB type renames and four identifier-helper renames listed below, simplify comments and formatting, and consolidate three repeated file-parser cancellation checks into a private helper. Parser behaviour remains unchanged. AVB data members, properties, parameters, locals and other existing function names remain unchanged, as do public AVB types, diagnostic strings and filenames. Journal version 2 is unchanged; journal work remains deferred. Other assessment findings and naming recommendations remain reference material.
+Current scope, 30 September 2026: the recovery-warning change and its tests have been reverted at the user's request. Subsequent authorized changes implement the ten internal AVB type renames and four identifier-helper renames listed below, simplify comments and formatting, and consolidate three repeated file-parser cancellation checks into a private helper. Parser behaviour remains unchanged. AVB data members, properties, parameters, locals and other existing function names remain unchanged, as do public AVB types, diagnostic strings and filenames. The separately approved MobId/OmfUid helper renames, one parameter rename and ten corresponding test-method renames are also implemented, as detailed below; their build and test validation is pending. The malformed-hex validation fix remains deferred, with parsing behaviour unchanged. Journal version 2 is unchanged; journal work remains deferred. Other assessment findings and naming recommendations remain reference material.
 
 **My assessment: MediaMuster has solid engineering foundations, substantial automated tests, and several areas that are becoming too complicated to maintain comfortably. Improve it incrementally. This review does not justify a rewrite.**
 
@@ -164,6 +164,22 @@ Validation of the earlier ten AVB type renames: the existing macOS build succeed
 Validation after the four helper renames: the existing macOS build and focused AVB suite passed; all 26 registered suites passed in 51.05 seconds. The change consists of exactly 18 identifier substitutions, and reversing those four mappings restores the pre-edit source exactly. `git diff --check` passed.
 
 The formatting cleanup separates adjacent definitions and wraps long expressions and class-code lists, while keeping small expressions and lambdas compact. Lines follow the roughly 100-column guide, with a current maximum of 109. A private `AvbFileParser::checkCancelled()` replaces three identical checks at their original call sites, preserving the atomic load, exception and message. The value parser's byte-offset diagnostics and public parser's early cancellation return remain separate. Expanding the helper back into those three sites reproduces the pre-pass code tokens exactly; the header change is whitespace-only. The macOS build, focused AVB suite and all 26 registered suites passed after the helper extraction. The final formatting adjustment removed 27 lines and was verified to change only whitespace; tests were not rerun for that adjustment. `git diff --check` passed.
+
+Identifier-helper implementation, 30 September 2026: the following names now describe the operation or output directly. The two byte-order functions intentionally share one name as raw-byte and text overloads.
+
+| Reviewed name | Current name |
+| --- | --- |
+| `MobId::swapMiddleFields` | `MobId::swapMaterialByteOrder` |
+| `MobId::toPmrForm` | `MobId::swapMaterialByteOrder` |
+| `MobId::toPmrForm` parameter `avbFormHex` | `mobIdHex` |
+| `OmfUid::wrap8` | `OmfUid::toMobIdBytes` |
+| `OmfUid::canonicalFromPmr8` | `OmfUid::toMobIdText` |
+| `OmfUid::canonicalHex` function | `OmfUid::toIdText` |
+| `OmfUid::isOmfForm` | `OmfUid::isWrappedOmfId` |
+
+The `canonicalHex` parameter of `isWrappedOmfId` remains unchanged. Ten existing Qt test-method prefixes follow their renamed helpers; their assertions remain unchanged. The inventory marks these seven declarations and ten test methods **Implemented**, while retaining every original snapshot name, scope and location. The namespaces, constants, other parameter and local names, filenames, byte layouts, parsing behaviour and journal remain unchanged. Comment cleanup was a separate source-only change; OMF comments restored during this pass were retained. Stricter malformed-hex validation is explicitly deferred.
+
+Validation of the identifier-helper renames: comparison with the pre-rename snapshots confirms that all 21 affected source/test files contain only the approved code-token substitutions, allowing for concurrent comment and whitespace edits. The macOS build, including signing, completed successfully. All six focused identifier/parser suites passed, followed by all 26 registered suites in 48.99 seconds. The final full suite ran outside the sandbox because Qt's processor check prevented sandboxed processes from starting. Inventory verification confirmed exactly 17 updated records and 13,978 unchanged records. `git diff --check` passed. Windows execution was not repeated.
 
 The companion inventory provides a recommendation for every inventoried name, including an explicit **Keep** decision when the existing name is good. It includes classes, structs, enums and enum values, functions and methods, fields, locals, parameters, aliases, platform-only declarations, and tracked filenames. The complete coverage and extraction limitations are stated in the inventory itself.
 

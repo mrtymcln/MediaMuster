@@ -50,14 +50,14 @@ namespace OmfUid
 	/// AAF SDK's "prefix 42" material marker (7f7f2a80 is 42 padded). This
 	/// is what keeps the two forms apart: an MXF-era MobID carries a per-host
 	/// random here (8e40da9649f531f4 in every specimen above), never this.
-	/// isOmfForm therefore requires prefix AND suffix.
+	/// isWrappedOmfId therefore requires prefix AND suffix.
 	inline constexpr unsigned char kSuffix[8] = {0x06, 0x0e, 0x2b, 0x34, 0x7f, 0x7f, 0x2a, 0x80};
 
 	/// kPrefix + eight + kSuffix. Deliberately NO middle-field swap: the
 	/// wrap is Avid's own byte layout, not an MXF UMID, so the PMR/MDB
-	/// versus MXF/AVB byte-order distinction MobId::swapMiddleFields exists
+	/// versus MXF/AVB byte-order distinction MobId::swapMaterialByteOrder exists
 	/// for does not apply. Caller guarantees kPmrSize valid bytes.
-	inline std::array<unsigned char, MobId::kRawSize> wrap8(const unsigned char *eight)
+	inline std::array<unsigned char, MobId::kRawSize> toMobIdBytes(const unsigned char *eight)
 	{
 		std::array<unsigned char, MobId::kRawSize> out;
 		std::memcpy(out.data(), kPrefix, sizeof kPrefix);
@@ -69,9 +69,9 @@ namespace OmfUid
 	// MARK: - Canonical hex
 
 	/// The canonical dotted hex of a v2 PMR record's 8-byte MOB.
-	inline QString canonicalFromPmr8(const unsigned char *eight)
+	inline QString toMobIdText(const unsigned char *eight)
 	{
-		return MobId::format(wrap8(eight).data());
+		return MobId::format(toMobIdBytes(eight).data());
 	}
 
 	/// One formatter for whatever width a mob arrives in: a prefix-42
@@ -79,7 +79,7 @@ namespace OmfUid
 	/// and a 32-byte UMID (MC 2026 writes
 	/// one on the physical mob of the same file) formats unchanged, and any
 	/// other width is empty so a caller can skip it rather than guess.
-	inline QString canonicalHex(QByteArrayView uid)
+	inline QString toIdText(QByteArrayView uid)
 	{
 		const auto *raw = reinterpret_cast<const unsigned char *>(uid.data());
 		if (uid.size() == kUidSize)
@@ -95,7 +95,7 @@ namespace OmfUid
 			// sources or inventing an Avid UMID. Input words are little-endian;
 			// the file reader normalizes big-endian OMF before calling this.
 			if (qFromLittleEndian<quint32>(raw) == 42)
-				return canonicalFromPmr8(raw + kUidCoreOffset);
+				return toMobIdText(raw + kUidCoreOffset);
 			return QStringLiteral("omf:") + QString::fromLatin1(uid.toByteArray().toHex());
 		}
 		if (uid.size() == MobId::kRawSize)
@@ -106,14 +106,14 @@ namespace OmfUid
 	/// True when a canonical hex is a wrapped OMF-era id: Avid's prefix,
 	/// any core, Avid's suffix. The dotted spelling is derived from the
 	/// byte constants above so the two can't drift.
-	inline bool isOmfForm(const QString &canonicalHex)
+	inline bool isWrappedOmfId(const QString &canonicalHex)
 	{
 		static const QString zeroWrap = []
 		{
 			const unsigned char zeros[kPmrSize] = {};
-			return canonicalFromPmr8(zeros);
+			return toMobIdText(zeros);
 		}();
-		// "pppppppppppppppp.pppppppppppppppp." is 34 chars; ".ssssssssssssssss" is 17.
+		// Include the dots so comparisons use the same layout as the formatter.
 		constexpr int kPrefixChars = 2 * static_cast<int>(sizeof kPrefix) + 2;
 		constexpr int kSuffixChars = 2 * static_cast<int>(sizeof kSuffix) + 1;
 		return canonicalHex.size() == zeroWrap.size() &&

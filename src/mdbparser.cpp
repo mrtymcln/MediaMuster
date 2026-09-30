@@ -18,7 +18,7 @@
 // format; the spec is public) inside an Apple Bento container (BentoFile).
 // The captured Avid databases use legacy MOBJ objects with a 32-byte
 // OMFI:MOBJ:MobID — the same UMID the PMR and the MXF carry, in Avid's byte
-// order (PMR↔MDB join raw; MXF needs MobId::toPmrForm). Standard OMF2 instead
+// order (PMR↔MDB join raw; MXF needs MobId::swapMaterialByteOrder). Standard OMF2 instead
 // uses explicit MMOB/SMOB/CMOB classes, mob slots and MediaDescription. Both
 // schemas are handled independently of Bento container revision. Properties are named
 // by a dictionary the file itself embeds, so this parser resolves
@@ -68,7 +68,7 @@
 //
 // In the OMF-era fixtures, msmMMOB.mdb uses 12-byte omfi:UIDs; MC 2026
 // also writes a 32-byte UMID on the physical mob. Both widths are keyed
-// through OmfUid::canonicalHex. Legacy audio uses WAVD/AIFD descriptors,
+// through OmfUid::toIdText. Legacy audio uses WAVD/AIFD descriptors,
 // and picture codecs use a 4CC plus resolution id. _PJ on the file or
 // source mob supplies the project when the PMR field is empty, as in the
 // shipped SupportingFiles fixtures. Version-2 PMRs can store projects;
@@ -139,7 +139,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 			continue;
 		const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, p.mobId));
 		// Canonical keys support 12-byte OMF IDs and 32-byte UMIDs.
-		const QString hex = OmfUid::canonicalHex(raw);
+		const QString hex = OmfUid::toIdText(raw);
 		if (hex.isEmpty() || raw == QByteArrayView(placeholderMob()))
 			continue;
 		const QByteArray rawBytes = raw;
@@ -221,7 +221,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				if (a.project.isEmpty())
 				{
 					const quint32 src = OmfObjects::findSourceMob(b, p, mediaObj, objectByMob);
-					const QString sourceHex = OmfUid::canonicalHex(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
+					const QString sourceHex = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
 					const auto sourceObjects = objectsByHex.constFind(sourceHex);
 					if (sourceObjects != objectsByHex.cend())
 						for (quint32 obj : *sourceObjects)
@@ -282,7 +282,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		for (quint32 obj : objectsByHex.value(master.key()))
 			for (quint32 target : OmfObjects::sourceMobs(b, p, obj, objectByMob))
 			{
-				const QString fileHex = OmfUid::canonicalHex(OmfObjects::normalizedMobId(b, b.bytes(target, p.mobId)));
+				const QString fileHex = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(target, p.mobId)));
 				if (db.files.contains(fileHex))
 					mastersByFile[fileHex].insert(master.key());
 			}

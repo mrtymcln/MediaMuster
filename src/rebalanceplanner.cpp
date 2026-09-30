@@ -120,7 +120,7 @@ namespace
 	QString relativesKey(const QString &masterMobId, const QString &fallbackPath)
 	{
 		if (masterMobId.isEmpty() || MobId::isAllZero(masterMobId) ||
-			MobId::toPmrForm(masterMobId).isEmpty())
+			MobId::swapMaterialByteOrder(masterMobId).isEmpty())
 			return kLoneKeyPrefix + fallbackPath;
 		const QFileInfo parent(QFileInfo(fallbackPath).absolutePath());
 		const auto folder = AvidMediaLayout::parseMxfFolderName(parent.fileName());

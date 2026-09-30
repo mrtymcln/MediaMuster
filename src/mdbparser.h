@@ -11,7 +11,7 @@
 /// A master clip as `msmMMOB.mdb` describes it: the clip-level facts that
 /// every V01/A01/A02 relative shares. Keyed by the master MOB — the same
 /// id the PMR's MASTER record carries and the MXF's MaterialPackage UID
-/// (after MobId::toPmrForm) resolves to.
+/// (after MobId::swapMaterialByteOrder) resolves to.
 struct MdbMasterMob
 {
 	QString mobIdHex;
@@ -45,7 +45,7 @@ struct MdbFileMob
 
 /// Master and file records from one msmMMOB.mdb. The scanner consumes `files`
 /// during the folder walk and retains `masters` for header lookups. Keys use
-/// OmfUid::canonicalHex: 32-byte IDs retain their dotted MOB form; Avid's
+/// OmfUid::toIdText: 32-byte IDs retain their dotted MOB form; Avid's
 /// prefix-42 OMF IDs use the same wrapper as legacy PMRs; other 12-byte
 /// IDs preserve all three words in an `omf:` namespace.
 struct MdbDatabase

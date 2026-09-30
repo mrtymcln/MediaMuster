@@ -101,7 +101,7 @@ namespace
 			const QByteArray raw = b.bytes(obj, p.mobId);
 			if (!objectByMob.contains(raw))
 				objectByMob.insert(raw, obj);
-			if (found == 0 && OmfUid::canonicalHex(raw) == mobIdHex)
+			if (found == 0 && OmfUid::toIdText(raw) == mobIdHex)
 				found = obj;
 		}
 		return found;
@@ -419,7 +419,7 @@ void TestMdbParser::duplicate_source_objects_supply_only_the_linked_project()
 	QVERIFY(ok);
 	QCOMPARE(db.files.size(), 1);
 	QVERIFY(db.masters.isEmpty());
-	const MdbFileMob record = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
+	const MdbFileMob record = db.files.value(OmfUid::toIdText(TestOmf::uid(2)));
 	QVERIFY(record.essenceComplete);
 	QCOMPARE(record.project, fileProject ? QStringLiteral("File project") : linkedProject ? QStringLiteral("Linked project")
 																						  : QString());
@@ -584,7 +584,7 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 	// same Avid folder: all 795 headers resolve into that database. They only
 	// look unrelated if you compare MOB IDs raw — an MXF stores a MobID's
 	// middle fields little-endian and the MDB big-endian, so the join has to
-	// go through MobId::toPmrForm first (0/795 match without it, 795/795 with).
+	// go through MobId::swapMaterialByteOrder first (0/795 match without it, 795/795 with).
 	// That conversion is the thing this test exists to pin.
 	bool ok = false;
 	const MdbDatabase db = MdbParser::load(fx("corpus_headers/msmMMOB_round3.mdb"), &ok);
@@ -617,7 +617,7 @@ void TestMdbParser::mdb_join_resolves_real_mxf_files()
 		// An MXF writes a MobID's middle fields little-endian and the MDB
 		// big-endian; without this conversion every lookup misses.
 		QVERIFY2(!db.masters.contains(meta.umid), "raw MXF UMID must not key the MDB");
-		const QString key = MobId::toPmrForm(meta.umid);
+		const QString key = MobId::swapMaterialByteOrder(meta.umid);
 		QVERIFY2(db.masters.contains(key), qPrintable(QLatin1String(file) + QStringLiteral(" -> ") + key));
 
 		const MdbMasterMob &rec = db.masters[key];
@@ -907,12 +907,12 @@ void TestMdbParser::omf_era_mdb_describes_every_pmr_pair_with_wrapped_ids()
 	QCOMPARE(db.files.size(), 80);
 	for (auto it = db.masters.cbegin(); it != db.masters.cend(); ++it)
 	{
-		QVERIFY2(OmfUid::isOmfForm(it.key()), qPrintable(it.key()));
+		QVERIFY2(OmfUid::isWrappedOmfId(it.key()), qPrintable(it.key()));
 		QCOMPARE(it.key(), it->mobIdHex);
 		QVERIFY2(!it->clipName.isEmpty(), qPrintable(it.key()));
 	}
 	for (auto it = db.files.cbegin(); it != db.files.cend(); ++it)
-		QVERIFY2(OmfUid::isOmfForm(it.key()), qPrintable(it.key()));
+		QVERIFY2(OmfUid::isWrappedOmfId(it.key()), qPrintable(it.key()));
 
 	const QVector<PmrEntry> pmr = PmrParser::parse(fx("omf/avid_supporting/msmFMID.pmr"), &ok);
 	QVERIFY(ok);
@@ -1061,7 +1061,7 @@ void TestMdbParser::omf_era_audio_mdb_describes_both_tone_files()
 		const QString name = QLatin1String(pin.file);
 		QVERIFY2(pmr.contains(name), pin.file);
 		const PmrEntry &e = pmr[name];
-		QVERIFY2(OmfUid::isOmfForm(e.mobId), pin.file);
+		QVERIFY2(OmfUid::isWrappedOmfId(e.mobId), pin.file);
 		QVERIFY2(db.files.contains(e.mobId), pin.file);
 		QVERIFY2(db.masters.contains(e.masterMobId), pin.file);
 
@@ -1218,13 +1218,13 @@ void TestMdbParser::omf_winl_and_unxl_locators_yield_the_source_path()
 	QCOMPARE(db.masters.size(), 2);
 	QVERIFY(db.files.isEmpty());
 
-	const MdbMasterMob &ma = db.masters[OmfUid::canonicalHex(uidA)];
+	const MdbMasterMob &ma = db.masters[OmfUid::toIdText(uidA)];
 	QCOMPARE(ma.sourceFilePath, QStringLiteral("C:\\clips\\tone.wav"));
 	QCOMPARE(ma.sourceFileName, QStringLiteral("tone.wav"));
 	QVERIFY(ma.isImported);
 	QCOMPARE(ma.project, QStringLiteral("Win Project"));
 
-	const MdbMasterMob &mb = db.masters[OmfUid::canonicalHex(uidB)];
+	const MdbMasterMob &mb = db.masters[OmfUid::toIdText(uidB)];
 	QCOMPARE(mb.sourceFilePath, QStringLiteral("/mnt/clips/tone.aif"));
 	QCOMPARE(mb.sourceFileName, QStringLiteral("tone.aif"));
 	QVERIFY(!mb.isImported); // no _IMPORTSETTING on this one
@@ -1317,16 +1317,16 @@ void TestMdbParser::mxf_era_master_keeps_the_macl_only_srcfile_rule()
 	QVERIFY(ok);
 	QCOMPARE(db.masters.size(), 3);
 
-	const MdbMasterMob &ma = db.masters[OmfUid::canonicalHex(mobA)];
+	const MdbMasterMob &ma = db.masters[OmfUid::toIdText(mobA)];
 	QCOMPARE(ma.sourceFilePath, QStringLiteral("\\\\server\\share\\import.mov"));
 	QCOMPARE(ma.sourceFileName, QStringLiteral("import.mov"));
 	QVERIFY(ma.isImported);
 
-	const MdbMasterMob &mb = db.masters[OmfUid::canonicalHex(mobB)];
+	const MdbMasterMob &mb = db.masters[OmfUid::toIdText(mobB)];
 	QVERIFY2(mb.sourceFilePath.isEmpty(), qPrintable(mb.sourceFilePath));
 	QVERIFY(mb.sourceFileName.isEmpty());
 
-	const MdbMasterMob &mc = db.masters[OmfUid::canonicalHex(mobC)];
+	const MdbMasterMob &mc = db.masters[OmfUid::toIdText(mobC)];
 	QCOMPARE(mc.sourceFilePath, QStringLiteral("/Volumes/Media/import.mov"));
 	QCOMPARE(mc.sourceFileName, QStringLiteral("import.mov"));
 }
@@ -1342,13 +1342,13 @@ void TestMdbParser::omf2_roles_and_file_master_ancestry()
 		QCOMPARE(db.revision, OmfObjects::Revision::Omf2);
 		QCOMPARE(db.files.size(), 1);
 		QCOMPARE(db.masters.size(), ambiguous ? 2 : 1);
-		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(99)))); // CMOB
-		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(3))));  // physical SMOB
-		QVERIFY(!db.masters.value(OmfUid::canonicalHex(TestOmf::uid(1))).classificationKnown);
-		const auto file = db.files.value(OmfUid::canonicalHex(TestOmf::uid(2)));
+		QVERIFY(!db.masters.contains(OmfUid::toIdText(TestOmf::uid(99)))); // CMOB
+		QVERIFY(!db.masters.contains(OmfUid::toIdText(TestOmf::uid(3))));  // physical SMOB
+		QVERIFY(!db.masters.value(OmfUid::toIdText(TestOmf::uid(1))).classificationKnown);
+		const auto file = db.files.value(OmfUid::toIdText(TestOmf::uid(2)));
 		QVERIFY(file.essenceComplete);
 		QCOMPARE(file.essence.codec, QStringLiteral("WAVE (OMF)"));
-		QCOMPARE(file.masterMobId, ambiguous ? QString() : OmfUid::canonicalHex(TestOmf::uid(1)));
+		QCOMPARE(file.masterMobId, ambiguous ? QString() : OmfUid::toIdText(TestOmf::uid(1)));
 	}
 }
 
@@ -1377,7 +1377,7 @@ void TestMdbParser::master_usage_conflicts_and_widths_stay_unknown()
 				}
 				const auto db = MdbParser::load(writeMdb(temp.filePath("usage.mdb"), w.build()));
 				QCOMPARE(db.masters.size(), 1); // role/identity survive a conflicting verdict
-				const auto master = db.masters.value(OmfUid::canonicalHex(TestOmf::uid(1)));
+				const auto master = db.masters.value(OmfUid::toIdText(TestOmf::uid(1)));
 				QCOMPARE(master.classificationKnown, next == -1 || next == 7);
 				QCOMPARE(master.usageCode, next == -1 || next == 7 ? 7 : AvidUsage::kInvalidOrConflicting);
 			}
@@ -1392,7 +1392,7 @@ void TestMdbParser::descriptor_failure_never_creates_a_master()
 		const auto db = MdbParser::load(writeMdb(temp.filePath("bad.mdb"), TestOmf::wave(omf2, false, true)), &ok);
 		QVERIFY(ok);
 		QVERIFY(db.files.isEmpty());
-		QVERIFY(!db.masters.contains(OmfUid::canonicalHex(TestOmf::uid(2))));
+		QVERIFY(!db.masters.contains(OmfUid::toIdText(TestOmf::uid(2))));
 	}
 }
 

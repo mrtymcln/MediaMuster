@@ -228,7 +228,7 @@ void TestBentoFile::typed_readers()
 	QCOMPARE(BentoFile::string(b.value(a, b.propertyId("OMFI:CPNT:Name"))), QString::fromUtf8("zT_ßt"));
 	QCOMPARE(BentoFile::utf8String(b.value(a, b.propertyId("OMFI:MCBR:MC:binNameUTF8"))),
 			 QString::fromUtf8("zT_ßt"));
-	QCOMPARE(OmfUid::canonicalHex(b.value(a, b.propertyId("OMFI:MOBJ:MobID"))),
+	QCOMPARE(OmfUid::toIdText(b.value(a, b.propertyId("OMFI:MOBJ:MobID"))),
 			 QStringLiteral("060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613"));
 	// Malformed shapes read as nothing rather than something.
 	BentoFile::ReadStatus status;
@@ -237,7 +237,7 @@ void TestBentoFile::typed_readers()
 	QVERIFY(b.refs(a, b.propertyId("OMFI:MalformedReferences"), &status).isEmpty());
 	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 	QVERIFY(!b.rationalValue(QByteArrayView("1234"), num, den));
-	QVERIFY(OmfUid::canonicalHex(QByteArrayView("short")).isEmpty());
+	QVERIFY(OmfUid::toIdText(QByteArrayView("short")).isEmpty());
 }
 
 void TestBentoFile::real_fixtures_load_with_the_expected_shape()

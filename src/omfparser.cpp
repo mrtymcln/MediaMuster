@@ -72,7 +72,7 @@ namespace
 			for (quint32 obj : b.objectsWithProperty(prop))
 			{
 				const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, prop));
-				if (!OmfUid::canonicalHex(raw).isEmpty())
+				if (!OmfUid::toIdText(raw).isEmpty())
 					ids.insert(raw);
 			}
 		}
@@ -111,7 +111,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	const QByteArray fileMobRaw = mediaDataMobId(b, p, ambiguousData);
 	if (ambiguousData)
 		return out;
-	out.fileMobId = OmfUid::canonicalHex(fileMobRaw);
+	out.fileMobId = OmfUid::toIdText(fileMobRaw);
 
 	// Group every MOBJ by its canonical hex and note what each owns, the
 	// way MdbParser::load does — 12-byte omfi:UIDs and the 32-byte UMID MC
@@ -124,7 +124,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		if (!OmfObjects::isMobClass(b.objectClass(obj)))
 			continue;
 		const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, p.mobId));
-		const QString hex = OmfUid::canonicalHex(raw);
+		const QString hex = OmfUid::toIdText(raw);
 		if (hex.isEmpty())
 			continue;
 		if (!objectByMob.contains(raw))
@@ -249,7 +249,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	QVector<quint32> srcObjs;
 	if (src != 0)
 	{
-		const QString srcHex = OmfUid::canonicalHex(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
+		const QString srcHex = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
 		const auto it = groups.constFind(srcHex);
 		srcObjs = it == groups.cend() ? QVector<quint32>{src} : it->objects;
 	}

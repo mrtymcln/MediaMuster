@@ -26,7 +26,7 @@ struct OmfMetadata
 	/// establishes the container even when technical fields are incomplete.
 	bool hasMediaDescriptor = false;
 	/// `umid` and `clipName` come from the linked master mob. IDs use
-	/// OmfUid::canonicalHex, including the Avid wrapper and general OMF
+	/// OmfUid::toIdText, including the Avid wrapper and general OMF
 	/// namespace. `_PJ` is searched master → file → source mob; precompute
 	/// classification comes from the master's usage code.
 	MediaMetadata essence;
