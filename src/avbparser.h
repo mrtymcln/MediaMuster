@@ -7,15 +7,15 @@
 #include <QMetaType>
 #include <atomic>
 
-/// Metadata owned by a CMPO object. originalBin is the recorded _ORG_BIN,
-/// while the current AVB path is retained separately on AvbBin.
 struct AvbMob
 {
 	static constexpr int masterMobType = 2;
 
-	/// Material scalar fields use little-endian bytes, regardless of file order.
+	/// Keep material fields little-endian so the MobId stays the same across AVB byte orders.
 	QString mobId;
 	QString name;
+
+	/// Clips can move between bins, so use the original bin recorded in _ORG_BIN.
 	QString originalBin;
 	QString originalBinUid;
 	int mobType = 0;
@@ -27,39 +27,34 @@ struct AvbBin
 	QString filePath;
 	QString displayName;
 
-	/// Typed object identities and references. Both material byte orders are
-	/// retained for compatibility with the existing media readers.
+	/// Different readers use different byte orders, so keep both MobId forms.
+	/// Wrapped OMF MobIds only need one.
 	QSet<QString> mobIds;
 	QVector<AvbMob> mobs;
 
-	/// Framing and understood properties are valid. complete additionally
-	/// requires supported whole-bin identity coverage, not timeline evaluation.
+	/// Filtering needs both valid and complete so we don't miss MobIds.
+	/// This doesn't mean every effect or timeline has been checked.
 	bool valid = false;
 	bool complete = false;
 	QString error;
 	QStringList warnings;
 };
+
 Q_DECLARE_METATYPE(AvbBin)
 
-/// Result of recognising an AVB document signature without parsing its body.
 struct AvbHeaderCheck
 {
 	bool recognized = false;
 	QString error;
 };
 
-// MARK: - AvbParser
-
-/// Bounded AVB object reader. Malformed or cancelled input clears identities.
-/// Consumers must require valid && complete before applying a bin filter.
 class AvbParser
 {
 public:
-	/// Recognises the 21-byte AVB document signature in either byte order.
-	/// This bounded probe does not validate the document body or file extension.
+	/// Keep the header check quick for dragging. The full bin still needs parsing.
 	[[nodiscard]] static AvbHeaderCheck inspectHeader(const QString &avbFilePath);
 
-	/// cancelled is an optional observer; its owner keeps it alive until parse returns.
+	/// The parser borrows this flag, so keep it alive until parsing finishes.
 	[[nodiscard]] static AvbBin parse(
 		const QString &avbFilePath, const std::atomic_bool *cancelled = nullptr);
 };
