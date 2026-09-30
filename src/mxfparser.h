@@ -32,7 +32,7 @@ public:
 	[[nodiscard]] static MediaMetadata parseHeader(QFile &file, qint64 *bytesRead = nullptr);
 
 private:
-	[[nodiscard]] static MediaMetadata parseFromBuffer(const QByteArray &data);
+	[[nodiscard]] static MediaMetadata parseHeaderMetadata(const QByteArray &data);
 	[[nodiscard]] static qint64 readBerLength(const QByteArray &data, qint64 offset,
 											  int &bytesUsed);
 	[[nodiscard]] static quint16 readUint16BE(const QByteArray &data, qint64 offset);

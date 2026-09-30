@@ -4,7 +4,7 @@ Reviewed on 29 September 2026 at commit `39c04c558a88260b178c2cf636be410231cb7d6
 
 Practical-priority clarification, 30 September 2026: the filename-collision and named-pipe probes used deliberately constructed inputs. They establish conditional weaknesses, not defects demonstrated in ordinary Media Composer workflows or the user's real media. Their original medium priority overstated the evidence of everyday impact. Both are now classified as low-priority defensive hardening; the recovery-warning correction is the most directly actionable of the three. Application source was unchanged during the initial review.
 
-Current scope, 30 September 2026: the recovery-warning change and its tests have been reverted at the user's request. Subsequent authorized changes implement the ten internal AVB type renames and four identifier-helper renames listed below, simplify comments and formatting, and consolidate three repeated file-parser cancellation checks into a private helper. Parser behaviour remains unchanged. AVB data members, properties, parameters, locals and other existing function names remain unchanged, as do public AVB types, diagnostic strings and filenames. The separately approved MobId/OmfUid helper renames, one parameter rename and ten corresponding test-method renames are also implemented, as detailed below; their build and test validation is pending. The malformed-hex validation fix remains deferred, with parsing behaviour unchanged. Journal version 2 is unchanged; journal work remains deferred. Other assessment findings and naming recommendations remain reference material.
+Current scope, 30 September 2026: the recovery-warning change and its tests have been reverted at the user's request. Subsequent authorized changes implement the ten internal AVB type renames and four identifier-helper renames listed below, simplify comments and formatting, and consolidate three repeated file-parser cancellation checks into a private helper. Parser behaviour remains unchanged. AVB data members, properties, parameters, locals and other existing function names remain unchanged, as do public AVB types, diagnostic strings and filenames. The separately approved MobId/OmfUid helper renames, one parameter rename and ten corresponding test-method renames are also implemented, as detailed below; their completed macOS build and test validation is recorded below. The malformed-hex validation fix remains deferred, with parsing behaviour unchanged. The approved MXF pass also implements 16 type, method, field and local/helper names; its macOS build and test validation is complete. Journal version 2 is unchanged; journal work remains deferred. Other assessment findings and naming recommendations remain reference material.
 
 **My assessment: MediaMuster has solid engineering foundations, substantial automated tests, and several areas that are becoming too complicated to maintain comfortably. Improve it incrementally. This review does not justify a rewrite.**
 
@@ -111,7 +111,7 @@ These are design recommendations, not additional claims of reproduced bugs.
 | 7 | Add repeatable static-analysis and sanitizer configurations | Finds classes of mistakes before release | P.5, ES.46, CP.2 |
 | 8 | Apply semantic renames in small, separate changes | Helps readers without concealing behaviour changes in a large diff | P.3, F.1, NL.8 |
 
-**Smaller responsibilities.** Start with `MxfParser::parseFromBuffer`, approximately 700 lines, and `OpRunner::run`, approximately 549 lines. The 2,351-line main window also mixes discovery, selection persistence, filtering, exporting and presentation. Extract coherent phases such as metadata graph selection, operation preparation, transfer, source retirement, and selection persistence. Preserve the existing regression cases around each extraction. Line count identifies concentration; it does not by itself prove a defect. See [MXF parsing](/Users/martymclean/Developer/MediaMuster/src/mxfparser.cpp:434), [operation execution](/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp:1347) and [main-window state](/Users/martymclean/Developer/MediaMuster/src/mainwindow.h:237).
+**Smaller responsibilities.** Start with `MxfParser::parseFromBuffer` (now `parseHeaderMetadata`), approximately 700 lines, and `OpRunner::run`, approximately 549 lines. The 2,351-line main window also mixes discovery, selection persistence, filtering, exporting and presentation. Extract coherent phases such as metadata graph selection, operation preparation, transfer, source retirement, and selection persistence. Preserve the existing regression cases around each extraction. Line count identifies concentration; it does not by itself prove a defect. See [MXF parsing](/Users/martymclean/Developer/MediaMuster/src/mxfparser.cpp:434), [operation execution](/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp:1347) and [main-window state](/Users/martymclean/Developer/MediaMuster/src/mainwindow.h:237).
 
 **Stronger types.** Operation fields such as `policy`, `undoAction` and `mechanism` drive important behaviour using text. Use typed values inside the program, while keeping existing serialized journal keys and values unchanged at the file boundary. Distinguish file and master MOB identities and native timestamps from Unix milliseconds. Replace the destination assessment's parallel vectors with one vector of per-item records, so their indexes cannot drift apart. See [operation input](/Users/martymclean/Developer/MediaMuster/src/oprequest.h:119), [journal state](/Users/martymclean/Developer/MediaMuster/src/opjournal.h:56) and [destination assessment](/Users/martymclean/Developer/MediaMuster/src/managemediadialog.h:139).
 
@@ -180,6 +180,31 @@ Identifier-helper implementation, 30 September 2026: the following names now des
 The `canonicalHex` parameter of `isWrappedOmfId` remains unchanged. Ten existing Qt test-method prefixes follow their renamed helpers; their assertions remain unchanged. The inventory marks these seven declarations and ten test methods **Implemented**, while retaining every original snapshot name, scope and location. The namespaces, constants, other parameter and local names, filenames, byte layouts, parsing behaviour and journal remain unchanged. Comment cleanup was a separate source-only change; OMF comments restored during this pass were retained. Stricter malformed-hex validation is explicitly deferred.
 
 Validation of the identifier-helper renames: comparison with the pre-rename snapshots confirms that all 21 affected source/test files contain only the approved code-token substitutions, allowing for concurrent comment and whitespace edits. The macOS build, including signing, completed successfully. All six focused identifier/parser suites passed, followed by all 26 registered suites in 48.99 seconds. The final full suite ran outside the sandbox because Qt's processor check prevented sandboxed processes from starting. Inventory verification confirmed exactly 17 updated records and 13,978 unchanged records. `git diff --check` passed. Windows execution was not repeated.
+
+MXF implementation, 30 September 2026: the following are the approved current names. `MxfObject` is the parser's normalized metadata-object representation; `MxfMaterialTrack` is its temporary material-track summary. The earlier `Set` → `MxfMetadataSet` proposal is superseded.
+
+| Reviewed name | Current name |
+| --- | --- |
+| `Set` | `MxfObject` |
+| `TrackTime` | `MxfMaterialTrack` |
+| `MxfParser::parseFromBuffer` | `MxfParser::parseHeaderMetadata` |
+| `sets` | `objects` |
+| `byInstance` | `objectIndexByInstanceUid` |
+| `byPackage` | `packageIndexByMobId` |
+| `material` | `materialPackageIndex` |
+| `filePackage` | `filePackageIndex` |
+| `chosen` | `descriptorIndex` |
+| `refs` | `resolveObjectReferences` |
+| `descendants` | `reachableObjectIndexes` |
+| `Set::local` | `MxfObject::fieldData` |
+| `TrackTime::component` | `MxfMaterialTrack::componentIndex` |
+| `TrackTime::rate` | `MxfMaterialTrack::editRate` |
+| `TrackTime::duration` | `MxfMaterialTrack::durationUnits` |
+| `TrackTime::ownsFile` | `MxfMaterialTrack::referencesFile` |
+
+The inventory marks exactly these 16 declarations **Implemented**, preserving original snapshot names, scopes and locations. Other names, including the separate `component`, `rate` and `duration` locals, remain unchanged. Metadata object InstanceUIDs remain distinct from package MobIds. The pass changes names only; parsing behaviour, diagnostic strings, filenames and journal data remain unchanged.
+
+Validation of the MXF renames: the macOS build, including signing, succeeded. The focused `tst_mxfparser` suite passed in 4.51 seconds (93 passed, 0 failed, 0 skipped), followed by all 26 registered suites in 52.11 seconds. The full run retained three existing environment-dependent case/toolkit skips. Snapshot comparison confirmed exactly 189 approved identifier substitutions in `mxfparser.cpp` and one in `mxfparser.h`, including three method-name references in comments. All literals, other comments, whitespace and line counts remained unchanged (1,398 lines in the source and 57 in the header). An independent parser review found no issues. Inventory verification confirmed 16 updated records and 13,979 unchanged records. `git diff --check` passed. No tests were added; Windows execution was not repeated.
 
 The companion inventory provides a recommendation for every inventoried name, including an explicit **Keep** decision when the existing name is good. It includes classes, structs, enums and enum values, functions and methods, fields, locals, parameters, aliases, platform-only declarations, and tracked filenames. The complete coverage and extraction limitations are stated in the inventory itself.
 

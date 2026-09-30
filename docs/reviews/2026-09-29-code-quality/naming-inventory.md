@@ -4,7 +4,9 @@ Source snapshot: `39c04c558a88260b178c2cf636be410231cb7d69`, reviewed 29 Septemb
 
 AVB update, 30 September 2026: the ten internal AVB type renames and four identifier-helper renames (`nativeMobId`, `typedMobId`, `isNullMobId`, `addMobId`) are implemented. Their final names appear in rows marked **Implemented**. The source snapshot, original names, scopes and line numbers below remain the 29 September baseline; “Recommended” is the current name for implemented rows. Earlier type-row reasons record the initial type-only decision; the four helper rows record the subsequent authorized change. All AVB data members, properties, parameters, locals and other functions remain unchanged, including `m_objects`, `type`, `offset`, `size` and `attributes`. Public `AvbParser`, `AvbBin`, `AvbMob` and `AvbHeaderCheck`, AVB source/test filenames, parser behaviour and journal version 2 are unchanged. Comment cleanup is a separate applied change. Other recommendations remain proposals.
 
-Identifier-helper update, 30 September 2026: the approved MobId and OmfUid names are implemented, together with the ten matching Qt test-method prefixes. `swapMiddleFields` and `toPmrForm` now share the name `swapMaterialByteOrder` as raw-byte and text overloads; `avbFormHex` is now `mobIdHex`. `wrap8`, `canonicalFromPmr8`, the `canonicalHex` function and `isOmfForm` are now `toMobIdBytes`, `toMobIdText`, `toIdText` and `isWrappedOmfId`. The `canonicalHex` parameter of the last function stays unchanged. All snapshot names, scopes and locations are preserved. This is a naming change; stricter malformed-hex validation remains deferred. Build and test validation for this change is pending.
+Identifier-helper update, 30 September 2026: the approved MobId and OmfUid names are implemented, together with the ten matching Qt test-method prefixes. `swapMiddleFields` and `toPmrForm` now share the name `swapMaterialByteOrder` as raw-byte and text overloads; `avbFormHex` is now `mobIdHex`. `wrap8`, `canonicalFromPmr8`, the `canonicalHex` function and `isOmfForm` are now `toMobIdBytes`, `toMobIdText`, `toIdText` and `isWrappedOmfId`. The `canonicalHex` parameter of the last function stays unchanged. All snapshot names, scopes and locations are preserved. This is a naming change; stricter malformed-hex validation remains deferred. The macOS build including signing, six focused suites and all 26 registered suites passed; detailed validation is recorded in the assessment.
+
+MXF update, 30 September 2026: the approved names are implemented for `MxfObject`, `MxfMaterialTrack`, `parseHeaderMetadata` and their selected fields and local helpers. The 16 affected declarations are marked **Implemented**; `MxfObject` supersedes the earlier `MxfMetadataSet` proposal. Original snapshot names, scopes and locations remain unchanged, including the earlier `parseFromBuffer` scopes. Other declarations and filenames retain their prior decisions. This pass changes names only. The macOS build including signing, the focused MXF suite and all 26 registered suites passed; detailed validation is recorded in the assessment. Windows execution was not repeated.
 
 12,879 code-name records and 1,116 tracked filenames. Every record has a recommendation, including an explicit decision to keep a good name. Constructor names follow their class. Repeated local names are separate records. Header/implementation declarations of one compiler symbol are combined where Clang provides a shared identity. Build-variable records also include first observed references to built-ins or external inputs.
 
@@ -3488,13 +3490,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 388 | Variable | MxfParser::parseHeader | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 403 | Variable | MxfParser::parseHeader | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 434 | Parameter | MxfParser::parseFromBuffer | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 436 | Struct | MxfParser::parseFromBuffer | Set | MxfMetadataSet | Rename | Distinguishes this domain record or reader from unrelated generic records. |
+| 436 | Struct | MxfParser::parseFromBuffer | Set | MxfObject | Implemented | Implemented 30 September 2026: Agreed name for the parser's normalized MXF metadata object; supersedes the earlier MxfMetadataSet proposal. |
 | 438 | Field | MxfParser::parseFromBuffer::Set | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 439 | Field | MxfParser::parseFromBuffer::Set | local | local | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 439 | Field | MxfParser::parseFromBuffer::Set | local | fieldData | Implemented | Implemented 30 September 2026: Names the normalized tag, length and value bytes passed to field parsers. |
 | 440 | Field | MxfParser::parseFromBuffer::Set | fields | fields | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 441 | Field | MxfParser::parseFromBuffer::Set | identifiedProperties | identifiedProperties | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 443 | Variable | MxfParser::parseFromBuffer | meta | meta | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 444 | Variable | MxfParser::parseFromBuffer | sets | sets | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 444 | Variable | MxfParser::parseFromBuffer | sets | objects | Implemented | Implemented 30 September 2026: Names the collection of parsed MXF metadata objects. |
 | 445 | Variable | MxfParser::parseFromBuffer | primer | primer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 446 | Variable | MxfParser::parseFromBuffer | rawSets | rawSets | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 447 | Variable | MxfParser::parseFromBuffer | primerKey | primerKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3515,8 +3517,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 486 | Variable | MxfParser::parseFromBuffer | tag | tag | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 487 | Variable | MxfParser::parseFromBuffer | key | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 490 | Variable | MxfParser::parseFromBuffer | canonical | canonical | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 500 | Variable | MxfParser::parseFromBuffer | byInstance | byInstance | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 501 | Variable | MxfParser::parseFromBuffer | byPackage | byPackage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 500 | Variable | MxfParser::parseFromBuffer | byInstance | objectIndexByInstanceUid | Implemented | Implemented 30 September 2026: Distinguishes the object-index lookup by metadata InstanceUID from the package MobId lookup. |
+| 501 | Variable | MxfParser::parseFromBuffer | byPackage | packageIndexByMobId | Implemented | Implemented 30 September 2026: Names the package-index lookup by the 32-byte package MobId. |
 | 502 | Variable | MxfParser::parseFromBuffer | materials | materials | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 502 | Variable | MxfParser::parseFromBuffer | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 502 | Variable | MxfParser::parseFromBuffer | descriptors | descriptors | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3531,7 +3533,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 524 | Variable | MxfParser::parseFromBuffer | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 543 | Variable | MxfParser::parseFromBuffer | index | index | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 544 | Variable | MxfParser::parseFromBuffer | instance | instance | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 563 | Variable | MxfParser::parseFromBuffer | refs | refs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 563 | Variable | MxfParser::parseFromBuffer | refs | resolveObjectReferences | Implemented | Implemented 30 September 2026: Names the operation that resolves encoded InstanceUID references into object indexes. |
 | 563 | Parameter | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:563:14)::operator() | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 565 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:563:14)::operator() | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 568 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:563:14)::operator() | found | found | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3539,7 +3541,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 574 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:563:14)::operator() | stride | stride | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 576 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:563:14)::operator() | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 578 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:563:14)::operator() | found | found | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 585 | Variable | MxfParser::parseFromBuffer | descendants | descendants | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 585 | Variable | MxfParser::parseFromBuffer | descendants | reachableObjectIndexes | Implemented | Implemented 30 September 2026: Names the root-inclusive set of object indexes reached through references. |
 | 585 | Parameter | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:585:21)::operator() | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 585 | Parameter | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:585:21)::operator() | followSource | followSource | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 587 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:585:21)::operator() | visited | visited | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3549,11 +3551,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 595 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:585:21)::operator() | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 596 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:585:21)::operator() | target | target | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 601 | Variable | MxfParser::parseFromBuffer::(lambda at src/mxfparser.cpp:585:21)::operator() | target | target | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 608 | Variable | MxfParser::parseFromBuffer | filePackage | filePackage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 608 | Variable | MxfParser::parseFromBuffer | filePackage | filePackageIndex | Implemented | Implemented 30 September 2026: Identifies the selected file package as an index with a negative sentinel value. |
 | 611 | Variable | MxfParser::parseFromBuffer | linkedFiles | linkedFiles | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 612 | Variable | MxfParser::parseFromBuffer | set | set | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 615 | Variable | MxfParser::parseFromBuffer | candidate | candidate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 623 | Variable | MxfParser::parseFromBuffer | material | material | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 623 | Variable | MxfParser::parseFromBuffer | material | materialPackageIndex | Implemented | Implemented 30 September 2026: Identifies the selected material package as an index with negative sentinel values. |
 | 626 | Variable | MxfParser::parseFromBuffer | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 629 | Variable | MxfParser::parseFromBuffer | candidate | candidate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 644 | Variable | MxfParser::parseFromBuffer | primaryMaterials | primaryMaterials | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3609,7 +3611,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 815 | Variable | MxfParser::parseFromBuffer | chosenDescriptors | chosenDescriptors | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 818 | Variable | MxfParser::parseFromBuffer | descriptor | descriptor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 823 | Variable | MxfParser::parseFromBuffer | child | child | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 833 | Variable | MxfParser::parseFromBuffer | chosen | chosen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 833 | Variable | MxfParser::parseFromBuffer | chosen | descriptorIndex | Implemented | Implemented 30 September 2026: Identifies the selected descriptor as an index with a negative sentinel value. |
 | 836 | Variable | MxfParser::parseFromBuffer | candidate | candidate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 849 | Variable | MxfParser::parseFromBuffer | set | set | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 855 | Variable | MxfParser::parseFromBuffer | scope | scope | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3637,11 +3639,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 925 | Variable | MxfParser::parseFromBuffer | index | index | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 934 | Variable | MxfParser::parseFromBuffer | all | all | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 935 | Variable | MxfParser::parseFromBuffer | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 946 | Struct | MxfParser::parseFromBuffer | TrackTime | TrackTime | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 948 | Field | MxfParser::parseFromBuffer::TrackTime | component | component | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 949 | Field | MxfParser::parseFromBuffer::TrackTime | rate | rate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 950 | Field | MxfParser::parseFromBuffer::TrackTime | duration | duration | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 951 | Field | MxfParser::parseFromBuffer::TrackTime | ownsFile | ownsFile | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 946 | Struct | MxfParser::parseFromBuffer | TrackTime | MxfMaterialTrack | Implemented | Implemented 30 September 2026: Agreed name for the local summary of a material track's component, timing and file-reference evidence. |
+| 948 | Field | MxfParser::parseFromBuffer::TrackTime | component | componentIndex | Implemented | Implemented 30 September 2026: Identifies the material track's component as an object index. |
+| 949 | Field | MxfParser::parseFromBuffer::TrackTime | rate | editRate | Implemented | Implemented 30 September 2026: Identifies the track's edit-unit rate. |
+| 950 | Field | MxfParser::parseFromBuffer::TrackTime | duration | durationUnits | Implemented | Implemented 30 September 2026: Identifies duration measured in the track's edit units. |
+| 951 | Field | MxfParser::parseFromBuffer::TrackTime | ownsFile | referencesFile | Implemented | Implemented 30 September 2026: Describes the source-reference match to the selected file package and, when specified, its linked track. |
 | 953 | Variable | MxfParser::parseFromBuffer | timing | timing | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 954 | Variable | MxfParser::parseFromBuffer | fileId | fileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 955 | Variable | MxfParser::parseFromBuffer | linkedTrack | linkedTrack | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3756,7 +3758,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 32 | Method | MxfParser | parseHeader | parseHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Parameter | MxfParser::parseHeader | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Parameter | MxfParser::parseHeader | bytesRead | bytesRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 35 | Method | MxfParser | parseFromBuffer | parseFromBuffer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 35 | Method | MxfParser | parseFromBuffer | parseHeaderMetadata | Implemented | Implemented 30 September 2026: Names the buffered header metadata being parsed. |
 | 35 | Parameter | MxfParser::parseFromBuffer | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Method | MxfParser | readBerLength | readBerLength | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Parameter | MxfParser::readBerLength | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
