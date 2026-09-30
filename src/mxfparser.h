@@ -33,25 +33,17 @@ public:
 
 private:
 	[[nodiscard]] static MediaMetadata parseHeaderMetadata(const QByteArray &data);
-	[[nodiscard]] static qint64 readBerLength(const QByteArray &data, qint64 offset,
-											  int &bytesUsed);
-	[[nodiscard]] static quint16 readUint16BE(const QByteArray &data, qint64 offset);
-	[[nodiscard]] static quint32 readUint32BE(const QByteArray &data, qint64 offset);
 
-	static void parseDescriptorSet(const QByteArray &data, qint64 startPos, qint64 length,
-								   MediaMetadata &out);
+	static void parseDescriptorSet(const QByteArray &data, MediaMetadata &out);
 	/// Handles both MaterialPackage (0x36) and SourcePackage (0x37) sets. The
 	/// MaterialPackage is authoritative for clip name and UMID; a SourcePackage
 	/// only supplies them as a fallback when still unset. The flag lets the
-	/// material values win regardless of the packages' byte order in the header.
-	static void parsePackage(const QByteArray &data, qint64 startPos, qint64 length,
-							 MediaMetadata &out, bool isMaterialPackage);
-	static void parseStructuralComponent(const QByteArray &data, qint64 startPos, qint64 length,
-										 MediaMetadata &out);
+	/// material values win regardless of the packages' order in the header.
+	static void parsePackage(const QByteArray &data, MediaMetadata &out, bool isMaterialPackage);
+	static void parseStructuralComponent(const QByteArray &data, MediaMetadata &out);
 	/// AAF TaggedValue set (0x3F): Name (0x5001, UTF-16BE) + Value (0x5003,
 	/// an Indirect: type AUID + payload). Only four names are read —
 	/// `UNC Path`, `Video`, `_IMPORTSETTING`, `_PJ`/`PROJNAME` — see
 	/// MediaMetadata::sourceFilePath.
-	static void parseTaggedValue(const QByteArray &data, qint64 startPos, qint64 length,
-								 MediaMetadata &out);
+	static void parseTaggedValue(const QByteArray &data, MediaMetadata &out);
 };
