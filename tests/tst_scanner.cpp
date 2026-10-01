@@ -1164,7 +1164,8 @@ void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
 	// descriptive metadata; the MDB-only bin name proves the re-join ran.
 	QCOMPARE(tone->databaseMetadataCurrent, listsTone);
 	QCOMPARE(tone->clipNameSource, listsTone && !FeatureFlags::kClipDurationEnabled
-									  ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+									   ? MediaFile::ClipNameSource::Mdb
+									   : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(tone->clipName, kToneClip);
 	QCOMPARE(tone->project, QStringLiteral("block 1729"));
 	QCOMPARE(tone->masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613"));
@@ -1280,7 +1281,8 @@ void TestScanner::stale_header_and_current_database_agree()
 	const auto normal = runScan(tmp.path());
 	QCOMPARE(normal.size(), 1);
 	QCOMPARE(normal.first().clipNameSource, FeatureFlags::kClipDurationEnabled
-											   ? MediaFile::ClipNameSource::MaterialPackage : MediaFile::ClipNameSource::Mdb);
+												? MediaFile::ClipNameSource::MaterialPackage
+												: MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(normal.first().needsHeaderRead, FeatureFlags::kClipDurationEnabled);
 
 	// Changing the timestamp triggers automatic verification. The actual
@@ -1547,7 +1549,10 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	{
 		QByteArray key = QByteArray::fromHex("060e2b34025301010d01010101010000");
 		key[14] = char(type);
-		return key + QByteArray(1, char(value.size())) + value;
+		QByteArray length(1, '\x82');
+		length.append(char(value.size() >> 8));
+		length.append(char(value.size() & 0xff));
+		return key + length + value;
 	};
 	QByteArray name;
 	for (char c : QByteArray("Sequence,3D_Warp+1"))
@@ -1557,9 +1562,19 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	}
 	QByteArray material = QByteArray::fromHex("44010020") + kLadderMob +
 						  QByteArray::fromHex("44080010060e2b34040101010d01010201010800") +
-						  QByteArray::fromHex("4402") + QByteArray(1, '\0') + QByteArray(1, char(name.size())) + name;
+						  QByteArray::fromHex("4402") + QByteArray(1, '\0') + QByteArray(1, char(name.size())) + name +
+						  QByteArray::fromHex("440300180000000100000010") + QByteArray(16, 't');
 	const QByteArray descriptorId(16, '\x42');
+	// Identity does not require a known usage classification, but the master
+	// still needs a real path to the file: track -> EssenceGroup -> SourceClip.
+	const QByteArray sourceReference = QByteArray::fromHex("11010020") + kToneFileId;
 	const QByteArray bytes = set(0x36, material) +
+							 set(0x3b, QByteArray::fromHex("3c0a0010") + QByteArray(16, 't') +
+										   QByteArray::fromHex("48030010") + QByteArray(16, 'g') +
+										   QByteArray::fromHex("4b0100080000001900000001")) +
+							 set(0x05, QByteArray::fromHex("3c0a0010") + QByteArray(16, 'g') +
+										   QByteArray::fromHex("050100180000000100000010") + QByteArray(16, 'c')) +
+							 set(0x11, QByteArray::fromHex("3c0a0010") + QByteArray(16, 'c') + sourceReference) +
 							 set(0x37, QByteArray::fromHex("44010020") + kToneFileId + QByteArray::fromHex("47010010") + descriptorId) +
 							 set(0x28, QByteArray::fromHex("3c0a0010") + descriptorId +
 										   QByteArray::fromHex("32030004000007803202000400000438300100080000001900000001"));
@@ -1580,6 +1595,17 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	QCOMPARE(mf.type, MediaFile::Type::Unknown);
 	QCOMPARE(mf.clipName, QStringLiteral("Sequence,3D_Warp+1"));
 	QVERIFY(mf.effect.isEmpty()); // A known effect name cannot supply the missing usage verdict.
+
+	QByteArray disconnected = bytes;
+	disconnected.replace(sourceReference, QByteArray::fromHex("11010020") + QByteArray(32, 'x'));
+	QVERIFY(tryWriteFile(path, disconnected));
+	const auto withoutConnection = runScan(tmp.path());
+	QCOMPARE(withoutConnection.size(), 1);
+	QCOMPARE(withoutConnection.first().mobId, mf.mobId);
+	QVERIFY(withoutConnection.first().masterMobId.isEmpty());
+	QVERIFY(withoutConnection.first().clipName.isEmpty());
+	QCOMPARE(withoutConnection.first().kind, MediaFile::Kind::Video);
+	QVERIFY(tryWriteFile(path, bytes));
 
 	// A current database initially says Precompute, but its missing project
 	// causes header verification. The actual material package's ambiguous
@@ -1931,7 +1957,8 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
 	QCOMPARE(mxf.clipNameSource, withDatabases && !FeatureFlags::kClipDurationEnabled
-									   ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+									 ? MediaFile::ClipNameSource::Mdb
+									 : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mxf.sampleRate, 48000);
 }
 

@@ -41,6 +41,7 @@ static constexpr quint8 kSetAes3 = 0x47;
 static constexpr quint8 kSetSoundMpeg = 0x5E;
 static constexpr quint8 kSetMatPkg = 0x36;
 static constexpr quint8 kSetSrcPkg = 0x37;
+static constexpr quint8 kSetEssenceGroup = 0x05;
 static constexpr quint8 kSetSequence = 0x0F;
 static constexpr quint8 kSetSourceClip = 0x11;
 static constexpr quint8 kSetTimecode = 0x14;
@@ -58,6 +59,7 @@ static bool isUsefulMetadataSet(quint8 type)
 {
 	switch (type)
 	{
+	case kSetEssenceGroup:
 	case 0x0f:
 	case 0x11:
 	case 0x14:
@@ -449,6 +451,12 @@ namespace
 			   type == kSetAes3 || type == kSetSoundMpeg || type == 0x27 || type == 0x42 || type == 0x51;
 	}
 
+	bool isReferenceBatch(const QByteArray &value)
+	{
+		return value.size() >= 8 && readUint32BE(value, 4) == 16 &&
+			   quint64(readUint32BE(value, 0)) * 16 == quint64(value.size() - 8);
+	}
+
 	std::optional<MxfHeaderObjects> decodeHeaderObjects(const QByteArray &data)
 	{
 		MxfHeaderObjects header;
@@ -523,6 +531,9 @@ namespace
 						(tag == 0x3c0a && size != 16) || (tag == 0x4701 && size != 16) ||
 						(tag == 0x4803 && size != 16) || (tag == 0x4b01 && size != 8))
 						return std::nullopt;
+					if (set.type == kSetEssenceGroup &&
+						((tag == 0x0501 && !isReferenceBatch(value)) || (tag == 0x0502 && size != 16)))
+						return std::nullopt;
 					if (set.fields.contains(tag) && set.fields.value(tag) != value)
 						return std::nullopt;
 					set.fields.insert(tag, value);
@@ -569,16 +580,15 @@ namespace
 			if (found != header.objectIndexByInstanceUid.constEnd())
 				result.append(found.value());
 		}
-		else if (value.size() >= 8)
+		else if (isReferenceBatch(value))
 		{
-			const quint32 count = readUint32BE(value, 0), stride = readUint32BE(value, 4);
-			if (stride == 16 && count == quint64(value.size() - 8) / 16 && (value.size() - 8) % 16 == 0)
-				for (quint32 n = 0; n < count; ++n)
-				{
-					const auto found = header.objectIndexByInstanceUid.constFind(value.mid(8 + qsizetype(n) * 16, 16));
-					if (found != header.objectIndexByInstanceUid.constEnd())
-						result.append(found.value());
-				}
+			const quint32 count = readUint32BE(value, 0);
+			for (quint32 n = 0; n < count; ++n)
+			{
+				const auto found = header.objectIndexByInstanceUid.constFind(value.mid(8 + qsizetype(n) * 16, 16));
+				if (found != header.objectIndexByInstanceUid.constEnd())
+					result.append(found.value());
+			}
 		}
 		return result;
 	}
@@ -594,10 +604,24 @@ namespace
 			if (index < 0 || visited.contains(index))
 				continue;
 			visited.insert(index);
-			for (const auto &value : header.objects[index].fields)
-				for (qsizetype target : resolveObjectReferences(header, value))
-					if (!visited.contains(target))
-						queue.append(target);
+			const auto &object = header.objects[index];
+			if (object.type == kSetEssenceGroup)
+			{
+				// Choices are alternative representations, not consecutive media.
+				// Follow their declared reference properties, never a coincidental
+				// UID in another field. StillFrame points to a single SourceClip.
+				for (quint16 tag : {quint16(0x0501), quint16(0x0502)})
+					for (qsizetype target : resolveObjectReferences(header, object.fields.value(tag)))
+						if (header.objects[target].type == kSetSourceClip ||
+							(tag == 0x0501 && header.objects[target].type == kSetSequence))
+							if (!visited.contains(target))
+								queue.append(target);
+			}
+			else
+				for (const auto &value : object.fields)
+					for (qsizetype target : resolveObjectReferences(header, value))
+						if (!visited.contains(target))
+							queue.append(target);
 			if (followSource && header.objects[index].type == kSetSourceClip)
 			{
 				const auto target = header.packageIndexByMobId.constFind(header.objects[index].fields.value(0x1101));
@@ -646,7 +670,9 @@ namespace
 					materialPackageIndex = candidate;
 				}
 		}
-		if (materialPackageIndex == -1 && header.materials.size() == 1)
+		// With an identified file package, a master must actually reach it.
+		// Retain standalone-header recovery only when no file was selected.
+		if (filePackageIndex < 0 && materialPackageIndex == -1 && header.materials.size() == 1)
 			materialPackageIndex = header.materials.first();
 		// An explicit Preface primary-package reference resolves otherwise
 		// ambiguous connected material packages.
@@ -717,7 +743,10 @@ namespace
 		QVector<MxfMaterialTrack> timing;
 		const QByteArray fileId = filePackageIndex >= 0 ? header.objects[filePackageIndex].fields.value(0x4401) : QByteArray{};
 		const QByteArray linkedTrack = descriptorIndex >= 0 ? header.objects[descriptorIndex].fields.value(0x3006) : QByteArray{};
-		for (qsizetype track : resolveObjectReferences(header, header.objects[materialPackageIndex].fields.value(0x4403)))
+		const auto materialTracks = materialPackageIndex >= 0
+										? resolveObjectReferences(header, header.objects[materialPackageIndex].fields.value(0x4403))
+										: QVector<qsizetype>{};
+		for (qsizetype track : materialTracks)
 		{
 			const QByteArray rate = header.objects[track].fields.value(0x4b01);
 			const auto components = resolveObjectReferences(header, header.objects[track].fields.value(0x4803));
@@ -771,7 +800,7 @@ namespace
 		// Audio-only material packages can have sample-rate tracks only.
 		// Their linked source/timecode tracks establish the project's frame
 		// rate; use it only when that ancestry offers one consistent rate.
-		if (!displayRate.valid() && owning && owning->editRate.value() >= 1000.0)
+		if (!displayRate.valid() && ((owning && owning->editRate.value() >= 1000.0) || materialPackageIndex < 0))
 		{
 			for (qsizetype index : scope)
 			{
@@ -792,6 +821,8 @@ namespace
 				displayRate = candidate;
 			}
 		}
+		if (!displayRate.valid() && materialPackageIndex < 0 && !meta.isAudio)
+			displayRate = meta.descriptorRate;
 		if (displayRate.valid())
 			meta.timecodeBase = qRound(displayRate.value());
 		// Avid can put the timecode track on the linked source package.
@@ -1112,8 +1143,8 @@ MediaMetadata MxfParser::parseHeaderMetadata(const QByteArray &data)
 		scope = reachableObjectIndexes(header, filePackageIndex, true);
 	// Standalone metadata lacks graph edges. Retain recovery only when no
 	// package declares an object graph, rather than pooling unrelated tracks.
-	const bool graphDeclared = (materialPackageIndex >= 0 && header.objects[materialPackageIndex].fields.contains(0x4403)) ||
-							   (filePackageIndex >= 0 && header.objects[filePackageIndex].fields.contains(0x4403));
+	const bool graphDeclared = filePackageIndex >= 0 ||
+							   (materialPackageIndex >= 0 && header.objects[materialPackageIndex].fields.contains(0x4403));
 	if (!graphDeclared)
 		for (qsizetype n = 0; n < header.objects.size(); ++n)
 			scope.insert(n);
@@ -1192,7 +1223,7 @@ MediaMetadata MxfParser::parseHeaderMetadata(const QByteArray &data)
 	if (projects.size() == 1)
 		meta.projectName = *projects.constBegin();
 
-	if (materialPackageIndex >= 0 && graphDeclared)
+	if ((materialPackageIndex >= 0 || filePackageIndex >= 0) && graphDeclared)
 		applyTrackTiming(header, selection, scope, meta);
 
 	MediaMetadataUtil::finalise(meta);

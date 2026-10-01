@@ -252,6 +252,12 @@ private slots:
 	void precompute_categories_require_direct_typed_evidence();
 	void precompute_categories_scope_and_incomplete_headers();
 	void owning_package_selects_descriptor();
+	void essence_group_selects_connected_master_data();
+	void essence_group_selects_connected_master();
+	void essence_group_does_not_invent_connections_data();
+	void essence_group_does_not_invent_connections();
+	void essence_group_rejects_malformed_references_data();
+	void essence_group_rejects_malformed_references();
 	void split_master_uses_individual_file_duration();
 	void extra_audio_samples_survive_display_conversion();
 	void malformed_local_property_invalidates_header();
@@ -452,7 +458,7 @@ void TestMxfParser::audio_sampling_rate_retains_fraction_and_distinct_unit_clock
 	for (const bool samplingFirst : {false, true})
 	{
 		const auto meta = MxfParser::parseHeader(writeMxf(tmp.filePath("rates.mxf"),
-			shortSet(0x48, samplingFirst ? sampling + units : units + sampling)));
+														  shortSet(0x48, samplingFirst ? sampling + units : units + sampling)));
 		QVERIFY(meta.valid);
 		QCOMPARE(meta.sampleRateRatio.numerator, 96001);
 		QCOMPARE(meta.sampleRateRatio.denominator, 2);
@@ -1189,6 +1195,164 @@ void TestMxfParser::owning_package_selects_descriptor()
 	QVERIFY(result.classificationKnown);
 }
 
+namespace
+{
+	// Metadata-only fixture: one master points through a sequence/group,
+	// and EssenceContainerData identifies the file whose descriptor we need.
+	// The alternative file deliberately has different dimensions and length.
+	QByteArray essenceGroupGraph(const QByteArray &groupFields, bool audio = false)
+	{
+		const QByteArray fileId(32, 'f');
+		QByteArray descriptor = localProperty(0x3002, u32be(audio ? 96001 : 1));
+		if (audio)
+			descriptor += localProperty(0x3001, u32be(48000) + u32be(1)) +
+						  localProperty(0x3d03, u32be(48000) + u32be(1)) + localProperty(0x3d07, u32be(1));
+		else
+			descriptor += localProperty(0x3001, u32be(30000) + u32be(1001)) +
+						  localProperty(0x3203, u32be(1920)) + localProperty(0x3202, u32be(1080));
+		return partitionPack() +
+			   objectSet(0x36, 'm', localProperty(0x4401, QByteArray(32, 'm')) + localProperty(0x4402, utf16be("Group master")) + localProperty(0x4403, references('t'))) +
+			   objectSet(0x3b, 't', localProperty(0x4801, u32be(1)) + localProperty(0x4803, QByteArray(16, 's')) + localProperty(0x4b01, u32be(30000) + u32be(1001))) +
+			   objectSet(0x0f, 's', localProperty(0x0202, u32be(300)) + localProperty(0x1001, references('g'))) +
+			   objectSet(0x05, 'g', localProperty(0x0202, u32be(300)) + groupFields) +
+			   objectSet(0x11, 'c', localProperty(0x1101, fileId) + localProperty(0x1102, u32be(1)) + localProperty(0x0202, u32be(300))) +
+			   objectSet(0x11, 'C', localProperty(0x1101, QByteArray(32, 'u')) + localProperty(0x0202, u32be(300))) +
+			   objectSet(0x37, 'f', localProperty(0x4401, fileId) + localProperty(0x4701, QByteArray(16, 'd'))) +
+			   objectSet(audio ? 0x48 : 0x28, 'd', descriptor) +
+			   objectSet(0x37, 'u', localProperty(0x4401, QByteArray(32, 'u')) + localProperty(0x4701, QByteArray(16, 'x'))) +
+			   objectSet(0x28, 'x', localProperty(0x3203, u32be(9999)) + localProperty(0x3202, u32be(1080)) + localProperty(0x3001, u32be(25) + u32be(1)) + localProperty(0x3002, u32be(750))) +
+			   objectSet(0x23, 'e', localProperty(0x2701, fileId));
+	}
+}
+
+void TestMxfParser::essence_group_selects_connected_master_data()
+{
+	QTest::addColumn<QByteArray>("fields");
+	QTest::addColumn<QByteArray>("extras");
+	QTest::addColumn<bool>("audio");
+	const QByteArray choices = localProperty(0x0501, references('c'));
+	QTest::newRow("single-choice") << choices << QByteArray{} << false;
+	const QByteArray alternatives = u32be(3) + u32be(16) + QByteArray(16, 'C') + QByteArray(16, 'c') + QByteArray(16, 'c');
+	QTest::newRow("alternatives-and-repeated-reference") << localProperty(0x0501, alternatives) << QByteArray{} << false;
+	QTest::newRow("exact-audio-samples") << localProperty(0x0501, alternatives) << QByteArray{} << true;
+	QTest::newRow("sequence-choice") << localProperty(0x0501, references('q'))
+									 << objectSet(0x0f, 'q', localProperty(0x0202, u32be(300)) + localProperty(0x1001, references('c'))) << false;
+	QTest::newRow("cyclic-sequence-is-bounded") << localProperty(0x0501, references('q'))
+												<< objectSet(0x0f, 'q', localProperty(0x1001, u32be(2) + u32be(16) + QByteArray(16, 'q') + QByteArray(16, 'c'))) << false;
+	QTest::newRow("still-frame") << localProperty(0x0501, references('C')) + localProperty(0x0502, QByteArray(16, 'c'))
+								 << QByteArray{} << false;
+	const QByteArray primer = klv(ul("060e2b34020501010d01020101050100"), u32be(2) + u32be(18) +
+																			  u16be(0x9001) + ul("060e2b34010101020601010406010000") +
+																			  u16be(0x9002) + ul("060e2b34010101020601010402080000"));
+	QTest::newRow("remapped-choices") << localProperty(0x9001, references('c')) << primer << false;
+	QTest::newRow("remapped-still-frame") << localProperty(0x9001, references('C')) + localProperty(0x9002, QByteArray(16, 'c'))
+										  << primer << false;
+}
+
+void TestMxfParser::essence_group_selects_connected_master()
+{
+	QFETCH(QByteArray, fields);
+	QFETCH(QByteArray, extras);
+	QFETCH(bool, audio);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	// Two masters prevent a sole-master fallback from hiding a broken walk.
+	const QByteArray unrelated = objectSet(0x36, 'a', localProperty(0x4401, QByteArray(32, 'a')) + localProperty(0x4402, utf16be("Unrelated master")));
+	QByteArray content = essenceGroupGraph(fields, audio) + unrelated + extras;
+	if (fields.contains(localProperty(0x0502, QByteArray(16, 'c'))) ||
+		fields.contains(localProperty(0x9002, QByteArray(16, 'c'))))
+		content.replace(objectSet(0x11, 'c', localProperty(0x1101, QByteArray(32, 'f')) + localProperty(0x1102, u32be(1)) + localProperty(0x0202, u32be(300))),
+						objectSet(0x11, 'c', localProperty(0x1101, QByteArray(32, 'f')) + localProperty(0x1102, u32be(1)) + localProperty(0x0202, u32be(1))));
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("choices.mxf"), content));
+	QVERIFY(result.valid);
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Complete);
+	QCOMPARE(result.fileMobId, MobId::format(QByteArray(32, 'f')));
+	QCOMPARE(result.umid, MobId::format(QByteArray(32, 'm')));
+	QCOMPARE(result.clipName, QStringLiteral("Group master"));
+	QVERIFY(result.hasMaterialPackage);
+	QVERIFY(result.clipNameFromMaterial);
+	QVERIFY(result.classificationKnown);
+	QCOMPARE(result.isAudio, audio);
+	QCOMPARE(result.duration.source, MediaDuration::Source::Descriptor);
+	QCOMPARE(result.duration.units, qint64(audio ? 96001 : 1));
+	QCOMPARE(result.duration.rate.numerator, audio ? 48000 : 30000);
+	QCOMPARE(result.duration.rate.denominator, audio ? 1 : 1001);
+	QCOMPARE(result.duration.displayRate.numerator, 30000);
+	QCOMPARE(result.duration.displayRate.denominator, 1001);
+	if (audio)
+		QCOMPARE(result.sampleRateRatio.numerator, 48000);
+	else
+		QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+	QCOMPARE(result.clipDurations.size(), 1);
+	QCOMPARE(result.clipDurations.first().trackId, quint32(1));
+	QCOMPARE(result.clipDurations.first().duration.units, qint64(300));
+	QCOMPARE(result.clipDurations.first().duration.rate.numerator, 30000);
+	QCOMPARE(result.clipDurations.first().duration.rate.denominator, 1001);
+}
+
+void TestMxfParser::essence_group_does_not_invent_connections_data()
+{
+	QTest::addColumn<QByteArray>("fields");
+	QTest::addColumn<QByteArray>("extras");
+	QTest::newRow("unrelated-source") << localProperty(0x0501, references('C')) << QByteArray{};
+	QTest::newRow("empty-choices") << localProperty(0x0501, u32be(0) + u32be(16)) << QByteArray{};
+	QTest::newRow("missing-reference") << localProperty(0x0501, references('z')) << QByteArray{};
+	QTest::newRow("wrong-object-type") << localProperty(0x0501, references('f')) << QByteArray{};
+	QTest::newRow("unrelated-field-is-not-a-choice") << localProperty(0x0501, references('C')) + localProperty(0x9008, references('c')) << QByteArray{};
+	QTest::newRow("cyclic-group-is-not-a-choice") << localProperty(0x0501, references('g')) << QByteArray{};
+	QTest::newRow("wrong-still-frame-type") << localProperty(0x0501, references('C')) + localProperty(0x0502, QByteArray(16, 'f')) << QByteArray{};
+	// A local tag which the Primer assigns to another property is not Choices.
+	QTest::newRow("primer-overrides-canonical-tag") << localProperty(0x0501, references('c'))
+													<< klv(ul("060e2b34020501010d01020101050100"), u32be(1) + u32be(18) +
+																									   u16be(0x0501) + ul("060e2b3401010101010101017f7f7f7f"));
+}
+
+void TestMxfParser::essence_group_does_not_invent_connections()
+{
+	QFETCH(QByteArray, fields);
+	QFETCH(QByteArray, extras);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	// A sole master is still unrelated if its references do not reach this file.
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("disconnected.mxf"), essenceGroupGraph(fields) + extras));
+	QVERIFY(result.valid); // The file's own technical metadata remains available.
+	QCOMPARE(result.fileMobId, MobId::format(QByteArray(32, 'f')));
+	QCOMPARE(result.resolution, QStringLiteral("1920x1080"));
+	QCOMPARE(result.duration.units, qint64(1));
+	QCOMPARE(result.duration.source, MediaDuration::Source::Descriptor);
+	QCOMPARE(result.duration.rate.numerator, 30000);
+	QCOMPARE(result.duration.rate.denominator, 1001);
+	QCOMPARE(result.umid, result.fileMobId); // Existing source-only fallback; never the unrelated master ID.
+	QVERIFY(result.clipName.isEmpty());
+	QVERIFY(!result.clipNameFromMaterial);
+	QVERIFY(!result.hasMaterialPackage);
+	QVERIFY(!result.classificationKnown);
+	QVERIFY(result.clipDurations.isEmpty());
+}
+
+void TestMxfParser::essence_group_rejects_malformed_references_data()
+{
+	QTest::addColumn<QByteArray>("fields");
+	QTest::newRow("single-uid-is-not-a-batch") << localProperty(0x0501, QByteArray(16, 'c'));
+	QTest::newRow("truncated-batch") << localProperty(0x0501, references('c').chopped(1));
+	QTest::newRow("extra-batch-byte") << localProperty(0x0501, references('c') + QByteArray(1, 'x'));
+	QTest::newRow("incorrect-stride") << localProperty(0x0501, u32be(1) + u32be(8) + QByteArray(16, 'c'));
+	QTest::newRow("oversized-count") << localProperty(0x0501, u32be(0xffffffffu) + u32be(16) + QByteArray(16, 'c'));
+	QTest::newRow("truncated-still-frame") << localProperty(0x0501, references('c')) + localProperty(0x0502, QByteArray(15, 'c'));
+}
+
+void TestMxfParser::essence_group_rejects_malformed_references()
+{
+	QFETCH(QByteArray, fields);
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto result = MxfParser::parseHeader(writeMxf(temp.filePath("malformed.mxf"), essenceGroupGraph(fields)));
+	QCOMPARE(result.headerStatus, MediaMetadata::HeaderStatus::Malformed);
+	QVERIFY(!result.valid);
+	QVERIFY(!result.hasMaterialPackage);
+	QVERIFY(result.clipDurations.isEmpty());
+}
+
 void TestMxfParser::extra_audio_samples_survive_display_conversion()
 {
 	const auto path = QStringLiteral(FIXTURES_DIR "/corpus_headers/A01.E69CED82_F8DF1F8DF1DD1A.mxf");
@@ -1266,6 +1430,10 @@ void TestMxfParser::split_master_uses_individual_file_duration()
 				disconnected.replace(localProperty(0x1101, fileId), localProperty(0x1101, QByteArray(32, 'x')));
 				const auto unrelated = MxfParser::parseHeader(writeMxf(temp.filePath("unrelated.mxf"), disconnected));
 				QVERIFY(unrelated.clipDurations.isEmpty());
+				QVERIFY(!unrelated.hasMaterialPackage);
+				QCOMPARE(unrelated.duration.units, qint64(19 * units));
+				QCOMPARE(unrelated.duration.rate.numerator, qint32(rate));
+				QCOMPARE(unrelated.duration.source, descriptorDuration ? MediaDuration::Source::Descriptor : MediaDuration::Source::FileTrack);
 			}
 }
 

@@ -59,6 +59,8 @@ inline constexpr MxfPropertyIdentifier kMxfProperties[] = {
 	{"060e2b34010101020530040500000000", 0x4b01},					// Track::EditRate
 	{"060e2b34010101020407010000000000", 0x0201},					// StructuralComponent::DataDefinition
 	{"060e2b34010101020702020101030000", 0x0202},					// StructuralComponent::Duration
+	{"060e2b34010101020601010406010000", 0x0501},					// EssenceGroup::Choices (strong-reference batch)
+	{"060e2b34010101020601010402080000", 0x0502},					// EssenceGroup::StillFrame (single strong reference)
 	{"060e2b34010101020601010406090000", 0x1001},					// Sequence::StructuralComponents
 	{"060e2b34010101020404010102060000", 0x1502},					// TimecodeComponent::RoundedTimecodeBase
 	{"060e2b34010101010404010105000000", 0x1503},					// TimecodeComponent::DropFrame
