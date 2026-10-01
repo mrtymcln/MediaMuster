@@ -936,7 +936,6 @@ void TestMdbParser::omf_era_mdb_describes_every_pmr_pair_with_wrapped_ids()
 	for (auto it = db.masters.cbegin(); it != db.masters.cend(); ++it)
 	{
 		QVERIFY2(OmfUid::isWrappedOmfId(it.key()), qPrintable(it.key()));
-		QCOMPARE(it.key(), it->mobIdHex);
 		QVERIFY2(!it->clipName.isEmpty(), qPrintable(it.key()));
 	}
 	for (auto it = db.files.cbegin(); it != db.files.cend(); ++it)

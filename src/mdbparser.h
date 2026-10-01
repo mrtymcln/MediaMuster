@@ -14,7 +14,6 @@
 /// (after MobId::swapMaterialByteOrder) resolves to.
 struct MdbMasterMob
 {
-	QString mobIdHex;
 	QString clipName;				  ///< OMFI:CPNT:Name — the clip name recorded by Avid.
 	QString bin;					  ///< _ORG_BIN → original bin name; AVB and OMF readers can also supply it.
 	QString sourceFilePath;			  ///< _IMPORTSETTING/_SRCFILE → the imported file's path.
@@ -33,7 +32,6 @@ struct MdbMasterMob
 /// fields, helping it decide whether a header read is needed.
 struct MdbFileMob
 {
-	QString mobIdHex;
 	QString masterMobId; ///< Unique master whose source-clip graph references this file; empty if ambiguous.
 	int usageCode = -1;	 ///< 0 = NoSpecialUsage, 9 = PrecomputeFile; classification comes from the master.
 	MediaMetadata essence;
@@ -66,8 +64,7 @@ class MdbParser
 {
 public:
 	/// Load and index the database. `ok` (optional) is false when the file
-	/// can't be opened or isn't a Bento container whose label and table of
+	/// can't be opened/read or isn't a Bento container whose label and table of
 	/// contents agree. ok=true with empty maps is a valid, empty database.
-	/// Never throws.
 	[[nodiscard]] static MdbDatabase load(const QString &mdbFilePath, bool *ok = nullptr);
 };

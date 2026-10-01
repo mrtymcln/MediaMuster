@@ -1,5 +1,7 @@
 # MediaMuster naming inventory
 
+MDB cleanup, 1 October 2026: approved internal names are implemented, including fileMobObjectId and mediaDescriptorObjectId. Redundant mobIdHex fields and rawBytes temporary are removed. File-read errors are explicitly rejected. Useful format notes remain; earlier validation statistics are preserved in assessment.md. Historical inventory scopes and locations are unchanged.
+
 PMR cleanup, 1 October 2026: retained PmrValueParser and AvbValueParser. The PMR parser now reuses MobId::swapMaterialByteOrder for AAF IDs, names the null-string sentinel, clarifies four local/parameter names, and includes its Qt dependencies directly. Format and recovery notes are preserved, with the nonempty Unicode-set condition clarified.
 
 PMR update, 1 October 2026: Cursor is now PmrValueParser, readMob is now readMobId, and PmrEntry::mobId is now PmrEntry::fileMobId. PmrEntry::masterMobId and PmrEntry::project are retained. These are naming changes only; snapshot names, scopes and locations remain unchanged.
@@ -2472,7 +2474,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 87 | Function |  | placeholderMob | placeholderMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 87 | Function |  | placeholderMob | placeholderMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 89 | Variable | placeholderMob | kMob | kMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 98 | Parameter | MdbParser::load | mdbFilePath | mdbFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 98 | Parameter | MdbParser::load | ok | ok | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -2483,18 +2485,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 114 | Variable | MdbParser::load | why | reason | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 123 | Variable | MdbParser::load | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 133 | Variable | MdbParser::load | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 134 | Variable | MdbParser::load | objectsByHex | objectsByHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 134 | Variable | MdbParser::load | objectsByHex | objectsByMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 135 | Variable | MdbParser::load | order | order | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 136 | Variable | MdbParser::load | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 140 | Variable | MdbParser::load | raw | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 142 | Variable | MdbParser::load | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 145 | Variable | MdbParser::load | rawBytes | rawBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 142 | Variable | MdbParser::load | hex | mobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
+| 145 | Variable | MdbParser::load | rawBytes | (removed) | Implemented | Removed redundant stored value; existing identity or raw bytes remain available. |
 | 148 | Variable | MdbParser::load | it | it | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 157 | Variable | MdbParser::load | complete | complete | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 158 | Variable | MdbParser::load | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 157 | Variable | MdbParser::load | complete | completeFileCount | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
+| 158 | Variable | MdbParser::load | hex | mobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 160 | Variable | MdbParser::load | objs | objs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 164 | Variable | MdbParser::load | mediaObj | mediaObj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 164 | Variable | MdbParser::load | mediaDesc | mediaDesc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 164 | Variable | MdbParser::load | mediaObj | fileMobObjectId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
+| 164 | Variable | MdbParser::load | mediaDesc | mediaDescriptorObjectId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 165 | Variable | MdbParser::load | anyPhysical | anyPhysical | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 166 | Variable | MdbParser::load | explicitMaster | explicitMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 167 | Variable | MdbParser::load | legacyMaster | legacyMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2510,7 +2512,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 218 | Variable | MdbParser::load | seen | seen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 219 | Variable | MdbParser::load | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 223 | Variable | MdbParser::load | src | src | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 224 | Variable | MdbParser::load | sourceHex | sourceHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 224 | Variable | MdbParser::load | sourceHex | sourceMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 225 | Variable | MdbParser::load | sourceObjects | sourceObjects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 227 | Variable | MdbParser::load | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 235 | Variable | MdbParser::load | loc | loc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2519,11 +2521,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 255 | Variable | MdbParser::load | a | a | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 258 | Variable | MdbParser::load | seen | seen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 259 | Variable | MdbParser::load | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 280 | Variable | MdbParser::load | mastersByFile | mastersByFile | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 280 | Variable | MdbParser::load | mastersByFile | masterMobIdsByFileMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 281 | Variable | MdbParser::load | master | master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 282 | Variable | MdbParser::load | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 283 | Variable | MdbParser::load | target | target | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 285 | Variable | MdbParser::load | fileHex | fileHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 285 | Variable | MdbParser::load | fileHex | fileMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 289 | Variable | MdbParser::load | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 291 | Variable | MdbParser::load | masters | masters | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 
@@ -2532,7 +2534,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 | 15 | Struct |  | MdbMasterMob | MdbMasterMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 17 | Field | MdbMasterMob | mobIdHex | mobIdHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 17 | Field | MdbMasterMob | mobIdHex | (removed) | Implemented | Removed redundant stored value; existing identity or raw bytes remain available. |
 | 18 | Field | MdbMasterMob | clipName | clipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Field | MdbMasterMob | bin | bin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | MdbMasterMob | sourceFilePath | sourceFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2544,7 +2546,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 26 | Field | MdbMasterMob | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Field | MdbMasterMob | precomputeCategory | precomputeCategory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Struct |  | MdbFileMob | MdbFileMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 36 | Field | MdbFileMob | mobIdHex | mobIdHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 36 | Field | MdbFileMob | mobIdHex | (removed) | Implemented | Removed redundant stored value; existing identity or raw bytes remain available. |
 | 37 | Field | MdbFileMob | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Field | MdbFileMob | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Field | MdbFileMob | essence | essence | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |

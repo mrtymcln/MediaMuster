@@ -259,3 +259,16 @@ Keep format acronyms such as MXF, OMF, AVB, PMR, MDB, MOB and UMID. Keep Qt over
 6. Consider the optional filename style migration only after the semantic names have settled.
 
 The initial review added assessment and naming reports and regenerated build/test output without modifying application source. The subsequent authorized AVB and identifier-helper changes, MXF renames, MXF structural refactor and final cleanup are recorded above. The initial-review validation results retain their original scope; separate validation paragraphs identify the later changes they cover.
+
+
+### MDB validation history preserved from source
+
+The following records earlier validation, not a new test run:
+
+Verified 2026-08-19..22 against 360 whole MXF files with their own
+databases plus 795 archived headers across two database generations: clip
+name 360/360, project, kind, codec label 119/119 (byte-identical after the
+AUID reorder), dims, frame rate, durations 119/119 + 241/241, bits, channels,
+source path 354/354, usage pairs 1,155/1,155. The one known gap is MPEG
+audio (MPGA), which carries no codec label in the MDB — such a file is
+reported essenceComplete=false and the scanner reads its header instead.
