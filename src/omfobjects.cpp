@@ -83,14 +83,14 @@ namespace OmfObjects
 
 	// MARK: - Property ids, resolved once per file
 
-	Props::Props(const BentoFile &b)
+	PropertyIds::PropertyIds(const BentoFile &b)
 		: revision(OmfObjects::revision(b)),
 		  omf2(revision == Revision::Omf2 || (revision == Revision::Unknown && b.propertyId("OMFI:OOBJ:ObjClass") >= 0)),
 		  mobId(b.propertyId("OMFI:MOBJ:MobID")), usage(b.propertyId("OMFI:MOBJ:UsageCode")),
 		  name(b.propertyId("OMFI:CPNT:Name")), editRate(b.propertyId("OMFI:CPNT:EditRate")),
 		  attrs(b.propertyId("OMFI:CPNT:Attributes")), physMedia(b.propertyId("OMFI:MOBJ:PhysicalMedia")),
 		  attrRefs(b.propertyId("OMFI:ATTR:AttrRefs")), attbName(b.propertyId("OMFI:ATTB:Name")),
-		  attbKind(b.propertyId("OMFI:ATTB:Kind")), attbInt(b.propertyId("OMFI:ATTB:IntAttribute")),
+		  attbKind(b.propertyId("OMFI:ATTB:Kind")),
 		  attbString(b.propertyId("OMFI:ATTB:StringAttribute")), attbObj(b.propertyId("OMFI:ATTB:ObjAttribute")),
 		  binNameUtf8(b.propertyId("OMFI:MCBR:MC:binNameUTF8")), binName(b.propertyId("OMFI:MCBR:MC:binName")),
 		  posixPath(b.propertyId("OMFI:FL:POSIXPathName")), pathUtf8(b.propertyId("OMFI:FL:PathNameUTF8")),
@@ -190,7 +190,7 @@ namespace OmfObjects
 	{
 		struct TiffSummary
 		{
-			int width = 0, height = 0, bits = 0, layout = -1;
+			int width = 0, height = 0, bitsPerComponent = 0, layout = -1;
 			QString codec;
 		};
 
@@ -236,7 +236,7 @@ namespace OmfObjects
 						for (quint32 i = 1; i < items; ++i)
 							uniform &= u16(start + qsizetype(i) * 2) == bits;
 						if (uniform)
-							result.bits = bits;
+							result.bitsPerComponent = bits;
 					}
 				}
 				if (items != 1 || (type != 3 && type != 4))
@@ -319,7 +319,7 @@ namespace OmfObjects
 				s.formatTag = qFromLittleEndian<quint16>(f);
 				s.channels = qFromLittleEndian<quint16>(f + 2);
 				s.sampleRate = int(qFromLittleEndian<quint32>(f + 4));
-				s.bits = qFromLittleEndian<quint16>(f + 14);
+				s.bitsPerSample = qFromLittleEndian<quint16>(f + 14);
 				s.valid = s.channels > 0 && s.sampleRate > 0;
 				return s;
 			}
@@ -352,7 +352,7 @@ namespace OmfObjects
 				const unsigned char *c = d + pos + 8;
 				s.channels = qFromBigEndian<qint16>(c);
 				s.frames = qFromBigEndian<quint32>(c + 2);
-				s.bits = qFromBigEndian<qint16>(c + 6);
+				s.bitsPerSample = qFromBigEndian<qint16>(c + 6);
 				const double rate = extendedToDouble(c + 8);
 				s.sampleRateRatio = extendedToRate(c + 8);
 				s.sampleRateEncoding = QByteArray(reinterpret_cast<const char *>(c + 8), 10);
@@ -372,7 +372,7 @@ namespace OmfObjects
 
 	// MARK: - Attribute trees
 
-	QString locatorPath(const BentoFile &b, const Props &p, quint32 locator)
+	QString locatorPath(const BentoFile &b, const PropertyIds &p, quint32 locator)
 	{
 		QString path = BentoFile::string(b.bytes(locator, p.posixPath));
 		if (path.isEmpty())
@@ -388,7 +388,7 @@ namespace OmfObjects
 		return path;
 	}
 
-	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen)
+	void walkAttributes(const BentoFile &b, const PropertyIds &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen)
 	{
 		QVector<quint32> pending;
 		const auto appendAttributes = [&](quint32 object)
@@ -485,7 +485,7 @@ namespace OmfObjects
 				   out.size() == b.uintValue(QByteArrayView(raw.data).first(2));
 		}
 
-		AvidPrecompute::ImportAttribute directImportAttribute(const BentoFile &b, const Props &p, quint32 master)
+		AvidPrecompute::ImportAttribute directImportAttribute(const BentoFile &b, const PropertyIds &p, quint32 master)
 		{
 			using Import = AvidPrecompute::ImportAttribute;
 			BentoFile::ReadStatus status;
@@ -527,7 +527,7 @@ namespace OmfObjects
 			return result;
 		}
 
-		int directVideoTrackCount(const BentoFile &b, const Props &p, quint32 master)
+		int directVideoTrackCount(const BentoFile &b, const PropertyIds &p, quint32 master)
 		{
 			QVector<quint32> tracks;
 			if (!completeRefs(b, master, p.tracks, tracks))
@@ -552,7 +552,7 @@ namespace OmfObjects
 		}
 	} // namespace
 
-	AvidPrecompute::Category precomputeCategory(const BentoFile &b, const Props &p,
+	AvidPrecompute::Category precomputeCategory(const BentoFile &b, const PropertyIds &p,
 												const QVector<quint32> &masters)
 	{
 		using Category = AvidPrecompute::Category;
@@ -600,10 +600,10 @@ namespace OmfObjects
 
 	namespace
 	{
-		QVector<quint32> components(const BentoFile &b, const Props &p, quint32 mob)
+		QVector<quint32> componentObjectIds(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId)
 		{
 			QVector<quint32> stack, out;
-			for (quint32 track : b.refs(mob, p.tracks))
+			for (quint32 track : b.refs(mobObjectId, p.tracks))
 				stack.append(b.ref(track, p.trackComp));
 			QSet<quint32> seen;
 			while (!stack.isEmpty())
@@ -629,56 +629,66 @@ namespace OmfObjects
 		}
 	}
 
-	QVector<quint32> sourceMobs(const BentoFile &b, const Props &p, quint32 mob, const ObjectByMob &objectByMob)
+	namespace
 	{
-		QVector<quint32> out;
-		for (quint32 c : components(b, p, mob))
+		QVector<quint32> referencedMobObjectIds(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId,
+												const ObjectIdByMobId &objectByMob, const QVector<quint32> &componentIds)
 		{
-			if (b.objectClass(c) != "SCLP")
-				continue;
-			const QByteArray src = normalizedMobId(b, b.bytes(c, p.sourceId));
-			if (!isSourceIdWidth(src.size()) || src == QByteArray(src.size(), '\0'))
-				continue; // 0-0-0 is the original source, not a mob reference
-			const quint32 target = objectByMob.value(src, 0);
-			if (target && target != mob && !out.contains(target))
-				out.append(target);
+			QVector<quint32> out;
+			for (quint32 c : componentIds)
+			{
+				if (b.objectClass(c) != "SCLP")
+					continue;
+				const QByteArray src = normalizedMobId(b, b.bytes(c, p.sourceId));
+				if (!isSourceIdWidth(src.size()) || src == QByteArray(src.size(), '\0'))
+					continue; // 0-0-0 is the original source, not a Mob reference
+				const quint32 target = objectByMob.value(src, 0);
+				if (target && target != mobObjectId && !out.contains(target))
+					out.append(target);
+			}
+			return out;
 		}
-		return out;
+	} // namespace
+
+	QVector<quint32> referencedMobObjectIds(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId, const ObjectIdByMobId &objectByMob)
+	{
+		return referencedMobObjectIds(b, p, mobObjectId, objectByMob, componentObjectIds(b, p, mobObjectId));
 	}
 
-	quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob, const ObjectByMob &objectByMob,
+	quint32 findTimecodeComponent(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId, const ObjectIdByMobId &objectByMob,
 								  QSet<quint32> &seen)
 	{
-		QVector<quint32> pending{mob};
+		QVector<quint32> pending{mobObjectId};
 		while (!pending.isEmpty())
 		{
 			const quint32 current = pending.takeLast();
 			if (!current || seen.contains(current))
 				continue;
 			seen.insert(current);
-			for (quint32 c : components(b, p, current))
+			const auto componentIds = componentObjectIds(b, p, current);
+			for (quint32 c : componentIds)
 				if (b.objectClass(c) == "TCCP")
 					return c;
-			const auto sources = sourceMobs(b, p, current, objectByMob);
+			const auto sources = referencedMobObjectIds(b, p, current, objectByMob, componentIds);
 			for (auto it = sources.crbegin(); it != sources.crend(); ++it)
 				pending.append(*it);
 		}
 		return 0;
 	}
 
-	quint32 findSourceMob(const BentoFile &b, const Props &p, quint32 mob, const ObjectByMob &objectByMob)
+	quint32 findUniqueReferencedMobObjectId(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId, const ObjectIdByMobId &objectByMob)
 	{
-		const auto sources = sourceMobs(b, p, mob, objectByMob);
+		const auto sources = referencedMobObjectIds(b, p, mobObjectId, objectByMob);
 		return sources.size() == 1 ? sources.first() : 0;
 	}
 
-	bool mobEditRate(const BentoFile &b, const Props &p, quint32 mob, qint32 &num, qint32 &den)
+	bool readMobEditRate(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId, qint32 &num, qint32 &den)
 	{
 		if (!p.omf2)
-			return b.rationalValue(b.bytes(mob, p.editRate), num, den);
+			return b.rationalValue(b.bytes(mobObjectId, p.editRate), num, den);
 		// Slots own rates in OMF2. A mob has no single rate when they disagree.
 		bool found = false;
-		for (quint32 slot : b.refs(mob, p.tracks))
+		for (quint32 slot : b.refs(mobObjectId, p.tracks))
 		{
 			qint32 n = 0, d = 0;
 			if (!b.rationalValue(b.bytes(slot, p.slotRate), n, d) || n <= 0 || d <= 0)
@@ -692,37 +702,37 @@ namespace OmfObjects
 		return found;
 	}
 
-	Timecode readTimecode(const BentoFile &b, const Props &p, quint32 tccp)
+	Timecode readTimecode(const BentoFile &b, const PropertyIds &p, quint32 timecodeObjectId)
 	{
 		Timecode t;
-		if (tccp == 0)
+		if (timecodeObjectId == 0)
 			return t;
 		t.found = true;
-		t.dropFrame = b.uintValue(b.bytes(tccp, p.tcFlags)) != 0;
+		t.dropFrame = b.uintValue(b.bytes(timecodeObjectId, p.tcFlags)) != 0;
 		// OMF-era: start and rate, surfaced by the essence-file reader.
-		const QByteArray start = b.bytes(tccp, p.tcStart);
+		const QByteArray start = b.bytes(timecodeObjectId, p.tcStart);
 		if (!start.isEmpty())
 			t.start = b.int64Value(start);
-		t.frameRate = int(b.uintValue(b.bytes(tccp, p.tcFrameRate)));
+		t.frameRate = int(b.uintValue(b.bytes(timecodeObjectId, p.tcFrameRate)));
 		return t;
 	}
 
 	// MARK: - Descriptor
 
-	bool readDescriptor(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
-						const ObjectByMob &objectByMob, MediaMetadata &e, bool *codecKnown)
+	bool readDescriptor(const BentoFile &b, const PropertyIds &p, quint32 fileMobObjectId, quint32 mediaDescriptorObjectId,
+						const ObjectIdByMobId &objectByMob, MediaMetadata &e, bool *codecKnown)
 	{
 		if (codecKnown)
 			*codecKnown = false;
-		const QByteArray cls = b.objectClass(desc);
+		const QByteArray cls = b.objectClass(mediaDescriptorObjectId);
 		if (!isMediaClass(cls))
 			return false;
 		e.isAudio = isAudioClass(cls);
 		e.pcmDescriptor = cls == "PCMA" || cls == "WAVE";
 
 		// Codec label: the stored AUID, else rebuilt from the resolution id.
-		const quint32 resId = b.uintValue(b.bytes(desc, p.resId));
-		QByteArray label = auidToUl(b.bytes(desc, p.essComp));
+		const quint32 resId = b.uintValue(b.bytes(mediaDescriptorObjectId, p.resId));
+		QByteArray label = auidToUl(b.bytes(mediaDescriptorObjectId, p.essComp));
 		if (label.isEmpty())
 			label = ulFromResId(resId);
 
@@ -733,9 +743,9 @@ namespace OmfObjects
 		// with the label left empty, which is exactly the case finalise keeps
 		// `codec` for. A 32-byte (MXF-era) mob never reaches this branch.
 		bool tableHit = false;
-		if (!e.isAudio && b.bytes(mobObj, p.mobId).size() == OmfUid::kUidSize)
+		if (!e.isAudio && b.bytes(fileMobObjectId, p.mobId).size() == OmfUid::kUidSize)
 		{
-			const QString bare = OmfResolutions::name(resId, b.bytes(desc, p.compression));
+			const QString bare = OmfResolutions::name(resId, b.bytes(mediaDescriptorObjectId, p.compression));
 			if (!bare.isEmpty())
 			{
 				e.codec = bare;
@@ -748,11 +758,11 @@ namespace OmfObjects
 		// separate A / 8 component arrays. This works with either MobID width
 		// and OMF revision; missing or unreadable compression is not NONE.
 		if (cls == "RGBA" && e.codec.isEmpty() && label.isEmpty() &&
-			!b.hasProperty(desc, p.essComp))
+			!b.hasProperty(mediaDescriptorObjectId, p.essComp))
 		{
-			const auto compression = b.read(desc, p.compression);
-			const auto pixels = b.read(desc, p.rgbaLayout, 16);
-			const auto depths = b.read(desc, p.rgbaStructure, 16);
+			const auto compression = b.read(mediaDescriptorObjectId, p.compression);
+			const auto pixels = b.read(mediaDescriptorObjectId, p.rgbaLayout, 16);
+			const auto depths = b.read(mediaDescriptorObjectId, p.rgbaStructure, 16);
 			const auto oneComponent = [](const QByteArray &value, char expected)
 			{
 				return value == QByteArray(1, expected) || value == QByteArray(1, expected) + '\0';
@@ -770,7 +780,7 @@ namespace OmfObjects
 		// only to these standard image descriptors, not unknown video classes.
 		if (p.omf2 && e.codec.isEmpty() && label.isEmpty() && (cls == "CDCI" || cls == "RGBA"))
 		{
-			const auto compression = b.read(desc, p.compression);
+			const auto compression = b.read(mediaDescriptorObjectId, p.compression);
 			if (compression.status == BentoFile::ReadStatus::Missing)
 				e.codec = QStringLiteral("Uncompressed");
 			else if (compression.ok() && BentoFile::string(compression.data) == QLatin1String("JPEG"))
@@ -782,10 +792,10 @@ namespace OmfObjects
 
 		// Rate. Video goes through the same label matcher as tag 0x3001.
 		qint32 num = 0, den = 0;
-		if (b.rationalValue(b.bytes(desc, p.sampleRate), num, den) && den > 0 && num > 0)
+		if (b.rationalValue(b.bytes(mediaDescriptorObjectId, p.sampleRate), num, den) && den > 0 && num > 0)
 			MediaMetadataUtil::applyEditRate(e, quint32(num), quint32(den));
 
-		const qint64 length = b.int64Value(b.bytes(desc, p.length));
+		const qint64 length = b.int64Value(b.bytes(mediaDescriptorObjectId, p.length));
 		if (e.isAudio)
 		{
 			// OMF-era: the codec column shows Avid's own label for legacy
@@ -807,24 +817,24 @@ namespace OmfObjects
 			QByteArray blobRateEncoding;
 			if (cls == "WAVD")
 			{
-				const WaveSummary s = readWaveSummary(b.bytes(desc, p.wavdSummary));
+				const WaveSummary s = readWaveSummary(b.bytes(mediaDescriptorObjectId, p.wavdSummary));
 				if (s.valid)
 				{
 					blobRate = s.sampleRate;
 					blobRateRatio = {s.sampleRate, 1};
-					blobBits = s.bits;
+					blobBits = s.bitsPerSample;
 					blobChannels = s.channels;
 				}
 			}
 			else if (cls == "AIFD")
 			{
-				const AifcSummary s = readAifcSummary(b.bytes(desc, p.aifdSummary));
+				const AifcSummary s = readAifcSummary(b.bytes(mediaDescriptorObjectId, p.aifdSummary));
 				if (s.valid)
 				{
 					blobRate = s.sampleRate;
 					blobRateRatio = s.sampleRateRatio;
 					blobRateEncoding = s.sampleRateEncoding;
-					blobBits = s.bits;
+					blobBits = s.bitsPerSample;
 					blobChannels = s.channels;
 				}
 			}
@@ -841,7 +851,7 @@ namespace OmfObjects
 			e.descriptorDuration = length;
 			MediaRate displayRate;
 			qint32 erNum = 0, erDen = 0;
-			if (mobEditRate(b, p, mobObj, erNum, erDen) && erDen > 0 && erNum > 0)
+			if (readMobEditRate(b, p, fileMobObjectId, erNum, erDen) && erDen > 0 && erNum > 0)
 			{
 				const double editRate = double(erNum) / erDen;
 				if (editRate >= 1.0 && editRate < 1000.0)
@@ -853,9 +863,9 @@ namespace OmfObjects
 			e.duration = {length, e.descriptorRate, displayRate, MediaDuration::Source::Descriptor};
 			e.durationIsResolved = true;
 
-			if (const quint32 bits = b.uintValue(b.bytes(desc, p.bits)))
+			if (const quint32 bits = b.uintValue(b.bytes(mediaDescriptorObjectId, p.bits)))
 				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
-			e.channels = int(b.uintValue(b.bytes(desc, p.channels)));
+			e.channels = int(b.uintValue(b.bytes(mediaDescriptorObjectId, p.channels)));
 			// OMF-era: the MDAU properties above are absent on the legacy
 			// descriptors, so the blob supplies what they left empty.
 			if (e.bitDepth.isEmpty() && blobBits > 0)
@@ -865,21 +875,21 @@ namespace OmfObjects
 		}
 		else
 		{
-			const TiffSummary tiff = cls == "TIFD" ? readTiffSummary(b.bytes(desc, p.tiffSummary)) : TiffSummary();
+			const TiffSummary tiff = cls == "TIFD" ? readTiffSummary(b.bytes(mediaDescriptorObjectId, p.tiffSummary)) : TiffSummary();
 			e.descriptorDuration = length;
 			e.duration = {length, e.descriptorRate, e.descriptorRate, MediaDuration::Source::Descriptor};
 			e.durationIsResolved = true;
-			e.width = int(b.uintValue(b.bytes(desc, p.width)));
-			int height = int(b.uintValue(b.bytes(desc, p.height)));
-			const QByteArray layoutV = b.bytes(desc, p.layout);
+			e.width = int(b.uintValue(b.bytes(mediaDescriptorObjectId, p.width)));
+			int height = int(b.uintValue(b.bytes(mediaDescriptorObjectId, p.height)));
+			const QByteArray layoutV = b.bytes(mediaDescriptorObjectId, p.layout);
 			const int layout = layoutV.isEmpty() ? tiff.layout : int(b.uintValue(layoutV));
 			if (cls == "TIFD")
 			{
 				e.width = tiff.width;
 				height = tiff.height;
 				e.codec = tiff.codec;
-				if (tiff.bits > 0)
-					e.bitDepth = MediaMetadataUtil::bitDepthLabel(quint32(tiff.bits));
+				if (tiff.bitsPerComponent > 0)
+					e.bitDepth = MediaMetadataUtil::bitDepthLabel(quint32(tiff.bitsPerComponent));
 				if (codecKnown)
 					*codecKnown = !e.codec.isEmpty();
 			}
@@ -891,15 +901,15 @@ namespace OmfObjects
 			e.height = height;
 			e.frameLayout = layout;
 			e.heightIsFrameHeight = height > 0;
-			if (const quint32 bits = b.uintValue(b.bytes(desc, p.compWidth)))
+			if (const quint32 bits = b.uintValue(b.bytes(mediaDescriptorObjectId, p.compWidth)))
 				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
 		}
 
 		// Drop frame: the timecode component is on a source mob, reached
 		// through the file mob's SCLP references.
 		QSet<quint32> seen;
-		if (const quint32 tccp = findTimecodeComponent(b, p, mobObj, objectByMob, seen))
-			e.dropFrame = b.uintValue(b.bytes(tccp, p.tcFlags)) != 0;
+		if (const quint32 timecodeObjectId = findTimecodeComponent(b, p, fileMobObjectId, objectByMob, seen))
+			e.dropFrame = b.uintValue(b.bytes(timecodeObjectId, p.tcFlags)) != 0;
 
 		MediaMetadataUtil::finalise(e);
 		return true;

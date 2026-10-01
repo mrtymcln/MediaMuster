@@ -120,7 +120,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 	if (ok)
 		*ok = true;
 
-	const OmfObjects::Props p(b);
+	const OmfObjects::PropertyIds p(b);
 	db.revision = p.revision;
 	if (p.mobId < 0)
 	{
@@ -130,7 +130,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 
 	// Group Mob objects by their MobId. Avid writes the same MobID on
 	// more than one object, so each clip is the union of its objects.
-	OmfObjects::ObjectByMob objectByMob; ///< First object per MobID (for SCLP hops).
+	OmfObjects::ObjectIdByMobId objectByMob; ///< First object per MobID (for SCLP hops).
 	QHash<QString, QVector<quint32>> objectsByMobId;
 	QVector<QString> order;
 	for (quint32 obj : b.objectsWithProperty(p.mobId))
@@ -218,7 +218,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 					OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
 				if (a.project.isEmpty())
 				{
-					const quint32 src = OmfObjects::findSourceMob(b, p, fileMobObjectId, objectByMob);
+					const quint32 src = OmfObjects::findUniqueReferencedMobObjectId(b, p, fileMobObjectId, objectByMob);
 					const QString sourceMobId = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
 					const auto sourceObjects = objectsByMobId.constFind(sourceMobId);
 					if (sourceObjects != objectsByMobId.cend())
@@ -277,7 +277,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 	QHash<QString, QSet<QString>> masterMobIdsByFileMobId;
 	for (auto master = db.masters.cbegin(); master != db.masters.cend(); ++master)
 		for (quint32 obj : objectsByMobId.value(master.key()))
-			for (quint32 target : OmfObjects::sourceMobs(b, p, obj, objectByMob))
+			for (quint32 target : OmfObjects::referencedMobObjectIds(b, p, obj, objectByMob))
 			{
 				const QString fileMobId = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(target, p.mobId)));
 				if (db.files.contains(fileMobId))

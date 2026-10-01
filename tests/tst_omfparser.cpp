@@ -781,7 +781,7 @@ void TestOmfParser::attributes_follow_deep_graphs_and_preserve_first_value()
 	QVERIFY(b.load(w.build()));
 	OmfObjects::Attributes attributes;
 	QSet<quint32> seen;
-	OmfObjects::walkAttributes(b, OmfObjects::Props(b), root, attributes, seen);
+	OmfObjects::walkAttributes(b, OmfObjects::PropertyIds(b), root, attributes, seen);
 	QCOMPARE(attributes.project, QStringLiteral("Deep project"));
 	QVERIFY(attributes.isImported);
 	QCOMPARE(seen.size(), 257);
@@ -793,7 +793,7 @@ void TestOmfParser::timecode_follows_deep_source_graphs_and_stops_cycles()
 	{
 		BentoBuilder w;
 		QVector<quint32> mobs;
-		OmfObjects::ObjectByMob objectByMob;
+		OmfObjects::ObjectIdByMobId objectByMob;
 		for (quint32 n = 0; n < 256; ++n)
 		{
 			const quint32 mob = w.addObject("MOBJ");
@@ -814,7 +814,7 @@ void TestOmfParser::timecode_follows_deep_source_graphs_and_stops_cycles()
 		BentoFile b;
 		QVERIFY(b.load(w.build()));
 		QSet<quint32> seen;
-		QCOMPARE(OmfObjects::findTimecodeComponent(b, OmfObjects::Props(b), mobs.first(), objectByMob, seen),
+		QCOMPARE(OmfObjects::findTimecodeComponent(b, OmfObjects::PropertyIds(b), mobs.first(), objectByMob, seen),
 				 hasTimecode ? timecode : 0u);
 		QCOMPARE(seen.size(), mobs.size());
 	}
@@ -839,9 +839,9 @@ void TestOmfParser::segment_graphs_exceed_one_hundred_thousand_components()
 	w.setHandles(current, "OMFI:SEQU:Sequence", {root, clip, timecode});
 	BentoFile b;
 	QVERIFY(b.load(w.build()));
-	const OmfObjects::Props p(b);
-	const OmfObjects::ObjectByMob objectByMob{{TestOmf::uid(7), source}};
-	QCOMPARE(OmfObjects::sourceMobs(b, p, mob, objectByMob), QVector<quint32>{source});
+	const OmfObjects::PropertyIds p(b);
+	const OmfObjects::ObjectIdByMobId objectByMob{{TestOmf::uid(7), source}};
+	QCOMPARE(OmfObjects::referencedMobObjectIds(b, p, mob, objectByMob), QVector<quint32>{source});
 	QSet<quint32> seen;
 	QCOMPARE(OmfObjects::findTimecodeComponent(b, p, mob, objectByMob, seen), timecode);
 }
@@ -861,7 +861,7 @@ void TestOmfParser::tiff_summary_accepts_more_than_sixteen_samples()
 			BentoFile b;
 			QVERIFY(b.load(w.build()));
 			MediaMetadata metadata;
-			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, metadata));
+			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::PropertyIds(b), mob, desc, {}, metadata));
 			QCOMPARE(metadata.bitDepth, sampleCount == 17 ? QStringLiteral("8-bit") : QString());
 		}
 }

@@ -62,7 +62,7 @@ namespace
 
 	/// Embedded media identity. More than one distinct ID cannot be
 	/// represented by this single-essence API without choosing arbitrarily.
-	QByteArray mediaDataMobId(const BentoFile &b, const OmfObjects::Props &p, bool &ambiguous)
+	QByteArray mediaDataMobId(const BentoFile &b, const OmfObjects::PropertyIds &p, bool &ambiguous)
 	{
 		QSet<QByteArray> ids;
 		for (int prop : {p.mdatMobId, p.waveMobId, p.aifcMobId})
@@ -98,7 +98,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		return out;
 	}
 
-	const OmfObjects::Props p(b);
+	const OmfObjects::PropertyIds p(b);
 	out.revision = p.revision;
 	out.essence.headerStatus = MediaMetadata::HeaderStatus::Incomplete;
 	if (p.mobId < 0)
@@ -116,7 +116,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	// Group every MOBJ by its canonical hex and note what each owns, the
 	// way MdbParser::load does — 12-byte omfi:UIDs and the 32-byte UMID MC
 	// 2026 puts on the physical mob both key cleanly through OmfUid.
-	OmfObjects::ObjectByMob objectByMob;
+	OmfObjects::ObjectIdByMobId objectByMob;
 	QHash<QString, MobGroup> groups;
 	QVector<QString> order;
 	for (quint32 obj : b.objectsWithProperty(p.mobId))
@@ -190,7 +190,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 			continue;
 		bool referencesFile = false;
 		for (quint32 obj : g.objects)
-			for (quint32 target : OmfObjects::sourceMobs(b, p, obj, objectByMob))
+			for (quint32 target : OmfObjects::referencedMobObjectIds(b, p, obj, objectByMob))
 				referencesFile |= fileMob->objects.contains(target);
 		if (!referencesFile)
 			continue;
@@ -245,7 +245,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 
 	// The source mob and every object sharing its id, resolved once for the
 	// two facts below that may live there.
-	const quint32 src = OmfObjects::findSourceMob(b, p, fileMob->mediaObj, objectByMob);
+	const quint32 src = OmfObjects::findUniqueReferencedMobObjectId(b, p, fileMob->mediaObj, objectByMob);
 	QVector<quint32> srcObjs;
 	if (src != 0)
 	{

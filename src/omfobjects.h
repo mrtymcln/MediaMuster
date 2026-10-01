@@ -14,6 +14,7 @@
 #include <QHash>
 #include <QSet>
 #include <QString>
+#include <QVector>
 
 namespace OmfObjects
 {
@@ -34,12 +35,12 @@ namespace OmfObjects
 	/// own dictionary. −1 when the file lacks a property: BentoFile reads a
 	/// missing (object, property) as empty, so a −1 id simply yields
 	/// nothing rather than a guard at every use.
-	struct Props
+	struct PropertyIds
 	{
 		Revision revision;
 		bool omf2;
 		int mobId, usage, name, editRate, attrs, physMedia;
-		int attrRefs, attbName, attbKind, attbInt, attbString, attbObj;
+		int attrRefs, attbName, attbKind, attbString, attbObj;
 		int binNameUtf8, binName, posixPath, pathUtf8, pathName;
 		int essComp, resId, width, height, layout, sampleRate, length, compWidth, bits, channels;
 		int tracks, trackComp, sequence, sourceId, tcFlags;
@@ -56,7 +57,7 @@ namespace OmfObjects
 		int slotRate, nestedSlots, selected, choices, inputSegment;
 		int winlPath, maclPath, tiffSummary, rgbaLayout, rgbaStructure;
 
-		explicit Props(const BentoFile &b);
+		explicit PropertyIds(const BentoFile &b);
 	};
 
 	/// The first object carrying each raw MobID — the map SCLP source
@@ -64,13 +65,13 @@ namespace OmfObjects
 	/// its bytes, not by object handle). OMF-era: keys are the raw bytes of
 	/// whichever width the mob was written in (12 or 32), since a SourceID
 	/// is written in the same width as the mob it names.
-	using ObjectByMob = QHash<QByteArray, quint32>;
+	using ObjectIdByMobId = QHash<QByteArray, quint32>;
 
-	// Direct source-mob references in a mob's segment graph; no ancestry hop.
+	// Mobs referenced by Source Clips in the segment graph; no ancestry hop.
 	// Returning all targets lets callers reject ambiguous file/master matches.
-	[[nodiscard]] QVector<quint32> sourceMobs(const BentoFile &b, const Props &p, quint32 mob,
-											  const ObjectByMob &objectByMob);
-	[[nodiscard]] bool mobEditRate(const BentoFile &b, const Props &p, quint32 mob, qint32 &num, qint32 &den);
+	[[nodiscard]] QVector<quint32> referencedMobObjectIds(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId,
+														  const ObjectIdByMobId &objectByMob);
+	[[nodiscard]] bool readMobEditRate(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId, qint32 &num, qint32 &den);
 
 	// MARK: - Descriptor classes
 
@@ -80,7 +81,7 @@ namespace OmfObjects
 	/// MDAU properties).
 	[[nodiscard]] bool isAudioClass(const QByteArray &cls);
 
-	/// Audio plus CDCI / MPGI / RGBA / JPED: anything that describes essence
+	/// Audio plus CDCI / MPGI / RGBA / JPED / TIFD: anything that describes essence
 	/// (as opposed to MDES, the import/tape source descriptor).
 	[[nodiscard]] bool isMediaClass(const QByteArray &cls);
 
@@ -121,22 +122,22 @@ namespace OmfObjects
 		quint16 formatTag = 0; ///< 1 = PCM, 3 = IEEE float, 0xFFFE = extensible.
 		int channels = 0;
 		int sampleRate = 0;
-		int bits = 0;
+		int bitsPerSample = 0;
 		bool valid = false;
 	};
 
-	/// OMF-era: what OMFI:AIFD:Summary yields — the FORM/AIFC header up to
+	/// OMF-era: OMFI:AIFD:Summary contains a FORM/AIFF or FORM/AIFC header with
 	/// its `COMM` chunk (big-endian sizes, an 80-bit extended sample rate,
 	/// and a compression type such as "in24" / "NONE" / "sowt").
 	struct AifcSummary
 	{
 		int channels = 0;
 		qint64 frames = 0;
-		int bits = 0;
+		int bitsPerSample = 0;
 		int sampleRate = 0;
-		MediaRate sampleRateRatio; ///< Exact fraction when representable by MediaRate.
+		MediaRate sampleRateRatio;	   ///< Exact fraction when representable by MediaRate.
 		QByteArray sampleRateEncoding; ///< Preserve all ten bytes, including rates beyond rational storage bounds.
-		QByteArray compressionType; ///< Empty for a plain AIFF `COMM`.
+		QByteArray compressionType;	   ///< Empty for a plain AIFF `COMM`.
 		bool valid = false;
 	};
 
@@ -150,7 +151,7 @@ namespace OmfObjects
 
 	/// What a mob's attribute tree yields. Fields fill first-non-empty so
 	/// the same struct can be walked from every object that shares a MobID
-	/// (Avid writes the clip name on one object and the bin on another).
+	/// (Avid may spread attributes across several objects).
 	struct Attributes
 	{
 		QString bin;			 ///< _ORG_BIN → MCBR → OMFI:MCBR:MC:binNameUTF8 (else MC:binName).
@@ -172,36 +173,36 @@ namespace OmfObjects
 	/// OMF-era: the path a locator object carries — OMFI:FL:POSIXPathName,
 	/// else FL:PathNameUTF8, else FL:PathName, else OMFI:UNXL:PathName (the
 	/// UNIX locator's own property). Works for MACL, WINL and UNXL alike.
-	[[nodiscard]] QString locatorPath(const BentoFile &b, const Props &p, quint32 locator);
+	[[nodiscard]] QString locatorPath(const BentoFile &b, const PropertyIds &p, quint32 locator);
 
 	/// ATTR → AttrRefs → ATTB[]; nested ATTRs are followed only where a
 	/// fact we want lives below them (_IMPORTSETTING, _USER). `seen` guards
 	/// the shared nodes Avid writes and must persist across every object
 	/// walked into the same `a`. `attrObj` is the handle from
 	/// OMFI:CPNT:Attributes; 0 is a no-op.
-	void walkAttributes(const BentoFile &b, const Props &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen);
+	void walkAttributes(const BentoFile &b, const PropertyIds &p, quint32 attrObj, Attributes &a, QSet<quint32> &seen);
 
 	/// Media Composer 26.8's precompute display predicate, evaluated on each
 	/// logical master separately. No recursive import search or combining
 	/// one duplicate's import marker with another duplicate's video tracks.
 	/// Unsupported schemas, incomplete evidence and disagreements stay unknown.
-	[[nodiscard]] AvidPrecompute::Category precomputeCategory(const BentoFile &b, const Props &p,
+	[[nodiscard]] AvidPrecompute::Category precomputeCategory(const BentoFile &b, const PropertyIds &p,
 															  const QVector<quint32> &masters);
 
 	// MARK: - Track walk (timecode, source mob)
 
-	/// The first TCCP reachable from `mob`'s tracks: through SEQU
+	/// The first TCCP reachable from `mobObjectId`'s tracks: through SEQU
 	/// components, and through SCLP source references into other mobs (the
 	/// timecode lives on the tape/import source mob, not the file mob). 0
 	/// if none. `seen` prevents cycles; pass a fresh set for each search.
-	[[nodiscard]] quint32 findTimecodeComponent(const BentoFile &b, const Props &p, quint32 mob,
-												const ObjectByMob &objectByMob, QSet<quint32> &seen);
+	[[nodiscard]] quint32 findTimecodeComponent(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId,
+												const ObjectIdByMobId &objectByMob, QSet<quint32> &seen);
 
-	/// The unique source mob referenced by SCLPs in `mob`'s segment graph;
+	/// The unique Mob referenced by Source Clips in `mobObjectId`'s segment graph;
 	/// 0 when none or several are found. Does not follow further source mobs.
 	/// Used to find source-level metadata such as the _PJ project attribute.
-	[[nodiscard]] quint32 findSourceMob(const BentoFile &b, const Props &p, quint32 mob,
-										const ObjectByMob &objectByMob);
+	[[nodiscard]] quint32 findUniqueReferencedMobObjectId(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId,
+														  const ObjectIdByMobId &objectByMob);
 
 	/// What a TCCP carries. `dropFrame` is OMFI:TCCP:Flags != 0 (the MDB
 	/// path's rule); OMF-era: `start` and `frameRate` are OMFI:TCCP:StartTC (in
@@ -214,20 +215,20 @@ namespace OmfObjects
 		qint64 start = -1; ///< Frames; −1 when the property is absent.
 		int frameRate = 0;
 	};
-	[[nodiscard]] Timecode readTimecode(const BentoFile &b, const Props &p, quint32 tccp);
+	[[nodiscard]] Timecode readTimecode(const BentoFile &b, const PropertyIds &p, quint32 timecodeObjectId);
 
 	// MARK: - Descriptor
 
-	/// Fill `e` from the media descriptor `desc` of the file mob `mobObj`
+	/// Fill `e` from the media descriptor `mediaDescriptorObjectId` of the file mob `fileMobObjectId`
 	/// the way a header parse would, then hand it to MediaMetadataUtil::finalise so
 	/// every derived value comes from the same code as the header path.
-	/// Returns false — leaving `e` untouched — when `desc` is not a media
+	/// Returns false — leaving `e` untouched — when `mediaDescriptorObjectId` is not a media
 	/// class. `codecKnown` (optional) reports whether a codec was
 	/// established (the stored AUID, one rebuilt from the resolution id,
 	/// or — OMF-era, 12-byte file mobs only — a hit in the OmfResolutions
 	/// table); the caller decides what "complete" means from that plus the
 	/// descriptor class, since MPEG audio has no label here and would
 	/// wrongly read as PCM.
-	bool readDescriptor(const BentoFile &b, const Props &p, quint32 mobObj, quint32 desc,
-						const ObjectByMob &objectByMob, MediaMetadata &e, bool *codecKnown = nullptr);
+	bool readDescriptor(const BentoFile &b, const PropertyIds &p, quint32 fileMobObjectId, quint32 mediaDescriptorObjectId,
+						const ObjectIdByMobId &objectByMob, MediaMetadata &e, bool *codecKnown = nullptr);
 } // namespace OmfObjects

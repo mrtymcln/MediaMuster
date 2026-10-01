@@ -1,5 +1,7 @@
 # MediaMuster naming inventory
 
+OMF helpers update, 2 October 2026: approved PropertyIds, ObjectIdByMobId, traversal/helper and object-ID parameter names are implemented. WaveSummary, AifcSummary and TiffSummary names are retained; sample/component bit-count fields are clarified. The unused attbInt lookup is removed. Timecode searches reuse the component list while preserving traversal order and cycle checks. Format documentation is corrected and QVector included directly. Historical inventory scopes and locations remain unchanged.
+
 MDB cleanup, 1 October 2026: approved internal names are implemented, including fileMobObjectId and mediaDescriptorObjectId. Redundant mobIdHex fields and rawBytes temporary are removed. File-read errors are explicitly rejected. Useful format notes remain; earlier validation statistics are preserved in assessment.md. Historical inventory scopes and locations are unchanged.
 
 PMR cleanup, 1 October 2026: retained PmrValueParser and AvbValueParser. The PMR parser now reuses MobId::swapMaterialByteOrder for AAF IDs, names the null-string sentinel, clarifies four local/parameter names, and includes its Qt dependencies directly. Format and recovery notes are preserved, with the nonempty Unicode-set condition clarified.
@@ -3991,10 +3993,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 551 | Variable | OmfObjects::precomputeCategory | current | current | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 567 | Function | OmfObjects | isSourceIdWidth | isSourceIdWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 567 | Parameter | OmfObjects::isSourceIdWidth | size | size | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 575 | Function | OmfObjects | components | components | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 575 | Function | OmfObjects | components | componentObjectIds | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 575 | Parameter | OmfObjects::components | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 575 | Parameter | OmfObjects::components | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 575 | Parameter | OmfObjects::components | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 575 | Parameter | OmfObjects::components | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 577 | Variable | OmfObjects::components | stack | stack | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 577 | Variable | OmfObjects::components | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 578 | Variable | OmfObjects::components | track | track | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4003,7 +4005,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 588 | Variable | OmfObjects::components | cls | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 604 | Parameter | OmfObjects::sourceMobs | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 604 | Parameter | OmfObjects::sourceMobs | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 604 | Parameter | OmfObjects::sourceMobs | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 604 | Parameter | OmfObjects::sourceMobs | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 604 | Parameter | OmfObjects::sourceMobs | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 606 | Variable | OmfObjects::sourceMobs | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 607 | Variable | OmfObjects::sourceMobs | c | c | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -4011,7 +4013,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 614 | Variable | OmfObjects::sourceMobs | target | target | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 621 | Parameter | OmfObjects::findTimecodeComponent | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 621 | Parameter | OmfObjects::findTimecodeComponent | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 621 | Parameter | OmfObjects::findTimecodeComponent | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 621 | Parameter | OmfObjects::findTimecodeComponent | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 621 | Parameter | OmfObjects::findTimecodeComponent | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 622 | Parameter | OmfObjects::findTimecodeComponent | seen | seen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 624 | Variable | OmfObjects::findTimecodeComponent | pending | pending | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4021,12 +4023,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 635 | Variable | OmfObjects::findTimecodeComponent | it | it | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 641 | Parameter | OmfObjects::findSourceMob | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 641 | Parameter | OmfObjects::findSourceMob | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 641 | Parameter | OmfObjects::findSourceMob | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 641 | Parameter | OmfObjects::findSourceMob | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 641 | Parameter | OmfObjects::findSourceMob | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 643 | Variable | OmfObjects::findSourceMob | sources | sources | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 647 | Parameter | OmfObjects::mobEditRate | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 647 | Parameter | OmfObjects::mobEditRate | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 647 | Parameter | OmfObjects::mobEditRate | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 647 | Parameter | OmfObjects::mobEditRate | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 647 | Parameter | OmfObjects::mobEditRate | num | num | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 647 | Parameter | OmfObjects::mobEditRate | den | den | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 652 | Variable | OmfObjects::mobEditRate | found | found | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4035,13 +4037,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 655 | Variable | OmfObjects::mobEditRate | d | d | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 667 | Parameter | OmfObjects::readTimecode | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 667 | Parameter | OmfObjects::readTimecode | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 667 | Parameter | OmfObjects::readTimecode | tccp | tccp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 667 | Parameter | OmfObjects::readTimecode | tccp | timecodeObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 669 | Variable | OmfObjects::readTimecode | t | t | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 675 | Variable | OmfObjects::readTimecode | start | start | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 684 | Parameter | OmfObjects::readDescriptor | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 684 | Parameter | OmfObjects::readDescriptor | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 684 | Parameter | OmfObjects::readDescriptor | mobObj | mobObj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 684 | Parameter | OmfObjects::readDescriptor | desc | desc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 684 | Parameter | OmfObjects::readDescriptor | mobObj | fileMobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
+| 684 | Parameter | OmfObjects::readDescriptor | desc | mediaDescriptorObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 685 | Parameter | OmfObjects::readDescriptor | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 685 | Parameter | OmfObjects::readDescriptor | e | metadata | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 685 | Parameter | OmfObjects::readDescriptor | codecKnown | codecKnown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4076,7 +4078,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 832 | Variable | OmfObjects::readDescriptor | layout | layout | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 851 | Variable | OmfObjects::readDescriptor | bits | bits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 857 | Variable | OmfObjects::readDescriptor | seen | seen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 858 | Variable | OmfObjects::readDescriptor | tccp | tccp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 858 | Variable | OmfObjects::readDescriptor | tccp | timecodeObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 
 ## src/omfobjects.h
 
@@ -4094,7 +4096,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 29 | Parameter | OmfObjects::normalizedMobId | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Function | OmfObjects | isMobClass | isMobClass | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Parameter | OmfObjects::isMobClass | cls | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 37 | Struct | OmfObjects | Props | PropertyIds | Rename | Clarifies the specific role, result, state or units. |
+| 37 | Struct | OmfObjects | Props | PropertyIds | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 39 | Field | OmfObjects::Props | revision | revision | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Field | OmfObjects::Props | omf2 | omf2 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Field | OmfObjects::Props | mobId | mobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4106,7 +4108,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 42 | Field | OmfObjects::Props | attrRefs | attrRefs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 42 | Field | OmfObjects::Props | attbName | attbName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 42 | Field | OmfObjects::Props | attbKind | attbKind | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 42 | Field | OmfObjects::Props | attbInt | attbInt | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 42 | Field | OmfObjects::Props | attbInt | (removed) | Implemented | Unused property lookup and field removed. |
 | 42 | Field | OmfObjects::Props | attbString | attbString | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 42 | Field | OmfObjects::Props | attbObj | attbObj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Field | OmfObjects::Props | binNameUtf8 | binNameUtf8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4152,18 +4154,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 57 | Field | OmfObjects::Props | tiffSummary | tiffSummary | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 57 | Field | OmfObjects::Props | rgbaLayout | rgbaLayout | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 57 | Field | OmfObjects::Props | rgbaStructure | rgbaStructure | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 59 | Constructor | OmfObjects::Props | Props | Props | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 59 | Constructor | OmfObjects::Props | Props | PropertyIds | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 59 | Parameter | OmfObjects::Props::Props | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 67 | Type alias | OmfObjects | ObjectByMob | ObjectByMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 71 | Function | OmfObjects | sourceMobs | sourceMobs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 67 | Type alias | OmfObjects | ObjectByMob | ObjectIdByMobId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
+| 71 | Function | OmfObjects | sourceMobs | referencedMobObjectIds | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 71 | Parameter | OmfObjects::sourceMobs | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 71 | Parameter | OmfObjects::sourceMobs | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 71 | Parameter | OmfObjects::sourceMobs | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 71 | Parameter | OmfObjects::sourceMobs | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 72 | Parameter | OmfObjects::sourceMobs | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 73 | Function | OmfObjects | mobEditRate | mobEditRate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 73 | Function | OmfObjects | mobEditRate | readMobEditRate | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 73 | Parameter | OmfObjects::mobEditRate | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 73 | Parameter | OmfObjects::mobEditRate | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 73 | Parameter | OmfObjects::mobEditRate | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 73 | Parameter | OmfObjects::mobEditRate | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 73 | Parameter | OmfObjects::mobEditRate | num | num | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 73 | Parameter | OmfObjects::mobEditRate | den | den | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Function | OmfObjects | isAudioClass | isAudioClass | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4218,13 +4220,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 195 | Function | OmfObjects | findTimecodeComponent | findTimecodeComponent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 195 | Parameter | OmfObjects::findTimecodeComponent | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 195 | Parameter | OmfObjects::findTimecodeComponent | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 195 | Parameter | OmfObjects::findTimecodeComponent | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 195 | Parameter | OmfObjects::findTimecodeComponent | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 196 | Parameter | OmfObjects::findTimecodeComponent | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 196 | Parameter | OmfObjects::findTimecodeComponent | seen | seen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 201 | Function | OmfObjects | findSourceMob | findSourceMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 201 | Function | OmfObjects | findSourceMob | findUniqueReferencedMobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 201 | Parameter | OmfObjects::findSourceMob | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 201 | Parameter | OmfObjects::findSourceMob | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 201 | Parameter | OmfObjects::findSourceMob | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 201 | Parameter | OmfObjects::findSourceMob | mob | mobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 202 | Parameter | OmfObjects::findSourceMob | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 208 | Struct | OmfObjects | Timecode | Timecode | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 210 | Field | OmfObjects::Timecode | found | found | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4234,12 +4236,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 215 | Function | OmfObjects | readTimecode | readTimecode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 215 | Parameter | OmfObjects::readTimecode | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 215 | Parameter | OmfObjects::readTimecode | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 215 | Parameter | OmfObjects::readTimecode | tccp | tccp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 215 | Parameter | OmfObjects::readTimecode | tccp | timecodeObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 229 | Function | OmfObjects | readDescriptor | readDescriptor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 229 | Parameter | OmfObjects::readDescriptor | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 229 | Parameter | OmfObjects::readDescriptor | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 229 | Parameter | OmfObjects::readDescriptor | mobObj | mobObj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 229 | Parameter | OmfObjects::readDescriptor | desc | desc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 229 | Parameter | OmfObjects::readDescriptor | mobObj | fileMobObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
+| 229 | Parameter | OmfObjects::readDescriptor | desc | mediaDescriptorObjectId | Implemented | Approved OMF naming: distinguishes property IDs, object IDs and Mob identities. |
 | 230 | Parameter | OmfObjects::readDescriptor | objectByMob | objectByMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 230 | Parameter | OmfObjects::readDescriptor | e | metadata | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 230 | Parameter | OmfObjects::readDescriptor | codecKnown | codecKnown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |

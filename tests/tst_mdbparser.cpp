@@ -90,8 +90,8 @@ namespace
 
 	/// The first MOBJ object carrying `mobIdHex`, plus the raw-keyed map the
 	/// walker hops through — what MdbParser::load builds privately.
-	quint32 findMob(const BentoFile &b, const OmfObjects::Props &p, const QString &mobIdHex,
-					OmfObjects::ObjectByMob &objectByMob)
+	quint32 findMob(const BentoFile &b, const OmfObjects::PropertyIds &p, const QString &mobIdHex,
+					OmfObjects::ObjectIdByMobId &objectByMob)
 	{
 		quint32 found = 0;
 		for (quint32 obj : b.objectsWithProperty(p.mobId))
@@ -809,7 +809,7 @@ void TestMdbParser::omf_wave_summary_is_chunk_walked()
 	QCOMPARE(int(s.formatTag), 1);
 	QCOMPARE(s.channels, 2);
 	QCOMPARE(s.sampleRate, 44100);
-	QCOMPARE(s.bits, 16);
+	QCOMPARE(s.bitsPerSample, 16);
 
 	// Not a WAVE; `data` before any `fmt `; a `fmt ` too short to hold its fields.
 	QVERIFY(!OmfObjects::readWaveSummary(QByteArray("FORM") + le32(4) + QByteArray("AIFF")).valid);
@@ -840,7 +840,7 @@ void TestMdbParser::omf_wave_summary_is_chunk_walked()
 		QCOMPARE(int(real.formatTag), 1);
 		QCOMPARE(real.channels, 1);
 		QCOMPARE(real.sampleRate, 48000);
-		QCOMPARE(real.bits, 24);
+		QCOMPARE(real.bitsPerSample, 24);
 		ok = true;
 	}
 	QVERIFY(ok);
@@ -859,7 +859,7 @@ void TestMdbParser::omf_aifc_summary_is_chunk_walked()
 	QVERIFY(s.valid);
 	QCOMPARE(s.channels, 1);
 	QCOMPARE(s.frames, qint64(2880002));
-	QCOMPARE(s.bits, 24);
+	QCOMPARE(s.bitsPerSample, 24);
 	QCOMPARE(s.sampleRate, 48000);
 	QCOMPARE(s.compressionType, QByteArray("in24"));
 	QCOMPARE(s.sampleRateRatio.numerator, 48000);
@@ -894,7 +894,7 @@ void TestMdbParser::omf_aifc_summary_is_chunk_walked()
 	QVERIFY(plain.valid);
 	QCOMPARE(plain.channels, 2);
 	QCOMPARE(plain.sampleRate, 44100);
-	QCOMPARE(plain.bits, 16);
+	QCOMPARE(plain.bitsPerSample, 16);
 	QVERIFY(plain.compressionType.isEmpty());
 
 	QVERIFY(!OmfObjects::readAifcSummary(QByteArray("RIFF") + le32(4) + QByteArray("WAVE")).valid);
@@ -918,7 +918,7 @@ void TestMdbParser::omf_aifc_summary_is_chunk_walked()
 	QVERIFY(real.valid);
 	QCOMPARE(real.channels, 1);
 	QCOMPARE(real.frames, qint64(2880002));
-	QCOMPARE(real.bits, 24);
+	QCOMPARE(real.bitsPerSample, 24);
 	QCOMPARE(real.sampleRate, 48000);
 	QCOMPARE(real.compressionType, QByteArray("in24"));
 }
@@ -1155,11 +1155,11 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 			QVERIFY2(f.open(QIODevice::ReadOnly), pin.mdb);
 			QVERIFY2(b.load(f.readAll()), pin.mdb);
 		}
-		const OmfObjects::Props p(b);
+		const OmfObjects::PropertyIds p(b);
 		const QHash<QString, PmrEntry> pmr = pmrByName(fx(pin.pmr), pin.pairs);
 		QVERIFY2(pmr.contains(QLatin1String(pin.file)), pin.file);
 
-		OmfObjects::ObjectByMob objectByMob;
+		OmfObjects::ObjectIdByMobId objectByMob;
 		const quint32 fileMob = findMob(b, p, pmr[QLatin1String(pin.file)].fileMobId, objectByMob);
 		QVERIFY2(fileMob != 0, pin.file);
 		QCOMPARE(b.bytes(fileMob, p.mobId).size(), qsizetype(OmfUid::kUidSize));
@@ -1175,11 +1175,11 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 		QCOMPARE(tc.dropFrame, pin.drop);
 
 		// And the mob the hop went through is of the width this pin claims.
-		const quint32 src = OmfObjects::findSourceMob(b, p, fileMob, objectByMob);
+		const quint32 src = OmfObjects::findUniqueReferencedMobObjectId(b, p, fileMob, objectByMob);
 		QVERIFY2(src != 0, pin.file);
 		QCOMPARE(b.bytes(src, p.mobId).size(), qsizetype(pin.sourceIdWidth));
 	}
-	QVERIFY(!OmfObjects::readTimecode(BentoFile(), OmfObjects::Props(BentoFile()), 0).found);
+	QVERIFY(!OmfObjects::readTimecode(BentoFile(), OmfObjects::PropertyIds(BentoFile()), 0).found);
 }
 
 // OMF files written on Windows or UNIX point _SRCFILE at a WINL / UNXL
@@ -1260,7 +1260,7 @@ void TestMdbParser::omf_winl_and_unxl_locators_yield_the_source_path()
 	// _MEDIAFILE is not surfaced by the database record; the walker keeps it.
 	BentoFile bf;
 	QVERIFY(bf.load(bytes));
-	const OmfObjects::Props p(bf);
+	const OmfObjects::PropertyIds p(bf);
 	OmfObjects::Attributes attrs;
 	attrs.omfEra = true; // as MdbParser sets it for a 12-byte mob: the UNXL is admitted
 	QSet<quint32> seen;
@@ -1500,7 +1500,7 @@ void TestMdbParser::omf2_video_uses_full_mixed_field_height_and_64_bit_length()
 		w.setString(desc, "OMFI:DIDD:Compression", "JPEG");
 		BentoFile b;
 		QVERIFY(b.load(w.build()));
-		OmfObjects::Props p(b);
+		OmfObjects::PropertyIds p(b);
 		MediaMetadata m;
 		bool codecKnown = false;
 		QVERIFY(OmfObjects::readDescriptor(b, p, mob, desc, {}, m, &codecKnown));
@@ -1544,7 +1544,7 @@ void TestMdbParser::tiff_summary_respects_own_byte_order_and_avid_short_values()
 			BentoFile b;
 			QVERIFY(b.load(w.build()));
 			MediaMetadata m;
-			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, m));
+			QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::PropertyIds(b), mob, desc, {}, m));
 			QVERIFY(m.valid);
 			QCOMPARE(m.width, 320);
 			QCOMPARE(m.height, avid ? 480 : 240);
@@ -1600,7 +1600,7 @@ void TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arra
 				QVERIFY2(b.load(w.build()), test.name);
 				MediaMetadata meta;
 				bool known = false;
-				QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::Props(b), mob, desc, {}, meta, &known));
+				QVERIFY(OmfObjects::readDescriptor(b, OmfObjects::PropertyIds(b), mob, desc, {}, meta, &known));
 				QVERIFY(meta.valid);
 				QVERIFY2((meta.codec == QStringLiteral("Uncompressed alpha")) == test.alpha, test.name);
 				if (test.alpha)
