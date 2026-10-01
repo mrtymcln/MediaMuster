@@ -11,7 +11,7 @@
 class MediaTableModel;
 struct MediaFile;
 
-/// Independent filters all have to pass: tab, projects, bin MOBs,
+/// Independent filters all have to pass: tab, projects, bin file keys,
 /// optional precompute categories/effect categories/effect names/volume, and free text in visible string fields.
 class MediaFilterProxy : public QSortFilterProxyModel
 {
@@ -59,7 +59,7 @@ public:
 	static bool matchesMode(FilterMode mode, const MediaFile &f);
 
 public slots:
-	/// Apply ordered bin operations to each row's file/master membership.
+	/// Apply ordered bin operations to each row's file-locator membership.
 	void setBinFilter(const BinFilter &filter);
 
 protected:

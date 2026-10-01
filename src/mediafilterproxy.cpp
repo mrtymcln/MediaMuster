@@ -208,7 +208,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		(f.type != MediaFile::Type::Precompute || f.volumePath != m_precomputeVolumePath))
 		return false;
 
-	if (!m_binFilter.matches(f.mobId, f.masterMobId))
+	if (!m_binFilter.matches(f.mobId))
 		return false;
 
 	if (!m_searchNfc.isEmpty())

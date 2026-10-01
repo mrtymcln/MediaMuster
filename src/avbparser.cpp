@@ -780,6 +780,7 @@ namespace
 			const auto low = r.u32();
 			const auto high = r.u32();
 			auto mob = nativeMobId(low, high);
+			bool hasFullId = false;
 			if (type == "MSML")
 				r.string();
 			else if (type == "MCMR" || type == "TMBC")
@@ -795,7 +796,10 @@ namespace
 						r.skip(4);
 					}
 					else if (tag == 2)
+					{
 						mob = typedMobId(r);
+						hasFullId = true;
+					}
 					else if (tag == 3)
 					{
 						r.tag(AvbPropertyTag::String);
@@ -849,6 +853,12 @@ namespace
 				}
 			}
 			r.finish();
+			// A present full ID is authoritative, including a null ID. Only
+			// a missing extension permits using the older scalar fields.
+			if (type == "MSML")
+				m_result.mediaFileIds.add(hasFullId
+					? BinMediaId::fromMobId(MobId::format(mob.data()))
+					: BinMediaId::fromLegacyWords(low, high));
 			addMobId(mob);
 		}
 
@@ -1160,6 +1170,7 @@ AvbBin AvbParser::parse(const QString &avbFilePath, const std::atomic_bool *canc
 		result.valid = false;
 		result.complete = false;
 		result.mobIds.clear();
+		result.mediaFileIds = {};
 		result.mobs.clear();
 		result.error = problem.message;
 		qCWarning(lcAvb) << "cannot parse" << avbFilePath << result.error;

@@ -195,6 +195,22 @@ namespace TestAvb
 		return b.data;
 	}
 
+	inline QByteArray mediaLocator(bool big, const QByteArray &id = Source, bool typed = true,
+								   const QByteArray &typedId = {})
+	{
+		Bytes b(big);
+		b.tags(2, 2);
+		b.legacyWords(id);
+		b.string("EDIT");
+		if (typed)
+		{
+			b.tags(1, 2);
+			b.mob(typedId.isEmpty() ? id : typedId);
+		}
+		b.u8(3);
+		return b.data;
+	}
+
 	inline QByteArray attributes(bool big, quint32 originalBin = 0, const QByteArray &comment = {},
 								 quint32 mobReference = 0)
 	{
@@ -360,6 +376,16 @@ namespace TestAvb
 		document.objects.append({"ABIN", bin(big, references)});
 		for (const auto &id : ids)
 			document.objects.append({"CMPO", composition(big, id)});
+		return document.bytes();
+	}
+
+	inline QByteArray mediaBin(const QVector<QByteArray> &fileIds = {Source}, bool big = false)
+	{
+		Document document;
+		document.bigEndian = big;
+		document.objects = {{"ABIN", bin(big, {2})}, {"CMPO", composition(big)}};
+		for (const auto &id : fileIds)
+			document.objects.append({"MSML", mediaLocator(big, id)});
 		return document.bytes();
 	}
 

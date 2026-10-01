@@ -33,11 +33,11 @@ class QDropEvent;
 ///
 /// State:
 ///   - Loaded bins: parsed AvbBins with tickboxes.
-///   - Chain: ordered (operation, snapshot of ticked MOB IDs)
+///   - Chain: ordered (operation, snapshot of ticked media-file identities)
 ///     steps. Each applyOperation snapshots ticks so subsequent
 ///     re-ticking doesn't disturb prior steps.
 ///
-/// The proxy applies each step to a row's file or master identity, in order.
+/// The proxy matches each row's file identity against the MSML references, in order.
 /// Loading is asynchronous. Failed or unsupported bins are not retained;
 /// errors are reported through loadError for the main-window console.
 class BinFilterDialog : public QDialog
@@ -135,7 +135,7 @@ private:
 
 	// MARK: - Tick helpers
 
-	QSet<QString> selectedBinsMobs() const;
+	BinMediaIds selectedMediaFileIds() const;
 	QVector<QString> selectedBinsDisplayNames() const;
 	int selectedBinsCount() const;
 

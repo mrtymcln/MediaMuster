@@ -38,7 +38,7 @@ namespace
 	{
 		if (loading)
 			return BinFilterDialog::tr("Loading…");
-		if (bin.mobIds.isEmpty())
+		if (bin.mediaFileIds.isEmpty())
 			return BinFilterDialog::tr("No media references.");
 		return bin.warnings.isEmpty() ? QString() : BinFilterDialog::tr("Loaded with warnings.");
 	}
@@ -725,9 +725,9 @@ int BinFilterDialog::selectedBinsCount() const
 	return n;
 }
 
-QSet<QString> BinFilterDialog::selectedBinsMobs() const
+BinMediaIds BinFilterDialog::selectedMediaFileIds() const
 {
-	QSet<QString> out;
+	BinMediaIds out;
 	for (int i = 0; i < m_binList->count(); ++i)
 	{
 		const QListWidgetItem *it = m_binList->item(i);
@@ -738,7 +738,7 @@ QSet<QString> BinFilterDialog::selectedBinsMobs() const
 			continue;
 		const LoadedBin &entry = m_bins[idx];
 		if (!entry.loading && entry.bin.valid && entry.bin.complete)
-			out.unite(entry.bin.mobIds);
+			out.unite(entry.bin.mediaFileIds);
 	}
 	return out;
 }
@@ -778,15 +778,16 @@ void BinFilterDialog::onAddClicked()
 
 void BinFilterDialog::applyOperation(Operation op)
 {
-	// A selected, complete empty bin is a real operand: Intersect must
-	// create an active filter matching no rows. Absence of ticks is separate.
 	if (selectedBinsCount() == 0)
 		return;
 	m_autoIntersectPending = false;
 	ChainStep step;
 	step.op = op;
 	step.binDisplayNames = selectedBinsDisplayNames();
-	step.mobIds = selectedBinsMobs();
+	step.mediaFileIds = selectedMediaFileIds();
+	// An operand without usable file identities leaves the current chain unchanged.
+	if (step.mediaFileIds.isEmpty())
+		return;
 	m_chain.append(std::move(step));
 	rebuildChainList();
 	recomputeAndEmit();

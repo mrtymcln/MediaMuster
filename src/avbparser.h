@@ -1,5 +1,7 @@
 #pragma once
 
+#include "binmediaids.h"
+
 #include <QSet>
 #include <QString>
 #include <QStringList>
@@ -27,12 +29,16 @@ struct AvbBin
 	QString filePath;
 	QString displayName;
 
-	/// Different readers use different byte orders, so keep both MobId forms.
-	/// Wrapped OMF MobIds only need one.
+	/// Decoded identities and existing comparison aliases. Bin filtering uses
+	/// mediaFileIds below rather than this broad inventory.
 	QSet<QString> mobIds;
 	QVector<AvbMob> mobs;
 
-	/// Filtering needs both valid and complete so we don't miss MobIds.
+	/// Full file IDs and explicitly legacy references from MSML locators.
+	BinMediaIds mediaFileIds;
+
+	/// Filtering needs both valid and complete so unsupported references cannot
+	/// silently supply a partial operand.
 	/// This doesn't mean every effect or timeline has been checked.
 	bool valid = false;
 	bool complete = false;

@@ -40,17 +40,15 @@ Cannot load bin "/Projects/Example/Newer bin format.avb": This bin contains data
 | Truncated file with an Avid header | The bin could not be read | `Invalid AVB chunk length (byte 267)` |
 | Broken reference | The bin could not be read | `Invalid AVB object reference 7 (byte 336)` |
 | Invalid name encoding | The bin could not be read | `Invalid UTF-8 AVB string (byte 468)` |
-| Over 256 MiB limit | The bin could not be read | `AVB file is empty, truncated, or exceeds the 256 MiB limit.` |
 | Unsupported object type | Some media references could not be read | `Unsupported AVB class ZZZZ; whole-bin identity coverage is incomplete.` |
 | Unsupported object version | Some media references could not be read | `Object 3 (SEQU): Unsupported AVB object version 127 (expected 3) (byte 427)` |
 | Bin changes while being read | The bin could not be read | `AVB file changed while reading; load it again.` |
-| Retained identity/metadata exceeds the application budget | The bin could not be read | `AVB identity and metadata inventory exceeds the 192 MiB memory budget.` |
 | Invalid object counts, tags, root or lengths | The bin could not be read | `Invalid AVB object count or root reference` or `Truncated AVB property`, with a byte offset |
 | Reference points to the wrong object kind | The bin could not be read | `AVB reference 3 must identify MCBR`, with a byte offset |
 | Unsupported property extension | Some media references could not be read | `Unsupported AVB extension 0x7f`, with object and byte context |
 | Unsupported bin version, track flags, attribute type or AudioSuite structure | Some media references could not be read | `Unsupported AVB bin version`, `Unsupported AVB track flags`, `Unsupported AVB attribute type 5`, or `Unsupported AudioSuite plug-in count`, with object and byte context |
 
-Only valid, complete bins contribute filter operands or metadata. A valid empty bin displays “No media references.” in normal text and remains usable: Intersect with it matches zero rows. Removing a loading bin cancels its work and removes the row without a console failure warning; late results for that removed row are ignored. Loading failures alone do not reactivate a cleared filter.
+Only valid, complete bins contribute filter operands or metadata. A valid bin without usable `MSML` file identities displays “No media references.” in normal text and remains usable for metadata. If the selected bins collectively have no usable file identities, Intersect, Subtract and Add leave the current filter unchanged. Removing a loading bin cancels its work and removes the row without a console failure warning; late results for that removed row are ignored. Loading failures alone do not reactivate a cleared filter.
 
 ## Recorded validation
 

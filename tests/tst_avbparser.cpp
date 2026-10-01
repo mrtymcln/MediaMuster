@@ -55,6 +55,10 @@ private slots:
 	void header_recognition();
 	void header_recognition_requires_a_readable_file();
 	void missing_file_has_diagnostic();
+	void media_file_ids_only_use_msml_locators_data();
+	void media_file_ids_only_use_msml_locators();
+	void null_locator_ids_do_not_enable_legacy_fallback();
+	void malformed_locator_clears_file_keys();
 	void binary_only_master_data();
 	void binary_only_master();
 	void source_and_mob_references_and_owned_metadata_data();
@@ -144,6 +148,80 @@ void TestAvbParser::missing_file_has_diagnostic()
 	QVERIFY(!result.complete);
 	QVERIFY(!result.error.isEmpty());
 	QVERIFY(result.mobIds.isEmpty());
+}
+
+void TestAvbParser::media_file_ids_only_use_msml_locators_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<bool>("typed");
+	for (bool big : {false, true})
+		for (bool typed : {false, true})
+			QTest::newRow(qPrintable(QString("%1-%2").arg(big).arg(typed))) << big << typed;
+}
+
+void TestAvbParser::media_file_ids_only_use_msml_locators()
+{
+	QFETCH(bool, big);
+	QFETCH(bool, typed);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	auto d = graph(big); // CMPO, SCLP and MCMR must not supply filter keys.
+	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed, TestAvb::Other)});
+	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed)});
+	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed)}); // duplicate
+	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("locators.avb"), d.bytes()));
+	QVERIFY2(result.valid, qPrintable(result.error));
+	QVERIFY(result.complete);
+	if (typed)
+	{
+		QCOMPARE(result.mediaFileIds.fullIds, (QSet<QString>{MobId::format(TestAvb::Source), MobId::format(TestAvb::Other)}));
+		QVERIFY(result.mediaFileIds.legacyKeys.isEmpty());
+	}
+	else
+	{
+		QVERIFY(result.mediaFileIds.fullIds.isEmpty());
+		QCOMPARE(result.mediaFileIds.legacyKeys, QSet<QString>{QString::fromLatin1(TestAvb::Source.mid(16, 8).toHex())});
+	}
+	QVERIFY(result.mobIds.contains(MobId::format(TestAvb::Master)));
+	QVERIFY(result.mobIds.contains(MobId::format(TestAvb::Other)));
+	QCOMPARE(result.mobs.first().name, QStringLiteral("Owned clip"));
+
+	const auto noLocators = AvbParser::parse(TestAvb::write(tmp.filePath("other-records.avb"), graph(big).bytes()));
+	QVERIFY(noLocators.valid && noLocators.complete);
+	QVERIFY(noLocators.mediaFileIds.isEmpty());
+}
+
+void TestAvbParser::null_locator_ids_do_not_enable_legacy_fallback()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	for (bool big : {false, true})
+	{
+		TestAvb::Document d;
+		d.bigEndian = big;
+		d.objects = {{"ABIN", TestAvb::bin(big)},
+			{"MSML", TestAvb::mediaLocator(big, TestAvb::Source, true, QByteArray(32, '\0'))},
+			{"MSML", TestAvb::mediaLocator(big, QByteArray(32, '\0'), false)}};
+		const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("null.avb"), d.bytes()));
+		QVERIFY2(result.valid && result.complete, qPrintable(result.error));
+		QVERIFY(result.mediaFileIds.isEmpty());
+	}
+}
+
+void TestAvbParser::malformed_locator_clears_file_keys()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	TestAvb::Document d;
+	auto bad = TestAvb::mediaLocator(false);
+	bad[10] = char(0xff); // volume-name length runs beyond the object
+	bad[11] = char(0x7f);
+	d.objects = {{"ABIN", TestAvb::bin(false)},
+				 {"MSML", TestAvb::mediaLocator(false)},
+				 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source, false)}, {"MSML", bad}};
+	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("bad.avb"), d.bytes()));
+	QVERIFY(!result.valid);
+	QVERIFY(result.mediaFileIds.isEmpty());
 }
 
 void TestAvbParser::binary_only_master_data()

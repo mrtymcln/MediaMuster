@@ -60,6 +60,7 @@ namespace
 			outside.mediaFilePath = QStringLiteral("/media/outside.mxf");
 			outside.fileName = QStringLiteral("outside.mxf");
 			outside.mobId = MobId::format(TestAvb::Other);
+			outside.masterMobId = hit.masterMobId; // A shared master must not admit this file.
 			model.setMediaFiles({hit, outside});
 			proxy.setSourceModel(&model);
 			QObject::connect(&dialog, &BinFilterDialog::filterChainChanged, &proxy,
@@ -90,8 +91,10 @@ class TestBinFilterDialog : public QObject
 	Q_OBJECT
 private slots:
 	void loading_completion_auto_intersects();
+	void locator_identity_controls_file_matching_data();
+	void locator_identity_controls_file_matching();
 	void loaded_bin_metadata_is_published_as_one_batch();
-	void intersect_empty_bin_is_active_and_matches_nothing();
+	void empty_locator_selection_leaves_filter_unchanged();
 	void intersection_and_subtraction_use_row_membership_data();
 	void intersection_and_subtraction_use_row_membership();
 	void add_restores_a_previously_subtracted_row();
@@ -120,7 +123,7 @@ void TestBinFilterDialog::loading_completion_auto_intersects()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	const auto path = TestAvb::write(tmp.filePath("Master.AVB"), TestAvb::masterBin());
+	const auto path = TestAvb::write(tmp.filePath("Master.AVB"), TestAvb::mediaBin());
 	h.dialog.addBinFromFile(path);
 	QCOMPARE(h.list()->count(), 1); // row appears before background parsing completes
 	QVERIFY(!(h.list()->item(0)->flags() & Qt::ItemIsUserCheckable));
@@ -138,24 +141,66 @@ void TestBinFilterDialog::loading_completion_auto_intersects()
 	QCOMPARE(h.errors.count(), 0);
 }
 
-void TestBinFilterDialog::intersect_empty_bin_is_active_and_matches_nothing()
+void TestBinFilterDialog::locator_identity_controls_file_matching_data()
+{
+	QTest::addColumn<bool>("typed");
+	QTest::addColumn<QByteArray>("locatorId");
+	QTest::addColumn<QString>("fileId");
+	QTest::addColumn<int>("expected");
+	const auto modern = MobId::format(TestAvb::Source);
+	const auto old = QStringLiteral("060a2b3401010101.01010f0013000000.98badcfe32107654.060e2b347f7f2a80");
+	auto different = TestAvb::Source;
+	different[24] = char(uchar(different[24]) ^ 1);
+	QTest::newRow("full-identity") << true << TestAvb::Source << modern << 1;
+	QTest::newRow("different-full-same-short") << true << different << modern << 0;
+	QTest::newRow("full-id-overrides-legacy-fields") << true << TestAvb::Master << modern << 0;
+	QTest::newRow("older-bin") << false << TestAvb::Source << modern << 1;
+	QTest::newRow("older-media") << true << TestAvb::Source << old << 1;
+	QTest::newRow("both-older") << false << TestAvb::Source << old << 1;
+}
+
+void TestBinFilterDialog::locator_identity_controls_file_matching()
+{
+	QFETCH(bool, typed);
+	QFETCH(QByteArray, locatorId);
+	QFETCH(QString, fileId);
+	QFETCH(int, expected);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	Harness h;
+	auto rows = h.model.allFiles();
+	rows[0].mobId = fileId;
+	h.model.setMediaFiles(rows);
+	TestAvb::Document d;
+	d.objects = {{"ABIN", TestAvb::bin(false)},
+		{"MSML", TestAvb::mediaLocator(false, TestAvb::Source, typed, locatorId)}};
+	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("References.avb"), d.bytes()));
+	QTRY_COMPARE(loaded.count(), 1);
+	QTRY_VERIFY(h.filter.isActive());
+	QCOMPARE(h.proxy.rowCount(), expected);
+	if (expected)
+		QCOMPARE(h.proxy.mapToSource(h.proxy.index(0, 0)).row(), 0);
+	QCOMPARE(h.errors.count(), 0);
+}
+
+void TestBinFilterDialog::empty_locator_selection_leaves_filter_unchanged()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Empty.avb"), TestAvb::masterBin({})));
+	// A master-only bin is valid but has no MSML file references.
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Empty.avb"), TestAvb::masterBin()));
 	QTRY_COMPARE(loaded.count(), 1);
-	QTRY_VERIFY(h.filter.isActive());
-	QCOMPARE(h.filter.steps.size(), 1);
-	QVERIFY(h.filter.steps.first().mobIds.isEmpty());
-	QCOMPARE(h.proxy.rowCount(), 0);
-	QVERIFY(h.dialog.findChild<QPushButton *>(QStringLiteral("BinIntersectButton"))->isEnabled());
-	h.dialog.clearChain();
+	QVERIFY(!h.filter.isActive());
 	QCOMPARE(h.proxy.rowCount(), 2);
-	QVERIFY(h.invoke("onIntersectClicked"));
-	QVERIFY(h.filter.isActive());
-	QCOMPARE(h.proxy.rowCount(), 0);
+	for (const auto slot : {"onIntersectClicked", "onSubtractClicked", "onAddClicked"})
+	{
+		QVERIFY(h.invoke(slot));
+		QVERIFY(!h.filter.isActive());
+		QCOMPARE(h.proxy.rowCount(), 2);
+	}
 	QCOMPARE(h.errors.count(), 0);
 	QVERIFY(!h.errorDialog());
 }
@@ -167,8 +212,8 @@ void TestBinFilterDialog::loaded_bin_metadata_is_published_as_one_batch()
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	QSignalSpy published(&h.dialog, &BinFilterDialog::binsChanged);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::masterBin()));
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::masterBin({TestAvb::Source})));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::mediaBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::mediaBin({TestAvb::Source})));
 	QCOMPARE(published.count(), 0);
 	QTRY_COMPARE(loaded.count(), 2);
 	QTRY_COMPARE(published.count(), 1);
@@ -190,9 +235,9 @@ void TestBinFilterDialog::intersection_and_subtraction_use_row_membership_data()
 	QTest::addColumn<QByteArray>("firstBin");
 	QTest::addColumn<QByteArray>("slot");
 	QTest::addColumn<int>("expected");
-	QTest::newRow("intersect-master-then-file") << TestAvb::masterBin({TestAvb::Master})
+	QTest::newRow("intersect-file-in-both-bins") << TestAvb::mediaBin({TestAvb::Source})
 												<< QByteArray("onIntersectClicked") << 1;
-	QTest::newRow("subtract-file-from-master-and-file") << TestAvb::masterBin({TestAvb::Master, TestAvb::Source})
+	QTest::newRow("subtract-file-with-unrelated-locator") << TestAvb::mediaBin({TestAvb::Master, TestAvb::Source})
 														<< QByteArray("onSubtractClicked") << 0;
 }
 
@@ -206,7 +251,7 @@ void TestBinFilterDialog::intersection_and_subtraction_use_row_membership()
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("First.avb"), firstBin));
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::masterBin({TestAvb::Source})));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::mediaBin({TestAvb::Source})));
 	QTRY_COMPARE(loaded.count(), 2);
 	QTRY_VERIFY(h.filter.isActive());
 	h.dialog.clearChain();
@@ -225,8 +270,8 @@ void TestBinFilterDialog::add_restores_a_previously_subtracted_row()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::masterBin()));
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::masterBin({TestAvb::Source})));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::mediaBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::mediaBin({TestAvb::Source})));
 	QTRY_COMPARE(loaded.count(), 2);
 	QTRY_VERIFY(h.filter.isActive());
 	h.dialog.clearChain();
@@ -248,8 +293,8 @@ void TestBinFilterDialog::snapshots_survive_reticking_and_bin_removal()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::masterBin()));
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::masterBin({TestAvb::Source})));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::mediaBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("File.avb"), TestAvb::mediaBin({TestAvb::Source})));
 	QTRY_COMPARE(loaded.count(), 2);
 	QTRY_VERIFY(h.filter.isActive());
 	h.dialog.clearChain();
@@ -284,7 +329,7 @@ void TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs_da
 	QTest::newRow("empty-file") << QByteArray{} << false;
 	QTest::newRow("truncated-signature") << QByteArray::fromHex("0600446f6d61696e444a424f") << false;
 	QTest::newRow("renamed-text") << QByteArray("Ordinary text named .avb") << false;
-	QTest::newRow("damaged-body") << TestAvb::masterBin().chopped(1) << false;
+	QTest::newRow("damaged-body") << TestAvb::mediaBin().chopped(1) << false;
 	QTest::newRow("unsupported-dependency") << partialBin() << true;
 }
 
@@ -365,7 +410,7 @@ void TestBinFilterDialog::non_avb_extension_is_rejected_without_parsing()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	const auto path = TestAvb::write(tmp.filePath("Bin.txt"), TestAvb::masterBin());
+	const auto path = TestAvb::write(tmp.filePath("Bin.txt"), TestAvb::mediaBin());
 	h.dialog.addBinFromFile(path);
 	QCOMPARE(h.list()->count(), 0);
 	QCOMPARE(loaded.count(), 1);
@@ -387,10 +432,10 @@ void TestBinFilterDialog::mixed_batch_reports_errors_once_and_keeps_usable_bins(
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	QSignalSpy published(&h.dialog, &BinFilterDialog::binsChanged);
-	const auto damagedPath = TestAvb::write(tmp.filePath("Damaged.avb"), TestAvb::masterBin().chopped(1));
+	const auto damagedPath = TestAvb::write(tmp.filePath("Damaged.avb"), TestAvb::mediaBin().chopped(1));
 	const auto partialPath = TestAvb::write(tmp.filePath("Partial.avb"), partialBin());
 	h.dialog.addBinFromFile(damagedPath);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::masterBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::mediaBin()));
 	h.dialog.addBinFromFile(partialPath);
 	QTRY_COMPARE(loaded.count(), 3);
 	QCOMPARE(h.errors.count(), 2);
@@ -416,13 +461,13 @@ void TestBinFilterDialog::rejected_path_can_be_repaired_and_retried()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	const auto path = TestAvb::write(tmp.filePath("Repair.avb"), TestAvb::masterBin().chopped(1));
+	const auto path = TestAvb::write(tmp.filePath("Repair.avb"), TestAvb::mediaBin().chopped(1));
 	h.dialog.addBinFromFile(path);
 	QTRY_COMPARE(loaded.count(), 1);
 	QCOMPARE(h.errors.count(), 1);
 	QCOMPARE(h.list()->count(), 0);
 	QVERIFY(!h.errorDialog());
-	QCOMPARE(TestAvb::write(path, TestAvb::masterBin()), path);
+	QCOMPARE(TestAvb::write(path, TestAvb::mediaBin()), path);
 	h.dialog.addBinFromFile(path);
 	QTRY_COMPARE(loaded.count(), 2);
 	QTRY_VERIFY(h.filter.isActive());
@@ -436,7 +481,7 @@ void TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter_data()
 {
 	QTest::addColumn<QByteArray>("bytes");
 	QTest::newRow("bad-header") << QByteArray("Ordinary text");
-	QTest::newRow("damaged-body") << TestAvb::masterBin().chopped(1);
+	QTest::newRow("damaged-body") << TestAvb::mediaBin().chopped(1);
 	QTest::newRow("unsupported-dependency") << partialBin();
 }
 
@@ -447,7 +492,7 @@ void TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::masterBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::mediaBin()));
 	QTRY_COMPARE(loaded.count(), 1);
 	QTRY_VERIFY(h.filter.isActive());
 	h.dialog.clearChain();
@@ -470,11 +515,11 @@ void TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content_d
 	QTest::addColumn<bool>("accepted");
 	QTest::newRow("plain-text") << QStringLiteral("Notes.txt") << QByteArray("Notes") << false;
 	QTest::newRow("renamed-text") << QStringLiteral("Notes.avb") << QByteArray("Notes") << false;
-	QTest::newRow("actual-bin-wrong-extension") << QStringLiteral("Bin.txt") << TestAvb::masterBin() << false;
-	QTest::newRow("little-endian-bin") << QStringLiteral("Bin.avb") << TestAvb::masterBin() << true;
-	QTest::newRow("big-endian-bin") << QStringLiteral("Bin.avb") << TestAvb::masterBin({TestAvb::Master}, true) << true;
-	QTest::newRow("uppercase-extension") << QStringLiteral("Bin.AVB") << TestAvb::masterBin() << true;
-	QTest::newRow("recognizable-damaged-bin") << QStringLiteral("Bin.avb") << TestAvb::masterBin().chopped(1) << true;
+	QTest::newRow("actual-bin-wrong-extension") << QStringLiteral("Bin.txt") << TestAvb::mediaBin() << false;
+	QTest::newRow("little-endian-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin() << true;
+	QTest::newRow("big-endian-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin({TestAvb::Master}, true) << true;
+	QTest::newRow("uppercase-extension") << QStringLiteral("Bin.AVB") << TestAvb::mediaBin() << true;
+	QTest::newRow("recognizable-damaged-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin().chopped(1) << true;
 }
 
 void TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content()
@@ -537,7 +582,7 @@ void TestBinFilterDialog::repeated_drag_paths_and_moves_do_not_repeat_errors()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	const auto rejected = QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Notes.avb"), QByteArray("Notes")));
-	const auto accepted = QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::masterBin()));
+	const auto accepted = QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::mediaBin()));
 	QMimeData mime;
 	mime.setUrls({rejected, accepted, rejected, accepted});
 	QDragEnterEvent enter(QPoint{}, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
@@ -569,9 +614,9 @@ void TestBinFilterDialog::mixed_drop_loads_only_recognizable_avb_files()
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	QSignalSpy published(&h.dialog, &BinFilterDialog::binsChanged);
 	QMimeData mime;
-	mime.setUrls({QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::masterBin())),
+	mime.setUrls({QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::mediaBin())),
 				  QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Notes.avb"), QByteArray("Notes"))),
-				  QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Other.txt"), TestAvb::masterBin({TestAvb::Source})))});
+				  QUrl::fromLocalFile(TestAvb::write(tmp.filePath("Other.txt"), TestAvb::mediaBin({TestAvb::Source})))});
 	QDragEnterEvent enter(QPoint{}, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
 	h.dialog.dragEnterEvent(&enter);
 	QVERIFY(enter.isAccepted());
@@ -598,7 +643,7 @@ void TestBinFilterDialog::changed_content_is_rechecked_when_dropped()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	const auto path = TestAvb::write(tmp.filePath("Changed.avb"), TestAvb::masterBin());
+	const auto path = TestAvb::write(tmp.filePath("Changed.avb"), TestAvb::mediaBin());
 	QMimeData mime;
 	mime.setUrls({QUrl::fromLocalFile(path)});
 	QDragEnterEvent enter(QPoint{}, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
@@ -632,16 +677,16 @@ void TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows()
 	for (int i = 0; i < 8; ++i)
 	{
 		const auto bytes = i % 4 == 0	? partialBin()
-						   : i % 4 == 1 ? TestAvb::masterBin().chopped(1)
+						   : i % 4 == 1 ? TestAvb::mediaBin().chopped(1)
 						   : i % 4 == 2 ? QByteArray("Ordinary text")
-										: TestAvb::masterBin();
+										: TestAvb::mediaBin({TestAvb::Master});
 		h.dialog.addBinFromFile(TestAvb::write(tmp.filePath(QString("Remove%1.avb").arg(i)),
 											   bytes));
 		h.list()->item(0)->setSelected(true);
 		QVERIFY(h.invoke("onRemoveSelectedBinsClicked"));
 		QCOMPARE(h.list()->count(), 0);
 	}
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Retained.avb"), TestAvb::masterBin({TestAvb::Source})));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Retained.avb"), TestAvb::mediaBin({TestAvb::Source})));
 	QTRY_COMPARE(loaded.count(), 1);
 	QTRY_VERIFY(h.filter.isActive());
 	QCoreApplication::processEvents();
@@ -651,8 +696,9 @@ void TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows()
 	QVERIFY(!h.errorDialog());
 	QCOMPARE(h.names, QStringList{QStringLiteral("Retained")});
 	QCOMPARE(h.proxy.rowCount(), 1);
-	QVERIFY(h.filter.steps.first().mobIds.contains(MobId::format(TestAvb::Source)));
-	QVERIFY(!h.filter.steps.first().mobIds.contains(MobId::format(TestAvb::Master)));
+	QVERIFY(h.filter.steps.first().mediaFileIds.fullIds.contains(MobId::format(TestAvb::Source)));
+	QVERIFY(!h.filter.steps.first().mediaFileIds.fullIds.contains(MobId::format(TestAvb::Master)));
+	QVERIFY(h.filter.steps.first().mediaFileIds.legacyKeys.isEmpty());
 }
 
 void TestBinFilterDialog::clear_while_loading_suppresses_automatic_filter()
@@ -661,7 +707,7 @@ void TestBinFilterDialog::clear_while_loading_suppresses_automatic_filter()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::masterBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Master.avb"), TestAvb::mediaBin()));
 	h.dialog.clearChain();
 	QTRY_COMPARE(loaded.count(), 1);
 	QCoreApplication::processEvents();
