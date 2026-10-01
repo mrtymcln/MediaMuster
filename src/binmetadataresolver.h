@@ -10,6 +10,7 @@ struct MediaFile;
 
 // Resolves optional bin-derived names without replacing scanner evidence.
 // Reloading bins retracts only values previously supplied by this resolver.
+// Matches master IDs exactly in the shared PMR/MDB representation.
 class BinMetadataResolver
 {
 public:

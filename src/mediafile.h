@@ -20,6 +20,8 @@ struct MediaFile
 {
 	// MARK: Identity
 
+	// Full IDs use PMR/MDB field order. The scanner converts MXF header IDs
+	// before storing them; database, OMF and AVB readers already use this order.
 	QString mobId;		 ///< Avid file MOB ID recovered from databases or media metadata.
 	QString masterMobId; ///< Master MOB — the master clip's MOB (AAF MasterMob);
 						 ///< V01/A01/A02 relatives share this.
@@ -50,15 +52,15 @@ struct MediaFile
 
 	// MARK: MXF or MDB technical metadata
 
-	QString codec;		///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
-	QString resolution; ///< "1920x1080". Video only; audio rows stay blank.
-	QString frameRate;		///< Display label: "23.976", "25". Video only; audio rows stay blank.
-	MediaRate frameRateRatio; ///< Original video fraction; never recovered from the display label.
-	QString bitDepth;	///< "10-bit", "24-bit".
-	int sampleRate = 0; ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
-	MediaRate sampleRateRatio; ///< Original audio sampling fraction, separate from duration's unit rate.
+	QString codec;				   ///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
+	QString resolution;			   ///< "1920x1080". Video only; audio rows stay blank.
+	QString frameRate;			   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
+	MediaRate frameRateRatio;	   ///< Original video fraction; never recovered from the display label.
+	QString bitDepth;			   ///< "10-bit", "24-bit".
+	int sampleRate = 0;			   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
+	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction, separate from duration's unit rate.
 	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate, retained even when no exact fraction fits.
-	int channels = 0;	///< Audio only.
+	int channels = 0;			   ///< Audio only.
 	/// File duration with exact source units/rate and provenance. Master and
 	/// sibling lengths may differ; association never depends on equal duration.
 	MediaDuration duration;

@@ -30,6 +30,8 @@ private slots:
 	void scans_folder_with_pmr_mdb_and_audio_mxf();
 	void unreferenced_mxf_recovered_via_mdb();
 	void stage3_mdb_name_must_not_clobber_material_name();
+	void header_master_lookup_uses_canonical_identity_data();
+	void header_master_lookup_uses_canonical_identity();
 	void mxf_without_any_database_is_no_database();
 	void unlisted_media_with_readable_databases_is_no_reference();
 	void corrupt_pmr_flags_no_database_and_mdb_still_recovers();
@@ -1394,6 +1396,52 @@ void TestScanner::current_render_with_missing_project_survives_failed_header_rea
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.sampleRate, 48000);
 	QCOMPARE(mf.clipName, QStringLiteral("Sequence,Audio Effect+1"));
+}
+
+void TestScanner::header_master_lookup_uses_canonical_identity_data()
+{
+	QTest::addColumn<bool>("correctPresent");
+	QTest::addColumn<bool>("otherPresent");
+	QTest::newRow("correct-only") << true << false;
+	QTest::newRow("both-identities") << true << true;
+	QTest::newRow("other-only") << false << true;
+}
+
+void TestScanner::header_master_lookup_uses_canonical_identity()
+{
+	QFETCH(bool, correctPresent);
+	QFETCH(bool, otherPresent);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(kToneName, folder);
+	const QByteArray correct = QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613");
+	const QByteArray other = QByteArray::fromHex("060a2b340101010501010f1013000000ea7d46d21174900691901e6a605d3613");
+	BentoBuilder w;
+	const auto addMaster = [&](const QByteArray &id, const QByteArray &binName)
+	{
+		const quint32 master = w.addObject("MOBJ");
+		w.set(master, "OMFI:MOBJ:MobID", id);
+		w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
+		w.setString(master, "OMFI:CPNT:Name", binName);
+		const quint32 attrs = w.addObject("ATTR"), attr = w.addObject("ATTB"), bin = w.addObject("MCBR");
+		w.setHandle(master, "OMFI:CPNT:Attributes", attrs);
+		w.setHandles(attrs, "OMFI:ATTR:AttrRefs", {attr});
+		w.setString(attr, "OMFI:ATTB:Name", "_ORG_BIN");
+		w.setU16(attr, "OMFI:ATTB:Kind", 3);
+		w.setHandle(attr, "OMFI:ATTB:ObjAttribute", bin);
+		w.setString(bin, "OMFI:MCBR:MC:binName", binName);
+	};
+	if (correctPresent)
+		addMaster(correct, "Correct clip");
+	if (otherPresent)
+		addMaster(other, "Different clip");
+	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), w.build()));
+	const auto rows = runScan(tmp.path());
+	QCOMPARE(rows.size(), 1);
+	QCOMPARE(rows.first().masterMobId, MobId::format(correct));
+	QCOMPARE(rows.first().originalBin, correctPresent ? QStringLiteral("Correct clip") : QString{});
 }
 
 void TestScanner::reused_filename_clears_old_editorial_details()

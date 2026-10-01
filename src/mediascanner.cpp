@@ -1070,23 +1070,6 @@ namespace
 		mf.databaseMetadataCurrent = false;
 	}
 
-	const MdbMasterMob *findHeaderMaster(const QString &id, bool readingOmf,
-										 const QHash<QString, MdbMasterMob> *masters)
-	{
-		if (!masters)
-			return nullptr;
-		auto record = masters->constFind(id);
-		// MXF permits the PMR byte-order alias. OMF IDs already have the
-		// database representation; swapping them would identify different media.
-		if (record == masters->constEnd() && !readingOmf)
-		{
-			const QString swapped = MobId::swapMaterialByteOrder(id);
-			if (!swapped.isEmpty())
-				record = masters->constFind(swapped);
-		}
-		return record == masters->constEnd() ? nullptr : &record.value();
-	}
-
 	// Owns only this row. Scheduling, cancellation and progress stay with
 	// MediaScanner; the database records remain read-only throughout pass 2.
 	void readMediaHeader(MediaFile &mf, AvidMediaLayout::Family family,
@@ -1112,6 +1095,8 @@ namespace
 			metadata = MxfParser::parseHeader(mf.mediaFilePath);
 		}
 		const bool headerUsable = metadata.valid || metadata.classificationKnown;
+		// MXF stores material fields in network byte order; rows use the PMR/MDB
+		// representation. OMF and AVB readers already normalize their integer fields.
 		const auto canonicalHeaderId = [&](const QString &id)
 		{
 			if (readingOmf || id.isEmpty())
@@ -1158,14 +1143,11 @@ namespace
 
 		// Recover names by the header's master identity without changing the
 		// row's PMR membership status.
-		if (headerUsable && headerMasterKnown && !metadata.umid.isEmpty() && !MobId::isAllZero(metadata.umid))
+		if (headerUsable && headerMasterKnown && masters && !headerMasterId.isEmpty() && !MobId::isAllZero(headerMasterId))
 		{
-			if (const auto *record = findHeaderMaster(metadata.umid, readingOmf, masters))
-			{
-				applyMdbRecord(mf, *record);
-				if (!record->mobIdHex.isEmpty())
-					mf.masterMobId = record->mobIdHex;
-			}
+			const auto record = masters->constFind(headerMasterId);
+			if (record != masters->constEnd())
+				applyMdbRecord(mf, record.value());
 		}
 		// The header's own identity can be the zero one too.
 		mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||

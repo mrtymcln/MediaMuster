@@ -45,7 +45,7 @@ namespace
 	{
 		MediaFile file;
 		file.mediaFilePath = path;
-		file.masterMobId = MobId::swapMaterialByteOrder(masterId());
+		file.masterMobId = masterId();
 		return file;
 	}
 }
@@ -80,8 +80,9 @@ private slots:
 	void precompute_categories_and_unknown_effects_display_consistently();
 
 	// Bin-derived fallbacks, conflict handling and row refresh notifications.
-	void fills_missing_owned_metadata_in_both_identity_forms();
-	void omf_metadata_does_not_cross_byte_swapped_identities();
+	void fills_missing_owned_metadata_by_exact_identity();
+	void metadata_does_not_cross_byte_swapped_identities_data();
+	void metadata_does_not_cross_byte_swapped_identities();
 	void preserves_scanner_metadata_and_ignores_source_names();
 	void conflicts_are_independent_and_retractable();
 	void same_bin_name_with_different_uid_is_ambiguous();
@@ -422,12 +423,10 @@ void TestMediaTableModel::precompute_categories_and_unknown_effects_display_cons
 	QVERIFY(model.index(3, category).data().toString().isEmpty());
 }
 
-void TestMediaTableModel::fills_missing_owned_metadata_in_both_identity_forms()
+void TestMediaTableModel::fills_missing_owned_metadata_by_exact_identity()
 {
 	MediaTableModel model;
-	MediaFile little = row();
-	little.masterMobId = masterId();
-	model.setMediaFiles({little, row(QStringLiteral("/media/second.mxf"))});
+	model.setMediaFiles({row(), row(QStringLiteral("/media/second.mxf"))});
 	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
 	model.setAvbBins({bin()});
 	QCOMPARE(changed.size(), 1);
@@ -450,13 +449,25 @@ void TestMediaTableModel::fills_missing_owned_metadata_in_both_identity_forms()
 	}
 }
 
-void TestMediaTableModel::omf_metadata_does_not_cross_byte_swapped_identities()
+void TestMediaTableModel::metadata_does_not_cross_byte_swapped_identities_data()
 {
-	const QString firstId = QStringLiteral("060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80");
-	const QString secondId = QStringLiteral("060a2b3401010101.01010f0013000000.4433221166558877.060e2b347f7f2a80");
-	MediaFile first = row(QStringLiteral("/media/first.omf"));
+	QTest::addColumn<QString>("firstId");
+	QTest::addColumn<QString>("secondId");
+	QTest::newRow("OMF")
+		<< QStringLiteral("060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80")
+		<< QStringLiteral("060a2b3401010101.01010f0013000000.4433221166558877.060e2b347f7f2a80");
+	QTest::newRow("MXF")
+		<< QStringLiteral("060a2b3401010105.01010f1013000000.1122334455667788.99aabbccddeeff00")
+		<< QStringLiteral("060a2b3401010105.01010f1013000000.4433221166558877.99aabbccddeeff00");
+}
+
+void TestMediaTableModel::metadata_does_not_cross_byte_swapped_identities()
+{
+	QFETCH(QString, firstId);
+	QFETCH(QString, secondId);
+	MediaFile first = row(QStringLiteral("/media/first"));
 	first.masterMobId = firstId;
-	MediaFile second = row(QStringLiteral("/media/second.omf"));
+	MediaFile second = row(QStringLiteral("/media/second"));
 	second.masterMobId = secondId;
 	AvbBin firstBin = bin(QStringLiteral("First clip"), QStringLiteral("First bin"));
 	firstBin.mobs[0].mobId = firstId;

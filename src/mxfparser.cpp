@@ -1349,8 +1349,8 @@ void MxfParser::parsePackage(const QByteArray &data, MediaMetadata &out, bool is
 		// otherwise lock onto the tape name/UMID (the reported clip-name bug).
 		if (tag == 0x4401 && len >= MobId::kRawSize && (isMaterialPackage || out.umid.isEmpty()))
 		{
-			// Package UID: 32 bytes, the canonical UMID. Routed through
-			// `MobId::format` so the rendering matches PMR/MDB/AVB MOBs.
+			// Preserve the 32 on-disk UMID bytes. The scanner converts material
+			// fields to the PMR/MDB representation before storing or joining IDs.
 			out.umid =
 				MobId::format(reinterpret_cast<const unsigned char *>(data.constData() + pos));
 		}
