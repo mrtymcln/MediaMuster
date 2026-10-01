@@ -12,6 +12,7 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QListWidget>
+#include <QLabel>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
@@ -99,6 +100,7 @@ private slots:
 	void intersection_and_subtraction_use_row_membership();
 	void add_restores_a_previously_subtracted_row();
 	void snapshots_survive_reticking_and_bin_removal();
+	void selection_snapshot_keeps_counts_names_and_ids_together();
 	void failed_and_partial_bins_emit_errors_without_dialogs_data();
 	void failed_and_partial_bins_emit_errors_without_dialogs();
 	void bad_header_batch_is_parsed_asynchronously_and_reported_once();
@@ -173,7 +175,7 @@ void TestBinFilterDialog::locator_identity_controls_file_matching()
 	h.model.setMediaFiles(rows);
 	TestAvb::Document d;
 	d.objects = {{"ABIN", TestAvb::bin(false)},
-		{"MSML", TestAvb::mediaLocator(false, TestAvb::Source, typed, locatorId)}};
+				 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source, typed, locatorId)}};
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("References.avb"), d.bytes()));
 	QTRY_COMPARE(loaded.count(), 1);
@@ -236,9 +238,9 @@ void TestBinFilterDialog::intersection_and_subtraction_use_row_membership_data()
 	QTest::addColumn<QByteArray>("slot");
 	QTest::addColumn<int>("expected");
 	QTest::newRow("intersect-file-in-both-bins") << TestAvb::mediaBin({TestAvb::Source})
-												<< QByteArray("onIntersectClicked") << 1;
+												 << QByteArray("onIntersectClicked") << 1;
 	QTest::newRow("subtract-file-with-unrelated-locator") << TestAvb::mediaBin({TestAvb::Master, TestAvb::Source})
-														<< QByteArray("onSubtractClicked") << 0;
+														  << QByteArray("onSubtractClicked") << 0;
 }
 
 void TestBinFilterDialog::intersection_and_subtraction_use_row_membership()
@@ -320,6 +322,37 @@ void TestBinFilterDialog::snapshots_survive_reticking_and_bin_removal()
 	h.dialog.clearChain();
 	QVERIFY(!h.filter.isActive());
 	QCOMPARE(h.proxy.rowCount(), 2);
+}
+
+void TestBinFilterDialog::selection_snapshot_keeps_counts_names_and_ids_together()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	Harness h;
+	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("First.avb"), TestAvb::mediaBin()));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Second.avb"), TestAvb::mediaBin({TestAvb::Other})));
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Empty.avb"), TestAvb::masterBin({})));
+	QTRY_COMPARE(loaded.count(), 3);
+	QTRY_VERIFY(h.filter.isActive());
+	h.dialog.clearChain();
+	h.selectOnly(1);
+	h.list()->item(2)->setCheckState(Qt::Checked);
+	const auto summary = h.dialog.findChild<QLabel *>(QStringLiteral("BinListSummary"));
+	QVERIFY(summary);
+	QCOMPARE(summary->text(), QStringLiteral("3 loaded, 2 ticked"));
+	QVERIFY(h.invoke("onIntersectClicked"));
+	QCOMPARE(h.filter.steps.size(), 1);
+	QCOMPARE(h.filter.steps.first().binDisplayNames,
+			 (QVector<QString>{QStringLiteral("Second"), QStringLiteral("Empty")}));
+	QCOMPARE(h.filter.steps.first().mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Other)});
+	QCOMPARE(h.proxy.rowCount(), 1);
+	QCOMPARE(h.proxy.mapToSource(h.proxy.index(0, 0)).row(), 1);
+	h.selectOnly(-1);
+	QCOMPARE(summary->text(), QStringLiteral("3 loaded, 0 ticked"));
+	QVERIFY(!h.dialog.findChild<QPushButton *>(QStringLiteral("BinIntersectButton"))->isEnabled());
+	QVERIFY(h.invoke("onAddClicked"));
+	QCOMPARE(h.filter.steps.size(), 1);
 }
 
 void TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs_data()

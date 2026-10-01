@@ -125,19 +125,16 @@ private:
 	bool hasLoadingBins() const;
 	void emitBinsChanged();
 	void rebuildChainList();
-	void recomputeAndEmit();
+	void publishFilter();
 	void applyOperation(Operation op);
 
-	/// Re-syncs the bin-list summary, op-button enable state, and
-	/// empty-chain placeholder against current bin/tick state. Cheap
-	/// to call; invoke whenever the bin list or tickboxes change.
+	/// Refresh the summary, operation buttons and placeholder when bins or ticks change.
 	void refreshBinSelectionUi();
 
 	// MARK: - Tick helpers
 
-	BinMediaIds selectedMediaFileIds() const;
-	QVector<QString> selectedBinsDisplayNames() const;
-	int selectedBinsCount() const;
+	/// Immediate-use snapshot of ticked, fully loaded bins in list order.
+	QVector<const AvbBin *> selectedBins() const;
 
 	struct LoadedBin
 	{

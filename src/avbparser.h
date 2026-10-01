@@ -1,8 +1,7 @@
 #pragma once
 
-#include "binmediaids.h"
+#include "binfilereferences.h"
 
-#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -29,13 +28,11 @@ struct AvbBin
 	QString filePath;
 	QString displayName;
 
-	/// Decoded identities and existing comparison aliases. Bin filtering uses
-	/// mediaFileIds below rather than this broad inventory.
-	QSet<QString> mobIds;
+	/// Composition identities and clip/original-bin metadata.
 	QVector<AvbMob> mobs;
 
 	/// Full file IDs and explicitly legacy references from MSML locators.
-	BinMediaIds mediaFileIds;
+	BinFileReferences mediaFileIds;
 
 	/// Filtering needs both valid and complete so unsupported references cannot
 	/// silently supply a partial operand.
@@ -44,6 +41,9 @@ struct AvbBin
 	bool complete = false;
 	QString error;
 	QStringList warnings;
+
+	/// Usable for filtering and metadata; loading state belongs to the dialog.
+	[[nodiscard]] bool isUsable() const noexcept { return valid && complete; }
 };
 
 Q_DECLARE_METATYPE(AvbBin)

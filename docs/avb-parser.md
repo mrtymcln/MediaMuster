@@ -1,10 +1,10 @@
 # AVB reading and bin filtering
 
-The AVB reader implements a bounded subset of Avid's serialized object format for whole-bin identity matching and clip/original-bin metadata. It does not evaluate timelines or write bins. Format decisions were checked against the supplied reference reader, real bins and focused Media Composer disassembly; the [original review](avb-review-2026-09-05.md) records that evidence.
+The AVB reader implements a bounded subset of Avid's serialized object format for whole-bin identity matching and clip/original-bin metadata. It does not evaluate timelines or write bins. The [original review](avb-review-2026-09-05.md) records the format evidence and earlier validation.
 
-The reader validates the document header, object count, root and class/length records, then indexes object offsets. It reads identity-bearing properties at their class-defined positions and checks references in shared component/track prefixes and common sequence/reference-list objects. MOB-looking comment text and the `NewlyArrivedMobList` history are not identity fields. Ordinary tagged binary MOBs and legacy scalar MOB words are decoded with the file's byte order. The decoded identity inventory and its existing byte-order aliases remain separate from bin-filter identities.
+The reader validates the document header, object count, root and class/length records, then indexes object offsets. It reads identity-bearing properties at their class-defined positions and checks references in shared component/track prefixes and common sequence/reference-list objects. MOB-looking comment text and the `NewlyArrivedMobList` history are not identity fields. Ordinary tagged binary MOBs and legacy scalar MOB words are decoded with the file's byte order. The retained outputs are `MSML` file identities and composition identities with clip/original-bin metadata. Other supported identity fields are still validated, but the parser no longer builds a broad ID collection or its byte-order aliases.
 
-Bin filtering uses only `MSML` media locators and compares them with the media row's file MobId. `BinMediaIds` keeps full IDs separately from explicitly legacy keys:
+Bin filtering uses only `MSML` media locators and compares them with the media row's file MobId. The parser's `readMediaLocator()` handles these separately from other MOB-reference validation. `BinFileReferences` keeps full IDs separately from explicitly legacy keys:
 
 - Two modern identities must match in all 32 bytes. Dotted/undotted hex and letter case are normalised; identity bytes are not changed.
 - If either identity is legacy, compare its eight-byte section with bytes 16–23 (zero-based) of the other identity. A locator without the full-ID extension supplies this section through its two scalar 32-bit fields. Avid's wrapped OMF identity is also legacy, even though the wrapper is 32 bytes long: both the known prefix and suffix must match.
@@ -12,7 +12,9 @@ Bin filtering uses only `MSML` media locators and compares them with the media r
 
 A failed comparison between two modern full IDs never enables a shortened comparison. Master IDs, source-clip IDs, filenames and byte-order aliases do not supply alternative bin matches. Legacy matching cannot distinguish IDs beyond the eight bytes the older format provides. General 12-byte OMF IDs in the `omf:` namespace are not assumed to have Avid's legacy bridge.
 
-`AvbBin::valid` describes structural validity of the framing and understood properties. `complete` additionally describes the supported whole-bin identity coverage. Consumers require both before allowing a bin as an operand. Unsupported identity-bearing data is reported; unrelated known descriptor payloads can be skipped by their validated chunk sizes without parsing codecs or essence metadata. This status does not certify that every optional property or media reference can be evaluated as a timeline.
+`AvbBin::valid` describes structural validity of the framing and understood properties. `complete` additionally describes the supported whole-bin identity coverage. `isUsable()` requires both for filtering and metadata; the dialog checks loading state separately. Unsupported identity-bearing data is reported; unrelated known descriptor payloads can be skipped by their validated chunk sizes without parsing codecs or essence metadata. This status does not certify that every optional property or media reference can be evaluated as a timeline.
+
+The parser visits all indexed objects independently. That does not validate links inside skipped descriptor or effect payloads; reference checks apply only to fields the parser reads explicitly.
 
 A successful bin with no usable `MSML` identities is distinct from a failed read. If the selected bins collectively supply no file identities, applying an operation leaves the current filter unchanged. The bin can still supply clip metadata. Invalid or incomplete reads are rejected and do not remain in the list or supply filter operands or metadata. Rejected inputs and unsuccessful reads produce warnings in MediaMuster's console, including the filename, full path and diagnostic. The existing console logger also writes these warnings to the diagnostic log. No error message box is shown. [Error examples](avb-error-examples.md) describe the admission rules and failure situations.
 
@@ -31,6 +33,8 @@ Each chain step snapshots the union of full file IDs and legacy keys from the ti
 - Add admits matching rows again.
 
 A leading Intersect or Add starts with that operand's matching rows. A leading Subtract starts from all media rows; the other independent filters still apply. Removing loaded bins does not change existing chain operands. Removing or reordering the first step therefore cannot introduce a mutable loaded-bin “universe.”
+
+One selection helper supplies the ticked, valid, complete bins in list order. The summary counts that selection; applying an operation uses it to collect names and file identities together. The proxy compares the ordered operations and both ID sets before refiltering. Repeated criteria or changed display names alone do not recheck rows; changed source-model data still follows the normal model update path.
 
 The MDVx comparison covers media-file selection, not every detail of its UI. MediaMuster retains its ordered chain interface, structural validation and support for both AVB byte orders. The real-bin MDVx comparison used little-endian bins; big-endian normalization is covered by generated parser tests.
 
@@ -74,6 +78,12 @@ Of the 13,022 typed locator records, 1,431 carry Avid's legacy OMF wrapper. None
 The full-ID revision's universal macOS application rebuilt and passed strict signature verification. All 26 CTest suites passed, including 111 parser cases, 31 proxy cases and 40 bin-dialog cases with no skips in those suites. Three unrelated cases skipped: two optional external OMF-fixture checks and a case-sensitive-directory check on the case-insensitive temporary filesystem. The build and test logs are `full-id-app-build.log`, `full-id-ctest.log` and `full-id-test-details.log` in the audit directory below.
 
 The independent extraction is recorded in `compare_full_locators.py` and `full-locator-comparison.json`. The new implementation check is recorded in `full-id-probe.cpp`, `full-id-results.jsonl`, `validate_full_id.py` and `full-id-validation.json`, all under `/private/tmp/mediamuster-mdvx-filter-fix-20261001`. This comparison reused the saved media scan, PyAVB extraction and native exports; it did not launch MDVx again or rescan media essence. Production comments describe the data and matching rule; the comparison history remains here as audit evidence.
+
+### Bookkeeping cleanup validation
+
+The parser's unused broad ID collection and alias construction were removed after the full-ID revision. The 105-bin baseline contained 77,186 entries in that collection. A fresh read-only probe parsed all 105 originals again: every original hash, retained file-ID set, legacy-key set, composition metadata record and per-bin matched path set agreed with the full-ID baseline. The combined selection remained 3,756 of the saved scan's 3,834 rows. This preserves the baseline's six native-export/UI comparisons; no new native app run or media rescan was performed. The probe, comparison script and complete results are under `/private/tmp/mediamuster-avb-cleanup-20261001`.
+
+All 26 CTest suites passed after the cleanup, with the same three environmental skips described above. The parser passed 160 cases, the proxy 32 and the bin dialog 41, with no skips in those suites. Tests now check the retained outputs instead of the removed collection. Malformed typed fields remain rejected in compositions, source clips, media locators, other MOB references and AudioSuite effects in both byte orders. A proxy counter verifies that unchanged criteria and label-only changes do not recheck rows, while operation order, operations, full IDs, legacy keys and step removal still trigger filtering. Selection tests check that counts, names and IDs agree, including a selected empty bin. The universal app rebuilt and passed strict signature verification. No overall performance benchmark was run.
 
 ## Recorded console-reporting validation
 

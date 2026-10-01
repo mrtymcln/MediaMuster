@@ -11,7 +11,7 @@
 class MediaTableModel;
 struct MediaFile;
 
-/// Independent filters all have to pass: tab, projects, bin file keys,
+/// Independent filters all have to pass: tab, projects, bin file identities,
 /// optional precompute categories/effect categories/effect names/volume, and free text in visible string fields.
 class MediaFilterProxy : public QSortFilterProxyModel
 {

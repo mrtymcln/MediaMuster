@@ -331,25 +331,19 @@ void BinFilterDialog::refreshBinSelectionUi()
 									   [](const LoadedBin &entry)
 									   { return entry.loading; });
 	const auto loaded = m_bins.size() - loading;
-	const int ready = selectedBinsCount();
+	const auto ready = selectedBins().size();
 	QString summary = tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready));
 	if (loading > 0)
 		summary += tr(", %1 loading").arg(Format::count(loading));
 	m_binListSummary->setText(summary);
 
-	// Disabled op buttons hard-couple the two halves of the dialog: users can't
-	// click an op without first ticking a bin, so the 'tickbox = arms, button =
-	// fires' model becomes self-evident — which is also why the disabled state
-	// needs no explanatory tooltip.
+	// Operations require at least one ticked, usable bin.
 	const bool canApply = ready > 0;
 	m_btnIntersect->setEnabled(canApply);
 	m_btnAdd->setEnabled(canApply);
 	// A leading Subtract starts with all media rows, just as its help text says.
 	m_btnSubtract->setEnabled(canApply);
 
-	// Empty-chain placeholder. Single message; the intro text and
-	// the bin-list summary already guide users into loading + ticking
-	// bins; this slot just describes the next concrete action.
 	if (m_chain.isEmpty())
 		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));
 }
@@ -516,7 +510,7 @@ void BinFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
 		LoadedBin &entry = m_bins[row];
 		if (entry.id != id)
 			continue;
-		if (!bin.valid || !bin.complete)
+		if (!bin.isUsable())
 		{
 			removeBinRow(row);
 			refreshBinSelectionUi();
@@ -589,8 +583,6 @@ void BinFilterDialog::maybeAutoIntersect()
 	if (hasLoadingBins())
 		return;
 	m_autoIntersectPending = false;
-	if (selectedBinsCount() == 0)
-		return;
 	applyOperation(Operation::Intersect);
 }
 
@@ -608,7 +600,7 @@ void BinFilterDialog::updateBinItem(int idx)
 	const AvbBin &bin = entry.bin;
 	QListWidgetItem *const item = m_binList->item(idx);
 	const QSignalBlocker block(m_binList);
-	const bool usable = !entry.loading && bin.valid && bin.complete;
+	const bool usable = !entry.loading && bin.isUsable();
 	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable |
 				   (usable ? Qt::ItemIsUserCheckable : Qt::NoItemFlags));
 	// Loading rows remain selectable so their outstanding reads can be cancelled.
@@ -631,7 +623,7 @@ void BinFilterDialog::emitBinsChanged()
 	QVector<AvbBin> bins;
 	for (const LoadedBin &entry : std::as_const(m_bins))
 	{
-		if (!entry.loading && entry.bin.valid && entry.bin.complete)
+		if (!entry.loading && entry.bin.isUsable())
 			bins.append(entry.bin);
 	}
 	emit binsChanged(bins);
@@ -677,11 +669,7 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 		}
 	}
 
-	// Delete the clicked rows in place instead of clearing and rebuilding the
-	// whole list. The old rebuild re-ran appendBinItem for every survivor,
-	// which forces the checked state — silently re-ticking bins the user had
-	// deliberately unticked. Deleting in place leaves each survivor's tick
-	// state intact.
+	// Remove selected rows in place to preserve the survivors' tick states.
 	qDeleteAll(selected);
 
 	// Survivors are still in m_bins order, so renumber their UserRole to the
@@ -705,29 +693,15 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 	// Chain operands are snapshots and remain unchanged, including a
 	// leading Subtract. Metadata, however, belongs to the retained bins.
 	emitBinsChanged();
-	recomputeAndEmit();
+	publishFilter();
 	QTimer::singleShot(0, this, &BinFilterDialog::finishLoadingBatch);
 }
 
 // MARK: - Tick helpers
 
-int BinFilterDialog::selectedBinsCount() const
+QVector<const AvbBin *> BinFilterDialog::selectedBins() const
 {
-	int n = 0;
-	for (int i = 0; i < m_binList->count(); ++i)
-	{
-		const QListWidgetItem *item = m_binList->item(i);
-		const int idx = item->data(Qt::UserRole).toInt();
-		if (item->checkState() == Qt::Checked && idx >= 0 && idx < m_bins.size() &&
-			!m_bins[idx].loading && m_bins[idx].bin.valid && m_bins[idx].bin.complete)
-			++n;
-	}
-	return n;
-}
-
-BinMediaIds BinFilterDialog::selectedMediaFileIds() const
-{
-	BinMediaIds out;
+	QVector<const AvbBin *> out;
 	for (int i = 0; i < m_binList->count(); ++i)
 	{
 		const QListWidgetItem *it = m_binList->item(i);
@@ -737,26 +711,8 @@ BinMediaIds BinFilterDialog::selectedMediaFileIds() const
 		if (idx < 0 || idx >= m_bins.size())
 			continue;
 		const LoadedBin &entry = m_bins[idx];
-		if (!entry.loading && entry.bin.valid && entry.bin.complete)
-			out.unite(entry.bin.mediaFileIds);
-	}
-	return out;
-}
-
-QVector<QString> BinFilterDialog::selectedBinsDisplayNames() const
-{
-	QVector<QString> out;
-	for (int i = 0; i < m_binList->count(); ++i)
-	{
-		const QListWidgetItem *it = m_binList->item(i);
-		if (it->checkState() != Qt::Checked)
-			continue;
-		const int idx = it->data(Qt::UserRole).toInt();
-		if (idx < 0 || idx >= m_bins.size())
-			continue;
-		const LoadedBin &entry = m_bins[idx];
-		if (!entry.loading && entry.bin.valid && entry.bin.complete)
-			out.append(entry.bin.displayName);
+		if (!entry.loading && entry.bin.isUsable())
+			out.append(&entry.bin);
 	}
 	return out;
 }
@@ -778,19 +734,23 @@ void BinFilterDialog::onAddClicked()
 
 void BinFilterDialog::applyOperation(Operation op)
 {
-	if (selectedBinsCount() == 0)
+	const auto selection = selectedBins();
+	if (selection.isEmpty())
 		return;
 	m_autoIntersectPending = false;
 	ChainStep step;
 	step.op = op;
-	step.binDisplayNames = selectedBinsDisplayNames();
-	step.mediaFileIds = selectedMediaFileIds();
+	for (const AvbBin *bin : selection)
+	{
+		step.binDisplayNames.append(bin->displayName);
+		step.mediaFileIds.unite(bin->mediaFileIds);
+	}
 	// An operand without usable file identities leaves the current chain unchanged.
 	if (step.mediaFileIds.isEmpty())
 		return;
 	m_chain.append(std::move(step));
 	rebuildChainList();
-	recomputeAndEmit();
+	publishFilter();
 	refreshBinSelectionUi();
 }
 
@@ -801,7 +761,7 @@ void BinFilterDialog::clearChain()
 		return;
 	m_chain.clear();
 	rebuildChainList();
-	recomputeAndEmit();
+	publishFilter();
 	refreshBinSelectionUi();
 }
 
@@ -812,7 +772,7 @@ void BinFilterDialog::onRemoveStep(int index)
 	m_autoIntersectPending = false;
 	m_chain.removeAt(index);
 	rebuildChainList();
-	recomputeAndEmit();
+	publishFilter();
 	refreshBinSelectionUi();
 }
 
@@ -837,7 +797,7 @@ void BinFilterDialog::rebuildChainList()
 
 // MARK: - Emit the ordered chain
 
-void BinFilterDialog::recomputeAndEmit()
+void BinFilterDialog::publishFilter()
 {
 	if (m_chain.isEmpty())
 	{
@@ -846,10 +806,7 @@ void BinFilterDialog::recomputeAndEmit()
 		return;
 	}
 
-	// No summary line here: the step list above already spells out the active
-	// filter, and the main-window chips and the "filtered from N" status-bar
-	// count say it again — a "filter active" label would just be a fourth,
-	// vaguer restatement. Keep it blank while steps exist.
+	// The chain list already describes the active filter.
 	m_chainSummary->clear();
 
 	// Deduped, insertion-ordered bin names for the main-window chip

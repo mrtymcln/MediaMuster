@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binmediaids.h"
+#include "binfilereferences.h"
 
 #include <QMetaType>
 #include <QString>
@@ -21,12 +21,28 @@ struct BinFilter
 	{
 		Operation op = Operation::Intersect;
 		QVector<QString> binDisplayNames;
-		BinMediaIds mediaFileIds;
+		BinFileReferences mediaFileIds;
 	};
 
 	QVector<Step> steps;
 
 	[[nodiscard]] bool isActive() const noexcept { return !steps.isEmpty(); }
+
+	/// Labels do not affect row membership; operation order and both ID sets do.
+	[[nodiscard]] bool hasSameCriteria(const BinFilter &other) const
+	{
+		if (steps.size() != other.steps.size())
+			return false;
+		for (qsizetype i = 0; i < steps.size(); ++i)
+		{
+			const auto &a = steps[i];
+			const auto &b = other.steps[i];
+			if (a.op != b.op || a.mediaFileIds.fullIds != b.mediaFileIds.fullIds ||
+				a.mediaFileIds.legacyKeys != b.mediaFileIds.legacyKeys)
+				return false;
+		}
+		return true;
+	}
 
 	[[nodiscard]] bool matches(const QString &fileMob) const
 	{
@@ -36,7 +52,7 @@ struct BinFilter
 		// A leading Subtract removes matches from all media rows, including
 		// rows outside every loaded bin. A leading Add starts with its own
 		// matches. This remains stable when earlier steps or bins are removed.
-		const auto fileId = BinMediaId::fromMobId(fileMob);
+		const auto fileId = BinFileId::fromMobId(fileMob);
 		bool accepted = true;
 		bool started = false;
 		for (const Step &step : steps)
@@ -49,7 +65,7 @@ struct BinFilter
 				accepted = step.op != Operation::Add;
 				started = true;
 			}
-			const bool hit = step.mediaFileIds.contains(fileId);
+			const bool hit = step.mediaFileIds.matches(fileId);
 			switch (step.op)
 			{
 			case Operation::Intersect:

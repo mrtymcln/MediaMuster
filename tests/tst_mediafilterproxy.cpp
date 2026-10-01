@@ -21,7 +21,7 @@
 
 namespace
 {
-	BinMediaIds fullIds(std::initializer_list<QString> ids)
+	BinFileReferences fullIds(std::initializer_list<QString> ids)
 	{
 		return {QSet<QString>(ids), {}};
 	}
@@ -84,6 +84,7 @@ private slots:
 	void bin_leading_subtract_uses_all_media_rows();
 	void bin_empty_operand_leaves_filter_unchanged();
 	void bin_expression_intersects_search_and_survives_model_refresh();
+	void unchanged_bin_criteria_do_not_refilter_rows();
 };
 
 void TestMediaFilterProxy::unicode_search_normalises_and_folds_data()
@@ -822,14 +823,14 @@ void TestMediaFilterProxy::bin_filter_falls_back_only_for_legacy_identities()
 	const QString modern = MobId::format(TestAvb::Source);
 	const QString old = QStringLiteral("060a2b3401010101.01010f0013000000.98badcfe32107654.060e2b347f7f2a80");
 	const QString wrongOld = QStringLiteral("060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80");
-	const auto shortId = BinMediaId::fromLegacyWords(0xfedcba98, 0x54761032);
+	const auto shortId = BinFileId::fromLegacyWords(0xfedcba98, 0x54761032);
 	QCOMPARE(shortId.legacyKey, QStringLiteral("98badcfe32107654"));
 	QVERIFY(shortId.fullId.isEmpty());
-	BinMediaIds legacyRefs;
+	BinFileReferences legacyRefs;
 	legacyRefs.add(shortId);
 	const BinFilter oldBin{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
 	QVERIFY(oldBin.matches(modern)); // modern file, old bin
-	QVERIFY(oldBin.matches(old));    // old file, old bin
+	QVERIFY(oldBin.matches(old));	 // old file, old bin
 	QVERIFY(!oldBin.matches(wrongOld));
 	QVERIFY(!oldBin.matches(MobId::format(TestAvb::Other)));
 	const BinFilter modernBin{{{BinFilter::Operation::Intersect, {}, fullIds({modern})}}};
@@ -839,8 +840,8 @@ void TestMediaFilterProxy::bin_filter_falls_back_only_for_legacy_identities()
 	// cannot turn a different modern ID into a legacy fallback.
 	const QString modernWithOldPrefix = QStringLiteral("060a2b3401010101.01010f0013000000.98badcfe32107654.0123456789abcdef");
 	QVERIFY(!modernBin.matches(modernWithOldPrefix));
-	BinMediaIds wrappedRefs;
-	wrappedRefs.add(BinMediaId::fromMobId(old));
+	BinFileReferences wrappedRefs;
+	wrappedRefs.add(BinFileId::fromMobId(old));
 	QVERIFY(wrappedRefs.fullIds.contains(old));
 	QCOMPARE(wrappedRefs.legacyKeys, QSet<QString>{shortId.legacyKey});
 	const BinFilter wrappedBin{{{BinFilter::Operation::Intersect, {}, wrappedRefs}}};
@@ -858,7 +859,7 @@ void TestMediaFilterProxy::bin_filter_falls_back_only_for_legacy_identities()
 
 void TestMediaFilterProxy::bin_filter_rejects_malformed_file_ids()
 {
-	const BinMediaIds refs{{MobId::format(QByteArray(32, '\0'))}, {QStringLiteral("0000000000000000")}};
+	const BinFileReferences refs{{MobId::format(QByteArray(32, '\0'))}, {QStringLiteral("0000000000000000")}};
 	const BinFilter filter{{{BinFilter::Operation::Intersect, {}, refs}}};
 	for (const auto &id : {QString{}, QStringLiteral("F"), QString(64, 'g'),
 						   QString(32, '0'), QStringLiteral("omf:") + QString(24, '0')})
@@ -969,6 +970,75 @@ void TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_r
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	proxy.setBinFilter({});
 	QCOMPARE(proxy.rowCount(), 2);
+}
+
+void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
+{
+	class CountingProxy : public MediaFilterProxy
+	{
+	public:
+		mutable int rowChecks = 0;
+
+	protected:
+		bool filterAcceptsRow(int row, const QModelIndex &parent) const override
+		{
+			++rowChecks;
+			return MediaFilterProxy::filterAcceptsRow(row, parent);
+		}
+	};
+	MediaFile first = rowNamed(QStringLiteral("first"));
+	first.mobId = MobId::format(TestAvb::Source);
+	MediaFile second = rowNamed(QStringLiteral("second"));
+	second.mobId = MobId::format(TestAvb::Other);
+	MediaTableModel model;
+	model.setMediaFiles({first, second});
+	CountingProxy proxy;
+	proxy.setSourceModel(&model);
+	QCOMPARE(proxy.rowCount(), 2);
+	proxy.rowChecks = 0;
+	proxy.setBinFilter({});
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	BinFilter filter{{{BinFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.mobId})},
+					  {BinFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.mobId})}}};
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 2);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+	filter.steps[0].binDisplayNames = {QStringLiteral("Renamed")};
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	// Order, operations, full IDs, legacy keys and step removal each matter.
+	std::swap(filter.steps[0], filter.steps[1]);
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 0);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	filter.steps[1].op = BinFilter::Operation::Add;
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 2);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	filter.steps[1].mediaFileIds = fullIds({second.mobId});
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 1);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	filter.steps[1].mediaFileIds.add(BinFileId::fromLegacyWords(0xfedcba98, 0x54761032));
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 2);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	filter.steps.removeLast();
+	proxy.setBinFilter(filter);
+	QCOMPARE(proxy.rowCount(), 1);
+	QVERIFY(proxy.rowChecks > 0);
 }
 
 QTEST_GUILESS_MAIN(TestMediaFilterProxy)

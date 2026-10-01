@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QHash>
+#include <QSet>
 #include <QStringDecoder>
 #include <QtEndian>
 #include <algorithm>
@@ -522,23 +523,6 @@ namespace
 			return value;
 		}
 
-		QString addMobId(const RawMobId &mob)
-		{
-			if (isNullMobId(mob))
-				return {};
-			const auto canonical = MobId::format(mob.data());
-			m_result.mobIds.insert(canonical);
-			// Leave wrapped OMF MobIds as they are.
-			// Swapping their bytes could match the wrong clip.
-			if (OmfUid::isWrappedOmfId(canonical))
-				return canonical;
-			RawMobId swapped{};
-			MobId::swapMaterialByteOrder(mob.data(), swapped.data());
-			const auto alias = MobId::format(swapped.data());
-			m_result.mobIds.insert(alias);
-			return canonical;
-		}
-
 		AvbComponent component(AvbValueParser &r)
 		{
 			r.start(kComponentVersion);
@@ -636,9 +620,11 @@ namespace
 					r.unknownExtension(tag);
 			}
 			r.finish();
-			value.mob.mobId = addMobId(mob);
-			if (!value.mob.mobId.isEmpty())
+			if (!isNullMobId(mob))
+			{
+				value.mob.mobId = MobId::format(mob.data());
 				m_compositions.insert(id, std::move(value));
+			}
 		}
 
 		void sourceClip(AvbValueParser &r)
@@ -647,19 +633,17 @@ namespace
 			r.start(kClipVersion);
 			r.skip(4);
 			r.start(kSourceClipVersion);
-			const auto low = r.u32();
-			const auto high = r.u32();
-			auto mob = nativeMobId(low, high);
+			r.u32(); // legacy source-reference words
+			r.u32();
 			r.skip(6);
 			quint8 tag{};
 			while (r.extension(tag))
 			{
 				if (tag != 1)
 					r.unknownExtension(tag);
-				mob = typedMobId(r);
+				typedMobId(r); // Validate the reference without retaining a filter identity.
 			}
 			r.finish();
-			addMobId(mob);
 		}
 
 		void bin(AvbValueParser &r, const QByteArray &type)
@@ -774,46 +758,56 @@ namespace
 			m_binReferences.insert(id, std::move(value));
 		}
 
-		void mobReference(AvbValueParser &r, const QByteArray &type)
+		void readMediaLocator(AvbValueParser &r)
 		{
-			r.start(type == "MSML" ? 2 : 1);
+			r.start(2);
 			const auto low = r.u32();
 			const auto high = r.u32();
-			auto mob = nativeMobId(low, high);
+			r.string();
+			RawMobId mob{};
 			bool hasFullId = false;
-			if (type == "MSML")
-				r.string();
-			else if (type == "MCMR" || type == "TMBC")
+			quint8 tag{};
+			while (r.extension(tag))
+			{
+				if (tag == 1)
+				{
+					r.tag(AvbPropertyTag::Int32);
+					r.skip(4);
+				}
+				else if (tag == 2)
+				{
+					mob = typedMobId(r);
+					hasFullId = true;
+				}
+				else if (tag == 3)
+				{
+					r.tag(AvbPropertyTag::String);
+					r.string(true);
+				}
+				else
+					r.unknownExtension(tag);
+			}
+			r.finish();
+			// A present full ID is authoritative, including a null ID. Only
+			// a missing extension permits using the older scalar fields.
+			m_result.mediaFileIds.add(hasFullId
+										  ? BinFileId::fromMobId(MobId::format(mob.data()))
+										  : BinFileId::fromLegacyWords(low, high));
+		}
+
+		void mobReference(AvbValueParser &r, const QByteArray &type)
+		{
+			r.start(1);
+			r.u32(); // legacy reference words
+			r.u32();
+			if (type == "MCMR" || type == "TMBC")
 				r.skip(4);
 			quint8 tag{};
 			while (r.extension(tag))
 			{
-				if (type == "MSML")
-				{
-					if (tag == 1)
-					{
-						r.tag(AvbPropertyTag::Int32);
-						r.skip(4);
-					}
-					else if (tag == 2)
-					{
-						mob = typedMobId(r);
-						hasFullId = true;
-					}
-					else if (tag == 3)
-					{
-						r.tag(AvbPropertyTag::String);
-						r.string(true);
-					}
-					else
-						r.unknownExtension(tag);
-				}
-				else
-				{
-					if (tag != 1)
-						r.unknownExtension(tag);
-					mob = typedMobId(r);
-				}
+				if (tag != 1)
+					r.unknownExtension(tag);
+				typedMobId(r);
 			}
 			if (type == "TMBC")
 			{
@@ -853,13 +847,6 @@ namespace
 				}
 			}
 			r.finish();
-			// A present full ID is authoritative, including a null ID. Only
-			// a missing extension permits using the older scalar fields.
-			if (type == "MSML")
-				m_result.mediaFileIds.add(hasFullId
-					? BinMediaId::fromMobId(MobId::format(mob.data()))
-					: BinMediaId::fromLegacyWords(low, high));
-			addMobId(mob);
 		}
 
 		void audioPlugin(AvbValueParser &r)
@@ -891,8 +878,6 @@ namespace
 				r.string();
 				r.skip(size);
 			}
-			RawMobId mob{};
-			bool fullMob = false;
 			while (r.extension(tag))
 			{
 				switch (tag)
@@ -900,11 +885,9 @@ namespace
 				case 1:
 				{
 					r.tag(AvbPropertyTag::Int32);
-					const auto low = r.u32();
+					r.u32();
 					r.tag(AvbPropertyTag::Int32);
-					const auto high = r.u32();
-					if (!fullMob)
-						mob = nativeMobId(low, high);
+					r.u32();
 					break;
 				}
 				case 2:
@@ -922,8 +905,7 @@ namespace
 					r.skip(4);
 					break;
 				case 8:
-					mob = typedMobId(r);
-					fullMob = true;
+					typedMobId(r);
 					break;
 				case 9:
 				{
@@ -943,7 +925,6 @@ namespace
 				}
 			}
 			r.finish();
-			addMobId(mob);
 		}
 
 		void referenceList(AvbValueParser &r, const QByteArray &type)
@@ -971,7 +952,7 @@ namespace
 			{
 				r.start(kClipVersion);
 				r.skip(4);
-				// These settings don't contain MobIds, so there's nothing more to collect here.
+				// The remaining settings contain no file identities or clip metadata.
 				if (type == "PRCL" || type == "CTRL")
 					return;
 				r.start(1);
@@ -1053,8 +1034,8 @@ namespace
 				}
 				r.finish();
 			}
-			// The remaining supported effects don't contain direct MobIds.
-			// We check their linked objects separately.
+			// Remaining effect payloads are skipped after their shared prefixes.
+			// Indexed objects are visited independently; links inside skipped data are not validated here.
 		}
 
 		void parseObject(AvbValueParser &r, const QByteArray &type, quint32 id)
@@ -1080,13 +1061,15 @@ namespace
 					 type == "STRB" || type == "SPED" || type == "REPT" || type == "TKFX" ||
 					 type == "PVOL" || type == "EQMB" || type == "TNFX" || type == "WARP")
 				dependencyTrackGroup(r, type);
-			else if (type == "MCMR" || type == "TMBC" || type == "MSML" || type == "APOS" ||
+			else if (type == "MSML")
+				readMediaLocator(r);
+			else if (type == "MCMR" || type == "TMBC" || type == "APOS" ||
 					 type == "ABOB" || type == "DIDP" || type == "MPGP")
 				mobReference(r, type);
 			else
 			{
-				// These classes don't contain direct MobIds.
-				// We check their linked objects separately.
+				// Known payloads without direct MobIds are skipped; their chunk framing was checked.
+				// Indexed objects are visited independently; links inside these payloads are not validated here.
 				static const QSet<QByteArray> noIdentityClasses = {
 					"ASET", "BVst", "FILE", "WINF", "URLL",
 					"GRFX", "SHLP", "CCFX", "FXPS", "AVUP", "PRIT",
@@ -1169,7 +1152,6 @@ AvbBin AvbParser::parse(const QString &avbFilePath, const std::atomic_bool *canc
 	{
 		result.valid = false;
 		result.complete = false;
-		result.mobIds.clear();
 		result.mediaFileIds = {};
 		result.mobs.clear();
 		result.error = problem.message;

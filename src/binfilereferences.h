@@ -10,11 +10,11 @@
 
 /// One file identity used by the bin filter. Legacy records only identify
 /// eight bytes; an Avid OMF wrapper preserves that same legacy identity.
-struct BinMediaId
+struct BinFileId
 {
 	QString fullId;
 	QString legacyKey;
-	bool legacy = false;
+	bool isLegacy = false;
 
 	/// Expects a canonical dotted full ID, as returned by MobId::format.
 	static QString legacyPart(const QString &canonical)
@@ -24,7 +24,7 @@ struct BinMediaId
 		return canonical.mid(kCoreHexOffset, 2 * OmfUid::kPmrSize);
 	}
 
-	static BinMediaId fromMobId(const QString &mobId)
+	static BinFileId fromMobId(const QString &mobId)
 	{
 		QString hex = mobId;
 		if (hex.size() == 2 * MobId::kRawSize + 3)
@@ -51,42 +51,41 @@ struct BinMediaId
 		return {full, key, old};
 	}
 
-	static BinMediaId fromLegacyWords(quint32 low, quint32 high)
+	static BinFileId fromLegacyWords(quint32 low, quint32 high)
 	{
 		if (low == 0 && high == 0)
 			return {};
 		std::array<uchar, OmfUid::kPmrSize> bytes{};
 		qToLittleEndian(low, bytes.data());
 		qToLittleEndian(high, bytes.data() + sizeof(low));
-		return {{}, QString::fromLatin1(QByteArray(reinterpret_cast<const char *>(bytes.data()),
-												 OmfUid::kPmrSize).toHex()), true};
+		return {{}, QString::fromLatin1(QByteArray(reinterpret_cast<const char *>(bytes.data()), OmfUid::kPmrSize).toHex()), true};
 	}
 };
 
 /// File references from MSML locators. Modern IDs require full equality.
 /// The short comparison is available only when either identity is legacy.
-struct BinMediaIds
+struct BinFileReferences
 {
 	QSet<QString> fullIds;
 	QSet<QString> legacyKeys;
 
 	bool isEmpty() const { return fullIds.isEmpty() && legacyKeys.isEmpty(); }
 
-	void add(const BinMediaId &id)
+	void add(const BinFileId &id)
 	{
 		if (!id.fullId.isEmpty())
 			fullIds.insert(id.fullId);
-		if (id.legacy && !id.legacyKey.isEmpty())
+		if (id.isLegacy && !id.legacyKey.isEmpty())
 			legacyKeys.insert(id.legacyKey);
 	}
 
-	void unite(const BinMediaIds &other)
+	void unite(const BinFileReferences &other)
 	{
 		fullIds.unite(other.fullIds);
 		legacyKeys.unite(other.legacyKeys);
 	}
 
-	bool contains(const BinMediaId &file) const
+	bool matches(const BinFileId &file) const
 	{
 		if (!file.fullId.isEmpty() && fullIds.contains(file.fullId))
 			return true;
@@ -95,9 +94,9 @@ struct BinMediaIds
 		if (legacyKeys.contains(file.legacyKey))
 			return true;
 		// Older media can only compare its known section with a full bin ID.
-		if (file.legacy)
+		if (file.isLegacy)
 			for (const QString &id : fullIds)
-				if (BinMediaId::legacyPart(id) == file.legacyKey)
+				if (BinFileId::legacyPart(id) == file.legacyKey)
 					return true;
 		return false;
 	}

@@ -158,8 +158,10 @@ void MediaFilterProxy::setPrecomputeVolumeFilter(const QString &volumePath)
 
 void MediaFilterProxy::setBinFilter(const BinFilter &filter)
 {
+	const bool unchanged = m_binFilter.hasSameCriteria(filter);
 	m_binFilter = filter;
-	invalidateRowsFilter();
+	if (!unchanged)
+		invalidateRowsFilter();
 }
 
 bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
