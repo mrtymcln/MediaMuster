@@ -1264,7 +1264,7 @@ void TestMdbParser::omf_winl_and_unxl_locators_yield_the_source_path()
 	OmfObjects::Attributes attrs;
 	attrs.omfEra = true; // as MdbParser sets it for a 12-byte mob: the UNXL is admitted
 	QSet<quint32> seen;
-	OmfObjects::walkAttributes(bf, p, bf.ref(b, p.attrs), attrs, seen);
+	OmfObjects::walkAttributes(bf, p, bf.readObjectId(b, p.attrs), attrs, seen);
 	QCOMPARE(attrs.mediaFilePath, QStringLiteral("/Volumes/Media/OMFI MediaFiles/tone.aif"));
 	QCOMPARE(attrs.sourceFilePath, QStringLiteral("/mnt/clips/tone.aif"));
 }

@@ -7,8 +7,10 @@
 //
 // A HEAD object (object 1) indexes the mobs — OMFI:SourceMobs,
 // OMFI:CompositionMobs, OMFI:MediaData — but the reader does not need it:
-// the file's MOBJ objects are found through the property dictionary just
-// as in an MDB. Three mobs per file, plus one media-data object:
+// Mob objects are found through the property dictionary, as in an MDB.
+// Both legacy MOBJ and explicit OMF2 Mob classes are supported.
+// The legacy fixtures described below have three Mobs and one media-data
+// object; other supported files may have a different layout:
 //
 //   media-data   (class JPEG / WAVE / AIFC; owns the essence value)
 //     OMFI:MDAT:MobID | WAVE:MobID | AIFC:MobID  — the FILE
@@ -41,6 +43,7 @@
 #include <QDebug>
 #include <QHash>
 #include <QSet>
+#include <QScopeGuard>
 #include <QVector>
 
 namespace
@@ -50,13 +53,13 @@ namespace
 	/// across the group — the MDB reader's rule.
 	struct MobGroup
 	{
-		QString hex;
+		QString mobId;
 		QVector<quint32> objects;
-		quint32 mediaObj = 0;  ///< The object whose PhysicalMedia is a media descriptor.
-		quint32 mediaDesc = 0; ///< That descriptor.
+		quint32 fileMobObjectId = 0;		 ///< The object whose PhysicalMedia is a media descriptor.
+		quint32 mediaDescriptorObjectId = 0; ///< That descriptor.
 		bool anyPhysical = false;
 		int usageCode = -1;
-		bool masterClass = false;
+		bool explicitMaster = false;
 		bool legacyMaster = false;
 	};
 
@@ -87,10 +90,12 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 {
 	OmfMetadata out;
 	BentoFile b;
+	const auto reportBytesRead = qScopeGuard([&]
+											 {
+		if (bytesRead)
+			*bytesRead = b.bytesRead(); });
 	QString why;
 	const bool opened = b.open(mediaFilePath, &why);
-	if (bytesRead)
-		*bytesRead = b.bytesRead();
 	if (!opened)
 	{
 		// No supported Bento tail or embedded omfi chunk was found.
@@ -113,7 +118,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		return out;
 	out.fileMobId = OmfUid::toIdText(fileMobRaw);
 
-	// Group every MOBJ by its canonical hex and note what each owns, the
+	// Group Mob objects by canonical MobId and note what each owns, the
 	// way MdbParser::load does — 12-byte omfi:UIDs and the 32-byte UMID MC
 	// 2026 puts on the physical mob both key cleanly through OmfUid.
 	OmfObjects::ObjectIdByMobId objectByMob;
@@ -124,19 +129,19 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		if (!OmfObjects::isMobClass(b.objectClass(obj)))
 			continue;
 		const QByteArray raw = OmfObjects::normalizedMobId(b, b.bytes(obj, p.mobId));
-		const QString hex = OmfUid::toIdText(raw);
-		if (hex.isEmpty())
+		const QString mobId = OmfUid::toIdText(raw);
+		if (mobId.isEmpty())
 			continue;
 		if (!objectByMob.contains(raw))
 			objectByMob.insert(raw, obj);
-		auto it = groups.find(hex);
+		auto it = groups.find(mobId);
 		if (it == groups.end())
 		{
-			it = groups.insert(hex, MobGroup{hex, {}, 0, 0, false, -1});
-			order.append(hex);
+			it = groups.insert(mobId, MobGroup{mobId, {}, 0, 0, false, -1});
+			order.append(mobId);
 		}
 		it->objects.append(obj);
-		it->masterClass |= b.objectClass(obj) == "MMOB";
+		it->explicitMaster |= b.objectClass(obj) == "MMOB";
 		const auto usage = b.read(obj, p.usage);
 		if (usage.status != BentoFile::ReadStatus::Missing)
 		{
@@ -146,14 +151,14 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		}
 		// A present but unreadable descriptor is not evidence of a master.
 		it->anyPhysical |= b.hasProperty(obj, p.physMedia);
-		const quint32 desc = b.ref(obj, p.physMedia);
+		const quint32 desc = b.readObjectId(obj, p.physMedia);
 		if (desc == 0)
 			continue;
 		it->anyPhysical = true;
-		if (it->mediaObj == 0 && OmfObjects::isMediaClass(b.objectClass(desc)))
+		if (it->fileMobObjectId == 0 && OmfObjects::isMediaClass(b.objectClass(desc)))
 		{
-			it->mediaObj = obj;
-			it->mediaDesc = desc;
+			it->fileMobObjectId = obj;
+			it->mediaDescriptorObjectId = desc;
 		}
 	}
 
@@ -162,10 +167,10 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	// source-clip links below (OMF1 usage 7/1, or OMF2 MMOB class).
 	const MobGroup *fileMob = nullptr;
 	const MobGroup *master = nullptr;
-	for (const QString &hex : order)
+	for (const QString &mobId : order)
 	{
-		const MobGroup &g = groups[hex];
-		if (g.mediaObj == 0 || (!out.fileMobId.isEmpty() && hex != out.fileMobId))
+		const MobGroup &g = groups[mobId];
+		if (g.fileMobObjectId == 0 || (!out.fileMobId.isEmpty() && mobId != out.fileMobId))
 			continue;
 		if (fileMob)
 			return out; // several media files; a single-row API cannot select one safely
@@ -174,19 +179,16 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	if (!fileMob)
 	{
 		qCWarning(lcOmf) << "no media descriptor in" << mediaFilePath << "(read" << b.bytesRead() << "bytes)";
-		if (bytesRead)
-			*bytesRead = b.bytesRead();
 		return out;
 	}
-	if (out.fileMobId.isEmpty() || out.fileMobId != fileMob->hex)
-		out.fileMobId = fileMob->hex;
+	out.fileMobId = fileMob->mobId;
 
 	// A composition is not a master. Match the actual source-clip graph
 	// to the selected file mob, and leave identity unknown on ambiguity.
-	for (const QString &hex : order)
+	for (const QString &mobId : order)
 	{
-		const MobGroup &g = groups[hex];
-		if (p.omf2 ? !g.masterClass : (g.anyPhysical || (p.revision == OmfObjects::Revision::Omf1 && !g.legacyMaster)))
+		const MobGroup &g = groups[mobId];
+		if (p.omf2 ? !g.explicitMaster : (g.anyPhysical || (p.revision == OmfObjects::Revision::Omf1 && !g.legacyMaster)))
 			continue;
 		bool referencesFile = false;
 		for (quint32 obj : g.objects)
@@ -204,7 +206,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 
 	MediaMetadata &e = out.essence;
 	out.hasMediaDescriptor = true;
-	OmfObjects::readDescriptor(b, p, fileMob->mediaObj, fileMob->mediaDesc, objectByMob, e);
+	OmfObjects::readDescriptor(b, p, fileMob->fileMobObjectId, fileMob->mediaDescriptorObjectId, objectByMob, e);
 	e.fileMobId = out.fileMobId;
 
 	// Identity from the master: the clip name Avid displays and the id the
@@ -214,7 +216,7 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	if (master)
 	{
 		e.hasMaterialPackage = true;
-		e.umid = master->hex;
+		e.umid = master->mobId;
 		for (quint32 obj : master->objects)
 		{
 			if (e.clipName.isEmpty())
@@ -238,24 +240,24 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	QSet<quint32> seen;
 	if (master)
 		for (quint32 obj : master->objects)
-			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
+			OmfObjects::walkAttributes(b, p, b.readObjectId(obj, p.attrs), a, seen);
 	e.hasImportSetting = a.isImported; // the master's flag only, as the MDB reads it
 	for (quint32 obj : fileMob->objects)
-		OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
+		OmfObjects::walkAttributes(b, p, b.readObjectId(obj, p.attrs), a, seen);
 
 	// The source mob and every object sharing its id, resolved once for the
 	// two facts below that may live there.
-	const quint32 src = OmfObjects::findUniqueReferencedMobObjectId(b, p, fileMob->mediaObj, objectByMob);
-	QVector<quint32> srcObjs;
-	if (src != 0)
+	const quint32 sourceMobObjectId = OmfObjects::findUniqueReferencedMobObjectId(b, p, fileMob->fileMobObjectId, objectByMob);
+	QVector<quint32> sourceMobObjectIds;
+	if (sourceMobObjectId != 0)
 	{
-		const QString srcHex = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(src, p.mobId)));
-		const auto it = groups.constFind(srcHex);
-		srcObjs = it == groups.cend() ? QVector<quint32>{src} : it->objects;
+		const QString sourceMobId = OmfUid::toIdText(OmfObjects::normalizedMobId(b, b.bytes(sourceMobObjectId, p.mobId)));
+		const auto it = groups.constFind(sourceMobId);
+		sourceMobObjectIds = it == groups.cend() ? QVector<quint32>{sourceMobObjectId} : it->objects;
 	}
 	if (a.project.isEmpty())
-		for (quint32 obj : srcObjs)
-			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
+		for (quint32 obj : sourceMobObjectIds)
+			OmfObjects::walkAttributes(b, p, b.readObjectId(obj, p.attrs), a, seen);
 
 	// The oldest slates (15 of the 80 shipped: the JFIF12S/14S/35/42 and
 	// DV411 families, 2001-era) carry no _SRCFILE at all; their import path
@@ -264,12 +266,12 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	// MSML is skipped: MC 2026 uses it for the last-known volume, not a path.
 	if (a.sourceFilePath.isEmpty())
 	{
-		for (quint32 obj : srcObjs)
+		for (quint32 obj : sourceMobObjectIds)
 		{
-			const quint32 desc = b.ref(obj, p.physMedia);
+			const quint32 desc = b.readObjectId(obj, p.physMedia);
 			if (desc == 0 || (!p.omf2 && b.objectClass(desc) != "MDES"))
 				continue;
-			for (quint32 loc : b.refs(desc, p.locator))
+			for (quint32 loc : b.readObjectIds(desc, p.locator))
 			{
 				if (b.objectClass(loc) == "MSML")
 					continue;
@@ -292,12 +294,12 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	// component). The master's tracks are the fallback route.
 	{
 		QSet<quint32> tcSeen;
-		quint32 tccp = OmfObjects::findTimecodeComponent(b, p, fileMob->mediaObj, objectByMob, tcSeen);
-		if (tccp == 0 && master)
+		quint32 timecodeObjectId = OmfObjects::findTimecodeComponent(b, p, fileMob->fileMobObjectId, objectByMob, tcSeen);
+		if (timecodeObjectId == 0 && master)
 			for (quint32 obj : master->objects)
-				if ((tccp = OmfObjects::findTimecodeComponent(b, p, obj, objectByMob, tcSeen)) != 0)
+				if ((timecodeObjectId = OmfObjects::findTimecodeComponent(b, p, obj, objectByMob, tcSeen)) != 0)
 					break;
-		const OmfObjects::Timecode tc = OmfObjects::readTimecode(b, p, tccp);
+		const OmfObjects::Timecode tc = OmfObjects::readTimecode(b, p, timecodeObjectId);
 		if (tc.found)
 		{
 			out.startTimecode = tc.start;
@@ -306,8 +308,6 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 		}
 	}
 
-	if (bytesRead)
-		*bytesRead = b.bytesRead();
 	e.headerStatus = e.valid && !out.fileMobId.isEmpty() && master
 						 ? MediaMetadata::HeaderStatus::Complete
 						 : MediaMetadata::HeaderStatus::Incomplete;

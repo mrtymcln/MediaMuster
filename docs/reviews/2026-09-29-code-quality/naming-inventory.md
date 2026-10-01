@@ -1,5 +1,9 @@
 # MediaMuster naming inventory
 
+Bento cleanup, 2 October 2026: approved TocEntry, reference-reading and private helper/storage names are implemented. Reference arrays reuse one entry lookup, the open failure helper is expanded, and label/entry sizes plus dictionary/reference property and type IDs have named constants. Format values, entry fields and validation rules are preserved. Historical inventory scopes and locations remain unchanged.
+
+OMF parser update, 2 October 2026: approved MobGroup and local names are implemented. Selected file identity assignment is simplified, and a scope guard reports final bytesRead on every return. Fixture-layout comments now distinguish examples from supported schemas. Parsed output fields are retained. Historical inventory scopes and locations remain unchanged.
+
 OMF helpers update, 2 October 2026: approved PropertyIds, ObjectIdByMobId, traversal/helper and object-ID parameter names are implemented. WaveSummary, AifcSummary and TiffSummary names are retained; sample/component bit-count fields are clarified. The unused attbInt lookup is removed. Timecode searches reuse the component list while preserving traversal order and cycle checks. Format documentation is corrected and QVector included directly. Historical inventory scopes and locations remain unchanged.
 
 MDB cleanup, 1 October 2026: approved internal names are implemented, including fileMobObjectId and mediaDescriptorObjectId. Redundant mobIdHex fields and rawBytes temporary are removed. File-read errors are explicitly rejected. Useful format notes remain; earlier validation statistics are preserved in assessment.md. Historical inventory scopes and locations are unchanged.
@@ -911,7 +915,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 515 | Parameter | BentoFile::hasProperty | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 520 | Parameter | BentoFile::read | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 520 | Parameter | BentoFile::read | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 520 | Parameter | BentoFile::read | cap | cap | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 520 | Parameter | BentoFile::read | cap | maxBytes | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 522 | Variable | BentoFile::read | first | first | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 528 | Variable | BentoFile::read | maxSize | maxSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 529 | Variable | BentoFile::read | total | total | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -921,7 +925,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 551 | Variable | BentoFile::read | part | part | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 560 | Parameter | BentoFile::bytes | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 560 | Parameter | BentoFile::bytes | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 560 | Parameter | BentoFile::bytes | cap | cap | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 560 | Parameter | BentoFile::bytes | cap | maxBytes | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 561 | Parameter | BentoFile::value | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 561 | Parameter | BentoFile::value | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 565 | Variable | BentoFile::value | key | key | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -974,16 +978,16 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 | 15 | Class |  | BentoFile | BentoFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 18 | Struct | BentoFile | Entry | Entry | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 18 | Struct | BentoFile | Entry | TocEntry | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 20 | Field | BentoFile::Entry | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | BentoFile::Entry | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | BentoFile::Entry | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Field | BentoFile::Entry | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Field | BentoFile::Entry | length | length | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 21 | Field | BentoFile::Entry | tocPos | tocPos | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 21 | Field | BentoFile::Entry | tocPos | tocOffset | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 22 | Field | BentoFile::Entry | immediate | immediate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Field | BentoFile::Entry | continued | continued | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 23 | Field | BentoFile::Entry | referenceList | referenceList | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 23 | Field | BentoFile::Entry | referenceList | referenceListObjectId | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 24 | Field | BentoFile::Entry | immediateData | immediateData | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Field | BentoFile::Entry | nextSegment | nextSegment | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Enum | BentoFile | ReadStatus | ReadStatus | Keep | Existing domain or scoped type name is clear; no forced synonym. |
@@ -1011,14 +1015,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 48 | Method | BentoFile | read | read | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 48 | Parameter | BentoFile::read | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 48 | Parameter | BentoFile::read | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 48 | Parameter | BentoFile::read | cap | cap | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 48 | Parameter | BentoFile::read | cap | maxBytes | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 50 | Method | BentoFile | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | BentoFile::value | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | BentoFile::value | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Method | BentoFile | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Parameter | BentoFile::bytes | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Parameter | BentoFile::bytes | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Parameter | BentoFile::bytes | cap | cap | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 51 | Parameter | BentoFile::bytes | cap | maxBytes | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 52 | Method | BentoFile | objectClass | objectClass | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 52 | Parameter | BentoFile::objectClass | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Method | BentoFile | objectsWithProperty | objectsWithProperty | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1036,11 +1040,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 62 | Parameter | BentoFile::rationalValue | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | BentoFile::rationalValue | num | num | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | BentoFile::rationalValue | den | den | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 64 | Method | BentoFile | ref | ref | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 64 | Method | BentoFile | ref | readObjectId | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 64 | Parameter | BentoFile::ref | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 64 | Parameter | BentoFile::ref | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 64 | Parameter | BentoFile::ref | status | status | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 65 | Method | BentoFile | refs | refs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 65 | Method | BentoFile | refs | readObjectIds | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 65 | Parameter | BentoFile::refs | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | BentoFile::refs | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | BentoFile::refs | status | status | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1053,7 +1057,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 72 | Method | BentoFile | tocOffset | tocOffset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 73 | Method | BentoFile | entries | entries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 74 | Method | BentoFile | bytesRead | bytesRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 77 | Method | BentoFile | find | find | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 77 | Method | BentoFile | find | findEntry | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 77 | Parameter | BentoFile::find | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 77 | Parameter | BentoFile::find | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 78 | Method | BentoFile | checkLabel | checkLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1074,7 +1078,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 82 | Parameter | BentoFile::fetch | at | at | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 82 | Parameter | BentoFile::fetch | length | length | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 82 | Parameter | BentoFile::fetch | out | outputBytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 83 | Method | BentoFile | mappedReference | mappedReference | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 83 | Method | BentoFile | mappedReference | resolveObjectReference | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 83 | Parameter | BentoFile::mappedReference | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | BentoFile::mappedReference | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | BentoFile::mappedReference | status | status | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1090,12 +1094,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 90 | Field | BentoFile | m_containerBigEndian | m_containerBigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 90 | Field | BentoFile | m_metadataBigEndian | m_metadataBigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 90 | Field | BentoFile | m_omf2References | m_omf2References | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 91 | Field | BentoFile | m_tailFirst | m_tailFirst | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 91 | Field | BentoFile | m_tailFirst | m_readsFromFile | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 92 | Field | BentoFile | m_entries | m_entries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 93 | Field | BentoFile | m_propIdByName | m_propIdByName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 94 | Field | BentoFile | m_objIdProperty | m_objIdProperty | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 94 | Field | BentoFile | m_objClassProperty | m_objClassProperty | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 95 | Field | BentoFile | m_views | m_views | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 95 | Field | BentoFile | m_views | m_cachedValues | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 96 | Field | BentoFile | m_file | m_file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 97 | Field | BentoFile | m_bytesRead | m_bytesRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 
@@ -4251,13 +4255,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 | 51 | Struct |  | MobGroup | MobGroup | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 53 | Field | MobGroup | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 53 | Field | MobGroup | hex | mobId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 54 | Field | MobGroup | objects | objects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 55 | Field | MobGroup | mediaObj | mediaObj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 56 | Field | MobGroup | mediaDesc | mediaDesc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 55 | Field | MobGroup | mediaObj | fileMobObjectId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
+| 56 | Field | MobGroup | mediaDesc | mediaDescriptorObjectId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 57 | Field | MobGroup | anyPhysical | anyPhysical | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Field | MobGroup | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 59 | Field | MobGroup | masterClass | masterClass | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 59 | Field | MobGroup | masterClass | explicitMaster | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 60 | Field | MobGroup | legacyMaster | legacyMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Function |  | mediaDataMobId | mediaDataMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | mediaDataMobId | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -4281,16 +4285,16 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 121 | Variable | OmfParser::parseHeader | order | order | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 122 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 126 | Variable | OmfParser::parseHeader | raw | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 127 | Variable | OmfParser::parseHeader | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 127 | Variable | OmfParser::parseHeader | hex | mobId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 132 | Variable | OmfParser::parseHeader | it | it | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 140 | Variable | OmfParser::parseHeader | usage | usage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 143 | Variable | OmfParser::parseHeader | code | code | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 149 | Variable | OmfParser::parseHeader | desc | desc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 163 | Variable | OmfParser::parseHeader | fileMob | fileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 164 | Variable | OmfParser::parseHeader | master | master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 165 | Variable | OmfParser::parseHeader | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 165 | Variable | OmfParser::parseHeader | hex | mobId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 167 | Variable | OmfParser::parseHeader | g | g | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 186 | Variable | OmfParser::parseHeader | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 186 | Variable | OmfParser::parseHeader | hex | mobId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 188 | Variable | OmfParser::parseHeader | g | g | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 191 | Variable | OmfParser::parseHeader | referencesFile | referencesFile | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 192 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4302,16 +4306,16 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 238 | Variable | OmfParser::parseHeader | seen | seen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 240 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 243 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 248 | Variable | OmfParser::parseHeader | src | src | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 249 | Variable | OmfParser::parseHeader | srcObjs | srcObjs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 252 | Variable | OmfParser::parseHeader | srcHex | srcHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 248 | Variable | OmfParser::parseHeader | src | sourceMobObjectId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
+| 249 | Variable | OmfParser::parseHeader | srcObjs | sourceMobObjectIds | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
+| 252 | Variable | OmfParser::parseHeader | srcHex | sourceMobId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 253 | Variable | OmfParser::parseHeader | it | it | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 257 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 267 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 269 | Variable | OmfParser::parseHeader | desc | desc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 272 | Variable | OmfParser::parseHeader | loc | loc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 294 | Variable | OmfParser::parseHeader | tcSeen | tcSeen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 295 | Variable | OmfParser::parseHeader | tccp | tccp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 295 | Variable | OmfParser::parseHeader | tccp | timecodeObjectId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 297 | Variable | OmfParser::parseHeader | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 300 | Variable | OmfParser::parseHeader | tc | tc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 

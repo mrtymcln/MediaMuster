@@ -176,7 +176,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				usageCode = AvidUsage::merge(usageCode, code);
 			}
 			anyPhysical |= b.hasProperty(obj, p.physMedia);
-			const quint32 desc = b.ref(obj, p.physMedia);
+			const quint32 desc = b.readObjectId(obj, p.physMedia);
 			if (desc == 0)
 				continue;
 			anyPhysical = true;
@@ -215,7 +215,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 				a.omfEra = b.value(fileMobObjectId, p.mobId).size() == OmfUid::kUidSize; // OMF-era: 12-byte mob
 				QSet<quint32> seen;
 				for (quint32 obj : objs)
-					OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
+					OmfObjects::walkAttributes(b, p, b.readObjectId(obj, p.attrs), a, seen);
 				if (a.project.isEmpty())
 				{
 					const quint32 src = OmfObjects::findUniqueReferencedMobObjectId(b, p, fileMobObjectId, objectByMob);
@@ -223,14 +223,14 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 					const auto sourceObjects = objectsByMobId.constFind(sourceMobId);
 					if (sourceObjects != objectsByMobId.cend())
 						for (quint32 obj : *sourceObjects)
-							OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
+							OmfObjects::walkAttributes(b, p, b.readObjectId(obj, p.attrs), a, seen);
 				}
 				f.project = a.project;
 			}
 
 			// OMF-era: the descriptor's locator list may name the volume the
 			// file was last seen on (MSML). Diagnostic only — never a fact.
-			for (quint32 loc : b.refs(mediaDescriptorObjectId, p.locator))
+			for (quint32 loc : b.readObjectIds(mediaDescriptorObjectId, p.locator))
 			{
 				if (b.objectClass(loc) != "MSML")
 					continue;
@@ -257,7 +257,7 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 		{
 			if (m.clipName.isEmpty())
 				m.clipName = BentoFile::string(b.value(obj, p.name));
-			OmfObjects::walkAttributes(b, p, b.ref(obj, p.attrs), a, seen);
+			OmfObjects::walkAttributes(b, p, b.readObjectId(obj, p.attrs), a, seen);
 		}
 		m.bin = a.bin;
 		m.classificationKnown = AvidUsage::isMasterCode(m.usageCode);

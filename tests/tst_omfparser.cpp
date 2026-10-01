@@ -163,9 +163,9 @@ void TestOmfParser::omf_master_usage_is_role_specific_and_width_checked()
 			{
 				QVERIFY(entry.immediate);
 				QCOMPARE(entry.length, quint64(4));
-				data.replace(qsizetype(entry.tocPos + 12), 4, encoding.word(quint32(code == -2 ? 1 : code)));
+				data.replace(qsizetype(entry.tocOffset + 12), 4, encoding.word(quint32(code == -2 ? 1 : code)));
 				if (code == -2)
-					data.replace(qsizetype(entry.tocPos + 16), 4, BentoBuilder::le32(2));
+					data.replace(qsizetype(entry.tocOffset + 16), 4, BentoBuilder::le32(2));
 				++changed;
 			}
 		QCOMPARE(changed, 1);
@@ -240,7 +240,13 @@ void TestOmfParser::multiple_embedded_files_are_not_collapsed()
 	}
 	QTemporaryDir temp;
 	const QString path = writeFileIn(temp.path(), QStringLiteral("multiple.omf"), w.build());
-	QVERIFY(!OmfParser::parseHeader(path).essence.valid);
+	BentoFile container;
+	QVERIFY(container.open(path));
+	const qint64 openingBytes = container.bytesRead();
+	qint64 bytesRead = -1;
+	QVERIFY(!OmfParser::parseHeader(path, &bytesRead).essence.valid);
+	// Rejecting ambiguous media still reports the metadata reads after opening.
+	QVERIFY(bytesRead > openingBytes);
 }
 
 // MARK: - Every one of the 80 slates

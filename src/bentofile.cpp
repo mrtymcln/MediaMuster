@@ -8,6 +8,12 @@
 
 namespace
 {
+	constexpr qsizetype kLabelSize = 24;
+	constexpr qsizetype kBento1TocEntrySize = 24;
+	constexpr quint32 kGlobalTypeNamePropertyId = 23;
+	constexpr quint32 kGlobalPropertyNamePropertyId = 24;
+	constexpr quint32 kReferenceRecordingPropertyId = 31;
+	constexpr quint32 kReferenceRecordingTypeId = 32;
 	constexpr quint64 kDictionaryPrefetchBytes = 64 * 1024 * 1024;
 	constexpr unsigned char kMagic[] = {0xA4, 0x43, 0x4D, 0xA5, 0x48, 0x64, 0x72, 0xD7};
 	quint32 u32At(const char *p) { return qFromLittleEndian<quint32>(p); }
@@ -27,19 +33,19 @@ void BentoFile::reset()
 	m_toc.clear();
 	m_dict.clear();
 	m_entries.clear();
-	m_views.clear();
+	m_cachedValues.clear();
 	m_propIdByName.clear();
 	m_tocOffset = m_tocLength = m_dictOffset = 0;
 	m_tocBlockSize = m_major = 0;
 	m_objIdProperty = m_objClassProperty = -1;
-	m_containerBigEndian = m_metadataBigEndian = m_omf2References = m_tailFirst = false;
+	m_containerBigEndian = m_metadataBigEndian = m_omf2References = m_readsFromFile = false;
 	if (m_file.isOpen())
 		m_file.close();
 }
 
 bool BentoFile::checkLabel(QByteArrayView label, qint64 fileSize, QString &reason)
 {
-	if (label.size() != 24 || std::memcmp(label.data(), kMagic, 8) != 0)
+	if (label.size() != kLabelSize || std::memcmp(label.data(), kMagic, 8) != 0)
 	{
 		reason = QStringLiteral("no Bento label at end of file");
 		return false;
@@ -60,7 +66,7 @@ bool BentoFile::checkLabel(QByteArrayView label, qint64 fileSize, QString &reaso
 	m_tocBlockSize = m_major == 2 ? quint32(half(p + 10, m_containerBigEndian)) * 1024 : 0;
 	m_tocOffset = word(p + 16, m_containerBigEndian);
 	m_tocLength = word(p + 20, m_containerBigEndian);
-	if (m_tocOffset + m_tocLength != quint64(fileSize - 24))
+	if (m_tocOffset + m_tocLength != quint64(fileSize - kLabelSize))
 	{
 		reason = QStringLiteral("TOC arithmetic does not close (off %1 + len %2 != size %3 - 24)")
 					 .arg(m_tocOffset)
@@ -68,7 +74,7 @@ bool BentoFile::checkLabel(QByteArrayView label, qint64 fileSize, QString &reaso
 					 .arg(fileSize);
 		return false;
 	}
-	if (m_major == 1 && m_tocLength % 24 != 0)
+	if (m_major == 1 && m_tocLength % kBento1TocEntrySize != 0)
 	{
 		reason = QStringLiteral("Bento1 TOC length is not a multiple of 24");
 		return false;
@@ -88,17 +94,17 @@ bool BentoFile::indexToc(QByteArrayView toc, QString &reason)
 	};
 	if (m_major == 1)
 	{
-		m_entries.reserve(toc.size() / 24);
-		for (qsizetype pos = 0; pos < toc.size(); pos += 24)
+		m_entries.reserve(toc.size() / kBento1TocEntrySize);
+		for (qsizetype pos = 0; pos < toc.size(); pos += kBento1TocEntrySize)
 		{
 			const char *p = toc.data() + pos;
-			Entry e;
+			TocEntry e;
 			e.object = u32At(p);
 			e.property = u32At(p + 4);
 			e.type = u32At(p + 8);
 			e.value = u32At(p + 12);
 			e.length = u32At(p + 16);
-			e.tocPos = m_tocOffset + pos;
+			e.tocOffset = m_tocOffset + pos;
 			const quint16 flags = u16At(p + 22);
 			e.immediate = flags & 1;
 			e.continued = flags & 2;
@@ -209,12 +215,12 @@ bool BentoFile::indexToc(QByteArrayView toc, QString &reason)
 				allowReference = allowGeneration = false;
 				continue;
 			}
-			Entry e;
+			TocEntry e;
 			e.object = object;
 			e.property = property;
 			e.type = type;
-			e.referenceList = refs;
-			e.tocPos = m_tocOffset + start;
+			e.referenceListObjectId = refs;
+			e.tocOffset = m_tocOffset + start;
 			e.immediate = code >= 9 && code <= 14;
 			e.continued = code == 6 || code == 8 || code == 14 || code == 26;
 			if (e.immediate)
@@ -245,16 +251,16 @@ bool BentoFile::indexToc(QByteArrayView toc, QString &reason)
 	// property. Validate before sorting, while physical adjacency is known.
 	for (qsizetype i = 0; i < m_entries.size(); ++i)
 	{
-		Entry &e = m_entries[i];
+		TocEntry &e = m_entries[i];
 		if (!e.continued)
 			continue;
 		if (i + 1 >= m_entries.size())
-			return fail(e.tocPos - m_tocOffset, QStringLiteral("unterminated continued value"));
-		const Entry &next = m_entries[i + 1];
+			return fail(e.tocOffset - m_tocOffset, QStringLiteral("unterminated continued value"));
+		const TocEntry &next = m_entries[i + 1];
 		if (e.object != next.object || e.property != next.property || e.type != next.type)
-			return fail(e.tocPos - m_tocOffset, QStringLiteral("continued value changes object/property/type"));
+			return fail(e.tocOffset - m_tocOffset, QStringLiteral("continued value changes object/property/type"));
 	}
-	std::stable_sort(m_entries.begin(), m_entries.end(), [](const Entry &a, const Entry &b)
+	std::stable_sort(m_entries.begin(), m_entries.end(), [](const TocEntry &a, const TocEntry &b)
 					 { return a.object != b.object ? a.object < b.object : a.property < b.property; });
 	for (qsizetype i = 0; i < m_entries.size(); ++i)
 		if (m_entries[i].continued)
@@ -279,12 +285,12 @@ bool BentoFile::locateLabel(qint64 fileSize, QByteArray &label, quint64 &labelEn
 	{
 		if (offset > quint64(fileSize) || length > quint64(fileSize) - offset)
 			return false;
-		if (m_tailFirst)
+		if (m_readsFromFile)
 			return fetch(offset, length, out);
 		out = m_data.sliced(qsizetype(offset), qsizetype(length));
 		return true;
 	};
-	if (!at(fileSize - 24, 24, label))
+	if (!at(fileSize - kLabelSize, kLabelSize, label))
 	{
 		reason = QStringLiteral("short read of Bento label");
 		return false;
@@ -361,10 +367,10 @@ bool BentoFile::locateLabel(qint64 fileSize, QByteArray &label, quint64 &labelEn
 			dataLength = qFromLittleEndian<quint64>(sizes.constData() + 8);
 			haveDataLength = true;
 		}
-		if (id == "omfi" && padded >= 24)
+		if (id == "omfi" && padded >= kLabelSize)
 		{
 			labelEnd = body + padded;
-			if (!at(labelEnd - 24, 24, label))
+			if (!at(labelEnd - kLabelSize, kLabelSize, label))
 			{
 				reason = QStringLiteral("short read of RIFF Bento label");
 				return false;
@@ -383,7 +389,7 @@ bool BentoFile::load(const QByteArray &data, QString *why)
 	reset();
 	m_bytesRead = data.size();
 	QString reason;
-	if (data.size() < 24)
+	if (data.size() < kLabelSize)
 		reason = QStringLiteral("too small for a Bento label");
 	else
 	{
@@ -417,21 +423,26 @@ bool BentoFile::open(const QString &path, QString *why)
 	QString reason;
 	m_file.setFileName(path);
 	auto fail = [&]()
-	{ if (why) *why = reason; reset(); return false; };
+	{
+		if (why)
+			*why = reason;
+		reset();
+		return false;
+	};
 	if (!m_file.open(QIODevice::ReadOnly))
 	{
 		reason = QStringLiteral("cannot open: %1").arg(m_file.errorString());
 		return fail();
 	}
 	const qint64 size = m_file.size();
-	if (size < 24)
+	if (size < kLabelSize)
 	{
 		reason = QStringLiteral("too small for a Bento label");
 		return fail();
 	}
 	QByteArray label;
 	quint64 labelEnd = 0;
-	m_tailFirst = true;
+	m_readsFromFile = true;
 	if (!locateLabel(size, label, labelEnd, reason) || !checkLabel(label, qint64(labelEnd), reason))
 		return fail();
 	if (!fetch(m_tocOffset, m_tocLength, m_toc))
@@ -444,9 +455,9 @@ bool BentoFile::open(const QString &path, QString *why)
 	// Names normally occupy one small span. A scattered dictionary falls
 	// back to individually bounded reads instead of copying the intervening essence.
 	quint64 lo = m_tocOffset, hi = 0;
-	for (const Entry &e : m_entries)
+	for (const TocEntry &e : m_entries)
 	{
-		if ((e.property != 23 && e.property != 24) || e.immediate)
+		if ((e.property != kGlobalTypeNamePropertyId && e.property != kGlobalPropertyNamePropertyId) || e.immediate)
 			continue;
 		if (e.value > m_tocOffset || e.length > m_tocOffset - e.value)
 			continue;
@@ -471,11 +482,11 @@ bool BentoFile::open(const QString &path, QString *why)
 
 bool BentoFile::indexNames(QString &reason)
 {
-	for (const Entry &e : m_entries)
+	for (const TocEntry &e : m_entries)
 	{
-		if (e.property != 24)
+		if (e.property != kGlobalPropertyNamePropertyId)
 			continue;
-		const ReadResult result = read(e.object, 24);
+		const ReadResult result = read(e.object, kGlobalPropertyNamePropertyId);
 		if (!result.ok())
 		{
 			reason = QStringLiteral("unreadable property-name dictionary entry %1").arg(e.object);
@@ -504,30 +515,30 @@ int BentoFile::propertyId(QByteArrayView name) const
 	return m_propIdByName.value(name.toByteArray(), -1);
 }
 
-const BentoFile::Entry *BentoFile::find(quint32 object, quint32 property) const
+const BentoFile::TocEntry *BentoFile::findEntry(quint32 object, quint32 property) const
 {
 	const auto it = std::lower_bound(m_entries.cbegin(), m_entries.cend(), std::make_pair(object, property),
-									 [](const Entry &e, const std::pair<quint32, quint32> &key)
+									 [](const TocEntry &e, const std::pair<quint32, quint32> &key)
 									 { return e.object != key.first ? e.object < key.first : e.property < key.second; });
 	return it == m_entries.cend() || it->object != object || it->property != property ? nullptr : &*it;
 }
 
 bool BentoFile::hasProperty(quint32 object, int property) const
 {
-	return property >= 0 && find(object, quint32(property));
+	return property >= 0 && findEntry(object, quint32(property));
 }
 
-BentoFile::ReadResult BentoFile::read(quint32 object, int property, qint64 cap) const
+BentoFile::ReadResult BentoFile::read(quint32 object, int property, qint64 maxBytes) const
 {
-	const Entry *first = property < 0 ? nullptr : find(object, quint32(property));
+	const TocEntry *first = property < 0 ? nullptr : findEntry(object, quint32(property));
 	if (!first)
 		return {{}, ReadStatus::Missing};
-	if (cap < 0)
+	if (maxBytes < 0)
 		return {{}, ReadStatus::TooLarge};
 	// QByteArray uses qsizetype and needs room for its trailing NUL byte.
-	const quint64 maxSize = quint64(qMin<qint64>(cap, std::numeric_limits<qsizetype>::max() - 1));
+	const quint64 maxSize = quint64(qMin<qint64>(maxBytes, std::numeric_limits<qsizetype>::max() - 1));
 	quint64 total = 0;
-	for (const Entry *e = first; e; e = e->nextSegment < 0 ? nullptr : &m_entries[e->nextSegment])
+	for (const TocEntry *e = first; e; e = e->nextSegment < 0 ? nullptr : &m_entries[e->nextSegment])
 	{
 		if (e->immediate ? e->length > quint64(e->immediateData.size()) : (e->value > m_tocOffset || e->length > m_tocOffset - e->value))
 			return {{}, ReadStatus::Malformed};
@@ -537,11 +548,11 @@ BentoFile::ReadResult BentoFile::read(quint32 object, int property, qint64 cap) 
 	}
 	QByteArray out;
 	out.reserve(qsizetype(total));
-	for (const Entry *e = first; e; e = e->nextSegment < 0 ? nullptr : &m_entries[e->nextSegment])
+	for (const TocEntry *e = first; e; e = e->nextSegment < 0 ? nullptr : &m_entries[e->nextSegment])
 	{
 		if (e->immediate)
 			out += e->immediateData;
-		else if (!m_tailFirst)
+		else if (!m_readsFromFile)
 			out.append(m_data.constData() + e->value, qsizetype(e->length));
 		else if (e->value >= m_dictOffset && e->value - m_dictOffset <= quint64(m_dict.size()) &&
 				 e->length <= quint64(m_dict.size()) - (e->value - m_dictOffset))
@@ -557,15 +568,15 @@ BentoFile::ReadResult BentoFile::read(quint32 object, int property, qint64 cap) 
 	return {out, ReadStatus::Ok};
 }
 
-QByteArray BentoFile::bytes(quint32 object, int property, qint64 cap) const { return read(object, property, cap).data; }
+QByteArray BentoFile::bytes(quint32 object, int property, qint64 maxBytes) const { return read(object, property, maxBytes).data; }
 QByteArrayView BentoFile::value(quint32 object, int property) const
 {
 	if (property < 0)
 		return {};
 	const quint64 key = (quint64(object) << 32) | quint32(property);
-	auto it = m_views.constFind(key);
-	if (it == m_views.cend())
-		it = m_views.insert(key, bytes(object, property));
+	auto it = m_cachedValues.constFind(key);
+	if (it == m_cachedValues.cend())
+		it = m_cachedValues.insert(key, bytes(object, property));
 	return QByteArrayView(it.value());
 }
 QByteArray BentoFile::objectClass(quint32 object) const
@@ -575,7 +586,7 @@ QByteArray BentoFile::objectClass(quint32 object) const
 QVector<quint32> BentoFile::objectsWithProperty(int property) const
 {
 	QVector<quint32> result;
-	for (const Entry &e : m_entries)
+	for (const TocEntry &e : m_entries)
 		if (property >= 0 && e.property == quint32(property) && (result.isEmpty() || result.last() != e.object))
 			result.append(e.object);
 	return result;
@@ -613,7 +624,7 @@ bool BentoFile::rationalValue(QByteArrayView v, qint32 &num, qint32 &den) const
 	den = qint32(uintValue(v.sliced(4)));
 	return true;
 }
-quint32 BentoFile::mappedReference(const Entry &e, QByteArrayView raw, ReadStatus &status) const
+quint32 BentoFile::resolveObjectReference(const TocEntry &e, QByteArrayView raw, ReadStatus &status) const
 {
 	if (raw.size() != 4)
 	{
@@ -626,7 +637,7 @@ quint32 BentoFile::mappedReference(const Entry &e, QByteArrayView raw, ReadStatu
 	auto existingObject = [&](quint32 id)
 	{
 		const auto it = std::lower_bound(m_entries.cbegin(), m_entries.cend(), id,
-										 [](const Entry &candidate, quint32 target)
+										 [](const TocEntry &candidate, quint32 target)
 										 { return candidate.object < target; });
 		if (it == m_entries.cend() || it->object != id)
 		{
@@ -635,15 +646,15 @@ quint32 BentoFile::mappedReference(const Entry &e, QByteArrayView raw, ReadStatu
 		}
 		return id;
 	};
-	if (m_major == 1 || e.referenceList == 0)
+	if (m_major == 1 || e.referenceListObjectId == 0)
 		return existingObject(key);
-	const Entry *recording = find(e.referenceList, 31);
-	if (!recording || recording->type != 32)
+	const TocEntry *recording = findEntry(e.referenceListObjectId, kReferenceRecordingPropertyId);
+	if (!recording || recording->type != kReferenceRecordingTypeId)
 	{
 		status = ReadStatus::Malformed;
 		return 0;
 	}
-	const ReadResult table = read(e.referenceList, 31);
+	const ReadResult table = read(e.referenceListObjectId, kReferenceRecordingPropertyId);
 	if (!table.ok())
 	{
 		status = table.status == ReadStatus::Missing ? ReadStatus::Malformed : table.status;
@@ -660,7 +671,7 @@ quint32 BentoFile::mappedReference(const Entry &e, QByteArrayView raw, ReadStatu
 	status = ReadStatus::Malformed;
 	return 0;
 }
-quint32 BentoFile::ref(quint32 object, int property, ReadStatus *status) const
+quint32 BentoFile::readObjectId(quint32 object, int property, ReadStatus *status) const
 {
 	const ReadResult r = read(object, property);
 	ReadStatus s = r.status;
@@ -670,13 +681,13 @@ quint32 BentoFile::ref(quint32 object, int property, ReadStatus *status) const
 		if (r.data.size() != (m_omf2References ? 4 : 8))
 			s = ReadStatus::Malformed;
 		else
-			result = mappedReference(*find(object, quint32(property)), QByteArrayView(r.data).first(4), s);
+			result = resolveObjectReference(*findEntry(object, quint32(property)), QByteArrayView(r.data).first(4), s);
 	}
 	if (status)
 		*status = s;
 	return result;
 }
-QVector<quint32> BentoFile::refs(quint32 object, int property, ReadStatus *status) const
+QVector<quint32> BentoFile::readObjectIds(quint32 object, int property, ReadStatus *status) const
 {
 	const ReadResult r = read(object, property);
 	ReadStatus s = r.status;
@@ -688,9 +699,11 @@ QVector<quint32> BentoFile::refs(quint32 object, int property, ReadStatus *statu
 		if (r.data.size() != 2 + qsizetype(count) * stride)
 			s = ReadStatus::Malformed;
 		else
+		{
+			const TocEntry *entry = findEntry(object, quint32(property));
 			for (quint32 i = 0; i < count; ++i)
 			{
-				const quint32 id = mappedReference(*find(object, quint32(property)), QByteArrayView(r.data).sliced(2 + i * stride, 4), s);
+				const quint32 id = resolveObjectReference(*entry, QByteArrayView(r.data).sliced(2 + i * stride, 4), s);
 				if (s != ReadStatus::Ok)
 				{
 					result.clear();
@@ -699,6 +712,7 @@ QVector<quint32> BentoFile::refs(quint32 object, int property, ReadStatus *statu
 				if (id)
 					result.append(id);
 			}
+		}
 	}
 	if (status)
 		*status = s;

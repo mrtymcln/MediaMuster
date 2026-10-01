@@ -396,7 +396,7 @@ namespace OmfObjects
 			if (!object || seen.contains(object))
 				return;
 			seen.insert(object);
-			const auto attributes = b.refs(object, p.attrRefs);
+			const auto attributes = b.readObjectIds(object, p.attrRefs);
 			// A stack preserves the recursive walk's first-non-empty order
 			// without making graph depth depend on the process call stack.
 			for (auto it = attributes.crbegin(); it != attributes.crend(); ++it)
@@ -410,7 +410,7 @@ namespace OmfObjects
 			const quint32 kind = b.uintValue(b.bytes(attb, p.attbKind));
 			if (kind == 3)
 			{
-				const quint32 target = b.ref(attb, p.attbObj);
+				const quint32 target = b.readObjectId(attb, p.attbObj);
 				if (target == 0)
 					continue;
 				const QByteArray cls = b.objectClass(target);
@@ -477,7 +477,7 @@ namespace OmfObjects
 		bool completeRefs(const BentoFile &b, quint32 object, int property, QVector<quint32> &out)
 		{
 			BentoFile::ReadStatus status;
-			out = b.refs(object, property, &status);
+			out = b.readObjectIds(object, property, &status);
 			if (status != BentoFile::ReadStatus::Ok)
 				return false;
 			const auto raw = b.read(object, property);
@@ -489,7 +489,7 @@ namespace OmfObjects
 		{
 			using Import = AvidPrecompute::ImportAttribute;
 			BentoFile::ReadStatus status;
-			const quint32 attrs = b.ref(master, p.attrs, &status);
+			const quint32 attrs = b.readObjectId(master, p.attrs, &status);
 			if (status == BentoFile::ReadStatus::Missing || (status == BentoFile::ReadStatus::Ok && attrs == 0))
 				return Import::Absent;
 			if (status != BentoFile::ReadStatus::Ok || b.objectClass(attrs) != "ATTR")
@@ -539,7 +539,7 @@ namespace OmfObjects
 				if (b.objectClass(track) != "TRAK")
 					return -1;
 				BentoFile::ReadStatus status;
-				const quint32 component = b.ref(track, p.trackComp, &status);
+				const quint32 component = b.readObjectId(track, p.trackComp, &status);
 				if (status != BentoFile::ReadStatus::Ok || component == 0 || b.objectClass(component).isEmpty())
 					return -1;
 				const auto kind = b.read(component, trackKind);
@@ -603,8 +603,8 @@ namespace OmfObjects
 		QVector<quint32> componentObjectIds(const BentoFile &b, const PropertyIds &p, quint32 mobObjectId)
 		{
 			QVector<quint32> stack, out;
-			for (quint32 track : b.refs(mobObjectId, p.tracks))
-				stack.append(b.ref(track, p.trackComp));
+			for (quint32 track : b.readObjectIds(mobObjectId, p.tracks))
+				stack.append(b.readObjectId(track, p.trackComp));
 			QSet<quint32> seen;
 			while (!stack.isEmpty())
 			{
@@ -615,15 +615,15 @@ namespace OmfObjects
 				out.append(obj);
 				const QByteArray cls = b.objectClass(obj);
 				if (cls == "SEQU")
-					stack += b.refs(obj, p.sequence);
+					stack += b.readObjectIds(obj, p.sequence);
 				else if (p.omf2 && cls == "NEST")
-					stack += b.refs(obj, p.nestedSlots);
+					stack += b.readObjectIds(obj, p.nestedSlots);
 				else if (p.omf2 && cls == "SLCT")
-					stack.append(b.ref(obj, p.selected));
+					stack.append(b.readObjectId(obj, p.selected));
 				else if (p.omf2 && cls == "MGRP")
-					stack += b.refs(obj, p.choices);
+					stack += b.readObjectIds(obj, p.choices);
 				else if (p.omf2 && cls == "ERAT")
-					stack.append(b.ref(obj, p.inputSegment));
+					stack.append(b.readObjectId(obj, p.inputSegment));
 			}
 			return out;
 		}
@@ -688,7 +688,7 @@ namespace OmfObjects
 			return b.rationalValue(b.bytes(mobObjectId, p.editRate), num, den);
 		// Slots own rates in OMF2. A mob has no single rate when they disagree.
 		bool found = false;
-		for (quint32 slot : b.refs(mobObjectId, p.tracks))
+		for (quint32 slot : b.readObjectIds(mobObjectId, p.tracks))
 		{
 			qint32 n = 0, d = 0;
 			if (!b.rationalValue(b.bytes(slot, p.slotRate), n, d) || n <= 0 || d <= 0)

@@ -15,12 +15,12 @@
 class BentoFile
 {
 public:
-	struct Entry
+	struct TocEntry
 	{
 		quint32 object = 0, property = 0, type = 0;
-		quint64 value = 0, length = 0, tocPos = 0;
+		quint64 value = 0, length = 0, tocOffset = 0;
 		bool immediate = false, continued = false;
-		quint32 referenceList = 0;
+		quint32 referenceListObjectId = 0;
 		QByteArray immediateData;
 		qsizetype nextSegment = -1; ///< Index after sorting; only a continued segment links onward.
 	};
@@ -45,10 +45,10 @@ public:
 	[[nodiscard]] int propertyId(QByteArrayView name) const;
 	[[nodiscard]] bool hasProperty(quint32 object, int property) const;
 	/// Missing and unreadable are distinct. Never returns a truncated value.
-	[[nodiscard]] ReadResult read(quint32 object, int property, qint64 cap = std::numeric_limits<qsizetype>::max() - 1) const;
+	[[nodiscard]] ReadResult read(quint32 object, int property, qint64 maxBytes = std::numeric_limits<qsizetype>::max() - 1) const;
 	/// Compatibility adapters: use read() when absence changes interpretation.
 	[[nodiscard]] QByteArrayView value(quint32 object, int property) const;
-	[[nodiscard]] QByteArray bytes(quint32 object, int property, qint64 cap = std::numeric_limits<qsizetype>::max() - 1) const;
+	[[nodiscard]] QByteArray bytes(quint32 object, int property, qint64 maxBytes = std::numeric_limits<qsizetype>::max() - 1) const;
 	[[nodiscard]] QByteArray objectClass(quint32 object) const;
 	[[nodiscard]] QVector<quint32> objectsWithProperty(int property) const;
 
@@ -61,8 +61,8 @@ public:
 	[[nodiscard]] qint64 int64Value(QByteArrayView v) const;
 	bool rationalValue(QByteArrayView v, qint32 &num, qint32 &den) const;
 	/// Resolve object references, including Bento2 reference-list keys.
-	[[nodiscard]] quint32 ref(quint32 object, int property, ReadStatus *status = nullptr) const;
-	[[nodiscard]] QVector<quint32> refs(quint32 object, int property, ReadStatus *status = nullptr) const;
+	[[nodiscard]] quint32 readObjectId(quint32 object, int property, ReadStatus *status = nullptr) const;
+	[[nodiscard]] QVector<quint32> readObjectIds(quint32 object, int property, ReadStatus *status = nullptr) const;
 
 	[[nodiscard]] static QString string(QByteArrayView v);
 	[[nodiscard]] static QString utf8String(QByteArrayView v);
@@ -70,17 +70,17 @@ public:
 	[[nodiscard]] qsizetype entryCount() const { return m_entries.size(); }
 	[[nodiscard]] qsizetype propertyNameCount() const { return m_propIdByName.size(); }
 	[[nodiscard]] quint64 tocOffset() const { return m_tocOffset; }
-	[[nodiscard]] const QVector<Entry> &entries() const { return m_entries; }
+	[[nodiscard]] const QVector<TocEntry> &entries() const { return m_entries; }
 	[[nodiscard]] qint64 bytesRead() const { return m_bytesRead; }
 
 private:
-	[[nodiscard]] const Entry *find(quint32 object, quint32 property) const;
+	[[nodiscard]] const TocEntry *findEntry(quint32 object, quint32 property) const;
 	bool checkLabel(QByteArrayView label, qint64 fileSize, QString &reason);
 	bool locateLabel(qint64 fileSize, QByteArray &label, quint64 &labelEnd, QString &reason);
 	bool indexToc(QByteArrayView toc, QString &reason);
 	bool indexNames(QString &reason);
 	bool fetch(quint64 at, quint64 length, QByteArray &out) const;
-	[[nodiscard]] quint32 mappedReference(const Entry &entry, QByteArrayView raw, ReadStatus &status) const;
+	[[nodiscard]] quint32 resolveObjectReference(const TocEntry &entry, QByteArrayView raw, ReadStatus &status) const;
 	void reset();
 
 	QByteArray m_data, m_toc, m_dict;
@@ -88,11 +88,11 @@ private:
 	quint64 m_tocBlockSize = 0;
 	quint16 m_major = 0;
 	bool m_containerBigEndian = false, m_metadataBigEndian = false, m_omf2References = false;
-	bool m_tailFirst = false;
-	QVector<Entry> m_entries;
+	bool m_readsFromFile = false;
+	QVector<TocEntry> m_entries;
 	QHash<QByteArray, int> m_propIdByName;
 	int m_objIdProperty = -1, m_objClassProperty = -1;
-	mutable QHash<quint64, QByteArray> m_views;
+	mutable QHash<quint64, QByteArray> m_cachedValues;
 	mutable QFile m_file;
 	mutable qint64 m_bytesRead = 0;
 };

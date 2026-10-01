@@ -223,8 +223,8 @@ void TestBentoFile::typed_readers()
 	QVERIFY(b.rationalValue(b.value(a, b.propertyId("OMFI:CPNT:EditRate")), num, den));
 	QCOMPARE(num, 2997);
 	QCOMPARE(den, 100);
-	QCOMPARE(b.ref(a, b.propertyId("OMFI:MOBJ:PhysicalMedia")), t);
-	QCOMPARE(b.refs(a, b.propertyId("OMFI:TRKG:Tracks")), (QVector<quint32>{t, secondTrack}));
+	QCOMPARE(b.readObjectId(a, b.propertyId("OMFI:MOBJ:PhysicalMedia")), t);
+	QCOMPARE(b.readObjectIds(a, b.propertyId("OMFI:TRKG:Tracks")), (QVector<quint32>{t, secondTrack}));
 	QCOMPARE(BentoFile::string(b.value(a, b.propertyId("OMFI:CPNT:Name"))), QString::fromUtf8("zT_ßt"));
 	QCOMPARE(BentoFile::utf8String(b.value(a, b.propertyId("OMFI:MCBR:MC:binNameUTF8"))),
 			 QString::fromUtf8("zT_ßt"));
@@ -232,9 +232,9 @@ void TestBentoFile::typed_readers()
 			 QStringLiteral("060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613"));
 	// Malformed shapes read as nothing rather than something.
 	BentoFile::ReadStatus status;
-	QCOMPARE(b.ref(a, b.propertyId("OMFI:MalformedReference"), &status), 0u);
+	QCOMPARE(b.readObjectId(a, b.propertyId("OMFI:MalformedReference"), &status), 0u);
 	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
-	QVERIFY(b.refs(a, b.propertyId("OMFI:MalformedReferences"), &status).isEmpty());
+	QVERIFY(b.readObjectIds(a, b.propertyId("OMFI:MalformedReferences"), &status).isEmpty());
 	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 	QVERIFY(!b.rationalValue(QByteArrayView("1234"), num, den));
 	QVERIFY(OmfUid::toIdText(QByteArrayView("short")).isEmpty());
@@ -424,14 +424,14 @@ void TestBentoFile::omf_open_matches_load_on_real_fixtures()
 		const int nameProp = 24;
 		for (int i = 0; i < loaded.entryCount(); ++i)
 		{
-			const BentoFile::Entry &a = loaded.entries()[i];
-			const BentoFile::Entry &b = opened.entries()[i];
+			const BentoFile::TocEntry &a = loaded.entries()[i];
+			const BentoFile::TocEntry &b = opened.entries()[i];
 			QCOMPARE(b.object, a.object);
 			QCOMPARE(b.property, a.property);
 			QCOMPARE(b.type, a.type);
 			QCOMPARE(b.value, a.value);
 			QCOMPARE(b.length, a.length);
-			QCOMPARE(b.tocPos, a.tocPos);
+			QCOMPARE(b.tocOffset, a.tocOffset);
 			QCOMPARE(b.immediate, a.immediate);
 			// Same bytes in both modes — the dictionary span and the seek+read
 			// path both get exercised here, as does the shared 1 MiB cap.
@@ -505,7 +505,7 @@ void TestBentoFile::omf_open_reads_only_the_tail()
 	QCOMPARE(again.objectClass(firstObject), QByteArray("MOBJ"));
 	QCOMPARE(again.bytes(firstObject, mobIdProp), firstUid);
 	BentoFile::ReadStatus status;
-	QVERIFY(again.refs(heads[0], srcProp, &status).isEmpty());
+	QVERIFY(again.readObjectIds(heads[0], srcProp, &status).isEmpty());
 	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 
 	// A small .omf: the same budget, and the picture is only read when asked.
@@ -589,7 +589,7 @@ void TestBentoFile::omf_mob_index()
 	QCOMPARE(v.mid(22, 12), BentoBuilder::le32(0x2a) + coreB);
 	QCOMPARE(qFromLittleEndian<quint32>(v.constData() + 34), 68020u);
 	BentoFile::ReadStatus status;
-	QVERIFY(b.refs(head, b.propertyId("OMFI:SourceMobs"), &status).isEmpty());
+	QVERIFY(b.readObjectIds(head, b.propertyId("OMFI:SourceMobs"), &status).isEmpty());
 	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 }
 
@@ -622,9 +622,9 @@ void TestBentoFile::bento2_endian_references_and_status()
 			QCOMPARE(b->objectClass(source), QByteArray("SMOB"));
 			QCOMPARE(b->bytes(source, b->propertyId("OMFI:MOBJ:Name")), QByteArray("first part"));
 			BentoFile::ReadStatus status;
-			QCOMPARE(b->ref(source, b->propertyId("OMFI:SMOB:MediaDescription"), &status), descriptor);
+			QCOMPARE(b->readObjectId(source, b->propertyId("OMFI:SMOB:MediaDescription"), &status), descriptor);
 			QCOMPARE(status, BentoFile::ReadStatus::Ok);
-			QCOMPARE(b->refs(source, b->propertyId("OMFI:MOBJ:Slots"), &status), (QVector<quint32>{descriptor, source}));
+			QCOMPARE(b->readObjectIds(source, b->propertyId("OMFI:MOBJ:Slots"), &status), (QVector<quint32>{descriptor, source}));
 			QCOMPARE(status, BentoFile::ReadStatus::Ok);
 			qint32 num = 0, den = 0;
 			QVERIFY(b->rationalValue(b->bytes(descriptor, b->propertyId("OMFI:MDFL:SampleRate")), num, den));
@@ -688,7 +688,7 @@ void TestBentoFile::bento2_opcode_boundaries()
 	bad.setRaw(300, 31, bad.word(8) + bad.word(obj));
 	QVERIFY(b.load(bad.build()));
 	BentoFile::ReadStatus status;
-	QCOMPARE(b.ref(obj, b.propertyId("OMFI:Ref"), &status), 0u);
+	QCOMPARE(b.readObjectId(obj, b.propertyId("OMFI:Ref"), &status), 0u);
 	QCOMPARE(status, BentoFile::ReadStatus::Malformed);
 }
 
