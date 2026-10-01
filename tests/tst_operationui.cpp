@@ -7,6 +7,9 @@
 #include "rebalancedialog.h"
 #include "rebalancer.h"
 #include "formatutil.h"
+#include "binfilterdialog.h"
+#include "testavb.h"
+#include "mobid.h"
 
 #include <QAction>
 #include <QApplication>
@@ -158,6 +161,7 @@ private slots:
 	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
 	void optional_columns_match_csv_and_preserve_retained_sort();
+	void bin_metadata_lifecycle_matches_table_and_csv();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
 	void added_locations_require_managed_media_structure();
 	void startup_prunes_expired_journals_with_undo_disabled();
@@ -986,7 +990,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 		{
 			auto *header = window.m_tableView->horizontalHeader();
 			QCOMPARE(header->visualIndex(window.m_model->clipDurationColumn()),
-				header->visualIndex(static_cast<int>(Column::Duration)) + 1);
+					 header->visualIndex(static_cast<int>(Column::Duration)) + 1);
 		}
 	};
 	checkClipDurationPosition();
@@ -1116,6 +1120,99 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 	QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
 	window.setClipDurationEnabled(false);
 	QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(MediaTableModel::Column::ClipName));
+}
+
+void TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile missing;
+	missing.mediaFilePath = tmp.filePath("missing.mxf");
+	missing.masterMobId = MobId::format(TestAvb::Master);
+	MediaFile known = missing;
+	known.mediaFilePath = tmp.filePath("known.mxf");
+	known.clipName = QStringLiteral("Database clip");
+	known.clipNameSource = MediaFile::ClipNameSource::Mdb;
+	known.originalBin = QStringLiteral("Database bin");
+	window.onScanFinished({missing, known});
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	auto *list = dialog->findChild<QListWidget *>(QStringLiteral("BinList"));
+	QVERIFY(list);
+	QSignalSpy published(dialog, &BinFilterDialog::binsChanged);
+	const auto makeBin = [&](const QString &name)
+	{
+		TestAvb::Document d;
+		d.objects = {{"ABIN", TestAvb::bin(false, {2})},
+					 {"CMPO", TestAvb::composition(false, TestAvb::Master, name.toUtf8(), 3)},
+					 {"ATTR", TestAvb::attributes(false, 4)},
+					 {"MCBR", TestAvb::binReference(false, (name + " bin").toUtf8(), {})}};
+		return TestAvb::write(tmp.filePath(name + ".avb"), d.bytes());
+	};
+	const auto check = [&](const QString &expectedName, const QString &expectedBin)
+	{
+		QCOMPARE(window.m_model->fileAt(0).clipName, expectedName);
+		QCOMPARE(window.m_model->fileAt(0).originalBin, expectedBin);
+		QCOMPARE(window.m_model->fileAt(1).clipName, known.clipName);
+		QCOMPARE(window.m_model->fileAt(1).originalBin, known.originalBin);
+		QCOMPARE(window.m_model->fileAt(1).clipNameSource, MediaFile::ClipNameSource::Mdb);
+		QVERIFY(!window.m_model->fileAt(1).originalBinFromAvb);
+		QCOMPARE(window.m_proxy->rowCount(), 2);
+		window.m_tableView->selectAll();
+		const auto selected = window.selectedFiles();
+		QCOMPARE(selected.size(), 2);
+		QVector<MediaFile> visible;
+		for (int row = 0; row < window.m_proxy->rowCount(); ++row)
+			visible.append(window.fileAtProxyRow(row));
+		for (const auto &snapshot : {visible, selected})
+		{
+			const auto exportPath = tmp.filePath("names.csv");
+			QVERIFY(MediaCsv::write(exportPath, snapshot));
+			QFile csv(exportPath);
+			QVERIFY(csv.open(QIODevice::ReadOnly));
+			csv.readLine(); // UTF-8 BOM and column headings.
+			for (const auto &file : snapshot)
+			{
+				int proxyRow = 0;
+				while (proxyRow < 2 && window.fileAtProxyRow(proxyRow).mediaFilePath != file.mediaFilePath)
+					++proxyRow;
+				QVERIFY(proxyRow < 2);
+				const auto displayedName = window.m_proxy->index(proxyRow, int(MediaTableModel::Column::ClipName)).data().toString();
+				const auto displayedBin = window.m_proxy->index(proxyRow, int(MediaTableModel::Column::OriginalBin)).data().toString();
+				// Fixture names contain no CSV-special characters; escaping has separate coverage.
+				const auto prefix = QStringLiteral("\"%1\",\"No project\",\"%2\",").arg(displayedName, displayedBin).toUtf8();
+				QVERIFY(csv.readLine().startsWith(prefix));
+			}
+			QVERIFY(csv.atEnd());
+		}
+	};
+	dialog->addBinFromFile(makeBin(QStringLiteral("First")));
+	QTRY_COMPARE(published.count(), 1);
+	check(QStringLiteral("First"), QStringLiteral("First bin"));
+	dialog->addBinFromFile(makeBin(QStringLiteral("Second")));
+	QTRY_COMPARE(published.count(), 2);
+	check({}, {}); // Both fields conflict, while the database row stays authoritative.
+	list->item(1)->setCheckState(Qt::Unchecked);
+	check({}, {}); // Ticking controls filter operands, not metadata ownership.
+	list->clearSelection();
+	list->item(0)->setSelected(true);
+	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
+	check(QStringLiteral("Second"), QStringLiteral("Second bin"));
+	window.onScanFinished({missing, known});
+	check(QStringLiteral("Second"), QStringLiteral("Second bin"));
+	MediaFile refreshed = missing;
+	refreshed.clipName = QStringLiteral("Fresh database clip");
+	refreshed.clipNameSource = MediaFile::ClipNameSource::Mdb;
+	refreshed.originalBin = QStringLiteral("Fresh database bin");
+	window.onScanFinished({refreshed, known});
+	check(refreshed.clipName, refreshed.originalBin);
+	list->item(0)->setSelected(true);
+	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
+	check(refreshed.clipName, refreshed.originalBin);
+	window.onScanFinished({missing, known});
+	check({}, {});
 }
 
 void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()

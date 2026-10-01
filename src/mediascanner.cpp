@@ -976,7 +976,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	{
 		pmrHit = &pmr;
 		mf.project = pmr.project;
-		mf.mobId = pmr.mobId;
+		mf.mobId = pmr.fileMobId;
 		mf.masterMobId = pmr.masterMobId;
 	};
 

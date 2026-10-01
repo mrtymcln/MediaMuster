@@ -8,11 +8,11 @@
 // MARK: - PmrEntry
 
 /// One row from a parsed `msmFMID.pmr`. Each PMR file entry maps a
-/// media filename to its Avid MOB IDs.
+/// media filename to its Avid MobIds.
 struct PmrEntry
 {
-	QString mobId;		 ///< Canonical hex form of the file MOB.
-	QString masterMobId; ///< Canonical hex form of the master clip MOB
+	QString fileMobId;	 ///< Canonical hex form of the file MobId.
+	QString masterMobId; ///< Canonical hex form of the master clip MobId
 						 ///< from the paired MASTER record; shared by all
 						 ///< V01/A01/A02 relatives of the same clip. Empty for
 						 ///< version 1 (stored in the MOB database) or a null master.
@@ -30,7 +30,7 @@ struct PmrEntry
 
 /// PMR records keyed by PmrKey::primary: NFC-normalised, lower-case filenames.
 /// Names retain their punctuation and extension. The PMR links filenames to
-/// MOB IDs; the MDB supplies metadata for those IDs.
+/// MobIds; the MDB supplies metadata for those IDs.
 using PmrIndex = QHash<QString, QVector<PmrEntry>>;
 
 // MARK: - PmrParser
@@ -43,8 +43,8 @@ using PmrIndex = QHash<QString, QVector<PmrEntry>>;
 /// version-1 record omits project/master. The accepted 0/negative version
 /// words share the OMF layout; this does not establish historical releases
 /// of those versions. Either byte order is normalized into the same keys.
-/// The optional version-16 Unicode section is a complete preferred set,
-/// whose count and identities may differ from the first section.
+/// A nonempty version-16 Unicode set replaces the first set in full.
+/// Its count and identities may differ; an empty set keeps the first set.
 class PmrParser
 {
 public:
@@ -60,8 +60,9 @@ public:
 	/// false on every failure above, including a truncation that still
 	/// returns partial entries, an unsupported extension or unconsumed bytes.
 	/// Success requires EOF after the base set or its optional version-16
-	/// Unicode set; their record counts need not match. Callers use it to tell "readable database,
-	/// entry genuinely absent" from "database can't vouch for anything".
+	/// Unicode set; their record counts need not match. Callers use it to tell
+	/// "readable database, entry genuinely absent" from "database can't vouch
+	/// for anything".
 	[[nodiscard]] static QVector<PmrEntry> parse(const QString &pmrFilePath, bool *ok = nullptr);
 
 	/// Does a PMR trailer agree with the file's modification time under the

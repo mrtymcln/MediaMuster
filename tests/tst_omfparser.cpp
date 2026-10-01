@@ -309,7 +309,7 @@ void TestOmfParser::omf_pmr_pairs_name_the_file_and_master_mobs()
 			const OmfMetadata m = OmfParser::parseHeader(dir.filePath(entry.fileName));
 			QVERIFY2(m.essence.valid, fn);
 			// The file's own ids are exactly what the version-2 PMR pairs.
-			QVERIFY2(m.fileMobId == entry.mobId, qPrintable(entry.fileName + QStringLiteral(": ") + m.fileMobId));
+			QVERIFY2(m.fileMobId == entry.fileMobId, qPrintable(entry.fileName + QStringLiteral(": ") + m.fileMobId));
 			QVERIFY2(m.essence.umid == entry.masterMobId,
 					 qPrintable(entry.fileName + QStringLiteral(": ") + m.essence.umid));
 		}
@@ -342,9 +342,9 @@ void TestOmfParser::omf_mdb_row_agrees_with_the_file()
 		{
 			const QByteArray fnBytes = entry.fileName.toUtf8();
 			const char *fn = fnBytes.constData();
-			QVERIFY2(db.files.contains(entry.mobId), fn);
+			QVERIFY2(db.files.contains(entry.fileMobId), fn);
 			QVERIFY2(db.masters.contains(entry.masterMobId), fn);
-			const MdbFileMob &row = db.files[entry.mobId];
+			const MdbFileMob &row = db.files[entry.fileMobId];
 			const MdbMasterMob &master = db.masters[entry.masterMobId];
 			const OmfMetadata m = OmfParser::parseHeader(dir.filePath(entry.fileName));
 			const MediaMetadata &e = m.essence;

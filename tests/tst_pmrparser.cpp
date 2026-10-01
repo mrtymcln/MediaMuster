@@ -308,7 +308,7 @@ void TestPmrParser::parses_one_file_comp_pair()
 	QCOMPARE(entries.size(), 1);
 	QCOMPARE(entries[0].fileName, QStringLiteral("CLIP.A01.mxf"));
 	QCOMPARE(entries[0].project, QStringLiteral("block 1729"));
-	QCOMPARE(entries[0].mobId, MobId::format(fileMob()));
+	QCOMPARE(entries[0].fileMobId, MobId::format(fileMob()));
 	QCOMPARE(entries[0].masterMobId, MobId::format(masterMob()));
 }
 
@@ -443,7 +443,7 @@ void TestPmrParser::non_smpte_file_identity_is_preserved()
 	const auto entries = PmrParser::parse(writePmr(tmp.path() + "/msmFMID.pmr", buf), &ok);
 	QVERIFY(ok);
 	QCOMPARE(entries.size(), 2);
-	QCOMPARE(entries[1].mobId, MobId::format(unusualFile));
+	QCOMPARE(entries[1].fileMobId, MobId::format(unusualFile));
 	QCOMPARE(entries[1].masterMobId, MobId::format(masterMob()));
 }
 
@@ -530,7 +530,7 @@ void TestPmrParser::unicode_section_names_take_precedence()
 	QCOMPARE(entries.size(), 1);
 	QCOMPARE(entries.first().fileName, QString::fromUtf8("zT\xc4\x99t_clip.mxf"));
 	QCOMPARE(entries.first().project, QStringLiteral("proj"));
-	QCOMPARE(entries.first().mobId, MobId::format(fileMob()));
+	QCOMPARE(entries.first().fileMobId, MobId::format(fileMob()));
 	QCOMPARE(entries.first().masterMobId, MobId::format(masterMob()));
 	QCOMPARE(entries.first().fileModifiedSecs, 7u);
 }
@@ -602,7 +602,7 @@ void TestPmrParser::real_fixture_pmrs_parse_with_unicode_names()
 		int eszett = 0;
 		for (const PmrEntry &e : entries)
 		{
-			QVERIFY2(!e.mobId.isEmpty() && !e.masterMobId.isEmpty(), qPrintable(e.fileName));
+			QVERIFY2(!e.fileMobId.isEmpty() && !e.masterMobId.isEmpty(), qPrintable(e.fileName));
 			QVERIFY2(e.fileModifiedSecs > 1'700'000'000u, qPrintable(e.fileName));
 			QVERIFY2(!e.fileName.contains(QChar(QChar::ReplacementCharacter)), qPrintable(e.fileName));
 			if (e.fileName.contains(QChar(0xDF)))
@@ -645,7 +645,7 @@ void TestPmrParser::real_fixture_metadata_is_unchanged()
 	u32le(serialized, quint32(entries.size()));
 	for (const PmrEntry &entry : entries)
 	{
-		for (const QString &text : {entry.fileName, entry.project, entry.mobId, entry.masterMobId})
+		for (const QString &text : {entry.fileName, entry.project, entry.fileMobId, entry.masterMobId})
 		{
 			const QByteArray utf8 = text.toUtf8();
 			u32le(serialized, quint32(utf8.size()));
@@ -721,10 +721,10 @@ void TestPmrParser::omf_v2_pair_parses_with_wrapped_mobs()
 	QCOMPARE(entries.size(), 1);
 	QCOMPARE(entries[0].fileName, QStringLiteral("TONE.wav"));
 	QCOMPARE(entries[0].project, QStringLiteral("proj"));
-	QCOMPARE(entries[0].mobId, canonical8(fileMob8()));
+	QCOMPARE(entries[0].fileMobId, canonical8(fileMob8()));
 	QCOMPARE(entries[0].masterMobId, canonical8(masterMob8()));
-	QCOMPARE(entries[0].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
-	QVERIFY(OmfUid::isWrappedOmfId(entries[0].mobId));
+	QCOMPARE(entries[0].fileMobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
+	QVERIFY(OmfUid::isWrappedOmfId(entries[0].fileMobId));
 	QVERIFY(OmfUid::isWrappedOmfId(entries[0].masterMobId));
 	QCOMPARE(entries[0].fileModifiedSecs, 1788291444u);
 
@@ -755,7 +755,7 @@ void TestPmrParser::omf_v2_unicode_set_replaces_names()
 	QCOMPARE(entries.size(), 1);
 	QCOMPARE(entries.first().fileName, QString::fromUtf8("zT\xc4\x99t_clip.omf"));
 	QCOMPARE(entries.first().project, QStringLiteral("proj"));
-	QCOMPARE(entries.first().mobId, canonical8(fileMob8()));
+	QCOMPARE(entries.first().fileMobId, canonical8(fileMob8()));
 	QCOMPARE(entries.first().masterMobId, canonical8(masterMob8()));
 	QCOMPARE(entries.first().fileModifiedSecs, 7u);
 }
@@ -793,18 +793,18 @@ void TestPmrParser::omf_v2_real_avid_supporting_fixture()
 	QSet<QString> fileMobs;
 	for (const PmrEntry &e : entries)
 	{
-		QVERIFY2(OmfUid::isWrappedOmfId(e.mobId), qPrintable(e.fileName + ' ' + e.mobId));
+		QVERIFY2(OmfUid::isWrappedOmfId(e.fileMobId), qPrintable(e.fileName + ' ' + e.fileMobId));
 		QVERIFY2(OmfUid::isWrappedOmfId(e.masterMobId), qPrintable(e.fileName + ' ' + e.masterMobId));
-		QVERIFY2(e.mobId != e.masterMobId, qPrintable(e.fileName));
+		QVERIFY2(e.fileMobId != e.masterMobId, qPrintable(e.fileName));
 		QVERIFY2(e.project.isEmpty(), qPrintable(e.project));
 		QVERIFY2(e.fileName.endsWith(QLatin1String(".omf")), qPrintable(e.fileName));
 		QVERIFY2(e.fileModifiedSecs == 1626810310u || e.fileModifiedSecs == 1626810312u,
 				 qPrintable(e.fileName + QLatin1Char(' ') + QString::number(e.fileModifiedSecs)));
-		fileMobs.insert(e.mobId);
+		fileMobs.insert(e.fileMobId);
 	}
 	QCOMPARE(fileMobs.size(), 80);
 	QCOMPARE(entries.first().fileName, QStringLiteral("BLACK_720x576x1_DV420.omf"));
-	QCOMPARE(entries.first().mobId, QStringLiteral("060a2b3401010101.01010f0013000000.5f489d3ab16ff300.060e2b347f7f2a80"));
+	QCOMPARE(entries.first().fileMobId, QStringLiteral("060a2b3401010101.01010f0013000000.5f489d3ab16ff300.060e2b347f7f2a80"));
 	QCOMPARE(entries.first().masterMobId, QStringLiteral("060a2b3401010101.01010f0013000000.5f489d3ab06ff300.060e2b347f7f2a80"));
 	QCOMPARE(entries.first().fileModifiedSecs, 1626810310u);
 	QCOMPARE(entries.last().fileName, QStringLiteral("OFFLINE_288x243x1_JFIF20mP.omf"));
@@ -823,13 +823,13 @@ void TestPmrParser::omf_v2_real_mc2026_audio_fixture()
 
 	QCOMPARE(entries[0].fileName, QStringLiteral("TONE_100A01.6A972974.039700.wav"));
 	QCOMPARE(entries[0].project, project);
-	QCOMPARE(entries[0].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
+	QCOMPARE(entries[0].fileMobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
 	QCOMPARE(entries[0].masterMobId, QStringLiteral("060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80"));
 	QCOMPARE(entries[0].fileModifiedSecs, 1788291444u);
 
 	QCOMPARE(entries[1].fileName, QStringLiteral("TONE_100A01.6A972997.0C53E0.aif"));
 	QCOMPARE(entries[1].project, project);
-	QCOMPARE(entries[1].mobId, QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80"));
+	QCOMPARE(entries[1].fileMobId, QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80"));
 	QCOMPARE(entries[1].masterMobId, QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80"));
 	QCOMPARE(entries[1].fileModifiedSecs, 1788291480u);
 
@@ -865,7 +865,7 @@ void TestPmrParser::accepted_versions_and_byte_orders()
 	QCOMPARE(entries[1].fileName, QStringLiteral("TWO.media"));
 	QCOMPARE(entries[0].fileModifiedSecs, 0x12345678u);
 	QCOMPARE(entries[1].fileModifiedSecs, 0x87654321u);
-	QCOMPARE(entries[0].mobId, version <= 7 ? canonical8(fileMob8()) : MobId::format(fileMob()));
+	QCOMPARE(entries[0].fileMobId, version <= 7 ? canonical8(fileMob8()) : MobId::format(fileMob()));
 	if (version == 1)
 	{
 		// No project/master bytes exist in v1; consuming either would shift
@@ -884,7 +884,7 @@ void TestPmrParser::accepted_versions_and_byte_orders()
 	QVERIFY(ok);
 	QCOMPARE(entries.size(), 1);
 	QCOMPARE(entries[0].fileName, QString::fromUtf8("東京.media"));
-	QCOMPARE(entries[0].mobId, MobId::format(fileMob()));
+	QCOMPARE(entries[0].fileMobId, MobId::format(fileMob()));
 	QCOMPARE(entries[0].masterMobId, MobId::format(masterMob()));
 	QCOMPARE(entries[0].project, QStringLiteral("unicode"));
 	QCOMPARE(entries[0].fileModifiedSecs, 0xa1b2c3d4u);
@@ -931,7 +931,7 @@ void TestPmrParser::independent_unicode_records()
 		QCOMPARE(entries[0].fileModifiedSecs, 2u);
 		if (unicodeCount == 2)
 		{
-			QCOMPARE(entries[1].mobId, MobId::format(masterMob()));
+			QCOMPARE(entries[1].fileMobId, MobId::format(masterMob()));
 			QCOMPARE(entries[1].fileName, QString::fromUtf8("東京1"));
 			QCOMPARE(entries[1].fileModifiedSecs, 3u);
 		}

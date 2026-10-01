@@ -13,22 +13,24 @@ Drag and drop keeps a quick check of the extension and 21-byte Avid header signa
 | File without an `.avb` extension | Rejected; no row; console warning | Hidden by the picker filter; rejected with a console warning if submitted |
 | Text, media or other non-AVB content renamed `.avb` | Rejected; no row; console warning | Loading row, then removed; console warning |
 | Missing or unreadable `.avb` file | Rejected by the header check; console warning | If submitted or changed after selection: loading row, then removed; console warning |
-| File with an Avid header but damaged contents | Loading row, then removed; console warning | Loading row, then removed; console warning |
+| File with an Avid header but damaged framing or malformed parsed properties | Loading row, then removed; console warning | Loading row, then removed; console warning |
 | Bin with unsupported identity-bearing data | Loading row, then removed; console warning | Loading row, then removed; console warning |
 | Valid bin with no media references | Retained as a usable empty bin | Retained as a usable empty bin |
 
 A rejected drag logs its warning when it enters the drop area, even if the mouse button is never released there. Each distinct local path is checked once per entry; moving the pointer within the area does not repeat checks or warnings. Leaving and re-entering starts a new check and can log another warning. A mixed drop accepts recognized bins while rejected files are reported in the console. Truncation, malformed references and unsupported structures can be discovered later during the full read; a file replaced after the header check is also subject to full validation.
 
+Acceptance is not a complete integrity check of the bin. Known descriptor and effect payloads outside the reader's supported fields can be skipped after their chunk boundaries are checked. Damage within those skipped fields may go undetected. Unsupported classes, versions and extensions encountered by the reader instead make the result unusable, even when other objects supplied readable names or file IDs.
+
 ## What the console explains
 
 Each failed file produces its own warning with the file path and diagnostic; errors are not held until the whole batch completes. Incomplete reads also include the parser's warnings explaining the unsupported data. These are examples of diagnostic content, rather than complete console lines. Byte offsets, reference numbers and operating-system messages vary with the actual file, and the drag header check can report a different reason from the full parser.
 
-For example, the message text for a rejected drag, a damaged bin and an unsupported bin can look like this. The console adds its normal timestamp, warning level and `binfilter` module prefix:
+For example, the message text for a rejected drag, a damaged bin and an unsupported bin can look like this. The console adds its normal timestamp, warning level and `filters` module prefix:
 
 ```text
-Cannot load bin "/Projects/Example/Renamed text.avb": This file is not an Avid bin.
-Cannot load bin "/Projects/Example/Camera rushes.avb": Invalid AVB chunk length (byte 267)
-Cannot load bin "/Projects/Example/Newer bin format.avb": This bin contains data that MediaMuster does not yet support; Unsupported AVB class ZZZZ; whole-bin identity coverage is incomplete.
+Bin unavailable: /Projects/Example/Renamed text.avb: This file is not an Avid bin.
+Bin unavailable: /Projects/Example/Camera rushes.avb: Invalid AVB chunk length (byte 267)
+Bin unavailable: /Projects/Example/Newer bin format.avb: This bin contains data that MediaMuster does not yet support; Unsupported AVB class ZZZZ; whole-bin identity coverage is incomplete.
 ```
 
 | Situation | What it means | Example technical detail |
@@ -50,7 +52,17 @@ Cannot load bin "/Projects/Example/Newer bin format.avb": This bin contains data
 
 Only valid, complete bins contribute filter operands or metadata. A valid bin without usable `MSML` file identities displays “No media references.” in normal text and remains usable for metadata. If the selected bins collectively have no usable file identities, Intersect, Subtract and Add leave the current filter unchanged. Removing a loading bin cancels its work and removes the row without a console failure warning; late results for that removed row are ignored. Loading failures alone do not reactivate a cleared filter.
 
+A readable bin that has file identities but none matching the scanned media is different: Intersect creates an active filter showing zero rows, without a load error. A rejected bin creates no operand and contributes no metadata; an existing filter remains in effect. In a mixed load, successfully read bins can still participate while failed bins are reported individually.
+
 ## Recorded validation
+
+### Failure-path review, 2026-10-01
+
+Seven additional integration cases passed: an unknown class, unsupported locator extension and malformed locator after readable identities/metadata, each in both byte orders, plus a readable bin with no matching media rows. They exercise the actual parser, asynchronous dialog, table model and proxy. Rejected reads preserved an existing filter and published no metadata; direct submission of partial results to the model also supplied no clip names. The unmatched readable bin produced an active zero-row filter without an error.
+
+All four relevant suites passed after rebuilding their targets: 160 parser cases, 48 bin-dialog cases, 28 table-model cases and 32 proxy cases, with no failures or skips. This review changed tests and documentation only. It did not rerun native Avid/MDVx or establish their handling of malformed bins. Logs are `/private/tmp/mediamuster-bin-failure-build.log` and `/private/tmp/mediamuster-bin-failure-tests.log`.
+
+### Earlier console-only revision
 
 At the console-only revision, all four affected test targets passed: 98 parser cases, 34 bin-dialog cases, 24 proxy cases and eight metadata cases (164 total), with no failures or skips. The universal macOS application rebuilt and passed strict bundle signature verification.
 

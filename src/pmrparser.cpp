@@ -5,8 +5,11 @@
 #include "omfuid.h"
 #include "pmrkey.h"
 
+#include <QByteArray>
+#include <QByteArrayView>
 #include <QDebug>
 #include <QFile>
+#include <QStringDecoder>
 #include <QtEndian>
 
 #include <algorithm>
@@ -31,16 +34,17 @@ namespace
 	constexpr quint32 kPmrMagic = 0x000007a9;
 	constexpr qint32 kUnicodeVersion = 16;
 	constexpr qsizetype kHeaderSize = 12;
+	constexpr quint16 kNullStringLength = 0xffff;
 	// ReadPmrRec's actual buffer capacities, including the terminator.
 	constexpr quint16 kMbcsNameCapacity = 2048;
 	constexpr quint16 kProjectCapacity = 64;
 	constexpr quint16 kUtf8NameCapacity = 1024;
 	constexpr qsizetype kMaxFileNameUnits = 255;
 
-	class Cursor
+	class PmrValueParser
 	{
 	public:
-		Cursor(const QByteArray &data, bool bigEndian) : m_data(data), m_bigEndian(bigEndian) {}
+		PmrValueParser(const QByteArray &data, bool bigEndian) : m_data(data), m_bigEndian(bigEndian) {}
 
 		[[nodiscard]] qsizetype remaining() const { return m_data.size() - m_pos; }
 		[[nodiscard]] qsizetype position() const { return m_pos; }
@@ -78,13 +82,13 @@ namespace
 		return bytes.first(end - bytes.begin());
 	}
 
-	bool readMbcs(Cursor &cursor, quint16 capacity, QString &value)
+	bool readMbcs(PmrValueParser &cursor, quint16 capacity, QString &value)
 	{
 		quint16 length = 0;
 		if (!cursor.integer(length))
 			return false;
 		// AStream::ReadString (AvidCore 0x27770) uses -1 for a null string.
-		if (length == 0xffff)
+		if (length == kNullStringLength)
 		{
 			value.clear();
 			return true;
@@ -97,12 +101,12 @@ namespace
 		return true;
 	}
 
-	bool readUnicodeName(Cursor &cursor, QString &value)
+	bool readUnicodeName(PmrValueParser &cursor, QString &value)
 	{
 		quint16 length = 0;
 		if (!cursor.integer(length))
 			return false;
-		if (length == 0xffff)
+		if (length == kNullStringLength)
 		{
 			value.clear();
 			return true;
@@ -119,7 +123,7 @@ namespace
 		return !utf8.hasError();
 	}
 
-	bool readMob(Cursor &cursor, qint32 version, bool master, QString &value)
+	bool readMobId(PmrValueParser &cursor, qint32 version, bool allowNull, QString &value)
 	{
 		const bool omf = version <= 7;
 		QByteArrayView bytes;
@@ -130,7 +134,7 @@ namespace
 		if (nullId)
 		{
 			value.clear();
-			return master;
+			return allowNull;
 		}
 		// Read_AAFMobID imposes no SMPTE-prefix test. A complete identity
 		// is not a record delimiter; framing comes from counts and lengths.
@@ -148,9 +152,8 @@ namespace
 			}
 			else
 			{
-				std::reverse(normalized.begin() + 16, normalized.begin() + 20);
-				std::reverse(normalized.begin() + 20, normalized.begin() + 22);
-				std::reverse(normalized.begin() + 22, normalized.begin() + 24);
+				auto *raw = reinterpret_cast<unsigned char *>(normalized.data());
+				MobId::swapMaterialByteOrder(raw, raw);
 			}
 		}
 		const auto *raw = reinterpret_cast<const unsigned char *>(normalized.constData());
@@ -158,16 +161,16 @@ namespace
 		return true;
 	}
 
-	bool readSet(Cursor &cursor, qint32 version, quint32 count, QVector<PmrEntry> &entries)
+	bool readSet(PmrValueParser &cursor, qint32 version, quint32 count, QVector<PmrEntry> &entries)
 	{
 		// Do not allocate from an untrusted count alone, or multiply it by
 		// two. A truncated set can still return the records decoded so far.
-		const qsizetype minimumRecord = version == 1 ? 14 : (version <= 7 ? 24 : 72);
-		entries.reserve(qMin(qsizetype(count), cursor.remaining() / minimumRecord));
+		const qsizetype minimumRecordSize = version == 1 ? 14 : (version <= 7 ? 24 : 72);
+		entries.reserve(qMin(qsizetype(count), cursor.remaining() / minimumRecordSize));
 		for (quint32 i = 0; i < count; ++i)
 		{
 			PmrEntry entry;
-			if (!readMob(cursor, version, false, entry.mobId))
+			if (!readMobId(cursor, version, false, entry.fileMobId))
 				return false;
 			const bool nameRead = version == kUnicodeVersion
 									  ? readUnicodeName(cursor, entry.fileName)
@@ -177,9 +180,9 @@ namespace
 
 			// ReadPmrRec consumes invalid/empty names but excludes those rows.
 			const bool validName = !entry.fileName.isEmpty() && entry.fileName.size() <= kMaxFileNameUnits;
-			QString master;
+			QString masterMobId;
 			quint32 modified = 0;
-			if ((version != 1 && !readMob(cursor, version, true, master)) || !cursor.integer(modified))
+			if ((version != 1 && !readMobId(cursor, version, true, masterMobId)) || !cursor.integer(modified))
 			{
 				// Preserve the historical partial-result API, but never attach a
 				// master or an invented zero timestamp before the record completes.
@@ -189,7 +192,7 @@ namespace
 			}
 			if (validName)
 			{
-				entry.masterMobId = std::move(master);
+				entry.masterMobId = std::move(masterMobId);
 				entry.fileModifiedSecs = modified;
 				entries.append(std::move(entry));
 			}
@@ -216,8 +219,8 @@ bool PmrParser::trailerMatchesModified(quint32 trailer, const QDateTime &onDisk)
 	if (matches(trailer))
 		return true;
 	constexpr qint64 kMacToUnix = 2082844800;
-	const qint64 local = QDateTime::fromSecsSinceEpoch(mtime).offsetFromUtc();
-	return matches(qint64(trailer) - kMacToUnix - local);
+	const qint64 utcOffsetSeconds = QDateTime::fromSecsSinceEpoch(mtime).offsetFromUtc();
+	return matches(qint64(trailer) - kMacToUnix - utcOffsetSeconds);
 }
 
 QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
@@ -243,7 +246,7 @@ QVector<PmrEntry> PmrParser::parse(const QString &pmrFilePath, bool *ok)
 		qCWarning(lcPmr) << "not a PMR (bad magic)" << pmrFilePath;
 		return {};
 	}
-	Cursor cursor(data, bigEndian);
+	PmrValueParser cursor(data, bigEndian);
 	quint32 headerMagic = 0;
 	qint32 version = 0;
 	quint32 count = 0;

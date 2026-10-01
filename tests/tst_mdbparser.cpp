@@ -556,9 +556,9 @@ void TestMdbParser::macroman_only_precompute_names_decode()
 	QSet<QString> names;
 	for (const PmrEntry &e : pmr)
 	{
-		QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
+		QVERIFY2(db.files.contains(e.fileMobId), qPrintable(e.fileName));
 		QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
-		const MdbFileMob &f = db.files[e.mobId];
+		const MdbFileMob &f = db.files[e.fileMobId];
 		const MdbMasterMob &m = db.masters[e.masterMobId];
 		if (f.usageCode == 9)
 		{
@@ -684,9 +684,9 @@ void TestMdbParser::every_pmr_pair_is_described_and_essence_matches_the_header()
 		{
 			const QString path = fx("corpus_headers/") + e.fileName;
 			QVERIFY2(QFile::exists(path), qPrintable(path));
-			QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
+			QVERIFY2(db.files.contains(e.fileMobId), qPrintable(e.fileName));
 			QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
-			const MdbFileMob &f = db.files[e.mobId];
+			const MdbFileMob &f = db.files[e.fileMobId];
 			const MdbMasterMob &m = db.masters[e.masterMobId];
 
 			const MediaMetadata hdr = MxfParser::parseHeader(path);
@@ -742,7 +742,7 @@ void TestMdbParser::mpga_audio_is_not_essence_complete()
 	QString mob;
 	for (const PmrEntry &e : pmr)
 		if (e.fileName == QLatin1String("A01.E68C35B3_2C34B2C34B61AA.mxf"))
-			mob = e.mobId;
+			mob = e.fileMobId;
 	QVERIFY(!mob.isEmpty());
 	QVERIFY(db.files.contains(mob));
 	const MdbFileMob &f = db.files[mob];
@@ -947,9 +947,9 @@ void TestMdbParser::omf_era_mdb_describes_every_pmr_pair_with_wrapped_ids()
 	QCOMPARE(pmr.size(), 80);
 	for (const PmrEntry &e : pmr)
 	{
-		QVERIFY2(db.files.contains(e.mobId), qPrintable(e.fileName));
+		QVERIFY2(db.files.contains(e.fileMobId), qPrintable(e.fileName));
 		QVERIFY2(db.masters.contains(e.masterMobId), qPrintable(e.fileName));
-		const MdbFileMob &f = db.files[e.mobId];
+		const MdbFileMob &f = db.files[e.fileMobId];
 		const QByteArray fnBytes = e.fileName.toUtf8();
 		const char *fn = fnBytes.constData();
 		// Every slate is one frame of 8-bit video with a codec the table can
@@ -1030,8 +1030,8 @@ void TestMdbParser::omf_era_mdb_video_facts_by_resolution_id()
 		const QString name = QLatin1String(pin.file);
 		QVERIFY2(pmr.contains(name), pin.file);
 		const PmrEntry &e = pmr[name];
-		QVERIFY2(db.files.contains(e.mobId), pin.file);
-		const MdbFileMob &f = db.files[e.mobId];
+		QVERIFY2(db.files.contains(e.fileMobId), pin.file);
+		const MdbFileMob &f = db.files[e.fileMobId];
 		QVERIFY2(f.essence.codec == QLatin1String(pin.codec),
 				 qPrintable(name + QStringLiteral(": codec ") + f.essence.codec));
 		QVERIFY2(f.essence.resolution == QLatin1String(pin.resolution),
@@ -1044,8 +1044,8 @@ void TestMdbParser::omf_era_mdb_video_facts_by_resolution_id()
 
 	// The two DNxHD ids the app's table does not know name what the MXF
 	// path would name them, never "Unknown".
-	QCOMPARE(db.files[pmr[QStringLiteral("BLACK_1920x540x2_AVHD_145.omf")].mobId].essence.codec, dnx1242);
-	QCOMPARE(db.files[pmr[QStringLiteral("BLACK_1280x720x1_DNxHD_145.omf")].mobId].essence.codec, dnx1252);
+	QCOMPARE(db.files[pmr[QStringLiteral("BLACK_1920x540x2_AVHD_145.omf")].fileMobId].essence.codec, dnx1242);
+	QCOMPARE(db.files[pmr[QStringLiteral("BLACK_1280x720x1_DNxHD_145.omf")].fileMobId].essence.codec, dnx1252);
 
 	// Master-side facts: clip name and bin from the master's own objects.
 	const MdbMasterMob &jfif35 = db.masters[pmr[QStringLiteral("BLACK_720x243x2_JFIF35.omf")].masterMobId];
@@ -1089,11 +1089,11 @@ void TestMdbParser::omf_era_audio_mdb_describes_both_tone_files()
 		const QString name = QLatin1String(pin.file);
 		QVERIFY2(pmr.contains(name), pin.file);
 		const PmrEntry &e = pmr[name];
-		QVERIFY2(OmfUid::isWrappedOmfId(e.mobId), pin.file);
-		QVERIFY2(db.files.contains(e.mobId), pin.file);
+		QVERIFY2(OmfUid::isWrappedOmfId(e.fileMobId), pin.file);
+		QVERIFY2(db.files.contains(e.fileMobId), pin.file);
 		QVERIFY2(db.masters.contains(e.masterMobId), pin.file);
 
-		const MdbFileMob &f = db.files[e.mobId];
+		const MdbFileMob &f = db.files[e.fileMobId];
 		QVERIFY2(f.essenceComplete, pin.file);
 		QVERIFY2(f.essence.valid, pin.file);
 		QVERIFY2(f.essence.isAudio, pin.file);
@@ -1161,7 +1161,7 @@ void TestMdbParser::omf_timecode_is_reached_through_either_mob_width()
 		QVERIFY2(pmr.contains(QLatin1String(pin.file)), pin.file);
 
 		OmfObjects::ObjectByMob objectByMob;
-		const quint32 fileMob = findMob(b, p, pmr[QLatin1String(pin.file)].mobId, objectByMob);
+		const quint32 fileMob = findMob(b, p, pmr[QLatin1String(pin.file)].fileMobId, objectByMob);
 		QVERIFY2(fileMob != 0, pin.file);
 		QCOMPARE(b.bytes(fileMob, p.mobId).size(), qsizetype(OmfUid::kUidSize));
 

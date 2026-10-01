@@ -96,6 +96,9 @@ private slots:
 	void locator_identity_controls_file_matching();
 	void loaded_bin_metadata_is_published_as_one_batch();
 	void empty_locator_selection_leaves_filter_unchanged();
+	void late_parse_problem_cannot_publish_partial_results_data();
+	void late_parse_problem_cannot_publish_partial_results();
+	void readable_bin_without_matching_files_filters_to_zero();
 	void intersection_and_subtraction_use_row_membership_data();
 	void intersection_and_subtraction_use_row_membership();
 	void add_restores_a_previously_subtracted_row();
@@ -205,6 +208,84 @@ void TestBinFilterDialog::empty_locator_selection_leaves_filter_unchanged()
 	}
 	QCOMPARE(h.errors.count(), 0);
 	QVERIFY(!h.errorDialog());
+}
+
+void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results_data()
+{
+	QTest::addColumn<bool>("bigEndian");
+	QTest::addColumn<int>("problem");
+	for (const bool big : {false, true})
+		for (int problem = 0; problem < 3; ++problem)
+			QTest::newRow(qPrintable(QStringLiteral("%1-%2").arg(big ? "BE" : "LE").arg(problem))) << big << problem;
+}
+
+void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results()
+{
+	QFETCH(bool, bigEndian);
+	QFETCH(int, problem);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	Harness h;
+	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
+	QSignalSpy published(&h.dialog, &BinFilterDialog::binsChanged);
+	// Retain a working filter while a second bin fails after readable metadata/IDs.
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Good.avb"), TestAvb::mediaBin()));
+	QTRY_VERIFY(h.filter.isActive());
+	const auto previous = h.filter;
+	published.clear();
+	TestAvb::Document d;
+	d.bigEndian = bigEndian;
+	d.objects = {{"ABIN", TestAvb::bin(bigEndian, {2})},
+				 {"CMPO", TestAvb::composition(bigEndian, TestAvb::Master, "Must not leak")},
+				 {"MSML", TestAvb::mediaLocator(bigEndian, TestAvb::Other)}};
+	if (problem == 0)
+		d.objects.append({"ZZZZ", QByteArray::fromHex("020103")});
+	else
+	{
+		auto payload = TestAvb::mediaLocator(bigEndian, TestAvb::Source);
+		if (problem == 1)
+			payload.insert(payload.size() - 1, QByteArray::fromHex("017f"));
+		else
+			payload.chop(1); // Chunk framing is intact; its property terminator is missing.
+		d.objects.append({"MSML", payload});
+	}
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Problem.avb"), d.bytes()));
+	QTRY_COMPARE(loaded.count(), 2);
+	const auto parsed = qvariant_cast<AvbBin>(loaded.last().first());
+	QVERIFY(!parsed.isUsable());
+	QCOMPARE(parsed.valid, problem != 2);
+	if (parsed.valid)
+	{
+		QVERIFY(!parsed.mediaFileIds.isEmpty());
+		QVERIFY(!parsed.mobs.isEmpty());
+	}
+	else
+	{
+		QVERIFY(parsed.mediaFileIds.isEmpty());
+		QVERIFY(parsed.mobs.isEmpty());
+	}
+	QCOMPARE(h.errors.count(), 1);
+	QCOMPARE(h.list()->count(), 1);
+	QVERIFY(h.filter.hasSameCriteria(previous));
+	QCOMPARE(h.proxy.rowCount(), 1);
+	QCOMPARE(published.count(), 0);
+	// The model independently rejects partial metadata, even if passed directly.
+	h.model.setAvbBins({parsed});
+	for (const auto &file : h.model.allFiles())
+		QVERIFY(file.clipName.isEmpty());
+}
+
+void TestBinFilterDialog::readable_bin_without_matching_files_filters_to_zero()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	Harness h;
+	// This full file ID is absent from both media rows.
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Unmatched.avb"), TestAvb::mediaBin({TestAvb::Master})));
+	QTRY_VERIFY(h.filter.isActive());
+	QCOMPARE(h.proxy.rowCount(), 0);
+	QCOMPARE(h.list()->count(), 1);
+	QCOMPARE(h.errors.count(), 0);
 }
 
 void TestBinFilterDialog::loaded_bin_metadata_is_published_as_one_batch()

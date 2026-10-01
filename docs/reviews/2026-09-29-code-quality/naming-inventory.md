@@ -1,5 +1,9 @@
 # MediaMuster naming inventory
 
+PMR cleanup, 1 October 2026: retained PmrValueParser and AvbValueParser. The PMR parser now reuses MobId::swapMaterialByteOrder for AAF IDs, names the null-string sentinel, clarifies four local/parameter names, and includes its Qt dependencies directly. Format and recovery notes are preserved, with the nonempty Unicode-set condition clarified.
+
+PMR update, 1 October 2026: Cursor is now PmrValueParser, readMob is now readMobId, and PmrEntry::mobId is now PmrEntry::fileMobId. PmrEntry::masterMobId and PmrEntry::project are retained. These are naming changes only; snapshot names, scopes and locations remain unchanged.
+
 Source snapshot: `39c04c558a88260b178c2cf636be410231cb7d69`, reviewed 29 September 2026.
 
 AVB update, 30 September 2026: the ten internal AVB type renames and four identifier-helper renames (`nativeMobId`, `typedMobId`, `isNullMobId`, `addMobId`) are implemented. Their final names appear in rows marked **Implemented**. The source snapshot, original names, scopes and line numbers below remain the 29 September baseline; “Recommended” is the current name for implemented rows. Earlier type-row reasons record the initial type-only decision; the four helper rows record the subsequent authorized change. All AVB data members, properties, parameters, locals and other functions remain unchanged, including `m_objects`, `type`, `offset`, `size` and `attributes`. Public `AvbParser`, `AvbBin`, `AvbMob` and `AvbHeaderCheck`, AVB source/test filenames, parser behaviour and journal version 2 are unchanged. Comment cleanup is a separate applied change. Other recommendations remain proposals.
@@ -6156,8 +6160,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 36 | Variable |  | kProjectCapacity | kProjectCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Variable |  | kUtf8NameCapacity | kUtf8NameCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Variable |  | kMaxFileNameUnits | kMaxFileNameUnits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 40 | Class |  | Cursor | PmrByteReader | Rename | Distinguishes this domain record or reader from unrelated generic records. |
-| 43 | Constructor | Cursor | Cursor | PmrByteReader | Rename | Distinguishes this domain record or reader from unrelated generic records. |
+| 40 | Class |  | Cursor | PmrValueParser | Implemented | Approved PMR value-parser name; replaces the earlier PmrByteReader proposal. |
+| 43 | Constructor | Cursor | Cursor | PmrValueParser | Implemented | Approved PMR value-parser name; replaces the earlier PmrByteReader proposal. |
 | 43 | Parameter | Cursor::Cursor | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Parameter | Cursor::Cursor | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 45 | Method | Cursor | remaining | remaining | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6188,10 +6192,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 102 | Variable | readUnicodeName | length | length | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 110 | Variable | readUnicodeName | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 117 | Variable | readUnicodeName | utf8 | utf8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 122 | Function |  | readMob | readMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 122 | Function |  | readMob | readMobId | Implemented | Reads an identifier rather than a Mob object. |
 | 122 | Parameter | readMob | cursor | cursor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 122 | Parameter | readMob | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 122 | Parameter | readMob | master | master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 122 | Parameter | readMob | master | allowNull | Implemented | Specifies whether an all-zero MobId is accepted. |
 | 122 | Parameter | readMob | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 124 | Variable | readMob | omf | omf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 125 | Variable | readMob | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6204,12 +6208,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 161 | Parameter | readSet | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 161 | Parameter | readSet | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 161 | Parameter | readSet | entries | entries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 165 | Variable | readSet | minimumRecord | minimumRecord | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 165 | Variable | readSet | minimumRecord | minimumRecordSize | Implemented | Makes the byte-size role explicit. |
 | 167 | Variable | readSet | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 169 | Variable | readSet | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 172 | Variable | readSet | nameRead | nameRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 179 | Variable | readSet | validName | validName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 180 | Variable | readSet | master | master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 180 | Variable | readSet | master | masterMobId | Implemented | Identifies the temporary Master Mob identifier. |
 | 181 | Variable | readSet | modified | modified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 201 | Parameter | PmrParser::trailerMatchesModified | trailer | trailer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 201 | Parameter | PmrParser::trailerMatchesModified | onDisk | onDisk | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6217,7 +6221,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 211 | Variable | PmrParser::trailerMatchesModified | matches | matches | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 211 | Parameter | PmrParser::trailerMatchesModified::(lambda at src/pmrparser.cpp:211:23)::operator() | candidate | candidate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 218 | Variable | PmrParser::trailerMatchesModified | kMacToUnix | kMacToUnix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 219 | Variable | PmrParser::trailerMatchesModified | local | local | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 219 | Variable | PmrParser::trailerMatchesModified | local | utcOffsetSeconds | Implemented | Identifies the UTC offset and its units. |
 | 223 | Parameter | PmrParser::parse | pmrFilePath | pmrFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 223 | Parameter | PmrParser::parse | ok | ok | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 227 | Variable | PmrParser::parse | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6242,10 +6246,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 | 12 | Struct |  | PmrEntry | PmrEntry | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 14 | Field | PmrEntry | mobId | fileMobId | Rename | Clarifies the specific role, result, state or units. |
+| 14 | Field | PmrEntry | mobId | fileMobId | Implemented | Identifies the File Mob; distinguishes it from the Master Mob identifier. |
 | 15 | Field | PmrEntry | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Field | PmrEntry | fileName | fileName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 20 | Field | PmrEntry | project | projectName | Rename | Clarifies the specific role, result, state or units. |
+| 20 | Field | PmrEntry | project | project | Keep | User confirmed the existing scoped name; projectName proposal withdrawn. |
 | 26 | Field | PmrEntry | fileModifiedSecs | indexedModifiedSeconds | Rename | Clarifies the specific role, result, state or units. |
 | 34 | Type alias |  | PmrIndex | PmrIndex | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 48 | Class |  | PmrParser | PmrParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
