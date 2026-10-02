@@ -37,10 +37,11 @@ private:
 							   const PrecomputeFilterPath &path);
 	void applySelection(const PrecomputeFilter &selection);
 	void setSubtreeChecked(QTreeWidgetItem *item, Qt::CheckState state);
+	void onChoiceChanged(QTreeWidgetItem *item, int column);
 	void updateParentChecks(QTreeWidgetItem *item);
 	void collectSelection(QTreeWidgetItem *item, QVector<PrecomputeFilterPath> &paths) const;
 	void updateMatchingCount();
-	qint64 matchingCount(QTreeWidgetItem *item) const;
+	qint64 matchingCount(QTreeWidgetItem *item, const QString &volumePath) const;
 
 	QHash<QTreeWidgetItem *, PrecomputeFilterPath> m_paths;
 	QHash<QTreeWidgetItem *, Counts> m_counts;

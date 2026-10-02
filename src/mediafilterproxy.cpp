@@ -48,12 +48,8 @@ namespace
 						   { return c.unicode() < 128; });
 	}
 
-	// The string in the form search comparisons run in (NFC). macOS
-	// filesystems often hand back decomposed names — 'é' stored as 'e'
-	// plus a combining accent — which render identically to composed
-	// keyboard input but fail a plain contains() against it. Comparing
-	// NFC-on-NFC makes both forms of either side match; the ASCII fast
-	// path skips the allocation for the overwhelmingly common case.
+	// macOS filenames can store accents separately from their letters.
+	// NFC makes those names match composed keyboard input; ASCII needs no conversion.
 	QString searchForm(const QString &s)
 	{
 		return isAsciiOnly(s) ? s : s.normalized(QString::NormalizationForm_C);
@@ -237,96 +233,94 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 
 bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-	// Bypass the data()/QVariant round-trip; sort directly off the
-	// MediaFile fields the model exposes. Removes ~12M QVariant
-	// constructions per sort of a 300K-row table.
+	// Compare stored fields directly to avoid converting each value through QVariant.
 	if (!m_sourceModel)
 		return QSortFilterProxyModel::lessThan(left, right);
 
-	const MediaFile &l = m_sourceModel->fileAt(left.row());
-	const MediaFile &r = m_sourceModel->fileAt(right.row());
+	const MediaFile &leftFile = m_sourceModel->fileAt(left.row());
+	const MediaFile &rightFile = m_sourceModel->fileAt(right.row());
 
 	if (m_sourceModel->clipDurationEnabled() && left.column() == m_sourceModel->clipDurationColumn())
-		return QString::compare(l.clipDurationDisplay(), r.clipDurationDisplay(), Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.clipDurationDisplay(), rightFile.clipDurationDisplay(), Qt::CaseInsensitive) < 0;
 
 	using Col = MediaTableModel::Column;
 	switch (static_cast<Col>(left.column()))
 	{
 	case Col::SizeMB:
 		// Exact integer compare; the MB string is display-only.
-		return l.sizeBytes < r.sizeBytes;
+		return leftFile.sizeBytes < rightFile.sizeBytes;
 
 	case Col::Created:
 	{
 		// Invalid (unknown) datetimes sort before every valid one, so blank
 		// rows group together predictably.
-		return l.created < r.created;
+		return leftFile.created < rightFile.created;
 	}
 	case Col::SourceFile:
-		return QString::compare(l.sourceFileName, r.sourceFileName, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.sourceFileName, rightFile.sourceFileName, Qt::CaseInsensitive) < 0;
 
 	case Col::ClipName:
 		// The exact string the column displays; shared rule, can't drift.
-		return QString::compare(l.clipNameDisplay(), r.clipNameDisplay(),
+		return QString::compare(leftFile.clipNameDisplay(), rightFile.clipNameDisplay(),
 								Qt::CaseInsensitive) < 0;
 
 	case Col::Codec:
-		return QString::compare(l.codec, r.codec,
+		return QString::compare(leftFile.codec, rightFile.codec,
 								Qt::CaseInsensitive) < 0;
 
 	case Col::Kind:
-		return kindSortRank(l.kind) < kindSortRank(r.kind);
+		return kindSortRank(leftFile.kind) < kindSortRank(rightFile.kind);
 
 	case Col::Duration:
 	{
 		// Compare the displayed HH, MM, SS, FF; equal values sort audio first.
-		const auto ls = l.durationTimecode();
-		const auto rs = r.durationTimecode();
+		const auto ls = leftFile.durationTimecode();
+		const auto rs = rightFile.durationTimecode();
 		if (ls != rs)
 			return ls < rs;
-		return kindSortRank(l.kind) < kindSortRank(r.kind);
+		return kindSortRank(leftFile.kind) < kindSortRank(rightFile.kind);
 	}
 
 	case Col::FileName:
-		return QString::compare(l.fileName, r.fileName, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.fileName, rightFile.fileName, Qt::CaseInsensitive) < 0;
 	case Col::Project:
-		return QString::compare(l.projectDisplay(), r.projectDisplay(), Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.projectDisplay(), rightFile.projectDisplay(), Qt::CaseInsensitive) < 0;
 	case Col::OriginalBin:
-		return QString::compare(l.originalBin, r.originalBin, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.originalBin, rightFile.originalBin, Qt::CaseInsensitive) < 0;
 	case Col::Resolution:
 	{
 		// Width first, then height; a string tiebreak keeps equal-dimension or
 		// non-video rows in a stable, deterministic order.
-		const QSize ls = resolutionSortValue(l.resolution);
-		const QSize rs = resolutionSortValue(r.resolution);
+		const QSize ls = resolutionSortValue(leftFile.resolution);
+		const QSize rs = resolutionSortValue(rightFile.resolution);
 		if (ls.width() != rs.width())
 			return ls.width() < rs.width();
 		if (ls.height() != rs.height())
 			return ls.height() < rs.height();
-		return QString::compare(l.resolution, r.resolution, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.resolution, rightFile.resolution, Qt::CaseInsensitive) < 0;
 	}
 	case Col::FrameRate:
 	{
-		const double lf = frameRateSortValue(l.frameRate);
-		const double rf = frameRateSortValue(r.frameRate);
+		const double lf = frameRateSortValue(leftFile.frameRate);
+		const double rf = frameRateSortValue(rightFile.frameRate);
 		if (lf != rf)
 			return lf < rf;
-		return QString::compare(l.frameRate, r.frameRate, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.frameRate, rightFile.frameRate, Qt::CaseInsensitive) < 0;
 	}
 	case Col::SampleRate:
-		return l.sampleRateHz() < r.sampleRateHz();
+		return leftFile.sampleRateHz() < rightFile.sampleRateHz();
 	case Col::BitDepth:
 	{
-		const auto ld = bitDepthSortValue(l.bitDepth);
-		const auto rd = bitDepthSortValue(r.bitDepth);
+		const auto ld = bitDepthSortValue(leftFile.bitDepth);
+		const auto rd = bitDepthSortValue(rightFile.bitDepth);
 		if (ld != rd)
 			return ld < rd;
-		return QString::compare(l.bitDepth, r.bitDepth, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.bitDepth, rightFile.bitDepth, Qt::CaseInsensitive) < 0;
 	}
 	case Col::Location:
-		return QString::compare(l.mediaFilePath, r.mediaFilePath, Qt::CaseInsensitive) < 0;
+		return QString::compare(leftFile.mediaFilePath, rightFile.mediaFilePath, Qt::CaseInsensitive) < 0;
 	case Col::Type:
-		return typeSortRank(l.type) < typeSortRank(r.type);
+		return typeSortRank(leftFile.type) < typeSortRank(rightFile.type);
 	case Col::PrecomputeCategory:
 	case Col::Effect:
 	case Col::EffectCategory:

@@ -4,7 +4,6 @@
 #include "binmetadataresolver.h"
 
 #include <QAbstractTableModel>
-#include <QHash>
 #include <QSet>
 #include <QString>
 #include <QVector>

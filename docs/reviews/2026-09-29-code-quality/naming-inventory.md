@@ -1,5 +1,7 @@
 # MediaMuster naming inventory
 
+Filter/table cleanup, 2 October 2026: precompute-category, child-check-state and compared-file names are clarified. onChoiceChanged contains the former constructor callback, and recursive matching counts reuse one selected volume value. Unused includes and an unverified numerical performance estimate are removed; Unicode matching and sorting rationale remain. Filter and display behaviour are unchanged. Historical inventory scopes and locations remain unchanged.
+
 Bin dialog update, 2 October 2026: LoadedBin is retained. opLabel is now operationLabel; the post-snapshot selectedBins helper is now checkedBins. Failed loads and user removals share removeBinRow, including pending-load cancellation. List items no longer duplicate their row numbers; stable bin IDs and filter-step snapshots are preserved. Historical inventory scopes and locations remain unchanged.
 
 Bin metadata update, 2 October 2026: BinFilter::matches now names its argument fileMobId. BinMetadataResolver uses MasterMobMetadata and m_metadataByMasterMobId. Conflict handling and ownership of bin-supplied names are unchanged. Historical scopes and locations remain unchanged.
@@ -48,7 +50,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | CMake variable | | configure_args | configure_args | Keep | Retain the established build, macro or namespace contract.
+| 9 | CMake variable | | configure_args | configure_args | Keep | Retain the established build, macro or namespace contract. |
 | 22 | CMake variable | | processor_count | processor_count | Keep | Retain the established build, macro or namespace contract. |
 | 26 | CMake variable | | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
@@ -2765,8 +2767,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 220 | Parameter | MediaFilterProxy::filterAcceptsRow::(lambda at src/mediafilterproxy.cpp:220:24)::operator() | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 236 | Parameter | MediaFilterProxy::lessThan | left | left | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 236 | Parameter | MediaFilterProxy::lessThan | right | right | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 244 | Variable | MediaFilterProxy::lessThan | l | l | Keep | Keep for now: multiple local names would become mediaFile. Choose names for their distinct roles during refactoring. |
-| 245 | Variable | MediaFilterProxy::lessThan | r | r | Keep | Keep for now: multiple local names would become mediaFile. Choose names for their distinct roles during refactoring. |
+| 244 | Variable | MediaFilterProxy::lessThan | l | leftFile | Implemented | Clarifies the precompute category, child check state or compared file. |
+| 245 | Variable | MediaFilterProxy::lessThan | r | rightFile | Implemented | Clarifies the precompute category, child check state or compared file. |
 | 247 | Type alias | MediaFilterProxy::lessThan | Col | Col | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 278 | Variable | MediaFilterProxy::lessThan | ls | ls | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 279 | Variable | MediaFilterProxy::lessThan | rs | rs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6342,12 +6344,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 148 | Variable | PrecomputeFilterDialog::buildTree | rendered | rendered | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 149 | Variable | PrecomputeFilterDialog::buildTree | titles | titles | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 150 | Variable | PrecomputeFilterDialog::buildTree | unknown | unknown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 151 | Variable | PrecomputeFilterDialog::buildTree | typeItems | typeItems | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 152 | Variable | PrecomputeFilterDialog::buildTree | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 151 | Variable | PrecomputeFilterDialog::buildTree | typeItems | precomputeCategoryItems | Implemented | Clarifies the precompute category, child check state or compared file. |
+| 152 | Variable | PrecomputeFilterDialog::buildTree | type | precomputeCategory | Implemented | Clarifies the precompute category, child check state or compared file. |
 | 154 | Variable | PrecomputeFilterDialog::buildTree | categories | categories | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 155 | Variable | PrecomputeFilterDialog::buildTree | effects | effects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 156 | Variable | PrecomputeFilterDialog::buildTree | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 160 | Variable | PrecomputeFilterDialog::buildTree | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 160 | Variable | PrecomputeFilterDialog::buildTree | type | precomputeCategory | Implemented | Clarifies the precompute category, child check state or compared file. |
 | 161 | Variable | PrecomputeFilterDialog::buildTree | category | category | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 162 | Variable | PrecomputeFilterDialog::buildTree | effect | effect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 163 | Variable | PrecomputeFilterDialog::buildTree | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6355,7 +6357,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 173 | Variable | PrecomputeFilterDialog::buildTree | effectItem | effectItem | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Variable | PrecomputeFilterDialog::buildTree | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 178 | Variable | PrecomputeFilterDialog::buildTree | counts | counts | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 183 | Variable | PrecomputeFilterDialog::buildTree | typeItem | typeItem | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 183 | Variable | PrecomputeFilterDialog::buildTree | typeItem | precomputeCategoryItem | Implemented | Clarifies the precompute category, child check state or compared file. |
 | 186 | Variable | PrecomputeFilterDialog::buildTree | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 193 | Parameter | PrecomputeFilterDialog::applySelection | selection | selection | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 195 | Variable | PrecomputeFilterDialog::applySelection | blocker | blocker | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6372,8 +6374,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 216 | Parameter | PrecomputeFilterDialog::setSubtreeChecked | state | state | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 219 | Variable | PrecomputeFilterDialog::setSubtreeChecked | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 223 | Parameter | PrecomputeFilterDialog::updateParentChecks | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 227 | Variable | PrecomputeFilterDialog::updateParentChecks | all | all | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 228 | Variable | PrecomputeFilterDialog::updateParentChecks | any | any | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 227 | Variable | PrecomputeFilterDialog::updateParentChecks | all | allChildrenChecked | Implemented | Clarifies the precompute category, child check state or compared file. |
+| 228 | Variable | PrecomputeFilterDialog::updateParentChecks | any | anyChildChecked | Implemented | Clarifies the precompute category, child check state or compared file. |
 | 229 | Variable | PrecomputeFilterDialog::updateParentChecks | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 231 | Variable | PrecomputeFilterDialog::updateParentChecks | state | state | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 239 | Parameter | PrecomputeFilterDialog::collectSelection | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13647,4 +13649,3 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 89 | Variable | TestVolumeIdentity::unsupported_directory_flush_is_not_an_io_failure | code | unsupportedErrorCode | Candidate | First Windows loop covers unsupported capability error codes. |
 | 91 | Variable | TestVolumeIdentity::unsupported_directory_flush_is_not_an_io_failure | code | failureErrorCode | Candidate | Second Windows loop covers real I/O or access failure error codes. |
 | 96 | Variable | TestVolumeIdentity::unsupported_directory_flush_is_not_an_io_failure | code | code | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-

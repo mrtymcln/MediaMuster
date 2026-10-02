@@ -107,14 +107,7 @@ PrecomputeFilterDialog::PrecomputeFilterDialog(const QVector<MediaFile> &files,
 	applySelection(selection);
 	connect(m_volumes, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int)
 			{ updateMatchingCount(); });
-	connect(m_tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem *item, int column)
-			{
-		if (column != 0) return;
-		const QSignalBlocker blocker(m_tree);
-		setSubtreeChecked(item, item->checkState(0) == Qt::Unchecked ? Qt::Unchecked : Qt::Checked);
-		for (auto *parentItem = item->parent(); parentItem; parentItem = parentItem->parent())
-			updateParentChecks(parentItem);
-		updateMatchingCount(); });
+	connect(m_tree, &QTreeWidget::itemChanged, this, &PrecomputeFilterDialog::onChoiceChanged);
 	for (const bool expand : {false, true})
 	{
 		auto *shortcut = new QShortcut(QKeySequence(expand ? Qt::CTRL | Qt::Key_Right : Qt::CTRL | Qt::Key_Left), m_tree);
@@ -148,31 +141,31 @@ void PrecomputeFilterDialog::buildTree(const QVector<MediaFile> &files)
 	const QString rendered = QStringLiteral("Rendered Effects");
 	const QString titles = QStringLiteral("Titles and Matte Keys");
 	const QString unknown = QStringLiteral("unknown");
-	QMap<QString, QTreeWidgetItem *> typeItems;
-	for (const auto &type : {rendered, titles, unknown})
-		typeItems.insert(type, addChoice(root, type, {type, {}, {}}));
+	QMap<QString, QTreeWidgetItem *> precomputeCategoryItems;
+	for (const auto &precomputeCategory : {rendered, titles, unknown})
+		precomputeCategoryItems.insert(precomputeCategory, addChoice(root, precomputeCategory, {precomputeCategory, {}, {}}));
 	QMap<QString, QMap<QString, QTreeWidgetItem *>> categories;
 	QMap<QString, QMap<QString, QMap<QString, QTreeWidgetItem *>>> effects;
 	for (const auto &file : files)
 	{
 		if (file.type != MediaFile::Type::Precompute)
 			continue;
-		const QString type = file.precomputeCategoryDisplay();
-		const QString category = type == rendered ? file.effectCategoryDisplay() : QString{};
+		const QString precomputeCategory = file.precomputeCategoryDisplay();
+		const QString category = precomputeCategory == rendered ? file.effectCategoryDisplay() : QString{};
 		const QString effect = file.effectDisplay();
-		auto *parent = typeItems.value(type);
+		auto *parent = precomputeCategoryItems.value(precomputeCategory);
 		if (!parent)
 			continue;
 		if (!category.isEmpty())
 		{
-			auto *&categoryItem = categories[type][category];
+			auto *&categoryItem = categories[precomputeCategory][category];
 			if (!categoryItem)
-				categoryItem = addChoice(parent, category, {type, category, {}});
+				categoryItem = addChoice(parent, category, {precomputeCategory, category, {}});
 			parent = categoryItem;
 		}
-		auto *&effectItem = effects[type][category][effect];
+		auto *&effectItem = effects[precomputeCategory][category][effect];
 		if (!effectItem)
-			effectItem = addChoice(parent, effect, {type, category, effect});
+			effectItem = addChoice(parent, effect, {precomputeCategory, category, effect});
 		for (auto *item = effectItem; item; item = item->parent())
 		{
 			auto &counts = m_counts[item];
@@ -180,14 +173,14 @@ void PrecomputeFilterDialog::buildTree(const QVector<MediaFile> &files)
 			++counts.volumes[file.volumePath];
 		}
 	}
-	for (auto *typeItem : typeItems)
+	for (auto *precomputeCategoryItem : precomputeCategoryItems)
 	{
-		typeItem->sortChildren(0, Qt::AscendingOrder);
-		for (int i = 0; i < typeItem->childCount(); ++i)
-			typeItem->child(i)->sortChildren(0, Qt::AscendingOrder);
+		precomputeCategoryItem->sortChildren(0, Qt::AscendingOrder);
+		for (int i = 0; i < precomputeCategoryItem->childCount(); ++i)
+			precomputeCategoryItem->child(i)->sortChildren(0, Qt::AscendingOrder);
 	}
 	root->setExpanded(true);
-	typeItems.value(rendered)->setExpanded(true);
+	precomputeCategoryItems.value(rendered)->setExpanded(true);
 }
 
 void PrecomputeFilterDialog::applySelection(const PrecomputeFilter &selection)
@@ -213,6 +206,17 @@ void PrecomputeFilterDialog::applySelection(const PrecomputeFilter &selection)
 	update(update, m_tree->topLevelItem(0));
 }
 
+void PrecomputeFilterDialog::onChoiceChanged(QTreeWidgetItem *item, int column)
+{
+	if (column != 0)
+		return;
+	const QSignalBlocker blocker(m_tree);
+	setSubtreeChecked(item, item->checkState(0) == Qt::Unchecked ? Qt::Unchecked : Qt::Checked);
+	for (auto *parent = item->parent(); parent; parent = parent->parent())
+		updateParentChecks(parent);
+	updateMatchingCount();
+}
+
 void PrecomputeFilterDialog::setSubtreeChecked(QTreeWidgetItem *item, Qt::CheckState state)
 {
 	item->setCheckState(0, state);
@@ -224,16 +228,17 @@ void PrecomputeFilterDialog::updateParentChecks(QTreeWidgetItem *item)
 {
 	if (item->childCount() == 0)
 		return;
-	bool all = true;
-	bool any = false;
+	bool allChildrenChecked = true;
+	bool anyChildChecked = false;
 	for (int i = 0; i < item->childCount(); ++i)
 	{
 		const auto state = item->child(i)->checkState(0);
-		all = all && state == Qt::Checked;
-		any = any || state != Qt::Unchecked;
+		allChildrenChecked = allChildrenChecked && state == Qt::Checked;
+		anyChildChecked = anyChildChecked || state != Qt::Unchecked;
 	}
-	item->setCheckState(0, all ? Qt::Checked : any ? Qt::PartiallyChecked
-												   : Qt::Unchecked);
+	item->setCheckState(0, allChildrenChecked ? Qt::Checked
+						   : anyChildChecked  ? Qt::PartiallyChecked
+											  : Qt::Unchecked);
 }
 
 void PrecomputeFilterDialog::collectSelection(QTreeWidgetItem *item, QVector<PrecomputeFilterPath> &paths) const
@@ -258,21 +263,21 @@ QString PrecomputeFilterDialog::selectedVolume() const
 	return m_volumes->currentData().toString();
 }
 
-qint64 PrecomputeFilterDialog::matchingCount(QTreeWidgetItem *item) const
+qint64 PrecomputeFilterDialog::matchingCount(QTreeWidgetItem *item, const QString &volumePath) const
 {
 	if (item->checkState(0) == Qt::Checked)
 	{
 		const auto counts = m_counts.value(item);
-		return selectedVolume().isEmpty() ? counts.total : counts.volumes.value(selectedVolume());
+		return volumePath.isEmpty() ? counts.total : counts.volumes.value(volumePath);
 	}
 	qint64 count = 0;
 	for (int i = 0; i < item->childCount(); ++i)
-		count += matchingCount(item->child(i));
+		count += matchingCount(item->child(i), volumePath);
 	return count;
 }
 
 void PrecomputeFilterDialog::updateMatchingCount()
 {
-	const qint64 count = matchingCount(m_tree->topLevelItem(0));
+	const qint64 count = matchingCount(m_tree->topLevelItem(0), selectedVolume());
 	m_matchCount->setText(count == 1 ? tr("1 matching file") : tr("%1 matching files").arg(count));
 }

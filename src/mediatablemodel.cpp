@@ -1,7 +1,7 @@
 #include "mediatablemodel.h"
 #include "enumutil.h"
 
-#include <utility>
+#include <QStringList>
 
 MediaTableModel::MediaTableModel(QObject *parent)
 	: QAbstractTableModel(parent)

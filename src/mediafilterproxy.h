@@ -6,7 +6,6 @@
 #include <QSet>
 #include <QSortFilterProxyModel>
 #include <QString>
-#include <QStringList>
 
 class MediaTableModel;
 struct MediaFile;
