@@ -17,6 +17,7 @@
 #include <QFuture>
 #include <QMutexLocker>
 #include <QSet>
+#include <QScopeGuard>
 #include <QStringList>
 #include <QtConcurrent>
 #include <algorithm>
@@ -119,15 +120,10 @@ void MediaScanner::startScan(const Options &options)
 	m_flushTimer.start();
 	m_lastFlushElapsed = 0;
 
-	// RAII guard resets m_running on any exit path from the lambda.
 	m_job.start(
 		[this]
 		{
-			struct ResetRunning
-			{
-				std::atomic<bool> &flag;
-				~ResetRunning() { flag.store(false); }
-			} guard{m_running};
+			const auto resetRunning = qScopeGuard([this] { m_running.store(false); });
 			doScan();
 		});
 }
@@ -391,11 +387,15 @@ void MediaScanner::doScan()
 		qCDebug(lcScanner) << "pass 2 (headers):" << stageTimer.restart() << "ms";
 	}
 
-	if (m_job.isCancelled())
+	const auto finishIfCancelled = [this, &allFiles]
 	{
+		if (!m_job.isCancelled())
+			return false;
 		concludeScan(allFiles, /*cancelled=*/true);
+		return true;
+	};
+	if (finishIfCancelled())
 		return;
-	}
 
 	// Both passes are done and the bar has hit 100%. Tell the UI to show an
 	// indeterminate "Finalising..." for the tally below so a slow finish on a
@@ -408,6 +408,8 @@ void MediaScanner::doScan()
 	// The name never decides their media type or precompute category.
 	for (MediaFile &f : allFiles)
 	{
+		if (finishIfCancelled())
+			return;
 		if (f.type != MediaFile::Type::Precompute)
 			continue;
 		const AvidEffects::Hit hit = AvidEffects::lookup(f.clipName);
@@ -419,6 +421,8 @@ void MediaScanner::doScan()
 	int noReference = 0, noDatabase = 0, invalidUmid = 0, noProject = 0, nonPortable = 0;
 	for (const auto &f : allFiles)
 	{
+		if (finishIfCancelled())
+			return;
 		if (f.dbStatus == MediaFile::DbStatus::NoReference)
 			++noReference;
 		if (f.isNoDatabase())
@@ -430,6 +434,9 @@ void MediaScanner::doScan()
 		if (f.isNonPortable)
 			++nonPortable;
 	}
+
+	if (finishIfCancelled())
+		return;
 
 	qCDebug(lcScanner) << "scan tally:" << allFiles.size() << "files —" << noReference
 					   << "no reference," << noDatabase << "no database," << invalidUmid << "invalid umid,"
@@ -717,8 +724,8 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	if (!requested || requested->family != task.family)
 		return result;
 	const bool isQuarantineFolder = requested->isQuarantined;
+	const QString key = scannerFolderKey(task.mediaFolderPath);
 	{
-		const QString key = scannerFolderKey(task.mediaFolderPath);
 		// Also cover UME folders reached through a link beneath a supported root.
 		if (AvidMediaLayout::isInsideUmeRoot(task.mediaFolderPath) || AvidMediaLayout::isInsideUmeRoot(key))
 			return result;
@@ -819,7 +826,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	if (!mdb.masters.isEmpty())
 	{
 		QMutexLocker lock(&m_mdbMapsMutex);
-		m_mdbMapsByFolder.insert(scannerFolderKey(task.mediaFolderPath), std::move(mdb.masters));
+		m_mdbMapsByFolder.insert(key, std::move(mdb.masters));
 	}
 
 	return result;
@@ -972,22 +979,20 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 	const QString primaryKey = PmrKey::primary(mf.fileName);
 
 	const PmrEntry *pmrHit = nullptr;
-	auto applyPmrHit = [&mf, &pmrHit](const PmrEntry &pmr)
-	{
-		pmrHit = &pmr;
-		mf.project = pmr.project;
-		mf.mobId = pmr.fileMobId;
-		mf.masterMobId = pmr.masterMobId;
-	};
 
 	// Match the normalised filename, including its punctuation and extension.
 	const auto pmrIt = pmrMap.constFind(primaryKey);
 	if (pmrIt != pmrMap.constEnd() && !pmrIt->isEmpty())
-		applyPmrHit(pmrIt->first());
+	{
+		pmrHit = &pmrIt->first();
+		mf.project = pmrHit->project;
+		mf.fileMobId = pmrHit->fileMobId;
+		mf.masterMobId = pmrHit->masterMobId;
+	}
 
 	// The PMR v1 contains no embedded master/project. Recover a master only
 	// when the MDB's source-reference graph establishes a unique relationship.
-	const auto fileIt = mf.mobId.isEmpty() ? mdb.files.constEnd() : mdb.files.constFind(mf.mobId);
+	const auto fileIt = mf.fileMobId.isEmpty() ? mdb.files.constEnd() : mdb.files.constFind(mf.fileMobId);
 	if (mf.masterMobId.isEmpty() && fileIt != mdb.files.constEnd())
 		mf.masterMobId = fileIt->masterMobId;
 	const auto masterIt = mf.masterMobId.isEmpty() ? mdb.masters.constEnd() : mdb.masters.constFind(mf.masterMobId);
@@ -1001,13 +1006,13 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 
 	// Missing timestamps leave database freshness unknown, so the media must
 	// be checked rather than relying on the database alone.
-	const bool headerReadable = mf.sizeBytes > 0;
-	const bool described = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
-						   masterIt != mdb.masters.constEnd();
-	const bool indexedFileCurrent = pmrHit && pmrHit->fileModifiedSecs != 0 &&
-									PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, fi.lastModified());
-	mf.databaseMetadataCurrent = described && indexedFileCurrent;
-	if (headerReadable && mf.databaseMetadataCurrent)
+	const bool isNonEmpty = mf.sizeBytes > 0;
+	const bool databaseMetadataComplete = fileIt != mdb.files.constEnd() && fileIt->essenceComplete &&
+										  masterIt != mdb.masters.constEnd();
+	const bool databaseTimestampMatches = pmrHit && pmrHit->fileModifiedSecs != 0 &&
+										  PmrParser::trailerMatchesModified(pmrHit->fileModifiedSecs, mf.modified);
+	mf.databaseMetadataCurrent = databaseMetadataComplete && databaseTimestampMatches;
+	if (isNonEmpty && mf.databaseMetadataCurrent)
 	{
 		MediaMetadata essence = fileIt->essence;
 		essence.isPrecompute = AvidUsage::masterClassification(masterIt->usageCode) ==
@@ -1016,13 +1021,13 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		essence.precomputeCategory = masterIt->precomputeCategory;
 		applyMetadata(mf, essence);
 	}
-	mf.needsHeaderRead = headerReadable && ((FeatureFlags::kClipDurationEnabled && !mf.omfEra) || !mf.databaseMetadataCurrent ||
-											mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
-											(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
+	mf.needsHeaderRead = isNonEmpty && ((FeatureFlags::kClipDurationEnabled && !mf.omfEra) || !mf.databaseMetadataCurrent ||
+										mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
+										(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
 
 	// An all-zero MOB ID means Avid never wrote a real identity for the file
 	// or its clip; the media can't be tracked or relinked reliably.
-	mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId);
+	mf.isInvalidUmid = MobId::isAllZero(mf.fileMobId) || MobId::isAllZero(mf.masterMobId);
 
 	// MARK: Local-database status
 
@@ -1042,7 +1047,7 @@ namespace
 	void clearReplacedMetadata(MediaFile &mf)
 	{
 		mf.project.clear();
-		mf.mobId.clear();
+		mf.fileMobId.clear();
 		mf.masterMobId.clear();
 		mf.clipName.clear();
 		mf.clipNameSource = MediaFile::ClipNameSource::None;
@@ -1079,13 +1084,13 @@ namespace
 		const auto databaseCategory = mf.precomputeCategory;
 		MediaMetadata metadata;
 		QString headerBin;
-		bool omfIdentityKnown = false;
+		bool hasOmfMediaDescriptor = false;
 		if (readingOmf)
 		{
 			// OMF1/OMF2 return the same essence fields, with the master
 			// bin and file identity obtained from their object graph.
 			const OmfMetadata omf = OmfParser::parseHeader(mf.mediaFilePath);
-			omfIdentityKnown = omf.hasMediaDescriptor;
+			hasOmfMediaDescriptor = omf.hasMediaDescriptor;
 			metadata = omf.essence;
 			headerBin = omf.bin;
 			metadata.fileMobId = omf.fileMobId;
@@ -1107,23 +1112,23 @@ namespace
 		// A selected OMF file mob can prove identity even when its
 		// descriptor lacks usable technical fields. A different old
 		// file's database details must still be invalidated in that case.
-		const QString headerFileId = headerUsable || omfIdentityKnown ? canonicalHeaderId(metadata.fileMobId) : QString{};
+		const QString headerFileMobId = headerUsable || hasOmfMediaDescriptor ? canonicalHeaderId(metadata.fileMobId) : QString{};
 		const bool headerMasterKnown = readingOmf || metadata.hasMaterialPackage;
-		const QString headerMasterId = headerUsable && headerMasterKnown ? canonicalHeaderId(metadata.umid) : QString{};
+		const QString headerMasterMobId = headerUsable && headerMasterKnown ? canonicalHeaderId(metadata.umid) : QString{};
 		const auto contradicts = [](const QString &oldId, const QString &actualId)
 		{
 			return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
 		};
-		if (contradicts(mf.mobId, headerFileId) || contradicts(mf.masterMobId, headerMasterId))
+		if (contradicts(mf.fileMobId, headerFileMobId) || contradicts(mf.masterMobId, headerMasterMobId))
 		{
 			// The name was reused for different media. None of the old
 			// clip's editorial/technical fields belongs to the replacement.
 			clearReplacedMetadata(mf);
 		}
-		assignIfMissing(mf.mobId, headerFileId);
+		assignIfMissing(mf.fileMobId, headerFileMobId);
 		if (headerUsable)
 		{
-			assignIfMissing(mf.masterMobId, headerMasterId);
+			assignIfMissing(mf.masterMobId, headerMasterMobId);
 			assignIfMissing(mf.originalBin, headerBin);
 		}
 		applyMetadata(mf, metadata);
@@ -1143,14 +1148,14 @@ namespace
 
 		// Recover names by the header's master identity without changing the
 		// row's PMR membership status.
-		if (headerUsable && headerMasterKnown && masters && !headerMasterId.isEmpty() && !MobId::isAllZero(headerMasterId))
+		if (headerUsable && headerMasterKnown && masters && !headerMasterMobId.isEmpty() && !MobId::isAllZero(headerMasterMobId))
 		{
-			const auto record = masters->constFind(headerMasterId);
+			const auto record = masters->constFind(headerMasterMobId);
 			if (record != masters->constEnd())
 				applyMdbRecord(mf, record.value());
 		}
 		// The header's own identity can be the zero one too.
-		mf.isInvalidUmid = MobId::isAllZero(mf.mobId) || MobId::isAllZero(mf.masterMobId) ||
+		mf.isInvalidUmid = MobId::isAllZero(mf.fileMobId) || MobId::isAllZero(mf.masterMobId) ||
 						   (headerUsable && (MobId::isAllZero(metadata.umid) || MobId::isAllZero(metadata.fileMobId)));
 	}
 } // namespace

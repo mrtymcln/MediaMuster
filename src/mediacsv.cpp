@@ -73,7 +73,7 @@ namespace MediaCsv
 		out << f.createdDisplay() << ','
 			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFileName) << ','
 			<< CsvUtil::quoted(f.mediaFilePath) << ',' << CsvUtil::quoted(f.dbStatusText().label) << ','
-			<< CsvUtil::quoted(f.mobId) << ',' << CsvUtil::quoted(f.masterMobId);
+			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobId);
 		out << '\n';
 		return line;
 	}

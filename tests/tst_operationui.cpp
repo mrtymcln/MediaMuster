@@ -777,7 +777,7 @@ void TestOperationUi::select_relatives_counts_all_visible_matches()
 		file.fileName = QStringLiteral("audio-%1.mxf").arg(i);
 		file.mediaFilePath = path(file.fileName);
 		file.clipName = QStringLiteral("Interview");
-		file.mobId = QStringLiteral("file-%1").arg(i);
+		file.fileMobId = QStringLiteral("file-%1").arg(i);
 		file.masterMobId = i < total ? QStringLiteral("master-a") : QStringLiteral("unrelated-master");
 		file.kind = MediaFile::Kind::Audio;
 	}
@@ -837,7 +837,7 @@ void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
 		file.fileName = QStringLiteral("channel-%1.mxf").arg(i);
 		file.mediaFilePath = path(file.fileName);
 		file.clipName = QStringLiteral("Same clip name");
-		file.mobId = QStringLiteral("file-%1").arg(i);
+		file.fileMobId = QStringLiteral("file-%1").arg(i);
 		file.masterMobId = i < 2   ? QStringLiteral("master-a")
 						   : i < 5 ? QStringLiteral("master-b")
 								   : QStringLiteral("unrelated-master");
@@ -881,7 +881,7 @@ void TestOperationUi::select_relatives_preserves_hidden_selections_without_using
 		file.fileName = names[i];
 		file.mediaFilePath = path(file.fileName);
 		file.clipName = i < 2 ? QStringLiteral("Interview") : QStringLiteral("Cutaway");
-		file.mobId = QStringLiteral("file-%1").arg(i);
+		file.fileMobId = QStringLiteral("file-%1").arg(i);
 		file.masterMobId = i < 2 ? QStringLiteral("master-a") : QStringLiteral("master-b");
 		file.kind = MediaFile::Kind::Audio;
 	}

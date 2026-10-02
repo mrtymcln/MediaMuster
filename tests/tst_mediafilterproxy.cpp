@@ -458,14 +458,14 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	title.volumeName = QStringLiteral("EDIT");
 	title.volumePath = QStringLiteral("/Volumes/EDIT");
 	title.project = QStringLiteral("Project A");
-	title.mobId = MobId::format(TestAvb::Source);
+	title.fileMobId = MobId::format(TestAvb::Source);
 	MediaFile custom = title;
 	custom.clipName = QStringLiteral("sound");
 	custom.fileName = QStringLiteral("sound.mxf");
 	custom.mediaFilePath = QStringLiteral("/vol/sound.mxf");
 	custom.kind = MediaFile::Kind::Audio;
 	custom.effect = QStringLiteral("Custom, exact name");
-	custom.mobId = MobId::format(TestAvb::Other);
+	custom.fileMobId = MobId::format(TestAvb::Other);
 	MediaFile otherVolume = title;
 	otherVolume.volumePath = QStringLiteral("/Volumes/EDIT 2"); // same displayed label
 	MediaFile otherProject = title;
@@ -487,9 +487,9 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({title.mobId})}}});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({title.fileMobId})}}});
 	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({custom.mobId})}}});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({custom.fileMobId})}}});
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText(QStringLiteral("picture"));
 	QCOMPARE(proxy.rowCount(), 0);
@@ -684,7 +684,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	warp.effect = QStringLiteral("3D Warp");
 	warp.volumePath = QStringLiteral("/Volumes/EDIT");
 	warp.project = QStringLiteral("Project A");
-	warp.mobId = MobId::format(TestAvb::Master);
+	warp.fileMobId = MobId::format(TestAvb::Master);
 	warp.kind = MediaFile::Kind::Video;
 	MediaFile sameNameOtherCategory = warp;
 	sameNameOtherCategory.effectCategory = QStringLiteral("Image");
@@ -692,11 +692,11 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
 	title.effectCategory = title.effect = QStringLiteral("Title");
 	title.project = QStringLiteral("Project B");
-	title.mobId = MobId::format(TestAvb::Source);
+	title.fileMobId = MobId::format(TestAvb::Source);
 	MediaFile matte = title;
 	matte.effect = QStringLiteral("Matte Key");
 	matte.project = warp.project;
-	matte.mobId = MobId::format(TestAvb::Other);
+	matte.fileMobId = MobId::format(TestAvb::Other);
 	matte.kind = MediaFile::Kind::Audio;
 	MediaFile sameNameOtherSubtype = warp;
 	sameNameOtherSubtype.precomputeCategory = title.precomputeCategory;
@@ -721,7 +721,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({matte.mobId})}}});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({matte.fileMobId})}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
 	QCOMPARE(proxy.rowCount(), 1);
@@ -777,10 +777,10 @@ void TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
 void TestMediaFilterProxy::bin_filter_excludes_master_only_relatives()
 {
 	MediaFile video = rowNamed(QStringLiteral("video"));
-	video.mobId = MobId::format(TestAvb::Source);
+	video.fileMobId = MobId::format(TestAvb::Source);
 	video.masterMobId = MobId::format(TestAvb::Master);
 	MediaFile audio = rowNamed(QStringLiteral("audio"));
-	audio.mobId = MobId::format(TestAvb::Other);
+	audio.fileMobId = MobId::format(TestAvb::Other);
 	audio.masterMobId = video.masterMobId;
 	MediaTableModel model;
 	model.setMediaFiles({video, audio});
@@ -885,13 +885,13 @@ void TestMediaFilterProxy::bin_subtraction_only_uses_file_identity()
 	QFETCH(QString, subtract);
 	QFETCH(int, expected);
 	MediaFile row = rowNamed(QStringLiteral("same media"));
-	row.mobId = MobId::format(TestAvb::Source);
+	row.fileMobId = MobId::format(TestAvb::Source);
 	row.masterMobId = MobId::format(TestAvb::Master);
 	MediaTableModel model;
 	model.setMediaFiles({row});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({row.mobId})},
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({row.fileMobId})},
 						 {BinFilter::Operation::Subtract, {}, fullIds({subtract})}}});
 	QCOMPARE(proxy.rowCount(), expected);
 }
@@ -899,9 +899,9 @@ void TestMediaFilterProxy::bin_subtraction_only_uses_file_identity()
 void TestMediaFilterProxy::bin_ordered_add_can_restore_a_row()
 {
 	MediaFile row = rowNamed(QStringLiteral("same media"));
-	row.mobId = MobId::format(TestAvb::Source);
+	row.fileMobId = MobId::format(TestAvb::Source);
 	row.masterMobId = MobId::format(TestAvb::Master);
-	const auto refs = fullIds({row.mobId});
+	const auto refs = fullIds({row.fileMobId});
 	MediaTableModel model;
 	model.setMediaFiles({row, rowNamed(QStringLiteral("unrelated"))});
 	MediaFilterProxy proxy;
@@ -918,15 +918,15 @@ void TestMediaFilterProxy::bin_ordered_add_can_restore_a_row()
 void TestMediaFilterProxy::bin_leading_subtract_uses_all_media_rows()
 {
 	MediaFile hit = rowNamed(QStringLiteral("hit"));
-	hit.mobId = MobId::format(TestAvb::Source);
+	hit.fileMobId = MobId::format(TestAvb::Source);
 	MediaFile outside = rowNamed(QStringLiteral("outside all bins"));
-	outside.mobId = MobId::format(TestAvb::Other);
+	outside.fileMobId = MobId::format(TestAvb::Other);
 	MediaFile unknown = rowNamed(QStringLiteral("no identity"));
 	MediaTableModel model;
 	model.setMediaFiles({hit, outside, unknown});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, fullIds({hit.mobId, QString{}})}}});
+	proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, fullIds({hit.fileMobId, QString{}})}}});
 	QCOMPARE(proxy.rowCount(), 2);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 2);
@@ -935,7 +935,7 @@ void TestMediaFilterProxy::bin_leading_subtract_uses_all_media_rows()
 void TestMediaFilterProxy::bin_empty_operand_leaves_filter_unchanged()
 {
 	MediaFile hit = rowNamed(QStringLiteral("hit"));
-	hit.mobId = MobId::format(TestAvb::Source);
+	hit.fileMobId = MobId::format(TestAvb::Source);
 	MediaTableModel model;
 	model.setMediaFiles({hit, rowNamed(QStringLiteral("outside"))});
 	MediaFilterProxy proxy;
@@ -944,7 +944,7 @@ void TestMediaFilterProxy::bin_empty_operand_leaves_filter_unchanged()
 	{
 		proxy.setBinFilter({{{op, {}, {}}}});
 		QCOMPARE(proxy.rowCount(), 2);
-		proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.mobId})}, {op, {}, {}}}});
+		proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
 		QCOMPARE(proxy.rowCount(), 1);
 	}
 	proxy.setBinFilter({});
@@ -954,14 +954,14 @@ void TestMediaFilterProxy::bin_empty_operand_leaves_filter_unchanged()
 void TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_refresh()
 {
 	MediaFile first = rowNamed(QStringLiteral("first"));
-	first.mobId = MobId::format(TestAvb::Source);
+	first.fileMobId = MobId::format(TestAvb::Source);
 	MediaFile second = rowNamed(QStringLiteral("second"));
-	second.mobId = first.mobId;
+	second.fileMobId = first.fileMobId;
 	MediaTableModel model;
 	model.setMediaFiles({first, second});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({first.mobId})}}});
+	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({first.fileMobId})}}});
 	proxy.setSearchText(QStringLiteral("second"));
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
@@ -987,9 +987,9 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 		}
 	};
 	MediaFile first = rowNamed(QStringLiteral("first"));
-	first.mobId = MobId::format(TestAvb::Source);
+	first.fileMobId = MobId::format(TestAvb::Source);
 	MediaFile second = rowNamed(QStringLiteral("second"));
-	second.mobId = MobId::format(TestAvb::Other);
+	second.fileMobId = MobId::format(TestAvb::Other);
 	MediaTableModel model;
 	model.setMediaFiles({first, second});
 	CountingProxy proxy;
@@ -1000,8 +1000,8 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 	QCOMPARE(proxy.rowCount(), 2);
 	QCOMPARE(proxy.rowChecks, 0);
 
-	BinFilter filter{{{BinFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.mobId})},
-					  {BinFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.mobId})}}};
+	BinFilter filter{{{BinFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.fileMobId})},
+					  {BinFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.fileMobId})}}};
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 2);
 	QVERIFY(proxy.rowChecks > 0);
@@ -1025,7 +1025,7 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 	QCOMPARE(proxy.rowCount(), 2);
 	QVERIFY(proxy.rowChecks > 0);
 	proxy.rowChecks = 0;
-	filter.steps[1].mediaFileIds = fullIds({second.mobId});
+	filter.steps[1].mediaFileIds = fullIds({second.fileMobId});
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 1);
 	QVERIFY(proxy.rowChecks > 0);

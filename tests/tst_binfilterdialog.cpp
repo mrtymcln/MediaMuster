@@ -55,12 +55,12 @@ namespace
 			MediaFile hit;
 			hit.mediaFilePath = QStringLiteral("/media/hit.mxf");
 			hit.fileName = QStringLiteral("hit.mxf");
-			hit.mobId = MobId::format(TestAvb::Source);
+			hit.fileMobId = MobId::format(TestAvb::Source);
 			hit.masterMobId = MobId::format(TestAvb::Master);
 			MediaFile outside;
 			outside.mediaFilePath = QStringLiteral("/media/outside.mxf");
 			outside.fileName = QStringLiteral("outside.mxf");
-			outside.mobId = MobId::format(TestAvb::Other);
+			outside.fileMobId = MobId::format(TestAvb::Other);
 			outside.masterMobId = hit.masterMobId; // A shared master must not admit this file.
 			model.setMediaFiles({hit, outside});
 			proxy.setSourceModel(&model);
@@ -174,7 +174,7 @@ void TestBinFilterDialog::locator_identity_controls_file_matching()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	auto rows = h.model.allFiles();
-	rows[0].mobId = fileId;
+	rows[0].fileMobId = fileId;
 	h.model.setMediaFiles(rows);
 	TestAvb::Document d;
 	d.objects = {{"ABIN", TestAvb::bin(false)},

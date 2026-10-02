@@ -1,5 +1,13 @@
 # MediaMuster naming inventory
 
+Bin metadata update, 2 October 2026: BinFilter::matches now names its argument fileMobId. BinMetadataResolver uses MasterMobMetadata and m_metadataByMasterMobId. Conflict handling and ownership of bin-supplied names are unchanged. Historical scopes and locations remain unchanged.
+
+Scanner flow update, 2 October 2026: finalisation checks cancellation, the running-state cleanup uses qScopeGuard, and folder database caching reuses the canonical path from duplicate detection. Progress handling is unchanged: 30 scans of 100 empty folders, plus three slower scans using the existing folder pause, showed no backwards updates; a temporary 100 ms delay after one worker incremented its completion count reproduced 100 then 1. The diagnostic delay and test were removed.
+
+MediaFile update, 2 October 2026: MediaFile::mobId is now fileMobId across callers and tests. Other Mob objects and property identifiers keep mobId where appropriate. The CSV MobId column, operation-item fields, serialized journal keys and journal version 2 retain their existing contracts.
+
+Scanner metadata update, 2 October 2026: approved local names are implemented, including isNonEmpty, databaseMetadataComplete and databaseTimestampMatches. PMR selection assigns fields directly, and timestamp checks reuse the captured modification time. Database precedence, replacement clearing and parsed fields are preserved. The subsequent MediaFile update applies its field rename.
+
 Bento cleanup, 2 October 2026: approved TocEntry, reference-reading and private helper/storage names are implemented. Reference arrays reuse one entry lookup, the open failure helper is expanded, and label/entry sizes plus dictionary/reference property and type IDs have named constants. Format values, entry fields and validation rules are preserved. Historical inventory scopes and locations remain unchanged.
 
 OMF parser update, 2 October 2026: approved MobGroup and local names are implemented. Selected file identity assignment is simplified, and a scope guard reports final bytesRead on every return. Fixture-layout comments now distinguish examples from supported schemas. Parsed output fields are retained. Historical inventory scopes and locations remain unchanged.
@@ -38,146 +46,146 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | CMake variable |  | configure_args | configure_args | Keep | Retain the established build, macro or namespace contract. |
-| 22 | CMake variable |  | processor_count | processor_count | Keep | Retain the established build, macro or namespace contract. |
-| 26 | CMake variable |  | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 9 | CMake variable | | configure_args | configure_args | Keep | Retain the established build, macro or namespace contract.
+| 22 | CMake variable | | processor_count | processor_count | Keep | Retain the established build, macro or namespace contract. |
+| 26 | CMake variable | | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
 ## .github/cmake/check-versions.cmake
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 4 | CMake variable |  | name | name | Keep | Retain the established build, macro or namespace contract. |
+| 4 | CMake variable | | name | name | Keep | Retain the established build, macro or namespace contract. |
 | 13 | CMake parameter | require_line_prefix | contents | contents | Keep | Retain the established build, macro or namespace contract. |
 | 13 | CMake parameter | require_line_prefix | description | description | Keep | Retain the established build, macro or namespace contract. |
 | 13 | CMake parameter | require_line_prefix | prefix | prefix | Keep | Retain the established build, macro or namespace contract. |
-| 13 | CMake function |  | require_line_prefix | require_line_prefix | Keep | Retain the established build, macro or namespace contract. |
-| 20 | CMake variable |  | app_cmake | app_cmake | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 24 | CMake variable |  | test_cmake | test_cmake | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 13 | CMake function | | require_line_prefix | require_line_prefix | Keep | Retain the established build, macro or namespace contract. |
+| 20 | CMake variable | | app_cmake | app_cmake | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 24 | CMake variable | | test_cmake | test_cmake | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
 ## .github/cmake/package-macos.cmake
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 4 | CMake variable |  | required | required | Keep | Retain the established build, macro or namespace contract. |
-| 10 | CMake variable |  | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 10 | CMake variable |  | buildDir | buildDir | Keep | Retain the established build, macro or namespace contract. |
-| 11 | CMake variable |  | app | app | Keep | Retain the established build, macro or namespace contract. |
-| 12 | CMake variable |  | plugins | plugins | Keep | Retain the established build, macro or namespace contract. |
-| 13 | CMake variable |  | frameworks | frameworks | Keep | Retain the established build, macro or namespace contract. |
-| 14 | CMake variable |  | dmg | dmg | Keep | Retain the established build, macro or namespace contract. |
-| 18 | CMake function |  | checkResult | checkResult | Keep | Retain the established build, macro or namespace contract. |
+| 4 | CMake variable | | required | required | Keep | Retain the established build, macro or namespace contract. |
+| 10 | CMake variable | | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 10 | CMake variable | | buildDir | buildDir | Keep | Retain the established build, macro or namespace contract. |
+| 11 | CMake variable | | app | app | Keep | Retain the established build, macro or namespace contract. |
+| 12 | CMake variable | | plugins | plugins | Keep | Retain the established build, macro or namespace contract. |
+| 13 | CMake variable | | frameworks | frameworks | Keep | Retain the established build, macro or namespace contract. |
+| 14 | CMake variable | | dmg | dmg | Keep | Retain the established build, macro or namespace contract. |
+| 18 | CMake function | | checkResult | checkResult | Keep | Retain the established build, macro or namespace contract. |
 | 18 | CMake parameter | checkResult | description | description | Keep | Retain the established build, macro or namespace contract. |
 | 18 | CMake parameter | checkResult | result | result | Keep | Retain the established build, macro or namespace contract. |
-| 24 | CMake variable |  | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 25 | CMake variable |  | cleanupResult | cleanupResult | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 24 | CMake variable | | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 25 | CMake variable | | cleanupResult | cleanupResult | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 | 39 | CMake parameter | runChecked | description | description | Keep | Retain the established build, macro or namespace contract. |
-| 39 | CMake function |  | runChecked | runChecked | Keep | Retain the established build, macro or namespace contract. |
-| 41 | CMake variable |  | ARGN | ARGN | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 49 | CMake variable |  | identity | identity | Keep | Retain the established build, macro or namespace contract. |
-| 49 | CMake variable |  | signing_MEDIAMUSTER_CODESIGN_IDENTITY | signing_MEDIAMUSTER_CODESIGN_IDENTITY | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 53 | CMake variable |  | CMAKE_MATCH_1 | CMAKE_MATCH_1 | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 58 | CMake variable |  | identities | identities | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 66 | CMake variable |  | signArgs | signArgs | Keep | Retain the established build, macro or namespace contract. |
-| 72 | CMake variable |  | component | component | Keep | Retain the established build, macro or namespace contract. |
-| 76 | CMake variable |  | component | component | Keep | Retain the established build, macro or namespace contract. |
-| 86 | CMake variable |  | tempRoot | tempRoot | Keep | Retain the established build, macro or namespace contract. |
-| 88 | CMake variable |  | tempRoot | tempRoot | Keep | Retain the established build, macro or namespace contract. |
-| 90 | CMake variable |  | tempRoot | tempRoot | Keep | Retain the established build, macro or namespace contract. |
-| 94 | CMake variable |  | createdStaging | createdStaging | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 98 | CMake variable |  | staging | staging | Keep | Retain the established build, macro or namespace contract. |
-| 124 | CMake variable |  | notarization | notarization | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 125 | CMake variable |  | notarizationError | notarizationError | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 128 | CMake variable |  | parseError | parseError | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 133 | CMake variable |  | idError | idError | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 134 | CMake variable |  | status | status | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 134 | CMake variable |  | submissionId | submissionId | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 39 | CMake function | | runChecked | runChecked | Keep | Retain the established build, macro or namespace contract. |
+| 41 | CMake variable | | ARGN | ARGN | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 49 | CMake variable | | identity | identity | Keep | Retain the established build, macro or namespace contract. |
+| 49 | CMake variable | | signing_MEDIAMUSTER_CODESIGN_IDENTITY | signing_MEDIAMUSTER_CODESIGN_IDENTITY | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 53 | CMake variable | | CMAKE_MATCH_1 | CMAKE_MATCH_1 | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 58 | CMake variable | | identities | identities | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 66 | CMake variable | | signArgs | signArgs | Keep | Retain the established build, macro or namespace contract. |
+| 72 | CMake variable | | component | component | Keep | Retain the established build, macro or namespace contract. |
+| 76 | CMake variable | | component | component | Keep | Retain the established build, macro or namespace contract. |
+| 86 | CMake variable | | tempRoot | tempRoot | Keep | Retain the established build, macro or namespace contract. |
+| 88 | CMake variable | | tempRoot | tempRoot | Keep | Retain the established build, macro or namespace contract. |
+| 90 | CMake variable | | tempRoot | tempRoot | Keep | Retain the established build, macro or namespace contract. |
+| 94 | CMake variable | | createdStaging | createdStaging | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 98 | CMake variable | | staging | staging | Keep | Retain the established build, macro or namespace contract. |
+| 124 | CMake variable | | notarization | notarization | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 125 | CMake variable | | notarizationError | notarizationError | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 128 | CMake variable | | parseError | parseError | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 133 | CMake variable | | idError | idError | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 134 | CMake variable | | status | status | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 134 | CMake variable | | submissionId | submissionId | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
 ## .github/cmake/package-windows.cmake
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | CMake variable |  | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 8 | CMake variable |  | _build_dir | _build_dir | Keep | Retain the established build, macro or namespace contract. |
-| 9 | CMake variable |  | _dist_dir | _dist_dir | Keep | Retain the established build, macro or namespace contract. |
-| 10 | CMake variable |  | _package_dir | _package_dir | Keep | Retain the established build, macro or namespace contract. |
-| 16 | CMake variable |  | _windeployqt | _windeployqt | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 22 | CMake variable |  | _program_files_x86 | _program_files_x86 | Keep | Retain the established build, macro or namespace contract. |
-| 24 | CMake variable |  | _vswhere | _vswhere | Keep | Retain the established build, macro or namespace contract. |
-| 27 | CMake variable |  | _visual_studio | _visual_studio | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 37 | CMake variable |  | _crt_directories | _crt_directories | Keep | Retain the established build, macro or namespace contract. |
-| 38 | CMake variable |  | _candidate | _candidate | Keep | Retain the established build, macro or namespace contract. |
-| 49 | CMake variable |  | _dll | _dll | Keep | Retain the established build, macro or namespace contract. |
-| 58 | CMake variable |  | _crt | _crt | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 70 | CMake variable |  | _rename_result | _rename_result | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 8 | CMake variable | | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 8 | CMake variable | | _build_dir | _build_dir | Keep | Retain the established build, macro or namespace contract. |
+| 9 | CMake variable | | _dist_dir | _dist_dir | Keep | Retain the established build, macro or namespace contract. |
+| 10 | CMake variable | | _package_dir | _package_dir | Keep | Retain the established build, macro or namespace contract. |
+| 16 | CMake variable | | _windeployqt | _windeployqt | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 22 | CMake variable | | _program_files_x86 | _program_files_x86 | Keep | Retain the established build, macro or namespace contract. |
+| 24 | CMake variable | | _vswhere | _vswhere | Keep | Retain the established build, macro or namespace contract. |
+| 27 | CMake variable | | _visual_studio | _visual_studio | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 37 | CMake variable | | _crt_directories | _crt_directories | Keep | Retain the established build, macro or namespace contract. |
+| 38 | CMake variable | | _candidate | _candidate | Keep | Retain the established build, macro or namespace contract. |
+| 49 | CMake variable | | _dll | _dll | Keep | Retain the established build, macro or namespace contract. |
+| 58 | CMake variable | | _crt | _crt | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 70 | CMake variable | | _rename_result | _rename_result | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
 ## .github/cmake/patch-qt-windows.cmake
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 5 | CMake variable |  | _qt_root | _qt_root | Keep | Retain the established build, macro or namespace contract. |
-| 10 | CMake variable |  | _qt_root | _qt_root | Keep | Retain the established build, macro or namespace contract. |
-| 12 | CMake variable |  | _header | _header | Keep | Retain the established build, macro or namespace contract. |
-| 14 | CMake variable |  | _original | _original | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 15 | CMake variable |  | _patched | _patched | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 5 | CMake variable | | _qt_root | _qt_root | Keep | Retain the established build, macro or namespace contract. |
+| 10 | CMake variable | | _qt_root | _qt_root | Keep | Retain the established build, macro or namespace contract. |
+| 12 | CMake variable | | _header | _header | Keep | Retain the established build, macro or namespace contract. |
+| 14 | CMake variable | | _original | _original | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 15 | CMake variable | | _patched | _patched | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
 ## .github/cmake/test.cmake
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 6 | CMake variable |  | ctest_command | ctest_command | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 7 | CMake variable |  | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 8 | CMake variable |  | test_status | test_status | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 17 | CMake variable |  | failed_test | failed_test | Keep | Retain the established build, macro or namespace contract. |
-| 19 | CMake variable |  | test_name | test_name | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 20 | CMake variable |  | result_found | result_found | Keep | Retain the established build, macro or namespace contract. |
-| 21 | CMake variable |  | result_file | result_file | Keep | Retain the established build, macro or namespace contract. |
-| 25 | CMake variable |  | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 26 | CMake variable |  | result_found | result_found | Keep | Retain the established build, macro or namespace contract. |
+| 6 | CMake variable | | ctest_command | ctest_command | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 7 | CMake variable | | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 8 | CMake variable | | test_status | test_status | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 17 | CMake variable | | failed_test | failed_test | Keep | Retain the established build, macro or namespace contract. |
+| 19 | CMake variable | | test_name | test_name | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 20 | CMake variable | | result_found | result_found | Keep | Retain the established build, macro or namespace contract. |
+| 21 | CMake variable | | result_file | result_file | Keep | Retain the established build, macro or namespace contract. |
+| 25 | CMake variable | | CMAKE_COMMAND | CMAKE_COMMAND | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 26 | CMake variable | | result_found | result_found | Keep | Retain the established build, macro or namespace contract. |
 
 ## CMakeLists.txt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 5 | CMake variable |  | CMAKE_OSX_DEPLOYMENT_TARGET | CMAKE_OSX_DEPLOYMENT_TARGET | Keep | Retain the established build, macro or namespace contract. |
-| 8 | CMake variable |  | CMAKE_OSX_ARCHITECTURES | CMAKE_OSX_ARCHITECTURES | Keep | Retain the established build, macro or namespace contract. |
-| 13 | CMake variable |  | _qt_pinned | _qt_pinned | Keep | Retain the established build, macro or namespace contract. |
-| 15 | CMake variable |  | CMAKE_PREFIX_PATH | CMAKE_PREFIX_PATH | Keep | Retain the established build, macro or namespace contract. |
-| 25 | CMake variable |  | CMAKE_OBJCXX_STANDARD | CMAKE_OBJCXX_STANDARD | Keep | Retain the established build, macro or namespace contract. |
-| 26 | CMake variable |  | CMAKE_OBJCXX_STANDARD_REQUIRED | CMAKE_OBJCXX_STANDARD_REQUIRED | Keep | Retain the established build, macro or namespace contract. |
-| 28 | CMake variable |  | MEDIAMUSTER_COPYRIGHT | MEDIAMUSTER_COPYRIGHT | Keep | Retain the established build, macro or namespace contract. |
-| 31 | CMake variable |  | CMAKE_CXX_STANDARD | CMAKE_CXX_STANDARD | Keep | Retain the established build, macro or namespace contract. |
-| 32 | CMake variable |  | CMAKE_CXX_STANDARD_REQUIRED | CMAKE_CXX_STANDARD_REQUIRED | Keep | Retain the established build, macro or namespace contract. |
-| 33 | CMake variable |  | CMAKE_CXX_EXTENSIONS | CMAKE_CXX_EXTENSIONS | Keep | Retain the established build, macro or namespace contract. |
-| 34 | CMake variable |  | CMAKE_AUTOMOC | CMAKE_AUTOMOC | Keep | Retain the established build, macro or namespace contract. |
-| 35 | CMake variable |  | CMAKE_AUTORCC | CMAKE_AUTORCC | Keep | Retain the established build, macro or namespace contract. |
-| 51 | CMake variable |  | SELF_DESTRUCT | SELF_DESTRUCT | Keep | Retain the established build, macro or namespace contract. |
-| 52 | CMake variable |  | SELF_DESTRUCT_DATE | SELF_DESTRUCT_DATE | Keep | Retain the established build, macro or namespace contract. |
-| 76 | CMake variable |  | MEDIAMUSTER_CODESIGN_IDENTITY | MEDIAMUSTER_CODESIGN_IDENTITY | Keep | Retain the established build, macro or namespace contract. |
-| 82 | CMake variable |  | MEDIAMUSTER_BUILD_TESTS | MEDIAMUSTER_BUILD_TESTS | Keep | Retain the established build, macro or namespace contract. |
-| 86 | CMake variable |  | Qt6_VERSION | Qt6_VERSION | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 95 | CMake variable |  | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 98 | CMake variable |  | SOURCES | SOURCES | Keep | Retain the established build, macro or namespace contract. |
-| 147 | CMake variable |  | MACOS_ICON | MACOS_ICON | Keep | Retain the established build, macro or namespace contract. |
-| 151 | CMake variable |  | MACOSX_BUNDLE_BUNDLE_NAME | MACOSX_BUNDLE_BUNDLE_NAME | Keep | Retain the established build, macro or namespace contract. |
-| 152 | CMake variable |  | MACOSX_BUNDLE_BUNDLE_VERSION | MACOSX_BUNDLE_BUNDLE_VERSION | Keep | Retain the established build, macro or namespace contract. |
-| 152 | CMake variable |  | PROJECT_VERSION | PROJECT_VERSION | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 153 | CMake variable |  | MACOSX_BUNDLE_SHORT_VERSION_STRING | MACOSX_BUNDLE_SHORT_VERSION_STRING | Keep | Retain the established build, macro or namespace contract. |
-| 154 | CMake variable |  | MACOSX_BUNDLE_GUI_IDENTIFIER | MACOSX_BUNDLE_GUI_IDENTIFIER | Keep | Retain the established build, macro or namespace contract. |
-| 155 | CMake variable |  | MACOSX_BUNDLE_ICON_FILE | MACOSX_BUNDLE_ICON_FILE | Keep | Retain the established build, macro or namespace contract. |
-| 156 | CMake variable |  | MACOSX_BUNDLE_COPYRIGHT | MACOSX_BUNDLE_COPYRIGHT | Keep | Retain the established build, macro or namespace contract. |
-| 161 | CMake variable |  | CMAKE_CURRENT_SOURCE_DIR | CMAKE_CURRENT_SOURCE_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 167 | CMake variable |  | _part | _part | Keep | Retain the established build, macro or namespace contract. |
-| 169 | CMake variable |  | _mm_rc_${_part} | _mm_rc_${_part} | Keep | Retain the established build, macro or namespace contract. |
-| 171 | CMake variable |  | _mm_rc_${_part} | _mm_rc_${_part} | Keep | Retain the established build, macro or namespace contract. |
-| 174 | CMake variable |  | MM_RC_VERSION_COMMA | MM_RC_VERSION_COMMA | Keep | Retain the established build, macro or namespace contract. |
-| 174 | CMake variable |  | _mm_rc_MAJOR | _mm_rc_MAJOR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 174 | CMake variable |  | _mm_rc_MINOR | _mm_rc_MINOR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 174 | CMake variable |  | _mm_rc_PATCH | _mm_rc_PATCH | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 178 | CMake variable |  | MM_RC_ICON | MM_RC_ICON | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 198 | CMake function |  | mediamuster_link_native_operations | mediamuster_link_native_operations | Keep | Retain the established build, macro or namespace contract. |
+| 5 | CMake variable | | CMAKE_OSX_DEPLOYMENT_TARGET | CMAKE_OSX_DEPLOYMENT_TARGET | Keep | Retain the established build, macro or namespace contract. |
+| 8 | CMake variable | | CMAKE_OSX_ARCHITECTURES | CMAKE_OSX_ARCHITECTURES | Keep | Retain the established build, macro or namespace contract. |
+| 13 | CMake variable | | _qt_pinned | _qt_pinned | Keep | Retain the established build, macro or namespace contract. |
+| 15 | CMake variable | | CMAKE_PREFIX_PATH | CMAKE_PREFIX_PATH | Keep | Retain the established build, macro or namespace contract. |
+| 25 | CMake variable | | CMAKE_OBJCXX_STANDARD | CMAKE_OBJCXX_STANDARD | Keep | Retain the established build, macro or namespace contract. |
+| 26 | CMake variable | | CMAKE_OBJCXX_STANDARD_REQUIRED | CMAKE_OBJCXX_STANDARD_REQUIRED | Keep | Retain the established build, macro or namespace contract. |
+| 28 | CMake variable | | MEDIAMUSTER_COPYRIGHT | MEDIAMUSTER_COPYRIGHT | Keep | Retain the established build, macro or namespace contract. |
+| 31 | CMake variable | | CMAKE_CXX_STANDARD | CMAKE_CXX_STANDARD | Keep | Retain the established build, macro or namespace contract. |
+| 32 | CMake variable | | CMAKE_CXX_STANDARD_REQUIRED | CMAKE_CXX_STANDARD_REQUIRED | Keep | Retain the established build, macro or namespace contract. |
+| 33 | CMake variable | | CMAKE_CXX_EXTENSIONS | CMAKE_CXX_EXTENSIONS | Keep | Retain the established build, macro or namespace contract. |
+| 34 | CMake variable | | CMAKE_AUTOMOC | CMAKE_AUTOMOC | Keep | Retain the established build, macro or namespace contract. |
+| 35 | CMake variable | | CMAKE_AUTORCC | CMAKE_AUTORCC | Keep | Retain the established build, macro or namespace contract. |
+| 51 | CMake variable | | SELF_DESTRUCT | SELF_DESTRUCT | Keep | Retain the established build, macro or namespace contract. |
+| 52 | CMake variable | | SELF_DESTRUCT_DATE | SELF_DESTRUCT_DATE | Keep | Retain the established build, macro or namespace contract. |
+| 76 | CMake variable | | MEDIAMUSTER_CODESIGN_IDENTITY | MEDIAMUSTER_CODESIGN_IDENTITY | Keep | Retain the established build, macro or namespace contract. |
+| 82 | CMake variable | | MEDIAMUSTER_BUILD_TESTS | MEDIAMUSTER_BUILD_TESTS | Keep | Retain the established build, macro or namespace contract. |
+| 86 | CMake variable | | Qt6_VERSION | Qt6_VERSION | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 95 | CMake variable | | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 98 | CMake variable | | SOURCES | SOURCES | Keep | Retain the established build, macro or namespace contract. |
+| 147 | CMake variable | | MACOS_ICON | MACOS_ICON | Keep | Retain the established build, macro or namespace contract. |
+| 151 | CMake variable | | MACOSX_BUNDLE_BUNDLE_NAME | MACOSX_BUNDLE_BUNDLE_NAME | Keep | Retain the established build, macro or namespace contract. |
+| 152 | CMake variable | | MACOSX_BUNDLE_BUNDLE_VERSION | MACOSX_BUNDLE_BUNDLE_VERSION | Keep | Retain the established build, macro or namespace contract. |
+| 152 | CMake variable | | PROJECT_VERSION | PROJECT_VERSION | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 153 | CMake variable | | MACOSX_BUNDLE_SHORT_VERSION_STRING | MACOSX_BUNDLE_SHORT_VERSION_STRING | Keep | Retain the established build, macro or namespace contract. |
+| 154 | CMake variable | | MACOSX_BUNDLE_GUI_IDENTIFIER | MACOSX_BUNDLE_GUI_IDENTIFIER | Keep | Retain the established build, macro or namespace contract. |
+| 155 | CMake variable | | MACOSX_BUNDLE_ICON_FILE | MACOSX_BUNDLE_ICON_FILE | Keep | Retain the established build, macro or namespace contract. |
+| 156 | CMake variable | | MACOSX_BUNDLE_COPYRIGHT | MACOSX_BUNDLE_COPYRIGHT | Keep | Retain the established build, macro or namespace contract. |
+| 161 | CMake variable | | CMAKE_CURRENT_SOURCE_DIR | CMAKE_CURRENT_SOURCE_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 167 | CMake variable | | _part | _part | Keep | Retain the established build, macro or namespace contract. |
+| 169 | CMake variable | | _mm_rc_${_part} | _mm_rc_${_part} | Keep | Retain the established build, macro or namespace contract. |
+| 171 | CMake variable | | _mm_rc_${_part} | _mm_rc_${_part} | Keep | Retain the established build, macro or namespace contract. |
+| 174 | CMake variable | | MM_RC_VERSION_COMMA | MM_RC_VERSION_COMMA | Keep | Retain the established build, macro or namespace contract. |
+| 174 | CMake variable | | _mm_rc_MAJOR | _mm_rc_MAJOR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 174 | CMake variable | | _mm_rc_MINOR | _mm_rc_MINOR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 174 | CMake variable | | _mm_rc_PATCH | _mm_rc_PATCH | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 178 | CMake variable | | MM_RC_ICON | MM_RC_ICON | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 198 | CMake function | | mediamuster_link_native_operations | mediamuster_link_native_operations | Keep | Retain the established build, macro or namespace contract. |
 | 198 | CMake parameter | mediamuster_link_native_operations | target | target | Keep | Retain the established build, macro or namespace contract. |
-| 225 | CMake variable |  | _mm_identities | _mm_identities | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 232 | CMake variable |  | _mm_bundle | _mm_bundle | Keep | Retain the established build, macro or namespace contract. |
+| 225 | CMake variable | | _mm_identities | _mm_identities | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 232 | CMake variable | | _mm_bundle | _mm_bundle | Keep | Retain the established build, macro or namespace contract. |
 
 ## src/aboutdialog.cpp
 
@@ -186,27 +194,27 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 17 | Macro | Windows compilation | WIN32_LEAN_AND_MEAN | WIN32_LEAN_AND_MEAN | Keep | Keep the required Windows SDK configuration macro. |
 | 18 | Macro | Windows compilation | NOMINMAX | NOMINMAX | Keep | Keep the required Windows SDK configuration macro. |
 | 19 | Macro | Windows compilation | SECURITY_WIN32 | SECURITY_WIN32 | Keep | Keep the required Windows security SDK configuration macro. |
-| 26 | Variable |  | kDialogWidth | kDialogWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 27 | Variable |  | kSideMargin | kSideMargin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 28 | Variable |  | kRollWidth | kRollWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 29 | Variable |  | kRollHeight | kRollHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Variable |  | kRollTickMs | kRollTickMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 31 | Variable |  | kRollStartDelayMs | kRollStartDelayMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 33 | Function |  | userDisplayName | userDisplayName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 35 | Function |  | addLabel | addLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 26 | Variable | | kDialogWidth | kDialogWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 27 | Variable | | kSideMargin | kSideMargin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 28 | Variable | | kRollWidth | kRollWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 29 | Variable | | kRollHeight | kRollHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 30 | Variable | | kRollTickMs | kRollTickMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 31 | Variable | | kRollStartDelayMs | kRollStartDelayMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 33 | Function | | userDisplayName | userDisplayName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 35 | Function | | addLabel | addLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | addLabel | layout | layout | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | addLabel | text | text | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | addLabel | pointDelta | pointDelta | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | addLabel | bold | bold | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Variable | addLabel | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Variable | addLabel | font | font | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 49 | Function |  | startCreditsRoll | startCreditsRoll | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 49 | Function | | startCreditsRoll | startCreditsRoll | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Parameter | startCreditsRoll | viewport | viewport | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Parameter | startCreditsRoll | content | content | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Parameter | startCreditsRoll | postCredits | postCredits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 54 | Variable | startCreditsRoll | rollTimer | rollTimer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 59 | Variable | startCreditsRoll::(lambda at src/aboutdialog.cpp:57:8)::operator() | y | y | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 75 | Function |  | createCredits | createCredits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 75 | Function | | createCredits | createCredits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Parameter | createCredits | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 77 | Variable | createCredits | viewport | viewport | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 79 | Variable | createCredits | content | content | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -229,7 +237,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 4 | Class |  | AboutDialog | AboutDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 4 | Class | | AboutDialog | AboutDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 8 | Constructor | AboutDialog | AboutDialog | AboutDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 8 | Parameter | AboutDialog::AboutDialog | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 
@@ -237,34 +245,34 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 29 | Variable |  | kLittleEndianAvbHeader | kLittleEndianAvbHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 32 | Variable |  | kBigEndianAvbHeader | kBigEndianAvbHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 36 | Variable |  | kMaxWarnings | kMaxWarnings | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 37 | Variable |  | kNullStringLength | kNullStringLength | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Variable |  | kMobLabelBytes | kMobLabelBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 39 | Variable |  | kMobMaterialOffset | kMobMaterialOffset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 40 | Variable |  | kMobTailOffset | kMobTailOffset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 41 | Variable |  | kMobTailBytes | kMobTailBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 42 | Variable |  | kDocumentVersion | kDocumentVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 43 | Variable |  | kComponentVersion | kComponentVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Variable |  | kClipVersion | kClipVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 45 | Variable |  | kTrackGroupVersion | kTrackGroupVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 46 | Variable |  | kCompositionVersion | kCompositionVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 47 | Variable |  | kSourceClipVersion | kSourceClipVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 48 | Variable |  | kBinVersion | kBinVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 49 | Variable |  | kLargeBinVersion | kLargeBinVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 50 | Variable |  | kTrackLabel | kTrackLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Variable |  | kTrackAttributes | kTrackAttributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 52 | Variable |  | kTrackComponent | kTrackComponent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 53 | Variable |  | kTrackFillerProxy | kTrackFillerProxy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 54 | Variable |  | kTrackBob | kTrackBob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 55 | Variable |  | kTrackControlCode | kTrackControlCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 56 | Variable |  | kTrackControlSubCode | kTrackControlSubCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 57 | Variable |  | kTrackStartPosition | kTrackStartPosition | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 58 | Variable |  | kTrackReadOnly | kTrackReadOnly | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 59 | Variable |  | kTrackSessionAttributes | kTrackSessionAttributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 60 | Variable |  | kUnknownTrackFlags | kUnknownTrackFlags | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 61 | Enum |  | PropertyTag | AvbPropertyTag | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 29 | Variable | | kLittleEndianAvbHeader | kLittleEndianAvbHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 32 | Variable | | kBigEndianAvbHeader | kBigEndianAvbHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 36 | Variable | | kMaxWarnings | kMaxWarnings | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 37 | Variable | | kNullStringLength | kNullStringLength | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 38 | Variable | | kMobLabelBytes | kMobLabelBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 39 | Variable | | kMobMaterialOffset | kMobMaterialOffset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 40 | Variable | | kMobTailOffset | kMobTailOffset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 41 | Variable | | kMobTailBytes | kMobTailBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 42 | Variable | | kDocumentVersion | kDocumentVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 43 | Variable | | kComponentVersion | kComponentVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 44 | Variable | | kClipVersion | kClipVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 45 | Variable | | kTrackGroupVersion | kTrackGroupVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 46 | Variable | | kCompositionVersion | kCompositionVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 47 | Variable | | kSourceClipVersion | kSourceClipVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 48 | Variable | | kBinVersion | kBinVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 49 | Variable | | kLargeBinVersion | kLargeBinVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 50 | Variable | | kTrackLabel | kTrackLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 51 | Variable | | kTrackAttributes | kTrackAttributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 52 | Variable | | kTrackComponent | kTrackComponent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 53 | Variable | | kTrackFillerProxy | kTrackFillerProxy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 54 | Variable | | kTrackBob | kTrackBob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 55 | Variable | | kTrackControlCode | kTrackControlCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 56 | Variable | | kTrackControlSubCode | kTrackControlSubCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 57 | Variable | | kTrackStartPosition | kTrackStartPosition | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 58 | Variable | | kTrackReadOnly | kTrackReadOnly | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 59 | Variable | | kTrackSessionAttributes | kTrackSessionAttributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 60 | Variable | | kUnknownTrackFlags | kUnknownTrackFlags | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 61 | Enum | | PropertyTag | AvbPropertyTag | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 63 | Enum value | PropertyTag | Extension | Extension | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 64 | Enum value | PropertyTag | Class | Class | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Enum value | PropertyTag | End | End | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -278,12 +286,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 73 | Enum value | PropertyTag | Double | Double | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 74 | Enum value | PropertyTag | String | String | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Enum value | PropertyTag | Int64 | Int64 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 77 | Type alias |  | RawMob | RawMobId | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
-| 78 | Struct |  | ParseFailure | AvbParserFailure | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 77 | Type alias | | RawMob | RawMobId | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 78 | Struct | | ParseFailure | AvbParserFailure | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 80 | Field | ParseFailure | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 82 | Struct |  | Unsupported | AvbUnsupported | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 82 | Struct | | Unsupported | AvbUnsupported | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 84 | Field | Unsupported | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 89 | Class |  | Reader | AvbValueParser | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 89 | Class | | Reader | AvbValueParser | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 92 | Constructor | Reader | Reader | AvbValueParser | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 92 | Parameter | Reader::Reader | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 92 | Parameter | Reader::Reader | begin | begin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -353,32 +361,32 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 270 | Field | Reader | m_end | m_end | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 271 | Field | Reader | m_little | m_little | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 272 | Field | Reader | m_cancelled | m_cancelled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 275 | Struct |  | Object | AvbObject | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 275 | Struct | | Object | AvbObject | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 277 | Field | Object | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 278 | Field | Object | offset | offset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 279 | Field | Object | size | size | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 281 | Struct |  | BinReference | AvbBinReference | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 281 | Struct | | BinReference | AvbBinReference | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 283 | Field | BinReference | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 284 | Field | BinReference | uid | uid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 286 | Struct |  | Component | AvbComponent | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 286 | Struct | | Component | AvbComponent | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 288 | Field | Component | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 289 | Field | Component | attributes | attributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 291 | Struct |  | Composition | AvbComposition | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 291 | Struct | | Composition | AvbComposition | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 293 | Field | Composition | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 294 | Field | Composition | attributes | attributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 297 | Function |  | nativeMob | nativeMobId | Implemented | Implemented 30 September 2026: agreed identifier-helper name makes its MOB identifier role explicit; behaviour is unchanged. |
+| 297 | Function | | nativeMob | nativeMobId | Implemented | Implemented 30 September 2026: agreed identifier-helper name makes its MOB identifier role explicit; behaviour is unchanged. |
 | 297 | Parameter | nativeMob | low | low | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 297 | Parameter | nativeMob | high | high | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 299 | Variable | nativeMob | core | core | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 304 | Function |  | typedMob | typedMobId | Implemented | Implemented 30 September 2026: agreed identifier-helper name makes its MOB identifier role explicit; behaviour is unchanged. |
+| 304 | Function | | typedMob | typedMobId | Implemented | Implemented 30 September 2026: agreed identifier-helper name makes its MOB identifier role explicit; behaviour is unchanged. |
 | 304 | Parameter | typedMob | r | r | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 306 | Variable | typedMob | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 311 | Variable | typedMob | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 328 | Function |  | isNullMob | isNullMobId | Implemented | Implemented 30 September 2026: agreed identifier-helper name makes its MOB identifier role explicit; behaviour is unchanged. |
+| 328 | Function | | isNullMob | isNullMobId | Implemented | Implemented 30 September 2026: agreed identifier-helper name makes its MOB identifier role explicit; behaviour is unchanged. |
 | 328 | Parameter | isNullMob | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 330 | Parameter | isNullMob::(lambda at src/avbparser.cpp:330:43)::operator() | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 333 | Parameter | isNullMob::(lambda at src/avbparser.cpp:333:249)::operator() | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 337 | Class |  | Document | AvbFileParser | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
+| 337 | Class | | Document | AvbFileParser | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 340 | Constructor | Document | Document | AvbFileParser | Implemented | Implemented 30 September 2026: agreed internal AVB type name; member, function, parameter and local names are unchanged. |
 | 340 | Parameter | Document::Document | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 340 | Parameter | Document::Document | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -537,7 +545,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Struct |  | AvbMob | AvbMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 12 | Struct | | AvbMob | AvbMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 14 | Variable | AvbMob | masterMobType | masterMobType | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Field | AvbMob | mobId | mobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Field | AvbMob | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -545,7 +553,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 20 | Field | AvbMob | originalBinUid | originalBinUid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Field | AvbMob | mobType | mobType | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Field | AvbMob | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 25 | Struct |  | AvbBin | AvbBin | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 25 | Struct | | AvbBin | AvbBin | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 27 | Field | AvbBin | filePath | filePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 28 | Field | AvbBin | displayName | displayName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Field | AvbBin | mobIds | mobIds | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -554,10 +562,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 38 | Field | AvbBin | complete | complete | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Field | AvbBin | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Field | AvbBin | warnings | warnings | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 45 | Struct |  | AvbHeaderCheck | AvbHeaderCheck | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 45 | Struct | | AvbHeaderCheck | AvbHeaderCheck | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 47 | Field | AvbHeaderCheck | recognized | recognized | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 48 | Field | AvbHeaderCheck | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 55 | Class |  | AvbParser | AvbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 55 | Class | | AvbParser | AvbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 60 | Method | AvbParser | inspectHeader | inspectHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 60 | Parameter | AvbParser::inspectHeader | avbFilePath | avbFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 63 | Method | AvbParser | parse | parse | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -568,18 +576,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Struct |  | Entry | EffectCatalogueEntry | Rename | Distinguishes this domain record or reader from unrelated generic records. |
+| 14 | Struct | | Entry | EffectCatalogueEntry | Rename | Distinguishes this domain record or reader from unrelated generic records. |
 | 16 | Field | Entry | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Field | Entry | category | category | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Field | Entry | localised | localised | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 20 | Variable |  | kEffects | kEffects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 910 | Struct |  | Row | EffectAliasEntry | Rename | Distinguishes this domain record or reader from unrelated generic records. |
+| 20 | Variable | | kEffects | kEffects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 910 | Struct | | Row | EffectAliasEntry | Rename | Distinguishes this domain record or reader from unrelated generic records. |
 | 912 | Field | Row | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 913 | Field | Row | category | category | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 916 | Struct |  | Table | EffectLookupTable | Rename | Distinguishes this domain record or reader from unrelated generic records. |
+| 916 | Struct | | Table | EffectLookupTable | Rename | Distinguishes this domain record or reader from unrelated generic records. |
 | 918 | Field | Table | rows | rows | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 919 | Field | Table | byKey | byKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 925 | Function |  | table | table | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 925 | Function | | table | table | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 927 | Variable | table | t | t | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 929 | Variable | table::(lambda at src/avideffects.cpp:927:26)::operator() | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 931 | Variable | table::(lambda at src/avideffects.cpp:927:26)::operator() | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -615,7 +623,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Namespace |  | AvidEffects | AvidEffects | Keep | Retain the established build, macro or namespace contract. |
+| 18 | Namespace | | AvidEffects | AvidEffects | Keep | Retain the established build, macro or namespace contract. |
 | 20 | Struct | AvidEffects | Hit | Hit | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 22 | Field | AvidEffects::Hit | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 23 | Field | AvidEffects::Hit | category | category | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -632,7 +640,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Struct |  | NumberedMxfFolder | NumberedMxfFolder | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 13 | Struct | | NumberedMxfFolder | NumberedMxfFolder | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 15 | Field | NumberedMxfFolder | prefix | prefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Field | NumberedMxfFolder | number | number | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Method | NumberedMxfFolder | display | folderName | Rename | Clarifies the specific role, result, state or units. |
@@ -642,10 +650,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 24 | Parameter | NumberedMxfFolder::operator!= | o | o | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Method | NumberedMxfFolder | operator< | operator< | Keep | Language, Qt override, customization point or QtTest convention. |
 | 26 | Parameter | NumberedMxfFolder::operator< | o | o | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 34 | Function |  | qHash | qHash | Keep | Language, Qt override, customization point or QtTest convention. |
+| 34 | Function | | qHash | qHash | Keep | Language, Qt override, customization point or QtTest convention. |
 | 34 | Parameter | qHash | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 34 | Parameter | qHash | seed | seed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 40 | Namespace |  | AvidMediaLayout | AvidMediaLayout | Keep | Retain the established build, macro or namespace contract. |
+| 40 | Namespace | | AvidMediaLayout | AvidMediaLayout | Keep | Retain the established build, macro or namespace contract. |
 | 42 | Enum | AvidMediaLayout | Family | Family | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 44 | Enum value | AvidMediaLayout::Family | Mxf | Mxf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 45 | Enum value | AvidMediaLayout::Family | Omf | Omf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -654,7 +662,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 51 | Field | AvidMediaLayout::Location | rootPath | rootPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 52 | Field | AvidMediaLayout::Location | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Field | AvidMediaLayout::Location | isQuarantined | isQuarantined | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 56 | Namespace |  | Detail | Detail | Keep | Retain the established build, macro or namespace contract. |
+| 56 | Namespace | | Detail | Detail | Keep | Retain the established build, macro or namespace contract. |
 | 58 | Function | AvidMediaLayout::Detail | isLeafName | isLeafName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Parameter | AvidMediaLayout::Detail::isLeafName | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Function | AvidMediaLayout::Detail | cleanAbsolutePath | cleanAbsolutePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -697,7 +705,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | Namespace |  | AvidPrecompute | AvidPrecompute | Keep | Retain the established build, macro or namespace contract. |
+| 7 | Namespace | | AvidPrecompute | AvidPrecompute | Keep | Retain the established build, macro or namespace contract. |
 | 9 | Enum | AvidPrecompute | Category | Category | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 11 | Enum value | AvidPrecompute::Category | Unknown | Unknown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Enum value | AvidPrecompute::Category | RenderedEffects | RenderedEffects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -717,7 +725,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 20 | Namespace |  | AvidText | AvidText | Keep | Retain the established build, macro or namespace contract. |
+| 20 | Namespace | | AvidText | AvidText | Keep | Retain the established build, macro or namespace contract. |
 | 24 | Variable | AvidText | kMacRomanHigh | kMacRomanHigh | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Function | AvidText | decode | decode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | AvidText::decode | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -732,7 +740,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Namespace |  | AvidUsage | AvidUsage | Keep | Retain the established build, macro or namespace contract. |
+| 10 | Namespace | | AvidUsage | AvidUsage | Keep | Retain the established build, macro or namespace contract. |
 | 12 | Enum | AvidUsage | Code | Code | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 14 | Enum value | AvidUsage::Code | NoSpecialUsage | NoSpecialUsage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Enum value | AvidUsage::Code | PrecomputeMaster | PrecomputeMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -783,7 +791,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Class |  | BackgroundJob | BackgroundJob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 13 | Class | | BackgroundJob | BackgroundJob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 16 | Constructor | BackgroundJob | BackgroundJob | BackgroundJob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Destructor | BackgroundJob | ~BackgroundJob | ~BackgroundJob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Method | BackgroundJob | shutdown | shutdown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -808,19 +816,19 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 11 | Variable |  | kDictionaryPrefetchBytes | kDictionaryPrefetchBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 12 | Variable |  | kMagic | kMagic | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 13 | Function |  | u32At | u32At | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 11 | Variable | | kDictionaryPrefetchBytes | kDictionaryPrefetchBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 12 | Variable | | kMagic | kMagic | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 13 | Function | | u32At | u32At | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 13 | Parameter | u32At | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 14 | Function |  | u16At | u16At | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 14 | Function | | u16At | u16At | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Parameter | u16At | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 15 | Function |  | word | word | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 15 | Function | | word | word | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | word | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | word | big | big | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 16 | Function |  | half | half | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 16 | Function | | half | half | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | half | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | half | big | big | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 17 | Function |  | untilNul | untilNul | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 17 | Function | | untilNul | untilNul | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Parameter | untilNul | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Variable | untilNul | end | end | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Parameter | BentoFile::checkLabel | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -977,7 +985,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Class |  | BentoFile | BentoFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 15 | Class | | BentoFile | BentoFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 18 | Struct | BentoFile | Entry | TocEntry | Implemented | Approved Bento name clarifies table entries, object references, read limits or owned storage. |
 | 20 | Field | BentoFile::Entry | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | BentoFile::Entry | property | property | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1107,7 +1115,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 11 | Struct |  | BinFilter | BinFilter | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 11 | Struct | | BinFilter | BinFilter | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 13 | Enum | BinFilter | Operation | Operation | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 15 | Enum value | BinFilter::Operation | Intersect | Intersect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Enum value | BinFilter::Operation | Subtract | Subtract | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1119,7 +1127,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 27 | Field | BinFilter | steps | steps | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Method | BinFilter | isActive | isActive | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Method | BinFilter | matches | matches | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 31 | Parameter | BinFilter::matches | fileMob | fileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 31 | Parameter | BinFilter::matches | fileMob | fileMobId | Implemented | Receives a file MobId, not a Mob object. |
 | 31 | Parameter | BinFilter::matches | masterMob | masterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Variable | BinFilter::matches | accepted | accepted | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Variable | BinFilter::matches | step | step | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1129,15 +1137,15 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 35 | Variable |  | kMaxConcurrentBinLoads | kMaxConcurrentBinLoads | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 37 | Function |  | binExplanation | binExplanation | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 35 | Variable | | kMaxConcurrentBinLoads | kMaxConcurrentBinLoads | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 37 | Function | | binExplanation | binExplanation | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Parameter | binExplanation | bin | bin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Parameter | binExplanation | loading | loading | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 46 | Function |  | opLabel | opLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 46 | Function | | opLabel | opLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 46 | Parameter | opLabel | op | op | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 62 | Function |  | segBarStyleSheet | segBarStyleSheet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 62 | Function | | segBarStyleSheet | segBarStyleSheet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | segBarStyleSheet | objectName | objectName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 83 | Function |  | makeOperationRow | makeOperationRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 83 | Function | | makeOperationRow | makeOperationRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | makeOperationRow | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | makeOperationRow | help | help | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | makeOperationRow | buttonOut | buttonOut | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1271,10 +1279,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 19 | Class |  | QListWidget | QListWidget | Keep | Qt declaration; spelling is owned by the framework. |
-| 20 | Class |  | QListWidgetItem | QListWidgetItem | Keep | Qt declaration; spelling is owned by the framework. |
-| 21 | Class |  | QMimeData | QMimeData | Keep | Qt declaration; spelling is owned by the framework. |
-| 43 | Class |  | BinFilterDialog | BinFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 19 | Class | | QListWidget | QListWidget | Keep | Qt declaration; spelling is owned by the framework. |
+| 20 | Class | | QListWidgetItem | QListWidgetItem | Keep | Qt declaration; spelling is owned by the framework. |
+| 21 | Class | | QMimeData | QMimeData | Keep | Qt declaration; spelling is owned by the framework. |
+| 43 | Class | | BinFilterDialog | BinFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 49 | Type alias | BinFilterDialog | Operation | Operation | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 50 | Type alias | BinFilterDialog | ChainStep | ChainStep | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 52 | Constructor | BinFilterDialog | BinFilterDialog | BinFilterDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1379,12 +1387,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Class |  | BinMetadataResolver | BinMetadataResolver | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 13 | Class | | BinMetadataResolver | BinMetadataResolver | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 16 | Method | BinMetadataResolver | setBins | setBins | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | BinMetadataResolver::setBins | bins | bins | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Method | BinMetadataResolver | apply | apply | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Parameter | BinMetadataResolver::apply | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 21 | Struct | BinMetadataResolver | Metadata | Metadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 21 | Struct | BinMetadataResolver | Metadata | MasterMobMetadata | Implemented | Metadata collected from master Mobs. |
 | 23 | Method | BinMetadataResolver::Metadata | merge | merge | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 23 | Parameter | BinMetadataResolver::Metadata::merge | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Field | BinMetadataResolver::Metadata | clipName | clipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1392,13 +1400,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 26 | Field | BinMetadataResolver::Metadata | originalBinUid | originalBinUid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Field | BinMetadataResolver::Metadata | nameConflict | nameConflict | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 28 | Field | BinMetadataResolver::Metadata | binConflict | binConflict | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Field | BinMetadataResolver | m_metadata | m_metadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 30 | Field | BinMetadataResolver | m_metadata | m_metadataByMasterMobId | Implemented | Lookup is keyed by master MobId. |
 
 ## src/conventions.h
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Namespace |  | Conventions | Conventions | Keep | Retain the established build, macro or namespace contract. |
+| 16 | Namespace | | Conventions | Conventions | Keep | Retain the established build, macro or namespace contract. |
 | 24 | Variable | Conventions | kAvidMediaFilesDir | kAvidMediaFilesDir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Variable | Conventions | kMxfDir | kMxfDir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Function | Conventions | isMxfRootName | isMxfRootName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1435,23 +1443,23 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Logging category |  | lcApp | lcApp | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 15 | Logging category |  | lcAvb | lcAvb | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 16 | Logging category |  | lcMdb | lcMdb | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 17 | Logging category |  | lcMetadata | lcMetadata | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 18 | Logging category |  | lcMxf | lcMxf | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 19 | Logging category |  | lcOmf | lcOmf | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 20 | Logging category |  | lcPmr | lcPmr | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 21 | Logging category |  | lcScanner | lcScanner | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 22 | Logging category |  | lcVolumes | lcVolumes | Keep | Keep the Qt logging-category convention and existing category identity. |
-| 27 | Variable |  | g_file | g_file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 28 | Variable |  | g_mutex | g_mutex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 29 | Variable |  | g_previousHandler | g_previousHandler | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Variable |  | g_installed | g_installed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 32 | Function |  | writeRaw | writeRaw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 14 | Logging category | | lcApp | lcApp | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 15 | Logging category | | lcAvb | lcAvb | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 16 | Logging category | | lcMdb | lcMdb | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 17 | Logging category | | lcMetadata | lcMetadata | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 18 | Logging category | | lcMxf | lcMxf | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 19 | Logging category | | lcOmf | lcOmf | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 20 | Logging category | | lcPmr | lcPmr | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 21 | Logging category | | lcScanner | lcScanner | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 22 | Logging category | | lcVolumes | lcVolumes | Keep | Keep the Qt logging-category convention and existing category identity. |
+| 27 | Variable | | g_file | g_file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 28 | Variable | | g_mutex | g_mutex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 29 | Variable | | g_previousHandler | g_previousHandler | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 30 | Variable | | g_installed | g_installed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 32 | Function | | writeRaw | writeRaw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Parameter | writeRaw | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Variable | writeRaw | lock | lock | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 41 | Function |  | messageHandler | messageHandler | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 41 | Function | | messageHandler | messageHandler | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Parameter | messageHandler | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Parameter | messageHandler | ctx | ctx | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Parameter | messageHandler | msg | msg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1483,7 +1491,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Namespace |  | Diagnostics | Diagnostics | Keep | Retain the established build, macro or namespace contract. |
+| 12 | Namespace | | Diagnostics | Diagnostics | Keep | Retain the established build, macro or namespace contract. |
 | 18 | Function | Diagnostics | install | install | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Function | Diagnostics | logPath | logPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Function | Diagnostics | appendConsoleLine | appendConsoleLine | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1498,21 +1506,21 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 34 | Function | Diagnostics | collectCrashReports | collectCrashReports | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | Diagnostics::collectCrashReports | reportsDir | reportsDir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | Diagnostics::collectCrashReports | logsDir | logsDir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Function |  | lcApp | lcApp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 39 | Function |  | lcAvb | lcAvb | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 40 | Function |  | lcMdb | lcMdb | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 41 | Function |  | lcMetadata | lcMetadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 42 | Function |  | lcMxf | lcMxf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 43 | Function |  | lcOmf | lcOmf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Function |  | lcPmr | lcPmr | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 45 | Function |  | lcScanner | lcScanner | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 46 | Function |  | lcVolumes | lcVolumes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 38 | Function | | lcApp | lcApp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 39 | Function | | lcAvb | lcAvb | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 40 | Function | | lcMdb | lcMdb | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 41 | Function | | lcMetadata | lcMetadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 42 | Function | | lcMxf | lcMxf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 43 | Function | | lcOmf | lcOmf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 44 | Function | | lcPmr | lcPmr | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 45 | Function | | lcScanner | lcScanner | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 46 | Function | | lcVolumes | lcVolumes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 
 ## src/dragdroputil.h
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Namespace |  | DragDropUtil | DragDropUtil | Keep | Retain the established build, macro or namespace contract. |
+| 10 | Namespace | | DragDropUtil | DragDropUtil | Keep | Retain the established build, macro or namespace contract. |
 | 15 | Template parameter | DragDropUtil::hasAnyLocalUrl | Predicate | Predicate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Function template | DragDropUtil | hasAnyLocalUrl | hasAnyLocalUrl | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | DragDropUtil::hasAnyLocalUrl | mime | mime | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1523,7 +1531,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 6 | Namespace |  | Enum | Enum | Keep | Retain the established build, macro or namespace contract. |
+| 6 | Namespace | | Enum | Enum | Keep | Retain the established build, macro or namespace contract. |
 | 9 | Template parameter | Enum::to_underlying | E | E | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Function template | Enum | to_underlying | to_underlying | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Parameter | Enum::to_underlying | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1532,7 +1540,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 3 | Namespace |  | FeatureFlags | FeatureFlags | Keep | Retain the established build, macro or namespace contract. |
+| 3 | Namespace | | FeatureFlags | FeatureFlags | Keep | Retain the established build, macro or namespace contract. |
 | 5 | Variable | FeatureFlags | kDebugMenuEnabled | kDebugMenuEnabled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 6 | Variable | FeatureFlags | kOmfEnabled | kOmfEnabled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 7 | Variable | FeatureFlags | kPrecomputesEnabled | kPrecomputesEnabled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1542,7 +1550,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 20 | Function |  | operationHistory | operationHistory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 20 | Function | | operationHistory | operationHistory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Variable | operationHistory | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Parameter | FileOperationController::FileOperationController | window | window | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Parameter | FileOperationController::FileOperationController::(lambda at src/fileoperationcontroller.cpp:43:3)::operator() | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1610,10 +1618,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Class |  | QAction | QAction | Keep | Qt declaration; spelling is owned by the framework. |
-| 11 | Class |  | QMessageBox | QMessageBox | Keep | Qt declaration; spelling is owned by the framework. |
-| 13 | Class |  | QWidget | QWidget | Keep | Qt declaration; spelling is owned by the framework. |
-| 17 | Class |  | FileOperationController | FileOperationController | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 10 | Class | | QAction | QAction | Keep | Qt declaration; spelling is owned by the framework. |
+| 11 | Class | | QMessageBox | QMessageBox | Keep | Qt declaration; spelling is owned by the framework. |
+| 13 | Class | | QWidget | QWidget | Keep | Qt declaration; spelling is owned by the framework. |
+| 17 | Class | | FileOperationController | FileOperationController | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 23 | Enum | FileOperationController | Activity | Activity | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 25 | Enum value | FileOperationController::Activity | Idle | Idle | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Enum value | FileOperationController::Activity | Scanning | Scanning | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1704,7 +1712,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | Namespace |  | Format | Format | Keep | Retain the established build, macro or namespace contract. |
+| 7 | Namespace | | Format | Format | Keep | Retain the established build, macro or namespace contract. |
 | 11 | Function | Format | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 11 | Parameter | Format::count | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Variable | Format::count | loc | loc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1719,7 +1727,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | Namespace |  | LayoutUtil | LayoutUtil | Keep | Retain the established build, macro or namespace contract. |
+| 7 | Namespace | | LayoutUtil | LayoutUtil | Keep | Retain the established build, macro or namespace contract. |
 | 14 | Function | LayoutUtil | clearLayout | clearLayout | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Parameter | LayoutUtil::clearLayout | layout | layout | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Variable | LayoutUtil::clearLayout | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1730,7 +1738,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Function |  | main | main | Keep | Language, Qt override, customization point or QtTest convention. |
+| 10 | Function | | main | main | Keep | Language, Qt override, customization point or QtTest convention. |
 | 10 | Parameter | main | argc | argc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Parameter | main | argv | argv | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Variable | main | app | app | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1741,21 +1749,21 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 74 | Function |  | monoFont | monoFont | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 83 | Function |  | formatConsoleLine | formatConsoleLine | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 74 | Function | | monoFont | monoFont | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 83 | Function | | formatConsoleLine | formatConsoleLine | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | formatConsoleLine | module | module | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Parameter | formatConsoleLine | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 89 | Function |  | mediaTreeForFolder | mediaTreeForFolder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 89 | Function | | mediaTreeForFolder | mediaTreeForFolder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 89 | Parameter | mediaTreeForFolder | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Variable | mediaTreeForFolder | folder | folder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 92 | Variable | mediaTreeForFolder | mxfRootPath | mxfRootPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 95 | Variable | mediaTreeForFolder | info | info | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 96 | Variable | mediaTreeForFolder | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 102 | Variable | mediaTreeForFolder | ancestor | ancestor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 110 | Function |  | isStandardMediaTree | isStandardMediaTree | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 110 | Function | | isStandardMediaTree | isStandardMediaTree | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 110 | Parameter | isStandardMediaTree | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 112 | Variable | isStandardMediaTree | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 117 | Function |  | restorationScanPaths | restorationScanPaths | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 117 | Function | | restorationScanPaths | restorationScanPaths | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 117 | Parameter | restorationScanPaths | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 117 | Parameter | restorationScanPaths | restored | restored | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 122 | Variable | restorationScanPaths | originsByFolder | originsByFolder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1768,11 +1776,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 135 | Variable | restorationScanPaths | tree | tree | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 142 | Variable | restorationScanPaths | candidates | candidates | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 143 | Variable | restorationScanPaths | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 151 | Struct |  | FilterDef | FilterTabDefinition | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 151 | Struct | | FilterDef | FilterTabDefinition | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 153 | Field | FilterDef | mode | mode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 154 | Field | FilterDef | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 155 | Field | FilterDef | tooltip | tooltip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 158 | Variable |  | kFilterDefs | kFilterDefs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 158 | Variable | | kFilterDefs | kFilterDefs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Parameter | MainWindow::MainWindow | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Parameter | MainWindow::MainWindow | startup | startup | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 201 | Variable | MainWindow::MainWindow | platform | platform | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1796,7 +1804,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 388 | Variable | MainWindow::buildToolbar | toolbarV | toolbarV | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 392 | Variable | MainWindow::buildToolbar | actionsRow | actionsRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 403 | Variable | MainWindow::buildToolbar | filterRow | filterRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 422 | Class |  | MediaTableView | MediaTableView | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 422 | Class | | MediaTableView | MediaTableView | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 428 | Method | MediaTableView | keyPressEvent | keyPressEvent | Keep | Language, Qt override, customization point or QtTest convention. |
 | 428 | Parameter | MediaTableView::keyPressEvent | event | event | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 430 | Variable | MediaTableView::keyPressEvent | before | before | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1890,12 +1898,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1166 | Parameter | MainWindow::onRebalance::(lambda at src/mainwindow.cpp:1166:52)::operator() | level | level | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1166 | Parameter | MainWindow::onRebalance::(lambda at src/mainwindow.cpp:1166:52)::operator() | msg | msg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1178 | Variable | MainWindow::onRebalance | volumePath | volumePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1199 | Function |  | volumeNameSuffix | volumeNameSuffix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1199 | Function | | volumeNameSuffix | volumeNameSuffix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1199 | Parameter | volumeNameSuffix | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1199 | Parameter | volumeNameSuffix | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1204 | Variable | volumeNameSuffix | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1208 | Variable | volumeNameSuffix | basename | basename | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1217 | Function |  | disambiguated | disambiguated | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1217 | Function | | disambiguated | disambiguated | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1217 | Parameter | disambiguated | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1217 | Parameter | disambiguated | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1219 | Variable | disambiguated | suffix | suffix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2116,13 +2124,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 21 | Class |  | QPlainTextEdit | QPlainTextEdit | Keep | Qt declaration; spelling is owned by the framework. |
-| 23 | Class |  | QSplitter | QSplitter | Keep | Qt declaration; spelling is owned by the framework. |
-| 24 | Class |  | QStatusBar | QStatusBar | Keep | Qt declaration; spelling is owned by the framework. |
-| 25 | Class |  | QTabBar | QTabBar | Keep | Qt declaration; spelling is owned by the framework. |
-| 26 | Class |  | QTableView | QTableView | Keep | Qt declaration; spelling is owned by the framework. |
-| 27 | Class |  | QTimer | QTimer | Keep | Qt declaration; spelling is owned by the framework. |
-| 34 | Class |  | MainWindow | MainWindow | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 21 | Class | | QPlainTextEdit | QPlainTextEdit | Keep | Qt declaration; spelling is owned by the framework. |
+| 23 | Class | | QSplitter | QSplitter | Keep | Qt declaration; spelling is owned by the framework. |
+| 24 | Class | | QStatusBar | QStatusBar | Keep | Qt declaration; spelling is owned by the framework. |
+| 25 | Class | | QTabBar | QTabBar | Keep | Qt declaration; spelling is owned by the framework. |
+| 26 | Class | | QTableView | QTableView | Keep | Qt declaration; spelling is owned by the framework. |
+| 27 | Class | | QTimer | QTimer | Keep | Qt declaration; spelling is owned by the framework. |
+| 34 | Class | | MainWindow | MainWindow | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 42 | Enum | MainWindow | StartupMode | StartupMode | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 44 | Enum value | MainWindow::StartupMode | Normal | Normal | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 45 | Enum value | MainWindow::StartupMode | UiOnly | UiOnly | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2290,7 +2298,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 34 | Function |  | applyConflictPolicyToRow | applyConflictPolicyToRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 34 | Function | | applyConflictPolicyToRow | applyConflictPolicyToRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | applyConflictPolicyToRow | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | applyConflictPolicyToRow | baseDest | baseDest | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | applyConflictPolicyToRow | policy | policy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2401,18 +2409,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Class |  | QButtonGroup | QButtonGroup | Keep | Qt declaration; spelling is owned by the framework. |
-| 13 | Class |  | QCheckBox | QCheckBox | Keep | Qt declaration; spelling is owned by the framework. |
-| 14 | Class |  | QComboBox | QComboBox | Keep | Qt declaration; spelling is owned by the framework. |
-| 15 | Class |  | QLabel | QLabel | Keep | Qt declaration; spelling is owned by the framework. |
-| 16 | Class |  | QLineEdit | QLineEdit | Keep | Qt declaration; spelling is owned by the framework. |
-| 17 | Class |  | QPushButton | QPushButton | Keep | Qt declaration; spelling is owned by the framework. |
-| 18 | Class |  | QRadioButton | QRadioButton | Keep | Qt declaration; spelling is owned by the framework. |
-| 19 | Class |  | QTreeWidget | QTreeWidget | Keep | Qt declaration; spelling is owned by the framework. |
-| 20 | Class |  | QTreeWidgetItem | QTreeWidgetItem | Keep | Qt declaration; spelling is owned by the framework. |
-| 21 | Class |  | QGroupBox | QGroupBox | Keep | Qt declaration; spelling is owned by the framework. |
-| 22 | Class |  | QShowEvent | QShowEvent | Keep | Qt declaration; spelling is owned by the framework. |
-| 33 | Class |  | ManageMediaDialog | ManageMediaDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 12 | Class | | QButtonGroup | QButtonGroup | Keep | Qt declaration; spelling is owned by the framework. |
+| 13 | Class | | QCheckBox | QCheckBox | Keep | Qt declaration; spelling is owned by the framework. |
+| 14 | Class | | QComboBox | QComboBox | Keep | Qt declaration; spelling is owned by the framework. |
+| 15 | Class | | QLabel | QLabel | Keep | Qt declaration; spelling is owned by the framework. |
+| 16 | Class | | QLineEdit | QLineEdit | Keep | Qt declaration; spelling is owned by the framework. |
+| 17 | Class | | QPushButton | QPushButton | Keep | Qt declaration; spelling is owned by the framework. |
+| 18 | Class | | QRadioButton | QRadioButton | Keep | Qt declaration; spelling is owned by the framework. |
+| 19 | Class | | QTreeWidget | QTreeWidget | Keep | Qt declaration; spelling is owned by the framework. |
+| 20 | Class | | QTreeWidgetItem | QTreeWidgetItem | Keep | Qt declaration; spelling is owned by the framework. |
+| 21 | Class | | QGroupBox | QGroupBox | Keep | Qt declaration; spelling is owned by the framework. |
+| 22 | Class | | QShowEvent | QShowEvent | Keep | Qt declaration; spelling is owned by the framework. |
+| 33 | Class | | ManageMediaDialog | ManageMediaDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 39 | Enum | ManageMediaDialog | Operation | Operation | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 41 | Enum value | ManageMediaDialog::Operation | Copy | Copy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 42 | Enum value | ManageMediaDialog::Operation | Move | Move | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2480,7 +2488,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 87 | Function |  | placeholderMob | placeholderMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
+| 87 | Function | | placeholderMob | placeholderMobId | Implemented | Approved MDB naming: distinguishes Mob identities, container object IDs and counts. |
 | 89 | Variable | placeholderMob | kMob | kMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 98 | Parameter | MdbParser::load | mdbFilePath | mdbFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 98 | Parameter | MdbParser::load | ok | ok | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -2539,7 +2547,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Struct |  | MdbMasterMob | MdbMasterMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 15 | Struct | | MdbMasterMob | MdbMasterMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 17 | Field | MdbMasterMob | mobIdHex | (removed) | Implemented | Removed redundant stored value; existing identity or raw bytes remain available. |
 | 18 | Field | MdbMasterMob | clipName | clipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Field | MdbMasterMob | bin | bin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2551,19 +2559,19 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 25 | Field | MdbMasterMob | classificationKnown | classificationKnown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Field | MdbMasterMob | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Field | MdbMasterMob | precomputeCategory | precomputeCategory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 34 | Struct |  | MdbFileMob | MdbFileMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 34 | Struct | | MdbFileMob | MdbFileMob | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 36 | Field | MdbFileMob | mobIdHex | (removed) | Implemented | Removed redundant stored value; existing identity or raw bytes remain available. |
 | 37 | Field | MdbFileMob | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Field | MdbFileMob | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Field | MdbFileMob | essence | essence | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Field | MdbFileMob | essenceComplete | essenceComplete | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Field | MdbFileMob | project | project | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Struct |  | MdbDatabase | MdbDatabase | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 51 | Struct | | MdbDatabase | MdbDatabase | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 53 | Field | MdbDatabase | revision | revision | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 54 | Field | MdbDatabase | masters | masters | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Field | MdbDatabase | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 56 | Method | MdbDatabase | isEmpty | isEmpty | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 65 | Class |  | MdbParser | MdbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 65 | Class | | MdbParser | MdbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 72 | Method | MdbParser | load | load | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 72 | Parameter | MdbParser::load | mdbFilePath | mdbFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 72 | Parameter | MdbParser::load | ok | ok | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -2572,7 +2580,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | Namespace |  | CsvUtil | CsvUtil | Keep | Retain the established build, macro or namespace contract. |
+| 9 | Namespace | | CsvUtil | CsvUtil | Keep | Retain the established build, macro or namespace contract. |
 | 12 | Function | CsvUtil | escape | escape | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Parameter | CsvUtil::escape | field | field | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Function | CsvUtil | neutralise | neutralise | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2580,7 +2588,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 24 | Variable | CsvUtil::neutralise | c | c | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 33 | Function | CsvUtil | quoted | quoted | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 33 | Parameter | CsvUtil::quoted | field | field | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 39 | Namespace |  | MediaCsv | MediaCsv | Keep | Retain the established build, macro or namespace contract. |
+| 39 | Namespace | | MediaCsv | MediaCsv | Keep | Retain the established build, macro or namespace contract. |
 | 41 | Parameter | MediaCsv::headerLine | options | options | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Variable | MediaCsv::headerLine | line | line | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | MediaCsv::rowLine | f | mediaFile | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
@@ -2599,7 +2607,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Namespace |  | MediaCsv | MediaCsv | Keep | Retain the established build, macro or namespace contract. |
+| 15 | Namespace | | MediaCsv | MediaCsv | Keep | Retain the established build, macro or namespace contract. |
 | 17 | Struct | MediaCsv | Options | Options | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 20 | Field | MediaCsv::Options | includePrecomputeDetails | includePrecomputeDetails | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Function | MediaCsv | headerLine | headerLine | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2616,8 +2624,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 17 | Struct |  | MediaFile | MediaFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 21 | Field | MediaFile | mobId | fileMobId | Rename | Clarifies the specific role, result, state or units. |
+| 17 | Struct | | MediaFile | MediaFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 21 | Field | MediaFile | mobId | fileMobId | Implemented | Identifies the File Mob; scoped rename applied across scanner, filtering, export and operation planning. |
 | 22 | Field | MediaFile | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Field | MediaFile | clipName | clipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 33 | Enum | MediaFile | ClipNameSource | ClipNameSource | Keep | Existing domain or scoped type name is clear; no forced synonym. |
@@ -2718,22 +2726,22 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Function |  | kindSortRank | kindSortRank | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 16 | Function | | kindSortRank | kindSortRank | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | kindSortRank | kind | kind | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 29 | Function |  | typeSortRank | typeSortRank | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 29 | Function | | typeSortRank | typeSortRank | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Parameter | typeSortRank | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 45 | Function |  | isAsciiOnly | isAsciiOnly | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 45 | Function | | isAsciiOnly | isAsciiOnly | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 45 | Parameter | isAsciiOnly | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Parameter | isAsciiOnly::(lambda at src/mediafilterproxy.cpp:47:44)::operator() | c | c | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 57 | Function |  | searchForm | searchForm | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 57 | Function | | searchForm | searchForm | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 57 | Parameter | searchForm | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 64 | Function |  | fpsSortValue | fpsSortValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 64 | Function | | fpsSortValue | fpsSortValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 64 | Parameter | fpsSortValue | fps | fps | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 70 | Function |  | bitDepthSortValue | bitDepthSortValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 70 | Function | | bitDepthSortValue | bitDepthSortValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 70 | Parameter | bitDepthSortValue | depth | depth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 74 | Variable | bitDepthSortValue | numeric | numeric | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Variable | bitDepthSortValue | bits | bits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 84 | Function |  | resolutionSortValue | resolutionSortValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 84 | Function | | resolutionSortValue | resolutionSortValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Parameter | resolutionSortValue | res | res | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 86 | Variable | resolutionSortValue | x | x | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 93 | Parameter | MediaFilterProxy::MediaFilterProxy | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2771,7 +2779,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Class |  | MediaFilterProxy | MediaFilterProxyModel | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 16 | Class | | MediaFilterProxy | MediaFilterProxyModel | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 20 | Enum | MediaFilterProxy | FilterMode | FilterMode | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 22 | Enum value | MediaFilterProxy::FilterMode | All | All | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 23 | Enum value | MediaFilterProxy::FilterMode | Video | Video | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2823,7 +2831,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 26 | Function |  | isAudioCompressionLabel | isAudioCompressionLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 26 | Function | | isAudioCompressionLabel | isAudioCompressionLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Parameter | isAudioCompressionLabel | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Variable | isAudioCompressionLabel | b8 | b8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Variable | isAudioCompressionLabel | b9 | b9 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2879,8 +2887,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Variable |  | kPcmAudioName | kPcmAudioName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 21 | Struct |  | MediaMetadata | MediaMetadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 12 | Variable | | kPcmAudioName | kPcmAudioName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 21 | Struct | | MediaMetadata | MediaMetadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 23 | Enum | MediaMetadata | HeaderStatus | HeaderStatus | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 25 | Enum value | MediaMetadata::HeaderStatus | NotRead | NotRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Enum value | MediaMetadata::HeaderStatus | Complete | Complete | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2923,7 +2931,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 117 | Field | MediaMetadata | descriptorDuration | descriptorDuration | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 119 | Field | MediaMetadata | isAudio | isAudio | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 120 | Field | MediaMetadata | valid | hasUsableTechnicalMetadata | Rename | Clarifies the specific role, result, state or units. |
-| 123 | Namespace |  | MediaMetadataUtil | MediaMetadataUtil | Keep | Retain the established build, macro or namespace contract. |
+| 123 | Namespace | | MediaMetadataUtil | MediaMetadataUtil | Keep | Retain the established build, macro or namespace contract. |
 | 127 | Function | MediaMetadataUtil | finalise | deriveTechnicalMetadata | Rename | Clarifies the specific role, result, state or units. |
 | 127 | Parameter | MediaMetadataUtil::finalise | metadata | metadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 130 | Function | MediaMetadataUtil | applyEditRate | applyEditRate | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2942,21 +2950,21 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 32 | Function |  | scannerFolderKey | scannerFolderKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 32 | Function | | scannerFolderKey | scannerFolderKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Parameter | scannerFolderKey | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Variable | scannerFolderKey | info | info | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Variable | scannerFolderKey | canonical | canonical | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 39 | Function |  | childDirectory | childDirectory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 39 | Function | | childDirectory | childDirectory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Parameter | childDirectory | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Parameter | childDirectory | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Variable | childDirectory | dir | directory | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 42 | Variable | childDirectory | expected | expected | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 45 | Variable | childDirectory | child | child | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Struct |  | MediaRoot | MediaRoot | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 51 | Struct | | MediaRoot | MediaRoot | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 53 | Field | MediaRoot | family | family | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 54 | Field | MediaRoot | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Field | MediaRoot | volumePath | volumePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 58 | Function |  | rootsForAddedPath | rootsForAddedPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 58 | Function | | rootsForAddedPath | rootsForAddedPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Parameter | rootsForAddedPath | requestedPath | requestedPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Variable | rootsForAddedPath | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Variable | rootsForAddedPath | location | location | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -2976,20 +2984,20 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 127 | Field | MediaScanner::startScan::(lambda at src/mediascanner.cpp:123:3)::operator()::ResetRunning | flag | flag | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 128 | Destructor | MediaScanner::startScan::(lambda at src/mediascanner.cpp:123:3)::operator()::ResetRunning | ~ResetRunning | ~ResetRunning | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 129 | Variable | MediaScanner::startScan::(lambda at src/mediascanner.cpp:123:3)::operator() | guard | guard | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 144 | Variable |  | kLogBatchMaxSize | kLogBatchMaxSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 145 | Variable |  | kLogBatchMaxAgeMs | kLogBatchMaxAgeMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 162 | Function |  | setClipName | setClipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 144 | Variable | | kLogBatchMaxSize | kLogBatchMaxSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 145 | Variable | | kLogBatchMaxAgeMs | kLogBatchMaxAgeMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 162 | Function | | setClipName | setClipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 162 | Parameter | setClipName | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 162 | Parameter | setClipName | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 162 | Parameter | setClipName | src | nameSource | Rename | Clarifies the specific role, result, state or units. |
 | 171 | Template parameter | assignIfMissing | T | T | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 172 | Function template |  | assignIfMissing | assignIfMissing | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 172 | Function template | | assignIfMissing | assignIfMissing | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 172 | Parameter | assignIfMissing | dst | dst | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 172 | Parameter | assignIfMissing | src | src | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 188 | Function |  | applyMdbRecord | applyMdbRecord | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 188 | Function | | applyMdbRecord | applyMdbRecord | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 188 | Parameter | applyMdbRecord | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 188 | Parameter | applyMdbRecord | rec | rec | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 200 | Function |  | applyMetadata | applyMetadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 200 | Function | | applyMetadata | applyMetadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 200 | Parameter | applyMetadata | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 200 | Parameter | applyMetadata | metadata | metadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 262 | Parameter | MediaScanner::emitLog | level | level | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3130,24 +3138,24 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 944 | Variable | MediaScanner::buildMediaFile | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 963 | Variable | MediaScanner::buildMediaFile | primaryKey | primaryKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 965 | Variable | MediaScanner::buildMediaFile | pmrHit | pmrHit | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 966 | Variable | MediaScanner::buildMediaFile | applyPmrHit | applyPmrHit | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 966 | Variable | MediaScanner::buildMediaFile | applyPmrHit | (removed) | Implemented | One-use lambda replaced with direct PMR field assignments. |
 | 966 | Parameter | MediaScanner::buildMediaFile::(lambda at src/mediascanner.cpp:966:21)::operator() | pmr | pmr | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 975 | Variable | MediaScanner::buildMediaFile | pmrIt | pmrEntryIterator | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 981 | Variable | MediaScanner::buildMediaFile | fileIt | fileEntryIterator | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 984 | Variable | MediaScanner::buildMediaFile | masterIt | masterEntryIterator | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
-| 995 | Variable | MediaScanner::buildMediaFile | headerReadable | headerReadable | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 996 | Variable | MediaScanner::buildMediaFile | described | described | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 998 | Variable | MediaScanner::buildMediaFile | indexedFileCurrent | indexedFileCurrent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 995 | Variable | MediaScanner::buildMediaFile | headerReadable | isNonEmpty | Implemented | Approved scanner name states the evidence or specific Mob identity. |
+| 996 | Variable | MediaScanner::buildMediaFile | described | databaseMetadataComplete | Implemented | Approved scanner name states the evidence or specific Mob identity. |
+| 998 | Variable | MediaScanner::buildMediaFile | indexedFileCurrent | databaseTimestampMatches | Implemented | Approved scanner name states the evidence or specific Mob identity. |
 | 1003 | Variable | MediaScanner::buildMediaFile | essence | essence | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1033 | Function |  | clearReplacedMetadata | clearReplacedMetadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1033 | Function | | clearReplacedMetadata | clearReplacedMetadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1033 | Parameter | clearReplacedMetadata | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
-| 1060 | Function |  | findHeaderMaster | findHeaderMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1060 | Function | | findHeaderMaster | findHeaderMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1060 | Parameter | findHeaderMaster | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 1060 | Parameter | findHeaderMaster | readingOmf | readingOmf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1061 | Parameter | findHeaderMaster | masters | masters | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1065 | Variable | findHeaderMaster | record | record | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1070 | Variable | findHeaderMaster | swapped | swapped | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1079 | Function |  | readMediaHeader | readMediaHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1079 | Function | | readMediaHeader | readMediaHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1079 | Parameter | readMediaHeader | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 1079 | Parameter | readMediaHeader | family | family | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1080 | Parameter | readMediaHeader | masters | masters | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3155,15 +3163,15 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1083 | Variable | readMediaHeader | databaseCategory | databaseCategory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1084 | Variable | readMediaHeader | metadata | metadata | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1085 | Variable | readMediaHeader | headerBin | headerBin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1086 | Variable | readMediaHeader | omfIdentityKnown | omfIdentityKnown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1086 | Variable | readMediaHeader | omfIdentityKnown | hasOmfMediaDescriptor | Implemented | Approved scanner name states the evidence or specific Mob identity. |
 | 1091 | Variable | readMediaHeader | omf | omf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1101 | Variable | readMediaHeader | headerUsable | headerUsable | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1102 | Variable | readMediaHeader | canonicalHeaderId | canonicalHeaderId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1102 | Parameter | readMediaHeader::(lambda at src/mediascanner.cpp:1102:34)::operator() | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 1106 | Variable | readMediaHeader::(lambda at src/mediascanner.cpp:1102:34)::operator() | canonical | canonical | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1112 | Variable | readMediaHeader | headerFileId | headerFileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1112 | Variable | readMediaHeader | headerFileId | headerFileMobId | Implemented | Approved scanner name states the evidence or specific Mob identity. |
 | 1113 | Variable | readMediaHeader | headerMasterKnown | headerMasterKnown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1114 | Variable | readMediaHeader | headerMasterId | headerMasterId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1114 | Variable | readMediaHeader | headerMasterId | headerMasterMobId | Implemented | Approved scanner name states the evidence or specific Mob identity. |
 | 1115 | Variable | readMediaHeader | contradicts | contradicts | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1115 | Parameter | readMediaHeader::(lambda at src/mediascanner.cpp:1115:28)::operator() | oldId | oldId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1115 | Parameter | readMediaHeader::(lambda at src/mediascanner.cpp:1115:28)::operator() | actualId | actualId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3202,11 +3210,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 23 | Struct |  | LogMsg | ScanLogMessage | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 23 | Struct | | LogMsg | ScanLogMessage | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 25 | Field | LogMsg | level | level | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Field | LogMsg | module | module | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Field | LogMsg | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Class |  | MediaScanner | MediaScanner | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 38 | Class | | MediaScanner | MediaScanner | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 42 | Struct | MediaScanner | Options | Options | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 46 | Field | MediaScanner::Options | volumePaths | volumePaths | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Field | MediaScanner::Options | manualPaths | manualPaths | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3337,7 +3345,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Class |  | MediaTableModel | MediaTableModel | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 16 | Class | | MediaTableModel | MediaTableModel | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 22 | Enum | MediaTableModel | Column | Column | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 24 | Enum value | MediaTableModel::Column | ClipName | ClipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Enum value | MediaTableModel::Column | Project | Project | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3395,7 +3403,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 19 | Namespace |  | MobId | MobId | Keep | Retain the established build, macro or namespace contract. |
+| 19 | Namespace | | MobId | MobId | Keep | Retain the established build, macro or namespace contract. |
 | 21 | Variable | MobId | kRawSize | kRawSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Function | MobId | format | format | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Parameter | MobId::format | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3421,24 +3429,24 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 27 | Variable |  | kUlHeaderPartition | kUlHeaderPartition | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Variable |  | kUlSetPrefix | kUlSetPrefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 35 | Variable |  | kSetCdci | kSetCdci | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 36 | Variable |  | kSetRgba | kSetRgba | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 37 | Variable |  | kSetWave | kSetWave | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Variable |  | kSetAes3 | kSetAes3 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 43 | Variable |  | kSetSoundMpeg | kSetSoundMpeg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Variable |  | kSetMatPkg | kSetMatPkg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 45 | Variable |  | kSetSrcPkg | kSetSrcPkg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 46 | Variable |  | kSetSequence | kSetSequence | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 47 | Variable |  | kSetSourceClip | kSetSourceClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 48 | Variable |  | kSetTimecode | kSetTimecode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Variable |  | kSetTaggedValue | kSetTaggedValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 53 | Function |  | isMetadataSetKey | isMetadataSetKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 27 | Variable | | kUlHeaderPartition | kUlHeaderPartition | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 30 | Variable | | kUlSetPrefix | kUlSetPrefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 35 | Variable | | kSetCdci | kSetCdci | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 36 | Variable | | kSetRgba | kSetRgba | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 37 | Variable | | kSetWave | kSetWave | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 38 | Variable | | kSetAes3 | kSetAes3 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 43 | Variable | | kSetSoundMpeg | kSetSoundMpeg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 44 | Variable | | kSetMatPkg | kSetMatPkg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 45 | Variable | | kSetSrcPkg | kSetSrcPkg | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 46 | Variable | | kSetSequence | kSetSequence | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 47 | Variable | | kSetSourceClip | kSetSourceClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 48 | Variable | | kSetTimecode | kSetTimecode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 51 | Variable | | kSetTaggedValue | kSetTaggedValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 53 | Function | | isMetadataSetKey | isMetadataSetKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Parameter | isMetadataSetKey | key | key | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 59 | Function |  | isUsefulMetadataSet | isUsefulMetadataSet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 59 | Function | | isUsefulMetadataSet | isUsefulMetadataSet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 59 | Parameter | isUsefulMetadataSet | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 108 | Function |  | readDuration | readDuration | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 108 | Function | | readDuration | readDuration | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 108 | Parameter | readDuration | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 108 | Parameter | readDuration | pos | pos | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 108 | Parameter | readDuration | len | len | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3457,7 +3465,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 160 | Parameter | MxfParser::readUint16BE | offset | offset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 167 | Parameter | MxfParser::readUint32BE | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 167 | Parameter | MxfParser::readUint32BE | offset | offset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 176 | Function |  | readUtf16BE | readUtf16BE | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 176 | Function | | readUtf16BE | readUtf16BE | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Parameter | readUtf16BE | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Parameter | readUtf16BE | pos | pos | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Parameter | readUtf16BE | len | len | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3767,7 +3775,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Class |  | MxfParser | MxfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 14 | Class | | MxfParser | MxfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 26 | Method | MxfParser | parseHeader | parseHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Parameter | MxfParser::parseHeader | mediaFilePath | mediaFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Parameter | MxfParser::parseHeader | bytesRead | bytesRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3812,17 +3820,17 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 41 | Struct |  | MxfPropertyIdentifier | MxfPropertyIdentifier | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 41 | Struct | | MxfPropertyIdentifier | MxfPropertyIdentifier | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 43 | Field | MxfPropertyIdentifier | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 44 | Field | MxfPropertyIdentifier | tag | tag | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 46 | Variable |  | kMxfProperties | kMxfProperties | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 94 | Variable |  | kAvidUncRgbaContainerHex | kAvidUncRgbaContainerHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 46 | Variable | | kMxfProperties | kMxfProperties | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 94 | Variable | | kAvidUncRgbaContainerHex | kAvidUncRgbaContainerHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 
 ## src/nativefile.cpp
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Namespace |  | NativeFile | NativeFile | Keep | Retain the established build, macro or namespace contract. |
+| 16 | Namespace | | NativeFile | NativeFile | Keep | Retain the established build, macro or namespace contract. |
 | 20 | Parameter | NativeFile::syncFile | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 25 | Variable | NativeFile::syncFile | fd | fd | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 46 | Parameter | NativeFile::directoryFlushResult | code | code | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -3843,8 +3851,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 4 | Class |  | QFile | QFile | Keep | Qt declaration; spelling is owned by the framework. |
-| 9 | Namespace |  | NativeFile | NativeFile | Keep | Retain the established build, macro or namespace contract. |
+| 4 | Class | | QFile | QFile | Keep | Qt declaration; spelling is owned by the framework. |
+| 9 | Namespace | | NativeFile | NativeFile | Keep | Retain the established build, macro or namespace contract. |
 | 11 | Enum | NativeFile | SyncResult | SyncResult | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 13 | Enum value | NativeFile::SyncResult | Ok | Synced | Rename | Clarifies the specific role, result, state or units. |
 | 14 | Enum value | NativeFile::SyncResult | OkDegraded | DurabilityDegraded | Rename | Full requested durability was unavailable; a weaker flush may have succeeded. Preserve the distinct failure result. |
@@ -3862,7 +3870,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 34 | Namespace |  | OmfObjects | OmfObjects | Keep | Retain the established build, macro or namespace contract. |
+| 34 | Namespace | | OmfObjects | OmfObjects | Keep | Retain the established build, macro or namespace contract. |
 | 36 | Parameter | OmfObjects::revision | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 40 | Variable | OmfObjects::revision | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 42 | Variable | OmfObjects::revision | prop | prop | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4088,7 +4096,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Namespace |  | OmfObjects | OmfObjects | Keep | Retain the established build, macro or namespace contract. |
+| 18 | Namespace | | OmfObjects | OmfObjects | Keep | Retain the established build, macro or namespace contract. |
 | 22 | Enum | OmfObjects | Revision | Revision | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 24 | Enum value | OmfObjects::Revision | Unknown | Unknown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Enum value | OmfObjects::Revision | Omf1 | Omf1 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4254,7 +4262,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 51 | Struct |  | MobGroup | MobGroup | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 51 | Struct | | MobGroup | MobGroup | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 53 | Field | MobGroup | hex | mobId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 54 | Field | MobGroup | objects | objects | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Field | MobGroup | mediaObj | fileMobObjectId | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
@@ -4263,7 +4271,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 58 | Field | MobGroup | usageCode | usageCode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 59 | Field | MobGroup | masterClass | explicitMaster | Implemented | Approved OMF parser name clarifies Mob identities and container object IDs. |
 | 60 | Field | MobGroup | legacyMaster | legacyMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 65 | Function |  | mediaDataMobId | mediaDataMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 65 | Function | | mediaDataMobId | mediaDataMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | mediaDataMobId | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 65 | Parameter | mediaDataMobId | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | mediaDataMobId | ambiguous | ambiguous | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4323,7 +4331,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 22 | Struct |  | OmfMetadata | OmfMetadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 22 | Struct | | OmfMetadata | OmfMetadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 24 | Field | OmfMetadata | revision | revision | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Field | OmfMetadata | hasMediaDescriptor | hasMediaDescriptor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Field | OmfMetadata | essence | essence | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4332,7 +4340,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 43 | Field | OmfMetadata | mediaFilePath | mediaFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Field | OmfMetadata | startTimecode | startTimecode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 48 | Field | OmfMetadata | timecodeFps | timecodeFps | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 60 | Class |  | OmfParser | OmfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 60 | Class | | OmfParser | OmfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 67 | Method | OmfParser | parseHeader | parseHeader | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 67 | Parameter | OmfParser::parseHeader | mediaFilePath | mediaFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 67 | Parameter | OmfParser::parseHeader | bytesRead | bytesRead | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4341,11 +4349,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 71 | Struct |  | Row | ResolutionEntry | Rename | Distinguishes this domain record or reader from unrelated generic records. |
+| 71 | Struct | | Row | ResolutionEntry | Rename | Distinguishes this domain record or reader from unrelated generic records. |
 | 73 | Field | Row | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 74 | Field | Row | fourcc | fourcc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Field | Row | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 78 | Variable |  | kRows | kRows | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 78 | Variable | | kRows | kRows | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 106 | Parameter | OmfResolutions::name | resolutionId | resolutionId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 106 | Parameter | OmfResolutions::name | compression | compression | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 110 | Variable | OmfResolutions::name | len | len | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4356,7 +4364,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 11 | Namespace |  | OmfResolutions | OmfResolutions | Keep | Retain the established build, macro or namespace contract. |
+| 11 | Namespace | | OmfResolutions | OmfResolutions | Keep | Retain the established build, macro or namespace contract. |
 | 18 | Function | OmfResolutions | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Parameter | OmfResolutions::name | resolutionId | resolutionId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Parameter | OmfResolutions::name | compression | compression | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4367,7 +4375,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 25 | Namespace |  | OmfUid | OmfUid | Keep | Retain the established build, macro or namespace contract. |
+| 25 | Namespace | | OmfUid | OmfUid | Keep | Retain the established build, macro or namespace contract. |
 | 30 | Variable | OmfUid | kUidSize | kUidSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 33 | Variable | OmfUid | kUidCoreOffset | kUidCoreOffset | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Variable | OmfUid | kPmrSize | kPmrSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4394,12 +4402,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Struct |  | NativeCopyContext | NativeCopyProgressContext | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 18 | Struct | | NativeCopyContext | NativeCopyProgressContext | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 20 | Field | NativeCopyContext | cancel | cancel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Field | NativeCopyContext | progress | progress | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Field | NativeCopyContext | size | size | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 23 | Field | NativeCopyContext | exception | exception | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 25 | Function |  | copyStatus | copyStatus | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 25 | Function | | copyStatus | copyStatus | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | copyStatus | what | what | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | copyStatus | stage | stage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | copyStatus | state | state | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4467,7 +4475,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 6 | Class |  | OpCopier | NativeFileCopier | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 6 | Class | | OpCopier | NativeFileCopier | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 9 | Enum | OpCopier | Outcome | Outcome | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 11 | Enum value | OpCopier::Outcome | Succeeded | Succeeded | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Enum value | OpCopier::Outcome | Cancelled | Cancelled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4491,7 +4499,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | Namespace |  | OperationPlan | OperationPlan | Keep | Retain the established build, macro or namespace contract. |
+| 8 | Namespace | | OperationPlan | OperationPlan | Keep | Retain the established build, macro or namespace contract. |
 | 10 | Parameter | OperationPlan::destinationPath | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Parameter | OperationPlan::destinationPath | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Parameter | OperationPlan::destinationPath | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4526,7 +4534,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | Namespace |  | OperationPlan | OperationPlan | Keep | Retain the established build, macro or namespace contract. |
+| 8 | Namespace | | OperationPlan | OperationPlan | Keep | Retain the established build, macro or namespace contract. |
 | 10 | Function | OperationPlan | destinationPath | destinationPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Parameter | OperationPlan::destinationPath | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Parameter | OperationPlan::destinationPath | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4556,14 +4564,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | Type alias |  | CompletedUndoEntries | CompletedUndoEntries | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 11 | Function |  | completedUndoEntries | completedUndoEntries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 9 | Type alias | | CompletedUndoEntries | CompletedUndoEntries | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 11 | Function | | completedUndoEntries | completedUndoEntries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Parameter | completedUndoEntries | inverse | inverse | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Parameter | completedUndoEntries | mounted | mounted | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Variable | completedUndoEntries | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Variable | completedUndoEntries | completed | completed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Variable | completedUndoEntries | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 24 | Function |  | settleOriginalFromUndo | settleOriginalFromUndo | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 24 | Function | | settleOriginalFromUndo | settleOriginalFromUndo | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | settleOriginalFromUndo | journal | journal | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | settleOriginalFromUndo | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | settleOriginalFromUndo | completed | completed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4620,7 +4628,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 4 | Class |  | OperationRecovery | OperationRecovery | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 4 | Class | | OperationRecovery | OperationRecovery | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 7 | Struct | OperationRecovery | Restorable | RestorableJob | Rename | Clarifies the specific role, result, state or units. |
 | 9 | Field | OperationRecovery::Restorable | journalPath | journalPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Field | OperationRecovery::Restorable | originals | originals | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4659,9 +4667,9 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 26 | Function |  | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 26 | Function | | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Parameter | hex | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Function |  | privateDirectoryName | privateDirectoryName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 30 | Function | | privateDirectoryName | privateDirectoryName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Parameter | privateDirectoryName | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Parameter | privateDirectoryName | stageOnly | stageOnly | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Variable | privateDirectoryName | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4683,11 +4691,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 82 | Variable | openDirectory | native | nativeDirectoryPath | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
 | 83 | Variable | openDirectory | directory | directoryHandle | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
 | 89 | Variable | openDirectory | info | directoryInfo | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
-| 101 | Function |  | nativeError | nativeError | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 105 | Function |  | nativeStamp | nativeStamp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 101 | Function | | nativeError | nativeError | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 105 | Function | | nativeStamp | nativeStamp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 105 | Parameter | nativeStamp | info | info | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 107 | Variable | nativeStamp | out | outputIdentity | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 118 | Function |  | privateDirectory | privateDirectory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 118 | Function | | privateDirectory | privateDirectory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 118 | Parameter | privateDirectory | directory | directory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 118 | Parameter | privateDirectory | info | info | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 126 | Variable | privateDirectory | acl | acl | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4835,7 +4843,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | Struct |  | OpStamp | FileIdentitySnapshot | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 9 | Struct | | OpStamp | FileIdentitySnapshot | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 11 | Field | OpStamp | fileId | fileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Field | OpStamp | volumeId | volumeId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 13 | Field | OpStamp | size | sizeBytes | Rename | Clarifies the specific role, result, state or units. |
@@ -4848,7 +4856,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 23 | Method | OpStamp | json | toJson | Rename | Clarifies the specific role, result, state or units. |
 | 24 | Method | OpStamp | fromJson | fromJson | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Parameter | OpStamp::fromJson | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 29 | Class |  | OpFile | OperationFile | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 29 | Class | | OpFile | OperationFile | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 32 | Enum | OpFile | Relocation | RelocationResult | Rename | Clarifies the specific role, result, state or units. |
 | 34 | Enum value | OpFile::Relocation | Moved | Moved | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Enum value | OpFile::Relocation | Exists | Exists | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4923,13 +4931,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Variable |  | schema | schema | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 16 | Function |  | itemJson | itemJson | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 15 | Variable | | schema | schema | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 16 | Function | | itemJson | itemJson | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | itemJson | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 38 | Function |  | itemFromJson | itemFromJson | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 38 | Function | | itemFromJson | itemFromJson | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Parameter | itemFromJson | v | jsonObject | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 40 | Variable | itemFromJson | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 62 | Function |  | inside | inside | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 62 | Function | | inside | inside | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | inside | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | inside | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 68 | Parameter | OpJournal::stepName | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5032,10 +5040,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 675 | Variable | OpJournal::interrupted | record | record | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 678 | Variable | OpJournal::interrupted | record | record | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 683 | Parameter | OpJournal::interrupted::(lambda at src/opjournal.cpp:683:7)::operator() | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 691 | Struct |  | UndoSelection | UndoSelection | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 691 | Struct | | UndoSelection | UndoSelection | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 693 | Field | UndoSelection | index | index | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 694 | Field | UndoSelection | canUndo | canUndo | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 699 | Function |  | selectUndo | selectUndo | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 699 | Function | | selectUndo | selectUndo | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 699 | Parameter | selectUndo | records | records | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 701 | Type alias | selectUndo | Step | Step | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 702 | Variable | selectUndo | claimed | claimed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5077,7 +5085,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 835 | Variable | OpJournal::dismiss | lock | lock | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 838 | Variable | OpJournal::dismiss | rec | rec | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 848 | Variable | OpJournal::dismiss | j | j | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 860 | Function |  | resolveRecord | resolveRecord | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 860 | Function | | resolveRecord | resolveRecord | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 860 | Parameter | resolveRecord | rec | rec | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 860 | Parameter | resolveRecord | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 861 | Parameter | resolveRecord | overrideVolumes | overrideVolumes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5128,7 +5136,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Class |  | OpJournal | OperationJournal | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 15 | Class | | OpJournal | OperationJournal | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 18 | Enum | OpJournal | Step | EntryState | Rename | Clarifies the specific role, result, state or units. |
 | 20 | Enum value | OpJournal::Step | Planned | Planned | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Enum value | OpJournal::Step | Copying | Copying | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5311,7 +5319,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 19 | Class |  | OpManager | FileOperationCoordinator | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 19 | Class | | OpManager | FileOperationCoordinator | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 25 | Constructor | OpManager | OpManager | FileOperationCoordinator | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 25 | Parameter | OpManager::OpManager | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Destructor | OpManager | ~OpManager | ~FileOperationCoordinator | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
@@ -5384,24 +5392,24 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 17 | Enum |  | OpKind | FileOperationKind | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 17 | Enum | | OpKind | FileOperationKind | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 19 | Enum value | OpKind | Copy | Copy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Enum value | OpKind | Move | Move | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Enum value | OpKind | Delete | Delete | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Enum value | OpKind | Rename | Rename | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 23 | Enum value | OpKind | Undo | Undo | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 31 | Enum |  | ConflictPolicy | ConflictPolicy | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 31 | Enum | | ConflictPolicy | ConflictPolicy | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 33 | Enum value | ConflictPolicy | KeepBoth | KeepBoth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Enum value | ConflictPolicy | Skip | Skip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Function |  | opKindName | opKindName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 44 | Function | | opKindName | opKindName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 44 | Parameter | opKindName | k | k | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 65 | Function |  | opKindFromName | opKindFromName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 65 | Function | | opKindFromName | opKindFromName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | opKindFromName | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 80 | Function |  | conflictPolicyName | conflictPolicyName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 80 | Function | | conflictPolicyName | conflictPolicyName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 80 | Parameter | conflictPolicyName | policy | policy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 92 | Function |  | conflictPolicyFromName | conflictPolicyFromName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 92 | Function | | conflictPolicyFromName | conflictPolicyFromName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 92 | Parameter | conflictPolicyFromName | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 107 | Struct |  | OpItem | FileOperationItem | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 107 | Struct | | OpItem | FileOperationItem | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 109 | Field | OpItem | src | sourcePath | Rename | Clarifies the specific role, result, state or units. |
 | 110 | Field | OpItem | name | destinationFileName | Rename | Clarifies the specific role, result, state or units. |
 | 111 | Field | OpItem | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5421,7 +5429,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 133 | Field | OpItem | trashReceipt | trashReceipt | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 136 | Field | OpItem | renameDst | renameDestinationPath | Rename | Clarifies the specific role, result, state or units. |
 | 137 | Field | OpItem | groupKey | relatedMediaGroupKey | Rename | Clarifies the specific role, result, state or units. |
-| 145 | Struct |  | OpRequest | FileOperationRequest | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 145 | Struct | | OpRequest | FileOperationRequest | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 147 | Field | OpRequest | kind | kind | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 148 | Field | OpRequest | destRoot | destinationRootPath | Rename | Clarifies the specific role, result, state or units. |
 | 149 | Field | OpRequest | preserve | preserveFolderStructure | Rename | Clarifies the specific role, result, state or units. |
@@ -5433,11 +5441,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 156 | Field | OpRequest | diagnosticTrashRoot | diagnosticTrashRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 157 | Field | OpRequest | undoJournalPath | undoJournalPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 158 | Field | OpRequest | undoOf | originalJournalPath | Rename | Clarifies the specific role, result, state or units. |
-| 163 | Struct |  | OpTrashFallbackItem | TrashFallbackItem | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 163 | Struct | | OpTrashFallbackItem | TrashFallbackItem | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 165 | Field | OpTrashFallbackItem | source | sourcePath | Rename | Clarifies the specific role, result, state or units. |
 | 166 | Field | OpTrashFallbackItem | destination | trashRootPath | Rename | Clarifies the specific role, result, state or units. |
 | 167 | Field | OpTrashFallbackItem | reason | reason | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 171 | Struct |  | OpResult | FileOperationResult | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 171 | Struct | | OpResult | FileOperationResult | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 173 | Enum | OpResult | State | State | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 175 | Enum value | OpResult::State | Completed | Completed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 176 | Enum value | OpResult::State | NoEffect | NoEffect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5459,10 +5467,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Type alias |  | Step | Step | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 19 | Type alias |  | State | State | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 20 | Type alias |  | Sync | Sync | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 21 | Function |  | syncFolders | syncFolders | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 18 | Type alias | | Step | Step | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 19 | Type alias | | State | State | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 20 | Type alias | | Sync | Sync | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 21 | Function | | syncFolders | syncFolders | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Parameter | syncFolders | folders | folders | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Parameter | syncFolders | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Parameter | syncFolders | sync | sync | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5471,23 +5479,23 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 26 | Variable | syncFolders | folder | folder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 28 | Variable | syncFolders | detail | detail | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Variable | syncFolders | status | status | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Variable |  | directoryWarning | directoryWarning | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 47 | Function |  | unique | unique | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Function |  | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 44 | Variable | | directoryWarning | directoryWarning | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 47 | Function | | unique | unique | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 51 | Function | | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Parameter | label | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 55 | Function |  | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 55 | Function | | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Parameter | result | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Parameter | result | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Parameter | result | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 56 | Parameter | result | removed | removed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Variable | result | restored | restored | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 68 | Function |  | leaf | leaf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 68 | Function | | leaf | leaf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 68 | Parameter | leaf | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 72 | Function |  | trashRoot | trashRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 72 | Function | | trashRoot | trashRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 72 | Parameter | trashRoot | source | source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 76 | Variable | trashRoot | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 79 | Variable | trashRoot | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 91 | Function |  | mediaIdentityMatches | mediaIdentityMatches | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 91 | Function | | mediaIdentityMatches | mediaIdentityMatches | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Parameter | mediaIdentityMatches | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Parameter | mediaIdentityMatches | source | source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Parameter | mediaIdentityMatches | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5497,7 +5505,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 100 | Variable | mediaIdentityMatches | matches | matches | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 100 | Parameter | mediaIdentityMatches::(lambda at src/oprunner.cpp:100:18)::operator() | expected | expected | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 100 | Parameter | mediaIdentityMatches::(lambda at src/oprunner.cpp:100:18)::operator() | actual | actual | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 114 | Function |  | keepArtifact | keepArtifact | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 114 | Function | | keepArtifact | keepArtifact | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 114 | Parameter | keepArtifact | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 114 | Parameter | keepArtifact | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 121 | Parameter | OpRunner::checkpoint | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -5505,10 +5513,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 126 | Parameter | OpRunner::save | j | j | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 126 | Parameter | OpRunner::save | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 126 | Parameter | OpRunner::save | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 139 | Function |  | copiedDestinationUnchanged | copiedDestinationUnchanged | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 139 | Function | | copiedDestinationUnchanged | copiedDestinationUnchanged | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 139 | Parameter | copiedDestinationUnchanged | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 139 | Parameter | copiedDestinationUnchanged | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 148 | Function |  | removesAfterCopy | removesAfterCopy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 148 | Function | | removesAfterCopy | removesAfterCopy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 148 | Parameter | removesAfterCopy | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 148 | Parameter | removesAfterCopy | request | request | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 157 | Parameter | OpRunner::reconcile | j | j | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -5778,14 +5786,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | Class |  | OpSink | FileOperationObserver | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 8 | Class | | OpSink | FileOperationObserver | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 11 | Destructor | OpSink | ~OpSink | ~FileOperationObserver | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 12 | Method | OpSink | progress | progress | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 13 | Method | OpSink | log | log | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Method | OpSink | trashUsed | trashUsed | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Method | OpSink | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Method | OpSink | confirmTrashFallback | confirmTrashFallback | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 20 | Class |  | OpRunner | FileOperationExecutor | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 20 | Class | | OpRunner | FileOperationExecutor | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 23 | Struct | OpRunner | Totals | ExecutionSummary | Rename | Clarifies the specific role, result, state or units. |
 | 25 | Field | OpRunner::Totals | succeeded | succeeded | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Field | OpRunner::Totals | unchanged | unchanged | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6068,7 +6076,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | Class |  | OpTrash | NativeTrash | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 8 | Class | | OpTrash | NativeTrash | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 11 | Enum | OpTrash | Outcome | Outcome | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 13 | Enum value | OpTrash::Outcome | Succeeded | Succeeded | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Enum value | OpTrash::Outcome | Unavailable | Unavailable | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6092,7 +6100,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 34 | Parameter | OpTrash::restore | expected | expected | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | OpTrash::restore | cancel | cancel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | OpTrash::restore | resolvedSource | resolvedSource | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Namespace |  | OpTrashPlatform | OpTrashPlatform | Keep | Retain the established build, macro or namespace contract. |
+| 38 | Namespace | | OpTrashPlatform | OpTrashPlatform | Keep | Retain the established build, macro or namespace contract. |
 | 40 | Function | OpTrashPlatform | move | move | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Function | OpTrashPlatform | restore | restore | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Function | OpTrashPlatform | receipt | receipt | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6105,14 +6113,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8 | Function |  | url | url | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 8 | Function | | url | url | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 8 | Parameter | url | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 10 | Variable | url | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 13 | Function |  | describe | describe | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 13 | Function | | describe | describe | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 13 | Parameter | describe | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Variable | describe | details | details | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Variable | describe | depth | depth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 27 | Function |  | cancelled | cancelled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 27 | Function | | cancelled | cancelled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Parameter | cancelled | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Variable | cancelled | depth | depth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Parameter | OpTrashPlatform::move | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6137,7 +6145,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Namespace |  | PathKey | PathKey | Keep | Retain the established build, macro or namespace contract. |
+| 16 | Namespace | | PathKey | PathKey | Keep | Retain the established build, macro or namespace contract. |
 | 18 | Function | PathKey | normalise | normalise | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Parameter | PathKey::normalise | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Variable | PathKey::normalise | info | info | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6153,7 +6161,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | Namespace |  | PmrKey | PmrKey | Keep | Retain the established build, macro or namespace contract. |
+| 9 | Namespace | | PmrKey | PmrKey | Keep | Retain the established build, macro or namespace contract. |
 | 16 | Function | PmrKey | primary | primary | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | PmrKey::primary | filename | filename | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 
@@ -6161,14 +6169,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 31 | Variable |  | kPmrMagic | kPmrMagic | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 32 | Variable |  | kUnicodeVersion | kUnicodeVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 33 | Variable |  | kHeaderSize | kHeaderSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 35 | Variable |  | kMbcsNameCapacity | kMbcsNameCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 36 | Variable |  | kProjectCapacity | kProjectCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 37 | Variable |  | kUtf8NameCapacity | kUtf8NameCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Variable |  | kMaxFileNameUnits | kMaxFileNameUnits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 40 | Class |  | Cursor | PmrValueParser | Implemented | Approved PMR value-parser name; replaces the earlier PmrByteReader proposal. |
+| 31 | Variable | | kPmrMagic | kPmrMagic | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 32 | Variable | | kUnicodeVersion | kUnicodeVersion | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 33 | Variable | | kHeaderSize | kHeaderSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 35 | Variable | | kMbcsNameCapacity | kMbcsNameCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 36 | Variable | | kProjectCapacity | kProjectCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 37 | Variable | | kUtf8NameCapacity | kUtf8NameCapacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 38 | Variable | | kMaxFileNameUnits | kMaxFileNameUnits | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 40 | Class | | Cursor | PmrValueParser | Implemented | Approved PMR value-parser name; replaces the earlier PmrByteReader proposal. |
 | 43 | Constructor | Cursor | Cursor | PmrValueParser | Implemented | Approved PMR value-parser name; replaces the earlier PmrByteReader proposal. |
 | 43 | Parameter | Cursor::Cursor | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Parameter | Cursor::Cursor | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6185,22 +6193,22 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 70 | Field | Cursor | m_data | m_data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 71 | Field | Cursor | m_pos | m_pos | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 72 | Field | Cursor | m_bigEndian | m_bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 75 | Function |  | cString | cString | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 75 | Function | | cString | cString | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Parameter | cString | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 77 | Variable | cString | end | end | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 81 | Function |  | readMbcs | readMbcs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 81 | Function | | readMbcs | readMbcs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Parameter | readMbcs | cursor | cursor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Parameter | readMbcs | capacity | capacity | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Parameter | readMbcs | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Variable | readMbcs | length | length | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 92 | Variable | readMbcs | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 100 | Function |  | readUnicodeName | readUnicodeName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 100 | Function | | readUnicodeName | readUnicodeName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 100 | Parameter | readUnicodeName | cursor | cursor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 100 | Parameter | readUnicodeName | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 102 | Variable | readUnicodeName | length | length | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 110 | Variable | readUnicodeName | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 117 | Variable | readUnicodeName | utf8 | utf8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 122 | Function |  | readMob | readMobId | Implemented | Reads an identifier rather than a Mob object. |
+| 122 | Function | | readMob | readMobId | Implemented | Reads an identifier rather than a Mob object. |
 | 122 | Parameter | readMob | cursor | cursor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 122 | Parameter | readMob | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 122 | Parameter | readMob | master | allowNull | Implemented | Specifies whether an all-zero MobId is accepted. |
@@ -6211,7 +6219,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 128 | Parameter | readMob::(lambda at src/pmrparser.cpp:128:63)::operator() | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 138 | Variable | readMob | normalized | normalized | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 156 | Variable | readMob | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 161 | Function |  | readSet | readSet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 161 | Function | | readSet | readSet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 161 | Parameter | readSet | cursor | cursor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 161 | Parameter | readSet | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 161 | Parameter | readSet | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6253,14 +6261,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Struct |  | PmrEntry | PmrEntry | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 12 | Struct | | PmrEntry | PmrEntry | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 14 | Field | PmrEntry | mobId | fileMobId | Implemented | Identifies the File Mob; distinguishes it from the Master Mob identifier. |
 | 15 | Field | PmrEntry | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Field | PmrEntry | fileName | fileName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | PmrEntry | project | project | Keep | User confirmed the existing scoped name; projectName proposal withdrawn. |
 | 26 | Field | PmrEntry | fileModifiedSecs | indexedModifiedSeconds | Rename | Clarifies the specific role, result, state or units. |
-| 34 | Type alias |  | PmrIndex | PmrIndex | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 48 | Class |  | PmrParser | PmrParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 34 | Type alias | | PmrIndex | PmrIndex | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 48 | Class | | PmrParser | PmrParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 65 | Method | PmrParser | parse | parse | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | PmrParser::parse | pmrFilePath | pmrFilePath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Parameter | PmrParser::parse | ok | ok | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -6275,7 +6283,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Struct |  | PrecomputeFilterPath | PrecomputeFilterPath | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 14 | Struct | | PrecomputeFilterPath | PrecomputeFilterPath | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 16 | Field | PrecomputeFilterPath | precomputeCategory | precomputeCategory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Field | PrecomputeFilterPath | effectCategory | effectCategory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Field | PrecomputeFilterPath | effect | effect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6283,7 +6291,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 20 | Parameter | PrecomputeFilterPath::operator== | other | other | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Method | PrecomputeFilterPath | matches | matches | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Parameter | PrecomputeFilterPath::matches | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Struct |  | PrecomputeFilter | PrecomputeFilter | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 38 | Struct | | PrecomputeFilter | PrecomputeFilter | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 40 | Field | PrecomputeFilter | active | active | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Field | PrecomputeFilter | paths | paths | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Method | PrecomputeFilter | operator== | operator== | Keep | Language, Qt override, customization point or QtTest convention. |
@@ -6296,7 +6304,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 19 | Function |  | covers | covers | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 19 | Function | | covers | covers | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Parameter | covers | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Parameter | covers | child | child | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Parameter | PrecomputeFilterDialog::PrecomputeFilterDialog | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6380,7 +6388,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 17 | Class |  | PrecomputeFilterDialog | PrecomputeFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 17 | Class | | PrecomputeFilterDialog | PrecomputeFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 21 | Constructor | PrecomputeFilterDialog | PrecomputeFilterDialog | PrecomputeFilterDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Parameter | PrecomputeFilterDialog::PrecomputeFilterDialog | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Parameter | PrecomputeFilterDialog::PrecomputeFilterDialog | selection | selection | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6444,8 +6452,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 6 | Class |  | QProgressBar | QProgressBar | Keep | Qt declaration; spelling is owned by the framework. |
-| 15 | Class |  | ProgressDialog | ProgressDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 6 | Class | | QProgressBar | QProgressBar | Keep | Qt declaration; spelling is owned by the framework. |
+| 15 | Class | | ProgressDialog | ProgressDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 19 | Constructor | ProgressDialog | ProgressDialog | ProgressDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Parameter | ProgressDialog::ProgressDialog | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Method | ProgressDialog | begin | begin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6473,7 +6481,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Class |  | ProgressThrottle | ProgressThrottle | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 14 | Class | | ProgressThrottle | ProgressThrottle | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 17 | Constructor | ProgressThrottle | ProgressThrottle | ProgressThrottle | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Parameter | ProgressThrottle::ProgressThrottle | minIntervalMs | minIntervalMs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Method | ProgressThrottle | shouldEmit | shouldEmit | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6487,31 +6495,31 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 45 | Variable |  | kCardColumns | kCardColumns | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 49 | Function |  | capColor | capColor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 45 | Variable | | kCardColumns | kCardColumns | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 49 | Function | | capColor | capColor | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Parameter | capColor | fileCount | fileCount | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 58 | Function |  | makeStripeBrush | makeStripeBrush | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 58 | Function | | makeStripeBrush | makeStripeBrush | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Parameter | makeStripeBrush | color | color | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 60 | Variable | makeStripeBrush | kTile | kTile | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 61 | Variable | makeStripeBrush | tile | tile | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 64 | Variable | makeStripeBrush | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 66 | Variable | makeStripeBrush | pen | pen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 75 | Function |  | makeAquaBrush | makeAquaBrush | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 75 | Function | | makeAquaBrush | makeAquaBrush | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Parameter | makeAquaBrush | base | base | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Parameter | makeAquaBrush | rect | rect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 77 | Variable | makeAquaBrush | grad | grad | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 84 | Function |  | paintAquaGloss | paintAquaGloss | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 84 | Function | | paintAquaGloss | paintAquaGloss | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Parameter | paintAquaGloss | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Parameter | paintAquaGloss | rect | rect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Parameter | paintAquaGloss | radius | radius | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 86 | Variable | paintAquaGloss | top | top | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 88 | Variable | paintAquaGloss | grad | grad | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 97 | Variable |  | kCardMinWidth | kCardMinWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 98 | Variable |  | kCardHeight | kCardHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 99 | Variable |  | kPad | kPad | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 100 | Variable |  | kBarHeight | kBarHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 101 | Variable |  | kBarRadius | kBarRadius | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 109 | Class |  | FolderCard | FolderCard | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 97 | Variable | | kCardMinWidth | kCardMinWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 98 | Variable | | kCardHeight | kCardHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 99 | Variable | | kPad | kPad | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 100 | Variable | | kBarHeight | kBarHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 101 | Variable | | kBarRadius | kBarRadius | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 109 | Class | | FolderCard | FolderCard | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 112 | Constructor | FolderCard | FolderCard | FolderCard | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 112 | Parameter | FolderCard::FolderCard | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 113 | Method | FolderCard | setFolder | setFolder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6651,10 +6659,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Class |  | QFrame | QFrame | Keep | Qt declaration; spelling is owned by the framework. |
-| 17 | Class |  | QGridLayout | QGridLayout | Keep | Qt declaration; spelling is owned by the framework. |
-| 21 | Class |  | QScrollArea | QScrollArea | Keep | Qt declaration; spelling is owned by the framework. |
-| 43 | Class |  | RebalanceDialog | RebalanceDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 16 | Class | | QFrame | QFrame | Keep | Qt declaration; spelling is owned by the framework. |
+| 17 | Class | | QGridLayout | QGridLayout | Keep | Qt declaration; spelling is owned by the framework. |
+| 21 | Class | | QScrollArea | QScrollArea | Keep | Qt declaration; spelling is owned by the framework. |
+| 43 | Class | | RebalanceDialog | RebalanceDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 49 | Constructor | RebalanceDialog | RebalanceDialog | RebalanceDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Parameter | RebalanceDialog::RebalanceDialog | mxfRootPathsByLabel | mxfRootPathsByLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | RebalanceDialog::RebalanceDialog | filesByMxfRootPath | filesByMxfRootPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6731,14 +6739,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Struct |  | RebalanceMove | RebalanceMove | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 14 | Struct | | RebalanceMove | RebalanceMove | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 16 | Field | RebalanceMove | srcPath | sourcePath | Rename | Clarifies the specific role, result, state or units. |
 | 17 | Field | RebalanceMove | dest | destinationFolder | Rename | Clarifies the specific role, result, state or units. |
 | 18 | Field | RebalanceMove | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Field | RebalanceMove | sizeBytes | sizeBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | RebalanceMove | modifiedMs | modifiedAtUnixMs | Rename | Clarifies the specific role, result, state or units. |
 | 21 | Field | RebalanceMove | fileMobId | fileMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Struct |  | FolderState | RebalanceFolderState | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 30 | Struct | | FolderState | RebalanceFolderState | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 32 | Field | FolderState | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 33 | Field | FolderState | id | numberedFolder | Rename | Clarifies the specific role, result, state or units. |
 | 34 | Field | FolderState | count | fileCount | Rename | Clarifies the specific role, result, state or units. |
@@ -6749,7 +6757,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 39 | Field | FolderState | bytesOut | bytesOut | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 40 | Field | FolderState | isNew | isNew | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Field | FolderState | inScope | isEligibleForRebalance | Rename | Clarifies the specific role, result, state or units. |
-| 48 | Struct |  | RebalancePlan | RebalancePlan | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 48 | Struct | | RebalancePlan | RebalancePlan | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 50 | Field | RebalancePlan | mxfRootPath | mxfRootPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Field | RebalancePlan | volumeLabel | volumeLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Field | RebalancePlan | folders | folders | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6761,14 +6769,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 16 | Function |  | accessibleDirectory | accessibleDirectory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 16 | Function | | accessibleDirectory | accessibleDirectory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Parameter | accessibleDirectory | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Variable | accessibleDirectory | directory | directory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 29 | Function |  | resolvedMxfRoot | resolvedMxfRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 29 | Function | | resolvedMxfRoot | resolvedMxfRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Parameter | resolvedMxfRoot | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Variable | resolvedMxfRoot | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Variable | resolvedMxfRoot | resolved | resolved | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 38 | Function |  | folderBelongsToRoot | folderBelongsToRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 38 | Function | | folderBelongsToRoot | folderBelongsToRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Parameter | folderBelongsToRoot | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Parameter | folderBelongsToRoot | resolvedRoot | resolvedRoot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 38 | Parameter | folderBelongsToRoot | allowMissing | allowMissing | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6780,25 +6788,25 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 63 | Parameter | RebalancePlanner::isEligible | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Variable | RebalancePlanner::isEligible | source | source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 70 | Variable | RebalancePlanner::isEligible | location | location | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 84 | Function |  | countsTowardFolderBudget | countsTowardFolderBudget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 84 | Function | | countsTowardFolderBudget | countsTowardFolderBudget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Parameter | countsTowardFolderBudget | fileName | fileName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 89 | Function |  | readFolderCount | readFolderCount | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 89 | Function | | readFolderCount | readFolderCount | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 89 | Parameter | readFolderCount | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Variable | readFolderCount | before | before | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 92 | Variable | readFolderCount | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 95 | Variable | readFolderCount | resolved | resolved | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 98 | Variable | readFolderCount | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 99 | Variable | readFolderCount | entries | entries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 114 | Variable |  | kLoneKeyPrefix | kLoneKeyPrefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 120 | Function |  | relativesKey | relativesKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 114 | Variable | | kLoneKeyPrefix | kLoneKeyPrefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 120 | Function | | relativesKey | relativesKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 120 | Parameter | relativesKey | masterMobId | masterMobId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 120 | Parameter | relativesKey | fallbackPath | fallbackPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 125 | Variable | relativesKey | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 126 | Variable | relativesKey | folder | folder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 127 | Variable | relativesKey | prefix | prefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 131 | Function |  | relativesKey | relativesKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 131 | Function | | relativesKey | relativesKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 131 | Parameter | relativesKey | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
-| 136 | Function |  | relativesKey | relativesKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 136 | Function | | relativesKey | relativesKey | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 136 | Parameter | relativesKey | op | op | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 144 | Parameter | RebalancePlanner::countFolders | mxfRootPath | mxfRootPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 144 | Parameter | RebalancePlanner::countFolders | folders | folders | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6918,7 +6926,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Namespace |  | RebalancePlanner | RebalancePlanner | Keep | Retain the established build, macro or namespace contract. |
+| 12 | Namespace | | RebalancePlanner | RebalancePlanner | Keep | Retain the established build, macro or namespace contract. |
 | 14 | Struct | RebalancePlanner | FolderCount | FolderCount | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 16 | Field | RebalancePlanner::FolderCount | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Field | RebalancePlanner::FolderCount | exists | exists | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6957,7 +6965,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 20 | Class |  | Rebalancer | Rebalancer | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 20 | Class | | Rebalancer | Rebalancer | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 24 | Constructor | Rebalancer | Rebalancer | Rebalancer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Parameter | Rebalancer::Rebalancer | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Destructor | Rebalancer | ~Rebalancer | ~Rebalancer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -6989,7 +6997,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 23 | Namespace |  | RevealInFinder | RevealInFinder | Keep | Retain the established build, macro or namespace contract. |
+| 23 | Namespace | | RevealInFinder | RevealInFinder | Keep | Retain the established build, macro or namespace contract. |
 | 31 | Parameter | RevealInFinder::openParentFolder | log | logger | Candidate | Callable that records messages. |
 | 31 | Function | RevealInFinder::anonymous namespace | openParentFolder | openParentFolder | Keep | Non-macOS helper; keep semantic name and adopt the existing Qt style. |
 | 31 | Parameter | RevealInFinder::openParentFolder | parentDir | parentDirectory | Candidate | Name the parent folder without an abbreviation. |
@@ -7018,10 +7026,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | Namespace |  | RevealInFinder | RevealInFinder | Keep | Retain the established build, macro or namespace contract. |
+| 7 | Namespace | | RevealInFinder | RevealInFinder | Keep | Retain the established build, macro or namespace contract. |
 | 11 | Type alias | RevealInFinder | Logger | Logger | Keep | Existing domain or scoped type name is clear; no forced synonym. |
-| 11 | Parameter |  | level | level | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 11 | Parameter |  | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 11 | Parameter | | level | level | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 11 | Parameter | | message | message | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Function | RevealInFinder | reveal | reveal | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | RevealInFinder::reveal | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | RevealInFinder::reveal | log | log | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7030,7 +7038,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Namespace |  | TestPause | TestPause | Keep | Retain the established build, macro or namespace contract. |
+| 10 | Namespace | | TestPause | TestPause | Keep | Retain the established build, macro or namespace contract. |
 | 14 | Function | TestPause | flag | flag | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Variable | TestPause::flag | g | g | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Function | TestPause | setEnabled | setEnabled | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7044,18 +7052,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 19 | Variable |  | kLayoutMargin | kLayoutMargin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 20 | Variable |  | kRowSpacing | kRowSpacing | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 21 | Variable |  | kButtonWidth | kButtonWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 22 | Variable |  | kButtonHeight | kButtonHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 23 | Variable |  | kPathsWidth | kPathsWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 24 | Variable |  | kPathsHeight | kPathsHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 25 | Variable |  | kJobLabelCharacters | kJobLabelCharacters | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 27 | Struct |  | ActionRow | ActionRow | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 19 | Variable | | kLayoutMargin | kLayoutMargin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 20 | Variable | | kRowSpacing | kRowSpacing | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 21 | Variable | | kButtonWidth | kButtonWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 22 | Variable | | kButtonHeight | kButtonHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 23 | Variable | | kPathsWidth | kPathsWidth | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 24 | Variable | | kPathsHeight | kPathsHeight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 25 | Variable | | kJobLabelCharacters | kJobLabelCharacters | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 27 | Struct | | ActionRow | ActionRow | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 29 | Field | ActionRow | widget | widget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Field | ActionRow | button | button | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Field | ActionRow | explanation | explanation | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 34 | Function |  | makeActionRow | makeActionRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 34 | Function | | makeActionRow | makeActionRow | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | makeActionRow | label | label | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Parameter | makeActionRow | explanation | explanation | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | makeActionRow | buttonName | buttonName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7064,7 +7072,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 38 | Variable | makeActionRow | layout | layout | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Variable | makeActionRow | button | button | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 46 | Variable | makeActionRow | help | help | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 53 | Function |  | jobKind | jobKind | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 53 | Function | | jobKind | jobKind | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Parameter | jobKind | kind | kind | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 73 | Parameter | UnfinishedBusinessDialog::mergeJobs | resumable | resumable | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 74 | Parameter | UnfinishedBusinessDialog::mergeJobs | restorable | restorable | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7109,7 +7117,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Class |  | UnfinishedBusinessDialog | OperationRecoveryDialog | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
+| 14 | Class | | UnfinishedBusinessDialog | OperationRecoveryDialog | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 17 | Enum | UnfinishedBusinessDialog | Choice | Choice | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 19 | Enum value | UnfinishedBusinessDialog::Choice | Close | Close | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Enum value | UnfinishedBusinessDialog::Choice | Resume | Resume | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7149,14 +7157,14 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 3 | Macro |  | APP_NAME | APP_NAME | Keep | Retain the established build, macro or namespace contract. |
-| 4 | Macro |  | APP_VERSION | APP_VERSION | Keep | Retain the established build, macro or namespace contract. |
+| 3 | Macro | | APP_NAME | APP_NAME | Keep | Retain the established build, macro or namespace contract. |
+| 4 | Macro | | APP_VERSION | APP_VERSION | Keep | Retain the established build, macro or namespace contract. |
 
 ## src/volumeidentity.cpp
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 29 | Function |  | networkEndpoint | networkEndpoint | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 29 | Function | | networkEndpoint | networkEndpoint | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Parameter | networkEndpoint | source | source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Parameter | networkEndpoint | filesystem | filesystem | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Variable | networkEndpoint | url | url | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7200,7 +7208,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | Struct |  | VolumeIdentity | VolumeIdentity | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 9 | Struct | | VolumeIdentity | VolumeIdentity | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 11 | Enum | VolumeIdentity | Confidence | Confidence | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 13 | Enum value | VolumeIdentity::Confidence | Low | Low | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Enum value | VolumeIdentity::Confidence | Med | Med | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7227,7 +7235,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Function |  | dragHasLocalDir | dragHasLocalDir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 15 | Function | | dragHasLocalDir | dragHasLocalDir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | dragHasLocalDir | mime | mime | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Parameter | dragHasLocalDir::(lambda at src/volumelistwidget.cpp:17:45)::operator() | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Parameter | VolumeListWidget::VolumeListWidget | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7245,11 +7253,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 6 | Class |  | QDragEnterEvent | QDragEnterEvent | Keep | Qt declaration; spelling is owned by the framework. |
-| 7 | Class |  | QDragMoveEvent | QDragMoveEvent | Keep | Qt declaration; spelling is owned by the framework. |
-| 8 | Class |  | QDragLeaveEvent | QDragLeaveEvent | Keep | Qt declaration; spelling is owned by the framework. |
-| 9 | Class |  | QDropEvent | QDropEvent | Keep | Qt declaration; spelling is owned by the framework. |
-| 14 | Class |  | VolumeListWidget | VolumeListWidget | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 6 | Class | | QDragEnterEvent | QDragEnterEvent | Keep | Qt declaration; spelling is owned by the framework. |
+| 7 | Class | | QDragMoveEvent | QDragMoveEvent | Keep | Qt declaration; spelling is owned by the framework. |
+| 8 | Class | | QDragLeaveEvent | QDragLeaveEvent | Keep | Qt declaration; spelling is owned by the framework. |
+| 9 | Class | | QDropEvent | QDropEvent | Keep | Qt declaration; spelling is owned by the framework. |
+| 14 | Class | | VolumeListWidget | VolumeListWidget | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 18 | Constructor | VolumeListWidget | VolumeListWidget | VolumeListWidget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Parameter | VolumeListWidget::VolumeListWidget | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Method | VolumeListWidget | pathsDropped | pathsDropped | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7321,15 +7329,15 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Class |  | QStorageInfo | QStorageInfo | Keep | Qt declaration; spelling is owned by the framework. |
-| 13 | Struct |  | VolumeInfo | VolumeInfo | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 10 | Class | | QStorageInfo | QStorageInfo | Keep | Qt declaration; spelling is owned by the framework. |
+| 13 | Struct | | VolumeInfo | VolumeInfo | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 15 | Field | VolumeInfo | name | displayName | Rename | Clarifies the specific role, result, state or units. |
 | 16 | Field | VolumeInfo | path | scanLocationPath | Rename | Clarifies the specific role, result, state or units. |
 | 17 | Field | VolumeInfo | totalBytes | totalBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Field | VolumeInfo | usedBytes | usedBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Field | VolumeInfo | volumeType | volumeType | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Field | VolumeInfo | hasAvidMedia | hasAvidMedia | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 31 | Class |  | VolumeManager | VolumeManager | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 31 | Class | | VolumeManager | VolumeManager | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 35 | Constructor | VolumeManager | VolumeManager | VolumeManager | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | VolumeManager::VolumeManager | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Method | VolumeManager | detectVolumes | detectVolumes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7368,20 +7376,20 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 | 7 | CMake parameter | mediamuster_add_test | label | label | Keep | Retain the established build, macro or namespace contract. |
-| 7 | CMake function |  | mediamuster_add_test | mediamuster_add_test | Keep | Retain the established build, macro or namespace contract. |
+| 7 | CMake function | | mediamuster_add_test | mediamuster_add_test | Keep | Retain the established build, macro or namespace contract. |
 | 7 | CMake parameter | mediamuster_add_test | name | name | Keep | Retain the established build, macro or namespace contract. |
-| 10 | CMake variable |  | ARGN | ARGN | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 13 | CMake variable |  | CMAKE_SOURCE_DIR | CMAKE_SOURCE_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 17 | CMake variable |  | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 252 | CMake variable |  | SOURCES | SOURCES | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
-| 252 | CMake variable |  | _operation_ui_sources | _operation_ui_sources | Keep | Retain the established build, macro or namespace contract. |
-| 257 | CMake variable |  | CMAKE_BINARY_DIR | CMAKE_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 10 | CMake variable | | ARGN | ARGN | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 13 | CMake variable | | CMAKE_SOURCE_DIR | CMAKE_SOURCE_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 17 | CMake variable | | CMAKE_CURRENT_BINARY_DIR | CMAKE_CURRENT_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 252 | CMake variable | | SOURCES | SOURCES | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
+| 252 | CMake variable | | _operation_ui_sources | _operation_ui_sources | Keep | Retain the established build, macro or namespace contract. |
+| 257 | CMake variable | | CMAKE_BINARY_DIR | CMAKE_BINARY_DIR | Keep | Retain this referenced CMake variable, built-in or external build contract; location is the first observed use/output binding. |
 
 ## tests/testavb.h
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Namespace |  | TestAvb | TestAvb | Keep | Retain the established build, macro or namespace contract. |
+| 13 | Namespace | | TestAvb | TestAvb | Keep | Retain the established build, macro or namespace contract. |
 | 16 | Variable | TestAvb | Master | Master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Variable | TestAvb | Source | Source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 18 | Variable | TestAvb | Other | Other | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7514,7 +7522,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Class |  | BentoBuilder | BentoBuilder | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 14 | Class | | BentoBuilder | BentoBuilder | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 18 | Method | BentoBuilder | addObject | addObject | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 18 | Parameter | BentoBuilder::addObject | fourcc | fourcc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Variable | BentoBuilder::addObject | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
@@ -7598,7 +7606,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Class |  | Bento2Builder | Bento2Builder | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 10 | Class | | Bento2Builder | Bento2Builder | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 13 | Constructor | Bento2Builder | Bento2Builder | Bento2Builder | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 13 | Parameter | Bento2Builder::Bento2Builder | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Method | Bento2Builder | addObject | addObject | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -7653,7 +7661,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 9 | Namespace |  | TestOmf | TestOmf | Keep | Retain the established build, macro or namespace contract. |
+| 9 | Namespace | | TestOmf | TestOmf | Keep | Retain the established build, macro or namespace contract. |
 | 11 | Class | TestOmf | Writer | Writer | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 14 | Constructor | TestOmf::Writer | Writer | Writer | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 14 | Parameter | TestOmf::Writer::Writer | compact | compact | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7758,11 +7766,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Function |  | tryWriteFile | tryWriteFile | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 12 | Function | | tryWriteFile | tryWriteFile | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 12 | Parameter | tryWriteFile | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Parameter | tryWriteFile | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Variable | tryWriteFile | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 22 | Function |  | writeFileIn | writeFileIn | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 22 | Function | | writeFileIn | writeFileIn | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 22 | Parameter | writeFileIn | dir | dir | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Parameter | writeFileIn | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Parameter | writeFileIn | contents | contents | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -7772,17 +7780,17 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Function |  | aliases | aliases | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 18 | Function | | aliases | aliases | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 18 | Parameter | aliases | ids | ids | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Variable | aliases | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Variable | aliases | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 23 | Variable | aliases | formatted | formatted | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 30 | Function |  | graph | graph | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 30 | Function | | graph | graph | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 30 | Parameter | graph | big | big | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Variable | graph | d | d | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Function |  | legacy | legacy | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 44 | Function | | legacy | legacy | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 44 | Parameter | legacy | id | id | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 50 | Class |  | TestAvbParser | TestAvbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 50 | Class | | TestAvbParser | TestAvbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 54 | Method | TestAvbParser | header_recognition_data | header_recognition_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 55 | Method | TestAvbParser | header_recognition | header_recognition | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 56 | Method | TestAvbParser | header_recognition_requires_a_readable_file | header_recognition_requires_a_readable_file | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -7954,7 +7962,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Class |  | TestAvidEffects | TestAvidEffects | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 10 | Class | | TestAvidEffects | TestAvidEffects | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 14 | Method | TestAvidEffects | the_whole_catalogue_is_compiled_in | the_whole_catalogue_is_compiled_in | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 15 | Method | TestAvidEffects | corpus_render_names_resolve | corpus_render_names_resolve | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 16 | Method | TestAvidEffects | current_registration_variants_and_render_names | current_registration_variants_and_render_names | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -8008,21 +8016,21 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Function |  | readFile | readFile | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 18 | Function | | readFile | readFile | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 18 | Parameter | readFile | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Variable | readFile | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 24 | Function |  | writeTemp | writeTemp | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 24 | Function | | writeTemp | writeTemp | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 24 | Parameter | writeTemp | dir | temporaryDirectory | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 24 | Parameter | writeTemp | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Parameter | writeTemp | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Variable | writeTemp | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Variable | writeTemp | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 36 | Function |  | mobIndexRow | mobIndexRow | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 36 | Function | | mobIndexRow | mobIndexRow | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 36 | Parameter | mobIndexRow | core8 | core8 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Parameter | mobIndexRow | object | object | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Parameter | mobIndexRow | junk | junk | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 41 | Variable |  | kTailBudget | kTailBudget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Class |  | TestBentoFile | TestBentoFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 41 | Variable | | kTailBudget | kTailBudget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 44 | Class | | TestBentoFile | TestBentoFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 48 | Method | TestBentoFile | rejects_a_missing_or_garbled_label | rejects_a_missing_or_garbled_label | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 49 | Method | TestBentoFile | rejects_toc_arithmetic_that_does_not_close | rejects_toc_arithmetic_that_does_not_close | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 50 | Method | TestBentoFile | reads_immediate_and_offset_values | reads_immediate_and_offset_values | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -8252,13 +8260,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 26 | Class |  | TestableBinFilterDialog | TestableBinFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 26 | Class | | TestableBinFilterDialog | TestableBinFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 29 | Using declaration | TestableBinFilterDialog | dragEnterEvent | dragEnterEvent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Using declaration | TestableBinFilterDialog | dragMoveEvent | dragMoveEvent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 31 | Using declaration | TestableBinFilterDialog | dropEvent | dropEvent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 34 | Function |  | partialBin | partialBin | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 34 | Function | | partialBin | partialBin | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 36 | Variable | partialBin | d | d | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 43 | Struct |  | Harness | Harness | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 43 | Struct | | Harness | Harness | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 45 | Field | Harness | model | model | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 46 | Field | Harness | proxy | proxy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Field | Harness | dialog | dialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -8277,7 +8285,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 81 | Variable | Harness::selectOnly | row | row | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Method | Harness | invoke | invoke | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 84 | Parameter | Harness::invoke | slot | slot | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 88 | Class |  | TestBinFilterDialog | TestBinFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 88 | Class | | TestBinFilterDialog | TestBinFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 92 | Method | TestBinFilterDialog | loading_completion_auto_intersects | loading_completion_auto_intersects | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 93 | Method | TestBinFilterDialog | loaded_bin_metadata_is_published_as_one_batch | loaded_bin_metadata_is_published_as_one_batch | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 94 | Method | TestBinFilterDialog | intersect_empty_bin_is_active_and_matches_nothing | intersect_empty_bin_is_active_and_matches_nothing | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -8416,7 +8424,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Class |  | TestConventions | TestConventions | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 13 | Class | | TestConventions | TestConventions | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 18 | Method | TestConventions | mxf_root_name_is_case_insensitive | mxf_root_name_is_case_insensitive | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 19 | Method | TestConventions | omf_root_is_not_an_mxf_root | omf_root_is_not_an_mxf_root | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 20 | Method | TestConventions | mxf_root_under_builds_canonical_path | mxf_root_under_builds_canonical_path | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -8479,11 +8487,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 12 | Function |  | writeReport | writeReport | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 12 | Function | | writeReport | writeReport | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 12 | Parameter | writeReport | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Parameter | writeReport | mtime | mtime | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 14 | Variable | writeReport | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 21 | Class |  | TestDiagnostics | TestDiagnostics | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 21 | Class | | TestDiagnostics | TestDiagnostics | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 25 | Method | TestDiagnostics | initTestCase | initTestCase | Keep | Language, Qt override, customization point or QtTest convention. |
 | 26 | Method | TestDiagnostics | warning_line_has_level_category_and_location | warning_line_has_level_category_and_location | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 27 | Method | TestDiagnostics | debug_line_omits_location | debug_line_omits_location | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -8515,22 +8523,22 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 32 | Function |  | put | put | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 32 | Function | | put | put | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 32 | Parameter | put | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 32 | Parameter | put | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Variable | put | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 40 | Function |  | get | get | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 40 | Function | | get | get | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 40 | Parameter | get | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 42 | Variable | get | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 47 | Function |  | privateDirectories | privateDirectories | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 47 | Function | | privateDirectories | privateDirectories | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 47 | Parameter | privateDirectories | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Variable | privateDirectories | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Variable | privateDirectories | it | it | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 54 | Variable | privateDirectories | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 60 | Function |  | interruptAt | interruptAt | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 60 | Function | | interruptAt | interruptAt | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 60 | Parameter | interruptAt | checkpoint | checkpoint | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | interruptAt::(lambda at tests/tst_fileoperations.cpp:62:10)::operator() | stage | stage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 68 | Struct |  | Sink | Sink | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 68 | Struct | | Sink | Sink | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 70 | Field | Sink | results | results | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 71 | Field | Sink | messages | messages | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 72 | Field | Sink | trashFallbackPrompts | trashFallbackPrompts | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -8543,7 +8551,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 84 | Method | Sink | trashUsed | trashUsed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 85 | Method | Sink | result | result | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 85 | Parameter | Sink::result | r | r | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 90 | Struct |  | Fixture | Fixture | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 90 | Struct | | Fixture | Fixture | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 92 | Field | Fixture | dir | temporaryDirectory | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 93 | Field | Fixture | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 94 | Field | Fixture | src | src | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -8556,7 +8564,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 102 | Parameter | Fixture::request | policy | policy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 104 | Variable | Fixture::request | r | request | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 108 | Variable | Fixture::request | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 119 | Class |  | ScopedJournalDirectory | ScopedJournalDirectory | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 119 | Class | | ScopedJournalDirectory | ScopedJournalDirectory | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 122 | Constructor | ScopedJournalDirectory | ScopedJournalDirectory | ScopedJournalDirectory | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 122 | Parameter | ScopedJournalDirectory::ScopedJournalDirectory | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 129 | Destructor | ScopedJournalDirectory | ~ScopedJournalDirectory | ~ScopedJournalDirectory | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -8564,9 +8572,9 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 139 | Field | ScopedJournalDirectory | m_previousValue | m_previousValue | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 142 | Variable | anonymous namespace | transientCopyError | transientCopyError | Keep | Use the existing Qt style; the existing semantic name is clear. Windows-specific initializer. |
 | 143 | Variable | anonymous namespace | permanentCopyError | permanentCopyError | Keep | Use the existing Qt style; the existing semantic name is clear. Windows-specific initializer. |
-| 145 | Variable |  | transientCopyError | transientCopyError | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 146 | Variable |  | permanentCopyError | permanentCopyError | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 149 | Class |  | TestFileOperations | TestFileOperations | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 145 | Variable | | transientCopyError | transientCopyError | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 146 | Variable | | permanentCopyError | permanentCopyError | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 149 | Class | | TestFileOperations | TestFileOperations | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 153 | Method | TestFileOperations | copy_publishes_and_preserves_source | copy_publishes_and_preserves_source | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 154 | Method | TestFileOperations | advisory_copy_move_assessment_data | advisory_copy_move_assessment_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 155 | Method | TestFileOperations | advisory_copy_move_assessment | advisory_copy_move_assessment | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -9579,7 +9587,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 5 | Class |  | TestFormat | TestFormat | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 5 | Class | | TestFormat | TestFormat | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 9 | Method | TestFormat | bytes_data | bytes_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 10 | Method | TestFormat | bytes | bytes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 31 | Variable | TestFormat::bytes | size | size | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -9589,32 +9597,32 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 30 | Function |  | writeMdb | writeMdb | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 30 | Function | | writeMdb | writeMdb | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 30 | Parameter | writeMdb | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 30 | Parameter | writeMdb | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 33 | Variable | writeMdb | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 42 | Function |  | fx | fx | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 42 | Function | | fx | fx | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 42 | Parameter | fx | rel | rel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 47 | Variable |  | kToneFileMob | kToneFileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 49 | Variable |  | kToneMasterMob | kToneMasterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 54 | Function |  | omfUid | omfUid | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 47 | Variable | | kToneFileMob | kToneFileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 49 | Variable | | kToneMasterMob | kToneMasterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 54 | Function | | omfUid | omfUid | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 54 | Parameter | omfUid | core8Hex | core8Hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 59 | Function |  | le32 | le32 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 59 | Function | | le32 | le32 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 59 | Parameter | le32 | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 64 | Function |  | be32 | be32 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 64 | Function | | be32 | be32 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 64 | Parameter | be32 | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 66 | Variable | be32 | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 71 | Function |  | be16 | be16 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 71 | Function | | be16 | be16 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 71 | Parameter | be16 | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 73 | Variable | be16 | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 79 | Function |  | pmrByName | pmrByName | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 79 | Function | | pmrByName | pmrByName | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 79 | Parameter | pmrByName | pmrPath | pmrPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 79 | Parameter | pmrByName | expectedPairs | expectedPairs | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Variable | pmrByName | ok | ok | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 82 | Variable | pmrByName | entries | entries | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 83 | Variable | pmrByName | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 86 | Variable | pmrByName | e | e | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 93 | Function |  | findMob | findMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 93 | Function | | findMob | findMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 93 | Parameter | findMob | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 93 | Parameter | findMob | p | p | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 93 | Parameter | findMob | mobIdHex | mobIdHex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -9622,7 +9630,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 96 | Variable | findMob | found | found | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 97 | Variable | findMob | obj | obj | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 101 | Variable | findMob | raw | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 111 | Class |  | TestMdbParser | TestMdbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 111 | Class | | TestMdbParser | TestMdbParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 115 | Method | TestMdbParser | precompute_categories_use_direct_complete_master_evidence_data | precompute_categories_use_direct_complete_master_evidence_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 116 | Method | TestMdbParser | precompute_categories_use_direct_complete_master_evidence | precompute_categories_use_direct_complete_master_evidence | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 117 | Method | TestMdbParser | duplicate_precompute_categories_do_not_combine_evidence | duplicate_precompute_categories_do_not_combine_evidence | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10016,7 +10024,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1572 | Variable | TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arrays | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 1574 | Variable | TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arrays | meta | meta | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1575 | Variable | TestMdbParser::uncompressed_alpha_requires_explicit_none_and_component_arrays | known | known | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1590 | Function |  | categoryMaster | categoryMaster | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1590 | Function | | categoryMaster | categoryMaster | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1590 | Parameter | categoryMaster | w | w | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1590 | Parameter | categoryMaster | mode | mode | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1590 | Parameter | categoryMaster | videoTracks | videoTracks | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -10034,7 +10042,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1657 | Variable | categoryMaster | segment | segment | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1666 | Variable | categoryMaster | childA | childA | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1666 | Variable | categoryMaster | childB | childB | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1679 | Function |  | categoryHead | categoryHead | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1679 | Function | | categoryHead | categoryHead | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1679 | Parameter | categoryHead | w | w | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1679 | Parameter | categoryHead | big | big | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1679 | Parameter | categoryHead | omf2 | omf2 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -10076,16 +10084,16 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Function |  | readCsvRecord | readCsvRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 15 | Function | | readCsvRecord | readCsvRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 15 | Parameter | readCsvRecord | line | line | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 19 | Variable | readCsvRecord | fields | fields | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Variable | readCsvRecord | field | field | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Variable | readCsvRecord | quoted | quoted | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Variable | readCsvRecord | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 24 | Variable | readCsvRecord | c | c | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 47 | Function |  | sampleRow | sampleRow | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 47 | Function | | sampleRow | sampleRow | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 49 | Variable | sampleRow | f | mediaFile | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 67 | Class |  | TestMediaCsv | TestMediaCsv | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 67 | Class | | TestMediaCsv | TestMediaCsv | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 71 | Method | TestMediaCsv | header_and_row_have_the_same_field_count | header_and_row_have_the_same_field_count | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 72 | Method | TestMediaCsv | header_order_and_values_follow_the_export_schema | header_order_and_values_follow_the_export_schema | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 73 | Method | TestMediaCsv | created_date_carries_time_of_day | created_date_carries_time_of_day | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10173,12 +10181,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 21 | Function |  | rowNamed | rowNamed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 21 | Function | | rowNamed | rowNamed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 21 | Parameter | rowNamed | clipName | clipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 23 | Variable | rowNamed | f | mediaFile | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 31 | Variable |  | kCafeNfc | kCafeNfc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 34 | Variable |  | kCafeNfd | kCafeNfd | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 37 | Class |  | TestMediaFilterProxy | TestMediaFilterProxy | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 31 | Variable | | kCafeNfc | kCafeNfc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 34 | Variable | | kCafeNfd | kCafeNfd | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 37 | Class | | TestMediaFilterProxy | TestMediaFilterProxy | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 41 | Method | TestMediaFilterProxy | unicode_search_normalises_and_folds_data | unicode_search_normalises_and_folds_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 42 | Method | TestMediaFilterProxy | unicode_search_normalises_and_folds | unicode_search_normalises_and_folds | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 43 | Method | TestMediaFilterProxy | plain_ascii_never_matches_accents | plain_ascii_never_matches_accents | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10370,9 +10378,9 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Function |  | ul | ul | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 13 | Function | | ul | ul | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 13 | Parameter | ul | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 19 | Class |  | TestMediaMetadata | TestMediaMetadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 19 | Class | | TestMediaMetadata | TestMediaMetadata | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 23 | Method | TestMediaMetadata | codec_labels_data | codec_labels_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 24 | Method | TestMediaMetadata | codec_labels | codec_labels | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 25 | Method | TestMediaMetadata | unknown_ul_infers_family_from_structure | unknown_ul_infers_family_from_structure | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10415,17 +10423,17 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 19 | Function |  | masterId | masterId | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 25 | Function |  | bin | bin | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 19 | Function | | masterId | masterId | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 25 | Function | | bin | bin | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 25 | Parameter | bin | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 26 | Parameter | bin | originalBin | originalBin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Parameter | bin | uid | uid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Variable | bin | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Variable | bin | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 44 | Function |  | row | row | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 44 | Function | | row | row | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 44 | Parameter | row | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 46 | Variable | row | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 53 | Class |  | TestMediaTableModel | TestMediaTableModel | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 53 | Class | | TestMediaTableModel | TestMediaTableModel | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 57 | Method | TestMediaTableModel | row_removal_preserves_rows_and_notifications_data | row_removal_preserves_rows_and_notifications_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 58 | Method | TestMediaTableModel | row_removal_preserves_rows_and_notifications | row_removal_preserves_rows_and_notifications | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 64 | Method | TestMediaTableModel | unknown_created_date_displays_blank | unknown_created_date_displays_blank | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10542,7 +10550,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | Class |  | TestMobId | TestMobId | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 7 | Class | | TestMobId | TestMobId | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 11 | Method | TestMobId | format_renders_canonical_dotted_hex | format_renders_canonical_dotted_hex | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 12 | Method | TestMobId | format_too_short_buffer_returns_empty | format_too_short_buffer_returns_empty | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 13 | Method | TestMobId | isAllZero_detects_all_zero_pattern | isAllZero_detects_all_zero_pattern | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10561,47 +10569,47 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 21 | Function |  | ul | ul | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 21 | Function | | ul | ul | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 21 | Parameter | ul | hex | hex | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 26 | Function |  | u16be | u16be | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 26 | Function | | u16be | u16be | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 26 | Parameter | u16be | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 28 | Variable | u16be | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 34 | Function |  | utf16be | utf16be | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 34 | Function | | utf16be | utf16be | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 34 | Parameter | utf16be | s | s | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Variable | utf16be | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 37 | Variable | utf16be | c | c | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 39 | Variable | utf16be | u | u | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 47 | Function |  | shortSet | shortSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 47 | Function | | shortSet | shortSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 47 | Parameter | shortSet | setType | setType | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Parameter | shortSet | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Variable | shortSet | out | outputBytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 58 | Function |  | packageSet | packageSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 58 | Function | | packageSet | packageSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 58 | Parameter | packageSet | setType | setType | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Parameter | packageSet | umid32 | umid32 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Parameter | packageSet | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 60 | Variable | packageSet | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Variable | packageSet | nameBytes | nameBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 68 | Function |  | u32be | u32be | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 68 | Function | | u32be | u32be | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 68 | Parameter | u32be | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 70 | Variable | u32be | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 71 | Variable | u32be | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 79 | Function |  | cdciSet | cdciSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 79 | Function | | cdciSet | cdciSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 79 | Parameter | cdciSet | width | width | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 79 | Parameter | cdciSet | height | height | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 79 | Parameter | cdciSet | rateNum | rateNum | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 79 | Parameter | cdciSet | rateDen | rateDen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Variable | cdciSet | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 93 | Function |  | labelOnlySet | labelOnlySet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 93 | Function | | labelOnlySet | labelOnlySet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 93 | Parameter | labelOnlySet | label16 | label16 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 95 | Variable | labelOnlySet | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 103 | Function |  | fillerItem | fillerItem | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 103 | Function | | fillerItem | fillerItem | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 103 | Parameter | fillerItem | valueLen | valueLen | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 105 | Variable | fillerItem | out | outputBytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 112 | Function |  | writeMxf | writeMxf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 112 | Function | | writeMxf | writeMxf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 112 | Parameter | writeMxf | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 112 | Parameter | writeMxf | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 115 | Variable | writeMxf | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 125 | Class |  | TestMxfParser | TestMxfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 125 | Class | | TestMxfParser | TestMxfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 129 | Method | TestMxfParser | avid_alpha_requires_positive_container_and_layout_data | avid_alpha_requires_positive_container_and_layout_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 130 | Method | TestMxfParser | avid_alpha_requires_positive_container_and_layout | avid_alpha_requires_positive_container_and_layout | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 131 | Method | TestMxfParser | avid_alpha_respects_descriptor_selection_and_primer | avid_alpha_respects_descriptor_selection_and_primer | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -10763,20 +10771,20 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 912 | Variable | TestMxfParser::tagged_values_yield_source_path_and_import_flag | pmrTone | pmrTone | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 918 | Variable | TestMxfParser::tagged_values_yield_source_path_and_import_flag | tone | tone | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 925 | Variable | TestMxfParser::tagged_values_yield_source_path_and_import_flag | render | render | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 935 | Function |  | localProperty | localProperty | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 935 | Function | | localProperty | localProperty | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 935 | Parameter | localProperty | tag | tag | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 935 | Parameter | localProperty | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 939 | Function |  | klv | klv | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 939 | Function | | klv | klv | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 939 | Parameter | klv | key | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 939 | Parameter | klv | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 943 | Function |  | objectSet | objectSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 943 | Function | | objectSet | objectSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 943 | Parameter | objectSet | type | type | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 943 | Parameter | objectSet | instance | instance | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 943 | Parameter | objectSet | fields | fields | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 945 | Variable | objectSet | key | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 949 | Function |  | references | references | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 949 | Function | | references | references | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 949 | Parameter | references | instance | instance | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 953 | Function |  | partitionPack | partitionPack | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 953 | Function | | partitionPack | partitionPack | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 961 | Variable | TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read | temp | temp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 962 | Variable | TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read | header | header | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 963 | Variable | TestMxfParser::metadata_beyond_512k_and_essence_are_not_bulk_read | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -10892,11 +10900,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1344 | Variable | TestMxfParser::partition_container_batch_is_bounded | row | row | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1346 | Variable | TestMxfParser::partition_container_batch_is_bounded | pack | pack | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1347 | Variable | TestMxfParser::partition_container_batch_is_bounded | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1357 | Function |  | projectAttribute | projectAttribute | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1357 | Function | | projectAttribute | projectAttribute | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1357 | Parameter | projectAttribute | instance | instance | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1357 | Parameter | projectAttribute | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1361 | Variable | projectAttribute | indirect | indirect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1364 | Function |  | projectFileGraph | projectFileGraph | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1364 | Function | | projectFileGraph | projectFileGraph | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1364 | Parameter | projectFileGraph | fileAttributes | fileAttributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1364 | Parameter | projectFileGraph | materialAttributes | materialAttributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1366 | Variable | projectFileGraph | fileId | fileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -10917,12 +10925,12 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1428 | Variable | TestMxfParser::project_leaves_conflicting_fallbacks_unknown | first | first | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1429 | Variable | TestMxfParser::project_leaves_conflicting_fallbacks_unknown | second | second | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1433 | Variable | TestMxfParser::project_leaves_conflicting_fallbacks_unknown | result | result | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1441 | Function |  | precomputePrimer | precomputePrimer | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 1448 | Function |  | importObject | importObject | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1441 | Function | | precomputePrimer | precomputePrimer | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1448 | Function | | importObject | importObject | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1448 | Parameter | importObject | instance | instance | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1448 | Parameter | importObject | payload | payload | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1449 | Parameter | importObject | children | children | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1453 | Function |  | precomputeGraph | precomputeGraph | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1453 | Function | | precomputeGraph | precomputeGraph | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1453 | Parameter | precomputeGraph | kinds | kinds | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1453 | Parameter | precomputeGraph | attributes | attributes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1453 | Parameter | precomputeGraph | usage | usage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -10958,11 +10966,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 25 | Variable |  | kTailBudget | kTailBudget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 27 | Function |  | fx | fx | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 25 | Variable | | kTailBudget | kTailBudget | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 27 | Function | | fx | fx | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 27 | Parameter | fx | rel | rel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 32 | Function |  | slates | slates | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 38 | Class |  | TestOmfParser | TestOmfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 32 | Function | | slates | slates | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 38 | Class | | TestOmfParser | TestOmfParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 43 | Method | TestOmfParser | omf_every_slate_parses_with_a_named_codec | omf_every_slate_parses_with_a_named_codec | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 44 | Method | TestOmfParser | omf_pmr_pairs_name_the_file_and_master_mobs | omf_pmr_pairs_name_the_file_and_master_mobs | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 45 | Method | TestOmfParser | omf_mdb_row_agrees_with_the_file | omf_mdb_row_agrees_with_the_file | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -11192,11 +11200,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 18 | Function |  | readAll | readAll | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 18 | Function | | readAll | readAll | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 18 | Parameter | readAll | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Variable | readAll | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 28 | Variable |  | kPmrV2HeaderSize | kPmrV2HeaderSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 31 | Class |  | TestOmfUid | TestOmfUid | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 28 | Variable | | kPmrV2HeaderSize | kPmrV2HeaderSize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 31 | Class | | TestOmfUid | TestOmfUid | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 36 | Method | TestOmfUid | wrap8_is_prefix_core_suffix | toMobIdBytes_is_prefix_core_suffix | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
 | 37 | Method | TestOmfUid | wrap8_matches_the_unicode_set_in_the_real_pmrs | toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
 | 38 | Method | TestOmfUid | wrap8_does_not_swap_middle_fields | toMobIdBytes_does_not_swap_middle_fields | Implemented | Implemented 30 September 2026: Keeps the existing test scenario name aligned with its renamed identifier helper; assertions are unchanged. |
@@ -11229,7 +11237,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 21 | Struct |  | Fixture | Fixture | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 21 | Struct | | Fixture | Fixture | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 23 | Field | Fixture | temporary | temporary | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 24 | Field | Fixture | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Field | Fixture | stage | stage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -11237,22 +11245,22 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 27 | Field | Fixture | directory | directory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 28 | Field | Fixture | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Method | Fixture | create | create | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 35 | Function |  | put | put | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 35 | Function | | put | put | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 35 | Parameter | put | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | put | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Variable | put | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 41 | Function |  | addDirectoryAcl | addDirectoryAcl | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 41 | Function | | addDirectoryAcl | addDirectoryAcl | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 41 | Parameter | addDirectoryAcl | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Parameter | addDirectoryAcl | inherited | inherited | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Variable | addDirectoryAcl | chmod | chmod | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 44 | Variable | addDirectoryAcl | permission | permission | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 51 | Function |  | hasExtendedAcl | hasExtendedAcl | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 51 | Function | | hasExtendedAcl | hasExtendedAcl | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 51 | Parameter | hasExtendedAcl | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Variable | hasExtendedAcl | directory | directory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 56 | Variable | hasExtendedAcl | acl | acl | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 57 | Variable | hasExtendedAcl | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 58 | Variable | hasExtendedAcl | present | present | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 67 | Class |  | TestOpCleanup | TestOpCleanup | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 67 | Class | | TestOpCleanup | TestOpCleanup | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 71 | Method | TestOpCleanup | partial_can_be_removed_after_reopening | partial_can_be_removed_after_reopening | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 73 | Variable | TestOpCleanup::partial_can_be_removed_after_reopening | f | f | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 77 | Variable | TestOpCleanup::partial_can_be_removed_after_reopening | recorded | recorded | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -11307,35 +11315,35 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 47 | Function |  | put | put | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 47 | Function | | put | put | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 47 | Parameter | put | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Parameter | put | data | data | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Variable | put | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 54 | Function |  | smallRebalancePlan | smallRebalancePlan | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 54 | Function | | smallRebalancePlan | smallRebalancePlan | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 54 | Parameter | smallRebalancePlan | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 56 | Variable | smallRebalancePlan | plan | plan | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 59 | Variable | smallRebalancePlan | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 61 | Variable | smallRebalancePlan | folder | folder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 73 | Variable | smallRebalancePlan | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 75 | Variable | smallRebalancePlan | op | op | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 82 | Function |  | folderCountCaption | folderCountCaption | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 82 | Function | | folderCountCaption | folderCountCaption | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 82 | Parameter | folderCountCaption | dialog | dialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 82 | Parameter | folderCountCaption | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 84 | Variable | folderCountCaption | card | card | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 89 | Function |  | appMessages | appMessages | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 89 | Function | | appMessages | appMessages | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 89 | Parameter | appMessages | console | console | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Variable | appMessages | prefix | prefix | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 92 | Variable | appMessages | messages | messages | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 93 | Variable | appMessages | line | line | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 95 | Variable | appMessages | start | start | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 101 | Struct |  | Sink | Sink | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 101 | Struct | | Sink | Sink | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 103 | Field | Sink | cancelAfterResult | cancelAfterResult | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 104 | Method | Sink | progress | progress | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 105 | Method | Sink | log | log | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 106 | Method | Sink | trashUsed | trashUsed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 107 | Method | Sink | result | result | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 107 | Parameter | Sink::result | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 114 | Struct |  | BlockPool | BlockPool | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 114 | Struct | | BlockPool | BlockPool | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 116 | Field | BlockPool | pool | pool | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 117 | Field | BlockPool | previousMaximum | previousMaximum | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 118 | Field | BlockPool | entered | entered | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -11343,7 +11351,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 120 | Field | BlockPool | future | future | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 121 | Constructor | BlockPool | BlockPool | BlockPool | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 128 | Destructor | BlockPool | ~BlockPool | ~BlockPool | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 138 | Class |  | TestOperationUi | TestOperationUi | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 138 | Class | | TestOperationUi | TestOperationUi | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 142 | Method | TestOperationUi | initTestCase | initTestCase | Keep | Language, Qt override, customization point or QtTest convention. |
 | 143 | Method | TestOperationUi | init | init | Keep | Language, Qt override, customization point or QtTest convention. |
 | 144 | Method | TestOperationUi | cleanup | cleanup | Keep | Language, Qt override, customization point or QtTest convention. |
@@ -11854,18 +11862,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 14 | Function |  | requestFor | requestFor | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 14 | Function | | requestFor | requestFor | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 14 | Parameter | requestFor | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Variable | requestFor | request | request | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Variable | requestFor | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 27 | Function |  | writeBytes | writeBytes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 27 | Function | | writeBytes | writeBytes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 27 | Parameter | writeBytes | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 27 | Parameter | writeBytes | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 29 | Variable | writeBytes | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 32 | Function |  | readBytes | readBytes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 32 | Function | | readBytes | readBytes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 32 | Parameter | readBytes | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Variable | readBytes | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 37 | Function |  | setJournalTimes | setJournalTimes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 37 | Function | | setJournalTimes | setJournalTimes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 37 | Parameter | setJournalTimes | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Parameter | setJournalTimes | started | started | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Parameter | setJournalTimes | modified | modified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -11873,17 +11881,17 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 40 | Variable | setJournalTimes | firstLine | firstLine | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Variable | setJournalTimes | begin | begin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Variable | setJournalTimes | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 50 | Function |  | finishedJournal | finishedJournal | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 50 | Function | | finishedJournal | finishedJournal | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 50 | Parameter | finishedJournal | request | request | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | finishedJournal | directory | directory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 50 | Parameter | finishedJournal | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 52 | Variable | finishedJournal | journal | journal | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 55 | Variable | finishedJournal | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 64 | Function |  | cleanupEntry | cleanupEntry | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 64 | Function | | cleanupEntry | cleanupEntry | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 64 | Parameter | cleanupEntry | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 66 | Variable | cleanupEntry | entry | entry | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 72 | Variable | cleanupEntry | directory | directory | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 79 | Class |  | TestOpJournal | TestOpJournal | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 79 | Class | | TestOpJournal | TestOpJournal | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 83 | Method | TestOpJournal | serialized_kind_names_round_trip | serialized_kind_names_round_trip | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 84 | Method | TestOpJournal | unknown_serialized_kind_name_is_refused | unknown_serialized_kind_name_is_refused | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 85 | Method | TestOpJournal | serialized_policy_names_round_trip | serialized_policy_names_round_trip | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -12189,10 +12197,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Function |  | writeProbe | writeProbe | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 10 | Function | | writeProbe | writeProbe | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 10 | Parameter | writeProbe | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Variable | writeProbe | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 18 | Class |  | TestPathKey | TestPathKey | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 18 | Class | | TestPathKey | TestPathKey | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 22 | Method | TestPathKey | normalise_empty_input_returns_empty | normalise_empty_input_returns_empty | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 23 | Method | TestPathKey | normalise_preserves_root_slash | normalise_preserves_root_slash | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 24 | Method | TestPathKey | normalise_equates_path_spellings_data | normalise_equates_path_spellings_data | Keep | Language, Qt override, customization point or QtTest convention. |
@@ -12223,80 +12231,80 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 27 | Function |  | u16le | u16le | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 27 | Function | | u16le | u16le | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 27 | Parameter | u16le | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 27 | Parameter | u16le | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 32 | Function |  | u32le | u32le | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 32 | Function | | u32le | u32le | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 32 | Parameter | u32le | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
 | 32 | Parameter | u32le | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 34 | Variable | u32le | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 41 | Function |  | pmrHeader | pmrHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 41 | Function | | pmrHeader | pmrHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 41 | Parameter | pmrHeader | pairCount | pairCount | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Parameter | pmrHeader | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 41 | Parameter | pmrHeader | magic | magic | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 43 | Variable | pmrHeader | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 51 | Function |  | fileRecord | fileRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 51 | Function | | fileRecord | fileRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 51 | Parameter | fileRecord | mob | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 51 | Parameter | fileRecord | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Parameter | fileRecord | project | project | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 53 | Variable | fileRecord | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 62 | Function |  | masterRecord | masterRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 62 | Function | | masterRecord | masterRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 62 | Parameter | masterRecord | mob | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 62 | Parameter | masterRecord | trailer | trailer | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 64 | Variable | masterRecord | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 71 | Function |  | unicodeHeader | unicodeHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 71 | Function | | unicodeHeader | unicodeHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 71 | Parameter | unicodeHeader | pairCount | pairCount | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 73 | Variable | unicodeHeader | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 78 | Function |  | unicodeFileRecord | unicodeFileRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 78 | Function | | unicodeFileRecord | unicodeFileRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 78 | Parameter | unicodeFileRecord | mob | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 78 | Parameter | unicodeFileRecord | utf8Name | utf8Name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 78 | Parameter | unicodeFileRecord | project | project | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 83 | Function |  | fileMob | fileMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 90 | Function |  | masterMob | masterMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 104 | Function |  | pmrHeaderOmf | pmrHeaderOmf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 83 | Function | | fileMob | fileMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 90 | Function | | masterMob | masterMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 104 | Function | | pmrHeaderOmf | pmrHeaderOmf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 104 | Parameter | pmrHeaderOmf | pairCount | pairCount | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 108 | Function |  | fileMob8 | fileMob8 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 112 | Function |  | masterMob8 | masterMob8 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
-| 118 | Function |  | wrapped | wrapped | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 108 | Function | | fileMob8 | fileMob8 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 112 | Function | | masterMob8 | masterMob8 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 118 | Function | | wrapped | wrapped | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 118 | Parameter | wrapped | eight | eight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 120 | Variable | wrapped | raw | raw | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 123 | Function |  | canonical8 | canonical8 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 123 | Function | | canonical8 | canonical8 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 123 | Parameter | canonical8 | eight | eight | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 128 | Function |  | ordered16 | ordered16 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 128 | Function | | ordered16 | ordered16 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 128 | Parameter | ordered16 | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 128 | Parameter | ordered16 | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 128 | Parameter | ordered16 | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 130 | Variable | ordered16 | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 133 | Function |  | ordered32 | ordered32 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 133 | Function | | ordered32 | ordered32 | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 133 | Parameter | ordered32 | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 133 | Parameter | ordered32 | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 133 | Parameter | ordered32 | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 135 | Variable | ordered32 | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 138 | Function |  | orderedHeader | orderedHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 138 | Function | | orderedHeader | orderedHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 138 | Parameter | orderedHeader | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 138 | Parameter | orderedHeader | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 138 | Parameter | orderedHeader | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 140 | Variable | orderedHeader | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 146 | Function |  | orderedUnicodeHeader | orderedUnicodeHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 146 | Function | | orderedUnicodeHeader | orderedUnicodeHeader | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 146 | Parameter | orderedUnicodeHeader | count | count | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 146 | Parameter | orderedUnicodeHeader | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 148 | Variable | orderedUnicodeHeader | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 153 | Function |  | orderedMob | orderedMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 153 | Function | | orderedMob | orderedMob | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 153 | Parameter | orderedMob | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 153 | Parameter | orderedMob | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 153 | Parameter | orderedMob | master | master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 169 | Function |  | orderedRecord | orderedRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 169 | Function | | orderedRecord | orderedRecord | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 169 | Parameter | orderedRecord | version | version | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 169 | Parameter | orderedRecord | bigEndian | bigEndian | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 169 | Parameter | orderedRecord | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 170 | Parameter | orderedRecord | project | project | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 170 | Parameter | orderedRecord | modified | modified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 172 | Variable | orderedRecord | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 187 | Function |  | writePmr | writePmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 187 | Function | | writePmr | writePmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 187 | Parameter | writePmr | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 187 | Parameter | writePmr | bytes | bytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 190 | Variable | writePmr | f | file | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 200 | Class |  | TestPmrParser | TestPmrParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 200 | Class | | TestPmrParser | TestPmrParser | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 204 | Method | TestPmrParser | filename_key_lowercases | filename_key_lowercases | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 205 | Method | TestPmrParser | filename_key_normalizes_nfd_to_nfc | filename_key_normalizes_nfd_to_nfc | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 206 | Method | TestPmrParser | filename_key_preserves_already_normalised | filename_key_preserves_already_normalised | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -12569,18 +12577,18 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Function |  | render | render | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 15 | Function | | render | render | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 15 | Parameter | render | effect | effect | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | render | volume | volume | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 15 | Parameter | render | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 17 | Variable | render | row | mediaFile | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 29 | Function |  | rows | rows | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 29 | Function | | rows | rows | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 31 | Variable | rows | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 36 | Variable | rows | resize | resize | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 39 | Variable | rows | title | title | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 47 | Variable | rows | unknown | unknown | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 51 | Variable | rows | ordinary | ordinary | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 57 | Function |  | choice | choice | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 57 | Function | | choice | choice | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 57 | Parameter | choice | dialog | dialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 57 | Parameter | choice | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 59 | Variable | choice | tree | tree | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -12588,9 +12596,9 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 63 | Variable | choice | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 65 | Variable | choice | next | next | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 66 | Variable | choice | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 76 | Function |  | matchingText | matchingText | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 76 | Function | | matchingText | matchingText | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 76 | Parameter | matchingText | dialog | dialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 81 | Function |  | matchingFiles | matchingFiles | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 81 | Function | | matchingFiles | matchingFiles | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 81 | Parameter | matchingFiles | files | files | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Parameter | matchingFiles | filter | filter | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Parameter | matchingFiles | volume | volume | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -12598,7 +12606,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 85 | Variable | matchingFiles | proxy | proxy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 90 | Variable | matchingFiles | names | names | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 91 | Variable | matchingFiles | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 98 | Class |  | TestPrecomputeFilterDialog | TestPrecomputeFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 98 | Class | | TestPrecomputeFilterDialog | TestPrecomputeFilterDialog | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 102 | Method | TestPrecomputeFilterDialog | initial_all_and_empty_are_distinct | initial_all_and_empty_are_distinct | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 103 | Method | TestPrecomputeFilterDialog | branches_combine_and_reopen_without_crossing_subtypes | branches_combine_and_reopen_without_crossing_subtypes | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 104 | Method | TestPrecomputeFilterDialog | collapsed_branch_selects_all_descendants | collapsed_branch_selects_all_descendants | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -12638,7 +12646,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | Class |  | TestRebalancePlanner | TestRebalancePlanner | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 15 | Class | | TestRebalancePlanner | TestRebalancePlanner | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 19 | Method | TestRebalancePlanner | parseMxfFolderName_supported_names_data | parseMxfFolderName_supported_names_data | Keep | Language, Qt override, customization point or QtTest convention. |
 | 20 | Method | TestRebalancePlanner | parseMxfFolderName_supported_names | parseMxfFolderName_supported_names | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 21 | Method | TestRebalancePlanner | parseMxfFolderName_rejects_invalid_names_data | parseMxfFolderName_rejects_invalid_names_data | Keep | Language, Qt override, customization point or QtTest convention. |
@@ -12848,7 +12856,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 25 | Class |  | TestScanner | TestScanner | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 25 | Class | | TestScanner | TestScanner | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 29 | Method | TestScanner | scans_folder_with_pmr_mdb_and_audio_mxf | scans_folder_with_pmr_mdb_and_audio_mxf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 30 | Method | TestScanner | unreferenced_mxf_recovered_via_mdb | unreferenced_mxf_recovered_via_mdb | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 31 | Method | TestScanner | stage3_mdb_name_must_not_clobber_material_name | stage3_mdb_name_must_not_clobber_material_name | Keep | Existing test name describes a scenario or uses a QtTest convention. |
@@ -13006,8 +13014,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 511 | Variable | TestScanner::effect_render_names_classify_as_precompute | finishedSpy | finishedSpy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 512 | Variable | TestScanner::effect_render_names_classify_as_precompute | opts | options | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 517 | Variable | TestScanner::effect_render_names_classify_as_precompute | results | results | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 526 | Variable |  | kLadderMob | kLadderMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 531 | Function |  | ladderPmr | ladderPmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 526 | Variable | | kLadderMob | kLadderMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 531 | Function | | ladderPmr | ladderPmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 531 | Parameter | ladderPmr | fileName | fileName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 533 | Variable | ladderPmr | pmr | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 534 | Variable | ladderPmr | u16le | u16le | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13015,11 +13023,11 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 539 | Variable | ladderPmr | u32le | u32le | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 539 | Parameter | ladderPmr::(lambda at tests/tst_scanner.cpp:539:16)::operator() | v | v | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 541 | Variable | ladderPmr::(lambda at tests/tst_scanner.cpp:539:16)::operator() | i | i | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 560 | Function |  | ladderMdb | ladderMdb | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 560 | Function | | ladderMdb | ladderMdb | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 560 | Parameter | ladderMdb | clipName | clipName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 562 | Variable | ladderMdb | w | w | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 563 | Variable | ladderMdb | master | master | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 573 | Function |  | packageSet | packageSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 573 | Function | | packageSet | packageSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 573 | Parameter | packageSet | setType | setType | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 573 | Parameter | packageSet | umid32 | umid32 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 573 | Parameter | packageSet | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13031,7 +13039,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 588 | Variable | packageSet | value | value | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 591 | Variable | packageSet | key | bytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 595 | Variable | packageSet | out | outputBytes | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 604 | Function |  | cdciSet | cdciSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 604 | Function | | cdciSet | cdciSet | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 604 | Parameter | cdciSet | width | width | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 604 | Parameter | cdciSet | height | height | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 606 | Variable | cdciSet | u16be | u16be | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13104,20 +13112,20 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 889 | Variable | TestScanner::cancelled_scan_does_not_leak_databases_into_the_next | spy | spy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 902 | Variable | TestScanner::cancelled_scan_does_not_leak_databases_into_the_next | spy | spy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 905 | Variable | TestScanner::cancelled_scan_does_not_leak_databases_into_the_next | results | results | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 923 | Variable |  | kToneModified | kToneModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 924 | Variable |  | kToneName | kToneName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 925 | Variable |  | kToneClip | kToneClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 926 | Variable |  | kToneFileId | kToneFileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 928 | Function |  | singlePmr | singlePmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 923 | Variable | | kToneModified | kToneModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 924 | Variable | | kToneName | kToneName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 925 | Variable | | kToneClip | kToneClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 926 | Variable | | kToneFileId | kToneFileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 928 | Function | | singlePmr | singlePmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 928 | Parameter | singlePmr | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 928 | Parameter | singlePmr | fileId | fileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 928 | Parameter | singlePmr | masterId | masterId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 929 | Parameter | singlePmr | project | project | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 929 | Parameter | singlePmr | modified | modified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 936 | Function |  | singleLegacyPmr | singleLegacyPmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 936 | Function | | singleLegacyPmr | singleLegacyPmr | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 936 | Parameter | singleLegacyPmr | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 936 | Parameter | singleLegacyPmr | modified | modified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 944 | Function |  | waveOmf | waveOmf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 944 | Function | | waveOmf | waveOmf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 944 | Parameter | waveOmf | omf2 | omf2 | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 944 | Parameter | waveOmf | includeMaster | includeMaster | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 944 | Parameter | waveOmf | fileUid | fileUid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13144,13 +13152,13 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 998 | Variable | waveOmf | mob | mob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1002 | Variable | waveOmf | track | track | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1002 | Variable | waveOmf | clip | clip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1011 | Function |  | incompleteWaveOmf | incompleteWaveOmf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1011 | Function | | incompleteWaveOmf | incompleteWaveOmf | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1011 | Parameter | incompleteWaveOmf | fileUid | fileUid | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1013 | Variable | incompleteWaveOmf | w | w | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1014 | Variable | incompleteWaveOmf | head | head | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1014 | Variable | incompleteWaveOmf | file | file | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1014 | Variable | incompleteWaveOmf | desc | desc | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1023 | Function |  | categoryDatabase | categoryDatabase | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1023 | Function | | categoryDatabase | categoryDatabase | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1023 | Parameter | categoryDatabase | masterId | masterId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1023 | Parameter | categoryDatabase | fileId | fileId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1024 | Parameter | categoryDatabase | importObject | importObject | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13167,7 +13175,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1046 | Variable | categoryDatabase | n | n | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1048 | Variable | categoryDatabase | track | track | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1048 | Variable | categoryDatabase | component | component | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1064 | Function |  | runScan | runScan | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1064 | Function | | runScan | runScan | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1064 | Parameter | runScan | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1064 | Parameter | runScan | includeOmf | includeOmf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1066 | Variable | runScan | scanner | scanner | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13304,40 +13312,40 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1686 | Variable | TestScanner::modified_is_the_filesystem_mtime | tmp | temporaryDirectory | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
 | 1688 | Variable | TestScanner::modified_is_the_filesystem_mtime | folder | folder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1693 | Variable | TestScanner::modified_is_the_filesystem_mtime | results | results | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1707 | Variable |  | kOmfWav | kOmfWav | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1708 | Variable |  | kOmfAif | kOmfAif | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1709 | Variable |  | kOmfWavModified | kOmfWavModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1710 | Variable |  | kOmfAifModified | kOmfAifModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1711 | Variable |  | kOmfWavClip | kOmfWavClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1712 | Variable |  | kOmfAifClip | kOmfAifClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1713 | Variable |  | kOmfWavBin | kOmfWavBin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1714 | Variable |  | kOmfAifBin | kOmfAifBin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1715 | Variable |  | kOmfWavFileMob | kOmfWavFileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1717 | Variable |  | kOmfWavMasterMob | kOmfWavMasterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1719 | Variable |  | kOmfAifFileMob | kOmfAifFileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1721 | Variable |  | kOmfAifMasterMob | kOmfAifMasterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1723 | Variable |  | kOmfProject | kOmfProject | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1724 | Variable |  | kOmfFolder | kOmfFolder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1728 | Variable |  | kSlateModified | kSlateModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1730 | Function |  | runScanWith | runScanWith | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1707 | Variable | | kOmfWav | kOmfWav | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1708 | Variable | | kOmfAif | kOmfAif | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1709 | Variable | | kOmfWavModified | kOmfWavModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1710 | Variable | | kOmfAifModified | kOmfAifModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1711 | Variable | | kOmfWavClip | kOmfWavClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1712 | Variable | | kOmfAifClip | kOmfAifClip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1713 | Variable | | kOmfWavBin | kOmfWavBin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1714 | Variable | | kOmfAifBin | kOmfAifBin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1715 | Variable | | kOmfWavFileMob | kOmfWavFileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1717 | Variable | | kOmfWavMasterMob | kOmfWavMasterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1719 | Variable | | kOmfAifFileMob | kOmfAifFileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1721 | Variable | | kOmfAifMasterMob | kOmfAifMasterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1723 | Variable | | kOmfProject | kOmfProject | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1724 | Variable | | kOmfFolder | kOmfFolder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1728 | Variable | | kSlateModified | kSlateModified | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1730 | Function | | runScanWith | runScanWith | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1730 | Parameter | runScanWith | opts | options | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 1732 | Variable | runScanWith | scanner | scanner | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1733 | Variable | runScanWith | finishedSpy | finishedSpy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1743 | Function |  | runManualScan | runManualScan | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1743 | Function | | runManualScan | runManualScan | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1743 | Parameter | runManualScan | folder | folder | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1743 | Parameter | runManualScan | includeOmf | includeOmf | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1745 | Variable | runManualScan | opts | options | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
-| 1751 | Function |  | rowNamed | rowNamed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1751 | Function | | rowNamed | rowNamed | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1751 | Parameter | rowNamed | rows | rows | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1751 | Parameter | rowNamed | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1753 | Variable | rowNamed | f | mediaFile | Candidate | Type-supported expansion of a short local name; verify scope before applying. |
-| 1761 | Function |  | checkOmfAudioMetadata | checkOmfAudioMetadata | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1761 | Function | | checkOmfAudioMetadata | checkOmfAudioMetadata | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1761 | Parameter | checkOmfAudioMetadata | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 1761 | Parameter | checkOmfAudioMetadata | clip | clip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1761 | Parameter | checkOmfAudioMetadata | bin | bin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1762 | Parameter | checkOmfAudioMetadata | fileMob | fileMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1762 | Parameter | checkOmfAudioMetadata | masterMob | masterMob | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1788 | Function |  | checkOmfAudioRow | checkOmfAudioRow | Keep | Existing test name describes a scenario or uses a QtTest convention. |
+| 1788 | Function | | checkOmfAudioRow | checkOmfAudioRow | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 1788 | Parameter | checkOmfAudioRow | mf | mediaFile | Candidate | Context-based abbreviation expansion; confirm the role and check for a name collision. |
 | 1788 | Parameter | checkOmfAudioRow | clip | clip | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1788 | Parameter | checkOmfAudioRow | bin | bin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -13614,7 +13622,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| 11 | Class |  | TestVolumeIdentity | TestVolumeIdentity | Keep | Existing domain or scoped type name is clear; no forced synonym. |
+| 11 | Class | | TestVolumeIdentity | TestVolumeIdentity | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 15 | Method | TestVolumeIdentity | local_volume_round_trip | local_volume_round_trip | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 16 | Method | TestVolumeIdentity | a_different_volume_never_matches | a_different_volume_never_matches | Keep | Existing test name describes a scenario or uses a QtTest convention. |
 | 17 | Method | TestVolumeIdentity | labels_and_capacity_are_not_identity | labels_and_capacity_are_not_identity | Keep | Existing test name describes a scenario or uses a QtTest convention. |

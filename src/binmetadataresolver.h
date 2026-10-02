@@ -19,7 +19,7 @@ public:
 	bool apply(MediaFile &file) const;
 
 private:
-	struct Metadata
+	struct MasterMobMetadata
 	{
 		void merge(const AvbMob &mob);
 		QString clipName;
@@ -28,5 +28,5 @@ private:
 		bool nameConflict = false;
 		bool binConflict = false;
 	};
-	QHash<QString, Metadata> m_metadata;
+	QHash<QString, MasterMobMetadata> m_metadataByMasterMobId;
 };

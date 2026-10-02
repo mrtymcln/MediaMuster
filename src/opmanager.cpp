@@ -131,7 +131,7 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 		// file on disk against these before touching it, and every
 		// journal/undo/recovery message can then name the clip the
 		// editor knows rather than a cryptic MXF filename.
-		it.mobId = mf.mobId;
+		it.mobId = mf.fileMobId;
 		it.masterMobId = mf.masterMobId;
 		it.clipName = mf.clipName;
 		out.append(it);

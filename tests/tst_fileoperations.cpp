@@ -1728,7 +1728,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	plan.ops.clear();
 	for (const MediaFile &file : files)
 		plan.ops.append(
-			{file.mediaFilePath, NumberedMxfFolder{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+			{file.mediaFilePath, NumberedMxfFolder{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.fileMobId});
 
 	auto rebalancer = std::make_unique<Rebalancer>();
 	QSignalSpy finished(rebalancer.get(), &Rebalancer::finished);
@@ -1774,7 +1774,7 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	home.mediaFilePath = root + "/1/home.mxf";
 	home.mediaFolderName = "1";
 	home.masterMobId = firstHeader.umid;
-	home.mobId = firstHeader.fileMobId;
+	home.fileMobId = firstHeader.fileMobId;
 	put(home.mediaFilePath, get(first));
 	home.sizeBytes = QFileInfo(home.mediaFilePath).size();
 	MediaFile moved = home;

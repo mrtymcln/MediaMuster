@@ -580,14 +580,14 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 	auto moved = makeMxf(root, "2", "stray.mxf", "same");
-	moved.mobId = MobId::format(QCryptographicHash::hash("file identity", QCryptographicHash::Sha256));
+	moved.fileMobId = MobId::format(QCryptographicHash::hash("file identity", QCryptographicHash::Sha256));
 	const auto plan = RebalancePlanner::computePlan(root, "Test",
 													{makeMxf(root, "1", "home.mxf", "same"), moved});
 	QCOMPARE(plan.ops.size(), 1);
-	QCOMPARE(plan.ops.first().fileMobId, moved.mobId);
+	QCOMPARE(plan.ops.first().fileMobId, moved.fileMobId);
 	const auto request = RebalancePlanner::requestForPlan(plan);
 	QCOMPARE(request.items.size(), 1);
-	QCOMPARE(request.items.first().mobId, moved.mobId);
+	QCOMPARE(request.items.first().mobId, moved.fileMobId);
 	QCOMPARE(request.items.first().masterMobId, moved.masterMobId);
 }
 
@@ -599,7 +599,7 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 	const auto file = makeMxf(root, "2", "stray.mxf", "same");
 	RebalancePlan valid;
 	valid.mxfRootPath = root;
-	valid.ops.append({file.mediaFilePath, NumberedMxfFolder{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.mobId});
+	valid.ops.append({file.mediaFilePath, NumberedMxfFolder{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.fileMobId});
 	QCOMPARE(RebalancePlanner::requestForPlan(valid).items.size(), 1);
 
 	QVector<RebalanceMove> invalid;

@@ -512,7 +512,7 @@ void TestMediaTableModel::preserves_scanner_metadata_and_ignores_source_names()
 	QVERIFY(model.fileAt(0).clipName.isEmpty());
 	QVERIFY(model.fileAt(0).originalBin.isEmpty());
 	MediaFile noMaster = row();
-	noMaster.mobId = noMaster.masterMobId;
+	noMaster.fileMobId = noMaster.masterMobId;
 	noMaster.masterMobId.clear();
 	model.setMediaFiles({noMaster});
 	model.setAvbBins({bin()});

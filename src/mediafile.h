@@ -22,7 +22,7 @@ struct MediaFile
 
 	// Full IDs use PMR/MDB field order. The scanner converts MXF header IDs
 	// before storing them; database, OMF and AVB readers already use this order.
-	QString mobId;		 ///< Avid file MOB ID recovered from databases or media metadata.
+	QString fileMobId;	 ///< Avid file MobId recovered from databases or media metadata.
 	QString masterMobId; ///< Master MOB — the master clip's MOB (AAF MasterMob);
 						 ///< V01/A01/A02 relatives share this.
 

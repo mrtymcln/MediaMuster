@@ -351,7 +351,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 			return;
 		plan.ops.append({m.file->mediaFilePath, dest, m.file->masterMobId, m.file->sizeBytes,
 						 m.file->modified.isValid() ? m.file->modified.toMSecsSinceEpoch() : -1,
-						 m.file->mobId});
+						 m.file->fileMobId});
 		projected[m.folder] -= 1;
 		projected[dest] += 1;
 	};

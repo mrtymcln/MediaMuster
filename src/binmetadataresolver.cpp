@@ -2,7 +2,7 @@
 #include "avbparser.h"
 #include "mediafile.h"
 
-void BinMetadataResolver::Metadata::merge(const AvbMob &mob)
+void BinMetadataResolver::MasterMobMetadata::merge(const AvbMob &mob)
 {
 	if (!mob.name.isEmpty())
 	{
@@ -29,7 +29,7 @@ void BinMetadataResolver::Metadata::merge(const AvbMob &mob)
 
 void BinMetadataResolver::setBins(const QVector<AvbBin> &bins)
 {
-	m_metadata.clear();
+	m_metadataByMasterMobId.clear();
 	for (const AvbBin &bin : bins)
 	{
 		if (!bin.isUsable())
@@ -40,7 +40,7 @@ void BinMetadataResolver::setBins(const QVector<AvbBin> &bins)
 			if (mob.mobType != AvbMob::masterMobType || mob.mobId.isEmpty())
 				continue;
 			// Scanner rows and AVB compositions already share the database ID representation.
-			m_metadata[mob.mobId].merge(mob);
+			m_metadataByMasterMobId[mob.mobId].merge(mob);
 		}
 	}
 }
@@ -59,8 +59,8 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		file.originalBin.clear();
 		file.originalBinFromAvb = false;
 	}
-	const auto found = m_metadata.constFind(file.masterMobId);
-	if (found != m_metadata.cend())
+	const auto found = m_metadataByMasterMobId.constFind(file.masterMobId);
+	if (found != m_metadataByMasterMobId.cend())
 	{
 		const auto &value = found.value();
 		if (file.clipName.isEmpty() && !value.nameConflict && !value.clipName.isEmpty())

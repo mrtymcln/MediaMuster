@@ -116,7 +116,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
 	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf");
 	f.dbStatus = MediaFile::DbStatus::NoReference;
-	f.mobId = QStringLiteral("file-mob-id");
+	f.fileMobId = QStringLiteral("file-mob-id");
 	f.masterMobId = QStringLiteral("master-mob-id");
 	for (bool enabled : {false, true})
 	{

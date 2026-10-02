@@ -44,7 +44,7 @@ struct BinFilter
 		return true;
 	}
 
-	[[nodiscard]] bool matches(const QString &fileMob) const
+	[[nodiscard]] bool matches(const QString &fileMobId) const
 	{
 		if (steps.isEmpty())
 			return true;
@@ -52,7 +52,7 @@ struct BinFilter
 		// A leading Subtract removes matches from all media rows, including
 		// rows outside every loaded bin. A leading Add starts with its own
 		// matches. This remains stable when earlier steps or bins are removed.
-		const auto fileId = BinFileId::fromMobId(fileMob);
+		const auto fileId = BinFileId::fromMobId(fileMobId);
 		bool accepted = true;
 		bool started = false;
 		for (const Step &step : steps)
