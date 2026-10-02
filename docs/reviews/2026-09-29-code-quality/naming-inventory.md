@@ -1,5 +1,9 @@
 # MediaMuster naming inventory
 
+MainWindow comments update, 3 October 2026: removed narration and shortened explanations of selection, scan paths, signals, labels and debouncing. Master MobId terminology is standardised. Executable source was verified unchanged after removing standalone comments and blank lines. The broader focused MainWindow review is deferred until the end of the remaining area reviews.
+
+Volume list update, 3 October 2026: manual additions resolve paths before duplicate checks and select their row after insertion. Refresh restores manual entries directly and deliberately clears selection, following the user-selected Qt default. Manual and detected aliases share one row; collision labels are computed across the combined list. avidVolumeCount and manualPathsToRestore replace ac and manualCopy. Journal behaviour is unchanged.
+
 Filter/table cleanup, 2 October 2026: precompute-category, child-check-state and compared-file names are clarified. onChoiceChanged contains the former constructor callback, and recursive matching counts reuse one selected volume value. Unused includes and an unverified numerical performance estimate are removed; Unicode matching and sorting rationale remain. Filter and display behaviour are unchanged. Historical inventory scopes and locations remain unchanged.
 
 Bin dialog update, 2 October 2026: LoadedBin is retained. opLabel is now operationLabel; the post-snapshot selectedBins helper is now checkedBins. Failed loads and user removals share removeBinRow, including pending-load cancellation. List items no longer duplicate their row numbers; stable bin IDs and filter-step snapshots are preserved. Historical inventory scopes and locations remain unchanged.
@@ -1933,7 +1937,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1306 | Parameter | MainWindow::rebuildVolumeList | volumes | volumes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1310 | Variable | MainWindow::rebuildVolumeList | previouslySelected | previouslySelected | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1311 | Variable | MainWindow::rebuildVolumeList | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1314 | Variable | MainWindow::rebuildVolumeList | manualCopy | manualCopy | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1314 | Variable | MainWindow::rebuildVolumeList | manualCopy | manualPathsToRestore | Implemented | Clarifies the Avid-volume count or manual paths restored during refresh. |
 | 1319 | Variable | MainWindow::rebuildVolumeList | nameCounts | nameCounts | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1320 | Variable | MainWindow::rebuildVolumeList | d | d | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1323 | Variable | MainWindow::rebuildVolumeList | d | d | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -1943,7 +1947,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 1332 | Variable | MainWindow::rebuildVolumeList | newAvidVolume | newAvidVolume | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1335 | Variable | MainWindow::rebuildVolumeList | coldStart | coldStart | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1345 | Variable | MainWindow::rebuildVolumeList | mp | mp | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 1348 | Variable | MainWindow::rebuildVolumeList | ac | ac | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 1348 | Variable | MainWindow::rebuildVolumeList | ac | avidVolumeCount | Implemented | Clarifies the Avid-volume count or manual paths restored during refresh. |
 | 1349 | Variable | MainWindow::rebuildVolumeList | d | d | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1366 | Variable | MainWindow::scanSelected | paths | paths | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 1367 | Variable | MainWindow::scanSelected | item | item | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |

@@ -116,9 +116,8 @@ namespace
 
 	QStringList restorationScanPaths(const QVector<MediaFile> &files, const QSet<QString> &restored)
 	{
-		// One lexical calculation per media folder, with no directory probes
-		// on the UI thread. Keep the scanner's original volume root where it
-		// is available so a drive is not relabelled "Avid MediaFiles".
+		// Use stored volume roots to avoid relabelling drives as "Avid MediaFiles".
+		// Resolve paths without probing directories on the UI thread.
 		QHash<QString, QString> originsByFolder;
 		for (const auto &file : files)
 			originsByFolder.insert(QFileInfo(file.mediaFilePath).absolutePath(), file.volumePath);
@@ -175,7 +174,6 @@ namespace
 
 MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
-	  // Match declaration order; QObject parenting binds these services to the window.
 	  m_volumeManager(new VolumeManager(this)),
 	  m_scanner(new MediaScanner(this)),
 	  m_operations(new FileOperationController(this)),
@@ -268,8 +266,6 @@ void MainWindow::setupUi()
 	QWidget *toolbarWidget = buildToolbar();
 	buildTable();
 	buildConsole();
-
-	// Table + console stacked vertically.
 	m_contentSplitter = new QSplitter(Qt::Vertical);
 	m_contentSplitter->addWidget(m_tableView);
 	m_contentSplitter->addWidget(m_console);
@@ -277,16 +273,12 @@ void MainWindow::setupUi()
 	m_contentSplitter->setStretchFactor(1, 0);
 	// Table dominates the window; console sits at its minimum size.
 	m_contentSplitter->setSizes({100000, 80});
-
-	// Toolbar above the table + console.
 	auto *contentWidget = new QWidget;
 	auto *contentLayout = new QVBoxLayout(contentWidget);
 	contentLayout->setContentsMargins(0, 0, 0, 0);
 	contentLayout->setSpacing(0);
 	contentLayout->addWidget(toolbarWidget);
 	contentLayout->addWidget(m_contentSplitter);
-
-	// Side panel on the left.
 	m_mainSplitter = new QSplitter(Qt::Horizontal);
 	m_mainSplitter->addWidget(m_sidePanel);
 	m_mainSplitter->addWidget(contentWidget);
@@ -306,8 +298,6 @@ void MainWindow::buildSidePanel()
 	auto *sideLayout = new QVBoxLayout(m_sidePanel);
 	sideLayout->setContentsMargins(0, 0, 0, 0);
 	sideLayout->setSpacing(12);
-
-	// Volumes group.
 	auto *volGroup = new QGroupBox(tr("Volumes"));
 	auto *volLayout = new QVBoxLayout(volGroup);
 	volLayout->setContentsMargins(6, 6, 6, 6);
@@ -328,8 +318,6 @@ void MainWindow::buildSidePanel()
 	volLayout->addWidget(m_scanAllButton);
 
 	sideLayout->addWidget(volGroup);
-
-	// Projects group.
 	auto *projGroup = new QGroupBox(tr("Projects"));
 	auto *projLayout = new QVBoxLayout(projGroup);
 	projLayout->setContentsMargins(6, 6, 6, 6);
@@ -510,8 +498,6 @@ void MainWindow::buildStatusBar()
 	auto *primarySep = new QLabel(" | ");
 	m_statusSep1 = new QLabel(" | ");
 	m_statusSep2 = new QLabel(" | ");
-
-	// Hidden until rows are selected.
 	m_statusSep1->setVisible(false);
 	m_statusSep2->setVisible(false);
 	m_statusSelected->setVisible(false);
@@ -687,9 +673,7 @@ void MainWindow::buildDebugMenu()
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	// Whatever style main.cpp installed at startup is the one to restore.
-	// Read it here, before the toggle below can change it — main.cpp stays
-	// the single authority on the platform's native style.
+	// Save the startup style before the debug toggle changes it.
 	const QString nativeStyleName = QApplication::style()->name();
 	auto *fusionStyleAct = debugMenu->addAction(tr("Fusion style"));
 	fusionStyleAct->setObjectName(QStringLiteral("fusionStyleDebugAction"));
@@ -743,7 +727,6 @@ void MainWindow::buildHelpMenu()
 
 void MainWindow::onAbout()
 {
-	// Deletes itself on close; see AboutDialog.
 	(new AboutDialog(this))->show();
 }
 
@@ -769,8 +752,7 @@ void MainWindow::setupConnections()
 		m_scanner, &MediaScanner::scanFinalising, this,
 		[this]
 		{
-			// Walk and parse are done; flip to an indeterminate "Finalising..."
-			// so the post-walk stages can't masquerade as a frozen 100%.
+			// Show finalisation separately so a slow finish doesn't look stuck at 100%.
 			auto *dlg = progressDialog();
 			dlg->setProgress(0, 0);
 			dlg->setDetail(tr("Finalising..."));
@@ -800,8 +782,7 @@ void MainWindow::setupConnections()
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
 
-	// 200 ms debounce on the expensive proxy invalidation. Chip
-	// strip still updates per-keystroke for instant feedback.
+	// Wait for typing to pause before filtering; update chips immediately.
 	{
 		auto *searchDebounce = new QTimer(this);
 		searchDebounce->setSingleShot(true);
@@ -816,16 +797,13 @@ void MainWindow::setupConnections()
 				{ rebuildFilterChips(); });
 	}
 
-	// 200 ms debounce on the status bar's O(n) byte walk.
-	// updateStatusBar restarts the timer; doUpdateStatusBar runs
-	// once the burst settles.
+	// Delay the byte tally until a burst of updates settles.
 	m_statusBarUpdateTimer = new QTimer(this);
 	m_statusBarUpdateTimer->setSingleShot(true);
 	m_statusBarUpdateTimer->setInterval(200);
 	connect(m_statusBarUpdateTimer, &QTimer::timeout, this, &MainWindow::doUpdateStatusBar);
 
-	// Same pattern for the 'X MB selected' string; cheap state
-	// runs synchronously, byte sum waits for the timer.
+	// Update selection controls immediately; defer the byte tally.
 	m_selectionBytesTimer = new QTimer(this);
 	m_selectionBytesTimer->setSingleShot(true);
 	m_selectionBytesTimer->setInterval(200);
@@ -1102,8 +1080,6 @@ void MainWindow::onFilterByBins()
 }
 
 // MARK: - Rebalance
-
-// Offer MXF roots containing eligible scanned media.
 void MainWindow::onRebalance()
 {
 	if (!m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
@@ -1115,9 +1091,7 @@ void MainWindow::onRebalance()
 	QHash<QString, int> countByLabel;
 	QHash<QString, QString> volumePathByLabel;
 
-	// Each MXF root gets one stable, unique label so the label→root map stays
-	// 1:1. Without this, two volumes sharing a name (two 'Backup' mounts)
-	// would collide and one root would silently vanish from the picker.
+	// Give each MXF root a unique label so same-named volumes stay selectable.
 	QHash<QString, QString> labelByMxfRootPath;
 	QSet<QString> usedLabels;
 
@@ -1131,7 +1105,6 @@ void MainWindow::onRebalance()
 		QString label = labelByMxfRootPath.value(mxfRootPath);
 		if (label.isEmpty())
 		{
-			// First file from this root — settle its label once.
 			QString base = mf.volumeName;
 			if (base.isEmpty())
 				base = QFileInfo(mf.volumePath).fileName();
@@ -1209,12 +1182,15 @@ void MainWindow::onRebalance()
 
 namespace
 {
-	// Disk Utility-style suffix: a row whose name collides with another gets
-	// its last path component appended to keep the two distinct, falling
-	// back to the full path when that component still echoes the name
-	// (/Volumes/Backup and /Volumes/Backup-1 are both called "Backup").
-	// Shared by the detected-volume rebuild and by manual adds, so two rows
-	// can't end up identically labelled depending on how they arrived.
+	// Use path suffixes to distinguish same-named volumes and folders.
+	// Both detected and manual entries use the same label rule.
+	QString resolvedVolumePath(const QString &path)
+	{
+		const QFileInfo info(path);
+		const QString canonical = info.canonicalFilePath();
+		return canonical.isEmpty() ? QDir::cleanPath(info.absoluteFilePath()) : canonical;
+	}
+
 	QString volumeNameSuffix(const QString &path, const QString &name)
 	{
 		if (path.isEmpty())
@@ -1269,8 +1245,9 @@ void MainWindow::onPathsDropped(const QStringList &paths)
 		addVolumePath(path);
 }
 
-void MainWindow::addVolumePath(const QString &path)
+void MainWindow::addVolumePath(const QString &requestedPath)
 {
+	const QString path = resolvedVolumePath(requestedPath);
 	if (!MediaScanner::canScanPath(path))
 	{
 		const QString message = tr("Please add a recognised Avid folder, or its parent.");
@@ -1280,7 +1257,7 @@ void MainWindow::addVolumePath(const QString &path)
 	}
 	for (int i = 0; i < m_volumeList->count(); ++i)
 	{
-		if (m_volumeList->item(i)->data(Qt::UserRole).toString() == path)
+		if (resolvedVolumePath(m_volumeList->item(i)->data(Qt::UserRole).toString()) == path)
 		{
 			m_volumeList->item(i)->setSelected(true);
 			return;
@@ -1294,9 +1271,7 @@ void MainWindow::addVolumePath(const QString &path)
 	// Give added folders the same storage details and Avid-media indicator as detected volumes.
 	const VolumeInfo info = VolumeManager::makeVolumeInfo(name, path, QStorageInfo(path));
 
-	// Disambiguate against whatever is already listed, for the same reason
-	// the rebuild does it among detected volumes: two folders called Media
-	// from different parents must not both read as "Media".
+	// Distinguish same-named folders from different parents.
 	QString displayName = info.name;
 	for (int i = 0; i < m_volumeList->count(); ++i)
 	{
@@ -1307,16 +1282,15 @@ void MainWindow::addVolumePath(const QString &path)
 	}
 
 	auto *item = makeVolumeItem(info, displayName);
-	item->setSelected(true);
 	m_volumeList->addItem(item);
+	item->setSelected(true);
 	m_manualVolumes.insert(path);
 	addLog(QtInfoMsg, QStringLiteral("volumes"), QStringLiteral("Added: %1").arg(path));
 }
 
 void MainWindow::refreshVolumes()
 {
-	// Re-detect now, then seed the cache so the next async poll has
-	// something to diff against.
+	// Give the next background poll the same baseline as the displayed list.
 	auto drives = m_volumeManager->detectVolumes();
 	m_volumeManager->seedLastVolumes(drives);
 	rebuildVolumeList(std::move(drives));
@@ -1324,52 +1298,44 @@ void MainWindow::refreshVolumes()
 
 void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 {
-	// Snapshot selected paths so the rebuild can restore ticks.
-	// Otherwise a 'hot' volume mount would clear the selection.
-	QSet<QString> previouslySelected;
-	for (auto *item : m_volumeList->selectedItems())
-		previouslySelected.insert(item->data(Qt::UserRole).toString());
+	QVector<VolumeInfo> listedVolumes = volumes;
+	QSet<QString> manualPathsToRestore = m_manualVolumes;
+	for (const VolumeInfo &volume : volumes)
+		manualPathsToRestore.remove(resolvedVolumePath(volume.path));
 
-	QSet<QString> manualCopy = m_manualVolumes;
-	m_volumeList->clear();
-
-	// Count name collisions (e.g. two network drives both labelled 'Data') so we
-	// know which entries need a disambiguating suffix.
-	QHash<QString, int> nameCounts;
-	for (const auto &d : volumes)
-		++nameCounts[d.name];
-
-	for (const VolumeInfo &d : volumes)
+	// Restore manual entries directly; refreshing is not a new folder addition.
+	QStringList manualPaths = manualPathsToRestore.values();
+	manualPaths.sort();
+	for (const QString &path : manualPaths)
 	{
-		const QString displayName =
-			nameCounts.value(d.name) > 1 ? disambiguated(d.name, d.path) : d.name;
-		auto *item = makeVolumeItem(d, displayName);
-
-		// Preserve previous ticks for paths that still exist, and
-		// auto-select newly mounted volumes.
-		const bool wasSelected = previouslySelected.contains(d.path);
-		const bool newAvidVolume = d.hasAvidMedia && !wasSelected && !previouslySelected.isEmpty();
-		// Empty previouslySelected = cold start (auto-select every
-		// Avid volume); non-empty = hot mount (only auto-select new).
-		const bool coldStart = previouslySelected.isEmpty() && d.hasAvidMedia;
-		if (wasSelected || newAvidVolume || coldStart)
-			item->setSelected(true);
-
-		m_volumeList->addItem(item);
-		// Already detected? Drop from the manual set so we don't
-		// double-add the same volume below.
-		manualCopy.remove(d.path);
+		if (!MediaScanner::canScanPath(path))
+			continue;
+		QString name = QFileInfo(path).fileName();
+		if (name.isEmpty())
+			name = path;
+		listedVolumes.append(VolumeManager::makeVolumeInfo(name, path, QStorageInfo(path)));
 	}
 
-	for (const QString &mp : manualCopy)
-		addVolumePath(mp);
+	// Qt clears selection with the old rows. Refresh deliberately leaves the
+	// rebuilt list unselected, including manually added folders.
+	m_volumeList->clear();
+	QHash<QString, int> nameCounts;
+	for (const VolumeInfo &volume : listedVolumes)
+		++nameCounts[volume.name.toCaseFolded()];
+	for (const VolumeInfo &volume : listedVolumes)
+	{
+		const QString displayName = nameCounts.value(volume.name.toCaseFolded()) > 1
+										? disambiguated(volume.name, volume.path)
+										: volume.name;
+		m_volumeList->addItem(makeVolumeItem(volume, displayName));
+	}
 
-	int ac = 0;
-	for (const auto &d : volumes)
-		if (d.hasAvidMedia)
-			++ac;
+	int avidVolumeCount = 0;
+	for (const VolumeInfo &volume : volumes)
+		if (volume.hasAvidMedia)
+			++avidVolumeCount;
 	addLog(QtInfoMsg, QStringLiteral("volumes"),
-		   QStringLiteral("Found %1 volumes; %2 contain Avid media.").arg(volumes.size()).arg(ac));
+		   QStringLiteral("Found %1 volumes; %2 contain Avid media.").arg(volumes.size()).arg(avidVolumeCount));
 }
 
 // MARK: - Scan controls
@@ -1378,10 +1344,7 @@ void MainWindow::scanSelected()
 {
 	if (!m_operations->isIdle())
 		return;
-	// No in-scan cancel branch: a running scan raises the modal progress sheet,
-	// whose Cancel button is the stop control, so neither this button nor its
-	// menu action is reachable mid-scan. (MediaScanner::startScan also self-
-	// guards against a double start.) This handler therefore only begins a scan.
+	// The modal progress dialog handles cancellation and blocks new scan commands.
 	QStringList paths;
 	for (auto *item : m_volumeList->selectedItems())
 		paths << item->data(Qt::UserRole).toString();
@@ -1395,8 +1358,7 @@ void MainWindow::scanEverything()
 {
 	if (!m_operations->isIdle() || m_volumeList->count() == 0)
 		return;
-	// See scanSelected: cancel is via the modal progress sheet, so there is no
-	// reachable in-scan cancel path here. Only ever begins a scan.
+	// The modal progress dialog handles cancellation and blocks new scan commands.
 	QStringList paths = m_volumeManager->allScannablePaths();
 	for (const QString &mp : m_manualVolumes)
 	{
@@ -1411,16 +1373,8 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 {
 	if (!m_operations->isIdle() || paths.isEmpty())
 		return;
-	// Detected volumes and hand-added folders scan differently (see
-	// MediaScanner::Options): a volume is probed at its root only; manual
-	// paths resolve a managed tree or its immediate container. Callers use
-	// one merged list — the ticked rows, Scan All, the post-rebalance
-	// rescan — so the split is made here, once. A path is a volume only
-	// when VolumeManager detected it (a mount, or a system-drive base);
-	// everything else is scanned as a folder — including the rescan after a
-	// rebalance, whose path is the scanned root the rows derived (".../Avid
-	// MediaFiles" for a hand-added ".../MXF/3"), which is not the string
-	// the user added and would otherwise be probed as a drive and miss.
+	// Detected volumes scan from their roots; manual paths resolve managed folders.
+	// Rebalance can supply a derived media root, so other paths use folder rules too.
 	const QStringList detected = m_volumeManager->allScannablePaths();
 	MediaScanner::Options opts;
 	opts.includeOmf = m_omfEnabled;
@@ -1474,7 +1428,6 @@ void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
 		if (i > 0)
 			combined += QLatin1Char('\n');
 		combined += formatConsoleLine(batch[i].module, batch[i].message);
-		// Also write each console message to the diagnostic log.
 		Diagnostics::appendConsoleLine(batch[i].level, batch[i].module, batch[i].message);
 	}
 	m_console->appendPlainText(combined);
@@ -1554,8 +1507,7 @@ void MainWindow::rebuildProjectList()
 
 void MainWindow::onFilterChanged(int index)
 {
-	// kFilterDefs is the shared source of truth; the same array that
-	// fed the tab labels in setupUi.
+	// Use the same definitions for tab labels and matching rules.
 	if (index >= 0 && index < static_cast<int>(kFilterDefs.size()))
 	{
 		if (!m_precomputesEnabled && kFilterDefs[index].mode == MediaFilterProxy::FilterMode::Precompute)
@@ -1581,10 +1533,8 @@ void MainWindow::onSearchChanged(const QString &text)
 
 void MainWindow::onSelectionChanged()
 {
-	// Sync the persistent path set from the current visible selection.
-	// Skipped during applyFilterPreservingSelection's restore phase;
-	// the proxy drops hidden rows from the selection model there, and
-	// absorbing that would silently forget the user's earlier picks.
+	// Filter changes temporarily hide selected rows.
+	// Ignore those notifications so their saved paths survive.
 	if (!m_inFilterRestore)
 	{
 		m_persistentSelectedPaths.clear();
@@ -1593,7 +1543,7 @@ void MainWindow::onSelectionChanged()
 			m_persistentSelectedPaths.insert(fileForProxyIndex(idx).mediaFilePath);
 	}
 
-	// Counting via ranges is O(ranges), not O(rows), so it's faster.
+	// Count whole ranges without visiting each selected row.
 	const auto selection = m_tableView->selectionModel()->selection();
 	int selectedCount = 0;
 	for (const QItemSelectionRange &range : selection)
@@ -1639,7 +1589,6 @@ void MainWindow::applyFilterPreservingSelection(const std::function<void()> &mut
 
 	if (!m_persistentSelectedPaths.isEmpty())
 	{
-		// Re-select any rows whose path is in the persistent set.
 		// Rows that became hidden by the filter stay in the set but
 		// aren't selected; when they reappear, bring them back.
 
@@ -1879,8 +1828,6 @@ void MainWindow::onInvertSelection()
 	QSet<int> currentlySelected;
 	for (const QModelIndex &idx : selModel->selectedRows())
 		currentlySelected.insert(idx.row());
-
-	// Select the remaining rows using contiguous ranges.
 	QVector<int> rows;
 	for (int row = 0; row < rowCount; ++row)
 	{
@@ -1912,10 +1859,7 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 {
 	const QModelIndex index = m_tableView->indexAt(pos);
 
-	// macOS convention (Finder, Mail): right-clicking a row that isn't
-	// part of the current selection selects it first, so every action
-	// below acts on the row under the pointer — never on a stale
-	// selection that may be scrolled out of view.
+	// Right-clicking an unselected row selects it first, so actions target that row.
 	if (index.isValid() && !m_tableView->selectionModel()->isSelected(index))
 	{
 		m_tableView->selectionModel()->select(
@@ -2024,7 +1968,6 @@ qint64 MainWindow::sumBytesInProxyRange(int first, int last) const
 void MainWindow::addLog(QtMsgType level, const QString &module, const QString &message)
 {
 	m_console->appendPlainText(formatConsoleLine(module, message));
-	// Also write the console message to the diagnostic log.
 	Diagnostics::appendConsoleLine(level, module, message);
 }
 
@@ -2066,8 +2009,7 @@ void MainWindow::updateActivityUi()
 void MainWindow::updateSelectionActions()
 {
 	const auto selection = m_tableView->selectionModel()->selection();
-	// Only selection/metadata changes need this walk. Volume-list and activity
-	// updates reuse the result, including for large selections without MOB IDs.
+	// Cache whether selection contains a master MobId; activity updates reuse it.
 	m_selectionHasMasterMob = false;
 	for (const auto &range : selection)
 	{
@@ -2290,19 +2232,14 @@ void MainWindow::rebuildFilterChips()
 		}
 	}
 
-	// One chip per unique bin referenced in the chain; mirrors the
-	// Project: <name> pattern above. Dismissing any chip clears the
-	// entire chain. Loaded bins stay loaded, so re-filtering is trivial.
+	// Removing any bin chip clears the whole filter chain, but keeps the bins loaded.
 	if (m_binFilterActive)
 	{
 		auto clearBinFilter = [this]()
 		{
 			if (m_binFilterDialog)
 			{
-				// Dialog drives the cleanup: clearChain re-emits with
-				// an empty expression, which fans out through the connected
-				// signal handlers to update the proxy, cache, log, and
-				// chip strip uniformly.
+				// Use the dialog's signal so filter state, logging and chips update together.
 				m_binFilterDialog->clearChain();
 				return;
 			}
@@ -2326,10 +2263,8 @@ void MainWindow::rebuildFilterChips()
 
 void MainWindow::resetFiltersForNewScan()
 {
-	// A scan replaces the dataset, so every active filter describes the old
-	// data. Reset them all to a clean baseline; mirrors the persistent-
-	// selection clear in onScanFinished. The widgets are the source of truth
-	// for the chip strip, so reset those too — not just the proxy predicates.
+	// A new scan replaces the inventory. Reset filters and their widgets together
+	// so the table and filter chips show the same state.
 
 	// Type tab back to "All". Block the signal and push the mode to the proxy
 	// directly below so the already-on-All case still resets.
@@ -2338,8 +2273,7 @@ void MainWindow::resetFiltersForNewScan()
 		m_filterTabs->setCurrentIndex(0);
 	}
 
-	// Search box. Block the widget so its debounced handler doesn't fire a
-	// stale-text query a beat later; the proxy is reset directly below.
+	// Block the clear notification; reset the search filter directly below.
 	{
 		const QSignalBlocker block(m_searchField);
 		m_searchField->clear();

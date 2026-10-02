@@ -164,6 +164,7 @@ private slots:
 	void bin_metadata_lifecycle_matches_table_and_csv();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
 	void added_locations_require_managed_media_structure();
+	void volume_refresh_clears_selection_and_retains_unique_manual_paths();
 	void startup_prunes_expired_journals_with_undo_disabled();
 	void unfinished_business_is_the_single_file_recovery_command();
 	void unfinished_business_merges_jobs_and_updates_choices();
@@ -573,6 +574,33 @@ void TestOperationUi::clickRestoreOriginals(const QString &button,
 			target->click();
 		} });
 	timer->start();
+}
+
+void TestOperationUi::volume_refresh_clears_selection_and_retains_unique_manual_paths()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.rebuildVolumeList({});
+	const QString folder = path("manual/Avid MediaFiles");
+	QVERIFY(QDir().mkpath(folder + "/MXF/1"));
+	window.addVolumePath(folder);
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QVERIFY(window.m_volumeList->item(0)->isSelected());
+	window.addVolumePath(folder + "/.");
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_manualVolumes.size(), 1);
+	window.rebuildVolumeList({});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	VolumeInfo volume;
+	volume.name = QStringLiteral("Detected media");
+	volume.path = folder;
+	volume.hasAvidMedia = true;
+	window.rebuildVolumeList({volume});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	window.m_volumeList->item(0)->setSelected(true);
+	window.rebuildVolumeList({volume});
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
 }
 
 void TestOperationUi::added_locations_require_managed_media_structure()
