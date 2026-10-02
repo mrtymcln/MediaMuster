@@ -103,6 +103,7 @@ private slots:
 	void intersection_and_subtraction_use_row_membership();
 	void add_restores_a_previously_subtracted_row();
 	void snapshots_survive_reticking_and_bin_removal();
+	void removing_multiple_bins_preserves_survivor_ticks_and_snapshots();
 	void selection_snapshot_keeps_counts_names_and_ids_together();
 	void failed_and_partial_bins_emit_errors_without_dialogs_data();
 	void failed_and_partial_bins_emit_errors_without_dialogs();
@@ -368,6 +369,35 @@ void TestBinFilterDialog::add_restores_a_previously_subtracted_row()
 	QCOMPARE(h.proxy.rowCount(), 1);
 	QCOMPARE(h.filter.steps.size(), 3);
 	QCOMPARE(h.names, (QStringList{QStringLiteral("Master"), QStringLiteral("File")}));
+}
+
+void TestBinFilterDialog::removing_multiple_bins_preserves_survivor_ticks_and_snapshots()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	Harness h;
+	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
+	for (int i = 0; i < 4; ++i)
+		h.dialog.addBinFromFile(TestAvb::write(tmp.filePath(QStringLiteral("Bin%1.avb").arg(i)),
+											   TestAvb::mediaBin({i == 3 ? TestAvb::Other : TestAvb::Source})));
+	QTRY_COMPARE(loaded.count(), 4);
+	QTRY_VERIFY(h.filter.isActive());
+	const BinFilter previousFilter = h.filter;
+	h.list()->item(1)->setCheckState(Qt::Unchecked);
+	h.list()->item(0)->setSelected(true);
+	h.list()->item(2)->setSelected(true);
+	QVERIFY(h.invoke("onRemoveSelectedBinsClicked"));
+	QCOMPARE(h.list()->count(), 2);
+	QCOMPARE(h.list()->item(0)->text(), QStringLiteral("Bin1"));
+	QCOMPARE(h.list()->item(0)->checkState(), Qt::Unchecked);
+	QCOMPARE(h.list()->item(1)->text(), QStringLiteral("Bin3"));
+	QCOMPARE(h.list()->item(1)->checkState(), Qt::Checked);
+	QVERIFY(h.filter.hasSameCriteria(previousFilter));
+	h.dialog.clearChain();
+	QVERIFY(h.invoke("onIntersectClicked"));
+	QCOMPARE(h.names, QStringList{QStringLiteral("Bin3")});
+	QCOMPARE(h.proxy.rowCount(), 1);
+	QCOMPARE(h.proxy.mapToSource(h.proxy.index(0, 0)).row(), 1);
 }
 
 void TestBinFilterDialog::snapshots_survive_reticking_and_bin_removal()

@@ -134,7 +134,7 @@ private:
 	// MARK: - Tick helpers
 
 	/// Immediate-use snapshot of ticked, fully loaded bins in list order.
-	QVector<const AvbBin *> selectedBins() const;
+	QVector<const AvbBin *> checkedBins() const;
 
 	struct LoadedBin
 	{

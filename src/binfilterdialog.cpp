@@ -43,7 +43,7 @@ namespace
 		return bin.warnings.isEmpty() ? QString() : BinFilterDialog::tr("Loaded with warnings.");
 	}
 
-	QString opLabel(BinFilterDialog::Operation op)
+	QString operationLabel(BinFilterDialog::Operation op)
 	{
 		switch (op)
 		{
@@ -331,7 +331,7 @@ void BinFilterDialog::refreshBinSelectionUi()
 									   [](const LoadedBin &entry)
 									   { return entry.loading; });
 	const auto loaded = m_bins.size() - loading;
-	const auto ready = selectedBins().size();
+	const auto ready = checkedBins().size();
 	QString summary = tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready));
 	if (loading > 0)
 		summary += tr(", %1 loading").arg(Format::count(loading));
@@ -531,13 +531,14 @@ void BinFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
 
 void BinFilterDialog::removeBinRow(int row)
 {
-	m_newlyLoadedIds.remove(m_bins[row].id);
+	const quint64 id = m_bins[row].id;
+	const auto cancelled = m_pendingLoads.value(id);
+	if (cancelled)
+		cancelled->store(true, std::memory_order_relaxed);
+	m_newlyLoadedIds.remove(id);
 	m_bins.removeAt(row);
 	// takeItem transfers ownership out of the view; release it at scope end.
 	const std::unique_ptr<QListWidgetItem> removed(m_binList->takeItem(row));
-	const QSignalBlocker block(m_binList);
-	for (int index = row; index < m_binList->count(); ++index)
-		m_binList->item(index)->setData(Qt::UserRole, index);
 }
 
 void BinFilterDialog::reportLoadFailure(const AvbBin &bin)
@@ -589,8 +590,7 @@ void BinFilterDialog::maybeAutoIntersect()
 void BinFilterDialog::appendBinItem(int idx)
 {
 	const QSignalBlocker block(m_binList);
-	auto *const item = new QListWidgetItem(m_binList);
-	item->setData(Qt::UserRole, idx);
+	m_binList->addItem(QString{});
 	updateBinItem(idx);
 }
 
@@ -646,45 +646,15 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 	if (selected.isEmpty())
 		return;
 
-	// Every retained row, including pending reads, carries its current
-	// m_bins index. Remove descending so later indices stay valid.
-	QList<int> binIndices;
-	binIndices.reserve(selected.size());
-	for (const QListWidgetItem *it : selected)
-	{
-		const int idx = it->data(Qt::UserRole).toInt();
-		if (idx >= 0)
-			binIndices.append(idx);
-	}
-	std::sort(binIndices.begin(), binIndices.end(), std::greater<>{});
-	for (int idx : binIndices)
-	{
-		if (idx < m_bins.size())
-		{
-			const auto cancelled = m_pendingLoads.value(m_bins[idx].id);
-			if (cancelled)
-				cancelled->store(true, std::memory_order_relaxed);
-			m_newlyLoadedIds.remove(m_bins[idx].id);
-			m_bins.removeAt(idx);
-		}
-	}
-
-	// Remove selected rows in place to preserve the survivors' tick states.
-	qDeleteAll(selected);
-
-	// Survivors are still in m_bins order, so renumber their UserRole to the
-	// compacted indices. Block itemChanged so the per-row setData doesn't fan
-	// out one UI refresh each.
-	{
-		const QSignalBlocker block(m_binList);
-		int compacted = 0;
-		for (int row = 0; row < m_binList->count(); ++row)
-		{
-			QListWidgetItem *const it = m_binList->item(row);
-			if (it->data(Qt::UserRole).toInt() >= 0)
-				it->setData(Qt::UserRole, compacted++);
-		}
-	}
+	// Remove descending so earlier row numbers stay valid. Surviving items
+	// stay in place, preserving their tick states.
+	QList<int> binRows;
+	binRows.reserve(selected.size());
+	for (const QListWidgetItem *item : selected)
+		binRows.append(m_binList->row(item));
+	std::sort(binRows.begin(), binRows.end(), std::greater<>{});
+	for (int row : binRows)
+		removeBinRow(row);
 
 	// Deletes don't fire itemChanged, so refresh the summary and op-button
 	// state ourselves; otherwise they'd stay stale when the last bin goes.
@@ -699,7 +669,7 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 
 // MARK: - Tick helpers
 
-QVector<const AvbBin *> BinFilterDialog::selectedBins() const
+QVector<const AvbBin *> BinFilterDialog::checkedBins() const
 {
 	QVector<const AvbBin *> out;
 	for (int i = 0; i < m_binList->count(); ++i)
@@ -707,10 +677,7 @@ QVector<const AvbBin *> BinFilterDialog::selectedBins() const
 		const QListWidgetItem *it = m_binList->item(i);
 		if (it->checkState() != Qt::Checked)
 			continue;
-		const int idx = it->data(Qt::UserRole).toInt();
-		if (idx < 0 || idx >= m_bins.size())
-			continue;
-		const LoadedBin &entry = m_bins[idx];
+		const LoadedBin &entry = m_bins[i];
 		if (!entry.loading && entry.bin.isUsable())
 			out.append(&entry.bin);
 	}
@@ -734,7 +701,7 @@ void BinFilterDialog::onAddClicked()
 
 void BinFilterDialog::applyOperation(Operation op)
 {
-	const auto selection = selectedBins();
+	const auto selection = checkedBins();
 	if (selection.isEmpty())
 		return;
 	m_autoIntersectPending = false;
@@ -789,7 +756,7 @@ void BinFilterDialog::rebuildChainList()
 					  .join(QStringLiteral(", "));
 
 		auto *const item = new QListWidgetItem(
-			QStringLiteral("%1.  %2:  %3").arg(row + 1).arg(opLabel(step.op), binNames));
+			QStringLiteral("%1.  %2:  %3").arg(row + 1).arg(operationLabel(step.op), binNames));
 		item->setData(Qt::UserRole, row);
 		m_chainList->addItem(item);
 	}

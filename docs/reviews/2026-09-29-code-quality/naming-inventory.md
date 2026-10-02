@@ -1,5 +1,7 @@
 # MediaMuster naming inventory
 
+Bin dialog update, 2 October 2026: LoadedBin is retained. opLabel is now operationLabel; the post-snapshot selectedBins helper is now checkedBins. Failed loads and user removals share removeBinRow, including pending-load cancellation. List items no longer duplicate their row numbers; stable bin IDs and filter-step snapshots are preserved. Historical inventory scopes and locations remain unchanged.
+
 Bin metadata update, 2 October 2026: BinFilter::matches now names its argument fileMobId. BinMetadataResolver uses MasterMobMetadata and m_metadataByMasterMobId. Conflict handling and ownership of bin-supplied names are unchanged. Historical scopes and locations remain unchanged.
 
 Scanner flow update, 2 October 2026: finalisation checks cancellation, the running-state cleanup uses qScopeGuard, and folder database caching reuses the canonical path from duplicate detection. Progress handling is unchanged: 30 scans of 100 empty folders, plus three slower scans using the existing folder pause, showed no backwards updates; a temporary 100 ms delay after one worker incremented its completion count reproduced 100 then 1. The diagnostic delay and test were removed.
@@ -1141,7 +1143,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 37 | Function | | binExplanation | binExplanation | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Parameter | binExplanation | bin | bin | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Parameter | binExplanation | loading | loading | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 46 | Function | | opLabel | opLabel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 46 | Function | | opLabel | operationLabel | Implemented | Spells out the filter-operation label helper. |
 | 46 | Parameter | opLabel | op | op | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Function | | segBarStyleSheet | segBarStyleSheet | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 62 | Parameter | segBarStyleSheet | objectName | objectName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
