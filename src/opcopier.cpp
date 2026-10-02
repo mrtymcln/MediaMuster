@@ -1,6 +1,7 @@
 #include "opcopier.h"
 #include <QByteArray>
 #include <QDir>
+#include <QScopeGuard>
 #include <exception>
 #include <cerrno>
 #include <cstring>
@@ -19,8 +20,8 @@ namespace
 	{
 		const std::atomic<bool> &cancel;
 		const OpCopier::Progress &progress;
-		qint64 size;
-		std::exception_ptr exception;
+		qint64 sourceSize;
+		std::exception_ptr callbackException;
 	};
 	int copyStatus(int what, int stage, copyfile_state_t state, const char *, const char *, void *raw)
 	{
@@ -34,11 +35,11 @@ namespace
 			{
 				try
 				{
-					context.progress(copied, context.size);
+					context.progress(copied, context.sourceSize);
 				}
 				catch (...)
 				{
-					context.exception = std::current_exception();
+					context.callbackException = std::current_exception();
 					return COPYFILE_QUIT;
 				}
 			}
@@ -71,10 +72,10 @@ namespace
 	{
 		const std::atomic<bool> &cancel;
 		const OpCopier::Progress &progress;
-		OpStamp expected;
+		OpStamp expectedSourceStamp;
 		OpStamp destination;
-		bool changed = false;
-		std::exception_ptr exception;
+		bool identityChanged = false;
+		std::exception_ptr callbackException;
 		HANDLE destinationHandle = INVALID_HANDLE_VALUE;
 		~NativeCopyContext()
 		{
@@ -86,17 +87,17 @@ namespace
 							  LARGE_INTEGER, DWORD, DWORD, HANDLE source, HANDLE destination, LPVOID raw)
 	{
 		auto &context = *static_cast<NativeCopyContext *>(raw);
-		// Alternate-stream callbacks can report that stream's length. Bind every
-		// stream to the expected file object; recheck main-stream size/time below.
-		if (!context.expected.sameObject(handleStamp(source)))
+		// Alternate streams have their own lengths, so check file identity here.
+		// Check the main file's size and modification time after copying.
+		if (!context.expectedSourceStamp.sameObject(handleStamp(source)))
 		{
-			context.changed = true;
+			context.identityChanged = true;
 			return PROGRESS_STOP;
 		}
 		const auto landed = handleStamp(destination);
 		if (!landed.valid() || (context.destination.valid() && !context.destination.sameObject(landed)))
 		{
-			context.changed = true;
+			context.identityChanged = true;
 			return PROGRESS_STOP;
 		}
 		context.destination = landed;
@@ -104,7 +105,7 @@ namespace
 			!::DuplicateHandle(::GetCurrentProcess(), destination, ::GetCurrentProcess(),
 							   &context.destinationHandle, 0, FALSE, DUPLICATE_SAME_ACCESS))
 		{
-			context.changed = true;
+			context.identityChanged = true;
 			return PROGRESS_STOP;
 		}
 		if (context.cancel.load())
@@ -116,7 +117,7 @@ namespace
 		}
 		catch (...)
 		{
-			context.exception = std::current_exception();
+			context.callbackException = std::current_exception();
 			return PROGRESS_STOP;
 		}
 		return context.cancel.load() ? PROGRESS_STOP : PROGRESS_CONTINUE;
@@ -141,12 +142,13 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 								const std::atomic<bool> &cancel, const Progress &progress)
 {
 	Result out;
-	const auto before = source.stamp();
+	const auto sourceStamp = source.stamp();
 	if (!source.checkCopySupport(out.error))
 		return out;
-	if (!before.valid() || !source.stillAt(source.path(), before) ||
-		!destination.m_created || destination.stamp().size != 0 ||
-		!destination.stillAt(destination.path(), destination.stamp()))
+	const auto destinationStamp = destination.stamp();
+	if (!sourceStamp.valid() || !source.stillAt(source.path(), sourceStamp) ||
+		!destination.m_created || destinationStamp.size != 0 ||
+		!destination.stillAt(destination.path(), destinationStamp))
 	{
 		out.error = "Cannot start native copying with these source or staging identities.";
 		return out;
@@ -162,20 +164,21 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		out.error = "Cannot position the native copy handles.";
 		return out;
 	}
-	copyfile_state_t state = ::copyfile_state_alloc();
+	const auto state = ::copyfile_state_alloc();
 	if (!state)
 	{
 		out.error = "Cannot allocate native copy state.";
 		return out;
 	}
-	NativeCopyContext context{cancel, progress, before.size, {}};
+	NativeCopyContext context{cancel, progress, sourceStamp.size, {}};
+	const auto releaseCopyState = qScopeGuard([state]() noexcept
+											  { ::copyfile_state_free(state); });
 	::copyfile_state_set(state, COPYFILE_STATE_STATUS_CB, reinterpret_cast<void *>(copyStatus));
 	::copyfile_state_set(state, COPYFILE_STATE_STATUS_CTX, &context);
 	const int copied = ::fcopyfile(source.io().handle(), destination.io().handle(), state, COPYFILE_DATA);
 	const int copyError = errno;
-	::copyfile_state_free(state);
-	if (context.exception)
-		std::rethrow_exception(context.exception);
+	if (context.callbackException)
+		std::rethrow_exception(context.callbackException);
 	if (copied != 0)
 	{
 		out.outcome = cancel.load() ? Outcome::Cancelled : Outcome::Failed;
@@ -186,23 +189,22 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		return out;
 	}
 #elif defined(Q_OS_WIN)
-	// CopyFileEx opens its own paths. Dispose only of the exclusively created
-	// empty placeholder, then request CREATE_NEW semantics from the native API.
-	// The callback checks the actual source HANDLE, not just its pathname.
+	// CopyFileEx opens paths itself. Remove our empty placeholder so it can
+	// create a new file without overwriting anything. The callback checks
+	// the identity of the source it actually opens.
 	if (!destination.removeProtected(out.error))
 		return out;
 	source.m_file.close();
-	NativeCopyContext context{cancel, progress, before, {}, false, {}};
+	NativeCopyContext context{cancel, progress, sourceStamp, {}, false, {}};
 	const QString sourcePath = QDir::toNativeSeparators(source.path());
 	const QString destinationPath = QDir::toNativeSeparators(destination.path());
 	const BOOL copied = ::CopyFileExW(reinterpret_cast<LPCWSTR>(sourcePath.utf16()),
 									  reinterpret_cast<LPCWSTR>(destinationPath.utf16()), copyStatus, &context, nullptr,
 									  COPY_FILE_FAIL_IF_EXISTS);
 	const DWORD copyError = ::GetLastError();
-	// A copied read-only attribute must not prevent reopening our staging file
-	// with the write/delete rights needed for flush and publication. Change it
-	// only through the native-created object's retained HANDLE, then restore
-	// it through the protected reopened HANDLE before any final publication.
+	// Temporarily clear read-only through the retained handle so we can reopen
+	// the staging file for flushing and publication. Restore it through the
+	// protected handle before publication.
 	FILE_BASIC_INFO copiedAttributes{};
 	bool restoreReadOnly = false;
 	if (copied && context.destinationHandle != INVALID_HANDLE_VALUE &&
@@ -246,15 +248,15 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 	const bool attributesRestored = !restoreReadOnly || (destinationOpened &&
 														 ::SetFileInformationByHandle(reinterpret_cast<HANDLE>(::_get_osfhandle(destination.io().handle())),
 																					  FileBasicInfo, &copiedAttributes, sizeof(copiedAttributes)) != 0);
-	if (context.exception)
-		std::rethrow_exception(context.exception);
-	if (!copied || context.changed || !sourceOpened || !destinationOpened || !attributesRestored ||
+	if (context.callbackException)
+		std::rethrow_exception(context.callbackException);
+	if (!copied || context.identityChanged || !sourceOpened || !destinationOpened || !attributesRestored ||
 		!context.destination.valid() || !context.destination.sameObject(destination.stamp()))
 	{
 		out.outcome = cancel.load() ? Outcome::Cancelled : Outcome::Failed;
-		out.error = context.changed ? QStringLiteral("A native copying handle referred to a changed file.") : QStringLiteral("Native copying could not be completed and protected (Windows %1). %2 %3").arg(copyError).arg(sourceError, destinationError);
-		// GetLastError is meaningful only after CopyFileEx failed. A successful copy
-		// followed by a protection/identity failure must never use a stale error to retry.
+		out.error = context.identityChanged ? QStringLiteral("A native copying handle referred to a changed file.") : QStringLiteral("Native copying could not be completed and protected (Windows %1). %2 %3").arg(copyError).arg(sourceError, destinationError);
+		// GetLastError applies only when CopyFileEx fails. A later identity or
+		// protection failure must not trigger a retry using a stale error.
 		bool destinationAbsent = false;
 		if (!destinationOpened &&
 			::GetFileAttributesW(reinterpret_cast<LPCWSTR>(destinationPath.utf16())) == INVALID_FILE_ATTRIBUTES)
@@ -262,8 +264,8 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 			const DWORD absenceError = ::GetLastError();
 			destinationAbsent = absenceError == ERROR_FILE_NOT_FOUND || absenceError == ERROR_PATH_NOT_FOUND;
 		}
-		out.retryable = !copied && out.outcome == Outcome::Failed && !context.changed &&
-						sourceOpened && source.stillAt(source.path(), before) && attributesRestored &&
+		out.retryable = !copied && out.outcome == Outcome::Failed && !context.identityChanged &&
+						sourceOpened && source.stillAt(source.path(), sourceStamp) && attributesRestored &&
 						(destinationOpened || destinationAbsent) &&
 						isRetryableNativeError(copyError);
 		return out;
@@ -277,15 +279,14 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		out.outcome = Outcome::Cancelled;
 		return out;
 	}
-	if (!source.stillAt(source.path(), before))
+	if (!source.stillAt(source.path(), sourceStamp))
 	{
 		out.error = "The source changed during copying; it has been retained.";
 		return out;
 	}
 	QString metadataError;
 #ifdef Q_OS_WIN
-	// CopyFileEx has already copied the streams and supported Windows metadata.
-	// Do not replace that result with the old byte-copier's timestamp-only policy.
+	// CopyFileEx already preserves streams and supported Windows metadata.
 	out.metadataComplete = true;
 #else
 	out.metadataComplete = destination.preserveMetadataFrom(source, metadataError);
@@ -297,12 +298,12 @@ OpCopier::Result OpCopier::copy(OpFile &source, OpFile &destination,
 		return out;
 	}
 	out.durable = sync == NativeFile::SyncResult::Ok;
-	if (destination.stamp().size != before.size)
+	if (destination.stamp().size != sourceStamp.size)
 	{
 		out.error = "The destination length differs from the source.";
 		return out;
 	}
-	if (!source.stillAt(source.path(), before))
+	if (!source.stillAt(source.path(), sourceStamp))
 	{
 		out.error = "The source changed before copying finished; it has been retained.";
 		return out;

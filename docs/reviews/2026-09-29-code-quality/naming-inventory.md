@@ -1,5 +1,7 @@
 # MediaMuster naming inventory
 
+Copier cleanup, 3 October 2026: macOS native copy state uses automatic scope cleanup. Starting destination checks share one captured stamp. sourceStamp, sourceSize, expectedSourceStamp, identityChanged and callbackException clarify local roles; Windows comments retain protection and alternate-stream rationale without historical narration. Copy, cancellation, metadata and source-removal policies remain unchanged. Journal schema and version 2 are unchanged. Historical scopes and locations remain unchanged.
+
 Operation cleanup, 3 October 2026: copy/move assessment stops relocation probes once the whole job requires copying, while continuing identity checks and byte totals. Removed the unreachable Undo-action null guard. Assessment tests use an explicit fake identity probe and cover forced copying plus a first-file copy requirement. No journal contract changes.
 
 Operation controller update, 3 October 2026: queued result and completion callbacks now use onOperationResult and onOperationFinished, preserving their update order. m_operationManager, requiredCopyBytes, fileName, destinationRoot, preserveAvidStructure, sourceStorage and destinationStorage clarify the approved names. Callback formatting and comments are tidied. The preserveAvidStructure name applies to the destinationPath parameter; persisted request fields and journal schema/strings/version 2 are unchanged. Historical scopes and locations remain unchanged.
@@ -4417,8 +4419,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 18 | Struct | | NativeCopyContext | NativeCopyProgressContext | Rename | Makes the responsibility explicit; rename the type and its constructors together. |
 | 20 | Field | NativeCopyContext | cancel | cancel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 21 | Field | NativeCopyContext | progress | progress | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 22 | Field | NativeCopyContext | size | size | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 23 | Field | NativeCopyContext | exception | exception | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 22 | Field | NativeCopyContext | size | sourceSize | Implemented | Clarifies the source snapshot, callback failure or file-identity check. |
+| 23 | Field | NativeCopyContext | exception | callbackException | Implemented | Clarifies the source snapshot, callback failure or file-identity check. |
 | 25 | Function | | copyStatus | copyStatus | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | copyStatus | what | what | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 25 | Parameter | copyStatus | stage | stage | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4434,10 +4436,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 70 | Struct | (anonymous namespace) | NativeCopyContext | NativeCopyContext | Keep | Keep: clear within this scope. |
 | 72 | Field | NativeCopyContext | cancel | cancelRequested | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
 | 73 | Field | NativeCopyContext | progress | reportProgress | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
-| 74 | Field | NativeCopyContext | expected | expectedSource | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
+| 74 | Field | NativeCopyContext | expected | expectedSourceStamp | Implemented | Clarifies the source snapshot, callback failure or file-identity check. |
 | 75 | Field | NativeCopyContext | destination | destinationSnapshot | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
-| 76 | Field | NativeCopyContext | changed | identityChanged | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
-| 77 | Field | NativeCopyContext | exception | callbackException | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
+| 76 | Field | NativeCopyContext | changed | identityChanged | Implemented | Clarifies the source snapshot, callback failure or file-identity check. |
+| 77 | Field | NativeCopyContext | exception | callbackException | Implemented | Clarifies the source snapshot, callback failure or file-identity check. |
 | 78 | Field | NativeCopyContext | destinationHandle | destinationHandle | Keep | Keep: clear within this scope. |
 | 79 | Destructor | NativeCopyContext | ~NativeCopyContext | ~NativeCopyContext | Keep | Keep: clear within this scope. |
 | 85 | Function | (anonymous namespace) | copyStatus | reportWindowsCopyProgress | Candidate | Clarify the role of this declaration using the existing Qt naming style. |
@@ -4454,7 +4456,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 141 | Parameter | OpCopier::copy | cancel | cancel | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 141 | Parameter | OpCopier::copy | progress | progress | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 143 | Variable | OpCopier::copy | out | out | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 144 | Variable | OpCopier::copy | before | before | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 144 | Variable | OpCopier::copy | before | sourceStamp | Implemented | Clarifies the source snapshot, callback failure or file-identity check. |
 | 165 | Variable | OpCopier::copy | state | state | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 171 | Variable | OpCopier::copy | context | context | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 174 | Variable | OpCopier::copy | copied | copied | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
