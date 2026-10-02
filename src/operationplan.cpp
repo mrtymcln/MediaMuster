@@ -7,14 +7,14 @@
 
 namespace OperationPlan
 {
-	QString destinationPath(const QString &name, const QString &mediaFolderName, const QString &root,
-							bool preserve, bool omfEra)
+	QString destinationPath(const QString &fileName, const QString &mediaFolderName, const QString &destinationRoot,
+							bool preserveAvidStructure, bool omfEra)
 	{
-		if (preserve && omfEra)
-			return Conventions::omfRootUnder(root) + '/' + name;
-		if (preserve)
-			return Conventions::mxfRootUnder(root) + '/' + mediaFolderName + '/' + name;
-		return root + '/' + name;
+		if (preserveAvidStructure && omfEra)
+			return Conventions::omfRootUnder(destinationRoot) + '/' + fileName;
+		if (preserveAvidStructure)
+			return Conventions::mxfRootUnder(destinationRoot) + '/' + mediaFolderName + '/' + fileName;
+		return destinationRoot + '/' + fileName;
 	}
 
 	std::optional<QString> findKeepBothPath(const QString &path)
@@ -37,9 +37,10 @@ namespace OperationPlan
 		QString parent = QFileInfo(destination).absolutePath();
 		while (!QFileInfo::exists(parent) && QFileInfo(parent).absolutePath() != parent)
 			parent = QFileInfo(parent).absolutePath();
-		const QStorageInfo a(source), b(parent);
-		return a.isValid() && a.isReady() && b.isValid() && b.isReady() && !a.device().isEmpty() &&
-			   a.device() == b.device();
+		const QStorageInfo sourceStorage(source), destinationStorage(parent);
+		return sourceStorage.isValid() && sourceStorage.isReady() &&
+			   destinationStorage.isValid() && destinationStorage.isReady() &&
+			   !sourceStorage.device().isEmpty() && sourceStorage.device() == destinationStorage.device();
 	}
 
 	bool alreadyAtDestination(const QString &source, const QString &destination)
@@ -75,11 +76,11 @@ namespace OperationPlan
 				const qint64 maximum = (std::numeric_limits<qint64>::max)();
 				requiredBytes = item.bytes > maximum - requiredBytes ? maximum : requiredBytes + item.bytes;
 			}
-			if (request.kind == OpKind::Move && !canRelocate(item.src, destination))
+			if (request.kind == OpKind::Move && !out.copyThenRemove && !canRelocate(item.src, destination))
 				out.copyThenRemove = true;
 		}
 		if (request.kind == OpKind::Copy || out.copyThenRemove)
-			out.temporaryBytes = requiredBytes;
+			out.requiredCopyBytes = requiredBytes;
 		return out;
 	}
 }

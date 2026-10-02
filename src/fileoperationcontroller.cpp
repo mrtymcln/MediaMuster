@@ -29,7 +29,7 @@ namespace
 } // namespace
 
 FileOperationController::FileOperationController(QWidget *window)
-	: QObject(window), m_window(window), m_fileOps(new OpManager(this)),
+	: QObject(window), m_window(window), m_operationManager(new OpManager(this)),
 	  m_recoveryAct(new QAction(tr("Unfinished Business…"), this)),
 	  m_undoAction(new QAction(tr("&Undo"), this))
 {
@@ -39,7 +39,7 @@ FileOperationController::FileOperationController(QWidget *window)
 	connect(m_recoveryAct, &QAction::triggered, this, &FileOperationController::offerRecovery);
 	connect(m_undoAction, &QAction::triggered, this, &FileOperationController::undoLastOperation);
 	connect(
-		m_fileOps, &OpManager::operationProgress, this,
+		m_operationManager, &OpManager::operationProgress, this,
 		[this](const QString &name, int current, int total, double pct)
 		{
 			progressDialog()->setItemProgress(current, total, pct);
@@ -47,97 +47,97 @@ FileOperationController::FileOperationController(QWidget *window)
 		},
 		Qt::QueuedConnection);
 	connect(
-		m_fileOps, &OpManager::operationLog, this, [this](QtMsgType level, const QString &message)
+		m_operationManager, &OpManager::operationLog, this, [this](QtMsgType level, const QString &message)
 		{ emit logMessage(level, QStringLiteral("operations"), message); }, Qt::QueuedConnection);
-	connect(
-		m_fileOps, &OpManager::operationResult, this,
-		[this](const OpResult &result)
-		{
-			QString state;
-			bool appendDetail = true;
-			switch (result.state)
-			{
-			case OpResult::State::Completed:
-			case OpResult::State::OriginalRestored:
-				state = result.message;
-				appendDetail = false;
-				break;
-			case OpResult::State::SourceRetained:
-				state = tr("Source kept");
-				break;
-			case OpResult::State::NoEffect:
-				state = tr("Already at destination.");
-				appendDetail = false;
-				break;
-			case OpResult::State::Skipped:
-				state = tr("Skipped");
-				break;
-			case OpResult::State::Cancelled:
-				state = tr("Cancelled");
-				break;
-			case OpResult::State::Failed:
-				state = tr("Failed");
-				break;
-			case OpResult::State::NeedsAttention:
-				state = tr("Needs attention");
-				break;
-			}
-			if (!state.isEmpty())
-			{
-				const bool problem = result.state == OpResult::State::Failed ||
-									 result.state == OpResult::State::NeedsAttention;
-				const bool stateFirst = result.state == OpResult::State::Skipped ||
-										result.state == OpResult::State::Cancelled ||
-										result.state == OpResult::State::Failed;
-				const bool colonDetail = stateFirst || result.state == OpResult::State::SourceRetained;
-				QString message = stateFirst ? state + ": " + result.name : result.name + ": " + state;
-				if (appendDetail && !result.message.isEmpty())
-					message += (colonDetail ? ": " : " — ") + result.message;
-				if ((colonDetail || result.state == OpResult::State::Completed ||
-					 result.state == OpResult::State::OriginalRestored) &&
-					!message.endsWith(QLatin1Char('.')))
-					message += QLatin1Char('.');
-				emit logMessage(problem ? QtWarningMsg : QtInfoMsg, QStringLiteral("operations"),
-								message);
-			}
-			if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
-				m_removedSourcePaths.insert(result.source);
-			if (!result.restoredOriginalPath.isEmpty())
-				m_restoredOriginalPaths.insert(result.restoredOriginalPath);
-		},
-		Qt::QueuedConnection);
-	connect(
-		m_fileOps, &OpManager::operationFinished, this,
-		[this](int, int)
-		{
-			if (m_progressDialog)
-				m_progressDialog->finish();
-			setActivity(Activity::Idle);
-			if (m_pruneSourceRowsAfterOperation && !m_removedSourcePaths.isEmpty())
-				emit sourcesRemoved(m_removedSourcePaths);
-			m_pruneSourceRowsAfterOperation = false;
-			m_removedSourcePaths.clear();
-			const auto restored = m_restoredOriginalPaths;
-			m_restoredOriginalPaths.clear();
-			if (!restored.isEmpty())
-				emit originalsRestored(restored);
-			refreshHistory();
-		},
-		Qt::QueuedConnection);
-	connect(m_fileOps, &OpManager::mediaMusterTrashUsed, this,
+	connect(m_operationManager, &OpManager::operationResult, this,
+			&FileOperationController::onOperationResult, Qt::QueuedConnection);
+	connect(m_operationManager, &OpManager::operationFinished, this,
+			&FileOperationController::onOperationFinished, Qt::QueuedConnection);
+	connect(m_operationManager, &OpManager::mediaMusterTrashUsed, this,
 			&FileOperationController::mediaMusterTrashUsed, Qt::QueuedConnection);
-	connect(m_fileOps, &OpManager::trashFallbackRequested, this,
+	connect(m_operationManager, &OpManager::trashFallbackRequested, this,
 			&FileOperationController::showTrashFallback, Qt::QueuedConnection);
-	connect(m_fileOps, &OpManager::trashFallbackFinished, this,
+	connect(m_operationManager, &OpManager::trashFallbackFinished, this,
 			&FileOperationController::closeTrashFallback, Qt::QueuedConnection);
-	m_fileOps->setTrashFallbackHandlerAvailable(true);
+	m_operationManager->setTrashFallbackHandlerAvailable(true);
 	updateRecoveryAction();
+}
+
+void FileOperationController::onOperationResult(const OpResult &result)
+{
+	QString state;
+	bool appendDetail = true;
+	switch (result.state)
+	{
+	case OpResult::State::Completed:
+	case OpResult::State::OriginalRestored:
+		state = result.message;
+		appendDetail = false;
+		break;
+	case OpResult::State::SourceRetained:
+		state = tr("Source kept");
+		break;
+	case OpResult::State::NoEffect:
+		state = tr("Already at destination.");
+		appendDetail = false;
+		break;
+	case OpResult::State::Skipped:
+		state = tr("Skipped");
+		break;
+	case OpResult::State::Cancelled:
+		state = tr("Cancelled");
+		break;
+	case OpResult::State::Failed:
+		state = tr("Failed");
+		break;
+	case OpResult::State::NeedsAttention:
+		state = tr("Needs attention");
+		break;
+	}
+	if (!state.isEmpty())
+	{
+		const bool problem = result.state == OpResult::State::Failed ||
+							 result.state == OpResult::State::NeedsAttention;
+		const bool stateFirst = result.state == OpResult::State::Skipped ||
+								result.state == OpResult::State::Cancelled ||
+								result.state == OpResult::State::Failed;
+		const bool colonDetail = stateFirst || result.state == OpResult::State::SourceRetained;
+		QString message = stateFirst ? state + ": " + result.name : result.name + ": " + state;
+		if (appendDetail && !result.message.isEmpty())
+			message += (colonDetail ? ": " : " — ") + result.message;
+		if ((colonDetail || result.state == OpResult::State::Completed ||
+			 result.state == OpResult::State::OriginalRestored) &&
+			!message.endsWith(QLatin1Char('.')))
+			message += QLatin1Char('.');
+		emit logMessage(problem ? QtWarningMsg : QtInfoMsg, QStringLiteral("operations"),
+						message);
+	}
+	if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
+		m_removedSourcePaths.insert(result.source);
+	if (!result.restoredOriginalPath.isEmpty())
+		m_restoredOriginalPaths.insert(result.restoredOriginalPath);
+}
+
+void FileOperationController::onOperationFinished()
+{
+	if (m_progressDialog)
+		m_progressDialog->finish();
+	setActivity(Activity::Idle);
+	if (m_pruneSourceRowsAfterOperation && !m_removedSourcePaths.isEmpty())
+		emit sourcesRemoved(m_removedSourcePaths);
+	m_pruneSourceRowsAfterOperation = false;
+	m_removedSourcePaths.clear();
+	const auto restored = m_restoredOriginalPaths;
+	m_restoredOriginalPaths.clear();
+	if (!restored.isEmpty())
+		emit originalsRestored(restored);
+	refreshHistory();
 }
 
 FileOperationController::~FileOperationController()
 {
-	m_fileOps->setTrashFallbackHandlerAvailable(false);
-	m_fileOps->cancel();
+	m_operationManager->setTrashFallbackHandlerAvailable(false);
+	m_operationManager->cancel();
 	// The dialog belongs to the window/progress sheet, so it would otherwise
 	// outlive this controller when the controller is destroyed independently.
 	delete m_trashFallbackDialog.data();
@@ -146,7 +146,7 @@ FileOperationController::~FileOperationController()
 void FileOperationController::showTrashFallback(quint64 requestId,
 												const QVector<OpTrashFallbackItem> &items)
 {
-	if (!m_fileOps->isTrashFallbackPending(requestId))
+	if (!m_operationManager->isTrashFallbackPending(requestId))
 		return;
 	if (m_trashFallbackDialog)
 		closeTrashFallback(m_trashFallbackRequest);
@@ -175,13 +175,13 @@ void FileOperationController::showTrashFallback(quint64 requestId,
 	dialog->setEscapeButton(cancel);
 	connect(dialog, &QDialog::finished, this, [this, dialog, move, requestId]
 			{
-		m_fileOps->respondTrashFallback(requestId, dialog->clickedButton() == move);
-		if (m_trashFallbackDialog == dialog)
-		{
-			m_trashFallbackDialog = nullptr;
-			m_trashFallbackRequest = 0;
-		}
-		dialog->deleteLater(); });
+				m_operationManager->respondTrashFallback(requestId, dialog->clickedButton() == move);
+				if (m_trashFallbackDialog == dialog)
+				{
+					m_trashFallbackDialog = nullptr;
+					m_trashFallbackRequest = 0;
+				}
+				dialog->deleteLater(); });
 	dialog->open();
 }
 
@@ -225,7 +225,7 @@ ProgressDialog *FileOperationController::progressDialog()
 		connect(m_progressDialog, &ProgressDialog::cancelRequested, this,
 				[this]
 				{
-					m_fileOps->cancel();
+					m_operationManager->cancel();
 					emit logMessage(QtWarningMsg, QStringLiteral("operations"), tr("Cancel requested"));
 				});
 	}
@@ -251,7 +251,8 @@ void FileOperationController::runStartupRecovery()
 				setActivity(Activity::Idle);
 				onRecoveryDone(summary);
 			});
-	watcher->setFuture(QtConcurrent::run([] { return OperationRecovery::run(); }));
+	watcher->setFuture(QtConcurrent::run([]
+										 { return OperationRecovery::run(); }));
 }
 
 void FileOperationController::onRecoveryDone(const OperationRecovery::Summary &summary)
@@ -264,12 +265,10 @@ void FileOperationController::onRecoveryDone(const OperationRecovery::Summary &s
 	if (summary.hadTrouble())
 		QMessageBox::warning(m_window, tr("Some files need a look"), summary.message());
 
-	// Apply the launch sweep's results before offering recovery. The dialog's
-	// dispatch boundary reads fresh journal history before accepting a choice.
+	// Show the launch results; dispatch rechecks history before acting on a choice.
 	applyOperationHistory(summary);
 
-	// Anything left to finish? Ask now; the File menu item stays live for
-	// later if the dialog is closed without choosing an action.
+	// Offer unfinished work now; closing the dialog leaves it available in the File menu.
 	if (!m_restorable.isEmpty() || !m_resumable.isEmpty())
 		offerRecovery();
 }
@@ -287,14 +286,12 @@ bool FileOperationController::confirmCrashProtection()
 void FileOperationController::setUndoEnabled(bool enabled)
 {
 	m_undoEnabled = enabled;
-	m_fileOps->setUndoEnabled(enabled);
+	m_operationManager->setUndoEnabled(enabled);
 	updateUndoAction();
 }
 
 void FileOperationController::updateUndoAction()
 {
-	if (!m_undoAction)
-		return;
 	const bool enabled = m_undoEnabled;
 	m_undoAction->setVisible(enabled);
 	m_undoAction->setShortcut(enabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
@@ -335,7 +332,7 @@ void FileOperationController::undoLastOperation()
 
 bool FileOperationController::dispatchRequest(OpRequest request)
 {
-	if (!isIdle() || m_fileOps->isRunning())
+	if (!isIdle() || m_operationManager->isRunning())
 		return false;
 	const bool resuming = !request.resumeJournalPath.isEmpty();
 	const bool restoring = !request.restoreJournalPath.isEmpty();
@@ -357,7 +354,7 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 	m_undoCandidate = {};
 	setActivity(Activity::FileOperation);
 	progressDialog()->begin();
-	m_fileOps->execute(std::move(request));
+	m_operationManager->execute(std::move(request));
 	return true;
 }
 
@@ -445,7 +442,7 @@ void FileOperationController::readOperationHistoryForGate()
 
 bool FileOperationController::resolvePreviousJob()
 {
-	if (!isIdle() || m_fileOps->isRunning() || m_operationGateActive)
+	if (!isIdle() || m_operationManager->isRunning() || m_operationGateActive)
 		return false;
 	QScopedValueRollback<bool> guard(m_operationGateActive, true);
 	readOperationHistoryForGate();
@@ -461,7 +458,7 @@ bool FileOperationController::resolvePreviousJob()
 
 void FileOperationController::offerRecovery()
 {
-	if (!isIdle() || m_fileOps->isRunning() || m_operationGateActive)
+	if (!isIdle() || m_operationManager->isRunning() || m_operationGateActive)
 		return;
 	QScopedValueRollback<bool> guard(m_operationGateActive, true);
 	readOperationHistoryForGate();

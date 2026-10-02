@@ -663,10 +663,10 @@ void ManageMediaDialog::updateSummary()
 	// The worker supplied both the whole-job estimate and available capacity.
 	// Changing a policy starts another check; this paint never probes storage.
 	if (!m_checkingDest && operation() != Operation::Delete && !dest.isEmpty() &&
-		m_availableBytes >= 0 && m_assessment.temporaryBytes > m_availableBytes)
+		m_availableBytes >= 0 && m_assessment.requiredCopyBytes > m_availableBytes)
 	{
 		m_spaceWarning->setText(tr("Insufficient space: %1 needed, %2 free on destination volume")
-									.arg(Format::bytes(m_assessment.temporaryBytes))
+									.arg(Format::bytes(m_assessment.requiredCopyBytes))
 									.arg(Format::bytes(m_availableBytes)));
 		m_spaceWarning->setVisible(true);
 		canExecute = false;

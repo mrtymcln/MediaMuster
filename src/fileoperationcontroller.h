@@ -34,7 +34,7 @@ public:
 	Activity activity() const { return m_activity; }
 	bool isIdle() const { return m_activity == Activity::Idle; }
 	void setActivity(Activity activity);
-	OpManager *manager() const { return m_fileOps; }
+	OpManager *manager() const { return m_operationManager; }
 	QAction *recoveryAction() const { return m_recoveryAct; }
 	QAction *undoAction() const { return m_undoAction; }
 
@@ -63,6 +63,8 @@ private:
 		Started,
 		Stopped
 	};
+	void onOperationResult(const OpResult &result);
+	void onOperationFinished();
 	void onRecoveryDone(const OperationRecovery::Summary &summary);
 	void setUndoEnabled(bool enabled);
 	void updateUndoAction();
@@ -76,7 +78,7 @@ private:
 	void showTrashFallback(quint64 requestId, const QVector<OpTrashFallbackItem> &items);
 	void closeTrashFallback(quint64 requestId);
 	QWidget *m_window;
-	OpManager *m_fileOps;
+	OpManager *m_operationManager;
 	ProgressDialog *m_progressDialog = nullptr;
 	QPointer<QMessageBox> m_trashFallbackDialog;
 	quint64 m_trashFallbackRequest = 0;

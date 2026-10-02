@@ -283,27 +283,32 @@ void TestFileOperations::copy_publishes_and_preserves_source()
 void TestFileOperations::advisory_copy_move_assessment_data()
 {
 	QTest::addColumn<int>("kind");
+	QTest::addColumn<bool>("firstCanRelocate");
 	QTest::addColumn<bool>("secondCanRelocate");
 	QTest::addColumn<bool>("skipSecond");
 	QTest::addColumn<bool>("forceCopy");
 	QTest::addColumn<bool>("copyThenRemove");
-	QTest::addColumn<qint64>("temporaryBytes");
-	QTest::newRow("copy") << int(OpKind::Copy) << true << false << false << false << qint64(300);
-	QTest::newRow("same-volume-move") << int(OpKind::Move) << true << false << false << false << qint64(0);
-	QTest::newRow("mixed-volume-move") << int(OpKind::Move) << false << false << false << true << qint64(300);
-	QTest::newRow("skip-cross-volume") << int(OpKind::Move) << false << true << false << false << qint64(0);
-	QTest::newRow("copy-excludes-skip") << int(OpKind::Copy) << false << true << false << false << qint64(100);
-	QTest::newRow("forced-copy-move") << int(OpKind::Move) << true << false << true << true << qint64(300);
-	QTest::newRow("delete") << int(OpKind::Delete) << false << false << false << false << qint64(0);
+	QTest::addColumn<qint64>("requiredCopyBytes");
+	QTest::addColumn<int>("relocationProbeCount");
+	QTest::newRow("copy") << int(OpKind::Copy) << true << true << false << false << false << qint64(300) << 0;
+	QTest::newRow("same-volume-move") << int(OpKind::Move) << true << true << false << false << false << qint64(0) << 2;
+	QTest::newRow("mixed-volume-move") << int(OpKind::Move) << true << false << false << false << true << qint64(300) << 2;
+	QTest::newRow("first-file-needs-copy") << int(OpKind::Move) << false << true << false << false << true << qint64(300) << 1;
+	QTest::newRow("skip-cross-volume") << int(OpKind::Move) << true << false << true << false << false << qint64(0) << 1;
+	QTest::newRow("copy-excludes-skip") << int(OpKind::Copy) << true << false << true << false << false << qint64(100) << 0;
+	QTest::newRow("forced-copy-move") << int(OpKind::Move) << true << true << false << true << true << qint64(300) << 0;
+	QTest::newRow("delete") << int(OpKind::Delete) << true << false << false << false << false << qint64(0) << 0;
 }
 void TestFileOperations::advisory_copy_move_assessment()
 {
 	QFETCH(int, kind);
+	QFETCH(bool, firstCanRelocate);
 	QFETCH(bool, secondCanRelocate);
 	QFETCH(bool, skipSecond);
 	QFETCH(bool, forceCopy);
 	QFETCH(bool, copyThenRemove);
-	QFETCH(qint64, temporaryBytes);
+	QFETCH(qint64, requiredCopyBytes);
+	QFETCH(int, relocationProbeCount);
 	OpRequest request;
 	request.kind = static_cast<OpKind>(kind);
 	request.destRoot = "/destination";
@@ -318,23 +323,29 @@ void TestFileOperations::advisory_copy_move_assessment()
 	if (skipSecond)
 		second.policy = "skip";
 	request.items = {first, second};
-	QStringList probedSources, probedDestinations;
-	const auto assessment = OperationPlan::assessCopyMove(request, [&](const QString &source, const QString &destination)
-														  {
-			probedSources.append(source);
-			probedDestinations.append(destination);
-			return source == first.src || secondCanRelocate; }, forceCopy);
-	QCOMPARE(assessment.copyThenRemove, copyThenRemove);
-	QCOMPARE(assessment.temporaryBytes, temporaryBytes);
-	if (request.kind == OpKind::Move)
+	QStringList probedSources, probedDestinations, identityProbes;
+	const auto canRelocate = [&](const QString &source, const QString &destination)
 	{
-		QCOMPARE(probedSources.size(), skipSecond ? 1 : 2);
-		QCOMPARE(probedDestinations[0], QString("/destination/first.mxf"));
-		if (skipSecond)
-			QVERIFY(!probedSources.contains(second.src));
-	}
-	else
-		QVERIFY(probedSources.isEmpty());
+		probedSources.append(source);
+		probedDestinations.append(destination);
+		return source == first.src ? firstCanRelocate : secondCanRelocate;
+	};
+	const auto sameFile = [&](const QString &source, const QString &)
+	{
+		identityProbes.append(source);
+		return false;
+	};
+	const auto assessment = OperationPlan::assessCopyMove(request, canRelocate, forceCopy, sameFile);
+	QCOMPARE(assessment.copyThenRemove, copyThenRemove);
+	QCOMPARE(assessment.requiredCopyBytes, requiredCopyBytes);
+	QCOMPARE(probedSources.size(), relocationProbeCount);
+	if (!probedDestinations.isEmpty())
+		QCOMPARE(probedDestinations.first(), QString("/destination/first.mxf"));
+	if (skipSecond)
+		QVERIFY(!probedSources.contains(second.src));
+	// Choosing the copy route must not stop identity checks on later items.
+	const bool copyOrMove = request.kind == OpKind::Copy || request.kind == OpKind::Move;
+	QCOMPARE(identityProbes.size(), copyOrMove ? (skipSecond ? 1 : 2) : 0);
 }
 void TestFileOperations::advisory_destination_paths()
 {
@@ -449,7 +460,7 @@ void TestFileOperations::advisory_space_estimate_saturates()
 	OpItem item;
 	item.bytes = (std::numeric_limits<qint64>::max)();
 	request.items = {item, item};
-	QCOMPARE(OperationPlan::assessCopyMove(request).temporaryBytes, item.bytes);
+	QCOMPARE(OperationPlan::assessCopyMove(request).requiredCopyBytes, item.bytes);
 }
 void TestFileOperations::move_rechecks_advisory_strategy()
 {
@@ -492,7 +503,7 @@ void TestFileOperations::already_at_destination_move()
 														  [](const QString &, const QString &)
 														  { return false; });
 	QVERIFY(assessment.copyThenRemove);
-	QCOMPARE(assessment.temporaryBytes, qint64(f.bytes.size()));
+	QCOMPARE(assessment.requiredCopyBytes, qint64(f.bytes.size()));
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
@@ -567,7 +578,7 @@ void TestFileOperations::already_at_destination_copy_is_not_undone()
 	noEffect.name = "already.bin";
 	noEffect.bytes = before.size;
 	request.items.prepend(noEffect);
-	QCOMPARE(OperationPlan::assessCopyMove(request).temporaryBytes, qint64(f.bytes.size()));
+	QCOMPARE(OperationPlan::assessCopyMove(request).requiredCopyBytes, qint64(f.bytes.size()));
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
@@ -599,7 +610,7 @@ void TestFileOperations::already_at_destination_is_rechecked()
 													   OperationPlan::sameVolumeForRename, false,
 													   [](const QString &, const QString &)
 													   { return true; });
-	QCOMPARE(preview.temporaryBytes, qint64(0));
+	QCOMPARE(preview.requiredCopyBytes, qint64(0));
 	put(f.dest + "/clip.bin", "a different existing file");
 	Sink sink;
 	std::atomic<bool> cancel{false};
@@ -618,7 +629,7 @@ void TestFileOperations::already_at_destination_only_job()
 		auto request = f.request(kind);
 		request.destRoot = QFileInfo(f.src).absolutePath();
 		QVERIFY(OperationPlan::alreadyAtDestination(f.src, f.src));
-		QCOMPARE(OperationPlan::assessCopyMove(request).temporaryBytes, qint64(0));
+		QCOMPARE(OperationPlan::assessCopyMove(request).requiredCopyBytes, qint64(0));
 		Sink sink;
 		std::atomic<bool> cancel{false};
 		OpRunner runner(sink, cancel);

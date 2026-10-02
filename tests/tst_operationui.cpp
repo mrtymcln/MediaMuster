@@ -1596,7 +1596,7 @@ void TestOperationUi::interrupted_dialog_resume_starts_only_old_job()
 	auto old = request();
 	const auto journalPath = makeInterrupted(old);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	QSignalSpy finished(window.m_operations->m_fileOps, &OpManager::operationFinished);
+	QSignalSpy finished(window.m_operations->m_operationManager, &OpManager::operationFinished);
 	clickInterrupted("resumeInterruptedJobButton");
 	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
@@ -1638,7 +1638,7 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	window.onScanFinished({copied});
 	QCOMPARE(window.m_projectList->count(), 1);
 	QSignalSpy restored(window.m_operations, &FileOperationController::originalsRestored);
-	QSignalSpy finished(window.m_operations->m_fileOps, &OpManager::operationFinished);
+	QSignalSpy finished(window.m_operations->m_operationManager, &OpManager::operationFinished);
 	clickInterrupted("resumeInterruptedJobButton");
 	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
@@ -1885,17 +1885,17 @@ void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention
 	retirement.state = OpResult::State::SourceRetained;
 	retirement.source = retired.mediaFilePath;
 	retirement.sourceRemoved = true;
-	emit window.m_operations->m_fileOps->operationResult(retirement);
+	emit window.m_operations->m_operationManager->operationResult(retirement);
 	OpResult removal;
 	removal.state = OpResult::State::NeedsAttention;
 	removal.source = removed.mediaFilePath;
 	removal.sourceRemoved = true;
-	emit window.m_operations->m_fileOps->operationResult(removal);
+	emit window.m_operations->m_operationManager->operationResult(removal);
 	OpResult kept;
 	kept.state = OpResult::State::NeedsAttention;
 	kept.source = retained.mediaFilePath;
-	emit window.m_operations->m_fileOps->operationResult(kept);
-	emit window.m_operations->m_fileOps->operationFinished(0, 3);
+	emit window.m_operations->m_operationManager->operationResult(kept);
+	emit window.m_operations->m_operationManager->operationFinished(0, 3);
 	QTRY_COMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, retained.mediaFilePath);
 }
@@ -2143,7 +2143,7 @@ void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
 	QVERIFY(!window.m_operations->dispatchRequest(request("competing")));
 	QVERIFY(!window.m_operations->resolvePreviousJob());
 	window.m_operations->undoLastOperation();
-	QVERIFY(!window.m_operations->m_fileOps->isRunning());
+	QVERIFY(!window.m_operations->m_operationManager->isRunning());
 	QVERIFY(OpJournal::scan().isEmpty());
 	QVERIFY(!QFileInfo::exists(path("competing/destination/clip-0.bin")));
 }
@@ -2219,7 +2219,7 @@ void TestOperationUi::preview_background_checks_discard_superseded_results()
 	QCoreApplication::processEvents();
 	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
 	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->text(1), latestDestination + '/' + source.name);
-	QCOMPARE(dialog.m_assessment.temporaryBytes, source.bytes);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
 	QVERIFY(dialog.m_btnExecute->isEnabled());
 	{
 		BlockPool block;
@@ -2249,20 +2249,20 @@ void TestOperationUi::preview_policy_changes_refresh_space_and_same_file_is_no_e
 	ManageMediaDialog dialog({file});
 	dialog.m_destPath->setText(fixture.destRoot);
 	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
-	QCOMPARE(dialog.m_assessment.temporaryBytes, source.bytes);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
 	QCOMPARE(dialog.m_perFileConflictCombos.size(), 1);
 	auto *policy = dialog.m_perFileConflictCombos.value(source.src);
 	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::Skip)));
 	QVERIFY(dialog.m_checkingDest);
 	QVERIFY(!dialog.m_btnExecute->isEnabled());
 	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
-	QCOMPARE(dialog.m_assessment.temporaryBytes, qint64(0));
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, qint64(0));
 	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::KeepBoth)));
 	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
-	QCOMPARE(dialog.m_assessment.temporaryBytes, source.bytes);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
 	dialog.m_destPath->setText(QFileInfo(source.src).absolutePath());
 	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
-	QCOMPARE(dialog.m_assessment.temporaryBytes, qint64(0));
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, qint64(0));
 	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
 	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->toolTip(1), QStringLiteral("Already at destination; no change needed."));
 }

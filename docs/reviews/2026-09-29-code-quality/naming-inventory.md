@@ -1,5 +1,9 @@
 # MediaMuster naming inventory
 
+Operation cleanup, 3 October 2026: copy/move assessment stops relocation probes once the whole job requires copying, while continuing identity checks and byte totals. Removed the unreachable Undo-action null guard. Assessment tests use an explicit fake identity probe and cover forced copying plus a first-file copy requirement. No journal contract changes.
+
+Operation controller update, 3 October 2026: queued result and completion callbacks now use onOperationResult and onOperationFinished, preserving their update order. m_operationManager, requiredCopyBytes, fileName, destinationRoot, preserveAvidStructure, sourceStorage and destinationStorage clarify the approved names. Callback formatting and comments are tidied. The preserveAvidStructure name applies to the destinationPath parameter; persisted request fields and journal schema/strings/version 2 are unchanged. Historical scopes and locations remain unchanged.
+
 MainWindow comments update, 3 October 2026: removed narration and shortened explanations of selection, scan paths, signals, labels and debouncing. Master MobId terminology is standardised. Executable source was verified unchanged after removing standalone comments and blank lines. The broader focused MainWindow review is deferred until the end of the remaining area reviews.
 
 Volume list update, 3 October 2026: manual additions resolve paths before duplicate checks and select their row after insertion. Refresh restores manual entries directly and deliberately clears selection, following the user-selected Qt default. Manual and detected aliases share one row; collision labels are computed across the combined list. avidVolumeCount and manualPathsToRestore replace ac and manualCopy. Journal behaviour is unchanged.
@@ -1693,7 +1697,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 77 | Method | FileOperationController | closeTrashFallback | closeTrashFallback | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 77 | Parameter | FileOperationController::closeTrashFallback | requestId | requestId | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 78 | Field | FileOperationController | m_window | m_window | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 79 | Field | FileOperationController | m_fileOps | m_fileOps | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 79 | Field | FileOperationController | m_fileOps | m_operationManager | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 80 | Field | FileOperationController | m_progressDialog | m_progressDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 81 | Field | FileOperationController | m_trashFallbackDialog | m_trashFallbackDialog | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 82 | Field | FileOperationController | m_trashFallbackRequest | m_trashFallbackRequest | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4508,10 +4512,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | Line | Kind | Scope | Current | Recommended | Decision | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 | 8 | Namespace | | OperationPlan | OperationPlan | Keep | Retain the established build, macro or namespace contract. |
-| 10 | Parameter | OperationPlan::destinationPath | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 10 | Parameter | OperationPlan::destinationPath | name | fileName | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 10 | Parameter | OperationPlan::destinationPath | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 10 | Parameter | OperationPlan::destinationPath | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 11 | Parameter | OperationPlan::destinationPath | preserve | preserve | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 10 | Parameter | OperationPlan::destinationPath | root | destinationRoot | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
+| 11 | Parameter | OperationPlan::destinationPath | preserve | preserveAvidStructure | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 11 | Parameter | OperationPlan::destinationPath | omfEra | omfEra | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 20 | Parameter | OperationPlan::findKeepBothPath | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 22 | Variable | OperationPlan::findKeepBothPath | info | info | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4521,8 +4525,8 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 35 | Parameter | OperationPlan::sameVolumeForRename | source | source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 35 | Parameter | OperationPlan::sameVolumeForRename | destination | destination | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 37 | Variable | OperationPlan::sameVolumeForRename | parent | parent | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 40 | Variable | OperationPlan::sameVolumeForRename | a | a | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
-| 40 | Variable | OperationPlan::sameVolumeForRename | b | b | Keep | Short conventional name retained when local context supplies its meaning; no mechanical lengthening. |
+| 40 | Variable | OperationPlan::sameVolumeForRename | a | sourceStorage | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
+| 40 | Variable | OperationPlan::sameVolumeForRename | b | destinationStorage | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 45 | Parameter | OperationPlan::alreadyAtDestination | source | source | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 45 | Parameter | OperationPlan::alreadyAtDestination | destination | destination | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 49 | Variable | OperationPlan::alreadyAtDestination | error | error | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4544,10 +4548,10 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | --- | --- | --- | --- | --- | --- | --- |
 | 8 | Namespace | | OperationPlan | OperationPlan | Keep | Retain the established build, macro or namespace contract. |
 | 10 | Function | OperationPlan | destinationPath | destinationPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 10 | Parameter | OperationPlan::destinationPath | name | name | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 10 | Parameter | OperationPlan::destinationPath | name | fileName | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 10 | Parameter | OperationPlan::destinationPath | mediaFolderName | mediaFolderName | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 10 | Parameter | OperationPlan::destinationPath | root | root | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 11 | Parameter | OperationPlan::destinationPath | preserve | preserve | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 10 | Parameter | OperationPlan::destinationPath | root | destinationRoot | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
+| 11 | Parameter | OperationPlan::destinationPath | preserve | preserveAvidStructure | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 11 | Parameter | OperationPlan::destinationPath | omfEra | omfEra | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Function | OperationPlan | findKeepBothPath | findKeepBothPath | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 12 | Parameter | OperationPlan::findKeepBothPath | path | path | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
@@ -4559,7 +4563,7 @@ Use Find to locate a filename or identifier. The companion HTML has search, filt
 | 14 | Parameter | OperationPlan::alreadyAtDestination | destination | destination | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
 | 16 | Struct | OperationPlan | CopyMoveAssessment | CopyMoveAssessment | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 18 | Field | OperationPlan::CopyMoveAssessment | copyThenRemove | copyThenRemove | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
-| 19 | Field | OperationPlan::CopyMoveAssessment | temporaryBytes | temporaryBytes | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |
+| 19 | Field | OperationPlan::CopyMoveAssessment | temporaryBytes | requiredCopyBytes | Implemented | Clarifies the manager, destination structure, storage probe or copy-space estimate. |
 | 21 | Type alias | OperationPlan | CanRelocate | CanRelocate | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 22 | Type alias | OperationPlan | SameFile | SameFile | Keep | Existing domain or scoped type name is clear; no forced synonym. |
 | 27 | Function | OperationPlan | assessCopyMove | assessCopyMove | Keep | No clear improvement from the naming rules; retain pending a more specific semantic reason. |

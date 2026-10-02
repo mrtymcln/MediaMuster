@@ -7,8 +7,8 @@
 // reserve paths or authorize mutations; the runner rechecks live storage.
 namespace OperationPlan
 {
-	QString destinationPath(const QString &name, const QString &mediaFolderName, const QString &root,
-							bool preserve, bool omfEra = false);
+	QString destinationPath(const QString &fileName, const QString &mediaFolderName, const QString &destinationRoot,
+							bool preserveAvidStructure, bool omfEra = false);
 	std::optional<QString> findKeepBothPath(const QString &path);
 	bool sameVolumeForRename(const QString &source, const QString &destination);
 	bool alreadyAtDestination(const QString &source, const QString &destination);
@@ -16,7 +16,7 @@ namespace OperationPlan
 	struct CopyMoveAssessment
 	{
 		bool copyThenRemove = false;
-		qint64 temporaryBytes = 0;
+		qint64 requiredCopyBytes = 0;
 	};
 	using CanRelocate = std::function<bool(const QString &, const QString &)>;
 	using SameFile = std::function<bool(const QString &, const QString &)>;
