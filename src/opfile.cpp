@@ -482,10 +482,11 @@ std::unique_ptr<OpFile> OpFile::openImpl(const QString &path, bool create, bool 
 		return {};
 	}
 #else
+	// A named pipe must not block before the regular file check.
 	fd = ::open(QFile::encodeName(path).constData(),
 				(create ? O_RDWR | O_CREAT | O_EXCL : writable ? O_RDWR
 															   : O_RDONLY) |
-					O_NOFOLLOW | O_CLOEXEC,
+					O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK,
 				0600);
 	if (fd < 0)
 	{

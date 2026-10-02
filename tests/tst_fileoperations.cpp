@@ -246,6 +246,8 @@ private slots:
 	void second_runner_cannot_change_files();
 	void facade_refuses_second_job_without_cancelling_first();
 	void rebalance_cancel_before_queued_dispatch_keeps_source();
+	void rebalance_replacement_ignores_queued_preparation_data();
+	void rebalance_replacement_ignores_queued_preparation();
 	void rebalance_rejected_preparation_aborts_data();
 	void rebalance_rejected_preparation_aborts();
 	void rebalance_empty_plan_finishes_without_aborting();
@@ -1650,6 +1652,73 @@ void TestFileOperations::rebalance_cancel_before_queued_dispatch_keeps_source()
 	QCOMPARE(get(source), bytes);
 	QVERIFY(!QFile::exists(root + "/2/clip.mxf"));
 	QVERIFY(OpJournal::scan(f.journals).isEmpty());
+}
+
+void TestFileOperations::rebalance_replacement_ignores_queued_preparation_data()
+{
+	QTest::addColumn<bool>("oldPlanUnavailable");
+	QTest::newRow("old-start-is-ignored") << false;
+	QTest::newRow("old-failure-is-ignored") << true;
+}
+
+void TestFileOperations::rebalance_replacement_ignores_queued_preparation()
+{
+	QFETCH(bool, oldPlanUnavailable);
+	Fixture f;
+	ScopedJournalDirectory journals(f.journals);
+	const QString root = f.root + "/Avid MediaFiles/MXF";
+	const QString source = root + "/1/clip.mxf";
+	const QByteArray bytes("Disposable media");
+	put(source, bytes);
+	RebalancePlan replacement;
+	replacement.mxfRootPath = root;
+	replacement.ops.append({source, NumberedMxfFolder{{}, 3}, {}, bytes.size(), -1, {}});
+	RebalancePlan original = replacement;
+	original.ops[0].dest = NumberedMxfFolder{{}, 2};
+	if (oldPlanUnavailable)
+		original.mxfRootPath = root + "-offline";
+
+	Rebalancer rebalancer;
+	class ReplaceAtDispatch : public QObject
+	{
+	public:
+		ReplaceAtDispatch(Rebalancer &worker, const RebalancePlan &plan)
+			: m_worker(worker), m_plan(plan) {}
+		bool replaced = false;
+
+	protected:
+		bool eventFilter(QObject *watched, QEvent *event) override
+		{
+			if (event->type() == QEvent::MetaCall && !replaced)
+			{
+				replaced = true;
+				m_worker.executeAsync(m_plan);
+			}
+			return QObject::eventFilter(watched, event);
+		}
+
+	private:
+		Rebalancer &m_worker;
+		const RebalancePlan &m_plan;
+	} replaceAtDispatch(rebalancer, replacement);
+	rebalancer.installEventFilter(&replaceAtDispatch);
+	QSignalSpy finished(&rebalancer, &Rebalancer::finished);
+	QSignalSpy aborted(&rebalancer, &Rebalancer::aborted);
+	QSignalSpy results(&rebalancer, &Rebalancer::operationResult);
+	rebalancer.executeAsync(original);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
+	QVERIFY(replaceAtDispatch.replaced);
+	QCOMPARE(finished.first().at(0).toInt(), 1);
+	QCOMPARE(finished.first().at(1).toInt(), 0);
+	QVERIFY(!finished.first().at(2).toBool());
+	QVERIFY(aborted.isEmpty());
+	QCOMPARE(results.size(), 1);
+	QCOMPARE(get(root + "/3/clip.mxf"), bytes);
+	QVERIFY(!QFile::exists(root + "/2/clip.mxf"));
+	QVERIFY(!QFile::exists(source));
+	const auto records = OpJournal::scan(f.journals);
+	QCOMPARE(records.size(), 1);
+	QCOMPARE(records.first().entries.first().dst, root + "/3/clip.mxf");
 }
 
 void TestFileOperations::rebalance_rejected_preparation_aborts_data()

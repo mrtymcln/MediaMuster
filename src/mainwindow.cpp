@@ -1826,8 +1826,12 @@ void MainWindow::onInvertSelection()
 	// Snapshot the currently selected proxy rows so the inversion
 	// pass is O(1) per row.
 	QSet<int> currentlySelected;
+	auto hiddenSelectedPaths = m_persistentSelectedPaths;
 	for (const QModelIndex &idx : selModel->selectedRows())
+	{
 		currentlySelected.insert(idx.row());
+		hiddenSelectedPaths.remove(fileAtProxyRow(idx.row()).mediaFilePath);
+	}
 	QVector<int> rows;
 	for (int row = 0; row < rowCount; ++row)
 	{
@@ -1840,6 +1844,8 @@ void MainWindow::onInvertSelection()
 	selModel->clearSelection();
 	if (newCount > 0)
 		selModel->select(newSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	// Selection changes record visible rows only; keep the hidden selections too.
+	m_persistentSelectedPaths.unite(hiddenSelectedPaths);
 
 	addLog(QtInfoMsg, QStringLiteral("app"),
 		   QStringLiteral("Selection inverted: %1 of %2 visible row%3 selected.")

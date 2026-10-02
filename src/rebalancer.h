@@ -63,6 +63,7 @@ private:
 	OpManager *m_engine = nullptr;
 
 	std::atomic<bool> m_cancelRequested{false};
+	quint64 m_preparationRequestId = 0; // Accessed only on the owner thread.
 
 	/// Request preparation runs here so it cannot freeze the GUI. The
 	/// renames themselves run on the engine's own worker.

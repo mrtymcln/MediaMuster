@@ -46,6 +46,7 @@ private slots:
 	void file_identity_survives_plan_and_request();
 	void invalid_request_member_rejects_whole_plan();
 	void directory_aliases_cannot_redirect_rebalance();
+	void home_full_falls_back_to_existing_folder_data();
 	void home_full_falls_back_to_existing_folder();
 	void new_folder_when_all_existing_are_full();
 
@@ -404,17 +405,27 @@ void TestRebalancePlanner::host_prefix_isolates_consolidation()
 	QCOMPARE(opsBetween(p, "Ingest1.32", "Ingest1.1"), 1);
 }
 
+void TestRebalancePlanner::home_full_falls_back_to_existing_folder_data()
+{
+	QTest::addColumn<int>("destinationFillers");
+	QTest::addColumn<bool>("fits");
+	QTest::newRow("plenty-of-space") << 0 << true;
+	QTest::newRow("fits-exactly") << 4996 << true;
+	QTest::newRow("would-exceed-limit") << 4997 << false;
+}
+
 void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
 {
+	QFETCH(int, destinationFillers);
+	QFETCH(bool, fits);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 
-	// "1" is at the target (4999 fillers + 1 C1 member = 5000).
-	// "2" holds 3 C1 strays + 0 fillers (3 on disk). The C1 group of
-	// 4 members can't all fit in home "1" (would be 5003). First-fit
-	// finds "2" (3 + 4 = 7). Plan moves the "1" member to "2".
+	// Home is full. Folder 2 already holds three relatives, so only one
+	// additional slot is needed to reunite the group there.
 	makeFillers(root, "1", 4999);
+	makeFillers(root, "2", destinationFillers);
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "home_member.mxf", "C1"),
 		makeMxf(root, "2", "stray_a.mxf", "C1"),
@@ -423,9 +434,26 @@ void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
 	};
 
 	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
-	QCOMPARE(p.ops.size(), 1);
-	QCOMPARE(opsBetween(p, "1", "2"), 1);
-	QCOMPARE(p.newFolders.size(), 0);
+	if (fits)
+	{
+		QCOMPARE(p.ops.size(), 1);
+		QCOMPARE(opsBetween(p, "1", "2"), 1);
+		QVERIFY(p.newFolders.isEmpty());
+	}
+	else
+	{
+		QCOMPARE(p.ops.size(), 4);
+		QCOMPARE(p.newFolders.size(), 1);
+		QCOMPARE(p.newFolders.first().display(), QStringLiteral("3"));
+		QCOMPARE(opsBetween(p, "1", "3"), 1);
+		QCOMPARE(opsBetween(p, "2", "3"), 3);
+	}
+	for (const auto &folder : p.folders)
+	{
+		const int finalCount = folder.count + folder.filesIn - folder.filesOut;
+		QVERIFY(finalCount >= 0);
+		QVERIFY(finalCount <= Conventions::kFolderMax);
+	}
 }
 
 void TestRebalancePlanner::new_folder_when_all_existing_are_full()

@@ -157,6 +157,8 @@ private slots:
 	void select_relatives_counts_all_visible_matches();
 	void select_relatives_counts_master_ids_even_when_names_match();
 	void select_relatives_preserves_hidden_selections_without_using_them_as_seeds();
+	void invert_selection_preserves_hidden_selections_data();
+	void invert_selection_preserves_hidden_selections();
 	void text_editing_shortcuts_remain_native();
 	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
@@ -942,6 +944,64 @@ void TestOperationUi::select_relatives_preserves_hidden_selections_without_using
 	window.onSearchChanged({});
 	QCOMPARE(window.m_proxy->rowCount(), 4);
 	QCOMPARE(selectedPaths(), QSet<QString>({files[0].mediaFilePath, files[1].mediaFilePath, files[2].mediaFilePath}));
+}
+
+void TestOperationUi::invert_selection_preserves_hidden_selections_data()
+{
+	QTest::addColumn<int>("selectedVisibleCount");
+	QTest::newRow("none-visible-selected") << 0;
+	QTest::newRow("some-visible-selected") << 1;
+	QTest::newRow("all-visible-selected") << 2;
+}
+
+void TestOperationUi::invert_selection_preserves_hidden_selections()
+{
+	QFETCH(int, selectedVisibleCount);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(3);
+	for (int row = 0; row < files.size(); ++row)
+	{
+		auto &file = files[row];
+		file.fileName = row < 2 ? QStringLiteral("visible-%1.mxf").arg(row) : QStringLiteral("hidden.mxf");
+		file.mediaFilePath = path(file.fileName);
+		file.kind = MediaFile::Kind::Audio;
+	}
+	window.onScanFinished(files);
+	QSet<QString> initialPaths{files[2].mediaFilePath};
+	for (int row = 0; row < files.size(); ++row)
+	{
+		if (row < 2 && row >= selectedVisibleCount)
+			continue;
+		window.m_tableView->selectionModel()->select(
+			window.m_proxy->mapFromSource(window.m_model->index(row, 0)),
+			QItemSelectionModel::Select | QItemSelectionModel::Rows);
+		initialPaths.insert(files[row].mediaFilePath);
+	}
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> paths;
+		for (const auto &file : window.selectedFiles())
+			paths.insert(file.mediaFilePath);
+		return paths;
+	};
+	QCOMPARE(selectedPaths(), initialPaths);
+
+	window.onSearchChanged(QStringLiteral("visible-"));
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	window.onInvertSelection();
+	QSet<QString> invertedPaths;
+	for (int row = selectedVisibleCount; row < 2; ++row)
+		invertedPaths.insert(files[row].mediaFilePath);
+	QCOMPARE(selectedPaths(), invertedPaths);
+	window.onSearchChanged({});
+	invertedPaths.insert(files[2].mediaFilePath);
+	QCOMPARE(selectedPaths(), invertedPaths);
+
+	// Inverting twice restores the visible selection without losing the hidden one.
+	window.onSearchChanged(QStringLiteral("visible-"));
+	window.onInvertSelection();
+	window.onSearchChanged({});
+	QCOMPARE(selectedPaths(), initialPaths);
 }
 
 void TestOperationUi::text_editing_shortcuts_remain_native()

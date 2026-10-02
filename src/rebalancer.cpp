@@ -43,12 +43,13 @@ Rebalancer::~Rebalancer()
 
 void Rebalancer::executeAsync(const RebalancePlan &plan)
 {
+	const auto requestId = ++m_preparationRequestId;
 	m_cancelRequested.store(false, std::memory_order_release);
 
 	// Build the grouped request off the GUI thread. The engine owns every
 	// filesystem change, including folder creation and database retirement.
 	m_preflight.start(
-		[this, plan]
+		[this, plan, requestId]
 		{
 			// MARK: Build the engine request, group-contiguously
 			//
@@ -59,24 +60,22 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 			// the run with every completed move recorded for recovery.
 			OpRequest req = RebalancePlanner::requestForPlan(plan);
 
-			// A cancel that raced the pre-flight: stop before dispatch.
-			if (m_preflight.isCancelled())
-			{
-				emit finished(0, 0, /*cancelled=*/true);
-				return;
-			}
-			if (!plan.ops.isEmpty() && req.items.isEmpty())
-			{
-				emit aborted(tr("The media files are unavailable. Rescan and try again."));
-				return;
-			}
+			const bool cancelled = m_preflight.isCancelled();
+			const bool unavailable = !plan.ops.isEmpty() && req.items.isEmpty();
 
-			// Phase 2 must start from the GUI thread — BackgroundJob's
-			// start() manages its worker from its owner's thread — so
-			// hop back queued. This worker then exits.
+			// Deliver preparation outcomes on the owner thread so a replacement
+			// can invalidate both queued starts and queued failure messages.
 			QMetaObject::invokeMethod(
-				this, [this, req = std::move(req)]() mutable
-				{ startEngineRun(std::move(req)); },
+				this, [this, requestId, cancelled, unavailable, req = std::move(req)]() mutable
+				{
+					if (requestId != m_preparationRequestId)
+						return;
+					if (cancelled)
+						emit finished(0, 0, /*cancelled=*/true);
+					else if (unavailable)
+						emit aborted(tr("The media files are unavailable. Rescan and try again."));
+					else
+						startEngineRun(std::move(req)); },
 				Qt::QueuedConnection);
 		});
 }

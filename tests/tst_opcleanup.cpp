@@ -5,12 +5,12 @@
 #include <QTest>
 #include <QUuid>
 #ifdef Q_OS_MAC
-#include <QProcess>
 #include <sys/acl.h>
 #include <fcntl.h>
 #include <unistd.h>
 #endif
 #ifndef Q_OS_WIN
+#include <QProcess>
 #include <sys/stat.h>
 #endif
 
@@ -198,6 +198,29 @@ private slots:
 	}
 
 #ifndef Q_OS_WIN
+	void named_pipe_is_rejected_without_waiting_for_a_writer()
+	{
+		Fixture f;
+		const QString pipe = f.root + "/selected.mxf";
+		QVERIFY(::mkfifo(QFile::encodeName(pipe).constData(), 0600) == 0);
+		// Use a child so a blocking open fails this test without hanging the suite.
+		QProcess probe;
+		probe.start(QCoreApplication::applicationFilePath(), {"--reject-fifo", pipe});
+		QVERIFY(probe.waitForStarted());
+		const bool finished = probe.waitForFinished(3000);
+		if (!finished)
+		{
+			probe.kill();
+			probe.waitForFinished();
+		}
+		QVERIFY2(finished, "Opening a named pipe waited for a writer.");
+		QCOMPARE(probe.exitStatus(), QProcess::NormalExit);
+		QCOMPARE(probe.exitCode(), 0);
+		struct stat info{};
+		QVERIFY(::lstat(QFile::encodeName(pipe).constData(), &info) == 0);
+		QVERIFY(S_ISFIFO(info.st_mode));
+	}
+
 	void broadened_permissions_retain_partial()
 	{
 		Fixture f;
@@ -256,5 +279,19 @@ private slots:
 #endif
 };
 
-QTEST_GUILESS_MAIN(TestOpCleanup)
+int main(int argc, char **argv)
+{
+	QCoreApplication app(argc, argv);
+#ifndef Q_OS_WIN
+	const auto arguments = app.arguments();
+	if (arguments.size() == 3 && arguments[1] == "--reject-fifo")
+	{
+		QString error;
+		const auto file = OpFile::open(arguments[2], false, error);
+		return !file && error == "Only regular files are supported." ? 0 : 1;
+	}
+#endif
+	TestOpCleanup test;
+	return QTest::qExec(&test, argc, argv);
+}
 #include "tst_opcleanup.moc"

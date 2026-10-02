@@ -430,7 +430,10 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		for (int n : sortedNs)
 		{
 			NumberedMxfFolder cand{prefix, n};
-			if (projected.value(cand, 0) + size <= Conventions::kFolderMax)
+			const auto membersAtDestination = std::count_if(g.members.cbegin(), g.members.cend(),
+				[&cand](const IndexedMedia &member) { return member.folder == cand; });
+			// These members are already included in the destination's count.
+			if (projected.value(cand, 0) + size - membersAtDestination <= Conventions::kFolderMax)
 			{
 				dest = cand;
 				found = true;

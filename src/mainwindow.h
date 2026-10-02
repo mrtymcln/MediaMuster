@@ -148,10 +148,7 @@ private:
 	/// the persistent path set after the mutation runs.
 	void applyFilterPreservingSelection(const std::function<void()> &mutation);
 
-	/// Preserves the editor's current selection across the refresh
-	/// and merges manually-added paths from m_manualVolumes. Called
-	/// from both refreshVolumes (sync, startup / menu) and the
-	/// volumesChanged handler (hot mount refresh from the async poller).
+	/// Keeps manually-added paths when detected volumes change.
 	void rebuildVolumeList(const QVector<VolumeInfo> &volumes);
 
 	void rebuildFilterChips();
