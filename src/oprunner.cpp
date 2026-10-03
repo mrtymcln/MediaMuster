@@ -1344,552 +1344,610 @@ bool OpRunner::copiesReadyForRemoval(const OpJournal &journal, const OpRequest &
 	return ready;
 }
 
-OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
+// Per-run bookkeeping shared by the ordered execution phases. The request,
+// journal and operation lock remain owned by run().
+struct OpRunner::RunState
 {
-	if (!input.restoreJournalPath.isEmpty())
-		return restoreOriginals(input, directory);
 	Totals totals;
 	QString error;
 	QHash<QString, int> trashCounts;
-	const auto ownerPath = input.resumeJournalPath.isEmpty() ? input.undoJournalPath : input.resumeJournalPath;
-	const auto lockDirectory = ownerPath.isEmpty() ? directory : QFileInfo(ownerPath).absolutePath();
-	auto lock = OpJournal::acquire(lockDirectory, error);
-	if (!lock)
-	{
-		m_sink.log(QtCriticalMsg, error);
-		totals.failed = 1;
-		return totals;
-	}
-	OpRequest request = input;
-	OpJournal journal;
 	QSet<int> failedReconciliation;
-	try
+	// Snapshot for group planning; read current execution state from the journal.
+	QVector<OpJournal::Entry> initialEntries;
+	QSet<int> deferredRemovals;
+	QVector<int> undoDiscards;
+	QVector<int> trashFallbacks;
+	int mediaTotal = 0;
+	int workTotal = 0;
+	std::optional<OpJournal::Record> undoOriginal;
+};
+
+void OpRunner::resumeRunJournal(OpRequest &request, OpJournal &journal, RunState &state,
+								const QString &lockDirectory)
+{
+	const auto saved = OpJournal::readOne(request.resumeJournalPath);
+	if (!saved)
+		throw std::runtime_error("Cannot read the requested operation journal.");
+	auto rec = *saved;
+	if (rec.dismissed || !rec.undoPath.isEmpty())
+		throw std::runtime_error("This job was abandoned or has already started Undo.");
+	for (const auto &other : OpJournal::scan(lockDirectory))
+		if (other.request.undoOf == rec.path)
+			throw std::runtime_error("This job has already started Undo.");
+	if (!OpJournal::resolve(rec, state.error) || !journal.resume(rec, state.error))
+		throw std::runtime_error(state.error.toStdString());
+	request = rec.request;
+	if (!request.undoOf.isEmpty())
 	{
-		if (!request.resumeJournalPath.isEmpty())
+		auto original = OpJournal::readOne(request.undoOf);
+		if (!original || (!original->undoPath.isEmpty() && original->undoPath != journal.path()))
+			throw std::runtime_error("Cannot confirm which job owns this Undo.");
+		OpJournal claimed;
+		if (!claimed.resume(*original, state.error) || !claimed.claimUndo(journal.path()))
+			throw std::runtime_error("Cannot save ownership of the interrupted Undo.");
+	}
+	for (auto e : rec.entries)
+		if (!e.complete() && e.step != Step::Planned)
 		{
-			const auto saved = OpJournal::readOne(request.resumeJournalPath);
-			if (!saved)
-				throw std::runtime_error("Cannot read the requested operation journal.");
-			auto rec = *saved;
-			if (rec.dismissed || !rec.undoPath.isEmpty())
-				throw std::runtime_error("This job was abandoned or has already started Undo.");
-			for (const auto &other : OpJournal::scan(lockDirectory))
-				if (other.request.undoOf == rec.path)
-					throw std::runtime_error("This job has already started Undo.");
-			if (!OpJournal::resolve(rec, error) || !journal.resume(rec, error))
-				throw std::runtime_error(error.toStdString());
-			request = rec.request;
-			if (!request.undoOf.isEmpty())
+			if (e.step == Step::RestoringSource)
 			{
-				auto original = OpJournal::readOne(request.undoOf);
-				if (!original || (!original->undoPath.isEmpty() && original->undoPath != journal.path()))
-					throw std::runtime_error("Cannot confirm which job owns this Undo.");
-				OpJournal claimed;
-				if (!claimed.resume(*original, error) || !claimed.claimUndo(journal.path()))
-					throw std::runtime_error("Cannot save ownership of the interrupted Undo.");
-			}
-			for (auto e : rec.entries)
-				if (!e.complete() && e.step != Step::Planned)
-				{
-					if (e.step == Step::RestoringSource)
-					{
-						const auto restored = restoreOriginal(journal, e);
-						m_sink.result(restored);
-						if (restored.state != State::OriginalRestored)
-							throw std::runtime_error(restored.message.toStdString());
-						continue;
-					}
-					if (!reconcile(journal, e, error, hooks.directorySync))
-					{
-						const bool beforePublication = e.step == Step::Failed || e.step == Step::Cancelled ||
-													   e.step == Step::Copying || e.step == Step::CopyReady;
-						if ((request.kind != OpKind::Copy && request.kind != OpKind::Move) ||
-							!beforePublication || !journal.healthy() || m_cancel.load())
-							throw std::runtime_error(error.toStdString());
-						e.error = error;
-						if (!save(journal, e, Step::Failed))
-							throw std::runtime_error(journal.error().toStdString());
-						failedReconciliation.insert(e.id);
-						++totals.failed;
-						m_sink.result(result(e, State::Failed, error));
-					}
-				}
-		}
-		else
-		{
-			for (const auto &pending : OpJournal::interrupted(lockDirectory))
-				if (request.kind != OpKind::Undo || pending.path != request.undoJournalPath)
-					throw std::runtime_error("The previous job was interrupted. Resume or stop it first.");
-			std::optional<OpJournal::Record> undoOriginal;
-			if (request.kind == OpKind::Undo)
-			{
-				undoOriginal = OpJournal::latestUndoable(lockDirectory);
-				if (!undoOriginal || undoOriginal->path != request.undoJournalPath)
-					throw std::runtime_error("Only the most recent eligible job can be undone.");
-				request = planUndo(*undoOriginal, input);
-			}
-			if ((request.kind == OpKind::Copy || request.kind == OpKind::Move) &&
-				!QDir::isAbsolutePath(request.destRoot))
-				throw std::runtime_error("Choose an absolute destination folder before starting.");
-			request.destRoot = OpJournal::canonicalPath(request.destRoot);
-			request.diagnosticTrashRoot = OpJournal::canonicalPath(request.diagnosticTrashRoot);
-			QSet<QString> batchDestinations;
-			for (auto &i : request.items)
-			{
-				if (!QDir::isAbsolutePath(i.src) ||
-					(request.kind == OpKind::Rename && !QDir::isAbsolutePath(i.renameDst)))
-					throw std::runtime_error("The source and relocation paths must be absolute.");
-				i.src = OpJournal::canonicalPath(i.src);
-				i.renameDst = OpJournal::canonicalPath(i.renameDst);
-				if (i.name.isEmpty())
-					i.name = QFileInfo(i.src).fileName();
-				if (!leaf(i.name) || (!i.mediaFolderName.isEmpty() && !leaf(i.mediaFolderName)) ||
-					(!i.policy.isEmpty() && i.policy != "keepboth" && i.policy != "skip"))
-					throw std::runtime_error(
-						"Unsupported name, folder or conflict policy. Replace is not supported.");
-				if (request.kind == OpKind::Copy || request.kind == OpKind::Move)
-				{
-					const auto key = PathKey::normalise(OperationPlan::destinationPath(
-						i.name, i.mediaFolderName, request.destRoot, request.preserve, i.omfEra));
-					if (i.policy.isEmpty() && batchDestinations.contains(key))
-						i.policy = "keepboth";
-					batchDestinations.insert(key);
-				}
-			}
-			if (request.kind == OpKind::Move)
-			{
-				auto canRelocate = [&](const QString &source, const QString &destination)
-				{
-					QString parent = QFileInfo(destination).absolutePath();
-					while (!QFileInfo::exists(parent) && QFileInfo(parent).absolutePath() != parent)
-						parent = QFileInfo(parent).absolutePath();
-					return OperationPlan::sameVolumeForRename(source, destination) &&
-						   hooks.directorySync(QFileInfo(source).absolutePath(), &error) != Sync::OkDegraded &&
-						   hooks.directorySync(parent, &error) != Sync::OkDegraded;
-				};
-				request.copyThenRemove = OperationPlan::assessCopyMove(
-											 request, canRelocate, hooks.forceCopy)
-											 .copyThenRemove;
-			}
-
-			if (!journal.create(request, lockDirectory, error))
-				throw std::runtime_error(error.toStdString());
-			if (undoOriginal)
-			{
-				OpJournal claimed;
-				if (!claimed.resume(*undoOriginal, error) || !claimed.claimUndo(journal.path()))
-					throw std::runtime_error("Undo was saved, but original ownership needs recovery.");
-			}
-		}
-		auto entries = journal.record().entries;
-		bool undoRebalance = false;
-		if (request.kind == OpKind::Undo)
-		{
-			const auto forward = OpJournal::readOne(request.undoOf);
-			undoRebalance = forward && forward->request.kind == OpKind::Rename;
-		}
-		QString group;
-		int mediaIndex = 0, mediaTotal = 0;
-		QSet<int> deferred;
-		QVector<int> discards;
-		QVector<int> trashFallbacks;
-		for (const auto &e : entries)
-			if (!e.item.maintenance)
-				++mediaTotal;
-		const bool twoStage = request.copyThenRemove || std::any_of(entries.cbegin(), entries.cend(),
-																	[](const auto &e)
-																	{ return e.undoAction == "restoreMove"; });
-		const int workTotal = twoStage ? mediaTotal * 2 : mediaTotal;
-		for (int n = 0; n < entries.size(); ++n)
-		{
-			auto e = journal.record().entries[n];
-			if (!e.item.maintenance)
-				++mediaIndex;
-			if (e.complete() || failedReconciliation.contains(e.id))
-				continue;
-			if (!journal.healthy())
-				break;
-			if (e.undoAction == "discardCopy")
-			{
-				discards.append(n);
+				const auto restored = restoreOriginal(journal, e);
+				m_sink.result(restored);
+				if (restored.state != State::OriginalRestored)
+					throw std::runtime_error(restored.message.toStdString());
 				continue;
 			}
-			if (removesAfterCopy(e, request) && (e.step == Step::Published ||
-												 e.step == Step::SourceRetained || e.step == Step::RemovingSource))
+			if (!reconcile(journal, e, state.error, hooks.directorySync))
 			{
-				deferred.insert(n);
-				continue;
-			}
-			const bool startsGroup = e.item.groupKey.isEmpty() || e.item.groupKey != group;
-			if (startsGroup)
-			{
-				if (m_cancel.load())
-				{
-					totals.cancelled = true;
-					break;
-				}
-				group = e.item.groupKey;
-				if (request.kind == OpKind::Rename && !e.item.maintenance)
-				{
-					bool conflict = false;
-					QSet<QString> destinations;
-					QHash<QString, int> incoming;
-					int end = n;
-					while (end < entries.size() && entries[end].item.groupKey == group)
-					{
-						const auto &candidate = entries[end];
-						const auto key = PathKey::normalise(candidate.item.renameDst);
-						if (!candidate.complete() && (OpFile::occupied(candidate.item.renameDst) ||
-													  destinations.contains(key)))
-							conflict = true;
-						destinations.insert(key);
-						++end;
-						if (!candidate.complete() &&
-							Conventions::countsAsEssenceName(candidate.item.name))
-							++incoming[QFileInfo(candidate.item.renameDst).absolutePath()];
-						if (group.isEmpty())
-							break;
-					}
-					bool full = false;
-					for (auto it = incoming.cbegin(); it != incoming.cend(); ++it)
-					{
-						int count = 0;
-						for (const auto &name : QDir(it.key()).entryList(
-								 QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot))
-							if (Conventions::countsAsEssenceName(name))
-								++count;
-						if (count + it.value() > Conventions::kFolderMax)
-							full = true;
-					}
-					if (conflict || full)
-					{
-						for (int k = n; k < end; ++k)
-							if (!entries[k].complete())
-							{
-								auto skipped = entries[k];
-								if (!save(journal, skipped, Step::Skipped))
-									throw std::runtime_error(journal.error().toStdString());
-								++totals.skipped;
-								m_sink.result(result(
-									skipped, State::Skipped,
-									full ? "Rebalance group skipped: a destination folder would "
-										   "exceed 5,000 files. Rescan and replan."
-										 : "Rebalance group skipped: a destination is occupied. "
-										   "Rescan and replan."));
-							}
-						n = end - 1;
-						continue;
-					}
-				}
-			}
-			if (startsGroup && request.kind == OpKind::Rename && !e.item.maintenance)
-			{
-				QSet<QString> folders;
-				for (int k = n; k < entries.size(); ++k)
-				{
-					if (k > n && (group.isEmpty() || entries[k].item.groupKey != group))
-						break;
-					if (journal.record().entries[k].complete())
-						continue;
-					folders << QFileInfo(entries[k].item.src).absolutePath()
-							<< QFileInfo(entries[k].item.renameDst).absolutePath();
-				}
-				// Check the whole group before retiring any Avid database or media.
-				for (const auto &folder : folders)
-					if (OpFile::makeDirectory(folder, error, hooks.directorySync) != Sync::Ok)
-						throw std::runtime_error(("Rebalance unavailable; source files retained.\n" +
-												  error)
-													 .toStdString());
-				if (syncFolders(folders.values(), error, hooks.directorySync) != Sync::Ok)
-					throw std::runtime_error(("Rebalance unavailable; source files retained.\n" +
-											  error)
-												 .toStdString());
-				if (!retireDatabases(journal, folders, error))
-					throw std::runtime_error(error.toStdString());
-			}
-
-			if (e.step != Step::Planned)
-			{
-				if (!reconcile(journal, e, error, hooks.directorySync))
-				{
-					m_sink.result(result(e, State::NeedsAttention, error));
-					++totals.needsAttention;
-					break;
-				}
-				if (e.complete())
-					continue;
-			}
-			m_sink.progress(label(e.item), mediaIndex, workTotal, 0);
-			if (undoRebalance && e.undoAction == "restoreRelocate" && !e.item.maintenance)
-			{
-				QSet<QString> folders{QFileInfo(e.item.src).absolutePath(),
-									  QFileInfo(e.item.renameDst).absolutePath()};
-				if (!retireDatabases(journal, folders, error))
-					throw std::runtime_error(error.toStdString());
-			}
-			if (request.kind == OpKind::Rename && !e.item.maintenance)
-			{
-				if (!journal.touchFolder(QFileInfo(e.item.src).absolutePath()) ||
-					!journal.touchFolder(QFileInfo(e.item.renameDst).absolutePath()))
+				const bool beforePublication = e.step == Step::Failed || e.step == Step::Cancelled ||
+											   e.step == Step::Copying || e.step == Step::CopyReady;
+				if ((request.kind != OpKind::Copy && request.kind != OpKind::Move) ||
+					!beforePublication || !journal.healthy() || m_cancel.load())
+					throw std::runtime_error(state.error.toStdString());
+				e.error = state.error;
+				if (!save(journal, e, Step::Failed))
 					throw std::runtime_error(journal.error().toStdString());
-			}
-			const auto outcome = executeWithRetries(
-				journal, e, request.kind, mediaIndex, workTotal, error);
-			if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
-			{
-				trashFallbacks.append(n);
-				continue;
-			}
-			if (outcome.state == State::SourceRetained && removesAfterCopy(e, request))
-			{
-				deferred.insert(n);
-				if (m_cancel.load())
-				{
-					totals.cancelled = true;
-					break;
-				}
-				continue;
-			}
-			if (!e.item.maintenance)
-				m_sink.result(outcome);
-			else if (outcome.state != State::Completed)
-				m_sink.log(QtCriticalMsg, "Avid database relocation stopped: " + outcome.message);
-			if (outcome.state == State::Completed)
-			{
-				if (!e.item.maintenance)
-					++totals.succeeded;
-				if (request.kind == OpKind::Delete && !e.item.maintenance && e.trashProvider == "mediamuster")
-				{
-					QDir trash(QFileInfo(e.dst).absolutePath());
-					trash.cdUp();
-					trash.cdUp();
-					++trashCounts[trash.path()];
-				}
-			}
-			else if (outcome.state == State::NoEffect)
-				++totals.unchanged;
-			else if (outcome.state == State::SourceRetained)
-				++totals.retained;
-			else if (outcome.state == State::Skipped)
-				++totals.skipped;
-			else if (outcome.state == State::Cancelled)
-			{
-				totals.cancelled = true;
-				break;
-			}
-			else
-			{
-				if (outcome.state == State::NeedsAttention)
-					++totals.needsAttention;
-				else
-					++totals.failed;
-				if (outcome.state == State::NeedsAttention || request.kind == OpKind::Rename ||
-					request.kind == OpKind::Undo || !journal.healthy())
-					break;
+				state.failedReconciliation.insert(e.id);
+				++state.totals.failed;
+				m_sink.result(result(e, State::Failed, state.error));
 			}
 		}
-		bool ready = copiesReadyForRemoval(journal, request, totals, error);
-		if (ready && !deferred.isEmpty() && !journal.record().copiesComplete)
+}
+
+void OpRunner::createRunJournal(const OpRequest &input, OpRequest &request, OpJournal &journal,
+								RunState &state, const QString &lockDirectory)
+{
+	for (const auto &pending : OpJournal::interrupted(lockDirectory))
+		if (request.kind != OpKind::Undo || pending.path != request.undoJournalPath)
+			throw std::runtime_error("The previous job was interrupted. Resume or stop it first.");
+	std::optional<OpJournal::Record> undoOriginal;
+	if (request.kind == OpKind::Undo)
+	{
+		undoOriginal = OpJournal::latestUndoable(lockDirectory);
+		if (!undoOriginal || undoOriginal->path != request.undoJournalPath)
+			throw std::runtime_error("Only the most recent eligible job can be undone.");
+		request = planUndo(*undoOriginal, input);
+	}
+	if ((request.kind == OpKind::Copy || request.kind == OpKind::Move) &&
+		!QDir::isAbsolutePath(request.destRoot))
+		throw std::runtime_error("Choose an absolute destination folder before starting.");
+	request.destRoot = OpJournal::canonicalPath(request.destRoot);
+	request.diagnosticTrashRoot = OpJournal::canonicalPath(request.diagnosticTrashRoot);
+	QSet<QString> batchDestinations;
+	for (auto &i : request.items)
+	{
+		if (!QDir::isAbsolutePath(i.src) ||
+			(request.kind == OpKind::Rename && !QDir::isAbsolutePath(i.renameDst)))
+			throw std::runtime_error("The source and relocation paths must be absolute.");
+		i.src = OpJournal::canonicalPath(i.src);
+		i.renameDst = OpJournal::canonicalPath(i.renameDst);
+		if (i.name.isEmpty())
+			i.name = QFileInfo(i.src).fileName();
+		if (!leaf(i.name) || (!i.mediaFolderName.isEmpty() && !leaf(i.mediaFolderName)) ||
+			(!i.policy.isEmpty() && i.policy != "keepboth" && i.policy != "skip"))
+			throw std::runtime_error(
+				"Unsupported name, folder or conflict policy. Replace is not supported.");
+		if (request.kind == OpKind::Copy || request.kind == OpKind::Move)
 		{
-			if (!journal.markCopiesComplete())
-				throw std::runtime_error(journal.error().toStdString());
-			checkpoint("copies-complete", journal.record().entries[*deferred.cbegin()]);
+			const auto key = PathKey::normalise(OperationPlan::destinationPath(
+				i.name, i.mediaFolderName, request.destRoot, request.preserve, i.omfEra));
+			if (i.policy.isEmpty() && batchDestinations.contains(key))
+				i.policy = "keepboth";
+			batchDestinations.insert(key);
 		}
-		for (int n = 0; n < journal.record().entries.size(); ++n)
+	}
+	if (request.kind == OpKind::Move)
+	{
+		auto canRelocate = [&](const QString &source, const QString &destination)
 		{
-			if (!deferred.contains(n))
-				continue;
-			auto e = journal.record().entries[n];
-			const auto outcome = [&]
-			{
-				if (m_cancel.load() && e.needsOriginalRestoration())
-					return restoreOriginal(journal, e);
-				if (ready && !m_cancel.load())
-					return removeOriginal(journal, e, mediaTotal + n + 1, workTotal);
-				return result(e, State::SourceRetained,
-							  "Original retained because the job's required copies have not all completed safely." +
-								  (e.error.isEmpty() ? QString() : '\n' + e.error));
-			}();
-			m_sink.result(outcome);
-			if (outcome.state == State::Completed)
-				++totals.succeeded;
-			else if (outcome.state == State::SourceRetained || outcome.state == State::OriginalRestored)
-				++totals.retained;
-			else
-			{
-				++totals.needsAttention;
-				ready = false;
-			}
-		}
-		// Undo of copied-only portions comes last, after all restoration work.
-		// Re-read its forward evidence: a redundant Move copy is discardable only
-		// while the original or the inverse's restored replacement still exists.
-		std::optional<OpJournal::Record> undoOriginal;
-		if (!discards.isEmpty())
-		{
-			undoOriginal = OpJournal::readOne(request.undoOf);
-			if (!undoOriginal || !OpJournal::resolve(*undoOriginal, error))
-				throw std::runtime_error("Cannot confirm original locations before finishing Undo.");
-		}
-		auto canDiscard = [&](const OpJournal::Entry &e)
-		{
-			if (!undoOriginal || undoOriginal->request.kind != OpKind::Move)
-				return true;
-			for (const auto &inverse : journal.record().entries)
-				if (inverse.undoEntryId == e.undoEntryId && inverse.undoAction.startsWith("restore") &&
-					inverse.complete() && inverse.landed.unchanged(OpFile::inspect(inverse.dst)))
-					return true;
-			if (e.undoEntryId >= 0 && e.undoEntryId < undoOriginal->entries.size())
-			{
-				const auto &original = undoOriginal->entries[e.undoEntryId];
-				return original.source.unchanged(OpFile::inspect(original.item.src));
-			}
-			return false;
+			QString parent = QFileInfo(destination).absolutePath();
+			while (!QFileInfo::exists(parent) && QFileInfo(parent).absolutePath() != parent)
+				parent = QFileInfo(parent).absolutePath();
+			return OperationPlan::sameVolumeForRename(source, destination) &&
+				   hooks.directorySync(QFileInfo(source).absolutePath(), &state.error) != Sync::OkDegraded &&
+				   hooks.directorySync(parent, &state.error) != Sync::OkDegraded;
 		};
-		for (const auto n : discards)
-		{
-			if (!ready || m_cancel.load() || !journal.healthy())
-				break;
-			auto e = journal.record().entries[n];
-			if (!canDiscard(e))
-				throw std::runtime_error("A restored original changed; its remaining copy was retained.");
-			if (e.step != Step::Planned && !reconcile(journal, e, error, hooks.directorySync))
+		request.copyThenRemove = OperationPlan::assessCopyMove(
+									 request, canRelocate, hooks.forceCopy)
+									 .copyThenRemove;
+	}
+
+	if (!journal.create(request, lockDirectory, state.error))
+		throw std::runtime_error(state.error.toStdString());
+	if (undoOriginal)
+	{
+		OpJournal claimed;
+		if (!claimed.resume(*undoOriginal, state.error) || !claimed.claimUndo(journal.path()))
+			throw std::runtime_error("Undo was saved, but original ownership needs recovery.");
+	}
+}
+
+// Returns n when the group is ready, or the index after a skipped group.
+int OpRunner::prepareRebalanceGroup(OpJournal &journal, RunState &state, int n)
+{
+	const auto &group = state.initialEntries[n].item.groupKey;
+	bool conflict = false;
+	QSet<QString> destinations;
+	QHash<QString, int> incoming;
+	int end = n;
+	while (end < state.initialEntries.size() && state.initialEntries[end].item.groupKey == group)
+	{
+		const auto &candidate = state.initialEntries[end];
+		const auto key = PathKey::normalise(candidate.item.renameDst);
+		if (!candidate.complete() && (OpFile::occupied(candidate.item.renameDst) ||
+									  destinations.contains(key)))
+			conflict = true;
+		destinations.insert(key);
+		++end;
+		if (!candidate.complete() &&
+			Conventions::countsAsEssenceName(candidate.item.name))
+			++incoming[QFileInfo(candidate.item.renameDst).absolutePath()];
+		if (group.isEmpty())
+			break;
+	}
+	bool full = false;
+	for (auto it = incoming.cbegin(); it != incoming.cend(); ++it)
+	{
+		int count = 0;
+		for (const auto &name : QDir(it.key()).entryList(
+				 QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot))
+			if (Conventions::countsAsEssenceName(name))
+				++count;
+		if (count + it.value() > Conventions::kFolderMax)
+			full = true;
+	}
+	if (conflict || full)
+	{
+		for (int k = n; k < end; ++k)
+			if (!state.initialEntries[k].complete())
 			{
-				++totals.needsAttention;
-				m_sink.result(result(e, State::NeedsAttention, error));
+				auto skipped = state.initialEntries[k];
+				if (!save(journal, skipped, Step::Skipped))
+					throw std::runtime_error(journal.error().toStdString());
+				++state.totals.skipped;
+				m_sink.result(result(
+					skipped, State::Skipped,
+					full ? "Rebalance group skipped: a destination folder would "
+						   "exceed 5,000 files. Rescan and replan."
+						 : "Rebalance group skipped: a destination is occupied. "
+						   "Rescan and replan."));
+			}
+		return end;
+	}
+	QSet<QString> folders;
+	for (int k = n; k < state.initialEntries.size(); ++k)
+	{
+		if (k > n && (group.isEmpty() || state.initialEntries[k].item.groupKey != group))
+			break;
+		if (journal.record().entries[k].complete())
+			continue;
+		folders << QFileInfo(state.initialEntries[k].item.src).absolutePath()
+				<< QFileInfo(state.initialEntries[k].item.renameDst).absolutePath();
+	}
+	// Check the whole group before retiring any Avid database or media.
+	for (const auto &folder : folders)
+		if (OpFile::makeDirectory(folder, state.error, hooks.directorySync) != Sync::Ok)
+			throw std::runtime_error(("Rebalance unavailable; source files retained.\n" +
+									  state.error)
+										 .toStdString());
+	if (syncFolders(folders.values(), state.error, hooks.directorySync) != Sync::Ok)
+		throw std::runtime_error(("Rebalance unavailable; source files retained.\n" +
+								  state.error)
+									 .toStdString());
+	if (!retireDatabases(journal, folders, state.error))
+		throw std::runtime_error(state.error.toStdString());
+	return n;
+}
+
+void OpRunner::executePendingItems(OpJournal &journal, const OpRequest &request, RunState &state)
+{
+	state.initialEntries = journal.record().entries;
+	bool undoRebalance = false;
+	if (request.kind == OpKind::Undo)
+	{
+		const auto forward = OpJournal::readOne(request.undoOf);
+		undoRebalance = forward && forward->request.kind == OpKind::Rename;
+	}
+	QString group;
+	int mediaIndex = 0;
+	for (const auto &e : state.initialEntries)
+		if (!e.item.maintenance)
+			++state.mediaTotal;
+	const bool twoStage = request.copyThenRemove ||
+		std::any_of(state.initialEntries.cbegin(), state.initialEntries.cend(),
+					[](const auto &e) { return e.undoAction == "restoreMove"; });
+	state.workTotal = twoStage ? state.mediaTotal * 2 : state.mediaTotal;
+	for (int n = 0; n < state.initialEntries.size(); ++n)
+	{
+		auto e = journal.record().entries[n];
+		if (!e.item.maintenance)
+			++mediaIndex;
+		if (e.complete() || state.failedReconciliation.contains(e.id))
+			continue;
+		if (!journal.healthy())
+			break;
+		if (e.undoAction == "discardCopy")
+		{
+			state.undoDiscards.append(n);
+			continue;
+		}
+		if (removesAfterCopy(e, request) && (e.step == Step::Published ||
+											 e.step == Step::SourceRetained || e.step == Step::RemovingSource))
+		{
+			state.deferredRemovals.insert(n);
+			continue;
+		}
+		const bool startsGroup = e.item.groupKey.isEmpty() || e.item.groupKey != group;
+		if (startsGroup)
+		{
+			if (m_cancel.load())
+			{
+				state.totals.cancelled = true;
+				break;
+			}
+			group = e.item.groupKey;
+		}
+		if (startsGroup && request.kind == OpKind::Rename && !e.item.maintenance)
+		{
+			const int next = prepareRebalanceGroup(journal, state, n);
+			if (next != n)
+			{
+				n = next - 1;
+				continue;
+			}
+		}
+
+		if (e.step != Step::Planned)
+		{
+			if (!reconcile(journal, e, state.error, hooks.directorySync))
+			{
+				m_sink.result(result(e, State::NeedsAttention, state.error));
+				++state.totals.needsAttention;
 				break;
 			}
 			if (e.complete())
 				continue;
-			const auto outcome = execute(journal, e, OpKind::Undo, n + 1, mediaTotal);
-			if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
+		}
+		m_sink.progress(label(e.item), mediaIndex, state.workTotal, 0);
+		if (undoRebalance && e.undoAction == "restoreRelocate" && !e.item.maintenance)
+		{
+			QSet<QString> folders{QFileInfo(e.item.src).absolutePath(),
+								  QFileInfo(e.item.renameDst).absolutePath()};
+			if (!retireDatabases(journal, folders, state.error))
+				throw std::runtime_error(state.error.toStdString());
+		}
+		if (request.kind == OpKind::Rename && !e.item.maintenance)
+		{
+			if (!journal.touchFolder(QFileInfo(e.item.src).absolutePath()) ||
+				!journal.touchFolder(QFileInfo(e.item.renameDst).absolutePath()))
+				throw std::runtime_error(journal.error().toStdString());
+		}
+		const auto outcome = executeWithRetries(
+			journal, e, request.kind, mediaIndex, state.workTotal, state.error);
+		if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
+		{
+			state.trashFallbacks.append(n);
+			continue;
+		}
+		if (outcome.state == State::SourceRetained && removesAfterCopy(e, request))
+		{
+			state.deferredRemovals.insert(n);
+			if (m_cancel.load())
 			{
-				trashFallbacks.append(n);
-				continue;
+				state.totals.cancelled = true;
+				break;
 			}
+			continue;
+		}
+		if (!e.item.maintenance)
 			m_sink.result(outcome);
-			if (outcome.state == State::Completed)
-				++totals.succeeded;
-			else if (outcome.state == State::NoEffect)
-				++totals.unchanged;
+		else if (outcome.state != State::Completed)
+			m_sink.log(QtCriticalMsg, "Avid database relocation stopped: " + outcome.message);
+		if (outcome.state == State::Completed)
+		{
+			if (!e.item.maintenance)
+				++state.totals.succeeded;
+			if (request.kind == OpKind::Delete && !e.item.maintenance && e.trashProvider == "mediamuster")
+			{
+				QDir trash(QFileInfo(e.dst).absolutePath());
+				trash.cdUp();
+				trash.cdUp();
+				++state.trashCounts[trash.path()];
+			}
+		}
+		else if (outcome.state == State::NoEffect)
+			++state.totals.unchanged;
+		else if (outcome.state == State::SourceRetained)
+			++state.totals.retained;
+		else if (outcome.state == State::Skipped)
+			++state.totals.skipped;
+		else if (outcome.state == State::Cancelled)
+		{
+			state.totals.cancelled = true;
+			break;
+		}
+		else
+		{
+			if (outcome.state == State::NeedsAttention)
+				++state.totals.needsAttention;
 			else
-			{
-				++totals.needsAttention;
+				++state.totals.failed;
+			if (outcome.state == State::NeedsAttention || request.kind == OpKind::Rename ||
+				request.kind == OpKind::Undo || !journal.healthy())
 				break;
-			}
 		}
-		if (!trashFallbacks.isEmpty())
+	}
+}
+
+bool OpRunner::removeCopiedOriginals(OpJournal &journal, const OpRequest &request, RunState &state)
+{
+	bool ready = copiesReadyForRemoval(journal, request, state.totals, state.error);
+	if (ready && !state.deferredRemovals.isEmpty() && !journal.record().copiesComplete)
+	{
+		if (!journal.markCopiesComplete())
+			throw std::runtime_error(journal.error().toStdString());
+		checkpoint("copies-complete", journal.record().entries[*state.deferredRemovals.cbegin()]);
+	}
+	for (int n = 0; n < journal.record().entries.size(); ++n)
+	{
+		if (!state.deferredRemovals.contains(n))
+			continue;
+		auto e = journal.record().entries[n];
+		const auto outcome = [&]
 		{
-			QVector<OpTrashFallbackItem> choices;
-			QSet<int> changedOriginals;
-			bool eligible = journal.healthy() && !totals.needsAttention && !totals.failed &&
-							!totals.cancelled && !m_cancel.load();
-			for (const auto n : trashFallbacks)
-			{
-				const auto &e = journal.record().entries[n];
-				QString checkError;
-				auto original = OpFile::open(e.item.src, false, checkError);
-				if (!original || !original->stillAt(e.item.src, e.source) || !canDiscard(e))
-				{
-					eligible = false;
-					changedOriginals.insert(n);
-				}
-				choices.append({e.item.src, trashRoot(e.item.src), e.error});
-			}
-			const bool approved = eligible && m_sink.confirmTrashFallback(choices);
-			if (eligible && !approved)
-				totals.cancelled = true;
-			if (approved && !m_cancel.load())
-			{
-				// Persist the whole batch choice before moving its first file.
-				// Every subsequent mutation still revalidates its own source.
-				for (const auto n : trashFallbacks)
-				{
-					auto e = journal.record().entries[n];
-					e.trashFallbackApproved = true;
-					if (!save(journal, e, Step::TrashFallback))
-						throw std::runtime_error(journal.error().toStdString());
-				}
-				checkpoint("trash-fallback-approved", journal.record().entries[trashFallbacks.first()]);
-			}
-			for (const auto n : trashFallbacks)
-			{
-				auto e = journal.record().entries[n];
-				if (changedOriginals.contains(n))
-				{
-					e.error = "An original changed while preparing the Trash choice; no fallback was attempted.";
-					save(journal, e, Step::NeedsAttention);
-					++totals.needsAttention;
-					m_sink.result(result(e, State::NeedsAttention, e.error));
-					continue;
-				}
-				if (!approved || m_cancel.load() || !journal.healthy())
-				{
-					++totals.retained;
-					m_sink.result(result(e, State::SourceRetained,
-										 "Original retained; the MediaMuster Trash move was not approved or the operation stopped."));
-					continue;
-				}
-				OpResult outcome;
-				if (e.undoAction == "discardCopy" && !canDiscard(e))
-				{
-					e.error = "A restored original changed while awaiting the Trash choice; its remaining copy was retained.";
-					save(journal, e, Step::NeedsAttention);
-					outcome = result(e, State::NeedsAttention, e.error);
-				}
-				else
-					outcome = execute(journal, e, request.kind, n + 1, mediaTotal);
-				m_sink.result(outcome);
-				if (outcome.state == State::Completed)
-				{
-					++totals.succeeded;
-					QDir trash(QFileInfo(e.dst).absolutePath());
-					trash.cdUp();
-					trash.cdUp();
-					++trashCounts[trash.path()];
-				}
-				else if (outcome.state == State::Cancelled)
-				{
-					totals.cancelled = true;
-					break;
-				}
-				else
-				{
-					if (outcome.state == State::NeedsAttention)
-						++totals.needsAttention;
-					else
-						++totals.failed;
-					break;
-				}
-			}
-		}
-		// Publication/removal/restoration completion must be durable before
-		// deleting its working directory. Keep failed cleanup discoverable even
-		// for a completed or subsequently dismissed job.
-		for (auto e : journal.record().entries)
+			if (m_cancel.load() && e.needsOriginalRestoration())
+				return restoreOriginal(journal, e);
+			if (ready && !m_cancel.load())
+				return removeOriginal(journal, e, state.mediaTotal + n + 1, state.workTotal);
+			return result(e, State::SourceRetained,
+						  "Original retained because the job's required copies have not all completed safely." +
+							  (e.error.isEmpty() ? QString() : '\n' + e.error));
+		}();
+		m_sink.result(outcome);
+		if (outcome.state == State::Completed)
+			++state.totals.succeeded;
+		else if (outcome.state == State::SourceRetained || outcome.state == State::OriginalRestored)
+			++state.totals.retained;
+		else
 		{
-			if (!journal.healthy())
-				break;
-			QString cleanupError;
-			if (!cleanup(journal, e, cleanupError, &hooks))
-				m_sink.log(QtWarningMsg, cleanupError);
+			++state.totals.needsAttention;
+			ready = false;
 		}
-		totals.cancelled = totals.cancelled || m_cancel.load();
-		if (!journal.finish(totals.cancelled || m_cancel.load()))
+	}
+	return ready;
+}
+
+bool OpRunner::canDiscardUndoCopy(const OpJournal &journal, const OpJournal::Entry &e,
+								  const std::optional<OpJournal::Record> &undoOriginal)
+{
+	if (!undoOriginal || undoOriginal->request.kind != OpKind::Move)
+		return true;
+	for (const auto &inverse : journal.record().entries)
+		if (inverse.undoEntryId == e.undoEntryId && inverse.undoAction.startsWith("restore") &&
+			inverse.complete() && inverse.landed.unchanged(OpFile::inspect(inverse.dst)))
+			return true;
+	if (e.undoEntryId >= 0 && e.undoEntryId < undoOriginal->entries.size())
+	{
+		const auto &original = undoOriginal->entries[e.undoEntryId];
+		return original.source.unchanged(OpFile::inspect(original.item.src));
+	}
+	return false;
+}
+
+void OpRunner::discardUndoCopies(OpJournal &journal, const OpRequest &request,
+								 RunState &state, bool ready)
+{
+	// Undo of copied-only portions comes last, after all restoration work.
+	// Re-read its forward evidence: a redundant Move copy is discardable only
+	// while the original or the inverse's restored replacement still exists.
+	if (!state.undoDiscards.isEmpty())
+	{
+		state.undoOriginal = OpJournal::readOne(request.undoOf);
+		if (!state.undoOriginal || !OpJournal::resolve(*state.undoOriginal, state.error))
+			throw std::runtime_error("Cannot confirm original locations before finishing Undo.");
+	}
+	for (const auto n : state.undoDiscards)
+	{
+		if (!ready || m_cancel.load() || !journal.healthy())
+			break;
+		auto e = journal.record().entries[n];
+		if (!canDiscardUndoCopy(journal, e, state.undoOriginal))
+			throw std::runtime_error("A restored original changed; its remaining copy was retained.");
+		if (e.step != Step::Planned && !reconcile(journal, e, state.error, hooks.directorySync))
 		{
-			++totals.needsAttention;
-			m_sink.log(QtCriticalMsg, journal.error());
+			++state.totals.needsAttention;
+			m_sink.result(result(e, State::NeedsAttention, state.error));
+			break;
 		}
+		if (e.complete())
+			continue;
+		const auto outcome = execute(journal, e, OpKind::Undo, n + 1, state.mediaTotal);
+		if (e.step == Step::TrashFallback && outcome.state == State::SourceRetained)
+		{
+			state.trashFallbacks.append(n);
+			continue;
+		}
+		m_sink.result(outcome);
+		if (outcome.state == State::Completed)
+			++state.totals.succeeded;
+		else if (outcome.state == State::NoEffect)
+			++state.totals.unchanged;
+		else
+		{
+			++state.totals.needsAttention;
+			break;
+		}
+	}
+}
+
+void OpRunner::confirmAndRunTrashFallbacks(OpJournal &journal, const OpRequest &request,
+										 RunState &state)
+{
+	if (state.trashFallbacks.isEmpty())
+		return;
+	QVector<OpTrashFallbackItem> choices;
+	QSet<int> changedOriginals;
+	bool eligible = journal.healthy() && !state.totals.needsAttention && !state.totals.failed &&
+					!state.totals.cancelled && !m_cancel.load();
+	for (const auto n : state.trashFallbacks)
+	{
+		const auto &e = journal.record().entries[n];
+		QString checkError;
+		auto original = OpFile::open(e.item.src, false, checkError);
+		if (!original || !original->stillAt(e.item.src, e.source) ||
+			!canDiscardUndoCopy(journal, e, state.undoOriginal))
+		{
+			eligible = false;
+			changedOriginals.insert(n);
+		}
+		choices.append({e.item.src, trashRoot(e.item.src), e.error});
+	}
+	const bool approved = eligible && m_sink.confirmTrashFallback(choices);
+	if (eligible && !approved)
+		state.totals.cancelled = true;
+	if (approved && !m_cancel.load())
+	{
+		// Persist the whole batch choice before moving its first file.
+		// Every subsequent mutation still revalidates its own source.
+		for (const auto n : state.trashFallbacks)
+		{
+			auto e = journal.record().entries[n];
+			e.trashFallbackApproved = true;
+			if (!save(journal, e, Step::TrashFallback))
+				throw std::runtime_error(journal.error().toStdString());
+		}
+		checkpoint("trash-fallback-approved", journal.record().entries[state.trashFallbacks.first()]);
+	}
+	for (const auto n : state.trashFallbacks)
+	{
+		auto e = journal.record().entries[n];
+		if (changedOriginals.contains(n))
+		{
+			e.error = "An original changed while preparing the Trash choice; no fallback was attempted.";
+			save(journal, e, Step::NeedsAttention);
+			++state.totals.needsAttention;
+			m_sink.result(result(e, State::NeedsAttention, e.error));
+			continue;
+		}
+		if (!approved || m_cancel.load() || !journal.healthy())
+		{
+			++state.totals.retained;
+			m_sink.result(result(e, State::SourceRetained,
+								 "Original retained; the MediaMuster Trash move was not approved or the operation stopped."));
+			continue;
+		}
+		OpResult outcome;
+		if (e.undoAction == "discardCopy" && !canDiscardUndoCopy(journal, e, state.undoOriginal))
+		{
+			e.error = "A restored original changed while awaiting the Trash choice; its remaining copy was retained.";
+			save(journal, e, Step::NeedsAttention);
+			outcome = result(e, State::NeedsAttention, e.error);
+		}
+		else
+			outcome = execute(journal, e, request.kind, n + 1, state.mediaTotal);
+		m_sink.result(outcome);
+		if (outcome.state == State::Completed)
+		{
+			++state.totals.succeeded;
+			QDir trash(QFileInfo(e.dst).absolutePath());
+			trash.cdUp();
+			trash.cdUp();
+			++state.trashCounts[trash.path()];
+		}
+		else if (outcome.state == State::Cancelled)
+		{
+			state.totals.cancelled = true;
+			break;
+		}
+		else
+		{
+			if (outcome.state == State::NeedsAttention)
+				++state.totals.needsAttention;
+			else
+				++state.totals.failed;
+			break;
+		}
+	}
+}
+
+void OpRunner::finishRun(OpJournal &journal, RunState &state)
+{
+	// Publication/removal/restoration completion must be durable before
+	// deleting its working directory. Keep failed cleanup discoverable even
+	// for a completed or subsequently dismissed job.
+	for (auto e : journal.record().entries)
+	{
+		if (!journal.healthy())
+			break;
+		QString cleanupError;
+		if (!cleanup(journal, e, cleanupError, &hooks))
+			m_sink.log(QtWarningMsg, cleanupError);
+	}
+	state.totals.cancelled = state.totals.cancelled || m_cancel.load();
+	if (!journal.finish(state.totals.cancelled || m_cancel.load()))
+	{
+		++state.totals.needsAttention;
+		m_sink.log(QtCriticalMsg, journal.error());
+	}
+}
+
+OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
+{
+	if (!input.restoreJournalPath.isEmpty())
+		return restoreOriginals(input, directory);
+	RunState state;
+	const auto ownerPath = input.resumeJournalPath.isEmpty() ? input.undoJournalPath : input.resumeJournalPath;
+	const auto lockDirectory = ownerPath.isEmpty() ? directory : QFileInfo(ownerPath).absolutePath();
+	auto lock = OpJournal::acquire(lockDirectory, state.error);
+	if (!lock)
+	{
+		m_sink.log(QtCriticalMsg, state.error);
+		state.totals.failed = 1;
+		return state.totals;
+	}
+	OpRequest request = input;
+	OpJournal journal;
+	try
+	{
+		if (!request.resumeJournalPath.isEmpty())
+			resumeRunJournal(request, journal, state, lockDirectory);
+		else
+			createRunJournal(input, request, journal, state, lockDirectory);
+		executePendingItems(journal, request, state);
+		const bool ready = removeCopiedOriginals(journal, request, state);
+		discardUndoCopies(journal, request, state, ready);
+		confirmAndRunTrashFallbacks(journal, request, state);
+		finishRun(journal, state);
 	}
 	catch (const std::exception &e)
 	{
-		++totals.needsAttention;
+		++state.totals.needsAttention;
 		m_sink.log(QtCriticalMsg,
 				   QStringLiteral("Operation stopped: %1. Journal and files retained at %2.")
 					   .arg(QString::fromUtf8(e.what()), journal.path()));
 	}
-	totals.cancelled = totals.cancelled || m_cancel.load();
-	for (auto it = trashCounts.cbegin(); it != trashCounts.cend(); ++it)
+	state.totals.cancelled = state.totals.cancelled || m_cancel.load();
+	for (auto it = state.trashCounts.cbegin(); it != state.trashCounts.cend(); ++it)
 		m_sink.trashUsed(it.key(), it.value());
-	return totals;
+	return state.totals;
 }

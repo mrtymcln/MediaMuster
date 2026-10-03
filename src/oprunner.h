@@ -52,6 +52,19 @@ public:
 						const Hooks *hooks = nullptr);
 
 private:
+	struct RunState;
+	void resumeRunJournal(OpRequest &request, OpJournal &journal, RunState &state,
+							  const QString &lockDirectory);
+	void createRunJournal(const OpRequest &input, OpRequest &request, OpJournal &journal,
+							  RunState &state, const QString &lockDirectory);
+	int prepareRebalanceGroup(OpJournal &journal, RunState &state, int index);
+	void executePendingItems(OpJournal &journal, const OpRequest &request, RunState &state);
+	bool removeCopiedOriginals(OpJournal &journal, const OpRequest &request, RunState &state);
+	static bool canDiscardUndoCopy(const OpJournal &journal, const OpJournal::Entry &entry,
+								   const std::optional<OpJournal::Record> &undoOriginal);
+	void discardUndoCopies(OpJournal &journal, const OpRequest &request, RunState &state, bool ready);
+	void confirmAndRunTrashFallbacks(OpJournal &journal, const OpRequest &request, RunState &state);
+	void finishRun(OpJournal &journal, RunState &state);
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
 	OpResult execute(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, int index,
 					 int total, bool *retryableCopy = nullptr);

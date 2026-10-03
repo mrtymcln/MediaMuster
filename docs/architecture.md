@@ -121,11 +121,15 @@ dialog through its activity state. The engine additionally uses the journal lock
 to prevent concurrent execution/recovery through another manager. This does not
 lock out changes made by Avid, Finder or another application.
 
-Inside the runner, `executeWithRetries()` owns the bounded retry policy around one
-item. `copiesReadyForRemoval()` evaluates the whole-job checks used before Move
-removal or Undo copy disposal. The main `run()` routine keeps phase ordering,
-journal checkpoints and result accounting; extracting these checks does not create
-another operation engine or another recovery state machine.
+Inside the runner, `run()` owns the operation lock, request and journal and orders
+private helpers for journal preparation, pending-item execution, copied-original
+removal, Undo copy disposal, Trash fallback and final cleanup. Rebalance group
+preparation checks destinations and folder durability before retiring databases.
+`RunState` holds per-call bookkeeping, including an initial entry snapshot for group
+planning; execution and recovery checks continue to read the live journal.
+`executeWithRetries()` owns the bounded retry policy around one item, while
+`copiesReadyForRemoval()` evaluates the whole-job barrier before Move removal or
+Undo copy disposal. These helpers use the same journal and recovery state machine.
 
 ## Operation rules that must survive changes
 
