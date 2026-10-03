@@ -171,6 +171,8 @@ private:
 	/// filename; MDB records insert only when the key is new, so the msm*
 	/// pair — read first — wins over an ama* twin describing the same mob.
 	static FolderDatabases readFolderDatabases(const ScanTask &task, QVector<LogMsg> &logs);
+	static void readFolderPmrs(const ScanTask &task, FolderDatabases &dbs, QVector<LogMsg> &logs);
+	static void readFolderMdbs(const ScanTask &task, FolderDatabases &dbs, QVector<LogMsg> &logs);
 
 	/// One row from one directory entry (pass 1). `folderStatus` is the
 	/// status computed by processFolderTask for any file the folder's PMR

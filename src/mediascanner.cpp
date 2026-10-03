@@ -123,7 +123,8 @@ void MediaScanner::startScan(const Options &options)
 	m_job.start(
 		[this]
 		{
-			const auto resetRunning = qScopeGuard([this] { m_running.store(false); });
+			const auto resetRunning = qScopeGuard([this]
+												  { m_running.store(false); });
 			doScan();
 		});
 }
@@ -869,15 +870,30 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &task, QVector<LogMsg> &logs)
 {
 	FolderDatabases dbs;
-	auto bufLog = [&logs](QtMsgType level, const QString &module, const QString &msg)
-	{ logs.append({level, module, msg}); };
-
 	// Read msm* first. Its parse failure affects the folder status even if
 	// ama* succeeds; an ama* failure is ignored when msm* already succeeded.
-	const auto isPrimary = [](QLatin1String name, const auto &names)
-	{ return name == names[0]; };
+	readFolderPmrs(task, dbs, logs);
+	readFolderMdbs(task, dbs, logs);
 
-	// MARK: The PMRs
+	QStringList missingDatabases;
+	if (!dbs.pmrExists)
+		missingDatabases.append(QStringLiteral("PMR"));
+	if (!dbs.mdbExists)
+		missingDatabases.append(QStringLiteral("MDB"));
+	if (!missingDatabases.isEmpty())
+		qCInfo(lcScanner).noquote() << QStringLiteral("Missing databases in %1: %2")
+										   .arg(task.mediaFolderPath, missingDatabases.join(QStringLiteral(", ")));
+
+	return dbs;
+}
+
+// MARK: - Folder PMR indexes
+
+void MediaScanner::readFolderPmrs(const ScanTask &task, FolderDatabases &dbs,
+								  QVector<LogMsg> &logs)
+{
+	auto bufLog = [&logs](QtMsgType level, const QString &module, const QString &msg)
+	{ logs.append({level, module, msg}); };
 
 	// Every spelling present is read; entries for one filename append, so a
 	// file both index files name keeps its msm* record first.
@@ -888,7 +904,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		if (!QFile::exists(pmrPath))
 			continue;
 		dbs.pmrExists = true;
-		const bool primary = isPrimary(name, Conventions::kPmrFileNames);
+		const bool primary = name == Conventions::kPmrFileNames[0];
 
 		bool ok = true;
 		const PmrIndex index = PmrParser::buildFileMap(pmrPath, &ok);
@@ -916,7 +932,15 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 					   .arg(task.mediaFolderName));
 		}
 	}
-	// MARK: The MDBs
+}
+
+// MARK: - Folder MDB records
+
+void MediaScanner::readFolderMdbs(const ScanTask &task, FolderDatabases &dbs,
+								  QVector<LogMsg> &logs)
+{
+	auto bufLog = [&logs](QtMsgType level, const QString &module, const QString &msg)
+	{ logs.append({level, module, msg}); };
 
 	// Records insert only when the mob is new, so the msm* database — read
 	// first — is the one that describes a mob both spellings carry.
@@ -927,7 +951,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 		if (!QFile::exists(mdbPath))
 			continue;
 		dbs.mdbExists = true;
-		const bool primary = isPrimary(name, Conventions::kMdbFileNames);
+		const bool primary = name == Conventions::kMdbFileNames[0];
 
 		bool ok = true;
 		MdbDatabase db = MdbParser::load(mdbPath, &ok);
@@ -966,16 +990,6 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 					   .arg(task.mediaFolderName));
 		}
 	}
-	QStringList missingDatabases;
-	if (!dbs.pmrExists)
-		missingDatabases.append(QStringLiteral("PMR"));
-	if (!dbs.mdbExists)
-		missingDatabases.append(QStringLiteral("MDB"));
-	if (!missingDatabases.isEmpty())
-		qCInfo(lcScanner).noquote() << QStringLiteral("Missing databases in %1: %2")
-										   .arg(task.mediaFolderPath, missingDatabases.join(QStringLiteral(", ")));
-
-	return dbs;
 }
 
 // MARK: - MediaFile assembly (database pass)
