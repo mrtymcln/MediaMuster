@@ -40,6 +40,11 @@ mediamuster_add_test(tst_conventions core)
 
 ### Media ###
 
+# Fresh Canon discovery and record model; does not link legacy metadata/parsers.
+mediamuster_add_test(tst_canondiscovery media)
+target_link_libraries(tst_canondiscovery PRIVATE mediamuster_canon)
+
+
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
 mediamuster_add_test(tst_omfuid media)

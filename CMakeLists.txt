@@ -78,11 +78,24 @@ if(APPLE)
         CACHE STRING "Codesign identity for the .app bundle")
 endif()
 
+### Independent Canon replacement engine; no legacy parser or UI dependencies ###
+# Qt is linked after find_package below. The production adapter is added only
+# when the replacement's parsing and reconciliation stages are verified.
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
 
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
+
+add_library(mediamuster_canon STATIC
+    src/canon/discoveryengine.cpp
+    src/volumeidentity.cpp
+    src/nativefile.cpp
+)
+set_target_properties(mediamuster_canon PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_canon PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_canon PUBLIC Qt6::Core)
+
 message(STATUS "Using Qt6 ${Qt6_VERSION}")
 
 ### AGL deprecated ###

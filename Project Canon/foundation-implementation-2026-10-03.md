@@ -1,6 +1,10 @@
 # Project Canon: first implementation stage
 
 Recorded 3 October 2026. Branch: `codex/project-canon-foundation`.
+The user subsequently chose fresh replacement engines. See the
+[replacement plan](replacement-engine-plan.md). This aggregate-based implementation
+is retained as a working comparison; it is not the final engine architecture.
+
 This is the RAM/evidence foundation and its initial consumers. It does not close
 all findings in the format audit or implement the complete planned format model.
 
@@ -57,7 +61,7 @@ also passed. Tests use temporary fixtures for writable operation scenarios.
 - Review build: `/Users/martymclean/Developer/MediaMuster/build-canon/MediaMuster.app`
 
 The separate `build-canon` folder avoids interference from the other build process
-observed using `build`. Source changes remain uncommitted on the foundation branch.
+observed using `build`. The foundation was subsequently committed on the foundation branch.
 
 New checks exercise unresolved ties without majority voting, source eligibility,
 copy-on-write isolation, allocator exhaustion/reset, actual copy/move row updates,

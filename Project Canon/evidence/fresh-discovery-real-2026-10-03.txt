@@ -1,0 +1,8 @@
+********* Start testing of TestCanonDiscovery *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonDiscovery::initTestCase()
+QINFO  : TestCanonDiscovery::optional_real_discovery() Fresh discovery: 2413 physical rows, 2425 parser candidates
+PASS   : TestCanonDiscovery::optional_real_discovery()
+PASS   : TestCanonDiscovery::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 75ms
+********* Finished testing of TestCanonDiscovery *********

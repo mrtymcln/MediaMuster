@@ -1,0 +1,169 @@
+#pragma once
+
+#include "mediaevidence.h"
+#include <QByteArray>
+#include <QStringList>
+#include <atomic>
+
+namespace Canon
+{
+	/// Source-local handles preserve object contexts before identity reconciliation.
+	using ObjectHandle = quint64;
+
+	struct ObjectReference
+	{
+		SourceSnapshotRef source;
+		ObjectHandle handle = 0;
+	};
+
+	struct ByteRange
+	{
+		qint64 offset = 0;
+		qint64 length = 0;
+	};
+
+	struct PropertyLocator
+	{
+		QString name;
+		QByteArray key; ///< Original tag/UL/dictionary key when supplied by the format.
+		quint64 objectNumber = 0;
+		QVector<ByteRange> ranges; ///< Empty when not located; multiple ranges retain fragmented values.
+	};
+
+	/// Unknown/private properties keep their encoding without invented semantics.
+	struct RawProperty
+	{
+		PropertyLocator locator;
+		QByteArray encoding;
+		QVariant decoded;
+		PropertyReadState state = PropertyReadState::NotRead;
+	};
+
+	struct AvidObject
+	{
+		enum class Role
+		{
+			Unknown,
+			Master,
+			FileSource,
+			PhysicalSource,
+			Composition,
+			Descriptor,
+			Track,
+			Component
+		};
+		ObjectHandle handle = 0;
+		Role role = Role::Unknown;
+		SourceSnapshotRef snapshot;
+		QByteArray recordedIdentity;
+		QString identityEncoding; ///< Reader-established encoding, not an assumed byte order.
+		QVector<RawProperty> properties;
+	};
+
+	struct Relationship
+	{
+		ObjectHandle origin = 0;
+		ObjectHandle target = 0;
+		PropertyLocator locator;
+		QVariant recordedReference;
+		EvidenceBasis basis = EvidenceBasis::Recorded;
+		QString explanation;
+	};
+
+	/// Parsers return source-local facts and references; they never choose UI values.
+	struct ParsedSource
+	{
+		enum class Container
+		{
+			Unknown,
+			Pmr,
+			Bento,
+			Mxf,
+			Omf,
+			Wave,
+			Aiff
+		};
+		SourceSnapshotRef snapshot;
+		Container container = Container::Unknown;
+		QVector<AvidObject> objects;
+		QVector<Relationship> relationships;
+		QVector<RawProperty> unownedProperties;
+		QStringList diagnostics;
+	};
+
+	/// Canonical physical record. UI strings belong in a later adapter.
+	struct MediaFile
+	{
+		KelpieId kelpieId = 0;
+		QString path;
+		QString volumeIdentifier;
+		qint64 sizeBytes = 0;
+		QDateTime created;
+		QDateTime modified;
+		bool omfScan = false; ///< Accepted managed family, not actual container.
+		bool quarantined = false;
+		MediaEvidence evidence;
+		MediaScanStamp stamp;
+		QVector<ObjectReference> objects;
+	};
+
+	struct SourceCandidate
+	{
+		enum class ReaderHint
+		{
+			Pmr,
+			Mdb,
+			Mxf,
+			LegacyMedia
+		};
+		ReaderHint hint;
+		QString path;
+		QDateTime modified;
+		KelpieId kelpieId = 0; ///< Zero for databases; physical files have their row ID.
+	};
+
+	struct DiscoveryIssue
+	{
+		enum class Kind
+		{
+			UnmanagedRoot,
+			UnavailableRoot,
+			UnreadableFolder
+		};
+		Kind kind;
+		QString path;
+		QString explanation;
+	};
+
+	struct ScanRequest
+	{
+		/// Managed roots/leaves or their direct containing bases; no recursive search.
+		QStringList roots;
+		bool omfScan = true;
+	};
+
+	struct ScanResult
+	{
+		ScanRequest request;
+		QVector<MediaFile> files;
+		QVector<SourceCandidate> candidates;
+		QVector<ParsedSource> sources;
+		QVector<DiscoveryIssue> discoveryIssues;
+		QVector<ScanIssue> reconciliationIssues;
+		bool discoveryComplete = true;
+		bool cancelled = false;
+		// Discovery does not claim parsing/reconciliation has completed.
+		bool parsingComplete = false;
+		bool reconciliationComplete = false;
+	};
+
+	class Cancellation
+	{
+	public:
+		void cancel() { m_cancelled.store(true); }
+		bool cancelled() const { return m_cancelled.load(); }
+
+	private:
+		std::atomic_bool m_cancelled{false};
+	};
+}

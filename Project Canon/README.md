@@ -10,6 +10,13 @@ contain requirements that are still pending.
 Avid's formats and the evidence behind MediaMuster's interpretation. It is an
 objective, not a declaration that every current or proposed parser rule is proven.
 
+## Implementation direction
+
+The user subsequently clarified that scanner, parser and metadata engines should
+be fresh replacements, while the UI and file-operation executor stay. See the
+[fresh replacement plan](replacement-engine-plan.md). This supersedes the earlier
+aggregate-based refactor as the final engine architecture.
+
 ## Agreed v1 requirements
 
 - Keep scan metadata and its supporting evidence in RAM. Do not add a persistent

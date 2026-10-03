@@ -12,7 +12,14 @@ and measure comparable scan time and memory. The reported 3,774 ms and 147.1 MB
 screenshot are baseline references; the screenshot does not establish peak memory.
 The subsequent “Yep lets do it!” authorized starting the staged code changes.
 
-## Staged implementation
+## Updated implementation direction
+
+The subsequent user clarification authorizes fresh replacement engines, retaining
+the UI and file-operation executor. See [replacement engine plan](replacement-engine-plan.md).
+The earlier steps below remain useful acceptance goals; their aggregate-based
+implementation approach is superseded.
+
+## Earlier staged implementation
 
 1. Add the agreed `quint64`-backed KelpieId to physical-file records, with `0`
    reserved for "not assigned" and coordinated scan-wide assignment from `1`.
@@ -32,10 +39,9 @@ The subsequent “Yep lets do it!” authorized starting the staged code changes
 5. Measure and reduce repeated reads, strings and temporary buffers. Introduce more
    detailed raw-property retention only with a defined use and measured cost.
 
-This is a staged refactor of readers, scanner and metadata consumers. It is not an
-implementation estimate or a promise that all provenance can be added in one small
-change. The evidence so far supports building on the existing code rather than a
-wholesale rewrite.
+The updated plan replaces these engines in stages, with comparison against the
+existing implementation. It is not an estimate or a promise that all provenance
+can be added in one small change. Existing output is a comparison, not proof.
 
 ## Required correctness checks
 
