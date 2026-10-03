@@ -24,7 +24,7 @@ all findings in the format audit or implement the complete planned format model.
 | Database discovery | PMR/MDB extension only, including arbitrary names and uppercase extensions. No special msm/ama filename priority |
 | Media discovery | Existing managed folder scope retained. MXF family admits MXF; OMFI root and immediate accepted children admit OMF/AIF/WAV. Existing hidden/staging/symlink exclusions remain |
 | Legacy flag | `FeatureFlags::OmfScan`, enabled by default; existing flag callers retain a compatibility alias |
-| Table/export | MobId, all MasterMobIds separated by `; `, KelpieId and OmfScan. OmfScan table column follows its gate; CSV always retains the family boolean |
+| Table/export | MobId, all MasterMobIds separated by `;`, KelpieId and OmfScan. OmfScan table column follows its gate; CSV always retains the family boolean |
 | Internal fields | Sample Format and Channels stay internal; Bit Depth remains visible; unknown Kind displays blank; Date Created keeps its name |
 | Stamp | RAM receipt has path, native volume identifier, listing modification timestamp, selected file MobId and retained master IDs; no filesystem file identifier or size added to that receipt |
 | Diagnostics | Scoped PMR expected-path issues with matching paths elsewhere; unmatched MDB file identities distinguished from missing-file claims; selected-field conflicts retained and logged |

@@ -4,9 +4,13 @@
 #include <QByteArray>
 #include <QStringList>
 #include <atomic>
+#include <optional>
 
 namespace Canon
 {
+	enum class PmrFileSet { Legacy, Unicode };
+	enum class TextEncoding { Ascii, MacRoman, Utf8, Utf16LE, Utf16BE, Unknown };
+
 	/// Source-local handles preserve object contexts before identity reconciliation.
 	using ObjectHandle = quint64;
 
@@ -37,6 +41,10 @@ namespace Canon
 		QByteArray encoding;
 		QVariant decoded;
 		PropertyReadState state = PropertyReadState::NotRead;
+		QString interpretation; ///< Decoding limits/encoding evidence, without display policy.
+		std::optional<TextEncoding> textEncoding; ///< No value for binary/numeric/absent properties.
+		std::optional<EvidenceBasis> textEncodingBasis; ///< No value when encoding is unknown.
+		bool bytesRetained = true; ///< False: locator ranges reference bytes not copied into RAM.
 	};
 
 	struct AvidObject
@@ -66,8 +74,19 @@ namespace Canon
 		ObjectHandle target = 0;
 		PropertyLocator locator;
 		QVariant recordedReference;
+		QString referenceEncoding;
 		EvidenceBasis basis = EvidenceBasis::Recorded;
 		QString explanation;
+	};
+
+	struct RecordSet
+	{
+		QString name;
+		std::optional<PmrFileSet> pmrFileSet; ///< PMR only; other containers do not inherit these sets.
+		qint32 version = 0;
+		quint32 declaredCount = 0;
+		QVector<ObjectHandle> objects; ///< Includes partial records, without positional merging.
+		bool framingComplete = false;
 	};
 
 	/// Parsers return source-local facts and references; they never choose UI values.
@@ -83,8 +102,11 @@ namespace Canon
 			Wave,
 			Aiff
 		};
+		enum class Outcome { NotRead, Complete, Incomplete, Malformed, Unsupported, IoError, Cancelled };
+		Outcome outcome = Outcome::NotRead;
 		SourceSnapshotRef snapshot;
 		Container container = Container::Unknown;
+		QVector<RecordSet> recordSets;
 		QVector<AvidObject> objects;
 		QVector<Relationship> relationships;
 		QVector<RawProperty> unownedProperties;

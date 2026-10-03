@@ -16,7 +16,11 @@ namespace Canon
 	class SourceReader
 	{
 	public:
+		SourceReader(const SourceReader &) = delete;
+		SourceReader &operator=(const SourceReader &) = delete;
 		virtual ~SourceReader() = default;
 		virtual ParsedSource read(QIODevice &source, const ReaderContext &context) const = 0;
+	protected:
+		SourceReader() = default;
 	};
 }

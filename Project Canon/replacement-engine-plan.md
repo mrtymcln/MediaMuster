@@ -69,8 +69,9 @@ identity. Sharing these does not authorize inheriting the old readers' assumptio
 | `Canon::MediaFile` | Physical location, scan-session ID, filesystem facts, evidence, stamp and source/object references | Initial record defined; metadata values remain in evidence rather than display strings |
 | `ScanResult` | RAM inventory, worklist, source graphs, issues and distinct completion states | Initial types defined |
 | `DiscoveryEngine` | Enumerate admitted locations/extensions and create physical records plus parser worklist | Implemented and tested; not activated in the app |
-| `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; fresh format decoders not yet implemented |
-| `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Initial output types defined |
+| `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; first independent PMR reader implemented and verified |
+| `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Explicit outcomes, typed PMR set membership, per-text encoding/basis, interpretation limits and opaque ranges added for PMR |
+| `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Implemented and tested against fixtures and six local/EDIT databases; not activated in the app |
 | Reconciliation engine | Establish object ownership, identities, associations and scoped unmatched references | Pending |
 | Selection engine/catalogue | Apply individual verified metadata policies and DNx mappings | Pending |
 | UI/operation adapter | Connect the finished replacement to existing consumers | Pending |
@@ -106,8 +107,9 @@ requests; physical files are not grouped by native file ID, MobId or bytes.
 
 ## Verification of the independent start
 
-The universal macOS Debug build passes all **28 registered CTest suites**, including
-the new discovery suite. That suite verifies exact accepted file families, ignored
+The discovery-stage universal macOS Debug build passed all **28 registered CTest
+suites**, including the new discovery suite. The subsequent PMR stage adds a 29th
+suite; its results are recorded in the PMR implementation report. That suite verifies exact accepted file families, ignored
 locations, extension-only databases, quarantine marking, overlapping scan roots,
 separate same-name locations, session ID reset, unavailable scope and cancellation.
 It deliberately leaves parsing/reconciliation incomplete and metadata unread.
@@ -115,9 +117,9 @@ It deliberately leaves parsing/reconciliation incomplete and metadata unread.
 Proof: [full suite result](evidence/fresh-engine-tests-2026-10-03.txt) and
 [real discovery result](evidence/fresh-discovery-real-2026-10-03.txt).
 
-This does not establish fresh parser correctness: no format reader implementation
-has been added to this library yet. The earlier source-reader tests still exercise
-the comparison engines. An opt-in real-drive discovery check is available through
+This discovery check does not establish parser correctness. The first fresh PMR
+reader is now implemented; see [PMR implementation and proof](fresh-pmr-reader-2026-10-03.md).
+The other format-reader tests still exercise the comparison engines. An opt-in real-drive discovery check is available through
 `MEDIAMUSTER_CANON_REAL_SCAN_ROOTS`; it lists files without opening media headers.
 The opt-in check on EDIT and the two local managed roots found **2,413 distinct
 physical rows and 2,425 parser candidates** (media plus 12 database files), with

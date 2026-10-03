@@ -1,0 +1,173 @@
+{
+  "specimens": [
+    {
+      "path": "/Users/martymclean/Library/Group Containers/group.com.apple.notes/Accounts/05F4B15D-DD7C-454C-B334-B1E4C72107E4/Media/21C779BD-3E38-450C-9983-FFD2E4DE6FCD/1_DA444694-030D-4A9A-B192-C26C0149988D/msmFMID.pmr",
+      "sizeBytes": 248,
+      "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03"
+    },
+    {
+      "path": "/Users/martymclean/Library/Group Containers/group.com.apple.notes/Accounts/05F4B15D-DD7C-454C-B334-B1E4C72107E4/Media/25B97480-1498-45DA-8239-A432ACD4785E/1_C830198F-7AE1-4DF1-9982-A9158192FB98/msmMMOB.mdb",
+      "sizeBytes": 53688,
+      "sha256": "a633dbde971ca72011de1a5905fb825224dd331a6b0e74ee82ba6a95eb5acc53"
+    },
+    {
+      "path": "/Users/martymclean/Library/Group Containers/group.com.apple.notes/Accounts/05F4B15D-DD7C-454C-B334-B1E4C72107E4/Media/D109B927-C69B-4EFA-AFB9-43FE3E91414C/1_DA583EA9-1B03-4A3E-A2A7-2C78C7E68095/Nön English bin náme™ 你好 漢.avb",
+      "sizeBytes": 64500,
+      "sha256": "dcadf7d11c596ee046c9982efe7dffd5b4c7ba140143b5223257c93a654a4957"
+    }
+  ],
+  "pmrOutcome": "Complete",
+  "pmrSets": [
+    {
+      "count": 1,
+      "name": "Base",
+      "records": [
+        {
+          "FileMobId": {
+            "decoded": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000JP}�t\u0011\u0006�z6\u001ej`]6\u0013",
+            "hex": "060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613",
+            "interpretation": "PMR/AAF-32/little-endian",
+            "macRomanInterpretation": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000JP}Ít\u0011\u0006êz6\u001ej`]6\u0013",
+            "offset": 12,
+            "validUtf8": false
+          },
+          "Filename": {
+            "decoded": "TONE_100A01.EA7D504A.611740.mxf",
+            "hex": "1f00544f4e455f3130304130312e45413744353034412e3631313734302e6d7866",
+            "interpretation": "ASCII subset of untagged MBCS; full counted bytes retained.",
+            "macRomanInterpretation": "\u001f\u0000TONE_100A01.EA7D504A.611740.mxf",
+            "offset": 44,
+            "utf8": "\u001f\u0000TONE_100A01.EA7D504A.611740.mxf",
+            "validUtf8": true
+          },
+          "MasterMobId": {
+            "decoded": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000�F}�t\u0011\u0006���\u001ej`]6\u0013",
+            "hex": "060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613",
+            "interpretation": "PMR/AAF-32/little-endian",
+            "macRomanInterpretation": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000“F}Ít\u0011\u0006êëê\u001ej`]6\u0013",
+            "offset": 89,
+            "validUtf8": false
+          },
+          "ModificationWord": {
+            "decoded": 1778755394,
+            "hex": "42a7056a",
+            "interpretation": "Recorded uint32; epoch/timezone selection belongs to reconciliation.",
+            "macRomanInterpretation": "Bß\u0005j",
+            "offset": 121,
+            "validUtf8": false
+          },
+          "Project": {
+            "decoded": "block 1729",
+            "hex": "0a00626c6f636b2031373239",
+            "interpretation": "ASCII subset of untagged MBCS; full counted bytes retained.",
+            "macRomanInterpretation": "\n\u0000block 1729",
+            "offset": 77,
+            "utf8": "\n\u0000block 1729",
+            "validUtf8": true
+          },
+          "handle": 1,
+          "identityHex": "060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613"
+        }
+      ],
+      "version": 8
+    },
+    {
+      "count": 1,
+      "name": "Unicode",
+      "records": [
+        {
+          "FileMobId": {
+            "decoded": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000JP}�t\u0011\u0006�z6\u001ej`]6\u0013",
+            "hex": "060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613",
+            "interpretation": "PMR/AAF-32/little-endian",
+            "macRomanInterpretation": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000JP}Ít\u0011\u0006êz6\u001ej`]6\u0013",
+            "offset": 133,
+            "validUtf8": false
+          },
+          "Filename": {
+            "decoded": "TONE_100A01.EA7D504A.611740.mxf",
+            "hex": "21000000544f4e455f3130304130312e45413744353034412e3631313734302e6d7866",
+            "interpretation": "Explicit Unicode set: UTF-8 after two reserved bytes.",
+            "macRomanInterpretation": "!\u0000\u0000\u0000TONE_100A01.EA7D504A.611740.mxf",
+            "offset": 165,
+            "utf8": "!\u0000\u0000\u0000TONE_100A01.EA7D504A.611740.mxf",
+            "validUtf8": true
+          },
+          "MasterMobId": {
+            "decoded": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000�F}�t\u0011\u0006���\u001ej`]6\u0013",
+            "hex": "060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613",
+            "interpretation": "PMR/AAF-32/little-endian",
+            "macRomanInterpretation": "\u0006\n+4\u0001\u0001\u0001\u0005\u0001\u0001\u000f\u0010\u0013\u0000\u0000\u0000“F}Ít\u0011\u0006êëê\u001ej`]6\u0013",
+            "offset": 212,
+            "validUtf8": false
+          },
+          "ModificationWord": {
+            "decoded": 1778755394,
+            "hex": "42a7056a",
+            "interpretation": "Recorded uint32; epoch/timezone selection belongs to reconciliation.",
+            "macRomanInterpretation": "Bß\u0005j",
+            "offset": 244,
+            "validUtf8": false
+          },
+          "Project": {
+            "decoded": "block 1729",
+            "hex": "0a00626c6f636b2031373239",
+            "interpretation": "ASCII subset of untagged MBCS; full counted bytes retained.",
+            "macRomanInterpretation": "\n\u0000block 1729",
+            "offset": 200,
+            "utf8": "\n\u0000block 1729",
+            "validUtf8": true
+          },
+          "handle": 2,
+          "identityHex": "060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613"
+        }
+      ],
+      "version": 16
+    }
+  ],
+  "mdbBinNameProperties": [
+    {
+      "hex": "4e9a6e20456e676c6973682062696e206e876d65aa203f3f203f00",
+      "immediate": false,
+      "length": 27,
+      "macRomanInterpretation": "Nön English bin náme™ ?? ?",
+      "object": 68111,
+      "offset": 2065,
+      "property": "OMFI:MCBR:MC:binName",
+      "readStatus": 0,
+      "validUtf8": false
+    },
+    {
+      "hex": "4e6fcc886e20456e676c6973682062696e206e61cc816d65e284a220e4bda0e5a5bd20e6bca200",
+      "immediate": false,
+      "length": 39,
+      "macRomanInterpretation": "NoÃàn English bin naÃÅme‚Ñ¢ ‰Ω†Â•Ω Êº¢",
+      "object": 68111,
+      "offset": 2092,
+      "property": "OMFI:MCBR:MC:binNameUTF8",
+      "readStatus": 0,
+      "utf8": "Nön English bin náme™ 你好 漢",
+      "validUtf8": true
+    }
+  ],
+  "avbBinReferenceStrings": [
+    {
+      "objectIndex": 4,
+      "objectOffset": 259,
+      "fieldOffset": 277,
+      "encodingSelectedByReferenceReader": "macroman",
+      "value": "Nön English bin náme™ ?? ?",
+      "encodedHex": "1a004e9a6e20456e676c6973682062696e206e876d65aa203f3f203f"
+    },
+    {
+      "objectIndex": 4,
+      "objectOffset": 259,
+      "fieldOffset": 308,
+      "encodingSelectedByReferenceReader": "utf-8",
+      "value": "Nön English bin náme™ 你好 漢",
+      "encodedHex": "280000004e6fcc886e20456e676c6973682062696e206e61cc816d65e284a220e4bda0e5a5bd20e6bca2"
+    }
+  ],
+  "avbReferenceReader": "local pyavb, use_ext=False; interpreted MacRoman/UTF-8 values corroborated against original bytes; not proof of all AVB schemas",
+  "unicodeForm": "Original bin name contains decomposed o+U+0308 and a+U+0301; preserve recorded form."
+}

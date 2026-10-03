@@ -16,6 +16,12 @@ The user subsequently clarified that scanner, parser and metadata engines should
 be fresh replacements, while the UI and file-operation executor stay. See the
 [fresh replacement plan](replacement-engine-plan.md). This supersedes the earlier
 aggregate-based refactor as the final engine architecture.
+The first [fresh PMR reader](fresh-pmr-reader-2026-10-03.md) now preserves both
+record sets and raw source evidence independently of the existing parser.
+Additional [non-English encoding specimens](non-english-encoding-specimens-2026-10-03.md)
+show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
+The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
+per-property `TextEncoding` separate.
 
 ## Agreed v1 requirements
 

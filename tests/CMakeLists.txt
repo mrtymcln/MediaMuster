@@ -44,6 +44,9 @@ mediamuster_add_test(tst_conventions core)
 mediamuster_add_test(tst_canondiscovery media)
 target_link_libraries(tst_canondiscovery PRIVATE mediamuster_canon)
 
+mediamuster_add_test(tst_canonpmr media)
+target_link_libraries(tst_canonpmr PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canonpmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.

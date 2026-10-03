@@ -17,7 +17,8 @@ The subsequent “Yep lets do it!” authorized starting the staged code changes
 The subsequent user clarification authorizes fresh replacement engines, retaining
 the UI and file-operation executor. See [replacement engine plan](replacement-engine-plan.md).
 The earlier steps below remain useful acceptance goals; their aggregate-based
-implementation approach is superseded.
+implementation approach is superseded. The first independent format reader is
+recorded in [fresh PMR reader proof](fresh-pmr-reader-2026-10-03.md).
 
 ## Earlier staged implementation
 
