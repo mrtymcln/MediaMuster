@@ -48,9 +48,8 @@
 
 namespace
 {
-	/// The objects that share one MobID, in file order. Avid writes the
-	/// same MobID on more than one MOBJ, so every fact is first-non-empty
-	/// across the group — the MDB reader's rule.
+	/// Objects sharing one MobID, in file order. Grouping keeps metadata
+	/// from repeated mob objects together; usage evidence is merged separately.
 	struct MobGroup
 	{
 		QString mobId;
@@ -209,10 +208,9 @@ OmfMetadata OmfParser::parseHeader(const QString &mediaFilePath, qint64 *bytesRe
 	OmfObjects::readDescriptor(b, p, fileMob->fileMobObjectId, fileMob->mediaDescriptorObjectId, objectByMob, e);
 	e.fileMobId = out.fileMobId;
 
-	// Identity from the master: the clip name Avid displays and the id the
-	// PMR's MASTER record and the bins carry. A file with no master mob
-	// keeps a valid essence and an empty identity, as an MXF header with
-	// no MaterialPackage does.
+	// The linked master supplies the clip name and master identity used by
+	// PMR file entries and bins. Without a unique master, retain the file
+	// identity and descriptor metadata but leave the master fields unknown.
 	if (master)
 	{
 		e.hasMaterialPackage = true;

@@ -12,7 +12,8 @@
 
 // MARK: - OpKind
 
-/// Supported operations. New Undo jobs require an explicit runtime Debug gate.
+/// Supported operations. New Undo jobs require authorization from the caller;
+/// the application supplies it according to FeatureFlags::kUndoEnabled.
 /// Rename is Rebalance's same-filesystem relocation.
 enum class OpKind : int
 {
@@ -106,8 +107,8 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 /// known MXF IDs also receive a header cross-check through the open handle.
 struct OpItem
 {
-	QString src;	///< Absolute source path; the item's identity key.
-	QString name;	///< Destination leaf name (usually the source's).
+	QString src;			 ///< Absolute source path; the item's identity key.
+	QString name;			 ///< Destination leaf name (usually the source's).
 	QString mediaFolderName; ///< Source folder name, reused when preserving MXF structure.
 	/// OMF-era: the scanner's verdict (MediaFile::omfEra). Preserve mode
 	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `mediaFolderName`
@@ -132,8 +133,7 @@ struct OpItem
 	int undoEntryId = -1;
 	QString trashReceipt;
 
-	// Rename (Rebalance) only.
-	QString renameDst; ///< Full destination path for this rename.
+	QString renameDst; ///< Full destination for Rebalance relocation or Undo restoration.
 	QString groupKey;  ///< Relatives cancel boundary: cancel only
 					   ///< lands between groups, never inside one.
 };

@@ -43,12 +43,12 @@ struct MediaMetadata
 		false; ///< A completed header selected a logical master identity (MaterialPackage in MXF),
 			   ///< independently of usage classification.
 	bool classificationKnown =
-		false;			///< An identified material/master package supplied a usage verdict.
-	QString codec;		///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
-	QString resolution; ///< '1920x1080', or empty for audio.
-	QString frameRate;		///< Display label: '23.976', '25', '29.97', etc.
+		false;				  ///< An identified material/master package supplied a usage verdict.
+	QString codec;			  ///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
+	QString resolution;		  ///< '1920x1080', or empty for audio.
+	QString frameRate;		  ///< Display label: '23.976', '25', '29.97', etc.
 	MediaRate frameRateRatio; ///< Original video rate, retained independently of duration availability.
-	QString bitDepth;	///< '8-bit', '10-bit', '24-bit'.
+	QString bitDepth;		  ///< '8-bit', '10-bit', '24-bit'.
 	QString
 		umid;		  ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
 	QString clipName; ///< Clip name from tag 0x4402 in the material package.
@@ -65,14 +65,11 @@ struct MediaMetadata
 	bool isPrecompute = false;
 	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
 
-	/// Avid's own TaggedValues (set 0x3F, on the packages' attribute lists):
-	/// `UNC Path` = the imported file's path, `Video` = its container ("QTFF"),
-	/// whether an `_IMPORTSETTING` attribute exists at all (absent on
-	/// Avid-generated media — renders, tones, mixdowns), and `_PJ` (legacy
-	/// `PROJNAME`) = the project the media was created in. The MDB carries the
-	/// same facts; this is how the header path — the only path an Interplay
-	/// site has — gets them too. The project is exactly what Media Composer
-	/// itself reads from the file when it rebuilds a folder's PMR.
+	/// Import and project metadata from the selected mob/package attributes.
+	/// MXF TaggedValues use `UNC Path`, `Video`, `_IMPORTSETTING` and
+	/// `_PJ`/`PROJNAME`; MDB and OMF readers map their object attributes here.
+	/// Empty text remains unknown. hasImportSetting records recovered presence,
+	/// independently of whether an import path or container name was recovered.
 	QString sourceFilePath;
 	QString sourceContainer;
 	bool hasImportSetting = false;
@@ -82,10 +79,10 @@ struct MediaMetadata
 	QByteArray
 		wrappingLabel; ///< FileDescriptor EssenceContainer (0x3004); separate from compression.
 	int width = 0;
-	int height = 0;		///< Stored value; interlaced files store one field height.
-	int channels = 0;	///< Audio only.
-	int sampleRate = 0; ///< Whole-Hz compatibility value; exact rate is sampleRateRatio.
-	MediaRate sampleRateRatio; ///< Original audio sampling fraction; may differ from descriptor edit rate.
+	int height = 0;				   ///< Stored value; interlaced files store one field height.
+	int channels = 0;			   ///< Audio only.
+	int sampleRate = 0;			   ///< Whole-Hz compatibility value; exact rate is sampleRateRatio.
+	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction; may differ from descriptor edit rate.
 	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate when the legacy header supplies it.
 
 	/// 0 = Full Frame, 1 = Separate Fields, 2 = Single Field, 3 = Mixed Fields.

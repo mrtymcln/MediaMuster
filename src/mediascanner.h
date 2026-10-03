@@ -47,15 +47,16 @@ public:
 		/// Correctly structured Avid media roots, their media folders, or
 		/// a directory directly containing those roots, added by the user.
 		QStringList manualPaths;
-		/// Session-only opt-in for OMFI roots and legacy OMF/audio essence.
-		/// MXF and its PMR/MDB metadata remain available by default.
+		/// Include managed OMF media in this scan. The application sets this
+		/// from its build's OMF feature flag; MXF scanning is independent.
 		bool includeOmf = false;
 	};
 
 	explicit MediaScanner(QObject *parent = nullptr);
 
 	/// Uses the same managed-tree resolution as a manually requested scan.
-	/// OMF roots qualify here even while their session feature is disabled.
+	/// OMF roots qualify here regardless of Options::includeOmf; that option
+	/// controls which resolved roots a scan reads.
 	static bool canScanPath(const QString &path);
 
 	/// Join before caches and mutexes are destroyed: the worker accesses them,

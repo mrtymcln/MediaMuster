@@ -10,7 +10,7 @@
 
 /// A master clip as `msmMMOB.mdb` describes it: the clip-level facts that
 /// every V01/A01/A02 relative shares. Keyed by the master MOB — the same
-/// id the PMR's MASTER record carries and the MXF's MaterialPackage UID
+/// id a PMR file entry's master field carries and the MXF's MaterialPackage UID
 /// (after MobId::swapMaterialByteOrder) resolves to.
 struct MdbMasterMob
 {
@@ -26,7 +26,7 @@ struct MdbMasterMob
 	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
 };
 
-/// One essence file, keyed by the file MOB from the PMR's FILE record.
+/// One essence file, keyed by the file MOB that a PMR file entry identifies.
 /// Metadata uses the same finalisation as media headers. `essenceComplete`
 /// tells the scanner whether the descriptor supplies the required technical
 /// fields, helping it decide whether a header read is needed.

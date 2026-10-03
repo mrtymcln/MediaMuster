@@ -12,10 +12,9 @@
 struct PmrEntry
 {
 	QString fileMobId;	 ///< Canonical hex form of the file MobId.
-	QString masterMobId; ///< Canonical hex form of the master clip MobId
-						 ///< from the paired MASTER record; shared by all
-						 ///< V01/A01/A02 relatives of the same clip. Empty for
-						 ///< version 1 (stored in the MOB database) or a null master.
+	QString masterMobId; ///< Canonical master clip MobId stored in this file entry.
+						 ///< Empty for version 1 (resolved through the MOB database)
+						 ///< or a null master; relatives can share this identity.
 	QString fileName;	 ///< From the UTF-8 record set when present; otherwise decoded from MBCS.
 	QString project;	 ///< MBCS project text, decoded with the MacRoman/UTF-8
 						 ///< compatibility policy. Not stored in version 1 records.
@@ -50,7 +49,7 @@ class PmrParser
 public:
 	/// Read and parse the PMR at `pmrFilePath`. Returns an empty vector when
 	/// the file is missing, too small or has an unsupported header. A malformed
-	/// or truncated body can return recovery entries, including a final FILE
+	/// or truncated body can return recovery entries, including a final file entry
 	/// whose master/timestamp was incomplete. A malformed Unicode set returns
 	/// the MBCS recovery entries. The reason is logged to the lcPmr category.
 	/// A complete 32-byte ID is preserved without inventing a prefix rule;

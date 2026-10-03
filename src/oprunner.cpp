@@ -790,9 +790,9 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		}
 		if (e.item.policy != "keepboth")
 		{
-			e.explicitSkip = e.item.policy == "skip";
-			save(j, e, e.explicitSkip ? Step::Skipped : Step::Failed);
-			return result(e, e.explicitSkip ? State::Skipped : State::Failed,
+			e.explicitSkip = false;
+			save(j, e, Step::Failed);
+			return result(e, State::Failed,
 						  "Destination occupied; source retained.");
 		}
 		const auto next = OperationPlan::findKeepBothPath(e.dst);
