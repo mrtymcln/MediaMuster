@@ -26,6 +26,11 @@ objective, not a declaration that every current or proposed parser rule is prove
 - Never merge physical-file rows because their File Mob ID, Master Mob ID, clip
   name, duration, or other metadata agrees. Users need to see individual copies
   to investigate duplicates and recover storage.
+- Capture only path, volume identifier, modification timestamp, relevant file
+  MobId and MasterMobId in the scan stamp; retain it in RAM and carry it into
+  later operations. This supersedes the earlier file-identifier/size stamp proposal.
+  These fields are change/association evidence, not proof of byte equality or
+  physical-object continuity. Existing operation-engine safeguards remain separate.
 - Remember each selected metadata value, its source/property, whether it is
   recorded or derived, competing observations, selection reason, and freshness.
 - Handle selection individually for each metadata field, rather than applying one
@@ -63,6 +68,31 @@ objective, not a declaration that every current or proposed parser rule is prove
   Do not make it depend on runtime CSV/TSV files. Use structured entries with
   verified identifiers, applicable format constraints, all three naming schemes,
   source references and meaningful verification coverage.
+- Preserve the current discovery scope: accepted MXF media in Avid MediaFiles/MXF
+  and accepted legacy media in OMFI MediaFiles, including the current .omf/.aif/.wav
+  candidates and accepted folder layouts. Do not broaden to arbitrary files elsewhere.
+  OMF/legacy scanning stays behind its feature flag and **enabled by default**.
+- Discover databases by `.pmr`/`.mdb` extension alone in accepted folders, without
+  fixed-basename checks. MXF folders admit `.mxf`; OMFI root and immediate named/
+  numbered subfolders admit `.omf`, `.aif`, `.wav`. See [agreed scan scope](scan-scope-and-omf.md).
+- Use **OmfScan** as the agreed future OMF feature and column name. The column is
+  true for admitted OMFI-family media (including .wav/.aif), false for MXF-family
+  media. It does not repeat the global enabled state. This supersedes Media Format.
+  Retain actual parsed container separately; scanning remains enabled by default.
+- Show `MobId`, `MasterMobId`, `KelpieId` and `OmfScan` in the table
+  and CSV. Hide the OmfScan table column when its feature flag is false. Keep
+  `Date Created` as the creation-date column name. Kind is Audio/Video from the
+  relevant descriptor/label, blank if unknown. For compressed DNx, Codec shows
+  NewDnx followed by an established ReallyOldDnx alias in square brackets, e.g.
+  `Avid DNx HQX [DNxHD 175x]`. Store Bit Depth and Sample Format as separate
+  properties in the RAM MediaFile record. Show Bit Depth in the table and CSV;
+  Sample Format stays internal, with no table column or CSV field. This supersedes
+  the combined-cell decision. No Colour Bit Depth column. Multiple-master
+  cells and CSV show all established IDs consistently; see [column review](column-review.md).
+- Do not add audio-channel columns or CSV fields; the user withdrew the earlier
+  Channels approval. Source-recorded channel metadata remains internal evidence.
+- Use user-exported scan CSVs for before/after comparisons; ask for a matching export
+  when needed. The supplied full Macintosh HD/EDIT baseline is recorded below.
 - Support associations across scanned folders and volumes, independently of
   whether local PMR/MDB databases exist.
 - Retain enough information to report database references whose files were not
@@ -73,6 +103,16 @@ objective, not a declaration that every current or proposed parser rule is prove
 
 ## Documents
 
+- [Column review](column-review.md): three-column property/current UI/proposed UI
+  comparison for the user's decisions, including distinctions from CSV-only fields.
+- [Conflict selection proposals](conflict-selection-proposals.md): eligibility,
+  field-specific recommendations and unresolved ties; pending user approval.
+- [Pre-Canon scan baseline](scan-baseline-2026-10-03.md): supplied full-scan CSV,
+  3,774 ms timing, memory/CPU screenshots, file receipts and comparison limits.
+- [File-operation checks in plain language](file-operation-checks.md): how row
+  identity differs from confirming the physical file before a move/copy/delete.
+- [Scan scope and OmfScan](scan-scope-and-omf.md): current admission rules and
+  agreed future feature/column naming.
 - [DNx codec evidence](dnx-codec-evidence.md): primary sources and supplied white papers, DNxUncompressed flavour rules, agreed feature-flagged alpha column, codec-table limitations, and three naming schemes with verification checks.
 - [RAM design and terminology](ram-metadata-design.md): responsibilities, ASCII
   diagrams, evidence, duplicate handling, diagnostics, and resource costs.
@@ -129,7 +169,16 @@ Evidence-backed format rules must retain their source and revision; empirical
 observations must not be promoted to universal format facts. Resolve newly
 discovered property meanings/display rules with the user as already required.
 
-Outstanding decisions include the Resolution column's geometry semantics,
-individual metadata-field selection policies beyond the agreed naming/alpha rules,
-the Alpha feature flag identifier/default, and whether to add a diagnostic summary
-dialog. Retain useful evidence while those presentation/policy choices remain open.
+The user approved per-property selection, validated media-header preference for
+technical facts, retention of competing observations, blank unresolved values with
+Console diagnostics, and display/export of all established MasterMobIds. Stop an
+affected move/delete if an applicable stamp check cannot be completed or detects
+change, and explain the reason. The staged implementation and comparison/check
+recommendations are approved as the plan; no code has been changed by this task.
+
+Detailed editorial-name/project/original-bin source orders still need to be resolved
+where the approved principles do not determine a winner. The Alpha flag identifier/
+default and optional diagnostic summary dialog remain implementation/UI details.
+Retain evidence independently of those choices and ask about newly discovered
+semantics as already agreed. The column review incorporates the user's amendments;
+older general statements that only Alpha/OmfScan are approved are superseded.

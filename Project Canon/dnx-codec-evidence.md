@@ -192,6 +192,11 @@ The joined catalogue should retain source/revision citations per rule and associ
 
 ## Agreed catalogue storage: handwritten C++ for v1
 
+Agreed Codec presentation: `NewDnx` first, then a verified `ReallyOldDnx` alias
+in square brackets when applicable, for example `Avid DNx HQX [DNxHD 175x]`.
+Omit the bracketed alias if unavailable/inapplicable; no nearest-match substitute
+or invented numbered DNxHR name. Retain OldDnx separately as already agreed.
+
 User decision: the DNx identification/naming tables must be handwritten and hardcoded
 in C++ when the rewrite is implemented. Do not load the authoritative mappings from
 CSV/TSV at runtime. CSV/TSV can be documentation or a review/export aid if useful,

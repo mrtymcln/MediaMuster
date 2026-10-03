@@ -3,6 +3,14 @@
 Status: proposed work, not implemented by this documentation task. Keep the v1
 evidence store in RAM and preserve the existing physical-file inventory.
 
+The user approved the readiness recommendations on 3 October 2026: begin with RAM
+records and evidence collection, then connect selection rules and the table; verify
+the same Macintosh HD/EDIT inventory against the supplied CSV, explain changed values
+from source evidence, test missing files/databases, conflicts, moves and copies,
+and measure comparable scan time and memory. The reported 3,774 ms and 147.1 MB
+screenshot are baseline references; the screenshot does not establish peak memory.
+This approval records the plan, not completion or a request to start code changes.
+
 ## Staged implementation
 
 1. Add the agreed `quint64`-backed KelpieId to physical-file records, with `0`
@@ -35,6 +43,13 @@ and separately resolved `NewDnx`/`OldDnx`/`ReallyOldDnx` names, are recorded in
 [DNx codec evidence](dnx-codec-evidence.md). These are planned checks, not passed tests.
 Its DNx catalogue must be handwritten/hardcoded in C++ for v1, with source references
 and exact supported mappings; the agreed design has no runtime CSV/TSV dependency.
+Review [column meanings](column-review.md) and the pending
+[conflict-rule proposals](conflict-selection-proposals.md) before changing display
+behaviour. Use the supplied [scan baseline](scan-baseline-2026-10-03.md) for comparison
+and request a matching fresh CSV when needed. Preserve current managed-folder scope;
+OMF scanning remains enabled by default behind its future OmfScan flag. The agreed
+OmfScan boolean column marks each row's managed family, with actual container retained
+separately; it supersedes the earlier Media Format column proposal.
 
 | Scenario | Required result |
 | --- | --- |
@@ -69,6 +84,9 @@ and exact supported mappings; the agreed design has no runtime CSV/TSV dependenc
 | Unknown/private property or unsupported structure | Preserve raw evidence/locator where available and report incomplete interpretation; no fabricated absence or established meaning |
 | High-volume scan | No application-defined RAM cap or silent evidence/row loss; share metadata and bound avoidable temporary work |
 | Two masters reference one file source | Both recorded relationships preserved; no silent replacement by a single association |
+| Multiple established MasterMobIds | Show all in the table cell and CSV with consistent formatting |
+| No defensible selected value | Blank display and Console conflict issue; all observations retained |
+| Move/delete source changed or applicable stamp check cannot be completed | Stop the affected operation and explain the failed/unavailable check; never silently treat an unavailable check as passed |
 | Partial/unreadable database | Read completeness shown; no confident absence conclusion from unread data |
 | Cancelled scan or unavailable drive | Issues qualify incomplete scope; no global "missing" conclusion |
 | Source changes during/after reading | Observations retain their snapshot; change detected/qualified instead of silent mixing |
