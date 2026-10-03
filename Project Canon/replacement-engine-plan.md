@@ -69,10 +69,9 @@ identity. Sharing these does not authorize inheriting the old readers' assumptio
 | `Canon::MediaFile` | Physical location, scan-session ID, filesystem facts, evidence, stamp and source/object references | Initial record defined; metadata values remain in evidence rather than display strings |
 | `ScanResult` | RAM inventory, worklist, source graphs, issues and distinct completion states | Initial types defined |
 | `DiscoveryEngine` | Enumerate admitted locations/extensions and create physical records plus parser worklist | Implemented and tested; not activated in the app |
-| `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; first independent PMR reader implemented and verified |
+| `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; selected independent PMR reader implemented and verified |
 | `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Explicit outcomes, typed PMR set membership, per-text encoding/basis, interpretation limits and opaque ranges added for PMR |
-| `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Implemented and tested against fixtures and six local/EDIT databases; not activated in the app |
-| `PmrReaderAlternative` | Independent implementation of the same PMR evidence contract | Added at user request for comparison; both retained, neither newly activated. See [comparison](pmr-reader-comparison-2026-10-03.md) |
+| `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Alternative selected on 4 October, promoted to this name; first Canon implementation removed. See [selection and checks](pmr-reader-selection-2026-10-04.md). Not activated in the app |
 | Reconciliation engine | Establish object ownership, identities, associations and scoped unmatched references | Pending |
 | Selection engine/catalogue | Apply individual verified metadata policies and DNx mappings | Pending |
 | UI/operation adapter | Connect the finished replacement to existing consumers | Pending |
@@ -118,14 +117,49 @@ It deliberately leaves parsing/reconciliation incomplete and metadata unread.
 Proof: [full suite result](evidence/fresh-engine-tests-2026-10-03.txt) and
 [real discovery result](evidence/fresh-discovery-real-2026-10-03.txt).
 
-This discovery check does not establish parser correctness. The first fresh PMR
-reader is now implemented; see [PMR implementation and proof](fresh-pmr-reader-2026-10-03.md).
+This discovery check does not establish parser correctness. The selected fresh PMR
+reader and its current checks are recorded in [PMR reader selection](pmr-reader-selection-2026-10-04.md).
+The [first implementation report](fresh-pmr-reader-2026-10-03.md) retains the original format evidence.
 The other format-reader tests still exercise the comparison engines. An opt-in real-drive discovery check is available through
 `MEDIAMUSTER_CANON_REAL_SCAN_ROOTS`; it lists files without opening media headers.
 The opt-in check on EDIT and the two local managed roots found **2,413 distinct
 physical rows and 2,425 parser candidates** (media plus 12 database files), with
 unique nonzero KelpieIds. Its discovery-only test took 75 ms; that is not a full
 scan/parser benchmark and must not be compared with the earlier full-scan time.
+
+## Discovery review corrections, 4 October 2026
+
+The review reproduced two false-completion cases: a media folder with read but
+no search permission, and an unreadable `Avid MediaFiles` container alongside a
+readable OMFI tree. Both could omit existing files while reporting a complete scan.
+
+Discovery now checks directory opening/iteration and entry status at every
+enumeration level. A failure records an `UnreadableFolder` issue scoped to that
+directory, keeps other successfully found files and marks discovery incomplete.
+An empty listing alone no longer proves successful discovery. Case-insensitive
+extensions, name ordering, flat scope and hidden/symlink exclusions are retained.
+Failed canonical-path lookups use the absolute path for deduplication, avoiding a
+shared empty key for distinct failed roots.
+
+Attempted filesystem queries without a usable value now retain `Unreadable` and
+an explanation, rather than `NotRead`. They do not invent `Absent`. Zero and false
+remain usable values. A small private observation helper makes this distinction
+deterministically testable without simulated filesystem races or public test hooks.
+The model and reader interface only received clarifying ownership/reference comments.
+
+Verification: the universal Debug build succeeded. All four affected CTest suites
+passed with the real managed roots enabled; discovery's 13 cases passed without
+skips, including three permission cases, empty folders, Unicode names/symlinks
+and unavailable metadata. The same 2,413 physical rows and 2,425 parser candidates
+were retained on local/EDIT roots. The two new tests for the reproduced defects
+both fail against an isolated pre-fix engine and pass against the corrected one.
+
+Proof: [before-fix control](evidence/discovery-fixes-before-2026-10-04.txt),
+[corrected discovery](evidence/discovery-fixes-after-2026-10-04.txt),
+[affected suites](evidence/discovery-fixes-focused-2026-10-04.txt).
+Tests ran on macOS arm64; Windows runtime/ACL behaviour was not exercised here.
+This is error accounting, not an atomic filesystem snapshot or a speed claim;
+later file changes still require the planned freshness checks.
 
 ## Replacement sequence and acceptance
 

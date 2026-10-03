@@ -1,0 +1,29 @@
+********* Start testing of TestCanonPmrRobustness *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonPmrRobustness::initTestCase()
+QINFO  : TestCanonPmrRobustness::evidenceOnStaticInputs() Static inputs checked against retained evidence: 559
+PASS   : TestCanonPmrRobustness::evidenceOnStaticInputs()
+PASS   : TestCanonPmrRobustness::everyByteReadFailureRetainsPartialEvidence()
+PASS   : TestCanonPmrRobustness::finalReadCancellation()
+PASS   : TestCanonPmrRobustness::sourceGrowsDuringRead()
+PASS   : TestCanonPmrRobustness::stalledDevice()
+PASS   : TestCanonPmrRobustness::invalidDeviceAndPreCancellation()
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED 1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03 records= 2 /Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED f1c0dabb9f0d9cdfa4df8951b46295ab83f90aa2b99ce936bd531093c2641c13 records= 870 /Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED d56cc87c811040cdb1dc9bc60cb8af4d17c0df3b65325042da6fdd2a73285d69 records= 720 /Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe records= 160 /Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928 records= 4 /Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED 1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03 records= 2 /Users/martymclean/Library/Group Containers/group.com.apple.notes/Accounts/05F4B15D-DD7C-454C-B334-B1E4C72107E4/Media/21C779BD-3E38-450C-9983-FFD2E4DE6FCD/1_DA444694-030D-4A9A-B192-C26C0149988D/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544 records= 778 /Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED 22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79 records= 1372 /Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7 records= 1026 /Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED 4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524 records= 926 /Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED 9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a records= 718 /Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() CHECKED c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928 records= 4 /Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr
+QINFO  : TestCanonPmrRobustness::realSources() Real sources checked: 12 records: 6582
+PASS   : TestCanonPmrRobustness::realSources()
+SKIP   : TestCanonPmrRobustness::benchmark() Opt-in parsing benchmark; excludes discovery and filesystem I/O.
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_canonpmrrobustness.cpp(279)]
+PASS   : TestCanonPmrRobustness::cleanupTestCase()
+Totals: 9 passed, 0 failed, 1 skipped, 0 blacklisted, 178ms
+********* Finished testing of TestCanonPmrRobustness *********

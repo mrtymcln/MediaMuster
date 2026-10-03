@@ -1,7 +1,13 @@
 # Independent PMR reader comparison
 
+> Historical comparison, captured in commit `23a1ab5`. On 4 October 2026 the user
+> chose the alternative and requested removal of the first Canon implementation.
+> The alternative is now `Canon::PmrReader` in `src/canon/pmrreader.h/.cpp`.
+> The old names, test counts and measurements below describe the comparison at
+> that commit, not two readers in the current tree. See [selection and current checks](pmr-reader-selection-2026-10-04.md).
+
 The user requested a second implementation, written from scratch beside the first,
-to compare code quality. Both now exist:
+to compare code quality. At the comparison revision, both existed:
 
 - First: `src/canon/pmrreader.h/.cpp`, `Canon::PmrReader`.
 - Alternative: `src/canon/pmrreaderalternative.h/.cpp`, `Canon::PmrReaderAlternative`.
@@ -101,6 +107,10 @@ background activity is uncontrolled; the result is a local measurement, not a
 cross-machine performance guarantee. Error/exception-heavy performance and peak
 memory were not measured.
 
+The following commands require a separate checkout of historical commit `23a1ab5`;
+the comparison targets were removed when the alternative was selected. Current
+single-reader test commands are in the selection report.
+
 ```sh
 cmake -S . -B build-canon-compare -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build-canon-compare --target tst_canonpmrcomparison tst_canonpmralternative -j4
@@ -126,5 +136,6 @@ independent version-16 count, counted text framing and observed capacities. The
 1024-byte Unicode input capacity also excludes payloads outside the stream reader's
 signed 16-bit limit. Its format coverage has not been expanded by this experiment.
 
-Keep both implementations available for review. Choosing one for the finished
-replacement engine remains a separate decision; the live scanner is not switched.
+The comparison originally left both implementations available pending selection.
+That decision was made on 4 October: retain the alternative as the sole Canon PMR
+reader. The live scanner is still awaiting the remaining replacement-engine stages.

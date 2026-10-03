@@ -1,354 +1,361 @@
+// Decodes PMR records whilst keeping the Legacy and Unicode sets separate.
+// Reading bytes, interpreting text, and following the record layout are kept apart
+// so format rules and damaged-file handling can be checked without the UI.
+
 #include "pmrreader.h"
-#include <QStringConverter>
+
+#include <QByteArrayView>
+#include <QStringDecoder>
 #include <QtEndian>
 #include <algorithm>
-#include <cstring>
+#include <array>
+#include <type_traits>
+#include <utility>
 
 namespace Canon
 {
 	namespace
 	{
-		constexpr quint32 pmrMagic = 0x000007a9;
-		constexpr qint32 unicodeVersion = 16;
-		constexpr quint16 nullString = 0xffff;
-		constexpr qsizetype mbcsFilenameCapacity = 2048;
-		constexpr qsizetype projectCapacity = 64;
-		constexpr qsizetype utf8FilenameCapacity = 1024;
 		using Outcome = ParsedSource::Outcome;
+		constexpr quint32 signature = 0x000007a9;
+		constexpr qint32 unicodeSetVersion = 16;
+		constexpr quint16 nullTextLength = 0xffff;
 
-		class PmrReadSession
+		// Only expected input failures cross the grammar this way. Allocation failures
+		// and programming errors are not converted into apparently usable PMR results.
+		struct ParseFailure
+		{
+			Outcome outcome;
+			QString message;
+		};
+
+		void checkCancellation(const Cancellation &cancellation)
+		{
+			if (cancellation.cancelled())
+				throw ParseFailure{Outcome::Cancelled, QStringLiteral("PMR read cancelled.")};
+		}
+
+		/// Owns a cursor, not the device. Its captured extent bounds every read/range.
+		class Input
 		{
 		public:
-			PmrReadSession(QIODevice &device, const ReaderContext &context)
-				: m_device(device), m_context(context) {}
-
-			ParsedSource run()
+			Input(QIODevice &device, const Cancellation &cancellation)
+				: m_device(device), m_cancellation(cancellation), m_extent(device.size())
 			{
-				m_result.outcome = Outcome::Complete;
-				if (m_context.cancellation.cancelled())
-					fail(Outcome::Cancelled, QStringLiteral("Cancelled before reading."));
-				else if (!m_device.isOpen() || !m_device.isReadable() || m_device.isTextModeEnabled() || m_device.isSequential() ||
-						 !m_device.seek(0))
-					fail(Outcome::IoError, QStringLiteral("PMR reader requires an open, readable, binary, seekable source."));
-				else
-					parse();
-				retainUnreadTail();
-				// The supplied receipt remains immutable. Completion is this reader's receipt,
-				// not proof that the filesystem source stayed unchanged during the read.
-				SourceSnapshot receipt = m_context.snapshot ? *m_context.snapshot : SourceSnapshot{};
-				receipt.source = MetadataSource::Pmr;
-				receipt.readState = m_result.outcome == Outcome::Complete ? SourceReadState::Complete : (m_result.outcome == Outcome::IoError ? SourceReadState::Unreadable : SourceReadState::Incomplete);
-				m_result.snapshot = SourceSnapshotRef::create(receipt);
-				for (auto &object : m_result.objects)
-					object.snapshot = m_result.snapshot;
-				return std::move(m_result);
+				if (m_extent < 0 || !device.seek(0))
+					throw ParseFailure{Outcome::IoError, QStringLiteral("Cannot determine PMR extent or seek to its start.")};
+			}
+
+			qint64 position() const { return m_position; }
+			qint64 remaining() const { return m_extent - m_position; }
+
+			void append(RawProperty &property, qsizetype count)
+			{
+				// Field widths are fixed or uint16-counted. A corrupt record count never
+				// reserves a vector, and an unknown trailing payload is never loaded.
+				std::array<char, 4096> buffer{};
+				while (count > 0)
+				{
+					checkCancellation(m_cancellation);
+					if (remaining() == 0)
+						throw ParseFailure{Outcome::Incomplete, QStringLiteral("Truncated %1 at byte %2.")
+																	.arg(property.locator.name)
+																	.arg(m_position)};
+					const qint64 requested = std::min({qint64(count), remaining(), qint64(buffer.size())});
+					const qint64 received = m_device.read(buffer.data(), requested);
+					if (received <= 0)
+					{
+						const auto outcome = received == 0 && m_device.atEnd() ? Outcome::Incomplete : Outcome::IoError;
+						throw ParseFailure{outcome, QStringLiteral("Cannot read %1 at byte %2: %3")
+														.arg(property.locator.name)
+														.arg(m_position)
+														.arg(m_device.errorString())};
+					}
+					property.encoding.append(buffer.data(), received);
+					m_position += received;
+					property.locator.ranges.front().length = property.encoding.size();
+					count -= received;
+				}
+			}
+
+			void verifyCompletion() const
+			{
+				checkCancellation(m_cancellation); // Includes cancellation during the final read.
+				if (m_device.size() != m_extent)
+					throw ParseFailure{Outcome::Incomplete, QStringLiteral("PMR length changed during reading; source must be checked again.")};
 			}
 
 		private:
-			void fail(Outcome outcome, const QString &message)
-			{
-				m_result.outcome = outcome;
-				m_result.diagnostics.append(message);
-				m_stopped = true;
-			}
+			QIODevice &m_device;
+			const Cancellation &m_cancellation;
+			const qint64 m_extent;
+			qint64 m_position = 0;
+		};
 
-			void invalidText(RawProperty &property, const QString &reason)
-			{
-				property.state = PropertyReadState::Unreadable;
-				property.interpretation = reason;
-				property.decoded.clear();
-				m_result.diagnostics.append(property.locator.name + QStringLiteral(": ") + reason);
-				m_result.outcome = Outcome::Malformed;
-			}
+		enum class TextField
+		{
+			LegacyFilename,
+			UnicodeFilename,
+			Project
+		};
 
-			// Reads are bounded by a fixed field width or a uint16 string length, never
-			// by the declared record count. Short successful reads are accumulated.
-			bool appendBytes(RawProperty &property, qint64 count)
+		qsizetype textCapacity(TextField field)
+		{
+			// MC 26.8 ReadPmrRec/AStream capacities include room for a terminator.
+			// They are compatibility constraints, not a cap on evidence retention.
+			switch (field)
 			{
-				while (count > 0)
-				{
-					if (m_context.cancellation.cancelled())
-					{
-						fail(Outcome::Cancelled, QStringLiteral("Cancelled during a field read."));
-						return false;
-					}
-					char buffer[4096];
-					const qint64 read = m_device.read(buffer, std::min(count, qint64(sizeof(buffer))));
-					if (read <= 0)
-					{
-						fail(read < 0 ? Outcome::IoError : Outcome::Incomplete,
-							 QStringLiteral("Cannot complete %1 at byte %2: %3")
-								 .arg(property.locator.name)
-								 .arg(m_device.pos())
-								 .arg(m_device.errorString()));
-						return false;
-					}
-					property.encoding.append(buffer, read);
-					count -= read;
-				}
-				return true;
+			case TextField::LegacyFilename:
+				return 2048;
+			case TextField::UnicodeFilename:
+				return 1024;
+			case TextField::Project:
+				return 64;
 			}
+			Q_UNREACHABLE();
+		}
 
-			RawProperty bytes(const QString &name, qint64 count)
+		/// Interprets a fully captured counted payload. No device access or selection.
+		/// An empty error means either decoded text or explicitly unknown legacy text.
+		QString decodeText(RawProperty &property, TextField field)
+		{
+			QByteArrayView text(property.encoding);
+			text = text.sliced(sizeof(quint16));
+			if (field == TextField::UnicodeFilename)
 			{
-				RawProperty property;
-				property.locator.name = name;
-				const qint64 start = m_device.pos();
-				property.state = appendBytes(property, count) ? PropertyReadState::Present : PropertyReadState::Unreadable;
-				property.locator.ranges.append({start, property.encoding.size()});
-				return property;
+				if (text.size() < 2 || text[0] != '\0')
+					return QStringLiteral("Invalid Unicode framing: requires two reserved bytes, with the first zero.");
+				text = text.sliced(2); // Keep both original reserved bytes in property.encoding.
 			}
+			if (text.size() >= textCapacity(field))
+				return QStringLiteral("Counted text exceeds the verified Avid input capacity; full bytes retained.");
 
-			quint32 unsignedWord(const QByteArray &data) const
+			// Avid consumes a C string, but bytes after its terminator remain evidence.
+			const auto terminator = std::find(text.cbegin(), text.cend(), '\0');
+			text = text.first(terminator - text.cbegin());
+			if (field == TextField::UnicodeFilename)
 			{
-				return m_bigEndian ? qFromBigEndian<quint32>(data.constData()) : qFromLittleEndian<quint32>(data.constData());
+				QStringDecoder decoder(QStringDecoder::Utf8, QStringConverter::Flag::Stateless);
+				const QString decoded = decoder.decode(text);
+				if (decoder.hasError())
+					return QStringLiteral("Invalid UTF-8 in the explicitly Unicode filename.");
+				property.decoded = decoded;
+				property.interpretation = QStringLiteral("UTF-8 required by the Unicode filename layout.");
 			}
+			else if (std::all_of(text.cbegin(), text.cend(), [](char c)
+								 { return static_cast<unsigned char>(c) < 128; }))
+			{
+				property.textEncoding = TextEncoding::Ascii;
+				property.textEncodingBasis = EvidenceBasis::Derived;
+				property.decoded = QString::fromLatin1(text);
+				property.interpretation = QStringLiteral("ASCII subset only; the legacy codepage is not declared.");
+			}
+			else
+				property.interpretation = QStringLiteral("Untagged legacy text; bytes retained without choosing a codepage.");
+			return {};
+		}
 
-			quint32 word(const QString &name)
-			{
-				auto property = bytes(name, 4);
-				quint32 value = 0;
-				if (!m_stopped)
-				{
-					value = unsignedWord(property.encoding);
-					property.decoded = value;
-				}
-				m_result.unownedProperties.append(std::move(property));
-				return value;
-			}
-
-			qint32 signedWord(const QString &name)
-			{
-				const quint32 bits = word(name);
-				qint32 value = 0;
-				static_assert(sizeof(value) == sizeof(bits));
-				std::memcpy(&value, &bits, sizeof(value));
-				if (!m_stopped)
-					m_result.unownedProperties.last().decoded = value;
-				return value;
-			}
-
-			RawProperty text(const QString &name, bool unicode, qsizetype capacity)
-			{
-				auto property = bytes(name, 2);
-				property.textEncoding = unicode ? TextEncoding::Utf8 : TextEncoding::Unknown;
-				if (unicode)
-					property.textEncodingBasis = EvidenceBasis::Recorded;
-				if (m_stopped)
-					return property;
-				const quint16 length = m_bigEndian ? qFromBigEndian<quint16>(property.encoding.constData()) : qFromLittleEndian<quint16>(property.encoding.constData());
-				if (length == nullString)
-				{
-					property.decoded = QString{};
-					property.interpretation = QStringLiteral("Recorded null-string marker; not an absent property.");
-					return property;
-				}
-				const bool complete = appendBytes(property, length);
-				property.locator.ranges[0].length = property.encoding.size();
-				if (!complete)
-				{
-					property.state = PropertyReadState::Unreadable;
-					return property;
-				}
-				QByteArray payload = property.encoding.mid(2);
-				if (unicode)
-				{
-					if (payload.size() < 2 || payload.at(0) != '\0')
-					{
-						invalidText(property, QStringLiteral("Invalid Unicode length/first reserved byte; complete bytes retained."));
-						return property;
-					}
-					payload.remove(0, 2); // Second reserved byte is retained, not required to be zero.
-					if (payload.size() > 32767)
-					{
-						invalidText(property, QStringLiteral("Unicode payload exceeds Avid's signed 16-bit length."));
-						return property;
-					}
-				}
-				if (payload.size() >= capacity)
-				{
-					invalidText(property, QStringLiteral("Counted text exceeds the verified Avid input capacity; bytes retained."));
-					return property;
-				}
-				const qsizetype terminator = payload.indexOf('\0');
-				if (terminator >= 0)
-					payload.truncate(terminator); // Keep the complete counted encoding above.
-				if (unicode)
-				{
-					QStringDecoder decoder(QStringDecoder::Utf8, QStringConverter::Flag::Stateless);
-					const QString decoded = decoder.decode(payload);
-					if (decoder.hasError())
-						invalidText(property, QStringLiteral("Invalid explicitly tagged UTF-8; no replacement-text selection."));
-					else
-					{
-						property.decoded = decoded;
-						property.interpretation = QStringLiteral("Explicit Unicode set: UTF-8 after two reserved bytes.");
-					}
-				}
-				else if (std::any_of(payload.cbegin(), payload.cend(), [](char byte)
-									 { return static_cast<unsigned char>(byte) >= 128; }))
-					property.interpretation = QStringLiteral("Recorded MBCS bytes; codepage is not tagged. Semantic text remains undecoded.");
-				else
-				{
-					property.textEncoding = TextEncoding::Ascii;
-					property.textEncodingBasis = EvidenceBasis::Derived;
-					property.decoded = QString::fromLatin1(payload);
-					property.interpretation = QStringLiteral("ASCII subset of untagged MBCS; full counted bytes retained.");
-				}
-				return property;
-			}
-
-			QString identityEncoding(qint32 version) const
-			{
-				return QStringLiteral("PMR/%1/%2").arg(version <= 7 ? QStringLiteral("OMF-8") : QStringLiteral("AAF-32"), m_bigEndian ? QStringLiteral("big-endian") : QStringLiteral("little-endian"));
-			}
-
-			void record(RecordSet &set)
-			{
-				AvidObject object;
-				object.handle = static_cast<ObjectHandle>(m_result.objects.size()) + 1;
-				object.role = AvidObject::Role::FileSource;
-				object.identityEncoding = identityEncoding(set.version);
-				set.objects.append(object.handle);
-				const qint64 width = set.version <= 7 ? 8 : 32;
-				auto id = bytes(QStringLiteral("FileMobId"), width);
-				if (!m_stopped)
-				{
-					object.recordedIdentity = id.encoding;
-					id.decoded = id.encoding;
-					id.interpretation = object.identityEncoding;
-				}
-				object.properties.append(std::move(id));
-				if (!m_stopped)
-					object.properties.append(text(QStringLiteral("Filename"), set.pmrFileSet == PmrFileSet::Unicode,
-												  set.pmrFileSet == PmrFileSet::Unicode ? utf8FilenameCapacity : mbcsFilenameCapacity));
-				if (!m_stopped && set.version != 1)
-				{
-					object.properties.append(text(QStringLiteral("Project"), false, projectCapacity));
-					if (!m_stopped)
-					{
-						auto master = bytes(QStringLiteral("MasterMobId"), width);
-						if (!m_stopped)
-						{
-							master.decoded = master.encoding;
-							master.interpretation = object.identityEncoding;
-							Relationship relationship;
-							relationship.origin = object.handle;
-							relationship.locator = master.locator;
-							relationship.recordedReference = master.encoding;
-							relationship.referenceEncoding = object.identityEncoding;
-							relationship.explanation = QStringLiteral("Recorded master reference; target is not defined by this record.");
-							m_result.relationships.append(std::move(relationship));
-						}
-						object.properties.append(std::move(master));
-					}
-				}
-				else if (!m_stopped)
-				{
-					for (const auto &name : {QStringLiteral("Project"), QStringLiteral("MasterMobId")})
-					{
-						RawProperty absent;
-						absent.locator.name = name;
-						absent.state = PropertyReadState::Absent;
-						absent.interpretation = QStringLiteral("Not stored in a version-1 PMR record layout.");
-						object.properties.append(std::move(absent));
-					}
-				}
-				if (!m_stopped)
-				{
-					auto timestamp = bytes(QStringLiteral("ModificationWord"), 4);
-					if (!m_stopped)
-					{
-						timestamp.decoded = unsignedWord(timestamp.encoding);
-						timestamp.interpretation = QStringLiteral("Recorded uint32; epoch/timezone selection belongs to reconciliation.");
-					}
-					object.properties.append(std::move(timestamp));
-				}
-				m_result.objects.append(std::move(object));
-			}
-
-			void recordSet(PmrFileSet fileSet, qint32 version)
-			{
-				RecordSet set;
-				set.pmrFileSet = fileSet;
-				set.name = fileSet == PmrFileSet::Legacy ? QStringLiteral("Legacy") : QStringLiteral("Unicode");
-				set.version = version;
-				set.declaredCount = word(set.name + QStringLiteral(".Count"));
-				for (quint32 index = 0; !m_stopped && index < set.declaredCount; ++index)
-					record(set);
-				set.framingComplete = !m_stopped;
-				m_result.recordSets.append(std::move(set));
-			}
+		class Grammar
+		{
+		public:
+			Grammar(Input &input, ParsedSource &result) : m_input(input), m_result(result) {}
 
 			void parse()
 			{
-				auto magic = bytes(QStringLiteral("Magic"), 4);
-				if (m_stopped)
-				{
-					m_result.unownedProperties.append(std::move(magic));
-					return;
-				}
-				m_bigEndian = qFromBigEndian<quint32>(magic.encoding.constData()) == pmrMagic;
-				if (unsignedWord(magic.encoding) != pmrMagic)
-				{
-					m_result.unownedProperties.append(std::move(magic));
-					fail(Outcome::Malformed, QStringLiteral("PMR signature does not match either supported byte order."));
-					return;
-				}
-				magic.decoded = pmrMagic;
-				m_result.unownedProperties.append(std::move(magic));
+				auto &magic = fixed(m_result.unownedProperties, QStringLiteral("Magic"), sizeof(quint32));
+				if (qFromLittleEndian<quint32>(magic.encoding.constData()) == signature)
+					m_bigEndian = false;
+				else if (qFromBigEndian<quint32>(magic.encoding.constData()) == signature)
+					m_bigEndian = true;
+				else
+					throw ParseFailure{Outcome::Malformed, QStringLiteral("Invalid PMR signature.")};
+				magic.decoded = signature;
 				m_result.container = ParsedSource::Container::Pmr;
-				const qint32 version = signedWord(QStringLiteral("Legacy.Version"));
-				if (m_stopped)
-					return;
+
+				const auto version = integer<qint32>(m_result.unownedProperties, QStringLiteral("Legacy.Version"));
 				if (version >= 9)
-				{
-					fail(Outcome::Unsupported, QStringLiteral("Unverified PMR base version %1; remaining bytes referenced without decoding.").arg(version));
-					return;
-				}
+					throw ParseFailure{Outcome::Unsupported, QStringLiteral("Unverified PMR legacy version %1.").arg(version)};
 				if (version <= 0)
-					m_result.diagnostics.append(QStringLiteral("Version %1 follows the observed signed branch; historical writer support is unproven.").arg(version));
-				recordSet(PmrFileSet::Legacy, version);
-				if (m_stopped || m_device.pos() == m_device.size())
+					m_result.diagnostics.append(QStringLiteral("Version %1 follows the inspected signed branch; a historical writer is not established.").arg(version));
+				readSet(PmrFileSet::Legacy, version);
+				if (m_input.remaining() == 0)
 					return;
-				const qint32 extension = signedWord(QStringLiteral("Extension.Version"));
-				if (m_stopped)
-					return;
-				if (extension != unicodeVersion)
+
+				const auto extension = integer<qint32>(m_result.unownedProperties, QStringLiteral("Extension.Version"));
+				if (extension != unicodeSetVersion)
+					throw ParseFailure{Outcome::Unsupported, QStringLiteral("Unverified PMR extension %1.").arg(extension)};
+				readSet(PmrFileSet::Unicode, extension);
+				if (m_input.remaining() != 0)
+					throw ParseFailure{Outcome::Unsupported, QStringLiteral("Uninterpreted bytes follow the Unicode set.")};
+			}
+
+		private:
+			RawProperty &begin(QVector<RawProperty> &properties, const QString &name)
+			{
+				auto &property = properties.emplaceBack();
+				property.locator.name = name;
+				property.locator.ranges.append({m_input.position(), 0});
+				property.state = PropertyReadState::Unreadable;
+				return property;
+			}
+
+			RawProperty &fixed(QVector<RawProperty> &properties, const QString &name, qsizetype width)
+			{
+				auto &property = begin(properties, name);
+				m_input.append(property, width);
+				property.state = PropertyReadState::Present;
+				return property;
+			}
+
+			template <typename T>
+			T decodeInteger(const RawProperty &property) const
+			{
+				static_assert(std::is_integral_v<T> && (sizeof(T) == 2 || sizeof(T) == 4));
+				return m_bigEndian ? qFromBigEndian<T>(property.encoding.constData()) : qFromLittleEndian<T>(property.encoding.constData());
+			}
+
+			template <typename T>
+			T integer(QVector<RawProperty> &properties, const QString &name)
+			{
+				auto &property = fixed(properties, name, sizeof(T));
+				const T value = decodeInteger<T>(property);
+				property.decoded = QVariant::fromValue(value);
+				return value;
+			}
+
+			void text(QVector<RawProperty> &properties, const QString &name, TextField field)
+			{
+				auto &property = begin(properties, name);
+				property.textEncoding = field == TextField::UnicodeFilename ? TextEncoding::Utf8 : TextEncoding::Unknown;
+				if (field == TextField::UnicodeFilename)
+					property.textEncodingBasis = EvidenceBasis::Recorded;
+				m_input.append(property, sizeof(quint16));
+				const auto length = decodeInteger<quint16>(property);
+				if (length == nullTextLength)
 				{
-					fail(Outcome::Unsupported, QStringLiteral("Unverified PMR extension %1; base records retained.").arg(extension));
+					property.state = PropertyReadState::Present;
+					property.decoded = QString{};
+					property.interpretation = QStringLiteral("Recorded null-string marker, distinct from an absent field.");
 					return;
 				}
-				recordSet(PmrFileSet::Unicode, extension);
-				if (!m_stopped && m_device.pos() != m_device.size())
-					fail(Outcome::Unsupported, QStringLiteral("Bytes follow the verified Unicode set; retained as an opaque range."));
+				m_input.append(property, length);
+				const QString error = decodeText(property, field);
+				if (error.isEmpty())
+					property.state = PropertyReadState::Present;
+				else
+				{
+					property.interpretation = error;
+					m_result.diagnostics.append(QStringLiteral("%1 at byte %2: %3").arg(name).arg(property.locator.ranges.front().offset).arg(error));
+					m_result.outcome = Outcome::Malformed;
+				}
 			}
 
-			void retainUnreadTail()
+			void readSet(PmrFileSet kind, qint32 version)
 			{
-				if (!m_device.isOpen() || m_device.isSequential() || m_device.pos() < 0)
-					return;
-				const qint64 remaining = m_device.size() - m_device.pos();
-				if (remaining <= 0)
-					return;
-				RawProperty tail;
-				tail.locator.name = QStringLiteral("UnparsedTail");
-				tail.locator.ranges.append({m_device.pos(), remaining});
-				tail.bytesRetained = false;
-				tail.interpretation = QStringLiteral("Opaque source range; rereading requires a fresh source check.");
-				m_result.unownedProperties.append(std::move(tail));
+				auto &set = m_result.recordSets.emplaceBack();
+				set.pmrFileSet = kind;
+				set.name = kind == PmrFileSet::Legacy ? QStringLiteral("Legacy") : QStringLiteral("Unicode");
+				set.version = version;
+				set.declaredCount = integer<quint32>(m_result.unownedProperties, set.name + QStringLiteral(".Count"));
+				for (quint32 record = 0; record < set.declaredCount; ++record)
+					readRecord(set);
+				set.framingComplete = true;
 			}
 
-			QIODevice &m_device;
-			const ReaderContext &m_context;
-			ParsedSource m_result;
+			void readRecord(RecordSet &set)
+			{
+				auto &object = m_result.objects.emplaceBack();
+				object.handle = static_cast<ObjectHandle>(m_result.objects.size());
+				object.role = AvidObject::Role::FileSource;
+				const qsizetype identityWidth = set.version <= 7 ? 8 : 32;
+				object.identityEncoding = QStringLiteral("PMR/%1/%2")
+											  .arg(set.version <= 7 ? QStringLiteral("OMF-8") : QStringLiteral("AAF-32"),
+												   m_bigEndian ? QStringLiteral("big-endian") : QStringLiteral("little-endian"));
+				set.objects.append(object.handle);
+
+				auto &file = fixed(object.properties, QStringLiteral("FileMobId"), identityWidth);
+				file.decoded = file.encoding;
+				file.interpretation = object.identityEncoding;
+				object.recordedIdentity = file.encoding;
+				text(object.properties, QStringLiteral("Filename"),
+					 set.pmrFileSet == PmrFileSet::Unicode ? TextField::UnicodeFilename : TextField::LegacyFilename);
+				if (set.version == 1)
+				{
+					for (const auto &name : {QStringLiteral("Project"), QStringLiteral("MasterMobId")})
+					{
+						auto &absent = object.properties.emplaceBack();
+						absent.locator.name = name;
+						absent.state = PropertyReadState::Absent;
+						absent.interpretation = QStringLiteral("Version 1 does not store this field.");
+					}
+				}
+				else
+				{
+					text(object.properties, QStringLiteral("Project"), TextField::Project);
+					auto &master = fixed(object.properties, QStringLiteral("MasterMobId"), identityWidth);
+					master.decoded = master.encoding;
+					master.interpretation = object.identityEncoding;
+					auto &reference = m_result.relationships.emplaceBack();
+					reference.origin = object.handle;
+					reference.locator = master.locator;
+					reference.recordedReference = master.encoding;
+					reference.referenceEncoding = object.identityEncoding;
+					reference.explanation = QStringLiteral("Recorded master identity; no target object is defined here.");
+				}
+				integer<quint32>(object.properties, QStringLiteral("ModificationWord"));
+				object.properties.last().interpretation = QStringLiteral("Recorded uint32; no epoch or timezone selected.");
+			}
+
+			Input &m_input;
+			ParsedSource &m_result;
 			bool m_bigEndian = false;
-			bool m_stopped = false;
 		};
+
+		void retainTail(ParsedSource &result, const Input &input)
+		{
+			if (input.remaining() == 0)
+				return;
+			auto &tail = result.unownedProperties.emplaceBack();
+			tail.locator.name = QStringLiteral("UnparsedTail");
+			tail.locator.ranges.append({input.position(), input.remaining()});
+			tail.bytesRetained = false;
+			tail.interpretation = QStringLiteral("Source range only; revalidate the source before rereading.");
+		}
 	}
 
 	ParsedSource PmrReader::read(QIODevice &source, const ReaderContext &context) const
 	{
-		return PmrReadSession(source, context).run();
+		ParsedSource result;
+		result.outcome = Outcome::Complete;
+		try
+		{
+			checkCancellation(context.cancellation);
+			if (!source.isOpen() || !source.isReadable() || source.isSequential() || source.isTextModeEnabled())
+				throw ParseFailure{Outcome::IoError, QStringLiteral("PMR input must be open, readable, seekable and binary.")};
+			Input input(source, context.cancellation);
+			try
+			{
+				Grammar(input, result).parse();
+				input.verifyCompletion();
+			}
+			catch (const ParseFailure &failure)
+			{
+				result.outcome = failure.outcome;
+				result.diagnostics.append(failure.message);
+			}
+			retainTail(result, input);
+		}
+		catch (const ParseFailure &failure)
+		{
+			result.outcome = failure.outcome;
+			result.diagnostics.append(failure.message);
+		}
+		SourceSnapshot receipt = context.snapshot ? *context.snapshot : SourceSnapshot{};
+		receipt.source = MetadataSource::Pmr;
+		receipt.readState = result.outcome == Outcome::Complete ? SourceReadState::Complete : (result.outcome == Outcome::IoError ? SourceReadState::Unreadable : SourceReadState::Incomplete);
+		result.snapshot = SourceSnapshotRef::create(receipt);
+		for (auto &object : result.objects)
+			object.snapshot = result.snapshot;
+		return result;
 	}
 }

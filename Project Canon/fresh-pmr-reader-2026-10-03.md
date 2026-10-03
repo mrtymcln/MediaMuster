@@ -1,5 +1,10 @@
 # Fresh PMR reader — implementation and proof
 
+> Historical implementation report. On 4 October 2026 the user selected the
+> independently written alternative. It now occupies `src/canon/pmrreader.h/.cpp`
+> as `Canon::PmrReader`; the first implementation described here was removed.
+> The format evidence below remains relevant. See [selection and current checks](pmr-reader-selection-2026-10-04.md).
+
 Implemented 3 October 2026 in `src/canon/pmrreader.h/.cpp`. This is a replacement
 reader returning `Canon::ParsedSource`, without calling the old PMR parser or
 passing facts through `PmrEntry` or `MediaMetadata`. It is built in the independent

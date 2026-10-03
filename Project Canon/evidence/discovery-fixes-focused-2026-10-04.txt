@@ -1,0 +1,17 @@
+Test project /Users/martymclean/Developer/MediaMuster/build-canon
+    Start 5: tst_mediaevidence
+1/4 Test #5: tst_mediaevidence ................   Passed    0.01 sec
+    Start 7: tst_canondiscovery
+2/4 Test #7: tst_canondiscovery ...............   Passed    1.08 sec
+    Start 8: tst_canonpmr
+3/4 Test #8: tst_canonpmr .....................   Passed    0.65 sec
+    Start 9: tst_canonpmrrobustness
+4/4 Test #9: tst_canonpmrrobustness ...........   Passed    0.85 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Label Time Summary:
+core     =   0.01 sec*proc (1 test)
+media    =   2.58 sec*proc (3 tests)
+
+Total Test time (real) =   2.60 sec

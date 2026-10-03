@@ -1,0 +1,10 @@
+********* Start testing of TestCanonDiscovery *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonDiscovery::initTestCase()
+FAIL!  : TestCanonDiscovery::folder_without_search_permission_does_not_claim_completion() '!result.discoveryComplete' returned FALSE. ()
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_canondiscovery.cpp(244)]
+FAIL!  : TestCanonDiscovery::unreadable_avid_container_preserves_other_family() '!result.discoveryComplete' returned FALSE. ()
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_canondiscovery.cpp(271)]
+PASS   : TestCanonDiscovery::cleanupTestCase()
+Totals: 2 passed, 2 failed, 0 skipped, 0 blacklisted, 8ms
+********* Finished testing of TestCanonDiscovery *********

@@ -1,0 +1,71 @@
+Test project /Users/martymclean/Developer/MediaMuster/build-canon
+      Start  1: tst_diagnostics
+ 1/30 Test  #1: tst_diagnostics ..................   Passed    0.02 sec
+      Start  2: tst_mobid
+ 2/30 Test  #2: tst_mobid ........................   Passed    0.01 sec
+      Start  3: tst_pathkey
+ 3/30 Test  #3: tst_pathkey ......................   Passed    0.01 sec
+      Start  4: tst_format
+ 4/30 Test  #4: tst_format .......................   Passed    0.01 sec
+      Start  5: tst_mediaevidence
+ 5/30 Test  #5: tst_mediaevidence ................   Passed    0.01 sec
+      Start  6: tst_conventions
+ 6/30 Test  #6: tst_conventions ..................   Passed    0.01 sec
+      Start  7: tst_canondiscovery
+ 7/30 Test  #7: tst_canondiscovery ...............   Passed    0.73 sec
+      Start  8: tst_canonpmr
+ 8/30 Test  #8: tst_canonpmr .....................   Passed    0.81 sec
+      Start  9: tst_canonpmrrobustness
+ 9/30 Test  #9: tst_canonpmrrobustness ...........   Passed    0.84 sec
+      Start 10: tst_omfuid
+10/30 Test #10: tst_omfuid .......................   Passed    0.01 sec
+      Start 11: tst_mediametadata
+11/30 Test #11: tst_mediametadata ................   Passed    0.01 sec
+      Start 12: tst_bentofile
+12/30 Test #12: tst_bentofile ....................   Passed    1.31 sec
+      Start 13: tst_pmrparser
+13/30 Test #13: tst_pmrparser ....................   Passed    0.17 sec
+      Start 14: tst_mdbparser
+14/30 Test #14: tst_mdbparser ....................   Passed    3.46 sec
+      Start 15: tst_omfparser
+15/30 Test #15: tst_omfparser ....................   Passed    1.61 sec
+      Start 16: tst_avbparser
+16/30 Test #16: tst_avbparser ....................   Passed    3.43 sec
+      Start 17: tst_mxfparser
+17/30 Test #17: tst_mxfparser ....................   Passed    3.85 sec
+      Start 18: tst_avideffects
+18/30 Test #18: tst_avideffects ..................   Passed    0.02 sec
+      Start 19: tst_scanner
+19/30 Test #19: tst_scanner ......................   Passed    8.95 sec
+      Start 20: tst_opcleanup
+20/30 Test #20: tst_opcleanup ....................   Passed    0.04 sec
+      Start 21: tst_volumeidentity
+21/30 Test #21: tst_volumeidentity ...............   Passed    0.03 sec
+      Start 22: tst_opjournal
+22/30 Test #22: tst_opjournal ....................   Passed    1.31 sec
+      Start 23: tst_rebalanceplanner
+23/30 Test #23: tst_rebalanceplanner .............   Passed    7.11 sec
+      Start 24: tst_fileoperations
+24/30 Test #24: tst_fileoperations ...............   Passed   17.73 sec
+      Start 25: tst_mediacsv
+25/30 Test #25: tst_mediacsv .....................   Passed    0.02 sec
+      Start 26: tst_mediatablemodel
+26/30 Test #26: tst_mediatablemodel ..............   Passed    0.02 sec
+      Start 27: tst_mediafilterproxy
+27/30 Test #27: tst_mediafilterproxy .............   Passed    0.02 sec
+      Start 28: tst_precomputefilterdialog
+28/30 Test #28: tst_precomputefilterdialog .......   Passed    0.26 sec
+      Start 29: tst_binfilterdialog
+29/30 Test #29: tst_binfilterdialog ..............   Passed    0.84 sec
+      Start 30: tst_operationui
+30/30 Test #30: tst_operationui ..................   Passed    5.97 sec
+
+100% tests passed, 0 tests failed out of 30
+
+Label Time Summary:
+core          =   0.08 sec*proc (6 tests)
+media         =  25.20 sec*proc (13 tests)
+operations    =  26.22 sec*proc (5 tests)
+ui            =   7.13 sec*proc (6 tests)
+
+Total Test time (real) =  58.64 sec

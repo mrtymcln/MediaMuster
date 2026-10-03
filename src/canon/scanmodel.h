@@ -1,5 +1,9 @@
 #pragma once
 
+// The shared in-memory records for a scan. Physical media files stay
+// separate from the Avid objects and database records that describe them.
+// Each file copy has its own row; source evidence can be shared between rows.
+
 #include "mediaevidence.h"
 #include <QByteArray>
 #include <QStringList>
@@ -8,14 +12,27 @@
 
 namespace Canon
 {
-	enum class PmrFileSet { Legacy, Unicode };
-	enum class TextEncoding { Ascii, MacRoman, Utf8, Utf16LE, Utf16BE, Unknown };
+	enum class PmrFileSet
+	{
+		Legacy,
+		Unicode
+	};
+	enum class TextEncoding
+	{
+		Ascii,
+		MacRoman,
+		Utf8,
+		Utf16LE,
+		Utf16BE,
+		Unknown
+	};
 
 	/// Source-local handles preserve object contexts before identity reconciliation.
 	using ObjectHandle = quint64;
 
 	struct ObjectReference
 	{
+		// Use the owning ParsedSource's returned snapshot, not the reader's input receipt.
 		SourceSnapshotRef source;
 		ObjectHandle handle = 0;
 	};
@@ -41,10 +58,10 @@ namespace Canon
 		QByteArray encoding;
 		QVariant decoded;
 		PropertyReadState state = PropertyReadState::NotRead;
-		QString interpretation; ///< Decoding limits/encoding evidence, without display policy.
-		std::optional<TextEncoding> textEncoding; ///< No value for binary/numeric/absent properties.
+		QString interpretation;							///< Decoding limits/encoding evidence, without display policy.
+		std::optional<TextEncoding> textEncoding;		///< No value for binary/numeric/absent properties.
 		std::optional<EvidenceBasis> textEncodingBasis; ///< No value when encoding is unknown.
-		bool bytesRetained = true; ///< False: locator ranges reference bytes not copied into RAM.
+		bool bytesRetained = true;						///< False: locator ranges reference bytes not copied into RAM.
 	};
 
 	struct AvidObject
@@ -70,6 +87,7 @@ namespace Canon
 
 	struct Relationship
 	{
+		// Handles are local to the containing ParsedSource; zero is unresolved.
 		ObjectHandle origin = 0;
 		ObjectHandle target = 0;
 		PropertyLocator locator;
@@ -102,7 +120,16 @@ namespace Canon
 			Wave,
 			Aiff
 		};
-		enum class Outcome { NotRead, Complete, Incomplete, Malformed, Unsupported, IoError, Cancelled };
+		enum class Outcome
+		{
+			NotRead,
+			Complete,
+			Incomplete,
+			Malformed,
+			Unsupported,
+			IoError,
+			Cancelled
+		};
 		Outcome outcome = Outcome::NotRead;
 		SourceSnapshotRef snapshot;
 		Container container = Container::Unknown;

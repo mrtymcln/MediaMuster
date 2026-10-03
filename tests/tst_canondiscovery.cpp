@@ -1,10 +1,16 @@
 #include "canon/discoveryengine.h"
+#include "canon/discoveryengine_p.h"
 #include "canon/sourcereader.h"
 #include <QDir>
 #include <QFile>
 #include <QSet>
 #include <QTemporaryDir>
 #include <QTest>
+#ifdef Q_OS_UNIX
+#include <cerrno>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 namespace
 {
@@ -15,12 +21,92 @@ namespace
 		QFile file(path);
 		return file.open(QIODevice::WriteOnly) && file.write("opaque bytes") == 12;
 	}
+
+#ifdef Q_OS_UNIX
+	bool hasUnreadableIssue(const Canon::ScanResult &result, const QString &folder)
+	{
+		for (const auto &issue : result.discoveryIssues)
+			if (issue.kind == Canon::DiscoveryIssue::Kind::UnreadableFolder &&
+				(issue.path == folder || issue.path.startsWith(folder + '/')) && !issue.explanation.isEmpty())
+				return true;
+		return false;
+	}
+
+	class DirectoryPermissions
+	{
+	public:
+		explicit DirectoryPermissions(const QString &path) : m_path(QFile::encodeName(path))
+		{
+			struct stat info{};
+			m_saved = ::stat(m_path.constData(), &info) == 0;
+			m_original = info.st_mode & 07777;
+		}
+		~DirectoryPermissions()
+		{
+			if (m_saved)
+				::chmod(m_path.constData(), m_original);
+		}
+		bool set(mode_t mode) const { return m_saved && ::chmod(m_path.constData(), mode) == 0; }
+		Q_DISABLE_COPY_MOVE(DirectoryPermissions)
+
+	private:
+		QByteArray m_path;
+		mode_t m_original = 0;
+		bool m_saved = false;
+	};
+#endif
 }
 
 class TestCanonDiscovery : public QObject
 {
 	Q_OBJECT
 private slots:
+	void unavailable_filesystem_metadata_is_an_attempted_read()
+	{
+		Canon::MediaFile file;
+		const auto source = SourceSnapshotRef::create(SourceSnapshot{
+			MetadataSource::Filesystem, QStringLiteral("file.mxf"), {}, SourceReadState::Complete});
+		for (const auto property : {MediaProperty::Created, MediaProperty::Modified, MediaProperty::VolumeIdentifier})
+		{
+			Canon::Detail::filesystemObservation(file, source, property, QStringLiteral("tested filesystem property"), {});
+			const auto &observation = file.evidence.observations(property).first();
+			QCOMPARE(observation.readState, PropertyReadState::Unreadable);
+			QVERIFY(!observation.value.isValid());
+			QVERIFY(!observation.explanation.isEmpty());
+			QCOMPARE(observation.snapshot, source);
+		}
+		// Zero and false are usable values; neither means that a query failed.
+		Canon::Detail::filesystemObservation(file, source, MediaProperty::Size, QStringLiteral("byte size"), qint64(0));
+		Canon::Detail::filesystemObservation(file, source, MediaProperty::OmfScan, QStringLiteral("legacy family"), false);
+		QCOMPARE(file.evidence.observations(MediaProperty::Size).first().readState, PropertyReadState::Present);
+		QCOMPARE(file.evidence.observations(MediaProperty::Size).first().value.toLongLong(), qint64(0));
+		QCOMPARE(file.evidence.observations(MediaProperty::OmfScan).first().readState, PropertyReadState::Present);
+		QCOMPARE(file.evidence.observations(MediaProperty::OmfScan).first().value.toBool(), false);
+		QVERIFY(file.evidence.observations(MediaProperty::Codec).isEmpty());
+		QCOMPARE(file.evidence.selected(MediaProperty::Codec).readState, PropertyReadState::NotRead);
+	}
+
+	void unicode_names_and_symlink_exclusions()
+	{
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString root = temp.path() + "/Avid MediaFiles/MXF";
+		const QString folder = root + QString::fromUtf8("/No\u0308n English \u4f60\u597d");
+		const QString filename = QString::fromUtf8("/na\u0301me\u2122 \u6f22.MXF");
+		QVERIFY(put(folder + filename));
+#ifdef Q_OS_UNIX
+		QVERIFY(QFile::link(folder + filename, folder + "/linked.mxf"));
+		QVERIFY(QFile::link(folder, root + "/Linked folder"));
+#endif
+		Canon::Cancellation cancellation;
+		const auto result = Canon::DiscoveryEngine{}.discover({{root}, true}, cancellation);
+		QVERIFY(result.discoveryComplete);
+		QVERIFY(result.discoveryIssues.isEmpty());
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.candidates.size(), 1);
+		QCOMPARE(QFileInfo(result.files.first().path).canonicalFilePath(), QFileInfo(folder + filename).canonicalFilePath());
+	}
+
 	void optional_real_discovery()
 	{
 		const QString roots = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_ROOTS");
@@ -119,6 +205,105 @@ private slots:
 		QCOMPARE(result.discoveryIssues.size(), 2);
 		QCOMPARE(result.discoveryIssues[0].kind, Canon::DiscoveryIssue::Kind::UnmanagedRoot);
 		QCOMPARE(result.discoveryIssues[1].kind, Canon::DiscoveryIssue::Kind::UnavailableRoot);
+	}
+
+	void empty_managed_folders_are_complete()
+	{
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		QVERIFY(QDir().mkpath(temp.path() + "/Avid MediaFiles/MXF/1"));
+		QVERIFY(QDir().mkpath(temp.path() + "/OMFI MediaFiles/Editor"));
+		Canon::Cancellation cancellation;
+		const auto result = Canon::DiscoveryEngine{}.discover({{temp.path()}, true}, cancellation);
+		QVERIFY(result.discoveryComplete);
+		QVERIFY(!result.cancelled);
+		QVERIFY(result.files.isEmpty());
+		QVERIFY(result.candidates.isEmpty());
+		QVERIFY(result.discoveryIssues.isEmpty());
+	}
+
+	void folder_without_search_permission_does_not_claim_completion()
+	{
+#ifdef Q_OS_UNIX
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString root = temp.path() + "/Avid MediaFiles/MXF";
+		const QString restricted = root + "/1";
+		const QString unreachableFile = restricted + "/unreachable.mxf";
+		const QString readableFile = root + "/2/readable.mxf";
+		QVERIFY(put(unreachableFile));
+		QVERIFY(put(readableFile));
+		DirectoryPermissions permissions(restricted);
+		QVERIFY(permissions.set(0400));
+		if (::access(QFile::encodeName(unreachableFile).constData(), F_OK) == 0)
+			QSKIP("Host bypasses directory search permissions");
+		QCOMPARE(errno, EACCES);
+		QVERIFY(QFileInfo(restricted).isReadable());
+		Canon::Cancellation cancellation;
+		const auto result = Canon::DiscoveryEngine{}.discover({{root}, true}, cancellation);
+		QVERIFY(!result.discoveryComplete);
+		QVERIFY(!result.cancelled);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.files.first().path, readableFile);
+		QCOMPARE(result.candidates.size(), 1);
+		QVERIFY(hasUnreadableIssue(result, restricted));
+#else
+		QSKIP("POSIX directory permission regression");
+#endif
+	}
+
+	void unreadable_avid_container_preserves_other_family()
+	{
+#ifdef Q_OS_UNIX
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString restricted = temp.path() + "/Avid MediaFiles";
+		const QString readableFile = temp.path() + "/OMFI MediaFiles/readable.omf";
+		QVERIFY(put(restricted + "/MXF/1/unreachable.mxf"));
+		QVERIFY(put(readableFile));
+		DirectoryPermissions permissions(restricted);
+		QVERIFY(permissions.set(0000));
+		if (::access(QFile::encodeName(restricted).constData(), R_OK | X_OK) == 0)
+			QSKIP("Host bypasses restrictive directory permissions");
+		QCOMPARE(errno, EACCES);
+		Canon::Cancellation cancellation;
+		const auto result = Canon::DiscoveryEngine{}.discover({{temp.path()}, true}, cancellation);
+		QVERIFY(!result.discoveryComplete);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.files.first().path, readableFile);
+		QVERIFY(result.files.first().omfScan);
+		QCOMPARE(result.candidates.size(), 1);
+		QVERIFY(hasUnreadableIssue(result, restricted));
+#else
+		QSKIP("POSIX directory permission regression");
+#endif
+	}
+
+	void unreadable_mxf_root_preserves_other_request()
+	{
+#ifdef Q_OS_UNIX
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString restricted = temp.path() + "/Avid MediaFiles/MXF";
+		const QString omf = temp.path() + "/OMFI MediaFiles";
+		const QString readableFile = omf + "/readable.wav";
+		QVERIFY(put(restricted + "/1/unreachable.mxf"));
+		QVERIFY(put(readableFile));
+		DirectoryPermissions permissions(restricted);
+		QVERIFY(permissions.set(0000));
+		if (::access(QFile::encodeName(restricted).constData(), R_OK | X_OK) == 0)
+			QSKIP("Host bypasses restrictive directory permissions");
+		QCOMPARE(errno, EACCES);
+		Canon::Cancellation cancellation;
+		const auto result = Canon::DiscoveryEngine{}.discover({{temp.path() + "/Avid MediaFiles", omf}, true}, cancellation);
+		QVERIFY(!result.discoveryComplete);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.files.first().path, readableFile);
+		QCOMPARE(result.candidates.size(), 1);
+		QVERIFY(hasUnreadableIssue(result, restricted));
+#else
+		QSKIP("POSIX directory permission regression");
+#endif
 	}
 
 	void cancellation_does_not_claim_completion()

@@ -67,12 +67,19 @@ databases by the OMF scanner. Parent/root discovery may still inspect folder nam
 
 ## Agreed filtering approach for the rewrite
 
-Qt provides wildcard name filters through `QDir::entryInfoList()` / `setNameFilters()`:
-[official QDir documentation](https://doc.qt.io/qt-6/qdir.html). For accepted MXF
-media folders, use a combined listing for `*.mxf`, `*.pmr`, `*.mdb`, then dispatch
-by extension to the appropriate reader. No separate database-basename checks.
-Preserve case-insensitive suffix matching, dot-hidden/symlink
-exclusions and current managed folder scope.
+For accepted MXF media folders, use a combined listing for `*.mxf`, `*.pmr`,
+`*.mdb`, then dispatch by extension to the appropriate reader. No separate
+database-basename checks. Preserve case-insensitive suffix matching,
+dot-hidden/symlink exclusions and current managed folder scope.
+
+Implementation correction, 4 October 2026: `QDir::entryInfoList()` returns an
+empty list for both failed reads and empty/nonmatching directories
+([Qt 6.5 documentation](https://doc.qt.io/qt-6.5/qdir.html#entryInfoList)). Canon now
+uses a checked C++17 directory iterator plus explicit entry-status checks, with
+Qt's native path conversion, wildcard matching and hidden/symlink checks. Every
+enumeration level reports access errors, retains readable results and marks the
+scan incomplete. A folder that could not be inspected cannot establish absence.
+See [verification](replacement-engine-plan.md#discovery-review-corrections-4-october-2026).
 
 Any PMR/MDB basename is admitted within the agreed folder scope.
 Do not apply the MXF filter to discovering folder names, which would hide eligible

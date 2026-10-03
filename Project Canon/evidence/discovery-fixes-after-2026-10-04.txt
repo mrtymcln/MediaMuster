@@ -1,0 +1,18 @@
+********* Start testing of TestCanonDiscovery *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonDiscovery::initTestCase()
+PASS   : TestCanonDiscovery::unavailable_filesystem_metadata_is_an_attempted_read()
+PASS   : TestCanonDiscovery::unicode_names_and_symlink_exclusions()
+QINFO  : TestCanonDiscovery::optional_real_discovery() Fresh discovery: 2413 physical rows, 2425 parser candidates
+PASS   : TestCanonDiscovery::optional_real_discovery()
+PASS   : TestCanonDiscovery::scope_is_flat_and_extension_based()
+PASS   : TestCanonDiscovery::overlapping_requests_do_not_merge_different_locations()
+PASS   : TestCanonDiscovery::unavailable_and_unmanaged_scope_remains_qualified()
+PASS   : TestCanonDiscovery::empty_managed_folders_are_complete()
+PASS   : TestCanonDiscovery::folder_without_search_permission_does_not_claim_completion()
+PASS   : TestCanonDiscovery::unreadable_avid_container_preserves_other_family()
+PASS   : TestCanonDiscovery::unreadable_mxf_root_preserves_other_request()
+PASS   : TestCanonDiscovery::cancellation_does_not_claim_completion()
+PASS   : TestCanonDiscovery::cleanupTestCase()
+Totals: 13 passed, 0 failed, 0 skipped, 0 blacklisted, 92ms
+********* Finished testing of TestCanonDiscovery *********

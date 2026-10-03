@@ -16,14 +16,17 @@ The user subsequently clarified that scanner, parser and metadata engines should
 be fresh replacements, while the UI and file-operation executor stay. See the
 [fresh replacement plan](replacement-engine-plan.md). This supersedes the earlier
 aggregate-based refactor as the final engine architecture.
-The first [fresh PMR reader](fresh-pmr-reader-2026-10-03.md) now preserves both
-record sets and raw source evidence independently of the existing parser.
+The selected `Canon::PmrReader` preserves both record sets and raw source evidence
+independently of the existing production parser. On 4 October the user chose the
+alternative implementation and requested removal of the first Canon reader; see
+[PMR reader selection](pmr-reader-selection-2026-10-04.md).
 Additional [non-English encoding specimens](non-english-encoding-specimens-2026-10-03.md)
 show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
 The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
 per-property `TextEncoding` separate.
-A second implementation is available in the [PMR reader comparison](pmr-reader-comparison-2026-10-03.md),
-with shared tests, reproduced behavioural differences and measured parsing time.
+The historical [PMR reader comparison](pmr-reader-comparison-2026-10-03.md) retains
+the shared test results, reproduced behavioural differences and measured parsing time.
+Only the selected implementation remains in the current Canon source.
 
 ## Agreed v1 requirements
 
