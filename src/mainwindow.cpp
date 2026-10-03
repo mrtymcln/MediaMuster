@@ -28,6 +28,7 @@
 #include <QFileIconProvider>
 #include <QFileInfo>
 #include <QFont>
+#include <QFontDatabase>
 #include <QFutureWatcher>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -449,7 +450,7 @@ void MainWindow::buildTable()
 	m_tableView->horizontalHeader()->setSectionsMovable(true);
 	m_tableView->horizontalHeader()->setHighlightSections(false);
 	m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_tableView->setFont(monoFont());
+	setSystemTableFontEnabled(FeatureFlags::kSystemTableFontEnabled);
 
 	// Every session starts here. Scans leave widths alone; the View menu
 	// provides Qt's native content fitting when requested.
@@ -472,6 +473,11 @@ void MainWindow::buildTable()
 	setW(Col::FileName, 250);
 	setW(Col::SourceFile, 250);
 	setW(Col::Location, 250);
+}
+
+void MainWindow::setSystemTableFontEnabled(bool enabled)
+{
+	m_tableView->setFont(enabled ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : monoFont());
 }
 
 // MARK: - Console
@@ -673,6 +679,12 @@ void MainWindow::buildDebugMenu()
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
+	auto *systemTableFontAct = debugMenu->addAction(tr("System font"));
+	systemTableFontAct->setObjectName(QStringLiteral("systemTableFontDebugAction"));
+	systemTableFontAct->setCheckable(true);
+	systemTableFontAct->setChecked(FeatureFlags::kSystemTableFontEnabled);
+	connect(systemTableFontAct, &QAction::toggled, this, &MainWindow::setSystemTableFontEnabled);
+
 	// Save the startup style before the debug toggle changes it.
 	const QString nativeStyleName = QApplication::style()->name();
 	auto *fusionStyleAct = debugMenu->addAction(tr("Fusion style"));

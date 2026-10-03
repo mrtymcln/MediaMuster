@@ -3,6 +3,7 @@
 namespace FeatureFlags
 {
 	inline constexpr bool kDebugMenuEnabled = true;
+	inline constexpr bool kSystemTableFontEnabled = false;
 	inline constexpr bool OmfScan = true;
 	inline constexpr bool kOmfEnabled = OmfScan; // Compatibility for existing callers.
 	inline constexpr bool kPrecomputesEnabled = true;
