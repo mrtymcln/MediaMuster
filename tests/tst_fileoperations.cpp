@@ -2501,7 +2501,7 @@ void TestFileOperations::local_trash_and_undo_roundtrip()
 	QVERIFY2(first.succeeded == 1, qPrintable(details()));
 	QVERIFY(!QFile::exists(f.src));
 	const auto forward = OpJournal::scan(f.journals).first();
-	if (forward.entries[0].trashProvider == "system")
+	if (forward.entries[0].trashProvider == QStringLiteral("system"))
 		QVERIFY(!forward.entries[0].trashReceipt.isEmpty());
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
@@ -2795,7 +2795,7 @@ void TestFileOperations::network_delete_always_uses_mediamuster_trash()
 	QCOMPARE(nativeCalls, 0);
 	QVERIFY(sink.trashFallbackPrompts.isEmpty());
 	const auto saved = OpJournal::scan(f.journals)[0];
-	QCOMPARE(saved.entries[0].trashProvider, QString("mediamuster"));
+	QCOMPARE(saved.entries[0].trashProvider, QStringLiteral("mediamuster"));
 	QVERIFY(saved.entries[0].trashReceipt.isEmpty());
 	QVERIFY(saved.entries[0].dst.contains("/_MediaMuster_Trash/"));
 	QCOMPARE(get(saved.entries[0].dst), f.bytes);
@@ -2853,7 +2853,7 @@ void TestFileOperations::native_trash_refusals_share_one_consent_and_undo()
 		QVERIFY(!offered[i].destination.isEmpty());
 		QVERIFY(forward.entries[i].dst.startsWith(offered[i].destination + '/'));
 		QVERIFY(forward.entries[i].trashFallbackApproved);
-		QCOMPARE(forward.entries[i].trashProvider, QString("mediamuster"));
+		QCOMPARE(forward.entries[i].trashProvider, QStringLiteral("mediamuster"));
 		QVERIFY(forward.entries[i].trashReceipt.isEmpty());
 		QCOMPARE(get(forward.entries[i].dst), f.bytes);
 		QVERIFY(!QFile::exists(request.items[i].src));
@@ -3097,9 +3097,9 @@ void TestFileOperations::native_trash_success_excluded_from_fallback_batch()
 	QCOMPARE(sink.trashFallbackPrompts[0][0].source, refused.src);
 	QCOMPARE(get(nativeDestination), f.bytes);
 	const auto entries = OpJournal::scan(f.journals)[0].entries;
-	QCOMPARE(entries[0].trashProvider, QString("system"));
+	QCOMPARE(entries[0].trashProvider, QStringLiteral("system"));
 	QVERIFY(!entries[0].trashFallbackApproved);
-	QCOMPARE(entries[1].trashProvider, QString("mediamuster"));
+	QCOMPARE(entries[1].trashProvider, QStringLiteral("mediamuster"));
 	QVERIFY(entries[1].trashFallbackApproved);
 }
 
@@ -3246,9 +3246,9 @@ void TestFileOperations::undo_copy_native_refusal_uses_consented_fallback()
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 	const auto inverse = OpJournal::readOne(OpJournal::readOne(forward.path)->undoPath);
 	QVERIFY(inverse);
-	QCOMPARE(inverse->entries[0].undoAction, QString("discardCopy"));
+	QCOMPARE(inverse->entries[0].undoAction, QStringLiteral("discardCopy"));
 	QVERIFY(inverse->entries[0].trashFallbackApproved);
-	QCOMPARE(inverse->entries[0].trashProvider, QString("mediamuster"));
+	QCOMPARE(inverse->entries[0].trashProvider, QStringLiteral("mediamuster"));
 	QCOMPARE(get(inverse->entries[0].dst), f.bytes);
 }
 

@@ -105,7 +105,7 @@ projects when rebuilding the list.
 | [FileOperationController](../src/fileoperationcontroller.cpp) | Coordinates activity, progress, recovery choices, Undo availability and dispatch from the main window. |
 | [OpRequest / OpItem](../src/oprequest.h) | Carry the choices and file facts needed to run or resume a job without depending on the table model. |
 | [OpManager](../src/opmanager.cpp) | Owns the execution worker and passes progress/results between it and the interface. |
-| [OpRunner](../src/oprunner.cpp) | Rechecks the plan, records intent, executes steps, reconciles interrupted steps and plans Undo. |
+| [OpRunner](../src/oprunner.cpp) | Coordinates journal preparation, execution, recovery and Undo in one implementation file, organized with `MARK` sections. |
 | [OpFile](../src/opfile.cpp) | Holds file handles and checks file identity, metadata and relocation outcomes. |
 | [OpCopier](../src/opcopier.cpp), [OpTrash](../src/optrash.cpp) | Perform native copying and platform Trash handling. |
 | [NativeFile](../src/nativefile.cpp), [VolumeIdentity](../src/volumeidentity.cpp) | Request storage persistence and identify volumes for recovery. |
@@ -121,6 +121,11 @@ dialog through its activity state. The engine additionally uses the journal lock
 to prevent concurrent execution/recovery through another manager. This does not
 lock out changes made by Avid, Finder or another application.
 
+The runner remains one class and one operation engine. Its focused functions live
+in `oprunner.cpp`, organized with `// MARK: -` headings for coordination, journal
+preparation, Rebalance, execution, Trash, source removal/restoration, recovery and
+Undo. Shared operation helpers have file-local linkage in anonymous namespaces.
+
 Inside the runner, `run()` owns the operation lock, request and journal and orders
 private helpers for journal preparation, pending-item execution, copied-original
 removal, Undo copy disposal, Trash fallback and final cleanup. Rebalance group
@@ -129,7 +134,12 @@ preparation checks destinations and folder durability before retiring databases.
 planning; execution and recovery checks continue to read the live journal.
 `executeWithRetries()` owns the bounded retry policy around one item, while
 `copiesReadyForRemoval()` evaluates the whole-job barrier before Move removal or
-Undo copy disposal. These helpers use the same journal and recovery state machine.
+Undo copy disposal. `execute()` validates each source and routes it to system
+Trash restoration, a system Trash move, same-volume relocation or copy transfer.
+The Trash-move helper owns the source handle and closes it after saving intent,
+before calling the native provider. The relocation helper owns collision retries
+and post-move durability checks; the caller handles unavailable relocation.
+These helpers use the same journal and recovery state machine.
 
 ## Operation rules that must survive changes
 
@@ -152,10 +162,14 @@ Undo copy disposal. These helpers use the same journal and recovery state machin
   a job, restoring retained originals, stopping unfinished work and Undo are distinct
   actions. Stop abandons the remaining work and keeps the job's completed effects.
 
-Beta 3 reads and writes only journal schema 2, without checksum fields. Released
-Beta 2 used schema 1; no migration or legacy-step aliases are supported. Recovery,
-Resume and Undo use the current identity, size, modification-time, metadata and
-persistence checks.
+The current build and intended public v1 release use journal schema 2, without
+checksum fields. Mechanism, Trash provider and Undo action use `QString` internally
+and explicit names in JSON,
+including `"none"` for an unset choice (an empty string inside the program). Loading
+rejects unknown names in both entries and nested items. Other schema versions are
+unsupported; there is no migration or legacy-name interpretation. Recovery, Resume
+and Undo use the current identity, size, modification-time, metadata and persistence
+checks.
 
 See the [behaviour guide](current-behaviour.md#copy-move-and-delete) for Trash routing
 and the [validation record](file-operations-native-api-validation.md) for tested

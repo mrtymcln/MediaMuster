@@ -4,6 +4,8 @@
 #include "optrash.h"
 #include <QSet>
 #include <functional>
+#include <memory>
+#include <optional>
 
 class OpSink
 {
@@ -54,9 +56,9 @@ public:
 private:
 	struct RunState;
 	void resumeRunJournal(OpRequest &request, OpJournal &journal, RunState &state,
-							  const QString &lockDirectory);
+						  const QString &lockDirectory);
 	void createRunJournal(const OpRequest &input, OpRequest &request, OpJournal &journal,
-							  RunState &state, const QString &lockDirectory);
+						  RunState &state, const QString &lockDirectory);
 	int prepareRebalanceGroup(OpJournal &journal, RunState &state, int index);
 	void executePendingItems(OpJournal &journal, const OpRequest &request, RunState &state);
 	bool removeCopiedOriginals(OpJournal &journal, const OpRequest &request, RunState &state);
@@ -66,6 +68,13 @@ private:
 	void confirmAndRunTrashFallbacks(OpJournal &journal, const OpRequest &request, RunState &state);
 	void finishRun(OpJournal &journal, RunState &state);
 	bool save(OpJournal &journal, OpJournal::Entry &entry, OpJournal::Step step);
+	OpResult restoreSystemTrash(OpJournal &journal, OpJournal::Entry &entry);
+	// Takes ownership so the protected handle closes before the native Trash call.
+	OpResult moveToSystemTrash(OpJournal &journal, OpJournal::Entry &entry,
+							   std::unique_ptr<OpFile> source, QString error);
+	// No terminal result leaves the unavailable-relocation decision to execute().
+	std::optional<OpResult> attemptRelocation(OpJournal &journal, OpJournal::Entry &entry,
+											  OpKind kind, OpFile &source, const QString &originalDestination, QString &error);
 	OpResult execute(OpJournal &journal, OpJournal::Entry &entry, OpKind kind, int index,
 					 int total, bool *retryableCopy = nullptr);
 	/// Retry only eligible native copy failures, preserving journal and cancel gates.

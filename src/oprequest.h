@@ -37,11 +37,8 @@ enum class ConflictPolicy : int
 
 // MARK: - On-disk names
 //
-// The journal stores kinds and policies by NAME, not enum value, so a
-// journal written today still means the same thing to a future build
-// even if someone reorders the enums. Never rename a string here; add
-// new ones instead.
-
+// Journal names are explicit. Changes require a new schema; unsupported
+// schemas are rejected.
 inline QString opKindName(OpKind k)
 {
 	switch (k)

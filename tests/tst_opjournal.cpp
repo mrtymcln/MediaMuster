@@ -11,75 +11,74 @@
 
 namespace
 {
-OpRequest requestFor(const QString &root)
-{
-	OpRequest request;
-	request.kind = OpKind::Move;
-	request.copyThenRemove = true;
-	request.destRoot = root + "/destination";
-	OpItem item;
-	item.src = root + "/source.bin";
-	item.name = "source.bin";
-	item.bytes = 7;
-	request.items.append(item);
-	return request;
-}
-bool writeBytes(const QString &path, const QByteArray &bytes)
-{
-	QFile file(path);
-	return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size();
-}
-QByteArray readBytes(const QString &path)
-{
-	QFile file(path);
-	return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
-}
-bool setJournalTimes(const QString &path, const QDateTime &started, const QDateTime &modified)
-{
-	const auto bytes = readBytes(path);
-	const auto firstLine = bytes.indexOf('\n');
-	if (firstLine < 0)
-		return false;
-	auto begin = QJsonDocument::fromJson(bytes.left(firstLine)).object();
-	begin["started"] = started.toString(Qt::ISODateWithMs);
-	if (!writeBytes(path, QJsonDocument(begin).toJson(QJsonDocument::Compact) + bytes.mid(firstLine)))
-		return false;
-	QFile file(path);
-	return file.open(QIODevice::ReadWrite) && file.setFileTime(modified, QFileDevice::FileModificationTime);
-}
-QString finishedJournal(const OpRequest &request, const QString &directory, QString &error)
-{
-	OpJournal journal;
-	if (!journal.create(request, directory, error))
-		return {};
-	auto entry = journal.record().entries[0];
-	entry.step = OpJournal::Step::Done;
-	if (!journal.save(entry) || !journal.finish(false))
+	OpRequest requestFor(const QString &root)
 	{
-		error = journal.error();
-		return {};
+		OpRequest request;
+		request.kind = OpKind::Move;
+		request.copyThenRemove = true;
+		request.destRoot = root + "/destination";
+		OpItem item;
+		item.src = root + "/source.bin";
+		item.name = "source.bin";
+		item.bytes = 7;
+		request.items.append(item);
+		return request;
 	}
-	return journal.path();
-}
-OpJournal::Entry cleanupEntry(const QString &root)
-{
-	OpJournal::Entry entry;
-	entry.id = 0;
-	entry.item.src = root + "/source.bin";
-	entry.source = {"original", "volume", 7, 123};
-	entry.mechanism = "copy";
-	entry.retirement = root + "/.mediamuster-retire-0fdb69f1-e913-4f8c-aa9c-dcab911f4977/payload.retired";
-	const auto directory = root + "/.mediamuster-8821d1f0-f06b-4b0b-85f9-c66d155d4a08";
-	entry.cleanup.append({directory, {"directory", "volume", 0, 123},
-						  directory + "/payload.partial", {"partial", "volume", 4, 456}, true});
-	return entry;
-}
+	bool writeBytes(const QString &path, const QByteArray &bytes)
+	{
+		QFile file(path);
+		return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size();
+	}
+	QByteArray readBytes(const QString &path)
+	{
+		QFile file(path);
+		return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
+	}
+	bool setJournalTimes(const QString &path, const QDateTime &started, const QDateTime &modified)
+	{
+		const auto bytes = readBytes(path);
+		const auto firstLine = bytes.indexOf('\n');
+		if (firstLine < 0)
+			return false;
+		auto begin = QJsonDocument::fromJson(bytes.left(firstLine)).object();
+		begin["started"] = started.toString(Qt::ISODateWithMs);
+		if (!writeBytes(path, QJsonDocument(begin).toJson(QJsonDocument::Compact) + bytes.mid(firstLine)))
+			return false;
+		QFile file(path);
+		return file.open(QIODevice::ReadWrite) && file.setFileTime(modified, QFileDevice::FileModificationTime);
+	}
+	QString finishedJournal(const OpRequest &request, const QString &directory, QString &error)
+	{
+		OpJournal journal;
+		if (!journal.create(request, directory, error))
+			return {};
+		auto entry = journal.record().entries[0];
+		entry.step = OpJournal::Step::Done;
+		if (!journal.save(entry) || !journal.finish(false))
+		{
+			error = journal.error();
+			return {};
+		}
+		return journal.path();
+	}
+	OpJournal::Entry cleanupEntry(const QString &root)
+	{
+		OpJournal::Entry entry;
+		entry.id = 0;
+		entry.item.src = root + "/source.bin";
+		entry.source = {"original", "volume", 7, 123};
+		entry.mechanism = QStringLiteral("copy");
+		entry.retirement = root + "/.mediamuster-retire-0fdb69f1-e913-4f8c-aa9c-dcab911f4977/payload.retired";
+		const auto directory = root + "/.mediamuster-8821d1f0-f06b-4b0b-85f9-c66d155d4a08";
+		entry.cleanup.append({directory, {"directory", "volume", 0, 123}, directory + "/payload.partial", {"partial", "volume", 4, 456}, true});
+		return entry;
+	}
 } // namespace
 
 class TestOpJournal : public QObject
 {
 	Q_OBJECT
-  private slots:
+private slots:
 	void serialized_kind_names_round_trip();
 	void unknown_serialized_kind_name_is_refused();
 	void serialized_policy_names_round_trip();
@@ -90,6 +89,8 @@ class TestOpJournal : public QObject
 	void unsupported_schema_is_rejected_data();
 	void unsupported_schema_is_rejected();
 	void missing_required_policy_is_rejected();
+	void string_entry_choices_round_trip();
+	void unknown_entry_choice_names_are_rejected();
 	void missing_required_entry_evidence_is_rejected();
 	void cleanup_evidence_round_trips();
 	void invalid_cleanup_evidence_is_rejected_data();
@@ -184,7 +185,7 @@ void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 	item.expectedVolumeId = "selected-volume";
 	item.expectedModified = 123456;
 	item.undoEntryId = 7;
-	item.undoAction = "restoreMove";
+	item.undoAction = QStringLiteral("restoreMove");
 	item.trashReceipt = "opaque-receipt";
 	QVERIFY(writeBytes(item.src, "another"));
 	QString path, error;
@@ -209,7 +210,7 @@ void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 	QCOMPARE(entry.source.modified, item.expectedModified);
 	QCOMPARE(entry.source.size, item.bytes);
 	QCOMPARE(entry.undoEntryId, 7);
-	QCOMPARE(entry.undoAction, QString("restoreMove"));
+	QCOMPARE(entry.undoAction, QStringLiteral("restoreMove"));
 	QCOMPARE(entry.trashReceipt, QString("opaque-receipt"));
 	QCOMPARE(entry.item.expectedFileId, item.expectedFileId);
 	QCOMPARE(entry.attempts, 3);
@@ -219,13 +220,13 @@ void TestOpJournal::incomplete_moves_are_not_completed_by_source_retention()
 {
 	OpJournal::Entry entry;
 	for (const auto step : {OpJournal::Step::Published, OpJournal::Step::SourceRetained,
-						   OpJournal::Step::RemovingSource, OpJournal::Step::CopyReady})
+							OpJournal::Step::RemovingSource, OpJournal::Step::CopyReady})
 	{
 		entry.step = step;
 		QVERIFY(!entry.complete());
 	}
 	for (const auto step : {OpJournal::Step::SourceRemoved, OpJournal::Step::Done,
-		OpJournal::Step::Skipped, OpJournal::Step::NoEffect})
+							OpJournal::Step::Skipped, OpJournal::Step::NoEffect})
 	{
 		entry.step = step;
 		QVERIFY(entry.complete());
@@ -318,16 +319,87 @@ void TestOpJournal::missing_required_policy_is_rejected()
 	QVERIFY(QFile::exists(path));
 }
 
+void TestOpJournal::string_entry_choices_round_trip()
+{
+	OpJournal::Entry entry;
+	entry.id = 0;
+	entry.item.src = "/disposable/source.bin";
+	for (const auto &value : {QString(), QStringLiteral("copy"),
+							  QStringLiteral("relocate"), QStringLiteral("systemTrash")})
+	{
+		entry.mechanism = value;
+		const auto record = entry.json();
+		QCOMPARE(record["mechanism"].toString(),
+				 value.isEmpty() ? QStringLiteral("none") : value);
+		const auto parsed = OpJournal::Entry::fromJson(record);
+		QVERIFY(parsed);
+		QCOMPARE(parsed->mechanism, value);
+	}
+
+	for (const auto &value : {QString(), QStringLiteral("system"), QStringLiteral("mediamuster")})
+	{
+		entry.trashProvider = value;
+		const auto record = entry.json();
+		QCOMPARE(record["trashProvider"].toString(),
+				 value.isEmpty() ? QStringLiteral("none") : value);
+		const auto parsed = OpJournal::Entry::fromJson(record);
+		QVERIFY(parsed);
+		QCOMPARE(parsed->trashProvider, value);
+	}
+
+	for (const auto &value : {QString(), QStringLiteral("restoreMove"),
+							  QStringLiteral("discardCopy"), QStringLiteral("restoreTrash"),
+							  QStringLiteral("restoreRelocate")})
+	{
+		entry.undoAction = value;
+		entry.item.undoAction = value;
+		const auto record = entry.json();
+		QCOMPARE(record["undoAction"].toString(),
+				 value.isEmpty() ? QStringLiteral("none") : value);
+		QCOMPARE(record["item"].toObject()["undoAction"].toString(),
+				 value.isEmpty() ? QStringLiteral("none") : value);
+		const auto parsed = OpJournal::Entry::fromJson(record);
+		QVERIFY(parsed);
+		QCOMPARE(parsed->undoAction, value);
+		QCOMPARE(parsed->item.undoAction, value);
+	}
+}
+
+void TestOpJournal::unknown_entry_choice_names_are_rejected()
+{
+	OpJournal::Entry entry;
+	entry.id = 0;
+	entry.item.src = "/disposable/source.bin";
+	const auto record = entry.json();
+	for (const auto *field : {"mechanism", "trashProvider", "undoAction"})
+		for (const QJsonValue &value : {QJsonValue(""), QJsonValue("unknown"),
+										QJsonValue(1), QJsonValue(true), QJsonValue()})
+		{
+			auto invalid = record;
+			invalid[field] = value;
+			QVERIFY(!OpJournal::Entry::fromJson(invalid));
+		}
+	for (const QJsonValue &value : {QJsonValue(""), QJsonValue("unknown"),
+									QJsonValue(1), QJsonValue(true), QJsonValue()})
+	{
+		auto invalid = record;
+		auto item = invalid["item"].toObject();
+		item["undoAction"] = value;
+		invalid["item"] = item;
+		QVERIFY(!OpJournal::Entry::fromJson(invalid));
+	}
+}
+
 void TestOpJournal::missing_required_entry_evidence_is_rejected()
 {
 	OpJournal::Entry entry;
 	entry.id = 0;
 	entry.item.src = "/disposable/source.bin";
-	entry.mechanism = "copy";
+	entry.mechanism = QStringLiteral("copy");
 	const auto record = entry.json();
 	QVERIFY(OpJournal::Entry::fromJson(record));
 	for (const auto *field : {"mechanism", "sourceRemoved", "undoAction", "attempts",
-							 "trashFallbackApproved", "cleanup"})
+							  "trashFallbackApproved", "cleanup"})
 	{
 		auto incomplete = record;
 		incomplete.remove(field);
@@ -379,24 +451,31 @@ void TestOpJournal::invalid_cleanup_evidence_is_rejected()
 	auto entry = cleanupEntry(temp.path()).json();
 	auto records = entry["cleanup"].toArray();
 	auto pending = records[0].toObject();
-	if (corruption == "relative-directory") pending["directory"] = ".mediamuster-relative";
-	if (corruption == "traversal-directory") pending["directory"] = temp.path() + "/../" + QFileInfo(pending["directory"].toString()).fileName();
-	if (corruption == "ordinary-directory") pending["directory"] = temp.path() + "/ordinary-folder";
-	if (corruption == "invalid-directory-token") pending["directory"] = temp.path() + "/.mediamuster-unproven";
-	if (corruption == "missing-directory-identity") pending["directoryStamp"] = OpStamp{}.json();
+	if (corruption == "relative-directory")
+		pending["directory"] = ".mediamuster-relative";
+	if (corruption == "traversal-directory")
+		pending["directory"] = temp.path() + "/../" + QFileInfo(pending["directory"].toString()).fileName();
+	if (corruption == "ordinary-directory")
+		pending["directory"] = temp.path() + "/ordinary-folder";
+	if (corruption == "invalid-directory-token")
+		pending["directory"] = temp.path() + "/.mediamuster-unproven";
+	if (corruption == "missing-directory-identity")
+		pending["directoryStamp"] = OpStamp{}.json();
 	if (corruption == "missing-directory-volume")
 	{
 		auto stamp = pending["directoryStamp"].toObject();
 		stamp["volume"] = "";
 		pending["directoryStamp"] = stamp;
 	}
-	if (corruption == "outside-file") pending["file"] = temp.path() + "/original.bin";
+	if (corruption == "outside-file")
+		pending["file"] = temp.path() + "/original.bin";
 	if (corruption == "retired-original")
 	{
 		pending["directory"] = QFileInfo(entry["retirement"].toString()).absolutePath();
 		pending["file"] = entry["retirement"];
 	}
-	if (corruption == "missing-file-identity") pending["fileStamp"] = OpStamp{}.json();
+	if (corruption == "missing-file-identity")
+		pending["fileStamp"] = OpStamp{}.json();
 	if (corruption == "missing-file-volume")
 	{
 		auto stamp = pending["fileStamp"].toObject();
@@ -408,7 +487,8 @@ void TestOpJournal::invalid_cleanup_evidence_is_rejected()
 		pending["file"] = "";
 		pending["fileStamp"] = OpStamp{}.json();
 	}
-	if (corruption == "remove-type") pending["removeFile"] = "true";
+	if (corruption == "remove-type")
+		pending["removeFile"] = "true";
 	if (corruption == "stamp-type")
 	{
 		auto stamp = pending["directoryStamp"].toObject();
@@ -421,8 +501,10 @@ void TestOpJournal::invalid_cleanup_evidence_is_rejected()
 		pending["removeFile"] = false;
 	}
 	records[0] = pending;
-	if (corruption == "record-type") records[0] = "unproven";
-	if (corruption == "duplicate-directory") records.append(pending);
+	if (corruption == "record-type")
+		records[0] = "unproven";
+	if (corruption == "duplicate-directory")
+		records.append(pending);
 	entry["cleanup"] = corruption == "array-type" ? QJsonValue(pending) : QJsonValue(records);
 	QVERIFY(!OpJournal::Entry::fromJson(entry));
 }
@@ -639,7 +721,7 @@ void TestOpJournal::interrupted_source_removal_remains_undo_candidate()
 		QVERIFY(journal.create(requestFor(temp.path()), directory, error));
 		path = journal.path();
 		auto entry = journal.record().entries[0];
-		entry.mechanism = "copy";
+		entry.mechanism = QStringLiteral("copy");
 		entry.step = OpJournal::Step::RemovingSource;
 		entry.landed.fileId = "published-copy";
 		entry.landed.size = 7;
@@ -665,7 +747,7 @@ void TestOpJournal::restored_original_keeps_completed_copy_undoable()
 		QVERIFY2(journal.create(request, directory, error), qPrintable(error));
 		path = journal.path();
 		auto entry = journal.record().entries[0];
-		entry.mechanism = "copy";
+		entry.mechanism = QStringLiteral("copy");
 		entry.retirement = temp.path() + "/.mediamuster-retire-0fdb69f1-e913-4f8c-aa9c-dcab911f4977/payload.retired";
 		entry.step = OpJournal::Step::SourceRestored;
 		QVERIFY(journal.save(entry));
@@ -741,7 +823,7 @@ void TestOpJournal::relocated_source_identity_rebinds_at_destination()
 		record = journal.record();
 	}
 	auto &entry = record.entries[0];
-	entry.mechanism = "relocate";
+	entry.mechanism = QStringLiteral("relocate");
 	entry.step = OpJournal::Step::Relocating;
 	entry.dst = temp.path() + "/relocated.bin";
 	QVERIFY(QFile::rename(entry.item.src, entry.dst));
@@ -794,7 +876,7 @@ void TestOpJournal::interrupted_system_trash_requires_a_saved_receipt_for_undo()
 	OpJournal journal;
 	QVERIFY(journal.create(requestFor(temp.path()), directory, error));
 	auto entry = journal.record().entries[0];
-	entry.mechanism = "systemTrash";
+	entry.mechanism = QStringLiteral("systemTrash");
 	entry.step = OpJournal::Step::NeedsAttention;
 	entry.landed.fileId = "trashed-object";
 	entry.landed.size = 7;
@@ -897,7 +979,7 @@ void TestOpJournal::pruning_preserves_recovery_evidence()
 		}
 		if (evidence == "restoration")
 		{
-			entry.mechanism = "copy";
+			entry.mechanism = QStringLiteral("copy");
 			entry.retirement = cleanupEntry(temp.path()).retirement;
 		}
 		if (evidence == "cleanup" || evidence == "dismissed-cleanup")

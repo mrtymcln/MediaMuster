@@ -13,6 +13,19 @@
 namespace
 {
 	constexpr int schema = 2;
+	QString savedChoice(const QString &choice)
+	{
+		return choice.isEmpty() ? QStringLiteral("none") : choice;
+	}
+	QString loadedChoice(const QString &choice)
+	{
+		return choice == QStringLiteral("none") ? QString() : choice;
+	}
+	bool knownUndoAction(const QString &name)
+	{
+		return name == "none" || name == "restoreMove" || name == "discardCopy" ||
+			   name == "restoreTrash" || name == "restoreRelocate";
+	}
 	QJsonObject itemJson(const OpItem &i)
 	{
 		return {{"src", i.src},
@@ -31,11 +44,11 @@ namespace
 				{"expectedFileId", i.expectedFileId},
 				{"expectedVolumeId", i.expectedVolumeId},
 				{"expectedModified", QString::number(i.expectedModified)},
-				{"undoAction", i.undoAction},
+				{"undoAction", savedChoice(i.undoAction)},
 				{"undoEntryId", i.undoEntryId},
 				{"trashReceipt", i.trashReceipt}};
 	}
-	OpItem itemFromJson(const QJsonObject &v)
+	std::optional<OpItem> itemFromJson(const QJsonObject &v)
 	{
 		OpItem i;
 		i.src = v["src"].toString();
@@ -54,7 +67,10 @@ namespace
 		i.expectedFileId = v["expectedFileId"].toString();
 		i.expectedVolumeId = v["expectedVolumeId"].toString();
 		i.expectedModified = v["expectedModified"].toString().toLongLong();
-		i.undoAction = v["undoAction"].toString();
+		const auto action = v["undoAction"].toString();
+		if (!knownUndoAction(action))
+			return {};
+		i.undoAction = loadedChoice(action);
 		i.undoEntryId = v["undoEntryId"].toInt(-1);
 		i.trashReceipt = v["trashReceipt"].toString();
 		return i;
@@ -136,16 +152,16 @@ QJsonObject OpJournal::Entry::json() const
 			{"originalRelative", originalRelativePath},
 			{"dst", dst},
 			{"temp", temp},
-			{"mechanism", mechanism},
+			{"mechanism", savedChoice(mechanism)},
 			{"retirement", retirement},
-			{"trashProvider", trashProvider},
+			{"trashProvider", savedChoice(trashProvider)},
 			{"trashReceipt", trashReceipt},
 			{"trashFallbackApproved", trashFallbackApproved},
 			{"explicitSkip", explicitSkip},
 			{"sourceRemoved", sourceRemoved},
 			{"attempts", attempts},
 			{"undoEntryId", undoEntryId},
-			{"undoAction", undoAction},
+			{"undoAction", savedChoice(undoAction)},
 			{"copyDurable", copyDurable},
 			{"metadataComplete", metadataComplete},
 			{"error", error},
@@ -185,28 +201,33 @@ std::optional<OpJournal::Entry> OpJournal::Entry::fromJson(const QJsonObject &v)
 	if (!known)
 		return {};
 	e.id = v["id"].toInt(-1);
-	e.item = itemFromJson(v["item"].toObject());
+	const auto parsedItem = itemFromJson(item);
+	if (!parsedItem)
+		return {};
+	e.item = *parsedItem;
 	e.originalSource = v["original"].toString();
 	e.originalVolume = VolumeIdentity::fromJson(v["originalVolume"].toObject());
 	e.originalRelativePath = v["originalRelative"].toString();
 	e.dst = v["dst"].toString();
 	e.temp = v["temp"].toString();
-	e.mechanism = v["mechanism"].toString();
-	if (!e.mechanism.isEmpty() && e.mechanism != "copy" && e.mechanism != "relocate" &&
-		e.mechanism != "systemTrash")
+	const auto mechanism = v["mechanism"].toString();
+	const auto provider = v["trashProvider"].toString();
+	const auto action = v["undoAction"].toString();
+	if ((mechanism != "none" && mechanism != "copy" && mechanism != "relocate" &&
+		 mechanism != "systemTrash") ||
+		(provider != "none" && provider != "system" && provider != "mediamuster") ||
+		!knownUndoAction(action))
 		return {};
+	e.mechanism = loadedChoice(mechanism);
+	e.trashProvider = loadedChoice(provider);
+	e.undoAction = loadedChoice(action);
 	e.retirement = v["retirement"].toString();
-	e.trashProvider = v["trashProvider"].toString();
 	e.trashReceipt = v["trashReceipt"].toString();
 	e.trashFallbackApproved = v["trashFallbackApproved"].toBool();
 	e.explicitSkip = v["explicitSkip"].toBool();
 	e.sourceRemoved = v["sourceRemoved"].toBool();
 	e.attempts = v["attempts"].toInt();
 	e.undoEntryId = v["undoEntryId"].toInt(-1);
-	e.undoAction = v["undoAction"].toString();
-	if (!e.undoAction.isEmpty() && e.undoAction != "restoreMove" && e.undoAction != "discardCopy" &&
-		e.undoAction != "restoreTrash" && e.undoAction != "restoreRelocate")
-		return {};
 	e.copyDurable = v["copyDurable"].toBool();
 	e.metadataComplete = v["metadataComplete"].toBool();
 	e.error = v["error"].toString();
@@ -760,7 +781,7 @@ bool OpJournal::prune(const QString &directory, QString &error, const QDateTime 
 }
 
 bool OpJournal::pruneRecords(const QString &directory, QVector<Record> &records, QString &error,
-							const QDateTime &now)
+							 const QDateTime &now)
 {
 	error.clear();
 	if (!now.isValid())

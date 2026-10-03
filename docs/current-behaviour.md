@@ -348,8 +348,11 @@ changes.
 
 Every file job requires a writable journal: a saved record of its plan, file
 identities and progress. If the journal cannot be written, a new job cannot start.
-The upcoming Beta 3 build reads and writes schema-2 journals. Released Beta 2 used
-schema 1; those older journals are not supported for recovery or Undo in this build.
+The current build reads and writes schema-2 journals, which is also the intended
+internal schema for the public v1 release. Other schema versions are not supported
+for recovery or Undo, and are not migrated. Operation mechanism, Trash provider and
+Undo action are saved as explicit names; unset choices use
+`"none"`. Unknown names are rejected when loading.
 
 Cancel requests a stop; it does not reverse all completed work. Work already
 finished remains recorded. An operating-system call already in progress may delay
