@@ -48,6 +48,20 @@ mediamuster_add_test(tst_canonpmr media)
 target_link_libraries(tst_canonpmr PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonpmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Same assertions/source, independently compiled against the alternative reader.
+add_executable(tst_canonpmralternative tst_canonpmr.cpp)
+target_link_libraries(tst_canonpmralternative PRIVATE Qt6::Test Qt6::Core mediamuster_canon)
+target_compile_definitions(tst_canonpmralternative PRIVATE
+    CANON_PMR_ALTERNATIVE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+add_test(NAME tst_canonpmralternative COMMAND tst_canonpmralternative
+    -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/tst_canonpmralternative.result.txt,txt)
+set_tests_properties(tst_canonpmralternative PROPERTIES LABELS "media")
+
+# Differential facts and separately specified I/O robustness cases.
+mediamuster_add_test(tst_canonpmrcomparison media)
+target_link_libraries(tst_canonpmrcomparison PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canonpmrcomparison PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
 mediamuster_add_test(tst_omfuid media)

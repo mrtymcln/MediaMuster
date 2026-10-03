@@ -2,7 +2,13 @@
 #include <QBuffer>
 #include <QFile>
 #include <QtEndian>
+#ifdef CANON_PMR_ALTERNATIVE
+#include "canon/pmrreaderalternative.h"
+using ReaderUnderTest = Canon::PmrReaderAlternative;
+#else
 #include "canon/pmrreader.h"
+using ReaderUnderTest = Canon::PmrReader;
+#endif
 #include "canon/discoveryengine.h"
 
 namespace
@@ -49,7 +55,7 @@ Canon::ParsedSource parse(QByteArray bytes)
 	QBuffer source(&bytes);
 	source.open(QIODevice::ReadOnly);
 	Canon::Cancellation cancellation;
-	return Canon::PmrReader{}.read(source, {{}, cancellation});
+	return ReaderUnderTest{}.read(source, {{}, cancellation});
 }
 const Canon::RawProperty &rawProperty(const Canon::AvidObject &object, const QString &name)
 {
@@ -314,24 +320,24 @@ void TestCanonPmr::shortReadsIoAndCancellation()
 	source.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 	Canon::Cancellation cancellation;
 	const auto receipt = SourceSnapshotRef::create(SourceSnapshot{MetadataSource::Pmr, "source.pmr", {}, SourceReadState::NotRead});
-	QCOMPARE(Canon::PmrReader{}.read(source, {receipt, cancellation}).outcome, Outcome::Complete);
+	QCOMPARE(ReaderUnderTest{}.read(source, {receipt, cancellation}).outcome, Outcome::Complete);
 	QCOMPARE(receipt->readState, SourceReadState::NotRead);
 	source.ioFailure = true;
-	QCOMPARE(Canon::PmrReader{}.read(source, {receipt, cancellation}).outcome, Outcome::IoError);
+	QCOMPARE(ReaderUnderTest{}.read(source, {receipt, cancellation}).outcome, Outcome::IoError);
 	source.ioFailure = false;
 	source.cancellation = &cancellation;
 	source.cancelAfter = 15;
-	QCOMPARE(Canon::PmrReader{}.read(source, {receipt, cancellation}).outcome, Outcome::Cancelled);
+	QCOMPARE(ReaderUnderTest{}.read(source, {receipt, cancellation}).outcome, Outcome::Cancelled);
 	source.close();
-	QCOMPARE(Canon::PmrReader{}.read(source, {{}, cancellation}).outcome, Outcome::Cancelled);
+	QCOMPARE(ReaderUnderTest{}.read(source, {{}, cancellation}).outcome, Outcome::Cancelled);
 	Canon::Cancellation fresh;
-	QCOMPARE(Canon::PmrReader{}.read(source, {{}, fresh}).outcome, Outcome::IoError);
+	QCOMPARE(ReaderUnderTest{}.read(source, {{}, fresh}).outcome, Outcome::IoError);
 	QBuffer textSource(&bytes);
 	textSource.open(QIODevice::ReadOnly | QIODevice::Text);
-	QCOMPARE(Canon::PmrReader{}.read(textSource, {{}, fresh}).outcome, Outcome::IoError);
+	QCOMPARE(ReaderUnderTest{}.read(textSource, {{}, fresh}).outcome, Outcome::IoError);
 	SequentialBuffer sequential(&bytes);
 	sequential.open(QIODevice::ReadOnly);
-	QCOMPARE(Canon::PmrReader{}.read(sequential, {{}, fresh}).outcome, Outcome::IoError);
+	QCOMPARE(ReaderUnderTest{}.read(sequential, {{}, fresh}).outcome, Outcome::IoError);
 }
 void TestCanonPmr::realDrivePmrs()
 {
@@ -350,7 +356,7 @@ void TestCanonPmr::realDrivePmrs()
 		const QFileInfo before(source);
 		const auto receipt = SourceSnapshotRef::create(SourceSnapshot{MetadataSource::Pmr, candidate.path,
 			before.lastModified(), SourceReadState::NotRead});
-		const auto result = Canon::PmrReader{}.read(source, {receipt, cancellation});
+		const auto result = ReaderUnderTest{}.read(source, {receipt, cancellation});
 		QVERIFY2(result.outcome == Outcome::Complete, qPrintable(candidate.path + ": " + result.diagnostics.join("; ")));
 		const QFileInfo after(candidate.path);
 		QCOMPARE(after.size(), before.size());
@@ -384,7 +390,7 @@ void TestCanonPmr::realFixtures()
 	QVERIFY(source.open(QIODevice::ReadOnly));
 	const QByteArray original = source.readAll(); // Test fixtures only; reader never readAll().
 	Canon::Cancellation cancellation;
-	const auto result = Canon::PmrReader{}.read(source, {{}, cancellation});
+	const auto result = ReaderUnderTest{}.read(source, {{}, cancellation});
 	QVERIFY2(result.outcome == Outcome::Complete, qPrintable(result.diagnostics.join("; ")));
 	QCOMPARE(result.recordSets.size(), 2);
 	QCOMPARE(result.recordSets[0].declaredCount, quint32(records));

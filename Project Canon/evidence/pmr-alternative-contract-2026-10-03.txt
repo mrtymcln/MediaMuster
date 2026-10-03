@@ -1,0 +1,39 @@
+********* Start testing of TestCanonPmr *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonPmr::initTestCase()
+PASS   : TestCanonPmr::layouts(v-1-LE)
+PASS   : TestCanonPmr::layouts(v-1-BE)
+PASS   : TestCanonPmr::layouts(v0-LE)
+PASS   : TestCanonPmr::layouts(v0-BE)
+PASS   : TestCanonPmr::layouts(v1-LE)
+PASS   : TestCanonPmr::layouts(v1-BE)
+PASS   : TestCanonPmr::layouts(v2-LE)
+PASS   : TestCanonPmr::layouts(v2-BE)
+PASS   : TestCanonPmr::layouts(v7-LE)
+PASS   : TestCanonPmr::layouts(v7-BE)
+PASS   : TestCanonPmr::layouts(v8-LE)
+PASS   : TestCanonPmr::layouts(v8-BE)
+PASS   : TestCanonPmr::independentSetsAndDuplicateRecords()
+PASS   : TestCanonPmr::textEncodingProvenance()
+PASS   : TestCanonPmr::recordedTextAndIdentityAreNotGuessed()
+PASS   : TestCanonPmr::nullAndAbsentAreDifferent()
+PASS   : TestCanonPmr::malformedUnicodeAndCapacities()
+PASS   : TestCanonPmr::everyTruncationAndHugeCount()
+PASS   : TestCanonPmr::unsupportedRanges()
+PASS   : TestCanonPmr::shortReadsIoAndCancellation()
+QINFO  : TestCanonPmr::realDrivePmrs() /Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr Legacy=389/389, Unicode=389/389 preservedObjects= 778
+QINFO  : TestCanonPmr::realDrivePmrs() /Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr Legacy=686/686, Unicode=686/686 preservedObjects= 1372
+QINFO  : TestCanonPmr::realDrivePmrs() /Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr Legacy=513/513, Unicode=513/513 preservedObjects= 1026
+QINFO  : TestCanonPmr::realDrivePmrs() /Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr Legacy=463/463, Unicode=463/463 preservedObjects= 926
+QINFO  : TestCanonPmr::realDrivePmrs() /Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr Legacy=359/359, Unicode=359/359 preservedObjects= 718
+QINFO  : TestCanonPmr::realDrivePmrs() /Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr Legacy=2/2, Unicode=2/2 preservedObjects= 4
+QINFO  : TestCanonPmr::realDrivePmrs() PMR databases= 6 preserved source records= 4824
+PASS   : TestCanonPmr::realDrivePmrs()
+PASS   : TestCanonPmr::realFixtures(tone)
+PASS   : TestCanonPmr::realFixtures(corpus)
+PASS   : TestCanonPmr::realFixtures(round3)
+PASS   : TestCanonPmr::realFixtures(omf-supporting)
+PASS   : TestCanonPmr::realFixtures(omf-audio)
+PASS   : TestCanonPmr::cleanupTestCase()
+Totals: 28 passed, 0 failed, 0 skipped, 0 blacklisted, 179ms
+********* Finished testing of TestCanonPmr *********

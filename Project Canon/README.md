@@ -22,6 +22,8 @@ Additional [non-English encoding specimens](non-english-encoding-specimens-2026-
 show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
 The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
 per-property `TextEncoding` separate.
+A second implementation is available in the [PMR reader comparison](pmr-reader-comparison-2026-10-03.md),
+with shared tests, reproduced behavioural differences and measured parsing time.
 
 ## Agreed v1 requirements
 

@@ -72,6 +72,7 @@ identity. Sharing these does not authorize inheriting the old readers' assumptio
 | `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; first independent PMR reader implemented and verified |
 | `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Explicit outcomes, typed PMR set membership, per-text encoding/basis, interpretation limits and opaque ranges added for PMR |
 | `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Implemented and tested against fixtures and six local/EDIT databases; not activated in the app |
+| `PmrReaderAlternative` | Independent implementation of the same PMR evidence contract | Added at user request for comparison; both retained, neither newly activated. See [comparison](pmr-reader-comparison-2026-10-03.md) |
 | Reconciliation engine | Establish object ownership, identities, associations and scoped unmatched references | Pending |
 | Selection engine/catalogue | Apply individual verified metadata policies and DNx mappings | Pending |
 | UI/operation adapter | Connect the finished replacement to existing consumers | Pending |

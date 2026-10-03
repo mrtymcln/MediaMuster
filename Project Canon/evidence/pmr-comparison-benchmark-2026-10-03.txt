@@ -1,0 +1,12 @@
+********* Start testing of TestCanonPmrComparison *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonPmrComparison::initTestCase()
+PASS   : TestCanonPmrComparison::benchmark(first)
+RESULT : TestCanonPmrComparison::benchmark():"first":
+     3.04 msecs per iteration (total: 304, iterations: 100)
+PASS   : TestCanonPmrComparison::benchmark(alternative)
+RESULT : TestCanonPmrComparison::benchmark():"alternative":
+     3.33 msecs per iteration (total: 334, iterations: 100)
+PASS   : TestCanonPmrComparison::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 5753ms
+********* Finished testing of TestCanonPmrComparison *********
