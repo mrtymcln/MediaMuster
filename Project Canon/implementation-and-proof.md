@@ -30,6 +30,12 @@ wholesale rewrite.
 
 ## Required correctness checks
 
+Codec-specific checks, including DNxUncompressed sample representation, alpha roles,
+and separately resolved `NewDnx`/`OldDnx`/`ReallyOldDnx` names, are recorded in
+[DNx codec evidence](dnx-codec-evidence.md). These are planned checks, not passed tests.
+Its DNx catalogue must be handwritten/hardcoded in C++ for v1, with source references
+and exact supported mappings; the agreed design has no runtime CSV/TSV dependency.
+
 | Scenario | Required result |
 | --- | --- |
 | KelpieId allocation | Every admitted physical record has a nonzero unique ID within its scan, including parallel folder scans |

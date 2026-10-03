@@ -50,6 +50,19 @@ objective, not a declaration that every current or proposed parser rule is prove
 - Do not add a "Why this value?" detail UI in v1. Retain the evidence independently
   of presentation so a later UI or feature flag can expose the existing information.
   A UI feature flag must not disable the underlying evidence collection.
+- When implemented, put the `Alpha` table column behind a feature flag. Display
+  only `Yes` or `No`, leaving unknown/unresolved results empty. Retain alpha-only
+  roles, depth, read states and conflicts internally; alpha-only files display `Yes`.
+- Refer to the three DNx naming schemes in docs and future code as `NewDnx`,
+  `OldDnx` and `ReallyOldDnx`. Show `NewDnx` prominently, such as `Avid DNx HQX`.
+  Retain `OldDnx` (`DNxHD HQX` or `DNxHR HQX`) and applicable `ReallyOldDnx`
+  (`DNxHD 175x`) separately, alongside actually recorded names and their sources.
+  Identify the encoded profile before using resolution/rate for name selection;
+  never invent a numbered DNxHR name or use a closest-resolution/bitrate match.
+- Handwrite and hardcode the DNx identification/naming catalogue in C++ for v1.
+  Do not make it depend on runtime CSV/TSV files. Use structured entries with
+  verified identifiers, applicable format constraints, all three naming schemes,
+  source references and meaningful verification coverage.
 - Support associations across scanned folders and volumes, independently of
   whether local PMR/MDB databases exist.
 - Retain enough information to report database references whose files were not
@@ -60,6 +73,7 @@ objective, not a declaration that every current or proposed parser rule is prove
 
 ## Documents
 
+- [DNx codec evidence](dnx-codec-evidence.md): primary sources and supplied white papers, DNxUncompressed flavour rules, agreed feature-flagged alpha column, codec-table limitations, and three naming schemes with verification checks.
 - [RAM design and terminology](ram-metadata-design.md): responsibilities, ASCII
   diagrams, evidence, duplicate handling, diagnostics, and resource costs.
 - [Real media findings](real-media-findings-2026-10-03.md): measured folder counts,
@@ -71,6 +85,9 @@ objective, not a declaration that every current or proposed parser rule is prove
   selection examples from the inspected source.
 - [Metadata selection policy](metadata-selection-policy.md): proposed central
   developer-controlled selection table, retained observations, and one shared resolver.
+- [Audit coverage](audit-coverage.md): all 40 audit entries mapped to direct design
+  coverage, partial support or separate work; no planning entry is counted as a
+  verified implementation fix.
 
 ## Current behaviour versus proposed behaviour
 
@@ -99,3 +116,20 @@ Its conclusions are evidence-bounded; an accepted parse is not proof that every
 possible Avid object or property is interpreted correctly.
 
 Production code and media have not been changed by writing this documentation.
+
+## Handoff for the later rewrite
+
+The user will request implementation when ready. This documentation task records
+the plan; it does not start the rewrite. Read this requirements index together with
+the detailed documents and the wider audit before changing the implementation.
+
+Agreed requirements above are user decisions. Proposed class layouts, catalogue
+entry structures and staged implementation details remain engineering proposals.
+Evidence-backed format rules must retain their source and revision; empirical
+observations must not be promoted to universal format facts. Resolve newly
+discovered property meanings/display rules with the user as already required.
+
+Outstanding decisions include the Resolution column's geometry semantics,
+individual metadata-field selection policies beyond the agreed naming/alpha rules,
+the Alpha feature flag identifier/default, and whether to add a diagnostic summary
+dialog. Retain useful evidence while those presentation/policy choices remain open.
