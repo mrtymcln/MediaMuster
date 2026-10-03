@@ -17,6 +17,7 @@
 #include <functional>
 
 class QLabel;
+class QLayout;
 class QLineEdit;
 class QPlainTextEdit;
 class QPushButton;
@@ -151,6 +152,9 @@ private:
 	/// Keeps manually-added paths when detected volumes change.
 	void rebuildVolumeList(const QVector<VolumeInfo> &volumes);
 
+	void addFilterChip(QLayout *layout, const QString &text, std::function<void()> onClose);
+	QString precomputeSelectionLabel(const PrecomputeFilter &filter) const;
+	QString precomputeVolumeLabel(const QString &volumePath) const;
 	void rebuildFilterChips();
 	/// Refresh dependent views after the inventory changes; does not scan disk.
 	void refreshEverything();

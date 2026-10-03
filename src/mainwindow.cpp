@@ -1079,53 +1079,83 @@ void MainWindow::onFilterByBins()
 	m_binFilterDialog->activateWindow();
 }
 
-// MARK: - Rebalance
+// MARK: - Rebalance inventory preparation
+
+namespace
+{
+	struct RebalanceInventory
+	{
+		QHash<QString, QString> mxfRootPathsByLabel;
+		QHash<QString, QVector<MediaFile>> filesByMxfRootPath;
+		QHash<QString, QString> volumePathByLabel;
+		QString initialLabel;
+	};
+
+	RebalanceInventory prepareRebalanceInventory(const QVector<MediaFile> &files)
+	{
+		RebalanceInventory inventory;
+		// Each file lives in <mxfRootPath>/<mediaFolderName>/<filename>.
+		QHash<QString, int> countByLabel;
+
+		// Give each MXF root a unique label so same-named volumes stay selectable.
+		QHash<QString, QString> labelByMxfRootPath;
+		QSet<QString> usedLabels;
+
+		for (const MediaFile &mf : files)
+		{
+			if (!RebalancePlanner::isEligible(mf))
+				continue;
+			const QString mediaFolderPath = QFileInfo(mf.mediaFilePath).absolutePath();
+			const QString mxfRootPath = QFileInfo(mediaFolderPath).absolutePath();
+
+			QString label = labelByMxfRootPath.value(mxfRootPath);
+			if (label.isEmpty())
+			{
+				QString base = mf.volumeName;
+				if (base.isEmpty())
+					base = QFileInfo(mf.volumePath).fileName();
+				if (base.isEmpty())
+					base = mxfRootPath;
+
+				label = base;
+				for (int n = 2; usedLabels.contains(label); ++n)
+					label = QStringLiteral("%1 (%2)").arg(base).arg(n);
+
+				labelByMxfRootPath.insert(mxfRootPath, label);
+				usedLabels.insert(label);
+				inventory.mxfRootPathsByLabel.insert(label, mxfRootPath);
+				inventory.volumePathByLabel.insert(label, mf.volumePath);
+			}
+
+			inventory.filesByMxfRootPath[mxfRootPath].append(mf);
+			countByLabel[label] += 1;
+		}
+
+		// Default to the MXF root with the most eligible scanned files.
+		int maxCount = -1;
+		for (auto it = countByLabel.constBegin(); it != countByLabel.constEnd(); ++it)
+		{
+			if (it.value() > maxCount)
+			{
+				maxCount = it.value();
+				inventory.initialLabel = it.key();
+			}
+		}
+
+		return inventory;
+	}
+} // namespace
+
+// MARK: - Rebalance dialog and rescan
+
 void MainWindow::onRebalance()
 {
 	if (!m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
 		return;
 
-	// Each file lives in <mxfRootPath>/<mediaFolderName>/<filename>.
-	QHash<QString, QString> mxfRootPathsByLabel;
-	QHash<QString, QVector<MediaFile>> filesByMxfRootPath;
-	QHash<QString, int> countByLabel;
-	QHash<QString, QString> volumePathByLabel;
+	const auto inventory = prepareRebalanceInventory(m_model->allFiles());
 
-	// Give each MXF root a unique label so same-named volumes stay selectable.
-	QHash<QString, QString> labelByMxfRootPath;
-	QSet<QString> usedLabels;
-
-	for (const MediaFile &mf : m_model->allFiles())
-	{
-		if (!RebalancePlanner::isEligible(mf))
-			continue;
-		const QString mediaFolderPath = QFileInfo(mf.mediaFilePath).absolutePath();
-		const QString mxfRootPath = QFileInfo(mediaFolderPath).absolutePath();
-
-		QString label = labelByMxfRootPath.value(mxfRootPath);
-		if (label.isEmpty())
-		{
-			QString base = mf.volumeName;
-			if (base.isEmpty())
-				base = QFileInfo(mf.volumePath).fileName();
-			if (base.isEmpty())
-				base = mxfRootPath;
-
-			label = base;
-			for (int n = 2; usedLabels.contains(label); ++n)
-				label = QStringLiteral("%1 (%2)").arg(base).arg(n);
-
-			labelByMxfRootPath.insert(mxfRootPath, label);
-			usedLabels.insert(label);
-			mxfRootPathsByLabel.insert(label, mxfRootPath);
-			volumePathByLabel.insert(label, mf.volumePath);
-		}
-
-		filesByMxfRootPath[mxfRootPath].append(mf);
-		countByLabel[label] += 1;
-	}
-
-	if (filesByMxfRootPath.isEmpty())
+	if (inventory.filesByMxfRootPath.isEmpty())
 	{
 		QMessageBox::warning(this, tr("Rebalance"),
 							 tr("No 'Avid MediaFiles/MXF' folders were found in "
@@ -1134,19 +1164,8 @@ void MainWindow::onRebalance()
 		return;
 	}
 
-	// Default to whichever volume has the most scanned files.
-	QString initialLabel;
-	int maxCount = -1;
-	for (auto it = countByLabel.constBegin(); it != countByLabel.constEnd(); ++it)
-	{
-		if (it.value() > maxCount)
-		{
-			maxCount = it.value();
-			initialLabel = it.key();
-		}
-	}
-
-	RebalanceDialog dlg(mxfRootPathsByLabel, filesByMxfRootPath, initialLabel, this);
+	RebalanceDialog dlg(inventory.mxfRootPathsByLabel, inventory.filesByMxfRootPath,
+						inventory.initialLabel, this);
 	dlg.beforeRebalance = [this, &dlg]
 	{
 		if (m_operations->resolveBeforeRebalance())
@@ -1167,7 +1186,7 @@ void MainWindow::onRebalance()
 	if (!dlg.didRebalance())
 		return;
 
-	const QString volumePath = volumePathByLabel.value(dlg.rebalancedLabel());
+	const QString volumePath = inventory.volumePathByLabel.value(dlg.rebalancedLabel());
 	if (volumePath.isEmpty())
 	{
 		addLog(QtWarningMsg, QStringLiteral("rebalance"),
@@ -2105,18 +2124,11 @@ void MainWindow::updateFilterCounts()
 	m_filterTabs->updateGeometry();
 }
 
-// MARK: - Filter chips
+// MARK: - Filter chip UI
 
-void MainWindow::rebuildFilterChips()
+void MainWindow::addFilterChip(QLayout *layout, const QString &text,
+							   std::function<void()> onClose)
 {
-	if (!m_chipsBar)
-		return;
-	auto *layout = m_chipsBar->layout();
-	if (!layout)
-		return;
-
-	LayoutUtil::clearLayout(layout);
-
 	static const char *kChipStyle = "QPushButton {"
 									" background-color: rgba(74, 144, 226, 0.28);"
 									" border: none;"
@@ -2128,18 +2140,70 @@ void MainWindow::rebuildFilterChips()
 									" background-color: rgba(74, 144, 226, 0.42);"
 									"}";
 
-	auto addChip = [this, layout](const QString &text, std::function<void()> onClose)
+	auto *chip = new QPushButton(text + "  ✕");
+	chip->setCursor(Qt::PointingHandCursor);
+	chip->setFlat(true);
+	chip->setFocusPolicy(Qt::NoFocus);
+	chip->setAttribute(Qt::WA_MacShowFocusRect, false);
+	chip->setStyleSheet(kChipStyle);
+	QObject::connect(chip, &QPushButton::clicked, this, [cb = std::move(onClose)]()
+					 { cb(); });
+	layout->addWidget(chip);
+}
+
+// MARK: - Filter chip labels
+
+QString MainWindow::precomputeSelectionLabel(const PrecomputeFilter &filter) const
+{
+	QString selectionLabel;
+	if (filter.active)
 	{
-		auto *chip = new QPushButton(text + "  ✕");
-		chip->setCursor(Qt::PointingHandCursor);
-		chip->setFlat(true);
-		chip->setFocusPolicy(Qt::NoFocus);
-		chip->setAttribute(Qt::WA_MacShowFocusRect, false);
-		chip->setStyleSheet(kChipStyle);
-		QObject::connect(chip, &QPushButton::clicked, this, [cb = std::move(onClose)]()
-						 { cb(); });
-		layout->addWidget(chip);
-	};
+		if (filter.paths.isEmpty())
+			selectionLabel = tr("Precompute: none");
+		else if (filter.paths.size() == 1)
+		{
+			const auto &path = filter.paths.first();
+			QStringList names;
+			for (const auto &name : {path.precomputeCategory, path.effectCategory, path.effect})
+				if (!name.isEmpty())
+					names.append(name);
+			selectionLabel = names.isEmpty() ? tr("Precompute: all")
+											 : tr("Precompute: %1").arg(names.join(QStringLiteral(" / ")));
+		}
+		else
+			selectionLabel = tr("%1 precompute selections").arg(filter.paths.size());
+	}
+	return selectionLabel;
+}
+
+QString MainWindow::precomputeVolumeLabel(const QString &volumePath) const
+{
+	QHash<QString, QString> volumeNames;
+	for (const auto &file : m_model->allFiles())
+		if (!file.volumePath.isEmpty() && !volumeNames.contains(file.volumePath))
+			volumeNames.insert(file.volumePath, file.volumeName.isEmpty() ? file.volumePath : file.volumeName);
+	QString volumeLabel = volumeNames.value(volumePath, volumePath);
+	if (volumeLabel != volumePath)
+		for (auto it = volumeNames.cbegin(); it != volumeNames.cend(); ++it)
+			if (it.key() != volumePath && it.value() == volumeLabel)
+			{
+				volumeLabel = tr("%1 (%2)").arg(volumeLabel, volumePath);
+				break;
+			}
+	return volumeLabel;
+}
+
+// MARK: - Filter chip actions
+
+void MainWindow::rebuildFilterChips()
+{
+	if (!m_chipsBar)
+		return;
+	auto *layout = m_chipsBar->layout();
+	if (!layout)
+		return;
+
+	LayoutUtil::clearLayout(layout);
 
 	const int tabIdx = m_filterTabs->currentIndex();
 	const bool hasPrecomputeSelection = m_precomputesEnabled && m_proxy->precomputeTreeFilter().active;
@@ -2154,8 +2218,8 @@ void MainWindow::rebuildFilterChips()
 		const int paren = label.indexOf(QLatin1String(" ("));
 		if (paren > 0)
 			label.truncate(paren);
-		addChip(tr("Type: %1").arg(label), [this]()
-				{ m_filterTabs->setCurrentIndex(0); });
+		addFilterChip(layout, tr("Type: %1").arg(label), [this]()
+					  { m_filterTabs->setCurrentIndex(0); });
 	}
 
 	const QString searchText = m_searchField->text();
@@ -2164,15 +2228,15 @@ void MainWindow::rebuildFilterChips()
 		QString shown = searchText;
 		if (shown.length() > 24)
 			shown = shown.left(22) + QStringLiteral("...");
-		addChip(tr("Search: \"%1\"").arg(shown), [this]()
-				{ m_searchField->clear(); });
+		addFilterChip(layout, tr("Search: \"%1\"").arg(shown), [this]()
+					  { m_searchField->clear(); });
 	}
 
 	for (auto *item : m_projectList->selectedItems())
 	{
 		const QString proj = item->data(Qt::UserRole).toString();
-		addChip(tr("Project: %1").arg(proj), [item]()
-				{ item->setSelected(false); });
+		addFilterChip(layout, tr("Project: %1").arg(proj), [item]()
+					  { item->setSelected(false); });
 	}
 
 	if (m_precomputesEnabled)
@@ -2180,27 +2244,10 @@ void MainWindow::rebuildFilterChips()
 		// Keep complete checked paths together: splitting category/name chips
 		// would change their OR semantics. Volume is an independent filter.
 		const PrecomputeFilter filter = m_proxy->precomputeTreeFilter();
-		QString selectionLabel;
-		if (filter.active)
-		{
-			if (filter.paths.isEmpty())
-				selectionLabel = tr("Precompute: none");
-			else if (filter.paths.size() == 1)
-			{
-				const auto &path = filter.paths.first();
-				QStringList names;
-				for (const auto &name : {path.precomputeCategory, path.effectCategory, path.effect})
-					if (!name.isEmpty())
-						names.append(name);
-				selectionLabel = names.isEmpty() ? tr("Precompute: all")
-												 : tr("Precompute: %1").arg(names.join(QStringLiteral(" / ")));
-			}
-			else
-				selectionLabel = tr("%1 precompute selections").arg(filter.paths.size());
-		}
+		const QString selectionLabel = precomputeSelectionLabel(filter);
 		if (!selectionLabel.isEmpty())
-			addChip(selectionLabel, [this, combinedPrecomputeChip]()
-					{
+			addFilterChip(layout, selectionLabel, [this, combinedPrecomputeChip]()
+						  {
 				applyFilterPreservingSelection([this, combinedPrecomputeChip]() {
 					m_proxy->setPrecomputeTreeFilter({});
 					if (combinedPrecomputeChip)
@@ -2216,20 +2263,9 @@ void MainWindow::rebuildFilterChips()
 		const QString volumePath = m_proxy->precomputeVolumeFilter();
 		if (!volumePath.isEmpty())
 		{
-			QHash<QString, QString> volumeNames;
-			for (const auto &file : m_model->allFiles())
-				if (!file.volumePath.isEmpty() && !volumeNames.contains(file.volumePath))
-					volumeNames.insert(file.volumePath, file.volumeName.isEmpty() ? file.volumePath : file.volumeName);
-			QString volumeLabel = volumeNames.value(volumePath, volumePath);
-			if (volumeLabel != volumePath)
-				for (auto it = volumeNames.cbegin(); it != volumeNames.cend(); ++it)
-					if (it.key() != volumePath && it.value() == volumeLabel)
-					{
-						volumeLabel = tr("%1 (%2)").arg(volumeLabel, volumePath);
-						break;
-					}
-			addChip(tr("Precompute volume: %1").arg(volumeLabel), [this]()
-					{
+			const QString volumeLabel = precomputeVolumeLabel(volumePath);
+			addFilterChip(layout, tr("Precompute volume: %1").arg(volumeLabel), [this]()
+						  {
 				applyFilterPreservingSelection([this]() {
 					m_proxy->setPrecomputeVolumeFilter({});
 				});
@@ -2259,7 +2295,7 @@ void MainWindow::rebuildFilterChips()
 			updateStatusBar();
 		};
 		for (const QString &name : m_binFilterBinNames)
-			addChip(tr("Bin: %1").arg(name), clearBinFilter);
+			addFilterChip(layout, tr("Bin: %1").arg(name), clearBinFilter);
 	}
 
 	m_chipsBar->setVisible(layout->count() > 0);

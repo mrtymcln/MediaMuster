@@ -15,6 +15,7 @@
 #include <QString>
 #include <QVector>
 #include <atomic>
+#include <optional>
 
 // MARK: - LogMsg
 
@@ -95,6 +96,13 @@ private:
 	// shared thread pool). Don't call from UI handlers.
 
 	void doScan();
+	QVector<MediaFile> scanRequestedLocations();
+
+	// Partial enrichment is retained on cancellation; doScan owns completion.
+	bool applyEffectDetails(QVector<MediaFile> &files);
+	// nullopt means cancellation; an empty list is a completed tally without notes.
+	std::optional<QStringList> collectScanNotes(const QVector<MediaFile> &files);
+	void logScanSummary(qsizetype fileCount, const QStringList &notes);
 
 	/// Clear per-scan caches and flush logs on both completion and cancellation,
 	/// so later scans cannot inherit stale metadata.

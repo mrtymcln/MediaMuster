@@ -69,6 +69,12 @@ read. Header fallback can recover information and reject database details belong
 to a different file. Parser validity, unknown fields, project names and PMR
 membership are separate facts; they must not be collapsed into a single status.
 
+Within the scanner, `doScan()` orders location discovery, the header pass, effect
+enrichment, diagnostic-note collection and summary logging. These stages remain
+in `mediascanner.cpp`, separated by `MARK` headings. Finalisation helpers report
+cancellation to `doScan()`, which concludes once with the partial inventory;
+`concludeScan()` clears caches and flushes logs before emitting completion.
+
 Within the scanner, `readMediaHeadersConcurrently()` owns scheduling, cancellation
 and progress. The local `readMediaHeader()` helper reads and merges one file's
 metadata; `clearReplacedMetadata()` and `findHeaderMaster()` keep identity-reset

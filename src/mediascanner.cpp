@@ -310,8 +310,6 @@ bool MediaScanner::canReadPath(const QString &path)
 
 void MediaScanner::doScan()
 {
-	QVector<MediaFile> allFiles;
-
 	const int locationCount = m_options.volumePaths.size() + m_options.manualPaths.size();
 	emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s)...").arg(locationCount));
 
@@ -320,6 +318,54 @@ void MediaScanner::doScan()
 	qCDebug(lcScanner) << "scan start:" << locationCount << "location(s)";
 
 	// MARK: Pass 1 — per-location folder walk + databases
+
+	QVector<MediaFile> allFiles = scanRequestedLocations();
+
+	qCDebug(lcScanner) << "pass 1 (walk + databases):" << allFiles.size() << "files in" << stageTimer.restart()
+					   << "ms";
+
+	// MARK: Pass 2 — headers for the rows the databases didn't cover
+
+	if (!m_job.isCancelled())
+	{
+		readMediaHeadersConcurrently(allFiles);
+		qCDebug(lcScanner) << "pass 2 (headers):" << stageTimer.restart() << "ms";
+	}
+
+	if (m_job.isCancelled())
+	{
+		concludeScan(allFiles, /*cancelled=*/true);
+		return;
+	}
+
+	// Both passes are done and the bar has hit 100%. Tell the UI to show an
+	// indeterminate "Finalising..." for the tally below so a slow finish on a
+	// big share can't look like a frozen 100%.
+	emit scanFinalising();
+
+	// MARK: Summary — name the renders, tally, cleanup
+
+	if (!applyEffectDetails(allFiles))
+	{
+		concludeScan(allFiles, /*cancelled=*/true);
+		return;
+	}
+	const auto notes = collectScanNotes(allFiles);
+	if (!notes)
+	{
+		concludeScan(allFiles, /*cancelled=*/true);
+		return;
+	}
+	logScanSummary(allFiles.size(), *notes);
+
+	concludeScan(allFiles, /*cancelled=*/false);
+}
+
+// MARK: - Requested locations
+
+QVector<MediaFile> MediaScanner::scanRequestedLocations()
+{
+	QVector<MediaFile> allFiles;
 
 	// Volumes and hand-added folders share the readability gate and the
 	// bookkeeping; they differ only in which locator runs (see the class
@@ -376,40 +422,19 @@ void MediaScanner::doScan()
 		scanLocation(manualPath, /*manual=*/true);
 	}
 
-	qCDebug(lcScanner) << "pass 1 (walk + databases):" << allFiles.size() << "files in" << stageTimer.restart()
-					   << "ms";
+	return allFiles;
+}
 
-	// MARK: Pass 2 — headers for the rows the databases didn't cover
+// MARK: - Scan finalisation
 
-	if (!m_job.isCancelled())
-	{
-		readMediaHeadersConcurrently(allFiles);
-		qCDebug(lcScanner) << "pass 2 (headers):" << stageTimer.restart() << "ms";
-	}
-
-	const auto finishIfCancelled = [this, &allFiles]
-	{
-		if (!m_job.isCancelled())
-			return false;
-		concludeScan(allFiles, /*cancelled=*/true);
-		return true;
-	};
-	if (finishIfCancelled())
-		return;
-
-	// Both passes are done and the bar has hit 100%. Tell the UI to show an
-	// indeterminate "Finalising..." for the tally below so a slow finish on a
-	// big share can't look like a frozen 100%.
-	emit scanFinalising();
-
-	// MARK: Summary — name the renders, tally, cleanup
-
+bool MediaScanner::applyEffectDetails(QVector<MediaFile> &files)
+{
 	// Only metadata-confirmed precomputes receive name-derived effect details.
 	// The name never decides their media type or precompute category.
-	for (MediaFile &f : allFiles)
+	for (MediaFile &f : files)
 	{
-		if (finishIfCancelled())
-			return;
+		if (m_job.isCancelled())
+			return false;
 		if (f.type != MediaFile::Type::Precompute)
 			continue;
 		const AvidEffects::Hit hit = AvidEffects::lookup(f.clipName);
@@ -417,12 +442,16 @@ void MediaScanner::doScan()
 		f.effectCategory = hit.category;
 		f.effectSequence = hit.sequence;
 	}
+	return true;
+}
 
+std::optional<QStringList> MediaScanner::collectScanNotes(const QVector<MediaFile> &files)
+{
 	int noReference = 0, noDatabase = 0, invalidUmid = 0, noProject = 0, nonPortable = 0;
-	for (const auto &f : allFiles)
+	for (const auto &f : files)
 	{
-		if (finishIfCancelled())
-			return;
+		if (m_job.isCancelled())
+			return std::nullopt;
 		if (f.dbStatus == MediaFile::DbStatus::NoReference)
 			++noReference;
 		if (f.isNoDatabase())
@@ -435,21 +464,12 @@ void MediaScanner::doScan()
 			++nonPortable;
 	}
 
-	if (finishIfCancelled())
-		return;
+	if (m_job.isCancelled())
+		return std::nullopt;
 
-	qCDebug(lcScanner) << "scan tally:" << allFiles.size() << "files —" << noReference
+	qCDebug(lcScanner) << "scan tally:" << files.size() << "files —" << noReference
 					   << "no reference," << noDatabase << "no database," << invalidUmid << "invalid umid,"
 					   << noProject << "no project," << nonPortable << "non-portable";
-
-	if (allFiles.isEmpty())
-	{
-		emitLog(QtWarningMsg, QStringLiteral("scanner"), "No media files found.");
-	}
-	else
-	{
-		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scan complete: %1 files found").arg(allFiles.size()));
-	}
 
 	QStringList notes;
 	if (noReference > 0)
@@ -472,11 +492,23 @@ void MediaScanner::doScan()
 		notes.append(QStringLiteral("%1 non-portable filename%2")
 						 .arg(nonPortable)
 						 .arg(nonPortable == 1 ? "" : "s"));
+	return notes;
+}
+
+void MediaScanner::logScanSummary(qsizetype fileCount, const QStringList &notes)
+{
+	if (fileCount == 0)
+	{
+		emitLog(QtWarningMsg, QStringLiteral("scanner"), "No media files found.");
+	}
+	else
+	{
+		emitLog(QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scan complete: %1 files found").arg(fileCount));
+	}
+
 	if (!notes.isEmpty())
 		emitLog(QtWarningMsg, QStringLiteral("scanner"),
 				QStringLiteral("Scan notes: %1").arg(notes.join(QStringLiteral("; "))));
-
-	concludeScan(allFiles, /*cancelled=*/false);
 }
 
 // MARK: - Scan conclusion
