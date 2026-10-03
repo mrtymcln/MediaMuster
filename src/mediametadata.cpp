@@ -35,15 +35,10 @@ static bool isAudioCompressionLabel(const QByteArray &label)
 		   static_cast<quint8>(label[13]) == 0x06 && static_cast<quint8>(label[15]) == 0x00;
 }
 
-/// Quant-bits display. 254 is Avid's sentinel for the non-integer
-/// DNxUncompressed formats — 32-bit float and 16-bit 2.14 fixed point,
-/// whose descriptors are byte-identical (verified against real files),
-/// so they share one label. "254-bit" is not a bit depth.
+// A depth sentinel needs its coding variant; it is never a standalone bit count.
 QString MediaMetadataUtil::bitDepthLabel(quint32 bits)
 {
-	if (bits == 254)
-		return QStringLiteral("Float");
-	return QStringLiteral("%1-bit").arg(bits);
+	return bits == 0 || bits == 253 || bits == 254 ? QString{} : QStringLiteral("%1-bit").arg(bits);
 }
 
 // MARK: - Shared metadata derivation
@@ -51,6 +46,33 @@ QString MediaMetadataUtil::bitDepthLabel(quint32 bits)
 /// Derive display facts from the raw values supplied by any media reader.
 void MediaMetadataUtil::finalise(MediaMetadata &meta)
 {
+	// SMPTE RDD 50:2019, section 9/Table 5. The complete coding UL and
+	// depth together distinguish integer, half float, float and fixed point.
+	const bool dnxStandard = meta.compressionLabel == QByteArray::fromHex("060e2b340401010d0401020203070100");
+	const bool dnxFixed = meta.compressionLabel == QByteArray::fromHex("060e2b340401010d0401020203070200");
+	if (dnxStandard || dnxFixed)
+	{
+		if (dnxStandard && (meta.componentDepth == 8 || meta.componentDepth == 10 ||
+			meta.componentDepth == 12 || meta.componentDepth == 16))
+			meta.sampleFormat = QStringLiteral("Integer");
+		else if (dnxStandard && meta.componentDepth == 253)
+		{
+			meta.bitDepth = QStringLiteral("16-bit");
+			meta.sampleFormat = QStringLiteral("Half float");
+		}
+		else if (dnxStandard && meta.componentDepth == 254)
+		{
+			meta.bitDepth = QStringLiteral("32-bit");
+			meta.sampleFormat = QStringLiteral("Float");
+		}
+		else if (dnxFixed && (meta.componentDepth == 254 || meta.componentDepth == 10 || meta.componentDepth == 12))
+		{
+			meta.bitDepth = QStringLiteral("16-bit");
+			meta.sampleFormat = meta.componentDepth == 254 ? QStringLiteral("S2.14 fixed point") :
+				meta.componentDepth == 10 ? QStringLiteral("10.6 fixed point") : QStringLiteral("12.4 fixed point");
+		}
+	}
+
 	// An essence label can identify audio without a sound descriptor.
 	// Set isAudio before deriving duration, validity and codec names.
 	if (!meta.isAudio && isAudioCompressionLabel(meta.compressionLabel))

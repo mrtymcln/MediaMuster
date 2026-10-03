@@ -47,14 +47,14 @@ The Console and diagnostic log use the same bare category labels:
 | `filters` | Bin and Precompute filters |
 
 The diagnostic log also uses `avb`, `pmr`, `mdb`, `mxf`, `omf` and `metadata`
-for parser and metadata details. High-level PMR/MDB notices shown in the Console
+for parser and metadata details. The Console now also receives `metadata`
+conflicts and `reconciliation` notices. High-level PMR/MDB notices shown in the Console
 use `scanner`; the parsers retain their own diagnostic categories. Neither output
 adds a `console/` or `mediamuster.` prefix to these labels. The category identifies
 the source of a message; its severity is separate.
 
 OMF support, precompute classification/filtering and file-operation Undo are
-controlled independently by compile-time flags in `src/featureflags.h`. All three
-default to off. Change a flag and rebuild to enable it; these controls do not
+controlled independently by compile-time flags in `src/featureflags.h`. This build enables OmfScan, precompute details, Clip Duration and Undo by default. Change a flag and rebuild to enable it; these controls do not
 appear in the Debug menu. Rendered media remains in ordinary scan results when
 precompute details and filtering are disabled.
 
@@ -139,18 +139,28 @@ The scanner combines information from three places:
 | --- | --- |
 | The disk's file listing | Filename, location, size, creation time when available, and modification time. |
 | Avid's folder databases | The PMR file index connects filenames to Avid identifiers. MDB records provide clip relationships, names and technical details. Project information can also come from these databases. |
-| Metadata inside the media file | Technical details, identifiers and other recorded information that the database pass could not establish. |
+| Metadata inside the media file | Independent technical details, identifiers and other recorded information retained alongside matching database observations. |
 
-The scanner reads databases first. It can avoid opening a media file when the
-database information is sufficiently complete and the indexed modification time
-matches the file. Missing, unreadable, incomplete or stale information causes a
-fallback to the media reader. The scanner also reads `ama*` database variants;
-matching `msm*` records take precedence.
+The scanner reads every `.pmr` and `.mdb` in admitted folders, regardless of its
+basename, then attempts headers for admitted nonempty media. Empty files remain
+inventory rows. It retains source observations in RAM and uses validated header
+technical fields before qualified matching MDB fields. Equally eligible conflicting
+answers remain blank and receive Console diagnostics. Unreadable headers can still
+use a qualified database fallback.
 
-If a file's own identifiers contradict the database, the scanner discards the
-old file's details before applying the replacement's metadata. Unknown names and
-technical facts can stay blank or show an unknown value. A filename is not used
-as a substitute for an unknown clip name.
+A contradictory file/source identity excludes the old database's observations
+from selection while preserving them as evidence. Unknown clip names stay blank;
+filenames are not substitutes. This first evidence stage covers existing decoded
+aggregates, not every raw property in the formats. See the
+[Canon implementation report](../Project%20Canon/foundation-implementation-2026-10-03.md)
+for remaining coverage and operation checks.
+
+Every physical row receives a scan-session `KelpieId`. Copies with matching
+metadata still have separate rows and IDs. The five-field RAM scan receipt records
+path, volume identifier, modification timestamp, file MobId and master IDs; new
+receipt enforcement in operation requests is still pending. Scoped database
+reference issues distinguish local absence, matches elsewhere and unmatched MDB
+identities. An unmatched identity alone does not prove a missing physical file.
 
 Avid identifiers, called MOB IDs or UMIDs in the code, connect files to clips.
 They are different from filenames. Files belonging to the same master clip can
@@ -185,7 +195,10 @@ to delete.
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
 Codec, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
-Source Filename and Location. Type is always visible. Enabling
+Source Filename, Location, MobId, MasterMobId and KelpieId, followed by OmfScan
+when its flag is enabled. Multiple master IDs share a cell separated by `; `.
+OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
+for MXF-family media. Type is always visible. Enabling
 the Clip Duration feature flag places Clip Duration immediately after Duration
 in both the table and CSV. Enabling
 Precomputes inserts Precompute Category, Effect Category, Effect and Effect
@@ -200,7 +213,8 @@ or exported.
 
 The table and CSV include **Sample Rate** (for example, `48 kHz`) and
 **Bit Depth** (for example, `24-bit`) beside Frame Rate. Sample Rate describes audio;
-Bit Depth also shows recorded video depths. Unknown values stay blank.
+Bit Depth also shows established video depths. Sample Format is a separate internal
+RAM property with no table or CSV column. Unknown values, including Kind, stay blank.
 
 **Duration** describes the selected physical file. Readers retain the original
 length and rational rate (audio samples or video/edit units), plus the separate
@@ -289,10 +303,12 @@ CSV export offers selected rows or all rows in the current filtered view. Its
 **All** choice does not include filtered-out rows. Filter-tab counts use the whole
 inventory, while the status bar's file count and size describe the visible rows.
 
-CSV uses the table's default column order, followed by Database Status, MobId
-and MasterMobId. Both optional column groups follow the table's active settings:
-19 columns with both off, 20 with Clip Duration only, 23 with Precomputes only,
-and 24 with both on. Disabled columns are absent, not exported as blank fields.
+CSV retains its explicit established export order, ending with Database Status,
+MobId, MasterMobId, KelpieId and OmfScan. The two optional column groups follow
+the table's settings: 21 columns with both off, 22 with Clip Duration only,
+25 with Precomputes only and 26 with both on. Disabled optional columns are absent,
+not exported as blank fields. CSV always includes OmfScan, even when its table
+column is hidden.
 Moving table columns does not change export order. The exporter maintains its
 own explicit column list; a UI test compares its headings against the table's
 visual order for all four flag combinations. Location is the managed
@@ -337,12 +353,12 @@ is unchanged, it asks before using MediaMuster Trash. An uncertain native result
 requires recovery rather than an automatic second attempt elsewhere. Moving into
 MediaMuster Trash does not free disk space.
 
-After Move or Delete, the table removes source rows reported as removed. Project
-counts and sizes refresh, empty projects and their filters disappear, and the
-status bar reflects the remaining visible rows. Selections of remaining projects
-are preserved. Copy does not add destination rows to the inventory. Rescan the
-relevant locations to obtain an updated inventory of destinations and external
-changes.
+After a confirmed ordinary Move, the existing row updates to the destination
+and retains its KelpieId. Delete removes rows whose sources were confirmed removed.
+A confirmed ordinary Copy adds a destination row with a new KelpieId and leaves
+the original row intact. Counts, sizes and filters refresh after these updates.
+Recovery, rebalance and partial outcomes still have lifecycle work pending; rescan
+to refresh destination database status or observe external changes.
 
 ## Cancellation, recovery and Undo
 

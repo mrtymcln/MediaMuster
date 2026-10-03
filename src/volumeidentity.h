@@ -25,6 +25,14 @@ struct VolumeIdentity
 	QString rootObjectId;
 	Confidence confidence = Confidence::Low;
 	static VolumeIdentity capture(const QString &path);
+	QString identifier() const
+	{
+		if (!uuid.isEmpty())
+			return QStringLiteral("uuid:") + uuid;
+		if (!networkId.isEmpty() && !rootObjectId.isEmpty())
+			return QStringLiteral("network:") + networkId + QLatin1Char('|') + rootObjectId;
+		return {};
+	}
 	bool matches(const VolumeIdentity &other) const;
 	QJsonObject toJson() const;
 	static VolumeIdentity fromJson(const QJsonObject &value);

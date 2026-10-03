@@ -746,6 +746,7 @@ void MainWindow::setupConnections()
 			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanLogBatch, this, &MainWindow::onScanLogBatch,
 			Qt::QueuedConnection);
+	connect(m_scanner, &MediaScanner::scanIssuesFinished, m_model, &MediaTableModel::setScanIssues, Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanFinished, this, &MainWindow::onScanFinished,
 			Qt::QueuedConnection);
 	connect(
@@ -779,6 +780,14 @@ void MainWindow::setupConnections()
 				m_persistentSelectedPaths.subtract(paths);
 				refreshEverything();
 			});
+	connect(m_operations, &FileOperationController::transferCompleted, this,
+		[this](const QString &source, const QString &destination, bool copy)
+		{
+			m_model->applyTransfer(source, destination, copy);
+			if (!copy && m_persistentSelectedPaths.remove(source))
+				m_persistentSelectedPaths.insert(destination);
+			refreshEverything();
+		});
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
 
@@ -910,6 +919,7 @@ void MainWindow::setOmfEnabled(bool enabled)
 	if (m_omfEnabled == enabled)
 		return;
 	m_omfEnabled = enabled;
+	m_model->setOmfScanEnabled(enabled);
 	if (!enabled)
 	{
 		QSet<QString> legacyPaths;

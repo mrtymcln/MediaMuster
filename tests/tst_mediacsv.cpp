@@ -70,6 +70,7 @@ class TestMediaCsv : public QObject
 private slots:
 	void clip_duration_column_is_explicit();
 	void header_and_row_have_the_same_field_count();
+	void all_master_ids_and_physical_row_identity_are_exported();
 	void header_order_and_values_follow_the_export_schema();
 	void created_date_carries_time_of_day();
 	void unknown_created_date_is_blank();
@@ -87,19 +88,36 @@ private slots:
 	void precompute_categories_preserve_unknown_details();
 };
 
+void TestMediaCsv::all_master_ids_and_physical_row_identity_are_exported()
+{
+	MediaFile file = sampleRow();
+	file.kelpieId = 42;
+	file.fileMobId = QStringLiteral("file-id");
+	file.masterMobId = QStringLiteral("compatibility-only");
+	file.masterMobIds = {QStringLiteral("master-a"), QStringLiteral("master-b")};
+	file.omfEra = true;
+	const auto headers = readCsvRecord(MediaCsv::headerLine());
+	const auto values = readCsvRecord(MediaCsv::rowLine(file));
+	QCOMPARE(values.at(headers.indexOf(QStringLiteral("MasterMobId"))), QStringLiteral("master-a; master-b"));
+	QCOMPARE(values.at(headers.indexOf(QStringLiteral("KelpieId"))), QStringLiteral("42"));
+	QCOMPARE(values.at(headers.indexOf(QStringLiteral("OmfScan"))), QStringLiteral("true"));
+	QVERIFY(!headers.contains(QStringLiteral("Sample Format")));
+	QVERIFY(!headers.contains(QStringLiteral("Channels")));
+}
+
 void TestMediaCsv::header_and_row_have_the_same_field_count()
 {
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
 	const auto headerFields = readCsvRecord(MediaCsv::headerLine()).size();
-	QCOMPARE(headerFields, 19);
+	QCOMPARE(headerFields, 21);
 	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow())).size(), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{})).size(), headerFields);
 	const MediaCsv::Options enabled{true};
-	QCOMPARE(readCsvRecord(MediaCsv::headerLine(enabled)).size(), 23);
-	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow(), enabled)).size(), 23);
-	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, enabled)).size(), 23);
+	QCOMPARE(readCsvRecord(MediaCsv::headerLine(enabled)).size(), 25);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow(), enabled)).size(), 25);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, enabled)).size(), 25);
 }
 
 void TestMediaCsv::header_order_and_values_follow_the_export_schema()
@@ -122,7 +140,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	{
 		QStringList expectedHeaders = QStringLiteral(
 										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
-										  "Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId")
+										  "Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId,KelpieId,OmfScan")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
 			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),
@@ -132,7 +150,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 			QStringLiteral("2026-07-20 12:30"),
 			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("camera-original.mov"),
 			QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
-			QStringLiteral("No Reference"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id")};
+			QStringLiteral("No Reference"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id"), QStringLiteral("0"), QStringLiteral("false")};
 		if (enabled)
 		{
 			const QStringList detailHeaders{QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"),
@@ -305,7 +323,7 @@ void TestMediaCsv::unknown_classification_is_exported_without_guessing()
 		const MediaCsv::Options options{enabled};
 		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
 		const auto unknown = readCsvRecord(MediaCsv::rowLine(MediaFile{}, options));
-		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("\u2014"));
+		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QString{});
 		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("\u2014"));
 		const auto known = readCsvRecord(MediaCsv::rowLine(sampleRow(), options));
 		QCOMPARE(known.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("Video"));

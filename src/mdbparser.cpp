@@ -286,6 +286,8 @@ MdbDatabase MdbParser::load(const QString &mdbFilePath, bool *ok)
 	for (auto file = db.files.begin(); file != db.files.end(); ++file)
 	{
 		const auto masters = masterMobIdsByFileMobId.value(file.key());
+		file->masterMobIds = masters.values();
+		file->masterMobIds.sort();
 		if (masters.size() == 1)
 			file->masterMobId = *masters.cbegin();
 	}

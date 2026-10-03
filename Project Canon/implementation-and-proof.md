@@ -1,7 +1,8 @@
 # Implementation and proof
 
-Status: proposed work, not implemented by this documentation task. Keep the v1
-evidence store in RAM and preserve the existing physical-file inventory.
+Status: staged implementation in progress. The first RAM/evidence stage is recorded
+in [foundation implementation](foundation-implementation-2026-10-03.md). Requirements
+below are the acceptance plan, not a claim that every check is already implemented.
 
 The user approved the readiness recommendations on 3 October 2026: begin with RAM
 records and evidence collection, then connect selection rules and the table; verify
@@ -9,7 +10,7 @@ the same Macintosh HD/EDIT inventory against the supplied CSV, explain changed v
 from source evidence, test missing files/databases, conflicts, moves and copies,
 and measure comparable scan time and memory. The reported 3,774 ms and 147.1 MB
 screenshot are baseline references; the screenshot does not establish peak memory.
-This approval records the plan, not completion or a request to start code changes.
+The subsequent “Yep lets do it!” authorized starting the staged code changes.
 
 ## Staged implementation
 

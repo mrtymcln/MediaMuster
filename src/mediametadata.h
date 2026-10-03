@@ -49,6 +49,8 @@ struct MediaMetadata
 	QString frameRate;		  ///< Display label: '23.976', '25', '29.97', etc.
 	MediaRate frameRateRatio; ///< Original video rate, retained independently of duration availability.
 	QString bitDepth;		  ///< '8-bit', '10-bit', '24-bit'.
+	int componentDepth = -1; ///< Original descriptor code; 253/254 are not bit counts.
+	QString sampleFormat; ///< Internal number representation, independently of bit count.
 	QString
 		umid;		  ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
 	QString clipName; ///< Clip name from tag 0x4402 in the material package.
@@ -132,7 +134,7 @@ namespace MediaMetadataUtil
 	/// Apply a positive descriptor unit-rate rational and derive rate display fields.
 	void applyEditRate(MediaMetadata &metadata, quint32 numerator, quint32 denominator);
 
-	/// Avid's quantization sentinel 254 is displayed as Float.
+	/// Actual bit counts only; sentinels require format-specific interpretation in finalise().
 	[[nodiscard]] QString bitDepthLabel(quint32 bits);
 
 	/// Resolve a compression/coding UL, including rate-dependent DNxHD names.

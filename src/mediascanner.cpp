@@ -1,4 +1,5 @@
 #include "mediascanner.h"
+#include "mediaobservations.h"
 #include "featureflags.h"
 #include "avideffects.h"
 #include "avidusage.h"
@@ -22,6 +23,9 @@
 #include <QtConcurrent>
 #include <algorithm>
 #include <array>
+#include <QStorageInfo>
+#include "volumeidentity.h"
+#include <numeric>
 
 #ifdef Q_OS_MAC
 #include <unistd.h>
@@ -101,6 +105,7 @@ void MediaScanner::startScan(const Options &options)
 		return;
 
 	m_options = options;
+	m_scopeComplete.store(true);
 
 	// Locked so leftover threads from a prior scan can't race us.
 	{
@@ -116,6 +121,8 @@ void MediaScanner::startScan(const Options &options)
 		QMutexLocker lock(&m_mdbMapsMutex);
 		m_mdbMapsByFolder.clear();
 		m_seenFolders.clear();
+		m_mdbSources.clear();
+		m_pmrSources.clear();
 	}
 	m_flushTimer.start();
 	m_lastFlushElapsed = 0;
@@ -215,6 +222,8 @@ namespace
 				mf.frameRateRatio = metadata.frameRateRatio;
 			if (!metadata.bitDepth.isEmpty())
 				mf.bitDepth = metadata.bitDepth;
+			if (!metadata.sampleFormat.isEmpty())
+				mf.sampleFormat = metadata.sampleFormat;
 			if (metadata.sampleRate > 0)
 				mf.sampleRate = metadata.sampleRate;
 			if (metadata.sampleRateRatio.valid())
@@ -321,11 +330,14 @@ void MediaScanner::doScan()
 	// MARK: Pass 1 — per-location folder walk + databases
 
 	QVector<MediaFile> allFiles = scanRequestedLocations();
+	KelpieIdAllocator ids;
+	for (auto &file : allFiles)
+		file.kelpieId = ids.allocate();
 
 	qCDebug(lcScanner) << "pass 1 (walk + databases):" << allFiles.size() << "files in" << stageTimer.restart()
 					   << "ms";
 
-	// MARK: Pass 2 — headers for the rows the databases didn't cover
+	// MARK: Pass 2 — headers for admitted nonempty media
 
 	if (!m_job.isCancelled())
 	{
@@ -393,6 +405,7 @@ QVector<MediaFile> MediaScanner::scanRequestedLocations()
 
 		if (!canReadPath(path))
 		{
+			m_scopeComplete.store(false);
 			emitLog(QtCriticalMsg, QStringLiteral("scanner"), QStringLiteral("Permission denied: %1").arg(path));
 			return;
 		}
@@ -516,8 +529,128 @@ void MediaScanner::logScanSummary(qsizetype fileCount, const QStringList &notes)
 
 // Clear shared scan state on every exit so cancellation cannot leave stale
 // database records or folder counts for the next scan.
-void MediaScanner::concludeScan(const QVector<MediaFile> &files, bool cancelled)
+void MediaScanner::concludeScan(QVector<MediaFile> &files, bool cancelled)
 {
+	QVector<ScanIssue> issues;
+	QHash<QString, QStringList> pathsByMob;
+	QHash<QString, QSet<QString>> namesByFolder;
+	for (const auto &file : files)
+	{
+		namesByFolder[scannerFolderKey(QFileInfo(file.mediaFilePath).absolutePath())].insert(PmrKey::primary(file.fileName));
+		if (!file.fileMobId.isEmpty())
+			pathsByMob[file.fileMobId].append(file.mediaFilePath);
+	}
+	const bool completeScope = !cancelled && m_scopeComplete.load();
+	for (const auto &source : m_pmrSources)
+	{
+		const QDir folder(QFileInfo(source.snapshot->path).absolutePath());
+		for (auto it = source.index.cbegin(); it != source.index.cend(); ++it)
+			for (const auto &entry : it.value())
+			{
+				// A filename is a database claim, never permission to escape the folder.
+				if (entry.fileName.contains(QLatin1Char('/')) || entry.fileName.contains(QLatin1Char('\\')))
+					continue;
+				const QString suffix = QFileInfo(entry.fileName).suffix().toLower();
+				const bool legacy = source.snapshot->path.contains(QStringLiteral("/OMFI MediaFiles/"), Qt::CaseInsensitive);
+				if (legacy ? (suffix != QStringLiteral("omf") && suffix != QStringLiteral("aif") && suffix != QStringLiteral("wav")) : suffix != QStringLiteral("mxf"))
+					continue;
+				const QString expected = folder.filePath(entry.fileName);
+				if (namesByFolder.value(scannerFolderKey(folder.path())).contains(PmrKey::primary(entry.fileName)))
+					continue;
+				ScanIssue issue;
+				issue.source = source.snapshot;
+				issue.expectedPath = expected;
+				issue.fileMobId = entry.fileMobId;
+				issue.matchingPaths = pathsByMob.value(entry.fileMobId);
+				issue.scopeComplete = completeScope;
+				issue.explanation = QStringLiteral("Database entry has no media row at its recorded local path");
+				issues.append(issue);
+				emitLog(QtWarningMsg, QStringLiteral("reconciliation"),
+					QStringLiteral("Database reference not found locally: %1; source %2; %3 matching location(s) elsewhere; scan scope %4")
+					.arg(expected, source.snapshot->path).arg(issue.matchingPaths.size())
+					.arg(completeScope ? QStringLiteral("complete") : QStringLiteral("incomplete")));
+			}
+	}
+	QHash<QString, int> unmatchedBySource;
+	for (const auto &source : m_mdbSources)
+		for (auto file = source.database.files.cbegin(); file != source.database.files.cend(); ++file)
+			if (!pathsByMob.contains(file.key()))
+			{
+				ScanIssue issue;
+				issue.kind = ScanIssue::Kind::UnmatchedDatabaseIdentity;
+				issue.source = source.snapshot;
+				issue.fileMobId = file.key();
+				issue.scopeComplete = completeScope;
+				issue.explanation = QStringLiteral("MDB file/source object has no matching scanned media identity; this does not establish a missing physical file");
+				issues.append(issue);
+				++unmatchedBySource[source.snapshot->path];
+			}
+	for (auto source = unmatchedBySource.cbegin(); source != unmatchedBySource.cend(); ++source)
+		emitLog(QtWarningMsg, QStringLiteral("reconciliation"),
+			QStringLiteral("%1 unmatched MDB file/source identities in %2; no matching scanned media identity. This does not prove missing files; scan scope %3")
+			.arg(source.value()).arg(source.key()).arg(completeScope ? QStringLiteral("complete") : QStringLiteral("incomplete")));
+
+	QHash<QString, QString> volumeIds;
+	for (auto &file : files)
+	{
+		const QString folder = QFileInfo(file.mediaFilePath).absolutePath();
+		auto volume = volumeIds.find(folder);
+		if (volume == volumeIds.end())
+			volume = volumeIds.insert(folder, VolumeIdentity::capture(folder).identifier());
+		// Scan-wide joins retain shared masters across folders and volumes.
+		for (const auto &source : m_mdbSources)
+		{
+			const auto record = source.database.files.constFind(file.fileMobId);
+			if (record != source.database.files.cend())
+			{
+				MediaObservations::metadata(file, record->essence, source.snapshot);
+				bool headerIdentityEstablished = false;
+				for (const auto &identity : file.evidence.observations(MediaProperty::FileMobId))
+					if (identity.eligible && identity.readState == PropertyReadState::Present &&
+						identity.snapshot && (identity.snapshot->source == MetadataSource::Mxf || identity.snapshot->source == MetadataSource::Omf) &&
+						identity.value.toString() == file.fileMobId)
+						headerIdentityEstablished = true;
+				MediaObservations::qualifyTechnical(file, source.snapshot,
+					record->essence.valid && (file.databaseMetadataCurrent || headerIdentityEstablished));
+				for (const auto &masterId : record->masterMobIds)
+				{
+					if (!file.masterMobIds.contains(masterId))
+						file.masterMobIds.append(masterId);
+					MediaObservations::add(file, MediaProperty::MasterMobId, source.snapshot,
+						QStringLiteral("master source-clip graph references file mob"), masterId,
+						EvidenceBasis::Derived, {}, file.fileMobId);
+				}
+			}
+			for (const auto &masterId : file.masterMobIds)
+			{
+				const auto master = source.database.masters.constFind(masterId);
+				if (master != source.database.masters.cend())
+					MediaObservations::add(file, MediaProperty::ClipName, source.snapshot,
+						QStringLiteral("OMFI:CPNT:Name"), master->clipName, EvidenceBasis::Recorded, {}, masterId);
+			}
+		}
+		MediaObservations::resolveTechnical(file);
+		file.masterMobIds.sort();
+		file.scanStamp = {file.mediaFilePath, volume.value(), file.modified, file.fileMobId, file.masterMobIds};
+		for (MediaProperty field : {MediaProperty::Codec, MediaProperty::Resolution, MediaProperty::BitDepth, MediaProperty::ClipName})
+		{
+			const auto selected = file.evidence.selected(field);
+			if (selected.agreement == PropertyAgreement::Conflicting)
+			{
+				ScanIssue issue;
+				issue.kind = ScanIssue::Kind::MetadataConflict;
+				issue.expectedPath = file.mediaFilePath;
+				issue.fileMobId = file.fileMobId;
+				issue.scopeComplete = completeScope;
+				issue.explanation = QStringLiteral("Property %1: %2").arg(static_cast<int>(field)).arg(selected.reason);
+				issues.append(issue);
+				emitLog(QtWarningMsg, QStringLiteral("metadata"),
+					QStringLiteral("Metadata disagreement for %1 (property %2): %3")
+					.arg(file.mediaFilePath).arg(static_cast<int>(field)).arg(selected.reason));
+			}
+		}
+	}
+
 	if (cancelled)
 		emitLog(QtWarningMsg, QStringLiteral("scanner"), "Scan cancelled by user");
 
@@ -544,12 +677,15 @@ void MediaScanner::concludeScan(const QVector<MediaFile> &files, bool cancelled)
 		QMutexLocker lock(&m_mdbMapsMutex);
 		m_mdbMapsByFolder.clear();
 		m_seenFolders.clear();
+		m_mdbSources.clear();
+		m_pmrSources.clear();
 	}
 
 	// Drain the log buffer first so the last batch doesn't land
 	// after scanFinished.
 	flushLogs();
 	emit scanFinished(files);
+	emit scanIssuesFinished(issues);
 }
 
 // MARK: - Per-volume: the two roots at the top level
@@ -777,10 +913,23 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	auto bufLog = [&result](QtMsgType level, const QString &module, const QString &msg)
 	{ result.logs.append({level, module, msg}); };
 
+	if (!canReadPath(task.mediaFolderPath))
+	{
+		m_scopeComplete.store(false);
+		result.logs.append({QtWarningMsg, QStringLiteral("scanner"),
+			QStringLiteral("Folder unreadable; scan scope incomplete: %1").arg(task.mediaFolderPath)});
+		return result;
+	}
+
 	// MARK: Parse the databases
 
 	// Missing PMR/MDB is normal in Interplay environments.
-	FolderDatabases dbs = readFolderDatabases(task, result.logs);
+	const QDir folder(task.mediaFolderPath);
+	const QStringList filters = task.family == AvidMediaLayout::Family::Mxf
+		? QStringList{QStringLiteral("*.mxf"), QStringLiteral("*.pmr"), QStringLiteral("*.mdb")}
+		: QStringList{QStringLiteral("*.omf"), QStringLiteral("*.aif"), QStringLiteral("*.wav"), QStringLiteral("*.pmr"), QStringLiteral("*.mdb")};
+	const QFileInfoList entries = folder.entryInfoList(filters, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+	FolderDatabases dbs = readFolderDatabases(task, entries, result.logs);
 	const PmrIndex &pmrMap = dbs.pmr;
 	MdbDatabase &mdb = dbs.mdb;
 
@@ -800,8 +949,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 	// MARK: Enumerate files in this folder
 
 	// Managed media folders are flat, including Quarantined Files.
-	const QDir folder(task.mediaFolderPath);
-	const QFileInfoList entries = folder.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+
 
 	// Avid's own name for the folder it moves unreadable media into. Decided
 	// once here; every row from this folder is stamped isQuarantined below,
@@ -838,6 +986,56 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		MediaFile mf = buildMediaFile(entry, task.volumeName, task.volumePath, task.mediaFolderName, task.family, pmrMap, mdb,
 									  folderStatus);
 		mf.isQuarantined = isQuarantineFolder;
+		const auto filesystem = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Filesystem, mf.mediaFilePath, mf.modified, SourceReadState::Complete});
+		MediaObservations::add(mf, MediaProperty::Location, filesystem, QStringLiteral("filesystem path"), mf.mediaFilePath);
+		MediaObservations::add(mf, MediaProperty::Filename, filesystem, QStringLiteral("filesystem filename"), mf.fileName);
+		MediaObservations::add(mf, MediaProperty::Size, filesystem, QStringLiteral("filesystem byte size"), mf.sizeBytes);
+		MediaObservations::add(mf, MediaProperty::Created, filesystem, QStringLiteral("filesystem birth time"), mf.created.isValid() ? QVariant(mf.created) : QVariant{});
+		MediaObservations::add(mf, MediaProperty::Modified, filesystem, QStringLiteral("filesystem modification time"), mf.modified.isValid() ? QVariant(mf.modified) : QVariant{});
+		const QString fileKey = PmrKey::primary(mf.fileName);
+		for (const auto &source : dbs.pmrSources)
+			for (const auto &record : source.index.value(fileKey))
+			{
+				MediaObservations::add(mf, MediaProperty::FileMobId, source.snapshot, QStringLiteral("PMR file MobId"), record.fileMobId);
+				MediaObservations::add(mf, MediaProperty::MasterMobId, source.snapshot, QStringLiteral("PMR master MobId"), record.masterMobId, EvidenceBasis::Recorded, {}, record.fileMobId);
+				MediaObservations::add(mf, MediaProperty::Project, source.snapshot, QStringLiteral("PMR project"), record.project, EvidenceBasis::Recorded, {}, record.fileMobId);
+				if (!record.masterMobId.isEmpty() && !mf.masterMobIds.contains(record.masterMobId))
+					mf.masterMobIds.append(record.masterMobId);
+				// These properties are absent by the established PMR record definition.
+				for (MediaProperty field : {MediaProperty::Codec, MediaProperty::SampleRate})
+				{
+					MetadataObservation absent;
+					absent.snapshot = source.snapshot;
+					absent.objectIdentity = record.fileMobId;
+					absent.property = QStringLiteral("PMR record format");
+					absent.readState = PropertyReadState::Absent;
+					absent.explanation = QStringLiteral("The supported PMR record layout does not store this property");
+					mf.evidence.observe(field, std::move(absent));
+				}
+			}
+		for (const auto &source : dbs.mdbSources)
+		{
+			const auto record = source.database.files.constFind(mf.fileMobId);
+			if (record != source.database.files.cend())
+			{
+				MediaObservations::metadata(mf, record->essence, source.snapshot);
+				MediaObservations::qualifyTechnical(mf, source.snapshot, mf.databaseMetadataCurrent,
+					mf.databaseMetadataCurrent ? SourceFreshness::TimestampConsistent : SourceFreshness::Unknown);
+				for (const auto &master : record->masterMobIds)
+					if (!mf.masterMobIds.contains(master))
+						mf.masterMobIds.append(master);
+			}
+			for (const auto &masterId : mf.masterMobIds)
+			{
+				const auto master = source.database.masters.constFind(masterId);
+				if (master != source.database.masters.cend())
+				{
+					MediaObservations::add(mf, MediaProperty::ClipName, source.snapshot, QStringLiteral("OMFI:CPNT:Name"), master->clipName, EvidenceBasis::Recorded, {}, masterId);
+					MediaObservations::add(mf, MediaProperty::OriginalBin, source.snapshot, QStringLiteral("_ORG_BIN"), master->bin, EvidenceBasis::Recorded, {}, masterId);
+				}
+			}
+		}
 
 		result.files.append(mf);
 	}
@@ -850,6 +1048,12 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 		QMutexLocker lock(&m_overfullMutex);
 		m_overfullFolders.append(
 			{task.volumeName + QLatin1Char('/') + task.mediaFolderName, int(result.files.size())});
+	}
+
+	{
+		QMutexLocker lock(&m_mdbMapsMutex);
+		m_pmrSources.append(dbs.pmrSources);
+		m_mdbSources.append(dbs.mdbSources);
 	}
 
 	// Cache the clip records for pass 2's UMID re-join — only the masters;
@@ -867,127 +1071,70 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 
 // MARK: - Per-folder databases
 
-MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &task, QVector<LogMsg> &logs)
+MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &task,
+	const QFileInfoList &entries, QVector<LogMsg> &logs)
 {
 	FolderDatabases dbs;
-	// Read msm* first. Its parse failure affects the folder status even if
-	// ama* succeeds; an ama* failure is ignored when msm* already succeeded.
-	readFolderPmrs(task, dbs, logs);
-	readFolderMdbs(task, dbs, logs);
-
-	QStringList missingDatabases;
-	if (!dbs.pmrExists)
-		missingDatabases.append(QStringLiteral("PMR"));
-	if (!dbs.mdbExists)
-		missingDatabases.append(QStringLiteral("MDB"));
-	if (!missingDatabases.isEmpty())
-		qCInfo(lcScanner).noquote() << QStringLiteral("Missing databases in %1: %2")
-										   .arg(task.mediaFolderPath, missingDatabases.join(QStringLiteral(", ")));
-
+	readFolderPmrs(task, entries, dbs, logs);
+	readFolderMdbs(task, entries, dbs, logs);
 	return dbs;
 }
 
-// MARK: - Folder PMR indexes
-
-void MediaScanner::readFolderPmrs(const ScanTask &task, FolderDatabases &dbs,
-								  QVector<LogMsg> &logs)
+void MediaScanner::readFolderPmrs(const ScanTask &task, const QFileInfoList &entries,
+	FolderDatabases &dbs, QVector<LogMsg> &logs)
 {
-	auto bufLog = [&logs](QtMsgType level, const QString &module, const QString &msg)
-	{ logs.append({level, module, msg}); };
-
-	// Every spelling present is read; entries for one filename append, so a
-	// file both index files name keeps its msm* record first.
-	bool anyPmrOk = false;
-	for (const QLatin1String name : Conventions::kPmrFileNames)
+	for (const auto &entry : entries)
 	{
-		const QString pmrPath = task.mediaFolderPath + QLatin1Char('/') + name;
-		if (!QFile::exists(pmrPath))
+		if (entry.suffix().compare(QStringLiteral("pmr"), Qt::CaseInsensitive) != 0)
 			continue;
 		dbs.pmrExists = true;
-		const bool primary = name == Conventions::kPmrFileNames[0];
-
 		bool ok = true;
-		const PmrIndex index = PmrParser::buildFileMap(pmrPath, &ok);
+		const PmrIndex index = PmrParser::buildFileMap(entry.filePath(), &ok);
+		const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Pmr, entry.filePath(), entry.lastModified(),
+			ok ? SourceReadState::Complete : SourceReadState::Incomplete});
+		dbs.pmrSources.append({snapshot, index});
+		// Keep partial recovery observations; they cannot prove absence.
 		if (ok)
-		{
-			anyPmrOk = true;
-			qCInfo(lcPmr).noquote() << pmrPath << ':' << index.size() << "file entries";
-			for (auto it = index.constBegin(); it != index.constEnd(); ++it)
+			for (auto it = index.cbegin(); it != index.cend(); ++it)
 				dbs.pmr[it.key()].append(it.value());
-		}
-		else if (primary || !anyPmrOk)
+		if (!ok)
 		{
 			dbs.pmrOk = false;
-			bufLog(QtWarningMsg, QStringLiteral("scanner"),
-				   QStringLiteral("  %1 in /%2 is unreadable; unmatched files here "
-								  "surface as 'No database', not 'No reference'")
-					   .arg(name)
-					   .arg(task.mediaFolderName));
-		}
-		else
-		{
-			bufLog(QtInfoMsg, QStringLiteral("scanner"),
-				   QStringLiteral("  %1 in /%2 is unreadable; ignored, the msmFMID.pmr index stands")
-					   .arg(name)
-					   .arg(task.mediaFolderName));
+			logs.append({QtWarningMsg, QStringLiteral("scanner"),
+				QStringLiteral("Database read incomplete/unreadable: %1; absence in /%2 cannot be established")
+				.arg(entry.filePath(), task.mediaFolderName)});
 		}
 	}
 }
 
-// MARK: - Folder MDB records
-
-void MediaScanner::readFolderMdbs(const ScanTask &task, FolderDatabases &dbs,
-								  QVector<LogMsg> &logs)
+void MediaScanner::readFolderMdbs(const ScanTask &task, const QFileInfoList &entries,
+	FolderDatabases &dbs, QVector<LogMsg> &logs)
 {
-	auto bufLog = [&logs](QtMsgType level, const QString &module, const QString &msg)
-	{ logs.append({level, module, msg}); };
-
-	// Records insert only when the mob is new, so the msm* database — read
-	// first — is the one that describes a mob both spellings carry.
-	bool anyMdbOk = false;
-	for (const QLatin1String name : Conventions::kMdbFileNames)
+	for (const auto &entry : entries)
 	{
-		const QString mdbPath = task.mediaFolderPath + QLatin1Char('/') + name;
-		if (!QFile::exists(mdbPath))
+		if (entry.suffix().compare(QStringLiteral("mdb"), Qt::CaseInsensitive) != 0)
 			continue;
 		dbs.mdbExists = true;
-		const bool primary = name == Conventions::kMdbFileNames[0];
-
 		bool ok = true;
-		MdbDatabase db = MdbParser::load(mdbPath, &ok);
-		if (ok)
-		{
-			anyMdbOk = true;
-			qCInfo(lcMdb).noquote() << mdbPath << ':' << db.masters.size() << "clips," << db.files.size() << "files";
-			if (dbs.mdb.isEmpty())
-			{
-				dbs.mdb = std::move(db);
-			}
-			else
-			{
-				for (auto it = db.masters.constBegin(); it != db.masters.constEnd(); ++it)
-					if (!dbs.mdb.masters.contains(it.key()))
-						dbs.mdb.masters.insert(it.key(), it.value());
-				for (auto it = db.files.constBegin(); it != db.files.constEnd(); ++it)
-					if (!dbs.mdb.files.contains(it.key()))
-						dbs.mdb.files.insert(it.key(), it.value());
-			}
-		}
-		else if (primary || !anyMdbOk)
+		const MdbDatabase database = MdbParser::load(entry.filePath(), &ok);
+		const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, entry.filePath(), entry.lastModified(),
+			ok ? SourceReadState::Complete : SourceReadState::Unreadable});
+		dbs.mdbSources.append({snapshot, database});
+		// Compatibility indexes are only lookup aids. All versions remain in mdbSources.
+		for (auto it = database.masters.cbegin(); it != database.masters.cend(); ++it)
+			if (!dbs.mdb.masters.contains(it.key()))
+				dbs.mdb.masters.insert(it.key(), it.value());
+		for (auto it = database.files.cbegin(); it != database.files.cend(); ++it)
+			if (!dbs.mdb.files.contains(it.key()))
+				dbs.mdb.files.insert(it.key(), it.value());
+		if (!ok)
 		{
 			dbs.mdbOk = false;
-			bufLog(QtWarningMsg, QStringLiteral("scanner"),
-				   QStringLiteral("  %1 in /%2 is unreadable; unmatched files here "
-								  "surface as 'No database', not 'No reference'")
-					   .arg(name)
-					   .arg(task.mediaFolderName));
-		}
-		else
-		{
-			bufLog(QtInfoMsg, QStringLiteral("scanner"),
-				   QStringLiteral("  %1 in /%2 is unreadable; ignored, the msmMMOB.mdb records stand")
-					   .arg(name)
-					   .arg(task.mediaFolderName));
+			logs.append({QtWarningMsg, QStringLiteral("scanner"),
+				QStringLiteral("Database unreadable: %1 in /%2; other sources remain available")
+				.arg(entry.filePath(), task.mediaFolderName)});
 		}
 	}
 }
@@ -1067,9 +1214,7 @@ MediaFile MediaScanner::buildMediaFile(const QFileInfo &fi, const QString &volum
 		essence.precomputeCategory = masterIt->precomputeCategory;
 		applyMetadata(mf, essence);
 	}
-	mf.needsHeaderRead = isNonEmpty && ((FeatureFlags::kClipDurationEnabled && !mf.omfEra) || !mf.databaseMetadataCurrent ||
-										mf.project.isEmpty() || mf.masterMobId.isEmpty() || mf.type == MediaFile::Type::Unknown ||
-										(mf.type == MediaFile::Type::Precompute && mf.precomputeCategory == MediaFile::PrecomputeCategory::Unknown));
+	mf.needsHeaderRead = isNonEmpty;
 
 	// An all-zero MOB ID means Avid never wrote a real identity for the file
 	// or its clip; the media can't be tracked or relinked reliably.
@@ -1107,6 +1252,9 @@ namespace
 		mf.frameRate.clear();
 		mf.frameRateRatio = {};
 		mf.bitDepth.clear();
+		mf.sampleFormat.clear();
+		mf.masterMobIds.clear();
+		mf.evidence.excludeDatabaseMetadata();
 		mf.sampleRate = 0;
 		mf.sampleRateRatio = {};
 		mf.sampleRateEncoding.clear();
@@ -1146,6 +1294,11 @@ namespace
 			metadata = MxfParser::parseHeader(mf.mediaFilePath);
 		}
 		const bool headerUsable = metadata.valid || metadata.classificationKnown;
+		const auto status = metadata.headerStatus;
+		const SourceReadState sourceState = status == MediaMetadata::HeaderStatus::Complete ? SourceReadState::Complete :
+			status == MediaMetadata::HeaderStatus::Incomplete ? SourceReadState::Incomplete : SourceReadState::Unreadable;
+		const SourceSnapshotRef headerSource = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			readingOmf ? MetadataSource::Omf : MetadataSource::Mxf, mf.mediaFilePath, mf.modified, sourceState});
 		// MXF stores material fields in network byte order; rows use the PMR/MDB
 		// representation. OMF and AVB readers already normalize their integer fields.
 		const auto canonicalHeaderId = [&](const QString &id)
@@ -1161,17 +1314,26 @@ namespace
 		const QString headerFileMobId = headerUsable || hasOmfMediaDescriptor ? canonicalHeaderId(metadata.fileMobId) : QString{};
 		const bool headerMasterKnown = readingOmf || metadata.hasMaterialPackage;
 		const QString headerMasterMobId = headerUsable && headerMasterKnown ? canonicalHeaderId(metadata.umid) : QString{};
+		MediaObservations::metadata(mf, metadata, headerSource);
+		MediaObservations::qualifyTechnical(mf, headerSource, metadata.valid);
+		MediaObservations::add(mf, MediaProperty::FileMobId, headerSource, QStringLiteral("selected file/source mob identity"),
+			headerFileMobId, EvidenceBasis::Recorded, metadata.fileMobId);
+		MediaObservations::add(mf, MediaProperty::MasterMobId, headerSource, QStringLiteral("selected material/master identity"),
+			headerMasterMobId, EvidenceBasis::Recorded, metadata.umid);
+		MediaObservations::add(mf, MediaProperty::OriginalBin, headerSource, QStringLiteral("selected original-bin attribute"), headerBin);
 		const auto contradicts = [](const QString &oldId, const QString &actualId)
 		{
 			return !oldId.isEmpty() && !actualId.isEmpty() && !MobId::isAllZero(actualId) && oldId != actualId;
 		};
-		if (contradicts(mf.fileMobId, headerFileMobId) || contradicts(mf.masterMobId, headerMasterMobId))
+		if (contradicts(mf.fileMobId, headerFileMobId))
 		{
 			// The name was reused for different media. None of the old
 			// clip's editorial/technical fields belongs to the replacement.
 			clearReplacedMetadata(mf);
 		}
 		assignIfMissing(mf.fileMobId, headerFileMobId);
+		if (!headerMasterMobId.isEmpty() && !mf.masterMobIds.contains(headerMasterMobId))
+			mf.masterMobIds.append(headerMasterMobId);
 		if (headerUsable)
 		{
 			assignIfMissing(mf.masterMobId, headerMasterMobId);
@@ -1208,9 +1370,8 @@ namespace
 
 void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 {
-	// Pass 1 records which files need a header read for incomplete/stale
-	// database facts or missing identity. Resolve a case-preserving cache
-	// key once per folder.
+	// Pass 1 admits nonempty media for header observations. Resolve a
+	// case-preserving cache key once per folder.
 	struct HeaderRow
 	{
 		int index;
@@ -1224,7 +1385,7 @@ void MediaScanner::readMediaHeadersConcurrently(QVector<MediaFile> &files)
 	for (int i = 0; i < files.size(); ++i)
 	{
 		const MediaFile &f = files[i];
-		// Pass 1 marks rows with stale, incomplete or unknown database metadata.
+		// Empty media remains a physical row without an attempted header read.
 		const bool omfCandidate = f.omfEra;
 		if (!f.needsHeaderRead)
 			continue;

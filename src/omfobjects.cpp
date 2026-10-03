@@ -864,12 +864,18 @@ namespace OmfObjects
 			e.durationIsResolved = true;
 
 			if (const quint32 bits = b.uintValue(b.bytes(mediaDescriptorObjectId, p.bits)))
+			{
+				e.componentDepth = bits <= quint32(std::numeric_limits<int>::max()) ? static_cast<int>(bits) : -1;
 				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
+			}
 			e.channels = int(b.uintValue(b.bytes(mediaDescriptorObjectId, p.channels)));
 			// OMF-era: the MDAU properties above are absent on the legacy
 			// descriptors, so the blob supplies what they left empty.
 			if (e.bitDepth.isEmpty() && blobBits > 0)
+			{
+				e.componentDepth = blobBits;
 				e.bitDepth = MediaMetadataUtil::bitDepthLabel(quint32(blobBits));
+			}
 			if (e.channels <= 0 && blobChannels > 0)
 				e.channels = blobChannels;
 		}
@@ -902,7 +908,10 @@ namespace OmfObjects
 			e.frameLayout = layout;
 			e.heightIsFrameHeight = height > 0;
 			if (const quint32 bits = b.uintValue(b.bytes(mediaDescriptorObjectId, p.compWidth)))
+			{
+				e.componentDepth = bits <= quint32(std::numeric_limits<int>::max()) ? static_cast<int>(bits) : -1;
 				e.bitDepth = MediaMetadataUtil::bitDepthLabel(bits);
+			}
 		}
 
 		// Drop frame: the timecode component is on a source mob, reached

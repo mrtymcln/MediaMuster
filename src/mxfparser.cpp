@@ -753,7 +753,7 @@ namespace
 			if (rate.size() != 8 || components.size() != 1)
 				continue;
 			const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-			if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
+			if (num == 0 || den == 0 || num > quint32(std::numeric_limits<int>::max()) || den > quint32(std::numeric_limits<int>::max()))
 				continue;
 			const qsizetype component = components.first();
 			const QByteArray duration = header.objects[component].fields.value(0x0202);
@@ -808,7 +808,7 @@ namespace
 				if (rate.size() != 8)
 					continue;
 				const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
+				if (num == 0 || den == 0 || num > quint32(std::numeric_limits<int>::max()) || den > quint32(std::numeric_limits<int>::max()))
 					continue;
 				const MediaRate candidate{qint32(num), qint32(den)};
 				if (candidate.value() < 1.0 || candidate.value() >= 1000.0)
@@ -881,7 +881,7 @@ namespace
 			if (rate.size() == 8)
 			{
 				const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-				if (num > 0 && den > 0 && num <= quint32(INT_MAX) && den <= quint32(INT_MAX))
+				if (num > 0 && den > 0 && num <= quint32(std::numeric_limits<int>::max()) && den <= quint32(std::numeric_limits<int>::max()))
 				{
 					fileDuration = meta.descriptorDuration;
 					fileRate = {qint32(num), qint32(den)};
@@ -901,7 +901,7 @@ namespace
 				if (rate.size() != 8 || components.size() != 1 || header.objects[components.first()].type == kSetTimecode)
 					continue;
 				const quint32 num = readUint32BE(rate, 0), den = readUint32BE(rate, 4);
-				if (num == 0 || den == 0 || num > quint32(INT_MAX) || den > quint32(INT_MAX))
+				if (num == 0 || den == 0 || num > quint32(std::numeric_limits<int>::max()) || den > quint32(std::numeric_limits<int>::max()))
 					continue;
 				const QByteArray duration = header.objects[components.first()].fields.value(0x0202);
 				const qint64 length = readDuration(duration, 0, quint16(qMin<qsizetype>(duration.size(), 65535)));
@@ -1298,7 +1298,7 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, MediaMetadata &out)
 			{
 				const quint32 num = readUint32BE(data, pos);
 				const quint32 den = readUint32BE(data, pos + 4);
-				if (num > 0 && den > 0 && num <= quint32(INT_MAX) && den <= quint32(INT_MAX))
+				if (num > 0 && den > 0 && num <= quint32(std::numeric_limits<int>::max()) && den <= quint32(std::numeric_limits<int>::max()))
 				{
 					out.sampleRateRatio = {qint32(num), qint32(den)};
 					out.sampleRate = static_cast<int>(num / den);
@@ -1307,11 +1307,19 @@ void MxfParser::parseDescriptorSet(const QByteArray &data, MediaMetadata &out)
 			break;
 		case 0x3301: // video quantisation bits
 			if (len >= 4)
-				out.bitDepth = MediaMetadataUtil::bitDepthLabel(readUint32BE(data, pos));
+			{
+				const quint32 depth = readUint32BE(data, pos);
+				out.componentDepth = depth <= quint32(std::numeric_limits<int>::max()) ? static_cast<int>(depth) : -1;
+				out.bitDepth = MediaMetadataUtil::bitDepthLabel(depth);
+			}
 			break;
 		case 0x3D01: // audio quantisation bits
 			if (out.isAudio && len >= 4)
-				out.bitDepth = MediaMetadataUtil::bitDepthLabel(readUint32BE(data, pos));
+			{
+				const quint32 depth = readUint32BE(data, pos);
+				out.componentDepth = depth <= quint32(std::numeric_limits<int>::max()) ? static_cast<int>(depth) : -1;
+				out.bitDepth = MediaMetadataUtil::bitDepthLabel(depth);
+			}
 			break;
 		case 0x3D07: // audio channel count
 			if (out.isAudio && len >= 4)

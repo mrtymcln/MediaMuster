@@ -36,6 +36,9 @@ public:
 		FileName,
 		SourceFile,
 		Location,
+		MobId,
+		MasterMobId,
+		KelpieId,
 		PrecomputeCategory,
 		EffectCategory,
 		Effect,
@@ -55,6 +58,13 @@ public:
 	// MARK: - Bulk updates
 
 	void setMediaFiles(const QVector<MediaFile> &files);
+	void setScanIssues(const QVector<ScanIssue> &issues) { m_scanIssues = issues; }
+	const QVector<ScanIssue> &scanIssues() const { return m_scanIssues; }
+	/// Confirmed transfers only: moves retain identity; copies allocate a new one.
+	void applyTransfer(const QString &source, const QString &destination, bool copy);
+	void setOmfScanEnabled(bool enabled);
+	bool omfScanEnabled() const { return m_omfScanEnabled; }
+	int omfScanColumn() const;
 
 	/// Fill missing clip/original-bin names from matching master clips in
 	/// successfully loaded bins. Conflicting values stay unknown. Removing
@@ -85,4 +95,7 @@ private:
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
 	bool m_clipDurationEnabled = false;
+	bool m_omfScanEnabled = false;
+	KelpieIdAllocator m_ids;
+	QVector<ScanIssue> m_scanIssues;
 };

@@ -209,11 +209,9 @@ private slots:
 	// Every colliding UL is pinned here, audio and video alike.
 	void essence_label_audio_classification();
 
-	// Quant-bits 254 is Avid's sentinel for the non-integer DNxUncompressed
-	// formats. "254-bit" is not a bit depth. (The two formats ARE
-	// distinguishable by UL — 16(2.14) uses 03070200 — see the corpus test
-	// below; the shared "Float" bits label stays for the 03070100+254 case.)
-	void float_bit_depth_sentinel_shows_float();
+	// A sentinel alone does not establish bit count or number representation.
+	// The full coding label is required; numeric variant tests pin that rule.
+	void depth_sentinel_without_coding_stays_unknown();
 
 	// Ground-truth codec entries from the 2026-07 UHD/1080i corpus (every
 	// clip named in Avid after the codec menu entry that made it; 512 KB
@@ -591,7 +589,7 @@ void TestMxfParser::essence_label_audio_classification()
 	}
 }
 
-void TestMxfParser::float_bit_depth_sentinel_shows_float()
+void TestMxfParser::depth_sentinel_without_coding_stays_unknown()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -602,7 +600,7 @@ void TestMxfParser::float_bit_depth_sentinel_shows_float()
 		const char *expected;
 	} kCases[] = {
 		{10, "10-bit"}, // integer depths unchanged
-		{254, "Float"}, // sentinel — used to read "254-bit"
+		{254, ""}, // sentinel — used to read "254-bit"
 	};
 
 	for (const auto &c : kCases)
@@ -648,8 +646,8 @@ void TestMxfParser::uhd_corpus_codec_entries_resolve()
 		// (which appends i(PAL)/p(NTSC)) must not fire on it.
 		{"V01.E690E9D6_DC5B9DC5B9983V.mxf", "DV 1080 50i", "10-bit"},
 		// 16-bit 2.14 fixed point has its OWN UL (03070200); quant-bits
-		// still reads 254 → "Float".
-		{"V01.E68C029A_5733205733282V.mxf", "Avid DNxUncompressed 2.14", "Float"},
+		// code 254 means 16-bit S2.14 under that complete coding label.
+		{"V01.E68C029A_5733205733282V.mxf", "Avid DNxUncompressed 2.14", "16-bit"},
 		// Round-3 corpus: NTSC-flavour ULs for XAVC HD C200, DVCPro HD,
 		// and the classic DV codecs (which take the i(NTSC) display
 		// suffix; DVCPro HD deliberately does not).

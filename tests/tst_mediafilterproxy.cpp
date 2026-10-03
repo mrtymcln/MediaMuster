@@ -620,7 +620,7 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	}
 	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.columnCount(), 16);
+	QCOMPARE(proxy.columnCount(), 19);
 	QCOMPARE(proxy.rowCount(), 3);
 }
 

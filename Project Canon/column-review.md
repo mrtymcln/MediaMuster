@@ -2,8 +2,8 @@
 
 Inspected 3 October 2026. The current column describes code and the supplied
 pre-Canon CSV, not an endorsement of the interpretation. The new column is a
-recommendation for review unless explicitly marked **Agreed**. No production
-column, parser or export changes are implemented by this document.
+recommendation for review unless explicitly marked **Agreed**. This table preserves the pre-Canon reference for review. Subsequent production
+changes are tracked in [foundation implementation](foundation-implementation-2026-10-03.md).
 
 Sources: [table model](../src/mediatablemodel.cpp), [MediaFile display helpers](../src/mediafile.h),
 [CSV writer](../src/mediacsv.cpp), [metadata derivation](../src/mediametadata.cpp),

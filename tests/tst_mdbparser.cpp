@@ -1376,6 +1376,9 @@ void TestMdbParser::omf2_roles_and_file_master_ancestry()
 		QVERIFY(file.essenceComplete);
 		QCOMPARE(file.essence.codec, QStringLiteral("WAVE (OMF)"));
 		QCOMPARE(file.masterMobId, ambiguous ? QString() : OmfUid::toIdText(TestOmf::uid(1)));
+		QCOMPARE(file.masterMobIds.size(), ambiguous ? 2 : 1);
+		for (const auto &master : file.masterMobIds)
+			QVERIFY(db.masters.contains(master));
 	}
 }
 

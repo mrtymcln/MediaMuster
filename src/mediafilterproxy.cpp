@@ -243,6 +243,9 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	if (m_sourceModel->clipDurationEnabled() && left.column() == m_sourceModel->clipDurationColumn())
 		return QString::compare(leftFile.clipDurationDisplay(), rightFile.clipDurationDisplay(), Qt::CaseInsensitive) < 0;
 
+	if (m_sourceModel->omfScanEnabled() && left.column() == m_sourceModel->omfScanColumn())
+		return leftFile.omfEra < rightFile.omfEra;
+
 	using Col = MediaTableModel::Column;
 	switch (static_cast<Col>(left.column()))
 	{
@@ -319,6 +322,12 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	}
 	case Col::Location:
 		return QString::compare(leftFile.mediaFilePath, rightFile.mediaFilePath, Qt::CaseInsensitive) < 0;
+	case Col::KelpieId:
+		return leftFile.kelpieId < rightFile.kelpieId;
+	case Col::MobId:
+		return leftFile.fileMobId < rightFile.fileMobId;
+	case Col::MasterMobId:
+		return leftFile.masterMobIdDisplay() < rightFile.masterMobIdDisplay();
 	case Col::Type:
 		return typeSortRank(leftFile.type) < typeSortRank(rightFile.type);
 	case Col::PrecomputeCategory:

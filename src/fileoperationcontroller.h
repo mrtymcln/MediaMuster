@@ -53,6 +53,7 @@ signals:
 	void activityChanged(FileOperationController::Activity activity);
 	void logMessage(QtMsgType level, const QString &module, const QString &message);
 	void sourcesRemoved(const QSet<QString> &paths);
+	void transferCompleted(const QString &source, const QString &destination, bool copy);
 	void originalsRestored(const QSet<QString> &paths);
 	void mediaMusterTrashUsed(const QString &folder, int fileCount);
 
@@ -84,6 +85,7 @@ private:
 	quint64 m_trashFallbackRequest = 0;
 	Activity m_activity = Activity::Idle;
 	bool m_pruneSourceRowsAfterOperation = false;
+	OpKind m_activeKind = OpKind::Copy;
 	QSet<QString> m_removedSourcePaths;
 	QSet<QString> m_restoredOriginalPaths;
 	QVector<OperationRecovery::Resumable> m_resumable;

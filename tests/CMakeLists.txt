@@ -32,6 +32,7 @@ mediamuster_add_test(tst_diagnostics core
 mediamuster_add_test(tst_mobid core)
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
+mediamuster_add_test(tst_mediaevidence core)
 
 # Conventions: the agreed folder names, essence-name rules and folder
 # limits every feature keys on (header-only).
@@ -137,6 +138,8 @@ mediamuster_add_test(tst_avideffects media
 )
 
 mediamuster_add_test(tst_scanner media
+    ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
+    ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
     ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
@@ -264,3 +267,10 @@ elseif(WIN32)
     target_link_libraries(tst_operationui PRIVATE secur32)
 endif()
 set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Model transfer receipts use the same native volume identity as operations.
+foreach(_model_test tst_mediatablemodel tst_mediafilterproxy tst_precomputefilterdialog tst_binfilterdialog)
+    target_sources(${_model_test} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
+        ${CMAKE_SOURCE_DIR}/src/nativefile.cpp)
+endforeach()

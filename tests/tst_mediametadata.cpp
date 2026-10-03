@@ -21,6 +21,7 @@ class TestMediaMetadata : public QObject
 	Q_OBJECT
 private slots:
 	void exact_duration_conversion();
+	void dnx_uncompressed_numeric_variants();
 	void codec_labels_data();
 	void codec_labels();
 	void unknown_ul_infers_family_from_structure();
@@ -29,6 +30,31 @@ private slots:
 	void mdb_style_metadata_finalises_like_a_header();
 	void finalise_is_idempotent_and_does_not_guess();
 };
+
+void TestMediaMetadata::dnx_uncompressed_numeric_variants()
+{
+	struct Case { bool fixed; int code; const char *bits; const char *format; };
+	// RDD 50:2019 Table 5. Identical depth codes have different meanings
+	// under the two complete essence coding labels.
+	const Case cases[] = {{false, 10, "10-bit", "Integer"}, {false, 253, "16-bit", "Half float"},
+		{false, 254, "32-bit", "Float"}, {true, 254, "16-bit", "S2.14 fixed point"},
+		{true, 10, "16-bit", "10.6 fixed point"}, {true, 12, "16-bit", "12.4 fixed point"}};
+	for (const auto &item : cases)
+	{
+		MediaMetadata meta;
+		meta.compressionLabel = ul(item.fixed ? "060e2b340401010d0401020203070200" : "060e2b340401010d0401020203070100");
+		meta.componentDepth = item.code;
+		meta.bitDepth = MediaMetadataUtil::bitDepthLabel(item.code);
+		MediaMetadataUtil::finalise(meta);
+		QCOMPARE(meta.bitDepth, QString::fromLatin1(item.bits));
+		QCOMPARE(meta.sampleFormat, QString::fromLatin1(item.format));
+	}
+	MediaMetadata unknown;
+	unknown.componentDepth = 254;
+	MediaMetadataUtil::finalise(unknown);
+	QVERIFY(unknown.sampleFormat.isEmpty());
+	QVERIFY(unknown.bitDepth.isEmpty());
+}
 
 void TestMediaMetadata::exact_duration_conversion()
 {
@@ -223,7 +249,8 @@ void TestMediaMetadata::mdb_style_metadata_finalises_like_a_header()
 	QCOMPARE(au.duration.displayFrames(), qint64(1500));
 	QCOMPARE(au.codec, QString::fromLatin1(kPcmAudioName));
 	QCOMPARE(MediaMetadataUtil::bitDepthLabel(24), QStringLiteral("24-bit"));
-	QCOMPARE(MediaMetadataUtil::bitDepthLabel(254), QStringLiteral("Float"));
+	QVERIFY(MediaMetadataUtil::bitDepthLabel(254).isEmpty());
+	QVERIFY(MediaMetadataUtil::bitDepthLabel(253).isEmpty());
 }
 
 void TestMediaMetadata::finalise_is_idempotent_and_does_not_guess()

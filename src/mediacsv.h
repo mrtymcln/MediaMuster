@@ -8,7 +8,8 @@
 // MARK: - MediaCsv
 /// One header line and one line per physical MediaFile. Optional columns carry
 /// precompute details and separately recovered per-track clip durations. The explicit export schema follows
-/// the table's default order, then adds database status and MOB IDs;
+/// the established export order, ending with database status, MOB IDs, KelpieId
+/// and the OmfScan family boolean;
 /// dragging table columns does not change export order. The caller snapshots
 /// both gates from the table model. Tests compare headings with the default
 /// table layout for all four gate combinations and check emitted values.

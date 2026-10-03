@@ -112,6 +112,9 @@ void FileOperationController::onOperationResult(const OpResult &result)
 		emit logMessage(problem ? QtWarningMsg : QtInfoMsg, QStringLiteral("operations"),
 						message);
 	}
+	if (result.state == OpResult::State::Completed &&
+		(m_activeKind == OpKind::Copy || m_activeKind == OpKind::Move) && !result.destination.isEmpty())
+		emit transferCompleted(result.source, result.destination, !result.sourceRemoved);
 	if (result.sourceRemoved && m_pruneSourceRowsAfterOperation)
 		m_removedSourcePaths.insert(result.source);
 	if (!result.restoredOriginalPath.isEmpty())
@@ -347,6 +350,10 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 
 	m_pruneSourceRowsAfterOperation =
 		!restoring && (request.kind == OpKind::Move || request.kind == OpKind::Delete || request.kind == OpKind::Undo);
+	m_activeKind = request.kind;
+	if (resuming)
+		if (const auto journal = OpJournal::readOne(request.resumeJournalPath))
+			m_activeKind = journal->request.kind;
 	m_restoredOriginalPaths.clear();
 	m_removedSourcePaths.clear();
 	++m_historyGeneration; // A previous asynchronous read cannot repopulate stale actions.

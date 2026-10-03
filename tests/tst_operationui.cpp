@@ -364,8 +364,8 @@ void TestOperationUi::undo_restores_inventory()
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
 	QTRY_VERIFY(operations->isIdle() && !operations->m_historyLoading);
 	QVERIFY(!QFileInfo::exists(source));
-	QCOMPARE(window.m_model->rowCount(), keepOtherLocation ? 1 : 0);
-	QVERIFY(window.m_projectList->findItems(original.project, Qt::MatchExactly).isEmpty());
+	QCOMPARE(window.m_model->rowCount(), (keepOtherLocation ? 1 : 0) + (kind == OpKind::Move ? 1 : 0));
+	QCOMPARE(window.m_projectList->findItems(original.project, Qt::MatchExactly).isEmpty(), kind != OpKind::Move);
 	QCOMPARE(restored.count(), 0);
 	if (blockUndo)
 		QVERIFY(put(source, QByteArray("different file occupying the original location")));
@@ -385,8 +385,8 @@ void TestOperationUi::undo_restores_inventory()
 		QVERIFY(finished.last().at(1).toInt() > 0);
 		QCOMPARE(restored.count(), 0);
 		QCOMPARE(scanned.count(), 1);
-		QCOMPARE(window.m_model->rowCount(), 1);
-		QVERIFY(window.m_projectList->findItems(original.project, Qt::MatchExactly).isEmpty());
+		QCOMPARE(window.m_model->rowCount(), kind == OpKind::Move ? 2 : 1);
+		QCOMPARE(window.m_projectList->findItems(original.project, Qt::MatchExactly).isEmpty(), kind != OpKind::Move);
 		return;
 	}
 	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 1000);
@@ -1197,7 +1197,11 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 				QVERIFY(!window.m_tableView->isColumnHidden(logical));
 				headings.append(window.m_model->headerData(logical, Qt::Horizontal, Qt::DisplayRole).toString());
 			}
-			headings.append({QStringLiteral("Database Status"), QStringLiteral("MobId"), QStringLiteral("MasterMobId")});
+			headings.removeAll(QStringLiteral("MobId"));
+			headings.removeAll(QStringLiteral("MasterMobId"));
+			headings.removeAll(QStringLiteral("KelpieId"));
+			headings.removeAll(QStringLiteral("OmfScan"));
+			headings.append({QStringLiteral("Database Status"), QStringLiteral("MobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("OmfScan")});
 			QCOMPARE(MediaCsv::headerLine({precomputes, clip}), headings.join(',') + '\n');
 		}
 	}

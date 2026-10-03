@@ -2,6 +2,10 @@
 #include "enumutil.h"
 
 #include <QStringList>
+#include <QFileInfo>
+#include <QStorageInfo>
+#include "volumeidentity.h"
+#include "mediaobservations.h"
 
 MediaTableModel::MediaTableModel(QObject *parent)
 	: QAbstractTableModel(parent)
@@ -16,12 +20,33 @@ int MediaTableModel::columnCount(const QModelIndex &parent) const
 {
 	if (parent.isValid())
 		return 0;
-	return clipDurationColumn() + (m_clipDurationEnabled ? 1 : 0);
+	return omfScanColumn() + (m_omfScanEnabled ? 1 : 0);
 }
 
 int MediaTableModel::clipDurationColumn() const
 {
 	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
+}
+
+int MediaTableModel::omfScanColumn() const
+{
+	return clipDurationColumn() + (m_clipDurationEnabled ? 1 : 0);
+}
+
+void MediaTableModel::setOmfScanEnabled(bool enabled)
+{
+	if (m_omfScanEnabled == enabled)
+		return;
+	const int column = omfScanColumn();
+	if (enabled)
+		beginInsertColumns({}, column, column);
+	else
+		beginRemoveColumns({}, column, column);
+	m_omfScanEnabled = enabled;
+	if (enabled)
+		endInsertColumns();
+	else
+		endRemoveColumns();
 }
 
 void MediaTableModel::setClipDurationEnabled(bool enabled)
@@ -44,8 +69,80 @@ void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
 {
 	beginResetModel();
 	m_files = files;
+	m_scanIssues.clear();
+	m_ids.reset();
+	for (const auto &file : m_files)
+		m_ids.reserveThrough(file.kelpieId);
+	QSet<KelpieId> assigned;
+	for (auto &file : m_files)
+	{
+		if (file.kelpieId == 0 || assigned.contains(file.kelpieId))
+			file.kelpieId = m_ids.allocate();
+		assigned.insert(file.kelpieId);
+	}
 	applyAvbMetadata(false);
 	endResetModel();
+}
+
+void MediaTableModel::applyTransfer(const QString &source, const QString &destination, bool copy)
+{
+	if (source == destination || destination.isEmpty())
+		return;
+	const QFileInfo info(destination);
+	if (!info.isFile())
+		return;
+	for (const auto &file : m_files)
+		if (file.mediaFilePath == info.absoluteFilePath())
+			return; // Repeated completion notification must not invent another location.
+	for (int row = 0; row < m_files.size(); ++row)
+	{
+		if (m_files[row].mediaFilePath != source)
+			continue;
+		MediaFile transferred = m_files[row];
+		transferred.mediaFilePath = info.absoluteFilePath();
+		transferred.fileName = info.fileName();
+		transferred.mediaFolderName = info.dir().dirName();
+		transferred.sizeBytes = info.size();
+		transferred.created = info.birthTime();
+		transferred.modified = info.lastModified();
+		const QStorageInfo storage(destination);
+		transferred.volumePath = storage.rootPath();
+		transferred.volumeName = storage.name();
+		transferred.scanStamp.path = transferred.mediaFilePath;
+		transferred.scanStamp.modified = transferred.modified;
+		transferred.scanStamp.volumeIdentifier = VolumeIdentity::capture(destination).identifier();
+		transferred.evidence.excludeSource(MetadataSource::Filesystem);
+		transferred.isQuarantined = info.dir().dirName().compare(QStringLiteral("Quarantined Files"), Qt::CaseInsensitive) == 0;
+		const auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Filesystem, transferred.mediaFilePath, transferred.modified, SourceReadState::Complete});
+		MediaObservations::add(transferred, MediaProperty::Location, snapshot, QStringLiteral("filesystem path after confirmed transfer"), transferred.mediaFilePath);
+		MediaObservations::add(transferred, MediaProperty::Filename, snapshot, QStringLiteral("filesystem filename after confirmed transfer"), transferred.fileName);
+		MediaObservations::add(transferred, MediaProperty::Size, snapshot, QStringLiteral("filesystem byte size after confirmed transfer"), transferred.sizeBytes);
+		MediaObservations::add(transferred, MediaProperty::Created, snapshot, QStringLiteral("filesystem birth time after confirmed transfer"), transferred.created.isValid() ? QVariant(transferred.created) : QVariant{});
+		MediaObservations::add(transferred, MediaProperty::Modified, snapshot, QStringLiteral("filesystem modification time after confirmed transfer"), transferred.modified);
+		MediaObservations::add(transferred, MediaProperty::VolumeIdentifier, snapshot, QStringLiteral("native volume identifier after confirmed transfer"), transferred.scanStamp.volumeIdentifier);
+
+		// Destination databases have not been parsed by this transfer. Their
+		// presence cannot establish that this new location is absent from them.
+		const bool hasDatabases = !info.dir().entryList({QStringLiteral("*.pmr"), QStringLiteral("*.mdb")},
+			QDir::Files | QDir::NoSymLinks).isEmpty();
+		transferred.dbStatus = hasDatabases ? MediaFile::DbStatus::DbUnreadable : MediaFile::DbStatus::NoDatabase;
+		transferred.databaseMetadataCurrent = false;
+		if (copy)
+		{
+			transferred.kelpieId = m_ids.allocate();
+			const int next = m_files.size();
+			beginInsertRows({}, next, next);
+			m_files.append(std::move(transferred));
+			endInsertRows();
+		}
+		else
+		{
+			m_files[row] = std::move(transferred);
+			emit dataChanged(index(row, 0), index(row, columnCount() - 1));
+		}
+		return;
+	}
 }
 
 void MediaTableModel::setAvbBins(const QVector<AvbBin> &bins)
@@ -146,6 +243,9 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid() || index.row() >= m_files.size() || index.column() >= columnCount())
 		return {};
 	const MediaFile &f = m_files[index.row()];
+	if (m_omfScanEnabled && index.column() == omfScanColumn())
+		return role == Qt::DisplayRole ? QVariant(f.omfEra ? QStringLiteral("true") : QStringLiteral("false")) :
+			role == Qt::UserRole ? QVariant(f.omfEra) : QVariant{};
 	if (m_clipDurationEnabled && index.column() == clipDurationColumn())
 		return role == Qt::DisplayRole ? QVariant(f.clipDurationDisplay()) : QVariant{};
 
@@ -185,6 +285,12 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sourceFileName;
 		case Column::Location:
 			return f.mediaFilePath;
+		case Column::MobId:
+			return f.fileMobId;
+		case Column::MasterMobId:
+			return f.masterMobIdDisplay();
+		case Column::KelpieId:
+			return QVariant::fromValue(f.kelpieId);
 		case Column::PrecomputeCategory:
 			return f.precomputeCategoryDisplay();
 		case Column::EffectCategory:
@@ -238,12 +344,15 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= columnCount())
 		return {};
 
+	if (m_omfScanEnabled && section == omfScanColumn())
+		return QStringLiteral("OmfScan");
+
 	if (m_clipDurationEnabled && section == clipDurationColumn())
 		return QStringLiteral("Clip Duration");
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Codec", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
-							 "Date Created", "Filename", "Source Filename", "Location",
+							 "Date Created", "Filename", "Source Filename", "Location", "MobId", "MasterMobId", "KelpieId",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "

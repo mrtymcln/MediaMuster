@@ -2,6 +2,7 @@
 
 #include "avidprecompute.h"
 #include "mediaduration.h"
+#include "mediaevidence.h"
 
 #include <QString>
 #include <QStringList>
@@ -19,6 +20,14 @@
 struct MediaFile
 {
 	// MARK: Identity
+	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
+	MediaEvidence evidence;
+	MediaScanStamp scanStamp;
+	QStringList masterMobIds; ///< All established associations; the scalar below is compatibility only.
+	QString masterMobIdDisplay() const
+	{
+		return masterMobIds.isEmpty() ? masterMobId : masterMobIds.join(QStringLiteral("; "));
+	}
 
 	// Full IDs use PMR/MDB field order. The scanner converts MXF header IDs
 	// before storing them; database, OMF and AVB readers already use this order.
@@ -57,6 +66,7 @@ struct MediaFile
 	QString frameRate;			   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
 	MediaRate frameRateRatio;	   ///< Original video fraction; never recovered from the display label.
 	QString bitDepth;			   ///< "10-bit", "24-bit".
+	QString sampleFormat;          ///< Internal numeric representation; not a table/CSV column.
 	int sampleRate = 0;			   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
 	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction, separate from duration's unit rate.
 	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate, retained even when no exact fraction fits.
@@ -261,9 +271,9 @@ struct MediaFile
 		case Kind::Video:
 			return QStringLiteral("Video");
 		case Kind::Unknown:
-			return QStringLiteral("\u2014");
+			return QString{};
 		}
-		return QStringLiteral("\u2014");
+		return QString{};
 	}
 
 	/// "Type" column / CSV string; same single-site rule as kindDisplay.

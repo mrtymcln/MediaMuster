@@ -12,6 +12,8 @@
 #include <QSet>
 #include <QSignalSpy>
 #include <QTest>
+#include <QTemporaryDir>
+#include <QFile>
 #include <initializer_list>
 
 namespace
@@ -62,6 +64,8 @@ private slots:
 	// removed 2026-07: an unknown coerced to a different fact is a wrong
 	// value wearing a confident face).
 	void unknown_created_date_displays_blank();
+	void physical_row_ids_survive_moves_and_separate_copies();
+	void omf_gate_preserves_optional_column_indexes();
 
 	// The Location column shows the whole path; View ▸ Resize Columns to
 	// Fit (Cmd+T) is what makes it readable, so nothing here may quietly
@@ -201,6 +205,63 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 			 QStringLiteral("Location"));
 }
 
+void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto put = [&](const QString &name) {
+		const QString path = temp.filePath(name);
+		QFile file(path);
+		if (!file.open(QIODevice::WriteOnly) || file.write("same bytes") != 10)
+			return QString{};
+		return path;
+	};
+	const QString original = put("original.mxf");
+	const QString copy = put("copy.mxf");
+	const QString moved = put("moved.mxf");
+	QVERIFY(!original.isEmpty() && !copy.isEmpty() && !moved.isEmpty());
+	MediaTableModel model;
+	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+	model.setMediaFiles({row(original)});
+	const KelpieId originalId = model.allFiles().first().kelpieId;
+	QVERIFY(originalId != 0);
+	model.applyTransfer(original, copy, true);
+	QCOMPARE(model.rowCount(), 2);
+	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
+	QVERIFY(model.allFiles()[1].kelpieId != originalId);
+	QCOMPARE(model.allFiles()[0].masterMobId, model.allFiles()[1].masterMobId);
+	model.applyTransfer(original, moved, false);
+	QCOMPARE(model.rowCount(), 2);
+	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
+	QCOMPARE(model.allFiles()[0].scanStamp.path, moved);
+	QCOMPARE(model.allFiles()[0].mediaFilePath, moved);
+	model.setMediaFiles({row(copy)});
+	QCOMPARE(model.allFiles()[0].kelpieId, KelpieId(1));
+}
+
+void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
+{
+	MediaTableModel model;
+	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+	MediaFile file = row();
+	file.omfEra = true;
+	model.setMediaFiles({file});
+	for (bool omf : {true, false, true})
+		for (bool clip : {true, false})
+			for (bool precompute : {true, false})
+			{
+				model.setOmfScanEnabled(omf);
+				model.setClipDurationEnabled(clip);
+				model.setPrecomputesEnabled(precompute);
+				QCOMPARE(model.columnCount(), 19 + int(omf) + int(clip) + 4 * int(precompute));
+				if (omf)
+				{
+					QCOMPARE(model.headerData(model.omfScanColumn(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("OmfScan"));
+					QCOMPARE(model.data(model.index(0, model.omfScanColumn()), Qt::DisplayRole).toString(), QStringLiteral("true"));
+				}
+			}
+}
+
 void TestMediaTableModel::unknown_created_date_displays_blank()
 {
 	MediaFile withDate;
@@ -293,7 +354,7 @@ void TestMediaTableModel::unknown_classification_displays_without_guessing()
 	model.setMediaFiles({unknown, video, audio});
 	const int kind = int(MediaTableModel::Column::Kind);
 	const int type = int(MediaTableModel::Column::Type);
-	QCOMPARE(model.index(0, kind).data().toString(), QStringLiteral("\u2014"));
+	QCOMPARE(model.index(0, kind).data().toString(), QString{});
 	QCOMPARE(model.index(0, type).data().toString(), QStringLiteral("\u2014"));
 	QVERIFY(!model.index(0, kind).data(Qt::ToolTipRole).toString().isEmpty());
 	QVERIFY(!model.index(0, type).data(Qt::ToolTipRole).toString().isEmpty());
@@ -348,18 +409,18 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QSignalSpy inserted(&model, &QAbstractItemModel::columnsInserted);
 	QSignalSpy removed(&model, &QAbstractItemModel::columnsRemoved);
 	QVERIFY(!model.precomputesEnabled());
-	QCOMPARE(model.columnCount(), 16);
+	QCOMPARE(model.columnCount(), 19);
 	for (int column = 0; column < baseHeaders.size(); ++column)
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
 	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
 	model.setPrecomputesEnabled(true);
-	QCOMPARE(model.columnCount(), 20);
+	QCOMPARE(model.columnCount(), 23);
 	for (int column = 0; column < baseHeaders.size(); ++column)
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QCOMPARE(inserted.size(), 1);
-	QCOMPARE(inserted.first().at(1).toInt(), 16);
-	QCOMPARE(inserted.first().at(2).toInt(), 19);
+	QCOMPARE(inserted.first().at(1).toInt(), 19);
+	QCOMPARE(inserted.first().at(2).toInt(), 22);
 	QVERIFY(row.isValid());
 	QCOMPARE(row.data().toString(), path);
 	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
@@ -367,7 +428,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QCOMPARE(inserted.size(), 1);
 	model.setPrecomputesEnabled(false);
 	model.setPrecomputesEnabled(false);
-	QCOMPARE(model.columnCount(), 16);
+	QCOMPARE(model.columnCount(), 19);
 	QCOMPARE(removed.size(), 1);
 	QCOMPARE(reset.size(), 0);
 	QCOMPARE(model.rowCount(), 2);

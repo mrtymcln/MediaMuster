@@ -33,6 +33,7 @@ struct MdbMasterMob
 struct MdbFileMob
 {
 	QString masterMobId; ///< Unique master whose source-clip graph references this file; empty if ambiguous.
+	QStringList masterMobIds; ///< Every recorded master association, including shared file sources.
 	int usageCode = -1;	 ///< 0 = NoSpecialUsage, 9 = PrecomputeFile; classification comes from the master.
 	MediaMetadata essence;
 	bool essenceComplete = false;

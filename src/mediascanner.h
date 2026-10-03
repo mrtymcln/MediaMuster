@@ -31,8 +31,8 @@ struct LogMsg
 // MARK: - MediaScanner
 
 /// Builds an inventory of recognised Avid media files in two passes:
-/// directory listings and PMR/MDB joins, then media reads for incomplete or
-/// stale rows. Complete current database metadata can avoid a media read.
+/// directory listings and PMR/MDB joins, then header reads for admitted nonempty
+/// media. Source observations and selection explanations remain in RAM.
 /// AvidMediaLayout defines eligible locations; databases alone do not qualify
 /// a folder. Cancellation returns the partial inventory gathered so far.
 /// Scope and metadata rules: docs/current-behaviour.md.
@@ -88,6 +88,7 @@ signals:
 	void scanLogBatch(const QVector<LogMsg> &batch);
 
 	void scanFinished(const QVector<MediaFile> &results);
+	void scanIssuesFinished(const QVector<ScanIssue> &issues);
 
 private:
 	// MARK: - Scan stages
@@ -106,7 +107,7 @@ private:
 
 	/// Clear per-scan caches and flush logs on both completion and cancellation,
 	/// so later scans cannot inherit stale metadata.
-	void concludeScan(const QVector<MediaFile> &files, bool cancelled);
+	void concludeScan(QVector<MediaFile> &files, bool cancelled);
 
 	/// A volume path: probe `<path>/Avid MediaFiles/MXF` and, OMF-era,
 	/// `<path>/OMFI MediaFiles`; scan whichever exist; never look deeper.
@@ -149,15 +150,15 @@ private:
 
 	FolderResult processFolderTask(const ScanTask &task);
 
-	/// What one folder's databases said, merged across every spelling
-	/// present (Conventions::kPmrFileNames / kMdbFileNames). `pmrExists` /
-	/// `mdbExists` mean "at least one file of that kind was there";
-	/// `pmrOk` / `mdbOk` mean "and the msm* one parsed (or, with no msm*,
-	/// some file of that kind did)" — an ama* twin that fails beside a
-	/// readable msm* sibling is ignored, so the folder's verdict is exactly
-	/// what the msm* pair alone would have given.
+	/// All databases admitted by extension, with shared source snapshots. A
+	/// partial source is retained as incomplete evidence, not a trusted PMR index.
+	/// Any unreadable database prevents a confident unlisted-file verdict.
 	struct FolderDatabases
 	{
+		struct PmrSource { SourceSnapshotRef snapshot; PmrIndex index; };
+		struct MdbSource { SourceSnapshotRef snapshot; MdbDatabase database; };
+		QVector<PmrSource> pmrSources;
+		QVector<MdbSource> mdbSources;
 		PmrIndex pmr;
 		MdbDatabase mdb;
 		bool pmrExists = false;
@@ -166,13 +167,11 @@ private:
 		bool mdbOk = true;
 	};
 
-	/// Reads and merges the folder's PMR/MDB files, buffering Console notices
-	/// in `logs` (see FolderResult). PMR entries append per
-	/// filename; MDB records insert only when the key is new, so the msm*
-	/// pair — read first — wins over an ama* twin describing the same mob.
-	static FolderDatabases readFolderDatabases(const ScanTask &task, QVector<LogMsg> &logs);
-	static void readFolderPmrs(const ScanTask &task, FolderDatabases &dbs, QVector<LogMsg> &logs);
-	static void readFolderMdbs(const ScanTask &task, FolderDatabases &dbs, QVector<LogMsg> &logs);
+	/// Read every admitted PMR/MDB file. Compatibility maps support existing
+	/// consumers; evidence retains each source independently for selection.
+	static FolderDatabases readFolderDatabases(const ScanTask &task, const QFileInfoList &entries, QVector<LogMsg> &logs);
+	static void readFolderPmrs(const ScanTask &task, const QFileInfoList &entries, FolderDatabases &dbs, QVector<LogMsg> &logs);
+	static void readFolderMdbs(const ScanTask &task, const QFileInfoList &entries, FolderDatabases &dbs, QVector<LogMsg> &logs);
 
 	/// One row from one directory entry (pass 1). `folderStatus` is the
 	/// status computed by processFolderTask for any file the folder's PMR
@@ -238,4 +237,7 @@ private:
 	QHash<QString, QHash<QString, MdbMasterMob>> m_mdbMapsByFolder;
 	/// Guarded by the same mutex; overlapping scan roots enumerate a folder once.
 	QSet<QString> m_seenFolders;
+	QVector<FolderDatabases::MdbSource> m_mdbSources;
+	QVector<FolderDatabases::PmrSource> m_pmrSources;
+	std::atomic<bool> m_scopeComplete{true};
 };

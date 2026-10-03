@@ -2,7 +2,9 @@
 
 Recorded 3 October 2026. This folder captures the user's requirements, the proposed
 RAM metadata design, and the evidence discussed during the Avid format investigation.
-It does not claim that the proposed design is already implemented.
+Implementation has started. See [foundation implementation](foundation-implementation-2026-10-03.md)
+for the implemented subset, checks and remaining work. The design documents also
+contain requirements that are still pending.
 
 "Canon" means the plan for canonical correctness: preserve the distinctions in
 Avid's formats and the evidence behind MediaMuster's interpretation. It is an
@@ -22,7 +24,9 @@ objective, not a declaration that every current or proposed parser rule is prove
   IDs remain stable during sorting, filtering and metadata updates. Quitting or
   rescanning flushes the old scan's records and assigns IDs afresh for the new scan.
   A confirmed move retains its record's KelpieId; a copy receives its own new
-  KelpieId while the original keeps its ID. These decisions are not yet implemented.
+  KelpieId while the original keeps its ID. The foundation implements scan IDs and confirmed ordinary copy/move updates;
+  recovery, rebalance and the remaining operation integration are tracked in the
+  implementation report.
 - Never merge physical-file rows because their File Mob ID, Master Mob ID, clip
   name, duration, or other metadata agrees. Users need to see individual copies
   to investigate duplicates and recover storage.
