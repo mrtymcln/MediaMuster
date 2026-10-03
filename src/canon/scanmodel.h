@@ -51,7 +51,7 @@ namespace Canon
 		QVector<ByteRange> ranges; ///< Empty when not located; multiple ranges retain fragmented values.
 	};
 
-	// MDB values have a native type and TOC framing as well as a property name.
+	// MDB/OMF values have a native type and TOC framing as well as a property name.
 	// Keep that source context even when its private meaning is not yet understood.
 	struct BentoPropertyContext
 	{
@@ -147,6 +147,8 @@ namespace Canon
 		Outcome outcome = Outcome::NotRead;
 		SourceSnapshotRef snapshot;
 		Container container = Container::Unknown;
+		PropertyLocator embedding; ///< Parent chunk/property, when this is an embedded source.
+		QVector<ParsedSource> embeddedSources; ///< Each embedded graph has its own source receipt and local handles.
 		QVector<RecordSet> recordSets;
 		QVector<AvidObject> objects;
 		QVector<Relationship> relationships;

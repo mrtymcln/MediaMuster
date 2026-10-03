@@ -1,0 +1,11 @@
+[1/12] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/bentoreader_p.cpp.o
+[2/12] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/audioreader_p.cpp.o
+[3/12] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/omfobjects_p.cpp.o
+[4/12] Linking CXX static library libmediamuster_canon.a
+[5/12] Linking CXX executable tests/tst_canondiscovery
+[6/12] Linking CXX executable tests/tst_canonpmr
+[7/12] Linking CXX executable tests/tst_canonpmrrobustness
+[8/12] Linking CXX executable tests/tst_canonmdb
+[9/12] Automatic MOC for target tst_canonlegacy
+[10/11] Building CXX object tests/CMakeFiles/tst_canonlegacy.dir/tst_canonlegacy.cpp.o
+[11/11] Linking CXX executable tests/tst_canonlegacy

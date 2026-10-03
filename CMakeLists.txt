@@ -91,6 +91,9 @@ add_library(mediamuster_canon STATIC
     src/canon/discoveryengine.cpp
     src/canon/pmrreader.cpp
     src/canon/mdbreader.cpp
+    src/canon/omfobjects_p.cpp
+    src/canon/legacyreader.cpp
+    src/canon/audioreader_p.cpp
     src/canon/bentoreader_p.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp

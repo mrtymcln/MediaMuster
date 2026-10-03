@@ -33,11 +33,19 @@ Later: reconcile ownership/identities, match physical MediaFiles,
 
 Implementation files:
 
-- `src/canon/mdbreader.h/.cpp`: dictionary and object interpretation.
+- `src/canon/mdbreader.h/.cpp`: public MDB reader; delegates container and object interpretation.
+- `src/canon/omfobjects_p.h/.cpp`: shared dictionary and object interpretation,
+  extracted during the subsequent OMF/legacy stage on 4 October.
 - `src/canon/bentoreader_p.h/.cpp`: private container reader; no dependency on the
   old `BentoFile`, `MdbParser` or `OmfObjects` implementations.
 - `src/canon/scanmodel.h`: optional `BentoPropertyContext` on a raw property.
 - `tests/tst_canonmdb.cpp`: independently authored containers and genuine fixtures.
+
+Subsequent same-day update: the [legacy reader](fresh-legacy-reader-2026-10-04.md)
+shares this object interpreter and adds selective essence reads to the Bento layer.
+MDB keeps its previous eager value-reading mode and evidence semantics; its 29
+test cases pass after the extraction. The results below describe the original MDB
+stage; the legacy report records the later combined regression run.
 
 ## Evidence retained
 

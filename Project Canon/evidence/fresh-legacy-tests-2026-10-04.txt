@@ -1,0 +1,165 @@
+10/32 Testing: tst_canonmdb
+10/32 Test: tst_canonmdb
+Command: "/Users/martymclean/Developer/MediaMuster/build-canon/tests/tst_canonmdb" "-o" "-,txt" "-o" "/Users/martymclean/Developer/MediaMuster/build-canon/tests/tst_canonmdb.result.txt,txt"
+Directory: /Users/martymclean/Developer/MediaMuster/build-canon/tests
+"tst_canonmdb" start time: Oct 04 03:18 AEDT
+Output:
+----------------------------------------------------------
+********* Start testing of TestCanonMdb *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonMdb::initTestCase()
+PASS   : TestCanonMdb::dictionariesDuplicatesAndUnknownProperties()
+PASS   : TestCanonMdb::ambiguousDictionariesAndUnknownSchema()
+PASS   : TestCanonMdb::fragmentedValues(fixed TOC)
+PASS   : TestCanonMdb::fragmentedValues(compact TOC)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento1 OMF1 metadata LE)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 0 metadata 0)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 1 metadata 0)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento1 OMF1 metadata BE)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 0 metadata 1)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 1 metadata 1)
+PASS   : TestCanonMdb::referenceMapsAndAmbiguity()
+PASS   : TestCanonMdb::fragmentedReferenceLocations()
+PASS   : TestCanonMdb::compactWidthsBoundariesAndIncompleteContinuations()
+PASS   : TestCanonMdb::textEncodingIsPerProperty()
+PASS   : TestCanonMdb::ambiguousContextAndTimestampShapes()
+PASS   : TestCanonMdb::classAndObjectByteOrderEvidence()
+PASS   : TestCanonMdb::realFixtures(msmMMOB.mdb)
+PASS   : TestCanonMdb::realFixtures(msmMMOB_macroman.mdb)
+PASS   : TestCanonMdb::realFixtures(corpus_headers/msmMMOB.mdb)
+PASS   : TestCanonMdb::realFixtures(corpus_headers/msmMMOB_round3.mdb)
+PASS   : TestCanonMdb::realFixtures(omf/avid_supporting/msmMMOB.mdb)
+PASS   : TestCanonMdb::realFixtures(omf/mc2026_audio/msmMMOB.mdb)
+PASS   : TestCanonMdb::realNonEnglishEvidence()
+PASS   : TestCanonMdb::realOrderedRepeatedScalars()
+PASS   : TestCanonMdb::borrowedDeviceAndReceipt()
+PASS   : TestCanonMdb::truncationAndCorruption()
+PASS   : TestCanonMdb::shortReadsCancellationAndFailures()
+PASS   : TestCanonMdb::cleanupTestCase()
+Totals: 29 passed, 0 failed, 0 skipped, 0 blacklisted, 1881ms
+********* Finished testing of TestCanonMdb *********
+<end of output>
+Test time =   1.90 sec
+----------------------------------------------------------
+Test Passed.
+"tst_canonmdb" end time: Oct 04 03:18 AEDT
+
+11/32 Testing: tst_canonlegacy
+11/32 Test: tst_canonlegacy
+Command: "/Users/martymclean/Developer/MediaMuster/build-canon/tests/tst_canonlegacy" "-o" "-,txt" "-o" "/Users/martymclean/Developer/MediaMuster/build-canon/tests/tst_canonlegacy.result.txt,txt"
+Directory: /Users/martymclean/Developer/MediaMuster/build-canon/tests
+"tst_canonlegacy" start time: Oct 04 03:18 AEDT
+Output:
+----------------------------------------------------------
+********* Start testing of TestCanonLegacy *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonLegacy::initTestCase()
+PASS   : TestCanonLegacy::plainNativeAudio(plain-wave)
+PASS   : TestCanonLegacy::plainNativeAudio(plain-aiff)
+PASS   : TestCanonLegacy::repeatedNativePropertiesStaySeparate()
+PASS   : TestCanonLegacy::waveExtensibleKeepsPrecisionAndAssignments()
+PASS   : TestCanonLegacy::aifcKeepsCompressionAndSoundOffset()
+PASS   : TestCanonLegacy::bentoEssenceIsNotRead()
+PASS   : TestCanonLegacy::sparseRf64SkipsSamples()
+PASS   : TestCanonLegacy::partialDeferredMetadata(cancel-after-four-property-bytes)
+PASS   : TestCanonLegacy::partialDeferredMetadata(io-failure-after-four-property-bytes)
+PASS   : TestCanonLegacy::continuedMetadataAndEssence()
+PASS   : TestCanonLegacy::ambiguousEssencePropertyStaysDeferred()
+PASS   : TestCanonLegacy::rf64RepeatedSizesAndOrdinaryHeader()
+PASS   : TestCanonLegacy::rf64TruncatedTable()
+PASS   : TestCanonLegacy::truncatedNativeExtensionsKeepBaseFields()
+PASS   : TestCanonLegacy::multipleEmbeddedGraphsKeepTheirContexts()
+PASS   : TestCanonLegacy::inputReceiptAndBorrowedDevice()
+PASS   : TestCanonLegacy::malformedAndPartialMetadata()
+PASS   : TestCanonLegacy::malformedEmbeddedGraphKeepsNativeMetadata()
+PASS   : TestCanonLegacy::cancellation()
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1280x720x1_DNxHD_145.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1280x720x1_DV100_90.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1440x540x2_DNxHD.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1920x1080x1_DNxHD_115.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1920x540x2_AVHD_145.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1920x540x2_AVHD_220.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_1920x540x2_DV100_115.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_288x243x1_JFIF15m.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_288x243x1_JFIF20mP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_288x288x1_JFIF15m.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_288x288x1_JFIF20mP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_352x243x1_JFIF12S.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_352x288x1_JFIF14S.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x243x2_JFIF35.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x243x2_UNCOMP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x288x2_JFIF42.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x288x2_UNCOMP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x480x1_DV411.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x480x1_DV411P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x480x1_DV50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x486x1_JFIF25P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x486x1_MPEG50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x486x1_UNCOMP_24P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_DV411.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_DV420.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_DV420P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_DV50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_JFIF30P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_MPEG50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(BLACK_720x576x1_UNCOMP_24P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_1280x720x1_DNxHD_145.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_1280x720x1_DV100_90.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_1440x540x2_DNxHD.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_1920X540X2_AVHD.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_1920x1080x1_DNxHD_115.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_1920x540x2_DV100_115.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_288x243x1_JFIF15m.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_288x243x1_JFIF20mP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_288x288x1_JFIF15m.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_288x288x1_JFIF20mP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_352x243x1_JFIF12S.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_352x288x1_JFIF14S.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x243x2_JFIF35.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x243x2_UNCOMP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x288x2_JFIF42.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x288x2_UNCOMP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x480x1_DV411.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x486x1_JFIF25P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x486x1_MPEG50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x486x1_UNCOMP_24P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x576x1_DV411.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x576x1_DV420.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x576x1_JFIF30P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x576x1_MPEG50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(FORMAT_720x576x1_UNCOMP_24P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_1280x720x1_DNxHD_145.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_1280x720x1_DV100_90.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_1440x540x2_DNxHD.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_1920X540X2_AVHD.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_1920x1080x1_DNxHD_115.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_1920x540x2_DV100_115.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_288x243x1_JFIF15m.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_288x243x1_JFIF20mP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_288x288x1_JFIF15m.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_288x288x1_JFIF20mP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_352x243x1_JFIF12S.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_352x288x1_JFIF14S.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x243x2_JFIF35.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x243x2_UNCOMP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x288x2_JFIF42.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x288x2_UNCOMP.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x480x1_DV411.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x486x1_JFIF25P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x486x1_MPEG50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x486x1_UNCOMP24P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x576x1_DV411.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x576x1_DV420.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x576x1_JFIF30P.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x576x1_MPEG50.omf)
+PASS   : TestCanonLegacy::realAvidSlates(OFFLINE_720x576x1_UNCOMP24P.omf)
+PASS   : TestCanonLegacy::realAvidAudio(MediaComposer-WAVE)
+PASS   : TestCanonLegacy::realAvidAudio(MediaComposer-AIFC)
+PASS   : TestCanonLegacy::cleanupTestCase()
+Totals: 103 passed, 0 failed, 0 skipped, 0 blacklisted, 239ms
+********* Finished testing of TestCanonLegacy *********
+<end of output>
+Test time =   0.26 sec
+----------------------------------------------------------
+Test Passed.
+"tst_canonlegacy" end time: Oct 04 03:18 AEDT

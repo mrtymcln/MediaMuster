@@ -67,6 +67,13 @@ for the verified named UTF-8 properties and decoding limits. Untagged non-ASCII
 MDB strings remain `Unknown`, even where a MacRoman interpretation fits a known
 specimen. Invalid explicit UTF-8 retains `Utf8`/`Recorded` with `Unreadable` state.
 
+The fresh OMF/legacy reader shares these object-string rules. Native AIFF-C
+`COMM.compressionName` is kept as a separate counted-text observation with its
+exact original bytes/range. ASCII bytes use `Ascii`/`Derived`; non-ASCII remains
+`Unknown`. A Pascal/count-prefixed string describes framing, not proof of a
+MacRoman or Unicode encoding. Other native private metadata chunks are retained
+without guessed text decoding. See [legacy evidence](fresh-legacy-reader-2026-10-04.md).
+
 Qt stores decoded `QString` text as UTF-16 code units internally. That does not
 change the source's `TextEncoding`: an original UTF-8 observation remains UTF-8
 in its provenance even after MediaMuster decodes it into a QString.

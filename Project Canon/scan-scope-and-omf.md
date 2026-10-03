@@ -90,3 +90,14 @@ be measured rather than promising no directory I/O or a particular speedup.
 With OmfScan enabled, use the separate agreed legacy candidate filters .omf/.aif/.wav
 plus `*.pmr` and `*.mdb` within the OMFI tree. A global .mxf/.pmr/.mdb-only
 filter would accidentally disable agreed legacy support.
+
+## Fresh legacy reader, 4 October 2026
+
+`Canon::LegacyReader` is now implemented independently of the production scanner;
+see [implementation, evidence and limits](fresh-legacy-reader-2026-10-04.md).
+It inspects bytes for supported OMF, WAVE/RF64 or AIFF/AIFF-C containers and retains
+embedded OMF graphs separately from native audio headers. Database-free media
+can supply its own header evidence. Extensions still control discovery admission;
+the reader's broader byte recognition does not admit additional extensions or
+folders. The OmfScan row flag remains a folder-family fact, independently of the
+actual parsed container. Live-scanner integration and selection remain pending.

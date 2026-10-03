@@ -24,6 +24,10 @@ The [fresh MDB reader](fresh-mdb-reader-2026-10-04.md) now preserves Bento objec
 typed property occurrences and references independently of the production parser.
 It has been checked against genuine local/EDIT MDBs and original toolkit files;
 metadata reconciliation and live-scanner integration remain subsequent stages.
+The [fresh OMF/legacy reader](fresh-legacy-reader-2026-10-04.md) now uses that shared
+object interpreter and reads native WAV/AIFF headers plus embedded OMF graphs.
+Known recording payloads stay on disk; real specimens and guarded large-file
+tests verify the metadata path. It is not yet connected to the live scanner.
 Additional [non-English encoding specimens](non-english-encoding-specimens-2026-10-03.md)
 show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
 The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and

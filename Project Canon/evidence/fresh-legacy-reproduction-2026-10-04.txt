@@ -1,0 +1,42 @@
+Fresh legacy reader verification, 4 October 2026
+Working directory: /Users/martymclean/Developer/MediaMuster
+
+Final build and tests (run in sequence, only testing after build success):
+  cmake --build build-canon -j4
+  ctest --test-dir build-canon -R '^tst_canon(mdb|legacy)$' --output-on-failure
+  ctest --test-dir build-canon --output-on-failure
+
+The configured Debug build targets arm64;x86_64 and Qt 6.5.3 EXACT.
+Native arm64 execution required the host sandbox exception for Qt's NEON check.
+The saved detailed test output is extracted from the final full run's LastTest.log.
+
+Independent read-only probe compiler command (original temporary source path):
+  /usr/bin/c++ -arch x86_64 -std=c++17 -O0 -fPIC -Isrc -F/Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib /tmp/canon-legacy-probe.cpp src/canon/legacyreader.cpp src/canon/audioreader_p.cpp src/canon/omfobjects_p.cpp src/canon/bentoreader_p.cpp -o /tmp/canon-legacy-probe
+
+The retained equivalent of /tmp/canon-legacy-probe.cpp is
+fresh-legacy-probe-2026-10-04.cpp in this directory.
+The probe compiles current sources directly, not an older library. It uses an
+unbuffered counting QFile and reports requested/returned ranges, not physical
+disk traffic. This unoptimized x86_64/Rosetta check is not a speed benchmark.
+
+Input selection (Python, nonrecursive):
+  roots = [pathlib.Path('/Users/Shared/AvidMediaComposer/OMFI MediaFiles'),
+           pathlib.Path('/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10')]
+  paths = sorted(roots[0].glob('*.wav')) + sorted(roots[0].glob('*.aif')) + sorted(roots[1].glob('*.omf'))
+  r = subprocess.run(['/tmp/canon-legacy-probe', *map(str, paths)], text=True, capture_output=True)
+  pathlib.Path('/tmp/canon-legacy-probe-results.jsonl').write_text(r.stdout)
+
+Observed selection: 2 actual Avid audio files and 65 original toolkit containers.
+Toolkit reference: https://github.com/LWKS-Software/omfkt22
+Post-run input and source receipts are in fresh-legacy-receipts-2026-10-04.json.
+Temporary toolkit paths may need recreating for later reproduction.
+
+Range-count interpretation:
+- Native sound sample boundaries come from WAVE data or AIFF SSND plus its offset.
+- Actual embedded OMF AudioData ranges include native headers/metadata, so some
+  reads intersect those broad declared extents without reading sound samples.
+- rangeOnlyUniqueReferencedBytes also includes internal Bento container extents;
+  it must not be described as a count of skipped essence bytes alone.
+- retainedEncodingBytes is not a total RAM/RSS measurement.
+- Hashing inputs for the later receipt manifest reads their full contents; the
+  no-sample-read result applies specifically to LegacyReader's measured reads.

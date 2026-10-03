@@ -1,6 +1,6 @@
 #pragma once
 
-// The private container reader behind Canon's MDB reader. It follows Bento's
+// The private container reader behind Canon's MDB and OMF readers. It follows Bento's
 // table of contents and preserves each recorded value, without deciding what
 // Avid's property names mean or which value a media-file row should display.
 
@@ -21,7 +21,7 @@ namespace Canon::Detail
 		QVector<ByteRange> tocRanges;
 		PropertyReadState state = PropertyReadState::NotRead;
 		QString problem;
-		bool bytesRetained = true; // Internal TOC/container extents are kept as ranges.
+		bool bytesRetained = true; // Internal extents and optional media payloads stay as ranges.
 	};
 
 	struct BentoReadResult
@@ -34,5 +34,12 @@ namespace Canon::Detail
 		QStringList diagnostics;
 	};
 
-	BentoReadResult readBento(QIODevice &source, const Cancellation &cancellation);
+	struct BentoReadOptions
+	{
+		bool metadataOnly = false; // Keep known essence as ranges; read descriptor summaries.
+		qint64 labelOffset = -1; // Absolute file offset; -1 means the final 24 bytes.
+	};
+
+	BentoReadResult readBento(QIODevice &source, const Cancellation &cancellation,
+		const BentoReadOptions &options = {});
 }

@@ -69,10 +69,12 @@ identity. Sharing these does not authorize inheriting the old readers' assumptio
 | `Canon::MediaFile` | Physical location, scan-session ID, filesystem facts, evidence, stamp and source/object references | Initial record defined; metadata values remain in evidence rather than display strings |
 | `ScanResult` | RAM inventory, worklist, source graphs, issues and distinct completion states | Initial types defined |
 | `DiscoveryEngine` | Enumerate admitted locations/extensions and create physical records plus parser worklist | Implemented and tested; not activated in the app |
-| `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; independent PMR and MDB readers implemented and verified |
-| `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Explicit outcomes, typed PMR set membership, per-text encoding/basis, interpretation limits, opaque ranges and optional native Bento property context |
+| `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; independent PMR, MDB and OMF/legacy readers implemented and verified |
+| `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Explicit outcomes, typed PMR set membership, per-text encoding/basis, interpretation limits, opaque ranges, native Bento property context and separate embedded source graphs |
 | `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Alternative selected on 4 October, promoted to this name; first Canon implementation removed. See [selection and checks](pmr-reader-selection-2026-10-04.md). Not activated in the app |
 | `MdbReader` and private Bento reader | Preserve MDB dictionaries, separate object/property occurrences, native types and local references | Fresh implementation verified against six fixtures, six live MDBs and 65 toolkit containers. See [MDB evidence](fresh-mdb-reader-2026-10-04.md). Not activated in the app |
+| `LegacyReader` and private native-audio reader | Read OMF media and WAV/AIFF headers with embedded OMF graphs; retain known sample payloads by range | Implemented and verified against 80 Avid OMF slates, native audio and toolkit files. See [legacy evidence and limits](fresh-legacy-reader-2026-10-04.md). Not activated in the app |
+| Private OMF object interpreter | Share dictionary/type/reference interpretation between MDB and OMF media | Extracted from the fresh MDB reader; existing MDB behaviour retained |
 | Reconciliation engine | Establish object ownership, identities, associations and scoped unmatched references | Pending |
 | Selection engine/catalogue | Apply individual verified metadata policies and DNx mappings | Pending |
 | UI/operation adapter | Connect the finished replacement to existing consumers | Pending |
@@ -84,6 +86,12 @@ Unknown properties retain raw keys, object contexts, encoded values and byte ran
 where available. Multiple ranges allow fragmented values; repeated properties remain
 separate. Large essence payloads need references/ranges, not wholesale RAM copies.
 No meaning or display policy is invented for a newly discovered unknown property.
+
+Native WAV/AIFF headers and embedded OMF graphs are separate `ParsedSource`
+contexts within one physical file. `embedding` retains the parent chunk location;
+each child has a distinct source receipt and local object handles. All byte ranges
+remain file-absolute. This preserves conflicting native/OMF observations without
+creating extra physical MediaFiles or merging graph-local object IDs.
 
 ## Discovery guarantees checked now
 
