@@ -29,7 +29,6 @@ namespace Canon::Detail
 		ParsedSource::Outcome outcome = ParsedSource::Outcome::NotRead;
 		quint16 major = 0;
 		bool containerBigEndian = false;
-		bool metadataBigEndian = false; // Initial format default; MDB declarations may override it.
 		QVector<BentoValue> values; // Original order; only explicitly continued segments join.
 		QVector<RawProperty> structure;
 		QStringList diagnostics;

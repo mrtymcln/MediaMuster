@@ -57,6 +57,16 @@ The PMR's overall integer byte order does not make its UTF-8 filename UTF-16LE o
 UTF-16BE. Filename bytes and integer framing are different format facts. Version-1
 PMR records omit project and master fields; absence is not an encoding.
 
+## Fresh MDB reader
+
+Implemented 4 October 2026. MDB legacy/UTF-8 counterparts are separate properties
+on the same source object, with independent byte locations and encodings; they do
+not create PMR-style file sets. The original bytes, including string terminators
+and padding, remain intact. See [MDB implementation and evidence](fresh-mdb-reader-2026-10-04.md)
+for the verified named UTF-8 properties and decoding limits. Untagged non-ASCII
+MDB strings remain `Unknown`, even where a MacRoman interpretation fits a known
+specimen. Invalid explicit UTF-8 retains `Utf8`/`Recorded` with `Unreadable` state.
+
 Qt stores decoded `QString` text as UTF-16 code units internally. That does not
 change the source's `TextEncoding`: an original UTF-8 observation remains UTF-8
 in its provenance even after MediaMuster decodes it into a QString.

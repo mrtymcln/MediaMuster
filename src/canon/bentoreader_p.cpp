@@ -8,7 +8,6 @@
 #include <QtEndian>
 #include <algorithm>
 #include <array>
-#include <limits>
 
 namespace Canon::Detail
 {
@@ -60,7 +59,7 @@ namespace Canon::Detail
 				if (!m_device.seek(offset))
 					throw Failure{Outcome::IoError, QStringLiteral("Cannot seek to Bento byte %1: %2").arg(offset).arg(m_device.errorString())};
 				auto &range = ranges.emplaceBack(ByteRange{offset, 0});
-				std::array<char, 65536> buffer{};
+				std::array<char, 65536> buffer; // Only the bytes filled by read() are appended.
 				while (range.length < length)
 				{
 					checkCancellation(m_cancellation);
@@ -115,10 +114,17 @@ namespace Canon::Detail
 				m_result.major = half(p + 12, m_result.containerBigEndian);
 				const quint16 minor = half(p + 14, m_result.containerBigEndian);
 				if ((m_result.major != 1 && m_result.major != 2) || minor != 0)
+				{
+					auto &uninterpreted = m_result.structure.emplaceBack();
+					uninterpreted.locator.name = QStringLiteral("Bento.UninterpretedBody");
+					uninterpreted.locator.ranges.append({0, m_input.extent() - labelSize});
+					uninterpreted.state = PropertyReadState::NotRead;
+					uninterpreted.bytesRetained = false;
+					uninterpreted.interpretation = QStringLiteral("Body retained by source range because this label version is unsupported.");
 					throw Failure{Outcome::Unsupported, QStringLiteral("Bento label version %1.%2 is not supported; extended labels are not guessed.").arg(m_result.major).arg(minor)};
+				}
 				if (flags & ~quint16(0x0101))
 					throw Failure{Outcome::Unsupported, QStringLiteral("Unrecognised Bento label flags 0x%1.").arg(flags, 4, 16, QLatin1Char('0'))};
-				m_result.metadataBigEndian = m_result.major == 1 ? QByteArrayView(p + 10, 2) == QByteArrayView("MM") : m_result.containerBigEndian;
 				m_tocOffset = word(p + 16, m_result.containerBigEndian);
 				const qint64 tocLength = word(p + 20, m_result.containerBigEndian);
 				m_blockSize = qint64(half(p + 10, m_result.containerBigEndian)) * 1024;
@@ -237,6 +243,8 @@ namespace Canon::Detail
 					segment.object = word(p, false);
 					segment.property = word(p + 4, false);
 					segment.type = word(p + 8, false);
+					if ((segment.property | segment.type) & 0xff000000u)
+						throw Failure{Outcome::Unsupported, QStringLiteral("Bento 1 uses high property/type bytes associated with the legacy 40-bit offset extension; original TOC retained.")};
 					segment.generation = half(p + 20, false);
 					segment.immediate = flags & 1;
 					segment.continued = flags & 2;
@@ -270,11 +278,32 @@ namespace Canon::Detail
 					qsizetype width = 0;
 					switch (code)
 					{
-					case 1: case 7: case 8: width = 12; break;
-					case 2: case 5: case 6: width = 8; break;
-					case 3: case 4: case 10: case 11: case 12: case 13: case 14: case 15: width = 4; break;
-					case 9: break;
-					case 25: case 26: width = 16; break;
+					case 1:
+					case 7:
+					case 8:
+						width = 12;
+						break;
+					case 2:
+					case 5:
+					case 6:
+						width = 8;
+						break;
+					case 3:
+					case 4:
+					case 10:
+					case 11:
+					case 12:
+					case 13:
+					case 14:
+					case 15:
+						width = 4;
+						break;
+					case 9:
+						break;
+					case 25:
+					case 26:
+						width = 16;
+						break;
 					default:
 						throw Failure{code == 0 ? Outcome::Malformed : Outcome::Unsupported,
 							QStringLiteral("Unrecognised Bento 2 opcode %1 at byte %2; original TOC retained.").arg(code).arg(m_tocOffset + start)};
@@ -290,12 +319,15 @@ namespace Canon::Detail
 							throw Failure{Outcome::Malformed, QStringLiteral("Bento 2 object/property/type appears without the required preceding value or object.")};
 						if (code == 1)
 						{
-							context.object = w(0); context.property = w(1); context.type = w(2);
+							context.object = w(0);
+							context.property = w(1);
+							context.type = w(2);
 							haveObject = true;
 						}
 						else if (code == 2)
 						{
-							context.property = w(0); context.type = w(1);
+							context.property = w(0);
+							context.type = w(1);
 						}
 						else
 							context.type = w(0);
@@ -330,7 +362,8 @@ namespace Canon::Detail
 					}
 					else if (code == 5 || code == 6)
 					{
-						context.offset = w(0); context.length = w(1);
+						context.offset = w(0);
+						context.length = w(1);
 					}
 					else
 					{

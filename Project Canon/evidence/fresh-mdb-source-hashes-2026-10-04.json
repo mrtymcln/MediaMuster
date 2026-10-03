@@ -1,0 +1,614 @@
+{
+  "note": "Hashes collected after the read-only probes; size/mtime checked during hashing. They identify currently available fixtures/reference material, not an atomic snapshot of earlier reads.",
+  "files": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sizeBytes": 3668720,
+      "modifiedNs": 1788291273218255487,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "sizeBytes": 60680,
+      "modifiedNs": 1788291495301754724,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sizeBytes": 5159032,
+      "modifiedNs": 1561096331000000000,
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sizeBytes": 22745976,
+      "modifiedNs": 1785052712000000000,
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sizeBytes": 16616336,
+      "modifiedNs": 1778753153000000000,
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sizeBytes": 15703416,
+      "modifiedNs": 1778753179000000000,
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "tests/fixtures/msmMMOB_macroman.mdb",
+      "sizeBytes": 515968,
+      "modifiedNs": 1784544830980208569,
+      "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "tests/fixtures/msmMMOB.mdb",
+      "sizeBytes": 53688,
+      "modifiedNs": 1779716614000000000,
+      "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "sizeBytes": 3528208,
+      "modifiedNs": 1785719912863320262,
+      "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "sizeBytes": 6411016,
+      "modifiedNs": 1786262281141627428,
+      "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+      "sizeBytes": 60680,
+      "modifiedNs": 1788314697919056904,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "sizeBytes": 587424,
+      "modifiedNs": 1788314697909035712,
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omFile.c",
+      "sizeBytes": 130636,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omAcces.c",
+      "sizeBytes": 101220,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "075ec5b04ae79a5107e4885e8ce66f3be2136d485642b59afaa00cb3e5941757",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omUtils.c",
+      "sizeBytes": 103292,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "58cb7b59bfc1d7006531f8f7504b0c9c759a07884bb401fae3a370dd89e1699a",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omfansic.c",
+      "sizeBytes": 84402,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "d4ba65a30f2d3ab49c6111a3b38fba12bd81cb921fd90fcffa65d3c1246d7eb2",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/bento/CMRefOps.c",
+      "sizeBytes": 46255,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "b7b7337bbc8d8033800efab9c295278394f45b968ff162dc8cbe5aded65d993e",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/bento/CMAPIIDs.h",
+      "sizeBytes": 10077,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "db5b70b637e586e605f3da2b393878aaa6a0329ddbfe619ec600a8e8736481a5",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/bento/CMAPITyp.h",
+      "sizeBytes": 11126,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "50e7f4b3431bb3056d8951d0407c372fc88b902fe905477f9af2d482e7d21257",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/bento/TOCIO.h",
+      "sizeBytes": 37530,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "34f80af7035d487a74ad369bc8aac8a2afa87260b725732b9ea941c0e9da3b0e",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/bento/TOCIO.c",
+      "sizeBytes": 137673,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "d34c8571b3badbc6d0eb8b6570e803548c5448192424e63ad245a60134170188",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/bento/TOCEnts.c",
+      "sizeBytes": 92825,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "184ad1b3e20f0b4a9ee7a07209f4901da6de68897948fb5b70797b54ddd38251",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CDCI.omf",
+      "sizeBytes": 23416,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "decc64ef2f04a463c823f2430e34b38c475f44fb72257ffbea217872dabff82b",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ChgMbIMA.omf",
+      "sizeBytes": 155244,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "dfa49de70fe7cd4fb620717f32ac08b1721905acda21f1f1c7e9f7d4807b3745",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ChgMob1x.omf",
+      "sizeBytes": 160976,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "0dca5184e4543d054d90138201af4d3471b20007ef0dd2981d7f9150572e1d9c",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ChngeMob.omf",
+      "sizeBytes": 173192,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "ca7998d0bc65c9a9911cb05fc3ca109cd11b8c7bfc542e8a00503f35e2e35450",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ClnMXIMA.omf",
+      "sizeBytes": 140864,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "00001eee6e265568c6f2d8b1e2af9e374ffdeb668c278ba18c8b6d90f97fb6c3",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ClnMbX1x.omf",
+      "sizeBytes": 143428,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "e5b5adc2c7b44e5920a8c60f0b66fdcf7288a1976059b03a4b65eda8e4364b46",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ClneMobX.omf",
+      "sizeBytes": 147420,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "1270207745a1fcb188f16af410333da5e16cee188aba29419efbde5a5a18bc61",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CmplxIMA.omf",
+      "sizeBytes": 140700,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "7a128f869d27dc1964c6a452c99232b4c42c76731472675ecb15c6bbe00b684f",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CompIter.omf",
+      "sizeBytes": 32104,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "e5411fd5353c80c29ad2a066961514e5ba6c9cb1c9bfbd121ca9d0b4c441191e",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Complx1x.omf",
+      "sizeBytes": 143364,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "182697c12eed63ea1b69435458caa16494aaa25e132c6fe78a1f93741ba06c68",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Complx2x.omf",
+      "sizeBytes": 143480,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "bae7af2aa64f57ea42c30e44ec43e584e4b3888d8cf73d9bc7280f2dffab71ae",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CopyMob.omf",
+      "sizeBytes": 187632,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "221c0179a5a58cb49f0dd65d54c60d95fa0c939fa135daf266f079520836c643",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CopyMobX.omf",
+      "sizeBytes": 152440,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "e644c853526742e580ded505c1c751ed0790a64c351a7b11c08a91c48e023aab",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CpMbXIMA.omf",
+      "sizeBytes": 144660,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "f7984a1b966afbac9edebb710977eb0bb08df2795b0937194b16cedef55fa49d",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CpMob1x.omf",
+      "sizeBytes": 164892,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "e19c0403b5dd01c6ccdb6d0882fdba415e90e436e4240691f0e7a0aa2e8c322f",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CpMobIMA.omf",
+      "sizeBytes": 158468,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "a5b00e846bf07ca96172538f9eb9db15e2133aab2069786095b5fe72f9970a0e",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CpMobX1x.omf",
+      "sizeBytes": 148016,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "869a639e6dafc8718d6d506790ba480e3c27bab985b838ba6750a3ebba2b667f",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Cvt2xMed.omf",
+      "sizeBytes": 3487204,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "979ba6851b318195bd331dfd040a86353a332af8776ec034e0f4f90f4f4a3567",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CvtB2xMd.omf",
+      "sizeBytes": 3464700,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "b637c145ea18200954faa36e537a0fadf23da321b28d476d06426a94c0999d88",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CvtBck1x.omf",
+      "sizeBytes": 367152,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "ca797974d66f83e741c93f362893a7c4f1b7d1135a497ff711ac0d21d205c30a",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CvtComp1.omf",
+      "sizeBytes": 144116,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "1fca50ff5d23dc6ba7c658a561cb9f0224062578d946a6b1175ee4e9169f8847",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/CvtMod2x.omf",
+      "sizeBytes": 366536,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "6b696447bc3d3ab011c801bbfa8422f8d85736c0361c4ea94def72d1170820ef",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/DelMbIMA.omf",
+      "sizeBytes": 147720,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "4225c53127adc31fef816db6abb3e9e009bd0abe29199ee0235c929db3cfa992",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/DelMob.omf",
+      "sizeBytes": 155196,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "1408ab30ea989b95fb09ee08d30d2f5e6e66ce3a92ddf67128b511f447682422",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/DelMob1x.omf",
+      "sizeBytes": 151224,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "3639aa701d0e4ddc20a634f86dbaf40a82ba7b43d2e37d6a88be262a7ac7f63e",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/DupMbIMA.omf",
+      "sizeBytes": 13088,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "2768eee20bcbbb865c29bd96b71e1a8e78bd0edcf04792e6957c5b1a0cb4ef32",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/DupMob1x.omf",
+      "sizeBytes": 14228,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "171a4bc193d91ae324482ec1131ff38a1cb4ef79043a50f319db9ac6cb288868",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/DupMob2x.omf",
+      "sizeBytes": 15024,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "42297837e7e23f6fcdfe8b8963c3e5756b80a0067eb70ff03f1b6bfeb12c0de1",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/FX1xto2x.omf",
+      "sizeBytes": 22740,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "d941ac0999d80662c9be47ac5704e7e5ec9a2e1e3cd1715e090eff83352f82c1",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/FX2xto1x.omf",
+      "sizeBytes": 20652,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "be1b013f1bcdacce5026d8be3e3ff509d062e493ab4bce1a902b8110ea1baa02",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Film1x.omf",
+      "sizeBytes": 260620,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "b3c5c4af2de11f9e717036a01d3a4450aa22d85ce2076c7569d6f18bcdcf3b1d",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Film2x.omf",
+      "sizeBytes": 259972,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "fd4b898e11b52c35f3cb9b6d05fbebd91e78f4141f7dea585e1b54ec09ec0e1c",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/FilmIMA.omf",
+      "sizeBytes": 257688,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "d1bada6e7f58dcd40bf4e9fd1de5661aa1a7dc8f96a13dc3cec94aa584ac9d5a",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/JPEG.omf",
+      "sizeBytes": 23384,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "09c0a7c6c1255dfe64348f9eecf1027feb84df40174ddd3a0b993147ccf2711f",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/M2xF1x.omf",
+      "sizeBytes": 3502364,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "3e98004e42ead9925523dc602cd4ccda36579dbecd6f5ff67d5bbfba3936e54a",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/M2xFIMA.omf",
+      "sizeBytes": 3479360,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "0042a5e636d6dcd75134fb77e645e7e175886c6aa94da88df85cdc3a70a28279",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ManyO1x.omf",
+      "sizeBytes": 39576,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "1bf6c8f075f2b9d43cc88dab7e59fb0a99f1da485e90d85c6db8282f5e5a9557",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ManyO2x.omf",
+      "sizeBytes": 34544,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "e229aafd9e773858cf18769a0eb36ee73277bf939f9f0fbcf06ade815bf7974a",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/ManyOIMA.omf",
+      "sizeBytes": 31588,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "80d8321eded0e96d6115fe0519ba35e499566eca12e29397ee6914794cd13e69",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Media2x.omf",
+      "sizeBytes": 3480296,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "7b6f59cf94e8c45012cdc3cc81a38b9461f8e5fc057ea3e468a00bbf992c7127",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkComp2x.omf",
+      "sizeBytes": 147412,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "9fe2e01ece179e3db7bb5dd7eb7edbd276b285f8ec5dc071bb2bb6f9a1712d78",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkDesc2x.omf",
+      "sizeBytes": 13884,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "44611fcd919ec74acf9963277f33b461535cabc4cdfdf943bc7f250ecec4fe39",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkOMFLoc.omf",
+      "sizeBytes": 18408,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "d19812a84215c73430a67b1b493b35c336dec1e6cda99e10947cf4b4d4661954",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkSmpIMA.omf",
+      "sizeBytes": 16284,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "0178ad89599535ce5534a220ed9ef215d7e7bb9e517679ad9841d46155eb39f1",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkTape1x.omf",
+      "sizeBytes": 399676,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "04aa9815d691bbcc1509447b3ccd3611cfdc2dd46e3a977aeda79f44d6129769",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkTape2x.omf",
+      "sizeBytes": 397848,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "62258e55b24fdc833a2c70415ff377533d5c1c8319ee0db51ae28c55c8e214e4",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/MkTpeIMA.omf",
+      "sizeBytes": 395492,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "c13fc75ac278bbb72b959a1fb3a734389ae14a2bf24d58f7cba40b2cf21be0ae",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/NgCloneX.omf",
+      "sizeBytes": 11072,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "f84be55c01265d83297d74e9b34a0b5951aae1ee1ee860313f37530798a47df4",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/OpModIMA.omf",
+      "sizeBytes": 460808,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "bd6a2b34abccf9efb48f360bd17f56bef4011efca30ddac4fdb672f91b0ada4c",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/OpnMod1x.omf",
+      "sizeBytes": 487932,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "141f87841d4a5122af1dc7997793bd6aae738564ebf8245580900aaa276ad086",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Patch1x.omf",
+      "sizeBytes": 10852,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "d1cbf61d6eb1c74895ae2dc11b707b940155469d662bad766598cfccb394245b",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/PatchIMA.omf",
+      "sizeBytes": 10852,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "15801fb0bc06ebb001ee81f2af1a77c676d808f590ef29fcd160b68706e30896",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/PrivR1x.omf",
+      "sizeBytes": 11112,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "a3df1b9b9f7d188fc79f44fd2308dede48b1b3ef78f7ba4b4f4477766b21c48c",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/PrivR2x.omf",
+      "sizeBytes": 12184,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "8c9962a291c86d098db1251373c4e1ddff571d7684407e73f95ef6ff8574652a",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/PrivRIMA.omf",
+      "sizeBytes": 10484,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "ac2165df6ffa3fde8fbe3d36a8ef77ec28d34166b516c191bd3199ee97d63f86",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/RGBA.omf",
+      "sizeBytes": 23280,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "4dc632c52d8c82cb8384b1733ac56809e89f3dcf1a2d28c27c4f64f20e1aa915",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/SimpFX1x.omf",
+      "sizeBytes": 18240,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "0d75e28a35c282ed8e637ac1f76096f37d80aad2f25a5d676a6b0d4bee0ad412",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/SimpFX2x.omf",
+      "sizeBytes": 26148,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "46f397b24a02020ae2942810e9ef2844d443c7f1961ef374a6f617a398119bef",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Simple1x.omf",
+      "sizeBytes": 13672,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "4f93ad2b3ed296e97f2f7b305efea1d08c0018987422f9cced96c8b6e4800065",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Simple2x.omf",
+      "sizeBytes": 14720,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "0db558b54b6efa8388556243173354404234fdc491d70a5c7d448e0eca45ce67",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/TstAttr1x.omf",
+      "sizeBytes": 11760,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "81f7071accd99c6fc95d30dc77b4870cbc7032c6d0987934c580f040e2cbd5c4",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/TstAttr2x.omf",
+      "sizeBytes": 12708,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "fc50c7b8c6b10c5b9ad6516cb0ffb8216f57992f3a1de05a78b922f7b08b30bd",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/TstAttrIMA.omf",
+      "sizeBytes": 11156,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "8551515ab0ebb490459e3c54a8efa50f83468a4341683653f1c89d5735e68bdc",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/WriteIll.omf",
+      "sizeBytes": 21928,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "f887a8748ae691d9bcdaba5f7a1ddf1f05dae1958058e5c9154b12c2c4d063f8",
+      "unchangedDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/rawRef.omf",
+      "sizeBytes": 15500,
+      "modifiedNs": 1789215245000000000,
+      "sha256": "024a922a7b6fb67c1f357cb3fcecded0c778ce1521386ed375cc9e83e27b808b",
+      "unchangedDuringHash": true
+    }
+  ]
+}

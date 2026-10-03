@@ -53,6 +53,11 @@ mediamuster_add_test(tst_canonpmrrobustness media)
 target_link_libraries(tst_canonpmrrobustness PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonpmrrobustness PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Fresh MDB graph reader: original bytes, dictionaries, references and real sources.
+mediamuster_add_test(tst_canonmdb media)
+target_link_libraries(tst_canonmdb PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canonmdb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
 mediamuster_add_test(tst_omfuid media)

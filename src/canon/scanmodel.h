@@ -46,9 +46,22 @@ namespace Canon
 	struct PropertyLocator
 	{
 		QString name;
-		QByteArray key; ///< Original tag/UL/dictionary key when supplied by the format.
+		QByteArray key; ///< Source tag/UL/key; Bento numeric IDs use four big-endian bytes (native framing retained separately).
 		quint64 objectNumber = 0;
 		QVector<ByteRange> ranges; ///< Empty when not located; multiple ranges retain fragmented values.
+	};
+
+	// MDB values have a native type and TOC framing as well as a property name.
+	// Keep that source context even when its private meaning is not yet understood.
+	struct BentoPropertyContext
+	{
+		quint32 property = 0;
+		quint32 type = 0;
+		quint32 generation = 0;
+		quint32 referenceListObject = 0;
+		QString typeName;
+		QVector<ByteRange> tocRanges;
+		std::optional<bool> metadataBigEndian;
 	};
 
 	/// Unknown/private properties keep their encoding without invented semantics.
@@ -61,6 +74,7 @@ namespace Canon
 		QString interpretation;							///< Decoding limits/encoding evidence, without display policy.
 		std::optional<TextEncoding> textEncoding;		///< No value for binary/numeric/absent properties.
 		std::optional<EvidenceBasis> textEncodingBasis; ///< No value when encoding is unknown.
+		QSharedPointer<const BentoPropertyContext> bento; ///< Null for formats without Bento framing.
 		bool bytesRetained = true;						///< False: locator ranges reference bytes not copied into RAM.
 	};
 

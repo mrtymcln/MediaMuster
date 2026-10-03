@@ -90,6 +90,8 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 add_library(mediamuster_canon STATIC
     src/canon/discoveryengine.cpp
     src/canon/pmrreader.cpp
+    src/canon/mdbreader.cpp
+    src/canon/bentoreader_p.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
 )

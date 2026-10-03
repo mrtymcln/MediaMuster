@@ -1,0 +1,17 @@
+{
+  "method": "Read-only immediate managed media leaves; OMFI root included; no recursive walk or symlink following.",
+  "roots": [
+    "/Volumes/EDIT/Avid MediaFiles/MXF",
+    "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF",
+    "/Users/Shared/AvidMediaComposer/OMFI MediaFiles"
+  ],
+  "issues": [],
+  "paths": [
+    "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+    "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb"
+  ]
+}

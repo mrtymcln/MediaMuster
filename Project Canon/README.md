@@ -20,6 +20,10 @@ The selected `Canon::PmrReader` preserves both record sets and raw source eviden
 independently of the existing production parser. On 4 October the user chose the
 alternative implementation and requested removal of the first Canon reader; see
 [PMR reader selection](pmr-reader-selection-2026-10-04.md).
+The [fresh MDB reader](fresh-mdb-reader-2026-10-04.md) now preserves Bento objects,
+typed property occurrences and references independently of the production parser.
+It has been checked against genuine local/EDIT MDBs and original toolkit files;
+metadata reconciliation and live-scanner integration remain subsequent stages.
 Additional [non-English encoding specimens](non-english-encoding-specimens-2026-10-03.md)
 show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
 The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
