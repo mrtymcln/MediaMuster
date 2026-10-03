@@ -1,0 +1,38 @@
+MediaMuster format audit — 3 October 2026
+
+Start with format-audit.html (searchable) or format-audit.txt (all occurrences expanded).
+40 finding/scope entries; each distinguishes the strength and limits of its evidence.
+evidence/findings.json is the structured register.
+evidence/occurrence-inventory.tsv contains 1,103 related source/test/doc locations.
+Related historical occurrences are not asserted to be current defects.
+
+No production code, existing tests/docs, databases or original media were changed.
+New .mxf files under evidence/probes are deliberately authored metadata tests.
+They are not genuine Avid media and should not be added to a Media Composer project.
+
+Large raw KLV and production-reader outputs are stored outside Git at the path
+in evidence/large-evidence-location.txt. The compact derived evidence is here.
+These records contain local filenames, clip names and project metadata; they remain local.
+
+Reproduce the read-only reader harness on this machine:
+1. Copy evidence/harness-main.cpp to /tmp/mediamuster-audit-harness/main.cpp.
+2. Copy evidence/harness-CMakeLists.txt to /tmp/mediamuster-audit-harness/CMakeLists.txt.
+3. Configure:
+   cmake -S /tmp/mediamuster-audit-harness -B /tmp/mediamuster-audit-harness/build -DCMAKE_PREFIX_PATH=/Users/martymclean/Qt/6.5.3/macos
+4. Build:
+   cmake --build /tmp/mediamuster-audit-harness/build -j4
+5. Run with evidence/parse-inputs.txt on stdin; save JSONL to a separate output.
+6. Run --probe for codec-resolution/text helper results.
+7. evidence/synthetic_probes.py recreates the seven authored MXF probes and invokes that harness.
+8. evidence/independent_inspect.py runs a separate raw KLV/Bento1 inspection and
+   compares relevant bin fields with the supplied pure-Python pyavb checkout.
+   Its output may include pyavb descriptor diagnostics; these are documented skips.
+9. evidence/summarize_observations.py derives descriptor observations from the newly
+   generated raw-mxf.jsonl and compresses/removes that raw intermediate.
+10. evidence/build_report.py rebuilds the reports from compact evidence and the
+    large-output location. It contains the reviewed finding definitions.
+
+The report refers to the source at the recorded Git HEAD and hashes, not an
+unbounded promise about future changes. Re-running against altered source/media
+requires reviewing expectations and updating the ledger, rather than simply
+reusing old findings as a correctness certificate.

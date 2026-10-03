@@ -1,0 +1,6044 @@
+[
+  {
+    "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/AIFF-C(OMF).avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "AIFC": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/WAVE(OMF).avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "WAVE": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier01.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier02.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/bezier03.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear01.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 56,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear02.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/linear03.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline01.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline02.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline03.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/spline04.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step01.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 56,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step02.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/retimes/step03.avb",
+    "classes": {
+      "ATTR": 50,
+      "PRCL": 3,
+      "FILL": 13,
+      "SCLP": 4,
+      "PRIT": 39,
+      "SEQU": 6,
+      "PRLS": 2,
+      "SPED": 1,
+      "URLL": 2,
+      "TRKR": 5,
+      "WINF": 1,
+      "TCCP": 9,
+      "MDES": 2,
+      "MSML": 1,
+      "TKFX": 1,
+      "MCBR": 2,
+      "MASK": 6,
+      "CDCI": 1,
+      "ECCP": 1,
+      "CMPO": 4,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/pyavb-main/tests/test_files/test_file_01.avb",
+    "classes": {
+      "PRCL": 18,
+      "FILL": 66,
+      "SCLP": 220,
+      "ATTR": 906,
+      "PRIT": 41,
+      "SEQU": 27,
+      "PRLS": 21,
+      "GRFX": 2,
+      "SPED": 16,
+      "FILE": 159,
+      "FXPS": 5,
+      "CTRL": 2,
+      "TRKR": 170,
+      "MDES": 107,
+      "MSML": 55,
+      "TCCP": 60,
+      "TNFX": 5,
+      "PVOL": 2,
+      "TKFX": 5,
+      "MCBR": 52,
+      "CDCI": 52,
+      "MASK": 31,
+      "RGBA": 1,
+      "RSET": 2,
+      "PCMA": 2,
+      "ECCP": 1,
+      "CMPO": 160,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 160,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Downloads/sample.avb",
+    "classes": {
+      "TMCS": 3,
+      "DIDP": 12,
+      "ATTR": 33,
+      "FILL": 43,
+      "SCLP": 15,
+      "CCFX": 1,
+      "FXPS": 4,
+      "TRKR": 25,
+      "SEQU": 33,
+      "TCCP": 2,
+      "MSML": 3,
+      "MCBR": 2,
+      "TKFX": 4,
+      "MDTP": 1,
+      "CDCI": 1,
+      "WAVE": 2,
+      "CMPO": 6,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 6,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+    "classes": {
+      "FILL": 8439,
+      "SCLP": 5548,
+      "ATTR": 9897,
+      "SEQU": 4045,
+      "PRIT": 56213,
+      "PRCL": 17,
+      "FXPS": 2267,
+      "PRLS": 2201,
+      "DIDP": 1988,
+      "AVUP": 282,
+      "TRKR": 1014,
+      "MCMR": 141,
+      "GRFX": 113,
+      "TKFX": 1697,
+      "FILE": 152,
+      "RSET": 166,
+      "MDES": 651,
+      "MSML": 723,
+      "TNFX": 570,
+      "CTRL": 2,
+      "MCBR": 133,
+      "PCMA": 93,
+      "CDCI": 348,
+      "TCCP": 180,
+      "PVOL": 530,
+      "MULD": 4,
+      "RGBA": 17,
+      "ECCP": 6,
+      "MASK": 24,
+      "CMPO": 1981,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 90808,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90813,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90818,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90823,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90828,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90833,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90838,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90843,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90848,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90853,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90858,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90863,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90868,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90873,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90878,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90883,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90888,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90893,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90898,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90903,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90908,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90913,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90918,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90923,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90928,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90933,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90938,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90948,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90953,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90958,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90963,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90968,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90973,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90978,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 90983,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 91825,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 91840,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 91853,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 91876,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 91965,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92000,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92008,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92169,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92227,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92269,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92335,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92404,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92417,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92451,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92459,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92464,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92529,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92537,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92550,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92566,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92581,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92616,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92650,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92655,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92680,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92696,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92701,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92720,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92728,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92746,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92757,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92816,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92824,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92853,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92864,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92950,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 92980,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93002,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93019,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93038,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93049,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93083,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93112,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93123,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93131,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93146,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93191,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93204,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93225,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93233,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93248,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93295,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93303,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93333,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93341,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93381,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93438,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93458,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93487,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93495,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93506,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93533,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93541,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93575,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93583,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93591,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93678,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93686,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93715,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93752,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93768,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93797,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93855,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93869,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93877,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93950,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 93985,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94068,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94076,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94087,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94121,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94140,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94173,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94181,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94207,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94212,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94223,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94231,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94245,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94256,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94261,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94275,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94280,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94288,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94296,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94301,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94306,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94317,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94336,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94344,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94355,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94360,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94376,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94384,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94389,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94478,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94497,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94558,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94568,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94576,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94584,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94592,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94606,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94676,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94713,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94740,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94751,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94759,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94815,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94877,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94936,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 94944,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95004,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95026,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95065,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95078,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95224,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95253,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95261,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95282,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95293,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95298,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95337,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95342,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95347,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95358,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95363,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95371,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95411,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95416,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95435,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95440,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95448,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95494,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95507,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95528,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95554,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95573,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95760,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95833,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95841,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95870,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 95886,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96014,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96035,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96043,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96051,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96062,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96070,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96078,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96118,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96126,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96134,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96145,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96150,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96155,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96163,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96171,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96188,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96193,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96198,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96212,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96217,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96225,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96256,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96267,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96272,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96280,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96294,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96299,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96309,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96317,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96328,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96336,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96341,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96349,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96363,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96368,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96373,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96400,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96405,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96416,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96424,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96432,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96440,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96448,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96453,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96480,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96488,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96509,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96543,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96593,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96601,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96614,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96638,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96649,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96683,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96696,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96728,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96763,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96790,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96810,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96868,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96884,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96911,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96927,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96932,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 96987,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97023,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97042,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97077,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97099,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97131,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97155,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97181,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97189,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97202,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97210,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97233,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97258,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97279,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97309,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97341,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97362,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 97378,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 1981,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/02_SEQ_LOCK.avb",
+    "classes": {
+      "ATTR": 5312,
+      "FILL": 2965,
+      "SCLP": 2304,
+      "PRIT": 7500,
+      "TRKR": 297,
+      "MCMR": 71,
+      "GRFX": 14,
+      "SEQU": 1439,
+      "FILE": 117,
+      "FXPS": 540,
+      "PRLS": 536,
+      "RSET": 20,
+      "CTRL": 1,
+      "DIDP": 213,
+      "MSML": 517,
+      "TNFX": 332,
+      "PVOL": 293,
+      "TKFX": 208,
+      "MDES": 376,
+      "TCCP": 120,
+      "MCBR": 133,
+      "CDCI": 182,
+      "RGBA": 10,
+      "PCMA": 129,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1264,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 19024,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19043,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19067,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19101,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19114,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19120,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19129,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19139,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19167,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19180,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19185,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19190,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19195,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19209,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19232,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19250,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19271,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19281,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19286,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19308,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19339,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19345,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19355,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19366,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19389,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19410,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19415,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19425,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19433,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19438,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19443,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19450,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19456,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19476,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19479,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19517,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19536,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19556,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19570,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19581,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19598,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19601,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19613,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19618,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19649,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19654,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19659,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19677,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19680,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19687,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19701,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19736,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19741,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19789,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19801,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19810,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19824,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19827,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19867,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19886,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19898,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19916,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19925,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19939,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19942,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19952,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19964,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19983,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19988,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 19991,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20015,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20033,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20041,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20055,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20066,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20078,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20090,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20100,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20120,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20125,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20135,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20138,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20154,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20175,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20189,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20202,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20210,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20213,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20231,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20242,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20252,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20301,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20304,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20310,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20331,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20348,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20370,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20394,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20405,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20410,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20448,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20467,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20472,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20486,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20497,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20509,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20519,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20522,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20540,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20548,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20572,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20593,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20604,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20609,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20620,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20634,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20650,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20681,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20692,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20707,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20720,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20731,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20734,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20750,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20761,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20766,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20780,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20783,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20802,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20812,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20817,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20822,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20877,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20883,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20892,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20895,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20914,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20930,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20946,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20964,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20969,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20974,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 20996,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21004,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21040,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21049,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21054,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21065,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21075,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21078,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21083,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21088,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21099,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21166,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21185,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21193,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21200,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21205,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21210,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21231,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21251,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21254,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21278,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21283,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21291,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21296,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21301,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21306,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21311,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21316,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21321,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21326,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21331,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21336,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21341,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21346,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21351,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21356,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21361,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21366,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21371,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21376,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21381,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21386,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21391,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21396,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21401,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21406,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21411,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21421,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21426,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21431,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21436,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21441,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21446,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 21451,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 1264,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/02_RUSHES/D001_A001_RUSHES.avb",
+    "classes": {
+      "FILE": 40,
+      "MDES": 40,
+      "MSML": 30,
+      "PCMA": 10,
+      "CDCI": 10,
+      "FILL": 240,
+      "SCLP": 90,
+      "ATTR": 283,
+      "TCCP": 20,
+      "MCBR": 10,
+      "MULD": 10,
+      "SEQU": 110,
+      "TRKR": 30,
+      "CMPO": 30,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 30,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/02_RUSHES/D001_A002_RUSHES.avb",
+    "classes": {
+      "FILE": 56,
+      "MDES": 56,
+      "MSML": 42,
+      "PCMA": 14,
+      "CDCI": 14,
+      "FILL": 336,
+      "SCLP": 126,
+      "ATTR": 395,
+      "TCCP": 28,
+      "MCBR": 14,
+      "MULD": 14,
+      "SEQU": 154,
+      "TRKR": 42,
+      "CMPO": 42,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 42,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/02_RUSHES/D002_A001_RUSHES.avb",
+    "classes": {
+      "FILE": 60,
+      "MDES": 60,
+      "MSML": 45,
+      "PCMA": 15,
+      "CDCI": 15,
+      "FILL": 360,
+      "SCLP": 135,
+      "ATTR": 423,
+      "TCCP": 30,
+      "MCBR": 15,
+      "MULD": 15,
+      "SEQU": 165,
+      "TRKR": 45,
+      "CMPO": 45,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 45,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/02_RUSHES/D003_A001_RUSHES.avb",
+    "classes": {
+      "FILE": 72,
+      "MDES": 72,
+      "MSML": 54,
+      "PCMA": 18,
+      "CDCI": 18,
+      "FILL": 432,
+      "SCLP": 162,
+      "ATTR": 507,
+      "TCCP": 36,
+      "MCBR": 18,
+      "MULD": 18,
+      "SEQU": 198,
+      "TRKR": 54,
+      "CMPO": 54,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 54,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/02_RUSHES/D003_A002_RUSHES.avb",
+    "classes": {
+      "FILE": 68,
+      "MDES": 68,
+      "MSML": 51,
+      "PCMA": 17,
+      "CDCI": 17,
+      "FILL": 408,
+      "SCLP": 153,
+      "ATTR": 479,
+      "TCCP": 34,
+      "MCBR": 17,
+      "MULD": 17,
+      "SEQU": 187,
+      "TRKR": 51,
+      "CMPO": 51,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 51,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D001_A001_TRNSCDS.avb",
+    "classes": {
+      "FILE": 37,
+      "MDES": 37,
+      "MSML": 39,
+      "PCMA": 11,
+      "CDCI": 19,
+      "FILL": 258,
+      "SCLP": 99,
+      "ATTR": 323,
+      "TCCP": 20,
+      "MCMR": 10,
+      "MCBR": 10,
+      "MULD": 9,
+      "SEQU": 119,
+      "TRKR": 39,
+      "CMPO": 41,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 41,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D001_A002_TRNSCDS.avb",
+    "classes": {
+      "FILE": 13,
+      "FILL": 312,
+      "SCLP": 117,
+      "ATTR": 419,
+      "TCCP": 26,
+      "MSML": 39,
+      "MCMR": 13,
+      "MCBR": 13,
+      "MDES": 13,
+      "SEQU": 143,
+      "TRKR": 39,
+      "PCMA": 26,
+      "CDCI": 13,
+      "CMPO": 65,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 65,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D002_A001_TRNSCDS.avb",
+    "classes": {
+      "FILE": 15,
+      "FILL": 360,
+      "SCLP": 135,
+      "ATTR": 483,
+      "TCCP": 30,
+      "MSML": 45,
+      "MCMR": 15,
+      "MCBR": 15,
+      "MDES": 15,
+      "SEQU": 165,
+      "TRKR": 45,
+      "PCMA": 30,
+      "CDCI": 15,
+      "CMPO": 75,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 75,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D003_A001_TRNSCDS.avb",
+    "classes": {
+      "FILE": 18,
+      "FILL": 432,
+      "SCLP": 162,
+      "ATTR": 579,
+      "TCCP": 36,
+      "MSML": 54,
+      "MCMR": 18,
+      "MCBR": 18,
+      "MDES": 18,
+      "SEQU": 198,
+      "TRKR": 54,
+      "PCMA": 36,
+      "CDCI": 18,
+      "CMPO": 90,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 90,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D003_A002_TRNSCDS.avb",
+    "classes": {
+      "FILE": 17,
+      "FILL": 408,
+      "SCLP": 153,
+      "ATTR": 547,
+      "TCCP": 34,
+      "MSML": 51,
+      "MCMR": 17,
+      "MCBR": 17,
+      "MDES": 17,
+      "SEQU": 187,
+      "TRKR": 51,
+      "PCMA": 34,
+      "CDCI": 17,
+      "CMPO": 85,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 85,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/04_SOUND/D001_SOUND.avb",
+    "classes": {
+      "FILE": 164,
+      "MSML": 123,
+      "ATTR": 1194,
+      "MDES": 123,
+      "FILL": 574,
+      "SCLP": 492,
+      "TCCP": 82,
+      "MCBR": 82,
+      "PCMA": 82,
+      "SEQU": 287,
+      "CMPO": 287,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 2380,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2385,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2390,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2395,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2400,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2405,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2410,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2415,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2420,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2425,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2430,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2435,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2440,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2445,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2450,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2455,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2460,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2465,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2470,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2475,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2480,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2485,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2490,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2495,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2500,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2505,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2510,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2515,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2520,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2525,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2530,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2535,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2540,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2545,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2550,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2555,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2560,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2565,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2570,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2575,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 2580,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 287,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/04_SOUND/D002_SOUND.avb",
+    "classes": {
+      "FILE": 58,
+      "MDES": 58,
+      "MSML": 29,
+      "FILL": 408,
+      "SCLP": 174,
+      "ATTR": 590,
+      "TCCP": 29,
+      "MCBR": 30,
+      "SEQU": 205,
+      "PCMA": 1,
+      "CMPO": 88,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 1082,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1087,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1092,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1102,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1107,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1112,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1117,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1122,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1127,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1132,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1137,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1142,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1147,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1152,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1157,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1162,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1167,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1172,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1177,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1182,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1187,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1192,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1197,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1202,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1207,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1212,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1217,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1222,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 88,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/04_SOUND/D003_SOUND.avb",
+    "classes": {
+      "FILE": 82,
+      "MDES": 82,
+      "MSML": 41,
+      "FILL": 574,
+      "SCLP": 246,
+      "ATTR": 823,
+      "TCCP": 41,
+      "MCBR": 41,
+      "SEQU": 287,
+      "CMPO": 123,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 1519,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1524,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1529,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1534,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1539,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1544,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1549,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1554,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1559,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1564,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1569,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1574,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1579,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1584,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1589,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1594,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1599,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1604,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1609,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1614,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1619,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1624,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1629,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1634,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1639,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1644,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1649,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1654,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1659,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1664,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1669,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1674,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1679,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1684,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1689,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1694,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1699,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1704,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1709,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1714,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1719,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 123,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/04_SOUND/SND_FX.avb",
+    "classes": {
+      "FILE": 2,
+      "MDES": 2,
+      "MSML": 1,
+      "FILL": 14,
+      "SCLP": 6,
+      "ATTR": 23,
+      "TCCP": 1,
+      "MCBR": 1,
+      "PCMA": 1,
+      "SEQU": 7,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/06_SYNC/D001_A001_SYNC.avb",
+    "classes": {
+      "FILE": 12,
+      "MDES": 12,
+      "MSML": 16,
+      "FILL": 144,
+      "SCLP": 72,
+      "ATTR": 235,
+      "TCCP": 12,
+      "MCBR": 12,
+      "MCMR": 4,
+      "SEQU": 72,
+      "TRKR": 12,
+      "PCMA": 8,
+      "CDCI": 4,
+      "CMPO": 36,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 382,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 387,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 392,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 397,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 36,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/06_SYNC/D001_A002_SYNC.avb",
+    "classes": {
+      "FILE": 24,
+      "MDES": 24,
+      "MSML": 32,
+      "FILL": 304,
+      "SCLP": 144,
+      "ATTR": 459,
+      "TCCP": 24,
+      "MCMR": 8,
+      "MCBR": 24,
+      "SEQU": 144,
+      "TRKR": 24,
+      "PCMA": 16,
+      "CDCI": 8,
+      "CMPO": 72,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 778,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 783,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 788,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 793,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 798,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 803,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 808,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 813,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 72,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/06_SYNC/D002_A001_SYNC.avb",
+    "classes": {
+      "FILE": 39,
+      "MDES": 39,
+      "MSML": 91,
+      "FILL": 624,
+      "SCLP": 351,
+      "ATTR": 1069,
+      "TCCP": 39,
+      "MCBR": 65,
+      "MCMR": 26,
+      "SEQU": 312,
+      "PCMA": 53,
+      "TRKR": 65,
+      "CDCI": 26,
+      "CMPO": 182,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 1705,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1715,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1720,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1725,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1730,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1735,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1740,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1745,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1750,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1755,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1760,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1765,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 182,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/06_SYNC/D003_A001_SYNC.avb",
+    "classes": {
+      "FILE": 54,
+      "MDES": 54,
+      "MSML": 72,
+      "FILL": 684,
+      "SCLP": 324,
+      "ATTR": 1026,
+      "TCCP": 54,
+      "MCBR": 54,
+      "MCMR": 18,
+      "SEQU": 324,
+      "TRKR": 54,
+      "PCMA": 36,
+      "CDCI": 18,
+      "CMPO": 162,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 1748,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1753,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1758,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1763,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1768,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1773,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1778,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1783,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1788,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1793,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1798,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1803,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1808,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1813,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1818,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1823,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1828,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1833,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 162,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/06_SYNC/D003_A002_SYNC.avb",
+    "classes": {
+      "FILE": 36,
+      "MDES": 36,
+      "MSML": 48,
+      "FILL": 456,
+      "SCLP": 216,
+      "ATTR": 687,
+      "TCCP": 36,
+      "MCBR": 36,
+      "MCMR": 12,
+      "SEQU": 216,
+      "TRKR": 36,
+      "PCMA": 24,
+      "CDCI": 12,
+      "CMPO": 108,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 1166,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1171,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1176,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1181,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1186,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1191,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1196,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1201,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1206,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1211,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1216,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "object": 1221,
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "mobCount": 108,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/07_MISC/TITLES.avb",
+    "classes": {
+      "FILE": 8,
+      "FILL": 4,
+      "PRIT": 26,
+      "GRFX": 4,
+      "ATTR": 67,
+      "MSML": 12,
+      "SCLP": 40,
+      "FXPS": 4,
+      "TRKR": 12,
+      "SEQU": 4,
+      "PRLS": 4,
+      "MCBR": 4,
+      "RGBA": 4,
+      "MDES": 4,
+      "TCCP": 4,
+      "CDCI": 8,
+      "RSET": 8,
+      "TKFX": 4,
+      "CMPO": 24,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 24,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/HD_all_the_things/hd 25ps.avb",
+    "classes": {
+      "ATTR": 286,
+      "FILE": 29,
+      "MSML": 28,
+      "FILL": 62,
+      "SCLP": 84,
+      "TCCP": 28,
+      "MDES": 29,
+      "MCBR": 28,
+      "MCMR": 27,
+      "CDCI": 26,
+      "MPGI": 2,
+      "TRKR": 30,
+      "SEQU": 31,
+      "CMPO": 84,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 84,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/Thursday-project.MM/Second.avb",
+    "classes": {
+      "ATTR": 48,
+      "FILL": 15,
+      "SCLP": 13,
+      "PRIT": 35,
+      "FILE": 3,
+      "FXPS": 1,
+      "TRKR": 5,
+      "SEQU": 9,
+      "PRLS": 1,
+      "MSML": 4,
+      "MCMR": 2,
+      "MCBR": 3,
+      "TKFX": 1,
+      "MDES": 2,
+      "TCCP": 3,
+      "CDCI": 2,
+      "PCMA": 2,
+      "DIDP": 2,
+      "CMPO": 9,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 9,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/Thursday-project.MM/The first Bin.avb",
+    "classes": {
+      "FILE": 4,
+      "FILL": 20,
+      "SCLP": 9,
+      "ATTR": 42,
+      "TCCP": 1,
+      "MDES": 4,
+      "MSML": 3,
+      "MCBR": 1,
+      "SEQU": 10,
+      "TRKR": 3,
+      "CDCI": 1,
+      "PCMA": 2,
+      "CMPO": 5,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 5,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/aaf/aaf Bin.avb",
+    "classes": {
+      "ATTR": 3,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/monday_NIGHT/SD raster.avb",
+    "classes": {
+      "ATTR": 125,
+      "FILE": 14,
+      "MSML": 12,
+      "FILL": 30,
+      "SCLP": 36,
+      "TCCP": 12,
+      "MDES": 13,
+      "MCMR": 11,
+      "MCBR": 12,
+      "CDCI": 11,
+      "PCMA": 1,
+      "TRKR": 13,
+      "SEQU": 15,
+      "DIDP": 1,
+      "CMPO": 36,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 36,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/monday_NIGHT/Trash/720 raster.avb",
+    "classes": {
+      "FILE": 2,
+      "ATTR": 20,
+      "MDES": 2,
+      "MSML": 1,
+      "FILL": 8,
+      "SCLP": 3,
+      "TCCP": 1,
+      "MCBR": 1,
+      "CDCI": 1,
+      "TRKR": 3,
+      "SEQU": 4,
+      "CMPO": 3,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/monday_NIGHT/monday_NIGHT Bin.avb",
+    "classes": {
+      "FILE": 4,
+      "ATTR": 26,
+      "MDES": 4,
+      "MSML": 2,
+      "FILL": 8,
+      "SCLP": 6,
+      "MCBR": 2,
+      "TCCP": 2,
+      "CDCI": 2,
+      "TRKR": 4,
+      "SEQU": 4,
+      "CMPO": 6,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 6,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Desktop/mrtymcln/monday_NIGHT/reverse.avb",
+    "classes": {
+      "FILE": 2,
+      "FILL": 8,
+      "TCCP": 1,
+      "ATTR": 19,
+      "SCLP": 3,
+      "MDES": 2,
+      "MSML": 1,
+      "MCBR": 1,
+      "SEQU": 4,
+      "TRKR": 3,
+      "CDCI": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/aaf tests/aaf tests Bin.avb",
+    "classes": {
+      "ATTR": 15619,
+      "TMBC": 58,
+      "TMCS": 60,
+      "PRCL": 168,
+      "PRIT": 776,
+      "FILL": 4690,
+      "SCLP": 4956,
+      "AVUP": 4,
+      "FXPS": 170,
+      "PRLS": 206,
+      "SEQU": 2298,
+      "TRKR": 1048,
+      "GRFX": 24,
+      "MCMR": 853,
+      "FILE": 1138,
+      "TNFX": 162,
+      "RSET": 32,
+      "MDES": 1138,
+      "MSML": 842,
+      "PVOL": 247,
+      "URLL": 8,
+      "TKFX": 50,
+      "TCCP": 298,
+      "MCBR": 747,
+      "SPED": 2,
+      "PCMA": 574,
+      "CDCI": 260,
+      "RGBA": 8,
+      "MDTP": 92,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 2082,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 2082,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1727/8631 aaf from hdd.avb",
+    "classes": {
+      "ATTR": 14080,
+      "TMBC": 36,
+      "TMCS": 37,
+      "AVUP": 346,
+      "FILL": 4851,
+      "SCLP": 4257,
+      "PRCL": 75,
+      "PRIT": 1154,
+      "SEQU": 2369,
+      "TRKR": 1433,
+      "PRLS": 449,
+      "FXPS": 72,
+      "GRFX": 21,
+      "MCMR": 781,
+      "TKFX": 393,
+      "FILE": 978,
+      "TNFX": 64,
+      "RSET": 28,
+      "MDES": 885,
+      "MSML": 650,
+      "URLL": 10,
+      "TCCP": 334,
+      "MCBR": 741,
+      "PVOL": 79,
+      "PCMA": 368,
+      "CDCI": 275,
+      "RGBA": 7,
+      "MDTP": 110,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1763,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 1763,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1727/Goofs aaf.avb",
+    "classes": {
+      "ATTR": 117,
+      "TMBC": 2,
+      "TMCS": 2,
+      "MSML": 5,
+      "FILE": 2,
+      "FILL": 35,
+      "SCLP": 29,
+      "TCCP": 9,
+      "MCBR": 4,
+      "MCMR": 3,
+      "PCMA": 4,
+      "CDCI": 1,
+      "MDES": 1,
+      "SEQU": 18,
+      "TRKR": 4,
+      "MDTP": 1,
+      "DIDP": 1,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 11,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 11,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1727/aaf from hdd.avb",
+    "classes": {
+      "ATTR": 40267,
+      "PRCL": 1962,
+      "TMBC": 186,
+      "FILL": 12543,
+      "SCLP": 12931,
+      "PRIT": 4893,
+      "TMCS": 173,
+      "SEQU": 6052,
+      "PRLS": 625,
+      "SPED": 27,
+      "TRKR": 3104,
+      "TKPA": 28,
+      "TKDA": 70,
+      "TKFX": 193,
+      "TKPS": 22,
+      "TKDS": 22,
+      "MCMR": 2063,
+      "GRFX": 53,
+      "TKMN": 22,
+      "FXPS": 453,
+      "DIDP": 1033,
+      "FILE": 2855,
+      "RSET": 66,
+      "TNFX": 429,
+      "PVOL": 942,
+      "ASPI": 7,
+      "EQMB": 34,
+      "TCCP": 916,
+      "MDES": 2610,
+      "MSML": 1949,
+      "URLL": 31,
+      "MCBR": 1960,
+      "CTRL": 153,
+      "CDCI": 778,
+      "PCMA": 1154,
+      "RGBA": 17,
+      "MDTP": 277,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 4905,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4905,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1727/aaf from root.avb",
+    "classes": {
+      "ATTR": 40267,
+      "PRCL": 1962,
+      "TMBC": 186,
+      "FILL": 12543,
+      "SCLP": 12931,
+      "PRIT": 4893,
+      "TMCS": 173,
+      "SEQU": 6052,
+      "PRLS": 625,
+      "SPED": 27,
+      "TRKR": 3104,
+      "TKPA": 28,
+      "TKDA": 70,
+      "TKFX": 193,
+      "TKPS": 22,
+      "TKDS": 22,
+      "MCMR": 2063,
+      "GRFX": 53,
+      "TKMN": 22,
+      "FXPS": 453,
+      "DIDP": 1034,
+      "FILE": 2855,
+      "RSET": 66,
+      "TNFX": 429,
+      "PVOL": 942,
+      "ASPI": 7,
+      "EQMB": 34,
+      "TCCP": 916,
+      "MDES": 2610,
+      "MSML": 1949,
+      "URLL": 31,
+      "MCBR": 1960,
+      "CTRL": 153,
+      "CDCI": 778,
+      "PCMA": 1154,
+      "RGBA": 17,
+      "MDTP": 277,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 4905,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 4905,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1727/telemovie import.avb",
+    "classes": {
+      "MSML": 1,
+      "ATTR": 9,
+      "MCBR": 1,
+      "PCMA": 1,
+      "SCLP": 3,
+      "MDES": 1,
+      "TCCP": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8642.avb",
+    "classes": {
+      "FILL": 4086,
+      "SCLP": 4353,
+      "ATTR": 13511,
+      "PRCL": 868,
+      "SEQU": 1998,
+      "PRIT": 1733,
+      "TMBC": 65,
+      "TRKR": 1118,
+      "PRLS": 181,
+      "TMCS": 58,
+      "TKPA": 10,
+      "TKDA": 8,
+      "FXPS": 133,
+      "SPED": 6,
+      "DIDP": 342,
+      "GRFX": 27,
+      "MCMR": 836,
+      "TKPS": 6,
+      "TKDS": 6,
+      "TKFX": 76,
+      "FILE": 936,
+      "RSET": 36,
+      "PVOL": 715,
+      "TKMN": 6,
+      "TNFX": 116,
+      "MDES": 920,
+      "MSML": 636,
+      "URLL": 13,
+      "TCCP": 304,
+      "MCBR": 730,
+      "CDCI": 279,
+      "PCMA": 349,
+      "RGBA": 8,
+      "MDTP": 96,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1839,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 1839,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "classes": {
+      "ATTR": 18249,
+      "TMBC": 63,
+      "PRCL": 766,
+      "FILL": 5987,
+      "SCLP": 6031,
+      "TMCS": 57,
+      "PRIT": 2302,
+      "SEQU": 2934,
+      "AVUP": 373,
+      "PRLS": 555,
+      "TKPA": 6,
+      "TKDA": 3,
+      "SPED": 5,
+      "TKPS": 3,
+      "TKDS": 3,
+      "TRKR": 1643,
+      "FXPS": 126,
+      "TKMN": 3,
+      "EQMB": 3,
+      "DIDP": 339,
+      "GRFX": 20,
+      "MCMR": 889,
+      "TKFX": 439,
+      "FILE": 1116,
+      "TNFX": 120,
+      "PVOL": 919,
+      "ASPI": 8,
+      "SLCT": 261,
+      "MDES": 1028,
+      "MSML": 774,
+      "URLL": 13,
+      "RSET": 24,
+      "TCCP": 349,
+      "MCBR": 828,
+      "PCMA": 456,
+      "RGBA": 8,
+      "CDCI": 310,
+      "MDTP": 108,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 2031,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 2031,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645_v2.avb",
+    "classes": {
+      "ATTR": 14209,
+      "TMBC": 51,
+      "PRCL": 735,
+      "TMCS": 46,
+      "FILL": 4163,
+      "SCLP": 4784,
+      "PRIT": 1434,
+      "SEQU": 2022,
+      "PRLS": 180,
+      "TKPA": 2,
+      "TKDA": 1,
+      "FXPS": 126,
+      "TRKR": 1109,
+      "GRFX": 23,
+      "MCMR": 750,
+      "EQMB": 3,
+      "DIDP": 333,
+      "SPED": 4,
+      "TKPS": 1,
+      "TKDS": 1,
+      "FILE": 1000,
+      "TNFX": 119,
+      "RSET": 30,
+      "PVOL": 910,
+      "ASPI": 8,
+      "TKMN": 1,
+      "MDES": 916,
+      "MSML": 684,
+      "URLL": 13,
+      "TKFX": 67,
+      "TCCP": 323,
+      "MCBR": 703,
+      "PCMA": 407,
+      "CDCI": 269,
+      "RGBA": 8,
+      "MDTP": 104,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1756,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 1756,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/No\u0308n English bin na\u0301me\u2122 \u4f60\u597d \u6f22.avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/aaf on hdd, mxf on ssd.avb",
+    "classes": {
+      "TMCS": 51,
+      "FILL": 5217,
+      "SCLP": 5638,
+      "ATTR": 17515,
+      "PRCL": 223,
+      "SEQU": 2526,
+      "PRIT": 1118,
+      "TMBC": 62,
+      "PRLS": 228,
+      "SPED": 3,
+      "TRKR": 1284,
+      "TKPA": 8,
+      "TKDA": 4,
+      "GRFX": 21,
+      "MCMR": 1004,
+      "FXPS": 173,
+      "PVOL": 1088,
+      "TKFX": 74,
+      "DIDP": 410,
+      "TKPS": 4,
+      "TKDS": 4,
+      "FILE": 1188,
+      "RSET": 28,
+      "TNFX": 162,
+      "EQMB": 10,
+      "TKMN": 4,
+      "MDES": 1173,
+      "MSML": 820,
+      "URLL": 11,
+      "TCCP": 397,
+      "MCBR": 878,
+      "PCMA": 488,
+      "CDCI": 325,
+      "RGBA": 7,
+      "MDTP": 119,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 2289,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 2289,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/block 1729 Bin.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/8646.avb",
+    "classes": {
+      "ATTR": 11435,
+      "TMBC": 42,
+      "FILL": 3592,
+      "SCLP": 3474,
+      "TMCS": 35,
+      "SEQU": 1763,
+      "PRCL": 309,
+      "PVOL": 194,
+      "PRIT": 795,
+      "TKPA": 4,
+      "TKDA": 2,
+      "TRKR": 925,
+      "GRFX": 21,
+      "MCMR": 686,
+      "FXPS": 104,
+      "PRLS": 136,
+      "DIDP": 258,
+      "TKPS": 2,
+      "TKDS": 2,
+      "FILE": 825,
+      "RSET": 28,
+      "ASPI": 11,
+      "TNFX": 96,
+      "TKFX": 48,
+      "TKMN": 2,
+      "MDES": 808,
+      "MSML": 557,
+      "URLL": 12,
+      "TCCP": 300,
+      "MCBR": 600,
+      "PCMA": 320,
+      "CDCI": 230,
+      "RGBA": 7,
+      "MDTP": 82,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1566,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 1566,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/8647.avb",
+    "classes": {
+      "ATTR": 10214,
+      "TMBC": 24,
+      "PRCL": 203,
+      "TMCS": 26,
+      "FILL": 3005,
+      "SCLP": 3085,
+      "PRIT": 493,
+      "SEQU": 1473,
+      "FXPS": 67,
+      "PRLS": 91,
+      "PVOL": 119,
+      "GRFX": 11,
+      "MCMR": 567,
+      "DIDP": 299,
+      "FILE": 732,
+      "TRKR": 831,
+      "TNFX": 65,
+      "EQMB": 1,
+      "MDES": 667,
+      "MSML": 490,
+      "URLL": 13,
+      "RSET": 12,
+      "TCCP": 280,
+      "MCBR": 545,
+      "TKFX": 26,
+      "SPED": 2,
+      "CDCI": 227,
+      "PCMA": 258,
+      "RGBA": 5,
+      "MDTP": 78,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1307,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 1307,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/No\u0308n English bin na\u0301me\u2122 \u4f60\u597d \u6f22 \ud83d\ude80.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/block 1730 Bin.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/\u2122 tm.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/MC First Avid Projects/mrtymcln/Proj2/NEW bin.avb",
+    "classes": {
+      "FILE": 2,
+      "ATTR": 14,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "MPGI": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/MC First Avid Projects/mrtymcln/Proj2/Proj2 Bin.avb",
+    "classes": {
+      "FILE": 6,
+      "ATTR": 47,
+      "MSML": 6,
+      "FILL": 12,
+      "SCLP": 18,
+      "MCMR": 3,
+      "MCBR": 3,
+      "MDES": 3,
+      "TCCP": 3,
+      "CDCI": 2,
+      "PCMA": 4,
+      "SEQU": 6,
+      "TRKR": 2,
+      "CMPO": 12,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 12,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/MC First Avid Projects/mrtymcln/test/new imports.avb",
+    "classes": {
+      "ATTR": 154,
+      "AVUP": 8,
+      "PRCL": 2,
+      "FILL": 36,
+      "SCLP": 57,
+      "PRIT": 17,
+      "FILE": 20,
+      "SEQU": 19,
+      "FXPS": 3,
+      "DIDP": 3,
+      "TRKR": 10,
+      "PRLS": 3,
+      "MSML": 16,
+      "TCCP": 11,
+      "MDES": 12,
+      "MCBR": 11,
+      "MCMR": 1,
+      "TKFX": 3,
+      "CDCI": 11,
+      "RSET": 2,
+      "PCMA": 4,
+      "RGBA": 1,
+      "CMPO": 40,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 40,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Volumes/EDIT/2026/Documents/MC First Avid Projects/mrtymcln/test/test Bin.avb",
+    "classes": {
+      "ATTR": 23,
+      "FILE": 2,
+      "FILL": 1,
+      "PRIT": 3,
+      "MSML": 3,
+      "SCLP": 10,
+      "FXPS": 1,
+      "TRKR": 3,
+      "SEQU": 1,
+      "PRLS": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "CDCI": 2,
+      "RGBA": 1,
+      "RSET": 2,
+      "TKFX": 1,
+      "CMPO": 6,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 6,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/MC First Avid Projects/mrtymcln/test/new imports.avb",
+    "classes": {
+      "ATTR": 154,
+      "AVUP": 8,
+      "PRCL": 2,
+      "FILL": 36,
+      "SCLP": 57,
+      "PRIT": 17,
+      "FILE": 20,
+      "SEQU": 19,
+      "FXPS": 3,
+      "DIDP": 3,
+      "TRKR": 10,
+      "PRLS": 3,
+      "MSML": 16,
+      "TCCP": 11,
+      "MDES": 12,
+      "MCBR": 11,
+      "MCMR": 1,
+      "TKFX": 3,
+      "CDCI": 11,
+      "RSET": 2,
+      "PCMA": 4,
+      "RGBA": 1,
+      "CMPO": 40,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 40,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/MC First Avid Projects/mrtymcln/test/test Bin.avb",
+    "classes": {
+      "ATTR": 23,
+      "FILE": 2,
+      "FILL": 1,
+      "PRIT": 3,
+      "MSML": 3,
+      "SCLP": 10,
+      "FXPS": 1,
+      "TRKR": 3,
+      "SEQU": 1,
+      "PRLS": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "CDCI": 2,
+      "RGBA": 1,
+      "RSET": 2,
+      "TKFX": 1,
+      "CMPO": 6,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 6,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/MC First Avid Projects/mrtymcln/Proj2/NEW bin.avb",
+    "classes": {
+      "FILE": 2,
+      "ATTR": 14,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "MPGI": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/MC First Avid Projects/mrtymcln/Proj2/Proj2 Bin.avb",
+    "classes": {
+      "FILE": 6,
+      "ATTR": 47,
+      "MSML": 6,
+      "FILL": 12,
+      "SCLP": 18,
+      "MCMR": 3,
+      "MCBR": 3,
+      "MDES": 3,
+      "TCCP": 3,
+      "CDCI": 2,
+      "PCMA": 4,
+      "SEQU": 6,
+      "TRKR": 2,
+      "CMPO": 12,
+      "BVst": 1,
+      "BINF": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 12,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/Shared/AvidMediaComposer/Avid Users/martymclean/2026/Media Tool.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/Shared/AvidMediaComposer/Avid Users/martymclean/Media Tool.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_25P/te\u0308st_uhd_25P Bin1.avb",
+    "classes": {
+      "ATTR": 451,
+      "AVUP": 5,
+      "DIDP": 35,
+      "FILL": 137,
+      "SCLP": 232,
+      "PRIT": 44,
+      "SEQU": 69,
+      "FILE": 38,
+      "FXPS": 7,
+      "TRKR": 27,
+      "PRLS": 7,
+      "MSML": 58,
+      "MCMR": 19,
+      "MCBR": 20,
+      "TKFX": 7,
+      "TCCP": 26,
+      "CDCI": 20,
+      "PCMA": 38,
+      "MDES": 20,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 99,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 99,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_25P/te\u0308st_uhd_25P Bin.avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_720p_23.976/zTe\u00dft_720p_23.976 Bin.avb",
+    "classes": {
+      "ATTR": 421,
+      "AVUP": 5,
+      "FILL": 119,
+      "SCLP": 208,
+      "PRIT": 10,
+      "FILE": 34,
+      "DIDP": 23,
+      "MPGP": 4,
+      "FXPS": 5,
+      "TRKR": 24,
+      "SEQU": 60,
+      "PRLS": 5,
+      "TCCP": 26,
+      "MSML": 52,
+      "MCBR": 19,
+      "MCMR": 17,
+      "TKFX": 5,
+      "MDES": 18,
+      "MASK": 24,
+      "PCMA": 35,
+      "CDCI": 15,
+      "MPGI": 2,
+      "ECCP": 1,
+      "CMPO": 89,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 89,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin1.avb",
+    "classes": {
+      "FILE": 29,
+      "ATTR": 302,
+      "MSML": 41,
+      "MDES": 16,
+      "FILL": 98,
+      "SCLP": 126,
+      "TCCP": 14,
+      "MCMR": 13,
+      "MCBR": 14,
+      "CDCI": 14,
+      "PCMA": 26,
+      "MPGA": 1,
+      "SEQU": 49,
+      "TRKR": 16,
+      "DIDP": 1,
+      "CMPO": 69,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 69,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_30P/zTe\u0308st_uhd_30P Bin.avb",
+    "classes": {
+      "MSML": 1,
+      "ATTR": 9,
+      "MCBR": 1,
+      "PCMA": 1,
+      "SCLP": 3,
+      "MDES": 1,
+      "TCCP": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080i_59.94/zTe\u00dft_1080i_59.94 Bin1.avb",
+    "classes": {
+      "ATTR": 635,
+      "AVUP": 5,
+      "FILL": 185,
+      "SCLP": 336,
+      "PRIT": 10,
+      "FILE": 56,
+      "DIDP": 29,
+      "MPGP": 4,
+      "FXPS": 5,
+      "TRKR": 35,
+      "SEQU": 93,
+      "PRLS": 5,
+      "MSML": 84,
+      "MCMR": 28,
+      "MCBR": 29,
+      "TKFX": 5,
+      "TCCP": 30,
+      "PCMA": 56,
+      "CDCI": 26,
+      "MDES": 28,
+      "MPGI": 2,
+      "MASK": 1,
+      "CMPO": 141,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 141,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080i_59.94/zTe\u00dft_1080i_59.94 Bin.avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080p_23.976/zTe\u00dft_1080p_23.976 Bin.avb",
+    "classes": {
+      "ATTR": 11,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080p_23.976/zTe\u00dft_1080p_23.976 Bin1.avb",
+    "classes": {
+      "ATTR": 667,
+      "AVUP": 5,
+      "FILL": 191,
+      "SCLP": 348,
+      "PRIT": 10,
+      "FILE": 58,
+      "DIDP": 33,
+      "MPGP": 4,
+      "FXPS": 5,
+      "TRKR": 36,
+      "SEQU": 96,
+      "PRLS": 5,
+      "MSML": 87,
+      "MCMR": 29,
+      "MCBR": 30,
+      "TKFX": 5,
+      "TCCP": 37,
+      "CDCI": 27,
+      "PCMA": 58,
+      "MDES": 29,
+      "MPGI": 2,
+      "MASK": 5,
+      "ECCP": 1,
+      "CMPO": 146,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 146,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_1080i_50/zTe\u0308st_1080i_50 Bin1.avb",
+    "classes": {
+      "ATTR": 458,
+      "FILE": 40,
+      "DIDP": 18,
+      "MPGP": 4,
+      "MSML": 60,
+      "FILL": 127,
+      "SCLP": 240,
+      "MCMR": 20,
+      "MCBR": 21,
+      "CDCI": 18,
+      "MDES": 20,
+      "TCCP": 21,
+      "PCMA": 40,
+      "MPGI": 2,
+      "SEQU": 64,
+      "TRKR": 22,
+      "CMPO": 101,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 101,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_1080i_50/zTe\u0308st_1080i_50 Bin.avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Trash/Untitled Project Bin1.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Trash/Untitled Project Bin11.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Trash/Untitled Project Bin2.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Trash/Untitled Project Bin3.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Trash/Untitled Project Bin12.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/bin 1.avb",
+    "classes": {
+      "FILE": 2,
+      "MDES": 2,
+      "MSML": 1,
+      "FILL": 8,
+      "SCLP": 3,
+      "ATTR": 18,
+      "TCCP": 1,
+      "MCBR": 1,
+      "CDCI": 1,
+      "TRKR": 3,
+      "SEQU": 4,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Untitled Project Bin1.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/Untitled Project/Untitled Project Bin.avb",
+    "classes": {
+      "ATTR": 3751,
+      "PRCL": 285,
+      "TMBC": 5,
+      "FILL": 2732,
+      "SCLP": 1298,
+      "PRIT": 20564,
+      "TMCS": 4,
+      "SEQU": 1366,
+      "PRLS": 855,
+      "FILE": 250,
+      "SPED": 285,
+      "MDES": 342,
+      "MSML": 210,
+      "CTRL": 5,
+      "TRKR": 880,
+      "PCMA": 42,
+      "CDCI": 134,
+      "TCCP": 110,
+      "PVOL": 5,
+      "TKFX": 570,
+      "MCBR": 47,
+      "MULD": 33,
+      "MPGA": 1,
+      "ECCP": 5,
+      "MASK": 20,
+      "CMPO": 423,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 423,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/Sd2 test/Sd2 test Bin.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_29.97P/zTe\u0308st_uhd_29.97P Bin.avb",
+    "classes": {
+      "MSML": 11,
+      "ATTR": 60,
+      "MCBR": 11,
+      "MCMR": 10,
+      "PCMA": 10,
+      "SCLP": 23,
+      "MDES": 1,
+      "TCCP": 1,
+      "MPGA": 1,
+      "CMPO": 23,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 23,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_29.97P/zTe\u0308st_uhd_29.97P Bin1.avb",
+    "classes": {
+      "ATTR": 494,
+      "PRCL": 6,
+      "FILL": 164,
+      "SCLP": 252,
+      "PRIT": 112,
+      "SEQU": 83,
+      "AVUP": 10,
+      "PRLS": 14,
+      "SPED": 2,
+      "TRKR": 29,
+      "FILE": 38,
+      "DIDP": 44,
+      "FXPS": 12,
+      "MSML": 63,
+      "MCMR": 19,
+      "MCBR": 20,
+      "TKFX": 12,
+      "TCCP": 21,
+      "MDES": 25,
+      "CDCI": 25,
+      "PCMA": 38,
+      "MASK": 1,
+      "CMPO": 114,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 114,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_23.976P/te\u0308st_import.avb",
+    "classes": {
+      "ATTR": 456,
+      "DIDP": 38,
+      "AVUP": 5,
+      "FILL": 137,
+      "SCLP": 232,
+      "PRIT": 44,
+      "SEQU": 69,
+      "FILE": 38,
+      "FXPS": 7,
+      "TRKR": 27,
+      "PRLS": 7,
+      "MSML": 58,
+      "MCMR": 19,
+      "MCBR": 20,
+      "TKFX": 7,
+      "TCCP": 27,
+      "PCMA": 38,
+      "CDCI": 20,
+      "MDES": 20,
+      "MASK": 5,
+      "ECCP": 1,
+      "CMPO": 99,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 99,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_23.976P/te\u0308st_uhd_23.976P Bin.avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/GROSS_METAL_BODY_SHIT/02_VIDEO.avb",
+    "classes": {
+      "FILE": 41,
+      "ATTR": 449,
+      "MDES": 41,
+      "MSML": 27,
+      "FILL": 268,
+      "SCLP": 120,
+      "TCCP": 14,
+      "MCBR": 14,
+      "MPGA": 13,
+      "SEQU": 134,
+      "CDCI": 14,
+      "TRKR": 42,
+      "CMPO": 55,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 55,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/GROSS_METAL_BODY_SHIT/01_SEQS.avb",
+    "classes": {
+      "FILL": 5078,
+      "SCLP": 2014,
+      "ATTR": 4034,
+      "PRCL": 592,
+      "SEQU": 2330,
+      "PRIT": 13420,
+      "TMCS": 469,
+      "PRLS": 1517,
+      "AVUP": 780,
+      "TMBC": 11,
+      "SPED": 540,
+      "FXPS": 1048,
+      "DIDP": 1272,
+      "TKFX": 1036,
+      "TRKR": 1051,
+      "FILE": 47,
+      "MSML": 145,
+      "TNFX": 12,
+      "MCBR": 20,
+      "MDES": 160,
+      "TCCP": 38,
+      "CDCI": 125,
+      "PCMA": 6,
+      "MPGA": 14,
+      "ECCP": 3,
+      "MASK": 12,
+      "CMPO": 410,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 410,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/GROSS_METAL_BODY_SHIT/03_AUDIO.avb",
+    "classes": {
+      "FILE": 29,
+      "ATTR": 210,
+      "MSML": 26,
+      "MDES": 17,
+      "FILL": 34,
+      "SCLP": 87,
+      "TCCP": 14,
+      "MCBR": 15,
+      "PCMA": 23,
+      "MPGA": 2,
+      "SEQU": 17,
+      "CDCI": 1,
+      "TRKR": 3,
+      "CMPO": 55,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 55,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/GROSS_METAL_BODY_SHIT/Trash/GROSS_METAL_BODY_SHIT Bin.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/GROSS_METAL_BODY_SHIT/04_GFX.avb",
+    "classes": {
+      "ATTR": 68,
+      "FILE": 8,
+      "MDES": 8,
+      "MSML": 4,
+      "FILL": 28,
+      "SCLP": 12,
+      "TCCP": 4,
+      "MCBR": 4,
+      "CDCI": 1,
+      "TRKR": 12,
+      "SEQU": 14,
+      "RGBA": 3,
+      "CMPO": 12,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 12,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/GROSS_METAL_BODY_SHIT/GROSS_METAL_BODY_SHIT Bin.avb",
+    "classes": {
+      "ATTR": 2,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 0,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0328\u00dft_1080i_50/zTe\u0328\u00dft_1080i_50 Bin1.avb",
+    "classes": {
+      "ATTR": 586,
+      "DIDP": 31,
+      "AVUP": 2,
+      "PRCL": 8,
+      "MPGP": 8,
+      "FILL": 211,
+      "SCLP": 300,
+      "PRIT": 149,
+      "SEQU": 109,
+      "TRKR": 48,
+      "FILE": 46,
+      "FXPS": 20,
+      "PRLS": 16,
+      "MSML": 75,
+      "MCMR": 23,
+      "MCBR": 24,
+      "TKFX": 20,
+      "SPED": 1,
+      "MDES": 29,
+      "TCCP": 24,
+      "CDCI": 27,
+      "PCMA": 46,
+      "MPGI": 2,
+      "CMPO": 134,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 134,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0328\u00dft_1080i_50/zTe\u0328\u00dft_1080i_50 Bin.avb",
+    "classes": {
+      "MSML": 1,
+      "ATTR": 9,
+      "MCBR": 1,
+      "PCMA": 1,
+      "SCLP": 3,
+      "MDES": 1,
+      "TCCP": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/zAvid Projects/ARTEFACTS/ARTEFACTS Bin.avb",
+    "classes": {
+      "FXPS": 36,
+      "TRKR": 96,
+      "SCLP": 217,
+      "ATTR": 593,
+      "TKFX": 42,
+      "PRCL": 3,
+      "FILE": 70,
+      "TMBC": 5,
+      "PRIT": 4,
+      "MDES": 70,
+      "MSML": 51,
+      "TMCS": 1,
+      "PRLS": 1,
+      "PCMA": 16,
+      "CDCI": 18,
+      "MCBR": 20,
+      "FILL": 43,
+      "PVOL": 16,
+      "SPED": 1,
+      "MULD": 16,
+      "TCCP": 20,
+      "WAVE": 1,
+      "SEQU": 13,
+      "CMPO": 58,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 58,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_PAL_25p/WAVE(OMF).avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "WAVE": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_PAL_25p/AIFF-C(OMF).avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "AIFC": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_PAL_25p/zTe\u00dft_PAL_25p Bin.avb",
+    "classes": {
+      "ATTR": 166,
+      "FILL": 55,
+      "SCLP": 76,
+      "PRIT": 210,
+      "FILE": 12,
+      "FXPS": 6,
+      "TRKR": 14,
+      "SEQU": 28,
+      "PRLS": 6,
+      "DIDP": 5,
+      "MSML": 19,
+      "MCBR": 8,
+      "MCMR": 6,
+      "TKFX": 6,
+      "TCCP": 14,
+      "MDES": 7,
+      "PCMA": 13,
+      "CDCI": 6,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 34,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 34,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_50P/zTe\u0308st_uhd_50P Bin.avb",
+    "classes": {
+      "MSML": 1,
+      "ATTR": 9,
+      "MCBR": 1,
+      "PCMA": 1,
+      "SCLP": 3,
+      "MDES": 1,
+      "TCCP": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u0308st_uhd_50P/zTe\u0308st_uhd_50P Bin1.avb",
+    "classes": {
+      "FILE": 14,
+      "ATTR": 143,
+      "MSML": 21,
+      "FILL": 42,
+      "SCLP": 63,
+      "MCMR": 7,
+      "MCBR": 7,
+      "MDES": 7,
+      "TCCP": 7,
+      "PCMA": 14,
+      "CDCI": 7,
+      "SEQU": 21,
+      "TRKR": 7,
+      "CMPO": 35,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 35,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_24P/te\u0308st_uhd_24P Bin.avb",
+    "classes": {
+      "ATTR": 9,
+      "MSML": 1,
+      "MCBR": 1,
+      "MDES": 1,
+      "TCCP": 1,
+      "SCLP": 3,
+      "PCMA": 1,
+      "CMPO": 3,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 3,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/te\u0308st_uhd_24P/te\u0308st_uhd_24P Bin1.avb",
+    "classes": {
+      "ATTR": 338,
+      "AVUP": 5,
+      "FILL": 107,
+      "SCLP": 172,
+      "PRIT": 44,
+      "DIDP": 25,
+      "SEQU": 54,
+      "FILE": 28,
+      "FXPS": 7,
+      "TRKR": 22,
+      "PRLS": 7,
+      "MSML": 43,
+      "MCMR": 14,
+      "MCBR": 15,
+      "TCCP": 22,
+      "TKFX": 7,
+      "MDES": 15,
+      "CDCI": 15,
+      "PCMA": 28,
+      "MASK": 5,
+      "ECCP": 1,
+      "CMPO": 74,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 74,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_NTSC_30i/zTe\u00dft_NTSC_30i Bin.avb",
+    "classes": {
+      "ATTR": 217,
+      "FILL": 63,
+      "SCLP": 112,
+      "PRIT": 35,
+      "FILE": 18,
+      "DIDP": 13,
+      "FXPS": 1,
+      "TRKR": 12,
+      "SEQU": 32,
+      "PRLS": 1,
+      "MSML": 28,
+      "MCBR": 11,
+      "MCMR": 9,
+      "TKFX": 1,
+      "PCMA": 19,
+      "MDES": 10,
+      "TCCP": 11,
+      "CDCI": 4,
+      "CMPO": 49,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [
+      {
+        "object": 373,
+        "error": "b'CDCI': unknown ext tag 0x11 17"
+      },
+      {
+        "object": 448,
+        "error": "b'CDCI': unknown ext tag 0x11 17"
+      },
+      {
+        "object": 479,
+        "error": "b'CDCI': unknown ext tag 0x11 17"
+      },
+      {
+        "object": 482,
+        "error": "b'CDCI': unknown ext tag 0x11 17"
+      },
+      {
+        "object": 497,
+        "error": "b'CDCI': unknown ext tag 0x11 17"
+      }
+    ],
+    "mobCount": 49,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/Avid Projects/zTe\u00dft_1080p_29.97/zTe\u00dft_1080p_29.97 Bin.avb",
+    "classes": {
+      "ATTR": 754,
+      "AVUP": 10,
+      "FILL": 212,
+      "SCLP": 411,
+      "PRIT": 20,
+      "FILE": 58,
+      "DIDP": 45,
+      "MPGP": 6,
+      "FXPS": 10,
+      "TRKR": 45,
+      "SEQU": 106,
+      "PRLS": 10,
+      "MSML": 88,
+      "MCMR": 29,
+      "MCBR": 33,
+      "TKFX": 10,
+      "TCCP": 36,
+      "MPGI": 2,
+      "CDCI": 28,
+      "MDES": 30,
+      "PCMA": 58,
+      "MASK": 3,
+      "CMPO": 151,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 151,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/ANOM/ANOM TRAILER/ANOM Bin.avb",
+    "classes": {
+      "ATTR": 571,
+      "TMBC": 19,
+      "TMCS": 31,
+      "FILL": 331,
+      "PRIT": 101,
+      "PRCL": 4,
+      "FXPS": 37,
+      "TRKR": 71,
+      "SEQU": 145,
+      "PRLS": 37,
+      "AVUP": 34,
+      "TKFX": 35,
+      "SCLP": 193,
+      "FILE": 29,
+      "TCCP": 24,
+      "MCBR": 13,
+      "MDES": 29,
+      "MSML": 19,
+      "TNFX": 2,
+      "PCMA": 5,
+      "CDCI": 9,
+      "MPGA": 5,
+      "ECCP": 2,
+      "MASK": 8,
+      "CMPO": 42,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 42,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/ANOM/ANOM TRAILER/ANOM/JF.avb",
+    "classes": {
+      "FILE": 12,
+      "ATTR": 135,
+      "MDES": 12,
+      "MSML": 8,
+      "FILL": 80,
+      "SCLP": 36,
+      "TCCP": 4,
+      "MCBR": 4,
+      "CDCI": 4,
+      "TRKR": 12,
+      "SEQU": 40,
+      "MPGA": 4,
+      "CMPO": 16,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 16,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/ANOM/ANOM TRAILER/ANOM/CLIPS.avb",
+    "classes": {
+      "FILE": 69,
+      "ATTR": 809,
+      "FILL": 460,
+      "SCLP": 207,
+      "TCCP": 23,
+      "MDES": 69,
+      "MSML": 46,
+      "MCBR": 23,
+      "SEQU": 230,
+      "TRKR": 69,
+      "PCMA": 23,
+      "CDCI": 23,
+      "CMPO": 92,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 92,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/ANOM/ANOM TRAILER/ANOM/ANOM Bin.avb",
+    "classes": {
+      "ATTR": 1328,
+      "TMBC": 55,
+      "TMCS": 117,
+      "FILL": 796,
+      "PRIT": 322,
+      "PRCL": 15,
+      "FXPS": 124,
+      "TRKR": 189,
+      "SEQU": 306,
+      "PRLS": 124,
+      "AVUP": 110,
+      "TKFX": 114,
+      "SCLP": 523,
+      "FILE": 44,
+      "TCCP": 57,
+      "MCBR": 22,
+      "MDES": 44,
+      "MSML": 29,
+      "TNFX": 10,
+      "PCMA": 10,
+      "CDCI": 14,
+      "MPGA": 5,
+      "ECCP": 6,
+      "MASK": 24,
+      "CMPO": 66,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 66,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  },
+  {
+    "path": "/Users/martymclean/Documents/ANOM/ANOM TRAILER/ANOM/2.avb",
+    "classes": {
+      "ATTR": 990,
+      "TMBC": 17,
+      "TMCS": 40,
+      "FILL": 584,
+      "PRIT": 152,
+      "SCLP": 370,
+      "PRCL": 11,
+      "FXPS": 48,
+      "TRKR": 102,
+      "SEQU": 238,
+      "PRLS": 48,
+      "AVUP": 36,
+      "TKFX": 38,
+      "FILE": 55,
+      "MSML": 38,
+      "TNFX": 10,
+      "TCCP": 33,
+      "MCBR": 21,
+      "MDES": 57,
+      "PCMA": 15,
+      "CDCI": 17,
+      "MPGA": 5,
+      "RGBA": 1,
+      "ECCP": 2,
+      "MASK": 8,
+      "CMPO": 82,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "referenceSkippedObjects": [],
+    "mobCount": 82,
+    "mobsMatch": true,
+    "fileIdsMatch": true,
+    "missingMobs": [],
+    "extraMobs": []
+  }
+]

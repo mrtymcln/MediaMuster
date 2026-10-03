@@ -33,6 +33,9 @@ These documents preserve decisions, proposals, implementation follow-ups and pas
 findings. A statement of intent or an old finding is not necessarily current
 behaviour. Start with the guide above and follow the source links when checking it.
 
+- [Project Canon](../Project%20Canon/README.md): agreed v1 RAM metadata requirements,
+  proposed evidence/association design, ASCII diagrams, real-media findings, and
+  acceptance checks. Proposed behaviour is explicitly distinguished from current code.
 - [Native bin fallback](native-bin-fallback.md).
 - [Operation recovery and cleanup](operation-recovery-cleanup.md).
 - [Historical reviews](reviews/README.md): dated findings, research and validation summaries.

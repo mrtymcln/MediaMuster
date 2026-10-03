@@ -1,0 +1,97 @@
+[
+  [
+    "Current Avid documentation index",
+    "https://kb.avid.com/pkb/articles/en_US/Knowledge/Media-Composer-2026-Documentation",
+    "Located the26.8 ReadMe and2026.x Editing Guide; guide downloaded directly and relevant pages extracted locally."
+  ],
+  [
+    "Media Composer2026.x Editing Guide",
+    "https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_Editing_Guide.pdf",
+    "1320 PDF pages; relevant media-management/OMF/audio/shared-storage sections retained. Ordinary refresh guidance excludes Production Management-managed storage."
+  ],
+  [
+    "Avid developer SDK overview",
+    "https://developer.avid.com/",
+    "AMT/native media qualification and current VC-3/DNx SDK scope; not a public PMR specification."
+  ],
+  [
+    "Avid database refresh KB",
+    "https://kb.avid.com/pkb/articles/en_US/Troubleshooting/Refreshing-Media-Databases",
+    "Distinguishes standalone database-refresh workflow from managed/shared environments."
+  ],
+  [
+    "Import dailies into Media Composer",
+    "https://kb.avid.com/pkb/articles/en_US/Knowledge/import-dailies-into-MC",
+    "Managed-tree/qualified OP-Atom workflow and practical folder-count guidance."
+  ],
+  [
+    "Why audio is stored differently",
+    "https://kb.avid.com/pkb/articles/en_US/troubleshooting/en273303",
+    "Legacy audio settings and OMFI folders."
+  ],
+  [
+    "Unity ISIS media folder structure",
+    "https://resources.avid.com/SupportFiles/attach/Unity_ISIS_Media_File_Folder_Structure.pdf",
+    "Historical workstation/ingest folder layout; date is2008, not a current-format specification."
+  ],
+  [
+    "MediaCentral Production2023.7 best practices",
+    "https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2023_7_0_Best_Practices_Guide.pdf",
+    "Managed ingest/storage context."
+  ],
+  [
+    "Avid supported video formats",
+    "https://resources.avid.com/SupportFiles/attach/Avid_Supported_Video_File_Formats.pdf",
+    "Linked from2026 index but document is dated2021; linking/import compatibility is not managed-native equivalence."
+  ],
+  [
+    "OMF Interchange Specification2.1",
+    "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+    "Original1997 specification,282 PDF pages, retrieved from a mirror. Standard object/locator/geometry source; does not define all private Avid MDB extensions."
+  ],
+  [
+    "BBC/libMXF baseline model",
+    "https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_baseline_data_model.h",
+    "Actual property/class/type definitions used as an independent schema reference; snapshot copied with hash."
+  ],
+  [
+    "BBC/libMXF extensions",
+    "https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_extensions_data_model.h",
+    "Avid/private extension context; retained snapshot."
+  ],
+  [
+    "AAF object-model draft",
+    "https://aaf.sourceforge.net/docs/aafObjectModel.pdf",
+    "Historical model context; a draft is not final evidence of private writer behavior."
+  ],
+  [
+    "SMPTE published registry",
+    "https://registry.smpte-ra.org/view/published/",
+    "Register discovery; not every codec/type entry was individually certified here."
+  ],
+  [
+    "Microsoft WAVEFORMATEXTENSIBLE",
+    "https://learn.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatextensible",
+    "Valid bits, storage bits, subtype and channel mask."
+  ],
+  [
+    "pyavb reference reader",
+    "https://github.com/markreidvfx/pyavb",
+    "Reverse-engineered comparison implementation; supplied local source used with compiled extensions disabled."
+  ],
+  [
+    "Installed DRUI.xml",
+    "/Applications/Avid Media Composer/SupportingFiles/DynamicRelinkUI/DRUI.xml",
+    "Local Avid configuration; relink filters are evidence of its matching policy, not automatically container axioms."
+  ],
+  [
+    "Installed libameLibrary",
+    "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "Static arm64 instruction checks with retained addresses/excerpts."
+  ],
+  [
+    "Supplied legacy PMRReader",
+    "/Users/martymclean/Downloads/python-PMRReader-master/",
+    "Not authoritative: Python2-era parser, ignores modern Unicode details and uses assumptions inconsistent with this binary. No proposal to replace production code with it."
+  ]
+]

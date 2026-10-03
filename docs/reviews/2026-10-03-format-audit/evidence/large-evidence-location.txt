@@ -1,0 +1,2 @@
+/Users/martymclean/.codex/visualizations/2026/10/03/01a0ff96-4cf0-7e12-aa88-16bb706b800c/mediamuster-format-audit
+Read-only raw metadata and production reader outputs are retained here to avoid adding large data files to Git.

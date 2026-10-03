@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.31)
+project(FormatAudit LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Core)
+set(S /Users/martymclean/Developer/MediaMuster/src)
+add_executable(audit main.cpp ${S}/pmrparser.cpp ${S}/mdbparser.cpp ${S}/omfparser.cpp ${S}/omfobjects.cpp ${S}/omfresolutions.cpp ${S}/bentofile.cpp ${S}/mxfparser.cpp ${S}/mediametadata.cpp ${S}/avbparser.cpp ${S}/diagnostics.cpp)
+target_include_directories(audit PRIVATE ${S})
+target_link_libraries(audit PRIVATE Qt6::Core)
