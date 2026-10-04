@@ -78,6 +78,21 @@ Qt stores decoded `QString` text as UTF-16 code units internally. That does not
 change the source's `TextEncoding`: an original UTF-8 observation remains UTF-8
 in its provenance even after MediaMuster decodes it into a QString.
 
+## Fresh MXF reader
+
+Implemented 4 October 2026. Verified types come from each partition's Primer-mapped
+property identity and the static source catalogue, not a presumed fixed local tag.
+Standard UTF16String observations retain `Utf16BE`/`Recorded`; mapped UTF8String
+and ISO7String use `Utf8` and `Ascii` respectively. Original bytes, NUL termination
+and any padding remain intact, and malformed declared text is explicitly unreadable.
+No normalization removes decomposed characters.
+
+Verified Avid/AAF Indirect prefixes carry their own value type and byte-order byte.
+Their string values can therefore be `Utf16LE` or `Utf16BE` independently of normal
+MXF metadata's big-endian encoding. Unknown indirect forms and unknown private
+properties remain raw; they do not inherit a guessed text encoding. See the
+[MXF report](fresh-mxf-reader-2026-10-04.md) for proof and remaining limits.
+
 Evidence and limits: [fresh PMR reader](fresh-pmr-reader-2026-10-03.md),
 [non-English specimens](non-english-encoding-specimens-2026-10-03.md), and current
 `src/mxfparser.cpp` package-name/TaggedValue routines. The older PMR/MDB text helper

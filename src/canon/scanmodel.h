@@ -64,6 +64,27 @@ namespace Canon
 		std::optional<bool> metadataBigEndian;
 	};
 
+	// MXF local tags only acquire meaning through their own Primer Pack. Keep
+	// that mapping and framing separate from the property's original value bytes.
+	struct MxfPropertyContext
+	{
+		quint32 localTag = 0;
+		qint64 primerOffset = -1;
+		QByteArray mappedAuid;
+		QString typeName;
+		QByteArray framingBytes; ///< Original local tag and length, including BER spelling.
+		QVector<ByteRange> framingRanges;
+	};
+
+	struct MxfSetContext
+	{
+		QByteArray key;
+		QString name;
+		qint64 partitionOffset = -1;
+		ByteRange framing;
+		ByteRange value;
+	};
+
 	/// Unknown/private properties keep their encoding without invented semantics.
 	struct RawProperty
 	{
@@ -71,11 +92,12 @@ namespace Canon
 		QByteArray encoding;
 		QVariant decoded;
 		PropertyReadState state = PropertyReadState::NotRead;
-		QString interpretation;							///< Decoding limits/encoding evidence, without display policy.
-		std::optional<TextEncoding> textEncoding;		///< No value for binary/numeric/absent properties.
-		std::optional<EvidenceBasis> textEncodingBasis; ///< No value when encoding is unknown.
+		QString interpretation;							  ///< Decoding limits/encoding evidence, without display policy.
+		std::optional<TextEncoding> textEncoding;		  ///< No value for binary/numeric/absent properties.
+		std::optional<EvidenceBasis> textEncodingBasis;	  ///< No value when encoding is unknown.
 		QSharedPointer<const BentoPropertyContext> bento; ///< Null for formats without Bento framing.
-		bool bytesRetained = true;						///< False: locator ranges reference bytes not copied into RAM.
+		QSharedPointer<const MxfPropertyContext> mxf;	  ///< Null outside MXF local sets.
+		bool bytesRetained = true;						  ///< False: locator ranges reference bytes not copied into RAM.
 	};
 
 	struct AvidObject
@@ -95,7 +117,8 @@ namespace Canon
 		Role role = Role::Unknown;
 		SourceSnapshotRef snapshot;
 		QByteArray recordedIdentity;
-		QString identityEncoding; ///< Reader-established encoding, not an assumed byte order.
+		QString identityEncoding;				 ///< Reader-established encoding, not an assumed byte order.
+		QSharedPointer<const MxfSetContext> mxf; ///< MXF set/partition context, including repeated metadata copies.
 		QVector<RawProperty> properties;
 	};
 
@@ -147,7 +170,7 @@ namespace Canon
 		Outcome outcome = Outcome::NotRead;
 		SourceSnapshotRef snapshot;
 		Container container = Container::Unknown;
-		PropertyLocator embedding; ///< Parent chunk/property, when this is an embedded source.
+		PropertyLocator embedding;			   ///< Parent chunk/property, when this is an embedded source.
 		QVector<ParsedSource> embeddedSources; ///< Each embedded graph has its own source receipt and local handles.
 		QVector<RecordSet> recordSets;
 		QVector<AvidObject> objects;

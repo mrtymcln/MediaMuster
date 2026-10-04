@@ -1,0 +1,21 @@
+Working directory: /Users/martymclean/Developer/MediaMuster
+Architecture: x86_64 executable under Rosetta, linked to the final universal Debug static library.
+
+Compile after final successful CMake build:
+/usr/bin/clang++ -std=c++17 -arch x86_64 -mmacosx-version-min=11.0 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /tmp/canon-mxf-diagnostic-probe.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /tmp/canon-mxf-diagnostic-probe
+
+Run:
+/tmp/canon-mxf-diagnostic-probe tests/fixtures > /tmp/canon-mxf-diagnostic-expanded-final.jsonl
+
+Generate catalogue to a temporary file without changing production sources:
+python3 /tmp/generate-mxf-catalogue.py /tmp/mxfcatalogue-regenerated.h
+cmp src/canon/mxfcatalogue_p.h /tmp/mxfcatalogue-regenerated.h
+
+Catalogue input paths:
+docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h
+docs/reviews/2026-10-03-format-audit/evidence/mxf_extensions_data_model.h
+/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_avid_extensions_data_model.h
+
+Upstream: https://github.com/bbc/libMXF/tree/main/mxf
+Exact source hashes, including library and probe, are in canon-mxf-final-source-hashes.txt.
+The generator now reproduces the checked-in catalogue byte-for-byte, including the explicitly documented signed Timestamp.Year correction.

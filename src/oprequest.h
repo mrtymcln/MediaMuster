@@ -13,7 +13,7 @@
 // MARK: - OpKind
 
 /// Supported operations. New Undo jobs require authorization from the caller;
-/// the application supplies it according to FeatureFlags::kUndoEnabled.
+/// the application supplies it according to FeatureFlags::kUndo.
 /// Rename is Rebalance's same-filesystem relocation.
 enum class OpKind : int
 {

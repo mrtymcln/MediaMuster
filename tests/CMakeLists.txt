@@ -63,6 +63,11 @@ mediamuster_add_test(tst_canonlegacy media)
 target_link_libraries(tst_canonlegacy PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonlegacy PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Full MXF metadata framing, scoped Primers, source graphs and guarded essence.
+mediamuster_add_test(tst_canonmxf media)
+target_link_libraries(tst_canonmxf PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canonmxf PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
 mediamuster_add_test(tst_omfuid media)

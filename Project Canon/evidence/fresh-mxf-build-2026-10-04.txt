@@ -1,0 +1,11 @@
+[1/12] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/mxfreader.cpp.o
+[2/12] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/mxfobjects_p.cpp.o
+[3/12] Linking CXX static library libmediamuster_canon.a
+[4/12] Linking CXX executable tests/tst_canonpmr
+[5/12] Linking CXX executable tests/tst_canondiscovery
+[6/12] Linking CXX executable tests/tst_canonpmrrobustness
+[7/12] Automatic MOC for target tst_canonmxf
+[8/11] Linking CXX executable tests/tst_canonmdb
+[9/11] Linking CXX executable tests/tst_canonlegacy
+[10/11] Building CXX object tests/CMakeFiles/tst_canonmxf.dir/tst_canonmxf.cpp.o
+[11/11] Linking CXX executable tests/tst_canonmxf

@@ -198,3 +198,16 @@ an atomic snapshot of the earlier probe.
 Next stages remain MXF/AVB reader work, reconciliation, per-field selection and
 the compatibility adapter. Discovery admission and the default-on OmfScan setting
 remain as [agreed](scan-scope-and-omf.md).
+
+## Comparison after the MXF stage
+
+The fresh legacy reader is better suited to Canon's evidence model: it preserves
+the graph, competing observations, native/embedded source contexts and explicit
+interpretation limits instead of immediately selecting one metadata aggregate.
+The [MXF reader](fresh-mxf-reader-2026-10-04.md) subsequently follows that same design.
+
+The production Bento/OMF code already uses bounded reads and avoids copying
+intervening essence. The new reader's guarded no-sample-read tests prove its own
+behaviour; they do not prove a speed or total RAM improvement over production.
+The old reader still supplies the app's selected codec/name/duration output until
+the replacement metadata and adapter stages are implemented and compared.

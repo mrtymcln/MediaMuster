@@ -1,6 +1,6 @@
 // Legacy media may contain native audio headers and an OMF object graph in the
 // same physical file. Keep each source context, inspect bytes rather than names,
-// and leave audio/video samples on disk while reading their metadata.
+// and leave audio/video samples on disk whilst reading their metadata.
 
 #include "legacyreader.h"
 #include "audioreader_p.h"
@@ -31,7 +31,7 @@ namespace Canon
 		}
 
 		RawProperty probe(QIODevice &source, const ReaderContext &context, qint64 offset,
-			qint64 length, const QString &name)
+						  qint64 length, const QString &name)
 		{
 			RawProperty property;
 			property.locator.name = name;
@@ -46,7 +46,8 @@ namespace Canon
 			while (property.encoding.size() < length)
 			{
 				// Returning the observation preserves any bytes already obtained.
-				if (context.cancellation.cancelled()) return property;
+				if (context.cancellation.cancelled())
+					return property;
 				const qint64 got = source.read(bytes.data(), std::min<qint64>(length - property.encoding.size(), bytes.size()));
 				if (got <= 0)
 				{
@@ -64,10 +65,12 @@ namespace Canon
 		{
 			auto snapshot = QSharedPointer<SourceSnapshot>::create(context.snapshot ? *context.snapshot : SourceSnapshot{});
 			snapshot->source = MetadataSource::Omf;
-			snapshot->readState = result.outcome == Outcome::Complete ? SourceReadState::Complete
-				: result.outcome == Outcome::IoError ? SourceReadState::Unreadable : SourceReadState::Incomplete;
+			snapshot->readState = result.outcome == Outcome::Complete  ? SourceReadState::Complete
+								  : result.outcome == Outcome::IoError ? SourceReadState::Unreadable
+																	   : SourceReadState::Incomplete;
 			result.snapshot = snapshot;
-			for (auto &object : result.objects) object.snapshot = snapshot;
+			for (auto &object : result.objects)
+				object.snapshot = snapshot;
 		}
 
 		ParsedSource omfAt(QIODevice &source, const ReaderContext &context, qint64 labelOffset)
@@ -83,7 +86,8 @@ namespace Canon
 			child.embedding = std::move(embedding);
 			if (child.outcome != Outcome::Complete)
 			{
-				if (parent.outcome == Outcome::Complete) parent.outcome = Outcome::Incomplete;
+				if (parent.outcome == Outcome::Complete)
+					parent.outcome = Outcome::Incomplete;
 				parent.diagnostics.append(QStringLiteral("Embedded OMF metadata was not completely interpreted; its source evidence and diagnostics are retained separately."));
 			}
 			parent.embeddedSources.append(std::move(child));
@@ -152,7 +156,8 @@ namespace Canon
 				if (tail.encoding.startsWith(bentoMagic))
 				{
 					auto graph = omfAt(source, context, extent - labelSize);
-					if (!audio) result = std::move(graph);
+					if (!audio)
+						result = std::move(graph);
 					else
 					{
 						PropertyLocator embedding;
@@ -168,12 +173,13 @@ namespace Canon
 			{
 				result.unownedProperties.prepend(std::move(signature));
 				throw Failure{extent < 12 ? Outcome::Incomplete : Outcome::Unsupported,
-					QStringLiteral("No supported OMF, RIFF/WAVE or FORM/AIFF container was established from these bytes.")};
+							  QStringLiteral("No supported OMF, RIFF/WAVE or FORM/AIFF container was established from these bytes.")};
 			}
 			checkCancellation(context);
 			if (source.size() != extent)
 			{
-				if (result.outcome == Outcome::Complete) result.outcome = Outcome::Incomplete;
+				if (result.outcome == Outcome::Complete)
+					result.outcome = Outcome::Incomplete;
 				result.diagnostics.append(QStringLiteral("Legacy source length changed during reading; check this source again."));
 			}
 		}

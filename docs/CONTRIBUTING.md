@@ -22,6 +22,9 @@ units when the type does not express them (`retryDelayMs`, `sampleRateHz`). Pres
 the native unit of opaque platform timestamps. Treat acronyms as words (`MxfParser`,
 `MobId`), while keeping SDK symbols and actual Avid identifiers unchanged.
 
+Feature flag constants use `k` plus the feature name, without an `Enabled` suffix:
+`FeatureFlags::kOmfScan`, `FeatureFlags::kMonospaceTable`, `FeatureFlags::kClipDuration`.
+
 Use structs for related data and classes for resource ownership or enforced rules.
 Structs may have useful methods. Give helpers a focused home; avoid a general dumping
 ground named `Utils`. Keep `RevealInFinder` as the agreed cross-platform feature name.

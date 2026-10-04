@@ -1,0 +1,450 @@
+[
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C011_V01.D7EC5BC5FF69V.mxf",
+    "size": 756810337,
+    "packetCount": 802,
+    "bytesRead": 20050,
+    "seconds": 0.005904,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 787,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      756809760
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C011_A01.D7EC5BC5FF69A.mxf",
+    "size": 24351329,
+    "packetCount": 802,
+    "bytesRead": 20050,
+    "seconds": 0.003194,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 787,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      24350752
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+    "size": 10403042,
+    "packetCount": 718,
+    "bytesRead": 17950,
+    "seconds": 0.002832,
+    "kinds": {
+      "partition": 3,
+      "fill": 5,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 705,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      10402848
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C007_A01.D7EB5BC52785A.mxf",
+    "size": 19006049,
+    "packetCount": 802,
+    "bytesRead": 20050,
+    "seconds": 0.003158,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 787,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      19005472
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE3E0V02.21D19536.586550.mxf",
+    "size": 2490977,
+    "packetCount": 717,
+    "bytesRead": 17925,
+    "seconds": 0.003044,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 702,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "060e2b34010201010e04030115010801": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      2490400
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+    "size": 2134625,
+    "packetCount": 791,
+    "bytesRead": 19775,
+    "seconds": 0.003024,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 776,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      2134048
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/7292908SSWA01.6A0415CF90CFA.mxf",
+    "size": 3859041,
+    "packetCount": 750,
+    "bytesRead": 18750,
+    "seconds": 0.003005,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 735,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      3858464
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V02.6A04181E_16B9A16B9AFFBV.mxf",
+    "size": 660577,
+    "packetCount": 740,
+    "bytesRead": 18500,
+    "seconds": 0.002666,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "localset": 727,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      593952
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+    "size": 31637089,
+    "packetCount": 685,
+    "bytesRead": 17125,
+    "seconds": 0.00338,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "localset": 672,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      524320,
+      31570464
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7302108SLA02.6A04F0889F664A.mxf",
+    "size": 4444769,
+    "packetCount": 749,
+    "bytesRead": 18725,
+    "seconds": 0.003654,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 734,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      4444192
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.6A05007F_9DA3B09DA3BB2V.mxf",
+    "size": 626267233,
+    "packetCount": 685,
+    "bytesRead": 17125,
+    "seconds": 0.002494,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "localset": 672,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      626200608
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+    "size": 2568801,
+    "packetCount": 757,
+    "bytesRead": 18925,
+    "seconds": 0.002888,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 742,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      2568224
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7303008SSWA03.6A050C1E1444A.mxf",
+    "size": 5120609,
+    "packetCount": 757,
+    "bytesRead": 18925,
+    "seconds": 0.00297,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 742,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      5120032
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A05045F_CF2FB0CF2FB26V.mxf",
+    "size": 1065750625,
+    "packetCount": 786,
+    "bytesRead": 19650,
+    "seconds": 0.003922,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "localset": 773,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      1065684000
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+    "size": 3207777,
+    "packetCount": 764,
+    "bytesRead": 19100,
+    "seconds": 0.002286,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 749,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      3207200
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A02.E69692C4_26F3E26F3EFCEA.mxf",
+    "size": 3207777,
+    "packetCount": 764,
+    "bytesRead": 19100,
+    "seconds": 0.001555,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 749,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      3207200
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE95_F9B01F9B01A50V.mxf",
+    "size": 43129441,
+    "packetCount": 762,
+    "bytesRead": 19050,
+    "seconds": 0.001848,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "localset": 749,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      43062816
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/5 3 3 FIX.wav.A15B553A65A.mxf",
+    "size": 14676577,
+    "packetCount": 702,
+    "bytesRead": 17550,
+    "seconds": 0.00159,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 687,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      14676000
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/A01.E69BC936_1B2851B28566BA.mxf",
+    "size": 3207777,
+    "packetCount": 764,
+    "bytesRead": 19100,
+    "seconds": 0.001772,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "8053080036210804b3b398a51c9011d4": 1,
+      "localset": 749,
+      "9613b38a87348746f10296f056e04d2a": 1,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      3207200
+    ],
+    "errors": []
+  },
+  {
+    "path": "/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/V01.E69CEE95_F9B01F9B01A50V.mxf",
+    "size": 43129441,
+    "packetCount": 762,
+    "bytesRead": 19050,
+    "seconds": 0.001891,
+    "kinds": {
+      "partition": 3,
+      "fill": 7,
+      "060e2b34020501010d01020101050100": 1,
+      "localset": 749,
+      "gc essence": 1,
+      "060e2b34020501010d01020101110100": 1
+    },
+    "partitions": [
+      0,
+      262176,
+      43062816
+    ],
+    "errors": []
+  }
+]

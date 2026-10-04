@@ -68,7 +68,7 @@ namespace Canon::Detail
 					const qint64 count = m_device.read(buffer.data(), std::min(length - range.length, qint64(buffer.size())));
 					if (count <= 0)
 						throw Failure{count == 0 && m_device.atEnd() ? Outcome::Incomplete : Outcome::IoError,
-							QStringLiteral("Cannot read Bento byte %1: %2").arg(offset + range.length).arg(m_device.errorString())};
+									  QStringLiteral("Cannot read Bento byte %1: %2").arg(offset + range.length).arg(m_device.errorString())};
 					bytes.append(buffer.data(), count);
 					range.length += count;
 				}
@@ -99,7 +99,7 @@ namespace Canon::Detail
 		{
 		public:
 			Reader(Input &input, const Cancellation &cancellation, BentoReadResult &result,
-				const BentoReadOptions &options)
+				   const BentoReadOptions &options)
 				: m_input(input), m_cancellation(cancellation), m_result(result), m_options(options) {}
 
 			void read()
@@ -204,7 +204,7 @@ namespace Canon::Detail
 				value.tocRanges.append(segment.framing);
 				m_continuing = segment.continued;
 				const bool structuralExtent = segment.object == 1 && segment.type == 19 &&
-					(segment.property == 4 || segment.property == 5 || segment.property == 7);
+											  (segment.property == 4 || segment.property == 5 || segment.property == 7);
 				const quint64 limit = segment.immediate || structuralExtent ? quint64(m_input.extent()) : quint64(m_tocOffset);
 				if (segment.offset > limit || segment.length > limit - segment.offset)
 				{
@@ -298,7 +298,8 @@ namespace Canon::Detail
 						continue;
 					const auto names = propertyNames.constFind(value.property);
 					const bool essence = names != propertyNames.cend() &&
-						std::any_of(names->cbegin(), names->cend(), [&](const QByteArray &name) { return essenceNames.contains(name); });
+										 std::any_of(names->cbegin(), names->cend(), [&](const QByteArray &name)
+													 { return essenceNames.contains(name); });
 					if (!essence)
 					{
 						readDeferred(value);
@@ -308,8 +309,8 @@ namespace Canon::Detail
 					value.bytesRetained = false;
 					value.state = PropertyReadState::Present;
 					value.problem = names->size() != 1 || uncertainDefinitions.contains(value.property)
-						? QStringLiteral("Conflicting property definitions include an essence property; retained by range without guessing which definition applies.")
-						: QStringLiteral("Recorded media essence retained by source range; media payload bytes are not copied during metadata reading.");
+										? QStringLiteral("Conflicting property definitions include an essence property; retained by range without guessing which definition applies.")
+										: QStringLiteral("Recorded media essence retained by source range; media payload bytes are not copied during metadata reading.");
 				}
 			}
 
@@ -391,12 +392,13 @@ namespace Canon::Detail
 						break;
 					default:
 						throw Failure{code == 0 ? Outcome::Malformed : Outcome::Unsupported,
-							QStringLiteral("Unrecognised Bento 2 opcode %1 at byte %2; original TOC retained.").arg(code).arg(m_tocOffset + start)};
+									  QStringLiteral("Unrecognised Bento 2 opcode %1 at byte %2; original TOC retained.").arg(code).arg(m_tocOffset + start)};
 					}
 					if (width > blockEnd - pos)
 						throw Failure{Outcome::Malformed, QStringLiteral("Bento 2 opcode crosses the TOC or buffer boundary at byte %1.").arg(m_tocOffset + start)};
 					const char *p = m_toc.data() + pos;
-					auto w = [&](qsizetype index) { return word(p + index * 4, m_result.containerBigEndian); };
+					auto w = [&](qsizetype index)
+					{ return word(p + index * 4, m_result.containerBigEndian); };
 					pos += width;
 					if (code >= 1 && code <= 3)
 					{

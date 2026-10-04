@@ -1308,7 +1308,7 @@ void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
 	// record has a matching timestamp. The intact header/MDB still recover
 	// descriptive metadata; the MDB-only bin name proves the re-join ran.
 	QCOMPARE(tone->databaseMetadataCurrent, listsTone);
-	QCOMPARE(tone->clipNameSource, listsTone && !FeatureFlags::kClipDurationEnabled
+	QCOMPARE(tone->clipNameSource, listsTone && !FeatureFlags::kClipDuration
 									   ? MediaFile::ClipNameSource::Mdb
 									   : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(tone->clipName, kToneClip);
@@ -1393,7 +1393,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	const MediaFile &row = rows.first();
 	QCOMPARE(row.dbStatus, MediaFile::DbStatus::Listed);
 	QVERIFY(row.databaseMetadataCurrent);
-	QCOMPARE(row.needsHeaderRead, FeatureFlags::kClipDurationEnabled);
+	QCOMPARE(row.needsHeaderRead, FeatureFlags::kClipDuration);
 	QVERIFY(!row.omfEra);
 	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(row.clipName, QStringLiteral("Partial frame duration"));
@@ -1425,10 +1425,10 @@ void TestScanner::stale_header_and_current_database_agree()
 	// Current timestamps can skip the header unless Clip Duration needs it.
 	const auto normal = runScan(tmp.path());
 	QCOMPARE(normal.size(), 1);
-	QCOMPARE(normal.first().clipNameSource, FeatureFlags::kClipDurationEnabled
+	QCOMPARE(normal.first().clipNameSource, FeatureFlags::kClipDuration
 												? MediaFile::ClipNameSource::MaterialPackage
 												: MediaFile::ClipNameSource::Mdb);
-	QCOMPARE(normal.first().needsHeaderRead, FeatureFlags::kClipDurationEnabled);
+	QCOMPARE(normal.first().needsHeaderRead, FeatureFlags::kClipDuration);
 
 	// Changing the timestamp triggers automatic verification. The actual
 	// header still describes the same clip and must agree with the database.
@@ -2144,10 +2144,10 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QVERIFY(!mxf.omfEra);
 	QVERIFY(!mxf.isQuarantined);
 	QCOMPARE(mxf.databaseMetadataCurrent, withDatabases);
-	QCOMPARE(mxf.needsHeaderRead, FeatureFlags::kClipDurationEnabled || !withDatabases);
+	QCOMPARE(mxf.needsHeaderRead, FeatureFlags::kClipDuration || !withDatabases);
 	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
-	QCOMPARE(mxf.clipNameSource, withDatabases && !FeatureFlags::kClipDurationEnabled
+	QCOMPARE(mxf.clipNameSource, withDatabases && !FeatureFlags::kClipDuration
 									 ? MediaFile::ClipNameSource::Mdb
 									 : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mxf.sampleRate, 48000);

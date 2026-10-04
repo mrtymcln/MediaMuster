@@ -28,6 +28,10 @@ The [fresh OMF/legacy reader](fresh-legacy-reader-2026-10-04.md) now uses that s
 object interpreter and reads native WAV/AIFF headers plus embedded OMF graphs.
 Known recording payloads stay on disk; real specimens and guarded large-file
 tests verify the metadata path. It is not yet connected to the live scanner.
+The [fresh MXF reader](fresh-mxf-reader-2026-10-04.md) now preserves metadata sets,
+per-partition Primers, typed/raw properties and qualified references across the
+file, while seeking over recording payloads. Its [uninterpreted-field inventory](mxf-uninterpreted-fields-2026-10-04.md)
+records remaining meanings for later review. Selection and live integration remain pending.
 Additional [non-English encoding specimens](non-english-encoding-specimens-2026-10-03.md)
 show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
 The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
@@ -125,6 +129,10 @@ Only the selected implementation remains in the current Canon source.
   when needed. The supplied full Macintosh HD/EDIT baseline is recorded below.
 - Support associations across scanned folders and volumes, independently of
   whether local PMR/MDB databases exist.
+- Individual AVB sequence selection is requested. Include all referenced angles
+  of groups used by a selected sequence, preserving the ability to switch angles;
+  do not include unrelated groups solely because they share the bin. See
+  [sequence selection scope](avb-sequence-selection.md) for remaining policies.
 - Retain enough information to report database references whose files were not
   found in the scanned location. Flag these in the Console; a summary dialog is
   an option to decide during implementation.
@@ -133,6 +141,9 @@ Only the selected implementation remains in the current Canon source.
 
 ## Documents
 
+- [AVB sequence selection](avb-sequence-selection.md): requested sequence picker,
+  verified relationships in the supplied sequence bins, proposed filter integration
+  and pending dependency-selection policies.
 - [Column review](column-review.md): three-column property/current UI/proposed UI
   comparison for the user's decisions, including distinctions from CSV-only fields.
 - [Conflict selection proposals](conflict-selection-proposals.md): eligibility,

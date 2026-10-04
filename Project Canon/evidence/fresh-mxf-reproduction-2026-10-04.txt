@@ -1,0 +1,50 @@
+Fresh MXF reader verification, 4 October 2026
+Working directory: /Users/martymclean/Developer/MediaMuster
+
+Final build and full tests, run sequentially after confirming build success:
+  cmake --build build-canon -j4
+  ctest --test-dir build-canon --output-on-failure
+
+Universal Debug library/executables target arm64;x86_64 with Qt 6.5.3 EXACT.
+Full CTest execution was native macOS arm64 and needed the host sandbox exception
+for Qt's CPU feature check. All 33 suites passed; the MXF suite had 855 passing cases.
+The detailed MXF log is extracted from that final full run's LastTest.log.
+
+Read-only full-file probe compilation (original temporary source path):
+  clang++ -std=c++17 -arch x86_64 -Isrc -F/Users/martymclean/Qt/6.5.3/macos/lib -I/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers /tmp/canon-mxf-reader-probe.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /tmp/canon-mxf-reader-probe
+
+Original input selection used the 20 actual paths following 824 fixture rows in
+/tmp/canon-mxf-inventory.jsonl. The final retained result JSONL includes every
+actual input path, so the same selection can be reproduced without that temp file:
+  import json, subprocess
+  paths = [json.loads(line)['path'] for line in open('Project Canon/evidence/fresh-mxf-reader-probe-2026-10-04.jsonl')]
+  result = subprocess.run(['/tmp/canon-mxf-reader-probe', *paths], text=True, capture_output=True)
+
+The probe first inventories recording KLV ranges independently, then rejects
+every attempted reader read that intersects those ranges. That initial inventory
+is separate from the measured Canon reader byte counts. Both avoid sample reads.
+Use the retained source fresh-mxf-reader-probe-2026-10-04.cpp if recreating the
+temporary executable. All final measurements came from a freshly linked library.
+
+Fixture diagnostic compile/run commands and catalogue regeneration steps are in
+fresh-mxf-diagnostic-commands-2026-10-04.txt. The archived diagnostic probe source,
+summary script and generator use the same fresh-mxf-* names in this directory.
+The generator's temporary Avid schema input may be recreated from the retained
+fresh-mxf-avid-data-model-2026-10-04.h (the hash is recorded in mxfcatalogue_p.h).
+Baseline/extension inputs are the existing format-audit evidence headers.
+
+The independent whole-drive KLV framing count is a separate Python probe, retained
+as fresh-mxf-count-klvs-2026-10-04.py with its JSONL output and post-run receipts.
+That probe is not the Canon property interpreter and does not establish typed
+metadata correctness for all 3,832 files. Fixture/type checks and the 20 full-file
+Canon checks are separate evidence.
+
+Limits:
+- Probe executables ran as x86_64 under Rosetta, using the Debug static library.
+- Logical QFile request counts do not measure physical disk IO, whole-app scan
+  time, peak memory or UI behaviour.
+- All run inputs were read-only; managed media was not hashed. Later hashes of
+  fixture/source files identify available versions, not atomic prior snapshots.
+- Unknown opaque KLV values may be retained by range without payload reads.
+- Native Windows execution and the unfinished scan/selection adapter were not run.
+- No test/probe result claims every private codec or metadata schema is understood.

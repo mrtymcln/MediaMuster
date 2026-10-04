@@ -241,7 +241,7 @@ These differences do not invalidate files, identities or bin/master associations
 No master length is copied over a known descriptor length or calculated by
 summing associated files.
 
-`FeatureFlags::kClipDurationEnabled` controls this experiment. When enabled, an
+`FeatureFlags::kClipDuration` controls this experiment. When enabled, an
 experimental **Clip Duration** column and CSV field show separately
 recovered MXF material-package track lengths, labelled by track ID. It preserves
 multiple track lengths rather than inventing one aggregate. MXF headers are read

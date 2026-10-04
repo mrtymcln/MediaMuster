@@ -122,9 +122,9 @@ namespace Canon
 			// These are Avid's named UTF-8 counterparts in the inspected dictionaries.
 			// A private property's suggestive suffix alone does not prove its encoding.
 			return name == QLatin1String("OMFI:DL:PathNameUTF8") ||
-				name == QLatin1String("OMFI:FL:PathNameUTF8") ||
-				name == QLatin1String("OMFI:MCBR:MC:binNameUTF8") ||
-				name == QLatin1String("OMFI:MSML:LastKnownVolumeUTF8");
+				   name == QLatin1String("OMFI:FL:PathNameUTF8") ||
+				   name == QLatin1String("OMFI:MCBR:MC:binNameUTF8") ||
+				   name == QLatin1String("OMFI:MSML:LastKnownVolumeUTF8");
 		}
 
 		class ObjectReader
@@ -137,11 +137,15 @@ namespace Canon
 			{
 				for (const auto &value : m_bento.values)
 				{
-					if (cancelled()) break;
-					if (value.property == 23) define(m_types, value);
-					if (value.property == 24) define(m_properties, value);
+					if (cancelled())
+						break;
+					if (value.property == 23)
+						define(m_types, value);
+					if (value.property == 24)
+						define(m_properties, value);
 				}
-				if (!cancelled()) header();
+				if (!cancelled())
+					header();
 				// Cancellation stops I/O and interpretation, but cannot discard values
 				// that the container reader has already obtained, including partial ones.
 				for (const auto &value : m_bento.values)
@@ -162,15 +166,18 @@ namespace Canon
 					}
 					m_result.objects[m_objects.value(value.object)].properties.append(property(value));
 				}
-				if (cancelled()) return;
+				if (cancelled())
+					return;
 				buildReferenceTables();
 				for (auto &object : m_result.objects)
 				{
-					if (cancelled()) return;
+					if (cancelled())
+						return;
 					objectFacts(object);
 					for (auto &property : object.properties)
 					{
-						if (cancelled()) return;
+						if (cancelled())
+							return;
 						interpret(property);
 					}
 				}
@@ -181,14 +188,16 @@ namespace Canon
 		private:
 			bool cancelled()
 			{
-				if (!m_cancellation.cancelled()) return false;
+				if (!m_cancellation.cancelled())
+					return false;
 				m_result.outcome = Outcome::Cancelled;
 				return true;
 			}
 
 			void incomplete()
 			{
-				if (m_result.outcome == Outcome::Complete) m_result.outcome = Outcome::Incomplete;
+				if (m_result.outcome == Outcome::Complete)
+					m_result.outcome = Outcome::Incomplete;
 			}
 
 			void unreadable(RawProperty &property, const QString &why)
@@ -203,11 +212,12 @@ namespace Canon
 				QSet<int> versions;
 				bool badVersion = false;
 				bool legacyHead = false;
-			bool modernHead = false;
-			bool uncertainHead = false;
+				bool modernHead = false;
+				bool uncertainHead = false;
 				for (const auto &value : m_bento.values)
 				{
-					if (cancelled()) return;
+					if (cancelled())
+						return;
 					const QString name = nameOf(m_properties, value.property);
 					const QString type = nameOf(m_types, value.type);
 					if (name == QLatin1String("OMFI:ByteOrder") || name == QLatin1String("OMFI:HEAD:ByteOrder"))
@@ -220,19 +230,27 @@ namespace Canon
 							m_orders[value.object].uncertain = true;
 						}
 					}
-					if (value.object != 1) continue;
+					if (value.object != 1)
+						continue;
 					if ((name == QLatin1String("OMFI:ObjID") || name == QLatin1String("OMFI:OOBJ:ObjClass")) &&
-						(value.state != PropertyReadState::Present || value.bytes != "HEAD" || !classType(type))) uncertainHead = true;
-					if (value.state != PropertyReadState::Present) continue;
-					if (name == QLatin1String("OMFI:ObjID") && value.bytes == "HEAD") legacyHead = true;
-					if (name == QLatin1String("OMFI:OOBJ:ObjClass") && value.bytes == "HEAD") modernHead = true;
+						(value.state != PropertyReadState::Present || value.bytes != "HEAD" || !classType(type)))
+						uncertainHead = true;
+					if (value.state != PropertyReadState::Present)
+						continue;
+					if (name == QLatin1String("OMFI:ObjID") && value.bytes == "HEAD")
+						legacyHead = true;
+					if (name == QLatin1String("OMFI:OOBJ:ObjClass") && value.bytes == "HEAD")
+						modernHead = true;
 				}
 				for (const auto &value : m_bento.values)
 				{
-					if (cancelled()) return;
-					if (value.object != 1) continue;
+					if (cancelled())
+						return;
+					if (value.object != 1)
+						continue;
 					const QString name = nameOf(m_properties, value.property);
-					if (name != QLatin1String("OMFI:Version") && name != QLatin1String("OMFI:HEAD:Version")) continue;
+					if (name != QLatin1String("OMFI:Version") && name != QLatin1String("OMFI:HEAD:Version"))
+						continue;
 					if (value.state != PropertyReadState::Present || value.bytes.size() != 2 ||
 						nameOf(m_types, value.type) != QLatin1String("omfi:VersionType"))
 						badVersion = true;
@@ -241,7 +259,7 @@ namespace Canon
 					else if (value.bytes == QByteArray::fromHex("0200"))
 						versions.insert(2);
 					else if (name == QLatin1String("OMFI:Version") && legacyHead && !modernHead &&
-						value.bytes == QByteArray::fromHex("0001"))
+							 value.bytes == QByteArray::fromHex("0001"))
 						versions.insert(1); // Recorded Avid legacy spelling; never swap major/minor generically.
 					else
 						badVersion = true;
@@ -250,12 +268,17 @@ namespace Canon
 					m_revision = *versions.cbegin();
 				else
 					m_result.diagnostics.append(QStringLiteral("OMF object revision is absent, unsupported or conflicting; revision-dependent values remain raw."));
-				if (badVersion && m_result.outcome == Outcome::Complete) m_result.outcome = Outcome::Unsupported;
+				if (badVersion && m_result.outcome == Outcome::Complete)
+					m_result.outcome = Outcome::Unsupported;
 				if (!m_orders.value(1).established())
 					m_result.diagnostics.append(QStringLiteral("HEAD metadata byte order is absent or conflicting; multi-byte numbers remain raw."));
 				qsizetype ambiguous = 0;
-				for (const auto &entry : m_properties) if (entry.ambiguous) ++ambiguous;
-				for (const auto &entry : m_types) if (entry.ambiguous) ++ambiguous;
+				for (const auto &entry : m_properties)
+					if (entry.ambiguous)
+						++ambiguous;
+				for (const auto &entry : m_types)
+					if (entry.ambiguous)
+						++ambiguous;
 				if (ambiguous)
 					m_result.diagnostics.append(QStringLiteral("%1 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name.").arg(ambiguous));
 			}
@@ -263,11 +286,13 @@ namespace Canon
 			std::optional<bool> byteOrder(quint32 object) const
 			{
 				const auto head = m_orders.value(1).established();
-				if (m_revision != 1 || object == 1) return head;
+				if (m_revision != 1 || object == 1)
+					return head;
 				const auto local = m_orders.value(object);
 				// The legacy toolkit's override contract and implementation disagree.
 				// A contrary local order needs a verified specimen before decoding it.
-				if (local.seen && (!local.established() || local.established() != head)) return std::nullopt;
+				if (local.seen && (!local.established() || local.established() != head))
+					return std::nullopt;
 				return head;
 			}
 
@@ -278,7 +303,8 @@ namespace Canon
 				// A large database repeats its small dictionary thousands of times.
 				// QByteArray sharing avoids a separate key allocation for every value.
 				auto key = m_keys.constFind(value.property);
-				if (key == m_keys.cend()) key = m_keys.insert(value.property, numericKey(value.property));
+				if (key == m_keys.cend())
+					key = m_keys.insert(value.property, numericKey(value.property));
 				property.locator.key = *key; // Canonical numeric key, not the source's byte order.
 				property.locator.objectNumber = value.object;
 				property.locator.ranges = value.ranges;
@@ -309,27 +335,34 @@ namespace Canon
 					const auto &name = property.locator.name;
 					if (name == QLatin1String("OMFI:ObjID") || name == QLatin1String("OMFI:OOBJ:ObjClass"))
 					{
-						if (property.state != PropertyReadState::Present || !classType(property.bento->typeName)) uncertainClass = true;
-						else classes.insert(property.encoding);
+						if (property.state != PropertyReadState::Present || !classType(property.bento->typeName))
+							uncertainClass = true;
+						else
+							classes.insert(property.encoding);
 					}
-					if (name != QLatin1String("OMFI:MOBJ:MobID")) continue;
+					if (name != QLatin1String("OMFI:MOBJ:MobID"))
+						continue;
 					if (property.state != PropertyReadState::Present || property.bento->typeName != QLatin1String("omfi:UID") ||
-						(property.encoding.size() != 12 && property.encoding.size() != 32)) uncertainIdentity = true;
-					else identities.insert(property.encoding);
+						(property.encoding.size() != 12 && property.encoding.size() != 32))
+						uncertainIdentity = true;
+					else
+						identities.insert(property.encoding);
 				}
 				if (!uncertainClass && classes.size() == 1)
 				{
 					const auto &cls = *classes.cbegin();
-					if (cls == "MMOB") object.role = AvidObject::Role::Master;
-					if (cls == "CMOB") object.role = AvidObject::Role::Composition;
+					if (cls == "MMOB")
+						object.role = AvidObject::Role::Master;
+					if (cls == "CMOB")
+						object.role = AvidObject::Role::Composition;
 					// SMOB and legacy MOBJ need descriptor/usage relationships to establish their role.
 				}
 				if (!uncertainIdentity && identities.size() == 1)
 				{
 					object.recordedIdentity = *identities.cbegin();
 					object.identityEncoding = object.recordedIdentity.size() == 12
-						? QStringLiteral("OMF UID: three recorded 32-bit words; no normalization")
-						: QStringLiteral("Avid 32-byte MobID: recorded bytes; no normalization");
+												  ? QStringLiteral("OMF UID: three recorded 32-bit words; no normalization")
+												  : QStringLiteral("Avid 32-byte MobID: recorded bytes; no normalization");
 				}
 			}
 
@@ -366,8 +399,10 @@ namespace Canon
 				QSet<quint32> unusable;
 				for (const auto &value : m_bento.values)
 				{
-					if (cancelled()) return;
-					if (value.property != 31 || value.type != 32) continue;
+					if (cancelled())
+						return;
+					if (value.property != 31 || value.type != 32)
+						continue;
 					auto &table = m_referenceTables[value.object];
 					if (value.state != PropertyReadState::Present || value.bytes.size() % 8 != 0)
 					{
@@ -377,18 +412,22 @@ namespace Canon
 					table.readable = true;
 					for (qsizetype offset = 0; offset < value.bytes.size(); offset += 8)
 					{
-						if (cancelled()) return;
+						if (cancelled())
+							return;
 						const quint32 key = number<quint32>(value.bytes.constData() + offset, m_bento.containerBigEndian);
 						const quint32 target = number<quint32>(value.bytes.constData() + offset + 4, m_bento.containerBigEndian);
-						if (table.targets.contains(key) && table.targets.value(key) != target) table.ambiguousKeys.insert(key);
-						else table.targets.insert(key, target);
+						if (table.targets.contains(key) && table.targets.value(key) != target)
+							table.ambiguousKeys.insert(key);
+						else
+							table.targets.insert(key, target);
 					}
 				}
-				for (quint32 object : unusable) m_referenceTables[object].readable = false;
+				for (quint32 object : unusable)
+					m_referenceTables[object].readable = false;
 			}
 
 			void reference(RawProperty &property, qsizetype offset, qsizetype width, qsizetype index,
-				RangeCursor &cursor, QByteArray uid = {})
+						   RangeCursor &cursor, QByteArray uid = {})
 			{
 				const quint32 key = number<quint32>(property.encoding.constData() + offset, m_bento.containerBigEndian);
 				Relationship relationship;
@@ -396,7 +435,7 @@ namespace Canon
 				relationship.locator = property.locator;
 				relationship.locator.ranges.clear();
 				while (cursor.index < property.locator.ranges.size() &&
-					cursor.logicalStart + property.locator.ranges[cursor.index].length <= offset)
+					   cursor.logicalStart + property.locator.ranges[cursor.index].length <= offset)
 				{
 					cursor.logicalStart += property.locator.ranges[cursor.index].length;
 					++cursor.index;
@@ -406,19 +445,26 @@ namespace Canon
 				for (qsizetype part = cursor.index; part < property.locator.ranges.size(); ++part)
 				{
 					const auto &range = property.locator.ranges[part];
-					if (skip >= range.length) { skip -= range.length; continue; }
+					if (skip >= range.length)
+					{
+						skip -= range.length;
+						continue;
+					}
 					const qint64 count = qMin<qint64>(left, range.length - skip);
 					relationship.locator.ranges.append({range.offset + skip, count});
 					left -= count;
 					skip = 0;
-					if (!left) break;
+					if (!left)
+						break;
 				}
-				QVariantMap recorded{{QStringLiteral("key"), key}, {QStringLiteral("index"), qlonglong(index)},
-					{QStringLiteral("bytes"), property.encoding.mid(offset, width)}};
-				if (!uid.isEmpty()) recorded.insert(QStringLiteral("mobId"), uid);
+				QVariantMap recorded{{QStringLiteral("key"), key}, {QStringLiteral("index"), qlonglong(index)}, {QStringLiteral("bytes"), property.encoding.mid(offset, width)}};
+				if (!uid.isEmpty())
+					recorded.insert(QStringLiteral("mobId"), uid);
 				relationship.recordedReference = recorded;
 				relationship.referenceEncoding = QStringLiteral("OMF%1 %2-byte reference; key in Bento %3-endian order")
-					.arg(m_revision).arg(width).arg(m_bento.containerBigEndian ? QStringLiteral("big") : QStringLiteral("little"));
+													 .arg(m_revision)
+													 .arg(width)
+													 .arg(m_bento.containerBigEndian ? QStringLiteral("big") : QStringLiteral("little"));
 				quint32 target = key;
 				const quint32 list = property.bento->referenceListObject;
 				if (key == 0)
@@ -438,8 +484,10 @@ namespace Canon
 						relationship.explanation = QStringLiteral("Resolved through recorded Bento reference table %1.").arg(list);
 					}
 				}
-				if (target != 0 && m_objects.contains(target)) relationship.target = target;
-				else if (target != 0) relationship.explanation = QStringLiteral("Recorded object %1 was not found in this source.").arg(target);
+				if (target != 0 && m_objects.contains(target))
+					relationship.target = target;
+				else if (target != 0)
+					relationship.explanation = QStringLiteral("Recorded object %1 was not found in this source.").arg(target);
 				m_result.relationships.append(std::move(relationship));
 			}
 
@@ -456,7 +504,8 @@ namespace Canon
 				{
 					if (property.encoding.size() != width)
 						unreadable(property, QStringLiteral("Reference width does not match the recorded OMF revision; original bytes retained."));
-					else reference(property, 0, width, 0, cursor);
+					else
+						reference(property, 0, width, 0, cursor);
 					return;
 				}
 				const bool index = type == QLatin1String("omfi:MobIndex");
@@ -476,16 +525,18 @@ namespace Canon
 				}
 				for (qsizetype slot = 0; slot < count; ++slot)
 				{
-					if (cancelled()) return;
+					if (cancelled())
+						return;
 					const qsizetype offset = 2 + slot * stride;
 					reference(property, offset + (index ? 12 : 0), width, slot, cursor,
-						index ? property.encoding.mid(offset, 12) : QByteArray());
+							  index ? property.encoding.mid(offset, 12) : QByteArray());
 				}
 			}
 
 			void interpret(RawProperty &property)
 			{
-				if (property.state != PropertyReadState::Present || !property.bytesRetained) return;
+				if (property.state != PropertyReadState::Present || !property.bytesRetained)
+					return;
 				const QString &type = property.bento->typeName;
 				const auto &bytes = property.encoding;
 				const QString &name = property.locator.name;
@@ -562,12 +613,12 @@ namespace Canon
 						property.decoded = number<quint64>(data, bigEndian);
 					else if (type == QLatin1String("omfi:Rational") || type == QLatin1String("omfi:ExactEditRate"))
 						property.decoded = QVariantMap{{QStringLiteral("numerator"), number<qint32>(data, bigEndian)},
-							{QStringLiteral("denominator"), number<qint32>(data + 4, bigEndian)}};
+													   {QStringLiteral("denominator"), number<qint32>(data + 4, bigEndian)}};
 				}
 				else if (bytes.size() == 5 && type == QLatin1String("omfi:TimeStamp") && (bytes[4] == 0 || bytes[4] == 1))
 				{
 					property.decoded = QVariantMap{{QStringLiteral("secondsSince1970"), number<quint32>(data, bigEndian)},
-						{QStringLiteral("isGMT"), bytes[4] != 0}};
+												   {QStringLiteral("isGMT"), bytes[4] != 0}};
 					property.interpretation = QStringLiteral("Recorded epoch seconds and GMT flag; local timestamps are not silently converted to UTC.");
 				}
 			}
@@ -596,20 +647,24 @@ namespace Canon
 		reader.read();
 		if (kind == MetadataSource::Omf)
 		{
-			if (reader.hasOmfHeader()) result.container = ParsedSource::Container::Omf;
+			if (reader.hasOmfHeader())
+				result.container = ParsedSource::Container::Omf;
 			else if (result.outcome == Outcome::Complete)
 			{
 				result.outcome = Outcome::Unsupported;
 				result.diagnostics.append(QStringLiteral("Bento values retained, but a supported OMF HEAD was not established."));
 			}
 		}
-		if (context.cancellation.cancelled()) result.outcome = Outcome::Cancelled;
+		if (context.cancellation.cancelled())
+			result.outcome = Outcome::Cancelled;
 		auto receipt = QSharedPointer<SourceSnapshot>::create(context.snapshot ? *context.snapshot : SourceSnapshot{});
 		receipt->source = kind;
-		receipt->readState = result.outcome == Outcome::Complete ? SourceReadState::Complete
-			: result.outcome == Outcome::IoError ? SourceReadState::Unreadable : SourceReadState::Incomplete;
+		receipt->readState = result.outcome == Outcome::Complete  ? SourceReadState::Complete
+							 : result.outcome == Outcome::IoError ? SourceReadState::Unreadable
+																  : SourceReadState::Incomplete;
 		result.snapshot = receipt;
-		for (auto &object : result.objects) object.snapshot = receipt;
+		for (auto &object : result.objects)
+			object.snapshot = receipt;
 		return result;
 	}
 }

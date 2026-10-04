@@ -628,7 +628,7 @@ void TestOperationUi::added_locations_require_managed_media_structure()
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 	QVERIFY(window.m_manualVolumes.contains(copiedRoot));
 	QVERIFY(window.m_manualVolumes.contains(legacyRoot));
-	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfEnabled); // Adding a location preserves the build setting.
+	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfScan); // Adding a location preserves the build setting.
 	window.addVolumePath(copiedRoot);
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 }
@@ -638,18 +638,18 @@ void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.show();
 	auto *debugMenu = window.findChild<QMenu *>(QStringLiteral("debugMenu"));
-	QCOMPARE(debugMenu != nullptr, FeatureFlags::kDebugMenuEnabled);
+	QCOMPARE(debugMenu != nullptr, FeatureFlags::kDebugMenu);
 	for (const auto *name : {"enableOmfDebugAction", "enablePrecomputesDebugAction", "enableUndoDebugAction"})
 		QVERIFY(!window.findChild<QAction *>(QString::fromLatin1(name)));
-	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfEnabled);
-	QCOMPARE(window.m_precomputesEnabled, FeatureFlags::kPrecomputesEnabled);
-	QCOMPARE(window.m_model->precomputesEnabled(), FeatureFlags::kPrecomputesEnabled);
-	QCOMPARE(window.m_proxy->precomputesEnabled(), FeatureFlags::kPrecomputesEnabled);
-	QCOMPARE(window.m_precomputeFilterAct->isVisible(), FeatureFlags::kPrecomputesEnabled);
-	QCOMPARE(window.m_operations->m_undoEnabled, FeatureFlags::kUndoEnabled);
-	QCOMPARE(window.m_operations->m_undoAction->isVisible(), FeatureFlags::kUndoEnabled);
+	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfScan);
+	QCOMPARE(window.m_precomputesEnabled, FeatureFlags::kPrecomputes);
+	QCOMPARE(window.m_model->precomputesEnabled(), FeatureFlags::kPrecomputes);
+	QCOMPARE(window.m_proxy->precomputesEnabled(), FeatureFlags::kPrecomputes);
+	QCOMPARE(window.m_precomputeFilterAct->isVisible(), FeatureFlags::kPrecomputes);
+	QCOMPARE(window.m_operations->m_undoEnabled, FeatureFlags::kUndo);
+	QCOMPARE(window.m_operations->m_undoAction->isVisible(), FeatureFlags::kUndo);
 	QCOMPARE(window.m_operations->m_undoAction->shortcut(),
-			 FeatureFlags::kUndoEnabled ? QKeySequence(QKeySequence::Undo) : QKeySequence());
+			 FeatureFlags::kUndo ? QKeySequence(QKeySequence::Undo) : QKeySequence());
 	window.m_searchField->setFocus();
 	QTest::keyClicks(window.m_searchField, "typed search");
 	QVERIFY(window.m_searchField->isUndoAvailable());
@@ -1073,8 +1073,8 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	const int precomputeTab = 3;
 	const auto checkClipDurationPosition = [&]
 	{
-		QCOMPARE(window.m_model->clipDurationEnabled(), FeatureFlags::kClipDurationEnabled);
-		if (FeatureFlags::kClipDurationEnabled)
+		QCOMPARE(window.m_model->clipDurationEnabled(), FeatureFlags::kClipDuration);
+		if (FeatureFlags::kClipDuration)
 		{
 			auto *header = window.m_tableView->horizontalHeader();
 			QCOMPARE(header->visualIndex(window.m_model->clipDurationColumn()),
@@ -1101,7 +1101,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(!window.m_model->precomputesEnabled());
 	QVERIFY(!window.m_proxy->precomputesEnabled());
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
-	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory) + int(FeatureFlags::kClipDurationEnabled));
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory) + int(FeatureFlags::kClipDuration));
 	QVERIFY(window.m_btnPrecomputeFilter->isHidden());
 	QVERIFY(!window.m_precomputeFilterAct->isVisible());
 	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
@@ -1127,7 +1127,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	window.setPrecomputesEnabled(true);
 	QVERIFY(window.m_precomputesEnabled);
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
-	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_) + int(FeatureFlags::kClipDurationEnabled));
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_) + int(FeatureFlags::kClipDuration));
 	checkClipDurationPosition();
 	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
 	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})

@@ -3,7 +3,7 @@
 ## v1 media scope
 
 The supported workflow families are Avid-managed MXF OP-Atom and OMF media.
-MXF OP-Atom is available by default; OMF remains behind `FeatureFlags::kOmfEnabled` as
+MXF OP-Atom is available by default; OMF remains behind `FeatureFlags::kOmfScan` as
 requested for the public release. Enabling OMF does not depend on the version of
 Media Composer that created the files. The OMF gate controls product availability;
 the enabled feature is held to the same v1 correctness and testing requirements
@@ -85,11 +85,12 @@ switches and their current values. Rebuild after changing a value.
 
 | Flag | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
-| kOmfEnabled | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
-| kPrecomputesEnabled | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
-| kClipDurationEnabled | Adds separate per-track Clip Duration values to the table and CSV; reads MXF headers even when database metadata is current. | Omits the Clip Duration column and its extra header-read requirement. |
-| kUndoEnabled | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
-| kDebugMenuEnabled | Shows Fusion style in the Debug menu. | Omits the Debug menu. |
+| kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
+| kPrecomputes | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
+| kClipDuration | Adds separate per-track Clip Duration values to the table and CSV; reads MXF headers even when database metadata is current. | Omits the Clip Duration column and its extra header-read requirement. |
+| kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
+| kDebugMenu | Shows feature toggles and Fusion style in the Debug menu. | Omits the Debug menu. |
+| kMonospaceTable | Uses the system monospaced font for table rows and headers. | Uses normal Qt table font styling. |
 
 OMF, Precomputes and Undo have no Debug menu controls. Their availability is
 independent of whether the Debug menu is included. Fusion style starts off on
@@ -109,7 +110,7 @@ cmake --build build --config Release --parallel 4
 
 These values are compiled into the app. No saved preference, CMake option,
 version number, Git tag, or CI setting changes them. They are also independent
-of the compiler's Debug/Release configuration. Set `kDebugMenuEnabled` to `false`
+of the compiler's Debug/Release configuration. Set `kDebugMenu` to `false`
 to omit the developer menu; select each feature's availability separately.
 
 The operation UI tests check startup configuration against these constants and
@@ -117,7 +118,7 @@ verify that the removed feature toggles are absent. Rebuild after changing flags
 
 ## Experimental Clip Duration
 
-`FeatureFlags::kClipDurationEnabled` controls this experiment. Enabling it adds
+`FeatureFlags::kClipDuration` controls this experiment. Enabling it adds
 **Clip Duration** to the table and CSV. The first implementation reads
 separate, identified material-package tracks from MXF headers; OMF/MDB-only and
 AVB recovery is not included. Unknown clip lengths stay blank. Each track is

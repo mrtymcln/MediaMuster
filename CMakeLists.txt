@@ -95,6 +95,8 @@ add_library(mediamuster_canon STATIC
     src/canon/legacyreader.cpp
     src/canon/audioreader_p.cpp
     src/canon/bentoreader_p.cpp
+    src/canon/mxfreader.cpp
+    src/canon/mxfobjects_p.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
 )

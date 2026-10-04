@@ -84,7 +84,7 @@ private:
 	void buildSidePanel();
 	QWidget *buildToolbar();
 	void buildTable();
-	void setSystemTableFontEnabled(bool enabled);
+	void setMonospaceTableEnabled(bool enabled);
 	void buildConsole();
 	void buildStatusBar();
 

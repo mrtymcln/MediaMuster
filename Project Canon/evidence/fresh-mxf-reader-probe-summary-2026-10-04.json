@@ -1,0 +1,27 @@
+{
+  "files": 20,
+  "outcomes": {
+    "Complete": 20
+  },
+  "totals": {
+    "fileSize": 2666063893,
+    "objects": 14768,
+    "objectProperties": 75891,
+    "allProperties": 91261,
+    "bytesRequested": 2934800,
+    "bytesReturned": 2934800,
+    "rawEncodingBytesRetained": 2630916,
+    "relationships": 19207,
+    "resolvedStrongReferences": 14698,
+    "unresolvedStrongReferences": 0,
+    "resolvedWeakReferences": 0,
+    "unresolvedWeakReferences": 4509,
+    "essenceReadIntersectionBytes": 0
+  },
+  "unreadablePropertyCount": 0,
+  "diagnosticCount": 0,
+  "essenceReadAttempts": 0,
+  "minimumBytesRead": 122325,
+  "maximumBytesRead": 167933,
+  "execution": "x86_64 Debug static library via Rosetta; unbuffered QFile logical read counts, not physical disk IO or app benchmark"
+}

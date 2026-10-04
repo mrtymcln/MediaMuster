@@ -1,6 +1,6 @@
 #pragma once
 
-// Reads media admitted by OmfScan: OMF containers and native WAV/AIFF files,
+// Reads media admitted by OmfScan: OMF containers and native WAV/AIF files,
 // including their embedded OMF metadata. Each source keeps its own observations;
 // the reader does not merge media rows or select the table's metadata.
 

@@ -2,11 +2,10 @@
 
 namespace FeatureFlags
 {
-	inline constexpr bool kDebugMenuEnabled = true;
-	inline constexpr bool kSystemTableFontEnabled = false;
-	inline constexpr bool OmfScan = true;
-	inline constexpr bool kOmfEnabled = OmfScan; // Compatibility for existing callers.
-	inline constexpr bool kPrecomputesEnabled = true;
-	inline constexpr bool kClipDurationEnabled = true;
-	inline constexpr bool kUndoEnabled = true;
+	inline constexpr bool kDebugMenu = true;
+	inline constexpr bool kMonospaceTable = false;
+	inline constexpr bool kOmfScan = true;
+	inline constexpr bool kPrecomputes = true;
+	inline constexpr bool kClipDuration = true;
+	inline constexpr bool kUndo = true;
 }

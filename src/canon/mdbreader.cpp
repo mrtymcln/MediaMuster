@@ -1,5 +1,5 @@
 // Reads the complete MDB value graph through the shared OMF object interpreter.
-// Media payload handling belongs to the separate legacy-media reader.
+// Media payload handling belongs to the separate Legacy Media reader.
 
 #include "mdbreader.h"
 #include "omfobjects_p.h"

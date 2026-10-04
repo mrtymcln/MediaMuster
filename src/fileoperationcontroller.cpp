@@ -35,7 +35,7 @@ FileOperationController::FileOperationController(QWidget *window)
 {
 	m_undoAction->setObjectName(QStringLiteral("undoFileOperationAction"));
 	m_recoveryAct->setObjectName(QStringLiteral("unfinishedBusinessAction"));
-	setUndoEnabled(FeatureFlags::kUndoEnabled);
+	setUndoEnabled(FeatureFlags::kUndo);
 	connect(m_recoveryAct, &QAction::triggered, this, &FileOperationController::offerRecovery);
 	connect(m_undoAction, &QAction::triggered, this, &FileOperationController::undoLastOperation);
 	connect(

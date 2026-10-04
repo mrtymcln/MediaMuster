@@ -1,0 +1,2317 @@
+[
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+    "size": 9126981,
+    "byteOrder": "little",
+    "chunkCounts": {
+      "FILL": 8439,
+      "SCLP": 5548,
+      "ATTR": 9897,
+      "SEQU": 4045,
+      "PRIT": 56213,
+      "PRCL": 17,
+      "FXPS": 2267,
+      "PRLS": 2201,
+      "DIDP": 1988,
+      "AVUP": 282,
+      "TRKR": 1014,
+      "MCMR": 141,
+      "GRFX": 113,
+      "TKFX": 1697,
+      "FILE": 152,
+      "RSET": 166,
+      "MDES": 651,
+      "MSML": 723,
+      "TNFX": 570,
+      "CTRL": 2,
+      "MCBR": 133,
+      "PCMA": 363,
+      "CDCI": 348,
+      "TCCP": 180,
+      "PVOL": 530,
+      "MULD": 4,
+      "RGBA": 17,
+      "ECCP": 6,
+      "MASK": 24,
+      "CMPO": 1981,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "binItems": 1981,
+    "userPlacedCounts": {
+      "CompositionMob:0:True": 6,
+      "MasterMob:1:False": 521,
+      "SourceMob:9:False": 507,
+      "SourceMob:14:False": 507,
+      "MasterMob:0:False": 79,
+      "SourceMob:0:False": 313,
+      "CompositionMob:2:False": 34,
+      "CompositionMob:3:False": 14
+    },
+    "allCompositionObjects": 1981,
+    "compositionObjectsOutsideBinItems": [],
+    "duplicateMobIds": {},
+    "mobCounts": {
+      "MasterMob:0": 79,
+      "SourceMob:0": 313,
+      "SourceMob:14": 507,
+      "SourceMob:9": 507,
+      "MasterMob:1": 521,
+      "CompositionMob:2": 34,
+      "CompositionMob:3": 14,
+      "CompositionMob:0": 6
+    },
+    "descriptors": {
+      "MULD": 4,
+      "MDES": 603,
+      "PCMA": 359,
+      "CDCI": 344,
+      "RGBA": 17
+    },
+    "topSequences": [
+      {
+        "mob": {
+          "object": 99707,
+          "name": "FINE_01",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.59f6903d.70b800f2",
+          "bytes_le": "060a2b340101010101010f00130000003d90f659b870f200060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 14671,
+          "tracks": 20,
+          "descriptor": null
+        },
+        "directSourceClips": 237,
+        "directTargetTypes": {
+          "MasterMob": 127,
+          "CompositionMob": 110
+        },
+        "reachableMobs": 666,
+        "reachableMobTypes": {
+          "MasterMob": 187,
+          "CompositionMob": 31,
+          "SourceMob": 448
+        },
+        "reachableUsageTypes": {
+          "MasterMob:1": 125,
+          "CompositionMob:2": 30,
+          "SourceMob:0": 202,
+          "MasterMob:0": 62,
+          "SourceMob:14": 123,
+          "SourceMob:9": 123,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1266,
+        "missingSourceClipRefs": 193,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      },
+      {
+        "mob": {
+          "object": 99708,
+          "name": "FINE_02",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.59fd908d.c79b0055",
+          "bytes_le": "060a2b340101010101010f00130000008d90fd599bc75500060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 15142,
+          "tracks": 20,
+          "descriptor": null
+        },
+        "directSourceClips": 250,
+        "directTargetTypes": {
+          "MasterMob": 133,
+          "CompositionMob": 117
+        },
+        "reachableMobs": 655,
+        "reachableMobTypes": {
+          "CompositionMob": 30,
+          "SourceMob": 443,
+          "MasterMob": 182
+        },
+        "reachableUsageTypes": {
+          "CompositionMob:2": 29,
+          "SourceMob:0": 205,
+          "MasterMob:0": 62,
+          "SourceMob:14": 119,
+          "SourceMob:9": 119,
+          "MasterMob:1": 120,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1289,
+        "missingSourceClipRefs": 186,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      },
+      {
+        "mob": {
+          "object": 99709,
+          "name": "FINE_03",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.59fff225.1ed6009f",
+          "bytes_le": "060a2b340101010101010f001300000025f2ff59d61e9f00060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 13089,
+          "tracks": 20,
+          "descriptor": null
+        },
+        "directSourceClips": 189,
+        "directTargetTypes": {
+          "MasterMob": 117,
+          "CompositionMob": 72
+        },
+        "reachableMobs": 579,
+        "reachableMobTypes": {
+          "CompositionMob": 24,
+          "SourceMob": 396,
+          "MasterMob": 159
+        },
+        "reachableUsageTypes": {
+          "CompositionMob:2": 23,
+          "SourceMob:0": 180,
+          "MasterMob:0": 51,
+          "SourceMob:14": 108,
+          "SourceMob:9": 108,
+          "MasterMob:1": 108,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1067,
+        "missingSourceClipRefs": 176,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      },
+      {
+        "mob": {
+          "object": 99710,
+          "name": "FINE_04",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.5a267989.9b370292",
+          "bytes_le": "060a2b340101010101010f00130000008979265a379b9202060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 12739,
+          "tracks": 20,
+          "descriptor": null
+        },
+        "directSourceClips": 249,
+        "directTargetTypes": {
+          "MasterMob": 199,
+          "CompositionMob": 50
+        },
+        "reachableMobs": 830,
+        "reachableMobTypes": {
+          "SourceMob": 571,
+          "MasterMob": 237,
+          "CompositionMob": 22
+        },
+        "reachableUsageTypes": {
+          "SourceMob:0": 187,
+          "MasterMob:0": 45,
+          "SourceMob:14": 192,
+          "SourceMob:9": 192,
+          "MasterMob:1": 192,
+          "CompositionMob:2": 21,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1569,
+        "missingSourceClipRefs": 261,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      },
+      {
+        "mob": {
+          "object": 99711,
+          "name": "FINE_05",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.5a6ffa30.b3ae00de",
+          "bytes_le": "060a2b340101010101010f001300000030fa6f5aaeb3de00060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 12616,
+          "tracks": 20,
+          "descriptor": null
+        },
+        "directSourceClips": 301,
+        "directTargetTypes": {
+          "MasterMob": 259,
+          "CompositionMob": 42
+        },
+        "reachableMobs": 989,
+        "reachableMobTypes": {
+          "SourceMob": 679,
+          "MasterMob": 290,
+          "CompositionMob": 20
+        },
+        "reachableUsageTypes": {
+          "SourceMob:0": 183,
+          "MasterMob:0": 40,
+          "SourceMob:14": 248,
+          "SourceMob:9": 248,
+          "MasterMob:1": 250,
+          "CompositionMob:2": 19,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1703,
+        "missingSourceClipRefs": 306,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      },
+      {
+        "mob": {
+          "object": 99712,
+          "name": "ROUGH",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.59bb8d6d.f1e50077",
+          "bytes_le": "060a2b340101010101010f00130000006d8dbb59e5f17700060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 13934,
+          "tracks": 17,
+          "descriptor": null
+        },
+        "directSourceClips": 222,
+        "directTargetTypes": {
+          "CompositionMob": 107,
+          "MasterMob": 115
+        },
+        "reachableMobs": 566,
+        "reachableMobTypes": {
+          "CompositionMob": 23,
+          "SourceMob": 386,
+          "MasterMob": 157
+        },
+        "reachableUsageTypes": {
+          "CompositionMob:2": 22,
+          "SourceMob:0": 178,
+          "MasterMob:0": 50,
+          "SourceMob:14": 104,
+          "SourceMob:9": 104,
+          "MasterMob:1": 107,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1078,
+        "missingSourceClipRefs": 144,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      }
+    ],
+    "errors": [
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "seconds": 2.9582600420108065,
+    "fileUnchangedDuringRead": true
+  },
+  {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/02_SEQ_LOCK.avb",
+    "size": 3403226,
+    "byteOrder": "little",
+    "chunkCounts": {
+      "ATTR": 5312,
+      "FILL": 2965,
+      "SCLP": 2304,
+      "PRIT": 7500,
+      "TRKR": 297,
+      "MCMR": 71,
+      "GRFX": 14,
+      "SEQU": 1439,
+      "FILE": 117,
+      "FXPS": 540,
+      "PRLS": 536,
+      "RSET": 20,
+      "CTRL": 1,
+      "DIDP": 213,
+      "MSML": 517,
+      "TNFX": 332,
+      "PVOL": 293,
+      "TKFX": 208,
+      "MDES": 376,
+      "TCCP": 120,
+      "MCBR": 133,
+      "CDCI": 182,
+      "PCMA": 325,
+      "RGBA": 10,
+      "ECCP": 1,
+      "MASK": 4,
+      "CMPO": 1264,
+      "BVst": 1,
+      "ABIN": 1
+    },
+    "binItems": 1264,
+    "userPlacedCounts": {
+      "CompositionMob:3:True": 6,
+      "CompositionMob:0:True": 1,
+      "MasterMob:0:False": 94,
+      "SourceMob:0:False": 330,
+      "CompositionMob:2:False": 30,
+      "MasterMob:7:False": 2,
+      "MasterMob:1:False": 271,
+      "SourceMob:9:False": 265,
+      "SourceMob:14:False": 265
+    },
+    "allCompositionObjects": 1264,
+    "compositionObjectsOutsideBinItems": [],
+    "duplicateMobIds": {},
+    "mobCounts": {
+      "SourceMob:14": 265,
+      "MasterMob:1": 271,
+      "SourceMob:9": 265,
+      "SourceMob:0": 330,
+      "CompositionMob:2": 30,
+      "MasterMob:0": 94,
+      "MasterMob:7": 2,
+      "CompositionMob:0": 1,
+      "CompositionMob:3": 6
+    },
+    "descriptors": {
+      "MDES": 343,
+      "CDCI": 182,
+      "PCMA": 325,
+      "RGBA": 10
+    },
+    "topSequences": [
+      {
+        "mob": {
+          "object": 25088,
+          "name": "FINE_06",
+          "type": "CompositionMob",
+          "usage": 0,
+          "id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.5bc7c01c.461909b1",
+          "bytes_le": "060a2b340101010101010f00130000001cc0c75b1946b109060e2b347f7f2a80",
+          "edit_rate": 24.0,
+          "length": 11760,
+          "tracks": 18,
+          "descriptor": null
+        },
+        "directSourceClips": 246,
+        "directTargetTypes": {
+          "MasterMob": 220,
+          "CompositionMob": 26
+        },
+        "reachableMobs": 790,
+        "reachableMobTypes": {
+          "SourceMob": 549,
+          "MasterMob": 228,
+          "CompositionMob": 13
+        },
+        "reachableUsageTypes": {
+          "SourceMob:9": 189,
+          "MasterMob:1": 189,
+          "SourceMob:14": 189,
+          "SourceMob:0": 171,
+          "CompositionMob:2": 12,
+          "MasterMob:0": 39,
+          "CompositionMob:0": 1
+        },
+        "reachableSourceClipObjects": 1320,
+        "missingSourceClipRefs": 235,
+        "missingIds": [
+          "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+          "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80"
+        ],
+        "nullSourceClipRefs": 0,
+        "outsideBinItemObjects": [],
+        "crossBinMissingIdMatches": {}
+      }
+    ],
+    "errors": [
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      },
+      {
+        "path": ".descriptor",
+        "error": "b'PCMA': unknown ext tag 0x02 2"
+      }
+    ],
+    "seconds": 1.075961249996908,
+    "fileUnchangedDuringRead": true
+  }
+]

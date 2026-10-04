@@ -1,0 +1,34 @@
+[
+  {
+    "bin": "01_SEQ.avb",
+    "mobObject": 99684,
+    "mobName": "A002_C016_0101GA",
+    "mobId": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.59bbfb05.c8550177",
+    "descriptorObject": 97323,
+    "descriptorClass": "CDCI",
+    "locatorObject": 88700,
+    "locatorClass": "MSML",
+    "locator": {
+      "last_known_volume": "EDIT",
+      "domain_type": "4",
+      "mob_id": "urn:smpte:umid:060a2b34.01010101.01010f00.13000000.060e2b34.7f7f2a80.59bbfb05.c8550177",
+      "last_known_volume_utf8": "EDIT"
+    }
+  },
+  {
+    "bin": "02_SEQ_LOCK.avb",
+    "mobObject": 23962,
+    "mobName": null,
+    "mobId": "urn:smpte:umid:060a2b34.01010105.01010f10.13000000.088820da.86549005.45b83436.3bcdaf64",
+    "descriptorObject": 19369,
+    "descriptorClass": "CDCI",
+    "locatorObject": 12170,
+    "locatorClass": "MSML",
+    "locator": {
+      "last_known_volume": "EDIT (/Volumes/EDIT)",
+      "domain_type": "4",
+      "mob_id": "urn:smpte:umid:060a2b34.01010105.01010f10.13000000.088820da.86549005.45b83436.3bcdaf64",
+      "last_known_volume_utf8": "EDIT (/Volumes/EDIT)"
+    }
+  }
+]

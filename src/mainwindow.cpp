@@ -71,7 +71,7 @@
 
 namespace
 {
-	/// Shared font for the table and console.
+	/// Monospaced font for the table and console.
 	QFont monoFont()
 	{
 #ifdef Q_OS_MAC
@@ -187,9 +187,9 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupUi();
 	setupMenus();
 	setupConnections();
-	setOmfEnabled(FeatureFlags::kOmfEnabled);
-	setPrecomputesEnabled(FeatureFlags::kPrecomputesEnabled);
-	setClipDurationEnabled(FeatureFlags::kClipDurationEnabled);
+	setOmfEnabled(FeatureFlags::kOmfScan);
+	setPrecomputesEnabled(FeatureFlags::kPrecomputes);
+	setClipDurationEnabled(FeatureFlags::kClipDuration);
 	updateFilterCounts();
 	updateActivityUi();
 
@@ -450,7 +450,7 @@ void MainWindow::buildTable()
 	m_tableView->horizontalHeader()->setSectionsMovable(true);
 	m_tableView->horizontalHeader()->setHighlightSections(false);
 	m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-	setSystemTableFontEnabled(FeatureFlags::kSystemTableFontEnabled);
+	setMonospaceTableEnabled(FeatureFlags::kMonospaceTable);
 
 	// Every session starts here. Scans leave widths alone; the View menu
 	// provides Qt's native content fitting when requested.
@@ -475,9 +475,15 @@ void MainWindow::buildTable()
 	setW(Col::Location, 250);
 }
 
-void MainWindow::setSystemTableFontEnabled(bool enabled)
+void MainWindow::setMonospaceTableEnabled(bool enabled)
 {
-	m_tableView->setFont(enabled ? QFontDatabase::systemFont(QFontDatabase::GeneralFont) : monoFont());
+	// An unresolved font restores Qt's native styling.
+	QFont font = enabled ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont();
+	if (enabled)
+		font.setPointSize(12);
+	m_tableView->setFont(font);
+	m_tableView->horizontalHeader()->setFont(font);
+	m_tableView->verticalHeader()->setFont(font);
 }
 
 // MARK: - Console
@@ -674,16 +680,16 @@ void MainWindow::buildSpecialMenu()
 
 void MainWindow::buildDebugMenu()
 {
-	if constexpr (!FeatureFlags::kDebugMenuEnabled)
+	if constexpr (!FeatureFlags::kDebugMenu)
 		return;
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	auto *systemTableFontAct = debugMenu->addAction(tr("System font"));
-	systemTableFontAct->setObjectName(QStringLiteral("systemTableFontDebugAction"));
-	systemTableFontAct->setCheckable(true);
-	systemTableFontAct->setChecked(FeatureFlags::kSystemTableFontEnabled);
-	connect(systemTableFontAct, &QAction::toggled, this, &MainWindow::setSystemTableFontEnabled);
+	auto *monospaceTableAct = debugMenu->addAction(QStringLiteral("Monospace table"));
+	monospaceTableAct->setObjectName(QStringLiteral("monospaceTableDebugAction"));
+	monospaceTableAct->setCheckable(true);
+	monospaceTableAct->setChecked(FeatureFlags::kMonospaceTable);
+	connect(monospaceTableAct, &QAction::toggled, this, &MainWindow::setMonospaceTableEnabled);
 
 	// Save the startup style before the debug toggle changes it.
 	const QString nativeStyleName = QApplication::style()->name();
@@ -696,7 +702,6 @@ void MainWindow::buildDebugMenu()
 			{
 				const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
 				QApplication::setStyle(QStyleFactory::create(target));
-				qCInfo(lcApp).noquote() << QStringLiteral("Using %1 style for appearance.").arg(target);
 			});
 }
 
@@ -793,13 +798,13 @@ void MainWindow::setupConnections()
 				refreshEverything();
 			});
 	connect(m_operations, &FileOperationController::transferCompleted, this,
-		[this](const QString &source, const QString &destination, bool copy)
-		{
-			m_model->applyTransfer(source, destination, copy);
-			if (!copy && m_persistentSelectedPaths.remove(source))
-				m_persistentSelectedPaths.insert(destination);
-			refreshEverything();
-		});
+			[this](const QString &source, const QString &destination, bool copy)
+			{
+				m_model->applyTransfer(source, destination, copy);
+				if (!copy && m_persistentSelectedPaths.remove(source))
+					m_persistentSelectedPaths.insert(destination);
+				refreshEverything();
+			});
 
 	connect(m_filterTabs, &QTabBar::currentChanged, this, &MainWindow::onFilterChanged);
 
