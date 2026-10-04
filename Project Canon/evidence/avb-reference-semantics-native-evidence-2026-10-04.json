@@ -1,0 +1,92 @@
+{
+  "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+  "size": 73527536,
+  "mtimeNs": 1787793516000000000,
+  "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+  "architecture": "arm64",
+  "findings": [
+    {
+      "field": "SourceClip.mob_id",
+      "nullMaterialLE": "060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80",
+      "fillerMaterialLE": "060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80",
+      "nativeFunctions": {
+        "IsNullMobID": "0x2353dc: compares native structure bytes 16..23 with zero; does not require all 32 bytes zero.",
+        "IsFillerMobID": "0x235d94: constructs the exact material-LE filler identity above and calls EqualMobID.",
+        "IsWellKnownMobID": "0x235e1c: checks lowWord==0 and highWord<300. This alone does not establish terminal semantics for all such values.",
+        "InitMobID": "0x2364fc: writes Avid prefix/tail and material numeric words from arguments."
+      },
+      "literalData": {
+        "0x10ec848": "060e2b347f7f2a80",
+        "0x10ec850": "060a2b3401010101"
+      },
+      "recommendation": "Treat known all-zero/full-Avid-null and exact full-Avid-filler IDs as explicit terminals; retain raw IDs and distinct terminal explanations. Do not broaden to all well-known IDs without semantic evidence."
+    },
+    {
+      "field": "AudioSuitePluginEffect.mob_id",
+      "nativeExtensionDescription": "PCLASS_EXT(SourceMasterClipOMFMobID, 1); PCLASS_EXT(SourceMasterClipMobID_RETIRED_SYMBOL_DO_NOT_USE, 7); PCLASS_EXT(SourceMasterClipAAFMobID, 8)",
+      "nativeProperty": "OMFI:ASPI:sourceMasterClipMobID",
+      "nativePut": "AudioSuitePlugInEffect::Put writes object + 0x178 in extension 8 through Write_AAFMobID at 0x7b1030.",
+      "recommendation": "Explicit source-master dependency under approved inputs+renders policy. Resolve through qualified unique MobID matching, not only target Role::SourceMob."
+    }
+  ],
+  "primaryAAFContext": {
+    "url": "https://aafassociation.org/html/specs/aafspec-v1.0.1.pdf",
+    "sections": "7.6 SourceReference and 7.7 SourceClip, printed pages 45\u201346",
+    "summary": "SourceID 0 denotes an original-source terminal; omitted SourceID means a same-Mob reference. AVB sentinel byte forms come from native evidence, not the AAF specification."
+  },
+  "limitations": [
+    "Native implementation evidence from one inspected Avid library; not universal format specification.",
+    "The corpus probe has no ASPI examples; test source-master dependency grammar with a controlled fixture.",
+    "MobRef, Marker and Position IDs remain distinct descriptive/navigation/position evidence; no blanket dependency rule has been established."
+  ],
+  "arm64SliceFileOffset": 37027840,
+  "byteReceipts": [
+    {
+      "meaning": "IsNullMobID complete leaf function",
+      "arm64VirtualAddress": "0x2353dc",
+      "universalFileOffset": 39343068,
+      "length": 44,
+      "bytesHex": "081040b9092840791f0100712009407a6000005400008052c0035fd6082c40791f010071e0179f1ac0035fd6"
+    },
+    {
+      "meaning": "IsFillerMobID constant construction and comparison",
+      "arm64VirtualAddress": "0x235db0",
+      "universalFileOffset": 39345584,
+      "length": 68,
+      "bytesHex": "a87500f008412191080140f9e80700f928208052e801a072e81300b968028052e8530039ff5301b82800c0d2e80f00f9a87500f0002544fde01300fde1230091a6fdff97"
+    },
+    {
+      "meaning": "Avid MobID literal material tail",
+      "arm64VirtualAddress": "0x10ec848",
+      "universalFileOffset": 54773832,
+      "length": 8,
+      "bytesHex": "060e2b347f7f2a80"
+    },
+    {
+      "meaning": "Avid MobID literal prefix",
+      "arm64VirtualAddress": "0x10ec850",
+      "universalFileOffset": 54773840,
+      "length": 8,
+      "bytesHex": "060a2b3401010101"
+    },
+    {
+      "meaning": "ASPI extension 8 write and Write_AAFMobID call",
+      "arm64VirtualAddress": "0x7b0ff4",
+      "universalFileOffset": 45092852,
+      "length": 64,
+      "bytesHex": "880240f908fd40f9e00314aa0101805200013fd6f3031caa688e40b81f15007148039b9a080140f9012544f9c00640ade08702ade2430191e00314aa9712ea97"
+    }
+  ],
+  "stringReceipts": [
+    {
+      "universalFileOffset": 53538256,
+      "lengthIncludingNull": 32,
+      "ascii": "OMFI:ASPI:sourceMasterClipMobID"
+    },
+    {
+      "universalFileOffset": 54173042,
+      "lengthIncludingNull": 347,
+      "ascii": "PCLASS_EXTENSIONS9( PCLASS_EXT(SourceMasterClipOMFMobID, 1), PCLASS_EXT(MarkInForSource, 2), PCLASS_EXT(MarkOutForSource, 3), PCLASS_EXT(TracksToAffect, 4), PCLASS_EXT(RenderingMode, 5), PCLASS_EXT(PaddingSecs, 6), PCLASS_EXT(SourceMasterClipMobID_RETIRED_SYMBOL_DO_NOT_USE, 7), PCLASS_EXT(SourceMasterClipAAFMobID, 8), PCLASS_EXT(PresetPath, 9))"
+    }
+  ]
+}

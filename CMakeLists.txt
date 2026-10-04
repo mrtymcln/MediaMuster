@@ -97,6 +97,11 @@ add_library(mediamuster_canon STATIC
     src/canon/bentoreader_p.cpp
     src/canon/mxfreader.cpp
     src/canon/mxfobjects_p.cpp
+    src/canon/avbreader.cpp
+    src/canon/avbobjects_p.cpp
+    src/canon/avbcomponents_p.cpp
+    src/canon/avbdescriptors_p.cpp
+    src/canon/avbreferences.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
 )

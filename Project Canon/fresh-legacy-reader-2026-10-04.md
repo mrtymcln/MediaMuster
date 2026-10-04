@@ -73,7 +73,7 @@ range with an explanation. The reader does not skip every DataValue/VarLenBytes:
 those types also carry metadata and descriptor summaries.
 
 Native `data`/`SSND` sample payloads, padding/fill and `omfi` chunks are retained by
-range. The SSND offset/block-size header is read separately. Unrecognized native
+range. The SSND offset/block-size header is read separately. Unrecognised native
 chunks also retain ranges with an explicit interpretation limit: they are not
 silently classified as sound or presumed small enough to load. Known metadata
 chunks (`fmt `, `COMM`, `ds64`, `bext`, `iXML`, `axml`, `umid`, `minf`, `FVER`,

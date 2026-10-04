@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-04",
+  "reader": "Canon::AvbReader",
+  "library": "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a",
+  "librarySha256": "af932d314e7d1ee418d394ce58dd1414507c7e8de4bc9d851887007a579ec596",
+  "libraryModifiedUtc": "2026-10-04T02:07:18.215962+00:00",
+  "buildType": "Debug",
+  "libraryArchitectures": [
+    "arm64",
+    "x86_64"
+  ],
+  "probeArchitecture": "x86_64",
+  "execution": "Rosetta on Apple silicon; one new process per bin",
+  "qtVersion": "6.5.3",
+  "sourceDevice": "ReadOnly | Unbuffered QFile",
+  "sourceReads": "Logical QIODevice read requests, not physical disk I/O",
+  "rss": "getrusage RUSAGE_SELF ru_maxrss, macOS bytes; includes runtime and temporary allocations",
+  "independentFramingCountsMatch": true,
+  "bins": 9,
+  "objects": 132165,
+  "objectProperties": 2988319,
+  "logicalBytesRead": 14464589,
+  "sourceBytes": 14464589
+}

@@ -85,6 +85,17 @@ namespace Canon
 		ByteRange value;
 	};
 
+	// AVB fields are positional inside a typed chunk. Preserve the chunk's
+	// identity and byte order even when a newer field layout is not understood.
+	struct AvbObjectContext
+	{
+		QByteArray classId;
+		ByteRange framing;
+		ByteRange value;
+		bool bigEndian = false;
+		bool interpretationComplete = false;
+	};
+
 	/// Unknown/private properties keep their encoding without invented semantics.
 	struct RawProperty
 	{
@@ -119,6 +130,7 @@ namespace Canon
 		QByteArray recordedIdentity;
 		QString identityEncoding;				 ///< Reader-established encoding, not an assumed byte order.
 		QSharedPointer<const MxfSetContext> mxf; ///< MXF set/partition context, including repeated metadata copies.
+		QSharedPointer<const AvbObjectContext> avb;
 		QVector<RawProperty> properties;
 	};
 
@@ -155,7 +167,8 @@ namespace Canon
 			Mxf,
 			Omf,
 			Wave,
-			Aiff
+			Aiff,
+			Avb
 		};
 		enum class Outcome
 		{

@@ -1,0 +1,47 @@
+{
+  "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+  "parents": [
+    {
+      "parent": 92874,
+      "parentClass": "MULD",
+      "parentLocator": null,
+      "physicalObject": 83293,
+      "physicalClass": "MDES",
+      "physicalLocatorObject": 66074,
+      "physicalLocatorClass": "FILE",
+      "physicalLocatorFields": {
+        "path": "Mojave/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4",
+        "path_posix": "/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4",
+        "path_utf8": "/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4"
+      }
+    },
+    {
+      "parent": 92880,
+      "parentClass": "MULD",
+      "parentLocator": null,
+      "physicalObject": 83309,
+      "physicalClass": "MDES",
+      "physicalLocatorObject": 66078,
+      "physicalLocatorClass": "FILE",
+      "physicalLocatorFields": {
+        "path": "Mojave/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4",
+        "path_posix": "/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4",
+        "path_utf8": "/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4"
+      }
+    },
+    {
+      "parent": 92886,
+      "parentClass": "MULD",
+      "parentLocator": null,
+      "physicalObject": 83325,
+      "physicalClass": "MDES",
+      "physicalLocatorObject": 66082,
+      "physicalLocatorClass": "FILE",
+      "physicalLocatorFields": {
+        "path": "Mojave/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4",
+        "path_posix": "/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4",
+        "path_utf8": "/Volumes/AVID DRIVE/0008FixingJamesKingsley09-09-2017martymclean/008 EXPORTS/081 ROUGH/Scene04Rough.mp4"
+      }
+    }
+  ]
+}

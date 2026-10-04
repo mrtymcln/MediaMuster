@@ -2818,7 +2818,7 @@ void TestFileOperations::native_trash_refusals_share_one_consent_and_undo()
 		request.items.append(item);
 	}
 	const QStringList reasons{"Too large for the native bin", "Native bin unavailable",
-							  "Unrecognized native error 0xDEADBEEF"};
+							  "Unrecognised native error 0xDEADBEEF"};
 	Sink sink;
 	bool originalsIntactAtPrompt = true;
 	sink.trashFallbackAnswer = [&](const auto &items)

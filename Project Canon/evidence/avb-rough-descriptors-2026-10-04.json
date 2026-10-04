@@ -1,0 +1,1963 @@
+{
+  "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+  "outcome": "Complete",
+  "sizeAndMtimeUnchanged": true,
+  "objects": [
+    {
+      "class": "PCMA",
+      "fields": [
+        {
+          "bytes": "414d4350",
+          "name": "Chunk.class_id",
+          "value": "PCMA"
+        },
+        {
+          "bytes": "8c020000",
+          "name": "Chunk.size",
+          "value": 652
+        },
+        {
+          "bytes": "01",
+          "name": "MediaDescriptor.mob_kind",
+          "value": 1
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaDescriptor.locator",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "MediaDescriptor.intermediate",
+          "value": false
+        },
+        {
+          "bytes": "18020100",
+          "name": "MediaDescriptor.physical_media",
+          "value": 66072
+        },
+        {
+          "bytes": "10000000",
+          "name": "MediaDescriptor.uuid_length",
+          "value": 16
+        },
+        {
+          "bytes": "a29726b24234e844bb8f7a1cd290ebf1",
+          "name": "MediaDescriptor.uuid",
+          "value": "��&�B4�D��z\u001cҐ��"
+        },
+        {
+          "bytes": "00020000",
+          "name": "MediaDescriptor.wchar_size",
+          "value": 512
+        },
+        {
+          "bytes": "5b004100760069006400200054006500630068006e006f006c006f00670079002c00200049006e0063002e005d005b0041007600690064002000470065006e006500720069006300200050006c00750067002d0049006e005d005b0032002e0034002e0033002e00310030003000330032005d005b00510037005f004d00650064006900610043006f006e007400610069006e00650072005d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "name": "MediaDescriptor.wchar",
+          "value": null
+        },
+        {
+          "bytes": "17020100",
+          "name": "MediaDescriptor.attributes",
+          "value": 66071
+        },
+        {
+          "bytes": "44ac0000",
+          "name": "MediaFileDescriptor.edit_rate.mantissa",
+          "value": 44100
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.edit_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "df3f3700",
+          "name": "MediaFileDescriptor.length",
+          "value": 3620831
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.is_omfi",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaFileDescriptor.data_offset",
+          "value": 0
+        },
+        {
+          "bytes": "0200",
+          "name": "PCMADescriptor.channels",
+          "value": 2
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.quantization_bits",
+          "value": 0
+        },
+        {
+          "bytes": "44ac0000",
+          "name": "PCMADescriptor.sample_rate.mantissa",
+          "value": 44100
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.sample_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "PCMADescriptor.locked",
+          "value": false
+        },
+        {
+          "bytes": "ecff",
+          "name": "PCMADescriptor.audio_ref_level",
+          "value": -20
+        },
+        {
+          "bytes": "02000000",
+          "name": "PCMADescriptor.electro_spatial_formulation",
+          "value": 2
+        },
+        {
+          "bytes": "1b00",
+          "name": "PCMADescriptor.dial_norm",
+          "value": 27
+        },
+        {
+          "bytes": "08000000",
+          "name": "PCMADescriptor.coding_format",
+          "value": 8
+        },
+        {
+          "bytes": "04000000",
+          "name": "PCMADescriptor.block_align",
+          "value": 4
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.sequence_offset",
+          "value": 0
+        },
+        {
+          "bytes": "10b10200",
+          "name": "PCMADescriptor.average_bps",
+          "value": 176400
+        },
+        {
+          "bytes": "00",
+          "name": "PCMADescriptor.has_peak_envelope_data",
+          "value": false
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_version",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_format",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.points_per_peak_value",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_block_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_channel_count",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_frame_count",
+          "value": 0
+        },
+        {
+          "bytes": "ffffffffffffffff",
+          "name": "PCMADescriptor.peak_of_peaks_offset",
+          "value": 18446744073709552000
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_timestamp",
+          "value": 0
+        }
+      ],
+      "incoming": [
+        {
+          "origin": 92874,
+          "property": "MultiDescriptor.descriptors[1]"
+        }
+      ],
+      "object": 83291,
+      "outgoing": [
+        {
+          "property": "MediaDescriptor.locator",
+          "target": 0
+        },
+        {
+          "property": "MediaDescriptor.physical_media",
+          "target": 66072
+        },
+        {
+          "property": "MediaDescriptor.attributes",
+          "target": 66071
+        }
+      ]
+    },
+    {
+      "class": "CDCI",
+      "fields": [
+        {
+          "bytes": "49434443",
+          "name": "Chunk.class_id",
+          "value": "CDCI"
+        },
+        {
+          "bytes": "b6030000",
+          "name": "Chunk.size",
+          "value": 950
+        },
+        {
+          "bytes": "01",
+          "name": "MediaDescriptor.mob_kind",
+          "value": 1
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaDescriptor.locator",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "MediaDescriptor.intermediate",
+          "value": false
+        },
+        {
+          "bytes": "19020100",
+          "name": "MediaDescriptor.physical_media",
+          "value": 66073
+        },
+        {
+          "bytes": "10000000",
+          "name": "MediaDescriptor.uuid_length",
+          "value": 16
+        },
+        {
+          "bytes": "a29726b24234e844bb8f7a1cd290ebf1",
+          "name": "MediaDescriptor.uuid",
+          "value": "��&�B4�D��z\u001cҐ��"
+        },
+        {
+          "bytes": "00020000",
+          "name": "MediaDescriptor.wchar_size",
+          "value": 512
+        },
+        {
+          "bytes": "5b004100760069006400200054006500630068006e006f006c006f00670079002c00200049006e0063002e005d005b0041007600690064002000470065006e006500720069006300200050006c00750067002d0049006e005d005b0032002e0034002e0033002e00310030003000330032005d005b00510037005f004d00650064006900610043006f006e007400610069006e00650072005d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "name": "MediaDescriptor.wchar",
+          "value": null
+        },
+        {
+          "bytes": "18000000",
+          "name": "MediaFileDescriptor.edit_rate.mantissa",
+          "value": 24
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.edit_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "b2070000",
+          "name": "MediaFileDescriptor.length",
+          "value": 1970
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.is_omfi",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaFileDescriptor.data_offset",
+          "value": 0
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.stored_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.stored_width",
+          "value": 1280
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.sampled_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.sampled_width",
+          "value": 1280
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.sampled_x_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.sampled_y_offset",
+          "value": 0
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.display_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.display_width",
+          "value": 1280
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.display_x_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.display_y_offset",
+          "value": 0
+        },
+        {
+          "bytes": "0000",
+          "name": "DIDDescriptor.frame_layout",
+          "value": 0
+        },
+        {
+          "bytes": "10000000",
+          "name": "DIDDescriptor.aspect_ratio.numerator",
+          "value": 16
+        },
+        {
+          "bytes": "09000000",
+          "name": "DIDDescriptor.aspect_ratio.denominator",
+          "value": 9
+        },
+        {
+          "bytes": "08000000",
+          "name": "DIDDescriptor.line_map_byte_size",
+          "value": 8
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.line_map[0]",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.line_map[1]",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.alpha_transparency",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "DIDDescriptor.uniformness",
+          "value": false
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.did_image_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.next_did_desc",
+          "value": 0
+        },
+        {
+          "bytes": "30304952",
+          "name": "DIDDescriptor.compress_method",
+          "value": "RI00"
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.resolution_id",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.image_alignment_factor",
+          "value": 0
+        },
+        {
+          "bytes": "4949",
+          "name": "DIDDescriptor.frame_index_byte_order",
+          "value": 18761
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.frame_sample_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.first_frame_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.client_fill_start",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.client_fill_end",
+          "value": 0
+        },
+        {
+          "bytes": "ffffffff",
+          "name": "DIDDescriptor.offset_to_rle_frame_index",
+          "value": -1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.valid_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.valid_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.valid_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.valid_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.essence_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.essence_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.essence_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.essence_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.source_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.source_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.source_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.source_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "0101010402010000060e2b3404010101",
+          "name": "DIDDescriptor.transfer_characteristic",
+          "value": "\u0001\u0001\u0001\u0004\u0002\u0001\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0001"
+        },
+        {
+          "bytes": "0101010403030000060e2b3404010106",
+          "name": "DIDDescriptor.color_primaries",
+          "value": "\u0001\u0001\u0001\u0004\u0003\u0003\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0006"
+        },
+        {
+          "bytes": "0101010402020000060e2b3404010101",
+          "name": "DIDDescriptor.coding_equations",
+          "value": "\u0001\u0001\u0001\u0004\u0002\u0002\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0001"
+        },
+        {
+          "bytes": "0202010431010140060e2b340401010d",
+          "name": "DIDDescriptor.essence_compression",
+          "value": "\u0002\u0002\u0001\u00041\u0001\u0001@\u0006\u000e+4\u0004\u0001\u0001\r"
+        },
+        {
+          "bytes": "01",
+          "name": "DIDDescriptor.frame_checked_with_mapper",
+          "value": true
+        },
+        {
+          "bytes": "02000000",
+          "name": "CDCIDescriptor.horizontal_subsampling",
+          "value": 2
+        },
+        {
+          "bytes": "02000000",
+          "name": "CDCIDescriptor.vertical_subsampling",
+          "value": 2
+        },
+        {
+          "bytes": "08000000",
+          "name": "CDCIDescriptor.component_width",
+          "value": 8
+        },
+        {
+          "bytes": "0000",
+          "name": "CDCIDescriptor.color_sitting",
+          "value": 0
+        },
+        {
+          "bytes": "10000000",
+          "name": "CDCIDescriptor.black_ref_level",
+          "value": 16
+        },
+        {
+          "bytes": "eb000000",
+          "name": "CDCIDescriptor.white_ref_level",
+          "value": 235
+        },
+        {
+          "bytes": "dc000000",
+          "name": "CDCIDescriptor.color_range",
+          "value": 220
+        },
+        {
+          "bytes": "0000000000000000",
+          "name": "CDCIDescriptor.frame_index_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "CDCIDescriptor.alpha_sampled_width",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "CDCIDescriptor.ignore_bw",
+          "value": 0
+        }
+      ],
+      "incoming": [
+        {
+          "origin": 92874,
+          "property": "MultiDescriptor.descriptors[0]"
+        }
+      ],
+      "object": 83292,
+      "outgoing": [
+        {
+          "property": "MediaDescriptor.locator",
+          "target": 0
+        },
+        {
+          "property": "MediaDescriptor.physical_media",
+          "target": 66073
+        },
+        {
+          "property": "DIDDescriptor.next_did_desc",
+          "target": 0
+        }
+      ]
+    },
+    {
+      "class": "PCMA",
+      "fields": [
+        {
+          "bytes": "414d4350",
+          "name": "Chunk.class_id",
+          "value": "PCMA"
+        },
+        {
+          "bytes": "8c020000",
+          "name": "Chunk.size",
+          "value": 652
+        },
+        {
+          "bytes": "01",
+          "name": "MediaDescriptor.mob_kind",
+          "value": 1
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaDescriptor.locator",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "MediaDescriptor.intermediate",
+          "value": false
+        },
+        {
+          "bytes": "1c020100",
+          "name": "MediaDescriptor.physical_media",
+          "value": 66076
+        },
+        {
+          "bytes": "10000000",
+          "name": "MediaDescriptor.uuid_length",
+          "value": 16
+        },
+        {
+          "bytes": "a29726b24234e844bb8f7a1cd290ebf1",
+          "name": "MediaDescriptor.uuid",
+          "value": "��&�B4�D��z\u001cҐ��"
+        },
+        {
+          "bytes": "00020000",
+          "name": "MediaDescriptor.wchar_size",
+          "value": 512
+        },
+        {
+          "bytes": "5b004100760069006400200054006500630068006e006f006c006f00670079002c00200049006e0063002e005d005b0041007600690064002000470065006e006500720069006300200050006c00750067002d0049006e005d005b0032002e0034002e0033002e00310030003000330032005d005b00510037005f004d00650064006900610043006f006e007400610069006e00650072005d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "name": "MediaDescriptor.wchar",
+          "value": null
+        },
+        {
+          "bytes": "1b020100",
+          "name": "MediaDescriptor.attributes",
+          "value": 66075
+        },
+        {
+          "bytes": "44ac0000",
+          "name": "MediaFileDescriptor.edit_rate.mantissa",
+          "value": 44100
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.edit_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "df3f3700",
+          "name": "MediaFileDescriptor.length",
+          "value": 3620831
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.is_omfi",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaFileDescriptor.data_offset",
+          "value": 0
+        },
+        {
+          "bytes": "0200",
+          "name": "PCMADescriptor.channels",
+          "value": 2
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.quantization_bits",
+          "value": 0
+        },
+        {
+          "bytes": "44ac0000",
+          "name": "PCMADescriptor.sample_rate.mantissa",
+          "value": 44100
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.sample_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "PCMADescriptor.locked",
+          "value": false
+        },
+        {
+          "bytes": "ecff",
+          "name": "PCMADescriptor.audio_ref_level",
+          "value": -20
+        },
+        {
+          "bytes": "02000000",
+          "name": "PCMADescriptor.electro_spatial_formulation",
+          "value": 2
+        },
+        {
+          "bytes": "1b00",
+          "name": "PCMADescriptor.dial_norm",
+          "value": 27
+        },
+        {
+          "bytes": "08000000",
+          "name": "PCMADescriptor.coding_format",
+          "value": 8
+        },
+        {
+          "bytes": "04000000",
+          "name": "PCMADescriptor.block_align",
+          "value": 4
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.sequence_offset",
+          "value": 0
+        },
+        {
+          "bytes": "10b10200",
+          "name": "PCMADescriptor.average_bps",
+          "value": 176400
+        },
+        {
+          "bytes": "00",
+          "name": "PCMADescriptor.has_peak_envelope_data",
+          "value": false
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_version",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_format",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.points_per_peak_value",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_block_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_channel_count",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_frame_count",
+          "value": 0
+        },
+        {
+          "bytes": "ffffffffffffffff",
+          "name": "PCMADescriptor.peak_of_peaks_offset",
+          "value": 18446744073709552000
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_timestamp",
+          "value": 0
+        }
+      ],
+      "incoming": [
+        {
+          "origin": 92880,
+          "property": "MultiDescriptor.descriptors[1]"
+        }
+      ],
+      "object": 83307,
+      "outgoing": [
+        {
+          "property": "MediaDescriptor.locator",
+          "target": 0
+        },
+        {
+          "property": "MediaDescriptor.physical_media",
+          "target": 66076
+        },
+        {
+          "property": "MediaDescriptor.attributes",
+          "target": 66075
+        }
+      ]
+    },
+    {
+      "class": "CDCI",
+      "fields": [
+        {
+          "bytes": "49434443",
+          "name": "Chunk.class_id",
+          "value": "CDCI"
+        },
+        {
+          "bytes": "b6030000",
+          "name": "Chunk.size",
+          "value": 950
+        },
+        {
+          "bytes": "01",
+          "name": "MediaDescriptor.mob_kind",
+          "value": 1
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaDescriptor.locator",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "MediaDescriptor.intermediate",
+          "value": false
+        },
+        {
+          "bytes": "1d020100",
+          "name": "MediaDescriptor.physical_media",
+          "value": 66077
+        },
+        {
+          "bytes": "10000000",
+          "name": "MediaDescriptor.uuid_length",
+          "value": 16
+        },
+        {
+          "bytes": "a29726b24234e844bb8f7a1cd290ebf1",
+          "name": "MediaDescriptor.uuid",
+          "value": "��&�B4�D��z\u001cҐ��"
+        },
+        {
+          "bytes": "00020000",
+          "name": "MediaDescriptor.wchar_size",
+          "value": 512
+        },
+        {
+          "bytes": "5b004100760069006400200054006500630068006e006f006c006f00670079002c00200049006e0063002e005d005b0041007600690064002000470065006e006500720069006300200050006c00750067002d0049006e005d005b0032002e0034002e0033002e00310030003000330032005d005b00510037005f004d00650064006900610043006f006e007400610069006e00650072005d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "name": "MediaDescriptor.wchar",
+          "value": null
+        },
+        {
+          "bytes": "18000000",
+          "name": "MediaFileDescriptor.edit_rate.mantissa",
+          "value": 24
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.edit_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "b2070000",
+          "name": "MediaFileDescriptor.length",
+          "value": 1970
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.is_omfi",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaFileDescriptor.data_offset",
+          "value": 0
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.stored_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.stored_width",
+          "value": 1280
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.sampled_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.sampled_width",
+          "value": 1280
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.sampled_x_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.sampled_y_offset",
+          "value": 0
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.display_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.display_width",
+          "value": 1280
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.display_x_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.display_y_offset",
+          "value": 0
+        },
+        {
+          "bytes": "0000",
+          "name": "DIDDescriptor.frame_layout",
+          "value": 0
+        },
+        {
+          "bytes": "10000000",
+          "name": "DIDDescriptor.aspect_ratio.numerator",
+          "value": 16
+        },
+        {
+          "bytes": "09000000",
+          "name": "DIDDescriptor.aspect_ratio.denominator",
+          "value": 9
+        },
+        {
+          "bytes": "08000000",
+          "name": "DIDDescriptor.line_map_byte_size",
+          "value": 8
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.line_map[0]",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.line_map[1]",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.alpha_transparency",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "DIDDescriptor.uniformness",
+          "value": false
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.did_image_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.next_did_desc",
+          "value": 0
+        },
+        {
+          "bytes": "30304952",
+          "name": "DIDDescriptor.compress_method",
+          "value": "RI00"
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.resolution_id",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.image_alignment_factor",
+          "value": 0
+        },
+        {
+          "bytes": "4949",
+          "name": "DIDDescriptor.frame_index_byte_order",
+          "value": 18761
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.frame_sample_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.first_frame_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.client_fill_start",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.client_fill_end",
+          "value": 0
+        },
+        {
+          "bytes": "ffffffff",
+          "name": "DIDDescriptor.offset_to_rle_frame_index",
+          "value": -1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.valid_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.valid_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.valid_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.valid_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.essence_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.essence_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.essence_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.essence_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.source_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.source_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.source_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.source_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "0101010402010000060e2b3404010101",
+          "name": "DIDDescriptor.transfer_characteristic",
+          "value": "\u0001\u0001\u0001\u0004\u0002\u0001\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0001"
+        },
+        {
+          "bytes": "0101010403030000060e2b3404010106",
+          "name": "DIDDescriptor.color_primaries",
+          "value": "\u0001\u0001\u0001\u0004\u0003\u0003\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0006"
+        },
+        {
+          "bytes": "0101010402020000060e2b3404010101",
+          "name": "DIDDescriptor.coding_equations",
+          "value": "\u0001\u0001\u0001\u0004\u0002\u0002\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0001"
+        },
+        {
+          "bytes": "0202010431010140060e2b340401010d",
+          "name": "DIDDescriptor.essence_compression",
+          "value": "\u0002\u0002\u0001\u00041\u0001\u0001@\u0006\u000e+4\u0004\u0001\u0001\r"
+        },
+        {
+          "bytes": "01",
+          "name": "DIDDescriptor.frame_checked_with_mapper",
+          "value": true
+        },
+        {
+          "bytes": "02000000",
+          "name": "CDCIDescriptor.horizontal_subsampling",
+          "value": 2
+        },
+        {
+          "bytes": "02000000",
+          "name": "CDCIDescriptor.vertical_subsampling",
+          "value": 2
+        },
+        {
+          "bytes": "08000000",
+          "name": "CDCIDescriptor.component_width",
+          "value": 8
+        },
+        {
+          "bytes": "0000",
+          "name": "CDCIDescriptor.color_sitting",
+          "value": 0
+        },
+        {
+          "bytes": "10000000",
+          "name": "CDCIDescriptor.black_ref_level",
+          "value": 16
+        },
+        {
+          "bytes": "eb000000",
+          "name": "CDCIDescriptor.white_ref_level",
+          "value": 235
+        },
+        {
+          "bytes": "dc000000",
+          "name": "CDCIDescriptor.color_range",
+          "value": 220
+        },
+        {
+          "bytes": "0000000000000000",
+          "name": "CDCIDescriptor.frame_index_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "CDCIDescriptor.alpha_sampled_width",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "CDCIDescriptor.ignore_bw",
+          "value": 0
+        }
+      ],
+      "incoming": [
+        {
+          "origin": 92880,
+          "property": "MultiDescriptor.descriptors[0]"
+        }
+      ],
+      "object": 83308,
+      "outgoing": [
+        {
+          "property": "MediaDescriptor.locator",
+          "target": 0
+        },
+        {
+          "property": "MediaDescriptor.physical_media",
+          "target": 66077
+        },
+        {
+          "property": "DIDDescriptor.next_did_desc",
+          "target": 0
+        }
+      ]
+    },
+    {
+      "class": "PCMA",
+      "fields": [
+        {
+          "bytes": "414d4350",
+          "name": "Chunk.class_id",
+          "value": "PCMA"
+        },
+        {
+          "bytes": "8c020000",
+          "name": "Chunk.size",
+          "value": 652
+        },
+        {
+          "bytes": "01",
+          "name": "MediaDescriptor.mob_kind",
+          "value": 1
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaDescriptor.locator",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "MediaDescriptor.intermediate",
+          "value": false
+        },
+        {
+          "bytes": "20020100",
+          "name": "MediaDescriptor.physical_media",
+          "value": 66080
+        },
+        {
+          "bytes": "10000000",
+          "name": "MediaDescriptor.uuid_length",
+          "value": 16
+        },
+        {
+          "bytes": "a29726b24234e844bb8f7a1cd290ebf1",
+          "name": "MediaDescriptor.uuid",
+          "value": "��&�B4�D��z\u001cҐ��"
+        },
+        {
+          "bytes": "00020000",
+          "name": "MediaDescriptor.wchar_size",
+          "value": 512
+        },
+        {
+          "bytes": "5b004100760069006400200054006500630068006e006f006c006f00670079002c00200049006e0063002e005d005b0041007600690064002000470065006e006500720069006300200050006c00750067002d0049006e005d005b0032002e0034002e0033002e00310030003000330032005d005b00510037005f004d00650064006900610043006f006e007400610069006e00650072005d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "name": "MediaDescriptor.wchar",
+          "value": null
+        },
+        {
+          "bytes": "1f020100",
+          "name": "MediaDescriptor.attributes",
+          "value": 66079
+        },
+        {
+          "bytes": "44ac0000",
+          "name": "MediaFileDescriptor.edit_rate.mantissa",
+          "value": 44100
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.edit_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "df3f3700",
+          "name": "MediaFileDescriptor.length",
+          "value": 3620831
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.is_omfi",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaFileDescriptor.data_offset",
+          "value": 0
+        },
+        {
+          "bytes": "0200",
+          "name": "PCMADescriptor.channels",
+          "value": 2
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.quantization_bits",
+          "value": 0
+        },
+        {
+          "bytes": "44ac0000",
+          "name": "PCMADescriptor.sample_rate.mantissa",
+          "value": 44100
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.sample_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "PCMADescriptor.locked",
+          "value": false
+        },
+        {
+          "bytes": "ecff",
+          "name": "PCMADescriptor.audio_ref_level",
+          "value": -20
+        },
+        {
+          "bytes": "02000000",
+          "name": "PCMADescriptor.electro_spatial_formulation",
+          "value": 2
+        },
+        {
+          "bytes": "1b00",
+          "name": "PCMADescriptor.dial_norm",
+          "value": 27
+        },
+        {
+          "bytes": "08000000",
+          "name": "PCMADescriptor.coding_format",
+          "value": 8
+        },
+        {
+          "bytes": "04000000",
+          "name": "PCMADescriptor.block_align",
+          "value": 4
+        },
+        {
+          "bytes": "0000",
+          "name": "PCMADescriptor.sequence_offset",
+          "value": 0
+        },
+        {
+          "bytes": "10b10200",
+          "name": "PCMADescriptor.average_bps",
+          "value": 176400
+        },
+        {
+          "bytes": "00",
+          "name": "PCMADescriptor.has_peak_envelope_data",
+          "value": false
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_version",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_format",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.points_per_peak_value",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_block_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_channel_count",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_frame_count",
+          "value": 0
+        },
+        {
+          "bytes": "ffffffffffffffff",
+          "name": "PCMADescriptor.peak_of_peaks_offset",
+          "value": 18446744073709552000
+        },
+        {
+          "bytes": "00000000",
+          "name": "PCMADescriptor.peak_envelope_timestamp",
+          "value": 0
+        }
+      ],
+      "incoming": [
+        {
+          "origin": 92886,
+          "property": "MultiDescriptor.descriptors[1]"
+        }
+      ],
+      "object": 83323,
+      "outgoing": [
+        {
+          "property": "MediaDescriptor.locator",
+          "target": 0
+        },
+        {
+          "property": "MediaDescriptor.physical_media",
+          "target": 66080
+        },
+        {
+          "property": "MediaDescriptor.attributes",
+          "target": 66079
+        }
+      ]
+    },
+    {
+      "class": "CDCI",
+      "fields": [
+        {
+          "bytes": "49434443",
+          "name": "Chunk.class_id",
+          "value": "CDCI"
+        },
+        {
+          "bytes": "b6030000",
+          "name": "Chunk.size",
+          "value": 950
+        },
+        {
+          "bytes": "01",
+          "name": "MediaDescriptor.mob_kind",
+          "value": 1
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaDescriptor.locator",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "MediaDescriptor.intermediate",
+          "value": false
+        },
+        {
+          "bytes": "21020100",
+          "name": "MediaDescriptor.physical_media",
+          "value": 66081
+        },
+        {
+          "bytes": "10000000",
+          "name": "MediaDescriptor.uuid_length",
+          "value": 16
+        },
+        {
+          "bytes": "a29726b24234e844bb8f7a1cd290ebf1",
+          "name": "MediaDescriptor.uuid",
+          "value": "��&�B4�D��z\u001cҐ��"
+        },
+        {
+          "bytes": "00020000",
+          "name": "MediaDescriptor.wchar_size",
+          "value": 512
+        },
+        {
+          "bytes": "5b004100760069006400200054006500630068006e006f006c006f00670079002c00200049006e0063002e005d005b0041007600690064002000470065006e006500720069006300200050006c00750067002d0049006e005d005b0032002e0034002e0033002e00310030003000330032005d005b00510037005f004d00650064006900610043006f006e007400610069006e00650072005d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "name": "MediaDescriptor.wchar",
+          "value": null
+        },
+        {
+          "bytes": "18000000",
+          "name": "MediaFileDescriptor.edit_rate.mantissa",
+          "value": 24
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.edit_rate.exponent",
+          "value": 0
+        },
+        {
+          "bytes": "b2070000",
+          "name": "MediaFileDescriptor.length",
+          "value": 1970
+        },
+        {
+          "bytes": "0000",
+          "name": "MediaFileDescriptor.is_omfi",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "MediaFileDescriptor.data_offset",
+          "value": 0
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.stored_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.stored_width",
+          "value": 1280
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.sampled_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.sampled_width",
+          "value": 1280
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.sampled_x_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.sampled_y_offset",
+          "value": 0
+        },
+        {
+          "bytes": "d0020000",
+          "name": "DIDDescriptor.display_height",
+          "value": 720
+        },
+        {
+          "bytes": "00050000",
+          "name": "DIDDescriptor.display_width",
+          "value": 1280
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.display_x_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.display_y_offset",
+          "value": 0
+        },
+        {
+          "bytes": "0000",
+          "name": "DIDDescriptor.frame_layout",
+          "value": 0
+        },
+        {
+          "bytes": "10000000",
+          "name": "DIDDescriptor.aspect_ratio.numerator",
+          "value": 16
+        },
+        {
+          "bytes": "09000000",
+          "name": "DIDDescriptor.aspect_ratio.denominator",
+          "value": 9
+        },
+        {
+          "bytes": "08000000",
+          "name": "DIDDescriptor.line_map_byte_size",
+          "value": 8
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.line_map[0]",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.line_map[1]",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.alpha_transparency",
+          "value": 0
+        },
+        {
+          "bytes": "00",
+          "name": "DIDDescriptor.uniformness",
+          "value": false
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.did_image_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.next_did_desc",
+          "value": 0
+        },
+        {
+          "bytes": "30304952",
+          "name": "DIDDescriptor.compress_method",
+          "value": "RI00"
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.resolution_id",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.image_alignment_factor",
+          "value": 0
+        },
+        {
+          "bytes": "4949",
+          "name": "DIDDescriptor.frame_index_byte_order",
+          "value": 18761
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.frame_sample_size",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.first_frame_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.client_fill_start",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "DIDDescriptor.client_fill_end",
+          "value": 0
+        },
+        {
+          "bytes": "ffffffff",
+          "name": "DIDDescriptor.offset_to_rle_frame_index",
+          "value": -1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.valid_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.valid_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.valid_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.valid_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.valid_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.essence_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.essence_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.essence_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.essence_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.essence_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "e0fcffff",
+          "name": "DIDDescriptor.source_box[0].x",
+          "value": -800
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[0].y",
+          "value": 1
+        },
+        {
+          "bytes": "3efeffff",
+          "name": "DIDDescriptor.source_box[1].x",
+          "value": -450
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[1].y",
+          "value": 1
+        },
+        {
+          "bytes": "40060000",
+          "name": "DIDDescriptor.source_box[2].x",
+          "value": 1600
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[2].y",
+          "value": 1
+        },
+        {
+          "bytes": "84030000",
+          "name": "DIDDescriptor.source_box[3].x",
+          "value": 900
+        },
+        {
+          "bytes": "01000000",
+          "name": "DIDDescriptor.source_box[3].y",
+          "value": 1
+        },
+        {
+          "bytes": "0101010402010000060e2b3404010101",
+          "name": "DIDDescriptor.transfer_characteristic",
+          "value": "\u0001\u0001\u0001\u0004\u0002\u0001\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0001"
+        },
+        {
+          "bytes": "0101010403030000060e2b3404010106",
+          "name": "DIDDescriptor.color_primaries",
+          "value": "\u0001\u0001\u0001\u0004\u0003\u0003\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0006"
+        },
+        {
+          "bytes": "0101010402020000060e2b3404010101",
+          "name": "DIDDescriptor.coding_equations",
+          "value": "\u0001\u0001\u0001\u0004\u0002\u0002\u0000\u0000\u0006\u000e+4\u0004\u0001\u0001\u0001"
+        },
+        {
+          "bytes": "0202010431010140060e2b340401010d",
+          "name": "DIDDescriptor.essence_compression",
+          "value": "\u0002\u0002\u0001\u00041\u0001\u0001@\u0006\u000e+4\u0004\u0001\u0001\r"
+        },
+        {
+          "bytes": "01",
+          "name": "DIDDescriptor.frame_checked_with_mapper",
+          "value": true
+        },
+        {
+          "bytes": "02000000",
+          "name": "CDCIDescriptor.horizontal_subsampling",
+          "value": 2
+        },
+        {
+          "bytes": "02000000",
+          "name": "CDCIDescriptor.vertical_subsampling",
+          "value": 2
+        },
+        {
+          "bytes": "08000000",
+          "name": "CDCIDescriptor.component_width",
+          "value": 8
+        },
+        {
+          "bytes": "0000",
+          "name": "CDCIDescriptor.color_sitting",
+          "value": 0
+        },
+        {
+          "bytes": "10000000",
+          "name": "CDCIDescriptor.black_ref_level",
+          "value": 16
+        },
+        {
+          "bytes": "eb000000",
+          "name": "CDCIDescriptor.white_ref_level",
+          "value": 235
+        },
+        {
+          "bytes": "dc000000",
+          "name": "CDCIDescriptor.color_range",
+          "value": 220
+        },
+        {
+          "bytes": "0000000000000000",
+          "name": "CDCIDescriptor.frame_index_offset",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "CDCIDescriptor.alpha_sampled_width",
+          "value": 0
+        },
+        {
+          "bytes": "00000000",
+          "name": "CDCIDescriptor.ignore_bw",
+          "value": 0
+        }
+      ],
+      "incoming": [
+        {
+          "origin": 92886,
+          "property": "MultiDescriptor.descriptors[0]"
+        }
+      ],
+      "object": 83324,
+      "outgoing": [
+        {
+          "property": "MediaDescriptor.locator",
+          "target": 0
+        },
+        {
+          "property": "MediaDescriptor.physical_media",
+          "target": 66081
+        },
+        {
+          "property": "DIDDescriptor.next_did_desc",
+          "target": 0
+        }
+      ]
+    }
+  ]
+}

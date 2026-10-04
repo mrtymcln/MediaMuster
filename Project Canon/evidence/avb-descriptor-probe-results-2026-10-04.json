@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-04",
+  "scope": "Independent Canon descriptor/misc grammar probe; whole-file framing, sequence resolver and UI tests are separate and pending at this record.",
+  "method": "The probe used pyavb-confirmed first-object offset119 in these two little-endian AVBs, iterated bounded object chunks, called readAvbDescriptor, and required zero bytes remaining for every handled object. Unknown classes were left to the other reader components.",
+  "bins": [
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+      "handledClasses": {
+        "ATTR": 9897,
+        "AVUP": 282,
+        "CDCI": 348,
+        "DIDP": 1988,
+        "FILE": 152,
+        "FXPS": 2267,
+        "GRFX": 113,
+        "MCBR": 133,
+        "MCMR": 141,
+        "MDES": 651,
+        "MSML": 723,
+        "MULD": 4,
+        "PCMA": 363,
+        "PRIT": 56213,
+        "PRLS": 2201,
+        "RGBA": 17
+      },
+      "failureClasses": 0
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/02_SEQ_LOCK.avb",
+      "handledClasses": {
+        "ATTR": 5312,
+        "CDCI": 182,
+        "DIDP": 213,
+        "FILE": 117,
+        "FXPS": 540,
+        "GRFX": 14,
+        "MCBR": 133,
+        "MCMR": 71,
+        "MDES": 376,
+        "MSML": 517,
+        "PCMA": 325,
+        "PRIT": 7500,
+        "PRLS": 536,
+        "RGBA": 10
+      },
+      "failureClasses": 0
+    }
+  ],
+  "limits": [
+    "Successful framing is not a proof of every decoded property meaning.",
+    "The probe does not resolve reference graphs or match scanned physical media.",
+    "These files do not exercise every descriptor or extension implemented.",
+    "No scan-performance or RAM comparison was made.",
+    "Source filenames and absolute positions identify these observations; the original probe did not hash the input bins."
+  ]
+}

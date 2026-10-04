@@ -119,6 +119,6 @@ The original implementation was rendered and visually checked with usable, empty
 
 ## Historical rejection and error-dialog validation
 
-Before the console-only revision, restoring rejection before row insertion for unrecognized files and replacing failed loading rows with error dialogs passed all four affected test targets: 98 parser cases, 31 bin-dialog cases, 24 proxy cases and eight metadata cases, with no failures or skips. The universal macOS application rebuilt and passed strict bundle signature verification. The single-file, grouped-failure and expanded-details dialogs were rendered and visually checked.
+Before the console-only revision, restoring rejection before row insertion for unrecognised files and replacing failed loading rows with error dialogs passed all four affected test targets: 98 parser cases, 31 bin-dialog cases, 24 proxy cases and eight metadata cases, with no failures or skips. The universal macOS application rebuilt and passed strict bundle signature verification. The single-file, grouped-failure and expanded-details dialogs were rendered and visually checked.
 
 The admission check recognized all 42 real bins in the reviewed corpus. All 46 parser comparisons passed and all 363 historical media joins were preserved. Those checks included actual drop events for renamed files, mixed inputs and a file replaced between entering and dropping. These counts describe that earlier revision, not validation of the later console reporting.

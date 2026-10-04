@@ -68,6 +68,13 @@ mediamuster_add_test(tst_canonmxf media)
 target_link_libraries(tst_canonmxf PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonmxf PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Bin object graphs, source evidence and selected-sequence reference resolution.
+mediamuster_add_test(tst_canonavb media)
+target_link_libraries(tst_canonavb PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canonavb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_canonavbreferences media)
+target_link_libraries(tst_canonavbreferences PRIVATE mediamuster_canon)
+
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
 mediamuster_add_test(tst_omfuid media)

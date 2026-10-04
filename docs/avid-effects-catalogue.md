@@ -37,6 +37,6 @@ The original review inspected ARM64 registration paths and referenced strings/ta
 
 At the catalogue refresh, the C++17 effect-name test target passed **36 checks**, with no failures or skips. Coverage included current and legacy registrations, the requested render spellings, sequence commas, malformed and overflowing suffixes, localized lookup, category ambiguity and negative cases for arbitrary names or case changes.
 
-A separate comparison processed **171 supplied precompute clip names** and recognized **107**, including **51 additional matches**: 44 Audio Dissolve, five D-Verb, one Motion Effect and one 3D Warp. The remaining **64** retained their title, template or custom text and remained unrecognized. Private clip names are not reproduced here.
+A separate comparison processed **171 supplied precompute clip names** and recognized **107**, including **51 additional matches**: 44 Audio Dissolve, five D-Verb, one Motion Effect and one 3D Warp. The remaining **64** retained their title, template or custom text and remained unrecognised. Private clip names are not reproduced here.
 
 These historical checks validate name recognition on that sample. They do not prove an effect graph, plug-in availability or live AlphaFlex state from a clip name.

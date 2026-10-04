@@ -28,7 +28,7 @@ namespace AvidEffects
 		bool matched = false;
 	};
 
-	/// Parse a precompute clip name and look the effect up. An unrecognized
+	/// Parse a precompute clip name and look the effect up. An unrecognised
 	/// effect token is returned verbatim, unmatched. Malformed or out-of-range
 	/// numeric suffixes remain in the token rather than being silently lost.
 	[[nodiscard]] Hit lookup(const QString &clipName);

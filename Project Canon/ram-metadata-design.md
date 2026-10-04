@@ -215,7 +215,7 @@ discovered vendor/private properties. Extend the semantic field model as discove
 are agreed; preserve unmapped observations/raw encodings meanwhile and ask the user
 how new properties/value meanings should be represented and selected. Current tables
 are reference only. Actual completeness must be supported by coverage evidence;
-unrecognized structures must be retained/reported, not silently skipped or labelled
+unrecognised structures must be retained/reported, not silently skipped or labelled
 absent. See the selection-policy document for the discovery/decision workflow.
 Complete logical coverage does not require duplicating empty strings and identical
 format capability records for every file: shared field definitions/source capabilities

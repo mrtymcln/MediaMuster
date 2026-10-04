@@ -1,0 +1,17 @@
+{
+  "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+  "size": 73527536,
+  "mtimeNs": 1787793516000000000,
+  "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+  "architecture": "arm64",
+  "getSymbol": "__ZN18PCMAudioDescriptor3GetEP7AStreamP7AIODesc",
+  "getAddress": "0x3e8b8c",
+  "putSymbol": "__ZN18PCMAudioDescriptor3PutEP7AStreamP7AIODesc",
+  "putAddress": "0x3e86d4",
+  "evidence": {
+    "getExtension2": "0x3e9088-0x3e90b4 reads through virtual slot0x238 (same as int32 fields), sign-extends w0 and calls AudioMediaDesc::SetSubframeAlignment(long long).",
+    "putExtension2": "0x3e8a90-0x3e8ad8 gets SubframeAlignment, writes extension2 and serializes with virtual slot0x158 (same as int32 fields).",
+    "realBinMarker": "01 02 47 + signed32 little endian + 03 in 270 PCMA records of 01_SEQ.avb."
+  },
+  "limit": "Native implementation and observed-file evidence, not published Avid format specification."
+}

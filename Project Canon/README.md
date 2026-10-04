@@ -32,6 +32,17 @@ The [fresh MXF reader](fresh-mxf-reader-2026-10-04.md) now preserves metadata se
 per-partition Primers, typed/raw properties and qualified references across the
 file, while seeking over recording payloads. Its [uninterpreted-field inventory](mxf-uninterpreted-fields-2026-10-04.md)
 records remaining meanings for later review. Selection and live integration remain pending.
+The [fresh AVB reader and reference engine](avb-reader.md) now retain source-local
+objects and original property evidence, list sequences and resolve selected scopes.
+All nine supplied bins pass the implemented reader grammars; the full 35-suite
+regression run passed, followed by final focused AVB checks.
+The [sequence-selection plan](avb-sequence-selection.md) records the approved
+dependency scope and explicit filter-application flow. The user approved the
+engine-first stage without live UI changes, and blocked application of incomplete
+filters. Live table matching and UI integration remain subsequent work. The large
+bin's measured RAM cost and the external linked media in `ROUGH` are recorded
+explicitly in the AVB report; this is not a claim of complete format coverage or
+performance improvement.
 Additional [non-English encoding specimens](non-english-encoding-specimens-2026-10-03.md)
 show the actual legacy/UTF-8 bin-name counterparts in a supplied MDB and AVB.
 The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
@@ -74,7 +85,7 @@ Only the selected implementation remains in the current Canon source.
   properties the rewrite may read or retain. The new evidence/matching/selection
   model has a 1:1 fidelity and completeness goal across PMR/MDB/MXF/OMF/AVB properties,
   values, object contexts and references, including properties today's app misses.
-  Preserve unrecognized evidence and ask the user how newly discovered properties
+  Preserve unrecognised evidence and ask the user how newly discovered properties
   and value interpretations should be represented before choosing their semantics
   or selection/display policy. Group related findings to make those questions useful.
 - Use the agreed enums `PropertyReadState` (`NotRead`, `Present`, `Absent`,
@@ -129,10 +140,15 @@ Only the selected implementation remains in the current Canon source.
   when needed. The supplied full Macintosh HD/EDIT baseline is recorded below.
 - Support associations across scanned folders and volumes, independently of
   whether local PMR/MDB databases exist.
-- Individual AVB sequence selection is requested. Include all referenced angles
-  of groups used by a selected sequence, preserving the ability to switch angles;
-  do not include unrelated groups solely because they share the bin. See
-  [sequence selection scope](avb-sequence-selection.md) for remaining policies.
+- Individual AVB sequence selection is approved. Include all referenced angles
+  of groups used by a selected sequence, both renders and their source inputs,
+  and media on muted or disabled tracks. Do not include unrelated groups solely
+  because they share the bin. Choose **Entire bin** or **Selected sequences**, then
+  explicitly apply **Intersect**, **Add** or **Subtract**. Loading a bin must not
+  automatically apply a filter. Block applying any of those operations when the
+  read or dependency result is incomplete. Build and verify the engines first;
+  no live UI changes in this stage. See [sequence selection scope](avb-sequence-selection.md)
+  for dependency evidence and completeness requirements.
 - Retain enough information to report database references whose files were not
   found in the scanned location. Flag these in the Console; a summary dialog is
   an option to decide during implementation.
@@ -141,9 +157,13 @@ Only the selected implementation remains in the current Canon source.
 
 ## Documents
 
-- [AVB sequence selection](avb-sequence-selection.md): requested sequence picker,
-  verified relationships in the supplied sequence bins, proposed filter integration
-  and pending dependency-selection policies.
+- [AVB reader](avb-reader.md): fresh reader scope, PCMA native/specimen evidence,
+  verified reader/reference engine, remaining integration and source attribution.
+- [AVB corpus check](avb-corpus-check-2026-10-04.md): all nine supplied bins,
+  per-sequence identity counts, the external-media limit in `ROUGH`, and measured RAM.
+- [AVB sequence selection](avb-sequence-selection.md): approved sequence picker
+  flow and dependency policies, verified relationships in the supplied sequence
+  bins, and filter integration/completeness checks.
 - [Column review](column-review.md): three-column property/current UI/proposed UI
   comparison for the user's decisions, including distinctions from CSV-only fields.
 - [Conflict selection proposals](conflict-selection-proposals.md): eligibility,

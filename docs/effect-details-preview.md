@@ -94,7 +94,7 @@ Read-only scan results, per-file parser ledgers, screenshots and build/test logs
 The following results describe the earlier three-column effect preview, before the fourth Precompute Category column was added:
 
 - Re-reading the 2,493 media headers and their database relationships produced **2,322 Media / 171 Precompute**, unchanged from the supplied second export.
-- The refreshed catalogue recognizes **107 of 171** precompute names, adding **44 Audio Dissolve, five D-Verb, one Motion Effect and one 3D Warp** matches. The remaining 64 preserve their unrecognized title/template/custom text.
+- The refreshed catalogue recognizes **107 of 171** precompute names, adding **44 Audio Dissolve, five D-Verb, one Motion Effect and one 3D Warp** matches. The remaining 64 preserve their unrecognised title/template/custom text.
 - Current C++ table, filter and CSV code was exercised with all 2,493 records. All 7,479 effect-detail table cells agreed with the catalogue output; all 56 effect/volume count checks passed. **3D Warp on EDIT** selects only row 272 of the supplied second CSV.
 - Preview off/on exports contain 22/25 columns respectively, with 2,493 correctly aligned rows. All 54,846 non-effect cells agree with the supplied second CSV. Effect Sequence values are preserved.
 - An actual MainWindow probe passed 31 checks, including Debug gating, modal Apply/Cancel, keyboard checkboxes, identical volume labels, selection restoration, sorting, clearing filter chips and new-scan resets. It used synthetic rows with startup scanning and recovery disabled.

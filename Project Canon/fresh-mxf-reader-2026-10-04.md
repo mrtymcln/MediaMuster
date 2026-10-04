@@ -104,7 +104,7 @@ master/file/physical-source object. That requires the later ownership traversal.
 | Registry version | Ignore the registry-version byte only when matching established SMPTE UL schema entries; always retain all original bytes. Private UUID keys are matched exactly. |
 | Scalars and compounds | Decode registered widths, signedness and native fields, including exact rational numerator/denominator. No rounded frame-rate or invented timestamp timezone. |
 | Text | Standard mapped UTF-16 is big-endian; recorded UTF-8/ISO7 types retain their encodings. Validate text, preserve original bytes/terminators and decomposed Unicode. |
-| Avid Indirect | Decode verified string/Int32 prefixes and their explicit byte order, including UTF-16LE. Unrecognized encodings remain raw; a value too short to contain its type identity is unreadable. |
+| Avid Indirect | Decode verified string/Int32 prefixes and their explicit byte order, including UTF-16LE. Unrecognised encodings remain raw; a value too short to contain its type identity is unreadable. |
 | Avid ProductVersion | Preserve/decode the genuine nine-byte Avid/AAF form separately from the standard ten-byte form. |
 | References | Follow declared reference types; do not infer a reference merely because an unknown value happens to contain 16 bytes. |
 | Random Index Pack | Retain entries and length evidence. Discover partitions by physical framing, not by blindly trusting RIP/footer offsets. |

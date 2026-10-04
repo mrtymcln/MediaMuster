@@ -237,7 +237,7 @@ namespace Canon
 							range(packet, QStringLiteral("MXF.BodyValue"),
 								  QStringLiteral("Value outside Header Metadata retained by range. No header Primer or private payload interpretation is applied."));
 							if (sameUl(packet.key.first(partitionPrefix.size()), partitionPrefix))
-								qualify(m_result, Outcome::Unsupported, QStringLiteral("Unrecognized Partition Pack key retained without interpreting a new partition variant."));
+								qualify(m_result, Outcome::Unsupported, QStringLiteral("Unrecognised Partition Pack key retained without interpreting a new partition variant."));
 						}
 					}
 					if (!packet.fits)
@@ -328,7 +328,7 @@ namespace Canon
 				const auto &bytes = property.encoding;
 				if (bytes.size() >= 2 && u16(bytes, 0) != 1)
 				{
-					property.interpretation = QStringLiteral("Unrecognized major version; original bytes retained without applying the version-1 partition layout.");
+					property.interpretation = QStringLiteral("Unrecognised major version; original bytes retained without applying the version-1 partition layout.");
 					throw Failure{Outcome::Unsupported, property.interpretation};
 				}
 				if (bytes.size() < 88)
