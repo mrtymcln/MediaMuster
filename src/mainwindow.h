@@ -56,7 +56,7 @@ private slots:
 	void scanSelected();
 	void scanEverything();
 	void onScanProgress(int current, int total, const QString &currentPath);
-	void onScanLogBatch(const QVector<LogMsg> &batch);
+	void onScanLogBatch(const QVector<LogMessage> &batch);
 	void onScanFinished(const QVector<MediaFile> &results);
 	void onFilterChanged(int index);
 	void onSearchChanged(const QString &text);
@@ -160,7 +160,7 @@ private:
 	/// Refresh dependent views after the inventory changes; does not scan disk.
 	void refreshEverything();
 	void rebuildProjectList();
-	void setOmfEnabled(bool enabled);
+	void setOmfScanEnabled(bool enabled);
 	void setPrecomputesEnabled(bool enabled);
 	void setClipDurationEnabled(bool enabled);
 
@@ -195,24 +195,24 @@ private:
 
 	class ProgressDialog *m_progressDialog = nullptr;
 
-	QPushButton *m_btnFileOps;
-	QPushButton *m_btnBinFilter;
-	QPushButton *m_btnPrecomputeFilter = nullptr;
-	QPushButton *m_btnExport;
-	QPushButton *m_btnRebalance;
+	QPushButton *m_manageMediaButton;
+	QPushButton *m_binFilterButton;
+	QPushButton *m_precomputeFilterButton = nullptr;
+	QPushButton *m_exportCsvButton;
+	QPushButton *m_rebalanceButton;
 
 	// Shared commands keep menu and button availability in sync.
-	class QAction *m_addFolderAct = nullptr;
-	class QAction *m_refreshVolumesAct = nullptr;
-	class QAction *m_scanSelectedAct = nullptr;
-	class QAction *m_scanAllAct = nullptr;
-	class QAction *m_manageMediaAct = nullptr;
-	class QAction *m_binFilterAct = nullptr;
-	class QAction *m_rebalanceAct = nullptr;
-	class QAction *m_exportAct = nullptr;
-	class QAction *m_revealAct = nullptr;
-	class QAction *m_selectRelativesAct = nullptr;
-	class QAction *m_selectInverseAct = nullptr;
+	class QAction *m_addFolderAction = nullptr;
+	class QAction *m_refreshVolumesAction = nullptr;
+	class QAction *m_scanSelectedAction = nullptr;
+	class QAction *m_scanAllAction = nullptr;
+	class QAction *m_manageMediaAction = nullptr;
+	class QAction *m_binFilterAction = nullptr;
+	class QAction *m_rebalanceAction = nullptr;
+	class QAction *m_exportAction = nullptr;
+	class QAction *m_revealAction = nullptr;
+	class QAction *m_selectRelativesAction = nullptr;
+	class QAction *m_selectInverseAction = nullptr;
 	bool m_exportInProgress = false;
 	bool m_selectionHasMasterMob = false;
 
@@ -230,9 +230,9 @@ private:
 
 	QElapsedTimer m_scanTimer;
 	bool m_showAllFilterTabs = false;
-	bool m_omfEnabled = false;
+	bool m_omfScanEnabled = false;
 	bool m_precomputesEnabled = false;
-	class QAction *m_precomputeFilterAct = nullptr;
+	class QAction *m_precomputeFilterAction = nullptr;
 	QSet<QString> m_manualVolumes;
 
 	// MARK: - Selection persistence

@@ -464,17 +464,17 @@ void RebalanceDialog::setupUi()
 
 	auto *footer = new QHBoxLayout;
 	footer->addStretch();
-	m_btnCancel = new QPushButton(tr("Cancel"));
-	m_btnRebalance = new QPushButton(tr("Rebalance"));
-	m_btnRebalance->setDefault(true);
-	footer->addWidget(m_btnCancel);
-	footer->addWidget(m_btnRebalance);
+	m_cancelButton = new QPushButton(tr("Cancel"));
+	m_rebalanceButton = new QPushButton(tr("Rebalance"));
+	m_rebalanceButton->setDefault(true);
+	footer->addWidget(m_cancelButton);
+	footer->addWidget(m_rebalanceButton);
 	root->addLayout(footer);
 
 	connect(m_volumePicker, &QComboBox::currentIndexChanged, this,
 			&RebalanceDialog::onVolumeChanged);
-	connect(m_btnRebalance, &QPushButton::clicked, this, &RebalanceDialog::onRebalanceClicked);
-	connect(m_btnCancel, &QPushButton::clicked, this, &RebalanceDialog::onCancelClicked);
+	connect(m_rebalanceButton, &QPushButton::clicked, this, &RebalanceDialog::onRebalanceClicked);
+	connect(m_cancelButton, &QPushButton::clicked, this, &RebalanceDialog::onCancelClicked);
 }
 
 // MARK: - Planning
@@ -501,7 +501,7 @@ void RebalanceDialog::recomputePlan()
 	// Volume picker stays live so the user can flip volumes; a
 	// fresh setFuture() silently displaces any in-flight compute.
 	m_cardScroll->setEnabled(false);
-	m_btnRebalance->setEnabled(false);
+	m_rebalanceButton->setEnabled(false);
 	m_statsLine->setText(tr("Computing plan..."));
 	// Standard palette text, matching the summary and balanced states.
 	m_statsLine->setStyleSheet(QString());
@@ -586,7 +586,7 @@ void RebalanceDialog::renderPlan()
 	// Disable Rebalance when the plan is a no-op. The stats line already
 	// reads "The Force is balanced..." in that state, so no tooltip is needed.
 	const bool hasWork = m_currentPlan.moveCount() > 0;
-	m_btnRebalance->setEnabled(hasWork && !m_running);
+	m_rebalanceButton->setEnabled(hasWork && !m_running);
 }
 
 // MARK: - Execute
@@ -631,9 +631,9 @@ void RebalanceDialog::onRebalanceClicked()
 	m_progressLabel->setVisible(true);
 	m_progressLabel->setText(tr("Starting..."));
 
-	m_btnRebalance->setText(tr("Rebalancing..."));
-	m_btnRebalance->setEnabled(false);
-	m_btnCancel->setText(tr("Cancel"));
+	m_rebalanceButton->setText(tr("Rebalancing..."));
+	m_rebalanceButton->setEnabled(false);
+	m_cancelButton->setText(tr("Cancel"));
 
 	primeLiveState();
 
@@ -647,8 +647,8 @@ void RebalanceDialog::onCancelClicked()
 		// Cooperative cancel: the worker checks the flag between
 		// relatives groups. Disable Cancel after one click.
 		m_rebalancer->cancel();
-		m_btnCancel->setEnabled(false);
-		m_btnCancel->setText(tr("Cancelling..."));
+		m_cancelButton->setEnabled(false);
+		m_cancelButton->setText(tr("Cancelling..."));
 	}
 	else
 	{
@@ -710,8 +710,8 @@ void RebalanceDialog::applyMove(const NumberedMxfFolder &from, const NumberedMxf
 void RebalanceDialog::onFinished(int succeeded, int failed, bool cancelled)
 {
 	m_running = false;
-	m_btnCancel->setVisible(false);
-	m_btnRebalance->setEnabled(false);
+	m_cancelButton->setVisible(false);
+	m_rebalanceButton->setEnabled(false);
 	m_statsLine->setText(tr("Updating folder counts…"));
 	m_progressLabel->setText(cancelled ? tr("Cancelled — %1 moved, %2 failed")
 											 .arg(Format::count(succeeded), Format::count(failed))
@@ -768,10 +768,10 @@ void RebalanceDialog::finishDisplay(
 	buildSummaryLine(succeeded, affectedUnknown ? -1 : changed.size(),
 					 newFoldersUnknown ? -1 : newFolders, /*past=*/true);
 
-	m_btnRebalance->setText(tr("Close"));
-	m_btnRebalance->setEnabled(true);
-	disconnect(m_btnRebalance, &QPushButton::clicked, this, &RebalanceDialog::onRebalanceClicked);
-	connect(m_btnRebalance, &QPushButton::clicked, this, &QDialog::accept);
+	m_rebalanceButton->setText(tr("Close"));
+	m_rebalanceButton->setEnabled(true);
+	disconnect(m_rebalanceButton, &QPushButton::clicked, this, &RebalanceDialog::onRebalanceClicked);
+	connect(m_rebalanceButton, &QPushButton::clicked, this, &QDialog::accept);
 }
 
 void RebalanceDialog::onAborted(const QString &reason)
@@ -784,10 +784,10 @@ void RebalanceDialog::onAborted(const QString &reason)
 	m_progressBar->setVisible(false);
 	m_progressLabel->setVisible(false);
 
-	m_btnRebalance->setText(tr("Rebalance"));
-	m_btnRebalance->setEnabled(m_currentPlan.moveCount() > 0);
-	m_btnCancel->setEnabled(true);
-	m_btnCancel->setText(tr("Cancel"));
+	m_rebalanceButton->setText(tr("Rebalance"));
+	m_rebalanceButton->setEnabled(m_currentPlan.moveCount() > 0);
+	m_cancelButton->setEnabled(true);
+	m_cancelButton->setText(tr("Cancel"));
 
 	QMessageBox::warning(this, tr("Rebalance Aborted"), reason);
 }

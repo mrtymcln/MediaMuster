@@ -42,8 +42,10 @@ Explicit Intersect / Add / Subtract
 
 In the planned UI, loading a bin must not apply a filter. The agreed flow and dependency
 policies are recorded in [sequence selection](avb-sequence-selection.md).
-**Block filter application when reading or dependency resolution is incomplete.**
-Do not substitute a partial identity set for a complete result.
+The user subsequently approved **allowing usable partial results with a persistent
+warning and Console details**, superseding blanket blocking. Keep completeness
+truthful; an unreadable bin, invalid selection or cancelled operation cannot be
+made usable by a warning. See the current [release gate and partial-result policy](avb-sequence-selection.md#release-gate-and-partial-result-policy).
 A bin object is not an inventory row or a KelpieId. Several physical files can
 match one recorded Avid identity and must remain separate rows.
 
@@ -222,7 +224,8 @@ complete independent dependency oracle.
   the same MobID, including repeated or differing snapshots across bins. Keep
   each source/object occurrence. An identity alone does not justify selecting
   the first candidate, merging the objects or treating a match as unique.
-  Unsettled ambiguity must remain visible and block an affected incomplete filter.
+  Unsettled ambiguity must remain visible in the partial-result warning; do not
+  promote uncertain candidates to confirmed matches.
 - **Unknown dependencies:** retained raw fields are valuable evidence but do not
   establish dependency completeness until their relevant meanings are verified.
 - **Physical matches:** a resolved file identity can match several scanned copies.
@@ -234,8 +237,9 @@ complete independent dependency oracle.
   The supplied `ROUGH` contains three multiple-descriptor groups with six leaf
   descriptors pointing through physical descriptors to `Scene04Rough.mp4`, an
   external linked source. Neither their leaves nor parents supply MSML locators.
-  Its 232 resolved full media IDs are therefore a partial result, not an eligible
-  complete filter. No external MP4 scanning or path-based matching was added.
+  Its 232 resolved full media IDs are therefore a partial result. Under the
+  revised policy this can feed a filter carrying the required warning when the
+  live adapter is connected. No external MP4 scanning or path-based matching was added.
 
 The sequence catalogue retains bin membership and `user_placed` separately.
 It recognises bin-member CMPO objects with recorded mob type 1 and usage code 0,

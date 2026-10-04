@@ -12,6 +12,7 @@ and [the documentation index](README.md).
 | Function | lowerCamelCase action or query | `findKeepBothPath()`, `isNetwork()` |
 | Local, parameter, public data field | lowerCamelCase | `sourcePath`, `sizeBytes` |
 | Private member | `m_` plus lowerCamelCase | `m_currentJob` |
+| Action or button variable | Descriptive name ending in `Action` or `Button` | `m_recoveryAction`, `m_exportCsvButton` |
 | Fixed named constant | `k` plus PascalCase | `kMaxCopyAttempts` |
 | Enum value | PascalCase | `Outcome::Cancelled` |
 | File | Lowercase stem, matching header/source | `volumeidentity.h`, `volumeidentity.cpp` |

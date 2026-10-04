@@ -35,7 +35,7 @@ public:
 	bool isIdle() const { return m_activity == Activity::Idle; }
 	void setActivity(Activity activity);
 	OpManager *manager() const { return m_operationManager; }
-	QAction *recoveryAction() const { return m_recoveryAct; }
+	QAction *recoveryAction() const { return m_recoveryAction; }
 	QAction *undoAction() const { return m_undoAction; }
 
 	void runStartupRecovery();
@@ -90,7 +90,7 @@ private:
 	QSet<QString> m_restoredOriginalPaths;
 	QVector<OperationRecovery::Resumable> m_resumable;
 	QVector<OperationRecovery::Restorable> m_restorable;
-	QAction *m_recoveryAct;
+	QAction *m_recoveryAction;
 	QAction *m_undoAction;
 	bool m_undoEnabled = false;
 	bool m_operationGateActive = false;

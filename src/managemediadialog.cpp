@@ -149,9 +149,9 @@ void ManageMediaDialog::setupUi()
 	m_destPath = new QLineEdit;
 	m_destPath->setPlaceholderText(tr("Choose a destination folder..."));
 	m_destPath->setReadOnly(true);
-	m_btnChoose = new QPushButton(tr("Choose..."));
+	m_chooseDestinationButton = new QPushButton(tr("Choose..."));
 	destRow->addWidget(m_destPath, 1);
-	destRow->addWidget(m_btnChoose);
+	destRow->addWidget(m_chooseDestinationButton);
 	destDetails->addLayout(destRow);
 
 	m_spaceWarning = new QLabel;
@@ -219,19 +219,19 @@ void ManageMediaDialog::setupUi()
 
 	auto *footer = new QHBoxLayout;
 	footer->addStretch(1);
-	m_btnCancel = new QPushButton(tr("Cancel"));
-	m_btnExecute = new QPushButton(tr("Copy"));
-	m_btnExecute->setDefault(true);
-	m_btnExecute->setEnabled(false);
-	footer->addWidget(m_btnCancel);
-	footer->addWidget(m_btnExecute);
+	m_cancelButton = new QPushButton(tr("Cancel"));
+	m_executeButton = new QPushButton(tr("Copy"));
+	m_executeButton->setDefault(true);
+	m_executeButton->setEnabled(false);
+	footer->addWidget(m_cancelButton);
+	footer->addWidget(m_executeButton);
 	root->addLayout(footer);
 
 	// MARK: Wire signals
 
-	connect(m_btnChoose, &QPushButton::clicked, this, &ManageMediaDialog::onChooseDestination);
-	connect(m_btnCancel, &QPushButton::clicked, this, &QDialog::reject);
-	connect(m_btnExecute, &QPushButton::clicked, this, &QDialog::accept);
+	connect(m_chooseDestinationButton, &QPushButton::clicked, this, &ManageMediaDialog::onChooseDestination);
+	connect(m_cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+	connect(m_executeButton, &QPushButton::clicked, this, &QDialog::accept);
 
 	connect(m_opGroup, &QButtonGroup::idToggled, this, [this](int, bool)
 			{ onOperationChanged(); });
@@ -273,20 +273,20 @@ void ManageMediaDialog::onOperationChanged()
 	switch (operation())
 	{
 	case Operation::Copy:
-		m_btnExecute->setText(tr("Copy"));
+		m_executeButton->setText(tr("Copy"));
 		break;
 	case Operation::Move:
-		m_btnExecute->setText(tr("Move"));
+		m_executeButton->setText(tr("Move"));
 		break;
 	case Operation::Delete:
-		m_btnExecute->setText(tr("Delete"));
+		m_executeButton->setText(tr("Delete"));
 		break;
 	}
 
 	// Delete can be opened directly from the context menu, so Return
 	// defaults to Cancel. Copy and Move use the affirmative default.
-	m_btnExecute->setDefault(!isDel);
-	m_btnCancel->setDefault(isDel);
+	m_executeButton->setDefault(!isDel);
+	m_cancelButton->setDefault(isDel);
 
 	updatePreview();
 }
@@ -674,7 +674,7 @@ void ManageMediaDialog::updateSummary()
 	else
 		m_spaceWarning->setVisible(false);
 
-	m_btnExecute->setEnabled(canExecute);
+	m_executeButton->setEnabled(canExecute);
 }
 
 // MARK: - Reverse sync (per-file to global)

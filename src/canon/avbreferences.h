@@ -91,7 +91,7 @@ namespace Canon
 		QVector<AvbMediaReference> media;
 		QVector<AvbTerminalReference> terminals;
 		QVector<AvbReferenceIssue> issues;
-		bool complete = false; ///< Reference coverage, not proof that physical files exist.
+		bool complete = false; ///< Reference coverage, not filter eligibility or proof that physical files exist.
 		bool cancelled = false;
 	};
 

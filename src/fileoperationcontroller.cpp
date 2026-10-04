@@ -30,13 +30,13 @@ namespace
 
 FileOperationController::FileOperationController(QWidget *window)
 	: QObject(window), m_window(window), m_operationManager(new OpManager(this)),
-	  m_recoveryAct(new QAction(tr("Unfinished Business…"), this)),
+	  m_recoveryAction(new QAction(tr("Unfinished Business…"), this)),
 	  m_undoAction(new QAction(tr("&Undo"), this))
 {
 	m_undoAction->setObjectName(QStringLiteral("undoFileOperationAction"));
-	m_recoveryAct->setObjectName(QStringLiteral("unfinishedBusinessAction"));
+	m_recoveryAction->setObjectName(QStringLiteral("unfinishedBusinessAction"));
 	setUndoEnabled(FeatureFlags::kUndo);
-	connect(m_recoveryAct, &QAction::triggered, this, &FileOperationController::offerRecovery);
+	connect(m_recoveryAction, &QAction::triggered, this, &FileOperationController::offerRecovery);
 	connect(m_undoAction, &QAction::triggered, this, &FileOperationController::undoLastOperation);
 	connect(
 		m_operationManager, &OpManager::operationProgress, this,
@@ -367,7 +367,7 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 
 void FileOperationController::updateRecoveryAction()
 {
-	m_recoveryAct->setEnabled(!m_historyLoading && isIdle() &&
+	m_recoveryAction->setEnabled(!m_historyLoading && isIdle() &&
 							  (!m_resumable.isEmpty() || !m_restorable.isEmpty()));
 	updateUndoAction();
 }

@@ -43,6 +43,68 @@ No source AVB is rewritten or temporary Avid bin required.
 Exact control placement and the presentation of mixed clip/sequence bins remain
 UI details. They must preserve the agreed explicit scope and apply steps above.
 
+## Release gate and partial-result policy
+
+User update, 4 October 2026: **gate selecting individual sequences behind a
+feature flag**, so it can be withheld until a later v2 release. Keep whole-bin
+filtering available independently. The approved name is **`SequenceFilter`**,
+implemented as `FeatureFlags::kSequenceFilter = false`. The existing precompute
+flag is now **`PrecomputesFilter`**, implemented as
+`FeatureFlags::kPrecomputesFilter = true`; its behaviour is unchanged. The
+sequence flag is defined for the later UI integration. When enabled, it should
+gate both the sequence controls and the selected-sequence apply path. The shared
+reader, evidence storage and whole-bin functionality need not be disabled.
+
+The user explicitly approved **allow partial results with a warning**. This
+supersedes the earlier blanket rule blocking incomplete sequence filters:
+
+- A readable selected sequence that yields usable media references can be used
+  for Intersect, Add or Subtract, even when some dependencies are external,
+  unresolved, unreadable or ambiguous. Keep the sequence available for selection.
+- Show a persistent **Results may be incomplete** warning with the affected
+  result, and write a Console summary naming the bin/sequence and the reasons.
+  The warning must cover uncertain matches as well as omitted references;
+  ambiguous candidate evidence must not silently become a confirmed match.
+- Preserve specific reasons internally and in Console details. Do not flatten
+  all issues into AMA. Confirmed external sources remain outside the agreed
+  managed-folder scan scope; retain their paths and evidence without opening
+  or adding external media to the physical inventory.
+- A completely unreadable bin, invalid selection or cancelled operation is
+  unavailable. This change does not turn a failed operation into a usable result.
+  A partial read with no usable media references cannot manufacture an operand.
+- Keep dependency completeness separate from filter eligibility. Leave
+  `AvbResolution.complete` false when issues remain. The future adapter must
+  validate the selected roots, cancellation and usable references, carry the
+  warning into the applied result and retain the underlying issues.
+- A known managed identity not found in the current scan is a separate scan
+  coverage issue; it does not prove an unreadable bin or that media is absent
+  everywhere. Preserve that distinction in warning details.
+
+Currently the engine retains each recognised sequence in its catalogue and
+returns reference issues with `complete = false`; it does not discard the
+sequence. There is no new picker, greyed-out state or Console integration yet.
+The resolver's evidence and completeness flags are unchanged by this policy
+update. The warning UI and application eligibility belong to the deferred live
+adapter; no live bin-filter behaviour is changed in this stage.
+
+### Evidence for identifying external/AMA references
+
+The categories describe different dimensions and can coexist: an AMA-linked
+source can also be offline, unreadable or ambiguous. In `ROUGH`, recorded
+descriptor bytes contain `Avid Generic Plug-In` and `Q7_MediaContainer`, and the
+associated physical-source locators record an external `Scene04Rough.mp4` path.
+Those combined source-context observations support the linked-media finding for
+this specimen. They are not a universal, implemented `isAma` flag or a guarantee
+that the external file still exists. See the [descriptor evidence](evidence/avb-rough-descriptors-2026-10-04.json)
+and [parent/source locators](evidence/avb-rough-parent-locators-2026-10-04.json).
+
+Do not infer AMA merely from a missing MSML locator, a filename extension or an
+old original-source path. Avid's [MXF AMA Plug-in Guide, pages 1–3](https://resources.avid.com/SupportFiles/attach/MXF_AMA_v6.0_v10.pdf)
+explicitly supports linked MXF media, so MXF is not synonymous with managed
+media. Avid also [documents stored AMA-link paths](https://kb.avid.com/pkb/articles/en_US/Knowledge/rebuild-AMA-Management-folder).
+These sources establish workflow distinctions, not a universal AVB byte-level
+classifier. Unknown interpretations remain unknown even when filtering is allowed.
+
 ## Agreed dependency scope
 
 The existing parser collects all supported MSML locators from the bin. It does
@@ -70,15 +132,12 @@ The following decisions were approved on 4 October 2026:
   reference fields, not equal names or a guess based on object proximity.
 - File rows represent whole physical files. This proposal does not trim media
   down to the frames or samples used by an edit.
-- **Block incomplete filters:** if the source read or dependency resolution is
-  incomplete, do not apply Intersect, Add or Subtract from its partial identity
-  set. Explain the unresolved or unsupported evidence. A partial result cannot
-  establish that other scanned files are unused, and a filter is not by itself
-  proof that excluded files are safe to delete.
+- **Allow partial filters with a persistent warning:** use the revised policy
+  above. Incomplete results do not establish that unmatched files are unused.
 - **Keep ambiguous bin objects separate:** several loaded bins or object
   occurrences may carry the same MobID. Do not silently choose the first or merge
-  them. Unsettled identity ambiguity qualifies the result and blocks an affected
-  incomplete filter. This is distinct from several physical file copies that
+  them. Unsettled identity ambiguity qualifies the result and appears in its
+  warning. This is distinct from several physical file copies that
   correctly match one established identity.
 
 ## Evidence from the supplied sequence bins
@@ -158,8 +217,8 @@ managed-media identities. See [the implementation report](avb-reader.md).
 
 The checklist below also contains **later integration checks**: no physical-row
 adapter, live filter operation, sequence picker or Media Composer export oracle
-is claimed as delivered in this stage. `AvbResolution.complete` is the mandatory
-eligibility condition the future adapter must enforce for every operation.
+is claimed as delivered in this stage. `AvbResolution.complete` describes
+coverage; the revised warning policy governs the later adapter's eligibility.
 
 1. Implement the independent Canon AVB reader, retaining bin membership, sequence
    properties, typed identities, original text encodings and qualified references.
@@ -178,8 +237,9 @@ eligibility condition the future adapter must enforce for every operation.
    Include tests with both render and source inputs, and muted/disabled tracks.
    Confirm loading a bin has no filter side effect and applying each operation
    uses the chosen Entire bin or Selected sequences scope. In this engine-first
-   stage, test the underlying resolution/apply eligibility without adding live UI.
-   Verify every operation is blocked when its result is incomplete.
+   stage, test underlying resolution without adding live UI. At integration,
+   verify partial results retain their warning and failed/cancelled selections
+   cannot be applied.
 5. Establish an independent Avid reference comparison for selected sequences.
    A freshly copied sequence bin can be one comparison fixture; it is not a
    requirement imposed on the final user workflow or the sole truth oracle.

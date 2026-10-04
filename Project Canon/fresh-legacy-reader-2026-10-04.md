@@ -76,7 +76,7 @@ Native `data`/`SSND` sample payloads, padding/fill and `omfi` chunks are retaine
 range. The SSND offset/block-size header is read separately. Unrecognised native
 chunks also retain ranges with an explicit interpretation limit: they are not
 silently classified as sound or presumed small enough to load. Known metadata
-chunks (`fmt `, `COMM`, `ds64`, `bext`, `iXML`, `axml`, `umid`, `minf`, `FVER`,
+chunks (`fmt`, `COMM`, `ds64`, `bext`, `iXML`, `axml`, `umid`, `minf`, `FVER`,
 `fact`, `chna`, `CHAN`) retain their bytes. Some are not yet semantically decoded.
 A range-only observation proves a recorded location/extent, not that every byte
 of its payload was read, validated or copied into RAM. Future access must check
@@ -90,7 +90,7 @@ maps and shared allocations also contribute to memory use.
 
 | Topic | Current behaviour |
 | --- | --- |
-| WAVE `fmt ` | Preserve the recorded format tag, channels, sample rate, byte rate, block alignment and storage width. Decode an established extension without discarding the base fields on extension failure. |
+| WAVE `fmt` | Preserve the recorded format tag, channels, sample rate, byte rate, block alignment and storage width. Decode an established extension without discarding the base fields on extension failure. |
 | WAVE extensible | Preserve the SubFormat GUID, Samples union and channel mask. Interpret Samples as valid bits only for recorded PCM/IEEE-float subformats. A mask is a speaker assignment, not a free-text channel name. |
 | AIFF/AIFF-C `COMM` | Preserve channels, frame count, sample size, exact extended-precision rate fields and an approximate numeric rate. AIFF-C also preserves compression type and counted compression-name bytes. The rate's floating-point encoding does not imply floating-point sound samples. |
 | Compression-name text | ASCII bytes are decoded as `Ascii`/`Derived`. Non-ASCII remains `Unknown`; do not guess MacRoman/UTF-8 from the container. |
@@ -121,7 +121,7 @@ without modification. Corresponding test fixtures live in `tests/fixtures/omf/mc
 
 | File | Physical bytes | Native evidence | Embedded graph |
 | --- | ---: | --- | --- |
-| `TONE_100A01.6A972974.039700.wav` | 8,665,912 | WAVE `fmt ` and `data`, plus private metadata chunks | `omfi` payload at 8,649,712, length 16,200 |
+| `TONE_100A01.6A972974.039700.wav` | 8,665,912 | WAVE `fmt` and `data`, plus private metadata chunks | `omfi` payload at 8,649,712, length 16,200 |
 | `TONE_100A01.6A972997.0C53E0.aif` | 8,659,584 | AIFF-C `COMM`, `SSND`; recorded `in24`, “24-bit Integer”, mono/48 kHz | `omfi` payload at 8,646,720, length 12,864 |
 
 The Bento TOC/value offsets in these graphs are relative to the whole file, not

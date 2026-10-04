@@ -218,20 +218,20 @@ void BinFilterDialog::setupUi()
 	opsLayout->addWidget(makeOperationRow(
 		tr("Intersect"),
 		tr("Show only the media referenced in the ticked bins."),
-		m_btnIntersect));
+		m_intersectButton));
 
 	opsLayout->addWidget(makeOperationRow(
 		tr("Subtract"),
 		tr("Hide media that is referenced in the ticked bins. Useful when archiving or deleting."),
-		m_btnSubtract));
+		m_subtractButton));
 
 	opsLayout->addWidget(makeOperationRow(
 		tr("Add"),
 		tr("Bring back media referenced in the ticked bins, even if an earlier step hid it."),
-		m_btnAdd));
-	m_btnIntersect->setObjectName(QStringLiteral("BinIntersectButton"));
-	m_btnSubtract->setObjectName(QStringLiteral("BinSubtractButton"));
-	m_btnAdd->setObjectName(QStringLiteral("BinAddButton"));
+		m_addButton));
+	m_intersectButton->setObjectName(QStringLiteral("BinIntersectButton"));
+	m_subtractButton->setObjectName(QStringLiteral("BinSubtractButton"));
+	m_addButton->setObjectName(QStringLiteral("BinAddButton"));
 
 	root->addWidget(opsGroup);
 
@@ -309,9 +309,9 @@ void BinFilterDialog::setupUi()
 	footer->addWidget(btnDone);
 	root->addLayout(footer);
 
-	connect(m_btnIntersect, &QPushButton::clicked, this, &BinFilterDialog::onIntersectClicked);
-	connect(m_btnSubtract, &QPushButton::clicked, this, &BinFilterDialog::onSubtractClicked);
-	connect(m_btnAdd, &QPushButton::clicked, this, &BinFilterDialog::onAddClicked);
+	connect(m_intersectButton, &QPushButton::clicked, this, &BinFilterDialog::onIntersectClicked);
+	connect(m_subtractButton, &QPushButton::clicked, this, &BinFilterDialog::onSubtractClicked);
+	connect(m_addButton, &QPushButton::clicked, this, &BinFilterDialog::onAddClicked);
 	connect(btnDone, &QPushButton::clicked, this, &QDialog::hide);
 
 	// Tickbox changes drive the summary text and op-button enable state.
@@ -339,10 +339,10 @@ void BinFilterDialog::refreshBinSelectionUi()
 
 	// Operations require at least one ticked, usable bin.
 	const bool canApply = ready > 0;
-	m_btnIntersect->setEnabled(canApply);
-	m_btnAdd->setEnabled(canApply);
+	m_intersectButton->setEnabled(canApply);
+	m_addButton->setEnabled(canApply);
 	// A leading Subtract starts with all media rows, just as its help text says.
-	m_btnSubtract->setEnabled(canApply);
+	m_subtractButton->setEnabled(canApply);
 
 	if (m_chain.isEmpty())
 		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));

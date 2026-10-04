@@ -17,11 +17,11 @@
 #include <atomic>
 #include <optional>
 
-// MARK: - LogMsg
+// MARK: - LogMessage
 
 /// One buffered console line. Kept at file scope so Qt's signal generator
 /// sees the complete type used by scanLogBatch.
-struct LogMsg
+struct LogMessage
 {
 	QtMsgType level = QtInfoMsg;
 	QString module;
@@ -85,7 +85,7 @@ signals:
 
 	/// Coalesces up to ~50 lines or ~100 ms, whichever hits first.
 	/// Keeps the UI smooth under heavy load.
-	void scanLogBatch(const QVector<LogMsg> &batch);
+	void scanLogBatch(const QVector<LogMessage> &batch);
 
 	void scanFinished(const QVector<MediaFile> &results);
 	void scanIssuesFinished(const QVector<ScanIssue> &issues);
@@ -145,7 +145,7 @@ private:
 	struct FolderResult
 	{
 		QVector<MediaFile> files;
-		QVector<LogMsg> logs;
+		QVector<LogMessage> logs;
 	};
 
 	FolderResult processFolderTask(const ScanTask &task);
@@ -169,9 +169,9 @@ private:
 
 	/// Read every admitted PMR/MDB file. Compatibility maps support existing
 	/// consumers; evidence retains each source independently for selection.
-	static FolderDatabases readFolderDatabases(const ScanTask &task, const QFileInfoList &entries, QVector<LogMsg> &logs);
-	static void readFolderPmrs(const ScanTask &task, const QFileInfoList &entries, FolderDatabases &dbs, QVector<LogMsg> &logs);
-	static void readFolderMdbs(const ScanTask &task, const QFileInfoList &entries, FolderDatabases &dbs, QVector<LogMsg> &logs);
+	static FolderDatabases readFolderDatabases(const ScanTask &task, const QFileInfoList &entries, QVector<LogMessage> &logs);
+	static void readFolderPmrs(const ScanTask &task, const QFileInfoList &entries, FolderDatabases &dbs, QVector<LogMessage> &logs);
+	static void readFolderMdbs(const ScanTask &task, const QFileInfoList &entries, FolderDatabases &dbs, QVector<LogMessage> &logs);
 
 	/// One row from one directory entry (pass 1). `folderStatus` is the
 	/// status computed by processFolderTask for any file the folder's PMR
@@ -214,7 +214,7 @@ private:
 	/// Guard pending logs while swapping batches out for emission. Folder
 	/// workers return their own buffers for the orchestrator to replay.
 	QMutex m_logMutex;
-	QVector<LogMsg> m_pendingLogs;
+	QVector<LogMessage> m_pendingLogs;
 
 	/// Scan-scoped (member, not thread_local); dies with the scan
 	/// instead of sticking around in pool threads across rescans.

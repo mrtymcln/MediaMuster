@@ -158,7 +158,7 @@ private:
 	QLabel *m_binListSummary = nullptr;
 	QListWidget *m_chainList = nullptr;
 	QLabel *m_chainSummary = nullptr;
-	QPushButton *m_btnIntersect = nullptr;
-	QPushButton *m_btnSubtract = nullptr;
-	QPushButton *m_btnAdd = nullptr;
+	QPushButton *m_intersectButton = nullptr;
+	QPushButton *m_subtractButton = nullptr;
+	QPushButton *m_addButton = nullptr;
 };

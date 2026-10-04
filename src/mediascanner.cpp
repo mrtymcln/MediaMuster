@@ -294,7 +294,7 @@ void MediaScanner::emitLog(QtMsgType level, const QString &module, const QString
 void MediaScanner::flushLogs()
 {
 	// Swap-and-emit: the mutex isn't held across the queued signal.
-	QVector<LogMsg> batch;
+	QVector<LogMessage> batch;
 	{
 		QMutexLocker lock(&m_logMutex);
 		if (m_pendingLogs.isEmpty())
@@ -1072,7 +1072,7 @@ MediaScanner::FolderResult MediaScanner::processFolderTask(const ScanTask &task)
 // MARK: - Per-folder databases
 
 MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &task,
-	const QFileInfoList &entries, QVector<LogMsg> &logs)
+	const QFileInfoList &entries, QVector<LogMessage> &logs)
 {
 	FolderDatabases dbs;
 	readFolderPmrs(task, entries, dbs, logs);
@@ -1081,7 +1081,7 @@ MediaScanner::FolderDatabases MediaScanner::readFolderDatabases(const ScanTask &
 }
 
 void MediaScanner::readFolderPmrs(const ScanTask &task, const QFileInfoList &entries,
-	FolderDatabases &dbs, QVector<LogMsg> &logs)
+	FolderDatabases &dbs, QVector<LogMessage> &logs)
 {
 	for (const auto &entry : entries)
 	{
@@ -1109,7 +1109,7 @@ void MediaScanner::readFolderPmrs(const ScanTask &task, const QFileInfoList &ent
 }
 
 void MediaScanner::readFolderMdbs(const ScanTask &task, const QFileInfoList &entries,
-	FolderDatabases &dbs, QVector<LogMsg> &logs)
+	FolderDatabases &dbs, QVector<LogMessage> &logs)
 {
 	for (const auto &entry : entries)
 	{

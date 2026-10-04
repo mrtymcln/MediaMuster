@@ -628,7 +628,7 @@ void TestOperationUi::added_locations_require_managed_media_structure()
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 	QVERIFY(window.m_manualVolumes.contains(copiedRoot));
 	QVERIFY(window.m_manualVolumes.contains(legacyRoot));
-	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfScan); // Adding a location preserves the build setting.
+	QCOMPARE(window.m_omfScanEnabled, FeatureFlags::kOmfScan); // Adding a location preserves the build setting.
 	window.addVolumePath(copiedRoot);
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 }
@@ -641,11 +641,11 @@ void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
 	QCOMPARE(debugMenu != nullptr, FeatureFlags::kDebugMenu);
 	for (const auto *name : {"enableOmfDebugAction", "enablePrecomputesDebugAction", "enableUndoDebugAction"})
 		QVERIFY(!window.findChild<QAction *>(QString::fromLatin1(name)));
-	QCOMPARE(window.m_omfEnabled, FeatureFlags::kOmfScan);
-	QCOMPARE(window.m_precomputesEnabled, FeatureFlags::kPrecomputes);
-	QCOMPARE(window.m_model->precomputesEnabled(), FeatureFlags::kPrecomputes);
-	QCOMPARE(window.m_proxy->precomputesEnabled(), FeatureFlags::kPrecomputes);
-	QCOMPARE(window.m_precomputeFilterAct->isVisible(), FeatureFlags::kPrecomputes);
+	QCOMPARE(window.m_omfScanEnabled, FeatureFlags::kOmfScan);
+	QCOMPARE(window.m_precomputesEnabled, FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_model->precomputesEnabled(), FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_proxy->precomputesEnabled(), FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_precomputeFilterAction->isVisible(), FeatureFlags::kPrecomputeFilter);
 	QCOMPARE(window.m_operations->m_undoEnabled, FeatureFlags::kUndo);
 	QCOMPARE(window.m_operations->m_undoAction->isVisible(), FeatureFlags::kUndo);
 	QCOMPARE(window.m_operations->m_undoAction->shortcut(),
@@ -661,7 +661,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(false);
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	window.m_operations->setUndoEnabled(false);
 	auto action = [&window](const char *name)
 	{
@@ -680,12 +680,12 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 		QVERIFY(command);
 		QVERIFY(!command->isEnabled());
 	}
-	QVERIFY(!window.m_precomputeFilterAct->isVisible());
-	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(!window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
 	window.setPrecomputesEnabled(true);
-	QVERIFY(window.m_precomputeFilterAct->isVisible());
-	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
-	QVERIFY(!window.m_btnPrecomputeFilter->isEnabled());
+	QVERIFY(window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
+	QVERIFY(!window.m_precomputeFilterButton->isEnabled());
 	window.setPrecomputesEnabled(false);
 
 	auto *location = new QListWidgetItem(QStringLiteral("Media volume"));
@@ -704,9 +704,9 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	file.masterMobId = QStringLiteral("master-clip");
 	window.onScanFinished({file});
 	QVERIFY(rebalance->isEnabled());
-	QVERIFY(window.m_btnRebalance->isEnabled());
+	QVERIFY(window.m_rebalanceButton->isEnabled());
 	QVERIFY(exportCsv->isEnabled());
-	QVERIFY(window.m_btnExport->isEnabled());
+	QVERIFY(window.m_exportCsvButton->isEnabled());
 	QVERIFY(inverse->isEnabled());
 	QVERIFY(!manage->isEnabled());
 	QVERIFY(!reveal->isEnabled());
@@ -714,18 +714,18 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 
 	window.m_tableView->selectRow(0);
 	QVERIFY(manage->isEnabled());
-	QVERIFY(window.m_btnFileOps->isEnabled());
+	QVERIFY(window.m_manageMediaButton->isEnabled());
 	QVERIFY(reveal->isEnabled());
 	QVERIFY(relatives->isEnabled());
 	window.setPrecomputesEnabled(true);
-	QVERIFY(window.m_precomputeFilterAct->isEnabled());
-	QVERIFY(window.m_btnPrecomputeFilter->isEnabled());
+	QVERIFY(window.m_precomputeFilterAction->isEnabled());
+	QVERIFY(window.m_precomputeFilterButton->isEnabled());
 
 	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
-	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_precomputeFilterAct})
+	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_precomputeFilterAction})
 		QVERIFY(!command->isEnabled());
-	for (auto *button : {window.m_scanButton, window.m_scanAllButton, window.m_btnFileOps,
-						 window.m_btnRebalance, window.m_btnExport, window.m_btnPrecomputeFilter})
+	for (auto *button : {window.m_scanButton, window.m_scanAllButton, window.m_manageMediaButton,
+						 window.m_rebalanceButton, window.m_exportCsvButton, window.m_precomputeFilterButton})
 		QVERIFY(!button->isEnabled());
 	window.m_operations->setActivity(FileOperationController::Activity::Idle);
 	QVERIFY(manage->isEnabled());
@@ -739,7 +739,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	QVERIFY(!relatives->isEnabled());
 	QVERIFY(!inverse->isEnabled());
 	QVERIFY(!exportCsv->isEnabled());
-	QVERIFY(!window.m_btnExport->isEnabled());
+	QVERIFY(!window.m_exportCsvButton->isEnabled());
 	QVERIFY(rebalance->isEnabled()); // Rebalance uses the whole inventory.
 	window.onSearchChanged({});
 	QVERIFY(manage->isEnabled());
@@ -747,7 +747,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 
 	window.m_tableView->clearSelection();
 	QVERIFY(!manage->isEnabled());
-	QVERIFY(!window.m_btnFileOps->isEnabled());
+	QVERIFY(!window.m_manageMediaButton->isEnabled());
 	QVERIFY(!reveal->isEnabled());
 	QVERIFY(!relatives->isEnabled());
 
@@ -755,7 +755,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	window.m_tableView->selectRow(0);
 	window.m_model->removeFilesByPath({file.mediaFilePath});
 	QCOMPARE(window.m_proxy->rowCount(), 0);
-	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAct})
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAction})
 		QVERIFY(!command->isEnabled());
 	window.onScanFinished({file});
 	window.m_tableView->selectRow(0);
@@ -763,7 +763,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	QVERIFY(relatives->isEnabled());
 	window.m_model->setMediaFiles({});
 	QCOMPARE(window.m_proxy->rowCount(), 0);
-	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAct})
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAction})
 		QVERIFY(!command->isEnabled());
 
 	window.m_volumeList->clearSelection();
@@ -1066,7 +1066,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(false);
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	window.m_operations->setUndoEnabled(false);
 	using Column = MediaTableModel::Column;
 	const int typeColumn = static_cast<int>(Column::Type);
@@ -1102,9 +1102,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(!window.m_proxy->precomputesEnabled());
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory) + int(FeatureFlags::kClipDuration));
-	QVERIFY(window.m_btnPrecomputeFilter->isHidden());
-	QVERIFY(!window.m_precomputeFilterAct->isVisible());
-	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(window.m_precomputeFilterButton->isHidden());
+	QVERIFY(!window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
 	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
 	QCOMPARE(window.m_proxy->rowCount(), 2); // Rendered media remains manageable.
 	window.onFilterChanged(precomputeTab);
@@ -1132,9 +1132,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
 	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
 		QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
-	QVERIFY(!window.m_btnPrecomputeFilter->isHidden());
-	QVERIFY(window.m_precomputeFilterAct->isVisible());
-	QVERIFY(window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(!window.m_precomputeFilterButton->isHidden());
+	QVERIFY(window.m_precomputeFilterAction->isVisible());
+	QVERIFY(window.m_precomputeFilterAction->isEnabled());
 	QVERIFY(window.m_filterTabs->isTabVisible(precomputeTab));
 	window.m_filterTabs->setCurrentIndex(precomputeTab);
 	QCOMPARE(window.m_proxy->rowCount(), 1);
@@ -1153,9 +1153,9 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QCOMPARE(window.m_model->rowCount(), 2);
 	QCOMPARE(window.m_model->fileAt(1).type, MediaFile::Type::Precompute);
 	QCOMPARE(window.m_model->fileAt(1).effect, precompute.effect);
-	QVERIFY(window.m_btnPrecomputeFilter->isHidden());
-	QVERIFY(!window.m_precomputeFilterAct->isVisible());
-	QVERIFY(!window.m_precomputeFilterAct->isEnabled());
+	QVERIFY(window.m_precomputeFilterButton->isHidden());
+	QVERIFY(!window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
 
 	// Sorting by any disappearing detail column also returns to Clip Name.
 	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
@@ -1316,7 +1316,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QVERIFY(put(omfPath, QByteArray(4096, '\0')));
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(false);
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	window.m_operations->setUndoEnabled(false);
 	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
 	window.startScanWithPaths({root});
@@ -1325,7 +1325,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QCOMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 	QVERIFY(!window.m_model->fileAt(0).omfEra);
-	window.setOmfEnabled(true);
+	window.setOmfScanEnabled(true);
 	window.startScanWithPaths({root});
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
 	QTRY_VERIFY(window.m_operations->isIdle());
@@ -1334,7 +1334,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	for (const auto &file : window.m_model->allFiles())
 		scanned.insert(file.mediaFilePath);
 	QCOMPARE(scanned, QSet<QString>({mxfPath, omfPath}));
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	QCOMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 	QVERIFY(QFileInfo::exists(omfPath));
@@ -1345,7 +1345,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 
 	// Legacy metadata and suffixes must both be removed when the gate closes.
-	window.setOmfEnabled(true);
+	window.setOmfScanEnabled(true);
 	MediaFile modern = window.m_model->fileAt(0);
 	modern.type = MediaFile::Type::Precompute;
 	modern.project = QStringLiteral("Retained project");
@@ -1369,7 +1369,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 		matches.first()->setSelected(true);
 	}
 	QCOMPARE(window.m_proxy->rowCount(), 3);
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	QCOMPARE(window.m_model->rowCount(), 2);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 	QCOMPARE(window.m_model->fileAt(0).type, MediaFile::Type::Precompute);
@@ -1406,7 +1406,7 @@ void TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
 	QVERIFY(journals[0] != journals[1]);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(false);
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	window.m_operations->setUndoEnabled(false);
 	QVERIFY(!window.m_operations->m_undoEnabled);
 	window.m_operations->runStartupRecovery();
@@ -1729,7 +1729,7 @@ void TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
 	QCOMPARE(later.run(request("later"), path("journals")).succeeded, 1);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(false);
-	window.setOmfEnabled(false);
+	window.setOmfScanEnabled(false);
 	window.m_operations->setUndoEnabled(false);
 	auto *operations = window.m_operations;
 	operations->refreshHistory();
@@ -2076,7 +2076,7 @@ void TestOperationUi::rebalance_finished_recounts_uncertain_moves_and_absent_fol
 	dialog.onOperationResult(uncertain);
 	QVERIFY(dialog.m_runningCount == originalCounts);
 	dialog.onFinished(0, 1, false);
-	QTRY_COMPARE(dialog.m_btnRebalance->text(), QStringLiteral("Close"));
+	QTRY_COMPARE(dialog.m_rebalanceButton->text(), QStringLiteral("Close"));
 	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), QStringLiteral("2"));
 	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("2"));
 	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("Not created"));
@@ -2098,7 +2098,7 @@ void TestOperationUi::rebalance_finished_marks_unavailable_root()
 	QDir mediaRoot(QFileInfo(plan.mxfRootPath).absolutePath());
 	QVERIFY(mediaRoot.rename(QStringLiteral("MXF"), QStringLiteral("MXF-offline")));
 	dialog.onFinished(0, 1, false);
-	QTRY_COMPARE(dialog.m_btnRebalance->text(), QStringLiteral("Close"));
+	QTRY_COMPARE(dialog.m_rebalanceButton->text(), QStringLiteral("Close"));
 	for (const auto &folder : plan.folders)
 		QCOMPARE(folderCountCaption(dialog, folder.mediaFolderName), QStringLiteral("Unavailable"));
 	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("Unknown")));
@@ -2151,7 +2151,7 @@ void TestOperationUi::rebalance_engine_results_and_final_counts()
 	QSignalSpy finished(dialog.m_rebalancer, &Rebalancer::finished);
 	QSignalSpy messages(&dialog, &RebalanceDialog::logMessage);
 	dialog.m_rebalancer->executeAsync(plan);
-	QTRY_COMPARE_WITH_TIMEOUT(dialog.m_btnRebalance->text(), QStringLiteral("Close"), 15000);
+	QTRY_COMPARE_WITH_TIMEOUT(dialog.m_rebalanceButton->text(), QStringLiteral("Close"), 15000);
 	const int moved = firstDestinationOccupied ? 2 : 3;
 	QCOMPARE(finished.count(), 1);
 	QCOMPARE(finished.first().at(0).toInt(), moved);
@@ -2203,7 +2203,7 @@ void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
 	window.m_operations->setActivity(FileOperationController::Activity::RebalanceDialog);
 	window.m_operations->updateRecoveryAction();
 	QVERIFY(!window.m_operations->m_undoAction->isEnabled());
-	QVERIFY(!window.m_operations->m_recoveryAct->isEnabled());
+	QVERIFY(!window.m_operations->m_recoveryAction->isEnabled());
 	QVERIFY(!window.m_operations->dispatchRequest(request("competing")));
 	QVERIFY(!window.m_operations->resolvePreviousJob());
 	window.m_operations->undoLastOperation();
@@ -2245,7 +2245,7 @@ void TestOperationUi::same_session_refresh_and_stale_result_guard()
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.m_operations->refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
-	QVERIFY(window.m_operations->m_recoveryAct->isEnabled());
+	QVERIFY(window.m_operations->m_recoveryAction->isEnabled());
 	QCOMPARE(window.m_operations->m_resumable.first().journalPath, journalPath);
 	window.m_operations->refreshHistory();
 	++window.m_operations->m_historyGeneration; // A newer dispatch invalidates the pending read.
@@ -2273,10 +2273,10 @@ void TestOperationUi::preview_background_checks_discard_superseded_results()
 		QVERIFY(block.entered.tryAcquire(1, 10000));
 		dialog.m_destPath->setText(oldDestination);
 		QVERIFY(dialog.m_checkingDest);
-		QVERIFY(!dialog.m_btnExecute->isEnabled());
+		QVERIFY(!dialog.m_executeButton->isEnabled());
 		dialog.m_destPath->setText(latestDestination);
 		QVERIFY(dialog.m_checkingDest);
-		QVERIFY(!dialog.m_btnExecute->isEnabled());
+		QVERIFY(!dialog.m_executeButton->isEnabled());
 	}
 	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
 	QThreadPool::globalInstance()->waitForDone();
@@ -2284,7 +2284,7 @@ void TestOperationUi::preview_background_checks_discard_superseded_results()
 	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
 	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->text(1), latestDestination + '/' + source.name);
 	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
-	QVERIFY(dialog.m_btnExecute->isEnabled());
+	QVERIFY(dialog.m_executeButton->isEnabled());
 	{
 		BlockPool block;
 		QVERIFY(block.entered.tryAcquire(1, 10000));
@@ -2292,7 +2292,7 @@ void TestOperationUi::preview_background_checks_discard_superseded_results()
 		QVERIFY(dialog.m_checkingDest);
 		dialog.m_radioDelete->setChecked(true);
 		QVERIFY(!dialog.m_checkingDest);
-		QVERIFY(dialog.m_btnExecute->isEnabled());
+		QVERIFY(dialog.m_executeButton->isEnabled());
 	}
 	QThreadPool::globalInstance()->waitForDone();
 	QCoreApplication::processEvents();
@@ -2318,7 +2318,7 @@ void TestOperationUi::preview_policy_changes_refresh_space_and_same_file_is_no_e
 	auto *policy = dialog.m_perFileConflictCombos.value(source.src);
 	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::Skip)));
 	QVERIFY(dialog.m_checkingDest);
-	QVERIFY(!dialog.m_btnExecute->isEnabled());
+	QVERIFY(!dialog.m_executeButton->isEnabled());
 	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
 	QCOMPARE(dialog.m_assessment.requiredCopyBytes, qint64(0));
 	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::KeepBoth)));

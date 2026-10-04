@@ -86,7 +86,7 @@ switches and their current values. Rebuild after changing a value.
 | Flag | Enabled behavior | Disabled behavior |
 | --- | --- | --- |
 | kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
-| kPrecomputes | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
+| kPrecomputeFilter | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
 | kClipDuration | Adds separate per-track Clip Duration values to the table and CSV; reads MXF headers even when database metadata is current. | Omits the Clip Duration column and its extra header-read requirement. |
 | kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
 | kDebugMenu | Shows feature toggles and Fusion style in the Debug menu. | Omits the Debug menu. |

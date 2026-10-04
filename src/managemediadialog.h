@@ -87,7 +87,7 @@ private:
 	// MARK: - Destination row
 
 	QLineEdit *m_destPath = nullptr;
-	QPushButton *m_btnChoose = nullptr;
+	QPushButton *m_chooseDestinationButton = nullptr;
 	QWidget *m_destWidget = nullptr;
 
 	QCheckBox *m_chkPreserve = nullptr;
@@ -108,8 +108,8 @@ private:
 	/// that's how we know which rows to walk.
 	QHash<QString, QComboBox *> m_perFileConflictCombos;
 
-	QPushButton *m_btnCancel = nullptr;
-	QPushButton *m_btnExecute = nullptr;
+	QPushButton *m_cancelButton = nullptr;
+	QPushButton *m_executeButton = nullptr;
 
 	// MARK: - Async destination check
 

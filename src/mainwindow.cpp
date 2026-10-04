@@ -187,8 +187,8 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupUi();
 	setupMenus();
 	setupConnections();
-	setOmfEnabled(FeatureFlags::kOmfScan);
-	setPrecomputesEnabled(FeatureFlags::kPrecomputes);
+	setOmfScanEnabled(FeatureFlags::kOmfScan);
+	setPrecomputesEnabled(FeatureFlags::kPrecomputeFilter);
 	setClipDurationEnabled(FeatureFlags::kClipDuration);
 	updateFilterCounts();
 	updateActivityUi();
@@ -357,16 +357,16 @@ QWidget *MainWindow::buildToolbar()
 	m_searchField->setMinimumWidth(200);
 	m_searchField->setMaximumWidth(320);
 
-	m_btnFileOps = new QPushButton(tr("Manage Media…"));
-	m_btnBinFilter = new QPushButton(tr("Filter by Bin…"));
-	m_btnPrecomputeFilter = new QPushButton(tr("Filter Precomputes…"));
-	m_btnPrecomputeFilter->setObjectName(QStringLiteral("filterPrecomputesButton"));
-	m_btnPrecomputeFilter->setVisible(false);
-	m_btnPrecomputeFilter->setEnabled(false);
-	m_btnExport = new QPushButton(tr("Export CSV…"));
-	m_btnRebalance = new QPushButton(tr("Rebalance…"));
-	m_btnFileOps->setEnabled(false);
-	m_btnRebalance->setEnabled(false);
+	m_manageMediaButton = new QPushButton(tr("Manage Media…"));
+	m_binFilterButton = new QPushButton(tr("Filter by Bin…"));
+	m_precomputeFilterButton = new QPushButton(tr("Filter Precomputes…"));
+	m_precomputeFilterButton->setObjectName(QStringLiteral("filterPrecomputesButton"));
+	m_precomputeFilterButton->setVisible(false);
+	m_precomputeFilterButton->setEnabled(false);
+	m_exportCsvButton = new QPushButton(tr("Export CSV…"));
+	m_rebalanceButton = new QPushButton(tr("Rebalance…"));
+	m_manageMediaButton->setEnabled(false);
+	m_rebalanceButton->setEnabled(false);
 
 	m_chipsBar = new QWidget;
 	m_chipsBar->setVisible(false);
@@ -382,11 +382,11 @@ QWidget *MainWindow::buildToolbar()
 	auto *actionsRow = new QHBoxLayout;
 	actionsRow->setContentsMargins(0, 0, 0, 0);
 	actionsRow->setSpacing(8);
-	actionsRow->addWidget(m_btnFileOps);
-	actionsRow->addWidget(m_btnBinFilter);
-	actionsRow->addWidget(m_btnPrecomputeFilter);
-	actionsRow->addWidget(m_btnRebalance);
-	actionsRow->addWidget(m_btnExport);
+	actionsRow->addWidget(m_manageMediaButton);
+	actionsRow->addWidget(m_binFilterButton);
+	actionsRow->addWidget(m_precomputeFilterButton);
+	actionsRow->addWidget(m_rebalanceButton);
+	actionsRow->addWidget(m_exportCsvButton);
 	actionsRow->addStretch();
 	toolbarV->addLayout(actionsRow);
 
@@ -543,9 +543,9 @@ void MainWindow::buildFileMenu()
 {
 	auto *fileMenu = menuBar()->addMenu(tr("&File"));
 
-	m_addFolderAct = fileMenu->addAction(tr("Add &Folder or Volume…"));
-	m_addFolderAct->setShortcut(QKeySequence("Ctrl+O"));
-	connect(m_addFolderAct, &QAction::triggered, this,
+	m_addFolderAction = fileMenu->addAction(tr("Add &Folder or Volume…"));
+	m_addFolderAction->setShortcut(QKeySequence("Ctrl+O"));
+	connect(m_addFolderAction, &QAction::triggered, this,
 			[this]()
 			{
 				QString dir = QFileDialog::getExistingDirectory(this, tr("Add Volume or Folder"));
@@ -553,20 +553,20 @@ void MainWindow::buildFileMenu()
 					addVolumePath(dir);
 			});
 
-	m_refreshVolumesAct = fileMenu->addAction(tr("Refresh &Volumes"));
-	m_refreshVolumesAct->setShortcut(QKeySequence("Ctrl+R"));
-	connect(m_refreshVolumesAct, &QAction::triggered, this, &MainWindow::refreshVolumes);
+	m_refreshVolumesAction = fileMenu->addAction(tr("Refresh &Volumes"));
+	m_refreshVolumesAction->setShortcut(QKeySequence("Ctrl+R"));
+	connect(m_refreshVolumesAction, &QAction::triggered, this, &MainWindow::refreshVolumes);
 
 	fileMenu->addSeparator();
 
-	m_scanSelectedAct = fileMenu->addAction(tr("Scan &Selected"));
-	m_scanSelectedAct->setObjectName(QStringLiteral("scanSelectedAction"));
-	connect(m_scanSelectedAct, &QAction::triggered, this, &MainWindow::scanSelected);
+	m_scanSelectedAction = fileMenu->addAction(tr("Scan &Selected"));
+	m_scanSelectedAction->setObjectName(QStringLiteral("scanSelectedAction"));
+	connect(m_scanSelectedAction, &QAction::triggered, this, &MainWindow::scanSelected);
 
-	m_scanAllAct = fileMenu->addAction(tr("Scan &All"));
-	m_scanAllAct->setObjectName(QStringLiteral("scanAllAction"));
-	m_scanAllAct->setShortcut(QKeySequence("Ctrl+Shift+A"));
-	connect(m_scanAllAct, &QAction::triggered, this, &MainWindow::scanEverything);
+	m_scanAllAction = fileMenu->addAction(tr("Scan &All"));
+	m_scanAllAction->setObjectName(QStringLiteral("scanAllAction"));
+	m_scanAllAction->setShortcut(QKeySequence("Ctrl+Shift+A"));
+	connect(m_scanAllAction, &QAction::triggered, this, &MainWindow::scanEverything);
 
 	fileMenu->addSeparator();
 
@@ -575,21 +575,21 @@ void MainWindow::buildFileMenu()
 
 	fileMenu->addSeparator();
 
-	m_revealAct = fileMenu->addAction(tr("Reveal in Finder"));
-	m_revealAct->setObjectName(QStringLiteral("revealInFinderAction"));
-	m_revealAct->setShortcut(QKeySequence("Ctrl+Shift+R"));
-	connect(m_revealAct, &QAction::triggered, this, &MainWindow::onRevealInFinder);
+	m_revealAction = fileMenu->addAction(tr("Reveal in Finder"));
+	m_revealAction->setObjectName(QStringLiteral("revealInFinderAction"));
+	m_revealAction->setShortcut(QKeySequence("Ctrl+Shift+R"));
+	connect(m_revealAction, &QAction::triggered, this, &MainWindow::onRevealInFinder);
 
-	m_exportAct = fileMenu->addAction(tr("&Export CSV…"));
-	m_exportAct->setObjectName(QStringLiteral("exportCsvAction"));
-	m_exportAct->setShortcut(QKeySequence("Ctrl+E"));
-	connect(m_exportAct, &QAction::triggered, this, &MainWindow::onExportCsv);
+	m_exportAction = fileMenu->addAction(tr("&Export CSV…"));
+	m_exportAction->setObjectName(QStringLiteral("exportCsvAction"));
+	m_exportAction->setShortcut(QKeySequence("Ctrl+E"));
+	connect(m_exportAction, &QAction::triggered, this, &MainWindow::onExportCsv);
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
-	auto *quitAct = fileMenu->addAction(tr("&Quit"));
-	quitAct->setShortcut(QKeySequence("Ctrl+Q"));
-	connect(quitAct, &QAction::triggered, qApp, &QApplication::quit);
+	auto *quitAction = fileMenu->addAction(tr("&Quit"));
+	quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+	connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
 #endif
 }
 
@@ -603,20 +603,20 @@ void MainWindow::buildEditMenu()
 	// text-field Undo keeps working throughout the default beta workflow.
 	editMenu->addAction(m_operations->undoAction());
 
-	auto *findAct = editMenu->addAction(tr("&Find"));
-	findAct->setShortcut(QKeySequence::Find);
-	connect(findAct, &QAction::triggered, m_searchField, qOverload<>(&QWidget::setFocus));
+	auto *findAction = editMenu->addAction(tr("&Find"));
+	findAction->setShortcut(QKeySequence::Find);
+	connect(findAction, &QAction::triggered, m_searchField, qOverload<>(&QWidget::setFocus));
 
 	editMenu->addSeparator();
-	m_selectRelativesAct = editMenu->addAction(tr("Select &Relatives"));
-	m_selectRelativesAct->setObjectName(QStringLiteral("selectRelativesAction"));
-	m_selectRelativesAct->setShortcut(QKeySequence("Ctrl+Shift+L"));
-	connect(m_selectRelativesAct, &QAction::triggered, this, &MainWindow::onSelectRelatives);
+	m_selectRelativesAction = editMenu->addAction(tr("Select &Relatives"));
+	m_selectRelativesAction->setObjectName(QStringLiteral("selectRelativesAction"));
+	m_selectRelativesAction->setShortcut(QKeySequence("Ctrl+Shift+L"));
+	connect(m_selectRelativesAction, &QAction::triggered, this, &MainWindow::onSelectRelatives);
 
-	m_selectInverseAct = editMenu->addAction(tr("Select &Inverse"));
-	m_selectInverseAct->setObjectName(QStringLiteral("selectInverseAction"));
-	m_selectInverseAct->setShortcut(QKeySequence("Ctrl+Shift+I"));
-	connect(m_selectInverseAct, &QAction::triggered, this, &MainWindow::onInvertSelection);
+	m_selectInverseAction = editMenu->addAction(tr("Select &Inverse"));
+	m_selectInverseAction->setObjectName(QStringLiteral("selectInverseAction"));
+	m_selectInverseAction->setShortcut(QKeySequence("Ctrl+Shift+I"));
+	connect(m_selectInverseAction, &QAction::triggered, this, &MainWindow::onInvertSelection);
 }
 
 // MARK: View menu
@@ -625,18 +625,18 @@ void MainWindow::buildViewMenu()
 {
 	auto *viewMenu = menuBar()->addMenu(tr("&View"));
 
-	auto *consoleAct = viewMenu->addAction(tr("Show &Console"));
-	consoleAct->setCheckable(true);
-	consoleAct->setChecked(true);
-	connect(consoleAct, &QAction::triggered, this, [this](bool c)
+	auto *consoleAction = viewMenu->addAction(tr("Show &Console"));
+	consoleAction->setCheckable(true);
+	consoleAction->setChecked(true);
+	connect(consoleAction, &QAction::triggered, this, [this](bool c)
 			{ m_console->setVisible(c); });
 
 	// Off by default; empty tabs hide themselves so the bar isn't
 	// cluttered with (0) placeholders.
-	auto *showAllTabsAct = viewMenu->addAction(tr("Show &All Filter Tabs"));
-	showAllTabsAct->setCheckable(true);
-	showAllTabsAct->setChecked(false);
-	connect(showAllTabsAct, &QAction::triggered, this,
+	auto *showAllTabsAction = viewMenu->addAction(tr("Show &All Filter Tabs"));
+	showAllTabsAction->setCheckable(true);
+	showAllTabsAction->setChecked(false);
+	connect(showAllTabsAction, &QAction::triggered, this,
 			[this](bool on)
 			{
 				m_showAllFilterTabs = on;
@@ -645,9 +645,9 @@ void MainWindow::buildViewMenu()
 
 	viewMenu->addSeparator();
 
-	auto *fitAct = viewMenu->addAction(tr("&Resize Columns to Fit"));
-	fitAct->setShortcut(QKeySequence("Ctrl+T"));
-	connect(fitAct, &QAction::triggered, this, &MainWindow::autoFitColumns);
+	auto *fitAction = viewMenu->addAction(tr("&Resize Columns to Fit"));
+	fitAction->setShortcut(QKeySequence("Ctrl+T"));
+	connect(fitAction, &QAction::triggered, this, &MainWindow::autoFitColumns);
 }
 
 // MARK: Special menu
@@ -656,24 +656,24 @@ void MainWindow::buildSpecialMenu()
 {
 	auto *specialMenu = menuBar()->addMenu(tr("&Special"));
 
-	m_manageMediaAct = specialMenu->addAction(tr("Manage &Media…"));
-	m_manageMediaAct->setObjectName(QStringLiteral("manageMediaAction"));
-	connect(m_manageMediaAct, &QAction::triggered, this, &MainWindow::onFileOperations);
+	m_manageMediaAction = specialMenu->addAction(tr("Manage &Media…"));
+	m_manageMediaAction->setObjectName(QStringLiteral("manageMediaAction"));
+	connect(m_manageMediaAction, &QAction::triggered, this, &MainWindow::onFileOperations);
 
-	m_binFilterAct = specialMenu->addAction(tr("Filter by &Bin…"));
-	m_binFilterAct->setObjectName(QStringLiteral("filterByBinAction"));
-	m_binFilterAct->setShortcut(QKeySequence("Ctrl+Shift+B"));
-	connect(m_binFilterAct, &QAction::triggered, this, &MainWindow::onFilterByBins);
-	m_precomputeFilterAct = specialMenu->addAction(tr("Filter &Precomputes…"));
-	m_precomputeFilterAct->setObjectName(QStringLiteral("filterPrecomputesAction"));
-	m_precomputeFilterAct->setVisible(false);
-	m_precomputeFilterAct->setEnabled(false);
-	connect(m_precomputeFilterAct, &QAction::triggered, this, &MainWindow::onFilterPrecomputes);
+	m_binFilterAction = specialMenu->addAction(tr("Filter by &Bin…"));
+	m_binFilterAction->setObjectName(QStringLiteral("filterByBinAction"));
+	m_binFilterAction->setShortcut(QKeySequence("Ctrl+Shift+B"));
+	connect(m_binFilterAction, &QAction::triggered, this, &MainWindow::onFilterByBins);
+	m_precomputeFilterAction = specialMenu->addAction(tr("Filter &Precomputes…"));
+	m_precomputeFilterAction->setObjectName(QStringLiteral("filterPrecomputesAction"));
+	m_precomputeFilterAction->setVisible(false);
+	m_precomputeFilterAction->setEnabled(false);
+	connect(m_precomputeFilterAction, &QAction::triggered, this, &MainWindow::onFilterPrecomputes);
 
 	specialMenu->addSeparator();
-	m_rebalanceAct = specialMenu->addAction(tr("&Rebalance…"));
-	m_rebalanceAct->setObjectName(QStringLiteral("rebalanceAction"));
-	connect(m_rebalanceAct, &QAction::triggered, this, &MainWindow::onRebalance);
+	m_rebalanceAction = specialMenu->addAction(tr("&Rebalance…"));
+	m_rebalanceAction->setObjectName(QStringLiteral("rebalanceAction"));
+	connect(m_rebalanceAction, &QAction::triggered, this, &MainWindow::onRebalance);
 }
 
 // MARK: Debug menu
@@ -685,19 +685,19 @@ void MainWindow::buildDebugMenu()
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	auto *monospaceTableAct = debugMenu->addAction(QStringLiteral("Monospace table"));
-	monospaceTableAct->setObjectName(QStringLiteral("monospaceTableDebugAction"));
-	monospaceTableAct->setCheckable(true);
-	monospaceTableAct->setChecked(FeatureFlags::kMonospaceTable);
-	connect(monospaceTableAct, &QAction::toggled, this, &MainWindow::setMonospaceTableEnabled);
+	auto *monospaceTableAction = debugMenu->addAction(QStringLiteral("Monospace table"));
+	monospaceTableAction->setObjectName(QStringLiteral("monospaceTableDebugAction"));
+	monospaceTableAction->setCheckable(true);
+	monospaceTableAction->setChecked(FeatureFlags::kMonospaceTable);
+	connect(monospaceTableAction, &QAction::toggled, this, &MainWindow::setMonospaceTableEnabled);
 
 	// Save the startup style before the debug toggle changes it.
 	const QString nativeStyleName = QApplication::style()->name();
-	auto *fusionStyleAct = debugMenu->addAction(tr("Fusion style"));
-	fusionStyleAct->setObjectName(QStringLiteral("fusionStyleDebugAction"));
-	fusionStyleAct->setCheckable(true);
-	fusionStyleAct->setChecked(false);
-	connect(fusionStyleAct, &QAction::triggered, this,
+	auto *fusionStyleAction = debugMenu->addAction(tr("Fusion style"));
+	fusionStyleAction->setObjectName(QStringLiteral("fusionStyleDebugAction"));
+	fusionStyleAction->setCheckable(true);
+	fusionStyleAction->setChecked(false);
+	connect(fusionStyleAction, &QAction::triggered, this,
 			[nativeStyleName](bool on)
 			{
 				const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
@@ -710,28 +710,28 @@ void MainWindow::buildDebugMenu()
 void MainWindow::buildHelpMenu()
 {
 	auto *helpMenu = menuBar()->addMenu(tr("&Help"));
-	auto *aboutAct = helpMenu->addAction(tr("About MediaMuster"));
-	connect(aboutAct, &QAction::triggered, this, &MainWindow::onAbout);
+	auto *aboutAction = helpMenu->addAction(tr("About MediaMuster"));
+	connect(aboutAction, &QAction::triggered, this, &MainWindow::onAbout);
 
 	helpMenu->addSeparator();
 
 #ifdef Q_OS_MAC
-	auto *permissionsAct = helpMenu->addAction(tr("Full Disk Access"));
-	connect(permissionsAct, &QAction::triggered, this, &MainWindow::onCheckPermissions);
+	auto *permissionsAction = helpMenu->addAction(tr("Full Disk Access"));
+	connect(permissionsAction, &QAction::triggered, this, &MainWindow::onCheckPermissions);
 #endif
 
 	// The diagnostic log always runs; this just surfaces it so the user can
 	// send it in, even though it lives in hidden ~/Library.
-	auto *diagnosticsAct = helpMenu->addAction(tr("Reveal Diagnostics"));
-	connect(diagnosticsAct, &QAction::triggered, this,
+	auto *diagnosticsAction = helpMenu->addAction(tr("Reveal Diagnostics"));
+	connect(diagnosticsAction, &QAction::triggered, this,
 			[this]
 			{
 				RevealInFinder::reveal(Diagnostics::logPath(), [this](QtMsgType level, const QString &msg)
 									   { addLog(level, QStringLiteral("app"), msg); });
 			});
 
-	auto *feedbackAct = helpMenu->addAction(tr("Send feedback…"));
-	connect(feedbackAct, &QAction::triggered, this,
+	auto *feedbackAction = helpMenu->addAction(tr("Send feedback…"));
+	connect(feedbackAction, &QAction::triggered, this,
 			[this]
 			{
 				if (!QDesktopServices::openUrl(QUrl(QStringLiteral("mailto:mrtymcln.dev@gmail.com"))))
@@ -845,13 +845,13 @@ void MainWindow::setupConnections()
 						 { button->setEnabled(action->isEnabled()); });
 		button->setEnabled(action->isEnabled());
 	};
-	bindButton(m_btnFileOps, m_manageMediaAct);
-	bindButton(m_btnBinFilter, m_binFilterAct);
-	bindButton(m_btnPrecomputeFilter, m_precomputeFilterAct);
-	bindButton(m_btnExport, m_exportAct);
-	bindButton(m_btnRebalance, m_rebalanceAct);
-	bindButton(m_scanButton, m_scanSelectedAct);
-	bindButton(m_scanAllButton, m_scanAllAct);
+	bindButton(m_manageMediaButton, m_manageMediaAction);
+	bindButton(m_binFilterButton, m_binFilterAction);
+	bindButton(m_precomputeFilterButton, m_precomputeFilterAction);
+	bindButton(m_exportCsvButton, m_exportAction);
+	bindButton(m_rebalanceButton, m_rebalanceAction);
+	bindButton(m_scanButton, m_scanSelectedAction);
+	bindButton(m_scanAllButton, m_scanAllAction);
 
 	connect(m_volumeList, &QListWidget::itemSelectionChanged, this, &MainWindow::updateActivityUi);
 	for (auto *model : {m_volumeList->model(), static_cast<QAbstractItemModel *>(m_proxy)})
@@ -929,13 +929,13 @@ void MainWindow::onCheckPermissions()
 
 // MARK: - Feature configuration
 
-void MainWindow::setOmfEnabled(bool enabled)
+void MainWindow::setOmfScanEnabled(bool enabled)
 {
 	if (!m_operations->isIdle())
 		return;
-	if (m_omfEnabled == enabled)
+	if (m_omfScanEnabled == enabled)
 		return;
-	m_omfEnabled = enabled;
+	m_omfScanEnabled = enabled;
 	m_model->setOmfScanEnabled(enabled);
 	if (!enabled)
 	{
@@ -993,8 +993,8 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		}
 		m_proxy->setPrecomputesEnabled(enabled);
 		m_model->setPrecomputesEnabled(enabled); });
-	m_btnPrecomputeFilter->setVisible(enabled);
-	m_precomputeFilterAct->setVisible(enabled);
+	m_precomputeFilterButton->setVisible(enabled);
+	m_precomputeFilterAction->setVisible(enabled);
 	updateActivityUi();
 	if (enabled)
 	{
@@ -1423,7 +1423,7 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	// Rebalance can supply a derived media root, so other paths use folder rules too.
 	const QStringList detected = m_volumeManager->allScannablePaths();
 	MediaScanner::Options opts;
-	opts.includeOmf = m_omfEnabled;
+	opts.includeOmf = m_omfScanEnabled;
 	for (const QString &path : paths)
 	{
 		if (detected.contains(path) && !m_manualVolumes.contains(path))
@@ -1459,7 +1459,7 @@ void MainWindow::onScanProgress(int current, int total, const QString &currentPa
 	dlg->setDetail(displayPath);
 }
 
-void MainWindow::onScanLogBatch(const QVector<LogMsg> &batch)
+void MainWindow::onScanLogBatch(const QVector<LogMessage> &batch)
 {
 	// One appendPlainText per batch; keeps the console responsive
 	// under heavy scanner log volume.
@@ -1934,8 +1934,8 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 	}
 
 	updateSelectionActions();
-	menu.addAction(m_revealAct);
-	auto *copyPathAct = menu.addAction(tr("Copy Path"),
+	menu.addAction(m_revealAction);
+	auto *copyPathAction = menu.addAction(tr("Copy Path"),
 									   [this]()
 									   {
 										   const auto sel = selectedFiles();
@@ -1947,20 +1947,20 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 										   QApplication::clipboard()->setText(paths.join("\n"));
 									   });
 
-	copyPathAct->setEnabled(m_tableView->selectionModel()->hasSelection());
-	menu.addAction(m_selectRelativesAct);
-	menu.addAction(m_selectInverseAct);
+	copyPathAction->setEnabled(m_tableView->selectionModel()->hasSelection());
+	menu.addAction(m_selectRelativesAction);
+	menu.addAction(m_selectInverseAction);
 
 	menu.addSeparator();
 	menu.addAction(tr("Copy To…"), this, [this]()
 				   { openManageMedia(ManageMediaDialog::Operation::Copy); })
-		->setEnabled(m_manageMediaAct->isEnabled());
+		->setEnabled(m_manageMediaAction->isEnabled());
 	menu.addAction(tr("Move To…"), this, [this]()
 				   { openManageMedia(ManageMediaDialog::Operation::Move); })
-		->setEnabled(m_manageMediaAct->isEnabled());
+		->setEnabled(m_manageMediaAction->isEnabled());
 	menu.addAction(tr("Delete…"), this, [this]()
 				   { openManageMedia(ManageMediaDialog::Operation::Delete); })
-		->setEnabled(m_manageMediaAct->isEnabled());
+		->setEnabled(m_manageMediaAction->isEnabled());
 	menu.exec(m_tableView->viewport()->mapToGlobal(pos));
 }
 
@@ -2037,19 +2037,19 @@ void MainWindow::autoFitColumns()
 void MainWindow::updateActivityUi()
 {
 	const bool busy = !m_operations->isIdle();
-	m_addFolderAct->setEnabled(!busy);
-	m_refreshVolumesAct->setEnabled(!busy);
-	m_scanSelectedAct->setEnabled(!busy && m_volumeList->selectionModel()->hasSelection());
-	m_scanAllAct->setEnabled(!busy && m_volumeList->count() > 0);
-	m_binFilterAct->setEnabled(!busy);
-	m_rebalanceAct->setEnabled(!busy && !m_model->allFiles().isEmpty());
-	m_exportAct->setEnabled(!busy && !m_exportInProgress && m_proxy->rowCount() > 0);
-	m_precomputeFilterAct->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
+	m_addFolderAction->setEnabled(!busy);
+	m_refreshVolumesAction->setEnabled(!busy);
+	m_scanSelectedAction->setEnabled(!busy && m_volumeList->selectionModel()->hasSelection());
+	m_scanAllAction->setEnabled(!busy && m_volumeList->count() > 0);
+	m_binFilterAction->setEnabled(!busy);
+	m_rebalanceAction->setEnabled(!busy && !m_model->allFiles().isEmpty());
+	m_exportAction->setEnabled(!busy && !m_exportInProgress && m_proxy->rowCount() > 0);
+	m_precomputeFilterAction->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
 	const bool hasSelection = m_tableView->selectionModel()->hasSelection();
-	m_manageMediaAct->setEnabled(!busy && hasSelection);
-	m_revealAct->setEnabled(!busy && hasSelection);
-	m_selectInverseAct->setEnabled(!busy && m_proxy->rowCount() > 0);
-	m_selectRelativesAct->setEnabled(!busy && hasSelection && m_selectionHasMasterMob);
+	m_manageMediaAction->setEnabled(!busy && hasSelection);
+	m_revealAction->setEnabled(!busy && hasSelection);
+	m_selectInverseAction->setEnabled(!busy && m_proxy->rowCount() > 0);
+	m_selectRelativesAction->setEnabled(!busy && hasSelection && m_selectionHasMasterMob);
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();

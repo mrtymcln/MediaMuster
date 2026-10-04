@@ -4,7 +4,7 @@ MediaMuster reads the additional Avid usage information identified in Media Comp
 
 The effect details and picker are a preview, controlled at launch by the build flag:
 
-1. Set `FeatureFlags::kPrecomputes` to `true` in `src/featureflags.h`, rebuild and launch.
+1. Set `FeatureFlags::kPrecomputeFilter` to `true` in `src/featureflags.h`, rebuild and launch.
 2. Scan the volumes you want to examine. Rescan results collected by an older build.
 3. The **Precompute Category** column shows **Rendered Effects**, **Titles and Matte Keys**, or **unknown** for precomputes.
 4. Choose **Filter Precomputes...**. Choose a **Volume** at the top, expand the outline, and tick the branches or effects you want. For example, expand **Precomputes → Rendered Effects → Blend** and tick **3D Warp**. Choose **Apply**.

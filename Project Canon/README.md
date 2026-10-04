@@ -38,8 +38,10 @@ All nine supplied bins pass the implemented reader grammars; the full 35-suite
 regression run passed, followed by final focused AVB checks.
 The [sequence-selection plan](avb-sequence-selection.md) records the approved
 dependency scope and explicit filter-application flow. The user approved the
-engine-first stage without live UI changes, and blocked application of incomplete
-filters. Live table matching and UI integration remain subsequent work. The large
+engine-first stage without live UI changes. The later policy update permits
+partial results with a persistent warning, superseding blanket blocking; unreadable
+bins, invalid selections and cancelled operations remain unavailable. Live table
+matching and UI integration remain subsequent work. The large
 bin's measured RAM cost and the external linked media in `ROUGH` are recorded
 explicitly in the AVB report; this is not a claim of complete format coverage or
 performance improvement.
@@ -145,8 +147,11 @@ Only the selected implementation remains in the current Canon source.
   and media on muted or disabled tracks. Do not include unrelated groups solely
   because they share the bin. Choose **Entire bin** or **Selected sequences**, then
   explicitly apply **Intersect**, **Add** or **Subtract**. Loading a bin must not
-  automatically apply a filter. Block applying any of those operations when the
-  read or dependency result is incomplete. Build and verify the engines first;
+  automatically apply a filter. Allow usable partial results with a persistent
+  warning and Console details; do not mark them complete. Gate sequence selection
+  with `FeatureFlags::kSequenceFilter = false` until its later release. The
+  existing precompute flag is now `FeatureFlags::kPrecomputesFilter = true`.
+  Build and verify the engines first;
   no live UI changes in this stage. See [sequence selection scope](avb-sequence-selection.md)
   for dependency evidence and completeness requirements.
 - Retain enough information to report database references whose files were not

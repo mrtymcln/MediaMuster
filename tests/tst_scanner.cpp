@@ -985,7 +985,7 @@ void TestScanner::cancellation_during_finalising_reports_cancelled()
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 	MediaScanner scanner;
 	QStringList messages;
-	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMsg> &batch)
+	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
 	{
 		for (const auto &msg : batch)
 			messages.append(msg.message);

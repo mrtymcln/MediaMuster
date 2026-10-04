@@ -139,8 +139,8 @@ private:
 
 	QProgressBar *m_progressBar = nullptr;
 	QLabel *m_progressLabel = nullptr;
-	QPushButton *m_btnRebalance = nullptr;
-	QPushButton *m_btnCancel = nullptr;
+	QPushButton *m_rebalanceButton = nullptr;
+	QPushButton *m_cancelButton = nullptr;
 
 	// MARK: - Live rebalance tracking
 
