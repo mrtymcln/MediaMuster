@@ -233,6 +233,8 @@ namespace Canon
 				else if (std::any_of(object.properties.cbegin(), object.properties.cend(), [](const auto &field)
 									 { return field.locator.name == QLatin1String("MSMLocator.mob_id"); }))
 					issue(result, AvbReferenceIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML full identity is not usable or conflicts; its legacy words do not override it."));
+				else if (!object.avb->interpretationComplete)
+					issue(result, AvbReferenceIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML layout is incomplete; unread fields may contain a modern identity, so legacy words cannot be selected."));
 				else
 				{
 					const auto *word0 = property(object.properties, QStringLiteral("MSMLocator.legacy_word0"));

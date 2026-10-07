@@ -10,10 +10,13 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
    changes to the drive list. It does not maintain a live media inventory.
 2. [MainWindow](../src/mainwindow.cpp) passes the selected detected and manually
    added paths to [MediaScanner](../src/mediascanner.cpp).
-3. The scanner applies [AvidMediaLayout](../src/avidmedialayout.h) rules, enumerates
-   actual files, joins folder databases, and reads media metadata where needed.
-4. It returns one [MediaFile](../src/mediafile.h) per physical file.
-   [MediaTableModel](../src/mediatablemodel.cpp) stores those rows and supplies cells.
+3. The worker calls [Canon::ScanEngine](../src/canon/scanengine.cpp). Its
+   [DiscoveryEngine](../src/canon/discoveryengine.cpp) applies the managed-location
+   rules, then fresh source readers retain graphs for reconciliation and selection.
+4. The [Canon adapter](../src/canonadapter.cpp) supplies one compatibility
+   [MediaFile](../src/mediafile.h) row per physical file. Each row retains the Canon
+   evidence and a shared immutable scan receipt; [MediaTableModel](../src/mediatablemodel.cpp)
+   stores the rows and supplies cells.
 5. [MediaFilterProxy](../src/mediafilterproxy.cpp) filters and sorts the rows for the
    view. It leaves the underlying inventory intact.
 
@@ -54,32 +57,50 @@ Qt controls' built-in keyboard shortcuts and context menus.
 
 | Component | Responsibility |
 | --- | --- |
-| [PmrParser](../src/pmrparser.cpp) | Reads the folder's filename-to-identifier index and available project/master information. |
-| [MdbParser](../src/mdbparser.cpp) | Reads clip and file metadata from the folder's Avid database. |
-| [MxfParser](../src/mxfparser.cpp) | Reads metadata inside MXF files. |
-| [BentoFile](../src/bentofile.cpp), [OmfObjects](../src/omfobjects.cpp), [OmfParser](../src/omfparser.cpp) | Read the Bento container, interpret OMF objects, and extract legacy media metadata. MDB reading also uses the first two layers. |
-| [AvbParser](../src/avbparser.cpp) | Reads bin objects, identifiers and references. |
-| [MediaMetadata](../src/mediametadata.h) and its utilities | Carry reader results and share codec/technical-field interpretation. This structure is an application result, not a single Avid object. |
-| [BinMetadataResolver](../src/binmetadataresolver.cpp) | Fills missing names from agreeing loaded-bin evidence and retracts obsolete bin fallbacks. |
-| [AvidEffects](../src/avideffects.cpp) | Derives effect display details from names of already-classified precomputes. It does not decide whether a file is a precompute. |
+| [Canon::PmrReader](../src/canon/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |
+| [Canon::MdbReader](../src/canon/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries and qualified relationships. |
+| [Canon::MxfReader](../src/canon/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
+| [Canon::LegacyReader](../src/canon/legacyreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
+| [Canon::AvbReader](../src/canon/avbreader.cpp) and [reference engine](../src/canon/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
+| [Canon source projections](../src/canon/projection.h) | Interpret recorded properties as file-owned or master-owned observations, retaining original graphs and competing evidence. |
+| [Canon::ScanEngine](../src/canon/scanengine.cpp) | Coordinates reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
+| [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
+| [AvbParser](../src/avbparser.cpp) | Compatibility adapter used by the existing bin dialog; delegates parsing and reference resolution to Canon. |
+| [BinMetadataResolver](../src/binmetadataresolver.cpp) | Applies and retracts eligible AVB name/bin observations without erasing scan evidence. |
+| [AvidEffects](../src/avideffects.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
-The scanner owns the decision about which sources to consult and how their facts
-are combined. A current, sufficiently complete database result can skip the media
-read. Header fallback can recover information and reject database details belonging
-to a different file. Parser validity, unknown fields, project names and PMR
-membership are separate facts; they must not be collapsed into a single status.
+`MediaScanner::doScan()` owns the background/UI boundary, cancellation, progress,
+logs and result delivery. Canon owns per-scan source graphs and reconciliation;
+the compatibility adapter formats selected facts for existing consumers. The
+live source loop currently reads candidates sequentially. Old PMR/MDB/MXF/OMF
+parser classes remain comparison-test code, outside the production scan path.
+Checked stateless codec/path utilities may be reused without passing the old
+`MediaMetadata` aggregate through the replacement engines.
 
-Within the scanner, `doScan()` orders location discovery, the header pass, effect
-enrichment, diagnostic-note collection and summary logging. These stages remain
-in `mediascanner.cpp`, separated by `MARK` headings. Finalisation helpers report
-cancellation to `doScan()`, which concludes once with the partial inventory;
-`concludeScan()` clears caches and flushes logs before emitting completion.
+A `Canon::ParsedSource` contains source-local objects, raw properties and edges.
+An object reference is a source receipt plus handle, not a globally unique Avid ID.
+Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
+partition copies also remain separate observations. Every physical location keeps
+its own KelpieId; identical mob IDs do not merge inventory rows.
 
-Within the scanner, `readMediaHeadersConcurrently()` owns scheduling, cancellation
-and progress. The local `readMediaHeader()` helper reads and merges one file's
-metadata; `clearReplacedMetadata()` and `findHeaderMaster()` keep identity-reset
-and byte-order lookup rules separate from the worker loop. These helpers share no
-mutable per-run state beyond the row handed to them.
+Matching prefers exact local PMR filenames, with normalized fallback only for an
+unambiguous physical location and compatible identity. MDB file facts join by full
+canonical file identities; master-only facts require an established association.
+Changed sources and ambiguous candidates remain retained but ineligible. The
+selection engine then applies the approved per-field priorities; raw bytes and
+alternatives are not replaced by the selected display value.
+
+Source read outcomes, property read states, agreement and selection are different
+facts. A sparse property with no observation is not proof of absence: its owning
+source may be unreadable, incomplete or uninterpreted. Consumers must inspect the
+source receipt as well as property evidence. Discovery/parsing/reconciliation
+completion flags describe their respective stages, not universal format support.
+
+The model holds current row locations and transfer receipts. Its shared `canonScan`
+remains an immutable receipt of the original scan, so confirmed moves/copies update
+row-owned filesystem evidence and selection rather than rewriting history. The
+new inventory is delivered before its reconciliation issues so model reset cannot
+discard the arriving issues.
 
 For supported locations and formats, see [release scope](release-feature-gates.md)
 and [parser compatibility](parser-compatibility.md).
@@ -88,7 +109,10 @@ and [parser compatibility](parser-compatibility.md).
 
 [BinFilterDialog](../src/binfilterdialog.cpp) loads bins and builds an ordered
 [BinFilter](../src/binfilter.h) expression. The proxy evaluates each step against a
-row's file or master identifier. Other filters still apply to the resulting rows.
+row's file or every established master identifier. Applied partial steps retain their
+source graphs and persistent “Results may be incomplete” warning. The future sequence
+picker remains disabled behind `SequenceFilter`; the current dialog applies whole-bin
+scope. Other filters still apply to the resulting rows.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).
 
@@ -111,6 +135,7 @@ projects when rebuilding the list.
 | [FileOperationController](../src/fileoperationcontroller.cpp) | Coordinates activity, progress, recovery choices, Undo availability and dispatch from the main window. |
 | [OpRequest / OpItem](../src/oprequest.h) | Carry the choices and file facts needed to run or resume a job without depending on the table model. |
 | [OpManager](../src/opmanager.cpp) | Owns the execution worker and passes progress/results between it and the interface. |
+| [Scan receipt adapter](../src/opscanreceipt.cpp) | Carries scan path/volume/time and Avid claims into requests, keeping header-established identities separate from database associations. |
 | [OpRunner](../src/oprunner.cpp) | Coordinates journal preparation, execution, recovery and Undo in one implementation file, organized with `MARK` sections. |
 | [OpFile](../src/opfile.cpp) | Holds file handles and checks file identity, metadata and relocation outcomes. |
 | [OpCopier](../src/opcopier.cpp), [OpTrash](../src/optrash.cpp) | Perform native copying and platform Trash handling. |
@@ -151,9 +176,13 @@ These helpers use the same journal and recovery state machine.
 
 - Save intent before the corresponding file mutation. Preserve uncertain outcomes
   for recovery rather than reporting a completed job without evidence.
-- Recheck source identity, size and supplied modification time. For MXF with known
-  scan identifiers, also compare the freshly read media identifiers. OMF currently
-  uses filesystem identity checks without that MXF-specific header cross-check.
+- Recheck native source identity, size and supplied modification time. New scan
+  receipts also check path and persistent volume identity. Fresh Canon MXF/legacy
+  readers recheck applicable header-established Avid identities through the opened
+  source. If scanning deliberately skipped the header, the selected PMR/MDB file
+  MobId must instead be confirmed at operation time. Database-only master
+  associations are not imposed as header requirements.
+  Changed or contradictory scan-time headers cannot authorize a stale row.
 - Never replace an occupied destination. Keep Both chooses a free name; explicit
   Skip leaves the file alone. An unapproved conflict fails the item. A confirmed
   same-file destination is `NoEffect`, excluded from removal and Undo.
@@ -212,8 +241,8 @@ displays them in the Console and passes them to Diagnostics for writing.
 Qt diagnostic messages also go to the file; the Console does not read the file.
 
 [BackgroundJob](../src/backgroundjob.h) owns a worker thread with cooperative
-cancellation. Qt's shared pool is also used for folder/header work, bin loads,
-previews, exports and history reads. The owner must join a worker before destroying
+cancellation. The Canon scan uses that worker; Qt's shared pool is also used for bin
+loads, previews, exports and history reads. The owner must join a worker before destroying
 data it can access; an in-progress filesystem call can delay shutdown. Do not
 force-stop a worker while its callbacks or file operations are still active.
 
@@ -223,19 +252,19 @@ include `tst_scanner`, the individual parser suites, `tst_mediafilterproxy`,
 and `tst_operationui`. Test scenarios document intended guarantees; passing results
 must still identify the tested platform and source state.
 
-Further separation of per-scan state from scanner orchestration, and recovery/Undo
-planning from runner execution, remains a possible later refactor. Establish a
-documented Windows and NEXIS behaviour baseline before changing those boundaries,
-so regressions can be distinguished from existing platform issues. The local
-helper extractions described above do not complete that broader work.
+Canon separates per-scan state and metadata decisions from scanner/UI orchestration.
+Recovery/Undo planning and execution remain the established operation engine.
+Windows and NEXIS behaviour need their own documented runtime checks; local macOS
+results do not establish those platform guarantees.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for development and documentation conventions.
 
 ## Duration ownership
 
 `MediaDuration` carries original units, their rational rate, a separate display
-frame rate, and descriptor/file-track/clip-reference/legacy provenance through
-`MediaMetadata` into `MediaFile`. Frame rounding is confined to display and the
+frame rate, and descriptor/file-track/clip-reference provenance in Canon observations.
+The compatibility adapter supplies the selected measurement to `MediaFile`.
+Frame rounding is confined to display and the
 existing sort-by-displayed-timecode rule. Exact integer conversion avoids losing
 sample precision or overflowing intermediate products on supported platforms.
 
@@ -244,9 +273,9 @@ of a duration count or rounded display label. MXF audio sampling and descriptor
 edit-unit clocks remain distinct. AIFF header fallback also retains its 80-bit
 sample-rate encoding and only sets a duration fraction when it fits exactly.
 
-`durationIsResolved` prevents graphless recovery from replacing a reader's
-selected value; it does not imply that duration came from a top-level track.
-Clip Duration entries live in a separate vector and never establish a file's
+File-duration selection compares equivalent recorded units/rates and resolves its
+optional display clock separately. Associated Clip Duration observations preserve
+master and track context; the adapter supplies their display vector. They never establish a file's
 stored length or a duration-based association constraint. The optional Clip Duration
 column is logically appended after currently enabled columns, while the view places
 it immediately after Duration. Toggling precompute details moves that logical index

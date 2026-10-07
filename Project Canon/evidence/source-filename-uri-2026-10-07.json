@@ -1,0 +1,142 @@
+{
+  "checkedDate": "2026-10-07",
+  "beforeFixObservations": [
+    {
+      "files": [
+        {
+          "fileId": "060a2b3401010105.01010f1013000000.87e7ed0d55120690.92f846fc807fda72",
+          "observations": [
+            {
+              "eligible": true,
+              "explanation": "Basename of the explicitly linked import-source locator.",
+              "field": "Source Filename",
+              "object": "object:735",
+              "property": "NetworkLocator.URLString",
+              "value": "Apple%20ProRes%20422%20Proxy.mov"
+            },
+            {
+              "eligible": true,
+              "explanation": "Basename of the recorded import path.",
+              "field": "Source Filename",
+              "object": "object:716",
+              "property": "TaggedValue.Value",
+              "value": "Apple ProRes 422 Proxy.mov"
+            },
+            {
+              "eligible": true,
+              "explanation": "UTF-16 text ends at the first null code unit; original terminator and any padding remain in the encoded value.",
+              "field": "Source Path",
+              "object": "object:735",
+              "property": "NetworkLocator.URLString",
+              "value": "file:///Macintosh%20HD/Users/martymclean/Desktop/Test%20media%20files/Apple%20ProRes%20422%20Proxy.mov"
+            },
+            {
+              "eligible": true,
+              "explanation": "UNC Path is a tagged value in the linked package attribute graph.",
+              "field": "Source Path",
+              "object": "object:716",
+              "property": "TaggedValue.Value",
+              "value": "/Users/martymclean/Desktop/Test media files/Apple ProRes 422 Proxy.mov"
+            }
+          ]
+        }
+      ],
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69671C4_DEDE70DEDE787V.mxf"
+    },
+    {
+      "files": [
+        {
+          "fileId": "060a2b3401010101.01010f0013000000.3b32c55b3a229202.060e2b347f7f2a80",
+          "observations": [
+            {
+              "eligible": true,
+              "explanation": "Basename of the explicitly linked import-source locator.",
+              "field": "Source Filename",
+              "object": "object:769",
+              "property": "NetworkLocator.URLString",
+              "value": "A001_C001_01019M_001.R3D"
+            },
+            {
+              "eligible": true,
+              "explanation": "UTF-16 text ends at the first null code unit; original terminator and any padding remain in the encoded value.",
+              "field": "Source Path",
+              "object": "object:769",
+              "property": "NetworkLocator.URLString",
+              "value": "file:///EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/02_CAM_RUSHES/01_D001/A001/A001_0101TU.RDM/A001_C001_01019M.RDC/A001_C001_01019M_001.R3D"
+            }
+          ]
+        }
+      ],
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_A01.D7EB5BC5323BA.mxf"
+    },
+    {
+      "files": [
+        {
+          "fileId": "060a2b3401010101.01010f0013000000.653a555b1e5c6e0a.060e2b347f7f2a80",
+          "observations": [
+            {
+              "eligible": true,
+              "explanation": "Basename of the explicitly linked import-source locator.",
+              "field": "Source Filename",
+              "object": "object:677",
+              "property": "NetworkLocator.URLString",
+              "value": "5%203%203%20FIX.wav"
+            },
+            {
+              "eligible": true,
+              "explanation": "Basename of the recorded import path.",
+              "field": "Source Filename",
+              "object": "object:661",
+              "property": "TaggedValue.Value",
+              "value": "5 3 3 FIX.wav"
+            },
+            {
+              "eligible": true,
+              "explanation": "UTF-16 text ends at the first null code unit; original terminator and any padding remain in the encoded value.",
+              "field": "Source Path",
+              "object": "object:677",
+              "property": "NetworkLocator.URLString",
+              "value": "file:///EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/03_SND_RUSHES/02_D002/5%203%203%20FIX.wav"
+            },
+            {
+              "eligible": true,
+              "explanation": "UNC Path is a tagged value in the linked package attribute graph.",
+              "field": "Source Path",
+              "object": "object:661",
+              "property": "TaggedValue.Value",
+              "value": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/03_SND_RUSHES/02_D002/5 3 3 FIX.wav"
+            }
+          ]
+        }
+      ],
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/5 3 3 FIX.wav.A15B553A65A.mxf"
+    },
+    {
+      "files": [
+        {
+          "fileId": "060a2b3401010105.01010f1013000000.b54ea01673110696.686f7c57583610fa",
+          "observations": [
+            {
+              "eligible": true,
+              "explanation": "Basename of the explicitly linked import-source locator.",
+              "field": "Source Filename",
+              "object": "object:683",
+              "property": "NetworkLocator.URLString",
+              "value": "ADR%20TEMPLATE.14-0eb51f31.PICT"
+            },
+            {
+              "eligible": true,
+              "explanation": "UTF-16 text ends at the first null code unit; original terminator and any padding remain in the encoded value.",
+              "field": "Source Path",
+              "object": "object:683",
+              "property": "NetworkLocator.URLString",
+              "value": "file:///C%3A/Users/Public/Documents/Shared%20Avid%20Projects/ADR%20TEMPLATE.14-0eb51f31.PICT"
+            }
+          ]
+        }
+      ],
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0417F4_16A0416A04EB5V.mxf"
+    }
+  ],
+  "rule": "Decode URI escapes exactly once for NetworkLocator.URLString-derived filenames; preserve native path strings and raw source URL observations."
+}

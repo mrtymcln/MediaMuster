@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-07",
+  "purpose": "Retained MXF graph allocations; independent of database-first scheduling policy.",
+  "provenance": {
+    "execution": "Isolated x86_64 C++17 reader probes under Rosetta on macOS; Qt6.5.3; unoptimized builds. Three real media files opened read-only, keeping each parsed graph alive. No whole-drive scan in this probe.",
+    "beforeReaderSourceGitCommit": "d085913cd502672e1284fa29b82045f0e5f02ed6",
+    "afterFiles": [
+      "src/canon/mxfobjects_p.cpp",
+      "src/canon/mxfreader.cpp"
+    ],
+    "beforeAndAfterHeaderCompatibility": "Both reader versions compiled against the same current headers, including the concurrently added ParsedSource.readReason; neither probe links the old static library.",
+    "probeSource": "/tmp/canon-memory-parser-probe.cpp",
+    "probeSourceSha256": "71093e1ccc884e70a02fa3bc4d0bcaabf1199b6f599d278dcbe1f2dc5007787a",
+    "beforeOutput": "/tmp/canon-memory-parser-before.jsonl",
+    "afterOutput": "/tmp/canon-memory-parser-after.jsonl",
+    "fingerprintScope": "SHA-256 of QDataStream serialization of outcome/container/diagnostics, object handles/roles/identities, MXF set contexts, property locators/ranges/encodings/decoded values/states/interpretations/text encoding/native MXF context, and relationship endpoints/locators/references/basis/explanations. Excludes capacities, pointer addresses, source snapshots, and scan scheduling readReason. This is a parsed-graph conservation check, not a whole-file checksum.",
+    "rssSource": "mach_task_basic_info.resident_size. Final snapshots follow graph fingerprint serialization, whose temporary allocation can affect retained allocator pages."
+  },
+  "sizeofBytes": {
+    "RawProperty": 224,
+    "AvidObject": 136,
+    "Relationship": 184
+  },
+  "samples": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A04172B_161D2161D2837V.mxf",
+      "fileSizeBytes": 2207126113,
+      "objects": 671,
+      "properties": 4211,
+      "unownedProperties": 700,
+      "relationships": 888,
+      "rawValueBytes": 108279,
+      "ranges": 5581,
+      "definitionObjects": 649,
+      "definitionObjectProperties": 3352,
+      "logicalGraphSha256Before": "9607952aff18fe35eece2c426982dce888d812563303c1863623f8265a93d8d7",
+      "logicalGraphSha256After": "9607952aff18fe35eece2c426982dce888d812563303c1863623f8265a93d8d7",
+      "propertyVectorCapacityBefore": 5996,
+      "propertyVectorCapacityAfter": 4211,
+      "unusedPropertyStorageRemovedBytes": 399840,
+      "parseRssIncreaseBeforeBytes": 6283264,
+      "parseRssIncreaseAfterBytes": 7188480
+    },
+    {
+      "path": "/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+      "fileSizeBytes": 490865249,
+      "objects": 787,
+      "properties": 4758,
+      "unownedProperties": 818,
+      "relationships": 1012,
+      "rawValueBytes": 152149,
+      "ranges": 6362,
+      "definitionObjects": 640,
+      "definitionObjectProperties": 3355,
+      "logicalGraphSha256Before": "6dc5224935eb96a3e0a5ad804d0a0217a8e16b2bc3b1dc2381ad35f9aab8302b",
+      "logicalGraphSha256After": "6dc5224935eb96a3e0a5ad804d0a0217a8e16b2bc3b1dc2381ad35f9aab8302b",
+      "propertyVectorCapacityBefore": 6630,
+      "propertyVectorCapacityAfter": 4758,
+      "unusedPropertyStorageRemovedBytes": 419328,
+      "parseRssIncreaseBeforeBytes": 4956160,
+      "parseRssIncreaseAfterBytes": 4796416
+    },
+    {
+      "path": "/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/A001_C001_A01.D7EB5BC5323BA.mxf",
+      "fileSizeBytes": 15884897,
+      "objects": 787,
+      "properties": 4738,
+      "unownedProperties": 818,
+      "relationships": 1012,
+      "rawValueBytes": 151910,
+      "ranges": 6342,
+      "definitionObjects": 640,
+      "definitionObjectProperties": 3355,
+      "logicalGraphSha256Before": "295b3b5aad27ce694491d30b38bbd67d17bcee071550c8fc88ff07f4a908db5d",
+      "logicalGraphSha256After": "295b3b5aad27ce694491d30b38bbd67d17bcee071550c8fc88ff07f4a908db5d",
+      "propertyVectorCapacityBefore": 6612,
+      "propertyVectorCapacityAfter": 4738,
+      "unusedPropertyStorageRemovedBytes": 419776,
+      "parseRssIncreaseBeforeBytes": 4980736,
+      "parseRssIncreaseAfterBytes": 4435968
+    }
+  ],
+  "totalUnusedPropertyStorageRemovedBytes": 1238944,
+  "threeGraphRssGrowthBytes": {
+    "before": 23355392,
+    "after": 21561344
+  },
+  "repeatedTextSample": {
+    "path": "/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+    "measurement": "UTF-16 character payload bytes counted once per distinct QString.constData pointer; excludes allocator headers and unused character capacity; includes shared literals. Counts are not heap-allocation byte totals.",
+    "interpretationDistinctValuesBefore": 11,
+    "interpretationDistinctValuesAfter": 11,
+    "interpretationDistinctStoragePayloadBytesBefore": 243088,
+    "interpretationDistinctStoragePayloadBytesAfter": 36544,
+    "referenceDescriptionDistinctValuesBefore": 2,
+    "referenceDescriptionDistinctValuesAfter": 2,
+    "referenceDescriptionDistinctStoragePayloadBytesBefore": 142792,
+    "referenceDescriptionDistinctStoragePayloadBytesAfter": 280,
+    "beforeOutput": "/tmp/canon-memory-strings-probe.jsonl",
+    "afterOutput": "/tmp/canon-memory-strings-after.jsonl"
+  },
+  "testResult": {
+    "suite": "TestCanonMxf",
+    "passed": 856,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedMs": 64808,
+    "output": "/tmp/canon-memory-focused-tests.txt",
+    "outputSha256": "3dbabca7a6ce3191a2da96074557bf2fe4b75e2a949b19cec6c1ba99b8f5f354",
+    "regression": "retainedGraphsUseCompactSharedStorage checks capacity, shared repeated text, distinct encoded/decoded names, and exact reference origins/targets; existing real fixtures check retained bytes against source ranges."
+  },
+  "wholeScanBeforeReference": {
+    "sourceLog": "/tmp/canon-full-before-2026-10-07.txt",
+    "sourceLogSha256": "71bb437022eb92322c623917ba19b8bcbd874ab5c78734783a33b9c59b4438db",
+    "rows": 2413,
+    "scanMs": 181021,
+    "maximumResidentSetSizeBytes": 13850722304,
+    "peakMemoryFootprintBytes": 13590966144,
+    "note": "Separate root-agent full-scan run of the prior eager-header binary, supplied as baseline context. It is not this three-file probe, and no after full-scan claim is made here."
+  },
+  "caveats": [
+    "Three representative files do not establish a universal per-file cost.",
+    "RSS depends on architecture, allocator reuse and transient allocations; the first-file RSS increase was larger after compaction. These changes do not guarantee a lower peak.",
+    "Exact dictionary-object payloads did not match across these samples when original InstanceUID and reference values were included; whole dictionaries must not be merged by assumption.",
+    "Raw essence bytes remain skipped. Every metadata property and reference retained before these changes remains retained.",
+    "Database-first reading, separately approved by the user, avoids building header graphs where database evidence satisfies required metadata. Its full-scan effect is reported separately."
+  ]
+}

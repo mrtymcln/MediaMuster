@@ -2,6 +2,7 @@
 // table proxy. Fixtures are complete structured AVBs from testavb.h.
 
 #include "binfilterdialog.h"
+#include "canon/avbreferences.h"
 #include "mediafilterproxy.h"
 #include "mediatablemodel.h"
 #include "mobid.h"
@@ -96,8 +97,8 @@ private slots:
 	void locator_identity_controls_file_matching();
 	void loaded_bin_metadata_is_published_as_one_batch();
 	void empty_locator_selection_leaves_filter_unchanged();
-	void late_parse_problem_cannot_publish_partial_results_data();
-	void late_parse_problem_cannot_publish_partial_results();
+	void partial_results_keep_warnings_and_evidence_data();
+	void partial_results_keep_warnings_and_evidence();
 	void readable_bin_without_matching_files_filters_to_zero();
 	void intersection_and_subtraction_use_row_membership_data();
 	void intersection_and_subtraction_use_row_membership();
@@ -105,8 +106,8 @@ private slots:
 	void snapshots_survive_reticking_and_bin_removal();
 	void removing_multiple_bins_preserves_survivor_ticks_and_snapshots();
 	void selection_snapshot_keeps_counts_names_and_ids_together();
-	void failed_and_partial_bins_emit_errors_without_dialogs_data();
-	void failed_and_partial_bins_emit_errors_without_dialogs();
+	void failed_bins_report_errors_and_partial_bins_report_warnings_data();
+	void failed_bins_report_errors_and_partial_bins_report_warnings();
 	void bad_header_batch_is_parsed_asynchronously_and_reported_once();
 	void non_avb_extension_is_rejected_without_parsing();
 	void mixed_batch_reports_errors_once_and_keeps_usable_bins();
@@ -211,7 +212,7 @@ void TestBinFilterDialog::empty_locator_selection_leaves_filter_unchanged()
 	QVERIFY(!h.errorDialog());
 }
 
-void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results_data()
+void TestBinFilterDialog::partial_results_keep_warnings_and_evidence_data()
 {
 	QTest::addColumn<bool>("bigEndian");
 	QTest::addColumn<int>("problem");
@@ -220,7 +221,7 @@ void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results_data
 			QTest::newRow(qPrintable(QStringLiteral("%1-%2").arg(big ? "BE" : "LE").arg(problem))) << big << problem;
 }
 
-void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results()
+void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 {
 	QFETCH(bool, bigEndian);
 	QFETCH(int, problem);
@@ -229,7 +230,8 @@ void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results()
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	QSignalSpy published(&h.dialog, &BinFilterDialog::binsChanged);
-	// Retain a working filter while a second bin fails after readable metadata/IDs.
+	QSignalSpy warnings(&h.dialog, &BinFilterDialog::loadWarning);
+	// Keep the existing operand while a second bin brings qualified evidence.
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Good.avb"), TestAvb::mediaBin()));
 	QTRY_VERIFY(h.filter.isActive());
 	const auto previous = h.filter;
@@ -237,7 +239,7 @@ void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results()
 	TestAvb::Document d;
 	d.bigEndian = bigEndian;
 	d.objects = {{"ABIN", TestAvb::bin(bigEndian, {2})},
-				 {"CMPO", TestAvb::composition(bigEndian, TestAvb::Master, "Must not leak")},
+				 {"CMPO", TestAvb::composition(bigEndian, TestAvb::Master, "Readable clip")},
 				 {"MSML", TestAvb::mediaLocator(bigEndian, TestAvb::Other)}};
 	if (problem == 0)
 		d.objects.append({"ZZZZ", QByteArray::fromHex("020103")});
@@ -253,27 +255,38 @@ void TestBinFilterDialog::late_parse_problem_cannot_publish_partial_results()
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Problem.avb"), d.bytes()));
 	QTRY_COMPARE(loaded.count(), 2);
 	const auto parsed = qvariant_cast<AvbBin>(loaded.last().first());
-	QVERIFY(!parsed.isUsable());
-	QCOMPARE(parsed.valid, problem != 2);
-	if (parsed.valid)
-	{
-		QVERIFY(!parsed.mediaFileIds.isEmpty());
-		QVERIFY(!parsed.mobs.isEmpty());
-	}
-	else
-	{
-		QVERIFY(parsed.mediaFileIds.isEmpty());
-		QVERIFY(parsed.mobs.isEmpty());
-	}
-	QCOMPARE(h.errors.count(), 1);
-	QCOMPARE(h.list()->count(), 1);
-	QVERIFY(h.filter.hasSameCriteria(previous));
-	QCOMPARE(h.proxy.rowCount(), 1);
-	QCOMPARE(published.count(), 0);
-	// The model independently rejects partial metadata, even if passed directly.
+
+	QCOMPARE(warnings.count(), 1);
+	QVERIFY(parsed.isUsable() && !parsed.complete);
+	QVERIFY(parsed.source && parsed.resolution);
+	QVERIFY(!parsed.mediaFileIds.isEmpty() && !parsed.warnings.isEmpty());
 	h.model.setAvbBins({parsed});
 	for (const auto &file : h.model.allFiles())
-		QVERIFY(file.clipName.isEmpty());
+		QCOMPARE(file.clipName, QStringLiteral("Readable clip"));
+	QCOMPARE(h.errors.count(), 0);
+	QCOMPARE(h.list()->count(), 2);
+	QVERIFY(h.list()->item(1)->text().contains(QStringLiteral("Results may be incomplete")));
+	QVERIFY(h.filter.hasSameCriteria(previous)); // Loading never silently rewrites an existing chain.
+	QTRY_COMPARE(published.count(), 1);
+	h.dialog.clearChain();
+	h.selectOnly(1);
+	QVERIFY(h.invoke("onAddClicked"));
+	QCOMPARE(h.filter.steps.size(), 1);
+	QVERIFY(h.filter.resultsMayBeIncomplete());
+	QCOMPARE(h.filter.steps[0].sources.size(), 1);
+	QCOMPARE(h.filter.steps[0].sources[0], parsed.source);
+	QCOMPARE(h.filter.steps[0].resolutions[0], parsed.resolution);
+	const auto warningSnapshot = h.filter.steps[0].warnings;
+	QVERIFY(!warningSnapshot.isEmpty());
+	h.list()->clearSelection();
+	h.list()->item(1)->setSelected(true);
+	QVERIFY(h.invoke("onRemoveSelectedBinsClicked"));
+	QCOMPARE(h.filter.steps[0].warnings, warningSnapshot);
+	QCOMPARE(h.filter.steps[0].sources[0], parsed.source);
+	QVERIFY(h.filter.resultsMayBeIncomplete());
+	QVERIFY(h.dialog.findChild<QLabel *>(QStringLiteral("BinChainSummary"))->text().contains(QStringLiteral("Results may be incomplete")));
+	h.dialog.clearChain();
+	QVERIFY(!h.filter.resultsMayBeIncomplete());
 }
 
 void TestBinFilterDialog::readable_bin_without_matching_files_filters_to_zero()
@@ -466,18 +479,18 @@ void TestBinFilterDialog::selection_snapshot_keeps_counts_names_and_ids_together
 	QCOMPARE(h.filter.steps.size(), 1);
 }
 
-void TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs_data()
+void TestBinFilterDialog::failed_bins_report_errors_and_partial_bins_report_warnings_data()
 {
 	QTest::addColumn<QByteArray>("bytes");
 	QTest::addColumn<bool>("valid");
 	QTest::newRow("empty-file") << QByteArray{} << false;
 	QTest::newRow("truncated-signature") << QByteArray::fromHex("0600446f6d61696e444a424f") << false;
 	QTest::newRow("renamed-text") << QByteArray("Ordinary text named .avb") << false;
-	QTest::newRow("damaged-body") << TestAvb::mediaBin().chopped(1) << false;
+	QTest::newRow("damaged-body") << TestAvb::mediaBin().left(30) << false;
 	QTest::newRow("unsupported-dependency") << partialBin() << true;
 }
 
-void TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs()
+void TestBinFilterDialog::failed_bins_report_errors_and_partial_bins_report_warnings()
 {
 	QFETCH(QByteArray, bytes);
 	QFETCH(bool, valid);
@@ -485,6 +498,7 @@ void TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
+	QSignalSpy warnings(&h.dialog, &BinFilterDialog::loadWarning);
 	const auto path = TestAvb::write(tmp.filePath("Problem.avb"), bytes);
 	h.dialog.addBinFromFile(path);
 	QCOMPARE(h.list()->count(), 1); // All .avb content validation runs in the worker.
@@ -496,23 +510,19 @@ void TestBinFilterDialog::failed_and_partial_bins_emit_errors_without_dialogs()
 	QVERIFY(!parsed.complete);
 	QVERIFY(!h.filter.isActive());
 	QCOMPARE(h.proxy.rowCount(), 2);
-	QCOMPARE(h.list()->count(), 0);
-	QCOMPARE(h.errors.count(), 1);
-	QCOMPARE(h.errors.first().at(0).toString(), path);
-	const auto reason = h.errors.first().at(1).toString();
-	if (parsed.valid)
+	QCOMPARE(h.list()->count(), valid ? 1 : 0);
+	QCOMPARE(h.errors.count(), valid ? 0 : 1);
+	QCOMPARE(warnings.count(), valid ? 1 : 0);
+	if (valid)
 	{
-		QCOMPARE(reason, QStringLiteral("This bin contains data that MediaMuster does not yet support; ") + parsed.warnings.join(QStringLiteral("; ")));
-		QVERIFY(reason.contains(QStringLiteral("ZZZZ")));
+		QCOMPARE(warnings.first().at(0).toString(), path);
+		QVERIFY(warnings.first().at(1).toString().contains(QStringLiteral("ZZZZ")));
 	}
 	else
-		QCOMPARE(reason, parsed.error);
-	QCoreApplication::processEvents();
-	QCOMPARE(h.errors.count(), 1);
+		QCOMPARE(h.errors.first().at(1).toString(), parsed.error);
 	QVERIFY(!h.errorDialog());
-	QVERIFY(!h.dialog.findChild<QPushButton *>(QStringLiteral("BinIntersectButton"))->isEnabled());
 	QVERIFY(h.invoke("onIntersectClicked"));
-	QVERIFY(!h.filter.isActive());
+	QVERIFY(!h.filter.isActive()); // Partial source with no media IDs makes no operand.
 }
 
 void TestBinFilterDialog::bad_header_batch_is_parsed_asynchronously_and_reported_once()
@@ -576,26 +586,28 @@ void TestBinFilterDialog::mixed_batch_reports_errors_once_and_keeps_usable_bins(
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
 	QSignalSpy published(&h.dialog, &BinFilterDialog::binsChanged);
-	const auto damagedPath = TestAvb::write(tmp.filePath("Damaged.avb"), TestAvb::mediaBin().chopped(1));
+	QSignalSpy warnings(&h.dialog, &BinFilterDialog::loadWarning);
+	const auto damagedPath = TestAvb::write(tmp.filePath("Damaged.avb"), TestAvb::mediaBin().left(30));
 	const auto partialPath = TestAvb::write(tmp.filePath("Partial.avb"), partialBin());
 	h.dialog.addBinFromFile(damagedPath);
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Usable.avb"), TestAvb::mediaBin()));
 	h.dialog.addBinFromFile(partialPath);
 	QTRY_COMPARE(loaded.count(), 3);
-	QCOMPARE(h.errors.count(), 2);
-	const QSet<QString> rejectedPaths{
-		h.errors.at(0).at(0).toString(), h.errors.at(1).at(0).toString()};
-	QCOMPARE(rejectedPaths, (QSet<QString>{damagedPath, partialPath}));
-	QCOMPARE(h.list()->count(), 1);
+	QCOMPARE(h.errors.count(), 1);
+	QCOMPARE(h.errors.first().at(0).toString(), damagedPath);
+	QCOMPARE(warnings.count(), 1);
+	QCOMPARE(warnings.first().at(0).toString(), partialPath);
+	QCOMPARE(h.list()->count(), 2);
 	QTRY_VERIFY(h.filter.isActive());
-	QCOMPARE(h.names, QStringList{QStringLiteral("Usable")});
+	QCOMPARE(h.names, (QStringList{QStringLiteral("Usable"), QStringLiteral("Partial")}));
+	QVERIFY(h.filter.resultsMayBeIncomplete());
 	QCOMPARE(h.proxy.rowCount(), 1);
 	QCOMPARE(published.count(), 1);
 	const auto bins = qvariant_cast<QVector<AvbBin>>(published.first().first());
-	QCOMPARE(bins.size(), 1);
+	QCOMPARE(bins.size(), 2);
 	QCOMPARE(bins.first().displayName, QStringLiteral("Usable"));
 	QCoreApplication::processEvents();
-	QCOMPARE(h.errors.count(), 2);
+	QCOMPARE(h.errors.count(), 1);
 	QVERIFY(!h.errorDialog());
 }
 
@@ -605,7 +617,7 @@ void TestBinFilterDialog::rejected_path_can_be_repaired_and_retried()
 	QVERIFY(tmp.isValid());
 	Harness h;
 	QSignalSpy loaded(&h.dialog, &BinFilterDialog::binLoaded);
-	const auto path = TestAvb::write(tmp.filePath("Repair.avb"), TestAvb::mediaBin().chopped(1));
+	const auto path = TestAvb::write(tmp.filePath("Repair.avb"), TestAvb::mediaBin().left(30));
 	h.dialog.addBinFromFile(path);
 	QTRY_COMPARE(loaded.count(), 1);
 	QCOMPARE(h.errors.count(), 1);
@@ -625,7 +637,7 @@ void TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter_data()
 {
 	QTest::addColumn<QByteArray>("bytes");
 	QTest::newRow("bad-header") << QByteArray("Ordinary text");
-	QTest::newRow("damaged-body") << TestAvb::mediaBin().chopped(1);
+	QTest::newRow("damaged-body") << TestAvb::mediaBin().left(30);
 	QTest::newRow("unsupported-dependency") << partialBin();
 }
 
@@ -644,9 +656,9 @@ void TestBinFilterDialog::rejected_bin_does_not_reapply_a_cleared_filter()
 	QCOMPARE(h.proxy.rowCount(), 2);
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Rejected.avb"), bytes));
 	QTRY_COMPARE(loaded.count(), 2);
-	QCOMPARE(h.errors.count(), 1);
+	QCOMPARE(h.errors.count(), bytes == partialBin() ? 0 : 1);
 	QVERIFY(!h.errorDialog());
-	QCOMPARE(h.list()->count(), 1);
+	QCOMPARE(h.list()->count(), bytes == partialBin() ? 2 : 1);
 	QCOMPARE(h.list()->item(0)->checkState(), Qt::Checked);
 	QVERIFY(!h.filter.isActive());
 	QCOMPARE(h.proxy.rowCount(), 2);
@@ -663,7 +675,7 @@ void TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content_d
 	QTest::newRow("little-endian-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin() << true;
 	QTest::newRow("big-endian-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin({TestAvb::Master}, true) << true;
 	QTest::newRow("uppercase-extension") << QStringLiteral("Bin.AVB") << TestAvb::mediaBin() << true;
-	QTest::newRow("recognizable-damaged-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin().chopped(1) << true;
+	QTest::newRow("recognizable-damaged-bin") << QStringLiteral("Bin.avb") << TestAvb::mediaBin().left(30) << true;
 }
 
 void TestBinFilterDialog::drag_requires_avb_extension_and_recognizable_content()
@@ -806,7 +818,7 @@ void TestBinFilterDialog::changed_content_is_rechecked_when_dropped()
 	QCOMPARE(h.errors.count(), 1);
 	QCOMPARE(h.errors.first().at(0).toString(), path);
 	QCOMPARE(h.errors.first().at(1).toString(),
-			 QStringLiteral("Not an Avid bin: invalid byte-order marker."));
+			 QStringLiteral("Invalid AVB byte-order signature."));
 	QVERIFY(!h.errorDialog());
 	QVERIFY(!h.filter.isActive());
 	QCOMPARE(h.proxy.rowCount(), 2);
@@ -821,7 +833,7 @@ void TestBinFilterDialog::removed_pending_reads_cannot_replace_retained_rows()
 	for (int i = 0; i < 8; ++i)
 	{
 		const auto bytes = i % 4 == 0	? partialBin()
-						   : i % 4 == 1 ? TestAvb::mediaBin().chopped(1)
+						   : i % 4 == 1 ? TestAvb::mediaBin().left(30)
 						   : i % 4 == 2 ? QByteArray("Ordinary text")
 										: TestAvb::mediaBin({TestAvb::Master});
 		h.dialog.addBinFromFile(TestAvb::write(tmp.filePath(QString("Remove%1.avb").arg(i)),

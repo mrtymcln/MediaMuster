@@ -1,0 +1,52 @@
+********* Start testing of TestScanner *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestScanner::initTestCase()
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 0 / 2425 at 79 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 100 / 2425 at 7123 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E69CB5C7_CE99ACE99AAC3A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 200 / 2425 at 14109 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A02.E69BC94D_1B3911B391759A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 300 / 2425 at 21567 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696920E_266BF266BF7BCV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 400 / 2425 at 28091 ms "/Volumes/EDIT/Avid MediaFiles/MXF/1/1018.WAVA02.D8875D203017D2A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 500 / 2425 at 34673 ms "/Volumes/EDIT/Avid MediaFiles/MXF/1/1069.WAVA02.D77B775B553A89A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 600 / 2425 at 41609 ms "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C011_V01.D7EC5BC69ADDV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 700 / 2425 at 48527 ms "/Volumes/EDIT/Avid MediaFiles/MXF/1/A002_C012_A02.D7ED5BC6D08FA.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 800 / 2425 at 55975 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/7290909LMA01.6A04115821516A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 900 / 2425 at 62821 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/7292508NSA01.6A04115967B72A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1000 / 2425 at 69626 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/7292807LMA02.6A041155E796FA.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1100 / 2425 at 76467 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/7292908SSWA01.6A0415DA79F7A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1200 / 2425 at 87789 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0415F5_156211562169FV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1300 / 2425 at 94486 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416F6_15F7115F71F9FV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1400 / 2425 at 101220 ms "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0417E7_16979169797DEV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1500 / 2425 at 108144 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7293007LMA02.6A04F0892B08AA.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1600 / 2425 at 115081 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7301908LMA01.6A04F08888866A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1700 / 2425 at 122077 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7302108SLA02.6A04F0889CE58A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1800 / 2425 at 132508 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.6A04FFBB_8CFF308CFF3BEV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 1900 / 2425 at 139425 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.6A050025_9609D09609D78V.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 2000 / 2425 at 146382 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7300409SMA01.6A0500C98FDFCA.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 2100 / 2425 at 153439 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7302108SLA01.6A0500CC88305A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 2200 / 2425 at 160493 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CD_BD2E40BD2E454A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 2300 / 2425 at 170642 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A05032B_C0FE30C0FE370V.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 2400 / 2425 at 177595 ms "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050413_CB2150CB2153DV.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit matching at 179345 ms
+QINFO  : TestScanner::optional_read_only_real_scan() Read-only Canon audit: 2413 rows in 181021 ms
+PASS   : TestScanner::optional_read_only_real_scan()
+PASS   : TestScanner::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 192084ms
+********* Finished testing of TestScanner *********
+      192.14 real       177.83 user        11.43 sys
+         13850722304  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              845753  page reclaims
+                   0  page faults
+                   0  swaps
+                   6  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+               10565  voluntary context switches
+               40887  involuntary context switches
+       1848255314933  instructions retired
+        599335773355  cycles elapsed
+         13590966144  peak memory footprint

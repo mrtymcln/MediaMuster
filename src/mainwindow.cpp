@@ -1060,6 +1060,12 @@ void MainWindow::onFilterByBins()
 	if (!m_binFilterDialog)
 	{
 		m_binFilterDialog = new BinFilterDialog(this);
+		connect(m_binFilterDialog, &BinFilterDialog::loadWarning, this,
+				[this](const QString &path, const QString &reason)
+				{
+					addLog(QtWarningMsg, QStringLiteral("filters"),
+						   tr("Bin loaded with incomplete results: %1: %2").arg(path, reason));
+				});
 		connect(m_binFilterDialog, &BinFilterDialog::loadError, this,
 				[this](const QString &path, const QString &reason)
 				{
@@ -1087,6 +1093,7 @@ void MainWindow::onFilterByBins()
 			[this](const BinFilter &filter, const QStringList &binNames)
 			{
 				m_binFilterActive = filter.isActive();
+				m_binFilterIncomplete = filter.resultsMayBeIncomplete();
 				m_binFilterBinNames = binNames;
 				rebuildFilterChips();
 
@@ -1936,16 +1943,16 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 	updateSelectionActions();
 	menu.addAction(m_revealAction);
 	auto *copyPathAction = menu.addAction(tr("Copy Path"),
-									   [this]()
-									   {
-										   const auto sel = selectedFiles();
-										   if (sel.isEmpty())
-											   return;
-										   QStringList paths;
-										   for (const auto &f : sel)
-											   paths << f.mediaFilePath;
-										   QApplication::clipboard()->setText(paths.join("\n"));
-									   });
+										  [this]()
+										  {
+											  const auto sel = selectedFiles();
+											  if (sel.isEmpty())
+												  return;
+											  QStringList paths;
+											  for (const auto &f : sel)
+												  paths << f.mediaFilePath;
+											  QApplication::clipboard()->setText(paths.join("\n"));
+										  });
 
 	copyPathAction->setEnabled(m_tableView->selectionModel()->hasSelection());
 	menu.addAction(m_selectRelativesAction);
@@ -2323,6 +2330,8 @@ void MainWindow::rebuildFilterChips()
 		};
 		for (const QString &name : m_binFilterBinNames)
 			addFilterChip(layout, tr("Bin: %1").arg(name), clearBinFilter);
+		if (m_binFilterIncomplete)
+			addFilterChip(layout, tr("Results may be incomplete"), clearBinFilter);
 	}
 
 	m_chipsBar->setVisible(layout->count() > 0);

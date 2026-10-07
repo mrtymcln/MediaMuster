@@ -84,6 +84,8 @@ private slots:
 	void serialized_policy_names_round_trip();
 	void unknown_serialized_policy_name_is_refused();
 	void saved_policy_and_inverse_identity_survive_restart();
+	void scan_receipt_round_trips_and_accepts_older_journals();
+	void malformed_scan_receipt_is_refused();
 	void incomplete_moves_are_not_completed_by_source_retention();
 	void no_effect_requires_identity_evidence();
 	void unsupported_schema_is_rejected_data();
@@ -170,6 +172,70 @@ void TestOpJournal::unknown_serialized_policy_name_is_refused()
 {
 	QVERIFY(!conflictPolicyFromName(QStringLiteral("bogus")).has_value());
 	QVERIFY(!conflictPolicyFromName(QString()).has_value());
+}
+
+void TestOpJournal::scan_receipt_round_trips_and_accepts_older_journals()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	auto request = requestFor(temp.path());
+	auto &item = request.items[0];
+	item.scanPath = item.src;
+	item.scanVolumeIdentifier = QStringLiteral("uuid:scan-volume");
+	item.masterMobIds = {QStringLiteral("header-master"), QStringLiteral("database-master")};
+	item.headerIdentity = OpHeaderIdentity{QStringLiteral("header-file"), {QStringLiteral("header-master")}, {}};
+	item.databaseMobIdToVerify = QStringLiteral("database-file-expectation");
+	QString path, error;
+	{
+		OpJournal journal;
+		QVERIFY2(journal.create(request, temp.path() + "/journals", error), qPrintable(error));
+		path = journal.path();
+	}
+	const auto saved = OpJournal::readOne(path);
+	QVERIFY(saved);
+	const auto &entry = saved->entries[0];
+	QCOMPARE(entry.item.scanPath, item.scanPath);
+	QCOMPARE(entry.item.scanVolumeIdentifier, item.scanVolumeIdentifier);
+	QCOMPARE(entry.item.masterMobIds, item.masterMobIds);
+	QVERIFY(entry.item.headerIdentity);
+	QCOMPARE(entry.item.headerIdentity->mobId, item.headerIdentity->mobId);
+	QCOMPARE(entry.item.headerIdentity->masterMobIds, item.headerIdentity->masterMobIds);
+	QCOMPARE(entry.item.headerIdentity->unavailableReason, QString());
+	QCOMPARE(entry.item.databaseMobIdToVerify, item.databaseMobIdToVerify);
+	auto json = entry.json();
+	auto oldItem = json["item"].toObject();
+	for (const auto *key : {"scanPath", "scanVolumeIdentifier", "masters", "headerIdentity", "databaseMobIdToVerify"})
+		oldItem.remove(key);
+	json["item"] = oldItem;
+	const auto old = OpJournal::Entry::fromJson(json);
+	QVERIFY(old);
+	QVERIFY(!old->item.headerIdentity);
+	QVERIFY(old->item.scanVolumeIdentifier.isEmpty());
+	QVERIFY(old->item.databaseMobIdToVerify.isEmpty());
+	QCOMPARE(old->item.src, item.src);
+}
+
+void TestOpJournal::malformed_scan_receipt_is_refused()
+{
+	OpJournal::Entry entry;
+	entry.id = 0;
+	entry.item.src = QStringLiteral("/source.bin");
+	entry.item.name = QStringLiteral("source.bin");
+	const auto valid = entry.json();
+	QVERIFY(OpJournal::Entry::fromJson(valid));
+	for (const auto *key : {"scanPath", "scanVolumeIdentifier", "masters", "headerIdentity", "databaseMobIdToVerify"})
+	{
+		auto json = valid;
+		auto item = json["item"].toObject();
+		item[key] = 123;
+		json["item"] = item;
+		QVERIFY2(!OpJournal::Entry::fromJson(json), key);
+	}
+	auto json = valid;
+	auto item = json["item"].toObject();
+	item["headerIdentity"] = QJsonObject{{"mob", "known"}, {"masters", QJsonArray{123}}, {"unavailableReason", ""}};
+	json["item"] = item;
+	QVERIFY(!OpJournal::Entry::fromJson(json));
 }
 
 void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
@@ -852,10 +918,14 @@ void TestOpJournal::resolved_request_uses_the_same_paths_as_its_entries()
 	newVolume.rootPath = newRoot;
 	record.volumes = {oldVolume};
 	record.entries[0].item.src = oldRoot + "/source.bin";
+	record.entries[0].item.scanPath = record.entries[0].item.src;
+	record.entries[0].item.scanVolumeIdentifier = oldVolume.identifier();
 	record.entries[0].originalSource = record.entries[0].item.src;
 	record.request.items[0].src = record.entries[0].item.src;
 	QVERIFY(OpJournal::resolve(record, error, {newVolume}));
 	QCOMPARE(record.request.items[0].src, newRoot + "/source.bin");
+	QCOMPARE(record.request.items[0].scanPath, newRoot + "/source.bin");
+	QCOMPARE(record.request.items[0].scanVolumeIdentifier, oldVolume.identifier());
 	QCOMPARE(record.entries[0].originalSource, oldRoot + "/source.bin");
 	{
 		OpJournal journal;
@@ -865,6 +935,7 @@ void TestOpJournal::resolved_request_uses_the_same_paths_as_its_entries()
 	QVERIFY(read);
 	QCOMPARE(read->request.items[0].src, read->entries[0].item.src);
 	QCOMPARE(read->request.items[0].src, newRoot + "/source.bin");
+	QCOMPARE(read->request.items[0].scanPath, newRoot + "/source.bin");
 }
 
 void TestOpJournal::interrupted_system_trash_requires_a_saved_receipt_for_undo()

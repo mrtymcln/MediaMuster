@@ -75,6 +75,20 @@ target_compile_definitions(tst_canonavb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR
 mediamuster_add_test(tst_canonavbreferences media)
 target_link_libraries(tst_canonavbreferences PRIVATE mediamuster_canon)
 
+# Live Canon matching, projections and presentation boundary.
+mediamuster_add_test(tst_canonscan media
+    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+)
+target_link_libraries(tst_canonscan PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canonscan PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_canon_omfprojection media)
+target_link_libraries(tst_canon_omfprojection PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canon_omfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_canon_mxfprojection media)
+target_link_libraries(tst_canon_mxfprojection PRIVATE mediamuster_canon)
+target_compile_definitions(tst_canon_mxfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
 mediamuster_add_test(tst_omfuid media)
@@ -151,6 +165,7 @@ mediamuster_add_test(tst_avbparser media
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
+target_link_libraries(tst_avbparser PRIVATE mediamuster_canon)
 target_compile_definitions(tst_avbparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
@@ -173,6 +188,8 @@ mediamuster_add_test(tst_avideffects media
 )
 
 mediamuster_add_test(tst_scanner media
+    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
@@ -187,7 +204,7 @@ mediamuster_add_test(tst_scanner media
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
-target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent)
+target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent mediamuster_canon)
 target_compile_definitions(tst_scanner PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
@@ -217,6 +234,7 @@ mediamuster_add_test(tst_opjournal operations
 # Rebalance folder naming and redistribution plans over synthetic Avid folders.
 # Execution contracts live in tst_fileoperations, keeping this planner-only.
 mediamuster_add_test(tst_rebalanceplanner operations
+    ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
     ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
 )
 
@@ -225,6 +243,7 @@ mediamuster_add_test(tst_rebalanceplanner operations
 mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
+    ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
     ${CMAKE_SOURCE_DIR}/src/opmanager.cpp
     ${CMAKE_SOURCE_DIR}/src/oprunner.cpp
     ${CMAKE_SOURCE_DIR}/src/operationplan.cpp
@@ -239,6 +258,7 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+target_link_libraries(tst_fileoperations PRIVATE mediamuster_canon)
 target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)
 if(APPLE)
     target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash_mac.mm)
@@ -283,7 +303,7 @@ mediamuster_add_test(tst_binfilterdialog ui
     ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
-target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent)
+target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_canon)
 set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
 # Production UI and coordinator behavior, with no alternate operation model.
@@ -293,7 +313,7 @@ list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
 list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
 mediamuster_add_test(tst_operationui ui ${_operation_ui_sources})
 target_include_directories(tst_operationui PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent)
+target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_canon)
 mediamuster_link_native_operations(tst_operationui)
 if(APPLE)
     set_source_files_properties(${CMAKE_SOURCE_DIR}/src/revealinfinder.cpp PROPERTIES LANGUAGE OBJCXX)
@@ -305,6 +325,7 @@ set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=off
 
 # Model transfer receipts use the same native volume identity as operations.
 foreach(_model_test tst_mediatablemodel tst_mediafilterproxy tst_precomputefilterdialog tst_binfilterdialog)
+    target_link_libraries(${_model_test} PRIVATE mediamuster_canon)
     target_sources(${_model_test} PRIVATE
         ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
         ${CMAKE_SOURCE_DIR}/src/nativefile.cpp)

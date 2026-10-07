@@ -190,6 +190,84 @@ These are exact documented names, not nearest-bitrate calculations. The rest of 
 
 The joined catalogue should retain source/revision citations per rule and associate the result with the observations used. This supplies the requested table-driven implementation without making a dimensions-only identification assumption.
 
+## Confirmed legacy OMF DNxHD 220 spelling — 7 October 2026
+
+`BLACK_1920x540x2_AVHD_220.omf` is **DNxHD 220**, displayed as
+`Avid DNx HQ [DNxHD 220]`. Withholding its numbered name solely because its
+OMF descriptor stores `2997/100` was too strict. The confirmed legacy spelling
+is accepted for naming; its recorded frame-rate fraction remains unchanged.
+
+The repository fixture and installed Avid supporting file have the same SHA-256:
+`e5636021776523f6676f61689bd41572092596e85529379fb6b33d202bdb18fb`.
+Its two compressed field headers, at byte offsets 0 and 458752, both record CID
+1243. The OMF descriptor independently records resolution ID 1243, 1920 × 540
+separate fields, eight-bit components and 2 × 1 chroma subsampling.
+[MediaInfo's parser](https://github.com/MediaArea/MediaInfoLib/blob/master/Source/MediaInfo/Video/File_Vc3.cpp)
+maps that CID to HD/HQ, 1920 × 1080, interlaced, eight-bit 4:2:2.
+[Avid's MediaDirector 1.0.1 release notes, PDF page 5](https://resources.avid.com/SupportFiles/attach/ReleaseNotes_MediaDirector_v1_0_1.pdf)
+list DNxHD 220 at 1080i/29.97.
+
+The user independently confirmed the `220` name in MediaInfo and VLC. A local
+read through the installed MediaInfoLib 26.05 independently reproduced the
+profile, geometry, scan type and component format; its JSON output did not
+include the numbered name. These are recorded separately in the
+[reproducible file evidence](evidence/dnxhd220-legacy-clock-2026-10-07.json).
+
+The initial correction accepted only this exact legacy OMF profile/clock combination,
+subject to the existing raster, layout, depth and sampling checks. It neither
+rounds arbitrary rates nor reads `220` from the filename. Nearby clocks and
+incompatible descriptors remain unnamed. Internally the generated alias keeps
+`EvidenceBasis::Derived`, meaning a verified name obtained from recorded facts;
+it does **not** mean an uncertain guess. The original descriptor observations
+remain `Recorded`.
+
+## Corroborated MDB decimal clocks — 7 October 2026
+
+The database-first comparison exposed fourteen additional numeric DNx names that
+were withheld even though their other descriptor facts were sufficient. All are
+in `/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/`. Seven MDB descriptors
+record `2997/100`; seven record `23976/1000`. Their file-mob `OMFI:CPNT:EditRate`
+properties repeat those exact decimal rates. The corresponding MXF descriptors
+record `30000/1001` or `24000/1001`. Each comparison matches the complete file
+MobId after applying the source's established byte convention, and agrees on
+profile, raster, layout, depth and chroma subsampling. See the
+[fourteen file comparisons](evidence/dnx-mdb-decimal-clocks-2026-10-07.json).
+
+These observations establish finite, source-qualified **name-table clock
+spellings**, not a general equality between decimal and NTSC rational rates.
+The following resolution-ID/rate pairs may use the corresponding named operating
+point in Avid's 2012 DNxHD white paper, pages 9–10:
+
+| Recorded OMF/MDB rate | Corroborated resolution IDs | Naming operating point |
+| --- | --- | --- |
+| `2997/100` | 1235, 1237, 1238, 1241, 1242, 1243, 1253 | `30000/1001` |
+| `23976/1000` | 1235, 1237, 1238, 1250, 1251, 1252, 1253 | `24000/1001` |
+
+The 1243 entry is established by the earlier Avid OMF slate; the other pairs are
+established by the linked MDB/MXF comparisons. The original OMF toolkit's
+`RationalFromFloat` in
+[`omUtils.c`](https://github.com/LWKS-Software/omfkt22/blob/main/kitomfi/omUtils.c)
+also explicitly writes `2997/100` for NTSC video. That corroborates the historical
+representation; its approximate conversion is **not** copied into MediaMuster.
+The checked local toolkit source is under
+`/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omUtils.c`, lines 581–598.
+
+The coding label must agree with the verified resolution-ID mapping, and all
+existing profile/raster/layout/depth/subsampling checks still apply. Other
+profile/rate pairs, nearby decimals, thin rasters and missing or contradictory
+facts gain no alias. This includes an uncorroborated decimal 720p/29.97 pair even
+though the rational-rate naming table contains a 720p/29.97 row.
+
+Only `ReallyOldDnx` and its bracketed presentation are affected. `Frame Rate`,
+duration arithmetic, raw property bytes and original observations retain the
+recorded fraction. The alias observation names both the recorded fraction and
+the naming operating point, with `EvidenceBasis::Derived`. No additional header
+reads are needed for these verified database combinations.
+
+Regression coverage checks all fourteen accepted profile/clock pairs, unchanged
+frame-rate and duration fractions, and rejects unsupported clocks, IDs, raster,
+layout, depth or sampling. No nearest-rate matching is used.
+
 ## Agreed catalogue storage: handwritten C++ for v1
 
 Agreed Codec presentation: `NewDnx` first, then a verified `ReallyOldDnx` alias

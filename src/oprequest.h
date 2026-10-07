@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include <QStringList>
 #include <QMetaType>
 #include <QVector>
 #include <QtGlobal>
@@ -98,10 +99,19 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 
 // MARK: - OpItem
 
+/// Header identities established during scanning. Database-only associations
+/// remain in the scan claims; they are not requirements imposed on the header.
+struct OpHeaderIdentity
+{
+	QString mobId;
+	QStringList masterMobIds;
+	QString unavailableReason; ///< A changed or contradictory header cannot authorize an operation.
+};
+
 /// One selected file, persisted in the journal so a job can resume without
 /// a rescan. Size, time and Avid IDs are scan claims, not fresh disk evidence.
 /// The runner checks filesystem identity and supplied size/time before acting;
-/// known MXF IDs also receive a header cross-check through the open handle.
+/// applicable MXF/legacy IDs also receive a header cross-check through the open handle.
 struct OpItem
 {
 	QString src;			 ///< Absolute source path; the item's identity key.
@@ -117,9 +127,16 @@ struct OpItem
 	QString policy;			  ///< Conflict policy by name; empty = none chosen.
 
 	// Scan claims about the media inside the file (empty when unknown).
-	QString mobId;		 ///< Avid MOB ID of this essence file.
-	QString masterMobId; ///< The master clip's MOB ID.
-	QString clipName;	 ///< The human name the editor knows the clip by.
+	QString mobId;			  ///< Avid MOB ID of this essence file.
+	QString masterMobId;	  ///< The master clip's MOB ID.
+	QString clipName;		  ///< The human name the editor knows the clip by.
+	QStringList masterMobIds; ///< Every established association, including database observations.
+	QString scanPath;
+	QString scanVolumeIdentifier;					///< VolumeIdentity identifier, distinct from native expectedVolumeId.
+	std::optional<OpHeaderIdentity> headerIdentity; ///< Absent in older requests/journals.
+	/// PMR/MDB file identity to verify when the scan deliberately skipped its header.
+	/// Kept separate from header-established IDs and database-only master associations.
+	QString databaseMobIdToVerify;
 
 	// Inverse operations must target the object recorded by the original job,
 	// not whichever file happens to occupy its path while building the new plan.

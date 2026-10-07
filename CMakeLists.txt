@@ -102,6 +102,15 @@ add_library(mediamuster_canon STATIC
     src/canon/avbcomponents_p.cpp
     src/canon/avbdescriptors_p.cpp
     src/canon/avbreferences.cpp
+    src/canon/projection.cpp
+    src/canon/pmrprojection.cpp
+    src/canon/mxfprojection.cpp
+    src/canon/omfprojection.cpp
+    src/canon/scanengine.cpp
+    src/avideffects.cpp
+    src/mediametadata.cpp
+    src/omfresolutions.cpp
+    src/diagnostics.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
 )
@@ -135,14 +144,9 @@ set(SOURCES
     src/volumelistwidget.cpp
     src/volumemanager.cpp
     src/mediascanner.cpp
-    src/mxfparser.cpp
+    src/canonadapter.cpp
     src/mediametadata.cpp
-    src/pmrparser.cpp
-    src/mdbparser.cpp
-    src/omfparser.cpp
-    src/omfobjects.cpp
     src/omfresolutions.cpp
-    src/bentofile.cpp
     src/avideffects.cpp
     src/mediacsv.cpp
     src/volumeidentity.cpp
@@ -153,6 +157,7 @@ set(SOURCES
     src/opcopier.cpp
     src/oprunner.cpp
     src/operationplan.cpp
+    src/opscanreceipt.cpp
     src/opmanager.cpp
     src/operationrecovery.cpp
     src/avbparser.cpp
@@ -215,6 +220,7 @@ target_include_directories(MediaMuster PRIVATE
 )
 
 target_link_libraries(MediaMuster PRIVATE
+    mediamuster_canon
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui

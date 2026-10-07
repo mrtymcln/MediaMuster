@@ -1,0 +1,96 @@
+{
+  "checkedDate": "2026-10-07",
+  "fixture": "tests/fixtures/omf/avid_supporting/BLACK_1920x540x2_AVHD_220.omf",
+  "installedSource": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/BLACK_1920x540x2_AVHD_220.omf",
+  "sizeBytes": 936464,
+  "sha256": "e5636021776523f6676f61689bd41572092596e85529379fb6b33d202bdb18fb",
+  "installedCopyMatches": true,
+  "userCorroboration": "User reports MediaInfo and VLC identify this file as DNxHD 220.",
+  "independentMediaInfo": {
+    "creatingLibrary": {
+      "name": "MediaInfoLib",
+      "version": "26.05",
+      "url": "https://mediaarea.net/MediaInfo"
+    },
+    "media": {
+      "@ref": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_1920x540x2_AVHD_220.omf",
+      "track": [
+        {
+          "@type": "General",
+          "VideoCount": "1",
+          "FileExtension": "omf",
+          "Format": "VC-3",
+          "FileSize": "936464",
+          "OverallBitRate_Mode": "CBR",
+          "File_Created_Date": "2026-09-02 02:04:57 UTC",
+          "File_Created_Date_Local": "2026-09-02 12:04:57",
+          "File_Modified_Date": "2026-09-02 02:04:57 UTC",
+          "File_Modified_Date_Local": "2026-09-02 12:04:57"
+        },
+        {
+          "@type": "Video",
+          "Format": "VC-3",
+          "Format_Version": "1",
+          "Format_Profile": "HD",
+          "Format_Level": "HQ",
+          "BitRate_Mode": "CBR",
+          "Width": "1920",
+          "Height": "1080",
+          "PixelAspectRatio": "1.000",
+          "DisplayAspectRatio": "1.778",
+          "ColorSpace": "YUV",
+          "ChromaSubsampling": "4:2:2",
+          "BitDepth": "8",
+          "ScanType": "Interlaced",
+          "ScanOrder": "TFF"
+        }
+      ]
+    }
+  },
+  "mediaInfoLimit": "Installed MediaInfoLib 26.05 exposes VC-3, HD, HQ, 1920x1080, 8-bit, 4:2:2, interlaced; its JSON does not print the numeric 220 name.",
+  "rawCompressedFieldHeaders": [
+    {
+      "offset": 0,
+      "prefix44Hex": "00000280010280a000000000000000000000000000000000021c078000021c0000388c0000000000000004db",
+      "compressionId": 1243,
+      "activeLines": 540,
+      "samplesPerLine": 1920
+    },
+    {
+      "offset": 458752,
+      "prefix44Hex": "00000280010380a000000000000000000000000000000000021c078000021c0000388c0000000000000004db",
+      "compressionId": 1243,
+      "activeLines": 540,
+      "samplesPerLine": 1920
+    }
+  ],
+  "omfDescriptor": {
+    "SampleRate": {
+      "numerator": 2997,
+      "denominator": 100,
+      "encodingHex": "b50b000064000000"
+    },
+    "DIDResolutionID": 1243,
+    "StoredWidth": 1920,
+    "StoredHeight": 540,
+    "FrameLayout": 1,
+    "ComponentWidth": 8,
+    "HorizontalSubsampling": 2,
+    "VerticalSubsampling": 1
+  },
+  "primarySources": [
+    {
+      "url": "https://resources.avid.com/SupportFiles/attach/ReleaseNotes_MediaDirector_v1_0_1.pdf",
+      "support": "PDF page5 lists DNxHD220 at1080i29.97."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/MediaArea/MediaInfoLib/master/Source/MediaInfo/Video/File_Vc3.cpp",
+      "support": "CID1243 maps to HD/HQ, interlaced1920x1080, eight-bit422; header CID is at offset0x28."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/master/libavcodec/dnxhddata.c",
+      "support": "CID1243 table records interlaced1920x1080,917504bytes/frame,458752bytes/field,eight-bit,185/220 nominal alternatives."
+    }
+  ],
+  "conclusion": "Avid DNx HQ [DNxHD 220]. Exact legacy OMF naming-clock case is accepted for profile1243 and validated descriptor geometry/layout/depth/sampling; no general nearest-rate rule. Recorded rate remains2997/100."
+}

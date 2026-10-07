@@ -38,8 +38,8 @@ class QDropEvent;
 ///     re-ticking doesn't disturb prior steps.
 ///
 /// The proxy matches each row's file identity against the MSML references, in order.
-/// Loading is asynchronous. Failed or unsupported bins are not retained;
-/// errors are reported through loadError for the main-window console.
+/// Loading is asynchronous. Unreadable bins report loadError; readable partial
+/// bins remain available with loadWarning and persistent filter warnings.
 class BinFilterDialog : public QDialog
 {
 	Q_OBJECT
@@ -78,6 +78,9 @@ signals:
 	/// Rejected local file or unsuccessful retained load, for console reporting.
 	/// Drag rejections emit on entry; cancelled/removed loads remain silent.
 	void loadError(const QString &filePath, const QString &reason);
+
+	/// Readable partial bins remain available, with their uncertainty visible.
+	void loadWarning(const QString &filePath, const QString &reason);
 
 	/// Current successfully parsed bins, for provenance-aware enrichment.
 	/// Emitted once when a loading batch settles, or immediately when bins

@@ -3,6 +3,7 @@
 // OMF fixtures pin compatibility with the PMR/file identities already shipped.
 
 #include "avbparser.h"
+#include "canon/avbreferences.h"
 #include "mobid.h"
 #include "testavb.h"
 
@@ -81,17 +82,18 @@ private slots:
 	void media_file_ids_only_use_msml_locators_data();
 	void media_file_ids_only_use_msml_locators();
 	void null_locator_ids_do_not_enable_legacy_fallback();
-	void malformed_locator_clears_file_ids();
+	void malformed_locator_keeps_other_proven_file_ids();
 	void binary_only_master_data();
 	void binary_only_master();
 	void source_and_mob_references_and_owned_metadata_data();
 	void source_and_mob_references_and_owned_metadata();
 	void macroman_names_are_decoded_without_utf8_extension();
-	void malformed_utf8_metadata_is_invalid();
+	void malformed_utf8_metadata_keeps_qualified_legacy_name();
+	void conflicting_modern_names_do_not_select_legacy();
 	void mob_looking_comment_is_not_membership();
 	void valid_empty_bin_is_complete_data();
 	void valid_empty_bin_is_complete();
-	void strict_prefixes_are_invalid();
+	void strict_prefixes_never_claim_complete();
 	void malformed_counts_lengths_and_references_data();
 	void malformed_counts_lengths_and_references();
 	void file_larger_than_256_mib_preserves_identities();
@@ -195,7 +197,9 @@ void TestAvbParser::media_file_ids_only_use_msml_locators()
 	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed)}); // duplicate
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("locators.avb"), d.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY(result.complete);
+	// This authored source clip has no established target in the bin.
+	QVERIFY(!result.complete);
+	QVERIFY(!result.warnings.isEmpty());
 	if (typed)
 	{
 		QCOMPARE(result.mediaFileIds.fullIds, (QSet<QString>{MobId::format(TestAvb::Source), MobId::format(TestAvb::Other)}));
@@ -210,7 +214,7 @@ void TestAvbParser::media_file_ids_only_use_msml_locators()
 	QCOMPARE(result.mobs.first().name, QStringLiteral("Owned clip"));
 
 	const auto noLocators = AvbParser::parse(TestAvb::write(tmp.filePath("other-records.avb"), graph(big).bytes()));
-	QVERIFY(noLocators.valid && noLocators.complete);
+	QVERIFY(noLocators.valid && !noLocators.complete);
 	QVERIFY(noLocators.mediaFileIds.isEmpty());
 }
 
@@ -226,12 +230,13 @@ void TestAvbParser::null_locator_ids_do_not_enable_legacy_fallback()
 					 {"MSML", TestAvb::mediaLocator(big, TestAvb::Source, true, QByteArray(32, '\0'))},
 					 {"MSML", TestAvb::mediaLocator(big, QByteArray(32, '\0'), false)}};
 		const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("null.avb"), d.bytes()));
-		QVERIFY2(result.valid && result.complete, qPrintable(result.error));
+		QVERIFY2(result.valid, qPrintable(result.error));
+		QVERIFY(!result.complete); // No usable identity: keep the reason, never fall back.
 		QVERIFY(result.mediaFileIds.isEmpty());
 	}
 }
 
-void TestAvbParser::malformed_locator_clears_file_ids()
+void TestAvbParser::malformed_locator_keeps_other_proven_file_ids()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -244,8 +249,10 @@ void TestAvbParser::malformed_locator_clears_file_ids()
 				 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source, false)},
 				 {"MSML", bad}};
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("bad.avb"), d.bytes()));
-	QVERIFY(!result.valid);
-	QVERIFY(result.mediaFileIds.isEmpty());
+	QVERIFY(result.valid && !result.complete);
+	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
+	QCOMPARE(result.mediaFileIds.legacyKeys.size(), 1); // Only the separately complete legacy locator.
+	QVERIFY(!result.warnings.isEmpty());
 }
 
 void TestAvbParser::binary_only_master_data()
@@ -300,7 +307,9 @@ void TestAvbParser::source_and_mob_references_and_owned_metadata()
 	auto d = graph(big);
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("renamed-current-bin.avb"), d.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY2(result.complete, qPrintable(result.warnings.join(';')));
+	// This authored source clip has no established target in the bin.
+	QVERIFY(!result.complete);
+	QVERIFY(!result.warnings.isEmpty());
 	QCOMPARE(compositionIds(result), QSet<QString>{MobId::format(TestAvb::Master)});
 	QVERIFY(result.mediaFileIds.isEmpty());
 	const auto owner = std::find_if(result.mobs.cbegin(), result.mobs.cend(), [](const AvbMob &mob)
@@ -310,6 +319,21 @@ void TestAvbParser::source_and_mob_references_and_owned_metadata()
 	QCOMPARE(owner->originalBin, QString::fromUtf8("東京"));
 	QCOMPARE(owner->originalBinUid, QStringLiteral("1234567890abcdef"));
 	QVERIFY(owner->originalBin != result.displayName);
+	QVERIFY(result.source && result.resolution);
+	QCOMPARE(owner->nameObservations.size(), 1);
+	QCOMPARE(owner->nameObservations[0].property, QStringLiteral("Component.name"));
+	QCOMPARE(owner->nameObservations[0].objectIdentity, QStringLiteral("2"));
+	QCOMPARE(owner->nameObservations[0].snapshot, result.source->snapshot);
+	QCOMPARE(owner->nameObservations[0].value.toString(), owner->name);
+	QCOMPARE(owner->nameObservations[0].textEncoding, Canon::TextEncoding::MacRoman);
+	QCOMPARE(owner->nameObservations[0].textEncodingBasis, EvidenceBasis::Recorded);
+	QCOMPARE(owner->originalBinObservations.size(), 2);
+	QVERIFY(!owner->originalBinObservations[0].eligible);
+	QVERIFY(owner->originalBinObservations[1].eligible);
+	QCOMPARE(owner->originalBinObservations[1].property, QStringLiteral("BinRef.name_utf8"));
+	QCOMPARE(owner->originalBinObservations[1].objectIdentity, QStringLiteral("5"));
+	QCOMPARE(owner->originalBinObservations[1].textEncoding, Canon::TextEncoding::Utf8);
+	QCOMPARE(owner->originalBinObservations[1].textEncodingBasis, EvidenceBasis::Recorded);
 }
 
 void TestAvbParser::mob_looking_comment_is_not_membership()
@@ -336,22 +360,55 @@ void TestAvbParser::macroman_names_are_decoded_without_utf8_extension()
 	d.objects[4].payload = TestAvb::binReference(false, QByteArray("caf\x8e originals"), {});
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("macroman.avb"), d.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY(result.complete);
+	// This authored source clip has no established target in the bin.
+	QVERIFY(!result.complete);
+	QVERIFY(!result.warnings.isEmpty());
 	QCOMPARE(result.mobs.size(), 1);
 	QCOMPARE(result.mobs.first().name, QStringLiteral("café"));
 	QCOMPARE(result.mobs.first().originalBin, QStringLiteral("café originals"));
+	QCOMPARE(result.mobs.first().nameObservations.first().textEncoding, Canon::TextEncoding::MacRoman);
+	QCOMPARE(result.mobs.first().nameObservations.first().textEncodingBasis, EvidenceBasis::Recorded);
+	QCOMPARE(result.mobs.first().originalBinObservations.first().textEncoding, Canon::TextEncoding::MacRoman);
 }
 
-void TestAvbParser::malformed_utf8_metadata_is_invalid()
+void TestAvbParser::malformed_utf8_metadata_keeps_qualified_legacy_name()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	auto d = graph(false);
 	d.objects[4].payload = TestAvb::binReference(false, "Fallback", QByteArray::fromHex("c328"));
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("invalid-utf8.avb"), d.bytes()));
-	QVERIFY(!result.valid);
-	QVERIFY(!result.error.isEmpty());
+	QVERIFY(result.valid && !result.complete);
+	QVERIFY(!result.warnings.isEmpty());
 	QVERIFY(result.mediaFileIds.isEmpty());
+	QCOMPARE(result.mobs.first().originalBin, QStringLiteral("Fallback"));
+	const auto &values = result.mobs.first().originalBinObservations;
+	QCOMPARE(values.size(), 2);
+	QCOMPARE(values[1].readState, PropertyReadState::Unreadable);
+	QVERIFY(!values[1].eligible);
+}
+
+void TestAvbParser::conflicting_modern_names_do_not_select_legacy()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	auto d = graph(false);
+	auto reference = TestAvb::binReference(false, "Legacy", "First modern");
+	reference.chop(1);
+	TestAvb::Bytes extension(false);
+	extension.tags(1, 1);
+	extension.u8(76);
+	extension.string(QByteArray(2, '\0') + "Second modern");
+	extension.u8(3);
+	d.objects[4].payload = reference + extension.data;
+	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("conflicting-names.avb"), d.bytes()));
+	QVERIFY(result.valid);
+	QVERIFY(!result.warnings.isEmpty());
+	QVERIFY(result.mobs.first().originalBin.isEmpty());
+	const auto &values = result.mobs.first().originalBinObservations;
+	QCOMPARE(values.size(), 3);
+	QVERIFY(!values[0].eligible);
+	QVERIFY(values[1].eligible && values[2].eligible);
 }
 
 void TestAvbParser::valid_empty_bin_is_complete_data()
@@ -374,21 +431,28 @@ void TestAvbParser::valid_empty_bin_is_complete()
 	QVERIFY(result.error.isEmpty());
 }
 
-void TestAvbParser::strict_prefixes_are_invalid()
+void TestAvbParser::strict_prefixes_never_claim_complete()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	for (bool big : {false, true})
 	{
-		const auto full = TestAvb::masterBin({TestAvb::Master}, big);
+		TestAvb::Document d;
+		d.bigEndian = big;
+		d.objects = {{"ABIN", TestAvb::bin(big, {2})}, {"CMPO", TestAvb::composition(big)}};
+		const auto full = d.bytes();
+		const auto rootEnd = d.chunkOffsets[0] + 8 + d.objects[0].payload.size();
 		for (qsizetype length = 0; length < full.size(); ++length)
 		{
-			QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("^cannot parse .*truncated\\.avb.*")));
+			const bool readableRoot = length >= rootEnd;
+			if (!readableRoot)
+				QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("^cannot parse .*truncated\\.avb.*")));
 			const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("truncated.avb"), full.left(length)));
-			QVERIFY2(!result.valid, qPrintable(QString("Accepted truncated %1-byte document (BE=%2)").arg(length).arg(big)));
-			QVERIFY(!result.error.isEmpty());
+			QCOMPARE(result.valid, readableRoot);
+			QVERIFY(!result.complete);
+			QVERIFY(readableRoot ? !result.warnings.isEmpty() : !result.error.isEmpty());
 			QVERIFY(result.mediaFileIds.isEmpty());
-			QVERIFY(result.mobs.isEmpty());
+			QVERIFY(result.mobs.isEmpty()); // No complete CMPO payload is available in these prefixes.
 		}
 	}
 }
@@ -396,13 +460,14 @@ void TestAvbParser::strict_prefixes_are_invalid()
 void TestAvbParser::malformed_counts_lengths_and_references_data()
 {
 	QTest::addColumn<QByteArray>("bytes");
+	QTest::addColumn<bool>("readable");
 	for (bool big : {false, true})
 	{
 		auto d = graph(big);
 		const auto full = d.bytes();
-		const auto add = [big](const char *name, const QByteArray &bytes)
+		const auto add = [big](const char *name, const QByteArray &bytes, bool readable = true)
 		{
-			QTest::newRow(qPrintable(QString("%1-%2").arg(big ? "BE" : "LE", name))) << bytes;
+			QTest::newRow(qPrintable(QString("%1-%2").arg(big ? "BE" : "LE", name))) << bytes << readable;
 		};
 		auto broken = full;
 		TestAvb::replaceU32(broken, d.countOffset, 0xffffffff, big);
@@ -412,13 +477,13 @@ void TestAvbParser::malformed_counts_lengths_and_references_data()
 		add("undeclared-trailing-object", broken);
 		broken = full;
 		TestAvb::replaceU32(broken, d.rootOffset, 0, big);
-		add("null-root", broken);
+		add("null-root", broken, false);
 		broken = full;
 		TestAvb::replaceU32(broken, d.rootOffset, 7, big);
-		add("root-out-of-range", broken);
+		add("root-out-of-range", broken, false);
 		broken = full;
 		TestAvb::replaceU32(broken, d.rootOffset, 2, big);
-		add("root-is-not-bin", broken);
+		add("root-is-not-bin", broken, false);
 		broken = full;
 		TestAvb::replaceU32(broken, d.chunkOffsets[1] + 4, 0xffffffff, big);
 		add("chunk-size-overflow", broken);
@@ -446,14 +511,16 @@ void TestAvbParser::malformed_counts_lengths_and_references_data()
 void TestAvbParser::malformed_counts_lengths_and_references()
 {
 	QFETCH(QByteArray, bytes);
+	QFETCH(bool, readable);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("broken.avb"), bytes));
-	QVERIFY(!result.valid);
+	QCOMPARE(result.valid, readable);
 	QVERIFY(!result.complete);
-	QVERIFY(!result.error.isEmpty());
+	QVERIFY(readable ? !result.warnings.isEmpty() : !result.error.isEmpty());
 	QVERIFY(result.mediaFileIds.isEmpty());
-	QVERIFY(result.mobs.isEmpty());
+	if (!readable)
+		QVERIFY(result.mobs.isEmpty());
 }
 
 void TestAvbParser::file_larger_than_256_mib_preserves_identities()
@@ -462,7 +529,7 @@ void TestAvbParser::file_larger_than_256_mib_preserves_identities()
 	QVERIFY(tmp.isValid());
 	TestAvb::Document document;
 	document.objects = {{"ABIN", TestAvb::bin(false, {3})},
-						{"FILE", QByteArray(1, '\x03')},
+						{"ZZZZ", QByteArray(1, '\x03')},
 						{"CMPO", TestAvb::composition(false)}};
 	auto bytes = document.bytes();
 	constexpr quint32 payloadSize = 256 * 1024 * 1024 + 1;
@@ -479,7 +546,8 @@ void TestAvbParser::file_larger_than_256_mib_preserves_identities()
 	file.close();
 	const auto result = AvbParser::parse(file.fileName());
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY(result.complete);
+	QVERIFY(!result.complete); // Opaque unknown objects cannot establish complete coverage.
+	QVERIFY(!result.warnings.isEmpty());
 	QCOMPARE(compositionIds(result), QSet<QString>{MobId::format(TestAvb::Master)});
 	QCOMPARE(result.mobs.size(), 1);
 }
@@ -496,7 +564,7 @@ void TestAvbParser::large_object_inventory_has_no_policy_limit()
 	constexpr quint32 extraObjects = 2'097'152;
 	TestAvb::replaceU32(bytes, document.countOffset, extraObjects + 2);
 	TestAvb::Bytes object(false);
-	object.fourcc("FILE");
+	object.fourcc("ZZZZ");
 	object.u32(1);
 	object.u8(3);
 	QFile file(tmp.filePath("many-objects.avb"));
@@ -507,7 +575,8 @@ void TestAvbParser::large_object_inventory_has_no_policy_limit()
 	file.close();
 	const auto result = AvbParser::parse(file.fileName());
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY(result.complete);
+	QVERIFY(!result.complete); // Opaque unknown objects cannot establish complete coverage.
+	QVERIFY(!result.warnings.isEmpty());
 	QCOMPARE(compositionIds(result), QSet<QString>{MobId::format(TestAvb::Master)});
 }
 
@@ -551,7 +620,9 @@ void TestAvbParser::native_legacy_words_are_decoded()
 	d.objects[5].payload = TestAvb::mobReference(big, TestAvb::Other, false);
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("native-words.avb"), d.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY(result.complete);
+	// This authored source clip has no established target in the bin.
+	QVERIFY(!result.complete);
+	QVERIFY(!result.warnings.isEmpty());
 	const QSet<QString> expected{MobId::format(legacy(TestAvb::Master))};
 	QCOMPARE(compositionIds(result), expected);
 }
@@ -576,12 +647,13 @@ void TestAvbParser::terminal_source_nulls_are_ignored()
 	d.objects[5].payload = TestAvb::mobReference(false, nullId, typed);
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("null-source.avb"), d.bytes()));
 	QVERIFY2(result.valid, qPrintable(result.error));
-	QVERIFY(result.complete);
+	QCOMPARE(result.complete, typed); // Legacy-only terminal meaning stays qualified.
 	QCOMPARE(compositionIds(result), QSet<QString>{MobId::format(TestAvb::Master)});
 	QVERIFY(result.mediaFileIds.isEmpty());
 	d.objects[1].payload = TestAvb::composition(false, nullId, "Null master", 4, {3}, 0, typed);
 	const auto nullMaster = AvbParser::parse(TestAvb::write(tmp.filePath("null-master.avb"), d.bytes()));
-	QVERIFY2(nullMaster.valid && nullMaster.complete, qPrintable(nullMaster.error));
+	QVERIFY2(nullMaster.valid, qPrintable(nullMaster.error));
+	QCOMPARE(nullMaster.complete, typed);
 	QVERIFY(nullMaster.mobs.isEmpty());
 }
 
@@ -603,6 +675,7 @@ void TestAvbParser::typed_mob_field_framing_is_validated_data()
 {
 	QTest::addColumn<QByteArray>("bytes");
 	QTest::addColumn<bool>("valid");
+	QTest::addColumn<bool>("resolved");
 	for (const bool big : {false, true})
 	{
 		const QVector<TestAvb::Document::Object> objects = {
@@ -614,7 +687,7 @@ void TestAvbParser::typed_mob_field_framing_is_validated_data()
 				TestAvb::Document d;
 				d.bigEndian = big;
 				d.objects = {{"ABIN", TestAvb::bin(big)}, {object.type, payload}};
-				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(object.type), big ? "BE" : "LE", label))) << d.bytes() << valid;
+				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(object.type), big ? "BE" : "LE", label))) << d.bytes() << valid << (object.type != "SCLP" && object.type != "ASPI");
 			};
 			add("valid", object.payload, true);
 			// Each fixture ends with a 49-byte typed ID and the object terminator.
@@ -628,7 +701,7 @@ void TestAvbParser::typed_mob_field_framing_is_validated_data()
 			TestAvb::replaceU32(broken, broken.size() - 13, 0x7fffffff, big);
 			add("bad-material-length", broken, false);
 			broken = object.payload;
-			broken.remove(broken.size() - 2, 1);
+			broken.chop(2); // Remove one identity byte and the terminator: typed field cannot fit.
 			add("truncated-value", broken, false);
 		}
 	}
@@ -638,14 +711,15 @@ void TestAvbParser::typed_mob_field_framing_is_validated()
 {
 	QFETCH(QByteArray, bytes);
 	QFETCH(bool, valid);
+	QFETCH(bool, resolved);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("typed-fields.avb"), bytes));
-	QCOMPARE(result.valid, valid);
-	QCOMPARE(result.complete, valid);
+	QVERIFY(result.valid); // The independently framed root is still usable.
+	QCOMPARE(result.complete, valid && resolved);
 	if (!valid)
 	{
-		QVERIFY(!result.error.isEmpty());
+		QVERIFY(!result.warnings.isEmpty());
 		QVERIFY(result.mobs.isEmpty());
 		QVERIFY(result.mediaFileIds.isEmpty());
 	}
@@ -697,15 +771,12 @@ void TestAvbParser::dependency_lists_validate_references()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto result = AvbParser::parse(TestAvb::write(tmp.filePath("dependency.avb"), bytes));
-	QCOMPARE(result.valid, valid);
-	QCOMPARE(result.complete, valid);
-	if (valid)
-		QCOMPARE(compositionIds(result), QSet<QString>{MobId::format(TestAvb::Master)});
-	else
-	{
-		QVERIFY(!result.error.isEmpty());
-		QVERIFY(result.mediaFileIds.isEmpty());
-	}
+	QVERIFY(result.valid);
+	QVERIFY(!result.complete); // Missing references qualify coverage, not known independent fields.
+	QVERIFY(!result.warnings.isEmpty());
+	QCOMPARE(compositionIds(result), QSet<QString>{MobId::format(TestAvb::Master)});
+	QVERIFY(result.mediaFileIds.isEmpty());
+	Q_UNUSED(valid);
 }
 
 void TestAvbParser::unknown_component_version_is_incomplete()

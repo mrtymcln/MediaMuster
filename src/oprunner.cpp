@@ -2,7 +2,10 @@
 #include "operationplan.h"
 #include "conventions.h"
 #include "mobid.h"
-#include "mxfparser.h"
+#include "canon/mxfreader.h"
+#include "canon/legacyreader.h"
+#include "canon/projection.h"
+#include "canon/scanengine.h"
 #include "pathkey.h"
 #include <QDateTime>
 #include <QDir>
@@ -97,26 +100,62 @@ namespace
 	}
 	bool mediaIdentityMatches(const OpItem &item, OpFile &source, QString &error)
 	{
-		if (!Conventions::hasMxfExtension(item.src))
-			return true;
-		const bool fileKnown = !item.mobId.isEmpty() && !MobId::isAllZero(item.mobId);
-		const bool masterKnown = !item.masterMobId.isEmpty() && !MobId::isAllZero(item.masterMobId);
-		if (!fileKnown && !masterKnown)
-			return true;
-		const auto h = MxfParser::parseHeader(source.io());
-		auto matches = [](const QString &expected, const QString &actual)
+		if (item.headerIdentity && !item.headerIdentity->unavailableReason.isEmpty())
 		{
-			return !actual.isEmpty() && !MobId::isAllZero(actual) &&
-				   (expected == actual || expected == MobId::swapMaterialByteOrder(actual));
-		};
-		if ((fileKnown && !matches(item.mobId, h.fileMobId)) ||
-			(masterKnown && (!h.hasMaterialPackage || !matches(item.masterMobId, h.umid))))
+			error = item.headerIdentity->unavailableReason;
+			return false;
+		}
+		const bool mxf = Conventions::hasMxfExtension(item.src);
+		if (!mxf && !Conventions::hasOmfEraExtension(item.src))
+			return true;
+		const QString fileId = !item.databaseMobIdToVerify.isEmpty() ? item.databaseMobIdToVerify
+							   : item.headerIdentity				 ? item.headerIdentity->mobId
+																	 : item.mobId;
+		QStringList expectedMasters = item.headerIdentity					 ? item.headerIdentity->masterMobIds
+									  : item.databaseMobIdToVerify.isEmpty() ? QStringList{item.masterMobId}
+																			 : QStringList{};
+		expectedMasters.removeIf([](const QString &id)
+								 { return id.isEmpty() || MobId::isAllZero(id); });
+		const bool fileKnown = !fileId.isEmpty() && !MobId::isAllZero(fileId);
+		if (!fileKnown && expectedMasters.isEmpty())
+			return true;
+		const Canon::Cancellation cancellation;
+		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			mxf ? MetadataSource::Mxf : MetadataSource::Omf, item.src, QFileInfo(item.src).lastModified(), SourceReadState::NotRead});
+		const auto parsed = mxf ? Canon::MxfReader{}.read(source.io(), {receipt, cancellation})
+								: Canon::LegacyReader{}.read(source.io(), {receipt, cancellation});
+		const auto projection = mxf ? Canon::projectMxf(parsed, cancellation) : Canon::projectOmf(parsed, cancellation);
+		MediaEvidence evidence;
+		for (const auto &file : projection.files)
+			Canon::appendEvidence(evidence, file.evidence);
+		Canon::selectMetadata(evidence);
+		const QString actualFile = evidence.selected(MediaProperty::FileMobId).value.toString();
+		const QStringList masters = evidence.selected(MediaProperty::MasterMobId).value.toStringList();
+		const bool mastersMatch = std::all_of(expectedMasters.cbegin(), expectedMasters.cend(),
+											  [&](const QString &id)
+											  { return masters.contains(id); });
+		if ((fileKnown && fileId != actualFile) || !mastersMatch)
 		{
-			error = "The file's Avid identity is missing or differs from the scan. Rescan before "
-					"proceeding.";
+			error = item.databaseMobIdToVerify.isEmpty()
+						? QStringLiteral("The file's Avid identity is missing or differs from the scan. Rescan before proceeding.")
+						: QStringLiteral("The opened media header cannot confirm the PMR/MDB FileMobId selected during scanning. The identity is missing, unreadable or different; rescan before proceeding.");
 			return false;
 		}
 		return true;
+	}
+	bool scanLocationMatches(const OpItem &item, QString &error)
+	{
+		if (item.scanPath.isEmpty())
+			return true; // Older requests and operation-only maintenance have no scan receipt.
+		if (QDir::cleanPath(item.scanPath) != QDir::cleanPath(item.src))
+			error = QStringLiteral("The selected path differs from its scan receipt. Rescan before proceeding.");
+		else if (item.scanVolumeIdentifier.isEmpty())
+			error = QStringLiteral("The scan did not establish the source volume identity. Rescan before proceeding.");
+		else if (item.modifiedMs < 0)
+			error = QStringLiteral("The scan did not establish the source modification time. Rescan before proceeding.");
+		else if (VolumeIdentity::capture(item.src).identifier() != item.scanVolumeIdentifier)
+			error = QStringLiteral("The source volume identity is unavailable or differs from the scan. Rescan before proceeding.");
+		return error.isEmpty();
 	}
 	void keepArtifact(OpJournal::Entry &e, const QString &path)
 	{
@@ -665,7 +704,7 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		(e.item.bytes >= 0 && e.item.bytes != current.size) ||
 		(e.item.modifiedMs >= 0 &&
 		 QFileInfo(e.item.src).lastModified().toMSecsSinceEpoch() != e.item.modifiedMs) ||
-		!mediaIdentityMatches(e.item, *source, error) || !source->stillAt(e.item.src, current))
+		!scanLocationMatches(e.item, error) || !mediaIdentityMatches(e.item, *source, error) || !source->stillAt(e.item.src, current))
 	{
 		if (error.isEmpty())
 			error =

@@ -1,4 +1,5 @@
 #include "rebalanceplanner.h"
+#include "opscanreceipt.h"
 #include "mobid.h"
 #include "pathkey.h"
 #include "conventions.h"
@@ -351,7 +352,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 			return;
 		plan.ops.append({m.file->mediaFilePath, dest, m.file->masterMobId, m.file->sizeBytes,
 						 m.file->modified.isValid() ? m.file->modified.toMSecsSinceEpoch() : -1,
-						 m.file->fileMobId});
+						 m.file->fileMobId, opItemFromMediaFile(*m.file)});
 		projected[m.folder] -= 1;
 		projected[dest] += 1;
 	};
@@ -431,7 +432,8 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		{
 			NumberedMxfFolder cand{prefix, n};
 			const auto membersAtDestination = std::count_if(g.members.cbegin(), g.members.cend(),
-				[&cand](const IndexedMedia &member) { return member.folder == cand; });
+															[&cand](const IndexedMedia &member)
+															{ return member.folder == cand; });
 			// These members are already included in the destination's count.
 			if (projected.value(cand, 0) + size - membersAtDestination <= Conventions::kFolderMax)
 			{
@@ -526,13 +528,16 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 		{
 			const RebalanceMove &op = plan.ops[idx];
 			const QString fileName = QFileInfo(op.srcPath).fileName();
-			OpItem it;
+			OpItem it = op.scannedItem.value_or(OpItem{});
 			it.src = op.srcPath;
 			it.name = fileName;
 			it.bytes = op.sizeBytes;
-			it.modifiedMs = op.modifiedMs;
-			it.masterMobId = op.masterMobId;
-			it.mobId = op.fileMobId;
+			if (!op.scannedItem)
+			{
+				it.modifiedMs = op.modifiedMs;
+				it.masterMobId = op.masterMobId;
+				it.mobId = op.fileMobId;
+			}
 			it.renameDst =
 				plan.mxfRootPath + QLatin1Char('/') + op.dest.display() + QLatin1Char('/') + fileName;
 			it.groupKey = compKey;

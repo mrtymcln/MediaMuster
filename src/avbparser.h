@@ -1,12 +1,20 @@
 #pragma once
 
 #include "binfilereferences.h"
+#include "mediaevidence.h"
 
 #include <QString>
 #include <QStringList>
 #include <QVector>
 #include <QMetaType>
 #include <atomic>
+#include <QSharedPointer>
+
+namespace Canon
+{
+	struct ParsedSource;
+	struct AvbResolution;
+}
 
 struct AvbMob
 {
@@ -21,6 +29,8 @@ struct AvbMob
 	QString originalBinUid;
 	int mobType = 0;
 	int usageCode = 0;
+	QVector<MetadataObservation> nameObservations;
+	QVector<MetadataObservation> originalBinObservations;
 };
 
 struct AvbBin
@@ -34,16 +44,19 @@ struct AvbBin
 	/// Full file IDs and explicitly legacy references from MSML locators.
 	BinFileReferences mediaFileIds;
 
-	/// Filtering needs both valid and complete so unsupported references cannot
-	/// silently supply a partial operand.
-	/// This doesn't mean every effect or timeline has been checked.
+	/// Shared source evidence survives worker delivery and filter snapshots.
+	QSharedPointer<const Canon::ParsedSource> source;
+	QSharedPointer<const Canon::AvbResolution> resolution;
+
+	/// Readability and reference coverage are separate. Partial results remain
+	/// usable with persistent warnings; empty reference sets create no operand.
 	bool valid = false;
 	bool complete = false;
 	QString error;
 	QStringList warnings;
 
 	/// Usable for filtering and metadata; loading state belongs to the dialog.
-	[[nodiscard]] bool isUsable() const noexcept { return valid && complete; }
+	[[nodiscard]] bool isUsable() const noexcept { return valid; }
 };
 
 Q_DECLARE_METATYPE(AvbBin)

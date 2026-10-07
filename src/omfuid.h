@@ -48,15 +48,16 @@ namespace OmfUid
 
 	/// [AVID — DO NOT CHANGE] The 8 bytes Avid puts after the core — the
 	/// AAF SDK's "prefix 42" material marker (7f7f2a80 is 42 padded). This
-	/// is what keeps the two forms apart: an MXF-era MobID carries a per-host
-	/// random here (8e40da9649f531f4 in every specimen above), never this.
-	/// isWrappedOmfId therefore requires prefix AND suffix.
+	/// identifies the prefix-42 family. MXF can carry that family too: the AAF
+	/// SDK generator used by libMXF writes these same bytes. Prefix and suffix
+	/// establish the identity family, not the container or its byte order.
 	inline constexpr unsigned char kSuffix[8] = {0x06, 0x0e, 0x2b, 0x34, 0x7f, 0x7f, 0x2a, 0x80};
 
 	/// kPrefix + eight + kSuffix. Deliberately NO middle-field swap: the
-	/// wrap is Avid's own byte layout, not an MXF UMID, so the PMR/MDB
-	/// versus MXF/AVB byte-order distinction MobId::swapMaterialByteOrder exists
-	/// for does not apply. Caller guarantees kPmrSize valid bytes.
+	/// input already has the PMR/database byte order. The same identity read
+	/// from an MXF UMID property must instead have its material numeric fields
+	/// converted from that property's wire order. Caller guarantees kPmrSize
+	/// valid bytes in the canonical database representation.
 	inline std::array<unsigned char, MobId::kRawSize> toMobIdBytes(const unsigned char *eight)
 	{
 		std::array<unsigned char, MobId::kRawSize> out;
@@ -103,9 +104,9 @@ namespace OmfUid
 		return {};
 	}
 
-	/// True when a canonical hex is a wrapped OMF-era id: Avid's prefix,
-	/// any core, Avid's suffix. The dotted spelling is derived from the
-	/// byte constants above so the two can't drift.
+	/// Recognizes the prefix-42 identity family: Avid's prefix, any core and
+	/// suffix. This cannot establish whether a value came from OMF or MXF,
+	/// or whether its numeric fields have already been converted.
 	inline bool isWrappedOmfId(const QString &canonicalHex)
 	{
 		static const QString zeroWrap = []

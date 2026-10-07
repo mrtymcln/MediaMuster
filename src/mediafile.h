@@ -14,6 +14,12 @@
 
 // MARK: - MediaFile
 
+namespace Canon
+{
+	struct ScanResult;
+	struct ParsedSource;
+}
+
 /// One physical file in the scan inventory, identified by its path.
 /// File and master MOB IDs connect it to Avid records, bins and relatives;
 /// either ID may be unknown. Display helpers are shared with the table and CSV.
@@ -23,6 +29,11 @@ struct MediaFile
 	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
 	MediaEvidence evidence;
 	MediaScanStamp scanStamp;
+	// Immutable scan receipt owns every original property and source graph.
+	// This row's current path/identity fields continue to follow moves and copies.
+	QSharedPointer<const Canon::ScanResult> canonScan;
+	/// Bin evidence remains inspectable after its current fallback is retracted.
+	QVector<QSharedPointer<const Canon::ParsedSource>> canonAvbSources;
 	QStringList masterMobIds; ///< All established associations; the scalar below is compatibility only.
 	QString masterMobIdDisplay() const
 	{
@@ -66,7 +77,7 @@ struct MediaFile
 	QString frameRate;			   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
 	MediaRate frameRateRatio;	   ///< Original video fraction; never recovered from the display label.
 	QString bitDepth;			   ///< "10-bit", "24-bit".
-	QString sampleFormat;          ///< Internal numeric representation; not a table/CSV column.
+	QString sampleFormat;		   ///< Internal numeric representation; not a table/CSV column.
 	int sampleRate = 0;			   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
 	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction, separate from duration's unit rate.
 	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate, retained even when no exact fraction fits.
@@ -121,11 +132,6 @@ struct MediaFile
 	/// file-operation checks rather than displayed in the table or CSV.
 	QDateTime modified;
 
-	/// Scan decisions carried between database lookup and the header pass.
-	/// A usable database alone does not establish that its metadata is current.
-	bool needsHeaderRead = false;
-	bool databaseMetadataCurrent = false;
-
 	// MARK: Classification
 
 	/// Audio or video essence — unknown until metadata identifies it.
@@ -139,12 +145,7 @@ struct MediaFile
 
 	/// Master-clip media or a precompute — the "Type" column.
 	/// Unknown when the usage metadata has not established either value.
-	enum class Type : int
-	{
-		Unknown = -1,
-		Media = 0,
-		Precompute = 1
-	};
+	using Type = MediaType;
 	Type type = Type::Unknown;
 
 	/// Local PMR membership and database readability, independent of project

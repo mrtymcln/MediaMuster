@@ -1,0 +1,667 @@
+{
+  "checked": "2026-10-07",
+  "database": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+  "databaseSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+  "method": "Canon MdbReader/MxfReader, associated file descriptor properties; source-qualified canonical file IDs independently compared. MXF essence payloads were not decoded. All corresponding file-mob EditRate values repeat MDB descriptor decimal clocks. Numeric name expectations come from the Avid 2012 DNxHD Technology white paper pp.9-10, not baseline strings alone.",
+  "mappingScope": "Exact rational decimal value plus observed resolution-ID/coding-label pair, then existing exact raster/layout/depth/subsampling checks. Naming only; no FrameRate or Duration substitution.",
+  "files": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+      "size": 11119016545,
+      "mtimeNs": 1786260224236153773,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.28175b1761120690.badf46fc807fda72",
+      "previousCodecCell": "Avid DNx SQ (DNxHD 145)",
+      "mdb": {
+        "descriptorObject": "object:73991",
+        "fileMobObject": "object:73992",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1237,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 684,
+        "filePackageHandle": 682,
+        "recordedPackageUid": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1237,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271030000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6966CE5_A3C580A3C588BV.mxf",
+      "size": 556586593,
+      "mtimeNs": 1785737161539115177,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.8b583c0a55120690.27a746fc807fda72",
+      "previousCodecCell": "Avid DNx SQ (DNxHD 145)",
+      "mdb": {
+        "descriptorObject": "object:75257",
+        "fileMobObject": "object:75258",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1242,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 540,
+          "OMFI:DIDD:FrameLayout": 1,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f10130000000a3c588b1255900627a746fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1242,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271080000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 540,
+          "GenericPictureEssenceDescriptor.FrameLayout": 1,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967030_CBBA90CBBA935V.mxf",
+      "size": 841913953,
+      "mtimeNs": 1785738004112642799,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.35a9bb0c55120690.d2ab46fc807fda72",
+      "previousCodecCell": "Avid DNx HQX (DNxHD 220X)",
+      "mdb": {
+        "descriptorObject": "object:80364",
+        "fileMobObject": "object:80365",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1241,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 540,
+          "OMFI:DIDD:FrameLayout": 1,
+          "OMFI:CDCI:ComponentWidth": 10,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f10130000000cbba93512559006d2ab46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1241,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271070000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 540,
+          "GenericPictureEssenceDescriptor.FrameLayout": 1,
+          "CDCIEssenceDescriptor.ComponentDepth": 10,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696869E_1DBEC1DBECCC4V.mxf",
+      "size": 138700897,
+      "mtimeNs": 1785743744782576886,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.c4ccbe1d55120690.096046fc807fda72",
+      "previousCodecCell": "Avid DNx LB (DNxHD 36)",
+      "mdb": {
+        "descriptorObject": "object:81438",
+        "fileMobObject": "object:81439",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1253,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f10130000001dbeccc412559006096046fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1253,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271130000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69686CC_1DE1C1DE1C9FCV.mxf",
+      "size": 445031521,
+      "mtimeNs": 1785743790916643663,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.fcc9e11d55120690.176e46fc807fda72",
+      "previousCodecCell": "Avid DNx SQ (DNxHD 115)",
+      "mdb": {
+        "descriptorObject": "object:68653",
+        "fileMobObject": "object:68654",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1237,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 744,
+        "filePackageHandle": 742,
+        "recordedPackageUid": "060a2b340101010501010f10130000001de1c9fc12559006176e46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1237,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271030000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69686E8_1DF711DF71BC5V.mxf",
+      "size": 673095265,
+      "mtimeNs": 1785743819207980684,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.c51bf71d55120690.3f4046fc807fda72",
+      "previousCodecCell": "Avid DNx HQ (DNxHD 175)",
+      "mdb": {
+        "descriptorObject": "object:79716",
+        "fileMobObject": "object:79717",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1238,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f10130000001df71bc5125590063f4046fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1238,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271040000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69687A8_1E8881E88858CV.mxf",
+      "size": 673095265,
+      "mtimeNs": 1785744011070050272,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.8c85881e55120690.d23f46fc807fda72",
+      "previousCodecCell": "Avid DNx HQX (DNxHD 175X)",
+      "mdb": {
+        "descriptorObject": "object:81776",
+        "fileMobObject": "object:81777",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1235,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 10,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f10130000001e88858c12559006d23f46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1235,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271010000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 10,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696920E_266BF266BF7BCV.mxf",
+      "size": 173442145,
+      "mtimeNs": 1785746673273749254,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.bcf76b2655120690.caff46fc807fda72",
+      "previousCodecCell": "Avid DNx LB (DNxHD 45)",
+      "mdb": {
+        "descriptorObject": "object:77833",
+        "fileMobObject": "object:77834",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1253,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f1013000000266bf7bc12559006caff46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1253,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271130000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969223_267B8267B8710V.mxf",
+      "size": 556586593,
+      "mtimeNs": 1785746693949823153,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.10877b2655120690.ab4346fc807fda72",
+      "previousCodecCell": "Avid DNx SQ (DNxHD 145)",
+      "mdb": {
+        "descriptorObject": "object:68279",
+        "fileMobObject": "object:68280",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1237,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f1013000000267b871012559006ab4346fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1237,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271030000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969230_2685B2685BD79V.mxf",
+      "size": 841913953,
+      "mtimeNs": 1785746707898369524,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.79bd852655120690.b04d46fc807fda72",
+      "previousCodecCell": "Avid DNx HQ (DNxHD 220)",
+      "mdb": {
+        "descriptorObject": "object:79265",
+        "fileMobObject": "object:79266",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1238,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f10130000002685bd7912559006b04d46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1238,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271040000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969283_26C4226C423C9V.mxf",
+      "size": 841913953,
+      "mtimeNs": 1785746790485997093,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.c923c42655120690.7b1946fc807fda72",
+      "previousCodecCell": "Avid DNx HQX (DNxHD 220X)",
+      "mdb": {
+        "descriptorObject": "object:81420",
+        "fileMobObject": "object:81421",
+        "fileMobEditRate": {
+          "denominator": 100,
+          "numerator": 2997
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1235,
+          "OMFI:DIDD:StoredWidth": 1920,
+          "OMFI:DIDD:StoredHeight": 1080,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 10,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 100,
+            "numerator": 2997
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 728,
+        "filePackageHandle": 726,
+        "recordedPackageUid": "060a2b340101010501010f101300000026c423c9125590067b1946fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1235,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271010000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1920,
+          "GenericPictureEssenceDescriptor.StoredHeight": 1080,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 10,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 30000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BE077_2CCCF2CCCFC4CV.mxf",
+      "size": 222846049,
+      "mtimeNs": 1786094425156046918,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.4cfccc2c59120690.5d0c46fc807fda72",
+      "previousCodecCell": "Avid DNx SQ (DNxHD 60)",
+      "mdb": {
+        "descriptorObject": "object:81140",
+        "fileMobObject": "object:81141",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1252,
+          "OMFI:DIDD:StoredWidth": 1280,
+          "OMFI:DIDD:StoredHeight": 720,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 736,
+        "filePackageHandle": 734,
+        "recordedPackageUid": "060a2b340101010501010f10130000002cccfc4c125990065d0c46fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1252,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271120000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1280,
+          "GenericPictureEssenceDescriptor.StoredHeight": 720,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BE8DD_332B7332B72BEV.mxf",
+      "size": 336910945,
+      "mtimeNs": 1786096574673614160,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.be722b3359120690.734746fc807fda72",
+      "previousCodecCell": "Avid DNx HQ (DNxHD 90)",
+      "mdb": {
+        "descriptorObject": "object:85669",
+        "fileMobObject": "object:85670",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1251,
+          "OMFI:DIDD:StoredWidth": 1280,
+          "OMFI:DIDD:StoredHeight": 720,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 8,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 736,
+        "filePackageHandle": 734,
+        "recordedPackageUid": "060a2b340101010501010f1013000000332b72be12599006734746fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1251,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271110000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1280,
+          "GenericPictureEssenceDescriptor.StoredHeight": 720,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 8,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BE8F5_333DD333DD876V.mxf",
+      "size": 336910945,
+      "mtimeNs": 1786096599114252609,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.76d83d3359120690.159546fc807fda72",
+      "previousCodecCell": "Avid DNx HQX (DNxHD 90x)",
+      "mdb": {
+        "descriptorObject": "object:87480",
+        "fileMobObject": "object:87481",
+        "fileMobEditRate": {
+          "denominator": 1000,
+          "numerator": 23976
+        },
+        "properties": {
+          "OMFI:DIDD:DIDResolutionID": 1250,
+          "OMFI:DIDD:StoredWidth": 1280,
+          "OMFI:DIDD:StoredHeight": 720,
+          "OMFI:DIDD:FrameLayout": 0,
+          "OMFI:CDCI:ComponentWidth": 10,
+          "OMFI:CDCI:HorizontalSubsampling": 2,
+          "OMFI:CDCI:VerticalSubsampling": 1,
+          "OMFI:MDFL:SampleRate": {
+            "denominator": 1000,
+            "numerator": 23976
+          }
+        }
+      },
+      "mxf": {
+        "descriptorHandle": 736,
+        "filePackageHandle": 734,
+        "recordedPackageUid": "060a2b340101010501010f1013000000333dd87612599006159546fc807fda72",
+        "properties": {
+          "GenericPictureEssenceDescriptor.ResolutionID": 1250,
+          "GenericPictureEssenceDescriptor.PictureEssenceCoding": "060e2b340401010a0401020271100000",
+          "GenericPictureEssenceDescriptor.StoredWidth": 1280,
+          "GenericPictureEssenceDescriptor.StoredHeight": 720,
+          "GenericPictureEssenceDescriptor.FrameLayout": 0,
+          "CDCIEssenceDescriptor.ComponentDepth": 10,
+          "CDCIEssenceDescriptor.HorizontalSubsampling": 2,
+          "CDCIEssenceDescriptor.VerticalSubsampling": 1,
+          "FileDescriptor.SampleRate": {
+            "Denominator": 1001,
+            "Numerator": 24000
+          }
+        }
+      }
+    }
+  ]
+}

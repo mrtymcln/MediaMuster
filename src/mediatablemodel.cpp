@@ -1,4 +1,5 @@
 #include "mediatablemodel.h"
+#include "canon/scanengine.h"
 #include "enumutil.h"
 
 #include <QStringList>
@@ -124,10 +125,24 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 
 		// Destination databases have not been parsed by this transfer. Their
 		// presence cannot establish that this new location is absent from them.
-		const bool hasDatabases = !info.dir().entryList({QStringLiteral("*.pmr"), QStringLiteral("*.mdb")},
-			QDir::Files | QDir::NoSymLinks).isEmpty();
-		transferred.dbStatus = hasDatabases ? MediaFile::DbStatus::DbUnreadable : MediaFile::DbStatus::NoDatabase;
-		transferred.databaseMetadataCurrent = false;
+		const auto databases = info.dir().entryList({QStringLiteral("*.pmr"), QStringLiteral("*.mdb")}, QDir::Files | QDir::NoSymLinks);
+		transferred.dbStatus = databases.isEmpty() ? MediaFile::DbStatus::NoDatabase : MediaFile::DbStatus::DbUnreadable;
+		MetadataObservation membership;
+		membership.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Filesystem, info.absolutePath(), QFileInfo(info.absolutePath()).lastModified(), SourceReadState::Complete});
+		membership.property = QStringLiteral("Destination folder database enumeration after confirmed transfer");
+		membership.value = int(transferred.dbStatus);
+		membership.rawValue = databases;
+		membership.readState = PropertyReadState::Present;
+		membership.basis = EvidenceBasis::Derived;
+		membership.explanation = databases.isEmpty()
+									 ? QStringLiteral("No PMR or MDB files found in the destination folder.")
+									 : QStringLiteral("Destination database files are present but were not read; destination membership remains unverified.");
+		transferred.evidence.observe(MediaProperty::DatabaseStatus, std::move(membership));
+		// Update only this row's evidence. The retained scan is an immutable
+		// receipt of the original location, shared with other physical rows.
+		Canon::selectMetadata(transferred.evidence);
+		m_binMetadata.apply(transferred);
 		if (copy)
 		{
 			transferred.kelpieId = m_ids.allocate();
@@ -168,7 +183,7 @@ void MediaTableModel::applyAvbMetadata(bool notify)
 	}
 	if (notify && firstChanged >= 0)
 		emit dataChanged(index(firstChanged, static_cast<int>(Column::ClipName)),
-						 index(lastChanged, static_cast<int>(Column::OriginalBin)),
+						 index(lastChanged, columnCount() - 1),
 						 {Qt::DisplayRole, Qt::UserRole});
 }
 
@@ -244,8 +259,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		return {};
 	const MediaFile &f = m_files[index.row()];
 	if (m_omfScanEnabled && index.column() == omfScanColumn())
-		return role == Qt::DisplayRole ? QVariant(f.omfEra ? QStringLiteral("true") : QStringLiteral("false")) :
-			role == Qt::UserRole ? QVariant(f.omfEra) : QVariant{};
+		return role == Qt::DisplayRole ? QVariant(f.omfEra ? QStringLiteral("true") : QStringLiteral("false")) : role == Qt::UserRole ? QVariant(f.omfEra)
+																																	  : QVariant{};
 	if (m_clipDurationEnabled && index.column() == clipDurationColumn())
 		return role == Qt::DisplayRole ? QVariant(f.clipDurationDisplay()) : QVariant{};
 

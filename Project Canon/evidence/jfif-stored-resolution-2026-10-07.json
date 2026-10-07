@@ -1,0 +1,790 @@
+{
+  "purpose": "Stored versus cropped display raster in genuine JFIF35 OMF and matching MDB; raw probe before table selection.",
+  "observations": [
+    {
+      "objects": [
+        {
+          "edges": [
+            {
+              "property": "OMFI:MDES:Locator",
+              "target": 68009
+            }
+          ],
+          "handle": 68010,
+          "properties": [
+            {
+              "decoded": "JPED",
+              "name": "OMFI:ObjID",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 18884
+                }
+              ],
+              "raw": "4a504544"
+            },
+            {
+              "decoded": 248,
+              "name": "OMFI:DIDD:StoredHeight",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19124
+                }
+              ],
+              "raw": "f8000000"
+            },
+            {
+              "decoded": 720,
+              "name": "OMFI:DIDD:StoredWidth",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19148
+                }
+              ],
+              "raw": "d0020000"
+            },
+            {
+              "decoded": 248,
+              "name": "OMFI:DIDD:SampledHeight",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19172
+                }
+              ],
+              "raw": "f8000000"
+            },
+            {
+              "decoded": 720,
+              "name": "OMFI:DIDD:SampledWidth",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19196
+                }
+              ],
+              "raw": "d0020000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:SampledXOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19220
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:SampledYOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19244
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 243,
+              "name": "OMFI:DIDD:DisplayHeight",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19268
+                }
+              ],
+              "raw": "f3000000"
+            },
+            {
+              "decoded": 720,
+              "name": "OMFI:DIDD:DisplayWidth",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19292
+                }
+              ],
+              "raw": "d0020000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:DisplayXOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19316
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 5,
+              "name": "OMFI:DIDD:DisplayYOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19340
+                }
+              ],
+              "raw": "05000000"
+            },
+            {
+              "decoded": 1,
+              "name": "OMFI:DIDD:FrameLayout",
+              "ranges": [
+                {
+                  "length": 2,
+                  "offset": 19364
+                }
+              ],
+              "raw": "0100"
+            },
+            {
+              "decoded": {
+                "denominator": 3,
+                "numerator": 4
+              },
+              "name": "OMFI:DIDD:ImageAspectRatio",
+              "ranges": [
+                {
+                  "length": 8,
+                  "offset": 9104
+                }
+              ],
+              "raw": "0400000003000000"
+            },
+            {
+              "decoded": null,
+              "name": "OMFI:DIDD:VideoLineMap",
+              "ranges": [
+                {
+                  "length": 8,
+                  "offset": 9112
+                }
+              ],
+              "raw": "1000000016010000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:AlphaTransparency",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19436
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": true,
+              "name": "OMFI:DIDD:Uniformness",
+              "ranges": [
+                {
+                  "length": 1,
+                  "offset": 19460
+                }
+              ],
+              "raw": "01"
+            },
+            {
+              "decoded": 8876,
+              "name": "OMFI:DIDD:DIDImageSize",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19484
+                }
+              ],
+              "raw": "ac220000"
+            },
+            {
+              "decoded": "JFIF",
+              "name": "OMFI:DIDD:DIDCompressMethod",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19508
+                }
+              ],
+              "raw": "4a464946"
+            },
+            {
+              "decoded": 82,
+              "name": "OMFI:DIDD:DIDResolutionID",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19532
+                }
+              ],
+              "raw": "52000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:ImageAlignmentFactor",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19556
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": "JFIF",
+              "name": "OMFI:DIDD:Compression",
+              "ranges": [
+                {
+                  "length": 5,
+                  "offset": 9120
+                }
+              ],
+              "raw": "4a46494600"
+            },
+            {
+              "decoded": 18761,
+              "name": "OMFI:DIDD:FrameIndexByteOrder",
+              "ranges": [
+                {
+                  "length": 2,
+                  "offset": 19628
+                }
+              ],
+              "raw": "4949"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:FrameSampleSize",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19652
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:FirstFrameOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19676
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": null,
+              "name": "OMFI:DIDD:AMEVersion",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 19700
+                }
+              ],
+              "raw": "02010203"
+            }
+          ]
+        },
+        {
+          "edges": [
+            {
+              "property": "OMFI:TRKG:Tracks",
+              "target": 68008
+            },
+            {
+              "property": "OMFI:MOBJ:PhysicalMedia",
+              "target": 68010
+            }
+          ],
+          "handle": 68011,
+          "properties": [
+            {
+              "decoded": "MOBJ",
+              "name": "OMFI:ObjID",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 20060
+                }
+              ],
+              "raw": "4d4f424a"
+            },
+            {
+              "decoded": "Black 720x486.PICT.PHYS",
+              "name": "OMFI:CPNT:Name",
+              "ranges": [
+                {
+                  "length": 24,
+                  "offset": 9783
+                }
+              ],
+              "raw": "426c61636b20373230783438362e504943542e5048595300"
+            },
+            {
+              "decoded": "2a000000129450353c599b28",
+              "name": "OMFI:MOBJ:MobID",
+              "ranges": [
+                {
+                  "length": 12,
+                  "offset": 9817
+                }
+              ],
+              "raw": "2a000000129450353c599b28"
+            },
+            {
+              "decoded": null,
+              "name": "OMFI:MOBJ:PhysicalMedia",
+              "ranges": [
+                {
+                  "length": 8,
+                  "offset": 9834
+                }
+              ],
+              "raw": "aa09010000000000"
+            }
+          ]
+        }
+      ],
+      "outcome": 1,
+      "path": "tests/fixtures/omf/avid_supporting/BLACK_720x243x2_JFIF35.omf"
+    },
+    {
+      "objects": [
+        {
+          "edges": [
+            {
+              "property": "OMFI:MDES:Locator",
+              "target": 70430
+            }
+          ],
+          "handle": 70431,
+          "properties": [
+            {
+              "decoded": "JPED",
+              "name": "OMFI:ObjID",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560532
+                }
+              ],
+              "raw": "4a504544"
+            },
+            {
+              "decoded": 248,
+              "name": "OMFI:DIDD:StoredHeight",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560772
+                }
+              ],
+              "raw": "f8000000"
+            },
+            {
+              "decoded": 720,
+              "name": "OMFI:DIDD:StoredWidth",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560796
+                }
+              ],
+              "raw": "d0020000"
+            },
+            {
+              "decoded": 248,
+              "name": "OMFI:DIDD:SampledHeight",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560820
+                }
+              ],
+              "raw": "f8000000"
+            },
+            {
+              "decoded": 720,
+              "name": "OMFI:DIDD:SampledWidth",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560844
+                }
+              ],
+              "raw": "d0020000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:SampledXOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560868
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:SampledYOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560892
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 243,
+              "name": "OMFI:DIDD:DisplayHeight",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560916
+                }
+              ],
+              "raw": "f3000000"
+            },
+            {
+              "decoded": 720,
+              "name": "OMFI:DIDD:DisplayWidth",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560940
+                }
+              ],
+              "raw": "d0020000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:DisplayXOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560964
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 5,
+              "name": "OMFI:DIDD:DisplayYOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 560988
+                }
+              ],
+              "raw": "05000000"
+            },
+            {
+              "decoded": 1,
+              "name": "OMFI:DIDD:FrameLayout",
+              "ranges": [
+                {
+                  "length": 2,
+                  "offset": 561012
+                }
+              ],
+              "raw": "0100"
+            },
+            {
+              "decoded": {
+                "denominator": 3,
+                "numerator": 4
+              },
+              "name": "OMFI:DIDD:ImageAspectRatio",
+              "ranges": [
+                {
+                  "length": 8,
+                  "offset": 79373
+                }
+              ],
+              "raw": "0400000003000000"
+            },
+            {
+              "decoded": 16,
+              "name": "OMFI:DIDD:VideoLineMap",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561060
+                }
+              ],
+              "raw": "10000000"
+            },
+            {
+              "decoded": 278,
+              "name": "OMFI:DIDD:VideoLineMap",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561084
+                }
+              ],
+              "raw": "16010000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:AlphaTransparency",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561108
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": true,
+              "name": "OMFI:DIDD:Uniformness",
+              "ranges": [
+                {
+                  "length": 1,
+                  "offset": 561132
+                }
+              ],
+              "raw": "01"
+            },
+            {
+              "decoded": 8876,
+              "name": "OMFI:DIDD:DIDImageSize",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561156
+                }
+              ],
+              "raw": "ac220000"
+            },
+            {
+              "decoded": "JFIF",
+              "name": "OMFI:DIDD:DIDCompressMethod",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561180
+                }
+              ],
+              "raw": "4a464946"
+            },
+            {
+              "decoded": 82,
+              "name": "OMFI:DIDD:DIDResolutionID",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561204
+                }
+              ],
+              "raw": "52000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:ImageAlignmentFactor",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561228
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": "JFIF",
+              "name": "OMFI:DIDD:Compression",
+              "ranges": [
+                {
+                  "length": 5,
+                  "offset": 79381
+                }
+              ],
+              "raw": "4a46494600"
+            },
+            {
+              "decoded": 18761,
+              "name": "OMFI:DIDD:FrameIndexByteOrder",
+              "ranges": [
+                {
+                  "length": 2,
+                  "offset": 561300
+                }
+              ],
+              "raw": "4949"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:FrameSampleSize",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561324
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:FirstFrameOffset",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561348
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:ClientFillStart",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561372
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": 0,
+              "name": "OMFI:DIDD:ClientFillEnd",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561396
+                }
+              ],
+              "raw": "00000000"
+            },
+            {
+              "decoded": -1,
+              "name": "OMFI:DIDD:OffsetToRLEFrameIndexes",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561420
+                }
+              ],
+              "raw": "ffffffff"
+            },
+            {
+              "decoded": null,
+              "name": "OMFI:DIDD:EssenceCompression",
+              "ranges": [
+                {
+                  "length": 16,
+                  "offset": 79386
+                }
+              ],
+              "raw": "0102040e01020101060e2b3404010101"
+            },
+            {
+              "decoded": true,
+              "name": "OMFI:DIDD:FrameSampleSizeHasBeenCheckedWithMapper",
+              "ranges": [
+                {
+                  "length": 1,
+                  "offset": 561468
+                }
+              ],
+              "raw": "01"
+            },
+            {
+              "decoded": null,
+              "name": "OMFI:DIDD:AMEVersion",
+              "ranges": [
+                {
+                  "length": 8,
+                  "offset": 79402
+                }
+              ],
+              "raw": "0201020304050c0f"
+            }
+          ]
+        },
+        {
+          "edges": [
+            {
+              "property": "OMFI:TRKG:Tracks",
+              "target": 70429
+            },
+            {
+              "property": "OMFI:MOBJ:PhysicalMedia",
+              "target": 70431
+            }
+          ],
+          "handle": 70432,
+          "properties": [
+            {
+              "decoded": "MOBJ",
+              "name": "OMFI:ObjID",
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 561900
+                }
+              ],
+              "raw": "4d4f424a"
+            },
+            {
+              "decoded": "Black 720x486.PICT.PHYS",
+              "name": "OMFI:CPNT:Name",
+              "ranges": [
+                {
+                  "length": 24,
+                  "offset": 80068
+                }
+              ],
+              "raw": "426c61636b20373230783438362e504943542e5048595300"
+            },
+            {
+              "decoded": "2a000000129450353c599b28",
+              "name": "OMFI:MOBJ:MobID",
+              "ranges": [
+                {
+                  "length": 12,
+                  "offset": 80102
+                }
+              ],
+              "raw": "2a000000129450353c599b28"
+            },
+            {
+              "decoded": null,
+              "name": "OMFI:MOBJ:PhysicalMedia",
+              "ranges": [
+                {
+                  "length": 8,
+                  "offset": 80119
+                }
+              ],
+              "raw": "1f13010000000000"
+            },
+            {
+              "decoded": "2a000000129450353c599b28",
+              "name": "OMFI:MOBJ:MobID",
+              "ranges": [
+                {
+                  "length": 12,
+                  "offset": 80127
+                }
+              ],
+              "raw": "2a000000129450353c599b28"
+            }
+          ]
+        }
+      ],
+      "outcome": 1,
+      "path": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb"
+    }
+  ]
+}

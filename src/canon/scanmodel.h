@@ -181,6 +181,7 @@ namespace Canon
 			Cancelled
 		};
 		Outcome outcome = Outcome::NotRead;
+		QString readReason; ///< Scan scheduling decision; empty for direct reader calls.
 		SourceSnapshotRef snapshot;
 		Container container = Container::Unknown;
 		PropertyLocator embedding;			   ///< Parent chunk/property, when this is an embedded source.
@@ -261,10 +262,12 @@ namespace Canon
 	class Cancellation
 	{
 	public:
+		explicit Cancellation(const std::atomic_bool *external = nullptr) : m_external(external) {}
 		void cancel() { m_cancelled.store(true); }
-		bool cancelled() const { return m_cancelled.load(); }
+		bool cancelled() const { return m_cancelled.load() || (m_external && m_external->load()); }
 
 	private:
+		const std::atomic_bool *m_external = nullptr; // Borrowed for this operation's lifetime.
 		std::atomic_bool m_cancelled{false};
 	};
 }

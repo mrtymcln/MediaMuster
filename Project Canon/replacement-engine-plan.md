@@ -9,6 +9,17 @@ This supersedes the earlier plan to implement Canon principally by refactoring
 existing readers and their aggregates. The previous foundation remains a working
 comparison implementation and supplies reusable tests, not the final architecture.
 
+## Connection status, 7 October 2026
+
+The user authorized the live connection on 4 October; implementation and verification
+continued on 7 October. The app now routes scans through `Canon::ScanEngine`, and
+its public AVB parser interface adapts the fresh Canon reader/reference engine.
+The existing table, CSV and file-operation executor consume the new evidence through
+adapters. The [live connection report](live-connection-2026-10-04.md) records the
+current selection policies and final verification status. Historical reader reports
+retain their original independent-stage results; their “not connected” wording no
+longer describes the application path.
+
 ## Ownership and boundaries
 
 ```text
@@ -59,27 +70,29 @@ compatibility/UI type until the adapter replaces its engine dependency.
 ## New code boundary
 
 The replacement lives in `src/canon` under namespace `Canon`, built as the separate
-`mediamuster_canon` library. It has no dependency on the old MediaScanner, MediaMetadata,
-PMR/MDB/MXF/OMF parser classes or UI. It shares checked general utilities: logical
+`mediamuster_canon` library. The live pipeline does not call the old PMR/MDB/MXF/OMF
+parser classes or pass their selected `MediaMetadata` aggregate between engines.
+It shares checked stateless codec/path catalogues and general utilities: logical
 field/evidence types, KelpieId allocation, managed-layout rules and native volume
-identity. Sharing these does not authorize inheriting the old readers' assumptions.
+identity. Compatibility enum values are reused at the adapter boundary. Sharing
+these does not authorize inheriting the old readers' assumptions.
 
 | New component | Purpose | Current state |
 | --- | --- | --- |
-| `Canon::MediaFile` | Physical location, scan-session ID, filesystem facts, evidence, stamp and source/object references | Initial record defined; metadata values remain in evidence rather than display strings |
-| `ScanResult` | RAM inventory, worklist, source graphs, issues and distinct completion states | Initial types defined |
-| `DiscoveryEngine` | Enumerate admitted locations/extensions and create physical records plus parser worklist | Implemented and tested; not activated in the app |
+| `Canon::MediaFile` | Physical location, scan-session ID, filesystem facts, evidence, stamp and source/object references | Used by live scans; metadata values remain in evidence rather than display strings |
+| `ScanResult` | RAM inventory, worklist, source graphs, issues and distinct completion states | Owns live scan sources, inventory and issues; UI rows retain a shared immutable receipt |
+| `DiscoveryEngine` | Enumerate admitted locations/extensions and create physical records plus parser worklist | Connected to the live scan worker; preserves the accepted folder/extension scope |
 | `SourceReader` | Decode an already-open source into a ParsedSource, with cancellation and source context | Interface defined; independent PMR, MDB, OMF/legacy and MXF readers implemented and verified |
 | `ParsedSource` | Actual parsed container, source-local objects, raw properties, references and diagnostics | Explicit outcomes, typed PMR set membership, per-text encoding/basis, interpretation limits, opaque ranges, native Bento property context and separate embedded source graphs |
-| `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Alternative selected on 4 October, promoted to this name; first Canon implementation removed. See [selection and checks](pmr-reader-selection-2026-10-04.md). Not activated in the app |
-| `MdbReader` and private Bento reader | Preserve MDB dictionaries, separate object/property occurrences, native types and local references | Fresh implementation verified against six fixtures, six live MDBs and 65 toolkit containers. See [MDB evidence](fresh-mdb-reader-2026-10-04.md). Not activated in the app |
-| `LegacyReader` and private native-audio reader | Read OMF media and WAV/AIFF headers with embedded OMF graphs; retain known sample payloads by range | Implemented and verified against 80 Avid OMF slates, native audio and toolkit files. See [legacy evidence and limits](fresh-legacy-reader-2026-10-04.md). Not activated in the app |
+| `PmrReader` | Retain both PMR sets, every encountered record, recorded identity/reference encodings and byte locations | Alternative selected on 4 October, promoted to this name; first Canon implementation removed. See [selection and checks](pmr-reader-selection-2026-10-04.md). Connected through Canon projections and selection |
+| `MdbReader` and private Bento reader | Preserve MDB dictionaries, separate object/property occurrences, native types and local references | Fresh implementation verified against six fixtures, six live MDBs and 65 toolkit containers. See [MDB evidence](fresh-mdb-reader-2026-10-04.md). Connected through Canon projections and selection |
+| `LegacyReader` and private native-audio reader | Read OMF media and WAV/AIFF headers with embedded OMF graphs; retain known sample payloads by range | Implemented and verified against 80 Avid OMF slates, native audio and toolkit files. See [legacy evidence and limits](fresh-legacy-reader-2026-10-04.md). Connected through Canon projections and selection |
 | Private OMF object interpreter | Share dictionary/type/reference interpretation between MDB and OMF media | Extracted from the fresh MDB reader; existing MDB behaviour retained |
-| `MxfReader` and private typed interpreter/catalogue | Keep per-partition Primer mappings, every encountered metadata set/property, exact encodings and qualified local references; seek over recording data | Implemented and verified against 824 fixtures and 20 actual complete files. See [MXF evidence and limits](fresh-mxf-reader-2026-10-04.md). Not activated in the app |
-| Reconciliation engine | Establish object ownership, identities, associations and scoped unmatched references | Pending |
-| AVB reader and sequence reference resolver | Retain loaded-bin objects and relationships; list sequences and resolve references from selected roots | Requested next; [sequence selection scope and evidence](avb-sequence-selection.md). Individual sequence selection and inclusion of all referenced group angles are agreed; render/inactive-track policies remain to be settled |
-| Selection engine/catalogue | Apply individual verified metadata policies and DNx mappings | Pending |
-| UI/operation adapter | Connect the finished replacement to existing consumers | Pending |
+| `MxfReader` and private typed interpreter/catalogue | Keep per-partition Primer mappings, every encountered metadata set/property, exact encodings and qualified local references; seek over recording data | Implemented and verified against 824 fixtures and 20 actual complete files. See [MXF evidence and limits](fresh-mxf-reader-2026-10-04.md). Connected through Canon projections and selection |
+| `ScanEngine` reconciliation | Establish object ownership, identities, associations and scoped unmatched references | Connected; exact-name-first PMR matching, full file-ID MDB joins, retained alternatives and changed-source exclusion |
+| AVB reader and sequence reference resolver | Retain loaded-bin objects and relationships; list sequences and resolve references from selected roots | Reader/reference engine implemented; whole-bin path connected. Group angles, renders and source media, and muted/disabled-track references are included. Partial usable results retain warnings. The sequence-picker UI remains gated for v2; see [scope](avb-sequence-selection.md) |
+| Selection engine/catalogue | Apply individual verified metadata policies and DNx mappings | Live per-field selection, approved name priorities, exact DNx operating-point aliases and retained inferred text/effect evidence; unresolved meanings remain qualified |
+| UI/operation adapter | Connect the replacement to existing consumers | `canonMediaFile` supplies the existing table/CSV model; operations receive scan claims separately from header-established identity checks |
 
 The record follows the approved **conceptual** MediaFile model, rather than freezing
 the incomplete foundation class's C++ layout. Agreed semantics remain fixed; parser
@@ -137,7 +150,7 @@ Proof: [full suite result](evidence/fresh-engine-tests-2026-10-03.txt) and
 This discovery check does not establish parser correctness. The selected fresh PMR
 reader and its current checks are recorded in [PMR reader selection](pmr-reader-selection-2026-10-04.md).
 The [first implementation report](fresh-pmr-reader-2026-10-03.md) retains the original format evidence.
-The other format-reader tests still exercise the comparison engines. An opt-in real-drive discovery check is available through
+This section records the earlier discovery-only milestone, before live connection. Legacy parser suites remain comparison tests alongside the fresh-reader suites. An opt-in real-drive discovery check is available through
 `MEDIAMUSTER_CANON_REAL_SCAN_ROOTS`; it lists files without opening media headers.
 The opt-in check on EDIT and the two local managed roots found **2,413 distinct
 physical rows and 2,425 parser candidates** (media plus 12 database files), with
@@ -193,6 +206,8 @@ later file changes still require the planned freshness checks.
 6. Switch the app only after the replacement meets the agreed correctness and resource
    checks. Remove superseded engines after that; keep durable fixtures/evidence.
 
-A fresh discovery library is not a finished scanner/parser replacement. The current
-app still uses the earlier implementation until the adapter and remaining stages
-are verified. No new persistent metadata database is introduced.
+The discovery-only milestone is superseded by the live connection described above.
+The older parsers remain available to regression tests, while application scans use
+Canon. Verification must distinguish controlled regression checks, actual read-only
+media checks and any platform/format limits. No new persistent metadata database is
+introduced, and memory optimization is not a prerequisite for the authorized connection.

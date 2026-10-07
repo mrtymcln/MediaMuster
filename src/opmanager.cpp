@@ -1,4 +1,5 @@
 #include "opmanager.h"
+#include "opscanreceipt.h"
 
 // MARK: - Construction
 
@@ -118,22 +119,9 @@ QVector<OpItem> OpManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
 	out.reserve(files.size());
 	for (const MediaFile &mf : files)
 	{
-		OpItem it;
-		it.src = mf.mediaFilePath;
-		it.name = mf.fileName;
-		it.mediaFolderName = mf.mediaFolderName;
-		it.omfEra = mf.omfEra; // OMF-era: travels with the item, and through the journal
-		it.bytes = mf.sizeBytes;
-		it.modifiedMs = mf.modified.isValid() ? mf.modified.toMSecsSinceEpoch() : -1;
+		auto it = opItemFromMediaFile(mf);
 		if (const auto p = policies.constFind(mf.mediaFilePath); p != policies.constEnd())
 			it.policy = conflictPolicyName(p.value());
-		// The scan's Avid identity claims. The runner cross-checks the
-		// file on disk against these before touching it, and every
-		// journal/undo/recovery message can then name the clip the
-		// editor knows rather than a cryptic MXF filename.
-		it.mobId = mf.fileMobId;
-		it.masterMobId = mf.masterMobId;
-		it.clipName = mf.clipName;
 		out.append(it);
 	}
 	return out;

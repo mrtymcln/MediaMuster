@@ -1,0 +1,24 @@
+Test project /Users/martymclean/Developer/MediaMuster/build-canon
+    Start 32: tst_fileoperations
+    Start 38: tst_operationui
+    Start 17: tst_canon_mxfprojection
+    Start 27: tst_scanner
+    Start 15: tst_canonscan
+    Start 16: tst_canon_omfprojection
+1/7 Test #17: tst_canon_mxfprojection ..........   Passed    1.43 sec
+    Start 34: tst_mediatablemodel
+2/7 Test #15: tst_canonscan ....................   Passed    2.60 sec
+3/7 Test #16: tst_canon_omfprojection ..........   Passed    2.88 sec
+4/7 Test #34: tst_mediatablemodel ..............   Passed    1.80 sec
+5/7 Test #38: tst_operationui ..................   Passed    8.39 sec
+6/7 Test #27: tst_scanner ......................   Passed   17.04 sec
+7/7 Test #32: tst_fileoperations ...............   Passed   17.77 sec
+
+100% tests passed, 0 tests failed out of 7
+
+Label Time Summary:
+media         =  23.96 sec*proc (4 tests)
+operations    =  17.77 sec*proc (1 test)
+ui            =  10.19 sec*proc (2 tests)
+
+Total Test time (real) =  17.77 sec

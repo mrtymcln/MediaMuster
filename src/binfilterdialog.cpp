@@ -38,6 +38,8 @@ namespace
 	{
 		if (loading)
 			return BinFilterDialog::tr("Loading…");
+		if (!bin.complete)
+			return BinFilterDialog::tr("Results may be incomplete");
 		if (bin.mediaFileIds.isEmpty())
 			return BinFilterDialog::tr("No media references.");
 		return bin.warnings.isEmpty() ? QString() : BinFilterDialog::tr("Loaded with warnings.");
@@ -279,6 +281,7 @@ void BinFilterDialog::setupUi()
 	chainSegLayout->addStretch(1);
 
 	m_chainSummary = new QLabel(tr("Add bin files to get started."));
+	m_chainSummary->setObjectName(QStringLiteral("BinChainSummary"));
 	m_chainSummary->setStyleSheet(
 		QStringLiteral("QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
 	chainSegLayout->addWidget(m_chainSummary);
@@ -520,7 +523,10 @@ void BinFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
 		}
 		entry.bin = bin;
 		entry.loading = false;
-		m_newlyLoadedIds.insert(id);
+		if (!bin.complete)
+			emit loadWarning(bin.filePath, bin.warnings.join(QStringLiteral("; ")));
+		if (!bin.mediaFileIds.isEmpty())
+			m_newlyLoadedIds.insert(id);
 		updateBinItem(row);
 		refreshBinSelectionUi();
 		m_metadataUpdatePending = true;
@@ -711,6 +717,15 @@ void BinFilterDialog::applyOperation(Operation op)
 	{
 		step.binDisplayNames.append(bin->displayName);
 		step.mediaFileIds.unite(bin->mediaFileIds);
+		if (bin->source)
+			step.sources.append(bin->source);
+		if (bin->resolution)
+			step.resolutions.append(bin->resolution);
+		if (!bin->complete)
+		{
+			step.warnings.append(tr("%1: Results may be incomplete").arg(bin->displayName));
+			step.warnings.append(bin->warnings);
+		}
 	}
 	// An operand without usable file identities leaves the current chain unchanged.
 	if (step.mediaFileIds.isEmpty())
@@ -757,6 +772,9 @@ void BinFilterDialog::rebuildChainList()
 
 		auto *const item = new QListWidgetItem(
 			QStringLiteral("%1.  %2:  %3").arg(row + 1).arg(operationLabel(step.op), binNames));
+		if (!step.warnings.isEmpty())
+			item->setText(item->text() + QStringLiteral("\n") + tr("Results may be incomplete"));
+		item->setToolTip(step.warnings.join(QStringLiteral("\n")));
 		item->setData(Qt::UserRole, row);
 		m_chainList->addItem(item);
 	}
@@ -774,7 +792,7 @@ void BinFilterDialog::publishFilter()
 	}
 
 	// The chain list already describes the active filter.
-	m_chainSummary->clear();
+	m_chainSummary->setText(BinFilter{m_chain}.resultsMayBeIncomplete() ? tr("Results may be incomplete") : QString{});
 
 	// Deduped, insertion-ordered bin names for the main-window chip
 	// strip. First appearance wins so the chip ordering is stable

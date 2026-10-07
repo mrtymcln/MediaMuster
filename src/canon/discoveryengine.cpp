@@ -146,6 +146,7 @@ namespace Canon
 												  file.modified.isValid() ? QVariant(file.modified) : QVariant{});
 					Detail::filesystemObservation(file, snapshot, MediaProperty::VolumeIdentifier, QStringLiteral("native volume identity"),
 												  file.volumeIdentifier.isEmpty() ? QVariant{} : QVariant(file.volumeIdentifier));
+					Detail::filesystemObservation(file, snapshot, MediaProperty::OmfScan, QStringLiteral("managed media folder family"), file.omfScan);
 					candidate.kelpieId = file.kelpieId;
 					result.files.append(std::move(file));
 				}

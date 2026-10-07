@@ -617,6 +617,25 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	QCOMPARE(request.items.size(), 1);
 	QCOMPARE(request.items.first().mobId, moved.fileMobId);
 	QCOMPARE(request.items.first().masterMobId, moved.masterMobId);
+
+	moved.scanStamp = {moved.mediaFilePath, QStringLiteral("uuid:scanned-volume"), QDateTime::fromMSecsSinceEpoch(123456), moved.fileMobId, {moved.masterMobId, QStringLiteral("database-only-master")}};
+	MetadataObservation observation;
+	observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf,
+																				 moved.mediaFilePath, moved.scanStamp.modified, SourceReadState::Complete});
+	observation.readState = PropertyReadState::Present;
+	observation.value = moved.masterMobId;
+	moved.evidence.observe(MediaProperty::MasterMobId, observation);
+	const auto stampedPlan = RebalancePlanner::computePlan(root, "Test",
+														   {makeMxf(root, "1", "home.mxf", "same"), moved});
+	const auto stampedRequest = RebalancePlanner::requestForPlan(stampedPlan);
+	QCOMPARE(stampedRequest.items.size(), 1);
+	const auto &item = stampedRequest.items.front();
+	QCOMPARE(item.scanPath, moved.scanStamp.path);
+	QCOMPARE(item.scanVolumeIdentifier, moved.scanStamp.volumeIdentifier);
+	QCOMPARE(item.modifiedMs, moved.scanStamp.modified.toMSecsSinceEpoch());
+	QCOMPARE(item.masterMobIds, moved.scanStamp.masterMobIds);
+	QVERIFY(item.headerIdentity);
+	QCOMPARE(item.headerIdentity->masterMobIds, QStringList{moved.masterMobId});
 }
 
 void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
@@ -627,7 +646,7 @@ void TestRebalancePlanner::invalid_request_member_rejects_whole_plan()
 	const auto file = makeMxf(root, "2", "stray.mxf", "same");
 	RebalancePlan valid;
 	valid.mxfRootPath = root;
-	valid.ops.append({file.mediaFilePath, NumberedMxfFolder{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.fileMobId});
+	valid.ops.append({file.mediaFilePath, NumberedMxfFolder{{}, 1}, file.masterMobId, file.sizeBytes, -1, file.fileMobId, {}});
 	QCOMPARE(RebalancePlanner::requestForPlan(valid).items.size(), 1);
 
 	QVector<RebalanceMove> invalid;

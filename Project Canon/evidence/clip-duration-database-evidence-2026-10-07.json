@@ -1,0 +1,340 @@
+{
+  "date": "2026-10-07",
+  "method": "Read-only Canon MDB/MXF projection probe against real local sources; source observations shown before selected-value coalescing.",
+  "duplicateMasterTrack": {
+    "source": {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "bytes": 60680,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+    },
+    "mediaPath": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+    "projectedFileObservations": [
+      {
+        "clipDuration": [
+          {
+            "DropFrame": false,
+            "Duration": {
+              "DisplayRate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Rate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Source": 3,
+              "Units": 1500
+            },
+            "DurationObject": 68018,
+            "DurationProperty": "OMFI:CLIP:Length",
+            "MasterMobId": "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80",
+            "TrackId": 1
+          },
+          {
+            "DropFrame": false,
+            "Duration": {
+              "DisplayRate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Rate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Source": 3,
+              "Units": 1500
+            },
+            "DurationObject": 68060,
+            "DurationProperty": "OMFI:CLIP:Length",
+            "MasterMobId": "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80",
+            "TrackId": 1
+          }
+        ],
+        "id": "060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80",
+        "object": "68014"
+      },
+      {
+        "clipDuration": [
+          {
+            "DropFrame": false,
+            "Duration": {
+              "DisplayRate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Rate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Source": 3,
+              "Units": 1500
+            },
+            "DurationObject": 68018,
+            "DurationProperty": "OMFI:CLIP:Length",
+            "MasterMobId": "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80",
+            "TrackId": 1
+          },
+          {
+            "DropFrame": false,
+            "Duration": {
+              "DisplayRate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Rate": {
+                "Denominator": 1,
+                "Numerator": 25
+              },
+              "Source": 3,
+              "Units": 1500
+            },
+            "DurationObject": 68060,
+            "DurationProperty": "OMFI:CLIP:Length",
+            "MasterMobId": "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80",
+            "TrackId": 1
+          }
+        ],
+        "id": "060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80",
+        "object": "68071"
+      }
+    ],
+    "masterObjects": [
+      {
+        "handle": "68020",
+        "properties": [
+          {
+            "bytes": "4d4f424a",
+            "decoded": "MOBJ",
+            "name": "OMFI:ObjID",
+            "state": 1,
+            "type": "omfi:ObjectTag"
+          },
+          {
+            "bytes": "2a0000007429976a4e397047",
+            "decoded": "*\u0000\u0000\u0000t)�jN9pG",
+            "name": "OMFI:MOBJ:MobID",
+            "state": 1,
+            "type": "omfi:UID"
+          },
+          {
+            "bytes": "07000000",
+            "decoded": 7,
+            "name": "OMFI:MOBJ:UsageCode",
+            "state": 1,
+            "type": "omfi:UsageCodeType"
+          },
+          {
+            "bytes": "2a0000007429976a4e397047",
+            "decoded": "*\u0000\u0000\u0000t)�jN9pG",
+            "name": "OMFI:MOBJ:MobID",
+            "state": 1,
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      {
+        "handle": "68062",
+        "properties": [
+          {
+            "bytes": "4d4f424a",
+            "decoded": "MOBJ",
+            "name": "OMFI:ObjID",
+            "state": 1,
+            "type": "omfi:ObjectTag"
+          },
+          {
+            "bytes": "2a0000007429976a4e397047",
+            "decoded": "*\u0000\u0000\u0000t)�jN9pG",
+            "name": "OMFI:MOBJ:MobID",
+            "state": 1,
+            "type": "omfi:UID"
+          },
+          {
+            "bytes": "07000000",
+            "decoded": 7,
+            "name": "OMFI:MOBJ:UsageCode",
+            "state": 1,
+            "type": "omfi:UsageCodeType"
+          },
+          {
+            "bytes": "2a0000007429976a4e397047",
+            "decoded": "*\u0000\u0000\u0000t)�jN9pG",
+            "name": "OMFI:MOBJ:MobID",
+            "state": 1,
+            "type": "omfi:UID"
+          }
+        ]
+      }
+    ],
+    "finding": "Two recorded master objects have the same MobID. Their separate track/segment objects record the same track label and timing. Selected values coalesce identical facts; raw observations and object provenance remain."
+  },
+  "sourceSpecificTrackNumbers": {
+    "mdbSource": {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 3668720,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+    },
+    "mxfSource": {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+      "bytes": 3207777,
+      "sha256": "16957917fe8a4cbfedd166fe0558d4269c5ca42e01f282ca10373c01d1fe0168"
+    },
+    "mdbProjectedObservation": [
+      {
+        "clipDuration": [
+          {
+            "DropFrame": false,
+            "Duration": {
+              "DisplayRate": {
+                "Denominator": 100,
+                "Numerator": 2997
+              },
+              "Rate": {
+                "Denominator": 100,
+                "Numerator": 2997
+              },
+              "Source": 3,
+              "Units": 917
+            },
+            "DurationComponents": [
+              {
+                "Contributions": [],
+                "Object": 75322,
+                "Property": "OMFI:CLIP:Length",
+                "Rate": {
+                  "Denominator": 100,
+                  "Numerator": 2997
+                },
+                "Units": 0
+              },
+              {
+                "Contributions": [],
+                "Object": 75323,
+                "Property": "OMFI:CLIP:Length",
+                "Rate": {
+                  "Denominator": 100,
+                  "Numerator": 2997
+                },
+                "Units": 917
+              },
+              {
+                "Contributions": [],
+                "Object": 75324,
+                "Property": "OMFI:CLIP:Length",
+                "Rate": {
+                  "Denominator": 100,
+                  "Numerator": 2997
+                },
+                "Units": 0
+              },
+              {
+                "Contributions": [
+                  {
+                    "Object": 75322,
+                    "Subtract": false,
+                    "Units": 0
+                  },
+                  {
+                    "Object": 75323,
+                    "Subtract": false,
+                    "Units": 917
+                  },
+                  {
+                    "Object": 75324,
+                    "Subtract": false,
+                    "Units": 0
+                  }
+                ],
+                "Object": 75325,
+                "Property": "OMFI:SEQU:Sequence",
+                "Rate": {
+                  "Denominator": 100,
+                  "Numerator": 2997
+                },
+                "Units": 917
+              }
+            ],
+            "DurationObject": 75325,
+            "DurationProperty": "OMFI:SEQU:Sequence",
+            "MasterMobId": "060a2b3401010105.01010f1013000000.86583c0a55120690.c09946fc807fda72",
+            "TrackId": 1
+          }
+        ],
+        "id": "060a2b3401010105.01010f1013000000.9a583c0a55120690.48e346fc807fda72",
+        "object": "75154"
+      }
+    ],
+    "mxfProjectedObservation": [
+      {
+        "clipDuration": [
+          {
+            "DropFrame": null,
+            "Duration": {
+              "DisplayRate": {
+                "Denominator": 1001,
+                "Numerator": 30000
+              },
+              "Rate": {
+                "Denominator": 1,
+                "Numerator": 48000
+              },
+              "Source": 3,
+              "Units": 1468667
+            },
+            "DurationObject": 720,
+            "DurationProperty": "StructuralComponent.Duration",
+            "MasterMobId": "060a2b3401010105.01010f1013000000.86583c0a55120690.c09946fc807fda72",
+            "TrackId": 2
+          }
+        ],
+        "id": "060a2b3401010105.01010f1013000000.9a583c0a55120690.48e346fc807fda72",
+        "object": "725"
+      }
+    ],
+    "mdbTrackProperties": [
+      {
+        "bytes": "5452414b",
+        "decoded": "TRAK",
+        "name": "OMFI:ObjID",
+        "state": 1,
+        "type": "omfi:ObjectTag"
+      },
+      {
+        "bytes": "0100",
+        "decoded": 1,
+        "name": "OMFI:TRAK:LabelNumber",
+        "state": 1,
+        "type": "omfi:Short"
+      }
+    ],
+    "mxfTrackProperties": [
+      {
+        "bytes": "0000bb8000000001",
+        "decoded": {
+          "Denominator": 1,
+          "Numerator": 48000
+        },
+        "name": "Track.EditRate",
+        "state": 1,
+        "type": ""
+      },
+      {
+        "bytes": "00000001",
+        "decoded": 1,
+        "name": "GenericTrack.TrackNumber",
+        "state": 1,
+        "type": ""
+      },
+      {
+        "bytes": "00000002",
+        "decoded": 2,
+        "name": "GenericTrack.TrackID",
+        "state": 1,
+        "type": ""
+      }
+    ],
+    "finding": "The same master/file association records OMF LabelNumber 1 in MDB and MXF TrackID 2 / TrackNumber 1. These fields are retained with their source property context; no guessed numeric conversion is applied.",
+    "toolkitSource": "https://github.com/LWKS-Software/omfkt22/blob/main/kitomfi/ommobget.c",
+    "toolkitFunction": "omfiTrackGetInfo reads OMF1 LabelNumber and TrackKind, then calls CvtTrackNumtoID."
+  }
+}

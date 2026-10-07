@@ -493,9 +493,13 @@ namespace Canon
 						property.textEncodingBasis = EvidenceBasis::Recorded;
 					if (!decoded.explanation.isEmpty())
 					{
-						if (!property.interpretation.isEmpty())
+						if (property.interpretation.isEmpty())
+							property.interpretation = decoded.explanation;
+						else
+						{
 							property.interpretation.append(QLatin1Char(' '));
-						property.interpretation.append(decoded.explanation);
+							property.interpretation.append(decoded.explanation);
+						}
 					}
 					if (!decoded.valid)
 					{
@@ -545,8 +549,9 @@ namespace Canon
 				relationship.target = type == Type::Strongref ? targetFor(object, identity) : 0;
 				relationship.locator = elementLocator(property.locator, offset, 16);
 				relationship.recordedReference = identity;
-				relationship.referenceEncoding = QStringLiteral("MXF %1: 16 original reference bytes; no byte-order normalization")
-													 .arg(typeName(type));
+				relationship.referenceEncoding = type == Type::Weakref
+													 ? QStringLiteral("MXF WeakRef: 16 original reference bytes; no byte-order normalization")
+													 : QStringLiteral("MXF StrongRef: 16 original reference bytes; no byte-order normalization");
 				relationship.explanation = relationship.target
 											   ? QStringLiteral("A unique InstanceUID target was found in this partition's metadata copy.")
 											   : QStringLiteral("No unique InstanceUID target was established in this partition's metadata copy; the recorded reference remains unresolved.");

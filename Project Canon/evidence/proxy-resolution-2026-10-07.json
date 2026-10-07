@@ -1,0 +1,1874 @@
+{
+  "checked": "2026-10-07",
+  "purpose": "Read-only review of all eight changed Resolution cells, not a policy change.",
+  "method": {
+    "canon": "Fresh x86_64 standalone MxfReader/MdbReader probe compiled from current repository reader sources; retained decoded values, raw property bytes and exact source ranges. No essence whole-file reads.",
+    "ffprobeCommand": "ffprobe -v error -probesize 1048576 -analyzeduration 1000000 -show_entries stream=codec_name,width,height,coded_width,coded_height,field_order,sample_aspect_ratio,display_aspect_ratio,pix_fmt -of json PATH",
+    "ffprobeVersion": "ffprobe version 8.1.2 Copyright (c) 2007-2026 the FFmpeg developers"
+  },
+  "conclusions": [
+    "All eight matching MDB descriptors agree with MXF headers for stored, sampled and display dimensions and FrameLayout.",
+    "Old Resolution equals stored raster and independently probed H.264 stream dimensions in all eight cases.",
+    "Current Resolution equals recorded display raster in all eight cases.",
+    "This is a geometry selection/display semantic difference, not a database-first IO regression and not a necessary AVC essence parsing gap.",
+    "It is not established that these larger display/sampled rectangles are useful Resolution-column values; user choice is required before changing agreed/planned display semantics."
+  ],
+  "records": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968361_1B4A21B4A27ECV.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1785742916245707761,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.ec274a1b55120690.c9ce46fc807fda72",
+      "baselineResolution": "480x270",
+      "currentResolution": "1920x540",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 78427,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 78426
+        },
+        "properties": [
+          {
+            "decoded": 270,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2178980
+              }
+            ],
+            "raw": "0e010000"
+          },
+          {
+            "decoded": 480,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2179004
+              }
+            ],
+            "raw": "e0010000"
+          },
+          {
+            "decoded": 540,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2179028
+              }
+            ],
+            "raw": "1c020000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2179052
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 540,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2179124
+              }
+            ],
+            "raw": "1c020000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2179148
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 2,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 2179220
+              }
+            ],
+            "raw": "0200"
+          },
+          {
+            "decoded": 3472,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2179388
+              }
+            ],
+            "raw": "900d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 282779
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 761,
+        "properties": [
+          {
+            "decoded": 3472,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136580
+              }
+            ],
+            "raw": "00000d90"
+          },
+          {
+            "decoded": 2,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 136833
+              }
+            ],
+            "raw": "02"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136854
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 540,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136862
+              }
+            ],
+            "raw": "0000021c"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136886
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 540,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136894
+              }
+            ],
+            "raw": "0000021c"
+          },
+          {
+            "decoded": 480,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136902
+              }
+            ],
+            "raw": "000001e0"
+          },
+          {
+            "decoded": 270,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136910
+              }
+            ],
+            "raw": "0000010e"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 136918
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 480,
+        "height": 270,
+        "coded_width": 480,
+        "coded_height": 270,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "tt"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968378_1B5B61B5B6A96V.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1785742939033752173,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.966a5b1b55120690.692346fc807fda72",
+      "baselineResolution": "480x270",
+      "currentResolution": "1920x540",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 87171,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 87170
+        },
+        "properties": [
+          {
+            "decoded": 270,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3525716
+              }
+            ],
+            "raw": "0e010000"
+          },
+          {
+            "decoded": 480,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3525740
+              }
+            ],
+            "raw": "e0010000"
+          },
+          {
+            "decoded": 540,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3525764
+              }
+            ],
+            "raw": "1c020000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3525788
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 540,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3525860
+              }
+            ],
+            "raw": "1c020000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3525884
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 2,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 3525956
+              }
+            ],
+            "raw": "0200"
+          },
+          {
+            "decoded": 3472,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 3526124
+              }
+            ],
+            "raw": "900d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 519048
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 745,
+        "properties": [
+          {
+            "decoded": 3472,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134506
+              }
+            ],
+            "raw": "00000d90"
+          },
+          {
+            "decoded": 2,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 134759
+              }
+            ],
+            "raw": "02"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134780
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 540,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134788
+              }
+            ],
+            "raw": "0000021c"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134812
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 540,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134820
+              }
+            ],
+            "raw": "0000021c"
+          },
+          {
+            "decoded": 480,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134828
+              }
+            ],
+            "raw": "000001e0"
+          },
+          {
+            "decoded": 270,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134836
+              }
+            ],
+            "raw": "0000010e"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 134844
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 480,
+        "height": 270,
+        "coded_width": 480,
+        "coded_height": 270,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "tt"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969069_252C9252C952BV.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1785746251577242832,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.2b952c2555120690.f6c946fc807fda72",
+      "baselineResolution": "480x270",
+      "currentResolution": "1920x1080",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 71270,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 71269
+        },
+        "properties": [
+          {
+            "decoded": 270,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075220
+              }
+            ],
+            "raw": "0e010000"
+          },
+          {
+            "decoded": 480,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075244
+              }
+            ],
+            "raw": "e0010000"
+          },
+          {
+            "decoded": 1080,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075268
+              }
+            ],
+            "raw": "38040000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075292
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 1080,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075364
+              }
+            ],
+            "raw": "38040000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075388
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 0,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 1075460
+              }
+            ],
+            "raw": "0000"
+          },
+          {
+            "decoded": 3484,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1075652
+              }
+            ],
+            "raw": "9c0d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 88012
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 745,
+        "properties": [
+          {
+            "decoded": 3484,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134516
+              }
+            ],
+            "raw": "00000d9c"
+          },
+          {
+            "decoded": 0,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 134773
+              }
+            ],
+            "raw": "00"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134794
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 1080,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134802
+              }
+            ],
+            "raw": "00000438"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134826
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 1080,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134834
+              }
+            ],
+            "raw": "00000438"
+          },
+          {
+            "decoded": 480,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134842
+              }
+            ],
+            "raw": "000001e0"
+          },
+          {
+            "decoded": 270,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134850
+              }
+            ],
+            "raw": "0000010e"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 134858
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 480,
+        "height": 270,
+        "coded_width": 480,
+        "coded_height": 270,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "progressive"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC6C3_194DA194DA6F9V.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1786087846996806884,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.f9a64d1959120690.002946fc807fda72",
+      "baselineResolution": "480x270",
+      "currentResolution": "1920x1080",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 78018,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 78017
+        },
+        "properties": [
+          {
+            "decoded": 270,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2114660
+              }
+            ],
+            "raw": "0e010000"
+          },
+          {
+            "decoded": 480,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2114684
+              }
+            ],
+            "raw": "e0010000"
+          },
+          {
+            "decoded": 1080,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2114708
+              }
+            ],
+            "raw": "38040000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2114732
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 1080,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2114804
+              }
+            ],
+            "raw": "38040000"
+          },
+          {
+            "decoded": 1920,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2114828
+              }
+            ],
+            "raw": "80070000"
+          },
+          {
+            "decoded": 0,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 2114900
+              }
+            ],
+            "raw": "0000"
+          },
+          {
+            "decoded": 3487,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2115092
+              }
+            ],
+            "raw": "9f0d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 271540
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 761,
+        "properties": [
+          {
+            "decoded": 3487,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136580
+              }
+            ],
+            "raw": "00000d9f"
+          },
+          {
+            "decoded": 0,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 136837
+              }
+            ],
+            "raw": "00"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136858
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 1080,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136866
+              }
+            ],
+            "raw": "00000438"
+          },
+          {
+            "decoded": 1920,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136890
+              }
+            ],
+            "raw": "00000780"
+          },
+          {
+            "decoded": 1080,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136898
+              }
+            ],
+            "raw": "00000438"
+          },
+          {
+            "decoded": 480,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136906
+              }
+            ],
+            "raw": "000001e0"
+          },
+          {
+            "decoded": 270,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136914
+              }
+            ],
+            "raw": "0000010e"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 136922
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 480,
+        "height": 270,
+        "coded_width": 480,
+        "coded_height": 270,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "progressive"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB1AA_CB7B1CB7B19CFV.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1786147979539155852,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.cf197bcb60120690.876f46fc807fda72",
+      "baselineResolution": "320x180",
+      "currentResolution": "1280x720",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 83178,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 83177
+        },
+        "properties": [
+          {
+            "decoded": 180,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910092
+              }
+            ],
+            "raw": "b4000000"
+          },
+          {
+            "decoded": 320,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910116
+              }
+            ],
+            "raw": "40010000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910140
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 1280,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910164
+              }
+            ],
+            "raw": "00050000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910236
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 1280,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910260
+              }
+            ],
+            "raw": "00050000"
+          },
+          {
+            "decoded": 0,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 2910332
+              }
+            ],
+            "raw": "0000"
+          },
+          {
+            "decoded": 3488,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 2910524
+              }
+            ],
+            "raw": "a00d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 411629
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 753,
+        "properties": [
+          {
+            "decoded": 3488,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136035
+              }
+            ],
+            "raw": "00000da0"
+          },
+          {
+            "decoded": 0,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 136292
+              }
+            ],
+            "raw": "00"
+          },
+          {
+            "decoded": 1280,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136313
+              }
+            ],
+            "raw": "00000500"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136321
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 1280,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136345
+              }
+            ],
+            "raw": "00000500"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136353
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 320,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136361
+              }
+            ],
+            "raw": "00000140"
+          },
+          {
+            "decoded": 180,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 136369
+              }
+            ],
+            "raw": "000000b4"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 136377
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 320,
+        "height": 180,
+        "coded_width": 320,
+        "coded_height": 180,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "progressive"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED98_F8F08F8F08A76V.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1786163322138335591,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.768af0f860120690.4d5d46fc807fda72",
+      "baselineResolution": "352x240",
+      "currentResolution": "720x240",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 74017,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 74016
+        },
+        "properties": [
+          {
+            "decoded": 240,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500428
+              }
+            ],
+            "raw": "f0000000"
+          },
+          {
+            "decoded": 352,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500452
+              }
+            ],
+            "raw": "60010000"
+          },
+          {
+            "decoded": 240,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500476
+              }
+            ],
+            "raw": "f0000000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500500
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 240,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500572
+              }
+            ],
+            "raw": "f0000000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500596
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 2,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 1500668
+              }
+            ],
+            "raw": "0200"
+          },
+          {
+            "decoded": 3470,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1500836
+              }
+            ],
+            "raw": "8e0d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 162520
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 745,
+        "properties": [
+          {
+            "decoded": 3470,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134500
+              }
+            ],
+            "raw": "00000d8e"
+          },
+          {
+            "decoded": 2,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 134733
+              }
+            ],
+            "raw": "02"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134754
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 240,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134762
+              }
+            ],
+            "raw": "000000f0"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134786
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 240,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134794
+              }
+            ],
+            "raw": "000000f0"
+          },
+          {
+            "decoded": 352,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134802
+              }
+            ],
+            "raw": "00000160"
+          },
+          {
+            "decoded": 240,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134810
+              }
+            ],
+            "raw": "000000f0"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 134818
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 352,
+        "height": 240,
+        "coded_width": 352,
+        "coded_height": 240,
+        "sample_aspect_ratio": "40:33",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "tt"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDC3_F9117F9117290V.mxf",
+      "fileSize": 6340705,
+      "mtimeNs": 1786163365497838081,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.907211f960120690.b1d646fc807fda72",
+      "baselineResolution": "352x240",
+      "currentResolution": "720x240",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 72011,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 72010
+        },
+        "properties": [
+          {
+            "decoded": 240,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1189652
+              }
+            ],
+            "raw": "f0000000"
+          },
+          {
+            "decoded": 352,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1189676
+              }
+            ],
+            "raw": "60010000"
+          },
+          {
+            "decoded": 240,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1189700
+              }
+            ],
+            "raw": "f0000000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1189724
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 240,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1189796
+              }
+            ],
+            "raw": "f0000000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1189820
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 2,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 1189892
+              }
+            ],
+            "raw": "0200"
+          },
+          {
+            "decoded": 3491,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1190060
+              }
+            ],
+            "raw": "a30d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 108516
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 745,
+        "properties": [
+          {
+            "decoded": 3491,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134506
+              }
+            ],
+            "raw": "00000da3"
+          },
+          {
+            "decoded": 2,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 134739
+              }
+            ],
+            "raw": "02"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134760
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 240,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134768
+              }
+            ],
+            "raw": "000000f0"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134792
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 240,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134800
+              }
+            ],
+            "raw": "000000f0"
+          },
+          {
+            "decoded": 352,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134808
+              }
+            ],
+            "raw": "00000160"
+          },
+          {
+            "decoded": 240,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134816
+              }
+            ],
+            "raw": "000000f0"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 134824
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 352,
+        "height": 240,
+        "coded_width": 352,
+        "coded_height": 240,
+        "sample_aspect_ratio": "40:33",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "tt"
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE89_F9A77F9A77023V.mxf",
+      "fileSize": 3698785,
+      "mtimeNs": 1786163563429476326,
+      "canonicalFileMobId": "060a2b3401010105.01010f1013000000.2370a7f960120690.2c6346fc807fda72",
+      "baselineResolution": "352x288",
+      "currentResolution": "720x576",
+      "mdb": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobObject": 74683,
+        "descriptorReference": {
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "target": 74682
+        },
+        "properties": [
+          {
+            "decoded": 288,
+            "name": "OMFI:DIDD:StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601108
+              }
+            ],
+            "raw": "20010000"
+          },
+          {
+            "decoded": 352,
+            "name": "OMFI:DIDD:StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601132
+              }
+            ],
+            "raw": "60010000"
+          },
+          {
+            "decoded": 576,
+            "name": "OMFI:DIDD:SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601156
+              }
+            ],
+            "raw": "40020000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601180
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 576,
+            "name": "OMFI:DIDD:DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601252
+              }
+            ],
+            "raw": "40020000"
+          },
+          {
+            "decoded": 720,
+            "name": "OMFI:DIDD:DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601276
+              }
+            ],
+            "raw": "d0020000"
+          },
+          {
+            "decoded": 0,
+            "name": "OMFI:DIDD:FrameLayout",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 1601348
+              }
+            ],
+            "raw": "0000"
+          },
+          {
+            "decoded": 3483,
+            "name": "OMFI:DIDD:DIDResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 1601516
+              }
+            ],
+            "raw": "9b0d0000"
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:DIDD:EssenceCompression",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 180578
+              }
+            ],
+            "raw": "0202010431010111060e2b340401010d"
+          }
+        ]
+      },
+      "mxf": {
+        "descriptorObject": 745,
+        "properties": [
+          {
+            "decoded": 3483,
+            "name": "GenericPictureEssenceDescriptor.ResolutionID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134496
+              }
+            ],
+            "raw": "00000d9b"
+          },
+          {
+            "decoded": 0,
+            "name": "GenericPictureEssenceDescriptor.FrameLayout",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 134729
+              }
+            ],
+            "raw": "00"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.DisplayWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134750
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 576,
+            "name": "GenericPictureEssenceDescriptor.DisplayHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134758
+              }
+            ],
+            "raw": "00000240"
+          },
+          {
+            "decoded": 720,
+            "name": "GenericPictureEssenceDescriptor.SampledWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134782
+              }
+            ],
+            "raw": "000002d0"
+          },
+          {
+            "decoded": 576,
+            "name": "GenericPictureEssenceDescriptor.SampledHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134790
+              }
+            ],
+            "raw": "00000240"
+          },
+          {
+            "decoded": 352,
+            "name": "GenericPictureEssenceDescriptor.StoredWidth",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134798
+              }
+            ],
+            "raw": "00000160"
+          },
+          {
+            "decoded": 288,
+            "name": "GenericPictureEssenceDescriptor.StoredHeight",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 134806
+              }
+            ],
+            "raw": "00000120"
+          },
+          {
+            "decoded": "060e2b340401010d0401020201311101",
+            "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "ranges": [
+              {
+                "length": 16,
+                "offset": 134814
+              }
+            ],
+            "raw": "060e2b340401010d0401020201311101"
+          }
+        ]
+      },
+      "ffprobe": {
+        "codec_name": "h264",
+        "width": 352,
+        "height": 288,
+        "coded_width": 352,
+        "coded_height": 288,
+        "sample_aspect_ratio": "16:11",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "field_order": "progressive"
+      }
+    }
+  ]
+}

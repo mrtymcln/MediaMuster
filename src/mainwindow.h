@@ -252,6 +252,7 @@ private:
 	/// Cached so the chip strip can render without reaching into
 	/// the dialog (which may not exist yet if not opened).
 	bool m_binFilterActive = false;
+	bool m_binFilterIncomplete = false;
 	QStringList m_binFilterBinNames;
 
 	// MARK: - Debounce timers

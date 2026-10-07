@@ -173,6 +173,7 @@ private slots:
 	void legacyOnlyClipIsExplicitlyUnsupported();
 	void audioSuiteDependencies();
 	void terminalLocatorIsNotMedia();
+	void incomplete_locator_cannot_assert_modern_identity_absent();
 	void fileDescriptorRequiresUsableMediaRoute_data();
 	void fileDescriptorRequiresUsableMediaRoute();
 	void invalidSelectionAndIncompleteEvidence();
@@ -443,6 +444,28 @@ void TestCanonAvbReferences::terminalLocatorIsNotMedia()
 	AvbReferenceIndex index({s}, cancel);
 	const auto result = index.resolve({selected({2})}, cancel);
 	QVERIFY(result.media.isEmpty());
+}
+
+void TestCanonAvbReferences::incomplete_locator_cannot_assert_modern_identity_absent()
+{
+	auto s = twoSequences();
+	auto &value = object(s, 8);
+	value.properties.clear();
+	auto context = QSharedPointer<AvbObjectContext>::create(*value.avb);
+	context->interpretationComplete = false;
+	value.avb = context;
+	field(s, 8, QStringLiteral("MSMLocator.legacy_word0"), quint32(0x12345678));
+	field(s, 8, QStringLiteral("MSMLocator.legacy_word1"), quint32(0x87654321));
+	Cancellation cancel;
+	const auto partial = AvbReferenceIndex({s}, cancel).resolve({selected({2})}, cancel);
+	QVERIFY(!partial.complete);
+	QVERIFY(partial.media.isEmpty());
+	QVERIFY(hasIssue(partial, Issue::UnsupportedIdentity));
+	// A typed ID that was read before a later failure is independent evidence.
+	field(s, 8, QStringLiteral("MSMLocator.mob_id"), identity('A'));
+	const auto known = AvbReferenceIndex({s}, cancel).resolve({selected({2})}, cancel);
+	QVERIFY(!known.complete);
+	QCOMPARE(mediaIds(known), QSet<QByteArray>{identity('A')});
 }
 
 void TestCanonAvbReferences::fileDescriptorRequiresUsableMediaRoute_data()

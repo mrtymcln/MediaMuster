@@ -1,0 +1,172 @@
+{
+  "date": "2026-10-07",
+  "finding": "MXF prefix-42/AAFSDK IDs were incorrectly exempted from source-qualified material numeric-field conversion. The family prefix/suffix does not establish byte order.",
+  "sampleFilename": "1042.WAVA01.D77B775B553A6FA.mxf",
+  "sources": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1042.WAVA01.D77B775B553A6FA.mxf",
+      "readerOutcome": "Complete",
+      "observations": [
+        {
+          "object": 649,
+          "property": "EssenceContainerData.LinkedPackageUID",
+          "encodingHex": "060a2b340101010101010f00130000005b553a6f83d50a6e060e2b347f7f2a80",
+          "decoded": "060a2b340101010101010f00130000005b553a6f83d50a6e060e2b347f7f2a80",
+          "ranges": [
+            {
+              "length": 32,
+              "offset": 124064
+            }
+          ],
+          "nativeType": "",
+          "sourceIdentityEncoding": "MXF InstanceUID: 16 original UUID bytes; no byte-order normalization"
+        },
+        {
+          "object": 670,
+          "property": "GenericPackage.PackageUID",
+          "encodingHex": "060a2b340101010101010f00130000005b553a6f83d50a6e060e2b347f7f2a80",
+          "decoded": "060a2b340101010101010f00130000005b553a6f83d50a6e060e2b347f7f2a80",
+          "ranges": [
+            {
+              "length": 32,
+              "offset": 127082
+            }
+          ],
+          "nativeType": "",
+          "sourceIdentityEncoding": "MXF InstanceUID: 16 original UUID bytes; no byte-order normalization"
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "readerOutcome": "Complete",
+      "observations": [
+        {
+          "object": 190,
+          "property": "FileMobId",
+          "encodingHex": "060a2b340101010101010f00130000006f3a555bd5836e0a060e2b347f7f2a80",
+          "decoded": "060a2b340101010101010f00130000006f3a555bd5836e0a060e2b347f7f2a80",
+          "ranges": [
+            {
+              "length": 32,
+              "offset": 23446
+            }
+          ],
+          "nativeType": "",
+          "sourceIdentityEncoding": "PMR/AAF-32/little-endian"
+        },
+        {
+          "object": 579,
+          "property": "FileMobId",
+          "encodingHex": "060a2b340101010101010f00130000006f3a555bd5836e0a060e2b347f7f2a80",
+          "decoded": "060a2b340101010101010f00130000006f3a555bd5836e0a060e2b347f7f2a80",
+          "ranges": [
+            {
+              "length": 32,
+              "offset": 72058
+            }
+          ],
+          "nativeType": "",
+          "sourceIdentityEncoding": "PMR/AAF-32/little-endian"
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "readerOutcome": "Complete",
+      "observations": [
+        {
+          "object": 75228,
+          "property": "OMFI:MOBJ:MobID",
+          "encodingHex": "2a0000006f3a555bd5836e0a",
+          "decoded": "2a0000006f3a555bd5836e0a",
+          "ranges": [
+            {
+              "length": 12,
+              "offset": 531982
+            }
+          ],
+          "nativeType": "omfi:UID",
+          "sourceIdentityEncoding": "OMF UID: three recorded 32-bit words; no normalization"
+        },
+        {
+          "object": 75228,
+          "property": "OMFI:MOBJ:MobID",
+          "encodingHex": "2a0000006f3a555bd5836e0a",
+          "decoded": "2a0000006f3a555bd5836e0a",
+          "ranges": [
+            {
+              "length": 12,
+              "offset": 532007
+            }
+          ],
+          "nativeType": "omfi:UID",
+          "sourceIdentityEncoding": "OMF UID: three recorded 32-bit words; no normalization"
+        }
+      ]
+    }
+  ],
+  "numericFields": {
+    "meaning": "Material Data1/Data2/Data3 as 32/16/16 numeric fields",
+    "mxfBigEndian": [
+      1532312175,
+      33749,
+      2670
+    ],
+    "pmrLittleEndian": [
+      1532312175,
+      33749,
+      2670
+    ]
+  },
+  "expectedCanonicalDatabaseEncodingHex": "060a2b340101010101010f00130000006f3a555bd5836e0a060e2b347f7f2a80",
+  "priorCanonicalMxfEncodingHex": "060a2b340101010101010f00130000005b553a6f83d50a6e060e2b347f7f2a80",
+  "beforeScanComparison": {
+    "priorScan": "/tmp/canon-full-before-2026-10-07.json",
+    "baselineCsv": "/Users/martymclean/Desktop/before project canon.csv",
+    "fileMobIdDifferences": 277,
+    "differencesExactlyResolvedByMxfMaterialConversion": 277,
+    "note": "Comparison classifies the earlier exported values; direct property-qualified raw proof is for the sample above. The final full scan is separate."
+  },
+  "primaryImplementationEvidence": {
+    "url": "https://raw.githubusercontent.com/bbc/bmx/main/deps/libMXF/mxf/mxf_avid.c",
+    "localReference": "/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_avid.c",
+    "localReferenceSha256": "725e2c51f9e98abdfd54e73325cf07da7b8cb8bf2a33f67fffd8862e8e502092",
+    "function": "mxf_default_generate_aafsdk_umid",
+    "localLines": [
+      609,
+      665
+    ],
+    "findings": [
+      "Writes the exact 060a2b340101010101010f0013000000 prefix and 060e2b347f7f2a80 suffix into an MXF UMID.",
+      "Serializes major at material bytes 16..19 in descending significance; serializes the two 16-bit parts at 20..21 and 22..23 in descending significance.",
+      "Thus this family occurs in MXF and needs the same 32/16/16 field conversion to the app database convention."
+    ]
+  },
+  "fix": {
+    "file": "src/canon/projection.cpp",
+    "function": "canonicalMxfId",
+    "change": "Remove isWrappedOmfId early return. Conversion is selected by the MXF source property; preserve original raw bytes.",
+    "unchanged": "canonicalDatabaseId and OMF prefix-42 wrapping retain their database encoding. No match-either-byte-order fallback added. All-zero 32-byte value remains all zero."
+  },
+  "probe": {
+    "source": "/tmp/canon-identity-proof.cpp",
+    "sha256": "57ec6bb78a7c53b2b817e3b5355a72e44a7052a361e912293ca35c022c964034",
+    "readOnly": true
+  },
+  "test": {
+    "source": "tests/tst_canon_mxfprojection.cpp",
+    "name": "legacy_aafsdk_ids_follow_the_source_encoding",
+    "covers": [
+      "FileMobId conversion",
+      "MasterMobId conversion",
+      "PMR 32-byte preservation",
+      "legacy PMR 8-byte wrapping",
+      "original raw encoding retained",
+      "zero identity preserved"
+    ],
+    "isolatedSuitePassed": 25,
+    "isolatedSuiteFailed": 0,
+    "output": "/tmp/canon-mxf-identity-tests-2026-10-07.txt"
+  }
+}

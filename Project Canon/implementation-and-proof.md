@@ -1,8 +1,12 @@
 # Implementation and proof
 
-Status: staged implementation in progress. The first RAM/evidence stage is recorded
-in [foundation implementation](foundation-implementation-2026-10-03.md). Requirements
-below are the acceptance plan, not a claim that every check is already implemented.
+Status: the fresh engines are connected to the live application; see the
+[live connection and verification report](live-connection-2026-10-04.md). The first
+RAM/evidence stage is recorded in [foundation implementation](foundation-implementation-2026-10-03.md).
+Requirements below remain the acceptance plan, not a claim that every check is complete.
+The original Macintosh HD + EDIT CSV comparison remains pending because EDIT was
+not mounted during the 7 October local verification. The user subsequently removed
+RAM optimization as a prerequisite for connection.
 
 The user approved the readiness recommendations on 3 October 2026: begin with RAM
 records and evidence collection, then connect selection rules and the table; verify

@@ -2,13 +2,42 @@
 
 Recorded 3 October 2026. This folder captures the user's requirements, the proposed
 RAM metadata design, and the evidence discussed during the Avid format investigation.
-Implementation has started. See [foundation implementation](foundation-implementation-2026-10-03.md)
-for the implemented subset, checks and remaining work. The design documents also
-contain requirements that are still pending.
+The fresh engines are now connected to the application. See the
+[live connection report](live-connection-2026-10-04.md) for current implementation,
+verification status and limits. The [foundation implementation](foundation-implementation-2026-10-03.md)
+records the earlier milestone; some design requirements and optional UI features
+remain future work.
 
 "Canon" means the plan for canonical correctness: preserve the distinctions in
 Avid's formats and the evidence behind MediaMuster's interpretation. It is an
 objective, not a declaration that every current or proposed parser rule is proven.
+
+## Live connection update
+
+The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
+This supersedes the historical “not yet connected” status of the reader reports below.
+Memory optimization is not a prerequisite. Work began on 4 October and continued
+on 7 October 2026; the linked report records verification status. The live scanner
+uses Canon discovery, raw source graphs, file/master projections and per-field
+selection. The AVB whole-bin path uses the fresh reader; the individual-sequence
+picker remains behind `SequenceFilter` for a later release.
+
+The 7 October full-drive check exposed excessive memory from reading every media
+header. The user confirmed databases first, with header fallback for unusable
+matches or missing/conflicting required table metadata. See the
+[memory investigation](database-first-and-memory-2026-10-07.md) and
+[MXF identity correction](mxf-identity-byte-order-2026-10-07.md).
+The [scheduling rules](database-first-scheduling-2026-10-07.md) explain header
+fallback and the recorded MDB sequence durations that avoid unnecessary reads.
+For deliberately skipped headers, file operations must confirm the selected
+database file MobId before acting; database-only master associations are excluded.
+The user also confirmed that Resolution shows the actual stored raster; retained
+display/sample rectangles remain separate. See [the proxy evidence](proxy-resolution-2026-10-07.md).
+The [full baseline-scope comparison](full-scan-comparison-2026-10-07.md) replaces
+the earlier local-only report: all 2,413 physical rows remain; the final Debug
+scan took 20,763 ms with a 2.41 GB peak process footprint. The complete native
+test suite passes 38/38. The report records all changed CSV cells and remaining
+notices, and distinguishes this improvement from the older app's performance.
 
 ## Implementation direction
 
@@ -17,31 +46,34 @@ be fresh replacements, while the UI and file-operation executor stay. See the
 [fresh replacement plan](replacement-engine-plan.md). This supersedes the earlier
 aggregate-based refactor as the final engine architecture.
 The selected `Canon::PmrReader` preserves both record sets and raw source evidence
-independently of the existing production parser. On 4 October the user chose the
+independently of the former production parser. On 4 October the user chose the
 alternative implementation and requested removal of the first Canon reader; see
 [PMR reader selection](pmr-reader-selection-2026-10-04.md).
 The [fresh MDB reader](fresh-mdb-reader-2026-10-04.md) now preserves Bento objects,
-typed property occurrences and references independently of the production parser.
-It has been checked against genuine local/EDIT MDBs and original toolkit files;
-metadata reconciliation and live-scanner integration remain subsequent stages.
+typed property occurrences and references independently of the former production parser.
+It has been checked against genuine local/EDIT MDBs and original toolkit files,
+and now supplies the live reconciliation stage.
 The [fresh OMF/legacy reader](fresh-legacy-reader-2026-10-04.md) now uses that shared
 object interpreter and reads native WAV/AIFF headers plus embedded OMF graphs.
 Known recording payloads stay on disk; real specimens and guarded large-file
-tests verify the metadata path. It is not yet connected to the live scanner.
+tests verify the metadata path. It now supplies the live legacy-file scan path.
 The [fresh MXF reader](fresh-mxf-reader-2026-10-04.md) now preserves metadata sets,
 per-partition Primers, typed/raw properties and qualified references across the
 file, while seeking over recording payloads. Its [uninterpreted-field inventory](mxf-uninterpreted-fields-2026-10-04.md)
-records remaining meanings for later review. Selection and live integration remain pending.
+records remaining meanings for later review. Its file-owned projections now supply
+live selection without discarding the original source graph.
 The [fresh AVB reader and reference engine](avb-reader.md) now retain source-local
 objects and original property evidence, list sequences and resolve selected scopes.
-All nine supplied bins pass the implemented reader grammars; the full 35-suite
-regression run passed, followed by final focused AVB checks.
+At the reader-only milestone, all nine supplied bins passed the implemented
+grammars and its 35-suite regression run passed. Current integration checks are
+recorded in the live connection report above.
 The [sequence-selection plan](avb-sequence-selection.md) records the approved
 dependency scope and explicit filter-application flow. The user approved the
 engine-first stage without live UI changes. The later policy update permits
 partial results with a persistent warning, superseding blanket blocking; unreadable
-bins, invalid selections and cancelled operations remain unavailable. Live table
-matching and UI integration remain subsequent work. The large
+bins, invalid selections and cancelled operations remain unavailable. The live
+whole-bin dialog now uses this engine and keeps applied partial-result warnings
+visible. The sequence selection UI remains later work. The large
 bin's measured RAM cost and the external linked media in `ROUGH` are recorded
 explicitly in the AVB report; this is not a claim of complete format coverage or
 performance improvement.
@@ -162,8 +194,10 @@ Only the selected implementation remains in the current Canon source.
 
 ## Documents
 
+- [Live connection](live-connection-2026-10-04.md): current Canon application path,
+  approved priorities, retained evidence and integration verification.
 - [AVB reader](avb-reader.md): fresh reader scope, PCMA native/specimen evidence,
-  verified reader/reference engine, remaining integration and source attribution.
+  verified reader/reference engine, original stage results and source attribution.
 - [AVB corpus check](avb-corpus-check-2026-10-04.md): all nine supplied bins,
   per-sequence identity counts, the external-media limit in `ROUGH`, and measured RAM.
 - [AVB sequence selection](avb-sequence-selection.md): approved sequence picker
@@ -172,7 +206,8 @@ Only the selected implementation remains in the current Canon source.
 - [Column review](column-review.md): three-column property/current UI/proposed UI
   comparison for the user's decisions, including distinctions from CSV-only fields.
 - [Conflict selection proposals](conflict-selection-proposals.md): eligibility,
-  field-specific recommendations and unresolved ties; pending user approval.
+  field-specific rules, the subsequently approved editorial priorities and unresolved
+  interpretations that still require evidence or a user decision.
 - [Pre-Canon scan baseline](scan-baseline-2026-10-03.md): supplied full-scan CSV,
   3,774 ms timing, memory/CPU screenshots, file receipts and comparison limits.
 - [File-operation checks in plain language](file-operation-checks.md): how row
@@ -186,9 +221,9 @@ Only the selected implementation remains in the current Canon source.
   a genuine video/audio group, local copies, and the limits of the observations.
 - [Implementation and proof](implementation-and-proof.md): staged changes and
   acceptance checks for correctness, memory, and scan speed.
-- [Current matching and selection](current-matching-and-selection.md): what the
-  existing scanner already does, what reconciliation is missing, and field-specific
-  selection examples from the inspected source.
+- [Current matching and selection](current-matching-and-selection.md): the inspected
+  pre-Canon scanner's matching rules and field-specific selection examples, retained
+  as a comparison reference rather than the current engine contract.
 - [Metadata selection policy](metadata-selection-policy.md): proposed central
   developer-controlled selection table, retained observations, and one shared resolver.
 - [Audit coverage](audit-coverage.md): all 40 audit entries mapped to direct design

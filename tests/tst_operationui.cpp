@@ -143,6 +143,7 @@ class TestOperationUi : public QObject
 {
 	Q_OBJECT
 private slots:
+	void scan_results_keep_reconciliation_issues();
 	void initTestCase();
 	void init();
 	void cleanup();
@@ -217,6 +218,22 @@ private:
 	std::unique_ptr<QTemporaryDir> m_temp;
 	QString m_root;
 };
+
+void TestOperationUi::scan_results_keep_reconciliation_issues()
+{
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(put(folder + QStringLiteral("/unknown.mxf"), QByteArrayLiteral("unreadable test header")));
+	QVERIFY(QFile::copy(QFINDTESTDATA("fixtures/msmFMID.pmr"), folder + QStringLiteral("/index.pmr")));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QSignalSpy issues(window.m_scanner, &MediaScanner::scanIssuesFinished);
+	window.startScanWithPaths({temporary.path()});
+	QVERIFY(issues.wait(10000));
+	QTRY_COMPARE(window.m_model->rowCount(), 1);
+	QVERIFY(!qvariant_cast<QVector<ScanIssue>>(issues.first().first()).isEmpty());
+	QCOMPARE(window.m_model->scanIssues().size(), qvariant_cast<QVector<ScanIssue>>(issues.first().first()).size());
+}
 
 void TestOperationUi::project_sidebar_uses_whole_inventory_totals()
 {

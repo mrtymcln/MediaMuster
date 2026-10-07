@@ -1,6 +1,6 @@
 # File-operation checks in plain language
 
-Explanation requested 3 October 2026. No operation-engine change is implemented here.
+Explanation requested 3 October 2026. Updated 7 October 2026 for the live Canon handoff.
 
 ## The distinction
 
@@ -39,15 +39,16 @@ The audit does not say the app has no safeguards. It identifies specific gaps:
   or the folder-family flag proves its current contents.
 
 See [audit coverage](audit-coverage.md) and the original finding evidence. These
-checks need their own operation-engine work and meaningful replacement/change tests;
-the RAM metadata redesign does not implement them automatically.
+checks now have explicit operation handoff code and focused regression tests as
+part of the live Canon connection described below. The original audit remains a
+record of the previous implementation.
 
 ## Capturing a stamp without writing into media
 
 Existing [OpStamp](../src/opfile.h) stores native file ID, volume ID, exact byte size
 and native modification timestamp. `sameObject()` compares native file/volume IDs;
 `unchanged()` also compares size/time. The operation engine checks an opened object's
-stamp, selected size/modification facts, applicable MXF IDs and expected path.
+stamp, selected size/modification facts, applicable header IDs and expected path.
 
 ## Agreed scan stamp
 
@@ -102,14 +103,75 @@ possible; do not require one arbitrary scalar identity or manufacture a mapping.
 For these agreed fields, compare readable scan-time header observations with
 fresh observations from the opened source. Missing, malformed or contradictory
 operation-time identity must not count as a match to an established scan identity.
-When no Avid identity was readable during scanning, report the unavailable check;
+When no Avid identity was readable during scanning, retain that unavailable evidence;
 do not invent an ID or apply OMF-package identity rules to ordinary legacy WAV/AIFF
-containers. The policy for operations with incomplete identity evidence still needs
-an explicit contract. The user subsequently approved stopping the affected move/delete
+containers. The user approved stopping the affected move/delete
 when an applicable stamp check cannot be completed or detects change, with an
 explanation. A missing optional Avid identity is not itself proof of a change;
 define which checks apply to each supported format without inventing unavailable
 identities. The agreed stamp does not uniquely identify a physical copy.
+
+For database-first scans, **deliberately not opening the header is a separate
+case from attempting an unreadable header**. User decision on 7 October 2026:
+when the header was skipped, verify the selected PMR/MDB FileMobId against the
+opened media header before copy, move or delete. A missing, unreadable or different
+identity stops that item. Database-only master associations are not additional
+header requirements. This does not change the earlier policy for headers which
+were actually attempted but had no readable Avid identity.
+
+## Live operation handoff
+
+[opscanreceipt.cpp](../src/opscanreceipt.cpp) prepares the same request receipt for
+Manage operations and Rebalance. Rebalance keeps that receipt through its preview;
+opening the preview does not refresh the scan's claims from disk.
+
+The operation request retains the five scan fields, including **all** established
+MasterMobIds. It also retains which identities were actually established in the
+media header. This applicability receipt is separate from the list of associations:
+an MDB can establish another legitimate master which the physical header does not
+contain. That database-only association must not make a valid file fail a header
+check.
+
+`databaseMobIdToVerify` records the separate database-origin expectation when the
+scan deliberately skipped the header. It never relabels that expectation as a
+header observation. Confirmed transfers preserve this applicability through the
+row's retained original location and immutable scan receipt.
+
+Before acting on a newly scanned source, the runner:
+
+1. Checks the selected path against its scan receipt.
+2. Checks the persistent volume identifier and modification timestamp; unavailable
+   required location/time evidence stops the item.
+3. Uses the fresh Canon MXF or legacy reader on the already opened file to compare
+   the file MobId and each master identity established in its scan-time header.
+   If the header was deliberately skipped, verifies the selected PMR/MDB FileMobId
+   instead, without requiring database-only master associations.
+4. Keeps the existing native file-handle, size, modification and path-binding checks.
+
+An identity missing or different on re-read fails an applicable header check. A
+header which changed during scanning, or supplied contradictory file identities,
+cannot become an apparently safe "unknown" receipt. An optional identity which
+was never established in the header has no equality claim to verify; it remains
+unknown unless the explicitly approved database-first FileMobId check applies.
+Ordinary WAV/AIFF files without any established Avid identity retain the existing
+filesystem checks.
+Embedded OMF identities in supported WAV/AIFF containers receive the same Canon
+legacy-reader check as OMF media.
+
+The journal preserves the applicability receipt. The new fields are optional when
+reading older schema-2 journals; malformed supplied fields are rejected. Existing
+inverse-operation `expectedVolumeId` remains the native device identity and is not
+reused for the scan's persistent volume identifier. Recovery can update the scan
+path only through its existing verified volume-remount mapping. Undo continues to
+target the forward operation's recorded native object at its current location.
+
+Focused tests cover header-only versus database-only master associations, changed
+scan evidence, wrong/missing volume, wrong path, real MXF and legacy WAV identities,
+Rebalance receipt retention, journal round trips, older journal compatibility and
+verified remount path updates. See the final live-connection report for actual
+build/test results. These checks still do not prove byte equality or continuity
+from scan time: replacement with matching path, volume, timestamp and header IDs
+can pass the agreed scan stamp.
 
 ### Source Mob terminology
 

@@ -5,6 +5,14 @@
 #include <QMetaType>
 #include <QString>
 #include <QVector>
+#include <QSharedPointer>
+#include <QStringList>
+
+namespace Canon
+{
+	struct ParsedSource;
+	struct AvbResolution;
+}
 
 /// Ordered operations on files identified by the selected bins' MSML locators.
 /// A shared master MobId does not establish bin-filter membership.
@@ -22,11 +30,21 @@ struct BinFilter
 		Operation op = Operation::Intersect;
 		QVector<QString> binDisplayNames;
 		BinFileReferences mediaFileIds;
+		QStringList warnings;
+		QVector<QSharedPointer<const Canon::ParsedSource>> sources;
+		QVector<QSharedPointer<const Canon::AvbResolution>> resolutions;
 	};
 
 	QVector<Step> steps;
 
 	[[nodiscard]] bool isActive() const noexcept { return !steps.isEmpty(); }
+	[[nodiscard]] bool resultsMayBeIncomplete() const noexcept
+	{
+		for (const auto &step : steps)
+			if (!step.warnings.isEmpty())
+				return true;
+		return false;
+	}
 
 	/// Labels do not affect row membership; operation order and both ID sets do.
 	[[nodiscard]] bool hasSameCriteria(const BinFilter &other) const

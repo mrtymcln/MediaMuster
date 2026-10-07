@@ -1,6 +1,7 @@
 #pragma once
 
 #include "avidmedialayout.h"
+#include "oprequest.h"
 
 #include <QString>
 #include <QVector>
@@ -18,7 +19,8 @@ struct RebalanceMove
 	QString masterMobId; ///< Empty for files with no relatives group.
 	qint64 sizeBytes = 0;
 	qint64 modifiedMs = -1;
-	QString fileMobId; ///< Essence-file identity retained for the engine's pre-move check.
+	QString fileMobId;				   ///< Essence-file identity retained for the engine's pre-move check.
+	std::optional<OpItem> scannedItem; ///< Exact selection receipt retained while the plan is previewed.
 };
 
 // MARK: - FolderState

@@ -205,6 +205,7 @@ private slots:
 	void genericStreamPartitionIsRetained();
 	void missingPrimerMappingQualifiesSource();
 	void emptyHeaderPartitionIsMalformed();
+	void retainedGraphsUseCompactSharedStorage();
 	void realAvidFixtures_data();
 	void realAvidFixtures();
 };
@@ -679,6 +680,42 @@ void TestCanonMxf::missingPrimerMappingQualifiesSource()
 void TestCanonMxf::emptyHeaderPartitionIsMalformed()
 {
 	QCOMPARE(parse(document({})).outcome, Outcome::Malformed);
+}
+
+void TestCanonMxf::retainedGraphsUseCompactSharedStorage()
+{
+	// A dictionary-rich header repeats the same descriptions many times. Keep
+	// every distinct value and reference without retaining allocation per copy.
+	constexpr int sourceCount = 23;
+	QByteArray graph = primer({{0x3c0a, instanceUl}, {0x4402, nameUl}, {0x4701, descriptorUl}});
+	for (int i = 0; i < sourceCount; ++i)
+		graph += klv(sourceKey, item(0x3c0a, QByteArray(16, char('c' + i))) +
+									item(0x4402, text(QStringLiteral("Source %1").arg(i))) + item(0x4701, idB));
+	graph += klv(descriptorKey, item(0x3c0a, idB));
+	const auto result = parse(document(graph));
+	QCOMPARE(result.outcome, Outcome::Complete);
+	QCOMPARE(result.objects.size(), sourceCount + 1);
+	QCOMPARE(result.relationships.size(), sourceCount);
+	QCOMPARE(result.objects.capacity(), result.objects.size());
+	QCOMPARE(result.relationships.capacity(), result.relationships.size());
+	QCOMPARE(result.unownedProperties.capacity(), result.unownedProperties.size());
+	for (const auto &object : result.objects)
+		QCOMPARE(object.properties.capacity(), object.properties.size());
+	const auto names = properties(result, nameUl);
+	QCOMPARE(names.size(), sourceCount);
+	for (int i = 0; i < sourceCount; ++i)
+	{
+		const QString name = QStringLiteral("Source %1").arg(i);
+		QCOMPARE(names[i]->encoding, text(name));
+		QCOMPARE(names[i]->decoded.toString(), name);
+		QVERIFY(!names[i]->interpretation.isEmpty());
+		QVERIFY(names[i]->interpretation.constData() == names.first()->interpretation.constData());
+		const auto &reference = result.relationships[i];
+		QCOMPARE(reference.origin, Canon::ObjectHandle(i + 1));
+		QCOMPARE(reference.target, Canon::ObjectHandle(sourceCount + 1));
+		QCOMPARE(reference.recordedReference.toByteArray(), idB);
+		QVERIFY(reference.referenceEncoding.constData() == result.relationships.first().referenceEncoding.constData());
+	}
 }
 
 void TestCanonMxf::realAvidFixtures_data()
