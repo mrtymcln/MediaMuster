@@ -6,6 +6,7 @@
 
 #include "scanmodel.h"
 #include "mediaduration.h"
+#include <initializer_list>
 
 namespace Canon
 {
@@ -40,6 +41,9 @@ namespace Canon
 	void observe(ProjectedFile &file, MediaProperty field, const ParsedSource &source,
 				 const AvidObject &object, const RawProperty &property, const QVariant &value,
 				 EvidenceBasis basis = EvidenceBasis::Recorded, const QString &explanation = {});
+	void recordPropertyCoverage(ProjectedFile &file, MediaProperty field, const ParsedSource &source,
+								const AvidObject &object, std::initializer_list<const char *> names,
+								bool completeObject);
 	QVariantMap rateValue(MediaRate rate);
 	MediaRate mediaRate(const QVariant &value);
 	QVariantMap durationValue(const MediaDuration &duration);

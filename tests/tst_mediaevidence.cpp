@@ -70,6 +70,104 @@ private slots:
 		QCOMPARE(evidence.observations(MediaProperty::Codec).size(), 1);
 		QVERIFY(!evidence.resolve(MediaProperty::Codec, priority, {}).value.isValid());
 	}
+	void source_reads_do_not_imply_property_absence()
+	{
+		MediaEvidence evidence;
+		const auto complete = observation(MetadataSource::Mxf, {}).snapshot;
+		evidence.registerSource(complete);
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, complete).state, PropertyReadState::NotRead);
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, complete).reason, PropertyReadReason::CoverageNotEstablished);
+		const auto missing = observation(MetadataSource::Mdb, {}).snapshot;
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, missing).reason, PropertyReadReason::NoAssociatedSource);
+		const auto failed = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Omf, QStringLiteral("failed.omf"), {}, SourceReadState::Unreadable});
+		evidence.registerSource(failed);
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, failed).state, PropertyReadState::Unreadable);
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, failed).reason, PropertyReadReason::SourceUnreadable);
+	}
+	void recorded_empty_false_and_zero_are_present_without_inventing_a_selected_value()
+	{
+		MediaEvidence evidence;
+		const auto empty = observation(MetadataSource::Mxf, QString{});
+		evidence.observe(MediaProperty::ClipName, empty);
+		QCOMPARE(evidence.readStatus(MediaProperty::ClipName, empty.snapshot).state, PropertyReadState::Present);
+		const auto selected = evidence.resolve(MediaProperty::ClipName, priority, {});
+		QCOMPARE(selected.readState, PropertyReadState::Present);
+		QVERIFY(!selected.value.isValid());
+		evidence.observe(MediaProperty::Alpha, observation(MetadataSource::Mxf, false));
+		evidence.observe(MediaProperty::Channels, observation(MetadataSource::Mxf, 0));
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha).state, PropertyReadState::Present);
+		QCOMPARE(evidence.readStatus(MediaProperty::Channels).state, PropertyReadState::Present);
+	}
+	void absence_is_scoped_and_qualification_keeps_history()
+	{
+		MediaEvidence evidence;
+		const auto source = observation(MetadataSource::Mxf, {}).snapshot;
+		evidence.recordReadStatus(MediaProperty::Alpha, source, QStringLiteral("descriptor:1"),
+			{PropertyReadState::Absent, PropertyReadReason::NotPresentInObject, PropertyApplicability::Applicable, {}});
+		evidence.registerSource(source, QStringLiteral("descriptor:2"));
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, source, QStringLiteral("descriptor:1")).state, PropertyReadState::Absent);
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, source).state, PropertyReadState::NotRead);
+		MediaEvidence copy = evidence;
+		copy.qualifyAll(false, SourceFreshness::Changed);
+		QCOMPARE(copy.sourceCoverage().first().freshness, SourceFreshness::Changed);
+		QVERIFY(!copy.sourceCoverage().first().eligible);
+		QVERIFY(evidence.sourceCoverage().first().eligible);
+		QCOMPARE(copy.readStatus(MediaProperty::Alpha, source, QStringLiteral("descriptor:1")).state, PropertyReadState::Absent);
+		QCOMPARE(copy.readStatus(MediaProperty::Alpha, source, {}, true).reason, PropertyReadReason::NoAssociatedSource);
+	}
+	void reading_a_scheduled_header_replaces_only_its_unopened_receipt()
+	{
+		MediaEvidence evidence;
+		const auto unopened = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("header.mxf"), {}, SourceReadState::NotRead});
+		const auto read = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("header.mxf"), {}, SourceReadState::Complete});
+		evidence.registerSource(unopened);
+		QCOMPARE(evidence.readStatus(MediaProperty::Codec, unopened).reason, PropertyReadReason::SourceNotRead);
+		evidence.registerSource(read);
+		QCOMPARE(evidence.sourceCoverage().size(), 1);
+		QCOMPARE(evidence.sourceCoverage().first().snapshot, SourceSnapshotRef(read));
+		evidence.registerSource(read);
+		QCOMPARE(evidence.sourceCoverage().size(), 1);
+		const auto anotherRead = QSharedPointer<SourceSnapshot>::create(*read);
+		evidence.registerSource(anotherRead);
+		QCOMPARE(evidence.sourceCoverage().size(), 2);
+	}
+	void repeated_read_states_are_order_independent()
+	{
+		const auto source = observation(MetadataSource::Mxf, {}).snapshot;
+		for (const bool reversed : {false, true})
+		{
+			MediaEvidence evidence;
+			auto absent = observation(MetadataSource::Mxf, {});
+			absent.snapshot = source;
+			absent.readState = PropertyReadState::Absent;
+			auto unread = absent;
+			unread.property = QStringLiteral("second occurrence");
+			unread.readState = PropertyReadState::NotRead;
+			evidence.observe(MediaProperty::Alpha, reversed ? unread : absent);
+			evidence.observe(MediaProperty::Alpha, reversed ? absent : unread);
+			QCOMPARE(evidence.readStatus(MediaProperty::Alpha, source).state, PropertyReadState::NotRead);
+			evidence.recordReadStatus(MediaProperty::Alpha, source, {},
+				{PropertyReadState::Unreadable, PropertyReadReason::ValueUnreadable, PropertyApplicability::Applicable, {}});
+			QCOMPARE(evidence.readStatus(MediaProperty::Alpha, source).state, PropertyReadState::Unreadable);
+		}
+	}
+	void attaching_more_context_does_not_erase_previously_checked_fields()
+	{
+		const auto source = observation(MetadataSource::Mxf, {}).snapshot;
+		MediaEvidence evidence, additional;
+		const QString owner = QStringLiteral("descriptor:1");
+		evidence.recordReadStatus(MediaProperty::Alpha, source, owner,
+			{PropertyReadState::Absent, PropertyReadReason::NotPresentInObject, PropertyApplicability::Applicable, {}});
+		additional.recordReadStatus(MediaProperty::Channels, source, owner,
+			{PropertyReadState::Unreadable, PropertyReadReason::ValueUnreadable, PropertyApplicability::Applicable, {}});
+		evidence.appendCoverage(additional.sourceCoverage().first());
+		QCOMPARE(evidence.sourceCoverage().size(), 1);
+		QCOMPARE(evidence.readStatus(MediaProperty::Alpha, source, owner).state, PropertyReadState::Absent);
+		QCOMPARE(evidence.readStatus(MediaProperty::Channels, source, owner).state, PropertyReadState::Unreadable);
+	}
 	void copy_on_write_keeps_original_evidence_unchanged()
 	{
 		MediaEvidence original;

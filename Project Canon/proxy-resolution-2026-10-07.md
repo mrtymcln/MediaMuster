@@ -1,5 +1,10 @@
 # Proxy resolution review, 7 October 2026
 
+**Historical stored-only decision, superseded later on 7 October.** The user
+subsequently chose visible dimensions with verified small proxies retained.
+See [the current geometry policy and verification](visible-resolution-2026-10-07.md).
+The observations and measurements below describe the earlier source state.
+
 The full comparison found eight changed **Resolution** cells. Both sets of
 numbers are recorded in the files. The initial difference came from a
 selection-policy change; it was **not an established accuracy improvement**.

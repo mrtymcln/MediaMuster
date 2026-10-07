@@ -4,9 +4,12 @@ Status: the fresh engines are connected to the live application; see the
 [live connection and verification report](live-connection-2026-10-04.md). The first
 RAM/evidence stage is recorded in [foundation implementation](foundation-implementation-2026-10-03.md).
 Requirements below remain the acceptance plan, not a claim that every check is complete.
-The original Macintosh HD + EDIT CSV comparison remains pending because EDIT was
-not mounted during the 7 October local verification. The user subsequently removed
-RAM optimization as a prerequisite for connection.
+The [complete Macintosh HD + EDIT comparison](full-scan-comparison-2026-10-07.md)
+now covers all 2,413 baseline paths and supersedes the earlier local-only check.
+The [subsequent visible-resolution verification](visible-resolution-2026-10-07.md)
+records the revised column policy with the same complete scope.
+The user removed RAM optimization as a prerequisite for connection; the completed
+database-first correction and its measurements are recorded in that comparison.
 
 The user approved the readiness recommendations on 3 October 2026: begin with RAM
 records and evidence collection, then connect selection rules and the table; verify
@@ -52,14 +55,16 @@ can be added in one small change. Existing output is a comparison, not proof.
 
 Codec-specific checks, including DNxUncompressed sample representation, alpha roles,
 and separately resolved `NewDnx`/`OldDnx`/`ReallyOldDnx` names, are recorded in
-[DNx codec evidence](dnx-codec-evidence.md). These are planned checks, not passed tests.
+[DNx codec evidence](dnx-codec-evidence.md). The live connection report records
+implemented mappings and verified specimens; this acceptance list does not imply
+that every historical format variant has been tested.
 Its DNx catalogue must be handwritten/hardcoded in C++ for v1, with source references
 and exact supported mappings; the agreed design has no runtime CSV/TSV dependency.
 Review [column meanings](column-review.md) and the pending
 [conflict-rule proposals](conflict-selection-proposals.md) before changing display
 behaviour. Use the supplied [scan baseline](scan-baseline-2026-10-03.md) for comparison
 and request a matching fresh CSV when needed. Preserve current managed-folder scope;
-OMF scanning remains enabled by default behind its future OmfScan flag. The agreed
+OMF scanning remains enabled by default behind `FeatureFlags::kOmfScan`. The agreed
 OmfScan boolean column marks each row's managed family, with actual container retained
 separately; it supersedes the earlier Media Format column proposal.
 

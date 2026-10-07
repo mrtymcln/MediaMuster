@@ -1,0 +1,88 @@
+{
+  "platform": "macOS-15.8.1-arm64-arm-64bit-Mach-O",
+  "nativeTestArchitecture": "arm64",
+  "qt": "6.5.3",
+  "configuration": "Debug",
+  "binaryArchitectures": "x86_64 arm64",
+  "fullNativeTestExecutables": 38,
+  "failed": 0,
+  "realScanComparison": "metadata-evidence-comparison-2026-10-07.json",
+  "scope": "Read-only originals; regression operations use disposable test files; no Windows or managed-server simultaneous-writer certification.",
+  "sourcesAndBuilds": [
+    {
+      "path": "src/mediaevidence.h",
+      "sha256": "8d8b5477f2874492a97481e97db2b8f416e614028b7b668bca30b88c5d5f778e",
+      "sizeBytes": 25996
+    },
+    {
+      "path": "src/canon/projection.h",
+      "sha256": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b",
+      "sizeBytes": 2453
+    },
+    {
+      "path": "src/canon/projection.cpp",
+      "sha256": "da2ec199ffc3971bd76c50f8713f1271001767487ebb1f000063cb0cfcea4c66",
+      "sizeBytes": 8901
+    },
+    {
+      "path": "src/canon/pmrprojection.cpp",
+      "sha256": "1be0add6208d6f875b14891866b2a483927e55a23926659792c10287878affc1",
+      "sizeBytes": 4375
+    },
+    {
+      "path": "src/canon/mxfprojection.cpp",
+      "sha256": "5e0a50d4a01d7eb01e059dcabadd555ef19fd299fe10c97554e89332b59a4d3f",
+      "sizeBytes": 50546
+    },
+    {
+      "path": "src/canon/omfprojection.cpp",
+      "sha256": "759568ca5d37944f79a3e62392b62ba36bf725a89a633da2e7d8d8794a9274c3",
+      "sizeBytes": 63899
+    },
+    {
+      "path": "src/canon/scanengine.cpp",
+      "sha256": "9dfa6c7a6c1890fd3b5c4addb8a9acec7379fc9ee1f0d140cb312ae59fc1b583",
+      "sizeBytes": 27431
+    },
+    {
+      "path": "src/binmetadataresolver.cpp",
+      "sha256": "1b946d8dc37f909c1959157efeeb30cda04366c0198bba193f39f867c6d19bcd",
+      "sizeBytes": 6836
+    },
+    {
+      "path": "tests/tst_mediaevidence.cpp",
+      "sha256": "9683d1c1df1068d27caad33050b5ba95750975cd8e4d7dc931b61e75f92a40ed",
+      "sizeBytes": 10307
+    },
+    {
+      "path": "tests/tst_canonpmr.cpp",
+      "sha256": "ae59de4f3ec3a0efa8b6a051e983bdacb73fd302ea79aeedae0b17c797c3a4fc",
+      "sizeBytes": 18005
+    },
+    {
+      "path": "tests/tst_canonscan.cpp",
+      "sha256": "98132cd1747ddbf669c48b3e580a9c9358455b2bc5b25479f86a1aa159d814c8",
+      "sizeBytes": 30745
+    },
+    {
+      "path": "tests/tst_canon_mxfprojection.cpp",
+      "sha256": "a1b9355b297c8a1b266252d342d7d5714266a07c565d0e1155346365996851d6",
+      "sizeBytes": 35495
+    },
+    {
+      "path": "tests/tst_canon_omfprojection.cpp",
+      "sha256": "9fc852c723d4a9143aad78736edb913d1aa3e7504e2784be5923d98af41e4df0",
+      "sizeBytes": 66306
+    },
+    {
+      "path": "build-canon/libmediamuster_canon.a",
+      "sha256": "33060faed4be992f138117ab73b9e6d3d0f735ff16b1e1aa87a1aaac3b3fa040",
+      "sizeBytes": 73031400
+    },
+    {
+      "path": "build/MediaMuster.app/Contents/MacOS/MediaMuster",
+      "sha256": "ed3f9b55840fb01504888755f57ae657f95816744485fb0dc1b5292142ce7671",
+      "sizeBytes": 25649872
+    }
+  ]
+}

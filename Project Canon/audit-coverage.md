@@ -1,8 +1,18 @@
 # Audit coverage by Project Canon
 
+For the current implementation assessment, use the
+[7 October finding-by-finding closeout](audit-closeout-2026-10-07.md). The counts
+and categories below describe the original planning stage.
+
 Assessment: 3 October 2026. Compared the HTML audit and its 40 finding/scope entries
 with the agreed requirements and proposed design in Project Canon. These categories
 are an engineering assessment of design coverage, not measured completed fixes.
+
+This preserves the planning-stage assessment. The replacement engines were
+subsequently connected; current verified corrections and remaining limits are in
+the [live connection report](live-connection-2026-10-04.md) and
+[latest full corpus comparison](visible-resolution-2026-10-07.md). The counts below are
+not a current tally of open or closed implementation findings.
 
 ## Counts
 

@@ -28,8 +28,8 @@ catalogue.
 
 File Duration likewise needs nonnegative units and valid exact and display rates.
 Kind must be Audio or Video; Type must be Media or Precompute. Unknown values do
-not satisfy these checks. The implementation uses the existing feature-flag
-symbols above; the user-facing planned terminology remains `PrecomputesFilter`.
+not satisfy these checks. `FeatureFlags::kPrecomputeFilter` uses the approved
+`PrecomputeFilter` name; the feature's behaviour is unchanged.
 
 Original Bin, Source Filename and effect details may legitimately be absent.
 Their absence does not force a header read, but an unresolved conflict does.

@@ -1,0 +1,653 @@
+{
+  "date": "2026-10-07",
+  "basis": "Final source state after checked-property explanations and coverage-union rebuild. Freshly rebuilt Canon archive; only standalone diagnostic sources compiled, no production translation unit recompiled. Authored in-memory packets/graphs; no media originals opened or altered. Exit 0 is completed observation, not finding closure or universal format certification. Earlier intermediate/tmp receipts remain separate and are superseded for the final linked source state.",
+  "working_directory": "/Users/martymclean/Developer/MediaMuster",
+  "platform": {
+    "macos_version": "15.8.1",
+    "architecture": "arm64",
+    "qt_library_directory": "/Users/martymclean/Qt/6.5.3/macos/lib",
+    "build": "existing universal Debug build-canon archive; diagnostics arm64"
+  },
+  "started_utc": "2026-10-07T12:25:49.709942+00:00",
+  "completed_utc": "2026-10-07T12:26:32.750186+00:00",
+  "snapshots_before_compilation": [
+    {
+      "path": "src/canon/audioreader_p.cpp",
+      "size": 28764,
+      "mtime_ns": 1791074081182955724,
+      "sha256": "e22465557a84ada768db7828c506e8233c84a82aaf8097925c0cd9cedcb0120b"
+    },
+    {
+      "path": "src/canon/avbcomponents_p.cpp",
+      "size": 21110,
+      "mtime_ns": 1791080031520607995,
+      "sha256": "7bdf3c6dc5a05e5271f0e5daf4bf6e916600e85b0d35c4c661bccbd04121b8cf"
+    },
+    {
+      "path": "src/canon/avbdescriptors_p.cpp",
+      "size": 28671,
+      "mtime_ns": 1791080251557650303,
+      "sha256": "66a8b64b4d259531ff73305eb38520b6ff15cba98f33bd75db34a085a45a7189"
+    },
+    {
+      "path": "src/canon/avbobjects_p.cpp",
+      "size": 12469,
+      "mtime_ns": 1791080250795653349,
+      "sha256": "50c3140ca25d43c9de11d6c3e6b362a9d354acd6ed2c56329ddf3f4fe6209ef9"
+    },
+    {
+      "path": "src/canon/avbreader.cpp",
+      "size": 22676,
+      "mtime_ns": 1791079953640434152,
+      "sha256": "7b466584bbe54c9bcce86e7279fbbde16356b9aab30c397846eb63752689a7fa"
+    },
+    {
+      "path": "src/canon/avbreferences.cpp",
+      "size": 13773,
+      "mtime_ns": 1791370575700505414,
+      "sha256": "467a1598ffff70ec3a8c51d1c1fecf8ebaf03edb99c8ba76eb6ec7d7384719c5"
+    },
+    {
+      "path": "src/canon/bentoreader_p.cpp",
+      "size": 19355,
+      "mtime_ns": 1791070674781309311,
+      "sha256": "ddef24ae85a90ba529361219ef5f425755f86cca1b59ae8d8e9b98a7fe714ed0"
+    },
+    {
+      "path": "src/canon/discoveryengine.cpp",
+      "size": 9214,
+      "mtime_ns": 1791354211921084789,
+      "sha256": "1a7a45b23229574d486626ec7ae200d6be310558d455c51b775111a1d9e762b4"
+    },
+    {
+      "path": "src/canon/legacyreader.cpp",
+      "size": 7249,
+      "mtime_ns": 1791070527101463461,
+      "sha256": "af2133a891472d8be96ffbc9d1cfae60649e493c5e23e964b4e2b9fc8b9917f6"
+    },
+    {
+      "path": "src/canon/mdbreader.cpp",
+      "size": 431,
+      "mtime_ns": 1791070674781325520,
+      "sha256": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825"
+    },
+    {
+      "path": "src/canon/mxfobjects_p.cpp",
+      "size": 23486,
+      "mtime_ns": 1791370908552632717,
+      "sha256": "f7efd73e2774e487cf88156b18ff5d32db138f91a2b781b9442085dfb86491cb"
+    },
+    {
+      "path": "src/canon/mxfprojection.cpp",
+      "size": 50546,
+      "mtime_ns": 1791374892997343995,
+      "sha256": "5e0a50d4a01d7eb01e059dcabadd555ef19fd299fe10c97554e89332b59a4d3f"
+    },
+    {
+      "path": "src/canon/mxfreader.cpp",
+      "size": 27183,
+      "mtime_ns": 1791370609532995522,
+      "sha256": "f3561c44c596ad0a49f44203ac3689a7025f7e375f242f16d2b2f8d32a115dde"
+    },
+    {
+      "path": "src/canon/omfobjects_p.cpp",
+      "size": 25212,
+      "mtime_ns": 1791070586239412575,
+      "sha256": "d07b84ab49969c8e5b7a274ffb890474f5eb8c74d9f6a4210b35667bb5e9266f"
+    },
+    {
+      "path": "src/canon/omfprojection.cpp",
+      "size": 63899,
+      "mtime_ns": 1791375029273301081,
+      "sha256": "759568ca5d37944f79a3e62392b62ba36bf725a89a633da2e7d8d8794a9274c3"
+    },
+    {
+      "path": "src/canon/pmrprojection.cpp",
+      "size": 4375,
+      "mtime_ns": 1791375197460674589,
+      "sha256": "1be0add6208d6f875b14891866b2a483927e55a23926659792c10287878affc1"
+    },
+    {
+      "path": "src/canon/pmrreader.cpp",
+      "size": 13907,
+      "mtime_ns": 1791070674781324187,
+      "sha256": "f3456b6239eb14ecc81797ef418241655139be3c805d33181b30798a95bd34f6"
+    },
+    {
+      "path": "src/canon/projection.cpp",
+      "size": 8901,
+      "mtime_ns": 1791375795782065530,
+      "sha256": "da2ec199ffc3971bd76c50f8713f1271001767487ebb1f000063cb0cfcea4c66"
+    },
+    {
+      "path": "src/canon/scanengine.cpp",
+      "size": 27431,
+      "mtime_ns": 1791374892975398464,
+      "sha256": "9dfa6c7a6c1890fd3b5c4addb8a9acec7379fc9ee1f0d140cb312ae59fc1b583"
+    },
+    {
+      "path": "src/canon/audioreader_p.h",
+      "size": 512,
+      "mtime_ns": 1791070674781276395,
+      "sha256": "8ae76a0a80fd4324ad131f3349c74da6e2ee72242a30ed5dd05e3f088b29f3f3"
+    },
+    {
+      "path": "src/canon/avbobjects_p.h",
+      "size": 2687,
+      "mtime_ns": 1791080250052911121,
+      "sha256": "5854d5997555079479c990b0312d87f1d5c9fa0044f1634710f65abc098c5d97"
+    },
+    {
+      "path": "src/canon/avbreader.h",
+      "size": 369,
+      "mtime_ns": 1791078047532104780,
+      "sha256": "6b10557c845e2bc2cf37323023971d48041824552601dc480c327a1fdec5c979"
+    },
+    {
+      "path": "src/canon/avbreferences.h",
+      "size": 3006,
+      "mtime_ns": 1791081692684497256,
+      "sha256": "06321cd21f94d4e1457a37e81d99268d66ec96c38282cc6d4c793fdd422bb77f"
+    },
+    {
+      "path": "src/canon/bentoreader_p.h",
+      "size": 1372,
+      "mtime_ns": 1791070478915098058,
+      "sha256": "ac8c2e57d9aa6aa8ef1508039381eddb4a320a5743a4aa809ee8ebd3d4b2ab48"
+    },
+    {
+      "path": "src/canon/discoveryengine.h",
+      "size": 422,
+      "mtime_ns": 1791040486000872586,
+      "sha256": "ea17e2e7857514de0db1469809cefb4d30ecb86e8dcfeee14e67cc8679cae2ed"
+    },
+    {
+      "path": "src/canon/discoveryengine_p.h",
+      "size": 1046,
+      "mtime_ns": 1791040374936792160,
+      "sha256": "0d2075a83c10042ac02975eba5055174a9b6fee405b868bab87f5315662a9ace"
+    },
+    {
+      "path": "src/canon/dnxnames_p.h",
+      "size": 5182,
+      "mtime_ns": 1791370585374284328,
+      "sha256": "3fd7da759c5704a1d19ebc72a75112e749d79108cac2d5cda5422ca94e5a4fee"
+    },
+    {
+      "path": "src/canon/legacyreader.h",
+      "size": 442,
+      "mtime_ns": 1791070674781306895,
+      "sha256": "2df400380d20960ee843e72c0e3afc96c9ccd52acd21e10babb44a3371610ee3"
+    },
+    {
+      "path": "src/canon/mdbreader.h",
+      "size": 407,
+      "mtime_ns": 1791040690023221899,
+      "sha256": "0eb3e95033657c6e000bd479ce06f7eb5714a0e235fc35ac95d8565a92b54273"
+    },
+    {
+      "path": "src/canon/mxfcatalogue_p.h",
+      "size": 54484,
+      "mtime_ns": 1791074063308418718,
+      "sha256": "8ec5f966960f2ca07f41a3956f46c882aaafe32844e0383e45e8a6265b059615"
+    },
+    {
+      "path": "src/canon/mxfobjects_p.h",
+      "size": 379,
+      "mtime_ns": 1791070828258264962,
+      "sha256": "1215d4389ee47f16e20ac6aa5c679576e453cc47a4ebfa77a1c8484f5cbd46ca"
+    },
+    {
+      "path": "src/canon/mxfreader.h",
+      "size": 427,
+      "mtime_ns": 1791070709382435679,
+      "sha256": "f3a17d222ac634f2ef085d2515f2abadbc5d8909254761a0f07bdadd6a958c1a"
+    },
+    {
+      "path": "src/canon/omfobjects_p.h",
+      "size": 438,
+      "mtime_ns": 1791043193709322861,
+      "sha256": "6b336acdd81e57d38ea3aed033dbe58fb685920a7449d791d5943d5b8e3c4d7b"
+    },
+    {
+      "path": "src/canon/picturegeometry_p.h",
+      "size": 4262,
+      "mtime_ns": 1791373621949360172,
+      "sha256": "68e4075cca6aa234a9ea0a722789901f0404e85e669a5f16fafba5a20ce258ec"
+    },
+    {
+      "path": "src/canon/pmrreader.h",
+      "size": 442,
+      "mtime_ns": 1791040621668247045,
+      "sha256": "f95404475d7eb423ac904df4f7a4e55c28f1c8fe408623310c09b26d171c5777"
+    },
+    {
+      "path": "src/canon/projection.h",
+      "size": 2453,
+      "mtime_ns": 1791374630391797865,
+      "sha256": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b"
+    },
+    {
+      "path": "src/canon/scanengine.h",
+      "size": 705,
+      "mtime_ns": 1791359107179362063,
+      "sha256": "86ea2350eea03d01cb47cd7542726d6fbe5108478c796e42a1fd9cae59d2823f"
+    },
+    {
+      "path": "src/canon/scanmodel.h",
+      "size": 7178,
+      "mtime_ns": 1791359054479625497,
+      "sha256": "fbcdf96d95192c45bb531d8bfb4ea59983835bc962c922d905e403ab9bc5efb0"
+    },
+    {
+      "path": "src/canon/sourcereader.h",
+      "size": 1027,
+      "mtime_ns": 1791040685672164710,
+      "sha256": "e0085ba7d6ae72d428b3c81b0c8ab8661499f8badf6384738e6ec28eef165bff"
+    },
+    {
+      "path": "src/canonadapter.cpp",
+      "size": 4900,
+      "mtime_ns": 1791354284076653272,
+      "sha256": "755e7bfae201fc05d5b6fffd40078a18b357becd3548839fe1f8a072c7a335db"
+    },
+    {
+      "path": "src/mediaevidence.h",
+      "size": 25996,
+      "mtime_ns": 1791375707419511950,
+      "sha256": "8d8b5477f2874492a97481e97db2b8f416e614028b7b668bca30b88c5d5f778e"
+    },
+    {
+      "path": "src/mediametadata.cpp",
+      "size": 25693,
+      "mtime_ns": 1791021097757966092,
+      "sha256": "c1d7f43c7f0e7d06741d35d4176e3ae366f94b687ef905640bb1b6aa2f2cf754"
+    },
+    {
+      "path": "src/omfresolutions.cpp",
+      "size": 5656,
+      "mtime_ns": 1790770979370435401,
+      "sha256": "8b3f9336d97b25c7b8b54afea6bb8aab8073b9419c402761d600272c67311232"
+    },
+    {
+      "path": "tests/testcanonbento.h",
+      "size": 4260,
+      "mtime_ns": 1791043166475799349,
+      "sha256": "e3eed88c6dee6332c67d5b56b5a90c7ab0119c1637cdd92688157266b51c5b8d"
+    },
+    {
+      "path": "tests/auditcloseout/README.md",
+      "size": 4305,
+      "mtime_ns": 1791375616980911165,
+      "sha256": "3a898dfa74223db56076847e06d6b3a8d12ec7594742906e16e8e72fb8c0985c"
+    },
+    {
+      "path": "tests/auditcloseout/mxfprojection.cpp",
+      "size": 6435,
+      "mtime_ns": 1791375496038683234,
+      "sha256": "8cabc75491556efcc0c3335e1906f5bb542bd1a3397e803a39c2659a253498bb"
+    },
+    {
+      "path": "tests/auditcloseout/mxfwidths.cpp",
+      "size": 4739,
+      "mtime_ns": 1791375496038875739,
+      "sha256": "d2a19642574ed5fcd7697ff95bf8a9da0e6211e3925a8e590bf9b86d8729840d"
+    },
+    {
+      "path": "tests/auditcloseout/omfprojection.cpp",
+      "size": 4676,
+      "mtime_ns": 1791375496039086327,
+      "sha256": "7e2bff17ff0d6275beb4cd53a2ae24f8ce567fd2bffa23560b36b5640b4eb57c"
+    },
+    {
+      "path": "build-canon/libmediamuster_canon.a",
+      "size": 73031400,
+      "mtime_ns": 1791375898208056000,
+      "sha256": "33060faed4be992f138117ab73b9e6d3d0f735ff16b1e1aa87a1aaac3b3fa040"
+    }
+  ],
+  "snapshots_after_execution": [
+    {
+      "path": "src/canon/audioreader_p.cpp",
+      "size": 28764,
+      "mtime_ns": 1791074081182955724,
+      "sha256": "e22465557a84ada768db7828c506e8233c84a82aaf8097925c0cd9cedcb0120b"
+    },
+    {
+      "path": "src/canon/avbcomponents_p.cpp",
+      "size": 21110,
+      "mtime_ns": 1791080031520607995,
+      "sha256": "7bdf3c6dc5a05e5271f0e5daf4bf6e916600e85b0d35c4c661bccbd04121b8cf"
+    },
+    {
+      "path": "src/canon/avbdescriptors_p.cpp",
+      "size": 28671,
+      "mtime_ns": 1791080251557650303,
+      "sha256": "66a8b64b4d259531ff73305eb38520b6ff15cba98f33bd75db34a085a45a7189"
+    },
+    {
+      "path": "src/canon/avbobjects_p.cpp",
+      "size": 12469,
+      "mtime_ns": 1791080250795653349,
+      "sha256": "50c3140ca25d43c9de11d6c3e6b362a9d354acd6ed2c56329ddf3f4fe6209ef9"
+    },
+    {
+      "path": "src/canon/avbreader.cpp",
+      "size": 22676,
+      "mtime_ns": 1791079953640434152,
+      "sha256": "7b466584bbe54c9bcce86e7279fbbde16356b9aab30c397846eb63752689a7fa"
+    },
+    {
+      "path": "src/canon/avbreferences.cpp",
+      "size": 13773,
+      "mtime_ns": 1791370575700505414,
+      "sha256": "467a1598ffff70ec3a8c51d1c1fecf8ebaf03edb99c8ba76eb6ec7d7384719c5"
+    },
+    {
+      "path": "src/canon/bentoreader_p.cpp",
+      "size": 19355,
+      "mtime_ns": 1791070674781309311,
+      "sha256": "ddef24ae85a90ba529361219ef5f425755f86cca1b59ae8d8e9b98a7fe714ed0"
+    },
+    {
+      "path": "src/canon/discoveryengine.cpp",
+      "size": 9214,
+      "mtime_ns": 1791354211921084789,
+      "sha256": "1a7a45b23229574d486626ec7ae200d6be310558d455c51b775111a1d9e762b4"
+    },
+    {
+      "path": "src/canon/legacyreader.cpp",
+      "size": 7249,
+      "mtime_ns": 1791070527101463461,
+      "sha256": "af2133a891472d8be96ffbc9d1cfae60649e493c5e23e964b4e2b9fc8b9917f6"
+    },
+    {
+      "path": "src/canon/mdbreader.cpp",
+      "size": 431,
+      "mtime_ns": 1791070674781325520,
+      "sha256": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825"
+    },
+    {
+      "path": "src/canon/mxfobjects_p.cpp",
+      "size": 23486,
+      "mtime_ns": 1791370908552632717,
+      "sha256": "f7efd73e2774e487cf88156b18ff5d32db138f91a2b781b9442085dfb86491cb"
+    },
+    {
+      "path": "src/canon/mxfprojection.cpp",
+      "size": 50546,
+      "mtime_ns": 1791374892997343995,
+      "sha256": "5e0a50d4a01d7eb01e059dcabadd555ef19fd299fe10c97554e89332b59a4d3f"
+    },
+    {
+      "path": "src/canon/mxfreader.cpp",
+      "size": 27183,
+      "mtime_ns": 1791370609532995522,
+      "sha256": "f3561c44c596ad0a49f44203ac3689a7025f7e375f242f16d2b2f8d32a115dde"
+    },
+    {
+      "path": "src/canon/omfobjects_p.cpp",
+      "size": 25212,
+      "mtime_ns": 1791070586239412575,
+      "sha256": "d07b84ab49969c8e5b7a274ffb890474f5eb8c74d9f6a4210b35667bb5e9266f"
+    },
+    {
+      "path": "src/canon/omfprojection.cpp",
+      "size": 63899,
+      "mtime_ns": 1791375029273301081,
+      "sha256": "759568ca5d37944f79a3e62392b62ba36bf725a89a633da2e7d8d8794a9274c3"
+    },
+    {
+      "path": "src/canon/pmrprojection.cpp",
+      "size": 4375,
+      "mtime_ns": 1791375197460674589,
+      "sha256": "1be0add6208d6f875b14891866b2a483927e55a23926659792c10287878affc1"
+    },
+    {
+      "path": "src/canon/pmrreader.cpp",
+      "size": 13907,
+      "mtime_ns": 1791070674781324187,
+      "sha256": "f3456b6239eb14ecc81797ef418241655139be3c805d33181b30798a95bd34f6"
+    },
+    {
+      "path": "src/canon/projection.cpp",
+      "size": 8901,
+      "mtime_ns": 1791375795782065530,
+      "sha256": "da2ec199ffc3971bd76c50f8713f1271001767487ebb1f000063cb0cfcea4c66"
+    },
+    {
+      "path": "src/canon/scanengine.cpp",
+      "size": 27431,
+      "mtime_ns": 1791374892975398464,
+      "sha256": "9dfa6c7a6c1890fd3b5c4addb8a9acec7379fc9ee1f0d140cb312ae59fc1b583"
+    },
+    {
+      "path": "src/canon/audioreader_p.h",
+      "size": 512,
+      "mtime_ns": 1791070674781276395,
+      "sha256": "8ae76a0a80fd4324ad131f3349c74da6e2ee72242a30ed5dd05e3f088b29f3f3"
+    },
+    {
+      "path": "src/canon/avbobjects_p.h",
+      "size": 2687,
+      "mtime_ns": 1791080250052911121,
+      "sha256": "5854d5997555079479c990b0312d87f1d5c9fa0044f1634710f65abc098c5d97"
+    },
+    {
+      "path": "src/canon/avbreader.h",
+      "size": 369,
+      "mtime_ns": 1791078047532104780,
+      "sha256": "6b10557c845e2bc2cf37323023971d48041824552601dc480c327a1fdec5c979"
+    },
+    {
+      "path": "src/canon/avbreferences.h",
+      "size": 3006,
+      "mtime_ns": 1791081692684497256,
+      "sha256": "06321cd21f94d4e1457a37e81d99268d66ec96c38282cc6d4c793fdd422bb77f"
+    },
+    {
+      "path": "src/canon/bentoreader_p.h",
+      "size": 1372,
+      "mtime_ns": 1791070478915098058,
+      "sha256": "ac8c2e57d9aa6aa8ef1508039381eddb4a320a5743a4aa809ee8ebd3d4b2ab48"
+    },
+    {
+      "path": "src/canon/discoveryengine.h",
+      "size": 422,
+      "mtime_ns": 1791040486000872586,
+      "sha256": "ea17e2e7857514de0db1469809cefb4d30ecb86e8dcfeee14e67cc8679cae2ed"
+    },
+    {
+      "path": "src/canon/discoveryengine_p.h",
+      "size": 1046,
+      "mtime_ns": 1791040374936792160,
+      "sha256": "0d2075a83c10042ac02975eba5055174a9b6fee405b868bab87f5315662a9ace"
+    },
+    {
+      "path": "src/canon/dnxnames_p.h",
+      "size": 5182,
+      "mtime_ns": 1791370585374284328,
+      "sha256": "3fd7da759c5704a1d19ebc72a75112e749d79108cac2d5cda5422ca94e5a4fee"
+    },
+    {
+      "path": "src/canon/legacyreader.h",
+      "size": 442,
+      "mtime_ns": 1791070674781306895,
+      "sha256": "2df400380d20960ee843e72c0e3afc96c9ccd52acd21e10babb44a3371610ee3"
+    },
+    {
+      "path": "src/canon/mdbreader.h",
+      "size": 407,
+      "mtime_ns": 1791040690023221899,
+      "sha256": "0eb3e95033657c6e000bd479ce06f7eb5714a0e235fc35ac95d8565a92b54273"
+    },
+    {
+      "path": "src/canon/mxfcatalogue_p.h",
+      "size": 54484,
+      "mtime_ns": 1791074063308418718,
+      "sha256": "8ec5f966960f2ca07f41a3956f46c882aaafe32844e0383e45e8a6265b059615"
+    },
+    {
+      "path": "src/canon/mxfobjects_p.h",
+      "size": 379,
+      "mtime_ns": 1791070828258264962,
+      "sha256": "1215d4389ee47f16e20ac6aa5c679576e453cc47a4ebfa77a1c8484f5cbd46ca"
+    },
+    {
+      "path": "src/canon/mxfreader.h",
+      "size": 427,
+      "mtime_ns": 1791070709382435679,
+      "sha256": "f3a17d222ac634f2ef085d2515f2abadbc5d8909254761a0f07bdadd6a958c1a"
+    },
+    {
+      "path": "src/canon/omfobjects_p.h",
+      "size": 438,
+      "mtime_ns": 1791043193709322861,
+      "sha256": "6b336acdd81e57d38ea3aed033dbe58fb685920a7449d791d5943d5b8e3c4d7b"
+    },
+    {
+      "path": "src/canon/picturegeometry_p.h",
+      "size": 4262,
+      "mtime_ns": 1791373621949360172,
+      "sha256": "68e4075cca6aa234a9ea0a722789901f0404e85e669a5f16fafba5a20ce258ec"
+    },
+    {
+      "path": "src/canon/pmrreader.h",
+      "size": 442,
+      "mtime_ns": 1791040621668247045,
+      "sha256": "f95404475d7eb423ac904df4f7a4e55c28f1c8fe408623310c09b26d171c5777"
+    },
+    {
+      "path": "src/canon/projection.h",
+      "size": 2453,
+      "mtime_ns": 1791374630391797865,
+      "sha256": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b"
+    },
+    {
+      "path": "src/canon/scanengine.h",
+      "size": 705,
+      "mtime_ns": 1791359107179362063,
+      "sha256": "86ea2350eea03d01cb47cd7542726d6fbe5108478c796e42a1fd9cae59d2823f"
+    },
+    {
+      "path": "src/canon/scanmodel.h",
+      "size": 7178,
+      "mtime_ns": 1791359054479625497,
+      "sha256": "fbcdf96d95192c45bb531d8bfb4ea59983835bc962c922d905e403ab9bc5efb0"
+    },
+    {
+      "path": "src/canon/sourcereader.h",
+      "size": 1027,
+      "mtime_ns": 1791040685672164710,
+      "sha256": "e0085ba7d6ae72d428b3c81b0c8ab8661499f8badf6384738e6ec28eef165bff"
+    },
+    {
+      "path": "src/canonadapter.cpp",
+      "size": 4900,
+      "mtime_ns": 1791354284076653272,
+      "sha256": "755e7bfae201fc05d5b6fffd40078a18b357becd3548839fe1f8a072c7a335db"
+    },
+    {
+      "path": "src/mediaevidence.h",
+      "size": 25996,
+      "mtime_ns": 1791375707419511950,
+      "sha256": "8d8b5477f2874492a97481e97db2b8f416e614028b7b668bca30b88c5d5f778e"
+    },
+    {
+      "path": "src/mediametadata.cpp",
+      "size": 25693,
+      "mtime_ns": 1791021097757966092,
+      "sha256": "c1d7f43c7f0e7d06741d35d4176e3ae366f94b687ef905640bb1b6aa2f2cf754"
+    },
+    {
+      "path": "src/omfresolutions.cpp",
+      "size": 5656,
+      "mtime_ns": 1790770979370435401,
+      "sha256": "8b3f9336d97b25c7b8b54afea6bb8aab8073b9419c402761d600272c67311232"
+    },
+    {
+      "path": "tests/testcanonbento.h",
+      "size": 4260,
+      "mtime_ns": 1791043166475799349,
+      "sha256": "e3eed88c6dee6332c67d5b56b5a90c7ab0119c1637cdd92688157266b51c5b8d"
+    },
+    {
+      "path": "tests/auditcloseout/README.md",
+      "size": 4305,
+      "mtime_ns": 1791375616980911165,
+      "sha256": "3a898dfa74223db56076847e06d6b3a8d12ec7594742906e16e8e72fb8c0985c"
+    },
+    {
+      "path": "tests/auditcloseout/mxfprojection.cpp",
+      "size": 6435,
+      "mtime_ns": 1791375496038683234,
+      "sha256": "8cabc75491556efcc0c3335e1906f5bb542bd1a3397e803a39c2659a253498bb"
+    },
+    {
+      "path": "tests/auditcloseout/mxfwidths.cpp",
+      "size": 4739,
+      "mtime_ns": 1791375496038875739,
+      "sha256": "d2a19642574ed5fcd7697ff95bf8a9da0e6211e3925a8e590bf9b86d8729840d"
+    },
+    {
+      "path": "tests/auditcloseout/omfprojection.cpp",
+      "size": 4676,
+      "mtime_ns": 1791375496039086327,
+      "sha256": "7e2bff17ff0d6275beb4cd53a2ae24f8ce567fd2bffa23560b36b5640b4eb57c"
+    },
+    {
+      "path": "build-canon/libmediamuster_canon.a",
+      "size": 73031400,
+      "mtime_ns": 1791375898208056000,
+      "sha256": "33060faed4be992f138117ab73b9e6d3d0f735ff16b1e1aa87a1aaac3b3fa040"
+    }
+  ],
+  "source_or_library_changes_during_probes": [],
+  "probes": [
+    {
+      "name": "mxfprojection",
+      "source": "tests/auditcloseout/mxfprojection.cpp",
+      "compile_command": "c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib tests/auditcloseout/mxfprojection.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/mediamuster-audit-closeout-final/mxfprojection",
+      "compile_exit_code": 0,
+      "compile_output": "",
+      "run_command": "/private/tmp/mediamuster-audit-closeout-final/mxfprojection > \"Project Canon/evidence/audit-closeout-mxfprojection-2026-10-07.json\"",
+      "run_exit_code": 0,
+      "run_stderr": "",
+      "execution": "outside restricted sandbox for Qt CPU feature detection",
+      "binary_path": "/private/tmp/mediamuster-audit-closeout-final/mxfprojection",
+      "binary_sha256": "d2580e2085a31b474afa3ce29490910d3b61514b678365e3620f58615a5bcbac",
+      "result_path": "Project Canon/evidence/audit-closeout-mxfprojection-2026-10-07.json",
+      "result_sha256": "d830d12ac9826a5518a52a7e514449f17afdda9d19e47f35d7b112ea78aff20f"
+    },
+    {
+      "name": "mxfwidths",
+      "source": "tests/auditcloseout/mxfwidths.cpp",
+      "compile_command": "c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib tests/auditcloseout/mxfwidths.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/mediamuster-audit-closeout-final/mxfwidths",
+      "compile_exit_code": 0,
+      "compile_output": "",
+      "run_command": "/private/tmp/mediamuster-audit-closeout-final/mxfwidths > \"Project Canon/evidence/audit-closeout-mxfwidths-2026-10-07.json\"",
+      "run_exit_code": 0,
+      "run_stderr": "",
+      "execution": "outside restricted sandbox for Qt CPU feature detection",
+      "binary_path": "/private/tmp/mediamuster-audit-closeout-final/mxfwidths",
+      "binary_sha256": "e21cc74d88aa2a0cd42db86a56f51a740a12c14ec85c512230c004c3b8c172a3",
+      "result_path": "Project Canon/evidence/audit-closeout-mxfwidths-2026-10-07.json",
+      "result_sha256": "c35cacf61713d39f0a1141b9316970d9435ae1cc80d57ebe46cf4a55fb1321d4"
+    },
+    {
+      "name": "omfprojection",
+      "source": "tests/auditcloseout/omfprojection.cpp",
+      "compile_command": "c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib tests/auditcloseout/omfprojection.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/mediamuster-audit-closeout-final/omfprojection",
+      "compile_exit_code": 0,
+      "compile_output": "",
+      "run_command": "/private/tmp/mediamuster-audit-closeout-final/omfprojection > \"Project Canon/evidence/audit-closeout-omfprojection-2026-10-07.json\"",
+      "run_exit_code": 0,
+      "run_stderr": "",
+      "execution": "outside restricted sandbox for Qt CPU feature detection",
+      "binary_path": "/private/tmp/mediamuster-audit-closeout-final/omfprojection",
+      "binary_sha256": "9750468b23e166ac99ba442b16d7f8c40488c87fd1fe62cc0fa4bfbb6b913811",
+      "result_path": "Project Canon/evidence/audit-closeout-omfprojection-2026-10-07.json",
+      "result_sha256": "a5cb384c32f8331c282cd46f10f79d1a734b3ec5697195f4e5725cc5d0a8240f"
+    }
+  ]
+}

@@ -2622,7 +2622,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 void TestScanner::omf_video_rows_show_avid_short_names()
 {
 	// Three shipped slates under their own databases exercise verified codec
-	// naming and the approved stored-raster display without opening headers.
+	// naming and visible-raster selection without opening headers.
 	struct Pin
 	{
 		const char *file;
@@ -2633,8 +2633,8 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 	};
 	const Pin kPins[] = {
 		// OMF and MDB record 248 stored lines per field, with a 243-line
-		// display crop. Resolution now shows the stored full-frame raster.
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x496", "29.97", true},
+		// display crop. Resolution shows the cropped full-frame raster.
+		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x486", "29.97", true},
 		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ [DNxHD 220]", "1920x1080", "29.97", false},
 	};
@@ -2690,7 +2690,7 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		bool stamp; ///< Exercise different filesystem mtimes without declaring database freshness.
 	};
 	const Pin kPins[] = {
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x496", "29.97", true},
+		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x486", "29.97", true},
 		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ [DNxHD 220]", "1920x1080", "29.97", false},
 	};

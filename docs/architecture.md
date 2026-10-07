@@ -55,6 +55,13 @@ Qt controls' built-in keyboard shortcuts and context menus.
 
 ## Readers and metadata
 
+`MediaEvidence` retains value observations separately from source/object field
+coverage. A readable source does not imply that an unprojected field is absent.
+Sparse receipts and explicit checked-field exceptions distinguish format omission,
+object absence, failed reads, unsupported interpretation and unopened headers.
+Applicability, agreement, eligibility and freshness remain separate facts; see the
+[evidence-state contract](../Project%20Canon/metadata-evidence-states-2026-10-07.md).
+
 | Component | Responsibility |
 | --- | --- |
 | [Canon::PmrReader](../src/canon/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |

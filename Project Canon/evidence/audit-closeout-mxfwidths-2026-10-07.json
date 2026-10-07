@@ -1,0 +1,50 @@
+[
+    {
+        "decoded_valid": false,
+        "interpretation": "Length requires 8 bytes; 5 are recorded.",
+        "name": "duration-5",
+        "outcome": 2,
+        "property_count": 1,
+        "read_state": 3
+    },
+    {
+        "decoded_valid": true,
+        "interpretation": "",
+        "name": "duration-8",
+        "outcome": 1,
+        "property_count": 1,
+        "read_state": 1
+    },
+    {
+        "decoded_valid": false,
+        "interpretation": "UL requires 16 bytes; 20 are recorded.",
+        "name": "coding-20",
+        "outcome": 2,
+        "property_count": 1,
+        "read_state": 3
+    },
+    {
+        "decoded_valid": true,
+        "interpretation": "",
+        "name": "coding-16",
+        "outcome": 1,
+        "property_count": 1,
+        "read_state": 1
+    },
+    {
+        "decoded_valid": false,
+        "interpretation": "UInt32 requires 4 bytes; 5 are recorded.",
+        "name": "width-5",
+        "outcome": 2,
+        "property_count": 1,
+        "read_state": 3
+    },
+    {
+        "decoded_valid": true,
+        "interpretation": "",
+        "name": "width-4",
+        "outcome": 1,
+        "property_count": 1,
+        "read_state": 1
+    }
+]

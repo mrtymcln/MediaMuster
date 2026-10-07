@@ -9,12 +9,14 @@ namespace Canon
 	{
 		Projection result;
 		QHash<ObjectHandle, QString> setsByObject;
+		QHash<ObjectHandle, qint32> versionsByObject;
 		for (const auto &set : source.recordSets)
 			for (const auto handle : set.objects)
 			{
 				if (cancellation.cancelled())
 					return result;
 				setsByObject.insert(handle, set.name);
+				versionsByObject.insert(handle, set.version);
 			}
 		for (const auto &object : source.objects)
 		{
@@ -25,6 +27,36 @@ namespace Canon
 			const bool bigEndian = object.identityEncoding.endsWith(QStringLiteral("/big-endian"));
 			file.fileMobId = canonicalDatabaseId(object.recordedIdentity, bigEndian);
 			const QString setName = setsByObject.value(object.handle);
+			const QString owner = QStringLiteral("object:%1").arg(object.handle);
+			file.evidence.registerSource(source.snapshot, owner, PropertyReadReason::NotStoredByFormat);
+			// These fields belong to the known record layout. A partial record must
+			// not turn an unattempted read into a format-omission claim.
+			for (const auto field : {MediaProperty::Filename, MediaProperty::Project,
+									MediaProperty::FileMobId, MediaProperty::MasterMobId})
+				file.evidence.recordReadStatus(field, source.snapshot, owner,
+					{PropertyReadState::NotRead, source.outcome == ParsedSource::Outcome::Incomplete
+						? PropertyReadReason::SourceIncomplete : PropertyReadReason::CoverageNotEstablished,
+					 PropertyApplicability::Applicable, QStringLiteral("Known PMR record field; its observation records the read outcome")});
+			const auto modification = std::find_if(object.properties.cbegin(), object.properties.cend(),
+				[](const RawProperty &property) { return property.locator.name == QLatin1String("ModificationWord"); });
+			PropertyReadResult modified;
+			if (modification == object.properties.cend())
+			{
+				modified.reason = PropertyReadReason::SourceIncomplete;
+				modified.explanation = QStringLiteral("The PMR record did not reach its modification word");
+			}
+			else if (modification->state == PropertyReadState::Unreadable)
+			{
+				modified.state = PropertyReadState::Unreadable;
+				modified.reason = PropertyReadReason::ValueUnreadable;
+				modified.explanation = QStringLiteral("The PMR modification word could not be read");
+			}
+			else
+			{
+				modified.reason = PropertyReadReason::UnsupportedInterpretation;
+				modified.explanation = QStringLiteral("PMR ModificationWord is retained without a proven timestamp interpretation");
+			}
+			file.evidence.recordReadStatus(MediaProperty::Modified, source.snapshot, owner, std::move(modified));
 			for (const auto &raw : object.properties)
 			{
 				const auto property = withInferredText(raw, 2);
@@ -59,21 +91,11 @@ namespace Canon
 				else
 					continue;
 				auto item = observation(source, object, property, value);
+				if (property.state == PropertyReadState::Absent && versionsByObject.value(object.handle) == 1)
+					item.readReason = PropertyReadReason::NotStoredByFormat;
 				item.property = QStringLiteral("%1.%2").arg(setName, name);
 				file.evidence.observe(field, std::move(item));
 			}
-			if (source.outcome == ParsedSource::Outcome::Complete)
-				for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
-					if (file.evidence.observations(MediaProperty(field)).isEmpty())
-					{
-						MetadataObservation absent;
-						absent.snapshot = source.snapshot;
-						absent.property = setName + QStringLiteral(".record layout");
-						absent.objectIdentity = QStringLiteral("object:%1").arg(object.handle);
-						absent.readState = PropertyReadState::Absent;
-						absent.explanation = QStringLiteral("This PMR record layout does not store this metadata field");
-						file.evidence.observe(MediaProperty(field), absent);
-					}
 			result.files.append(std::move(file));
 		}
 		return result;

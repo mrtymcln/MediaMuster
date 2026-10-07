@@ -1,5 +1,9 @@
 # Full scan comparison — 7 October 2026
 
+This is the historical database-first scan with stored-only Resolution. The user
+subsequently revised that column to visible geometry; see [the later verification](visible-resolution-2026-10-07.md).
+The CSV, JSON and measurements below remain evidence of this earlier source state.
+
 This replaces the earlier Desktop/local-only comparison with the complete set of paths in the user’s **Macintosh HD + EDIT** baseline export. It is a read-only scan, using the production CSV writer.
 
 ## Scope and identity

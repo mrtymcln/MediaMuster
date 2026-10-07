@@ -221,7 +221,7 @@ to delete.
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
 Codec, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
 Source Filename, Location, MobId, MasterMobId and KelpieId, followed by OmfScan
-when its flag is enabled. Multiple master IDs share a cell separated by `; `.
+when its flag is enabled. Multiple master IDs share a cell separated by `;`.
 OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
 for MXF-family media. Type is always visible. Enabling
 the Clip Duration feature flag places Clip Duration immediately after Duration
@@ -233,13 +233,22 @@ Columns start at their default widths each session. Dragging or resizing them
 affects the current window only; scans leave that layout alone. Nothing is saved.
 **View > Resize Columns to Fit** uses content-based resizing.
 Column headings have no tooltips. File modification timestamps are retained
-internally for database freshness and operation checks, but are not displayed
+internally for source-change detection and operation checks, but are not displayed
 or exported.
 
 The table and CSV include **Sample Rate** (for example, `48 kHz`) and
 **Bit Depth** (for example, `24-bit`) beside Frame Rate. Sample Rate describes audio;
 Bit Depth also shows established video depths. Sample Format is a separate internal
 RAM property with no table or CSV column. Unknown values, including Kind, stay blank.
+
+**Resolution** shows the visible picture raster, using valid descriptor crops and
+format-correct field handling. Recorded display geometry can remove storage padding
+(1920×1088 to 1920×1080). Verified Avid small-proxy configurations use their actual
+stored dimensions, such as 480×270 or 320×180, with the inference retained in evidence.
+Unexplained invalid geometry stays unresolved and can trigger the database-first
+header fallback. Padding is never trimmed by a universal height rule. Stored,
+sampled and display rectangles, offsets and pixel aspect remain in RAM. See
+[the geometry policy and proof](../Project%20Canon/visible-resolution-2026-10-07.md).
 
 **Duration** describes the selected physical file. Readers retain the original
 length and rational rate (audio samples or video/edit units), plus the separate

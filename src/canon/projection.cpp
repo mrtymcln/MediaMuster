@@ -98,6 +98,43 @@ namespace Canon
 		file.evidence.observe(field, observation(source, object, property, value, basis, explanation));
 	}
 
+	void recordPropertyCoverage(ProjectedFile &file, MediaProperty field, const ParsedSource &source,
+								const AvidObject &object, std::initializer_list<const char *> names,
+								bool completeObject)
+	{
+		PropertyReadResult status;
+		status.reason = PropertyReadReason::CoverageNotEstablished;
+		bool found = false;
+		for (const auto &property : object.properties)
+			if (std::any_of(names.begin(), names.end(), [&](const char *name)
+							{ return property.locator.name == QLatin1String(name); }))
+			{
+				found = true;
+				if (property.state == PropertyReadState::Unreadable)
+				{
+					status.state = PropertyReadState::Unreadable;
+					status.reason = PropertyReadReason::ValueUnreadable;
+				}
+				else if (status.state != PropertyReadState::Unreadable)
+					status.reason = PropertyReadReason::UnsupportedInterpretation;
+			}
+		if (!found && completeObject)
+		{
+			status.state = PropertyReadState::Absent;
+			status.reason = PropertyReadReason::NotPresentInObject;
+			status.explanation = QStringLiteral("The complete owning object has none of the checked input properties");
+		}
+		else if (found)
+			status.explanation = QStringLiteral("Recognized input properties are retained; the field has no usable interpretation unless an observation establishes it");
+		else
+			status.explanation = QStringLiteral("Owning object coverage is incomplete; missing inputs cannot establish absence");
+		QStringList checked;
+		for (const char *name : names)
+			checked.append(QString::fromLatin1(name));
+		status.explanation += QStringLiteral(". Checked properties: %1").arg(checked.join(QStringLiteral(", ")));
+		file.evidence.recordReadStatus(field, source.snapshot, QStringLiteral("object:%1").arg(object.handle), std::move(status));
+	}
+
 	QVariantMap rateValue(MediaRate rate)
 	{
 		return {{QStringLiteral("Numerator"), rate.numerator}, {QStringLiteral("Denominator"), rate.denominator}};
@@ -147,6 +184,8 @@ namespace Canon
 	}
 	void appendEvidence(MediaEvidence &target, const MediaEvidence &source, bool eligible)
 	{
+		for (const auto &coverage : source.sourceCoverage())
+			target.appendCoverage(coverage, eligible);
 		for (int index = int(MediaProperty::ClipName); index <= int(MediaProperty::ComponentDepth); ++index)
 			for (auto value : source.observations(MediaProperty(index)))
 			{

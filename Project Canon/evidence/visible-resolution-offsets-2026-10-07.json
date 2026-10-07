@@ -1,0 +1,2114 @@
+{
+  "checked": "2026-10-07",
+  "purpose": "Visible-resolution crop coordinate verification. Supplements earlier geometry evidence without replacing it.",
+  "method": "Fresh Canon graphs identify property ranges; all 156 ranges reread read-only and decoded independently as signed Int32 in source byte order. No essence read.",
+  "validatedOffsets": 156,
+  "records": [
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968361_1B4A21B4A27ECV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968361_1B4A21B4A27ECV.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1785742916245707761,
+      "descriptorObject": 761,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136838
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136846
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136870
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136878
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968361_1B4A21B4A27ECV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 78426,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2179076
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2179100
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2179172
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2179196
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968378_1B5B61B5B6A96V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968378_1B5B61B5B6A96V.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1785742939033752173,
+      "descriptorObject": 745,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134764
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134772
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134796
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134804
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968378_1B5B61B5B6A96V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 87170,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3525812
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3525836
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3525908
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3525932
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969069_252C9252C952BV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969069_252C9252C952BV.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1785746251577242832,
+      "descriptorObject": 745,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134778
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134786
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134810
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134818
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969069_252C9252C952BV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 71269,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1075316
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1075340
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1075412
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1075436
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC6C3_194DA194DA6F9V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC6C3_194DA194DA6F9V.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1786087846996806884,
+      "descriptorObject": 761,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136842
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136850
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136874
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136882
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC6C3_194DA194DA6F9V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 78017,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2114756
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2114780
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2114852
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2114876
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB1AA_CB7B1CB7B19CFV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB1AA_CB7B1CB7B19CFV.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1786147979539155852,
+      "descriptorObject": 753,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136297
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136305
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136329
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 136337
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB1AA_CB7B1CB7B19CFV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 83177,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2910188
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2910212
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2910284
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2910308
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED98_F8F08F8F08A76V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED98_F8F08F8F08A76V.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1786163322138335591,
+      "descriptorObject": 745,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134738
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134746
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134770
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134778
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED98_F8F08F8F08A76V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 74016,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1500524
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1500548
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1500620
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1500644
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDC3_F9117F9117290V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDC3_F9117F9117290V.mxf",
+      "sourceSize": 6340705,
+      "sourceMtimeNs": 1786163365497838081,
+      "descriptorObject": 745,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134744
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134752
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134776
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134784
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDC3_F9117F9117290V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 72010,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1189748
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1189772
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1189844
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1189868
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mxf",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE89_F9A77F9A77023V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE89_F9A77F9A77023V.mxf",
+      "sourceSize": 3698785,
+      "sourceMtimeNs": 1786163563429476326,
+      "descriptorObject": 745,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134734
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134742
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134766
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "GenericPictureEssenceDescriptor.SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 134774
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "verified-proxy-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE89_F9A77F9A77023V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 74682,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1601204
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1601228
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1601300
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1601324
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E18_174791747975EV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 73217,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1374572
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1374596
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1374668
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1374692
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E2C_1757117571C45V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 72368,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1245164
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1245188
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1245260
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1245284
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E51_1772E1772E57CV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 77577,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2047460
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2047484
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2047556
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2047580
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967F59_183B5183B5129V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 85053,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3200756
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3200780
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3200852
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3200876
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967F8B_1860F1860FA6DV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 82375,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2788124
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2788148
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2788220
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2788244
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967FA8_18774187744DFV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 84313,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3085868
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3085892
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3085964
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3085988
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69682F2_1AF611AF61D83V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 80811,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2545628
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2545652
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2545724
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2545748
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968EF3_2410E2410ECB0V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 76719,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1915796
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1915820
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1915892
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1915916
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968F32_244072440782EV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 82866,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2864564
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2864588
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2864660
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2864684
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968F80_247B8247B8796V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 72852,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1318436
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1318460
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1318532
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1318556
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968F92_2489724897CA3V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 80178,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2448260
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2448284
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2448356
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2448380
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968FAA_249BD249BDA15V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 68679,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 677252
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 677276
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 677348
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 677372
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969008_24E2724E27AB9V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 70162,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 904628
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 904652
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 904724
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 904748
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969022_24F6E24F6EAE5V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 69138,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 747092
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 747116
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 747188
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 747212
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696933E_27529275294A1V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 83885,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3020348
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3020372
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3020444
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3020468
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC5A1_1871E1871E408V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 73881,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1476980
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1477004
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1477076
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 1477100
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC5BF_1888B1888B724V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 69615,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 819716
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 819740
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 819812
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 819836
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC5EC_18AAC18AACC9BV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 70513,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 958964
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 958988
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 959060
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 959084
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC650_18F6518F650A2V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 78324,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2163236
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2163260
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2163332
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2163356
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC67F_191A8191A8458V.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 79508,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2345228
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2345252
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2345324
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 2345348
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "padded-mdb",
+      "mediaPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC695_192B1192B1A8FV.mxf",
+      "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSize": 3668720,
+      "sourceMtimeNs": 1788291273218255487,
+      "descriptorObject": 87042,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3505964
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3505988
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3506060
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 3506084
+            }
+          ],
+          "raw": "00000000"
+        }
+      ]
+    },
+    {
+      "category": "jfif-omf-or-mdb",
+      "mediaPath": "tests/fixtures/omf/avid_supporting/BLACK_720x243x2_JFIF35.omf",
+      "sourcePath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x243x2_JFIF35.omf",
+      "sourceSize": 23576,
+      "sourceMtimeNs": 1788314697883579870,
+      "descriptorObject": 68010,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 19220
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 19244
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 19316
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 5,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 19340
+            }
+          ],
+          "raw": "05000000"
+        }
+      ]
+    },
+    {
+      "category": "jfif-omf-or-mdb",
+      "mediaPath": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "sourcePath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "sourceSize": 587424,
+      "sourceMtimeNs": 1788314697909035712,
+      "descriptorObject": 70431,
+      "properties": [
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 560868
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:SampledYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 560892
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 0,
+          "name": "OMFI:DIDD:DisplayXOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 560964
+            }
+          ],
+          "raw": "00000000"
+        },
+        {
+          "decoded": 5,
+          "name": "OMFI:DIDD:DisplayYOffset",
+          "ranges": [
+            {
+              "length": 4,
+              "offset": 560988
+            }
+          ],
+          "raw": "05000000"
+        }
+      ]
+    }
+  ]
+}

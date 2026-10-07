@@ -79,8 +79,7 @@ if(APPLE)
 endif()
 
 ### Independent Canon replacement engine; no legacy parser or UI dependencies ###
-# Qt is linked after find_package below. The production adapter is added only
-# when the replacement's parsing and reconciliation stages are verified.
+# The live scanner and bin adapter share this parsing and reconciliation engine.
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
 
@@ -106,6 +105,7 @@ add_library(mediamuster_canon STATIC
     src/canon/pmrprojection.cpp
     src/canon/mxfprojection.cpp
     src/canon/omfprojection.cpp
+    src/canon/picturegeometry_p.h
     src/canon/scanengine.cpp
     src/avideffects.cpp
     src/mediametadata.cpp

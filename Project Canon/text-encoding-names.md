@@ -29,8 +29,21 @@ remain retained.
 
 These fields reside in the shared RAM source graph reached by object references;
 there is no need to repeat complete database records for each physical file.
-The metadata engine and UI adapter have not yet been connected. No visible encoding
-column or change to the live application's selected strings is introduced here.
+The metadata engine and UI adapter are now connected. The source graph keeps
+the original encoding evidence; projections may add the approved inferred text
+interpretations described below. There is no visible encoding column.
+
+## Live interpretation policy, confirmed 7 October 2026
+
+Unlabelled text with valid UTF-8 bytes may supply a displayed value as an explicit
+inference. Unlabelled legacy OMF/MDB text may fall back to an inferred MacRoman
+interpretation when UTF-8 validation fails. That fallback is not applied universally
+to PMR fields. The raw property remains unchanged; its projected observation retains
+the original bytes and property locator, `EvidenceBasis::Derived`, interpreted
+`TextEncoding`, and an explanation that the source does not declare that encoding.
+Declared encodings retain their recorded basis. See the
+[live connection text rules](live-connection-2026-10-04.md#text-interpretation) and
+[projection helper](../src/canon/projection.cpp).
 
 | Encoding | Meaning | Established application/example |
 | --- | --- | --- |
@@ -94,20 +107,25 @@ properties remain raw; they do not inherit a guessed text encoding. See the
 [MXF report](fresh-mxf-reader-2026-10-04.md) for proof and remaining limits.
 
 Evidence and limits: [fresh PMR reader](fresh-pmr-reader-2026-10-03.md),
-[non-English specimens](non-english-encoding-specimens-2026-10-03.md), and current
-`src/mxfparser.cpp` package-name/TaggedValue routines. The older PMR/MDB text helper
-tries UTF-8 and falls back to MacRoman; that is an existing heuristic, not proof of
-a source encoding. The fresh PMR reader does not use that heuristic.
+[non-English specimens](non-english-encoding-specimens-2026-10-03.md), and
+[Canon MXF property interpretation](../src/canon/mxfobjects_p.cpp).
+The older PMR/MDB helper tried UTF-8 followed by MacRoman without retaining the
+same distinction. Those parsers remain historical comparison-test code. Canon
+separates raw reader evidence from the approved projected inference; a successful
+interpretation does not establish the writer's undeclared encoding.
 
 ## Verification of the naming implementation
 
-The universal Debug build succeeded. Both fresh discovery and PMR CTest suites
-passed. The updated PMR suite passed 28 cases with the opt-in real-drive audit enabled,
+At the 3 October naming milestone, the universal Debug build succeeded. Both fresh
+discovery and PMR CTest suites passed. The updated PMR suite passed 28 cases with
+the opt-in real-drive audit enabled,
 including all six local/EDIT PMRs and the five existing fixtures. New assertions
 check Legacy/Unicode membership, per-property encoding/basis, ASCII-only explicit
 UTF-8, legacy project text inside the Unicode set, invalid UTF-8 retaining its known
 encoding, null strings, and binary/absent fields having no text encoding.
 
 Proof: [encoding implementation test output](evidence/text-encoding-tests-2026-10-03.txt).
-These focused tests supplement the preceding full 29-suite PMR-stage result; they
-are not a claim that fresh MDB/AVB readers have been implemented.
+These focused tests supplement the preceding full 29-suite PMR-stage result.
+Fresh MDB/AVB readers were implemented and connected subsequently; the
+[live connection report](live-connection-2026-10-04.md#verification-record)
+records their current integration verification.

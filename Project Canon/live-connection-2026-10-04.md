@@ -126,10 +126,11 @@ identity contradiction or an observed source change excludes affected values.
   does not establish freshness or imply that its values were checked against a header.
 - Codec and container are separate facts. Uncompressed WAVE/AIFF PCM is described
   as PCM, while the actual container and embedded OMF remain in source evidence.
-- Resolution uses the recorded stored raster with applicable field layout, as
-  confirmed by the user on 7 October. Display and sampled rectangles remain in
-  RAM; they cannot substitute for an unknown stored raster. Padding is not
-  silently trimmed. See [the eight proxy comparisons](proxy-resolution-2026-10-07.md).
+- Resolution uses valid visible geometry with applicable field layout, following
+  the user's revised 7 October decision. Verified small proxy configurations
+  retain their smaller stored raster. Crops use the format's coordinate system;
+  unresolved inconsistencies can trigger header fallback. All original rectangles
+  remain in RAM. See [the current geometry policy](visible-resolution-2026-10-07.md).
 - A usable property is not discarded solely because an unrelated essence excerpt
   or later object is incomplete. The owning object's framing, types and references
   still have to support the interpretation.
@@ -199,14 +200,16 @@ this remains a substantial RAM cost, not a return to the old app's footprint.
 [Allocation evidence](database-first-and-memory-2026-10-07.md) separates the
 smaller storage improvements from the main reduction in unnecessary header reads.
 
-The [production CSV](evidence/full-scan-2026-10-07.csv) matches the old export
+The earlier stored-only [production CSV](evidence/full-scan-2026-10-07.csv) matches the old export
 exactly for 19 of its 24 columns, including names, projects, bins, file durations,
 MobIds, MasterMobIds and database status. No populated field became blank.
 Changed cells are fully enumerated in the [cell-by-cell comparison](evidence/full-scan-comparison-2026-10-07.json):
 file-associated clip-track lists, approved DNx names/flavours, stored raster
 including padding, numeric Bit Depth separate from Sample Format, and one newly
 established Source Filename. The readable comparison explains every category;
-changed text is not automatically claimed as improved accuracy.
+changed text is not automatically claimed as improved accuracy. These measurements
+precede the revised visible-resolution policy; its [verification report](visible-resolution-2026-10-07.md)
+records the subsequent scan and comparison.
 
 The scan retains 296 notices: 273 metadata alternatives and 23 database identities
 without a local media match. All notices, database provenance and matches elsewhere

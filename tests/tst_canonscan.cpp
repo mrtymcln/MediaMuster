@@ -105,6 +105,16 @@ private slots:
 		QVERIFY(header->objects.isEmpty());
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
+		QCOMPARE(evidence.readStatus(MediaProperty::Codec, header->snapshot).state, PropertyReadState::NotRead);
+		QCOMPARE(evidence.readStatus(MediaProperty::Codec, header->snapshot).reason, PropertyReadReason::SourceNotRead);
+		for (const auto &source : scan.sources)
+			if (source.snapshot->source == MetadataSource::Pmr)
+			{
+				const auto absent = evidence.readStatus(MediaProperty::Codec, source.snapshot);
+				QCOMPARE(absent.state, PropertyReadState::Absent);
+				QCOMPARE(absent.reason, PropertyReadReason::NotStoredByFormat);
+				QCOMPARE(evidence.readStatus(MediaProperty::Modified, source.snapshot).reason, PropertyReadReason::UnsupportedInterpretation);
+			}
 		QCOMPARE(evidence.selected(MediaProperty::ClipName).value.toString(), QStringLiteral("Database clip"));
 		QCOMPARE(evidence.selected(MediaProperty::Codec).value.toString(), QStringLiteral("PCM"));
 		QVERIFY(!evidence.selected(MediaProperty::OriginalBin).value.isValid());

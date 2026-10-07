@@ -49,8 +49,8 @@ User update, 4 October 2026: **gate selecting individual sequences behind a
 feature flag**, so it can be withheld until a later v2 release. Keep whole-bin
 filtering available independently. The approved name is **`SequenceFilter`**,
 implemented as `FeatureFlags::kSequenceFilter = false`. The existing precompute
-flag is now **`PrecomputesFilter`**, implemented as
-`FeatureFlags::kPrecomputesFilter = true`; its behaviour is unchanged. The
+flag is now **`PrecomputeFilter`**, implemented as
+`FeatureFlags::kPrecomputeFilter = true`; its behaviour is unchanged. The
 sequence flag is defined for the later UI integration. When enabled, it should
 gate both the sequence controls and the selected-sequence apply path. The shared
 reader, evidence storage and whole-bin functionality need not be disabled.

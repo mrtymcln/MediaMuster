@@ -110,15 +110,18 @@ namespace
 			return result;
 		}
 
-		void picture(const QByteArray &coding)
+		void picture(const QByteArray &coding, bool hasDisplay = true)
 		{
 			property(descriptor, "FileDescriptor.SampleRate", rateValue({24, 1}));
 			property(descriptor, "FileDescriptor.ContainerDuration", qint64(240));
 			property(descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding", coding);
 			property(descriptor, "GenericPictureEssenceDescriptor.StoredWidth", 1920u);
 			property(descriptor, "GenericPictureEssenceDescriptor.StoredHeight", 1088u);
-			property(descriptor, "GenericPictureEssenceDescriptor.DisplayWidth", 1920u);
-			property(descriptor, "GenericPictureEssenceDescriptor.DisplayHeight", 1080u);
+			if (hasDisplay)
+			{
+				property(descriptor, "GenericPictureEssenceDescriptor.DisplayWidth", 1920u);
+				property(descriptor, "GenericPictureEssenceDescriptor.DisplayHeight", 1080u);
+			}
 			property(descriptor, "GenericPictureEssenceDescriptor.FrameLayout", 0u);
 			property(descriptor, "CDCIEssenceDescriptor.ComponentDepth", 10u);
 			property(descriptor, "CDCIEssenceDescriptor.HorizontalSubsampling", 2u);
@@ -275,9 +278,9 @@ private slots:
 		hd.picture(QByteArray::fromHex("060e2b340401010a0401020271010000"));
 		const auto result = project(hd);
 		const auto &file = result.files.first();
-		// The table keeps stored padding; the DNx name still uses the exact
-		// recorded active raster and established profile operating point.
-		QCOMPARE(value(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1088"));
+		// A valid display crop removes storage padding. DNx naming still
+		// requires its own established profile and exact operating point.
+		QCOMPARE(value(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
 		QCOMPARE(value(file, MediaProperty::Codec).toString(), QStringLiteral("Avid DNx HQX [DNxHD 175x]"));
 		QCOMPARE(value(file, MediaProperty::OldDnx).toString(), QStringLiteral("DNxHD HQX"));
 		Graph hr;
@@ -301,38 +304,41 @@ private slots:
 		QVERIFY(!value(project(graph).files.first(), MediaProperty::Resolution).isValid());
 	}
 
-	void resolution_uses_only_established_stored_geometry_data()
+	void visible_resolution_data()
 	{
 		QTest::addColumn<qint64>("width");
 		QTest::addColumn<qint64>("height");
 		QTest::addColumn<int>("layout");
+		QTest::addColumn<qint64>("displayHeight");
 		QTest::addColumn<QString>("damage");
 		QTest::addColumn<QString>("expected");
-		QTest::newRow("progressive-proxy") << qint64(480) << qint64(270) << 0 << QString{} << QStringLiteral("480x270");
-		QTest::newRow("single-field-proxy") << qint64(480) << qint64(270) << 2 << QString{} << QStringLiteral("480x270");
-		QTest::newRow("separate-fields") << qint64(1920) << qint64(540) << 1 << QString{} << QStringLiteral("1920x1080");
-		QTest::newRow("padding-retained") << qint64(1920) << qint64(1088) << 0 << QString{} << QStringLiteral("1920x1088");
-		QTest::newRow("missing-width") << qint64(480) << qint64(270) << 0 << QStringLiteral("missing-width") << QString{};
-		QTest::newRow("missing-height") << qint64(480) << qint64(270) << 0 << QStringLiteral("missing-height") << QString{};
-		QTest::newRow("conflicting-width") << qint64(480) << qint64(270) << 0 << QStringLiteral("conflicting-width") << QString{};
-		QTest::newRow("zero-width") << qint64(0) << qint64(270) << 0 << QString{} << QString{};
-		QTest::newRow("height-overflow") << qint64(480) << std::numeric_limits<qint64>::max() << 1 << QString{} << QString{};
+		QTest::newRow("progressive") << qint64(1920) << qint64(1080) << 0 << qint64(1080) << QString{} << QStringLiteral("1920x1080");
+		QTest::newRow("single-field") << qint64(1920) << qint64(540) << 2 << qint64(540) << QString{} << QStringLiteral("1920x540");
+		QTest::newRow("separate-fields") << qint64(1920) << qint64(544) << 1 << qint64(540) << QString{} << QStringLiteral("1920x1080");
+		QTest::newRow("padding-cropped") << qint64(1920) << qint64(1088) << 0 << qint64(1080) << QString{} << QStringLiteral("1920x1080");
+		QTest::newRow("padding-without-crop") << qint64(1920) << qint64(1088) << 0 << qint64(1088) << QStringLiteral("no-display") << QStringLiteral("1920x1088");
+		QTest::newRow("unverified-small-raster") << qint64(480) << qint64(270) << 0 << qint64(1080) << QString{} << QString{};
+		QTest::newRow("missing-width") << qint64(1920) << qint64(1080) << 0 << qint64(1080) << QStringLiteral("missing-width") << QString{};
+		QTest::newRow("missing-height") << qint64(1920) << qint64(1080) << 0 << qint64(1080) << QStringLiteral("missing-height") << QString{};
+		QTest::newRow("conflicting-width") << qint64(1920) << qint64(1080) << 0 << qint64(1080) << QStringLiteral("conflicting-width") << QString{};
+		QTest::newRow("zero-width") << qint64(0) << qint64(1080) << 0 << qint64(1080) << QString{} << QString{};
+		QTest::newRow("height-overflow") << qint64(1920) << std::numeric_limits<qint64>::max() << 1 << std::numeric_limits<qint64>::max() << QStringLiteral("no-display") << QString{};
 	}
 
-	void resolution_uses_only_established_stored_geometry()
+	void visible_resolution()
 	{
 		QFETCH(qint64, width);
 		QFETCH(qint64, height);
 		QFETCH(int, layout);
+		QFETCH(qint64, displayHeight);
 		QFETCH(QString, damage);
 		QFETCH(QString, expected);
 		Graph graph;
-		graph.picture(QByteArray::fromHex("060e2b340401010d0401020201311101"));
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020201311101"), damage != QLatin1String("no-display"));
 		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.StoredWidth", width);
 		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.StoredHeight", height);
 		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.FrameLayout", layout);
-		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledWidth", 1280u);
-		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledHeight", 720u);
+		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayHeight", displayHeight);
 		auto &properties = graph.at(graph.descriptor).properties;
 		if (damage == QLatin1String("missing-width"))
 			properties.removeIf([](const RawProperty &item)
@@ -351,7 +357,9 @@ private slots:
 		{
 			QCOMPARE(observations.size(), 1);
 			QCOMPARE(observations.first().value.toString(), expected);
-			QCOMPARE(observations.first().property, QStringLiteral("GenericPictureEssenceDescriptor.StoredWidth"));
+			QCOMPARE(observations.first().property, damage == QLatin1String("no-display")
+				? QStringLiteral("GenericPictureEssenceDescriptor.StoredWidth")
+				: QStringLiteral("GenericPictureEssenceDescriptor.DisplayWidth"));
 			QCOMPARE(observations.first().snapshot, graph.source.snapshot);
 		}
 		QCOMPARE(properties.size(), original.size());
@@ -360,6 +368,136 @@ private slots:
 			QCOMPARE(properties[index].decoded, original[index].decoded);
 			QCOMPARE(properties[index].encoding, original[index].encoding);
 			QCOMPARE(properties[index].locator.name, original[index].locator.name);
+		}
+	}
+
+	void nested_crop_offsets_data()
+	{
+		QTest::addColumn<QString>("damage");
+		QTest::addColumn<QString>("expected");
+		QTest::newRow("valid-at-edges") << QString{} << QStringLiteral("1280x720");
+		QTest::newRow("sampled-default-display") << QStringLiteral("no-display") << QStringLiteral("1800x1080");
+		QTest::newRow("sampled-outside-stored") << QStringLiteral("sampled-outside") << QString{};
+		QTest::newRow("display-outside-sampled") << QStringLiteral("display-outside") << QString{};
+		QTest::newRow("negative-offset") << QStringLiteral("negative-offset") << QString{};
+		QTest::newRow("huge-offset") << QStringLiteral("huge-offset") << QString{};
+		QTest::newRow("unreadable-offset") << QStringLiteral("unreadable-offset") << QString{};
+		QTest::newRow("conflicting-offset") << QStringLiteral("conflicting-offset") << QString{};
+	}
+
+	void nested_crop_offsets()
+	{
+		QFETCH(QString, damage);
+		QFETCH(QString, expected);
+		Graph graph;
+		graph.picture(QByteArray::fromHex("060e2b340401010a0401020271010000"),
+			damage != QLatin1String("no-display"));
+		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledWidth", 1800u);
+		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledHeight", 1080u);
+		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledXOffset", 120);
+		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledYOffset", 8);
+		if (damage != QLatin1String("no-display"))
+		{
+			// Display offsets are relative to Sampled, not Stored. Both crops
+			// fit exactly at their parent's lower-right edge.
+			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayWidth", 1280u);
+			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayHeight", 720u);
+			graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayXOffset", 520);
+			graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayYOffset", 360);
+		}
+		if (damage == QLatin1String("sampled-outside"))
+			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.SampledXOffset", 121);
+		else if (damage == QLatin1String("display-outside"))
+			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayXOffset", 521);
+		else if (damage == QLatin1String("negative-offset"))
+			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayYOffset", -1);
+		else if (damage == QLatin1String("huge-offset"))
+			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayYOffset",
+				std::numeric_limits<qint64>::max());
+		else if (damage == QLatin1String("unreadable-offset"))
+		{
+			for (auto &property : graph.at(graph.descriptor).properties)
+				if (property.locator.name.endsWith(QLatin1String(".DisplayYOffset")))
+					property.state = PropertyReadState::Unreadable;
+		}
+		else if (damage == QLatin1String("conflicting-offset"))
+			graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayYOffset", 0);
+		const auto selected = value(project(graph).files.first(), MediaProperty::Resolution);
+		if (expected.isEmpty())
+			QVERIFY(!selected.isValid());
+		else
+			QCOMPARE(selected.toString(), expected);
+	}
+
+	void verified_proxy_configurations_data()
+	{
+		QTest::addColumn<int>("id");
+		QTest::addColumn<int>("width");
+		QTest::addColumn<int>("height");
+		QTest::addColumn<int>("displayWidth");
+		QTest::addColumn<int>("displayHeight");
+		QTest::addColumn<int>("layout");
+		// Independently probed local files: see Canon's proxy evidence. Their
+		// upscaled descriptor rectangles cannot be treated as literal crops.
+		QTest::newRow("3472") << 3472 << 480 << 270 << 1920 << 540 << 2;
+		QTest::newRow("3484") << 3484 << 480 << 270 << 1920 << 1080 << 0;
+		QTest::newRow("3487") << 3487 << 480 << 270 << 1920 << 1080 << 0;
+		QTest::newRow("3488") << 3488 << 320 << 180 << 1280 << 720 << 0;
+		QTest::newRow("3470") << 3470 << 352 << 240 << 720 << 240 << 2;
+		QTest::newRow("3491") << 3491 << 352 << 240 << 720 << 240 << 2;
+		QTest::newRow("3483") << 3483 << 352 << 288 << 720 << 576 << 0;
+	}
+
+	void verified_proxy_configurations()
+	{
+		QFETCH(int, id);
+		QFETCH(int, width);
+		QFETCH(int, height);
+		QFETCH(int, displayWidth);
+		QFETCH(int, displayHeight);
+		QFETCH(int, layout);
+		Graph graph;
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020201311101"));
+		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.StoredWidth", width);
+		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.StoredHeight", height);
+		graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.FrameLayout", layout);
+		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.ResolutionID", id);
+		for (const auto *prefix : {"Sampled", "Display"})
+		{
+			const QByteArray base = QByteArray("GenericPictureEssenceDescriptor.") + prefix;
+			if (QLatin1String(prefix) == QLatin1String("Display"))
+			{
+				graph.replace(graph.descriptor, (base + "Width").constData(), displayWidth);
+				graph.replace(graph.descriptor, (base + "Height").constData(), displayHeight);
+			}
+			else
+			{
+				graph.property(graph.descriptor, (base + "Width").constData(), displayWidth);
+				graph.property(graph.descriptor, (base + "Height").constData(), displayHeight);
+			}
+			graph.property(graph.descriptor, (base + "XOffset").constData(), 0);
+			graph.property(graph.descriptor, (base + "YOffset").constData(), 0);
+		}
+		const auto result = project(graph);
+		const auto &observations = result.files.first().evidence.observations(MediaProperty::Resolution);
+		QCOMPARE(observations.size(), 1);
+		QCOMPARE(observations.first().value.toString(), QStringLiteral("%1x%2").arg(width).arg(height));
+		QCOMPARE(observations.first().basis, EvidenceBasis::Derived);
+		QVERIFY(observations.first().explanation.contains(QStringLiteral("qualified inference")));
+
+		// Near matches must not turn a contradictory descriptor into a proxy.
+		for (int damage = 0; damage < 5; ++damage)
+		{
+			Graph different = graph;
+			switch (damage)
+			{
+			case 0: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.ResolutionID", 9999); break;
+			case 1: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding", QByteArray(16, 'x')); break;
+			case 2: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.SampledWidth", displayWidth + 1); break;
+			case 3: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.DisplayXOffset", 1); break;
+			case 4: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.FrameLayout", 4); break;
+			}
+			QVERIFY(!value(project(different).files.first(), MediaProperty::Resolution).isValid());
 		}
 	}
 
@@ -502,6 +640,42 @@ private slots:
 		const auto result = project(graph);
 		QVERIFY(!value(result.files.first(), MediaProperty::Codec).isValid());
 		QCOMPARE(result.files.first().evidence.observations(MediaProperty::CompressionLabel).first().readState, PropertyReadState::Unreadable);
+		const auto status = result.files.first().evidence.readStatus(MediaProperty::Codec, graph.source.snapshot,
+			QStringLiteral("object:%1").arg(graph.descriptor));
+		QCOMPARE(status.state, PropertyReadState::Unreadable);
+		QCOMPARE(status.reason, PropertyReadReason::ValueUnreadable);
+	}
+	void absent_field_requires_complete_owning_object()
+	{
+		Graph graph("WaveAudioDescriptor");
+		auto result = project(graph);
+		const QString owner = QStringLiteral("object:%1").arg(graph.descriptor);
+		auto status = result.files.first().evidence.readStatus(MediaProperty::Channels, graph.source.snapshot, owner);
+		QCOMPARE(status.state, PropertyReadState::Absent);
+		QCOMPARE(status.reason, PropertyReadReason::NotPresentInObject);
+		const auto resolution = result.files.first().evidence.readStatus(MediaProperty::Resolution, graph.source.snapshot, owner);
+		QCOMPARE(resolution.applicability, PropertyApplicability::NotApplicable);
+		auto incomplete = QSharedPointer<MxfSetContext>::create(*graph.at(graph.descriptor).mxf);
+		incomplete->value.length += 4;
+		graph.at(graph.descriptor).mxf = incomplete;
+		result = project(graph);
+		status = result.files.first().evidence.readStatus(MediaProperty::Channels, graph.source.snapshot, owner);
+		QCOMPARE(status.state, PropertyReadState::NotRead);
+		QCOMPARE(status.reason, PropertyReadReason::CoverageNotEstablished);
+		QVERIFY(!value(result.files.first(), MediaProperty::Codec).isValid());
+		QVERIFY(!value(result.files.first(), MediaProperty::SampleFormat).isValid());
+	}
+	void unsupported_numeric_format_retains_inputs_without_claiming_absence()
+	{
+		Graph graph;
+		graph.property(graph.descriptor, "CDCIEssenceDescriptor.ComponentDepth", 252u);
+		const auto result = project(graph);
+		const auto status = result.files.first().evidence.readStatus(MediaProperty::BitDepth, graph.source.snapshot,
+			QStringLiteral("object:%1").arg(graph.descriptor));
+		QCOMPARE(status.state, PropertyReadState::NotRead);
+		QCOMPARE(status.reason, PropertyReadReason::UnsupportedInterpretation);
+		QCOMPARE(result.files.first().evidence.observations(MediaProperty::ComponentDepth).first().value.toUInt(), 252u);
+		QVERIFY(!result.files.first().evidence.observations(MediaProperty::ComponentDepth).first().rawValue.toByteArray().isEmpty());
 	}
 
 	void precompute_category_requires_the_established_master_and_readable_attributes()

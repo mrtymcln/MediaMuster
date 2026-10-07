@@ -4,6 +4,10 @@ Source inspection: 3 October 2026. This describes the inspected implementation,
 not the proposed complete evidence model. Existing priorities are recorded here
 for review; documenting them does not prove that each is the best Avid interpretation.
 
+This is the historical pre-Canon reference requested during planning. Its scanner
+rules are superseded by the [live connection](live-connection-2026-10-04.md) and
+[database-first scheduling](database-first-scheduling-2026-10-07.md).
+
 ## Existing reconciliation-like behaviour
 
 The scanner starts with supported physical files in accepted media folders and

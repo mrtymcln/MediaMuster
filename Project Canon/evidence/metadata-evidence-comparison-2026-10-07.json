@@ -1,0 +1,31 @@
+{
+  "beforeCsv": "Project Canon/evidence/full-scan-visible-resolution-2026-10-07.csv",
+  "beforeSha256": "c5fed6e2613704155e360ca813da5750e030732360b915cd55ac4735db6274ee",
+  "afterCsv": "Project Canon/evidence/full-scan-metadata-evidence-2026-10-07.csv",
+  "afterSha256": "c5fed6e2613704155e360ca813da5750e030732360b915cd55ac4735db6274ee",
+  "beforeRows": 2413,
+  "afterRows": 2413,
+  "columnsIdentical": true,
+  "addedPaths": [],
+  "removedPaths": [],
+  "changedCellsExcludingScanSessionKelpieId": [],
+  "nonzeroUniqueKelpieIds": true,
+  "sourceReadOutcomesIdentical": true,
+  "headerReads": 65,
+  "headersSkipped": 2348,
+  "issueCountsBefore": {
+    "2": 273,
+    "1": 23
+  },
+  "issueCountsAfter": {
+    "2": 273,
+    "1": 23
+  },
+  "scanMs": 23006,
+  "memoryRetained": {
+    "peakResidentBytes": 2726772736,
+    "physicalFootprintBytes": 2445007104,
+    "residentBytes": 2726772736
+  },
+  "performanceBoundary": "Read-only Debug scan ran alongside native tests with uncontrolled filesystem cache; no comparative speed or memory claim."
+}

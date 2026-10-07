@@ -4,6 +4,7 @@
 
 #include "projection.h"
 #include "dnxnames_p.h"
+#include "picturegeometry_p.h"
 #include "avidprecompute.h"
 #include "mediametadata.h"
 #include "omfresolutions.h"
@@ -83,6 +84,17 @@ namespace Canon
 		bool mobClass(const QString &value)
 		{
 			return named(value, {"MOBJ", "SMOB", "MMOB", "CMOB"});
+		}
+
+		bool completeObject(const ParsedSource &source, const AvidObject &object)
+		{
+			// A complete Bento read enumerates the owner's TOC entries. An unnamed
+			// entry may conceal a checked property behind an unresolved dictionary
+			// definition, so it cannot establish that property's absence.
+			return source.outcome == ParsedSource::Outcome::Complete && !object.properties.isEmpty() &&
+				std::all_of(object.properties.cbegin(), object.properties.cend(), [&](const auto &property)
+							{ return property.bento && !property.locator.name.isEmpty() &&
+									 property.locator.objectNumber == object.handle; });
 		}
 
 		std::optional<qint64> integer(Property property)
@@ -209,6 +221,7 @@ namespace Canon
 
 		void link(ProjectedFile &file, const ParsedSource &source, const AvidObject &object)
 		{
+			file.evidence.registerSource(source.snapshot, QStringLiteral("object:%1").arg(object.handle));
 			if (std::none_of(file.objects.cbegin(), file.objects.cend(), [&](const auto &existing)
 							 { return existing.source == source.snapshot && existing.handle == object.handle; }))
 				file.objects.append({source.snapshot, object.handle});
@@ -302,6 +315,12 @@ namespace Canon
 					ProjectedFile masterFacts;
 					masterFacts.masterMobIds.append(masterId);
 					link(masterFacts, m_source, master);
+					recordPropertyCoverage(masterFacts, MediaProperty::ClipName, m_source, master,
+									   {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}, completeObject(m_source, master));
+					recordPropertyCoverage(masterFacts, MediaProperty::Type, m_source, master,
+									   {"OMFI:MOBJ:UsageCode"}, false);
+					recordPropertyCoverage(masterFacts, MediaProperty::PrecomputeCategory, m_source, master,
+									   {"OMFI:MOBJ:UsageCode", "OMFI:CPNT:Attributes", "OMFI:TRKG:Tracks"}, false);
 					observe(masterFacts, MediaProperty::MasterMobId, m_source, master, *masterProperty, masterId,
 							EvidenceBasis::Derived, QStringLiteral("Canonical identity of this recorded master object."));
 					for (const auto *name : properties(master, {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}))
@@ -675,9 +694,9 @@ namespace Canon
 			void text(ProjectedFile &file, MediaProperty field, const AvidObject &object, const RawProperty &property)
 			{
 				const auto interpreted = withInferredText(property, 0, true);
-				if (interpreted.state == PropertyReadState::Present && interpreted.decoded.metaType().id() == QMetaType::QString &&
-					!interpreted.decoded.toString().isEmpty())
-					observe(file, field, m_source, object, interpreted, interpreted.decoded);
+				const auto value = interpreted.decoded.metaType().id() == QMetaType::QString
+								 ? interpreted.decoded : QVariant{};
+				observe(file, field, m_source, object, interpreted, value);
 			}
 
 			void attributes(ProjectedFile &file, const AvidObject &owner, bool projectOnly = false)
@@ -737,6 +756,8 @@ namespace Canon
 
 			void originalBin(ProjectedFile &file, const AvidObject &object)
 			{
+				recordPropertyCoverage(file, MediaProperty::OriginalBin, m_source, object,
+									   {"OMFI:MCBR:MC:binNameUTF8", "OMFI:MCBR:MC:binName"}, completeObject(m_source, object));
 				const auto modern = properties(object, {"OMFI:MCBR:MC:binNameUTF8"});
 				const bool usableModern = std::any_of(modern.cbegin(), modern.cend(), [](Property value)
 													  { return value->state == PropertyReadState::Present && value->decoded.metaType().id() == QMetaType::QString &&
@@ -761,6 +782,9 @@ namespace Canon
 			{
 				const auto interpreted = withInferredText(property, 0, true);
 				text(file, MediaProperty::SourcePath, object, interpreted);
+				recordPropertyCoverage(file, MediaProperty::SourceFilename, m_source, object,
+					{"OMFI:ATTB:StringAttribute", "OMFI:FL:POSIXPathName", "OMFI:FL:PathNameUTF8",
+					 "OMFI:FL:PathName", "OMFI:UNXL:PathName", "OMFI:WINL:PathName", "OMFI:MACL:PathName"}, false);
 				if (interpreted.decoded.metaType().id() != QMetaType::QString || interpreted.decoded.toString().isEmpty())
 					return;
 				observe(file, MediaProperty::SourceFilename, m_source, object, interpreted,
@@ -1013,6 +1037,41 @@ namespace Canon
 		{
 			const auto cls = objectClass(descriptor);
 			const bool audio = audioClass(cls);
+			const bool complete = completeObject(m_source, descriptor);
+			recordPropertyCoverage(file, MediaProperty::Kind, m_source, descriptor,
+								   {"OMFI:ObjID", "OMFI:OOBJ:ObjClass"}, false);
+			recordPropertyCoverage(file, audio ? MediaProperty::SampleRate : MediaProperty::FrameRate, m_source, descriptor,
+								   {"OMFI:MDFL:SampleRate", "OMFI:WAVD:Summary", "OMFI:AIFD:Summary"}, complete);
+			recordPropertyCoverage(file, MediaProperty::FileDuration, m_source, descriptor,
+								   {"OMFI:MDFL:Length", "OMFI:MDFL:SampleRate", "OMFI:WAVD:Summary", "OMFI:AIFD:Summary"}, false);
+			recordPropertyCoverage(file, MediaProperty::Codec, m_source, descriptor,
+								   {"OMFI:DIDD:EssenceCompression", "OMFI:DIDD:DIDResolutionID", "OMFI:DIDD:Compression",
+									"OMFI:WAVD:Summary", "OMFI:AIFD:Summary", "OMFI:ObjID", "OMFI:OOBJ:ObjClass"}, false);
+			recordPropertyCoverage(file, MediaProperty::CompressionLabel, m_source, descriptor,
+								   {"OMFI:DIDD:EssenceCompression", "OMFI:DIDD:DIDResolutionID"}, complete);
+			recordPropertyCoverage(file, MediaProperty::ComponentDepth, m_source, descriptor,
+								   {"OMFI:CDCI:ComponentWidth", "OMFI:MDAU:BitsPerSample"}, complete);
+			for (const auto field : {MediaProperty::BitDepth, MediaProperty::SampleFormat})
+				recordPropertyCoverage(file, field, m_source, descriptor,
+									   {"OMFI:CDCI:ComponentWidth", "OMFI:MDAU:BitsPerSample", "OMFI:RGBA:PixelStructure",
+										"OMFI:WAVD:Summary", "OMFI:AIFD:Summary", "OMFI:DIDD:EssenceCompression"}, false);
+			if (audio)
+				recordPropertyCoverage(file, MediaProperty::Channels, m_source, descriptor,
+									   {"OMFI:MDAU:NumChannels", "OMFI:WAVD:Summary", "OMFI:AIFD:Summary"}, complete);
+			else
+			{
+				recordPropertyCoverage(file, MediaProperty::PixelLayout, m_source, descriptor,
+									   {"OMFI:RGBA:PixelLayout"}, complete);
+				recordPropertyCoverage(file, MediaProperty::Alpha, m_source, descriptor,
+									   {"OMFI:RGBA:PixelLayout", "OMFI:RGBA:PixelStructure"}, false);
+				recordPropertyCoverage(file, MediaProperty::Resolution, m_source, descriptor,
+									   {"OMFI:DIDD:StoredWidth", "OMFI:DIDD:StoredHeight", "OMFI:DIDD:FrameLayout",
+										"OMFI:DIDD:SampledWidth", "OMFI:DIDD:SampledHeight", "OMFI:DIDD:SampledXOffset", "OMFI:DIDD:SampledYOffset",
+										"OMFI:DIDD:DisplayWidth", "OMFI:DIDD:DisplayHeight", "OMFI:DIDD:DisplayXOffset", "OMFI:DIDD:DisplayYOffset"}, false);
+				for (const auto field : {MediaProperty::NewDnx, MediaProperty::OldDnx, MediaProperty::ReallyOldDnx})
+					recordPropertyCoverage(file, field, m_source, descriptor,
+										   {"OMFI:DIDD:EssenceCompression", "OMFI:DIDD:DIDResolutionID"}, false);
+			}
 			const auto *classProperty = unique(descriptor, {"OMFI:ObjID", "OMFI:OOBJ:ObjClass"});
 			if (!classProperty)
 				return;
@@ -1202,11 +1261,52 @@ namespace Canon
 				saveCodec();
 				return;
 			}
-			if (layout && *layout >= 0 && *layout <= 3 && storedWidth && *storedWidth > 0 && frameHeight > 0)
+			if (layout && *layout >= 0 && *layout <= 3)
 			{
-				observe(file, MediaProperty::Resolution, m_source, descriptor, *storedWidthProperty,
-						QStringLiteral("%1x%2").arg(*storedWidth).arg(frameHeight), EvidenceBasis::Derived,
-						QStringLiteral("OMFI:DIDD:StoredWidth/StoredHeight, expressed as a frame raster using recorded FrameLayout. Separate fields and OMF1 mixed fields double the height; a single field does not. Display/sample dimensions and padding are unchanged."));
+				const bool complete = m_source.outcome == ParsedSource::Outcome::Complete;
+				const auto read = [&](const QByteArray &name, std::optional<qint64> fallback)
+				{
+					return !properties(descriptor, {name.constData()}).isEmpty() ? integer(unique(descriptor, {name.constData()}))
+						   : complete											 ? fallback
+																				 : std::nullopt;
+				};
+				const auto rectangle = [&](const char *prefix)
+				{
+					const QByteArray base = QByteArray("OMFI:DIDD:") + prefix;
+					return Detail::PictureRectangle{read(base + "Width", storedWidth), read(base + "Height", storedHeight),
+													read(base + "XOffset", 0), read(base + "YOffset", 0)};
+				};
+				const auto recorded = [&](const char *prefix)
+				{
+					const QByteArray base = QByteArray("OMFI:DIDD:") + prefix;
+					return !properties(descriptor, {(base + "Width").constData(), (base + "Height").constData(),
+													(base + "XOffset").constData(), (base + "YOffset").constData()})
+								.isEmpty();
+				};
+				Detail::PictureGeometry geometry;
+				geometry.stored = {storedWidth, storedHeight, 0, 0};
+				geometry.sampled = rectangle("Sampled");
+				geometry.display = rectangle("Display");
+				geometry.sampledRecorded = recorded("Sampled");
+				geometry.displayRecorded = recorded("Display");
+				geometry.layout = layout;
+				geometry.heightMultiplier = *layout == 1 || (omf1 && *layout == 3) ? 2 : 1;
+				geometry.coding = label;
+				geometry.resolutionId = resolution;
+				const auto selected = Detail::visibleGeometry(geometry);
+				if (selected.origin != Detail::VisibleGeometry::Origin::Unknown)
+				{
+					const auto *anchor = selected.origin == Detail::VisibleGeometry::Origin::Display
+											 ? unique(descriptor, {"OMFI:DIDD:DisplayWidth"})
+											 : storedWidthProperty;
+					if (!anchor)
+						anchor = storedWidthProperty;
+					const QString reason = selected.origin == Detail::VisibleGeometry::Origin::VerifiedProxy
+											   ? QStringLiteral("Verified Avid H.264 descriptor configuration (ResolutionID %1, coding label, all three rasters, layout and zero offsets) selects this file's stored proxy raster. Matching specimens were independently checked with ffprobe; this is a qualified inference, not a universal proxy flag.").arg(*geometry.resolutionId)
+											   : QStringLiteral("Visible raster: OMF Display offsets are relative to Stored, independently of Sampled. The Display rectangle is validated within Stored before field-height handling. Absent optional properties follow original toolkit Stored/zero defaults, including legacy partial sets; unreadable/conflicting values do not default. All recorded rectangles remain retained.");
+					observe(file, MediaProperty::Resolution, m_source, descriptor, *anchor,
+							QStringLiteral("%1x%2").arg(selected.width).arg(selected.height), EvidenceBasis::Derived, reason);
+				}
 			}
 			const auto *pixels = uniqueRaw(descriptor, {"OMFI:RGBA:PixelLayout"});
 			const auto *depths = uniqueRaw(descriptor, {"OMFI:RGBA:PixelStructure"});
@@ -1266,6 +1366,13 @@ namespace Canon
 			ProjectedFile file;
 			AvidObject owner;
 			owner.snapshot = source.snapshot;
+			owner.properties = source.unownedProperties;
+			file.evidence.registerSource(source.snapshot, QStringLiteral("object:0"));
+			for (const auto field : {MediaProperty::Kind, MediaProperty::Channels, MediaProperty::BitDepth,
+									MediaProperty::SampleRate, MediaProperty::Codec, MediaProperty::SampleFormat})
+				recordPropertyCoverage(file, field, source, owner, {"Audio.fmt ", "Audio.COMM"}, false);
+			recordPropertyCoverage(file, MediaProperty::FileDuration, source, owner,
+								   {"Audio.fmt ", "Audio.COMM", "Audio.data", "Audio.SSND"}, false);
 			QVector<Property> dataChunks;
 			for (const auto &property : source.unownedProperties)
 				if (property.locator.key == "data" && property.state == PropertyReadState::Present)

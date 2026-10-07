@@ -85,7 +85,11 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		combined.binConflict |= value.binConflict;
 		for (const auto &source : value.sources)
 			if (!file.canonAvbSources.contains(source))
+			{
 				file.canonAvbSources.append(source);
+				if (source)
+					file.evidence.registerSource(source->snapshot);
+			}
 	}
 	for (const auto &value : combined.names)
 		file.evidence.observe(MediaProperty::ClipName, value);

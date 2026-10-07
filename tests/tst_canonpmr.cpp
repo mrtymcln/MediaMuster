@@ -4,6 +4,7 @@
 #include <QtEndian>
 #include "canon/pmrreader.h"
 #include "canon/discoveryengine.h"
+#include "canon/projection.h"
 
 namespace
 {
@@ -228,6 +229,16 @@ void TestCanonPmr::nullAndAbsentAreDifferent()
 	QVERIFY(rawProperty(result.objects[0], "Filename").textEncoding == Canon::TextEncoding::Unknown);
 	QVERIFY(!rawProperty(result.objects[0], "MasterMobId").textEncoding.has_value());
 	QVERIFY(rawProperty(result.objects[0], "MasterMobId").locator.ranges.isEmpty());
+	const Canon::Cancellation cancellation;
+	const auto projection = Canon::projectPmr(result, cancellation);
+	QCOMPARE(projection.files.size(), 1);
+	const auto &evidence = projection.files.first().evidence;
+	for (const auto field : {MediaProperty::Project, MediaProperty::MasterMobId, MediaProperty::Codec})
+	{
+		const auto status = evidence.readStatus(field, result.snapshot);
+		QCOMPARE(status.state, PropertyReadState::Absent);
+		QCOMPARE(status.reason, PropertyReadReason::NotStoredByFormat);
+	}
 }
 void TestCanonPmr::malformedUnicodeAndCapacities()
 {

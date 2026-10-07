@@ -5,6 +5,7 @@
 #include "projection.h"
 #include "dnxnames_p.h"
 #include "mxfcatalogue_p.h"
+#include "picturegeometry_p.h"
 #include "avidusage.h"
 #include "mediametadata.h"
 
@@ -224,6 +225,7 @@ namespace Canon
 
 			void remember(ProjectedFile &file, const AvidObject &object) const
 			{
+				file.evidence.registerSource(m_source.snapshot, QStringLiteral("object:%1").arg(object.handle));
 				if (std::none_of(file.objects.cbegin(), file.objects.cend(), [&](const auto &reference)
 								 { return reference.handle == object.handle; }))
 					file.objects.append({m_source.snapshot, object.handle});
@@ -286,6 +288,7 @@ namespace Canon
 			void copy(ProjectedFile &file, const AvidObject &object, const char *name, MediaProperty field,
 					  const QVariant &converted = {}) const
 			{
+				recordPropertyCoverage(file, field, m_source, object, {name}, completeSet(object));
 				for (const auto &property : object.properties)
 					if (property.locator.name == QLatin1String(name))
 						observe(file, field, m_source, object, property, converted.isValid() ? converted : property.decoded,
@@ -465,6 +468,9 @@ namespace Canon
 								   has(descriptor, "GenericSoundEssenceDescriptor.SoundEssenceCompression");
 				const bool video = isClass(descriptor, "GenericPictureEssenceDescriptor") ||
 								   has(descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding");
+				const bool complete = completeSet(descriptor);
+				recordPropertyCoverage(file, MediaProperty::Kind, m_source, descriptor,
+					{"InterchangeObject.InstanceUID"}, complete);
 				if (audio && video)
 				{
 					m_result.diagnostics.append(QStringLiteral("MXF descriptor object %1 has both sound and picture properties; its technical projection is unresolved.").arg(descriptor.handle));
@@ -488,6 +494,36 @@ namespace Canon
 				}
 				copy(file, descriptor, "FileDescriptor.EssenceContainer", MediaProperty::WrappingLabel);
 				const char *codingName = audio ? "GenericSoundEssenceDescriptor.SoundEssenceCompression" : "GenericPictureEssenceDescriptor.PictureEssenceCoding";
+				// Missing, malformed and not-yet-interpreted inputs have different
+				// outcomes. A null unique() result alone cannot establish absence.
+				recordPropertyCoverage(file, MediaProperty::Codec, m_source, descriptor, {codingName}, complete);
+				recordPropertyCoverage(file, MediaProperty::FileDuration, m_source, descriptor,
+					{"FileDescriptor.ContainerDuration", "FileDescriptor.SampleRate"}, complete);
+				const char *depthName = audio ? "GenericSoundEssenceDescriptor.QuantizationBits" : "CDCIEssenceDescriptor.ComponentDepth";
+				for (const auto field : {MediaProperty::BitDepth, MediaProperty::SampleFormat, MediaProperty::ComponentDepth})
+					recordPropertyCoverage(file, field, m_source, descriptor,
+						{depthName, "RGBAEssenceDescriptor.PixelLayout"}, complete);
+				recordPropertyCoverage(file, MediaProperty::Alpha, m_source, descriptor,
+					{"CDCIEssenceDescriptor.AlphaSampleDepth", "RGBAEssenceDescriptor.PixelLayout"}, complete);
+				if (video)
+				{
+					recordPropertyCoverage(file, MediaProperty::FrameRate, m_source, descriptor,
+						{"FileDescriptor.SampleRate"}, complete);
+					recordPropertyCoverage(file, MediaProperty::Resolution, m_source, descriptor,
+						{"GenericPictureEssenceDescriptor.StoredWidth", "GenericPictureEssenceDescriptor.StoredHeight",
+						 "GenericPictureEssenceDescriptor.SampledWidth", "GenericPictureEssenceDescriptor.SampledHeight",
+						 "GenericPictureEssenceDescriptor.DisplayWidth", "GenericPictureEssenceDescriptor.DisplayHeight",
+						 "GenericPictureEssenceDescriptor.FrameLayout"}, complete);
+				}
+				if (audio)
+				{
+					recordPropertyCoverage(file, MediaProperty::SampleRate, m_source, descriptor,
+						{"GenericSoundEssenceDescriptor.AudioSamplingRate"}, complete);
+					file.evidence.recordReadStatus(MediaProperty::Resolution, m_source.snapshot,
+						QStringLiteral("object:%1").arg(descriptor.handle),
+						{PropertyReadState::NotRead, PropertyReadReason::None, PropertyApplicability::NotApplicable,
+						 QStringLiteral("This sound descriptor does not describe a picture raster")});
+				}
 				copy(file, descriptor, codingName, MediaProperty::CompressionLabel);
 				const auto *coding = unique(descriptor, codingName);
 				const QByteArray label = coding ? coding->decoded.toByteArray() : QByteArray{};
@@ -516,10 +552,10 @@ namespace Canon
 							QStringLiteral("ContainerDuration uses FileDescriptor.SampleRate from this same descriptor; display clock does not change its units."));
 				else if (!has(descriptor, "FileDescriptor.ContainerDuration"))
 					projectTrackDuration(file, package, descriptor, displayRate);
-				projectStoredGeometry(file, descriptor);
+				projectVisibleGeometry(file, descriptor);
 				if (coding && label.size() == 16)
 					projectCodec(file, descriptor, *coding, label, unitsRate);
-				else if (audio && isClass(descriptor, "WaveAudioDescriptor") && !has(descriptor, codingName) && anchor)
+				else if (audio && isClass(descriptor, "WaveAudioDescriptor") && complete && !has(descriptor, codingName) && anchor)
 				{
 					observe(file, MediaProperty::Codec, m_source, descriptor, *anchor, QString::fromLatin1(kPcmAudioName), EvidenceBasis::Derived,
 							QStringLiteral("WaveAudioDescriptor/AES3AudioDescriptor establishes PCM when SoundEssenceCompression is absent."));
@@ -613,21 +649,64 @@ namespace Canon
 				return {*width, *layout == 1 ? *height * 2 : *height};
 			}
 
-			void projectStoredGeometry(ProjectedFile &file, const AvidObject &descriptor) const
+			void projectVisibleGeometry(ProjectedFile &file, const AvidObject &descriptor) const
 			{
-				const auto geometry = frameGeometry(descriptor, "Stored");
-				if (geometry.first == 0)
+				const auto layout = integer(unique(descriptor, "GenericPictureEssenceDescriptor.FrameLayout"));
+				if (!layout || *layout < 0 || *layout > 4)
 					return;
-				const auto *width = unique(descriptor, "GenericPictureEssenceDescriptor.StoredWidth");
-				observe(file, MediaProperty::Resolution, m_source, descriptor, *width,
-						QStringLiteral("%1x%2").arg(geometry.first).arg(geometry.second), EvidenceBasis::Derived,
-						QStringLiteral("StoredWidth and StoredHeight from this descriptor, expressed as a frame raster using FrameLayout. Separate fields double the height; a single field does not. Display/sample dimensions and padding are unchanged."));
+				const bool complete = completeSet(descriptor);
+				const auto read = [&](const QByteArray &name, std::optional<qint64> fallback)
+				{
+					return has(descriptor, name.constData()) ? integer(unique(descriptor, name.constData()))
+						   : complete						 ? fallback
+															 : std::nullopt;
+				};
+				const auto rectangle = [&](const char *prefix, const Detail::PictureRectangle &fallback)
+				{
+					const QByteArray base = QByteArray("GenericPictureEssenceDescriptor.") + prefix;
+					return Detail::PictureRectangle{read(base + "Width", fallback.width), read(base + "Height", fallback.height),
+													read(base + "XOffset", 0), read(base + "YOffset", 0)};
+				};
+				const auto recorded = [&](const char *prefix)
+				{
+					const QByteArray base = QByteArray("GenericPictureEssenceDescriptor.") + prefix;
+					return has(descriptor, (base + "Width").constData()) || has(descriptor, (base + "Height").constData()) ||
+						   has(descriptor, (base + "XOffset").constData()) || has(descriptor, (base + "YOffset").constData());
+				};
+				Detail::PictureGeometry geometry;
+				geometry.stored = {integer(unique(descriptor, "GenericPictureEssenceDescriptor.StoredWidth")),
+								   integer(unique(descriptor, "GenericPictureEssenceDescriptor.StoredHeight")), 0, 0};
+				geometry.sampled = rectangle("Sampled", geometry.stored);
+				geometry.display = rectangle("Display", geometry.sampled);
+				geometry.sampledRecorded = recorded("Sampled");
+				geometry.displayRecorded = recorded("Display");
+				geometry.displayRelativeToSampled = true;
+				geometry.layout = layout;
+				geometry.heightMultiplier = *layout == 1 ? 2 : 1;
+				if (const auto *coding = unique(descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding"))
+					geometry.coding = coding->decoded.toByteArray();
+				geometry.resolutionId = integer(unique(descriptor, "GenericPictureEssenceDescriptor.ResolutionID"));
+				const auto selected = Detail::visibleGeometry(geometry);
+				if (selected.origin == Detail::VisibleGeometry::Origin::Unknown)
+					return;
+				const auto *prefix = selected.origin == Detail::VisibleGeometry::Origin::Display   ? "Display"
+									 : selected.origin == Detail::VisibleGeometry::Origin::Sampled ? "Sampled"
+																								   : "Stored";
+				const QByteArray base = QByteArray("GenericPictureEssenceDescriptor.") + prefix;
+				const auto *anchor = unique(descriptor, (base + "Width").constData());
+				if (!anchor)
+					anchor = unique(descriptor, "GenericPictureEssenceDescriptor.StoredWidth");
+				const QString reason = selected.origin == Detail::VisibleGeometry::Origin::VerifiedProxy
+										   ? QStringLiteral("Verified Avid H.264 descriptor configuration (ResolutionID %1, coding label, all three rasters, layout and zero offsets) selects this file's stored proxy raster. Matching specimens were independently checked with ffprobe; this is a qualified inference, not a universal proxy flag.").arg(*geometry.resolutionId)
+										   : QStringLiteral("Visible raster: Sampled is validated within Stored, and Display within Sampled, including offsets, under ST 377-1 Annex G. Absent optional properties use that format's defaults; unreadable/conflicting properties do not. FrameLayout supplies field-height handling; original geometry remains retained.");
+				observe(file, MediaProperty::Resolution, m_source, descriptor, *anchor,
+						QStringLiteral("%1x%2").arg(selected.width).arg(selected.height), EvidenceBasis::Derived, reason);
 			}
 
 			QPair<qint64, qint64> dnxNamingGeometry(const AvidObject &descriptor) const
 			{
 				// DNx operating-point names use the recorded active raster. Keep
-				// that existing rule separate from the stored-size table column.
+				// that existing rule independent of table-resolution selection.
 				for (const auto *prefix : {"Display", "Sampled", "Stored"})
 				{
 					const auto geometry = frameGeometry(descriptor, prefix);

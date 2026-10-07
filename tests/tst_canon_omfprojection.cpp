@@ -100,14 +100,21 @@ private slots:
 	void repeatedDescriptorsAndMastersRemainSeparate();
 	void oppositeEndianUid();
 	void repeatedFactsRemainConflicting();
-	void storedResolution_data();
-	void storedResolution();
+	void visibleResolution_data();
+	void visibleResolution();
+	void verifiedProxyResolution_data();
+	void verifiedProxyResolution();
 	void nativeAudio();
 	void rgbaAlphaEvidence();
 	void uncompressedAlphaRequiresExplicitEvidence_data();
 	void uncompressedAlphaRequiresExplicitEvidence();
 	void inferredUtf8RetainsOriginalEvidence();
 	void inferredMacRomanFallback();
+	void emptyAndUnreadableTextRemainEvidence();
+	void unreadableImportPathQualifiesDerivedFilename();
+	void checkedAbsenceRequiresCompleteNamedObject();
+	void failedTechnicalInputsRemainUnreadable();
+	void nativeAudioReadCoverage();
 	void originalBinTextPriority_data();
 	void originalBinTextPriority();
 	void associatedTimecodeAndClipDuration();
@@ -270,52 +277,111 @@ void TestCanonOmfProjection::repeatedFactsRemainConflicting()
 	QVERIFY(result.files.first().evidence.observations(MediaProperty::Resolution).isEmpty());
 }
 
-void TestCanonOmfProjection::storedResolution_data()
+void TestCanonOmfProjection::visibleResolution_data()
 {
 	QTest::addColumn<quint32>("width");
 	QTest::addColumn<quint32>("height");
 	QTest::addColumn<qint16>("layout");
-	QTest::addColumn<QString>("damage");
+	QTest::addColumn<quint32>("displayWidth");
+	QTest::addColumn<quint32>("displayHeight");
+	QTest::addColumn<QString>("condition");
 	QTest::addColumn<QString>("expected");
-	QTest::newRow("progressive-proxy") << quint32(480) << quint32(270) << qint16(0) << QString{} << QStringLiteral("480x270");
-	QTest::newRow("single-field-proxy") << quint32(480) << quint32(270) << qint16(2) << QString{} << QStringLiteral("480x270");
-	QTest::newRow("separate-fields") << quint32(1920) << quint32(540) << qint16(1) << QString{} << QStringLiteral("1920x1080");
-	QTest::newRow("omf1-mixed-fields") << quint32(1920) << quint32(540) << qint16(3) << QString{} << QStringLiteral("1920x1080");
-	QTest::newRow("padding-retained") << quint32(1920) << quint32(1088) << qint16(0) << QString{} << QStringLiteral("1920x1088");
-	QTest::newRow("missing-width") << quint32(480) << quint32(270) << qint16(0) << QStringLiteral("missing-width") << QString{};
-	QTest::newRow("missing-height") << quint32(480) << quint32(270) << qint16(0) << QStringLiteral("missing-height") << QString{};
-	QTest::newRow("unreadable-width") << quint32(480) << quint32(270) << qint16(0) << QStringLiteral("unreadable-width") << QString{};
-	QTest::newRow("conflicting-width") << quint32(480) << quint32(270) << qint16(0) << QStringLiteral("conflicting-width") << QString{};
-	QTest::newRow("zero-width") << quint32(0) << quint32(270) << qint16(0) << QString{} << QString{};
+	QTest::newRow("absent-optional-rectangles") << quint32(1920) << quint32(540) << qint16(1)
+		<< quint32(0) << quint32(0) << QString{} << QStringLiteral("1920x1080");
+	QTest::newRow("small-file-without-proxy-guess") << quint32(480) << quint32(270) << qint16(0)
+		<< quint32(0) << quint32(0) << QString{} << QStringLiteral("480x270");
+	QTest::newRow("recorded-display-crop") << quint32(1920) << quint32(1088) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QString{} << QStringLiteral("1920x1080");
+	QTest::newRow("padding-without-crop-is-retained") << quint32(1920) << quint32(1088) << qint16(0)
+		<< quint32(0) << quint32(0) << QString{} << QStringLiteral("1920x1088");
+	QTest::newRow("separate-fields-crop") << quint32(1920) << quint32(544) << qint16(1)
+		<< quint32(1920) << quint32(540) << QString{} << QStringLiteral("1920x1080");
+	QTest::newRow("omf1-mixed-fields") << quint32(1920) << quint32(544) << qint16(3)
+		<< quint32(1920) << quint32(540) << QString{} << QStringLiteral("1920x1080");
+	QTest::newRow("single-field-is-not-doubled") << quint32(720) << quint32(248) << qint16(2)
+		<< quint32(720) << quint32(243) << QStringLiteral("bottom-crop") << QStringLiteral("720x243");
+	QTest::newRow("jfif-field-crop") << quint32(720) << quint32(248) << qint16(1)
+		<< quint32(720) << quint32(243) << QStringLiteral("bottom-crop") << QStringLiteral("720x486");
+	// Unlike MXF, OMF measures Display directly from Stored, not from Sampled.
+	QTest::newRow("display-outside-sampled") << quint32(1920) << quint32(1080) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QStringLiteral("small-sampled") << QStringLiteral("1920x1080");
+	QTest::newRow("sampled-does-not-replace-display-default") << quint32(1920) << quint32(1080) << qint16(0)
+		<< quint32(0) << quint32(0) << QStringLiteral("small-sampled") << QStringLiteral("1920x1080");
+	QTest::newRow("legacy-partial-display-default") << quint32(1920) << quint32(1080) << qint16(0)
+		<< quint32(1280) << quint32(0) << QString{} << QStringLiteral("1280x1080");
+	QTest::newRow("unexplained-proxy-sized-storage") << quint32(480) << quint32(270) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QString{} << QString{};
+	QTest::newRow("missing-width") << quint32(1920) << quint32(1088) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QStringLiteral("missing-width") << QString{};
+	QTest::newRow("missing-height") << quint32(1920) << quint32(1088) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QStringLiteral("missing-height") << QString{};
+	QTest::newRow("unreadable-width") << quint32(1920) << quint32(1088) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QStringLiteral("unreadable-width") << QString{};
+	QTest::newRow("conflicting-width") << quint32(1920) << quint32(1088) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QStringLiteral("conflicting-width") << QString{};
+	QTest::newRow("zero-width") << quint32(0) << quint32(1088) << qint16(0)
+		<< quint32(1920) << quint32(1080) << QString{} << QString{};
+	for (const auto *condition : {"unreadable-offset", "conflicting-offset", "negative-offset",
+		"right-edge-outside", "bottom-edge-outside"})
+		QTest::newRow(condition) << quint32(1920) << quint32(1088) << qint16(0)
+			<< quint32(1920) << quint32(1080) << QString::fromLatin1(condition) << QString{};
+	QTest::newRow("offset-plus-width-must-not-wrap") << std::numeric_limits<quint32>::max()
+		<< quint32(1088) << qint16(0) << std::numeric_limits<quint32>::max()
+		<< quint32(1080) << QStringLiteral("large-offset") << QString{};
 }
 
-void TestCanonOmfProjection::storedResolution()
+void TestCanonOmfProjection::visibleResolution()
 {
 	QFETCH(quint32, width);
 	QFETCH(quint32, height);
 	QFETCH(qint16, layout);
-	QFETCH(QString, damage);
+	QFETCH(quint32, displayWidth);
+	QFETCH(quint32, displayHeight);
+	QFETCH(QString, condition);
 	QFETCH(QString, expected);
 	TypedBento writer;
 	writer.head(1);
 	fileMob(writer, 101, 201, 11);
 	writer.entries.removeIf([&](const TypedBento::Entry &entry)
-							{ return entry.object == 201 &&
-									 (entry.property == writer.property("OMFI:DIDD:StoredWidth") ||
-									  entry.property == writer.property("OMFI:DIDD:StoredHeight") ||
-									  entry.property == writer.property("OMFI:DIDD:FrameLayout")); });
-	if (damage != QLatin1String("missing-width"))
+		{ return entry.object == 201 &&
+			(entry.property == writer.property("OMFI:DIDD:StoredWidth") ||
+			 entry.property == writer.property("OMFI:DIDD:StoredHeight") ||
+			 entry.property == writer.property("OMFI:DIDD:FrameLayout")); });
+	if (condition != QLatin1String("missing-width"))
 		writer.add(201, "OMFI:DIDD:StoredWidth", "omfi:UInt32",
-				   damage == QLatin1String("unreadable-width") ? QByteArray(3, '\0') : number(width));
-	if (damage != QLatin1String("missing-height"))
+			condition == QLatin1String("unreadable-width") ? QByteArray(3, '\0') : number(width));
+	if (condition != QLatin1String("missing-height"))
 		writer.add(201, "OMFI:DIDD:StoredHeight", "omfi:UInt32", number(height));
-	if (damage == QLatin1String("conflicting-width"))
+	if (condition == QLatin1String("conflicting-width"))
 		writer.add(201, "OMFI:DIDD:StoredWidth", "omfi:UInt32", number<quint32>(320));
 	writer.add(201, "OMFI:DIDD:FrameLayout", "omfi:LayoutType", number(layout));
-	writer.add(201, "OMFI:DIDD:DisplayWidth", "omfi:UInt32", number<quint32>(1920));
-	writer.add(201, "OMFI:DIDD:DisplayHeight", "omfi:UInt32", number<quint32>(1080));
-	writer.add(201, "OMFI:DIDD:SampledWidth", "omfi:UInt32", number<quint32>(1280));
-	writer.add(201, "OMFI:DIDD:SampledHeight", "omfi:UInt32", number<quint32>(720));
+	if (displayWidth)
+		writer.add(201, "OMFI:DIDD:DisplayWidth", "omfi:UInt32", number(displayWidth));
+	if (displayHeight)
+		writer.add(201, "OMFI:DIDD:DisplayHeight", "omfi:UInt32", number(displayHeight));
+	if (condition == QLatin1String("small-sampled"))
+	{
+		writer.add(201, "OMFI:DIDD:SampledWidth", "omfi:UInt32", number<quint32>(1280));
+		writer.add(201, "OMFI:DIDD:SampledHeight", "omfi:UInt32", number<quint32>(720));
+	}
+	if (condition == QLatin1String("bottom-crop"))
+		writer.add(201, "OMFI:DIDD:DisplayYOffset", "omfi:Int32", number<qint32>(5));
+	else if (condition == QLatin1String("bottom-edge-outside"))
+		writer.add(201, "OMFI:DIDD:DisplayYOffset", "omfi:Int32", number<qint32>(9));
+	else if (condition == QLatin1String("unreadable-offset"))
+		writer.add(201, "OMFI:DIDD:DisplayXOffset", "omfi:Int32", QByteArray(3, '\0'));
+	else if (condition == QLatin1String("conflicting-offset"))
+	{
+		writer.add(201, "OMFI:DIDD:DisplayXOffset", "omfi:Int32", number<qint32>(0));
+		writer.add(201, "OMFI:DIDD:DisplayXOffset", "omfi:Int32", number<qint32>(1));
+	}
+	else if (condition == QLatin1String("negative-offset") ||
+		condition == QLatin1String("right-edge-outside") || condition == QLatin1String("large-offset"))
+	{
+		const qint32 offset = condition == QLatin1String("negative-offset") ? -1
+			: condition == QLatin1String("large-offset") ? std::numeric_limits<qint32>::max() : 1;
+		writer.add(201, "OMFI:DIDD:DisplayXOffset", "omfi:Int32", number(offset));
+	}
 	for (const bool database : {false, true})
 	{
 		const auto source = read(writer.build(), database);
@@ -327,22 +393,127 @@ void TestCanonOmfProjection::storedResolution()
 		else
 		{
 			QCOMPARE(observations.size(), 1);
-			QCOMPARE(observations.first().value.toString(), expected);
-			QCOMPARE(observations.first().property, QStringLiteral("OMFI:DIDD:StoredWidth"));
-			QCOMPARE(observations.first().rawValue.toByteArray(), number(width));
-			QCOMPARE(observations.first().snapshot, source.snapshot);
+			const auto &observation = observations.first();
+			QCOMPARE(observation.value.toString(), expected);
+			QCOMPARE(observation.property, displayWidth ? QStringLiteral("OMFI:DIDD:DisplayWidth")
+				: QStringLiteral("OMFI:DIDD:StoredWidth"));
+			QCOMPARE(observation.rawValue.toByteArray(), number(displayWidth ? displayWidth : width));
+			QCOMPARE(observation.snapshot, source.snapshot);
+			QCOMPARE(observation.basis, EvidenceBasis::Derived);
 		}
-		int alternativeDimensions = 0;
+		// Projection must not replace original rectangles or discard their byte locations.
 		for (const auto &object : source.objects)
 			for (const auto &property : object.properties)
-				if (property.locator.name.startsWith(QLatin1String("OMFI:DIDD:Display")) ||
-					property.locator.name.startsWith(QLatin1String("OMFI:DIDD:Sampled")))
+				if (property.locator.name.startsWith(QLatin1String("OMFI:DIDD:")))
 				{
-					++alternativeDimensions;
 					QVERIFY(!property.locator.ranges.isEmpty());
-					QCOMPARE(property.encoding, number(property.decoded.toUInt()));
+					const auto id = writer.properties.value(property.locator.name.toLatin1());
+					QVERIFY(std::any_of(writer.entries.cbegin(), writer.entries.cend(),
+						[&](const TypedBento::Entry &entry)
+						{ return entry.object == 201 && entry.property == id &&
+							entry.bytes == property.encoding; }));
 				}
-		QCOMPARE(alternativeDimensions, 4);
+	}
+}
+
+void TestCanonOmfProjection::verifiedProxyResolution_data()
+{
+	QTest::addColumn<quint32>("resolution");
+	QTest::addColumn<quint32>("width");
+	QTest::addColumn<quint32>("height");
+	QTest::addColumn<quint32>("displayWidth");
+	QTest::addColumn<quint32>("displayHeight");
+	QTest::addColumn<qint16>("layout");
+	QTest::addColumn<QString>("alteration");
+	QTest::addColumn<bool>("accepted");
+	QTest::newRow("1080-single-field") << quint32(3472) << quint32(480) << quint32(270)
+		<< quint32(1920) << quint32(540) << qint16(2) << QString{} << true;
+	QTest::newRow("1080-progressive-3484") << quint32(3484) << quint32(480) << quint32(270)
+		<< quint32(1920) << quint32(1080) << qint16(0) << QString{} << true;
+	QTest::newRow("1080-progressive-3487") << quint32(3487) << quint32(480) << quint32(270)
+		<< quint32(1920) << quint32(1080) << qint16(0) << QString{} << true;
+	QTest::newRow("720-progressive") << quint32(3488) << quint32(320) << quint32(180)
+		<< quint32(1280) << quint32(720) << qint16(0) << QString{} << true;
+	QTest::newRow("ntsc-single-field-3470") << quint32(3470) << quint32(352) << quint32(240)
+		<< quint32(720) << quint32(240) << qint16(2) << QString{} << true;
+	QTest::newRow("ntsc-single-field-3491") << quint32(3491) << quint32(352) << quint32(240)
+		<< quint32(720) << quint32(240) << qint16(2) << QString{} << true;
+	QTest::newRow("pal-progressive") << quint32(3483) << quint32(352) << quint32(288)
+		<< quint32(720) << quint32(576) << qint16(0) << QString{} << true;
+	for (const auto *alteration : {"unknown-id", "no-id", "other-coding", "no-coding", "stored-width",
+		"sampled-width", "display-height", "other-layout", "display-offset", "sampled-offset"})
+		QTest::newRow(alteration) << quint32(3484) << quint32(480) << quint32(270)
+			<< quint32(1920) << quint32(1080) << qint16(0) << QString::fromLatin1(alteration) << false;
+}
+
+void TestCanonOmfProjection::verifiedProxyResolution()
+{
+	QFETCH(quint32, resolution);
+	QFETCH(quint32, width);
+	QFETCH(quint32, height);
+	QFETCH(quint32, displayWidth);
+	QFETCH(quint32, displayHeight);
+	QFETCH(qint16, layout);
+	QFETCH(QString, alteration);
+	QFETCH(bool, accepted);
+	TypedBento writer;
+	writer.head(1);
+	fileMob(writer, 101, 201, 11);
+	writer.entries.removeIf([&](const TypedBento::Entry &entry)
+		{ return entry.object == 201 &&
+			(entry.property == writer.property("OMFI:DIDD:StoredWidth") ||
+			 entry.property == writer.property("OMFI:DIDD:StoredHeight") ||
+			 entry.property == writer.property("OMFI:DIDD:FrameLayout")); });
+	writer.add(201, "OMFI:DIDD:StoredWidth", "omfi:UInt32",
+		number(alteration == QLatin1String("stored-width") ? width + 1 : width));
+	writer.add(201, "OMFI:DIDD:StoredHeight", "omfi:UInt32", number(height));
+	writer.add(201, "OMFI:DIDD:FrameLayout", "omfi:LayoutType",
+		number(alteration == QLatin1String("other-layout") ? qint16(2) : layout));
+	writer.add(201, "OMFI:DIDD:SampledWidth", "omfi:UInt32",
+		number(alteration == QLatin1String("sampled-width") ? displayWidth + 1 : displayWidth));
+	writer.add(201, "OMFI:DIDD:SampledHeight", "omfi:UInt32", number(displayHeight));
+	writer.add(201, "OMFI:DIDD:DisplayWidth", "omfi:UInt32", number(displayWidth));
+	writer.add(201, "OMFI:DIDD:DisplayHeight", "omfi:UInt32",
+		number(alteration == QLatin1String("display-height") ? displayHeight + 1 : displayHeight));
+	for (const auto *prefix : {"Sampled", "Display"})
+	{
+		const QByteArray base = QByteArray("OMFI:DIDD:") + prefix;
+		const bool changed = (prefix == QByteArray("Sampled") && alteration == QLatin1String("sampled-offset")) ||
+			(prefix == QByteArray("Display") && alteration == QLatin1String("display-offset"));
+		writer.add(201, base + "XOffset", "omfi:Int32", number<qint32>(changed ? 1 : 0));
+		writer.add(201, base + "YOffset", "omfi:Int32", number<qint32>(0));
+	}
+	if (alteration != QLatin1String("no-id"))
+		writer.add(201, "OMFI:DIDD:DIDResolutionID", "omfi:UInt32",
+			number(alteration == QLatin1String("unknown-id") ? quint32(3485) : resolution));
+	if (alteration != QLatin1String("no-coding"))
+	{
+		const auto label = QByteArray::fromHex(alteration == QLatin1String("other-coding")
+			? "060e2b340401010d0401020201311102" : "060e2b340401010d0401020201311101");
+		// AUID's integer fields use metadata byte order; the UL's first eight octets follow them.
+		const auto auid = number(qFromBigEndian<quint32>(label.constData() + 8)) +
+			number(qFromBigEndian<quint16>(label.constData() + 12)) +
+			number(qFromBigEndian<quint16>(label.constData() + 14)) + label.first(8);
+		writer.add(201, "OMFI:DIDD:EssenceCompression", "omfi:UID", auid);
+	}
+	for (const bool database : {false, true})
+	{
+		const auto source = read(writer.build(), database);
+		const auto result = project(source);
+		QCOMPARE(result.files.size(), 1);
+		const auto &observations = result.files.first().evidence.observations(MediaProperty::Resolution);
+		if (!accepted)
+			QVERIFY(observations.isEmpty());
+		else
+		{
+			QCOMPARE(observations.size(), 1);
+			const auto &observation = observations.first();
+			QCOMPARE(observation.value.toString(), QStringLiteral("%1x%2").arg(width).arg(height));
+			QCOMPARE(observation.property, QStringLiteral("OMFI:DIDD:StoredWidth"));
+			QCOMPARE(observation.rawValue.toByteArray(), number(width));
+			QCOMPARE(observation.basis, EvidenceBasis::Derived);
+			QVERIFY(observation.explanation.contains(QLatin1String("qualified inference")));
+		}
 	}
 }
 
@@ -468,6 +639,162 @@ void TestCanonOmfProjection::inferredMacRomanFallback()
 	QCOMPARE(observations.first().basis, EvidenceBasis::Derived);
 	QCOMPARE(observations.first().rawValue.toByteArray(), QByteArray::fromHex("8ea0ff00"));
 	QVERIFY(!observations.first().value.toString().isEmpty());
+}
+
+void TestCanonOmfProjection::emptyAndUnreadableTextRemainEvidence()
+{
+	TypedBento writer;
+	writer.head(1);
+	fileMob(writer, 101, 201, 11);
+	master(writer, 301, 401, 501, 21, 11, {});
+	auto source = read(writer.build());
+	auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &empty = result.files.first().evidence.observations(MediaProperty::ClipName);
+	QCOMPARE(empty.size(), 1);
+	QCOMPARE(empty.first().readState, PropertyReadState::Present);
+	QCOMPARE(empty.first().value.toString(), QString{});
+	QCOMPARE(empty.first().rawValue.toByteArray(), QByteArray(1, '\0'));
+	QCOMPARE(result.files.first().evidence.readStatus(MediaProperty::ClipName, source.snapshot,
+		QStringLiteral("object:301")).state, PropertyReadState::Present);
+	QVERIFY(!result.files.first().evidence.resolve(MediaProperty::ClipName, [](MetadataSource)
+		{ return 1; }, QStringLiteral("Test priority")).value.isValid());
+	for (auto &object : source.objects)
+		for (auto &property : object.properties)
+			if (object.handle == 301 && property.locator.name == QLatin1String("OMFI:CPNT:Name"))
+			{
+				property.state = PropertyReadState::Unreadable;
+				property.decoded.clear();
+			}
+	result = project(source);
+	const auto &damaged = result.files.first().evidence.observations(MediaProperty::ClipName);
+	QCOMPARE(damaged.size(), 1);
+	QCOMPARE(damaged.first().readState, PropertyReadState::Unreadable);
+	QCOMPARE(damaged.first().rawValue.toByteArray(), QByteArray(1, '\0'));
+	QCOMPARE(result.files.first().evidence.readStatus(MediaProperty::ClipName, source.snapshot,
+		QStringLiteral("object:301")).reason, PropertyReadReason::ValueUnreadable);
+}
+
+void TestCanonOmfProjection::unreadableImportPathQualifiesDerivedFilename()
+{
+	TypedBento writer;
+	writer.head(1);
+	fileMob(writer, 101, 201, 11);
+	object(writer, 601, "ATTR");
+	object(writer, 602, "ATTB");
+	writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(601, 1));
+	writer.add(601, "OMFI:ATTR:AttrRefs", "omfi:ObjRefArray", number<quint16>(1) + writer.reference(602, 1));
+	writer.add(602, "OMFI:ATTB:Name", "omfi:String", QByteArray("UNC Path\0", 9));
+	writer.add(602, "OMFI:ATTB:Kind", "omfi:AttrKind", number<qint16>(2));
+	writer.add(602, "OMFI:ATTB:StringAttribute", "omfi:String", QByteArray("/source/clip.mov\0", 17));
+	auto source = read(writer.build());
+	for (auto &owner : source.objects)
+		for (auto &property : owner.properties)
+			if (property.locator.name == QLatin1String("OMFI:ATTB:StringAttribute"))
+			{
+				property.state = PropertyReadState::Unreadable;
+				property.decoded.clear();
+			}
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &evidence = result.files.first().evidence;
+	QCOMPARE(evidence.observations(MediaProperty::SourcePath).size(), 1);
+	QCOMPARE(evidence.observations(MediaProperty::SourcePath).first().readState, PropertyReadState::Unreadable);
+	QVERIFY(evidence.observations(MediaProperty::SourceFilename).isEmpty());
+	QCOMPARE(evidence.readStatus(MediaProperty::SourceFilename, source.snapshot,
+		QStringLiteral("object:602")).state, PropertyReadState::Unreadable);
+	QCOMPARE(evidence.readStatus(MediaProperty::SourceFilename, source.snapshot,
+		QStringLiteral("object:602")).reason, PropertyReadReason::ValueUnreadable);
+}
+
+void TestCanonOmfProjection::checkedAbsenceRequiresCompleteNamedObject()
+{
+	TypedBento writer;
+	writer.head(1);
+	object(writer, 101, "MOBJ");
+	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
+	writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
+	object(writer, 201, "WAVD");
+	for (const auto &variation : {QStringLiteral("complete"), QStringLiteral("incomplete"), QStringLiteral("unnamed")})
+	{
+		auto source = read(writer.build());
+		QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::Complete);
+		if (variation == QLatin1String("incomplete"))
+			source.outcome = Canon::ParsedSource::Outcome::Incomplete;
+		else if (variation == QLatin1String("unnamed"))
+			for (auto &owner : source.objects)
+				if (owner.handle == 201)
+				{
+					auto unknown = owner.properties.first();
+					unknown.locator.name.clear();
+					owner.properties.append(std::move(unknown));
+				}
+		const auto result = project(source);
+		QCOMPARE(result.files.size(), 1);
+		const auto &evidence = result.files.first().evidence;
+		QVERIFY(evidence.observations(MediaProperty::Channels).isEmpty());
+		const auto status = evidence.readStatus(MediaProperty::Channels, source.snapshot, QStringLiteral("object:201"));
+		QCOMPARE(status.state, variation == QLatin1String("complete")
+			? PropertyReadState::Absent : PropertyReadState::NotRead);
+		QCOMPARE(status.reason, variation == QLatin1String("complete")
+			? PropertyReadReason::NotPresentInObject : PropertyReadReason::CoverageNotEstablished);
+	}
+}
+
+void TestCanonOmfProjection::failedTechnicalInputsRemainUnreadable()
+{
+	TypedBento writer;
+	writer.head(1);
+	fileMob(writer, 101, 201, 11);
+	auto source = read(writer.build());
+	for (auto &owner : source.objects)
+		for (auto &property : owner.properties)
+			if (owner.handle == 201 && (property.locator.name == QLatin1String("OMFI:MDFL:SampleRate") ||
+				property.locator.name == QLatin1String("OMFI:CDCI:ComponentWidth") ||
+				property.locator.name == QLatin1String("OMFI:DIDD:StoredWidth")))
+			{
+				property.state = PropertyReadState::Unreadable;
+				property.decoded.clear();
+			}
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &evidence = result.files.first().evidence;
+	for (const auto field : {MediaProperty::FrameRate, MediaProperty::FileDuration, MediaProperty::ComponentDepth,
+		MediaProperty::BitDepth, MediaProperty::Resolution})
+	{
+		QVERIFY(evidence.observations(field).isEmpty());
+		QCOMPARE(evidence.readStatus(field, source.snapshot, QStringLiteral("object:201")).state,
+			PropertyReadState::Unreadable);
+	}
+	QCOMPARE(evidence.readStatus(MediaProperty::Codec, source.snapshot, QStringLiteral("object:201")).state,
+		PropertyReadState::NotRead);
+	QCOMPARE(evidence.readStatus(MediaProperty::Codec, source.snapshot, QStringLiteral("object:201")).reason,
+		PropertyReadReason::UnsupportedInterpretation);
+}
+
+void TestCanonOmfProjection::nativeAudioReadCoverage()
+{
+	const auto malformedChunks = chunk("fmt ", QByteArray(3, 'x')) + chunk("data", QByteArray(2, '\0'));
+	const auto malformed = read(QByteArray("RIFF") + number(quint32(malformedChunks.size() + 4)) + "WAVE" + malformedChunks, false);
+	const auto malformedResult = project(malformed);
+	QCOMPARE(malformedResult.files.size(), 1);
+	const auto &evidence = malformedResult.files.first().evidence;
+	for (const auto field : {MediaProperty::Codec, MediaProperty::SampleRate, MediaProperty::BitDepth})
+	{
+		QVERIFY(evidence.observations(field).isEmpty());
+		QCOMPARE(evidence.readStatus(field, malformed.snapshot, QStringLiteral("object:0")).state,
+			PropertyReadState::Unreadable);
+	}
+	const auto unsupported = read(wave(6, 16), false);
+	const auto unsupportedResult = project(unsupported);
+	QCOMPARE(unsupportedResult.files.size(), 1);
+	const auto &unsupportedEvidence = unsupportedResult.files.first().evidence;
+	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::SampleRate, unsupported.snapshot,
+		QStringLiteral("object:0")).state, PropertyReadState::Present);
+	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::Codec, unsupported.snapshot,
+		QStringLiteral("object:0")).state, PropertyReadState::NotRead);
+	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::Codec, unsupported.snapshot,
+		QStringLiteral("object:0")).reason, PropertyReadReason::UnsupportedInterpretation);
 }
 
 void TestCanonOmfProjection::originalBinTextPriority_data()

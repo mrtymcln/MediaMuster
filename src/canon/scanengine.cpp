@@ -356,8 +356,14 @@ namespace Canon
 			const QString name = PmrKey::primary(filename);
 			const bool physicalChanged = headers.contains(file.kelpieId) && !unchanged[headers.value(file.kelpieId)];
 			if (headers.contains(file.kelpieId))
+			{
+				file.evidence.registerSource(result.sources[headers.value(file.kelpieId)].snapshot);
 				for (const auto &facts : projections[headers.value(file.kelpieId)].files)
 					attach(file, facts, unchanged[headers.value(file.kelpieId)]);
+				if (physicalChanged)
+					file.evidence.qualifySource(result.sources[headers.value(file.kelpieId)].snapshot,
+						false, SourceFreshness::Changed);
+			}
 			selectMetadata(file.evidence);
 			const auto headerSelection = file.evidence.selected(MediaProperty::FileMobId);
 			const QString headerId = headerSelection.value.toString();

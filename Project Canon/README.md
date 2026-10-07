@@ -14,6 +14,11 @@ objective, not a declaration that every current or proposed parser rule is prove
 
 ## Live connection update
 
+The [original audit closeout](audit-closeout-2026-10-07.md) assesses each of the
+40 findings individually and retains the open/partial/evidence limits. The
+[metadata evidence-state report](metadata-evidence-states-2026-10-07.md) records
+source/object coverage, explicit absence reasons and the related verification.
+
 The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
 This supersedes the historical “not yet connected” status of the reader reports below.
 Memory optimization is not a prerequisite. Work began on 4 October and continued
@@ -31,13 +36,22 @@ The [scheduling rules](database-first-scheduling-2026-10-07.md) explain header
 fallback and the recorded MDB sequence durations that avoid unnecessary reads.
 For deliberately skipped headers, file operations must confirm the selected
 database file MobId before acting; database-only master associations are excluded.
-The user also confirmed that Resolution shows the actual stored raster; retained
-display/sample rectangles remain separate. See [the proxy evidence](proxy-resolution-2026-10-07.md).
-The [full baseline-scope comparison](full-scan-comparison-2026-10-07.md) replaces
-the earlier local-only report: all 2,413 physical rows remain; the final Debug
-scan took 20,763 ms with a 2.41 GB peak process footprint. The complete native
-test suite passes 38/38. The report records all changed CSV cells and remaining
-notices, and distinguishes this improvement from the older app's performance.
+The user revised Resolution to show the visible raster: valid crops remove
+padding, while verified small proxies keep their actual smaller dimensions.
+All original rectangles remain in RAM. See [the current geometry policy](visible-resolution-2026-10-07.md).
+The latest [full baseline-scope verification](visible-resolution-2026-10-07.md)
+keeps all 2,413 physical rows and matches every baseline Resolution cell. The
+native test suite passes 38/38; the Debug scan took 20,802 ms with a 2.40 GB peak
+footprint. Its report retains every changed CSV cell and remaining notice, and
+distinguishes this improvement from the older app's performance. The
+[earlier database-first comparison](full-scan-comparison-2026-10-07.md), stored-only
+CSV and measurements remain historical evidence.
+
+Current user decision, 7 October 2026: the feature name is singular
+`PrecomputeFilter`, implemented as `FeatureFlags::kPrecomputeFilter`. The user
+accepts the current 2.40 GB peak footprint and 20,802 ms scan time for now;
+further memory optimization is no longer an immediate priority. This decision
+does not establish correctness for every format variant.
 
 ## Implementation direction
 
@@ -182,7 +196,7 @@ Only the selected implementation remains in the current Canon source.
   automatically apply a filter. Allow usable partial results with a persistent
   warning and Console details; do not mark them complete. Gate sequence selection
   with `FeatureFlags::kSequenceFilter = false` until its later release. The
-  existing precompute flag is now `FeatureFlags::kPrecomputesFilter = true`.
+  existing precompute flag is now `FeatureFlags::kPrecomputeFilter = true`.
   Build and verify the engines first;
   no live UI changes in this stage. See [sequence selection scope](avb-sequence-selection.md)
   for dependency evidence and completeness requirements.
@@ -230,19 +244,18 @@ Only the selected implementation remains in the current Canon source.
   coverage, partial support or separate work; no planning entry is counted as a
   verified implementation fix.
 
-## Current behaviour versus proposed behaviour
+## Current implementation
 
-The existing scanner creates `MediaFile` records by enumerating supported physical
-files in accepted media folders. PMR/MDB information and header reads populate
-those records. A database entry alone does not currently create a physical-file
-row or a dedicated unmatched-reference report.
+The live scanner creates one `MediaFile` per admitted physical location. It retains
+source graphs, property observations and per-field selection explanations in RAM.
+Database entries without a local media match produce scoped `ScanIssue` records,
+including wider-scan matches when found; they do not create phantom media rows.
 
-Existing records retain some provenance, including clip-name source and duration
-source, but do not uniformly retain all observations and selection explanations.
 `AvidObject`, `Relationship`, `SourceSnapshot`, `MetadataObservation`,
-`ResolvedField`, and `ScanIssue` are proposed concepts/names. `ScanResult` is a
-proposed container for their shared RAM collections, not a claim about existing
-class names.
+`ResolvedField`, `ScanIssue` and `ScanResult` are implemented model concepts.
+The [architecture map](../docs/architecture.md) records current ownership and
+the [live connection report](live-connection-2026-10-04.md) records verified
+behaviour and remaining limits.
 
 The operation journal remains responsible for file-operation recovery and Undo.
 It is not the live metadata evidence store.
@@ -256,13 +269,12 @@ supplement that audit rather than repeating its entire occurrence inventory.
 Its conclusions are evidence-bounded; an accepted parse is not proof that every
 possible Avid object or property is interpreted correctly.
 
-Production code and media have not been changed by writing this documentation.
+## Continuing the implementation
 
-## Handoff for the later rewrite
-
-The user will request implementation when ready. This documentation task records
-the plan; it does not start the rewrite. Read this requirements index together with
-the detailed documents and the wider audit before changing the implementation.
+The replacement engines are connected. Read this requirements index together with
+the detailed documents, live verification report and wider audit before changing
+the implementation. Original media and Avid databases were not changed by the
+read-only corpus checks.
 
 Agreed requirements above are user decisions. Proposed class layouts, catalogue
 entry structures and staged implementation details remain engineering proposals.
@@ -275,11 +287,12 @@ technical facts, retention of competing observations, blank unresolved values wi
 Console diagnostics, and display/export of all established MasterMobIds. Stop an
 affected move/delete if an applicable stamp check cannot be completed or detects
 change, and explain the reason. The staged implementation and comparison/check
-recommendations are approved as the plan; no code has been changed by this task.
+recommendations remain the approved acceptance plan.
 
-Detailed editorial-name/project/original-bin source orders still need to be resolved
-where the approved principles do not determine a winner. The Alpha flag identifier/
-default and optional diagnostic summary dialog remain implementation/UI details.
+The [live connection report](live-connection-2026-10-04.md#confirmed-selection-priorities)
+records the confirmed editorial-name/project/original-bin priorities. The Alpha
+flag identifier/default and optional diagnostic summary dialog remain
+implementation/UI details.
 Retain evidence independently of those choices and ask about newly discovered
 semantics as already agreed. The column review incorporates the user's amendments;
 older general statements that only Alpha/OmfScan are approved are superseded.

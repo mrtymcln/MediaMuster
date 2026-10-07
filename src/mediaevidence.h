@@ -92,6 +92,28 @@ enum class SourceFreshness
 	Changed
 };
 
+// A missing selected value does not explain what the reader actually checked.
+// Keep that explanation separate from value agreement and field applicability.
+enum class PropertyReadReason
+{
+	None,
+	NoAssociatedSource,
+	SourceNotRead,
+	SourceIncomplete,
+	SourceUnreadable,
+	CoverageNotEstablished,
+	NotStoredByFormat,
+	NotPresentInObject,
+	UnsupportedInterpretation,
+	ValueUnreadable
+};
+enum class PropertyApplicability
+{
+	Unknown,
+	Applicable,
+	NotApplicable
+};
+
 // Shared application classification, independent of the presentation record.
 enum class MediaType : int
 {
@@ -247,6 +269,27 @@ struct SourceSnapshot
 };
 using SourceSnapshotRef = QSharedPointer<const SourceSnapshot>;
 
+struct PropertyReadResult
+{
+	PropertyReadState state = PropertyReadState::NotRead;
+	PropertyReadReason reason = PropertyReadReason::NoAssociatedSource;
+	PropertyApplicability applicability = PropertyApplicability::Unknown;
+	QString explanation;
+};
+
+// One source/object receipt supplies defaults for all logical fields. Only
+// explicitly checked exceptions need storage; an empty observation is not proof
+// that a format or object omits a property.
+struct SourceFieldCoverage
+{
+	SourceSnapshotRef snapshot;
+	QString objectIdentity;
+	PropertyReadReason defaultReason = PropertyReadReason::CoverageNotEstablished;
+	QHash<MediaProperty, PropertyReadResult> fields;
+	bool eligible = true;
+	SourceFreshness freshness = SourceFreshness::Unknown;
+};
+
 struct MetadataObservation
 {
 	SourceSnapshotRef snapshot;
@@ -255,6 +298,7 @@ struct MetadataObservation
 	QVariant value;			///< Interpreted semantic value, with its type retained.
 	QVariant rawValue;		///< Original encoding/value when supplied by the reader.
 	PropertyReadState readState = PropertyReadState::NotRead;
+	PropertyReadReason readReason = PropertyReadReason::None;
 	EvidenceBasis basis = EvidenceBasis::Recorded;
 	SourceFreshness freshness = SourceFreshness::Unknown;
 	QString explanation;
@@ -272,14 +316,142 @@ struct ResolvedField
 	QString rule;
 	quint32 ruleVersion = 1;
 	QString reason;
+	PropertyReadReason readReason = PropertyReadReason::NoAssociatedSource;
+	PropertyApplicability applicability = PropertyApplicability::Unknown;
 };
 
 /// Sparse, implicitly shared RAM storage. Reading an unknown field never inserts it.
 class MediaEvidence
 {
 public:
+	void registerSource(const SourceSnapshotRef &snapshot, const QString &objectIdentity = {},
+						PropertyReadReason defaultReason = PropertyReadReason::CoverageNotEstablished)
+	{
+		if (!snapshot)
+			return;
+		for (auto &coverage : m_coverage)
+		{
+			// A scheduled header replaces its unopened receipt. Distinct reads
+			// with actual observations remain distinct snapshots.
+			if (coverage.objectIdentity.isEmpty() && objectIdentity.isEmpty() && coverage.fields.isEmpty() &&
+				coverage.snapshot->readState == SourceReadState::NotRead &&
+				snapshot->readState != SourceReadState::NotRead &&
+				coverage.snapshot->source == snapshot->source && coverage.snapshot->path == snapshot->path &&
+				coverage.snapshot->modified == snapshot->modified)
+			{
+				const bool hasObservations = std::any_of(m_observations.cbegin(), m_observations.cend(),
+					[&](const QVector<MetadataObservation> &values)
+					{ return std::any_of(values.cbegin(), values.cend(), [&](const MetadataObservation &value)
+						{ return value.snapshot == coverage.snapshot; }); });
+				if (!hasObservations)
+					coverage.snapshot = snapshot;
+			}
+			if (coverage.snapshot == snapshot && coverage.objectIdentity == objectIdentity)
+			{
+				if (defaultReason != PropertyReadReason::CoverageNotEstablished)
+					coverage.defaultReason = defaultReason;
+				return;
+			}
+		}
+		m_coverage.append({snapshot, objectIdentity, defaultReason, {}, true, SourceFreshness::Unknown});
+	}
+	void recordReadStatus(MediaProperty property, const SourceSnapshotRef &snapshot,
+						  const QString &objectIdentity, PropertyReadResult status)
+	{
+		registerSource(snapshot, objectIdentity);
+		for (auto &coverage : m_coverage)
+			if (coverage.snapshot == snapshot && coverage.objectIdentity == objectIdentity)
+			{
+				coverage.fields.insert(property, std::move(status));
+				m_resolved.remove(property);
+				return;
+			}
+	}
+	const QVector<SourceFieldCoverage> &sourceCoverage() const { return m_coverage; }
+	void appendCoverage(const SourceFieldCoverage &source, bool eligible = true)
+	{
+		registerSource(source.snapshot, source.objectIdentity, source.defaultReason);
+		for (auto &coverage : m_coverage)
+			if (coverage.snapshot == source.snapshot && coverage.objectIdentity == source.objectIdentity)
+			{
+				for (auto field = source.fields.cbegin(); field != source.fields.cend(); ++field)
+					coverage.fields.insert(field.key(), field.value());
+				coverage.eligible = source.eligible && eligible;
+				coverage.freshness = source.freshness;
+				m_resolved.clear();
+				return;
+			}
+	}
+	PropertyReadResult readStatus(MediaProperty property, const SourceSnapshotRef &source = {},
+								  const QString &objectIdentity = {}, bool eligibleOnly = false) const
+	{
+		PropertyReadResult result;
+		bool found = false;
+		const auto rank = [](PropertyReadState state)
+		{
+			return state == PropertyReadState::Present ? 3 : state == PropertyReadState::Unreadable ? 2
+				 : state == PropertyReadState::NotRead ? 1 : 0;
+		};
+		const auto merge = [&](const PropertyReadResult &next)
+		{
+			// Unchecked contexts prevent a source-wide absence conclusion. Present
+			// evidence still remains present when another context failed or conflicted.
+			if (!found || rank(next.state) > rank(result.state))
+				result = next;
+			found = true;
+		};
+		for (const auto &coverage : m_coverage)
+		{
+			if ((source && coverage.snapshot != source) ||
+				(!objectIdentity.isEmpty() && coverage.objectIdentity != objectIdentity) ||
+				(eligibleOnly && !coverage.eligible))
+				continue;
+			PropertyReadResult status;
+			status.reason = coverage.defaultReason;
+			if (coverage.defaultReason == PropertyReadReason::NotStoredByFormat)
+			{
+				status.state = PropertyReadState::Absent;
+				status.explanation = QStringLiteral("This source record layout does not store this field");
+			}
+			else if (coverage.snapshot->readState == SourceReadState::NotRead)
+				status.reason = PropertyReadReason::SourceNotRead;
+			else if (coverage.snapshot->readState == SourceReadState::Unreadable)
+			{
+				status.state = PropertyReadState::Unreadable;
+				status.reason = PropertyReadReason::SourceUnreadable;
+			}
+			else if (coverage.snapshot->readState == SourceReadState::Incomplete)
+				status.reason = PropertyReadReason::SourceIncomplete;
+			if (const auto explicitStatus = coverage.fields.constFind(property);
+				explicitStatus != coverage.fields.cend())
+				status = explicitStatus.value();
+			bool observed = false;
+			PropertyReadResult observedStatus;
+			for (const auto &value : observations(property))
+				if (value.snapshot == coverage.snapshot && value.objectIdentity == coverage.objectIdentity &&
+					(!eligibleOnly || value.eligible))
+				{
+					PropertyReadResult observationStatus{value.readState,
+						value.readReason != PropertyReadReason::None ? value.readReason
+							: value.readState == PropertyReadState::Unreadable ? PropertyReadReason::ValueUnreadable
+							: value.readState == PropertyReadState::Absent ? PropertyReadReason::NotPresentInObject
+							: value.readState == PropertyReadState::NotRead ? PropertyReadReason::CoverageNotEstablished
+							: PropertyReadReason::None,
+						PropertyApplicability::Applicable, value.explanation};
+					if (!observed || rank(value.readState) > rank(observedStatus.state))
+						observedStatus = std::move(observationStatus);
+					observed = true;
+				}
+			if (observed && !(status.state == PropertyReadState::Unreadable &&
+				observedStatus.state != PropertyReadState::Present))
+				status = std::move(observedStatus);
+			merge(status);
+		}
+		return result;
+	}
 	void observe(MediaProperty property, MetadataObservation observation)
 	{
+		registerSource(observation.snapshot, observation.objectIdentity);
 		auto &values = m_observations[property];
 		for (auto &existing : values)
 			if (existing.snapshot == observation.snapshot && existing.property == observation.property &&
@@ -289,6 +461,7 @@ public:
 				existing.eligible = observation.eligible;
 				existing.freshness = observation.freshness;
 				existing.basis = observation.basis;
+				existing.readReason = observation.readReason;
 				existing.textEncoding = observation.textEncoding;
 				existing.textEncodingBasis = observation.textEncodingBasis;
 				existing.explanation = std::move(observation.explanation);
@@ -299,15 +472,48 @@ public:
 		m_resolved.remove(property);
 	}
 	void select(MediaProperty property, ResolvedField field) { m_resolved.insert(property, std::move(field)); }
-	ResolvedField selected(MediaProperty property) const { return m_resolved.value(property); }
+	ResolvedField selected(MediaProperty property) const
+	{
+		auto result = m_resolved.value(property);
+		if (result.readState != PropertyReadState::Present)
+		{
+			const auto coverage = readStatus(property, {}, {}, true);
+			result.readState = coverage.state;
+			result.readReason = coverage.reason;
+			result.applicability = coverage.applicability;
+		}
+		return result;
+	}
 	void qualifyAll(bool eligible, SourceFreshness freshness)
 	{
+		for (auto &coverage : m_coverage)
+		{
+			coverage.eligible = eligible;
+			coverage.freshness = freshness;
+		}
 		for (auto it = m_observations.begin(); it != m_observations.end(); ++it)
 			for (auto &observation : it.value())
 			{
 				observation.eligible = eligible;
 				observation.freshness = freshness;
 			}
+		m_resolved.clear();
+	}
+	void qualifySource(const SourceSnapshotRef &source, bool eligible, SourceFreshness freshness)
+	{
+		for (auto &coverage : m_coverage)
+			if (coverage.snapshot == source)
+			{
+				coverage.eligible = eligible;
+				coverage.freshness = freshness;
+			}
+		for (auto it = m_observations.begin(); it != m_observations.end(); ++it)
+			for (auto &value : it.value())
+				if (value.snapshot == source)
+				{
+					value.eligible = eligible;
+					value.freshness = freshness;
+				}
 		m_resolved.clear();
 	}
 	void qualify(MediaProperty property, const SourceSnapshotRef &source, bool eligible, SourceFreshness freshness)
@@ -332,6 +538,9 @@ public:
 	/// Exclude old file-owned observations after a header establishes a replacement.
 	void excludeDatabaseMetadata()
 	{
+		for (auto &coverage : m_coverage)
+			if (coverage.snapshot->source == MetadataSource::Pmr || coverage.snapshot->source == MetadataSource::Mdb)
+				coverage.eligible = false;
 		for (auto it = m_observations.begin(); it != m_observations.end(); ++it)
 			for (auto &observation : it.value())
 				if (observation.snapshot && (observation.snapshot->source == MetadataSource::Pmr ||
@@ -341,6 +550,9 @@ public:
 	}
 	void excludeSource(MetadataSource source)
 	{
+		for (auto &coverage : m_coverage)
+			if (coverage.snapshot->source == source)
+				coverage.eligible = false;
 		for (auto it = m_observations.begin(); it != m_observations.end(); ++it)
 			for (auto &observation : it.value())
 				if (observation.snapshot && observation.snapshot->source == source)
@@ -469,7 +681,18 @@ public:
 																	   : disagree		? PropertyAgreement::Conflicting
 																						: PropertyAgreement::Agreeing;
 		if (present > 0)
+		{
 			result.readState = PropertyReadState::Present;
+			result.readReason = PropertyReadReason::None;
+			result.applicability = PropertyApplicability::Applicable;
+		}
+		else
+		{
+			const auto coverage = readStatus(property, {}, {}, true);
+			result.readState = coverage.state;
+			result.readReason = coverage.reason;
+			result.applicability = coverage.applicability;
+		}
 		if (tie)
 		{
 			result.value.clear();
@@ -508,6 +731,7 @@ public:
 	}
 
 private:
+	QVector<SourceFieldCoverage> m_coverage;
 	QHash<MediaProperty, QVector<MetadataObservation>> m_observations;
 	QHash<MediaProperty, ResolvedField> m_resolved;
 };

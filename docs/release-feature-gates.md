@@ -68,9 +68,14 @@ This is not a scan limit: folders containing more files are still read.
 The managed layout selects the family. There is no mandatory per-file
 Operational Pattern probe and no attempt to authenticate the authoring app.
 Media Composer and compatible third-party media are treated alike. PMR/MDB
-records are read first; missing, unreadable, stale or incomplete records trigger
-the existing header fallback. A current complete database record can avoid
-opening the media entirely. This is a managed-workflow scope rule, not a
+records are read first. A complete, unchanged local PMR with an unambiguous
+filename/FileMobId match, joined to complete, unchanged MDB file metadata, can
+avoid opening the media header when all required table fields are usable.
+No usable match, missing or unresolved required metadata, or a detected source
+change triggers a header read. Deliberately unopened headers retain a `NotRead`
+receipt; database freshness stays unknown. See the [database-first scheduling
+contract](../Project%20Canon/database-first-scheduling-2026-10-07.md).
+This is a managed-workflow scope rule, not a
 guarantee that a deliberately misplaced or renamed file is format-certified.
 
 OMF bin matching preserves legacy ID bytes. Preserve-structure transfers use
@@ -87,7 +92,8 @@ switches and their current values. Rebuild after changing a value.
 | --- | --- | --- |
 | kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
 | kPrecomputeFilter | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
-| kClipDuration | Adds separate per-track Clip Duration values to the table and CSV; reads MXF headers even when database metadata is current. | Omits the Clip Duration column and its extra header-read requirement. |
+| kSequenceFilter | Reserved for the deferred v2 sequence picker; currently false. The reference engine supports sequence scopes, but the live dialog applies whole-bin references. | Keeps the sequence picker unavailable; whole-bin filtering remains available. |
+| kClipDuration | Adds separate per-track Clip Duration values to the table and CSV. Required durations missing or unresolved in matching MDB metadata trigger header fallback. | Omits the Clip Duration column and its sufficiency check when scheduling headers. |
 | kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
 | kDebugMenu | Shows feature toggles and Fusion style in the Debug menu. | Omits the Debug menu. |
 | kMonospaceTable | Uses the system monospaced font for table rows and headers. | Uses normal Qt table font styling. |
@@ -119,11 +125,13 @@ verify that the removed feature toggles are absent. Rebuild after changing flags
 ## Experimental Clip Duration
 
 `FeatureFlags::kClipDuration` controls this experiment. Enabling it adds
-**Clip Duration** to the table and CSV. The first implementation reads
-separate, identified material-package tracks from MXF headers; OMF/MDB-only and
-AVB recovery is not included. Unknown clip lengths stay blank. Each track is
-labelled separately, with no sum or guessed single clip length.
+**Clip Duration** to the table and CSV. Canon projects separate, identified
+master tracks from MXF and OMF/MDB graphs. Supported OMF1 sequence-backed tracks
+retain their recorded component/transition calculation. AVB recovery is not
+included. Unknown clip lengths stay blank. Each track is labelled separately;
+different tracks are not summed into one guessed clip length.
 
-With this flag enabled, the scanner also reads MXF headers when a current
-complete database would otherwise let it skip that read. File **Duration** still
-uses the selected descriptor first and is never replaced by Clip Duration.
+With this flag enabled, usable matching MDB clip-track durations can satisfy the
+scan without a media-header read. Missing or unresolved required durations force
+the header fallback. File **Duration** still uses the selected descriptor first
+with a linked file-track fallback; Clip Duration does not replace it.
