@@ -15,7 +15,7 @@ Two genuine legacy audio files contain embedded OMF1 graphs. In each graph HEAD 
 Counts are reference slots after exact value-extent framing. `S/C/D/O` denotes OMF1 SourceMobs/CompositionMobs/MediaData/ObjectSpine; `M/P/D` denotes OMF2 HEAD:Mobs/PrimaryMobs/MediaData. A dash denotes an absent property; all listed slots resolve.
 
 | Path | Bytes | Objects | Membership | SHA-256 |
-|---|---:|---:|---|---|
+| --- | ---: | ---: | --- | --- |
 | `/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf` | 3,207,777 | 749 | Preface→CS 1; CS Packages 3; CS ECD 1 | `16957917fe8a4cbfedd166fe0558d4269c5ca42e01f282ca10373c01d1fe0168` |
 | `/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6966CE5_A3C580A3C588BV.mxf` | 556,586,593 | 748 | Preface→CS 1; CS Packages 3; CS ECD 1 | `f251e14087171f30fac540b083324cdeb821970e3fc5878fee9a9e4fe1b94912` |
 | `/Volumes/EDIT/Avid MediaFiles/MXF/1/1042.WAVA01.D77B775B553A6FA.mxf` | 443,106 | 689 | Preface→CS 1; CS Packages 3; CS ECD 1 | `bbcd57979dae580b4a298ab568604d9717b99fcc00507a879f421fea2d4cf4a7` |
@@ -34,7 +34,7 @@ Counts are reference slots after exact value-extent framing. `S/C/D/O` denotes O
 HEAD handle 1 contains `OMFI:Version` bytes `0001`, `OMFI:ByteOrder` `4949`, and `OMFI:NumDelMobs` (`omfi:Long`) bytes `03000000` (3). SourceMobs is `omfi:MobIndex`, property ID 66070/type ID 65645, 82 bytes = 2-byte prefix + 4×(12-byte UID + 8-byte reference). CompositionMobs is property ID 66025, 42 bytes = 2 + 2×20. ObjectSpine is `omfi:ObjRefArray`, property ID 66065/type ID 65660, 50 bytes = 2 + 6×8. Their count prefixes agree with extents; no null/unresolved reference is present. MediaData is absent.
 
 | MOBJ handle | Recorded MobID bytes (hex) | Active membership | Descriptor / association |
-|---:|---|---|---|
+| ---: | --- | --- | --- |
 | 68071 | `2a0000007429976a70397047` | SourceMobs and ObjectSpine | WAVD 68070; locator MSML 68069; source clip 68067→physical ID below |
 | 68077 | `060a2b340101010501010f10130000000de37d9a8412069034364a963681a3eb` | SourceMobs and ObjectSpine | MDES 68076, MobKind 5; name `TONE: 1000 Hz @ -14.0 dB.1` |
 | 68128 | `2a0000009729976a3ec57047` | SourceMobs and ObjectSpine | AIFD 68127; locator MSML 68126; source clip 68124→physical ID below |
@@ -63,7 +63,7 @@ The Avid graphs contain both 12-byte and 32-byte MobID properties whose Bento di
 - `kitomfi/omUtils.c:2155–2215`: `omfsGetArrayLength` computes count from `CMGetValueSize`, `(size−sizeof(omfInt16))/dataSize`; it does not use the prefix as count. Lines2277–2287 write a `0xffff` overflow marker. `kitomfi/omAcces.c:1922–1932` calls this with 20-byte OMF1 MobIndex slots; lines2320–2334 use 8-byte OMF1 or 4-byte OMF2 reference slots. None of these specimens has a count-prefix disagreement or `0xffff` marker. Treating other disagreements as unsafe is conservative projection policy, not a demonstrated universal format violation.
 - Preserved libMXF baseline data model `docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h:235–255`: Preface.PrimaryPackage (tag0x3b08) is optional WeakRef; Preface.ContentStorage (tag0x3b03) is required StrongRef. Lines355–380: ContentStorage.Packages (tag0x1901) is required StrongRefBatch; EssenceContainerData (tag0x1902) is optional StrongRefBatch; ECD.LinkedPackageUID (tag0x2701) is required UMID. Optional ECD absence therefore needs an ownership explanation for an essence-bearing file, not a universal format-invalid assertion.
 
-Toolkit upstream: https://github.com/LWKS-Software/omfkt22 . Preserved libMXF model upstream: https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_baseline_data_model.h . Source copies and hashes, not mutable upstream state, identify this investigation's authority.
+Toolkit upstream: <https://github.com/LWKS-Software/omfkt22> . Preserved libMXF model upstream: <https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_baseline_data_model.h> . Source copies and hashes, not mutable upstream state, identify this investigation's authority.
 
 ## Recommendations and limits
 
@@ -88,7 +88,7 @@ This binary was compiled against the pre-`omfRevision` ParsedSource layout, befo
 `/private/tmp/mediamuster-root-membership-manifest-2026-10-08.json` records SHA-256, size and before/after mtime/size for all12 inputs, probe artifacts, archive, reader source and model/toolkit copies. The recorded files were stable during hashing; that is a size/mtime observation, not a native handle identity guarantee. Key hashes:
 
 | Artifact | SHA-256 |
-|---|---|
+| --- | --- |
 | `/private/tmp/mediamuster-root-membership-probe.cpp` | `911421bee22d7d975fd08e18abd2fce91e48a36c76f6894b25a387ab9563aba1` |
 | `/private/tmp/mediamuster-root-membership-probe` | `dc61df1ae0312db9241382148c3e5c393dedc80ea603e0eba709c1808eb9f670` |
 | `/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a` | `33060faed4be992f138117ab73b9e6d3d0f735ff16b1e1aa87a1aaac3b3fa040` |

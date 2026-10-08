@@ -19,8 +19,8 @@ and both copied policy sources are retained.
 | Actual `MediaCsv::rowLine` Clip Name | Same header name | Same MDB name |
 | Derived effect/category | 3D Warp / Blend | Color Correction / Image |
 | Effect sequence | Sequence | Sequence |
-| Selected rule version |1|2|
-| KelpieId |41|41|
+| Selected rule version | 1 | 2 |
+| KelpieId | 41 | 41 |
 
 Both runs replaced an authored stale nonempty display name, retained three name
 observations after AVB enrichment, and preserved original raw values, property/object
