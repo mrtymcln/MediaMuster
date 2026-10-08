@@ -86,6 +86,16 @@ parser classes remain comparison-test code, outside the production scan path.
 Checked stateless codec/path utilities may be reused without passing the old
 `MediaMetadata` aggregate through the replacement engines.
 
+Discovery reports the location before root and folder access, while the file
+total is still unknown. Cancellation checks stop subsequent source reads,
+freshness checks and matching once the request is observed; discovered rows and
+obtained source evidence remain available as partial results. The scanner passes
+its existing display-volume path and label to the presentation adapter, avoiding
+a storage query for each row with that context. Native volume identity remains
+separate discovery evidence. A filesystem call already in progress can still
+delay cancellation. Windows/NEXIS performance needs a real-world retest; these
+changes do not establish a measured improvement there.
+
 A `Canon::ParsedSource` contains source-local objects, raw properties and edges.
 An object reference is a source receipt plus handle, not a globally unique Avid ID.
 Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF

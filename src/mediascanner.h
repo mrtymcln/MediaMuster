@@ -30,6 +30,7 @@ public:
 	void startScan(const Options &options);
 	void cancelScan();
 signals:
+	void scanDiscovering(const QString &path);
 	void scanProgress(int current, int total, const QString &currentPath);
 	void scanFinalising();
 	void scanLogBatch(const QVector<LogMessage> &batch);

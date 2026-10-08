@@ -161,6 +161,8 @@ private slots:
 	void non_avid_files_are_invisible();
 	void cancelled_scan_does_not_leak_databases_into_the_next();
 	void cancellation_during_finalising_reports_cancelled();
+	void discovery_progress_precedes_source_progress();
+	void cancellation_during_root_preparation_stops_scan();
 
 	// This real effect render carries private MobAppCode 1 and the standard
 	// LowerLevel UID in AAF byte order. Its name cannot decide classification.
@@ -1121,6 +1123,59 @@ void TestScanner::non_avid_files_are_invisible()
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
 	QCOMPARE(results.first().fileName, QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
+}
+
+void TestScanner::discovery_progress_precedes_source_progress()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const QString folder = temp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
+	MediaScanner scanner;
+	QStringList events;
+	connect(&scanner, &MediaScanner::scanDiscovering, &scanner, [&](const QString &path)
+		{ events.append(QStringLiteral("Discover: ") + path); }, Qt::DirectConnection);
+	connect(&scanner, &MediaScanner::scanProgress, &scanner, [&](int, int, const QString &path)
+		{ events.append(QStringLiteral("Read: ") + path); }, Qt::DirectConnection);
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	MediaScanner::Options options;
+	options.volumePaths = {temp.path()};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QVERIFY(!events.isEmpty());
+	QCOMPARE(events.first(), QStringLiteral("Discover: ") + temp.path());
+	const qsizetype folderEvent = events.indexOf(QStringLiteral("Discover: ") + folder);
+	const qsizetype readEvent = events.indexOf(QStringLiteral("Read: ") + folder + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"));
+	QVERIFY(folderEvent >= 0);
+	QVERIFY(readEvent > folderEvent);
+	QCOMPARE(finished.first().first().value<QVector<MediaFile>>().size(), 1);
+}
+
+void TestScanner::cancellation_during_root_preparation_stops_scan()
+{
+	QTemporaryDir first, second;
+	QVERIFY(first.isValid());
+	QVERIFY(second.isValid());
+	const QString folder = first.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
+	MediaScanner scanner;
+	QStringList reported;
+	connect(&scanner, &MediaScanner::scanDiscovering, &scanner, [&](const QString &path)
+		{
+			reported.append(path);
+			scanner.cancelScan();
+		}, Qt::DirectConnection);
+	QSignalSpy progress(&scanner, &MediaScanner::scanProgress);
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	MediaScanner::Options options;
+	options.volumePaths = {first.path(), second.path()};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QCOMPARE(reported, QStringList{first.path()});
+	QVERIFY(progress.isEmpty());
+	QVERIFY(finished.first().first().value<QVector<MediaFile>>().isEmpty());
 }
 
 void TestScanner::cancellation_during_finalising_reports_cancelled()

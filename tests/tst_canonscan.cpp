@@ -678,6 +678,101 @@ private slots:
 		QVERIFY(!scan.reconciliationComplete);
 		QVERIFY(!scan.parsingComplete);
 	}
+	void cancellation_before_source_open_data()
+	{
+		QTest::addColumn<bool>("withDatabases");
+		QTest::newRow("database-progress") << true;
+		QTest::newRow("header-progress") << false;
+	}
+	void cancellation_before_source_open()
+	{
+		QFETCH(bool, withDatabases);
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(tryWriteFile(path, "Header must remain unopened"));
+		if (withDatabases)
+		{
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+				pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase()));
+		}
+		Canon::Cancellation cancellation;
+		int progressCalls = 0;
+		bool finalising = false;
+		Canon::ScanCallbacks callbacks;
+		callbacks.progress = [&](int, int, const QString &)
+		{
+			++progressCalls;
+			cancellation.cancel();
+		};
+		callbacks.finalising = [&] { finalising = true; };
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QCOMPARE(progressCalls, 1);
+		QVERIFY(!finalising);
+		QVERIFY(scan.cancelled);
+		QVERIFY(scan.discoveryComplete);
+		QVERIFY(!scan.parsingComplete);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 1);
+		QCOMPARE(scan.files.front().path, path);
+		QCOMPARE(scan.sources.size(), scan.candidates.size());
+		for (const auto &source : scan.sources)
+		{
+			QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::NotRead);
+			QCOMPARE(source.snapshot->readState, SourceReadState::NotRead);
+			QVERIFY(source.objects.isEmpty());
+		}
+		QVERIFY(scan.reconciliationIssues.isEmpty());
+	}
+	void cancellation_after_database_read_keeps_raw_evidence()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		const QString database = folder + QStringLiteral("/index.pmr");
+		QVERIFY(tryWriteFile(path, "Header must remain unopened"));
+		QVERIFY(tryWriteFile(database, pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		Canon::Cancellation cancellation;
+		QStringList discovered;
+		Canon::ScanCallbacks callbacks;
+		callbacks.discovering = [&](const QString &folder) { discovered.append(folder); };
+		callbacks.progress = [&](int, int, const QString &current)
+		{
+			QVERIFY(!discovered.isEmpty());
+			if (current == path)
+				cancellation.cancel();
+		};
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(scan.cancelled);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 1);
+		const auto *parsed = mediaSource(scan, database);
+		QVERIFY(parsed);
+		QCOMPARE(parsed->outcome, Canon::ParsedSource::Outcome::Complete);
+		QVERIFY(!parsed->objects.isEmpty());
+		QCOMPARE(mediaSource(scan, path)->outcome, Canon::ParsedSource::Outcome::NotRead);
+		QVERIFY(scan.reconciliationIssues.isEmpty());
+	}
+	void row_conversion_reuses_known_volume_and_does_not_probe_after_cancel()
+	{
+		const auto scan = QSharedPointer<Canon::ScanResult>::create();
+		scan->cancelled = true;
+		Canon::MediaFile file;
+		file.kelpieId = 42;
+		file.path = QStringLiteral("/unavailable/Avid MediaFiles/MXF/1/take.mxf");
+		file.volumeIdentifier = QStringLiteral("captured-physical-volume");
+		file.stamp.volumeIdentifier = file.volumeIdentifier;
+		const auto known = canonMediaFile(file, scan, QStringLiteral("/selected-volume"), QStringLiteral("NEXIS workspace"));
+		QCOMPARE(known.volumePath, QStringLiteral("/selected-volume"));
+		QCOMPARE(known.volumeName, QStringLiteral("NEXIS workspace"));
+		QCOMPARE(known.kelpieId, KelpieId(42));
+		QCOMPARE(known.scanStamp.volumeIdentifier, file.volumeIdentifier);
+		const auto unknown = canonMediaFile(file, scan);
+		QVERIFY(unknown.volumePath.isEmpty());
+		QVERIFY(unknown.volumeName.isEmpty());
+		QCOMPARE(unknown.mediaFilePath, file.path);
+	}
 };
 
 QTEST_GUILESS_MAIN(TestCanonScan)

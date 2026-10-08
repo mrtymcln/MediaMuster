@@ -108,7 +108,8 @@ bool applyResolvedMetadata(MediaFile &row)
 	return changed;
 }
 
-MediaFile canonMediaFile(const Canon::MediaFile &file, const QSharedPointer<const Canon::ScanResult> &scan)
+MediaFile canonMediaFile(const Canon::MediaFile &file, const QSharedPointer<const Canon::ScanResult> &scan,
+						const QString &volumePath, const QString &volumeName)
 {
 	MediaFile row;
 	row.canonScan = scan;
@@ -119,10 +120,20 @@ MediaFile canonMediaFile(const Canon::MediaFile &file, const QSharedPointer<cons
 	const QFileInfo info(file.path);
 	row.fileName = info.fileName();
 	row.mediaFolderName = info.dir().dirName();
-	const QStorageInfo volume(file.path);
-	row.volumePath = volume.rootPath();
-	row.volumeName = volume.displayName();
-	if (row.volumeName.isEmpty())
+	// Live scans already know the display volume. Reuse it rather than query
+	// network storage once per row, including rows retained after Cancel.
+	if (!volumePath.isEmpty())
+	{
+		row.volumePath = volumePath;
+		row.volumeName = volumeName;
+	}
+	else if (!scan || !scan->cancelled)
+	{
+		const QStorageInfo volume(file.path);
+		row.volumePath = volume.rootPath();
+		row.volumeName = volume.displayName();
+	}
+	if (row.volumeName.isEmpty() && !row.volumePath.isEmpty())
 		row.volumeName = QDir(row.volumePath).dirName();
 	row.sizeBytes = file.sizeBytes;
 	row.created = file.created;

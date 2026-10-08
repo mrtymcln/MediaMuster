@@ -306,6 +306,52 @@ private slots:
 #endif
 	}
 
+	void folder_progress_precedes_enumeration()
+	{
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString root = temp.path() + "/Avid MediaFiles/MXF";
+		const QString folder = root + "/1";
+		QVERIFY(QDir().mkpath(folder));
+		Canon::Cancellation cancellation;
+		QStringList reported;
+		bool created = false;
+		const auto result = Canon::DiscoveryEngine{}.discover({{root}, false}, cancellation,
+			[&](const QString &path)
+			{
+				reported.append(path);
+				if (path == folder)
+					created = put(folder + "/arrived.mxf");
+			});
+		QVERIFY(created);
+		QCOMPARE(reported.first(), root);
+		QVERIFY(reported.contains(folder));
+		QVERIFY(result.discoveryComplete);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.files.first().path, folder + "/arrived.mxf");
+	}
+
+	void cancellation_from_folder_progress_stops_enumeration()
+	{
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString root = temp.path() + "/Avid MediaFiles/MXF";
+		const QString folder = root + "/1";
+		QVERIFY(put(folder + "/unread.mxf"));
+		Canon::Cancellation cancellation;
+		const auto result = Canon::DiscoveryEngine{}.discover({{root}, false}, cancellation,
+			[&](const QString &path)
+			{
+				if (path == folder)
+					cancellation.cancel();
+			});
+		QVERIFY(result.cancelled);
+		QVERIFY(!result.discoveryComplete);
+		QVERIFY(result.files.isEmpty());
+		QVERIFY(result.candidates.isEmpty());
+		QVERIFY(result.discoveryIssues.isEmpty());
+	}
+
 	void cancellation_does_not_claim_completion()
 	{
 		Canon::Cancellation cancellation;

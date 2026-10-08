@@ -55,6 +55,7 @@ private slots:
 	void refreshVolumes();
 	void scanSelected();
 	void scanEverything();
+	void onScanDiscovering(const QString &path);
 	void onScanProgress(int current, int total, const QString &currentPath);
 	void onScanLogBatch(const QVector<LogMessage> &batch);
 	void onScanFinished(const QVector<MediaFile> &results);

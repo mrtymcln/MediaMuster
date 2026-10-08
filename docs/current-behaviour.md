@@ -197,6 +197,13 @@ share a master identifier even though their individual file identifiers differ.
 Scanning reads media and databases; it does not rewrite them. A scan replaces the
 previous inventory and clears active filters and selections. Cancelling a scan
 still displays the files gathered so far, with potentially incomplete metadata.
+While discovering folders, the progress dialog shows **Finding media files…**
+and the location being checked. Once source files are known, it reports the
+database or media file being processed. After observing Cancel, the worker stops
+starting new reads, freshness checks and matching work, retaining gathered rows
+and evidence. An operating-system request already in progress may delay stopping.
+The Console records root lookup, discovery/source preparation and total worker
+times separately so shared-storage delays can be located.
 Loaded bins remain available and can still supply missing names after a rescan.
 
 ## Reading the labels

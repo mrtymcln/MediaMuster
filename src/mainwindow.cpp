@@ -759,6 +759,8 @@ void MainWindow::setupConnections()
 		},
 		Qt::QueuedConnection);
 
+	connect(m_scanner, &MediaScanner::scanDiscovering, this, &MainWindow::onScanDiscovering,
+			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanProgress, this, &MainWindow::onScanProgress,
 			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanLogBatch, this, &MainWindow::onScanLogBatch,
@@ -1445,6 +1447,13 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	m_scanTimer.start();
 
 	m_scanner->startScan(opts);
+}
+
+void MainWindow::onScanDiscovering(const QString &path)
+{
+	auto *dlg = progressDialog();
+	dlg->setProgress(0, 0);
+	dlg->setDetail(tr("Finding media files… %1").arg(QDir::toNativeSeparators(path)));
 }
 
 void MainWindow::onScanProgress(int current, int total, const QString &currentPath)
