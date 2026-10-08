@@ -184,6 +184,14 @@ namespace Canon
 			}
 
 			bool hasOmfHeader() const { return m_revision != 0; }
+			std::optional<OmfRevision> revision() const
+			{
+				if (m_revision == 1)
+					return OmfRevision::V1;
+				if (m_revision == 2)
+					return OmfRevision::V2;
+				return {};
+			}
 
 		private:
 			bool cancelled()
@@ -645,6 +653,7 @@ namespace Canon
 		result.diagnostics = std::move(bento.diagnostics);
 		ObjectReader reader(bento, result, context.cancellation);
 		reader.read();
+		result.omfRevision = reader.revision();
 		if (kind == MetadataSource::Omf)
 		{
 			if (reader.hasOmfHeader())

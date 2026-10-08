@@ -1361,9 +1361,12 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QCOMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 
+	// This part authors compatibility rows to exercise UI filtering alone.
 	// Legacy metadata and suffixes must both be removed when the gate closes.
 	window.setOmfScanEnabled(true);
-	MediaFile modern = window.m_model->fileAt(0);
+	MediaFile modern;
+	modern.mediaFilePath = mxfPath;
+	modern.fileName = QStringLiteral("clip.mxf");
 	modern.type = MediaFile::Type::Precompute;
 	modern.project = QStringLiteral("Retained project");
 	MediaFile otherModern = modern;

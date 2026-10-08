@@ -1,0 +1,1151 @@
+{
+  "date": "2026-10-08",
+  "recordedUTC": "2026-10-07T15:29:51.437076+00:00",
+  "workingDirectory": "/Users/martymclean/Developer/MediaMuster",
+  "baseCommit": "da87337098c1ba2fb817ada1dda4e160c34e527d",
+  "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H212\n",
+  "build": "Qt6.5.3 universal Debug; native runtime arm64; Windows not exercised",
+  "snapshotsBeforeDiagnosticCompilation": [
+    {
+      "path": "build-canon/libmediamuster_canon.a",
+      "size": 74516112,
+      "mtimeNs": 1791379974126503000,
+      "sha256": "7ed4c8ddccddf9bd502444c58163b74218ce40ae5520002bd9ac6b5a61372513"
+    },
+    {
+      "path": "src/aboutdialog.cpp",
+      "size": 4844,
+      "mtimeNs": 1790675031219549442,
+      "sha256": "382d1f149675ff5669c6a66ac025610548a7e5e8d518b786c95f1a15961495b0"
+    },
+    {
+      "path": "src/aboutdialog.h",
+      "size": 141,
+      "mtimeNs": 1790675116447526986,
+      "sha256": "f51b9af72d09198bfd92f11b199e3841bdb46fab256a0d9d0675e67a243de225"
+    },
+    {
+      "path": "src/avbparser.cpp",
+      "size": 14325,
+      "mtimeNs": 1791370648119660299,
+      "sha256": "6659338c9a9bf791d25bc624d7093f330accbbfb13392a069e7d61bc9fb7d42d"
+    },
+    {
+      "path": "src/avbparser.h",
+      "size": 2013,
+      "mtimeNs": 1791086656228257333,
+      "sha256": "7b45ff74b956da3c227924305f2127114f0ee8bed2163c073c372d52a8626392"
+    },
+    {
+      "path": "src/avideffects.cpp",
+      "size": 69704,
+      "mtimeNs": 1791070669448141931,
+      "sha256": "8c50f1bfb58f5d105c14f5fc78230f4a063d33c5ce007be48c126e201525544c"
+    },
+    {
+      "path": "src/avideffects.h",
+      "size": 1797,
+      "mtimeNs": 1791080148843418851,
+      "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+    },
+    {
+      "path": "src/avidmedialayout.h",
+      "size": 5442,
+      "mtimeNs": 1790580366576741573,
+      "sha256": "f7e96f37804ba628e18a12a97b374911d5ec8d9f7edb4745ccba6473f79572fc"
+    },
+    {
+      "path": "src/avidprecompute.h",
+      "size": 1175,
+      "mtimeNs": 1788617222698991256,
+      "sha256": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd"
+    },
+    {
+      "path": "src/avidtext.h",
+      "size": 2816,
+      "mtimeNs": 1788176641106759774,
+      "sha256": "19cd6e2d2a833efa74f07f28efa0c5b2daf69fa79172f785c7736ede8e5e5e62"
+    },
+    {
+      "path": "src/avidusage.h",
+      "size": 3760,
+      "mtimeNs": 1789883172182744464,
+      "sha256": "2338ad737d20b8be37c95f52b60c17ce600fa4e55b1a690e1e2ede569c5a234c"
+    },
+    {
+      "path": "src/backgroundjob.h",
+      "size": 3062,
+      "mtimeNs": 1790333643511674610,
+      "sha256": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2"
+    },
+    {
+      "path": "src/bentofile.cpp",
+      "size": 22137,
+      "mtimeNs": 1790865516074140751,
+      "sha256": "7a448068989a0eeadad6d24b186b07fbb4cd5a9ff9ca51f209b6c236d9b64b88"
+    },
+    {
+      "path": "src/bentofile.h",
+      "size": 4295,
+      "mtimeNs": 1790865516070693257,
+      "sha256": "c8ab0efa1e3107142f23042bd136d5aa0c18506a6d9634b95e032fff2fefc6a0"
+    },
+    {
+      "path": "src/binfilereferences.h",
+      "size": 2958,
+      "mtimeNs": 1790835964192049066,
+      "sha256": "5356e351eb5d82059797634469f25c02f2bbd026c06bd16f5afffc9b6a61ab96"
+    },
+    {
+      "path": "src/binfilter.h",
+      "size": 2526,
+      "mtimeNs": 1791086656233073662,
+      "sha256": "75b79c3768be35c6bba9b557e488a1cf168f61de569626aee7bf38daf24f77bd"
+    },
+    {
+      "path": "src/binfilterdialog.cpp",
+      "size": 25013,
+      "mtimeNs": 1791086656238473417,
+      "sha256": "aac0c5eed22ac7f1f0359161a33855f01a358173201f2cc80cc7e8275791d979"
+    },
+    {
+      "path": "src/binfilterdialog.h",
+      "size": 5269,
+      "mtimeNs": 1791084131118017639,
+      "sha256": "d87de858e544f78eb91a44eb395e9f7854996659ad1ed22b02f3aa83558ff85f"
+    },
+    {
+      "path": "src/binmetadataresolver.cpp",
+      "size": 6836,
+      "mtimeNs": 1791374694637324217,
+      "sha256": "1b946d8dc37f909c1959157efeeb30cda04366c0198bba193f39f867c6d19bcd"
+    },
+    {
+      "path": "src/binmetadataresolver.h",
+      "size": 1038,
+      "mtimeNs": 1791086656238515126,
+      "sha256": "103a77650026a5f53eb7b431bb876fd4629ff25f59de8a16d3aef1c969b49e73"
+    },
+    {
+      "path": "src/canon/audioreader_p.cpp",
+      "size": 28764,
+      "mtimeNs": 1791074081182955724,
+      "sha256": "e22465557a84ada768db7828c506e8233c84a82aaf8097925c0cd9cedcb0120b"
+    },
+    {
+      "path": "src/canon/audioreader_p.h",
+      "size": 512,
+      "mtimeNs": 1791070674781276395,
+      "sha256": "8ae76a0a80fd4324ad131f3349c74da6e2ee72242a30ed5dd05e3f088b29f3f3"
+    },
+    {
+      "path": "src/canon/avbcomponents_p.cpp",
+      "size": 21110,
+      "mtimeNs": 1791080031520607995,
+      "sha256": "7bdf3c6dc5a05e5271f0e5daf4bf6e916600e85b0d35c4c661bccbd04121b8cf"
+    },
+    {
+      "path": "src/canon/avbdescriptors_p.cpp",
+      "size": 28671,
+      "mtimeNs": 1791080251557650303,
+      "sha256": "66a8b64b4d259531ff73305eb38520b6ff15cba98f33bd75db34a085a45a7189"
+    },
+    {
+      "path": "src/canon/avbobjects_p.cpp",
+      "size": 12469,
+      "mtimeNs": 1791080250795653349,
+      "sha256": "50c3140ca25d43c9de11d6c3e6b362a9d354acd6ed2c56329ddf3f4fe6209ef9"
+    },
+    {
+      "path": "src/canon/avbobjects_p.h",
+      "size": 2687,
+      "mtimeNs": 1791080250052911121,
+      "sha256": "5854d5997555079479c990b0312d87f1d5c9fa0044f1634710f65abc098c5d97"
+    },
+    {
+      "path": "src/canon/avbreader.cpp",
+      "size": 22676,
+      "mtimeNs": 1791079953640434152,
+      "sha256": "7b466584bbe54c9bcce86e7279fbbde16356b9aab30c397846eb63752689a7fa"
+    },
+    {
+      "path": "src/canon/avbreader.h",
+      "size": 369,
+      "mtimeNs": 1791078047532104780,
+      "sha256": "6b10557c845e2bc2cf37323023971d48041824552601dc480c327a1fdec5c979"
+    },
+    {
+      "path": "src/canon/avbreferences.cpp",
+      "size": 13773,
+      "mtimeNs": 1791370575700505414,
+      "sha256": "467a1598ffff70ec3a8c51d1c1fecf8ebaf03edb99c8ba76eb6ec7d7384719c5"
+    },
+    {
+      "path": "src/canon/avbreferences.h",
+      "size": 3006,
+      "mtimeNs": 1791081692684497256,
+      "sha256": "06321cd21f94d4e1457a37e81d99268d66ec96c38282cc6d4c793fdd422bb77f"
+    },
+    {
+      "path": "src/canon/bentoreader_p.cpp",
+      "size": 19355,
+      "mtimeNs": 1791070674781309311,
+      "sha256": "ddef24ae85a90ba529361219ef5f425755f86cca1b59ae8d8e9b98a7fe714ed0"
+    },
+    {
+      "path": "src/canon/bentoreader_p.h",
+      "size": 1372,
+      "mtimeNs": 1791070478915098058,
+      "sha256": "ac8c2e57d9aa6aa8ef1508039381eddb4a320a5743a4aa809ee8ebd3d4b2ab48"
+    },
+    {
+      "path": "src/canon/discoveryengine.cpp",
+      "size": 9214,
+      "mtimeNs": 1791354211921084789,
+      "sha256": "1a7a45b23229574d486626ec7ae200d6be310558d455c51b775111a1d9e762b4"
+    },
+    {
+      "path": "src/canon/discoveryengine.h",
+      "size": 422,
+      "mtimeNs": 1791040486000872586,
+      "sha256": "ea17e2e7857514de0db1469809cefb4d30ecb86e8dcfeee14e67cc8679cae2ed"
+    },
+    {
+      "path": "src/canon/discoveryengine_p.h",
+      "size": 1046,
+      "mtimeNs": 1791040374936792160,
+      "sha256": "0d2075a83c10042ac02975eba5055174a9b6fee405b868bab87f5315662a9ace"
+    },
+    {
+      "path": "src/canon/dnxnames_p.h",
+      "size": 5182,
+      "mtimeNs": 1791370585374284328,
+      "sha256": "3fd7da759c5704a1d19ebc72a75112e749d79108cac2d5cda5422ca94e5a4fee"
+    },
+    {
+      "path": "src/canon/legacyreader.cpp",
+      "size": 7249,
+      "mtimeNs": 1791070527101463461,
+      "sha256": "af2133a891472d8be96ffbc9d1cfae60649e493c5e23e964b4e2b9fc8b9917f6"
+    },
+    {
+      "path": "src/canon/legacyreader.h",
+      "size": 442,
+      "mtimeNs": 1791070674781306895,
+      "sha256": "2df400380d20960ee843e72c0e3afc96c9ccd52acd21e10babb44a3371610ee3"
+    },
+    {
+      "path": "src/canon/mdbreader.cpp",
+      "size": 431,
+      "mtimeNs": 1791070674781325520,
+      "sha256": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825"
+    },
+    {
+      "path": "src/canon/mdbreader.h",
+      "size": 407,
+      "mtimeNs": 1791040690023221899,
+      "sha256": "0eb3e95033657c6e000bd479ce06f7eb5714a0e235fc35ac95d8565a92b54273"
+    },
+    {
+      "path": "src/canon/mxfcatalogue_p.h",
+      "size": 54484,
+      "mtimeNs": 1791074063308418718,
+      "sha256": "8ec5f966960f2ca07f41a3956f46c882aaafe32844e0383e45e8a6265b059615"
+    },
+    {
+      "path": "src/canon/mxfobjects_p.cpp",
+      "size": 23486,
+      "mtimeNs": 1791370908552632717,
+      "sha256": "f7efd73e2774e487cf88156b18ff5d32db138f91a2b781b9442085dfb86491cb"
+    },
+    {
+      "path": "src/canon/mxfobjects_p.h",
+      "size": 379,
+      "mtimeNs": 1791070828258264962,
+      "sha256": "1215d4389ee47f16e20ac6aa5c679576e453cc47a4ebfa77a1c8484f5cbd46ca"
+    },
+    {
+      "path": "src/canon/mxfprojection.cpp",
+      "size": 65343,
+      "mtimeNs": 1791379061774816457,
+      "sha256": "b059226c6ce5503cfa06c6c3f17624eef4ef32d504605bba505ae07aacbceeb0"
+    },
+    {
+      "path": "src/canon/mxfreader.cpp",
+      "size": 27183,
+      "mtimeNs": 1791370609532995522,
+      "sha256": "f3561c44c596ad0a49f44203ac3689a7025f7e375f242f16d2b2f8d32a115dde"
+    },
+    {
+      "path": "src/canon/mxfreader.h",
+      "size": 427,
+      "mtimeNs": 1791070709382435679,
+      "sha256": "f3a17d222ac634f2ef085d2515f2abadbc5d8909254761a0f07bdadd6a958c1a"
+    },
+    {
+      "path": "src/canon/omfobjects_p.cpp",
+      "size": 25434,
+      "mtimeNs": 1791378394421441831,
+      "sha256": "ed5f401940dbca2fdcc464180487612e8248abd77eb806f77639a8a177880c67"
+    },
+    {
+      "path": "src/canon/omfobjects_p.h",
+      "size": 438,
+      "mtimeNs": 1791043193709322861,
+      "sha256": "6b336acdd81e57d38ea3aed033dbe58fb685920a7449d791d5943d5b8e3c4d7b"
+    },
+    {
+      "path": "src/canon/omfprojection.cpp",
+      "size": 77512,
+      "mtimeNs": 1791379830362605095,
+      "sha256": "f54ec11c28831cf86f9da4ecea0bd78c65082c21689cce5d7ac4dfe8fbdd740d"
+    },
+    {
+      "path": "src/canon/picturegeometry_p.h",
+      "size": 4262,
+      "mtimeNs": 1791377061386190669,
+      "sha256": "68e4075cca6aa234a9ea0a722789901f0404e85e669a5f16fafba5a20ce258ec"
+    },
+    {
+      "path": "src/canon/pmrprojection.cpp",
+      "size": 4375,
+      "mtimeNs": 1791375197460674589,
+      "sha256": "1be0add6208d6f875b14891866b2a483927e55a23926659792c10287878affc1"
+    },
+    {
+      "path": "src/canon/pmrreader.cpp",
+      "size": 13907,
+      "mtimeNs": 1791070674781324187,
+      "sha256": "f3456b6239eb14ecc81797ef418241655139be3c805d33181b30798a95bd34f6"
+    },
+    {
+      "path": "src/canon/pmrreader.h",
+      "size": 442,
+      "mtimeNs": 1791040621668247045,
+      "sha256": "f95404475d7eb423ac904df4f7a4e55c28f1c8fe408623310c09b26d171c5777"
+    },
+    {
+      "path": "src/canon/projection.cpp",
+      "size": 8901,
+      "mtimeNs": 1791375795782065530,
+      "sha256": "da2ec199ffc3971bd76c50f8713f1271001767487ebb1f000063cb0cfcea4c66"
+    },
+    {
+      "path": "src/canon/projection.h",
+      "size": 2453,
+      "mtimeNs": 1791374630391797865,
+      "sha256": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b"
+    },
+    {
+      "path": "src/canon/scanengine.cpp",
+      "size": 28152,
+      "mtimeNs": 1791378860184441916,
+      "sha256": "8731bb8debc1cba601fde18220aa69fd37cb3fe6d61b001ab4b83b0f58a7720b"
+    },
+    {
+      "path": "src/canon/scanengine.h",
+      "size": 705,
+      "mtimeNs": 1791359107179362063,
+      "sha256": "86ea2350eea03d01cb47cd7542726d6fbe5108478c796e42a1fd9cae59d2823f"
+    },
+    {
+      "path": "src/canon/scanmodel.h",
+      "size": 7340,
+      "mtimeNs": 1791378394401117719,
+      "sha256": "526be67ba6241343372b83318181451ead98d6bd53ca5d6ed0494e6b65108f08"
+    },
+    {
+      "path": "src/canon/sourcereader.h",
+      "size": 1027,
+      "mtimeNs": 1791040685672164710,
+      "sha256": "e0085ba7d6ae72d428b3c81b0c8ab8661499f8badf6384738e6ec28eef165bff"
+    },
+    {
+      "path": "src/canonadapter.cpp",
+      "size": 4900,
+      "mtimeNs": 1791354284076653272,
+      "sha256": "755e7bfae201fc05d5b6fffd40078a18b357becd3548839fe1f8a072c7a335db"
+    },
+    {
+      "path": "src/canonadapter.h",
+      "size": 341,
+      "mtimeNs": 1791086656238917424,
+      "sha256": "2353609732dcac6bb7ad190f3d088c7877eed4d45b71bc719f2c513bb55b17d7"
+    },
+    {
+      "path": "src/conventions.h",
+      "size": 8835,
+      "mtimeNs": 1790594867962311316,
+      "sha256": "ec2ecb9f4b7b3f3b636b22ef3faf11527568678813c8e8eeb300fbb14450764d"
+    },
+    {
+      "path": "src/diagnostics.cpp",
+      "size": 5118,
+      "mtimeNs": 1790672573588327274,
+      "sha256": "5bd573d32af4917af051b75334204f6ead9f13f05c5f3ff59614c63fc7ec43a2"
+    },
+    {
+      "path": "src/diagnostics.h",
+      "size": 1800,
+      "mtimeNs": 1790334444097670833,
+      "sha256": "1b4ad2005925ddc1e742f4c4557b3fb8b2f73814f5de84b2736c5a9f7c62282c"
+    },
+    {
+      "path": "src/dragdroputil.h",
+      "size": 679,
+      "mtimeNs": 1790337590948307226,
+      "sha256": "6c91567ce5c2c7a5e619cc9e1adf6e08feee6ec2750b7479f71bf7e7710a7fbb"
+    },
+    {
+      "path": "src/enumutil.h",
+      "size": 324,
+      "mtimeNs": 1789883250702132017,
+      "sha256": "dd2cbfbbe8db0fa5686fa0c69eeb2f7de83fafbadcc3990d20831b3e0e25c254"
+    },
+    {
+      "path": "src/featureflags.h",
+      "size": 387,
+      "mtimeNs": 1791372544350708465,
+      "sha256": "961001c1b05065794ec81709614d7064150e6e4c4b80787d45a3e439ca078dc6"
+    },
+    {
+      "path": "src/fileoperationcontroller.cpp",
+      "size": 19773,
+      "mtimeNs": 1791082457059990510,
+      "sha256": "7e727a14b81bd2b3f53e1f8e27f4b291d02ba5317c267588dc342464a4d59298"
+    },
+    {
+      "path": "src/fileoperationcontroller.h",
+      "size": 3398,
+      "mtimeNs": 1791082457065284995,
+      "sha256": "7e7dbeab1c3ae8fe6acdb2d30357df3f2814bfcca2a4364cf9d082afdc89bf74"
+    },
+    {
+      "path": "src/formatutil.h",
+      "size": 1135,
+      "mtimeNs": 1788176641109593802,
+      "sha256": "c3b722d1ad6d744c8c2b0cad75b0085560ccb68fdc9ffd06fd61d2bc2d1000de"
+    },
+    {
+      "path": "src/layoututil.h",
+      "size": 750,
+      "mtimeNs": 1788176641110421394,
+      "sha256": "d8b8dd04e16c705b27932134f583ffdd32cb1e24fe3731789a1dc29ba8f2b494"
+    },
+    {
+      "path": "src/main.cpp",
+      "size": 1162,
+      "mtimeNs": 1790245060951040745,
+      "sha256": "104499a91dc3ce865a590384400ee01e6dc8ddfb35feea08676e91dab7456577"
+    },
+    {
+      "path": "src/mainwindow.cpp",
+      "size": 78625,
+      "mtimeNs": 1791372544373149508,
+      "sha256": "bd44fdf53ca2c12a1ba2718c46bef094976bbe2faca903fe5c99edfda6c8be71"
+    },
+    {
+      "path": "src/mainwindow.h",
+      "size": 8713,
+      "mtimeNs": 1791083871931901248,
+      "sha256": "552f20e9fd34169cbbd853e625aa249759826faaa7f38a52e690fdfb2e434017"
+    },
+    {
+      "path": "src/managemediadialog.cpp",
+      "size": 23341,
+      "mtimeNs": 1791082457062669587,
+      "sha256": "fcde76e8794b27f2c23a548597aee0313721773e9e00e258ff613946eda38dc1"
+    },
+    {
+      "path": "src/managemediadialog.h",
+      "size": 4526,
+      "mtimeNs": 1791082457064132587,
+      "sha256": "a7f62a3f1547990b185c436839cfa24c878680d6ad31fa2abcd459d2bbb8d5bb"
+    },
+    {
+      "path": "src/mdbparser.cpp",
+      "size": 12457,
+      "mtimeNs": 1791020478797920116,
+      "sha256": "20867a5b325b23fea30a0fa3db05ed511d296d589029516009d8b3f4fe42c711"
+    },
+    {
+      "path": "src/mdbparser.h",
+      "size": 3363,
+      "mtimeNs": 1791020273764943184,
+      "sha256": "c9c94f99b6233854e2c34c1cf078d83d21423c7f44d26a6a10545981500cbf3c"
+    },
+    {
+      "path": "src/mediacsv.cpp",
+      "size": 3836,
+      "mtimeNs": 1791020792280587584,
+      "sha256": "49ca347b380869df21727687103df20d542f38674c4589aef8a050e37e599c4c"
+    },
+    {
+      "path": "src/mediacsv.h",
+      "size": 1794,
+      "mtimeNs": 1791022920951727859,
+      "sha256": "a2c59609ad87d357e31b8d9da83c0c537719f0b48e502e1c745959d990481225"
+    },
+    {
+      "path": "src/mediaduration.h",
+      "size": 3343,
+      "mtimeNs": 1790771134771466324,
+      "sha256": "7cf2b94d109e2e36beeafa73f2e02c2e4539a7c2ab72721e1b0c01433b0103ff"
+    },
+    {
+      "path": "src/mediaevidence.h",
+      "size": 25996,
+      "mtimeNs": 1791375707419511950,
+      "sha256": "8d8b5477f2874492a97481e97db2b8f416e614028b7b668bca30b88c5d5f778e"
+    },
+    {
+      "path": "src/mediafile.h",
+      "size": 15442,
+      "mtimeNs": 1791355185810403148,
+      "sha256": "dfd7798ac0640e31038d238a9c63f95a488b2f454e41eb8c5bd1133990ce3159"
+    },
+    {
+      "path": "src/mediafilterproxy.cpp",
+      "size": 11232,
+      "mtimeNs": 1791022344531977857,
+      "sha256": "11ce4bd19e62274ae5eceedb88cc578a6ebe9a5ef3fd8375a4571826475fd015"
+    },
+    {
+      "path": "src/mediafilterproxy.h",
+      "size": 2955,
+      "mtimeNs": 1790941917439863520,
+      "sha256": "fb52834c749d8f922178947fa10f71239fa07849182e3eacb1ffa9a9de93cb3f"
+    },
+    {
+      "path": "src/mediametadata.cpp",
+      "size": 25693,
+      "mtimeNs": 1791021097757966092,
+      "sha256": "c1d7f43c7f0e7d06741d35d4176e3ae366f94b687ef905640bb1b6aa2f2cf754"
+    },
+    {
+      "path": "src/mediametadata.h",
+      "size": 7125,
+      "mtimeNs": 1791021097758781315,
+      "sha256": "ea65f0288ee89b741d6f6ed4499f647a325a0e97671538f86b0db2d18d1e6b2a"
+    },
+    {
+      "path": "src/mediaobservations.h",
+      "size": 1375,
+      "mtimeNs": 1791373658554916367,
+      "sha256": "5ecafb6a7060a068b0bcef755f7f41404a3ff50f5664527775a1b94de5ece747"
+    },
+    {
+      "path": "src/mediascanner.cpp",
+      "size": 7070,
+      "mtimeNs": 1791355265708147689,
+      "sha256": "869b9aed5f8d84cc20c9464633b5f8ecb59f8511eef59e0055fb86ccc2d05d1b"
+    },
+    {
+      "path": "src/mediascanner.h",
+      "size": 1092,
+      "mtimeNs": 1791086656243867005,
+      "sha256": "dbf6f8530674a41df5c81695cebd826df6eab679774c83d35f5f65f6895fccb2"
+    },
+    {
+      "path": "src/mediatablemodel.cpp",
+      "size": 13809,
+      "mtimeNs": 1791355498973301015,
+      "sha256": "280fa217600ff6c533f777f986cb583d1bfc3606dafc3c4edbc4253d831dab7c"
+    },
+    {
+      "path": "src/mediatablemodel.h",
+      "size": 3035,
+      "mtimeNs": 1791022376355136773,
+      "sha256": "843d37890b3f2d57135ce080211833794f0fec78864f6de3ed31f1453b3ca90d"
+    },
+    {
+      "path": "src/mobid.h",
+      "size": 2883,
+      "mtimeNs": 1790753980534945673,
+      "sha256": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8"
+    },
+    {
+      "path": "src/mxfparser.cpp",
+      "size": 55077,
+      "mtimeNs": 1791022585584110170,
+      "sha256": "e834f20d48dde9ff2f8076eb074318985dd27fd276eabd2c174551924bee3533"
+    },
+    {
+      "path": "src/mxfparser.h",
+      "size": 2401,
+      "mtimeNs": 1790770979339385538,
+      "sha256": "fca4d4a9b96424dc7af30491e337253b6aa0e5a66d510355bb83799f440e20a8"
+    },
+    {
+      "path": "src/mxfproperties.h",
+      "size": 6242,
+      "mtimeNs": 1790812989787732302,
+      "sha256": "be795545e51f71148a01a4f9b7607dd70c56b98ca6ddcad13179c76550962d44"
+    },
+    {
+      "path": "src/nativefile.cpp",
+      "size": 3762,
+      "mtimeNs": 1789281035520275292,
+      "sha256": "d990281783ba6d12fd54459d319f25ebd1f37915b0c9f501375ac08aca6cbc5b"
+    },
+    {
+      "path": "src/nativefile.h",
+      "size": 1029,
+      "mtimeNs": 1790053749060450647,
+      "sha256": "d22a83873134e61d934f082cbb4b1c5cdab7201c178ac89873d3f569850445ee"
+    },
+    {
+      "path": "src/omfobjects.cpp",
+      "size": 36101,
+      "mtimeNs": 1791022585584523382,
+      "sha256": "42add657225f12ed769595b17030cb4b1909cf8b711cddd8db3fb71fffa88f1d"
+    },
+    {
+      "path": "src/omfobjects.h",
+      "size": 11403,
+      "mtimeNs": 1790864263613848985,
+      "sha256": "b5eb338af20c1661e1524e85e71d83511138ac4faf009122e504bba2b3adb717"
+    },
+    {
+      "path": "src/omfparser.cpp",
+      "size": 12324,
+      "mtimeNs": 1790986886783204197,
+      "sha256": "65d8fbad269e5f5390dc910dd0494671ec368033e3f4bd14f269f5c2969fa7f9"
+    },
+    {
+      "path": "src/omfparser.h",
+      "size": 2926,
+      "mtimeNs": 1790770979379715647,
+      "sha256": "657c0d91d76eba4732590a3ea02a6dda3e47467cf88151efdba846aef3400926"
+    },
+    {
+      "path": "src/omfresolutions.cpp",
+      "size": 5656,
+      "mtimeNs": 1790770979370435401,
+      "sha256": "8b3f9336d97b25c7b8b54afea6bb8aab8073b9419c402761d600272c67311232"
+    },
+    {
+      "path": "src/omfresolutions.h",
+      "size": 1314,
+      "mtimeNs": 1790337499273084833,
+      "sha256": "b343f9b7b513eddb1752b8650210e97e0a18b8d85645d4f4320b49e3a2ad2f43"
+    },
+    {
+      "path": "src/omfuid.h",
+      "size": 5476,
+      "mtimeNs": 1791359755046893266,
+      "sha256": "c02b9316794d8113021bd0688143382dfddc8df5a2afeb11612447f2bbf48a66"
+    },
+    {
+      "path": "src/opcopier.cpp",
+      "size": 11615,
+      "mtimeNs": 1790977769639366939,
+      "sha256": "9bb0e15ad44b63093e57039ad8fc6883ddf1c8b38a6a4e78458428a255053f11"
+    },
+    {
+      "path": "src/opcopier.h",
+      "size": 634,
+      "mtimeNs": 1790053686819631504,
+      "sha256": "1912a5b5d72b081ca1bc6ffaab7d8b0c69806bb62fb5db53ade324e006a16ca8"
+    },
+    {
+      "path": "src/operationplan.cpp",
+      "size": 3078,
+      "mtimeNs": 1790976528219368687,
+      "sha256": "a50e185593f4bc45344732a1495d1a106f7d738e21b6b55c35ecb8dd0c405026"
+    },
+    {
+      "path": "src/operationplan.h",
+      "size": 1389,
+      "mtimeNs": 1790976008815625264,
+      "sha256": "2cb600014a0cecb7bd66834585047eaa5a488daf470b47b1ee17b9a48f248db0"
+    },
+    {
+      "path": "src/operationrecovery.cpp",
+      "size": 7334,
+      "mtimeNs": 1790990552316735838,
+      "sha256": "5de005ee6eb0c89062d07d62f395c0e5a4ad393438639034d6bae461112557a4"
+    },
+    {
+      "path": "src/operationrecovery.h",
+      "size": 1203,
+      "mtimeNs": 1790737957829383246,
+      "sha256": "2c53f3d40abe63d1da2d4cc6f0386e4a9244e0bb2110a7dceedf9dae0bafcb8e"
+    },
+    {
+      "path": "src/opfile.cpp",
+      "size": 27091,
+      "mtimeNs": 1790979826029652881,
+      "sha256": "950518ae71c6b1c70b5ddad0f7204497578b41823472728e6ee6193963c8d4f6"
+    },
+    {
+      "path": "src/opfile.h",
+      "size": 3722,
+      "mtimeNs": 1790337423514993706,
+      "sha256": "098975b44596eb2c1d968c647b9bc6ec5df63bcd98dcb3b003ec649d24aa802f"
+    },
+    {
+      "path": "src/opjournal.cpp",
+      "size": 36572,
+      "mtimeNs": 1791370905324343316,
+      "sha256": "40aabdea82dd4e284d9fe94726300f30213d30ec65a4a5cc48d301f2adf56784"
+    },
+    {
+      "path": "src/opjournal.h",
+      "size": 4566,
+      "mtimeNs": 1790990499684063568,
+      "sha256": "f11c524fd32133d8a279cc2e4af7bb0bd0b65ca7daaebde94f7eeb5fbc1d6995"
+    },
+    {
+      "path": "src/opmanager.cpp",
+      "size": 4930,
+      "mtimeNs": 1791354381288192047,
+      "sha256": "69ed237cef4160bb0618ebb79a13abe08fbd4f7fbaaa87eab1cbbd81e8c53c3b"
+    },
+    {
+      "path": "src/opmanager.h",
+      "size": 3425,
+      "mtimeNs": 1790577308982527842,
+      "sha256": "87e5190c091054b2b3cc2c72b24b5ba9a70843d22a5d57b994a1ab8a4e559d28"
+    },
+    {
+      "path": "src/oprequest.h",
+      "size": 6868,
+      "mtimeNs": 1791370904676471750,
+      "sha256": "79b9658de2a4e7b29fcf77517e3070969f23a5ce23c955ec9ef0dc3ef53cb750"
+    },
+    {
+      "path": "src/oprunner.cpp",
+      "size": 75405,
+      "mtimeNs": 1791370904001752308,
+      "sha256": "26f263011be77c6de5c3fb370573ff64756c85491e197b6784b1ecd712c198c7"
+    },
+    {
+      "path": "src/oprunner.h",
+      "size": 4841,
+      "mtimeNs": 1790991088409097733,
+      "sha256": "bfa33d8fbbbcd68e84def574ce0f363cb4b49add5b9847445f2cd8071311c118"
+    },
+    {
+      "path": "src/opscanreceipt.cpp",
+      "size": 4788,
+      "mtimeNs": 1791370903174055161,
+      "sha256": "e9b1ab96a070bb56acef8da4c39669af88cebbd2a2ce4a29c9368eb4cfdd3005"
+    },
+    {
+      "path": "src/opscanreceipt.h",
+      "size": 196,
+      "mtimeNs": 1791359448718620327,
+      "sha256": "976f6034b157e744e023f4b7604c3cb54e7a2c6f49d306729100723a98af73af"
+    },
+    {
+      "path": "src/optrash.cpp",
+      "size": 21956,
+      "mtimeNs": 1789366376452875702,
+      "sha256": "d22ace78c7a963e40c9fa02d153269c892aa21dd2b8c7a5c9d43d30ee48b58a7"
+    },
+    {
+      "path": "src/optrash.h",
+      "size": 1422,
+      "mtimeNs": 1789366376695520720,
+      "sha256": "0eb2da2292bf86e2cbb1d5bd71ddbec03aebcbdb6cd0b88f98b6aece559c9a67"
+    },
+    {
+      "path": "src/optrash_mac.mm",
+      "size": 4537,
+      "mtimeNs": 1789556501035356704,
+      "sha256": "e1add8d351578a829c4c9d2f986e1c5892255d1bbdeb75d4334e5af3b1cfd665"
+    },
+    {
+      "path": "src/pathkey.h",
+      "size": 2129,
+      "mtimeNs": 1790580493699107140,
+      "sha256": "0d769da9dea2bf7060868319422ad647a187caabe336a84799e6b3dfcae74819"
+    },
+    {
+      "path": "src/pmrkey.h",
+      "size": 634,
+      "mtimeNs": 1788617728974389525,
+      "sha256": "a7c1368514542e3b433e7ca78e20916a4423a301d85d0b9c93fb63457f51cac7"
+    },
+    {
+      "path": "src/pmrparser.cpp",
+      "size": 10394,
+      "mtimeNs": 1790853089100381700,
+      "sha256": "869816fb9516cbec9cfa6a86dfa247ece797a716cfd4c9a909ddc36c74d42a89"
+    },
+    {
+      "path": "src/pmrparser.h",
+      "size": 3965,
+      "mtimeNs": 1790986886779559101,
+      "sha256": "347ddafd138cf7c610963449d6ea77ecac7c8c9978b9730b927eddbe63c1a31c"
+    },
+    {
+      "path": "src/precomputefilter.h",
+      "size": 1649,
+      "mtimeNs": 1789281324544849352,
+      "sha256": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d"
+    },
+    {
+      "path": "src/precomputefilterdialog.cpp",
+      "size": 10762,
+      "mtimeNs": 1790942103778035299,
+      "sha256": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87"
+    },
+    {
+      "path": "src/precomputefilterdialog.h",
+      "size": 1570,
+      "mtimeNs": 1790941917439268181,
+      "sha256": "321cec10cccf155d13733bedb3b5b87843df3e2b899af4a2eff70bd52f4cfa76"
+    },
+    {
+      "path": "src/progressdialog.cpp",
+      "size": 4988,
+      "mtimeNs": 1790066562903296567,
+      "sha256": "80894107aa3b4e379812c113b09be0908f87131ed3f119e612df165fa598b4b0"
+    },
+    {
+      "path": "src/progressdialog.h",
+      "size": 2666,
+      "mtimeNs": 1789281342989769665,
+      "sha256": "fdf6cf6bc87f662ad2cacacb6a3e1ae961b1876491d27f29b472ca055b3ce07d"
+    },
+    {
+      "path": "src/progressthrottle.h",
+      "size": 1162,
+      "mtimeNs": 1790986886782033832,
+      "sha256": "365da04fbd81cf024464c174a4b01c47f0955e96588b10d7c72d332d274f966b"
+    },
+    {
+      "path": "src/rebalancedialog.cpp",
+      "size": 26106,
+      "mtimeNs": 1791082457072349781,
+      "sha256": "932c55198c526524b9aa79190d71a8069874f1e9abe8bcf65f9d5a100d239b22"
+    },
+    {
+      "path": "src/rebalancedialog.h",
+      "size": 5346,
+      "mtimeNs": 1791082457061456052,
+      "sha256": "7e3ac3e593e67624f1578e23ffa69d5abb589d108362ab0218ec203522781319"
+    },
+    {
+      "path": "src/rebalanceplan.h",
+      "size": 1781,
+      "mtimeNs": 1791370902483256610,
+      "sha256": "32ff6dce50573b26a2a902ac78140bc3df75497b7a1c873d11ec2dedebad0989"
+    },
+    {
+      "path": "src/rebalanceplanner.cpp",
+      "size": 17807,
+      "mtimeNs": 1791370901778839122,
+      "sha256": "fa9d5d9a705e55789ff4745d4497374c3209d8de5e11ed6d181f5ee01b03510c"
+    },
+    {
+      "path": "src/rebalanceplanner.h",
+      "size": 1115,
+      "mtimeNs": 1790580366577111319,
+      "sha256": "1e3aed2a5031c8cb38cce0d687bac9f95c4da02f3cda022e9c9272bfba3ae8a2"
+    },
+    {
+      "path": "src/rebalancer.cpp",
+      "size": 3372,
+      "mtimeNs": 1790982559405380685,
+      "sha256": "4287b7afa3549e4fb15628e0a9fd5bd4530794f4a40657be53c81458583105bc"
+    },
+    {
+      "path": "src/rebalancer.h",
+      "size": 2254,
+      "mtimeNs": 1790980688407933343,
+      "sha256": "86baad741be6e8298a1f61eae7a829d39b2d4e957612179a1cee57b8b3cbc6b3"
+    },
+    {
+      "path": "src/revealinfinder.cpp",
+      "size": 4056,
+      "mtimeNs": 1790551745562354829,
+      "sha256": "4fa74c6cbdbef108beaa5c31c6c4ab1791b58ab86ee4d683d6d76f3b3c91402c"
+    },
+    {
+      "path": "src/revealinfinder.h",
+      "size": 490,
+      "mtimeNs": 1790551737080900797,
+      "sha256": "83be667341872afd7c76f89db99fb2563d4e9047e91d3d676dc142c19891ef76"
+    },
+    {
+      "path": "src/testpause.h",
+      "size": 882,
+      "mtimeNs": 1789281440800006364,
+      "sha256": "180149048625806cd4e11c86740454549e6b74c1fe5bc077866ce9e62e31c3a0"
+    },
+    {
+      "path": "src/unfinishedbusinessdialog.cpp",
+      "size": 8937,
+      "mtimeNs": 1790068595080120970,
+      "sha256": "29b9d838befbe25b1e982001c582987d50ccd34079928c9f2ccf5a6f91c20403"
+    },
+    {
+      "path": "src/unfinishedbusinessdialog.h",
+      "size": 1431,
+      "mtimeNs": 1790068639676411751,
+      "sha256": "082c076c90d6046e4e5278556f658ff9da2fc90672c8a115529584b24867a3d2"
+    },
+    {
+      "path": "src/volumeidentity.cpp",
+      "size": 8371,
+      "mtimeNs": 1790337405555523614,
+      "sha256": "f3bd79a153d8793b825920b835d15190c06a7cf5c99006ef92b8dc30e86babc1"
+    },
+    {
+      "path": "src/volumeidentity.h",
+      "size": 1139,
+      "mtimeNs": 1791021244307872751,
+      "sha256": "8d779067d2b51ec7d2cf2024c9e55648d362dfcf76da47cca06be85ae5d2c0da"
+    },
+    {
+      "path": "src/volumelistwidget.cpp",
+      "size": 1875,
+      "mtimeNs": 1790337590876225395,
+      "sha256": "c80c56232489cefdc2eb94c5d83376f7ba073f8d60bde9f2eeefa0fc2dccb86d"
+    },
+    {
+      "path": "src/volumelistwidget.h",
+      "size": 808,
+      "mtimeNs": 1788617888795571450,
+      "sha256": "77480d504f145c2c16ef236edc85647305d0a199dfb32fe865296819c47917e0"
+    },
+    {
+      "path": "src/volumemanager.cpp",
+      "size": 10257,
+      "mtimeNs": 1790578679772019498,
+      "sha256": "9f1ca3b1c228e89404e55f10243f462549fb1fc7aea94043cff4f28ca943d8e8"
+    },
+    {
+      "path": "src/volumemanager.h",
+      "size": 2960,
+      "mtimeNs": 1790580372874615318,
+      "sha256": "29a1688f272e3886217cc8570172d7fd2b0ade57ff0bbec1d738c567498a4356"
+    },
+    {
+      "path": "tests/auditcloseout/mxfprojection.cpp",
+      "size": 10841,
+      "mtimeNs": 1791386409654910736,
+      "sha256": "9ca0d176dcc12cb5a11772ccf815bcfff6650f0f015710e65abc95e03717961a"
+    },
+    {
+      "path": "tests/auditcloseout/omfprojection.cpp",
+      "size": 4807,
+      "mtimeNs": 1791378298430245085,
+      "sha256": "e281a035799521d20519a19b1e34abbbbd60c41eae48890da04e5adb1486bdd5"
+    },
+    {
+      "path": "tests/testcanonbento.h",
+      "size": 4961,
+      "mtimeNs": 1791377791610110042,
+      "sha256": "093e13f74a4ea952458ac70a8c57cc1309fc71957d089bb527b8b268e7068691"
+    },
+    {
+      "path": "tests/testtypedbento.h",
+      "size": 4563,
+      "mtimeNs": 1791379009804681723,
+      "sha256": "87fa8e3ad0f0e671373864106490b82c1395bbb3875c8e0b368dfffb0102dd81"
+    },
+    {
+      "path": "tests/tst_canon_mxfprojection.cpp",
+      "size": 52957,
+      "mtimeNs": 1791379061802214448,
+      "sha256": "13b91a704221a348b17ffb113bf3c80ebb7e690f734c35186488d5eb10e886ec"
+    },
+    {
+      "path": "tests/tst_canon_omfprojection.cpp",
+      "size": 95996,
+      "mtimeNs": 1791379887101800603,
+      "sha256": "b23d0c0e38ad3b87045f70331a66706b0473bae17002d925e3c14b2cf1b7e8b1"
+    },
+    {
+      "path": "tests/tst_canonscan.cpp",
+      "size": 35667,
+      "mtimeNs": 1791378962126042484,
+      "sha256": "b281d6bfa22fcb6f4762b5afa665de350a0689afe486af0517303535acb71ba1"
+    },
+    {
+      "path": "tests/tst_scanner.cpp",
+      "size": 157838,
+      "mtimeNs": 1791386585528288900,
+      "sha256": "e980914b2740e0a63ff6e5ce8c258de7695809a944402726640dfa61bc58e9a4"
+    }
+  ],
+  "completedUTC": "2026-10-07T15:32:34.051219+00:00",
+  "snapshotsUnchangedSinceCompilation": true,
+  "commands": [
+    {
+      "command": "cmake --build build-canon --parallel 4",
+      "exitCode": 0
+    },
+    {
+      "command": "cmake --build build --parallel 4",
+      "exitCode": 0
+    },
+    {
+      "command": "ctest --test-dir build-canon --output-on-failure --parallel 4",
+      "exitCode": 0,
+      "suites": 38,
+      "passed": 38,
+      "elapsedSeconds": 42.09
+    },
+    {
+      "command": "codesign --verify --deep --strict --verbose=2 build/MediaMuster.app",
+      "exitCode": 0
+    },
+    {
+      "command": "c++ -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -fsyntax-only -I src -I tests -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib tests/auditcloseout/mxfwidths.cpp",
+      "exitCode": 0,
+      "diagnosticsBytes": 0
+    }
+  ],
+  "diagnostics": [
+    {
+      "compileCommand": "c++ -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -I src -I tests -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib tests/auditcloseout/mxfprojection.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/canon-root-mxfprojection-2026-10-08",
+      "compileExitCode": 0,
+      "compileDiagnosticsBytes": 0,
+      "binary": {
+        "path": "/private/tmp/canon-root-mxfprojection-2026-10-08",
+        "size": 4108672,
+        "mtimeNs": 1791386992464760080,
+        "sha256": "79a54736d29ce2c797c62b9d8817edd51a1bfe7bb7ecfd225622835d99d474f5"
+      },
+      "source": {
+        "path": "tests/auditcloseout/mxfprojection.cpp",
+        "size": 10841,
+        "mtimeNs": 1791386409654910736,
+        "sha256": "9ca0d176dcc12cb5a11772ccf815bcfff6650f0f015710e65abc95e03717961a"
+      },
+      "runCommand": "/private/tmp/canon-root-mxfprojection-2026-10-08",
+      "runExitCode": 0,
+      "result": {
+        "path": "Project Canon/evidence/root-membership-mxfprojection-2026-10-08.json",
+        "size": 414,
+        "mtimeNs": 1791387010766004158,
+        "sha256": "c7169e1219d0be208880500fc634ca102d512b6c73ce1e3d19c1b9d83b4e6a53"
+      }
+    },
+    {
+      "compileCommand": "c++ -std=c++17 -arch arm64 -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -I src -I tests -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib tests/auditcloseout/omfprojection.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/canon-root-omfprojection-2026-10-08",
+      "compileExitCode": 0,
+      "compileDiagnosticsBytes": 0,
+      "binary": {
+        "path": "/private/tmp/canon-root-omfprojection-2026-10-08",
+        "size": 2336112,
+        "mtimeNs": 1791386992417629521,
+        "sha256": "e7c20cd0a7aceaf97d7bbb828c1418c8f8de8854dd3336de6224fdeb0c048944"
+      },
+      "source": {
+        "path": "tests/auditcloseout/omfprojection.cpp",
+        "size": 4807,
+        "mtimeNs": 1791378298430245085,
+        "sha256": "e281a035799521d20519a19b1e34abbbbd60c41eae48890da04e5adb1486bdd5"
+      },
+      "runCommand": "/private/tmp/canon-root-omfprojection-2026-10-08",
+      "runExitCode": 0,
+      "result": {
+        "path": "Project Canon/evidence/root-membership-omfprojection-2026-10-08.json",
+        "size": 949,
+        "mtimeNs": 1791387010324712865,
+        "sha256": "a5cb384c32f8331c282cd46f10f79d1a734b3ec5697195f4e5725cc5d0a8240f"
+      }
+    }
+  ],
+  "realScan": {
+    "command": "/usr/bin/time -l env MEDIAMUSTER_CANON_REAL_SCAN_ROOTS='/Users/Shared/AvidMediaComposer;/Volumes/EDIT' MEDIAMUSTER_CANON_REAL_SCAN_CSV='/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/full-scan-root-membership-2026-10-08.csv' MEDIAMUSTER_CANON_REAL_SCAN_REPORT='/Users/martymclean/Developer/MediaMuster/Project Canon/live-scan-root-membership-2026-10-08.json' ./build-canon/tests/tst_scanner optional_read_only_real_scan",
+    "exitCode": 0,
+    "scanMs": 20736,
+    "rows": 2413,
+    "peakMemoryFootprintBytes": 2539395648,
+    "performanceBoundary": "Debug read-only scan with uncontrolled filesystem cache; no comparative speed or memory claim."
+  },
+  "evidence": [
+    {
+      "path": "Project Canon/evidence/root-membership-full-tests-2026-10-08.txt",
+      "size": 4305,
+      "mtimeNs": 1791386913093773798,
+      "sha256": "8052c49d8d29cd82ab49bf445f910798e3fda2287762b5c7cd2f7c87ccad9a68"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-full-tests-initial-2026-10-08.txt",
+      "size": 45713,
+      "mtimeNs": 1791383106969780698,
+      "sha256": "aa6de47cba465d8930b2d3d9ded1282e26724ce3848f2bdc6447fc339d21eacc"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-scanner-fixtures-2026-10-08.txt",
+      "size": 37248,
+      "mtimeNs": 1791386679667267382,
+      "sha256": "ba4db58b4c7f5abf3e07364dedadbed0fdeaa8e2a44a9f766190b80e87329454"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-real-scan-2026-10-08.txt",
+      "size": 5733,
+      "mtimeNs": 1791386961974511502,
+      "sha256": "d4ef392b478c08c2a8bc20efaeffdd0b58113fcfefd5df4aef94b05f30855ffa"
+    },
+    {
+      "path": "Project Canon/evidence/full-scan-root-membership-2026-10-08.csv",
+      "size": 1096732,
+      "mtimeNs": 1791386960075781665,
+      "sha256": "488b33fd4367695ca72633bf595c1eeb73039ff519df9fe221cd17cb35e11a0d"
+    },
+    {
+      "path": "Project Canon/live-scan-root-membership-2026-10-08.json",
+      "size": 2550664,
+      "mtimeNs": 1791386960228564627,
+      "sha256": "7630e9a3892c825135cd56d16813bf3cdd384c81fa75cbf278da7e692288e45b"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-comparison-2026-10-08.json",
+      "size": 15728,
+      "mtimeNs": 1791387027921410627,
+      "sha256": "41c0518d1cfc8e0cf7983fab3beb9b815b22481aeb9958c0f94e2c4e8efa1dcc"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-changed-cells-proof-2026-10-08.json",
+      "size": 68645,
+      "mtimeNs": 1791387722792848844,
+      "sha256": "9d4ed23b6247bd49c6e3c79a715f5d1eb031da183ffc1151de0b5f9663525b60"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-changed-cells-receipt-2026-10-08.json",
+      "size": 12012,
+      "mtimeNs": 1791387722793143760,
+      "sha256": "c12ad1ec35bb8cec6a438400045dede5621fc11e8eadc7d5ddedce3f6c34712b"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-changed-cells-probe-2026-10-08.cpp",
+      "size": 6921,
+      "mtimeNs": 1791387649552621377,
+      "sha256": "0d5e870627e33f45625e6b4078ac20a4d02199219b054c76d09b03f1a4c95a8e"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-duration-manifest-2026-10-08.json",
+      "size": 10016,
+      "mtimeNs": 1791387617430344425,
+      "sha256": "260a0a61a5bec91f8af2d27d3d71086b53c934298287d1d324faa70d1b40eb5d"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-duration-summary-2026-10-08.json",
+      "size": 57978,
+      "mtimeNs": 1791387617428453015,
+      "sha256": "d42c3cac27dcb5d58e5084f23ca61d116979916a7dbf545b9d5e090b11efc95a"
+    },
+    {
+      "path": "Project Canon/evidence/root-membership-duration-evidence-2026-10-08.jsonl.gz",
+      "size": 66705,
+      "mtimeNs": 1791387617428670806,
+      "sha256": "36de2e9ddff4b9854a97a878b9484c06a329a12895ff8a91e9a45b6ce20efea0"
+    },
+    {
+      "path": "Project Canon/evidence/audit-closeout-ledger-2026-10-08.json",
+      "size": 39855,
+      "mtimeNs": 1791387507181702493,
+      "sha256": "2490c5487765070804f5216025c972b776e1351d3969af0f21a1ea15715ae447"
+    }
+  ],
+  "scope": "Fresh final builds and retained source hashes. Authored controls plus bounded genuine-file evidence, not universal conformance. Initial suite failure from unrooted authored scanner fixtures is retained separately; final fixture assertions unchanged. Original media accessed read-only. Windows runtime not exercised."
+}

@@ -280,8 +280,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.durationDisplay();
 		case Column::SizeMB:
 			return f.sizeMBDisplay();
-		case Column::Codec:
-			return f.codec;
+		case Column::Compression:
+			return f.compression;
 		case Column::Resolution:
 			return f.resolution;
 		case Column::FrameRate:
@@ -366,7 +366,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 		return QStringLiteral("Clip Duration");
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
-							 "Codec", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
+							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
 							 "Date Created", "Filename", "Source Filename", "Location", "MobId", "MasterMobId", "KelpieId",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),

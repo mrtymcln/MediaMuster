@@ -20,7 +20,7 @@ class BinMetadataResolver
 {
 public:
 	void setBins(const QVector<AvbBin> &bins);
-	// Returns whether displayed name/bin values changed.
+	// Returns whether semantic row values changed, including derived effects.
 	bool apply(MediaFile &file) const;
 
 private:

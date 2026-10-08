@@ -30,6 +30,12 @@ namespace Canon
 	/// Source-local handles preserve object contexts before identity reconciliation.
 	using ObjectHandle = quint64;
 
+	enum class OmfRevision
+	{
+		V1 = 1,
+		V2 = 2
+	};
+
 	struct ObjectReference
 	{
 		// Use the owning ParsedSource's returned snapshot, not the reader's input receipt.
@@ -184,8 +190,9 @@ namespace Canon
 		QString readReason; ///< Scan scheduling decision; empty for direct reader calls.
 		SourceSnapshotRef snapshot;
 		Container container = Container::Unknown;
-		PropertyLocator embedding;			   ///< Parent chunk/property, when this is an embedded source.
-		QVector<ParsedSource> embeddedSources; ///< Each embedded graph has its own source receipt and local handles.
+		std::optional<OmfRevision> omfRevision; ///< Established HEAD context; raw version values remain properties.
+		PropertyLocator embedding;				///< Parent chunk/property, when this is an embedded source.
+		QVector<ParsedSource> embeddedSources;	///< Each embedded graph has its own source receipt and local handles.
 		QVector<RecordSet> recordSets;
 		QVector<AvidObject> objects;
 		QVector<Relationship> relationships;

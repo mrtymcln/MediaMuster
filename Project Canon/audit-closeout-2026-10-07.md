@@ -1,5 +1,10 @@
 # Original format audit: implementation closeout
 
+**Later assessment:** the [8 October ownership/reference corrections](root-membership-corrections-2026-10-08.md)
+close F06, F07, F14 and F40. The [updated ledger](evidence/audit-closeout-ledger-2026-10-08.json)
+records 25 Resolved, 9 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted
+scope limits. The assessment below remains the dated 7 October record.
+
 Assessment: 7 October 2026. This is a current finding-by-finding assessment of the
 40 original findings/scope entries, superseding the **implementation status** in
 the [3 October design coverage map](audit-coverage.md). That map and the

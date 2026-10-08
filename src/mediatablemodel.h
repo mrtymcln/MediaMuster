@@ -26,7 +26,7 @@ public:
 		Kind,
 		Duration,
 		SizeMB,
-		Codec,
+		Compression,
 		Resolution,
 		FrameRate,
 		SampleRate,
@@ -66,9 +66,9 @@ public:
 	bool omfScanEnabled() const { return m_omfScanEnabled; }
 	int omfScanColumn() const;
 
-	/// Fill missing clip/original-bin names from matching master clips in
-	/// successfully loaded bins. Conflicting values stay unknown. Removing
-	/// a bin retracts only the fallback metadata; scanner values take precedence.
+	/// Attach or retract matching master-clip observations from loaded bins.
+	/// Canon rows refresh under the shared policy; unresolved ties stay blank.
+	/// Removing a bin retains its evidence history while excluding its values.
 	void setAvbBins(const QVector<AvbBin> &bins);
 
 	/// Groups contiguous deletions into single beginRemoveRows /

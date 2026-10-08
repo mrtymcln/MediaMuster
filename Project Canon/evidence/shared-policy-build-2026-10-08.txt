@@ -1,0 +1,332 @@
+[1/208] Automatic MOC for target tst_diagnostics
+[2/206] Automatic MOC for target tst_mobid
+[3/204] Automatic MOC for target tst_pathkey
+[4/202] Automatic MOC for target tst_mediaevidence
+[5/200] Automatic MOC for target tst_format
+[6/198] Automatic MOC for target tst_conventions
+[7/196] Automatic MOC for target tst_mediametadata
+[8/194] Automatic MOC for target tst_bentofile
+[9/192] Automatic MOC for target tst_omfuid
+[10/190] Automatic MOC for target tst_pmrparser
+[11/188] Automatic MOC for target tst_omfparser
+[12/186] Automatic MOC for target tst_avideffects
+[13/184] Automatic MOC for target tst_opcleanup
+[14/182] Automatic MOC for target tst_volumeidentity
+[15/180] Automatic MOC for target tst_opjournal
+[16/178] Automatic MOC for target tst_mdbparser
+[17/177] Automatic MOC for target tst_mxfparser
+[18/176] Automatic MOC for target tst_rebalanceplanner
+[19/175] Automatic MOC for target tst_mediacsv
+[20/174] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/metadataselectionpolicy.cpp.o
+[21/174] Linking CXX static library libmediamuster_canon.a
+[22/174] Automatic MOC for target MediaMuster
+[23/174] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/tst_mxfparser.cpp.o
+[24/174] Building CXX object tests/CMakeFiles/tst_rebalanceplanner.dir/tst_rebalanceplanner.cpp.o
+[25/174] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/tst_mdbparser.cpp.o
+[26/174] Automatic MOC for target tst_canondiscovery
+[27/173] Automatic MOC for target tst_operationui
+[28/173] Automatic MOC for target tst_canonmdb
+[29/172] Automatic MOC for target tst_canonpmr
+[30/171] Automatic MOC for target tst_canonpmrrobustness
+[31/170] Automatic MOC for target tst_canonlegacy
+[32/169] Automatic MOC for target tst_canonscan
+[33/168] Automatic MOC for target tst_canonmxf
+[34/167] Automatic MOC for target tst_canonavb
+[35/166] Automatic MOC for target tst_canonavbreferences
+[36/165] Automatic MOC for target tst_canon_omfprojection
+[37/164] Automatic MOC for target tst_scanner
+[38/163] Automatic MOC for target tst_canon_mxfprojection
+[39/162] Automatic MOC for target tst_avbparser
+[40/161] Automatic MOC for target tst_mediatablemodel
+[41/161] Automatic MOC for target tst_fileoperations
+[42/161] Automatic MOC for target tst_mediafilterproxy
+[43/161] Automatic MOC for target tst_precomputefilterdialog
+[44/161] Automatic MOC for target tst_binfilterdialog
+[45/161] Building CXX object CMakeFiles/MediaMuster.dir/src/main.cpp.o
+[46/161] Building CXX object CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o
+[47/161] Building CXX object CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o
+[48/161] Building CXX object CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o
+[49/161] Building CXX object CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o
+[50/161] Building CXX object CMakeFiles/MediaMuster.dir/src/binmetadataresolver.cpp.o
+[51/161] Building CXX object CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o
+[52/161] Building CXX object CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o
+[53/161] Building CXX object CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o
+[54/161] Building CXX object CMakeFiles/MediaMuster.dir/src/canonadapter.cpp.o
+[55/161] Building CXX object CMakeFiles/MediaMuster.dir/src/opscanreceipt.cpp.o
+[56/161] Building CXX object CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o
+[57/161] Building CXX object CMakeFiles/MediaMuster.dir/src/avbparser.cpp.o
+[58/161] Building CXX object CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o
+[59/161] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o
+[60/161] Building CXX object CMakeFiles/MediaMuster.dir/src/precomputefilterdialog.cpp.o
+[61/161] Building CXX object CMakeFiles/MediaMuster.dir/src/binfilterdialog.cpp.o
+[62/161] Building CXX object CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o
+[63/161] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o
+[64/161] Building CXX object tests/CMakeFiles/tst_rebalanceplanner.dir/__/src/opscanreceipt.cpp.o
+[65/161] Building CXX object CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o
+[66/161] Building CXX object tests/CMakeFiles/tst_rebalanceplanner.dir/__/src/rebalanceplanner.cpp.o
+[67/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui_autogen/mocs_compilation.cpp.o
+[68/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/fileoperationcontroller.cpp.o
+[69/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediafilterproxy.cpp.o
+[70/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/tst_operationui.cpp.o
+[71/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediatablemodel.cpp.o
+[72/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/binmetadataresolver.cpp.o
+[73/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mainwindow.cpp.o
+[74/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/canonadapter.cpp.o
+[75/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediascanner.cpp.o
+[76/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediacsv.cpp.o
+[77/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/opscanreceipt.cpp.o
+[78/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/opmanager.cpp.o
+[79/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/oprunner.cpp.o
+[80/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/avbparser.cpp.o
+[81/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalancer.cpp.o
+[82/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/precomputefilterdialog.cpp.o
+[83/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/binfilterdialog.cpp.o
+[84/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/managemediadialog.cpp.o
+[85/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalanceplanner.cpp.o
+[86/161] Building CXX object tests/CMakeFiles/tst_canondiscovery.dir/tst_canondiscovery.cpp.o
+[87/161] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/rebalancedialog.cpp.o
+[88/161] Building CXX object tests/CMakeFiles/tst_canonpmr.dir/tst_canonpmr.cpp.o
+[89/161] Building CXX object tests/CMakeFiles/tst_canonpmrrobustness.dir/tst_canonpmrrobustness.cpp.o
+[90/161] Building CXX object tests/CMakeFiles/tst_canonmdb.dir/tst_canonmdb.cpp.o
+[91/161] Building CXX object tests/CMakeFiles/tst_canonlegacy.dir/tst_canonlegacy.cpp.o
+[92/161] Building CXX object tests/CMakeFiles/tst_canonmxf.dir/tst_canonmxf.cpp.o
+[93/161] Building CXX object tests/CMakeFiles/tst_canonavb.dir/tst_canonavb.cpp.o
+[94/161] Building CXX object tests/CMakeFiles/tst_canonavbreferences.dir/tst_canonavbreferences.cpp.o
+[95/161] Building CXX object tests/CMakeFiles/tst_canonscan.dir/__/src/canonadapter.cpp.o
+[96/161] Building CXX object tests/CMakeFiles/tst_avbparser.dir/__/src/avbparser.cpp.o
+[97/161] Building CXX object tests/CMakeFiles/tst_avbparser.dir/tst_avbparser.cpp.o
+[98/161] Building CXX object tests/CMakeFiles/tst_canon_omfprojection.dir/tst_canon_omfprojection.cpp.o
+[99/161] Building CXX object tests/CMakeFiles/tst_canon_mxfprojection.dir/tst_canon_mxfprojection.cpp.o
+[100/161] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/canonadapter.cpp.o
+[101/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/tst_fileoperations_autogen/mocs_compilation.cpp.o
+[102/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/rebalancer.cpp.o
+[103/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/opscanreceipt.cpp.o
+[104/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/opmanager.cpp.o
+[105/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/rebalanceplanner.cpp.o
+[106/161] Building CXX object tests/CMakeFiles/tst_mediacsv.dir/__/src/mediacsv.cpp.o
+[107/161] Building CXX object tests/CMakeFiles/tst_mediacsv.dir/tst_mediacsv.cpp.o
+[108/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/oprunner.cpp.o
+[109/161] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/tst_mediatablemodel_autogen/mocs_compilation.cpp.o
+[110/161] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/__/src/mediatablemodel.cpp.o
+[111/161] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/tst_fileoperations.cpp.o
+[112/161] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/__/src/binmetadataresolver.cpp.o
+[113/161] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/tst_mediatablemodel.cpp.o
+[114/161] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/__/src/mediacsv.cpp.o
+[115/161] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/tst_mediafilterproxy_autogen/mocs_compilation.cpp.o
+[116/161] Building CXX object tests/CMakeFiles/tst_mediatablemodel.dir/__/src/canonadapter.cpp.o
+[117/161] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/mediafilterproxy.cpp.o
+[118/161] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/tst_mediafilterproxy.cpp.o
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:490:87: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  490 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({title.fileMobId})}}});
+      |                                                                                              ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:492:88: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  492 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({custom.fileMobId})}}});
+      |                                                                                               ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:724:87: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  724 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({matte.fileMobId})}}});
+      |                                                                                              ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:792:80: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  792 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})}}});
+      |                                                                                       ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:796:81: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  796 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({masterKey})}}});
+      |                                                                                        ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:798:80: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  798 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})},
+      |                                                                                       ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:799:60: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  799 |                                                  {BinFilter::Operation::Add, {}, fullIds({masterKey})}}});
+      |                                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:801:80: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  801 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})},
+      |                                                                                       ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:802:59: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  802 |                                                  {BinFilter::Operation::Add, {}, fullIds({audioKey})}}});
+      |                                                                                                     ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:808:105: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  808 |         const BinFilter filter{{{BinFilter::Operation::Intersect, {}, fullIds({MobId::format(TestAvb::Source)})}}};
+      |                                                                                                                ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:831:74: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  831 |         const BinFilter oldBin{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
+      |                                                                                 ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:836:84: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  836 |         const BinFilter modernBin{{{BinFilter::Operation::Intersect, {}, fullIds({modern})}}};
+      |                                                                                           ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:847:79: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  847 |         const BinFilter wrappedBin{{{BinFilter::Operation::Intersect, {}, wrappedRefs}}};
+      |                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:852:73: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  852 |         const BinFilter mixed{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
+      |                                                                                ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:863:68: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  863 |         const BinFilter filter{{{BinFilter::Operation::Intersect, {}, refs}}};
+      |                                                                           ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:894:85: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  894 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({row.fileMobId})},
+      |                                                                                            ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:895:64: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  895 |                                                  {BinFilter::Operation::Subtract, {}, fullIds({subtract})}}});
+      |                                                                                                          ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:909:65: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  909 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, refs},
+      |                                                                        ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:910:49: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  910 |                                                  {BinFilter::Operation::Subtract, {}, refs},
+      |                                                                                           ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:911:44: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  911 |                                                  {BinFilter::Operation::Add, {}, refs}}});
+      |                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:914:59: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  914 |         proxy.setBinFilter({{{BinFilter::Operation::Add, {}, refs}}});
+      |                                                                  ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:929:95: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  929 |         proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, fullIds({hit.fileMobId, QString{}})}}});
+      |                                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:945:35: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  945 |                 proxy.setBinFilter({{{op, {}, {}}}});
+      |                                                 ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:947:86: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  947 |                 proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
+      |                                                                                                    ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:947:100: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  947 |                 proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
+      |                                                                                                                  ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:964:87: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  964 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({first.fileMobId})}}});
+      |                                                                                              ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:1003:107: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+ 1003 |         BinFilter filter{{{BinFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.fileMobId})},
+      |                                                                                                                  ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:1004:91: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+ 1004 |                                           {BinFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.fileMobId})}}};
+      |                                                                                                                              ^
+28 warnings generated.
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:490:87: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  490 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({title.fileMobId})}}});
+      |                                                                                              ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:492:88: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  492 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({custom.fileMobId})}}});
+      |                                                                                               ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:724:87: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  724 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({matte.fileMobId})}}});
+      |                                                                                              ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:792:80: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  792 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})}}});
+      |                                                                                       ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:796:81: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  796 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({masterKey})}}});
+      |                                                                                        ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:798:80: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  798 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})},
+      |                                                                                       ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:799:60: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  799 |                                                  {BinFilter::Operation::Add, {}, fullIds({masterKey})}}});
+      |                                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:801:80: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  801 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})},
+      |                                                                                       ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:802:59: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  802 |                                                  {BinFilter::Operation::Add, {}, fullIds({audioKey})}}});
+      |                                                                                                     ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:808:105: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  808 |         const BinFilter filter{{{BinFilter::Operation::Intersect, {}, fullIds({MobId::format(TestAvb::Source)})}}};
+      |                                                                                                                ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:831:74: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  831 |         const BinFilter oldBin{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
+      |                                                                                 ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:836:84: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  836 |         const BinFilter modernBin{{{BinFilter::Operation::Intersect, {}, fullIds({modern})}}};
+      |                                                                                           ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:847:79: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  847 |         const BinFilter wrappedBin{{{BinFilter::Operation::Intersect, {}, wrappedRefs}}};
+      |                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:852:73: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  852 |         const BinFilter mixed{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
+      |                                                                                ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:863:68: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  863 |         const BinFilter filter{{{BinFilter::Operation::Intersect, {}, refs}}};
+      |                                                                           ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:894:85: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  894 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({row.fileMobId})},
+      |                                                                                            ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:895:64: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  895 |                                                  {BinFilter::Operation::Subtract, {}, fullIds({subtract})}}});
+      |                                                                                                          ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:909:65: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  909 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, refs},
+      |                                                                        ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:910:49: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  910 |                                                  {BinFilter::Operation::Subtract, {}, refs},
+      |                                                                                           ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:911:44: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  911 |                                                  {BinFilter::Operation::Add, {}, refs}}});
+      |                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:914:59: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  914 |         proxy.setBinFilter({{{BinFilter::Operation::Add, {}, refs}}});
+      |                                                                  ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:929:95: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  929 |         proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, fullIds({hit.fileMobId, QString{}})}}});
+      |                                                                                                      ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:945:35: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  945 |                 proxy.setBinFilter({{{op, {}, {}}}});
+      |                                                 ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:947:86: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  947 |                 proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
+      |                                                                                                    ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:947:100: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  947 |                 proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
+      |                                                                                                                  ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:964:87: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+  964 |         proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({first.fileMobId})}}});
+      |                                                                                              ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:1003:107: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+ 1003 |         BinFilter filter{{{BinFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.fileMobId})},
+      |                                                                                                                  ^
+/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp:1004:91: warning: missing field 'warnings' initializer [-Wmissing-field-initializers]
+ 1004 |                                           {BinFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.fileMobId})}}};
+      |                                                                                                                              ^
+28 warnings generated.
+[119/161] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/binmetadataresolver.cpp.o
+[120/161] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/mediatablemodel.cpp.o
+[121/161] Building CXX object tests/CMakeFiles/tst_mediafilterproxy.dir/__/src/canonadapter.cpp.o
+[122/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/tst_precomputefilterdialog_autogen/mocs_compilation.cpp.o
+[123/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/__/src/mediafilterproxy.cpp.o
+[124/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/__/src/precomputefilterdialog.cpp.o
+[125/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/tst_precomputefilterdialog.cpp.o
+[126/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/__/src/mediatablemodel.cpp.o
+[127/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/__/src/binmetadataresolver.cpp.o
+[128/161] Building CXX object tests/CMakeFiles/tst_precomputefilterdialog.dir/__/src/canonadapter.cpp.o
+[129/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/tst_binfilterdialog_autogen/mocs_compilation.cpp.o
+[130/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/mediafilterproxy.cpp.o
+[131/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/avbparser.cpp.o
+[132/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/tst_binfilterdialog.cpp.o
+[133/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/binfilterdialog.cpp.o
+[134/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/binmetadataresolver.cpp.o
+[135/161] Linking CXX executable tests/tst_metadataselectionpolicy
+[136/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/mediatablemodel.cpp.o
+[137/161] Building CXX object tests/CMakeFiles/tst_binfilterdialog.dir/__/src/canonadapter.cpp.o
+[138/161] Linking CXX executable tests/tst_canondiscovery
+[139/161] Linking CXX executable tests/tst_canonpmr
+[140/161] Linking CXX executable tests/tst_canonpmrrobustness
+[141/161] Linking CXX executable tests/tst_canonmdb
+[142/161] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build-canon/MediaMuster.app: replacing existing signature
+[143/161] Linking CXX executable tests/tst_canonlegacy
+[144/161] Linking CXX executable tests/tst_canonmxf
+[145/161] Linking CXX executable tests/tst_canonavb
+[146/161] Linking CXX executable tests/tst_canonavbreferences
+[147/161] Linking CXX executable tests/tst_canonscan
+[148/161] Linking CXX executable tests/tst_canon_omfprojection
+[149/161] Linking CXX executable tests/tst_canon_mxfprojection
+[150/161] Linking CXX executable tests/tst_mdbparser
+[151/161] Linking CXX executable tests/tst_avbparser
+[152/161] Linking CXX executable tests/tst_mxfparser
+[153/161] Linking CXX executable tests/tst_rebalanceplanner
+[154/161] Linking CXX executable tests/tst_scanner
+[155/161] Linking CXX executable tests/tst_mediacsv
+[156/161] Linking CXX executable tests/tst_fileoperations
+[157/161] Linking CXX executable tests/tst_mediatablemodel
+[158/161] Linking CXX executable tests/tst_mediafilterproxy
+[159/161] Linking CXX executable tests/tst_precomputefilterdialog
+[160/161] Linking CXX executable tests/tst_binfilterdialog
+[161/161] Linking CXX executable tests/tst_operationui

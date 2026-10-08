@@ -3,9 +3,12 @@
 
 #include "canon/projection.h"
 #include "canon/mxfreader.h"
+#include "canon/scanengine.h"
 
 #include <QFile>
 #include <QTest>
+#include <QtEndian>
+#include <algorithm>
 #include <limits>
 
 namespace
@@ -20,7 +23,7 @@ namespace
 	struct Graph
 	{
 		ParsedSource source;
-		ObjectHandle ecd = 0, file = 0, descriptor = 0, preface = 0;
+		ObjectHandle ecd = 0, file = 0, descriptor = 0, preface = 0, storage = 0;
 		QByteArray fileId = umid('f');
 
 		Graph(const char *descriptorClass = "CDCIEssenceDescriptor", qint64 partition = 0)
@@ -37,6 +40,7 @@ namespace
 			property(file, "GenericPackage.PackageUID", fileId);
 			descriptor = object(descriptorClass, partition);
 			edge(file, "SourcePackage.Descriptor", descriptor);
+			storage = root(partition, preface, {file}, {ecd});
 		}
 
 		ObjectHandle object(const char *name, qint64 partition = 0)
@@ -64,7 +68,7 @@ namespace
 			property.locator.objectNumber = handle;
 			property.decoded = value;
 			property.state = PropertyReadState::Present;
-			property.encoding = value.metaType().id() == QMetaType::QByteArray ? value.toByteArray() : QByteArray(4, 'v');
+			property.encoding = encoding(value);
 			auto set = QSharedPointer<MxfSetContext>::create(*object.mxf);
 			auto context = QSharedPointer<MxfPropertyContext>::create();
 			context->mappedAuid = QByteArray(16, 'k');
@@ -77,24 +81,150 @@ namespace
 			object.properties.append(property);
 		}
 
+		QByteArray encoding(const QVariant &value)
+		{
+			if (value.metaType().id() == QMetaType::QByteArray)
+				return value.toByteArray();
+			if (value.metaType().id() != QMetaType::QVariantList)
+				return QByteArray(4, 'v');
+			const auto references = value.toList();
+			QByteArray bytes(8, '\0');
+			qToBigEndian(quint32(references.size()), bytes.data());
+			qToBigEndian(quint32(16), bytes.data() + 4);
+			for (const auto &reference : references)
+				bytes += reference.toByteArray();
+			return bytes;
+		}
+
+		void reframe(ObjectHandle handle)
+		{
+			auto &object = at(handle);
+			auto set = QSharedPointer<MxfSetContext>::create(*object.mxf);
+			qint64 offset = set->value.offset;
+			for (auto &property : object.properties)
+			{
+				auto context = QSharedPointer<MxfPropertyContext>::create(*property.mxf);
+				context->framingRanges = {{offset, 4}};
+				property.locator.ranges = {{offset + 4, property.encoding.size()}};
+				property.mxf = context;
+				offset += 4 + property.encoding.size();
+			}
+			set->value.length = offset - set->value.offset;
+			object.mxf = set;
+			refreshLinks(handle);
+		}
+
+		void refreshLinks(ObjectHandle handle)
+		{
+			for (auto &link : source.relationships)
+				if (link.origin == handle)
+					link.locator.ranges.clear();
+			for (const auto &property : at(handle).properties)
+			{
+				const bool array = property.decoded.metaType().id() == QMetaType::QVariantList;
+				const auto references = array ? property.decoded.toList() : QVariantList{property.decoded};
+				for (qsizetype index = 0; index < references.size(); ++index)
+					for (auto &link : source.relationships)
+						if (link.origin == handle && link.locator.name == property.locator.name && link.locator.ranges.isEmpty() &&
+							link.recordedReference == references[index] && !property.locator.ranges.isEmpty())
+						{
+							link.locator.objectNumber = handle;
+							link.locator.ranges = {{property.locator.ranges.first().offset + (array ? 8 + index * 16 : 0), 16}};
+							break;
+						}
+			}
+		}
+
 		void edge(ObjectHandle from, const char *name, ObjectHandle to)
 		{
-			property(from, name, QByteArray(16, char(to)));
+			const auto reference = instanceUid(to);
+			property(from, name, reference);
+			link(from, name, to, reference);
+		}
+
+		QByteArray instanceUid(ObjectHandle handle)
+		{
+			for (const auto &property : at(handle).properties)
+				if (property.locator.name == QStringLiteral("InterchangeObject.InstanceUID"))
+					return property.decoded.toByteArray();
+			return {};
+		}
+
+		void link(ObjectHandle from, const char *name, ObjectHandle to, const QByteArray &reference)
+		{
 			Relationship relationship;
 			relationship.origin = from;
 			relationship.target = to;
 			relationship.locator.name = QString::fromLatin1(name);
+			relationship.recordedReference = reference;
 			source.relationships.append(relationship);
+			refreshLinks(from);
+		}
+
+		void batch(ObjectHandle from, const char *name, const QVector<ObjectHandle> &targets)
+		{
+			QVariantList references;
+			for (const auto target : targets)
+				references.append(instanceUid(target));
+			property(from, name, references);
+			for (const auto target : targets)
+				link(from, name, target, instanceUid(target));
+		}
+
+		void appendToBatch(ObjectHandle from, const char *name, ObjectHandle to)
+		{
+			for (auto &property : at(from).properties)
+				if (property.locator.name == QLatin1String(name))
+				{
+					auto references = property.decoded.toList();
+					references.append(instanceUid(to));
+					property.decoded = references;
+					property.encoding = encoding(references);
+					reframe(from);
+					link(from, name, to, instanceUid(to));
+					return;
+				}
+			batch(from, name, {to});
+		}
+
+		void unresolved(ObjectHandle from, const char *name, const QByteArray &reference = QByteArray(16, 'z'))
+		{
+			for (auto &property : at(from).properties)
+				if (property.locator.name == QLatin1String(name))
+				{
+					auto references = property.decoded.toList();
+					references.append(reference);
+					property.decoded = references;
+					property.encoding = encoding(references);
+					reframe(from);
+					link(from, name, 0, reference);
+					return;
+				}
+		}
+
+		ObjectHandle root(qint64 partition, ObjectHandle rootPreface,
+						  const QVector<ObjectHandle> &packages, const QVector<ObjectHandle> &essence)
+		{
+			const auto content = object("ContentStorage", partition);
+			edge(rootPreface, "Preface.ContentStorage", content);
+			batch(content, "ContentStorage.Packages", packages);
+			batch(content, "ContentStorage.EssenceContainerData", essence);
+			return content;
 		}
 
 		void replace(ObjectHandle handle, const char *name, const QVariant &value)
 		{
 			for (auto &property : at(handle).properties)
 				if (property.locator.name == QLatin1String(name))
+				{
 					property.decoded = value;
+					if (value.metaType().id() == QMetaType::QByteArray)
+						property.encoding = value.toByteArray();
+				}
+			reframe(handle);
 		}
 
-		ObjectHandle master(char id = 'm')
+		ObjectHandle master(char id = 'm', bool active = true)
 		{
 			const auto partition = at(file).mxf->partitionOffset;
 			const auto result = object("MaterialPackage", partition);
@@ -105,8 +235,10 @@ namespace
 			property(track, "Track.EditRate", rateValue({24, 1}));
 			property(clip, "SourceClip.SourcePackageID", fileId);
 			property(clip, "StructuralComponent.Duration", qint64(48));
-			edge(result, "GenericPackage.Tracks", track);
+			batch(result, "GenericPackage.Tracks", {track});
 			edge(track, "GenericTrack.Sequence", clip);
+			if (active)
+				appendToBatch(storage, "ContentStorage.Packages", result);
 			return result;
 		}
 
@@ -139,6 +271,15 @@ namespace
 	{
 		Cancellation cancellation;
 		return projectMxf(graph.source, cancellation);
+	}
+
+	ResolvedField selectedIdentity(const Projection &projection)
+	{
+		MediaEvidence evidence;
+		for (const auto &file : projection.files)
+			appendEvidence(evidence, file.evidence);
+		selectMetadata(evidence);
+		return evidence.selected(MediaProperty::FileMobId);
 	}
 }
 
@@ -200,7 +341,267 @@ private slots:
 		graph.property(graph.ecd, "EssenceContainerData.LinkedPackageUID", graph.fileId);
 		const auto duplicate = graph.object("SourcePackage");
 		graph.property(duplicate, "GenericPackage.PackageUID", graph.fileId);
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", duplicate);
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().fileMobId.isEmpty());
+		QVERIFY(!selectedIdentity(result).value.isValid());
+		QVERIFY(!value(result.files.first(), MediaProperty::Kind).isValid());
+	}
+
+	void unlisted_packages_and_essence_never_gain_ownership()
+	{
+		Graph graph;
+		const auto active = graph.master('m');
+		graph.master('n', false);
+		const auto duplicate = graph.object("SourcePackage");
+		graph.property(duplicate, "GenericPackage.PackageUID", graph.fileId);
+		graph.property(duplicate, "GenericPackage.PackageUID", umid('x'));
+		const auto orphanEcd = graph.object("EssenceContainerData"), orphanPackage = graph.object("SourcePackage");
+		graph.property(orphanEcd, "EssenceContainerData.LinkedPackageUID", umid('x'));
+		graph.property(orphanPackage, "GenericPackage.PackageUID", umid('x'));
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020203070100"));
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.files.first().fileMobId, canonicalMxfId(graph.fileId));
+		QCOMPARE(result.files.first().masterMobIds, QStringList{canonicalMxfId(umid('m'))});
+		QCOMPARE(value(result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QVERIFY(std::none_of(result.files.first().objects.cbegin(), result.files.first().objects.cend(),
+							[&](const auto &object) { return object.handle == duplicate || object.handle == orphanEcd || object.handle == orphanPackage; }));
+		QVERIFY(std::any_of(result.files.first().objects.cbegin(), result.files.first().objects.cend(),
+							[&](const auto &object) { return object.handle == active; }));
+	}
+
+	void contradictory_active_package_claimants_remain_conflicting()
+	{
+		Graph graph;
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020203070100"));
+		const auto duplicate = graph.object("SourcePackage");
+		graph.property(duplicate, "GenericPackage.PackageUID", graph.fileId);
+		graph.property(duplicate, "GenericPackage.PackageUID", umid('x'));
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", duplicate);
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().fileMobId.isEmpty());
+		QVERIFY(!value(result.files.first(), MediaProperty::Kind).isValid());
+		const auto identity = selectedIdentity(result);
+		QVERIFY(!identity.value.isValid());
+		QCOMPARE(identity.agreement, PropertyAgreement::Conflicting);
+		QStringList values;
+		for (const auto &claim : result.files.first().evidence.observations(MediaProperty::FileMobId))
+			values.append(claim.value.toString());
+		QVERIFY(values.contains(canonicalMxfId(graph.fileId)));
+		QVERIFY(values.contains(canonicalMxfId(umid('x'))));
+	}
+
+	void contradictory_active_ecd_claims_remain_conflicting()
+	{
+		Graph graph;
+		graph.property(graph.ecd, "EssenceContainerData.LinkedPackageUID", umid('x'));
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().fileMobId.isEmpty());
+		const auto identity = selectedIdentity(result);
+		QVERIFY(!identity.value.isValid());
+		QCOMPARE(identity.agreement, PropertyAgreement::Conflicting);
+	}
+
+	void root_preface_conflict_survives_equal_package_ownership_ambiguity()
+	{
+		Graph graph;
+		const auto duplicate = graph.object("SourcePackage");
+		graph.property(duplicate, "GenericPackage.PackageUID", graph.fileId);
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", duplicate);
+		graph.property(graph.preface, "Preface.EssenceFileMobID", umid('x'));
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().fileMobId.isEmpty());
+		const auto identity = selectedIdentity(result);
+		QVERIFY(!identity.value.isValid());
+		QCOMPARE(identity.agreement, PropertyAgreement::Conflicting);
+	}
+
+	void unreadable_active_package_identity_cannot_restore_uniqueness()
+	{
+		Graph graph;
+		const auto duplicate = graph.object("SourcePackage");
+		graph.property(duplicate, "GenericPackage.PackageUID", graph.fileId);
+		graph.property(duplicate, "GenericPackage.PackageUID", QByteArray(5, 'x'));
+		graph.at(duplicate).properties.last().state = PropertyReadState::Unreadable;
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", duplicate);
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().fileMobId.isEmpty());
+		QVERIFY(!selectedIdentity(result).value.isValid());
+		QVERIFY(std::any_of(result.files.first().evidence.observations(MediaProperty::FileMobId).cbegin(),
+							result.files.first().evidence.observations(MediaProperty::FileMobId).cend(),
+							[](const auto &claim) { return claim.readState == PropertyReadState::Unreadable && !claim.eligible; }));
+	}
+
+	void absent_or_damaged_recorded_root_has_no_whole_header_recovery()
+	{
+		Graph absent;
+		absent.at(absent.preface).properties.removeLast();
+		QVERIFY(project(absent).files.isEmpty());
+		Graph partialPackages;
+		partialPackages.unresolved(partialPackages.storage, "ContentStorage.Packages");
+		QVERIFY(project(partialPackages).files.isEmpty());
+		Graph partialEssence;
+		partialEssence.unresolved(partialEssence.storage, "ContentStorage.EssenceContainerData");
+		QVERIFY(project(partialEssence).files.isEmpty());
+		Graph wrongClass;
+		wrongClass.appendToBatch(wrongClass.storage, "ContentStorage.Packages", wrongClass.descriptor);
+		QVERIFY(project(wrongClass).files.isEmpty());
+		Graph ambiguous;
+		ambiguous.object("Preface");
+		QVERIFY(project(ambiguous).files.isEmpty());
+		Graph wrongPartition;
+		const auto foreign = wrongPartition.object("SourcePackage", 999);
+		wrongPartition.appendToBatch(wrongPartition.storage, "ContentStorage.Packages", foreign);
+		QVERIFY(project(wrongPartition).files.isEmpty());
+		QVERIFY(!project(partialPackages).diagnostics.isEmpty());
+	}
+
+	void wholly_unreadable_active_identity_leaves_ownership_unresolved()
+	{
+		Graph graph;
+		const auto damaged = graph.object("SourcePackage");
+		graph.property(damaged, "GenericPackage.PackageUID", QByteArray(5, 'x'));
+		graph.at(damaged).properties.last().state = PropertyReadState::Unreadable;
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", damaged);
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().fileMobId.isEmpty());
+		QVERIFY(!selectedIdentity(result).value.isValid());
+		QCOMPARE(selectedIdentity(result).agreement, PropertyAgreement::NotCompared);
+		QVERIFY(!value(result.files.first(), MediaProperty::Kind).isValid());
+	}
+
+	void partial_master_track_or_component_lists_cannot_establish_association()
+	{
+		Graph graph;
+		const auto master = graph.master();
+		graph.unresolved(master, "GenericPackage.Tracks");
+		auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().masterMobIds.isEmpty());
+		for (const auto field : {MediaProperty::MasterMobId, MediaProperty::ClipName, MediaProperty::ClipDuration, MediaProperty::Type})
+			QVERIFY(!value(result.files.first(), field).isValid());
+		QCOMPARE(selectedIdentity(result).value.toString(), canonicalMxfId(graph.fileId));
+
+		Graph component;
+		component.master();
+		ObjectHandle track = 0, clip = 0;
+		for (const auto &object : component.source.objects)
+			if (object.mxf->name == QLatin1String("Track")) track = object.handle;
+			else if (object.mxf->name == QLatin1String("SourceClip")) clip = object.handle;
+		const auto sequence = component.object("Sequence");
+		component.batch(sequence, "Sequence.StructuralComponents", {clip});
+		component.unresolved(sequence, "Sequence.StructuralComponents");
+		component.replace(track, "GenericTrack.Sequence", component.instanceUid(sequence));
+		for (auto &link : component.source.relationships)
+			if (link.origin == track && link.locator.name == QLatin1String("GenericTrack.Sequence"))
+			{
+				link.target = sequence;
+				link.recordedReference = component.instanceUid(sequence);
+			}
+		component.refreshLinks(track);
+		result = project(component);
+		QVERIFY(result.files.first().masterMobIds.isEmpty());
+		QVERIFY(!value(result.files.first(), MediaProperty::ClipDuration).isValid());
+	}
+
+	void partial_multiple_descriptor_list_cannot_promote_one_resolved_descriptor()
+	{
+		Graph graph;
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020203070100"));
+		const auto multiple = graph.object("MultipleDescriptor");
+		graph.batch(multiple, "MultipleDescriptor.SubDescriptorUIDs", {graph.descriptor});
+		graph.unresolved(multiple, "MultipleDescriptor.SubDescriptorUIDs");
+		graph.replace(graph.file, "SourcePackage.Descriptor", graph.instanceUid(multiple));
+		for (auto &link : graph.source.relationships)
+			if (link.origin == graph.file && link.locator.name == QLatin1String("SourcePackage.Descriptor"))
+			{
+				link.target = multiple;
+				link.recordedReference = graph.instanceUid(multiple);
+			}
+		graph.refreshLinks(graph.file);
+		const auto result = project(graph);
+		QCOMPARE(selectedIdentity(result).value.toString(), canonicalMxfId(graph.fileId));
+		for (const auto field : {MediaProperty::Kind, MediaProperty::Compression, MediaProperty::Resolution, MediaProperty::FileDuration})
+			QVERIFY(!value(result.files.first(), field).isValid());
+	}
+
+	void array_occurrences_and_repeated_identical_properties_remain_valid()
+	{
+		Graph graph;
+		const auto master = graph.master();
+		ObjectHandle track = 0, clip = 0;
+		for (const auto &object : graph.source.objects)
+			if (object.mxf->name == QLatin1String("Track")) track = object.handle;
+			else if (object.mxf->name == QLatin1String("SourceClip")) clip = object.handle;
+		graph.appendToBatch(master, "GenericPackage.Tracks", track);
+		graph.batch(master, "GenericPackage.Tracks", {track, track});
+		const auto sequence = graph.object("Sequence");
+		graph.batch(sequence, "Sequence.StructuralComponents", {clip, clip});
+		graph.batch(sequence, "Sequence.StructuralComponents", {clip, clip});
+		graph.property(sequence, "StructuralComponent.Duration", qint64(48));
+		graph.replace(track, "GenericTrack.Sequence", graph.instanceUid(sequence));
+		for (auto &link : graph.source.relationships)
+			if (link.origin == track && link.locator.name == QLatin1String("GenericTrack.Sequence"))
+			{
+				link.target = sequence;
+				link.recordedReference = graph.instanceUid(sequence);
+			}
+		graph.refreshLinks(track);
+		const auto result = project(graph);
+		QCOMPARE(result.files.first().masterMobIds, QStringList{canonicalMxfId(umid('m'))});
+		QCOMPARE(value(result.files.first(), MediaProperty::ClipDuration).toList().size(), 1);
+		// Raw arrays retain both occurrences and both recorded property copies.
+		QCOMPARE(graph.at(sequence).properties[1].decoded.toList().size(), 2);
+		QCOMPARE(graph.at(sequence).properties[2].decoded.toList().size(), 2);
+	}
+
+	void duplicate_root_set_membership_remains_uncertain()
+	{
+		Graph graph;
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", graph.file);
 		QVERIFY(project(graph).files.isEmpty());
+	}
+
+	void genuine_rooted_metadata_copies_data()
+	{
+		QTest::addColumn<QString>("path");
+		QTest::addColumn<bool>("excerpt");
+		const QString fixtures = QStringLiteral(FIXTURES_DIR);
+		QTest::newRow("complete-tone") << fixtures + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf") << false;
+		QTest::newRow("audio-header-excerpt") << fixtures + QStringLiteral("/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf") << true;
+	}
+
+	void genuine_rooted_metadata_copies()
+	{
+		QFETCH(QString, path);
+		QFETCH(bool, excerpt);
+		QFile input(path);
+		QVERIFY2(input.open(QIODevice::ReadOnly), qPrintable(input.errorString()));
+		Cancellation cancellation;
+		const auto source = MxfReader{}.read(input, {{}, cancellation});
+		QCOMPARE(source.outcome, excerpt ? ParsedSource::Outcome::Incomplete : ParsedSource::Outcome::Complete);
+		const auto result = projectMxf(source, cancellation);
+		QVERIFY2(!result.files.isEmpty(), qPrintable(result.diagnostics.join(QStringLiteral("\n"))));
+		QVERIFY(!selectedIdentity(result).value.toString().isEmpty());
+		for (const auto &file : result.files)
+		{
+			QVERIFY(!file.fileMobId.isEmpty());
+			bool recordedRoot = false;
+			for (const auto &reference : file.objects)
+				for (const auto &object : source.objects)
+					if (reference.handle == object.handle && object.mxf->name == QLatin1String("ContentStorage"))
+						recordedRoot = true;
+			QVERIFY(recordedRoot);
+		}
+		// These two retained specimens establish their own root linkage; this
+		// does not certify all MXF formats, essence, or source-track timelines.
 	}
 
 	void masters_and_repeated_partitions_remain_separate()
@@ -219,6 +620,8 @@ private slots:
 		graph.property(ecd, "EssenceContainerData.LinkedPackageUID", graph.fileId);
 		const auto package = graph.object("SourcePackage", 999);
 		graph.property(package, "GenericPackage.PackageUID", graph.fileId);
+		const auto preface = graph.object("Preface", 999);
+		graph.root(999, preface, {package}, {ecd});
 		result = project(graph);
 		QCOMPARE(result.files.size(), 2);
 		QVERIFY(result.files.last().masterMobIds.isEmpty());
@@ -233,9 +636,9 @@ private slots:
 		graph.property(timecode, "TimecodeComponent.DropFrame", true);
 		graph.edge(track, "GenericTrack.Sequence", timecode);
 		const auto unrelated = graph.object("MaterialPackage");
-		graph.edge(unrelated, "GenericPackage.Tracks", track);
+		graph.batch(unrelated, "GenericPackage.Tracks", {track});
 		QVERIFY(!value(project(graph).files.first(), MediaProperty::DropFrame).isValid());
-		graph.edge(master, "GenericPackage.Tracks", track);
+		graph.appendToBatch(master, "GenericPackage.Tracks", track);
 		const auto result = project(graph).files.first();
 		QCOMPARE(value(result, MediaProperty::DropFrame).toBool(), true);
 		QCOMPARE(value(result, MediaProperty::ClipDuration).toList().first().toMap().value(QStringLiteral("DropFrame")).toBool(), true);
@@ -251,7 +654,7 @@ private slots:
 		graph.property(graph.descriptor, "GenericSoundEssenceDescriptor.ChannelCount", 1u);
 		const auto result = project(graph);
 		const auto &file = result.files.first();
-		QCOMPARE(value(file, MediaProperty::Codec).toString(), QStringLiteral("PCM"));
+		QCOMPARE(value(file, MediaProperty::Compression).toString(), QStringLiteral("PCM"));
 		QCOMPARE(value(file, MediaProperty::Kind).toInt(), 1);
 		QCOMPARE(value(file, MediaProperty::Channels).toInt(), 1);
 		QVERIFY(!value(file, MediaProperty::FrameRate).isValid());
@@ -268,7 +671,7 @@ private slots:
 		graph.property(graph.descriptor, "GenericSoundEssenceDescriptor.SoundEssenceCompression",
 					   QByteArray::fromHex("060e2b34040101010402020203020500"));
 		const auto result = project(graph);
-		QCOMPARE(value(result.files.first(), MediaProperty::Codec).toString(), QStringLiteral("MP2"));
+		QCOMPARE(value(result.files.first(), MediaProperty::Compression).toString(), QStringLiteral("MP2"));
 		QCOMPARE(value(result.files.first(), MediaProperty::Kind).toInt(), 1);
 	}
 
@@ -281,7 +684,7 @@ private slots:
 		// A valid display crop removes storage padding. DNx naming still
 		// requires its own established profile and exact operating point.
 		QCOMPARE(value(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
-		QCOMPARE(value(file, MediaProperty::Codec).toString(), QStringLiteral("Avid DNx HQX [DNxHD 175x]"));
+		QCOMPARE(value(file, MediaProperty::Compression).toString(), QStringLiteral("Avid DNx HQX [DNxHD 175x]"));
 		QCOMPARE(value(file, MediaProperty::OldDnx).toString(), QStringLiteral("DNxHD HQX"));
 		Graph hr;
 		hr.picture(QByteArray::fromHex("060e2b340401010d0401020271250000"));
@@ -594,17 +997,18 @@ private slots:
 		Graph graph;
 		const auto origin = graph.object("SourcePackage"), descriptor = graph.object("ImportDescriptor"), locator = graph.object("NetworkLocator");
 		graph.property(origin, "GenericPackage.PackageUID", umid('i'));
+		graph.appendToBatch(graph.storage, "ContentStorage.Packages", origin);
 		graph.edge(origin, "SourcePackage.Descriptor", descriptor);
-		graph.edge(descriptor, "GenericDescriptor.Locators", locator);
+		graph.batch(descriptor, "GenericDescriptor.Locators", {locator});
 		graph.property(locator, "NetworkLocator.URLString", url);
 		const auto track = graph.object("Track"), clip = graph.object("SourceClip");
 		graph.property(clip, "SourceClip.SourcePackageID", umid('i'));
 		graph.edge(track, "GenericTrack.Sequence", clip);
-		graph.edge(graph.file, "GenericPackage.Tracks", track);
+		graph.batch(graph.file, "GenericPackage.Tracks", {track});
 		const auto attribute = graph.object("TaggedValue");
 		graph.property(attribute, "TaggedValue.Name", QStringLiteral("UNC Path"));
 		graph.property(attribute, "TaggedValue.Value", nativePath);
-		graph.edge(graph.file, "GenericPackage.MobAttributeList", attribute);
+		graph.batch(graph.file, "GenericPackage.MobAttributeList", {attribute});
 		const auto result = project(graph);
 		QCOMPARE(result.files.size(), 1);
 		const auto &evidence = result.files.first().evidence;
@@ -638,9 +1042,9 @@ private slots:
 		graph.property(graph.descriptor, "GenericSoundEssenceDescriptor.SoundEssenceCompression", QByteArray(2, 'x'));
 		graph.at(graph.descriptor).properties.last().state = PropertyReadState::Unreadable;
 		const auto result = project(graph);
-		QVERIFY(!value(result.files.first(), MediaProperty::Codec).isValid());
+		QVERIFY(!value(result.files.first(), MediaProperty::Compression).isValid());
 		QCOMPARE(result.files.first().evidence.observations(MediaProperty::CompressionLabel).first().readState, PropertyReadState::Unreadable);
-		const auto status = result.files.first().evidence.readStatus(MediaProperty::Codec, graph.source.snapshot,
+		const auto status = result.files.first().evidence.readStatus(MediaProperty::Compression, graph.source.snapshot,
 			QStringLiteral("object:%1").arg(graph.descriptor));
 		QCOMPARE(status.state, PropertyReadState::Unreadable);
 		QCOMPARE(status.reason, PropertyReadReason::ValueUnreadable);
@@ -662,7 +1066,7 @@ private slots:
 		status = result.files.first().evidence.readStatus(MediaProperty::Channels, graph.source.snapshot, owner);
 		QCOMPARE(status.state, PropertyReadState::NotRead);
 		QCOMPARE(status.reason, PropertyReadReason::CoverageNotEstablished);
-		QVERIFY(!value(result.files.first(), MediaProperty::Codec).isValid());
+		QVERIFY(!value(result.files.first(), MediaProperty::Compression).isValid());
 		QVERIFY(!value(result.files.first(), MediaProperty::SampleFormat).isValid());
 	}
 	void unsupported_numeric_format_retains_inputs_without_claiming_absence()

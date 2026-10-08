@@ -56,6 +56,12 @@ public:
 			bytes += m_writer.reference(target, m_revision);
 		set(object, property, bytes);
 	}
+	void removeProperty(quint32 object, const char *property)
+	{
+		const auto id = m_writer.properties.value(property);
+		m_writer.entries.removeIf([&](const auto &entry)
+			{ return entry.object == object && entry.property == id; });
+	}
 	QByteArray build() const { return m_writer.build(); }
 
 private:
@@ -83,7 +89,8 @@ private:
 			return bytes.size() == 8 ? "omfi:Length64" : "omfi:Length32";
 		if (name == "OMFI:MDAU:BitsPerSample" || name == "OMFI:MDAU:NumChannels")
 			return "omfi:UInt16";
-		if (name == "OMFI:ATTR:AttrRefs" || name == "OMFI:TRKG:Tracks" || name == "OMFI:MOBJ:Slots")
+		if (name == "OMFI:ATTR:AttrRefs" || name == "OMFI:TRKG:Tracks" || name == "OMFI:MOBJ:Slots" ||
+			name == "OMFI:ObjectSpine" || name == "OMFI:HEAD:Mobs" || name == "OMFI:HEAD:MediaData" || name == "OMFI:HEAD:PrimaryMobs")
 			return "omfi:ObjRefArray";
 		if (name == "OMFI:MOBJ:PhysicalMedia" || name == "OMFI:SMOB:MediaDescription" ||
 			name == "OMFI:CPNT:Attributes" || name == "OMFI:MOBJ:UserAttributes" ||

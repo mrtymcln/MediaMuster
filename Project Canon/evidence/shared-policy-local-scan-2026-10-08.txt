@@ -1,0 +1,31 @@
+********* Start testing of TestScanner *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestScanner::initTestCase()
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 0 / 365 at 18 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 100 / 365 at 1197 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E69CB588_CE69CCE69C12DA.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 200 / 365 at 1262 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A02.E69BC880_1A9D71A9D7758A.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit progress: 300 / 365 at 1329 ms "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696915A_25E3625E36DC6V.mxf"
+QINFO  : TestScanner::optional_read_only_real_scan() Canon audit matching at 1375 ms
+QINFO  : TestScanner::optional_read_only_real_scan() Read-only Canon audit: 361 rows in 1647 ms
+PASS   : TestScanner::optional_read_only_real_scan()
+PASS   : TestScanner::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 1760ms
+********* Finished testing of TestScanner *********
+        2.29 real         1.67 user         0.08 sys
+           214384640  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               13552  page reclaims
+                   1  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                   1  voluntary context switches
+                1945  involuntary context switches
+         15693906285  instructions retired
+          5471036439  cycles elapsed
+           184272576  peak memory footprint

@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-08",
+  "policyRows": 41,
+  "nativeSuiteResult": {
+    "passed": 39,
+    "failed": 0,
+    "seconds": 129.93,
+    "log": "evidence/shared-policy-full-tests-2026-10-08.txt"
+  },
+  "builds": [
+    "build/MediaMuster.app",
+    "build-canon/MediaMuster.app"
+  ],
+  "architectures": [
+    "arm64",
+    "x86_64"
+  ],
+  "runtimeTestArchitecture": "arm64",
+  "qtVersion": "6.5.3",
+  "fullScanComparison": "evidence/shared-policy-full-comparison-2026-10-08.json",
+  "oldEngineRetirementAuthorized": false,
+  "sourceSha256": {
+    "CMakeLists.txt": "845e12b319ecda65c0b07ba9f4966374ae46e3e9c6b26c3638d123d9ea3e11e1",
+    "tests/CMakeLists.txt": "3f9b7da1debeb68ececef1b7baae7bec42a4c957e2eeb797667b458c744978cd",
+    "src/mediaevidence.h": "328486d44b48305d139b173722faf7ab60d61cf9355659870c6f030f463c7e32",
+    "src/mediafile.h": "0fc6302696bcfd28ddd89ecb2d046a2a80199c9d5e454b6769397851b5991c9b",
+    "src/mediatablemodel.h": "eaa5d6b61cdb39c372ca693f22d29b272c268c0bcb6a09d5ff9bbb6ccebcab40",
+    "src/binmetadataresolver.h": "62639f8553a265af4dc129c3df836dc51f72dce9b11e44a88b267abaff569bbd",
+    "src/binmetadataresolver.cpp": "ec511084c5b9f882db6857a54b71448cb316e80e7462392f677d2933fdbd6843",
+    "src/canon/metadataselectionpolicy.h": "79da27f4915238fb90e5fe488c0c6686715fe01293b608a65e03f7430ec64c0a",
+    "src/canon/metadataselectionpolicy.cpp": "38596032830ffc9e00ee7a8fb93f20b5cc2b8c26318a4b48aab5f537fc107310",
+    "src/canon/scanengine.cpp": "0c6f39d03f465b28939616cff45712d5d1f19b63c783b3c8e3fd75392b009c09",
+    "src/canon/projection.cpp": "7fa3e727da8d8d7a4dc658cbaac09acaa9f6906c1ef0438e32eb227aa9c36129",
+    "src/canonadapter.h": "b83f0a5d56a0da21ed3e79f1adbab7e8b2142c734af9bf0198836bdb0858983b",
+    "src/canonadapter.cpp": "1f1d1c03526cb79625f40dfc3fa4eefbe8f5256ba1e1139b6795de531a5a12ee",
+    "tests/tst_metadataselectionpolicy.cpp": "6b0640a972c707fa888592ec7c21e516c5f1e1bd542c56fd7314949268fd4a95",
+    "tests/tst_canonscan.cpp": "379c46f00913c136e30537db36cdeb65d6042743d5ed2b1375d40fb93db089c5",
+    "tests/tst_mediatablemodel.cpp": "542d060672c65770c8db4501f69de346174fca1ecc2796f1c68c33e7d5f3222d",
+    "tests/tst_operationui.cpp": "ff23b64289b48dde7ed61e4a9dbdcdf29cb03c906f50fd6fafd46b90684a122a"
+  },
+  "controlledPreferenceChange": "evidence/shared-policy-controlled-change-2026-10-08.md"
+}

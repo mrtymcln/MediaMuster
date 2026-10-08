@@ -1,0 +1,272 @@
+Test project /Users/martymclean/Developer/MediaMuster/build-canon
+      Start  1: tst_diagnostics
+ 1/39 Test  #1: tst_diagnostics ..................   Passed    0.02 sec
+      Start  2: tst_mobid
+ 2/39 Test  #2: tst_mobid ........................   Passed    0.01 sec
+      Start  3: tst_pathkey
+ 3/39 Test  #3: tst_pathkey ......................   Passed    0.01 sec
+      Start  4: tst_format
+ 4/39 Test  #4: tst_format .......................   Passed    0.01 sec
+      Start  5: tst_mediaevidence
+ 5/39 Test  #5: tst_mediaevidence ................   Passed    0.01 sec
+      Start  6: tst_metadataselectionpolicy
+ 6/39 Test  #6: tst_metadataselectionpolicy ......   Passed    0.45 sec
+      Start  7: tst_conventions
+ 7/39 Test  #7: tst_conventions ..................   Passed    0.02 sec
+      Start  8: tst_canondiscovery
+ 8/39 Test  #8: tst_canondiscovery ...............   Passed    0.50 sec
+      Start  9: tst_canonpmr
+ 9/39 Test  #9: tst_canonpmr .....................   Passed    0.48 sec
+      Start 10: tst_canonpmrrobustness
+10/39 Test #10: tst_canonpmrrobustness ...........   Passed    0.54 sec
+      Start 11: tst_canonmdb
+11/39 Test #11: tst_canonmdb .....................   Passed    2.43 sec
+      Start 12: tst_canonlegacy
+12/39 Test #12: tst_canonlegacy ..................   Passed    0.73 sec
+      Start 13: tst_canonmxf
+13/39 Test #13: tst_canonmxf .....................   Passed   42.90 sec
+      Start 14: tst_canonavb
+14/39 Test #14: tst_canonavb .....................   Passed    3.08 sec
+      Start 15: tst_canonavbreferences
+15/39 Test #15: tst_canonavbreferences ...........   Passed    0.17 sec
+      Start 16: tst_canonscan
+16/39 Test #16: tst_canonscan ....................   Passed    0.60 sec
+      Start 17: tst_canon_omfprojection
+17/39 Test #17: tst_canon_omfprojection ..........   Passed    0.54 sec
+      Start 18: tst_canon_mxfprojection
+18/39 Test #18: tst_canon_mxfprojection ..........   Passed    0.37 sec
+      Start 19: tst_omfuid
+19/39 Test #19: tst_omfuid .......................   Passed    0.02 sec
+      Start 20: tst_mediametadata
+20/39 Test #20: tst_mediametadata ................   Passed    0.02 sec
+      Start 21: tst_bentofile
+21/39 Test #21: tst_bentofile ....................   Passed    1.37 sec
+      Start 22: tst_pmrparser
+22/39 Test #22: tst_pmrparser ....................   Passed    0.17 sec
+      Start 23: tst_mdbparser
+23/39 Test #23: tst_mdbparser ....................   Passed    3.69 sec
+      Start 24: tst_omfparser
+24/39 Test #24: tst_omfparser ....................   Passed    1.43 sec
+      Start 25: tst_avbparser
+25/39 Test #25: tst_avbparser ....................   Passed   28.98 sec
+      Start 26: tst_mxfparser
+26/39 Test #26: tst_mxfparser ....................   Passed    4.35 sec
+      Start 27: tst_avideffects
+27/39 Test #27: tst_avideffects ..................   Passed    0.02 sec
+      Start 28: tst_scanner
+28/39 Test #28: tst_scanner ......................   Passed   10.48 sec
+      Start 29: tst_opcleanup
+29/39 Test #29: tst_opcleanup ....................   Passed    0.05 sec
+      Start 30: tst_volumeidentity
+30/39 Test #30: tst_volumeidentity ...............   Passed    0.02 sec
+      Start 31: tst_opjournal
+31/39 Test #31: tst_opjournal ....................   Passed    1.27 sec
+      Start 32: tst_rebalanceplanner
+32/39 Test #32: tst_rebalanceplanner .............   Passed    7.59 sec
+      Start 33: tst_fileoperations
+33/39 Test #33: tst_fileoperations ...............   Passed   18.08 sec
+      Start 34: tst_mediacsv
+34/39 Test #34: tst_mediacsv .....................   Passed    0.48 sec
+      Start 35: tst_mediatablemodel
+35/39 Test #35: tst_mediatablemodel ..............   Passed    0.52 sec
+      Start 36: tst_mediafilterproxy
+36/39 Test #36: tst_mediafilterproxy .............   Passed    0.49 sec
+      Start 37: tst_precomputefilterdialog
+37/39 Test #37: tst_precomputefilterdialog .......   Passed    0.75 sec
+      Start 38: tst_binfilterdialog
+38/39 Test #38: tst_binfilterdialog ..............   Passed    2.10 sec
+      Start 39: tst_operationui
+39/39 Test #39: tst_operationui ..................***Failed    6.73 sec
+********* Start testing of TestOperationUi *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestOperationUi::initTestCase()
+QWARN  : TestOperationUi::scan_results_keep_reconciliation_issues() qt.qpa.fonts: Populating font family aliases took 62 ms. Replace uses of missing font family "Sans Serif" with one that exists to avoid this cost. 
+QWARN  : TestOperationUi::scan_results_keep_reconciliation_issues() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::scan_results_keep_reconciliation_issues() This plugin does not support raise()
+PASS   : TestOperationUi::scan_results_keep_reconciliation_issues()
+PASS   : TestOperationUi::project_sidebar_uses_whole_inventory_totals()
+PASS   : TestOperationUi::removed_sources_refresh_status_and_project_filters()
+QWARN  : TestOperationUi::undo_restores_inventory(move-last-file) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(move-last-file) This plugin does not support raise()
+QINFO  : TestOperationUi::undo_restores_inventory(move-last-file) volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+QWARN  : TestOperationUi::undo_restores_inventory(move-last-file) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(move-last-file) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(move-last-file) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(move-last-file) This plugin does not support raise()
+PASS   : TestOperationUi::undo_restores_inventory(move-last-file)
+QWARN  : TestOperationUi::undo_restores_inventory(move-with-other-location) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(move-with-other-location) This plugin does not support raise()
+QINFO  : TestOperationUi::undo_restores_inventory(move-with-other-location) volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+QWARN  : TestOperationUi::undo_restores_inventory(move-with-other-location) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(move-with-other-location) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(move-with-other-location) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(move-with-other-location) This plugin does not support raise()
+PASS   : TestOperationUi::undo_restores_inventory(move-with-other-location)
+QWARN  : TestOperationUi::undo_restores_inventory(delete-with-other-location) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(delete-with-other-location) This plugin does not support raise()
+QINFO  : TestOperationUi::undo_restores_inventory(delete-with-other-location) volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+QWARN  : TestOperationUi::undo_restores_inventory(delete-with-other-location) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(delete-with-other-location) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(delete-with-other-location) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(delete-with-other-location) This plugin does not support raise()
+PASS   : TestOperationUi::undo_restores_inventory(delete-with-other-location)
+QWARN  : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row) This plugin does not support raise()
+QINFO  : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row) volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+QWARN  : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row) This plugin does not support raise()
+QWARN  : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row) This plugin does not support raise()
+PASS   : TestOperationUi::undo_restores_inventory(failed-undo-does-not-restore-row)
+QWARN  : TestOperationUi::feature_flags_configure_startup_and_text_undo_works() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
+PASS   : TestOperationUi::menu_availability_tracks_locations_selection_and_activity()
+PASS   : TestOperationUi::select_relatives_counts_all_visible_matches(solo-file)
+PASS   : TestOperationUi::select_relatives_counts_all_visible_matches(audio-pair)
+PASS   : TestOperationUi::select_relatives_counts_all_visible_matches(trio)
+PASS   : TestOperationUi::select_relatives_counts_all_visible_matches(partly-selected-trio)
+PASS   : TestOperationUi::select_relatives_counts_all_visible_matches(filtered-relative)
+PASS   : TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
+PASS   : TestOperationUi::select_relatives_preserves_hidden_selections_without_using_them_as_seeds()
+PASS   : TestOperationUi::invert_selection_preserves_hidden_selections(none-visible-selected)
+PASS   : TestOperationUi::invert_selection_preserves_hidden_selections(some-visible-selected)
+PASS   : TestOperationUi::invert_selection_preserves_hidden_selections(all-visible-selected)
+QWARN  : TestOperationUi::text_editing_shortcuts_remain_native() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::text_editing_shortcuts_remain_native() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::text_editing_shortcuts_remain_native()
+PASS   : TestOperationUi::table_widths_change_only_on_request_and_reset_each_session()
+PASS   : TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
+PASS   : TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
+QWARN  : TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv() This plugin does not support raise()
+QWARN  : TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv() This plugin does not support raise()
+PASS   : TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv()
+QWARN  : TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows() This plugin does not support raise()
+QINFO  : TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+QWARN  : TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows() This plugin does not support raise()
+QWARN  : TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows() This plugin does not support raise()
+FAIL!  : TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows() Compared values are not the same
+   Actual   (matches.size()): 0
+   Expected (1)             : 1
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_operationui.cpp(1385)]
+PASS   : TestOperationUi::added_locations_require_managed_media_structure()
+PASS   : TestOperationUi::volume_refresh_clears_selection_and_retains_unique_manual_paths()
+QINFO  : TestOperationUi::startup_prunes_expired_journals_with_undo_disabled() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+PASS   : TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
+PASS   : TestOperationUi::unfinished_business_is_the_single_file_recovery_command()
+QWARN  : TestOperationUi::unfinished_business_merges_jobs_and_updates_choices() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::unfinished_business_merges_jobs_and_updates_choices() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::unfinished_business_merges_jobs_and_updates_choices() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
+QWARN  : TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job() This plugin does not support raise()
+PASS   : TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job()
+QWARN  : TestOperationUi::unfinished_business_gate_stop_only_dismisses_selected_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::unfinished_business_gate_stop_only_dismisses_selected_job() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::unfinished_business_gate_stop_only_dismisses_selected_job()
+QWARN  : TestOperationUi::interrupted_dialog_escape_leaves_job_pending() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::interrupted_dialog_escape_leaves_job_pending()
+QWARN  : TestOperationUi::interrupted_dialog_close_leaves_job_pending() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::interrupted_dialog_close_leaves_job_pending()
+QWARN  : TestOperationUi::interrupted_dialog_stop_keeps_completed_effects() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::interrupted_dialog_stop_keeps_completed_effects()
+QWARN  : TestOperationUi::interrupted_dialog_resume_starts_only_old_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::interrupted_dialog_resume_starts_only_old_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::interrupted_dialog_resume_starts_only_old_job() This plugin does not support raise()
+QINFO  : TestOperationUi::interrupted_dialog_resume_starts_only_old_job() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+PASS   : TestOperationUi::interrupted_dialog_resume_starts_only_old_job()
+QWARN  : TestOperationUi::interrupted_undo_resumes_with_debug_flag_off() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::interrupted_undo_resumes_with_debug_flag_off() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::interrupted_undo_resumes_with_debug_flag_off() This plugin does not support raise()
+QINFO  : TestOperationUi::interrupted_undo_resumes_with_debug_flag_off() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+PASS   : TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
+QWARN  : TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
+QWARN  : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows() This plugin does not support raise()
+QWARN  : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows() This plugin does not support raise()
+QINFO  : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+PASS   : TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows()
+QWARN  : TestOperationUi::resume_restoration_refreshes_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::resume_restoration_refreshes_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::resume_restoration_refreshes_rows() This plugin does not support raise()
+QWARN  : TestOperationUi::resume_restoration_refreshes_rows() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::resume_restoration_refreshes_rows() This plugin does not support raise()
+QINFO  : TestOperationUi::resume_restoration_refreshes_rows() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+PASS   : TestOperationUi::resume_restoration_refreshes_rows()
+QWARN  : TestOperationUi::blocked_restore_remains_available() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::blocked_restore_remains_available() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::blocked_restore_remains_available() This plugin does not support raise()
+QWARN  : TestOperationUi::blocked_restore_remains_available() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::blocked_restore_remains_available()
+QWARN  : TestOperationUi::restore_can_select_another_retained_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_can_select_another_retained_job() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::restore_can_select_another_retained_job() This plugin does not support raise()
+PASS   : TestOperationUi::restore_can_select_another_retained_job()
+QWARN  : TestOperationUi::startup_offers_retained_originals() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::startup_offers_retained_originals()
+PASS   : TestOperationUi::restore_originals_respects_busy_gate()
+PASS   : TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention()
+PASS   : TestOperationUi::completed_results_preserve_details_and_refresh_signals()
+PASS   : TestOperationUi::rebalance_live_counts_follow_confirmed_results()
+PASS   : TestOperationUi::rebalance_finished_recounts_uncertain_moves_and_absent_folders()
+PASS   : TestOperationUi::rebalance_finished_marks_unavailable_root()
+PASS   : TestOperationUi::rebalance_engine_results_and_final_counts(all-moved)
+PASS   : TestOperationUi::rebalance_engine_results_and_final_counts(first-move-skipped)
+PASS   : TestOperationUi::rebalance_engine_results_and_final_counts(ancestor-directory-alias)
+PASS   : TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
+PASS   : TestOperationUi::scan_activity_blocks_operations_even_if_button_state_changes()
+QINFO  : TestOperationUi::rebalance_resume_keeps_running_job_activity() volumes: volumes changed: 3 mounted — AvidMediaComposer[Local,avid]  EDIT[Local,avid]  Macintosh HD[Local]
+QWARN  : TestOperationUi::rebalance_resume_keeps_running_job_activity() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::rebalance_resume_keeps_running_job_activity() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::rebalance_resume_keeps_running_job_activity() This plugin does not support raise()
+PASS   : TestOperationUi::rebalance_resume_keeps_running_job_activity()
+PASS   : TestOperationUi::same_session_refresh_and_stale_result_guard()
+QWARN  : TestOperationUi::progress_cancel_is_acknowledged_once() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::progress_cancel_is_acknowledged_once() This plugin does not support raise()
+PASS   : TestOperationUi::progress_cancel_is_acknowledged_once()
+QWARN  : TestOperationUi::trash_fallback_choice(move) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::trash_fallback_choice(move) This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::trash_fallback_choice(move)
+QWARN  : TestOperationUi::trash_fallback_choice(cancel) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::trash_fallback_choice(cancel) This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::trash_fallback_choice(cancel)
+QWARN  : TestOperationUi::trash_fallback_choice(escape) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::trash_fallback_choice(escape) This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::trash_fallback_choice(escape)
+QWARN  : TestOperationUi::trash_fallback_choice(window-close) This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::trash_fallback_choice(window-close) This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::trash_fallback_choice(window-close)
+QWARN  : TestOperationUi::trash_fallback_cancel_closes_dialog() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::trash_fallback_cancel_closes_dialog() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::trash_fallback_cancel_closes_dialog()
+PASS   : TestOperationUi::trash_fallback_without_handler_returns_without_waiting()
+PASS   : TestOperationUi::trash_fallback_destruction_unblocks_without_gui_events()
+QWARN  : TestOperationUi::trash_fallback_controller_destruction_closes_dialog() This plugin does not support propagateSizeHints()
+QWARN  : TestOperationUi::trash_fallback_controller_destruction_closes_dialog() This plugin does not support propagateSizeHints()
+PASS   : TestOperationUi::trash_fallback_controller_destruction_closes_dialog()
+PASS   : TestOperationUi::preview_background_checks_discard_superseded_results()
+PASS   : TestOperationUi::preview_policy_changes_refresh_space_and_same_file_is_no_effect()
+PASS   : TestOperationUi::cleanupTestCase()
+Totals: 68 passed, 1 failed, 0 skipped, 0 blacklisted, 6145ms
+********* Finished testing of TestOperationUi *********
+
+
+97% tests passed, 1 tests failed out of 39
+
+Label Time Summary:
+core          =   0.53 sec*proc (7 tests)
+media         = 102.84 sec*proc (21 tests)
+operations    =  27.00 sec*proc (5 tests)
+ui            =  11.08 sec*proc (6 tests)
+
+Total Test time (real) = 141.46 sec
+
+The following tests FAILED:
+	 39 - tst_operationui (Failed)                          ui
+Errors while running CTest

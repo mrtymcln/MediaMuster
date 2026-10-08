@@ -1,0 +1,16 @@
+Working directory: /Users/martymclean/Developer/MediaMuster
+
+The frozen archive is retained at /private/tmp/shared-policy-controlled-change-2026-10-08.archive.a
+Archive SHA256: 9509c23d44c83f1cd2927414cc553ad4b3f45fbe4203636ddf40775cff41a5a5
+The copied policy files are retained alongside this probe; only the ClipName row differs.
+
+/usr/bin/clang++ -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -DQT_CORE_LIB -Isrc -Isrc/canon -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/shared-policy-controlled-change-2026-10-08.cpp src/binmetadataresolver.cpp src/canonadapter.cpp src/mediacsv.cpp /private/tmp/shared-policy-controlled-change-2026-10-08.archive.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/shared-policy-controlled-change-2026-10-08.baseline
+
+/usr/bin/clang++ -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -DQT_CORE_LIB -Isrc -Isrc/canon -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include -c /private/tmp/shared-policy-controlled-change-2026-10-08.policy-variant.cpp -o /private/tmp/shared-policy-controlled-change-2026-10-08.policy-variant.o
+
+/usr/bin/clang++ -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -DQT_CORE_LIB -Isrc -Isrc/canon -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/shared-policy-controlled-change-2026-10-08.cpp src/binmetadataresolver.cpp src/canonadapter.cpp src/mediacsv.cpp /private/tmp/shared-policy-controlled-change-2026-10-08.policy-variant.o /private/tmp/shared-policy-controlled-change-2026-10-08.archive.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/shared-policy-controlled-change-2026-10-08.variant
+
+/private/tmp/shared-policy-controlled-change-2026-10-08.baseline header > /private/tmp/shared-policy-controlled-change-2026-10-08.baseline.json
+/private/tmp/shared-policy-controlled-change-2026-10-08.variant mdb > /private/tmp/shared-policy-controlled-change-2026-10-08.variant.json
+
+Both compilation stages and both executions returned exit code0. Qt execution used the approved unsandboxed runtime path because CPU feature detection is blocked by the sandbox. No parser or media scanner I/O was invoked.

@@ -50,8 +50,8 @@ struct MediaFile
 
 	QString clipName;
 
-	/// Higher-ranked recovered names replace lower-ranked ones. A media
-	/// material-package name outranks MDB; agreeing loaded bins fill gaps.
+	/// The source of the selected name; these enum values are source tags,
+	/// not preference ranks. Canon's shared policy table chooses the value.
 	/// Source-package names describe imports/tapes and belong in sourceFileName.
 	/// Unknown clip names stay blank rather than falling back to filenames.
 	enum class ClipNameSource
@@ -63,16 +63,15 @@ struct MediaFile
 	};
 	ClipNameSource clipNameSource = ClipNameSource::None;
 
-	/// Recorded project name, recovered from PMR, then MDB, then readable
-	/// media metadata when still missing. Empty means unknown, independently
-	/// of whether the folder's PMR currently lists this file.
+	/// Selected project name under Canon's shared policy. Empty means unknown,
+	/// independently of whether the folder's PMR currently lists this file.
 	QString project;
 	QString originalBin;			 ///< The recorded import-time _ORG_BIN, from media metadata or a bin reference.
 	bool originalBinFromAvb = false; ///< Loaded-bin fallback; cleared when its supporting bins change.
 
 	// MARK: MXF or MDB technical metadata
 
-	QString codec;				   ///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
+	QString compression;		   ///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
 	QString resolution;			   ///< "1920x1080". Video only; audio rows stay blank.
 	QString frameRate;			   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
 	MediaRate frameRateRatio;	   ///< Original video fraction; never recovered from the display label.

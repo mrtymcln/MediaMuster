@@ -33,6 +33,8 @@ mediamuster_add_test(tst_mobid core)
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
 mediamuster_add_test(tst_mediaevidence core)
+mediamuster_add_test(tst_metadataselectionpolicy core)
+target_link_libraries(tst_metadataselectionpolicy PRIVATE mediamuster_canon)
 
 # Conventions: the agreed folder names, essence-name rules and folder
 # limits every feature keys on (header-only).
@@ -275,6 +277,7 @@ mediamuster_add_test(tst_mediacsv ui ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 mediamuster_add_test(tst_mediatablemodel ui
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
     ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
 )
 
 # MediaFilterProxy: text normalization, classifications and row-level AVB algebra.
@@ -327,6 +330,7 @@ set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=off
 foreach(_model_test tst_mediatablemodel tst_mediafilterproxy tst_precomputefilterdialog tst_binfilterdialog)
     target_link_libraries(${_model_test} PRIVATE mediamuster_canon)
     target_sources(${_model_test} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
         ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
         ${CMAKE_SOURCE_DIR}/src/nativefile.cpp)
 endforeach()

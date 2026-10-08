@@ -23,17 +23,19 @@ namespace
 		return number<quint32>(42, big) + number(value, big) + number<quint32>(900, big);
 	}
 
-	void object(TypedBento &writer, quint32 handle, const char *cls)
+	void object(TypedBento &writer, quint32 handle, const char *cls, int revision = 1)
 	{
-		writer.add(handle, "OMFI:ObjID", "omfi:ObjectTag", cls, true);
+		writer.add(handle, revision == 1 ? "OMFI:ObjID" : "OMFI:OOBJ:ObjClass",
+			revision == 1 ? "omfi:ObjectTag" : "omfi:ClassID", cls, true);
 	}
 
-	void fileMob(TypedBento &writer, quint32 handle, quint32 descriptor, quint32 identity)
+	void fileMob(TypedBento &writer, quint32 handle, quint32 descriptor, quint32 identity, int revision = 1)
 	{
-		object(writer, handle, "MOBJ");
+		object(writer, handle, revision == 1 ? "MOBJ" : "SMOB", revision);
 		writer.add(handle, "OMFI:MOBJ:MobID", "omfi:UID", uid(identity, writer.metadataBig));
-		writer.add(handle, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(descriptor, 1));
-		object(writer, descriptor, "CDCI");
+		writer.add(handle, revision == 1 ? "OMFI:MOBJ:PhysicalMedia" : "OMFI:SMOB:MediaDescription",
+			"omfi:ObjRef", writer.reference(descriptor, revision));
+		object(writer, descriptor, "CDCI", revision);
 		writer.add(descriptor, "OMFI:MDFL:SampleRate", "omfi:ExactEditRate", number<qint32>(25, writer.metadataBig) + number<qint32>(1, writer.metadataBig));
 		writer.add(descriptor, "OMFI:MDFL:Length", "omfi:Length64", number<qint64>(250, writer.metadataBig));
 		writer.add(descriptor, "OMFI:DIDD:StoredWidth", "omfi:UInt32", number<quint32>(1920, writer.metadataBig));
@@ -96,6 +98,25 @@ private slots:
 	void ownershipAndExactFacts();
 	void masterOnlyAndIncompleteFileFacts();
 	void omf2MasterIdentity();
+	void legacyRootMembershipExcludesOrphans();
+	void omf2RootMembershipExcludesOrphans();
+	void requiredContentsLists_data();
+	void requiredContentsLists();
+	void rootContentsUsesExactArrayExtent_data();
+	void rootContentsUsesExactArrayExtent();
+	void legacyOptionalIndexesQualifyAffectedCategory();
+	void legacyIndexMembershipAndIdentityDiscrepancies();
+	void extendedAvidIdentityKeepsReferenceMembership();
+	void mediaIdentityRequiresOwningClass_data();
+	void mediaIdentityRequiresOwningClass();
+	void missingPhysicalMediaOwnership_data();
+	void missingPhysicalMediaOwnership();
+	void incompleteEmbeddedRootKeepsNativeAudioFacts();
+	void activeIdentityConflictRetainsCarrier();
+	void incompleteDependentReferences_data();
+	void incompleteDependentReferences();
+	void sourceClipIdentityMustBeUnique_data();
+	void sourceClipIdentityMustBeUnique();
 	void physicalMediaIdentitySelectsOwner();
 	void repeatedDescriptorsAndMastersRemainSeparate();
 	void oppositeEndianUid();
@@ -142,6 +163,7 @@ void TestCanonOmfProjection::ownershipAndExactFacts()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, "Recorded master");
 	const auto source = read(writer.build());
@@ -174,13 +196,18 @@ void TestCanonOmfProjection::masterOnlyAndIncompleteFileFacts()
 	writer.set(master, "OMFI:MOBJ:MobID", uid(21));
 	writer.setU32(master, "OMFI:MOBJ:UsageCode", 7);
 	writer.setString(master, "OMFI:CPNT:Name", "Master without file object");
+	writer.setHandles(1, "OMFI:ObjectSpine", {master});
 	auto result = project(read(writer.build()));
 	QVERIFY(result.files.isEmpty());
 	QCOMPARE(result.masters.size(), 1);
 	QCOMPARE(single(result.masters.first(), MediaProperty::ClipName).toString(), QStringLiteral("Master without file object"));
-	const auto file = writer.addObject("MOBJ"), descriptor = writer.addObject("WAVD");
+	const auto file = writer.addObject("MOBJ"), descriptor = writer.addObject("WAVD"), media = writer.addObject("WAVE");
 	writer.set(file, "OMFI:MOBJ:MobID", uid(11));
+	writer.set(media, "OMFI:WAVE:MobID", uid(11));
 	writer.setHandle(file, "OMFI:MOBJ:PhysicalMedia", descriptor);
+	// Replace the first explicitly authored membership as the fixture grows.
+	writer.removeProperty(1, "OMFI:ObjectSpine");
+	writer.setHandles(1, "OMFI:ObjectSpine", {master, file, media});
 	result = project(read(writer.build(), false));
 	QCOMPARE(result.files.size(), 1);
 	QCOMPARE(result.files.first().fileMobId, Canon::canonicalDatabaseId(uid(11)));
@@ -193,22 +220,571 @@ void TestCanonOmfProjection::omf2MasterIdentity()
 	TypedBentoBuilder writer(true, false, 2);
 	const auto master = writer.addObject("MMOB"), file = writer.addObject("SMOB"), descriptor = writer.addObject("WAVD");
 	const auto track = writer.addObject("MSLT"), clip = writer.addObject("SCLP");
+	const auto media = writer.addObject("WAVE");
 	writer.set(master, "OMFI:MOBJ:MobID", uid(21));
 	writer.set(file, "OMFI:MOBJ:MobID", uid(11));
 	writer.setHandle(file, "OMFI:SMOB:MediaDescription", descriptor);
 	writer.setHandles(master, "OMFI:MOBJ:Slots", {track});
 	writer.setHandle(track, "OMFI:MSLT:Segment", clip);
 	writer.set(clip, "OMFI:SCLP:SourceID", uid(11));
+	writer.set(media, "OMFI:MDAT:MobID", uid(11));
+	writer.setHandles(1, "OMFI:HEAD:Mobs", {master, file});
+	writer.setHandles(1, "OMFI:HEAD:MediaData", {media});
 	const auto result = project(read(writer.build(), false));
 	QCOMPARE(result.files.size(), 1);
 	QCOMPARE(result.files.first().masterMobIds, QStringList{Canon::canonicalDatabaseId(uid(21))});
 	QVERIFY(result.files.first().evidence.observations(MediaProperty::Type).isEmpty());
 }
 
+void TestCanonOmfProjection::legacyRootMembershipExcludesOrphans()
+{
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301, 601}, 1);
+	fileMob(writer, 101, 201, 11);
+	fileMob(writer, 102, 202, 11); // Retained duplicate, outside the active root.
+	master(writer, 301, 401, 501, 21, 11, "Active master");
+	master(writer, 302, 402, 502, 21, 11, "Retained old master");
+	object(writer, 601, "JPEG");
+	writer.add(601, "OMFI:MDAT:MobID", "omfi:UID", uid(11));
+	object(writer, 602, "JPEG");
+	writer.add(602, "OMFI:MDAT:MobID", "omfi:UID", uid(12));
+	const auto source = read(writer.build(), false);
+	QVERIFY(source.omfRevision == Canon::OmfRevision::V1);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(result.masters.size(), 1);
+	const auto &file = result.files.first();
+	QCOMPARE(file.fileMobId, Canon::canonicalDatabaseId(uid(11)));
+	QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Active master"));
+	QCOMPARE(file.evidence.observations(MediaProperty::Resolution).size(), 1);
+	QVERIFY(std::none_of(file.objects.cbegin(), file.objects.cend(), [](const auto &object)
+		{ return object.handle == 102 || object.handle == 202 || object.handle == 302 || object.handle == 602; }));
+	for (const auto handle : {102, 202, 302, 602})
+		QVERIFY(std::any_of(source.objects.cbegin(), source.objects.cend(), [&](const auto &object)
+			{ return object.handle == quint64(handle); }));
+}
+
+void TestCanonOmfProjection::omf2RootMembershipExcludesOrphans()
+{
+	TypedBentoBuilder writer(true, false, 2);
+	const auto file = writer.addObject("SMOB"), descriptor = writer.addObject("WAVD");
+	const auto orphan = writer.addObject("SMOB"), orphanDescriptor = writer.addObject("CDCI");
+	const auto media = writer.addObject("AIFC"), orphanMedia = writer.addObject("AIFC");
+	writer.set(file, "OMFI:MOBJ:MobID", uid(11));
+	writer.setHandle(file, "OMFI:SMOB:MediaDescription", descriptor);
+	writer.set(orphan, "OMFI:MOBJ:MobID", uid(12));
+	writer.setHandle(orphan, "OMFI:SMOB:MediaDescription", orphanDescriptor);
+	writer.set(media, "OMFI:MDAT:MobID", uid(11));
+	writer.set(orphanMedia, "OMFI:MDAT:MobID", uid(12));
+	writer.setHandles(1, "OMFI:HEAD:Mobs", {file});
+	writer.setHandles(1, "OMFI:HEAD:MediaData", {media});
+	// PrimaryMobs is an optional subset, never an alternative to Mobs.
+	writer.setHandles(1, "OMFI:HEAD:PrimaryMobs", {orphan});
+	const auto source = read(writer.build(), false);
+	QVERIFY(source.omfRevision == Canon::OmfRevision::V2);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(result.files.first().fileMobId, Canon::canonicalDatabaseId(uid(11)));
+	QCOMPARE(single(result.files.first(), MediaProperty::Kind).toInt(), 1);
+	QVERIFY(std::any_of(source.objects.cbegin(), source.objects.cend(), [&](const auto &object)
+		{ return object.handle == orphan; }));
+}
+
+void TestCanonOmfProjection::requiredContentsLists_data()
+{
+	QTest::addColumn<int>("revision");
+	QTest::addColumn<QByteArray>("root");
+	QTest::addColumn<QString>("damage");
+	for (const auto &root : {QByteArray("OMFI:ObjectSpine"), QByteArray("OMFI:HEAD:Mobs"), QByteArray("OMFI:HEAD:MediaData")})
+		for (const auto &damage : {QStringLiteral("missing"), QStringLiteral("malformed"), QStringLiteral("unresolved"),
+			QStringLiteral("null"), QStringLiteral("wrong-type"), QStringLiteral("wrong-class"), QStringLiteral("repeated")})
+			QTest::newRow((root + '-' + damage.toLatin1()).constData()) << (root == "OMFI:ObjectSpine" ? 1 : 2) << root << damage;
+}
+
+void TestCanonOmfProjection::requiredContentsLists()
+{
+	QFETCH(int, revision);
+	QFETCH(QByteArray, root);
+	QFETCH(QString, damage);
+	TypedBento writer;
+	writer.head(revision);
+	fileMob(writer, 101, 201, 11, revision);
+	if (revision == 1)
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
+	else
+	{
+		writer.referenceArray(1, "OMFI:HEAD:Mobs", {101}, 2);
+		writer.referenceArray(1, "OMFI:HEAD:MediaData", {}, 2);
+	}
+	const auto rootId = writer.properties.value(root);
+	writer.entries.removeIf([&](const auto &entry) { return entry.object == 1 && entry.property == rootId; });
+	if (damage == QLatin1String("malformed"))
+		writer.add(1, root, "omfi:ObjRefArray", number<quint16>(1) + '\1');
+	else if (damage == QLatin1String("unresolved"))
+		writer.referenceArray(1, root, {999}, revision);
+	else if (damage == QLatin1String("null"))
+		writer.referenceArray(1, root, {0}, revision);
+	else if (damage == QLatin1String("wrong-type"))
+		writer.add(1, root, "omfi:DataValue", number<quint16>(1) + writer.reference(101, revision));
+	else if (damage == QLatin1String("wrong-class"))
+		writer.referenceArray(1, root, {201}, revision);
+	else if (damage == QLatin1String("repeated"))
+	{
+		writer.referenceArray(1, root, {101}, revision);
+		writer.referenceArray(1, root, {101}, revision);
+	}
+	const auto source = read(writer.build());
+	const auto result = project(source);
+	QVERIFY(result.files.isEmpty());
+	QVERIFY(result.masters.isEmpty());
+	QVERIFY2(result.diagnostics.join('\n').contains(QString::fromLatin1(root)), qPrintable(result.diagnostics.join('\n')));
+	QVERIFY(std::any_of(source.objects.cbegin(), source.objects.cend(), [](const auto &object)
+		{ return object.handle == 101; }));
+	if (damage == QLatin1String("unresolved"))
+		QVERIFY(std::any_of(source.relationships.cbegin(), source.relationships.cend(), [&](const auto &edge)
+			{ return edge.locator.name == QString::fromLatin1(root) && edge.target == 0 &&
+				edge.recordedReference.toMap().value(QStringLiteral("key")).toUInt() == 999; }));
+}
+
+void TestCanonOmfProjection::rootContentsUsesExactArrayExtent_data()
+{
+	QTest::addColumn<int>("revision");
+	QTest::addColumn<QByteArray>("root");
+	QTest::addColumn<bool>("marker");
+	for (const auto &root : {QByteArray("OMFI:ObjectSpine"), QByteArray("OMFI:HEAD:Mobs"), QByteArray("OMFI:HEAD:MediaData")})
+		for (const bool marker : {false, true})
+			QTest::newRow((root + (marker ? "-marker" : "-stale-prefix")).constData())
+				<< (root == "OMFI:ObjectSpine" ? 1 : 2) << root << marker;
+}
+
+void TestCanonOmfProjection::rootContentsUsesExactArrayExtent()
+{
+	QFETCH(int, revision);
+	QFETCH(QByteArray, root);
+	QFETCH(bool, marker);
+	TypedBento writer;
+	writer.head(revision);
+	fileMob(writer, 101, 201, 11, revision);
+	object(writer, 601, "IDAT", revision);
+	writer.add(601, "OMFI:MDAT:MobID", "omfi:UID", uid(11));
+	if (revision == 1)
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101, 601}, 1);
+	else
+	{
+		writer.referenceArray(1, "OMFI:HEAD:Mobs", {101}, 2);
+		writer.referenceArray(1, "OMFI:HEAD:MediaData", {601}, 2);
+	}
+	const auto rootId = writer.properties.value(root);
+	for (auto &entry : writer.entries)
+		if (entry.object == 1 && entry.property == rootId)
+			entry.bytes.replace(0, 2, number<quint16>(marker ? 0xffff : 7));
+	const auto source = read(writer.build(), false);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(result.files.first().fileMobId, Canon::canonicalDatabaseId(uid(11)));
+	QCOMPARE(single(result.files.first(), MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
+	const auto head = std::find_if(source.objects.cbegin(), source.objects.cend(), [](const auto &object)
+		{ return object.handle == 1; });
+	QVERIFY(head != source.objects.cend());
+	const auto value = std::find_if(head->properties.cbegin(), head->properties.cend(), [&](const auto &property)
+		{ return property.locator.name == QString::fromLatin1(root); });
+	QVERIFY(value != head->properties.cend());
+	QCOMPARE(value->encoding.first(2), number<quint16>(marker ? 0xffff : 7));
+	if (!marker)
+		QVERIFY(value->interpretation.contains(QStringLiteral("disagrees with extent")));
+}
+
+void TestCanonOmfProjection::legacyOptionalIndexesQualifyAffectedCategory()
+{
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301, 601}, 1);
+	fileMob(writer, 101, 201, 11);
+	master(writer, 301, 401, 501, 21, 11, "Independent master");
+	object(writer, 601, "IDAT");
+	writer.add(601, "OMFI:MDAT:MobID", "omfi:UID", uid(11));
+	writer.add(1, "OMFI:SourceMobs", "omfi:MobIndex", number<quint16>(1) + '\1');
+	writer.mobIndex(1, "OMFI:CompositionMobs", {{301, uid(21)}});
+	writer.mobIndex(1, "OMFI:MediaData", {{601, uid(11)}});
+	const auto source = read(writer.build());
+	const auto database = project(source);
+	QVERIFY(database.files.isEmpty());
+	QCOMPARE(database.masters.size(), 1);
+	QCOMPARE(single(database.masters.first(), MediaProperty::ClipName).toString(), QStringLiteral("Independent master"));
+	QVERIFY(database.diagnostics.join('\n').contains(QStringLiteral("OMFI:SourceMobs")));
+	auto physicalSource = source;
+	auto snapshot = QSharedPointer<SourceSnapshot>::create(*source.snapshot);
+	snapshot->source = MetadataSource::Omf;
+	physicalSource.snapshot = snapshot;
+	const auto physical = project(physicalSource);
+	QCOMPARE(physical.masters.size(), 1);
+	QCOMPARE(physical.files.size(), 1);
+	QVERIFY(physical.files.first().fileMobId.isEmpty());
+	const auto selected = physical.files.first().evidence.resolve(MediaProperty::FileMobId, [](MetadataSource) { return 1; }, {});
+	QCOMPARE(selected.value.toString(), Canon::canonicalDatabaseId(uid(11)));
+	QVERIFY(physical.files.first().evidence.observations(MediaProperty::Kind).isEmpty());
+}
+
+void TestCanonOmfProjection::legacyIndexMembershipAndIdentityDiscrepancies()
+{
+	for (const bool mismatchedUid : {false, true})
+	{
+		TypedBento writer;
+		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
+		fileMob(writer, 101, 201, 11);
+		fileMob(writer, 102, 202, 12);
+		master(writer, 301, 401, 501, 21, 11, "Unrelated editorial facts");
+		writer.mobIndex(1, "OMFI:SourceMobs", mismatchedUid
+			? QVector<QPair<quint32, QByteArray>>{{101, uid(12)}}
+			: QVector<QPair<quint32, QByteArray>>{{102, uid(12)}});
+		const auto source = read(writer.build());
+		const auto result = project(source);
+		QVERIFY(result.files.isEmpty());
+		QCOMPARE(result.masters.size(), 1);
+		QVERIFY(result.masters.first().masterMobIds.contains(Canon::canonicalDatabaseId(uid(21))));
+		QVERIFY(result.diagnostics.join('\n').contains(QStringLiteral("OMFI:SourceMobs")));
+		QVERIFY(std::any_of(source.relationships.cbegin(), source.relationships.cend(), [&](const auto &edge)
+			{ return edge.locator.name == QLatin1String("OMFI:SourceMobs") && edge.target == (mismatchedUid ? 101 : 102); }));
+	}
+}
+
+void TestCanonOmfProjection::extendedAvidIdentityKeepsReferenceMembership()
+{
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
+	fileMob(writer, 101, 201, 11);
+	const auto id = QByteArray::fromHex("060a2b340101010501010f10130000000de37d9a8412069034364a963681a3eb");
+	const auto mobId = writer.properties.value("OMFI:MOBJ:MobID");
+	for (auto &entry : writer.entries)
+		if (entry.object == 101 && entry.property == mobId)
+			entry.bytes = id;
+	writer.mobIndex(1, "OMFI:SourceMobs", {{101, QByteArray::fromHex("2a0000000de37d9a84120690")}});
+	const auto result = project(read(writer.build()));
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(result.files.first().fileMobId, Canon::canonicalDatabaseId(id));
+	QCOMPARE(single(result.files.first(), MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
+	QVERIFY(result.diagnostics.join('\n').contains(QStringLiteral("identity comparison is not established")));
+}
+
+void TestCanonOmfProjection::mediaIdentityRequiresOwningClass_data()
+{
+	QTest::addColumn<int>("revision");
+	QTest::addColumn<QByteArray>("mediaClass");
+	QTest::addColumn<QByteArray>("identityProperty");
+	for (const auto &cls : {QByteArray("WAVE"), QByteArray("AIFC"), QByteArray("TIFF"), QByteArray("MDAT"), QByteArray("IDAT"), QByteArray("JPEG")})
+		for (const int revision : {1, 2})
+		{
+			const auto name = revision == 1 && (cls == "WAVE" || cls == "AIFC" || cls == "TIFF")
+				? QByteArray("OMFI:") + cls + ":MobID" : QByteArray("OMFI:MDAT:MobID");
+			QTest::newRow((cls + '-' + QByteArray::number(revision)).constData()) << revision << cls << name;
+		}
+}
+
+void TestCanonOmfProjection::mediaIdentityRequiresOwningClass()
+{
+	QFETCH(int, revision);
+	QFETCH(QByteArray, mediaClass);
+	QFETCH(QByteArray, identityProperty);
+	TypedBento writer;
+	writer.head(revision);
+	if (revision == 1)
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101, 102, 601}, 1);
+	else
+	{
+		writer.referenceArray(1, "OMFI:HEAD:Mobs", {101, 102}, 2);
+		writer.referenceArray(1, "OMFI:HEAD:MediaData", {601}, 2);
+	}
+	fileMob(writer, 101, 201, 11, revision);
+	fileMob(writer, 102, 202, 12, revision);
+	object(writer, 601, mediaClass.constData(), revision);
+	writer.add(601, identityProperty, "omfi:UID", uid(11));
+	writer.add(601, identityProperty == "OMFI:MDAT:MobID" ? "OMFI:WAVE:MobID" : "OMFI:MDAT:MobID", "omfi:UID", uid(12));
+	writer.add(201, "OMFI:MDAT:MobID", "omfi:UID", uid(12)); // A descriptor is not MediaData.
+	object(writer, 602, mediaClass.constData(), revision);
+	writer.add(602, identityProperty, "omfi:UID", uid(12)); // An unlisted MediaData object is inactive.
+	const auto source = read(writer.build(), false);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(result.files.first().fileMobId, Canon::canonicalDatabaseId(uid(11)));
+	QVERIFY(std::any_of(source.objects.cbegin(), source.objects.cend(), [](const auto &object)
+		{ return object.handle == 602; }));
+}
+
+void TestCanonOmfProjection::missingPhysicalMediaOwnership_data()
+{
+	QTest::addColumn<QString>("variation");
+	QTest::newRow("optional-media-index-and-object-absent") << QStringLiteral("no-media");
+	QTest::newRow("required-media-list-empty") << QStringLiteral("empty-v2");
+	QTest::newRow("listed-media-id-absent") << QStringLiteral("absent-id");
+	QTest::newRow("listed-media-id-unreadable") << QStringLiteral("unreadable-id");
+}
+
+void TestCanonOmfProjection::missingPhysicalMediaOwnership()
+{
+	QFETCH(QString, variation);
+	const int revision = variation == QLatin1String("empty-v2") ? 2 : 1;
+	const bool listed = variation == QLatin1String("absent-id") || variation == QLatin1String("unreadable-id");
+	TypedBento writer;
+	writer.head(revision);
+	fileMob(writer, 101, 201, 11, revision);
+	if (revision == 1)
+		writer.referenceArray(1, "OMFI:ObjectSpine", listed ? QVector<quint32>{101, 601} : QVector<quint32>{101}, 1);
+	else
+	{
+		writer.referenceArray(1, "OMFI:HEAD:Mobs", {101}, 2);
+		writer.referenceArray(1, "OMFI:HEAD:MediaData", {}, 2);
+	}
+	if (listed)
+		object(writer, 601, "IDAT");
+	if (variation == QLatin1String("unreadable-id"))
+		writer.add(601, "OMFI:MDAT:MobID", "omfi:UID", uid(11));
+	auto source = read(writer.build(), false);
+	if (variation == QLatin1String("unreadable-id"))
+		for (auto &owner : source.objects)
+			if (owner.handle == 601)
+				for (auto &property : owner.properties)
+					if (property.locator.name == QLatin1String("OMFI:MDAT:MobID"))
+					{
+						property.state = PropertyReadState::Unreadable;
+						property.decoded = {};
+						property.interpretation = QStringLiteral("Recorded identity read failed; retained bytes do not establish an interpreted owner.");
+					}
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &candidate = result.files.first();
+	QVERIFY(candidate.fileMobId.isEmpty());
+	const auto rank = [](MetadataSource) { return 1; };
+	QVERIFY(!candidate.evidence.resolve(MediaProperty::FileMobId, rank, {}).value.isValid());
+	QVERIFY(!candidate.evidence.resolve(MediaProperty::Kind, rank, {}).value.isValid());
+	for (const auto &value : candidate.evidence.observations(MediaProperty::FileMobId))
+		QVERIFY(!value.eligible);
+	QVERIFY(result.diagnostics.join('\n').contains(QStringLiteral("MediaData identity")));
+
+	// A database is allowed to describe external media; its root-owned facts
+	// remain usable without asserting physical ownership of the database file.
+	auto database = source;
+	auto snapshot = QSharedPointer<SourceSnapshot>::create(*source.snapshot);
+	snapshot->source = MetadataSource::Mdb;
+	database.snapshot = snapshot;
+	const auto external = project(database);
+	QCOMPARE(external.files.size(), 1);
+	QCOMPARE(external.files.first().fileMobId, Canon::canonicalDatabaseId(uid(11)));
+	QCOMPARE(single(external.files.first(), MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
+
+	auto native = read(wave(1, 16), false);
+	native.embeddedSources.append(source);
+	const auto audio = project(native);
+	QCOMPARE(audio.files.size(), 1);
+	QVERIFY(audio.files.first().fileMobId.isEmpty());
+	QCOMPARE(single(audio.files.first(), MediaProperty::Compression).toString(), QStringLiteral("PCM"));
+}
+
+void TestCanonOmfProjection::incompleteEmbeddedRootKeepsNativeAudioFacts()
+{
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 999}, 1);
+	fileMob(writer, 101, 201, 11);
+	auto source = read(wave(1, 16), false);
+	source.embeddedSources.append(read(writer.build(), false));
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	QVERIFY(result.files.first().fileMobId.isEmpty());
+	QCOMPARE(single(result.files.first(), MediaProperty::Compression).toString(), QStringLiteral("PCM"));
+	QCOMPARE(single(result.files.first(), MediaProperty::BitDepth).toString(), QStringLiteral("16-bit"));
+	QVERIFY(result.diagnostics.join('\n').contains(QStringLiteral("ObjectSpine")));
+}
+
+void TestCanonOmfProjection::activeIdentityConflictRetainsCarrier()
+{
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 102, 301}, 1);
+	fileMob(writer, 101, 201, 11);
+	fileMob(writer, 102, 202, 11);
+	writer.add(102, "OMFI:MOBJ:MobID", "omfi:UID", uid(12));
+	master(writer, 301, 401, 501, 21, 11, "Cannot establish file ownership");
+	const auto source = read(writer.build());
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 2);
+	MediaEvidence combined;
+	for (const auto &candidate : result.files)
+	{
+		QVERIFY(candidate.fileMobId.isEmpty());
+		QVERIFY(candidate.masterMobIds.isEmpty());
+		QVERIFY(candidate.evidence.observations(MediaProperty::Kind).isEmpty());
+		QVERIFY(candidate.evidence.observations(MediaProperty::ClipName).isEmpty());
+		Canon::appendEvidence(combined, candidate.evidence);
+	}
+	const auto identity = combined.resolve(MediaProperty::FileMobId, [](MetadataSource) { return 1; }, {});
+	QCOMPARE(identity.agreement, PropertyAgreement::Conflicting);
+	QVERIFY(!identity.value.isValid());
+	QCOMPARE(result.masters.size(), 1); // Its direct editorial facts remain independently owned.
+	QVERIFY(result.diagnostics.join('\n').contains(QStringLiteral("conflicting MobID")));
+}
+
+void TestCanonOmfProjection::incompleteDependentReferences_data()
+{
+	QTest::addColumn<QString>("damage");
+	QTest::addColumn<QString>("property");
+	QTest::newRow("descriptor-owner") << QStringLiteral("descriptor") << QStringLiteral("OMFI:MOBJ:PhysicalMedia");
+	QTest::newRow("master-tracks") << QStringLiteral("master-tracks") << QStringLiteral("OMFI:TRKG:Tracks");
+	QTest::newRow("track-component") << QStringLiteral("track-component") << QStringLiteral("OMFI:TRAK:TrackComponent");
+	QTest::newRow("nested-components") << QStringLiteral("nested-components") << QStringLiteral("OMFI:SEQU:Sequence");
+	QTest::newRow("attribute-root") << QStringLiteral("attribute-root") << QStringLiteral("OMFI:CPNT:Attributes");
+	QTest::newRow("attribute-members") << QStringLiteral("attribute-members") << QStringLiteral("OMFI:ATTR:AttrRefs");
+	QTest::newRow("attribute-object") << QStringLiteral("attribute-object") << QStringLiteral("OMFI:ATTB:ObjAttribute");
+}
+
+void TestCanonOmfProjection::incompleteDependentReferences()
+{
+	QFETCH(QString, damage);
+	QFETCH(QString, property);
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
+	fileMob(writer, 101, 201, 11);
+	master(writer, 301, 401, 501, 21, 11, "Owned master");
+	writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(701, 1));
+	object(writer, 701, "ATTR");
+	writer.referenceArray(701, "OMFI:ATTR:AttrRefs", {702}, 1);
+	object(writer, 702, "ATTB");
+	writer.add(702, "OMFI:ATTB:Name", "omfi:String", QByteArray("_PJ") + '\0');
+	writer.add(702, "OMFI:ATTB:Kind", "omfi:AttrKind", number<qint16>(2));
+	writer.add(702, "OMFI:ATTB:StringAttribute", "omfi:String", QByteArray("Owned project") + '\0');
+	const auto replace = [&](quint32 owner, const QByteArray &name, const QByteArray &bytes)
+	{
+		const auto id = writer.properties.value(name);
+		for (auto &entry : writer.entries)
+			if (entry.object == owner && entry.property == id)
+				entry.bytes = bytes;
+	};
+	if (damage == QLatin1String("descriptor"))
+		writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(999, 1));
+	else if (damage == QLatin1String("master-tracks"))
+		replace(301, "OMFI:TRKG:Tracks", number<quint16>(2) + writer.reference(401, 1) + writer.reference(999, 1));
+	else if (damage == QLatin1String("track-component"))
+		writer.add(401, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(999, 1));
+	else if (damage == QLatin1String("nested-components"))
+	{
+		object(writer, 600, "SEQU");
+		replace(401, "OMFI:TRAK:TrackComponent", writer.reference(600, 1));
+		writer.referenceArray(600, "OMFI:SEQU:Sequence", {501, 999}, 1);
+	}
+	else if (damage == QLatin1String("attribute-root"))
+		writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(999, 1));
+	else if (damage == QLatin1String("attribute-members"))
+		replace(701, "OMFI:ATTR:AttrRefs", number<quint16>(2) + writer.reference(702, 1) + writer.reference(999, 1));
+	else
+	{
+		replace(702, "OMFI:ATTB:Name", QByteArray("_IMPORTSETTING") + '\0');
+		replace(702, "OMFI:ATTB:Kind", number<qint16>(3));
+		writer.add(702, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(801, 1));
+		writer.add(702, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(999, 1));
+		object(writer, 801, "ATTR");
+		writer.referenceArray(801, "OMFI:ATTR:AttrRefs", {802}, 1);
+		object(writer, 802, "ATTB");
+		writer.add(802, "OMFI:ATTB:Name", "omfi:String", QByteArray("_PJ") + '\0');
+		writer.add(802, "OMFI:ATTB:Kind", "omfi:AttrKind", number<qint16>(2));
+		writer.add(802, "OMFI:ATTB:StringAttribute", "omfi:String", QByteArray("Unproven nested project") + '\0');
+	}
+	const auto source = read(writer.build());
+	const auto result = project(source);
+	QCOMPARE(result.masters.size(), 1);
+	if (damage == QLatin1String("descriptor"))
+		QVERIFY(result.files.isEmpty());
+	else
+	{
+		QCOMPARE(result.files.size(), 1);
+		const auto &file = result.files.first();
+		QCOMPARE(single(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
+		if (damage.startsWith(QLatin1String("attribute")))
+		{
+			QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Owned master"));
+			QVERIFY(file.evidence.observations(MediaProperty::Project).isEmpty());
+			QVERIFY(file.evidence.observations(MediaProperty::Imported).isEmpty());
+		}
+		else
+		{
+			QVERIFY(file.masterMobIds.isEmpty());
+			QVERIFY(file.evidence.observations(MediaProperty::ClipName).isEmpty());
+			QCOMPARE(single(file, MediaProperty::Project).toString(), QStringLiteral("Owned project"));
+			QVERIFY(file.evidence.observations(MediaProperty::ClipDuration).isEmpty());
+		}
+	}
+	QVERIFY2(result.diagnostics.join('\n').contains(property), qPrintable(result.diagnostics.join('\n')));
+	QVERIFY(std::any_of(source.relationships.cbegin(), source.relationships.cend(), [&](const auto &edge)
+		{ return edge.locator.name == property && edge.target == 0 &&
+			edge.recordedReference.toMap().value(QStringLiteral("key")).toUInt() == 999; }));
+}
+
+void TestCanonOmfProjection::sourceClipIdentityMustBeUnique_data()
+{
+	QTest::addColumn<QString>("variation");
+	QTest::addColumn<bool>("associated");
+	QTest::newRow("equal-duplicate") << QStringLiteral("equal") << true;
+	QTest::newRow("contradictory-positive") << QStringLiteral("conflicting") << false;
+	QTest::newRow("unreadable-positive") << QStringLiteral("unreadable") << false;
+	QTest::newRow("original-source-absent") << QStringLiteral("absent") << true;
+	QTest::newRow("original-source-zero") << QStringLiteral("zero") << true;
+}
+
+void TestCanonOmfProjection::sourceClipIdentityMustBeUnique()
+{
+	QFETCH(QString, variation);
+	QFETCH(bool, associated);
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 102, 301}, 1);
+	fileMob(writer, 101, 201, 11);
+	fileMob(writer, 102, 202, 12);
+	master(writer, 301, 401, 501, 21, 11, "Qualified master");
+	writer.referenceArray(101, "OMFI:TRKG:Tracks", {601, 603}, 1);
+	object(writer, 601, "TRAK");
+	object(writer, 602, "TCCP");
+	writer.add(601, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(602, 1));
+	writer.add(602, "OMFI:TCCP:Flags", "omfi:Int32", number<qint32>(1));
+	object(writer, 603, "TRAK");
+	object(writer, 604, "SCLP");
+	writer.add(603, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(604, 1));
+	if (variation == QLatin1String("equal"))
+		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", uid(11));
+	else if (variation == QLatin1String("conflicting"))
+		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", uid(12));
+	else if (variation == QLatin1String("unreadable"))
+		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", QByteArray::fromHex("2a0000"));
+	else if (variation == QLatin1String("zero"))
+		writer.add(604, "OMFI:SCLP:SourceID", "omfi:UID", QByteArray(12, '\0'));
+	const auto source = read(writer.build());
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 2);
+	QCOMPARE(result.masters.size(), 1);
+	for (const auto &file : result.files)
+	{
+		QCOMPARE(single(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
+		const bool first = file.fileMobId == Canon::canonicalDatabaseId(uid(11));
+		if (first && associated)
+			QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Qualified master"));
+		else
+		{
+			QVERIFY(file.masterMobIds.isEmpty());
+			QVERIFY(file.evidence.observations(MediaProperty::ClipName).isEmpty());
+		}
+		if (first)
+			QCOMPARE(single(file, MediaProperty::DropFrame).toBool(), true);
+	}
+	if (!associated)
+		QVERIFY(result.diagnostics.join('\n').contains(QStringLiteral("OMFI:SCLP:SourceID")));
+}
+
 void TestCanonOmfProjection::physicalMediaIdentitySelectsOwner()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 102, 601}, 1);
 	fileMob(writer, 101, 201, 11);
 	fileMob(writer, 102, 202, 12);
 	object(writer, 601, "IDAT");
@@ -234,6 +810,7 @@ void TestCanonOmfProjection::repeatedDescriptorsAndMastersRemainSeparate()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 102, 301, 302}, 1);
 	fileMob(writer, 101, 201, 11);
 	fileMob(writer, 102, 202, 11);
 	master(writer, 301, 401, 501, 21, 11, "First master");
@@ -255,6 +832,7 @@ void TestCanonOmfProjection::oppositeEndianUid()
 	writer.containerBig = false;
 	writer.metadataBig = true;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, "Big endian");
 	const auto result = project(read(writer.build()));
@@ -268,6 +846,7 @@ void TestCanonOmfProjection::repeatedFactsRemainConflicting()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	writer.add(201, "OMFI:CDCI:ComponentWidth", "omfi:UInt32", number<quint32>(12));
 	writer.add(201, "OMFI:DIDD:StoredWidth", "omfi:UInt32", number<quint32>(1280));
@@ -341,6 +920,7 @@ void TestCanonOmfProjection::visibleResolution()
 	QFETCH(QString, expected);
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	writer.entries.removeIf([&](const TypedBento::Entry &entry)
 		{ return entry.object == 201 &&
@@ -458,6 +1038,7 @@ void TestCanonOmfProjection::verifiedProxyResolution()
 	QFETCH(bool, accepted);
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	writer.entries.removeIf([&](const TypedBento::Entry &entry)
 		{ return entry.object == 201 &&
@@ -538,6 +1119,7 @@ void TestCanonOmfProjection::rgbaAlphaEvidence()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	object(writer, 101, "MOBJ");
 	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
 	writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
@@ -572,6 +1154,7 @@ void TestCanonOmfProjection::uncompressedAlphaRequiresExplicitEvidence()
 	QFETCH(bool, named);
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	object(writer, 101, "MOBJ");
 	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
 	writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
@@ -582,11 +1165,11 @@ void TestCanonOmfProjection::uncompressedAlphaRequiresExplicitEvidence()
 		writer.add(201, "OMFI:DIDD:Compression", "omfi:String", compression);
 	const auto result = project(read(writer.build()));
 	QCOMPARE(result.files.size(), 1);
-	const auto codec = single(result.files.first(), MediaProperty::Codec);
+	const auto codec = single(result.files.first(), MediaProperty::Compression);
 	QCOMPARE(codec.toString(), named ? QStringLiteral("Uncompressed alpha") : QString{});
 	if (named)
 	{
-		const auto &observation = result.files.first().evidence.observations(MediaProperty::Codec).first();
+		const auto &observation = result.files.first().evidence.observations(MediaProperty::Compression).first();
 		QCOMPARE(observation.rawValue.toByteArray(), compression);
 		QCOMPARE(observation.property, QStringLiteral("OMFI:DIDD:Compression"));
 	}
@@ -596,6 +1179,7 @@ void TestCanonOmfProjection::inferredUtf8RetainsOriginalEvidence()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	const auto bytes = QByteArray::fromHex("5465c39f74206e616d65");
 	master(writer, 301, 401, 501, 21, 11, bytes);
@@ -627,6 +1211,7 @@ void TestCanonOmfProjection::inferredMacRomanFallback()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, QByteArray::fromHex("8ea0ff"));
 	const auto source = read(writer.build());
@@ -645,6 +1230,7 @@ void TestCanonOmfProjection::emptyAndUnreadableTextRemainEvidence()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, {});
 	auto source = read(writer.build());
@@ -679,6 +1265,7 @@ void TestCanonOmfProjection::unreadableImportPathQualifiesDerivedFilename()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	object(writer, 601, "ATTR");
 	object(writer, 602, "ATTB");
@@ -711,6 +1298,7 @@ void TestCanonOmfProjection::checkedAbsenceRequiresCompleteNamedObject()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	object(writer, 101, "MOBJ");
 	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
 	writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
@@ -745,6 +1333,7 @@ void TestCanonOmfProjection::failedTechnicalInputsRemainUnreadable()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	auto source = read(writer.build());
 	for (auto &owner : source.objects)
@@ -766,9 +1355,9 @@ void TestCanonOmfProjection::failedTechnicalInputsRemainUnreadable()
 		QCOMPARE(evidence.readStatus(field, source.snapshot, QStringLiteral("object:201")).state,
 			PropertyReadState::Unreadable);
 	}
-	QCOMPARE(evidence.readStatus(MediaProperty::Codec, source.snapshot, QStringLiteral("object:201")).state,
+	QCOMPARE(evidence.readStatus(MediaProperty::Compression, source.snapshot, QStringLiteral("object:201")).state,
 		PropertyReadState::NotRead);
-	QCOMPARE(evidence.readStatus(MediaProperty::Codec, source.snapshot, QStringLiteral("object:201")).reason,
+	QCOMPARE(evidence.readStatus(MediaProperty::Compression, source.snapshot, QStringLiteral("object:201")).reason,
 		PropertyReadReason::UnsupportedInterpretation);
 }
 
@@ -779,7 +1368,7 @@ void TestCanonOmfProjection::nativeAudioReadCoverage()
 	const auto malformedResult = project(malformed);
 	QCOMPARE(malformedResult.files.size(), 1);
 	const auto &evidence = malformedResult.files.first().evidence;
-	for (const auto field : {MediaProperty::Codec, MediaProperty::SampleRate, MediaProperty::BitDepth})
+	for (const auto field : {MediaProperty::Compression, MediaProperty::SampleRate, MediaProperty::BitDepth})
 	{
 		QVERIFY(evidence.observations(field).isEmpty());
 		QCOMPARE(evidence.readStatus(field, malformed.snapshot, QStringLiteral("object:0")).state,
@@ -791,9 +1380,9 @@ void TestCanonOmfProjection::nativeAudioReadCoverage()
 	const auto &unsupportedEvidence = unsupportedResult.files.first().evidence;
 	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::SampleRate, unsupported.snapshot,
 		QStringLiteral("object:0")).state, PropertyReadState::Present);
-	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::Codec, unsupported.snapshot,
+	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::Compression, unsupported.snapshot,
 		QStringLiteral("object:0")).state, PropertyReadState::NotRead);
-	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::Codec, unsupported.snapshot,
+	QCOMPARE(unsupportedEvidence.readStatus(MediaProperty::Compression, unsupported.snapshot,
 		QStringLiteral("object:0")).reason, PropertyReadReason::UnsupportedInterpretation);
 }
 
@@ -816,6 +1405,7 @@ void TestCanonOmfProjection::originalBinTextPriority()
 	QFETCH(bool, modernSelected);
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, "Clip");
 	object(writer, 601, "ATTR");
@@ -854,6 +1444,7 @@ void TestCanonOmfProjection::associatedTimecodeAndClipDuration()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, "Linked master");
 	writer.add(401, "OMFI:TRAK:LabelNumber", "omfi:Int16", number<qint16>(7));
@@ -892,7 +1483,9 @@ void TestCanonOmfProjection::legacySequenceClipDuration_data()
 	QTest::newRow("segments-minus-transition") << QString{} << qint64(110);
 	QTest::newRow("nested-sequence") << QStringLiteral("nested") << qint64(110);
 	QTest::newRow("repeated-segment-occurrence") << QStringLiteral("repeat") << qint64(210);
-	for (const auto &variation : {"missing-length", "missing-clock", "different-clock", "cycle", "missing-reference", "overflow", "negative-total", "unknown-component", "wrong-count"})
+	QTest::newRow("stale-count-prefix") << QStringLiteral("stale-prefix") << qint64(110);
+	QTest::newRow("overflow-count-marker") << QStringLiteral("count-marker") << qint64(110);
+	for (const auto &variation : {"missing-length", "missing-clock", "different-clock", "cycle", "missing-reference", "overflow", "negative-total", "unknown-component", "truncated-reference"})
 		QTest::newRow(variation) << QString::fromLatin1(variation) << qint64(-1);
 }
 
@@ -902,6 +1495,7 @@ void TestCanonOmfProjection::legacySequenceClipDuration()
 	QFETCH(qint64, expected);
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
 	fileMob(writer, 101, 201, 11);
 	master(writer, 301, 401, 501, 21, 11, "Sequence-backed master");
 	writer.add(301, "OMFI:TRKG:GroupLength", "omfi:Long", number<qint32>(999)); // Not this track's length.
@@ -921,9 +1515,15 @@ void TestCanonOmfProjection::legacySequenceClipDuration()
 		children.append(999);
 	const auto references = [&](const QVector<quint32> &handles)
 	{
-		QByteArray bytes = number<quint16>(handles.size() + (variation == QLatin1String("wrong-count") ? 1 : 0));
+		// OMF toolkit array length comes from byte extent; a stale prefix or
+		// overflow marker does not discard otherwise complete references.
+		const quint16 prefix = variation == QLatin1String("count-marker") ? 0xffff
+			: quint16(handles.size() + (variation == QLatin1String("stale-prefix") ? 1 : 0));
+		QByteArray bytes = number(prefix);
 		for (const auto handle : handles)
 			bytes += writer.reference(handle, 1);
+		if (variation == QLatin1String("truncated-reference"))
+			bytes += writer.reference(999, 1).first(4);
 		return bytes;
 	};
 	if (variation == QLatin1String("nested"))
@@ -1006,6 +1606,7 @@ void TestCanonOmfProjection::exactDnxOperatingPoint()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	writer.add(201, "OMFI:DIDD:DIDResolutionID", "omfi:UInt32", number<quint32>(1241));
 	writer.add(201, "OMFI:CDCI:HorizontalSubsampling", "omfi:UInt32", number<quint32>(2));
@@ -1013,7 +1614,7 @@ void TestCanonOmfProjection::exactDnxOperatingPoint()
 	const auto result = project(read(writer.build()));
 	QCOMPARE(result.files.size(), 1);
 	const auto &file = result.files.first();
-	QCOMPARE(single(file, MediaProperty::Codec).toString(), QStringLiteral("Avid DNx HQX [DNxHD 185x]"));
+	QCOMPARE(single(file, MediaProperty::Compression).toString(), QStringLiteral("Avid DNx HQX [DNxHD 185x]"));
 	QCOMPARE(single(file, MediaProperty::NewDnx).toString(), QStringLiteral("Avid DNx HQX"));
 	QCOMPARE(single(file, MediaProperty::OldDnx).toString(), QStringLiteral("DNxHD HQX"));
 	QCOMPARE(single(file, MediaProperty::ReallyOldDnx).toString(), QStringLiteral("DNxHD 185x"));
@@ -1029,7 +1630,7 @@ void TestCanonOmfProjection::genuineVideoCodecNames()
 	const auto source = Canon::LegacyReader{}.read(input, {{}, cancellation});
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
-	QCOMPARE(single(result.files.first(), MediaProperty::Codec).toString(), expected);
+	QCOMPARE(single(result.files.first(), MediaProperty::Compression).toString(), expected);
 	if (filename.contains(QLatin1String("AVHD_220")))
 	{
 		QCOMPARE(Canon::mediaRate(single(result.files.first(), MediaProperty::FrameRate)).numerator, 2997);
@@ -1109,6 +1710,7 @@ void TestCanonOmfProjection::legacyDecimalDnxNaming()
 	QFETCH(QString, expected);
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	for (auto &entry : writer.entries)
 	{
@@ -1134,7 +1736,7 @@ void TestCanonOmfProjection::legacyDecimalDnxNaming()
 	QCOMPARE(result.files.size(), 1);
 	const auto &file = result.files.first();
 	QCOMPARE(single(file, MediaProperty::ReallyOldDnx).toString(), expected);
-	QVERIFY(single(file, MediaProperty::Codec).toString().endsWith(QStringLiteral(" [%1]").arg(expected)));
+	QVERIFY(single(file, MediaProperty::Compression).toString().endsWith(QStringLiteral(" [%1]").arg(expected)));
 	const auto recordedRate = Canon::mediaRate(single(file, MediaProperty::FrameRate));
 	QCOMPARE(recordedRate.numerator, numerator);
 	QCOMPARE(recordedRate.denominator, denominator);
@@ -1152,6 +1754,7 @@ void TestCanonOmfProjection::legacyDecimalDnxNamingRejectsUnverifiedFacts()
 {
 	TypedBento writer;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	fileMob(writer, 101, 201, 11);
 	writer.add(201, "OMFI:DIDD:DIDResolutionID", "omfi:UInt32", number<quint32>(1237));
 	writer.add(201, "OMFI:CDCI:HorizontalSubsampling", "omfi:UInt32", number<quint32>(2));
@@ -1198,7 +1801,10 @@ void TestCanonOmfProjection::conflictingEmbeddedIdentitiesRemainVisible()
 	{
 		TypedBento writer;
 		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101, 601}, 1);
 		fileMob(writer, 101, 201, identity);
+		object(writer, 601, "IDAT");
+		writer.add(601, "OMFI:MDAT:MobID", "omfi:UID", uid(identity));
 		source.embeddedSources.append(read(writer.build(), false));
 	}
 	const auto result = project(source);
@@ -1240,6 +1846,7 @@ void TestCanonOmfProjection::dnxUncompressedFlavour()
 	TypedBento writer;
 	writer.metadataBig = true;
 	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 	object(writer, 101, "MOBJ");
 	object(writer, 201, "CDCI");
 	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11, true));
@@ -1249,7 +1856,7 @@ void TestCanonOmfProjection::dnxUncompressedFlavour()
 	writer.add(201, "OMFI:DIDD:EssenceCompression", "omfi:UID", label.mid(8) + label.first(8));
 	const auto result = project(read(writer.build()));
 	QCOMPARE(result.files.size(), 1);
-	QCOMPARE(single(result.files.first(), MediaProperty::Codec).toString(), expected);
+	QCOMPARE(single(result.files.first(), MediaProperty::Compression).toString(), expected);
 }
 
 void TestCanonOmfProjection::unknownLayoutDoesNotGuessRaster()
@@ -1258,6 +1865,7 @@ void TestCanonOmfProjection::unknownLayoutDoesNotGuessRaster()
 	{
 		TypedBento writer;
 		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 		fileMob(writer, 101, 201, 11);
 		const auto layoutId = writer.properties.value("OMFI:DIDD:FrameLayout");
 		writer.entries.removeIf([&](const auto &entry)

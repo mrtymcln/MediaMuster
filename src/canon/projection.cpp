@@ -1,4 +1,5 @@
 #include "projection.h"
+#include "metadataselectionpolicy.h"
 #include "avidtext.h"
 #include "avideffects.h"
 #include <algorithm>
@@ -179,14 +180,13 @@ namespace Canon
 			}
 		}
 		for (const auto field : fields)
-			evidence.select(field, evidence.resolve(field, [](MetadataSource)
-													{ return 1; }, locator));
+			evidence.select(field, resolveProperty(evidence, propertyPolicy(field)));
 	}
 	void appendEvidence(MediaEvidence &target, const MediaEvidence &source, bool eligible)
 	{
 		for (const auto &coverage : source.sourceCoverage())
 			target.appendCoverage(coverage, eligible);
-		for (int index = int(MediaProperty::ClipName); index <= int(MediaProperty::ComponentDepth); ++index)
+		for (int index = int(MediaProperty::ClipName); index < int(MediaProperty::Count); ++index)
 			for (auto value : source.observations(MediaProperty(index)))
 			{
 				value.eligible = value.eligible && eligible;

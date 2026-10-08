@@ -1,0 +1,299 @@
+{
+  "recordedUtc": "2026-10-07T15:35:27.927792+00:00",
+  "boundary": "Read-only targeted recorded-property/root/projection diagnostic. Link current frozen archive; no production translation unit separately compiled; no format or timeline certification. Bulk raw graphs remain temporary.",
+  "compileArgv": [
+    "c++",
+    "-std=c++17",
+    "-arch",
+    "arm64",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wsign-conversion",
+    "-I",
+    "src",
+    "-I",
+    "tests",
+    "-isystem",
+    "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+    "-iframework",
+    "/Users/martymclean/Qt/6.5.3/macos/lib",
+    "/private/tmp/mediamuster-changed-cell-proof.cpp",
+    "build-canon/libmediamuster_canon.a",
+    "-framework",
+    "QtCore",
+    "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+    "-o",
+    "/private/tmp/mediamuster-changed-cell-proof"
+  ],
+  "workingDirectory": "/Users/martymclean/Developer/MediaMuster",
+  "hashesAtCompile": {
+    "/private/tmp/mediamuster-changed-cell-proof.cpp": "0d5e870627e33f45625e6b4078ac20a4d02199219b054c76d09b03f1a4c95a8e",
+    "build-canon/libmediamuster_canon.a": "7ed4c8ddccddf9bd502444c58163b74218ce40ae5520002bd9ac6b5a61372513",
+    "src/canon/mxfprojection.cpp": "b059226c6ce5503cfa06c6c3f17624eef4ef32d504605bba505ae07aacbceeb0",
+    "src/canon/omfprojection.cpp": "f54ec11c28831cf86f9da4ecea0bd78c65082c21689cce5d7ac4dfe8fbdd740d",
+    "src/canon/scanmodel.h": "526be67ba6241343372b83318181451ead98d6bd53ca5d6ed0494e6b65108f08",
+    "src/canon/mxfreader.cpp": "f3561c44c596ad0a49f44203ac3689a7025f7e375f242f16d2b2f8d32a115dde",
+    "src/canon/mxfobjects_p.cpp": "f7efd73e2774e487cf88156b18ff5d32db138f91a2b781b9442085dfb86491cb",
+    "src/canon/mdbreader.cpp": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825",
+    "src/canon/omfobjects_p.cpp": "ed5f401940dbca2fdcc464180487612e8248abd77eb806f77639a8a177880c67",
+    "src/canon/projection.h": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b",
+    "src/canon/scanengine.cpp": "8731bb8debc1cba601fde18220aa69fd37cb3fe6d61b001ab4b83b0f58a7720b",
+    "src/canon/projection.cpp": "da2ec199ffc3971bd76c50f8713f1271001767487ebb1f000063cb0cfcea4c66"
+  },
+  "compileExitCode": 0,
+  "compilerOutput": "",
+  "hashesAfterCompile": {
+    "/private/tmp/mediamuster-changed-cell-proof.cpp": "0d5e870627e33f45625e6b4078ac20a4d02199219b054c76d09b03f1a4c95a8e",
+    "build-canon/libmediamuster_canon.a": "7ed4c8ddccddf9bd502444c58163b74218ce40ae5520002bd9ac6b5a61372513",
+    "src/canon/mxfprojection.cpp": "b059226c6ce5503cfa06c6c3f17624eef4ef32d504605bba505ae07aacbceeb0",
+    "src/canon/omfprojection.cpp": "f54ec11c28831cf86f9da4ecea0bd78c65082c21689cce5d7ac4dfe8fbdd740d",
+    "src/canon/scanmodel.h": "526be67ba6241343372b83318181451ead98d6bd53ca5d6ed0494e6b65108f08",
+    "src/canon/mxfreader.cpp": "f3561c44c596ad0a49f44203ac3689a7025f7e375f242f16d2b2f8d32a115dde",
+    "src/canon/mxfobjects_p.cpp": "f7efd73e2774e487cf88156b18ff5d32db138f91a2b781b9442085dfb86491cb",
+    "src/canon/mdbreader.cpp": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825",
+    "src/canon/omfobjects_p.cpp": "ed5f401940dbca2fdcc464180487612e8248abd77eb806f77639a8a177880c67",
+    "src/canon/projection.h": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b",
+    "src/canon/scanengine.cpp": "8731bb8debc1cba601fde18220aa69fd37cb3fe6d61b001ab4b83b0f58a7720b",
+    "src/canon/projection.cpp": "da2ec199ffc3971bd76c50f8713f1271001767487ebb1f000063cb0cfcea4c66"
+  },
+  "binarySha256": "be6de906d9154ddb5eeea6edc02a160380469c6dd1b53a4aa04ba982452b9a43",
+  "runArgv": [
+    "/private/tmp/mediamuster-changed-cell-proof",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AB_1543D1543D7E1A.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AD_1544215442E0AA.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A2_166FC166FCC8DA.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A3_166FE166FEC21A.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041588_152EE152EE266A.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AC_1543D1543D7FEA.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AE_1544215442E2BA.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V copy.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF64_8969B08969B2DA.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF65_896B20896B240A.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF66_896C60896C6F2A.mxf",
+    "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF67_896DB0896DB75A.mxf"
+  ],
+  "runExitCode": 0,
+  "runStderr": "",
+  "runRecordedUtc": "2026-10-07T15:35:57.283945+00:00",
+  "resultPath": "/private/tmp/mediamuster-changed-cell-proof.jsonl",
+  "resultSha256": "77b704cd0f81a4bf0dd9bb6b7d9084510e8d6a35bb5d25ec35a669e65fc97ad5",
+  "sources": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "before": {
+        "size": 22745976,
+        "mtimeNs": 1785052712000000000
+      },
+      "after": {
+        "size": 22745976,
+        "mtimeNs": 1785052712000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AB_1543D1543D7E1A.mxf",
+      "before": {
+        "size": 8708705,
+        "mtimeNs": 1778652576000000000
+      },
+      "after": {
+        "size": 8708705,
+        "mtimeNs": 1778652576000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "005f11fbd100a0021555585eca875d45bf499d7c8293b15ab07af0ce82addcdb"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AD_1544215442E0AA.mxf",
+      "before": {
+        "size": 3142241,
+        "mtimeNs": 1778652576000000000
+      },
+      "after": {
+        "size": 3142241,
+        "mtimeNs": 1778652576000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "49abd3fb366cce6ad7a861cc152b5baa46ee8927e14686d257261dc51535cfa9"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A2_166FC166FCC8DA.mxf",
+      "before": {
+        "size": 2228833,
+        "mtimeNs": 1778652971000000000
+      },
+      "after": {
+        "size": 2228833,
+        "mtimeNs": 1778652971000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "cc2be593f4208b8a3e763afe69b3ce326bbeb52d77456dd0ebf1060625062e66"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A3_166FE166FEC21A.mxf",
+      "before": {
+        "size": 2605665,
+        "mtimeNs": 1778652971000000000
+      },
+      "after": {
+        "size": 2605665,
+        "mtimeNs": 1778652971000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "f4a452889ac202b2f64d7a01483c7419ae691d214c10e13651870953937d4abe"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041588_152EE152EE266A.mxf",
+      "before": {
+        "size": 1655393,
+        "mtimeNs": 1778652548000000000
+      },
+      "after": {
+        "size": 1655393,
+        "mtimeNs": 1778652548000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "b47307d904c3ca4573813a5a79285aedecfc8ae1738b313232069c4b1a5347f9"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AC_1543D1543D7FEA.mxf",
+      "before": {
+        "size": 8708705,
+        "mtimeNs": 1778652576000000000
+      },
+      "after": {
+        "size": 8708705,
+        "mtimeNs": 1778652576000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "cf5881b81ba11d6dfea98f5e0df95fa456a66902775babe0e0be7a704ece9b5b"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AE_1544215442E2BA.mxf",
+      "before": {
+        "size": 3142241,
+        "mtimeNs": 1778652576000000000
+      },
+      "after": {
+        "size": 3142241,
+        "mtimeNs": 1778652576000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "a6d805c42d87d6fac237c397912cdf80934f16b292bf237d9e31e237b3d3b5d8"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V copy.mxf",
+      "before": {
+        "size": 497869921,
+        "mtimeNs": 1778652802000000000
+      },
+      "after": {
+        "size": 497869921,
+        "mtimeNs": 1778652802000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "7e71b1783d3f27a794ec432786a78721802abe5386c664d47e8d6cf2f4c6414a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V.mxf",
+      "before": {
+        "size": 497869921,
+        "mtimeNs": 1778652802000000000
+      },
+      "after": {
+        "size": 497869921,
+        "mtimeNs": 1778652802000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "7e71b1783d3f27a794ec432786a78721802abe5386c664d47e8d6cf2f4c6414a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF64_8969B08969B2DA.mxf",
+      "before": {
+        "size": 2232929,
+        "mtimeNs": 1778712192000000000
+      },
+      "after": {
+        "size": 2232929,
+        "mtimeNs": 1778712192000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "a2ca860358a4437624714cea0c286cfd51b1cd33d920acde586025876e68606f"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF65_896B20896B240A.mxf",
+      "before": {
+        "size": 2605665,
+        "mtimeNs": 1778712192000000000
+      },
+      "after": {
+        "size": 2605665,
+        "mtimeNs": 1778712192000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "5bf23ac0671014903e61f2080f8950aa380aaa4ea794873cc6ef0b9ffd97ecf2"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF66_896C60896C6F2A.mxf",
+      "before": {
+        "size": 2093665,
+        "mtimeNs": 1778712192000000000
+      },
+      "after": {
+        "size": 2093665,
+        "mtimeNs": 1778712192000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "b787958b1743b2b0efe45de183ca0009c3af83cb9915dda54a78d9a2c8265f68"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF67_896DB0896DB75A.mxf",
+      "before": {
+        "size": 1639009,
+        "mtimeNs": 1778712192000000000
+      },
+      "after": {
+        "size": 1639009,
+        "mtimeNs": 1778712192000000000
+      },
+      "unchangedStat": true,
+      "sha256AfterRead": "bcaa88dc213a6e9b1e0fc9fa99009abf56db7db8ce63f86489c0eba51f2a3d7a"
+    }
+  ],
+  "retainedSourcePath": "Project Canon/evidence/root-membership-changed-cells-probe-2026-10-08.cpp",
+  "retainedSourceSha256": "0d5e870627e33f45625e6b4078ac20a4d02199219b054c76d09b03f1a4c95a8e",
+  "retainedProofPath": "Project Canon/evidence/root-membership-changed-cells-proof-2026-10-08.json",
+  "retainedProofSha256": "9d4ed23b6247bd49c6e3c79a715f5d1eb031da183ffc1151de0b5f9663525b60",
+  "reproduceCompileArgv": [
+    "c++",
+    "-std=c++17",
+    "-arch",
+    "arm64",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wsign-conversion",
+    "-I",
+    "src",
+    "-I",
+    "tests",
+    "-isystem",
+    "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+    "-iframework",
+    "/Users/martymclean/Qt/6.5.3/macos/lib",
+    "Project Canon/evidence/root-membership-changed-cells-probe-2026-10-08.cpp",
+    "build-canon/libmediamuster_canon.a",
+    "-framework",
+    "QtCore",
+    "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+    "-o",
+    "/private/tmp/mediamuster-changed-cell-proof"
+  ],
+  "bulkOutputBoundary": "The 1,021,566-byte targeted raw JSONL remains in /private/tmp. Retained proof contains decisive paths, source properties, membership, current selections and before/after CSV cells; no original-media copy or complete 140,448-object MDB graph retained."
+}

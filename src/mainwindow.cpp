@@ -463,7 +463,7 @@ void MainWindow::buildTable()
 	setW(Col::Kind, 75);
 	setW(Col::Duration, 100);
 	setW(Col::SizeMB, 100);
-	setW(Col::Codec, 150);
+	setW(Col::Compression, 150);
 	setW(Col::Resolution, 100);
 	setW(Col::FrameRate, 100);
 	setW(Col::SampleRate, 100);

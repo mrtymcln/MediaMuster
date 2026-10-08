@@ -5,6 +5,7 @@
 
 #include <QByteArray>
 #include <QMap>
+#include <QPair>
 #include <QVector>
 #include <QtEndian>
 
@@ -63,6 +64,24 @@ public:
 	QByteArray reference(quint32 target, int omfVersion) const
 	{
 		return number(target, containerBig) + (omfVersion == 1 ? QByteArray(4, '\0') : QByteArray());
+	}
+	void referenceArray(quint32 owner, const QByteArray &name, const QVector<quint32> &targets, int omfVersion)
+	{
+		QByteArray bytes = number(quint16(targets.size()), metadataBig);
+		for (const auto target : targets)
+			bytes += reference(target, omfVersion);
+		add(owner, name, "omfi:ObjRefArray", bytes);
+	}
+	void mobIndex(quint32 owner, const QByteArray &name, const QVector<QPair<quint32, QByteArray>> &targets)
+	{
+		QByteArray bytes = number(quint16(targets.size()), metadataBig);
+		for (const auto &target : targets)
+		{
+			Q_ASSERT(target.second.size() == 12);
+			bytes += target.second;
+			bytes += reference(target.first, 1);
+		}
+		add(owner, name, "omfi:MobIndex", bytes);
 	}
 	QByteArray build(quint32 baseOffset = 0) const
 	{

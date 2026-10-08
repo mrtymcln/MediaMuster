@@ -1,0 +1,11 @@
+--- original/metadataselectionpolicy.cpp
++++ variant/metadataselectionpolicy.cpp
+@@ -12,7 +12,7 @@
+ 		constexpr PropertyPolicies kPropertyPolicies{{
+ 			//                                      FS PMR MDB MXF OMF AVB
+ 			{MediaProperty::ClipName, SelectionRule::PreferredValue,
+-				{0, 0, 2, 3, 3, 1}, "clip-name", 1},
++				{0, 0, 3, 2, 2, 1}, "clip-name", 2},
+ 			{MediaProperty::Project, SelectionRule::PreferredValue,
+ 				{0, 3, 2, 1, 1, 0}, "project", 1},
+ 			{MediaProperty::OriginalBin, SelectionRule::PreferredValue,

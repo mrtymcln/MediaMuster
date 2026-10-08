@@ -82,8 +82,8 @@ private slots:
 		QCOMPARE(file.evidence.observations(MediaProperty::Size).first().value.toLongLong(), qint64(0));
 		QCOMPARE(file.evidence.observations(MediaProperty::OmfScan).first().readState, PropertyReadState::Present);
 		QCOMPARE(file.evidence.observations(MediaProperty::OmfScan).first().value.toBool(), false);
-		QVERIFY(file.evidence.observations(MediaProperty::Codec).isEmpty());
-		QCOMPARE(file.evidence.selected(MediaProperty::Codec).readState, PropertyReadState::NotRead);
+		QVERIFY(file.evidence.observations(MediaProperty::Compression).isEmpty());
+		QCOMPARE(file.evidence.selected(MediaProperty::Compression).readState, PropertyReadState::NotRead);
 	}
 
 	void unicode_names_and_symlink_exclusions()
@@ -124,7 +124,7 @@ private slots:
 			QVERIFY(file.kelpieId != 0 && !ids.contains(file.kelpieId));
 			paths.insert(file.path);
 			ids.insert(file.kelpieId);
-			QCOMPARE(file.evidence.selected(MediaProperty::Codec).readState, PropertyReadState::NotRead);
+			QCOMPARE(file.evidence.selected(MediaProperty::Compression).readState, PropertyReadState::NotRead);
 		}
 		qInfo() << "Fresh discovery:" << result.files.size() << "physical rows," << result.candidates.size() << "parser candidates";
 	}
@@ -167,7 +167,7 @@ private slots:
 			quarantined += int(file.quarantined);
 			QCOMPARE(file.stamp.path, file.path);
 			QVERIFY(file.stamp.mobId.isEmpty());
-			QCOMPARE(file.evidence.selected(MediaProperty::Codec).readState, PropertyReadState::NotRead);
+			QCOMPARE(file.evidence.selected(MediaProperty::Compression).readState, PropertyReadState::NotRead);
 			QCOMPARE(file.evidence.observations(MediaProperty::Size).first().value.toLongLong(), qint64(12));
 		}
 		QCOMPARE(legacy, 3);

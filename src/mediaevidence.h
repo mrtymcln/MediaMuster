@@ -50,24 +50,29 @@ private:
 	KelpieId m_next = 1;
 };
 
+// What was established about a property's value. Selection, agreement and
+// freshness are separate; the read reason explains incomplete/unsupported cases.
 enum class PropertyReadState
 {
-	NotRead,
-	Present,
-	Absent,
-	Unreadable
+	NotRead,   ///< No interpreted read result established; this does not prove absence.
+	Present,   ///< A value was read, including empty text, false or zero; it need not be selected.
+	Absent,	   ///< A checked object or established format layout does not supply the property.
+	Unreadable ///< The recognized value/source could not be read or decoded; raw bytes may remain.
 };
+// Compare eligible observations of the same fact, even within one source.
+// Disagreement can coexist with a selected value under an explicit preference.
 enum class PropertyAgreement
 {
-	NotCompared,
-	SingleSource,
-	Agreeing,
-	Conflicting
+	NotCompared,  ///< No usable comparison result established.
+	SingleSource, ///< One usable observation; this counts observations, not file/source kinds.
+	Agreeing,	  ///< Multiple comparable observations supply equivalent values.
+	Conflicting	  ///< Comparable values or qualified associations disagree.
 };
+// How the value was obtained, independently of whether it is correct or current.
 enum class EvidenceBasis
 {
-	Recorded,
-	Derived
+	Recorded, ///< The source explicitly supplied the value.
+	Derived	  ///< Calculated or inferred from evidence, with an explanation.
 };
 enum class MetadataSource
 {
@@ -133,7 +138,7 @@ enum class MediaProperty
 	FileDuration,
 	ClipDuration,
 	Size,
-	Codec,
+	Compression,
 	NewDnx,
 	OldDnx,
 	ReallyOldDnx,
@@ -166,7 +171,8 @@ enum class MediaProperty
 	WrappingLabel,
 	PixelLayout,
 	DropFrame,
-	ComponentDepth
+	ComponentDepth,
+	Count ///< Sentinel for complete policy coverage; not a metadata property.
 };
 
 inline QString mediaPropertyName(MediaProperty property)
@@ -187,8 +193,8 @@ inline QString mediaPropertyName(MediaProperty property)
 		return QStringLiteral("Clip Duration");
 	case MediaProperty::Size:
 		return QStringLiteral("Size");
-	case MediaProperty::Codec:
-		return QStringLiteral("Codec");
+	case MediaProperty::Compression:
+		return QStringLiteral("Compression");
 	case MediaProperty::NewDnx:
 		return QStringLiteral("NewDnx");
 	case MediaProperty::OldDnx:
@@ -255,6 +261,8 @@ inline QString mediaPropertyName(MediaProperty property)
 		return QStringLiteral("Component Depth");
 	case MediaProperty::DropFrame:
 		return QStringLiteral("Drop Frame");
+	case MediaProperty::Count:
+		break;
 	}
 	return QStringLiteral("Unknown property");
 }
@@ -313,8 +321,7 @@ struct ResolvedField
 	PropertyReadState readState = PropertyReadState::NotRead;
 	PropertyAgreement agreement = PropertyAgreement::NotCompared;
 	int selectedObservation = -1;
-	QString rule;
-	quint32 ruleVersion = 1;
+	QString rule; ///< Diagnostic selection label; Canon uses the shared property name.
 	QString reason;
 	PropertyReadReason readReason = PropertyReadReason::NoAssociatedSource;
 	PropertyApplicability applicability = PropertyApplicability::Unknown;
@@ -340,9 +347,9 @@ public:
 				coverage.snapshot->modified == snapshot->modified)
 			{
 				const bool hasObservations = std::any_of(m_observations.cbegin(), m_observations.cend(),
-					[&](const QVector<MetadataObservation> &values)
-					{ return std::any_of(values.cbegin(), values.cend(), [&](const MetadataObservation &value)
-						{ return value.snapshot == coverage.snapshot; }); });
+														 [&](const QVector<MetadataObservation> &values)
+														 { return std::any_of(values.cbegin(), values.cend(), [&](const MetadataObservation &value)
+																			  { return value.snapshot == coverage.snapshot; }); });
 				if (!hasObservations)
 					coverage.snapshot = snapshot;
 			}
@@ -390,7 +397,8 @@ public:
 		const auto rank = [](PropertyReadState state)
 		{
 			return state == PropertyReadState::Present ? 3 : state == PropertyReadState::Unreadable ? 2
-				 : state == PropertyReadState::NotRead ? 1 : 0;
+														 : state == PropertyReadState::NotRead		? 1
+																									: 0;
 		};
 		const auto merge = [&](const PropertyReadResult &next)
 		{
@@ -432,18 +440,18 @@ public:
 					(!eligibleOnly || value.eligible))
 				{
 					PropertyReadResult observationStatus{value.readState,
-						value.readReason != PropertyReadReason::None ? value.readReason
-							: value.readState == PropertyReadState::Unreadable ? PropertyReadReason::ValueUnreadable
-							: value.readState == PropertyReadState::Absent ? PropertyReadReason::NotPresentInObject
-							: value.readState == PropertyReadState::NotRead ? PropertyReadReason::CoverageNotEstablished
-							: PropertyReadReason::None,
-						PropertyApplicability::Applicable, value.explanation};
+														 value.readReason != PropertyReadReason::None		? value.readReason
+														 : value.readState == PropertyReadState::Unreadable ? PropertyReadReason::ValueUnreadable
+														 : value.readState == PropertyReadState::Absent		? PropertyReadReason::NotPresentInObject
+														 : value.readState == PropertyReadState::NotRead	? PropertyReadReason::CoverageNotEstablished
+																											: PropertyReadReason::None,
+														 PropertyApplicability::Applicable, value.explanation};
 					if (!observed || rank(value.readState) > rank(observedStatus.state))
 						observedStatus = std::move(observationStatus);
 					observed = true;
 				}
 			if (observed && !(status.state == PropertyReadState::Unreadable &&
-				observedStatus.state != PropertyReadState::Present))
+							  observedStatus.state != PropertyReadState::Present))
 				status = std::move(observedStatus);
 			merge(status);
 		}
@@ -580,7 +588,7 @@ public:
 				observation.eligible = false;
 		m_resolved.remove(property);
 	}
-	using Rank = int (*)(MetadataSource);
+	template <typename Rank>
 	ResolvedField resolve(MediaProperty property, Rank rank, const QString &rule) const
 	{
 		ResolvedField result;
@@ -667,6 +675,9 @@ public:
 			else if (!equivalent(first, observation.value))
 				disagree = true;
 			const int priority = rank(observation.snapshot->source);
+			// Zero excludes a display candidate, not its read result or evidence.
+			if (priority <= 0)
+				continue;
 			if (priority > bestRank)
 			{
 				bestRank = priority;
@@ -727,6 +738,8 @@ public:
 					result.value = tracks;
 			}
 		}
+		else if (present > 0)
+			result.reason = QStringLiteral("Read values retained; the policy excludes their sources from selection");
 		return result;
 	}
 

@@ -1,5 +1,6 @@
 #include "canon/scanengine.h"
 #include "canon/projection.h"
+#include "canon/metadataselectionpolicy.h"
 #include "canonadapter.h"
 #include "testutil.h"
 #include "testcanonbento.h"
@@ -42,11 +43,13 @@ namespace
 			bytes.append(record);
 		return bytes;
 	}
-	QByteArray audioDatabase(quint16 bitDepth = 24)
+	QByteArray audioDatabase(quint16 bitDepth = 24, const QVector<quint32> &members = {101, 301},
+		bool contradictoryFileIdentity = false)
 	{
 		using TestCanonBento::number;
 		TestCanonBento::TypedBento writer;
 		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", members, 1);
 		for (const auto &object : QList<QPair<quint32, QByteArray>>{{101, "MOBJ"}, {201, "WAVD"}, {301, "MOBJ"}, {401, "TRAK"}, {501, "SCLP"}})
 			writer.add(object.first, "OMFI:ObjID", "omfi:ObjectTag", object.second, true);
 		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", toneFileId);
@@ -67,6 +70,15 @@ namespace
 		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", toneFileId);
 		writer.add(501, "OMFI:CLIP:Length", "omfi:Length32", number<quint32>(50));
 		writer.add(501, "OMFI:CPNT:EditRate", "omfi:Rational", number<qint32>(25) + number<qint32>(1));
+		if (contradictoryFileIdentity)
+		{
+			QByteArray alternative = toneFileId;
+			alternative[31] = char(0x14);
+			writer.add(601, "OMFI:ObjID", "omfi:ObjectTag", "MOBJ", true);
+			writer.add(601, "OMFI:MOBJ:MobID", "omfi:UID", toneFileId);
+			writer.add(601, "OMFI:MOBJ:MobID", "omfi:UID", alternative);
+			writer.add(601, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
+		}
 		return writer.build();
 	}
 	const Canon::ParsedSource *mediaSource(const Canon::ScanResult &scan, const QString &path)
@@ -82,6 +94,85 @@ class TestCanonScan : public QObject
 {
 	Q_OBJECT
 private slots:
+	void conflicting_active_database_identity_cannot_disappear_during_matching()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(tryWriteFile(path, "Unreadable header"));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+			pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
+			audioDatabase(24, {101, 301, 601}, true)));
+		const Canon::Cancellation cancellation;
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(mediaSource(scan, path)->outcome != Canon::ParsedSource::Outcome::NotRead);
+		const auto &evidence = scan.files.front().evidence;
+		const auto identity = evidence.selected(MediaProperty::FileMobId);
+		QCOMPARE(identity.agreement, PropertyAgreement::Conflicting);
+		QVERIFY(!identity.value.isValid());
+		QVERIFY(!evidence.selected(MediaProperty::Compression).value.isValid());
+		QSet<QString> databaseClaims;
+		for (const auto &claim : evidence.observations(MediaProperty::FileMobId))
+			if (claim.snapshot->source == MetadataSource::Mdb && claim.eligible &&
+				claim.readState == PropertyReadState::Present)
+				databaseClaims.insert(claim.value.toString());
+		QCOMPARE(databaseClaims.size(), 2);
+	}
+
+	void damaged_database_contents_list_reads_header_and_keeps_physical_row()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(tryWriteFile(path, "Unreadable header"));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+			pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {101, 999})));
+		const Canon::Cancellation cancellation;
+		QStringList warnings;
+		Canon::ScanCallbacks callbacks;
+		callbacks.warning = [&](const QString &message) { warnings.append(message); };
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(scan.files.front().kelpieId != 0);
+		QVERIFY(mediaSource(scan, path)->outcome != Canon::ParsedSource::Outcome::NotRead);
+		const auto &evidence = scan.files.front().evidence;
+		QVERIFY(!evidence.selected(MediaProperty::Compression).value.isValid());
+		QCOMPARE(evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("Project"));
+		QVERIFY(std::any_of(warnings.cbegin(), warnings.cend(), [](const QString &message)
+			{ return message.contains(QStringLiteral("ObjectSpine")); }));
+		const auto *database = mediaSource(scan, folder + QStringLiteral("/metadata.mdb"));
+		QVERIFY(database);
+		QVERIFY(!database->objects.isEmpty());
+		QVERIFY(std::any_of(database->relationships.cbegin(), database->relationships.cend(),
+			[](const Canon::Relationship &link)
+			{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
+	}
+
+	void unlisted_database_master_cannot_supply_clip_name()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(tryWriteFile(path, "Unreadable header: the physical file must still keep its row."));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+			pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		// The master is readable in the database, but its contents list omits it.
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {101})));
+		const Canon::Cancellation cancellation;
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(scan.files.front().kelpieId != 0);
+		QVERIFY(mediaSource(scan, path)->outcome != Canon::ParsedSource::Outcome::NotRead);
+		const auto &evidence = scan.files.front().evidence;
+		QVERIFY(!evidence.selected(MediaProperty::ClipName).value.isValid());
+		QCOMPARE(evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
+		QCOMPARE(evidence.selected(MediaProperty::FileMobId).value.toString(),
+			Canon::canonicalDatabaseId(toneFileId));
+	}
+
 	void complete_database_does_not_open_media_header()
 	{
 		QTemporaryDir temporary;
@@ -105,21 +196,21 @@ private slots:
 		QVERIFY(header->objects.isEmpty());
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
-		QCOMPARE(evidence.readStatus(MediaProperty::Codec, header->snapshot).state, PropertyReadState::NotRead);
-		QCOMPARE(evidence.readStatus(MediaProperty::Codec, header->snapshot).reason, PropertyReadReason::SourceNotRead);
+		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).state, PropertyReadState::NotRead);
+		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).reason, PropertyReadReason::SourceNotRead);
 		for (const auto &source : scan.sources)
 			if (source.snapshot->source == MetadataSource::Pmr)
 			{
-				const auto absent = evidence.readStatus(MediaProperty::Codec, source.snapshot);
+				const auto absent = evidence.readStatus(MediaProperty::Compression, source.snapshot);
 				QCOMPARE(absent.state, PropertyReadState::Absent);
 				QCOMPARE(absent.reason, PropertyReadReason::NotStoredByFormat);
 				QCOMPARE(evidence.readStatus(MediaProperty::Modified, source.snapshot).reason, PropertyReadReason::UnsupportedInterpretation);
 			}
 		QCOMPARE(evidence.selected(MediaProperty::ClipName).value.toString(), QStringLiteral("Database clip"));
-		QCOMPARE(evidence.selected(MediaProperty::Codec).value.toString(), QStringLiteral("PCM"));
+		QCOMPARE(evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
 		QVERIFY(!evidence.selected(MediaProperty::OriginalBin).value.isValid());
 		QVERIFY(!evidence.selected(MediaProperty::SourceFilename).value.isValid());
-		for (const auto &value : evidence.observations(MediaProperty::Codec))
+		for (const auto &value : evidence.observations(MediaProperty::Compression))
 			if (value.readState == PropertyReadState::Present)
 			{
 				QCOMPARE(value.snapshot->source, MetadataSource::Mdb);
@@ -195,8 +286,8 @@ private slots:
 		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 2);
-		QVERIFY(!scan.files[0].evidence.selected(MediaProperty::Codec).value.isValid());
-		QCOMPARE(scan.files[1].evidence.selected(MediaProperty::Codec).value.toString(), QStringLiteral("PCM"));
+		QVERIFY(!scan.files[0].evidence.selected(MediaProperty::Compression).value.isValid());
+		QCOMPARE(scan.files[1].evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
 		QVERIFY(std::any_of(scan.reconciliationIssues.cbegin(), scan.reconciliationIssues.cend(), [&](const ScanIssue &issue)
 							{ return issue.kind == ScanIssue::Kind::SourceChanged && issue.expectedPath == first; }));
 	}
@@ -226,10 +317,10 @@ private slots:
 		QVERIFY(changed);
 		QVERIFY(mediaSource(scan, first)->outcome != Canon::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
-		const auto codec = evidence.selected(MediaProperty::Codec);
+		const auto codec = evidence.selected(MediaProperty::Compression);
 		QVERIFY(codec.value.isValid());
-		QCOMPARE(evidence.observations(MediaProperty::Codec)[codec.selectedObservation].snapshot->source, MetadataSource::Mxf);
-		for (const auto &observation : evidence.observations(MediaProperty::Codec))
+		QCOMPARE(evidence.observations(MediaProperty::Compression)[codec.selectedObservation].snapshot->source, MetadataSource::Mxf);
+		for (const auto &observation : evidence.observations(MediaProperty::Compression))
 			if (observation.snapshot && observation.snapshot->source == MetadataSource::Mdb)
 				QVERIFY(!observation.eligible);
 	}
@@ -472,9 +563,9 @@ private slots:
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QVERIFY(!evidence.selected(MediaProperty::FileMobId).value.isValid());
-		QVERIFY(!evidence.selected(MediaProperty::Codec).value.isValid());
+		QVERIFY(!evidence.selected(MediaProperty::Compression).value.isValid());
 		bool retainedDatabase = false;
-		for (const auto &value : evidence.observations(MediaProperty::Codec))
+		for (const auto &value : evidence.observations(MediaProperty::Compression))
 			if (value.snapshot && value.snapshot->source == MetadataSource::Mdb && value.readState == PropertyReadState::Present)
 			{
 				retainedDatabase = true;
@@ -539,6 +630,42 @@ private slots:
 		QCOMPARE(duration.units, 100);
 		QVERIFY(duration.rate.sameRate({25, 1}));
 		QVERIFY(!duration.displayRate.valid());
+	}
+	void central_policy_keeps_associations_and_duration_clocks_distinct()
+	{
+		MediaEvidence evidence;
+		const auto add = [&](MediaProperty property, MetadataSource source, const QVariant &value, bool eligible = true)
+		{
+			MetadataObservation item;
+			item.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{source, {}, {}, SourceReadState::Complete});
+			item.readState = PropertyReadState::Present;
+			item.value = value;
+			item.eligible = eligible;
+			evidence.observe(property, item);
+		};
+		add(MediaProperty::MasterMobId, MetadataSource::Pmr, QStringLiteral("master-b"));
+		add(MediaProperty::MasterMobId, MetadataSource::Mxf, QStringList{QStringLiteral("master-a"), QStringLiteral("master-b")});
+		add(MediaProperty::MasterMobId, MetadataSource::Mdb, QStringLiteral("wrong-owner"), false);
+		add(MediaProperty::FileDuration, MetadataSource::Mxf,
+			Canon::durationValue({100, {25, 1}, {}, MediaDuration::Source::Descriptor}));
+		add(MediaProperty::FileDuration, MetadataSource::Mdb,
+			Canon::durationValue({100, {50, 2}, {25, 1}, MediaDuration::Source::FileTrack}));
+		// This alternative clock belongs to a different duration; it cannot fill ours.
+		add(MediaProperty::FileDuration, MetadataSource::Mdb,
+			Canon::durationValue({200, {25, 1}, {24, 1}, MediaDuration::Source::FileTrack}));
+		Canon::selectMetadata(evidence);
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toStringList(),
+			(QStringList{QStringLiteral("master-a"), QStringLiteral("master-b")}));
+		QCOMPARE(evidence.observations(MediaProperty::MasterMobId).size(), 3);
+		const auto duration = Canon::mediaDuration(evidence.selected(MediaProperty::FileDuration).value);
+		QCOMPARE(duration.units, 100);
+		QVERIFY(duration.rate.sameRate({25, 1}));
+		QVERIFY(duration.displayRate.sameRate({25, 1}));
+		for (const auto &policy : Canon::propertyPolicies())
+		{
+			const auto selected = evidence.selected(policy.property);
+			QCOMPARE(selected.rule, mediaPropertyName(policy.property));
+		}
 	}
 	void external_cancellation_is_observed()
 	{

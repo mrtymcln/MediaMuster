@@ -53,7 +53,7 @@ namespace
 		f.fileName = QStringLiteral("A11B22C33D44.mxf");
 		f.project = QStringLiteral("MyFilm");
 		f.originalBin = QStringLiteral("Rushes");
-		f.codec = QStringLiteral("Avid DNx SQ (DNxHD 145)");
+		f.compression = QStringLiteral("Avid DNx SQ (DNxHD 145)");
 		f.resolution = QStringLiteral("1920x1080");
 		f.frameRate = QStringLiteral("25");
 		f.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
@@ -139,7 +139,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	for (bool enabled : {false, true})
 	{
 		QStringList expectedHeaders = QStringLiteral(
-										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Codec,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
+										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
 										  "Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId,KelpieId,OmfScan")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
@@ -345,7 +345,7 @@ void TestMediaCsv::effect_details_are_explicit_and_quoted()
 		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
 		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
 		QCOMPARE(fields.size(), headers.size());
-		QCOMPARE(fields[headers.indexOf(QStringLiteral("Codec"))], f.codec);
+		QCOMPARE(fields[headers.indexOf(QStringLiteral("Compression"))], f.compression);
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Date Created"))], f.createdDisplay());
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Type"))], QStringLiteral("Precompute"));
 		if (enabled)

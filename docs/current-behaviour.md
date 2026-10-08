@@ -165,8 +165,11 @@ file cannot be made trustworthy by falling back to a database.
 
 Technical fields prefer coherent file-owned header observations, then qualified
 matching MDB values. The approved editorial priorities are Clip Name: header, MDB,
-AVB; Project: PMR, MDB, header; Original Bin: MDB, header, AVB. Equal-rank incompatible
-values remain blank with a Console explanation. Lower-priority editorial alternatives
+AVB; Project: PMR, MDB, header; Original Bin: MDB, header, AVB. The shared policy
+lists named source groups from first choice to final fallback. Sources in one
+group have equal preference; omitted sources remain in evidence but cannot supply
+the selected value. Incompatible values in the preferred available group leave
+the cell blank with a Console explanation. Lower-priority editorial alternatives
 stay in evidence without producing a warning for every resolved difference. An
 unreadable header can use matching database values with freshness recorded as
 unknown; a raw PMR modification word is not treated as a proven filesystem timestamp.
@@ -219,9 +222,13 @@ to delete.
 ## Filtering, selecting and exporting
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
-Codec, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
+Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
 Source Filename, Location, MobId, MasterMobId and KelpieId, followed by OmfScan
 when its flag is enabled. Multiple master IDs share a cell separated by `;`.
+Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
+The selected property is `MediaProperty::Compression` and the row value is
+`MediaFile::compression`. `CompressionLabel` remains separate internal coding
+evidence; source properties and their recorded names are retained unchanged.
 OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
 for MXF-family media. Type is always visible. Enabling
 the Clip Duration feature flag places Clip Duration immediately after Duration

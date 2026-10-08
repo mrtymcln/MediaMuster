@@ -1,0 +1,303 @@
+********* Start testing of TestScanner *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestScanner::initTestCase()
+PASS   : TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
+SKIP   : TestScanner::optional_read_only_real_scan() Opt-in real-drive audit; set MEDIAMUSTER_CANON_REAL_SCAN_ROOTS to semicolon-separated managed roots
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp(315)]
+PASS   : TestScanner::canon_extension_discovery_keeps_copies_and_local_reference_issues()
+PASS   : TestScanner::unreferenced_mxf_recovered_via_mdb()
+PASS   : TestScanner::stage3_mdb_name_must_not_clobber_material_name()
+PASS   : TestScanner::header_master_lookup_uses_canonical_identity(correct-only)
+PASS   : TestScanner::header_master_lookup_uses_canonical_identity(both-identities)
+PASS   : TestScanner::header_master_lookup_uses_canonical_identity(other-only)
+PASS   : TestScanner::mxf_without_any_database_is_no_database()
+PASS   : TestScanner::unlisted_media_with_readable_databases_is_no_reference()
+PASS   : TestScanner::corrupt_pmr_flags_no_database_and_mdb_still_recovers()
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(healthy)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(valid-empty)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(under-declared-primary-count)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(under-declared-unicode-count)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(unknown-extension)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(trailing-bytes)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(truncated-unicode-header)
+PASS   : TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index(truncated-unicode-record)
+PASS   : TestScanner::appledouble_sibling_is_never_media()
+PASS   : TestScanner::non_avid_files_are_invisible()
+PASS   : TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
+PASS   : TestScanner::cancellation_during_finalising_reports_cancelled()
+PASS   : TestScanner::effect_render_names_classify_as_precompute()
+PASS   : TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
+PASS   : TestScanner::unknown_clip_name_is_blank_not_the_filename()
+PASS   : TestScanner::source_package_name_is_not_a_clip_name()
+PASS   : TestScanner::mixdown_is_media_not_precompute()
+PASS   : TestScanner::unreadable_header_stays_unknown()
+PASS   : TestScanner::database_described_row_survives_unreadable_header()
+PASS   : TestScanner::current_mxf_audio_database_rounds_partial_frames()
+PASS   : TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
+PASS   : TestScanner::unreadable_header_keeps_qualified_database_fallback()
+PASS   : TestScanner::zero_pmr_timestamp_does_not_certify_database_freshness()
+QDEBUG : TestScanner::current_render_with_missing_project_survives_failed_header_read() mdb: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-wzlNet/Avid MediaFiles/MXF/1/msmMMOB.mdb" : 41 TOC entries, 1 clips, 1 files ( 1 complete )
+PASS   : TestScanner::current_render_with_missing_project_survives_failed_header_read()
+PASS   : TestScanner::precompute_category_from_current_database(render-no-import)
+PASS   : TestScanner::precompute_category_from_current_database(two-track-import-null-payload)
+PASS   : TestScanner::precompute_category_from_current_database(one-track-import)
+PASS   : TestScanner::precompute_category_from_current_database(unreadable-kind)
+PASS   : TestScanner::precompute_category_conflict_and_stale_database()
+PASS   : TestScanner::reused_filename_clears_old_editorial_details()
+PASS   : TestScanner::pmr_v1_recovers_unique_master_from_mdb()
+PASS   : TestScanner::omf2_header_keeps_master_identity_with_unknown_classification()
+PASS   : TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
+PASS   : TestScanner::folder_without_databases_reads_every_header()
+PASS   : TestScanner::mpeg_audio_falls_back_to_its_header()
+PASS   : TestScanner::precompute_row_gets_effect_fields()
+PASS   : TestScanner::modified_is_the_filesystem_mtime()
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(volume-root)
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(manual-root)
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(manual-nested)
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(manual-direct)
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(manual-descendant)
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(volume-descendant)
+PASS   : TestScanner::omf_is_disabled_for_all_path_shapes(manual-renamed)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-root)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(manual-root)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(manual-nested)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(manual-numbered-folder)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(manual-shared-folder)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-Interview)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-Interview)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-Interview)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-EditSuite2)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-EditSuite2)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-EditSuite2)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-8243)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-8243)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-8243)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-Ingest1.32)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-Ingest1.32)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-Ingest1.32)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-EditSuite2.1)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-EditSuite2.1)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-EditSuite2.1)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-Archive)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-Archive)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-Archive)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-OMFI MediaFiles)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(mxf-root-OMFI MediaFiles)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-OMFI MediaFiles)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(volume-named-without-databases)
+PASS   : TestScanner::omf_disabled_preserves_mxf_and_its_databases(direct-named-without-databases)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.txt-mxf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.txt-omf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.xlsx-mxf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.xlsx-omf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.sd2-mxf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.sd2-omf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.SD2-mxf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.SD2-omf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.aiff-mxf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.aiff-omf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.mov-mxf)
+PASS   : TestScanner::unsupported_file_suffixes_are_ignored(.mov-omf)
+PASS   : TestScanner::stale_omf_database_does_not_describe_replacement()
+QDEBUG : TestScanner::incomplete_omf_database_recovers_file_identity_from_header(different-identity) mdb: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-oXJzRo/OMFI MediaFiles/msmMMOB.mdb" : 24 TOC entries, 0 clips, 1 files ( 0 complete )
+QDEBUG : TestScanner::incomplete_omf_database_recovers_file_identity_from_header(different-identity) omf: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-oXJzRo/OMFI MediaFiles/replaced.omf" : "WAVE (OMF)" "" "" clip "" project "" bin "" (read 1689 bytes)
+PASS   : TestScanner::incomplete_omf_database_recovers_file_identity_from_header(different-identity)
+QDEBUG : TestScanner::incomplete_omf_database_recovers_file_identity_from_header(same-identity) mdb: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-eyusgw/OMFI MediaFiles/msmMMOB.mdb" : 24 TOC entries, 0 clips, 1 files ( 0 complete )
+QDEBUG : TestScanner::incomplete_omf_database_recovers_file_identity_from_header(same-identity) omf: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-eyusgw/OMFI MediaFiles/replaced.omf" : "WAVE (OMF)" "" "" clip "" project "" bin "" (read 1689 bytes)
+PASS   : TestScanner::incomplete_omf_database_recovers_file_identity_from_header(same-identity)
+PASS   : TestScanner::omf_volume_root_scans_both_folders()
+PASS   : TestScanner::copied_media_tree_requires_its_direct_base_or_managed_root()
+PASS   : TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
+PASS   : TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::omf_video_rows_show_avid_short_names() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+PASS   : TestScanner::omf_video_rows_show_avid_short_names()
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+PASS   : TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010501" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010401" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010201" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010202" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010304" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010303" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010502" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010101" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010E04020102010402" family: "Avid"
+QDEBUG : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers() metadata: unrecognised compression label "060E2B34040101010401020100000000" family: ""
+PASS   : TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
+PASS   : TestScanner::shared_omf_folder_without_any_database_is_scanned()
+PASS   : TestScanner::unrelated_database_cannot_reclassify_omf_audio(current-matching-pair)
+PASS   : TestScanner::unrelated_database_cannot_reclassify_omf_audio(stale-matching-pair)
+PASS   : TestScanner::unrelated_database_cannot_reclassify_omf_audio(matching-mdb-only)
+PASS   : TestScanner::unrelated_database_cannot_reclassify_omf_audio(matching-pmr-only)
+PASS   : TestScanner::unrelated_database_cannot_reclassify_omf_audio(unrelated-records-only)
+QDEBUG : TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format() omf: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-YqfFoi/OMFI MediaFiles/EditorOne/incomplete.wav" : "WAVE (OMF)" "" "" clip "" project "" bin "" (read 1689 bytes)
+PASS   : TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format()
+QDEBUG : TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metadata() mdb: "060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80" last known volume "Macintosh HD"
+QDEBUG : TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metadata() mdb: "060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80" last known volume "Macintosh HD"
+QDEBUG : TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metadata() mdb: "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-PPnklZ/OMFI MediaFiles/EditorOne/msmMMOB.mdb" : 1368 TOC entries, 2 clips, 2 files ( 2 complete )
+QWARN  : TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metadata() omf: no usable OMF metadata in "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/tst_scanner-PPnklZ/OMFI MediaFiles/EditorOne/TONE_100A01.6A972974.039700.wav" (read 825 bytes)
+PASS   : TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metadata()
+PASS   : TestScanner::mxf_and_omf_staging_rules()
+PASS   : TestScanner::complete_omf_database_leaves_unreadable_header_unopened(flat-omfi)
+PASS   : TestScanner::complete_omf_database_leaves_unreadable_header_unopened(shared-workstation)
+PASS   : TestScanner::ama_databases_are_read()
+PASS   : TestScanner::manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root()
+PASS   : TestScanner::ume_paths_are_ignored(root-with-mxf-sibling)
+PASS   : TestScanner::ume_paths_are_ignored(child-with-mxf-sibling)
+PASS   : TestScanner::ume_paths_are_ignored(root-without-mxf-sibling)
+PASS   : TestScanner::ume_paths_are_ignored(database-child-without-mxf-sibling)
+PASS   : TestScanner::ume_paths_are_ignored(root-alias)
+PASS   : TestScanner::ume_paths_are_ignored(database-child-alias)
+PASS   : TestScanner::ume_exclusion_preserves_supported_siblings()
+PASS   : TestScanner::overlapping_volume_and_manual_roots_scan_each_folder_once()
+SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp(3300)]
+PASS   : TestScanner::cross_format_files_are_excluded_even_with_omf_enabled()
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(loose-media)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(loose-media-with-databases)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(standalone-mxf-root)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(standalone-mxf-leaf)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(partial-avid-path-component)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(partial-omfi-path-component)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(mxf-staging-folder)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(mxf-hidden-folder)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(mxf-leaf-grandchild)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(named-mxf-leaf-grandchild)
+PASS   : TestScanner::unsupported_manual_locations_are_rejected(omfi-workstation-grandchild)
+PASS   : TestScanner::mxf_quarantined_files_remain_diagnostic(volume)
+PASS   : TestScanner::mxf_quarantined_files_remain_diagnostic(manual-quarantine-folder)
+PASS   : TestScanner::media_file_symlinks_are_excluded(mxf-link-to-ume)
+PASS   : TestScanner::media_file_symlinks_are_excluded(mxf-link-to-loose-media)
+PASS   : TestScanner::media_file_symlinks_are_excluded(omf-wave-link-to-loose-media)
+PASS   : TestScanner::quarantine_alias_cannot_expand_a_normal_media_folder()
+PASS   : TestScanner::numbered_alias_cannot_hide_quarantined_status()
+PASS   : TestScanner::ordinary_wave_outside_omfi_is_excluded(mxf-folder-unrelated-databases)
+PASS   : TestScanner::ordinary_wave_outside_omfi_is_excluded(renamed-folder-unrelated-databases)
+PASS   : TestScanner::ordinary_wave_outside_omfi_is_excluded(renamed-folder-current-omf-databases)
+PASS   : TestScanner::unreadable_database_extension_marks_unverified_misses()
+PASS   : TestScanner::cleanupTestCase()
+Totals: 150 passed, 0 failed, 2 skipped, 0 blacklisted, 10312ms
+********* Finished testing of TestScanner *********

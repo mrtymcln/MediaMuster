@@ -222,7 +222,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		// and the two narrower fields need no separate pass. volumeName
 		// stays: a Windows path ("E:/...") need not contain the label.
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
-			   matches(f.codec) || matches(f.volumeName) || matches(f.mediaFilePath) ||
+			   matches(f.compression) || matches(f.volumeName) || matches(f.mediaFilePath) ||
 			   matches(f.sourceFileName) ||
 			   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&
 				(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||
@@ -267,8 +267,8 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return QString::compare(leftFile.clipNameDisplay(), rightFile.clipNameDisplay(),
 								Qt::CaseInsensitive) < 0;
 
-	case Col::Codec:
-		return QString::compare(leftFile.codec, rightFile.codec,
+	case Col::Compression:
+		return QString::compare(leftFile.compression, rightFile.compression,
 								Qt::CaseInsensitive) < 0;
 
 	case Col::Kind:

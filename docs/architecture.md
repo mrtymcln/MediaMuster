@@ -65,15 +65,17 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | Component | Responsibility |
 | --- | --- |
 | [Canon::PmrReader](../src/canon/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |
-| [Canon::MdbReader](../src/canon/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries and qualified relationships. |
+| [Canon::MdbReader](../src/canon/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
 | [Canon::MxfReader](../src/canon/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
 | [Canon::LegacyReader](../src/canon/legacyreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
 | [Canon::AvbReader](../src/canon/avbreader.cpp) and [reference engine](../src/canon/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
 | [Canon source projections](../src/canon/projection.h) | Interpret recorded properties as file-owned or master-owned observations, retaining original graphs and competing evidence. |
 | [Canon::ScanEngine](../src/canon/scanengine.cpp) | Coordinates reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
+| [Canon selection policy](../src/canon/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
 | [AvbParser](../src/avbparser.cpp) | Compatibility adapter used by the existing bin dialog; delegates parsing and reference resolution to Canon. |
 | [BinMetadataResolver](../src/binmetadataresolver.cpp) | Applies and retracts eligible AVB name/bin observations without erasing scan evidence. |
+| [Canon presentation adapter](../src/canonadapter.cpp) | Refreshes semantic table/filter/CSV fields from selected evidence, including clearing unresolved values; physical operation fields keep their current location and identity. |
 | [AvidEffects](../src/avideffects.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
 `MediaScanner::doScan()` owns the background/UI boundary, cancellation, progress,
@@ -90,12 +92,32 @@ Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
 partition copies also remain separate observations. Every physical location keeps
 its own KelpieId; identical mob IDs do not merge inventory rows.
 
+MXF ownership follows a unique partition Preface to ContentStorage and its recorded
+package and essence-data membership. OMF1 uses required ObjectSpine membership and
+qualifies optional typed indexes when present; OMF2 uses HEAD:Mobs and HEAD:MediaData.
+Optional PrimaryMobs does not replace the complete mob collection. Unknown OMF
+revision keeps raw evidence without owned OMF projection. Missing or damaged
+required contents leave dependent values blank, with independently established
+fallback still available. Complete declared reference paths are required for the
+technical or editorial facts that depend on them. See the
+[root membership corrections](../Project%20Canon/root-membership-corrections-2026-10-08.md)
+and [bounded specimen evidence](../Project%20Canon/root-membership-specimens-2026-10-08.md).
+
 Matching prefers exact local PMR filenames, with normalized fallback only for an
 unambiguous physical location and compatible identity. MDB file facts join by full
 canonical file identities; master-only facts require an established association.
-Changed sources and ambiguous candidates remain retained but ineligible. The
-selection engine then applies the approved per-field priorities; raw bytes and
-alternatives are not replaced by the selected display value.
+Changed source facts and unowned technical facts remain retained but ineligible.
+Known contradictory active file identities remain conflict evidence in an ownerless
+carrier; ScanEngine indexes its eligible claims so the disagreement reaches
+reconciliation and header fallback. The selection engine then applies the approved
+per-field priorities; raw bytes and
+alternatives are not replaced by the selected display value. Scanning and bin
+enrichment share the [compiled policy table](../src/canon/metadataselectionpolicy.cpp).
+Zero excludes a source from value selection while retaining its read state and
+comparable observations for agreement. Source qualification and header-read
+scheduling remain separate from display preference. The presentation adapter
+refreshes nonempty Canon cells as well as missing ones, so changing a policy for a
+new build applies consistently to table values, filters and CSV.
 
 Source read outcomes, property read states, agreement and selection are different
 facts. A sparse property with no observation is not proof of absence: its owning
@@ -288,3 +310,8 @@ column is logically appended after currently enabled columns, while the view pla
 it immediately after Duration. Toggling precompute details moves that logical index
 without changing base column indexes or its visual position. CSV also places
 Clip Duration immediately after Duration when enabled.
+
+Current associations establish package/mob membership. Exact SourceTrackID and
+SourceClip start-position qualification, applicable timecode branches and offsets,
+and relevant OMF slot-clock selection remain incomplete (F15/F16). Retained related
+timecodes and track rates do not claim a complete timeline evaluation.

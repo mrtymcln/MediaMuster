@@ -56,7 +56,7 @@ Proposed display examples, once validated from the file's recorded properties:
 - `Avid DNxUncompressed — 4:2:2, 16-bit S2.14 fixed point`
 - `Avid DNxUncompressed — RGB, 16-bit half float`
 
-Keep the underlying family, sample representation, per-component depths and component layout independently addressable. A formatted codec cell is derived presentation, not the sole stored fact. Preserve which associated descriptor/track supplied each observation; do not take the first picture descriptor anywhere in a file.
+Keep the underlying family, sample representation, per-component depths and component layout independently addressable. The formatted Compression cell is derived presentation, not the sole stored fact. Preserve which associated descriptor/track supplied each observation; do not take the first picture descriptor anywhere in a file.
 
 Agreed `Alpha` column values:
 
@@ -270,7 +270,7 @@ layout, depth or sampling. No nearest-rate matching is used.
 
 ## Agreed catalogue storage: handwritten C++ for v1
 
-Agreed Codec presentation: `NewDnx` first, then a verified `ReallyOldDnx` alias
+Agreed Compression presentation: `NewDnx` first, then a verified `ReallyOldDnx` alias
 in square brackets when applicable, for example `Avid DNx HQX [DNxHD 175x]`.
 Omit the bracketed alias if unavailable/inapplicable; no nearest-match substitute
 or invented numbered DNxHR name. Retain OldDnx separately as already agreed.

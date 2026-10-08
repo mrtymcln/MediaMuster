@@ -76,7 +76,8 @@ namespace Canon
 
 		QString identity(Property property)
 		{
-			if (!property || property->decoded.metaType().id() != QMetaType::QByteArray)
+			if (!property || property->state != PropertyReadState::Present ||
+				property->decoded.metaType().id() != QMetaType::QByteArray)
 				return {};
 			const auto bytes = property->decoded.toByteArray();
 			if (bytes.size() != 32 || std::all_of(bytes.cbegin(), bytes.cend(), [](char byte)
@@ -88,6 +89,34 @@ namespace Canon
 		bool samePartition(const AvidObject &left, const AvidObject &right)
 		{
 			return left.mxf && right.mxf && left.mxf->partitionOffset == right.mxf->partitionOffset;
+		}
+
+		QVector<ByteRange> referenceRanges(const RawProperty &property, qsizetype start)
+		{
+			QVector<ByteRange> result;
+			qint64 logical = 0, retained = 0;
+			for (const auto &range : property.locator.ranges)
+			{
+				if (range.offset < 0 || range.length < 0 || range.length > std::numeric_limits<qint64>::max() - logical ||
+					range.length > std::numeric_limits<qint64>::max() - range.offset)
+					return {};
+				const qint64 first = qMax<qint64>(start, logical);
+				const qint64 last = qMin<qint64>(start + 16, logical + range.length);
+				if (last > first)
+				{
+					result.append({range.offset + (first - logical), last - first});
+					retained += last - first;
+				}
+				logical += range.length;
+			}
+			return retained == 16 ? result : QVector<ByteRange>{};
+		}
+
+		bool sameRanges(const QVector<ByteRange> &left, const QVector<ByteRange> &right)
+		{
+			return left.size() == right.size() && std::equal(left.cbegin(), left.cend(), right.cbegin(),
+															 [](const auto &a, const auto &b)
+															 { return a.offset == b.offset && a.length == b.length; });
 		}
 
 		bool completeSet(const AvidObject &object)
@@ -156,6 +185,14 @@ namespace Canon
 
 		class Projector
 		{
+			struct Root
+			{
+				const AvidObject *preface = nullptr;
+				const AvidObject *storage = nullptr;
+				QVector<const AvidObject *> packages;
+				QVector<const AvidObject *> essence;
+			};
+
 		public:
 			Projector(const ParsedSource &source, const Cancellation &cancellation)
 				: m_source(source), m_cancellation(cancellation)
@@ -178,24 +215,26 @@ namespace Canon
 			{
 				if (m_source.container != ParsedSource::Container::Mxf)
 					return {};
+				discoverRoots();
 				QSet<ObjectHandle> projected;
 				QSet<QString> fileIdentities;
 				for (const auto &ecd : m_source.objects)
 				{
 					if (cancelled())
 						break;
-					if (!isClass(ecd, "EssenceContainerData"))
+					const auto *root = rootFor(ecd);
+					if (!root || !root->essence.contains(&ecd))
 						continue;
 					const auto *link = unique(ecd, "EssenceContainerData.LinkedPackageUID");
 					const QString fileId = identity(link);
-					if (fileId.isEmpty())
-						continue;
-					const auto packages = packagesWithId(ecd, fileId);
-					if (packages.size() != 1 || !isClass(*packages.first(), "SourcePackage"))
+					const auto packages = fileId.isEmpty() ? QVector<const AvidObject *>{} : packagesWithId(ecd, fileId);
+					if (fileId.isEmpty() || packages.size() != 1 || !isClass(*packages.first(), "SourcePackage") ||
+						identity(unique(*packages.first(), "GenericPackage.PackageUID")) != fileId)
 					{
-						m_result.diagnostics.append(QStringLiteral("MXF essence package %1 has no unique SourcePackage in partition %2.")
+						m_result.diagnostics.append(QStringLiteral("MXF active essence package %1 has no unique, readable SourcePackage identity in partition %2; its ownership is unresolved.")
 														.arg(fileId)
 														.arg(ecd.mxf->partitionOffset));
+						retainUnownedIdentity(ecd, *root);
 						continue;
 					}
 					const auto &package = *packages.first();
@@ -205,6 +244,8 @@ namespace Canon
 					fileIdentities.insert(fileId);
 					ProjectedFile file;
 					file.fileMobId = fileId;
+					remember(file, *root->preface);
+					remember(file, *root->storage);
 					remember(file, package);
 					remember(file, ecd);
 					observe(file, MediaProperty::FileMobId, m_source, ecd, *link, fileId,
@@ -222,6 +263,105 @@ namespace Canon
 
 		private:
 			bool cancelled() const { return m_cancellation.cancelled(); }
+
+			const Root *rootFor(const AvidObject &object) const
+			{
+				if (!object.mxf)
+					return nullptr;
+				const auto found = m_roots.constFind(object.mxf->partitionOffset);
+				return found == m_roots.cend() ? nullptr : &found.value();
+			}
+
+			void discoverRoots()
+			{
+				QHash<qint64, QVector<const AvidObject *>> partitions;
+				for (const auto &object : m_source.objects)
+					if (object.mxf)
+					{
+						auto &prefaces = partitions[object.mxf->partitionOffset];
+						if (isClass(object, "Preface"))
+							prefaces.append(&object);
+					}
+				for (auto partition = partitions.cbegin(); partition != partitions.cend() && !cancelled(); ++partition)
+				{
+					const auto &prefaces = partition.value();
+					if (prefaces.size() != 1 || !completeReferences(*prefaces.first(), "Preface.ContentStorage", "ContentStorage"))
+					{
+						m_result.diagnostics.append(QStringLiteral("MXF partition %1 has no unique complete Preface.ContentStorage root; file ownership is unresolved.").arg(partition.key()));
+						continue;
+					}
+					const auto *preface = prefaces.first();
+					const auto stores = children(*preface, "Preface.ContentStorage");
+					if (stores.size() != 1 ||
+						!completeReferences(*stores.first(), "ContentStorage.Packages", "GenericPackage", true) ||
+						!completeReferences(*stores.first(), "ContentStorage.EssenceContainerData", "EssenceContainerData", true))
+					{
+						m_result.diagnostics.append(QStringLiteral("MXF partition %1 has incomplete or invalid recorded ContentStorage membership; file ownership is unresolved.").arg(partition.key()));
+						continue;
+					}
+					m_roots.insert(partition.key(), {preface, stores.first(), children(*stores.first(), "ContentStorage.Packages"),
+													 children(*stores.first(), "ContentStorage.EssenceContainerData")});
+				}
+			}
+
+			void retainUnownedIdentity(const AvidObject &ecd, const Root &root)
+			{
+				ProjectedFile file;
+				remember(file, *root.preface);
+				remember(file, *root.storage);
+				remember(file, ecd);
+				for (const auto &property : root.preface->properties)
+					if (property.locator.name == QLatin1String("Preface.EssenceFileMobID"))
+					{
+						const auto id = identity(&property);
+						auto claim = observation(m_source, *root.preface, property, id, EvidenceBasis::Derived,
+												 QStringLiteral("Active root Preface file identity is retained alongside unresolved essence ownership."));
+						claim.eligible = !id.isEmpty();
+						file.evidence.observe(MediaProperty::FileMobId, std::move(claim));
+					}
+				QSet<QString> claims;
+				for (const auto &property : ecd.properties)
+					if (property.locator.name == QLatin1String("EssenceContainerData.LinkedPackageUID"))
+					{
+						const auto id = identity(&property);
+						if (!id.isEmpty())
+							claims.insert(id);
+						auto claim = observation(m_source, ecd, property, id, EvidenceBasis::Derived,
+												 QStringLiteral("Recorded active EssenceContainerData identity claim; complete file ownership was not established."));
+						claim.eligible = !id.isEmpty();
+						file.evidence.observe(MediaProperty::FileMobId, std::move(claim));
+					}
+				QSet<ObjectHandle> retained;
+				for (const auto &id : std::as_const(claims))
+					for (const auto *package : packagesWithId(ecd, id))
+						if (!retained.contains(package->handle))
+						{
+							retained.insert(package->handle);
+							remember(file, *package);
+							const bool directClaim = std::any_of(package->properties.cbegin(), package->properties.cend(),
+																 [&](const auto &property)
+																 { return property.locator.name == QLatin1String("GenericPackage.PackageUID") && claims.contains(identity(&property)); });
+							for (const auto &property : package->properties)
+								if (property.locator.name == QLatin1String("GenericPackage.PackageUID"))
+								{
+									const auto claim = identity(&property);
+									auto evidence = observation(m_source, *package, property, claim, EvidenceBasis::Derived,
+																QStringLiteral("Active recorded package identity is retained; contradictory, unreadable or nonunique ownership prevents selecting its metadata."));
+									evidence.eligible = directClaim && !claim.isEmpty();
+									file.evidence.observe(MediaProperty::FileMobId, std::move(evidence));
+								}
+						}
+				QSet<QString> knownIds;
+				for (const auto &claim : file.evidence.observations(MediaProperty::FileMobId))
+					if (claim.eligible && claim.readState == PropertyReadState::Present && !claim.value.toString().isEmpty())
+						knownIds.insert(claim.value.toString());
+				// A blank scalar ID is intentional. Differing recorded claims reach
+				// central reconciliation as conflict evidence, never as an owner.
+				if (knownIds.size() <= 1)
+					file.evidence.qualifyAll(false, SourceFreshness::Unknown);
+				if (!file.evidence.observations(MediaProperty::FileMobId).isEmpty())
+					m_result.files.append(std::move(file));
+			}
 
 			void remember(ProjectedFile &file, const AvidObject &object) const
 			{
@@ -250,39 +390,149 @@ namespace Canon
 			QVector<const AvidObject *> packagesWithId(const AvidObject &context, const QString &id) const
 			{
 				QVector<const AvidObject *> result;
-				for (const auto &object : m_source.objects)
+				const auto *root = rootFor(context);
+				if (!root)
+					return result;
+				for (const auto *object : root->packages)
 				{
 					if (cancelled())
 						break;
-					if (samePartition(context, object) && isClass(object, "GenericPackage") &&
-						identity(unique(object, "GenericPackage.PackageUID")) == id)
-						result.append(&object);
+					// Each known claim participates in uniqueness. A contradictory
+					// second PackageUID must not make this claimant disappear.
+					bool matches = false, sawIdentity = false, unreadableIdentity = false;
+					for (const auto &property : object->properties)
+						if (property.locator.name == QLatin1String("GenericPackage.PackageUID"))
+						{
+							sawIdentity = true;
+							const auto claim = identity(&property);
+							matches |= claim == id;
+							unreadableIdentity |= claim.isEmpty();
+						}
+					// A wholly unknown active identity cannot be ruled out as an
+					// additional owner. Known unrelated IDs remain unrelated.
+					if (matches || !sawIdentity || unreadableIdentity)
+						result.append(object);
 				}
 				return result;
 			}
 
-			bool completeReferences(const AvidObject &object, const char *name) const
+			bool completeReferences(const AvidObject &object, const char *name, const char *targetClass = nullptr,
+									bool uniqueMembers = false) const
 			{
 				const auto *property = unique(object, name);
 				if (!property)
 					return false;
-				const qsizetype expected = property->decoded.metaType().id() == QMetaType::QVariantList ? property->decoded.toList().size() : property->decoded.toByteArray().size() == 16 ? 1
-																																														   : -1;
-				QSet<ObjectHandle> targets;
-				qsizetype count = 0;
-				for (const auto *link : m_links.value(object.handle))
+				const auto links = m_links.value(object.handle);
+				QHash<qint64, QVector<const Relationship *>> linksByOffset;
+				for (const auto *link : links)
+					if (link->locator.name == QLatin1String(name) && !link->locator.ranges.isEmpty())
+						linksByOffset[link->locator.ranges.first().offset].append(link);
+				QSet<const Relationship *> matched;
+				for (const auto &recorded : object.properties)
 				{
-					if (cancelled())
-						return false;
-					if (link->locator.name != QLatin1String(name))
+					if (recorded.locator.name != QLatin1String(name))
 						continue;
-					const auto *target = m_objects.value(link->target);
-					if (!target || !samePartition(object, *target) || targets.contains(link->target))
+					const bool array = recorded.decoded.metaType().id() == QMetaType::QVariantList;
+					const auto references = array ? recorded.decoded.toList() : QVariantList{recorded.decoded};
+					if (!recorded.bytesRetained || (array && recorded.encoding.size() < 8) ||
+						(!array && recorded.encoding.size() != 16) ||
+						(array && ((recorded.encoding.size() - 8) % 16 != 0 ||
+								   (recorded.encoding.size() - 8) / 16 != references.size())))
 						return false;
-					targets.insert(link->target);
-					++count;
+					QSet<QByteArray> declared;
+					for (qsizetype index = 0; index < references.size(); ++index)
+					{
+						const auto &value = references[index];
+						const auto reference = value.toByteArray();
+						const qsizetype offset = array ? 8 + index * 16 : 0;
+						if (value.metaType().id() != QMetaType::QByteArray || reference.size() != 16 ||
+							reference == QByteArray(16, '\0') || (uniqueMembers && declared.contains(reference)) ||
+							recorded.encoding.sliced(offset, 16) != reference)
+							return false;
+						declared.insert(reference);
+						const auto ranges = referenceRanges(recorded, offset);
+						if (ranges.isEmpty())
+							return false;
+						const Relationship *found = nullptr;
+						for (const auto *link : linksByOffset.value(ranges.first().offset))
+						{
+							if (cancelled())
+								return false;
+							if (link->locator.name != QLatin1String(name) || !sameRanges(link->locator.ranges, ranges))
+								continue;
+							const auto *target = m_objects.value(link->target);
+							const auto *uid = target ? unique(*target, "InterchangeObject.InstanceUID") : nullptr;
+							if (found || !target || !samePartition(object, *target) || !uid ||
+								link->recordedReference.toByteArray() != reference || uid->decoded.toByteArray() != reference ||
+								(targetClass && !isClass(*target, targetClass)))
+								return false;
+							found = link;
+						}
+						if (!found || matched.contains(found))
+							return false;
+						matched.insert(found);
+					}
 				}
-				return count == expected;
+				return std::all_of(links.cbegin(), links.cend(),
+								   [&](const auto *link)
+								   { return link->locator.name != QLatin1String(name) || matched.contains(link); });
+			}
+
+			QVector<const AvidObject *> qualifiedChildren(const AvidObject &object, const char *name, const char *targetClass)
+			{
+				if (!has(object, name))
+					return {};
+				if (completeReferences(object, name, targetClass))
+					return children(object, name);
+				m_result.diagnostics.append(QStringLiteral("MXF object %1 has an incomplete or invalid %2 relationship; fields requiring that relationship remain unresolved.")
+												.arg(object.handle)
+												.arg(QString::fromLatin1(name)));
+				return {};
+			}
+
+			QVector<const AvidObject *> descriptors(const AvidObject &package)
+			{
+				if (!completeReferences(package, "SourcePackage.Descriptor"))
+					return {};
+				auto pending = children(package, "SourcePackage.Descriptor");
+				if (pending.size() != 1)
+					return {};
+				QVector<QPair<const AvidObject *, bool>> traversal{{pending.first(), false}};
+				QVector<const AvidObject *> result;
+				QHash<ObjectHandle, int> visited;
+				while (!traversal.isEmpty() && !cancelled())
+				{
+					const auto entry = traversal.takeLast();
+					const auto *descriptor = entry.first;
+					if (entry.second)
+					{
+						visited[descriptor->handle] = 2;
+						continue;
+					}
+					if (visited.value(descriptor->handle) == 1)
+						return {};
+					if (visited.value(descriptor->handle) == 2)
+						continue;
+					visited[descriptor->handle] = 1;
+					traversal.append({descriptor, true});
+					const bool knownClass = std::any_of(std::begin(Detail::MxfSchema::sets), std::end(Detail::MxfSchema::sets),
+														[&](const auto &set)
+														{ return descriptor->mxf->name == QLatin1String(set.name); });
+					if (!isClass(*descriptor, "GenericDescriptor") &&
+						(knownClass || (!has(*descriptor, "GenericSoundEssenceDescriptor.AudioSamplingRate") &&
+										!has(*descriptor, "GenericSoundEssenceDescriptor.SoundEssenceCompression") &&
+										!has(*descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding"))))
+						return {};
+					result.append(descriptor);
+					if (isClass(*descriptor, "MultipleDescriptor"))
+					{
+						if (!completeReferences(*descriptor, "MultipleDescriptor.SubDescriptorUIDs"))
+							return {};
+						for (const auto *child : children(*descriptor, "MultipleDescriptor.SubDescriptorUIDs"))
+							traversal.append({child, false});
+					}
+				}
+				return cancelled() ? QVector<const AvidObject *>{} : result;
 			}
 
 			void copy(ProjectedFile &file, const AvidObject &object, const char *name, MediaProperty field,
@@ -297,20 +547,52 @@ namespace Canon
 
 			QVector<const AvidObject *> componentGraph(const AvidObject &track) const
 			{
-				auto pending = children(track, "GenericTrack.Sequence");
+				if (!isClass(track, "GenericTrack") || !completeReferences(track, "GenericTrack.Sequence", "StructuralComponent"))
+					return {};
+				QVector<QPair<const AvidObject *, bool>> pending;
+				for (const auto *component : children(track, "GenericTrack.Sequence"))
+					pending.append({component, false});
 				QVector<const AvidObject *> result;
-				QSet<ObjectHandle> seen;
+				QHash<ObjectHandle, int> visited;
 				while (!pending.isEmpty() && !cancelled())
 				{
-					const auto *object = pending.takeLast();
-					if (seen.contains(object->handle))
+					const auto entry = pending.takeLast();
+					const auto *object = entry.first;
+					if (entry.second)
+					{
+						visited[object->handle] = 2;
 						continue;
-					seen.insert(object->handle);
+					}
+					if (visited.value(object->handle) == 1)
+						return {};
+					if (visited.value(object->handle) == 2)
+						continue;
+					visited[object->handle] = 1;
+					pending.append({object, true});
 					result.append(object);
-					pending += children(*object, "Sequence.StructuralComponents");
-					pending += children(*object, "EssenceGroup.Choices");
+					if (isClass(*object, "SourceClip"))
+					{
+						const auto *id = unique(*object, "SourceClip.SourcePackageID");
+						if (!id || id->decoded.metaType().id() != QMetaType::QByteArray || id->decoded.toByteArray().size() != 32)
+							return {};
+					}
+					if (isClass(*object, "Sequence"))
+					{
+						if (!completeReferences(*object, "Sequence.StructuralComponents", "StructuralComponent"))
+							return {};
+						for (const auto *component : children(*object, "Sequence.StructuralComponents"))
+							pending.append({component, false});
+					}
+					if (isClass(*object, "EssenceGroup"))
+					{
+						if (!completeReferences(*object, "EssenceGroup.Choices", "StructuralComponent") ||
+							(has(*object, "EssenceGroup.StillFrame") && !completeReferences(*object, "EssenceGroup.StillFrame", "SourceClip")))
+							return {};
+						for (const auto *component : children(*object, "EssenceGroup.Choices") + children(*object, "EssenceGroup.StillFrame"))
+							pending.append({component, false});
+					}
 				}
-				return result;
+				return cancelled() ? QVector<const AvidObject *>{} : result;
 			}
 
 			bool referencesFile(const AvidObject &track, const QString &fileId) const
@@ -323,60 +605,47 @@ namespace Canon
 
 			MediaRate projectRate(const AvidObject &package) const
 			{
-				MediaRate result;
-				for (const auto &object : m_source.objects)
-				{
-					if (cancelled())
-						return {};
-					if (!samePartition(package, object) || !isClass(object, "Preface"))
-						continue;
-					const MediaRate next = rate(unique(object, "Preface.ProjectEditRate"));
-					if (next.valid())
-					{
-						if (result.valid() && !result.sameRate(next))
-							return {};
-						result = next;
-					}
-				}
-				return result;
+				const auto *root = rootFor(package);
+				return root ? rate(unique(*root->preface, "Preface.ProjectEditRate")) : MediaRate{};
 			}
 
 			void projectFile(ProjectedFile &file, const AvidObject &package)
 			{
-				for (const auto &preface : m_source.objects)
+				const auto *root = rootFor(package);
+				if (!root)
+					return;
+				const auto &preface = *root->preface;
+				copy(file, preface, "Preface.ProjectName", MediaProperty::Project);
+				for (const auto &property : preface.properties)
 				{
 					if (cancelled())
 						return;
-					if (!samePartition(package, preface) || !isClass(preface, "Preface"))
+					if (property.locator.name != QLatin1String("Preface.EssenceFileMobID"))
 						continue;
-					remember(file, preface);
-					copy(file, preface, "Preface.ProjectName", MediaProperty::Project);
-					const auto *id = unique(preface, "Preface.EssenceFileMobID");
-					const auto recordedId = identity(id);
+					const auto recordedId = identity(&property);
+					auto claim = observation(m_source, preface, property, recordedId, EvidenceBasis::Derived);
+					claim.eligible = !recordedId.isEmpty();
+					file.evidence.observe(MediaProperty::FileMobId, std::move(claim));
 					if (!recordedId.isEmpty())
 					{
-						observe(file, MediaProperty::FileMobId, m_source, preface, *id, recordedId, EvidenceBasis::Derived);
 						if (recordedId != file.fileMobId)
 							m_result.diagnostics.append(QStringLiteral("MXF Preface.EssenceFileMobID disagrees with the essence-container package in partition %1; both identities are retained.").arg(preface.mxf->partitionOffset));
 					}
 				}
 				projectAttributes(file, package);
 				projectOrigins(file, package);
-				auto pending = children(package, "SourcePackage.Descriptor");
-				QSet<ObjectHandle> seen;
-				while (!pending.isEmpty() && !cancelled())
+				const auto ownedDescriptors = descriptors(package);
+				if (ownedDescriptors.isEmpty())
+					m_result.diagnostics.append(QStringLiteral("MXF SourcePackage object %1 has no complete valid descriptor graph; its technical fields remain unresolved.").arg(package.handle));
+				for (const auto *descriptor : ownedDescriptors)
 				{
-					const auto *descriptor = pending.takeLast();
-					if (seen.contains(descriptor->handle))
-						continue;
-					seen.insert(descriptor->handle);
+					if (cancelled())
+						return;
 					remember(file, *descriptor);
-					if (isClass(*descriptor, "MultipleDescriptor"))
-						pending += children(*descriptor, "MultipleDescriptor.SubDescriptorUIDs");
-					else if (isClass(*descriptor, "FileDescriptor") ||
-							 has(*descriptor, "GenericSoundEssenceDescriptor.AudioSamplingRate") ||
-							 has(*descriptor, "GenericSoundEssenceDescriptor.SoundEssenceCompression") ||
-							 has(*descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding"))
+					if (!isClass(*descriptor, "MultipleDescriptor") && (isClass(*descriptor, "FileDescriptor") ||
+																		has(*descriptor, "GenericSoundEssenceDescriptor.AudioSamplingRate") ||
+																		has(*descriptor, "GenericSoundEssenceDescriptor.SoundEssenceCompression") ||
+																		has(*descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding")))
 						projectDescriptor(file, package, *descriptor);
 				}
 				projectMasters(file, package);
@@ -384,8 +653,8 @@ namespace Canon
 
 			void projectAttributes(ProjectedFile &file, const AvidObject &package)
 			{
-				auto pending = children(package, "GenericPackage.MobAttributeList");
-				pending += children(package, "GenericPackage.UserComments");
+				auto pending = qualifiedChildren(package, "GenericPackage.MobAttributeList", "TaggedValue");
+				pending += qualifiedChildren(package, "GenericPackage.UserComments", "TaggedValue");
 				QSet<ObjectHandle> seen;
 				while (!pending.isEmpty() && !cancelled())
 				{
@@ -414,11 +683,11 @@ namespace Canon
 							observe(file, MediaProperty::SourceContainer, m_source, *attribute, *value, text, EvidenceBasis::Derived,
 									QStringLiteral("Avid import-settings Video tagged value; not this MXF file's container."));
 						else if (key == QLatin1String("_IMPORTSETTING") && text == QLatin1String("__AttributeList") &&
-								 !children(*attribute, "TaggedValue.TaggedValueAttributeList").isEmpty())
+								 !qualifiedChildren(*attribute, "TaggedValue.TaggedValueAttributeList", "TaggedValue").isEmpty())
 							observe(file, MediaProperty::Imported, m_source, *attribute, *value, true, EvidenceBasis::Derived,
 									QStringLiteral("Linked package contains the recorded _IMPORTSETTING attribute-list object."));
 					}
-					pending += children(*attribute, "TaggedValue.TaggedValueAttributeList");
+					pending += qualifiedChildren(*attribute, "TaggedValue.TaggedValueAttributeList", "TaggedValue");
 				}
 			}
 
@@ -432,9 +701,9 @@ namespace Canon
 					if (seen.contains(origin->handle))
 						continue;
 					seen.insert(origin->handle);
-					for (const auto *descriptor : children(*origin, "SourcePackage.Descriptor"))
+					for (const auto *descriptor : descriptors(*origin))
 						if (isClass(*descriptor, "ImportDescriptor"))
-							for (const auto *locator : children(*descriptor, "GenericDescriptor.Locators"))
+							for (const auto *locator : qualifiedChildren(*descriptor, "GenericDescriptor.Locators", "Locator"))
 							{
 								remember(file, *origin);
 								remember(file, *descriptor);
@@ -445,14 +714,15 @@ namespace Canon
 											QUrl(path->decoded.toString()).fileName(QUrl::FullyDecoded), EvidenceBasis::Derived,
 											QStringLiteral("Filename of the explicitly linked import-source URL, with URI escapes decoded once. The recorded URL remains unchanged."));
 							}
-					for (const auto *track : children(*origin, "GenericPackage.Tracks"))
+					for (const auto *track : qualifiedChildren(*origin, "GenericPackage.Tracks", "GenericTrack"))
 						for (const auto *component : componentGraph(*track))
 						{
 							const auto id = identity(unique(*component, "SourceClip.SourcePackageID"));
 							if (id.isEmpty())
 								continue;
 							const auto matches = packagesWithId(*origin, id);
-							if (matches.size() == 1 && isClass(*matches.first(), "SourcePackage"))
+							if (matches.size() == 1 && isClass(*matches.first(), "SourcePackage") &&
+								identity(unique(*matches.first(), "GenericPackage.PackageUID")) == id)
 								pending.append(matches.first());
 						}
 				}
@@ -470,7 +740,7 @@ namespace Canon
 								   has(descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding");
 				const bool complete = completeSet(descriptor);
 				recordPropertyCoverage(file, MediaProperty::Kind, m_source, descriptor,
-					{"InterchangeObject.InstanceUID"}, complete);
+									   {"InterchangeObject.InstanceUID"}, complete);
 				if (audio && video)
 				{
 					m_result.diagnostics.append(QStringLiteral("MXF descriptor object %1 has both sound and picture properties; its technical projection is unresolved.").arg(descriptor.handle));
@@ -496,33 +766,34 @@ namespace Canon
 				const char *codingName = audio ? "GenericSoundEssenceDescriptor.SoundEssenceCompression" : "GenericPictureEssenceDescriptor.PictureEssenceCoding";
 				// Missing, malformed and not-yet-interpreted inputs have different
 				// outcomes. A null unique() result alone cannot establish absence.
-				recordPropertyCoverage(file, MediaProperty::Codec, m_source, descriptor, {codingName}, complete);
+				recordPropertyCoverage(file, MediaProperty::Compression, m_source, descriptor, {codingName}, complete);
 				recordPropertyCoverage(file, MediaProperty::FileDuration, m_source, descriptor,
-					{"FileDescriptor.ContainerDuration", "FileDescriptor.SampleRate"}, complete);
+									   {"FileDescriptor.ContainerDuration", "FileDescriptor.SampleRate"}, complete);
 				const char *depthName = audio ? "GenericSoundEssenceDescriptor.QuantizationBits" : "CDCIEssenceDescriptor.ComponentDepth";
 				for (const auto field : {MediaProperty::BitDepth, MediaProperty::SampleFormat, MediaProperty::ComponentDepth})
 					recordPropertyCoverage(file, field, m_source, descriptor,
-						{depthName, "RGBAEssenceDescriptor.PixelLayout"}, complete);
+										   {depthName, "RGBAEssenceDescriptor.PixelLayout"}, complete);
 				recordPropertyCoverage(file, MediaProperty::Alpha, m_source, descriptor,
-					{"CDCIEssenceDescriptor.AlphaSampleDepth", "RGBAEssenceDescriptor.PixelLayout"}, complete);
+									   {"CDCIEssenceDescriptor.AlphaSampleDepth", "RGBAEssenceDescriptor.PixelLayout"}, complete);
 				if (video)
 				{
 					recordPropertyCoverage(file, MediaProperty::FrameRate, m_source, descriptor,
-						{"FileDescriptor.SampleRate"}, complete);
+										   {"FileDescriptor.SampleRate"}, complete);
 					recordPropertyCoverage(file, MediaProperty::Resolution, m_source, descriptor,
-						{"GenericPictureEssenceDescriptor.StoredWidth", "GenericPictureEssenceDescriptor.StoredHeight",
-						 "GenericPictureEssenceDescriptor.SampledWidth", "GenericPictureEssenceDescriptor.SampledHeight",
-						 "GenericPictureEssenceDescriptor.DisplayWidth", "GenericPictureEssenceDescriptor.DisplayHeight",
-						 "GenericPictureEssenceDescriptor.FrameLayout"}, complete);
+										   {"GenericPictureEssenceDescriptor.StoredWidth", "GenericPictureEssenceDescriptor.StoredHeight",
+											"GenericPictureEssenceDescriptor.SampledWidth", "GenericPictureEssenceDescriptor.SampledHeight",
+											"GenericPictureEssenceDescriptor.DisplayWidth", "GenericPictureEssenceDescriptor.DisplayHeight",
+											"GenericPictureEssenceDescriptor.FrameLayout"},
+										   complete);
 				}
 				if (audio)
 				{
 					recordPropertyCoverage(file, MediaProperty::SampleRate, m_source, descriptor,
-						{"GenericSoundEssenceDescriptor.AudioSamplingRate"}, complete);
+										   {"GenericSoundEssenceDescriptor.AudioSamplingRate"}, complete);
 					file.evidence.recordReadStatus(MediaProperty::Resolution, m_source.snapshot,
-						QStringLiteral("object:%1").arg(descriptor.handle),
-						{PropertyReadState::NotRead, PropertyReadReason::None, PropertyApplicability::NotApplicable,
-						 QStringLiteral("This sound descriptor does not describe a picture raster")});
+												   QStringLiteral("object:%1").arg(descriptor.handle),
+												   {PropertyReadState::NotRead, PropertyReadReason::None, PropertyApplicability::NotApplicable,
+													QStringLiteral("This sound descriptor does not describe a picture raster")});
 				}
 				copy(file, descriptor, codingName, MediaProperty::CompressionLabel);
 				const auto *coding = unique(descriptor, codingName);
@@ -557,7 +828,7 @@ namespace Canon
 					projectCodec(file, descriptor, *coding, label, unitsRate);
 				else if (audio && isClass(descriptor, "WaveAudioDescriptor") && complete && !has(descriptor, codingName) && anchor)
 				{
-					observe(file, MediaProperty::Codec, m_source, descriptor, *anchor, QString::fromLatin1(kPcmAudioName), EvidenceBasis::Derived,
+					observe(file, MediaProperty::Compression, m_source, descriptor, *anchor, QString::fromLatin1(kPcmAudioName), EvidenceBasis::Derived,
 							QStringLiteral("WaveAudioDescriptor/AES3AudioDescriptor establishes PCM when SoundEssenceCompression is absent."));
 					observe(file, MediaProperty::SampleFormat, m_source, descriptor, *anchor, QStringLiteral("Integer"), EvidenceBasis::Derived,
 							QStringLiteral("The linked Wave/AES3 descriptor records PCM; no contradictory sound coding property is present."));
@@ -769,14 +1040,19 @@ namespace Canon
 					if (!depth.isEmpty() && !format.isEmpty())
 						codec += QStringLiteral(" — %1 %2").arg(depth, format);
 				}
-				observe(file, MediaProperty::Codec, m_source, descriptor, coding, codec, EvidenceBasis::Derived,
+				observe(file, MediaProperty::Compression, m_source, descriptor, coding, codec, EvidenceBasis::Derived,
 						QStringLiteral("Coding-label lookup; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available."));
 			}
 
 			void projectTrackDuration(ProjectedFile &file, const AvidObject &package,
 									  const AvidObject &descriptor, MediaRate displayRate) const
 			{
+				if (!completeReferences(package, "GenericPackage.Tracks", "GenericTrack"))
+					return;
 				const auto linkedTrack = integer(unique(descriptor, "FileDescriptor.LinkedTrackID"));
+				if (has(descriptor, "FileDescriptor.LinkedTrackID") &&
+					(!linkedTrack || *linkedTrack < 0 || *linkedTrack > std::numeric_limits<quint32>::max()))
+					return;
 				const auto tracks = children(package, "GenericPackage.Tracks");
 				if (!linkedTrack && tracks.size() != 1)
 					return;
@@ -786,6 +1062,8 @@ namespace Canon
 						return;
 					if (linkedTrack && integer(unique(*track, "GenericTrack.TrackID")) != linkedTrack)
 						continue;
+					if (componentGraph(*track).isEmpty())
+						return;
 					const auto clock = rate(unique(*track, "Track.EditRate"));
 					for (const auto *sequence : children(*track, "GenericTrack.Sequence"))
 					{
@@ -801,20 +1079,17 @@ namespace Canon
 
 			QVector<const AvidObject *> timecodes(const AvidObject &package) const
 			{
-				QVector<const AvidObject *> pending, result;
+				if (!completeReferences(package, "GenericPackage.Tracks", "GenericTrack"))
+					return {};
+				QVector<const AvidObject *> result;
 				for (const auto *track : children(package, "GenericPackage.Tracks"))
-					pending += children(*track, "GenericTrack.Sequence");
-				QSet<ObjectHandle> visited;
-				while (!pending.isEmpty() && !cancelled())
 				{
-					const auto *component = pending.takeLast();
-					if (visited.contains(component->handle))
-						continue;
-					visited.insert(component->handle);
-					if (isClass(*component, "TimecodeComponent"))
-						result.append(component);
-					else if (isClass(*component, "Sequence"))
-						pending += children(*component, "Sequence.StructuralComponents");
+					const auto components = componentGraph(*track);
+					if (components.isEmpty())
+						return {};
+					for (const auto *component : components)
+						if (isClass(*component, "TimecodeComponent") && !result.contains(component))
+							result.append(component);
 				}
 				return result;
 			}
@@ -841,22 +1116,56 @@ namespace Canon
 				QVariantList durations;
 				projectDropFrame(file, package);
 				const auto displayRate = projectRate(package);
-				for (const auto &master : m_source.objects)
+				const auto *root = rootFor(package);
+				if (!root)
+					return;
+				for (const auto *recordedMaster : root->packages)
 				{
+					const auto &master = *recordedMaster;
 					if (cancelled())
 						return;
-					if (!samePartition(package, master) || !isClass(master, "MaterialPackage"))
+					if (!isClass(master, "MaterialPackage"))
 						continue;
+					if (!completeReferences(master, "GenericPackage.Tracks", "GenericTrack"))
+					{
+						m_result.diagnostics.append(QStringLiteral("MXF active MaterialPackage object %1 has incomplete or invalid Tracks; its file association and master fields remain unresolved.").arg(master.handle));
+						continue;
+					}
 					QVector<const AvidObject *> referencingTracks;
+					bool complete = true;
 					for (const auto *track : children(master, "GenericPackage.Tracks"))
+					{
+						if (componentGraph(*track).isEmpty())
+						{
+							complete = false;
+							break;
+						}
 						if (referencesFile(*track, file.fileMobId))
 							referencingTracks.append(track);
+					}
+					if (!complete)
+					{
+						m_result.diagnostics.append(QStringLiteral("MXF active MaterialPackage object %1 has an incomplete component graph; its file association and master fields remain unresolved.").arg(master.handle));
+						continue;
+					}
 					if (referencingTracks.isEmpty())
 						continue;
 					const auto *id = unique(master, "GenericPackage.PackageUID");
 					const auto masterId = identity(id);
 					if (masterId.isEmpty() || packagesWithId(master, masterId).size() != 1)
+					{
+						remember(file, master);
+						for (const auto &property : master.properties)
+							if (property.locator.name == QLatin1String("GenericPackage.PackageUID"))
+							{
+								auto claim = observation(m_source, master, property, identity(&property), EvidenceBasis::Derived,
+														 QStringLiteral("Recorded active MaterialPackage identity; nonunique or contradictory identity prevents establishing its master association."));
+								claim.eligible = false;
+								file.evidence.observe(MediaProperty::MasterMobId, std::move(claim));
+							}
+						m_result.diagnostics.append(QStringLiteral("MXF active MaterialPackage object %1 has a nonunique or contradictory identity; its master fields remain unresolved.").arg(master.handle));
 						continue;
+					}
 					remember(file, master);
 					if (!file.masterMobIds.contains(masterId))
 						file.masterMobIds.append(masterId);
@@ -890,13 +1199,14 @@ namespace Canon
 						}
 					}
 				}
-				for (const auto &preface : m_source.objects)
+				const auto &preface = *root->preface;
+				for (const auto &recorded : preface.properties)
 				{
 					if (cancelled())
 						return;
-					if (!samePartition(package, preface) || !isClass(preface, "Preface"))
+					if (recorded.locator.name != QLatin1String("Preface.MasterMobID"))
 						continue;
-					const auto *property = unique(preface, "Preface.MasterMobID");
+					const auto *property = &recorded;
 					const auto masterId = identity(property);
 					if (masterId.isEmpty())
 						continue;
@@ -995,7 +1305,9 @@ namespace Canon
 						evidence.importAttribute = Import::Present;
 					}
 				}
-				if (evidence.importAttribute == Import::Present && completeReferences(master, "GenericPackage.Tracks"))
+				// A repeated track reference cannot establish an independent track
+				// count. Array multiplicity remains retained without set inference.
+				if (evidence.importAttribute == Import::Present && completeReferences(master, "GenericPackage.Tracks", "GenericTrack", true))
 				{
 					int videos = 0;
 					bool complete = true;
@@ -1035,6 +1347,7 @@ namespace Canon
 			const Cancellation &m_cancellation;
 			QHash<ObjectHandle, const AvidObject *> m_objects;
 			QHash<ObjectHandle, QVector<const Relationship *>> m_links;
+			QHash<qint64, Root> m_roots;
 			Projection m_result;
 		};
 	}

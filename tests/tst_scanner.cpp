@@ -372,7 +372,7 @@ void TestScanner::optional_read_only_real_scan()
 		ids.insert(file.kelpieId);
 		paths.insert(file.mediaFilePath);
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
-		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"mobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.codec}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Codec).size())}});
+		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"mobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Compression).size())}});
 	}
 	QJsonArray issueDetails;
 	for (const auto &issue : qvariant_cast<QVector<ScanIssue>>(issues.first().first()))
@@ -435,7 +435,7 @@ void TestScanner::canon_extension_discovery_keeps_copies_and_local_reference_iss
 	{
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
 		QCOMPARE(file.scanStamp.mobId, file.fileMobId);
-		for (const auto &observation : file.evidence.observations(MediaProperty::Codec))
+		for (const auto &observation : file.evidence.observations(MediaProperty::Compression))
 			if (observation.snapshot->path.endsWith("future.MDB"))
 				readRenamedDatabase = true;
 	}
@@ -507,7 +507,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 
 	// From MXF (Stage 2)
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-	QVERIFY(!mf.codec.isEmpty());
+	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
 	QVERIFY(mf.channels > 0);
 
@@ -828,6 +828,7 @@ namespace
 		w.set(master, "OMFI:MOBJ:MobID", kLadderMob);
 		w.setString(master, "OMFI:CPNT:Name", clipName);
 		w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
+		w.setHandles(1, "OMFI:ObjectSpine", {master});
 		return w.build();
 	}
 
@@ -1296,17 +1297,30 @@ namespace
 			w.setRational(omf2 ? track : mob, omf2 ? "OMFI:MSLT:EditRate" : "OMFI:CPNT:EditRate", 25, 1);
 			w.set(clip, "OMFI:SCLP:SourceID", TestOmf::uid(mob == master ? fileUid : 3));
 		}
+		const QVector<quint32> mobs = includeMaster
+			? QVector<quint32>{master, file} : QVector<quint32>{file};
+		if (omf2)
+		{
+			w.setHandles(1, "OMFI:HEAD:Mobs", mobs);
+			w.setHandles(1, "OMFI:HEAD:MediaData", {data});
+		}
+		else
+			w.setHandles(1, "OMFI:ObjectSpine", includeMaster
+				? QVector<quint32>{master, file, data} : QVector<quint32>{file, data});
 		return w.build();
 	}
 
 	QByteArray incompleteWaveOmf(quint32 fileUid)
 	{
 		TypedBentoBuilder w;
-		const quint32 head = w.addObject("HEAD"), file = w.addObject("MOBJ"), desc = w.addObject("WAVD");
+		const quint32 head = w.addObject("HEAD"), file = w.addObject("MOBJ");
+		const quint32 desc = w.addObject("WAVD"), data = w.addObject("WAVE");
 		w.setImmediate(head, "OMFI:Version", QByteArray::fromHex("0100"));
 		w.set(file, "OMFI:MOBJ:MobID", TestOmf::uid(fileUid));
 		w.setHandle(file, "OMFI:MOBJ:PhysicalMedia", desc);
-		// File identity and a selected descriptor exist, but neither technical
+		w.set(data, "OMFI:WAVE:MobID", TestOmf::uid(fileUid));
+		w.setHandles(head, "OMFI:ObjectSpine", {file, data});
+		// Root-listed MediaData establishes physical identity, but neither technical
 		// properties nor a master establish usable metadata or classification.
 		return w.build();
 	}
@@ -1349,6 +1363,7 @@ namespace
 		w.setU32(pcm, "OMFI:MDFL:Length", 96000);
 		w.setU16(pcm, "OMFI:MDAU:BitsPerSample", 24);
 		w.setU16(pcm, "OMFI:MDAU:NumChannels", 1);
+		w.setHandles(head, "OMFI:ObjectSpine", {master, file});
 		return w.build();
 	}
 
@@ -1490,7 +1505,7 @@ void TestScanner::database_described_row_survives_unreadable_header()
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.type, MediaFile::Type::Media);
-	QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+	QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 	QCOMPARE(mf.sampleRate, 48000);
 	QVERIFY(mf.channels > 0);
 	QVERIFY(mf.duration.displayFrames() > 0);
@@ -1534,6 +1549,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	w.setU32(desc, "OMFI:MDFL:Length", 47040);
 	w.setU16(desc, "OMFI:MDAU:BitsPerSample", 24);
 	w.setU16(desc, "OMFI:MDAU:NumChannels", 2);
+	w.setHandles(head, "OMFI:ObjectSpine", {master, file});
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), w.build()));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
 						 singlePmr(kToneName.toLatin1(), kToneFileId, masterId, "Duration project", kToneModified)));
@@ -1590,7 +1606,7 @@ void TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
 	QCOMPARE(differentTime.first().project, QStringLiteral("block 1729"));
 	QVERIFY(!differentTime.first().originalBin.isEmpty());
 	QCOMPARE(differentTime.first().kind, MediaFile::Kind::Audio);
-	QCOMPARE(normal.first().codec, differentTime.first().codec);
+	QCOMPARE(normal.first().compression, differentTime.first().compression);
 	QCOMPARE(normal.first().sampleRate, differentTime.first().sampleRate);
 	QCOMPARE(normal.first().channels, differentTime.first().channels);
 	QCOMPARE(normal.first().bitDepth, differentTime.first().bitDepth);
@@ -1629,9 +1645,9 @@ void TestScanner::unreadable_header_keeps_qualified_database_fallback()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 	QVERIFY(headerWasRead(mf));
-	QCOMPARE(mf.codec, QStringLiteral("PCM"));
+	QCOMPARE(mf.compression, QStringLiteral("PCM"));
 	QCOMPARE(mf.sampleRate, 48000);
-	for (const auto &observation : mf.evidence.observations(MediaProperty::Codec))
+	for (const auto &observation : mf.evidence.observations(MediaProperty::Compression))
 		QCOMPARE(observation.freshness, SourceFreshness::Unknown);
 	QCOMPARE(mf.clipName, kToneClip);
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
@@ -1658,7 +1674,7 @@ void TestScanner::zero_pmr_timestamp_does_not_certify_database_freshness()
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.type, MediaFile::Type::Media);
-	QCOMPARE(mf.codec, QStringLiteral("PCM"));
+	QCOMPARE(mf.compression, QStringLiteral("PCM"));
 	QCOMPARE(mf.sampleRate, 48000);
 	QCOMPARE(mf.clipName, kToneClip); // The unread header has made no identity claim.
 }
@@ -1681,6 +1697,7 @@ void TestScanner::current_render_with_missing_project_survives_failed_header_rea
 	w.setU32(pcm, "OMFI:MDFL:Length", 96000);
 	w.setU16(pcm, "OMFI:MDAU:BitsPerSample", 24);
 	w.setU16(pcm, "OMFI:MDAU:NumChannels", 1);
+	w.setHandles(1, "OMFI:ObjectSpine", {master, file});
 	const QString dbPath = folder + QStringLiteral("/msmMMOB.mdb");
 	QVERIFY(tryWriteFile(dbPath, w.build()));
 	const MdbDatabase db = MdbParser::load(dbPath);
@@ -1724,9 +1741,11 @@ void TestScanner::header_master_lookup_uses_canonical_identity()
 	const QByteArray correct = QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613");
 	const QByteArray other = QByteArray::fromHex("060a2b340101010501010f1013000000ea7d46d21174900691901e6a605d3613");
 	TypedBentoBuilder w;
+	QVector<quint32> masters;
 	const auto addMaster = [&](const QByteArray &id, const QByteArray &binName)
 	{
 		const quint32 master = w.addObject("MOBJ");
+		masters.append(master);
 		w.set(master, "OMFI:MOBJ:MobID", id);
 		w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
 		w.setString(master, "OMFI:CPNT:Name", binName);
@@ -1742,6 +1761,7 @@ void TestScanner::header_master_lookup_uses_canonical_identity()
 		addMaster(correct, "Correct clip");
 	if (otherPresent)
 		addMaster(other, "Different clip");
+	w.setHandles(1, "OMFI:ObjectSpine", masters);
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), w.build()));
 	const auto rows = runScan(tmp.path());
 	QCOMPARE(rows.size(), 1);
@@ -1785,7 +1805,7 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	QCOMPARE(mf.type, MediaFile::Type::Precompute);
 	QCOMPARE(mf.precomputeCategory, header.precomputeCategory);
 	QCOMPARE(mf.sampleRate, 0);
-	QCOMPARE(mf.codec, header.codec);
+	QCOMPARE(mf.compression, header.codec);
 }
 
 void TestScanner::precompute_category_from_current_database_data()
@@ -1922,7 +1942,13 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	// Identity does not require a known usage classification, but the master
 	// still needs a real path to the file: track -> EssenceGroup -> SourceClip.
 	const QByteArray sourceReference = QByteArray::fromHex("11010020") + kToneFileId;
-	const QByteArray sets = set(0x36, material) +
+	const QByteArray sets =
+			set(0x2f, QByteArray::fromHex("3c0a0010") + QByteArray(16, 'p') +
+						  QByteArray::fromHex("3b030010") + QByteArray(16, 'h')) +
+			set(0x18, QByteArray::fromHex("3c0a0010") + QByteArray(16, 'h') +
+						  QByteArray::fromHex("190100280000000200000010") + QByteArray(16, 'm') + QByteArray(16, 's') +
+						  QByteArray::fromHex("190200180000000100000010") + QByteArray(16, 'e')) +
+			set(0x36, material) +
 							set(0x3b, QByteArray::fromHex("3c0a0010") + QByteArray(16, 't') +
 										  QByteArray::fromHex("48030010") + QByteArray(16, 'g') +
 										  QByteArray::fromHex("4b0100080000001900000001")) +
@@ -1952,6 +1978,9 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	};
 	const QVector<QPair<quint16, QByteArray>> mappings{
 		{0x3c0a, QByteArray::fromHex("060e2b34010101010101150200000000")},
+		{0x3b03, QByteArray::fromHex("060e2b34010101020601010402010000")},
+		{0x1901, QByteArray::fromHex("060e2b34010101020601010405010000")},
+		{0x1902, QByteArray::fromHex("060e2b34010101020601010405020000")},
 		{0x4401, QByteArray::fromHex("060e2b34010101010101151000000000")},
 		{0x4408, QByteArray::fromHex("060e2b34010101070501010800000000")},
 		{0x4402, QByteArray::fromHex("060e2b34010101010103030201000000")},
@@ -2019,6 +2048,7 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	db.setU32(pcm, "OMFI:MDFL:Length", 96000);
 	db.setU16(pcm, "OMFI:MDAU:BitsPerSample", 24);
 	db.setU16(pcm, "OMFI:MDAU:NumChannels", 1);
+	db.setHandles(1, "OMFI:ObjectSpine", {master, file});
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), db.build()));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
 						 singlePmr("unknown-usage.mxf", fileId, masterId, {}, kToneModified)));
@@ -2047,7 +2077,7 @@ void TestScanner::folder_without_databases_reads_every_header()
 	QCOMPARE(mf.clipName, kToneClip);
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-	QVERIFY(!mf.codec.isEmpty());
+	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
 }
 
@@ -2075,7 +2105,7 @@ void TestScanner::mpeg_audio_falls_back_to_its_header()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-	QVERIFY2(mf.codec.contains(QStringLiteral("MP2")), qPrintable(mf.codec));
+	QVERIFY2(mf.compression.contains(QStringLiteral("MP2")), qPrintable(mf.compression));
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 	QVERIFY(!mf.originalBin.isEmpty()); // identity still from the MDB
 }
@@ -2196,8 +2226,8 @@ namespace
 		QVERIFY(mf.omfEra);
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 		QCOMPARE(mf.type, MediaFile::Type::Media);
-		// Codec describes the recorded essence. The OMF/RIFF/AIFF container stays separate.
-		QCOMPARE(mf.codec, QStringLiteral("PCM"));
+		// Compression describes the recorded essence. The OMF/RIFF/AIFF container stays separate.
+		QCOMPARE(mf.compression, QStringLiteral("PCM"));
 		QCOMPARE(mf.clipName, clip);
 		QCOMPARE(mf.project, kOmfProject);
 		QCOMPARE(mf.originalBin, bin);
@@ -2405,7 +2435,7 @@ void TestScanner::stale_omf_database_does_not_describe_replacement()
 	QVERIFY(!hasDatabaseFileEvidence(rows.first()));
 	QVERIFY(headerWasRead(rows.first()));
 	QCOMPARE(rows.first().fileMobId, OmfUid::toIdText(TestOmf::uid(4)));
-	QCOMPARE(rows.first().codec, QStringLiteral("PCM"));
+	QCOMPARE(rows.first().compression, QStringLiteral("PCM"));
 	QCOMPARE(rows.first().sampleRate, 48000);
 }
 
@@ -2452,7 +2482,7 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 	QCOMPARE(rows.first().fileMobId, header.fileMobId);
 	QCOMPARE(hasDatabaseFileEvidence(rows.first()), fileUid == 2);
 	QVERIFY(headerWasRead(rows.first()));
-	QCOMPARE(rows.first().codec, QStringLiteral("PCM"));
+	QCOMPARE(rows.first().compression, QStringLiteral("PCM"));
 	QCOMPARE(rows.first().sampleRate, 48000);
 }
 
@@ -2592,7 +2622,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
 		QCOMPARE(mf.mediaFolderName, kOmfFolder);
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-		QCOMPARE(mf.codec, QStringLiteral("PCM")); // Codec and container are distinct facts.
+		QCOMPARE(mf.compression, QStringLiteral("PCM")); // Compression and container are distinct facts.
 		QCOMPARE(mf.clipName, kOmfWavClip);
 		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 		QCOMPARE(mf.project, kOmfProject);
@@ -2615,7 +2645,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.fileMobId, kOmfWavFileMob);
 		QCOMPARE(mf.masterMobId, kOmfWavMasterMob);
 		QVERIFY(mf.originalBin.isEmpty());
-		QCOMPARE(mf.codec, QStringLiteral("PCM")); // Codec and container are distinct facts. // OMF-era: Avid's container label
+		QCOMPARE(mf.compression, QStringLiteral("PCM")); // Compression and container are distinct facts. // OMF-era: Avid's container label
 	}
 }
 
@@ -2662,7 +2692,7 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 		QCOMPARE(mf->dbStatus, MediaFile::DbStatus::Listed);
 		QCOMPARE(mf->kind, MediaFile::Kind::Video);
 		QCOMPARE(mf->type, MediaFile::Type::Media);
-		QCOMPARE(mf->codec, QLatin1String(pin.codec));
+		QCOMPARE(mf->compression, QLatin1String(pin.codec));
 		QCOMPARE(mf->resolution, QLatin1String(pin.resolution));
 		QCOMPARE(mf->frameRate, QLatin1String(pin.frameRate));
 		QCOMPARE(mf->duration.displayFrames(), qint64(1));
@@ -2721,7 +2751,7 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		QCOMPARE(mf->mediaFolderName, QStringLiteral("EditorOne"));
 		QCOMPARE(mf->dbStatus, MediaFile::DbStatus::Listed);
 		QCOMPARE(mf->kind, MediaFile::Kind::Video);
-		QCOMPARE(mf->codec, QLatin1String(pin.codec));
+		QCOMPARE(mf->compression, QLatin1String(pin.codec));
 		QCOMPARE(mf->resolution, QLatin1String(pin.resolution));
 		QCOMPARE(mf->frameRate, QLatin1String(pin.frameRate));
 		QCOMPARE(mf->duration.displayFrames(), qint64(1));
@@ -2739,7 +2769,7 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 	QVERIFY(wav->omfEra);
 	QCOMPARE(wav->dbStatus, MediaFile::DbStatus::NoReference);
 	QCOMPARE(wav->kind, MediaFile::Kind::Audio);
-	QCOMPARE(wav->codec, QStringLiteral("PCM"));
+	QCOMPARE(wav->compression, QStringLiteral("PCM"));
 	QCOMPARE(wav->clipName, kOmfWavClip);
 	QCOMPARE(wav->fileMobId, kOmfWavFileMob);
 	QCOMPARE(wav->masterMobId, kOmfWavMasterMob); // verified by the file's own graph
@@ -2769,11 +2799,11 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 	}
 	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
 	QVERIFY(slate != nullptr);
-	QCOMPARE(slate->codec, QStringLiteral("20:1"));
+	QCOMPARE(slate->compression, QStringLiteral("20:1"));
 	QCOMPARE(slate->originalBin, QStringLiteral("NTSC slides")); // the MDB's record, joined by identity
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);
-	QCOMPARE(wav->codec, QStringLiteral("PCM"));
+	QCOMPARE(wav->compression, QStringLiteral("PCM"));
 	QVERIFY(wav->originalBin.isEmpty()); // this folder's MDB has never heard of it
 }
 
@@ -2924,7 +2954,7 @@ void TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format()
 	QVERIFY(row.clipName.isEmpty());
 	QCOMPARE(row.type, MediaFile::Type::Unknown);
 	QCOMPARE(row.kind, MediaFile::Kind::Audio);
-	QCOMPARE(row.codec, QStringLiteral("PCM"));
+	QCOMPARE(row.compression, QStringLiteral("PCM"));
 	QCOMPARE(row.sampleRate, 48000);
 	QVERIFY(runManualScan(folder).isEmpty());
 }
@@ -2973,7 +3003,7 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QVERIFY(!hasDatabaseEvidence(row));
 	QCOMPARE(row.type, MediaFile::Type::Unknown);
 	QCOMPARE(row.kind, MediaFile::Kind::Audio); // The explicitly linked WAVD class establishes audio, independently of missing technical fields.
-	QVERIFY(row.codec.isEmpty());
+	QVERIFY(row.compression.isEmpty());
 	QVERIFY(row.bitDepth.isEmpty());
 	QCOMPARE(row.sampleRate, 0);
 	QCOMPARE(row.channels, 0);
@@ -3106,7 +3136,7 @@ void TestScanner::ama_databases_are_read()
 		QCOMPARE(mf.project, QStringLiteral("block 1729"));
 		QCOMPARE(mf.clipName, kToneClip);
 		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
-		QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+		QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 		QCOMPARE(mf.sampleRate, 48000);
 		QVERIFY(!mf.originalBin.isEmpty());
 	}
@@ -3308,7 +3338,7 @@ void TestScanner::cross_format_files_are_excluded_even_with_omf_enabled()
 		{
 			QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), omfi);
 			QVERIFY(row.omfEra);
-			QVERIFY(!row.codec.isEmpty());
+			QVERIFY(!row.compression.isEmpty());
 		}
 	}
 	const auto publicRows = runScan(tmp.path());
@@ -3559,7 +3589,7 @@ void TestScanner::unreadable_database_extension_marks_unverified_misses()
 			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 			QCOMPARE(mf.clipName, kToneClip);
 			QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
-			QCOMPARE(mf.codec, QString::fromLatin1(kPcmAudioName));
+			QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 		}
 		else if (mf.mediaFolderName == QStringLiteral("1"))
 			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::DbUnreadable);

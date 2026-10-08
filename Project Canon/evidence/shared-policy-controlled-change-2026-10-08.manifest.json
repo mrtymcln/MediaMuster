@@ -1,0 +1,74 @@
+{
+  "archive_original": "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a",
+  "archive_copy": "/private/tmp/shared-policy-controlled-change-2026-10-08.archive.a",
+  "archive_sha256": "9509c23d44c83f1cd2927414cc553ad4b3f45fbe4203636ddf40775cff41a5a5",
+  "archive_bytes": 75101056,
+  "archive_mtime_ns": 1791418860394880000,
+  "scope": "Authored observations; no format certification or real media reads.",
+  "production_sources": {
+    "src/canon/metadataselectionpolicy.cpp": "38596032830ffc9e00ee7a8fb93f20b5cc2b8c26318a4b48aab5f537fc107310",
+    "src/binmetadataresolver.cpp": "ec511084c5b9f882db6857a54b71448cb316e80e7462392f677d2933fdbd6843",
+    "src/canonadapter.cpp": "1f1d1c03526cb79625f40dfc3fa4eefbe8f5256ba1e1139b6795de531a5a12ee",
+    "src/mediacsv.cpp": "49ca347b380869df21727687103df20d542f38674c4589aef8a050e37e599c4c",
+    "src/mediaevidence.h": "328486d44b48305d139b173722faf7ab60d61cf9355659870c6f030f463c7e32",
+    "src/canon/scanengine.cpp": "0c6f39d03f465b28939616cff45712d5d1f19b63c783b3c8e3fd75392b009c09",
+    "src/canon/projection.cpp": "7fa3e727da8d8d7a4dc658cbaac09acaa9f6906c1ef0438e32eb227aa9c36129"
+  },
+  "recorded_at": "2026-10-08T11:29:28.691009+11:00",
+  "compiler": "Apple clang17.0.0 (clang-1700.0.13.5)",
+  "architecture": "arm64",
+  "qt": "6.5.3",
+  "compile_and_run_exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "variant_change": "Only ClipName row: MDB2/header3/version1 -> MDB3/header2/version2; other policy rows byte-identical.",
+  "raw_observation_sha256": "2e05721c68a8ca535ded724d8572390d43b6f513f796be48c72d62a965840aa2",
+  "artifacts": {
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.cpp": {
+      "sha256": "1d8f1f68fc8d0b6ad3d97fd7556377b92512e71392acc8c12c3e3a1a86f508eb",
+      "bytes": 8370
+    },
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.policy-original.cpp": {
+      "sha256": "38596032830ffc9e00ee7a8fb93f20b5cc2b8c26318a4b48aab5f537fc107310",
+      "bytes": 6648
+    },
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.policy-variant.cpp": {
+      "sha256": "64f5b143388521d9a53971075639f12ce5fee3e2a3bb4a08904e40c613b82467",
+      "bytes": 6648
+    },
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.policy-diff.patch": {
+      "sha256": "b1997bfe5b0d7b3129a6f6bc774412877c5d5b80f649d1a268ca22d0e002b441",
+      "bytes": 525
+    },
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.baseline.json": {
+      "sha256": "29351fb4cc147c8e55bb491b3619ec2f96e84d0a10eeec60b246cb1f9d0b3a88",
+      "bytes": 2909
+    },
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.variant.json": {
+      "sha256": "c447243749d57598fc28c79230716e7a817585da4442e5de6f9a45a42b21c2a8",
+      "bytes": 2967
+    },
+    "Project Canon/evidence/shared-policy-controlled-change-2026-10-08.commands.txt": {
+      "sha256": "9ddfb3bb44c523ebc885dae89350cc1a35220e2f04553a8ce2b0c58b48ba5f3c",
+      "bytes": 2721
+    }
+  },
+  "temporary_binaries": {
+    "/private/tmp/shared-policy-controlled-change-2026-10-08.baseline": {
+      "sha256": "1735fcfa1468cbeb1dc4f01bd2b007c176aa420e993dd59f4965b69e4f29e72a",
+      "bytes": 4372432
+    },
+    "/private/tmp/shared-policy-controlled-change-2026-10-08.variant": {
+      "sha256": "e7a49a21b94800458fbdc326d85ac192711c7089c708646f52ab5bdf8905bebd",
+      "bytes": 4367568
+    },
+    "/private/tmp/shared-policy-controlled-change-2026-10-08.policy-variant.o": {
+      "sha256": "387980a6fffcb92308a3af316800712a1e7f40c3e64b8a227e63306c9c91ca03",
+      "bytes": 130280
+    }
+  }
+}

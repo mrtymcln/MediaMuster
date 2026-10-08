@@ -1,6 +1,7 @@
 #include "scanengine.h"
 #include "discoveryengine.h"
 #include "projection.h"
+#include "metadataselectionpolicy.h"
 #include "pmrreader.h"
 #include "mdbreader.h"
 #include "mxfreader.h"
@@ -18,33 +19,6 @@ namespace Canon
 {
 	namespace
 	{
-		int technicalRank(MetadataSource source)
-		{
-			switch (source)
-			{
-			case MetadataSource::Filesystem:
-				return 6;
-			case MetadataSource::Mxf:
-			case MetadataSource::Omf:
-				return 5;
-			case MetadataSource::Mdb:
-				return 4;
-			case MetadataSource::Pmr:
-				return 3;
-			case MetadataSource::Avb:
-				return 2;
-			}
-			return 0;
-		}
-		int projectRank(MetadataSource source)
-		{
-			return source == MetadataSource::Pmr ? 6 : source == MetadataSource::Mdb ? 5
-																					 : technicalRank(source) - 2;
-		}
-		int binRank(MetadataSource source)
-		{
-			return source == MetadataSource::Mdb ? 6 : technicalRank(source);
-		}
 		QString folderKey(const QString &path)
 		{
 			const QFileInfo info(path);
@@ -125,6 +99,21 @@ namespace Canon
 					file.objects.append(object);
 		}
 
+		QStringList fileIdentityClaims(const ProjectedFile &facts)
+		{
+			if (!facts.fileMobId.isEmpty())
+				return {facts.fileMobId};
+			QStringList claims;
+			for (const auto &observation : facts.evidence.observations(MediaProperty::FileMobId))
+				if (observation.eligible && observation.readState == PropertyReadState::Present)
+				{
+					const auto id = observation.value.toString();
+					if (!id.isEmpty() && !MobId::isAllZero(id) && !claims.contains(id))
+						claims.append(id);
+				}
+			return claims;
+		}
+
 		QStringList requiredTableMetadata(const MediaEvidence &evidence)
 		{
 			QStringList missing;
@@ -135,7 +124,7 @@ namespace Canon
 				if (!usable)
 					missing.append(mediaPropertyName(property));
 			};
-			for (const auto property : {MediaProperty::ClipName, MediaProperty::Project, MediaProperty::Codec,
+			for (const auto property : {MediaProperty::ClipName, MediaProperty::Project, MediaProperty::Compression,
 										MediaProperty::BitDepth, MediaProperty::FileMobId})
 				require(property, value(property).isValid() && !value(property).toString().isEmpty());
 			require(MediaProperty::MasterMobId, !value(MediaProperty::MasterMobId).toStringList().isEmpty());
@@ -179,55 +168,60 @@ namespace Canon
 
 	void selectMetadata(MediaEvidence &evidence)
 	{
-		for (int index = int(MediaProperty::ClipName); index <= int(MediaProperty::ComponentDepth); ++index)
+		for (const auto &policy : propertyPolicies())
 		{
-			const auto property = MediaProperty(index);
-			const auto rank = property == MediaProperty::Project ? projectRank : property == MediaProperty::OriginalBin ? binRank
-																														: technicalRank;
-			evidence.select(property, evidence.resolve(property, rank, QStringLiteral("Canon field priorities v1")));
-		}
-		// Display clocks do not change a file's recorded length. Resolve that
-		// optional clock separately, retaining the duration's original units.
-		auto duration = evidence.selected(MediaProperty::FileDuration);
-		if (duration.value.isValid())
-		{
-			const auto selected = mediaDuration(duration.value);
-			MediaEvidence clocks;
-			for (auto item : evidence.observations(MediaProperty::FileDuration))
+			// Effects depend on the final selected name and type, so derive them last.
+			if (policy.rule == SelectionRule::DerivedEffect)
+				continue;
+			auto field = resolveProperty(evidence, policy);
+			if (policy.rule == SelectionRule::FileDuration && field.value.isValid())
 			{
-				const auto candidate = mediaDuration(item.value);
-				if (!item.eligible || candidate.units != selected.units || !candidate.rate.sameRate(selected.rate) || !candidate.displayRate.valid())
-					continue;
-				item.value = rateValue(candidate.displayRate);
-				clocks.observe(MediaProperty::FrameRate, std::move(item));
+				// A display clock does not change the recorded length. Only clocks
+				// attached to equivalent durations can supplement the selected one.
+				const auto selected = mediaDuration(field.value);
+				MediaEvidence clocks;
+				for (auto item : evidence.observations(policy.property))
+				{
+					const auto candidate = mediaDuration(item.value);
+					if (!item.eligible || candidate.units != selected.units ||
+						!candidate.rate.sameRate(selected.rate) || !candidate.displayRate.valid())
+						continue;
+					item.value = rateValue(candidate.displayRate);
+					clocks.observe(MediaProperty::FrameRate, std::move(item));
+				}
+				auto clockPolicy = policy;
+				clockPolicy.property = MediaProperty::FrameRate;
+				const auto clock = resolveProperty(clocks, clockPolicy);
+				auto value = field.value.toMap();
+				value.insert(QStringLiteral("DisplayRate"), clock.value);
+				field.value = value;
+				field.reason += QStringLiteral("; display clock resolved independently from matching duration observations: ") + clock.reason;
 			}
-			const auto clock = clocks.resolve(MediaProperty::FrameRate, technicalRank, QStringLiteral("Recorded duration display clock"));
-			auto value = duration.value.toMap();
-			value.insert(QStringLiteral("DisplayRate"), clock.value);
-			duration.value = value;
-			duration.reason += QStringLiteral("; display clock resolved independently from matching duration observations: ") + clock.reason;
-			evidence.select(MediaProperty::FileDuration, duration);
-		}
-		// Master associations are a set of recorded relationships, not rival scalar values.
-		QStringList masters;
-		for (const auto &observation : evidence.observations(MediaProperty::MasterMobId))
-			if (observation.eligible && observation.readState == PropertyReadState::Present)
+			else if (policy.rule == SelectionRule::MasterAssociations)
 			{
-				if (observation.value.metaType().id() == QMetaType::QStringList)
-					masters.append(observation.value.toStringList());
-				else if (!observation.value.toString().isEmpty())
-					masters.append(observation.value.toString());
+				// Master associations are relationships, not competing scalar values.
+				QStringList masters;
+				for (const auto &item : evidence.observations(policy.property))
+					if (item.eligible && item.readState == PropertyReadState::Present)
+					{
+						if (item.value.metaType().id() == QMetaType::QStringList)
+							masters.append(item.value.toStringList());
+						else if (!item.value.toString().isEmpty())
+							masters.append(item.value.toString());
+					}
+				masters.removeDuplicates();
+				std::sort(masters.begin(), masters.end());
+				if (!masters.isEmpty())
+				{
+					field.value = masters;
+					field.readState = PropertyReadState::Present;
+					field.readReason = PropertyReadReason::None;
+					field.applicability = PropertyApplicability::Applicable;
+					field.agreement = PropertyAgreement::NotCompared;
+					field.reason = QStringLiteral("Every eligible master association retained; multiple masters do not merge physical files");
+				}
 			}
-		masters.removeDuplicates();
-		std::sort(masters.begin(), masters.end());
-		if (!masters.isEmpty())
-		{
-			ResolvedField field;
-			field.value = masters;
-			field.readState = PropertyReadState::Present;
-			field.rule = QStringLiteral("Preserve every eligible master association");
-			field.reason = QStringLiteral("Multiple masters do not merge physical files");
-			evidence.select(MediaProperty::MasterMobId, field);
+			evidence.select(policy.property, std::move(field));
 		}
 		selectEffectMetadata(evidence);
 	}
@@ -329,9 +323,9 @@ namespace Canon
 			if (candidate.hint == SourceCandidate::ReaderHint::Mdb)
 				for (qsizetype record = 0; record < projections[sourceIndex].files.size(); ++record)
 				{
-					const auto &id = projections[sourceIndex].files[record].fileMobId;
-					if (!id.isEmpty() && !MobId::isAllZero(id))
-						mdbById[id].append({sourceIndex, record});
+					for (const auto &id : fileIdentityClaims(projections[sourceIndex].files[record]))
+						if (!MobId::isAllZero(id))
+							mdbById[id].append({sourceIndex, record});
 				}
 			if (candidate.hint == SourceCandidate::ReaderHint::Mdb)
 				for (qsizetype record = 0; record < projections[sourceIndex].masters.size(); ++record)
@@ -362,7 +356,7 @@ namespace Canon
 					attach(file, facts, unchanged[headers.value(file.kelpieId)]);
 				if (physicalChanged)
 					file.evidence.qualifySource(result.sources[headers.value(file.kelpieId)].snapshot,
-						false, SourceFreshness::Changed);
+												false, SourceFreshness::Changed);
 			}
 			selectMetadata(file.evidence);
 			const auto headerSelection = file.evidence.selected(MediaProperty::FileMobId);
@@ -443,11 +437,17 @@ namespace Canon
 			for (const auto &item : file.evidence.observations(MediaProperty::FileMobId))
 				if (item.readState == PropertyReadState::Present && !item.value.toString().isEmpty())
 					candidateIds.insert(item.value.toString());
+			QSet<QPair<qsizetype, qsizetype>> attachedMdbFacts;
 			for (const auto &candidateId : candidateIds)
 				for (const auto &entry : mdbById.value(candidateId))
 				{
-					const bool eligible = unchanged[entry.first] && !physicalChanged && candidateId == identity;
-					attach(file, projections[entry.first].files[entry.second], eligible);
+					if (attachedMdbFacts.contains(entry))
+						continue;
+					attachedMdbFacts.insert(entry);
+					const auto &facts = projections[entry.first].files[entry.second];
+					const bool eligible = unchanged[entry.first] && !physicalChanged &&
+										  fileIdentityClaims(facts).contains(identity);
+					attach(file, facts, eligible);
 					completeMdbMatch |= eligible && result.sources[entry.first].outcome == ParsedSource::Outcome::Complete;
 				}
 			selectMetadata(file.evidence);
@@ -484,7 +484,7 @@ namespace Canon
 			file.evidence.observe(MediaProperty::DatabaseStatus, std::move(dbStatus));
 			selectMetadata(file.evidence);
 
-			for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
+			for (int field = int(MediaProperty::ClipName); field < int(MediaProperty::Count); ++field)
 			{
 				const auto selected = file.evidence.selected(MediaProperty(field));
 				if (selected.agreement != PropertyAgreement::Conflicting)

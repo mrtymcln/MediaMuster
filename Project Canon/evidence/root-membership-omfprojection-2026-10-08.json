@@ -1,0 +1,32 @@
+[
+    {
+        "case": "legacy-descriptor-12-byte-id",
+        "codec": "20:1",
+        "file_candidates": 1,
+        "reader_outcome": 1
+    },
+    {
+        "case": "legacy-descriptor-32-byte-id",
+        "codec": "",
+        "file_candidates": 1,
+        "reader_outcome": 1
+    },
+    {
+        "bit_depth": "24-bit",
+        "bit_depth_explanation": "Decoded fields in the recorded audio format header; original header bytes retained.",
+        "bit_depth_read_state": 1,
+        "case": "summary-extensible-missing-guid",
+        "codec": "",
+        "file_candidates": 1,
+        "reader_outcome": 1
+    },
+    {
+        "bit_depth": "24-bit",
+        "bit_depth_explanation": "Decoded fields in the recorded audio format header; original header bytes retained.",
+        "bit_depth_read_state": 1,
+        "case": "summary-aifc-missing-name-length",
+        "codec": "PCM",
+        "file_candidates": 1,
+        "reader_outcome": 1
+    }
+]

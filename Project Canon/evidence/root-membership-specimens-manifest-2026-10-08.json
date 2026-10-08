@@ -1,0 +1,295 @@
+{
+  "recordedAtUTC": "2026-10-07T13:07:00.011739+00:00",
+  "localReportDate": "2026-10-08",
+  "files": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+      "size": 3207777,
+      "mtimeNsBefore": 1785737161631517613,
+      "mtimeNsAfter": 1785737161631517613,
+      "sizeAfter": 3207777,
+      "sha256": "16957917fe8a4cbfedd166fe0558d4269c5ca42e01f282ca10373c01d1fe0168",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6966CE5_A3C580A3C588BV.mxf",
+      "size": 556586593,
+      "mtimeNsBefore": 1785737161539115177,
+      "mtimeNsAfter": 1785737161539115177,
+      "sizeAfter": 556586593,
+      "sha256": "f251e14087171f30fac540b083324cdeb821970e3fc5878fee9a9e4fe1b94912",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1042.WAVA01.D77B775B553A6FA.mxf",
+      "size": 443106,
+      "mtimeNsBefore": 1532312175000000000,
+      "mtimeNsAfter": 1532312175000000000,
+      "sizeAfter": 443106,
+      "sha256": "bbcd57979dae580b4a298ab568604d9717b99fcc00507a879f421fea2d4cf4a7",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/TONE_100A01.EA7D504A.611740.mxf",
+      "size": 8909409,
+      "mtimeNsBefore": 1779716614000000000,
+      "mtimeNsAfter": 1779716614000000000,
+      "sizeAfter": 8909409,
+      "sha256": "e545ab93dbf5227813b7cbb7ce2db50e9ff5660d2273cb7875e4dbe03071fe2b",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "size": 3668720,
+      "mtimeNsBefore": 1788291273218255487,
+      "mtimeNsAfter": 1788291273218255487,
+      "sizeAfter": 3668720,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "size": 60680,
+      "mtimeNsBefore": 1788291495301754724,
+      "mtimeNsAfter": 1788291495301754724,
+      "sizeAfter": 60680,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "size": 5159032,
+      "mtimeNsBefore": 1561096331000000000,
+      "mtimeNsAfter": 1561096331000000000,
+      "sizeAfter": 5159032,
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "size": 587424,
+      "mtimeNsBefore": 1788314697909035712,
+      "mtimeNsAfter": 1788314697909035712,
+      "sizeAfter": 587424,
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+      "size": 8665912,
+      "mtimeNsBefore": 1788291444212837609,
+      "mtimeNsAfter": 1788291444212837609,
+      "sizeAfter": 8665912,
+      "sha256": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972997.0C53E0.aif",
+      "size": 8659584,
+      "mtimeNsBefore": 1788291480006999401,
+      "mtimeNsAfter": 1788291480006999401,
+      "sizeAfter": 8659584,
+      "sha256": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_1920X540X2_AVHD.omf",
+      "size": 933848,
+      "mtimeNsBefore": 1788314697892662466,
+      "mtimeNsAfter": 1788314697892662466,
+      "sizeAfter": 933848,
+      "sha256": "54da5e8eb12e7534bb6a7c74e08f2b4e7c22e7b85af0835885c150f4bf85c946",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/NTProjects_VS10/Complx2x.omf",
+      "size": 143480,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 143480,
+      "sha256": "bae7af2aa64f57ea42c30e44ec43e584e4b3888d8cf73d9bc7280f2dffab71ae",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-root-membership-probe.cpp",
+      "size": 10402,
+      "mtimeNsBefore": 1791378141109530548,
+      "mtimeNsAfter": 1791378141109530548,
+      "sizeAfter": 10402,
+      "sha256": "911421bee22d7d975fd08e18abd2fce91e48a36c76f6894b25a387ab9563aba1",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-root-membership-probe",
+      "size": 1741240,
+      "mtimeNsBefore": 1791378142051779839,
+      "mtimeNsAfter": 1791378142051779839,
+      "sizeAfter": 1741240,
+      "sha256": "dc61df1ae0312db9241382148c3e5c393dedc80ea603e0eba709c1808eb9f670",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-root-membership-2026-10-07.jsonl",
+      "size": 48934,
+      "mtimeNsBefore": 1791377868075684230,
+      "mtimeNsAfter": 1791377868075684230,
+      "sizeAfter": 48934,
+      "sha256": "547c60bba4cc4c66c722b1d12be10b57d06a326ba7c4c40db021cc332c0df0e9",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-root-membership-legacy-detail-2026-10-07.jsonl",
+      "size": 296043,
+      "mtimeNsBefore": 1791378158989792222,
+      "mtimeNsAfter": 1791378158989792222,
+      "sizeAfter": 296043,
+      "sha256": "db025849bdcbfb179138b61f603b3b6c32ad3c2b60e80fdfc57ce42c3f07353d",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omFile.c",
+      "size": 130636,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 130636,
+      "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omMobMgt.c",
+      "size": 71639,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 71639,
+      "sha256": "946ad23fc77229d7a814735d41fead1e9f311501c323999c144517be8806c1ff",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omMobGet.c",
+      "size": 199377,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 199377,
+      "sha256": "406461744d14b45d6ef11cedc73f5cdd23f99b9404a3999f34cfd791eb85adca",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/include/omTypes.h",
+      "size": 18619,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 18619,
+      "sha256": "e4d157ae2dfdf42c1de6a47893e0c3c2f408bd0be3e492ded7c86fb0b50f1181",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfspec21.txt",
+      "size": 442527,
+      "mtimeNsBefore": 1791040404450887388,
+      "mtimeNsAfter": 1791040404450887388,
+      "sizeAfter": 442527,
+      "sha256": "1e1afc7af72422565825f9c1a3320623e1ba43d45fc61ec8623bad91f6688e64",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/omfspec21.pdf",
+      "size": 1081300,
+      "mtimeNsBefore": 1790995180492507798,
+      "mtimeNsAfter": 1790995180492507798,
+      "sizeAfter": 1081300,
+      "sha256": "62dd18226aee3fda27c4ac25cf50ab1764b7776d4a42eac8f00d3e5b07909794",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h",
+      "size": 83806,
+      "mtimeNsBefore": 1790995721615441353,
+      "mtimeNsAfter": 1790995721615441353,
+      "sizeAfter": 83806,
+      "sha256": "cd1a1b26a680da57a90d35992266e9840b9799fc6b9a22e65f3b9c4220e276b1",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/omfobjects_p.cpp",
+      "size": 25212,
+      "mtimeNsBefore": 1791070586239412575,
+      "mtimeNsAfter": 1791070586239412575,
+      "sizeAfter": 25212,
+      "sha256": "d07b84ab49969c8e5b7a274ffb890474f5eb8c74d9f6a4210b35667bb5e9266f",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/mxfreader.cpp",
+      "size": 27183,
+      "mtimeNsBefore": 1791370609532995522,
+      "mtimeNsAfter": 1791370609532995522,
+      "sizeAfter": 27183,
+      "sha256": "f3561c44c596ad0a49f44203ac3689a7025f7e375f242f16d2b2f8d32a115dde",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/mdbreader.cpp",
+      "size": 431,
+      "mtimeNsBefore": 1791070674781325520,
+      "mtimeNsAfter": 1791070674781325520,
+      "sizeAfter": 431,
+      "sha256": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/legacyreader.cpp",
+      "size": 7249,
+      "mtimeNsBefore": 1791070527101463461,
+      "mtimeNsAfter": 1791070527101463461,
+      "sizeAfter": 7249,
+      "sha256": "af2133a891472d8be96ffbc9d1cfae60649e493c5e23e964b4e2b9fc8b9917f6",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a",
+      "size": 73031400,
+      "mtimeNsBefore": 1791375898208056000,
+      "mtimeNsAfter": 1791375898208056000,
+      "sizeAfter": 73031400,
+      "sha256": "33060faed4be992f138117ab73b9e6d3d0f735ff16b1e1aa87a1aaac3b3fa040",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-root-membership-2026-10-08.jsonl",
+      "size": 6791245,
+      "mtimeNsBefore": 1791378410354376493,
+      "mtimeNsAfter": 1791378410354376493,
+      "sizeAfter": 6791245,
+      "sha256": "201b7cf5dcc8de47a045e676e08d573b3a1ab2de58003a90d9716c8882e3885d",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omUtils.c",
+      "size": 103292,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 103292,
+      "sha256": "58cb7b59bfc1d7006531f8f7504b0c9c759a07884bb401fae3a370dd89e1699a",
+      "stableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omAcces.c",
+      "size": 101220,
+      "mtimeNsBefore": 1789215245000000000,
+      "mtimeNsAfter": 1789215245000000000,
+      "sizeAfter": 101220,
+      "sha256": "075ec5b04ae79a5107e4885e8ce66f3be2136d485642b59afaa00cb3e5941757",
+      "stableDuringHash": true
+    }
+  ],
+  "durableCopies": {
+    "probeSource": "Project Canon/evidence/root-membership-probe-2026-10-08.cpp",
+    "probeSourceSha256": "911421bee22d7d975fd08e18abd2fce91e48a36c76f6894b25a387ab9563aba1",
+    "compressedJsonl": "Project Canon/evidence/root-membership-specimens-2026-10-08.jsonl.gz",
+    "compressedSha256": "133c9c56b9c6f6a765a3505f3a716cc6b0d8744b3852d0f7d8ada096007eaee9",
+    "uncompressedJsonlSha256": "201b7cf5dcc8de47a045e676e08d573b3a1ab2de58003a90d9716c8882e3885d",
+    "boundary": "The source and full JSONL bytes are retained; the temporary executable and pre-correction archive are identified by hashes, not copied as repository binaries.",
+    "matchingPreCorrectionHeader": "Project Canon/evidence/root-membership-probe-scanmodel-2026-10-08.h",
+    "matchingPreCorrectionHeaderSha256": "fbcdf96d95192c45bb531d8bfb4ea59983835bc962c922d905e403ab9bc5efb0"
+  }
+}

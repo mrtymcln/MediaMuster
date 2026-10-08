@@ -1,0 +1,427 @@
+{
+  "databases": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "rows": [
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041583_152E7152E7A15A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.157a2e1573110696.e0627c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.4b642b1573110696.73777c57583610fa",
+          "clipName": "Technology - Elevator.new.01",
+          "displayClipDuration": "Track 1: 00:00:14:10",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041585_152EA152EABE8A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.e8ab2e1573110696.2f9f7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.5d642b1573110696.a9027c57583610fa",
+          "clipName": "Punches - Body Dropped Onto Ground.new.01",
+          "displayClipDuration": "Track 1: 00:00:10:19",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041586_152EB152EBF31A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.31bf2e1573110696.41fb7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.6f642b1573110696.8da97c57583610fa",
+          "clipName": "car tire squeal, short -premed07 tk43.new.01",
+          "displayClipDuration": "Track 1: 00:00:06:03",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AB_1543D1543D7E1A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.e1d7431573110696.090f7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.58672b1573110696.6d767c57583610fa",
+          "clipName": "Mac and Levi dancing_The Teskey Brothers - Carry You.new.01",
+          "displayClipDuration": "Track 1: 00:00:58:15",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AD_1544215442E0AA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.0a2e441573110696.11747c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.6b672b1573110696.d4567c57583610fa",
+          "clipName": "Mac and Levi dancing_The Teskey Brothers - Carry You.new.02",
+          "displayClipDuration": "Track 1: 00:00:19:24",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041780_164A5164A5CA5A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.a55c4a1673110696.6eae7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.de892b1573110696.a7c87c57583610fa",
+          "clipName": "THEME_A_10sec.new.01",
+          "displayClipDuration": "Track 1: 00:00:10:00",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A2_166FC166FCC8DA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.8dcc6f1673110696.e9fd7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.068d2b1573110696.9df87c57583610fa",
+          "clipName": "8646 sc2 second version.new.01",
+          "displayClipDuration": "Track 1: 00:00:13:15",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A3_166FE166FEC21A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.21ec6f1673110696.2d437c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.178d2b1573110696.1b747c57583610fa",
+          "clipName": "8646 sc2 second version.new.02",
+          "displayClipDuration": "Track 1: 00:00:16:06",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A04181A_16B9716B97262A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.6272b91673110696.58847c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.08942b1573110696.47d47c57583610fa",
+          "clipName": "ATMOS - 15 Office, Med.oices, Tel.new.01",
+          "displayClipDuration": "Track 1: 00:00:25:02",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041584_152E7152E7A37A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.377a2e1573110696.2ed37c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.4b642b1573110696.73777c57583610fa",
+          "clipName": "Technology - Elevator.new.01",
+          "displayClipDuration": "Track 2: 00:00:14:10",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041587_152EB152EBF4EA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.4ebf2e1573110696.023e7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.6f642b1573110696.8da97c57583610fa",
+          "clipName": "car tire squeal, short -premed07 tk43.new.01",
+          "displayClipDuration": "Track 2: 00:00:06:03",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041588_152EE152EE266A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.66e22e1573110696.be6e7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.80642b1573110696.0a017c57583610fa",
+          "clipName": "Punches_Heavy Hit.new.01",
+          "displayClipDuration": "Track 1: 00:00:09:16",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AC_1543D1543D7FEA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.fed7431573110696.b1267c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.58672b1573110696.6d767c57583610fa",
+          "clipName": "Mac and Levi dancing_The Teskey Brothers - Carry You.new.01",
+          "displayClipDuration": "Track 2: 00:00:58:15",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AE_1544215442E2BA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.2b2e441573110696.af437c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.6b672b1573110696.d4567c57583610fa",
+          "clipName": "Mac and Levi dancing_The Teskey Brothers - Carry You.new.02",
+          "displayClipDuration": "Track 2: 00:00:19:24",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041781_164A5164A5CC2A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.c25c4a1673110696.18a27c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.de892b1573110696.a7c87c57583610fa",
+          "clipName": "THEME_A_10sec.new.01",
+          "displayClipDuration": "Track 2: 00:00:10:00",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A04181B_16B9716B97281A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.8172b91673110696.f7417c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.08942b1573110696.47d47c57583610fa",
+          "clipName": "ATMOS - 15 Office, Med.oices, Tel.new.01",
+          "displayClipDuration": "Track 2: 00:00:25:02",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "rows": [
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FE5B_87AA1087AA101A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.01a17a0873110696.e6627c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.407c7a0873110696.15ef7c57583610fa",
+          "clipName": "Phone Text_Sent.new.01",
+          "displayClipDuration": "Track 1: 00:00:00:13",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FEBA_883E90883E973A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.73e9830873110696.fe977c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.b8807a0873110696.18dc7c57583610fa",
+          "clipName": "GLASS_BOTTLE_BREAKING_THREE_(A)_MIKEY_GALLAGHER_(PRS)_Fired_Earth_Music_FEM_070_247.new.01",
+          "displayClipDuration": "Track 1: 00:00:00:23",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF29_88FB5088FB55EA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.5eb58f0873110696.26497c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.e8847a0873110696.eb667c57583610fa",
+          "clipName": "Phone Payment.new.01",
+          "displayClipDuration": "Track 1: 00:00:01:11",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF3B_892F50892F5F1A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.f1f5920873110696.b3647c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.db857a0873110696.ecc37c57583610fa",
+          "clipName": "78  microwave oven - whole sequence - kitchen.new.01",
+          "displayClipDuration": "Track 1: 00:00:36:04",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF42_893BE0893BE41A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.41be930873110696.8ffd7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.2f867a0873110696.d8267c57583610fa",
+          "clipName": "THEME_A_10sec.new.01",
+          "displayClipDuration": "Track 1: 00:00:10:00",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF55_895760895760BA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.0b76950873110696.15987c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.09877a0873110696.172d7c57583610fa",
+          "clipName": "Phone Lock.new.01",
+          "displayClipDuration": "Track 1: 00:00:00:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF64_8969B08969B2DA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.2d9b960873110696.50607c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.4d877a0873110696.dd8a7c57583610fa",
+          "clipName": "8646 sc2 second version.new.01",
+          "displayClipDuration": "Track 1: 00:00:13:16",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF65_896B20896B240A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.40b2960873110696.b8d27c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.59877a0873110696.10cb7c57583610fa",
+          "clipName": "8646 sc2 second version.new.02",
+          "displayClipDuration": "Track 1: 00:00:16:06",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF66_896C60896C6F2A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.f2c6960873110696.16ed7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.5d877a0873110696.35e27c57583610fa",
+          "clipName": "8646 sc2 second version.new.03",
+          "displayClipDuration": "Track 1: 00:00:12:17",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF67_896DB0896DB75A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.75db960873110696.e99f7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.5f877a0873110696.34c37c57583610fa",
+          "clipName": "8646 sc2 second version.new.04",
+          "displayClipDuration": "Track 1: 00:00:09:13",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF6B_898FD0898FD9CA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.9cfd980873110696.ad2d7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.94877a0873110696.4f1b7c57583610fa",
+          "clipName": "Phone Ring_Default_Reflection.new.01",
+          "displayClipDuration": "Track 1: 00:00:05:01",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF96_8A37308A37311A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.1173a30873110696.c01b7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.36897a0873110696.cd507c57583610fa",
+          "clipName": "Phone Text_Notification.new.01",
+          "displayClipDuration": "Track 1: 00:00:00:23",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FE5C_87AA1087AA117A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.17a17a0873110696.13987c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.407c7a0873110696.15ef7c57583610fa",
+          "clipName": "Phone Text_Sent.new.01",
+          "displayClipDuration": "Track 2: 00:00:00:13",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FEBB_883E90883E990A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.90e9830873110696.5c187c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.b8807a0873110696.18dc7c57583610fa",
+          "clipName": "GLASS_BOTTLE_BREAKING_THREE_(A)_MIKEY_GALLAGHER_(PRS)_Fired_Earth_Music_FEM_070_247.new.01",
+          "displayClipDuration": "Track 2: 00:00:00:23",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF3C_892F60892F60CA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.0cf6920873110696.80cd7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.db857a0873110696.ecc37c57583610fa",
+          "clipName": "78  microwave oven - whole sequence - kitchen.new.01",
+          "displayClipDuration": "Track 2: 00:00:36:04",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF43_893BE0893BE61A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.61be930873110696.a1287c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.2f867a0873110696.d8267c57583610fa",
+          "clipName": "THEME_A_10sec.new.01",
+          "displayClipDuration": "Track 2: 00:00:10:00",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF56_895760895762BA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.2b76950873110696.66967c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.09877a0873110696.172d7c57583610fa",
+          "clipName": "Phone Lock.new.01",
+          "displayClipDuration": "Track 2: 00:00:00:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF6C_898FD0898FDD9A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.d9fd980873110696.5fe87c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.94877a0873110696.4f1b7c57583610fa",
+          "clipName": "Phone Ring_Default_Reflection.new.01",
+          "displayClipDuration": "Track 2: 00:00:05:01",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF97_8A37308A37334A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.3473a30873110696.43b17c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.36897a0873110696.cd507c57583610fa",
+          "clipName": "Phone Text_Notification.new.01",
+          "displayClipDuration": "Track 2: 00:00:00:23",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "rows": [
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A050273_B95940B959404A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.0494950b73110696.40fc7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.dbdc940b73110696.7fec7c57583610fa",
+          "clipName": "Beach - Waves Against Rocks With Some Lapping.new.01",
+          "displayClipDuration": "Track 1: 00:00:14:13",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502C7_BCFEE0BCFEEAEA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.aeeecf0b73110696.40d97c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.93e1940b73110696.1ad17c57583610fa",
+          "clipName": "25-04 Door Knocks.new.01",
+          "displayClipDuration": "Track 1: 00:00:06:18",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CB_BD2E30BD2E3F6A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.f6e3d20b73110696.51547c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.d9e1940b73110696.02eb7c57583610fa",
+          "clipName": "Beach Atmos - Heavy Surf.new.01",
+          "displayClipDuration": "Track 1: 00:00:15:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CC_BD2E40BD2E43EA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.3ee4d20b73110696.70dd7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.d9e1940b73110696.02eb7c57583610fa",
+          "clipName": "Beach Atmos - Heavy Surf.new.01",
+          "displayClipDuration": "Track 1: 00:00:15:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CD_BD2E40BD2E454A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.54e4d20b73110696.66af7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.d9e1940b73110696.02eb7c57583610fa",
+          "clipName": "Beach Atmos - Heavy Surf.new.01",
+          "displayClipDuration": "Track 1: 00:00:15:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A05030F_BFADF0BFADF69A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.69dffa0b73110696.161d7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.37e5940b73110696.97437c57583610fa",
+          "clipName": "ATMOSPHERIC_SUB_HIT_(A)_CHRISTOPHER_HARDWICK_(PRS)_West_One_Music_WOM_618_159.wav.new.01",
+          "displayClipDuration": "Track 1: 00:00:07:09",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A050327_C0F430C0F4377A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.77430f0c73110696.69667c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.74e7940b73110696.76317c57583610fa",
+          "clipName": "GLASS_BOTTLE_BREAKING_THREE_(A)_MIKEY_GALLAGHER_(PRS)_Fired_Earth_Music_FEM_070_247.new.01",
+          "displayClipDuration": "Track 1: 00:00:00:23",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0503C2_C8B7C0C8B7C50A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.507c8b0c73110696.a3ab7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.8cf2940b73110696.b7037c57583610fa",
+          "clipName": "THEME_A_10sec.new.01",
+          "displayClipDuration": "Track 1: 00:00:10:00",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050274_B95940B95941AA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.1a94950b73110696.9c5c7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.dbdc940b73110696.7fec7c57583610fa",
+          "clipName": "Beach - Waves Against Rocks With Some Lapping.new.01",
+          "displayClipDuration": "Track 2: 00:00:14:13",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502C8_BCFEE0BCFEED0A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.d0eecf0b73110696.9a5c7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.93e1940b73110696.1ad17c57583610fa",
+          "clipName": "25-04 Door Knocks.new.01",
+          "displayClipDuration": "Track 2: 00:00:06:18",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502CE_BD2E40BD2E468A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.68e4d20b73110696.4cb67c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.d9e1940b73110696.02eb7c57583610fa",
+          "clipName": "Beach Atmos - Heavy Surf.new.01",
+          "displayClipDuration": "Track 2: 00:00:15:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502CF_BD2E40BD2E47CA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.7ce4d20b73110696.c2b37c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.d9e1940b73110696.02eb7c57583610fa",
+          "clipName": "Beach Atmos - Heavy Surf.new.01",
+          "displayClipDuration": "Track 2: 00:00:15:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502D0_BD2E40BD2E48EA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.8ee4d20b73110696.d90c7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.d9e1940b73110696.02eb7c57583610fa",
+          "clipName": "Beach Atmos - Heavy Surf.new.01",
+          "displayClipDuration": "Track 2: 00:00:15:08",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050310_BFADF0BFADF87A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.87dffa0b73110696.320a7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.37e5940b73110696.97437c57583610fa",
+          "clipName": "ATMOSPHERIC_SUB_HIT_(A)_CHRISTOPHER_HARDWICK_(PRS)_West_One_Music_WOM_618_159.wav.new.01",
+          "displayClipDuration": "Track 2: 00:00:07:09",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050328_C0F430C0F43B7A.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.b7430f0c73110696.fb4d7c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.74e7940b73110696.76317c57583610fa",
+          "clipName": "GLASS_BOTTLE_BREAKING_THREE_(A)_MIKEY_GALLAGHER_(PRS)_Fired_Earth_Music_FEM_070_247.new.01",
+          "displayClipDuration": "Track 2: 00:00:00:23",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0503C3_C8B7C0C8B7C6DA.mxf",
+          "fileId": "060a2b3401010105.01010f1013000000.6d7c8b0c73110696.3c497c57583610fa",
+          "masterId": "060a2b3401010105.01010f1013000000.8cf2940b73110696.b7037c57583610fa",
+          "clipName": "THEME_A_10sec.new.01",
+          "displayClipDuration": "Track 2: 00:00:10:00",
+          "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+        }
+      ]
+    }
+  ]
+}

@@ -233,7 +233,7 @@ void TestCanonPmr::nullAndAbsentAreDifferent()
 	const auto projection = Canon::projectPmr(result, cancellation);
 	QCOMPARE(projection.files.size(), 1);
 	const auto &evidence = projection.files.first().evidence;
-	for (const auto field : {MediaProperty::Project, MediaProperty::MasterMobId, MediaProperty::Codec})
+	for (const auto field : {MediaProperty::Project, MediaProperty::MasterMobId, MediaProperty::Compression})
 	{
 		const auto status = evidence.readStatus(field, result.snapshot);
 		QCOMPARE(status.state, PropertyReadState::Absent);

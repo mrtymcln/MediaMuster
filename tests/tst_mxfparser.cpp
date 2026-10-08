@@ -673,7 +673,7 @@ void TestMxfParser::avc_files_resolve_to_their_family()
 	// AVC is named at Avid's own codec_family level ("AVC Intra",
 	// "AVC Long GOP", "H.264"). The bitrate class is NOT in the essence
 	// label — one UL legitimately covers AVC Long GOP 6/12/25/35/50 — and
-	// the raster is shown in its own column, so the Codec column states the
+	// the raster is shown in its own column, so the Compression column states the
 	// family and lets Resolution and Size carry the rest (ruled 2026-08-13).
 	//
 	// These 15 real headers span both brands, both intra and long-GOP, HD

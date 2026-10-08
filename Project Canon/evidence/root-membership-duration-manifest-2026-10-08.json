@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-08",
+  "historicalCommit": "da87337098c1ba2fb817ada1dda4e160c34e527d",
+  "archiveSha256": "7ed4c8ddccddf9bd502444c58163b74218ce40ae5520002bd9ac6b5a61372513",
+  "compileCommand": "/usr/bin/clang++ -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/mediamuster-duration-root-probe-2026-10-08.cpp build-canon/libmediamuster_canon.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/mediamuster-duration-root-probe-2026-10-08",
+  "probeSizeMtimeChecks": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sizeBefore": 22745976,
+      "sizeAfter": 22745976,
+      "mtimeBefore": 1785052712000,
+      "mtimeAfter": 1785052712000
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sizeBefore": 16616336,
+      "sizeAfter": 16616336,
+      "mtimeBefore": 1778753153000,
+      "mtimeAfter": 1778753153000
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sizeBefore": 15703416,
+      "sizeAfter": 15703416,
+      "mtimeBefore": 1778753179000,
+      "mtimeAfter": 1778753179000
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bytes": 22745976,
+      "mtimeNsBeforeHash": 1785052712000000000,
+      "mtimeNsAfterHash": 1785052712000000000,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bytes": 16616336,
+      "mtimeNsBeforeHash": 1778753153000000000,
+      "mtimeNsAfterHash": 1778753153000000000,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bytes": 15703416,
+      "mtimeNsBeforeHash": 1778753179000000000,
+      "mtimeNsAfterHash": 1778753179000000000,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-evidence-2026-10-08.jsonl",
+      "sha256": "f21fc50305ccfb2c5abd694e73ea9a9731de848d1529b0fc7802afba6cf0c071",
+      "bytes": 866280,
+      "mtimeNsBeforeHash": 1791387212298222141,
+      "mtimeNsAfterHash": 1791387212298222141,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-evidence-2026-10-08.jsonl.gz",
+      "sha256": "36de2e9ddff4b9854a97a878b9484c06a329a12895ff8a91e9a45b6ce20efea0",
+      "bytes": 66705,
+      "mtimeNsBeforeHash": 1791387421521012214,
+      "mtimeNsAfterHash": 1791387421521012214,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-summary-2026-10-08.json",
+      "sha256": "d42c3cac27dcb5d58e5084f23ca61d116979916a7dbf545b9d5e090b11efc95a",
+      "bytes": 57978,
+      "mtimeNsBeforeHash": 1791387421508105054,
+      "mtimeNsAfterHash": 1791387421508105054,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-probe-2026-10-08.cpp",
+      "sha256": "f8005ff5eadd75e1dfc50b450aa6366c289983f237c987ba03f2090e13b4c975",
+      "bytes": 8819,
+      "mtimeNsBeforeHash": 1791387197413233465,
+      "mtimeNsAfterHash": 1791387197413233465,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-probe-2026-10-08",
+      "sha256": "d9605f2b95fa961b43f4e1ceafe01a37cc942f5c5a14bf24dcc6852d138f309d",
+      "bytes": 2252600,
+      "mtimeNsBeforeHash": 1791387198268398406,
+      "mtimeNsAfterHash": 1791387198268398406,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-requests-2026-10-08.json",
+      "sha256": "b2bc2262ecde0cf4a033e9c0ff6e9b7ff033658a5015fdcbc6d1b1a3681044da",
+      "bytes": 26917,
+      "mtimeNsBeforeHash": 1791387010721151014,
+      "mtimeNsAfterHash": 1791387010721151014,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-historical-omfprojection-2026-10-08.cpp",
+      "sha256": "759568ca5d37944f79a3e62392b62ba36bf725a89a633da2e7d8d8794a9274c3",
+      "bytes": 63899,
+      "mtimeNsBeforeHash": 1791387308802814519,
+      "mtimeNsAfterHash": 1791387308802814519,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a",
+      "sha256": "7ed4c8ddccddf9bd502444c58163b74218ce40ae5520002bd9ac6b5a61372513",
+      "bytes": 74516112,
+      "mtimeNsBeforeHash": 1791379974126503000,
+      "mtimeNsAfterHash": 1791379974126503000,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/omfprojection.cpp",
+      "sha256": "f54ec11c28831cf86f9da4ecea0bd78c65082c21689cce5d7ac4dfe8fbdd740d",
+      "bytes": 77512,
+      "mtimeNsBeforeHash": 1791379830362605095,
+      "mtimeNsAfterHash": 1791379830362605095,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/omfobjects_p.cpp",
+      "sha256": "ed5f401940dbca2fdcc464180487612e8248abd77eb806f77639a8a177880c67",
+      "bytes": 25434,
+      "mtimeNsBeforeHash": 1791378394421441831,
+      "mtimeNsAfterHash": 1791378394421441831,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/scanmodel.h",
+      "sha256": "526be67ba6241343372b83318181451ead98d6bd53ca5d6ed0494e6b65108f08",
+      "bytes": 7340,
+      "mtimeNsBeforeHash": 1791378394401117719,
+      "mtimeNsAfterHash": 1791378394401117719,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/scanengine.cpp",
+      "sha256": "8731bb8debc1cba601fde18220aa69fd37cb3fe6d61b001ab4b83b0f58a7720b",
+      "bytes": 28152,
+      "mtimeNsBeforeHash": 1791378860184441916,
+      "mtimeNsAfterHash": 1791378860184441916,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/root-membership-comparison-2026-10-08.json",
+      "sha256": "41c0518d1cfc8e0cf7983fab3beb9b815b22481aeb9958c0f94e2c4e8efa1dcc",
+      "bytes": 15728,
+      "mtimeNsBeforeHash": 1791387027921410627,
+      "mtimeNsAfterHash": 1791387027921410627,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/full-scan-metadata-evidence-2026-10-07.csv",
+      "sha256": "c5fed6e2613704155e360ca813da5750e030732360b915cd55ac4735db6274ee",
+      "bytes": 1096360,
+      "mtimeNsBeforeHash": 1791375964931076232,
+      "mtimeNsAfterHash": 1791375964931076232,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/full-scan-root-membership-2026-10-08.csv",
+      "sha256": "488b33fd4367695ca72633bf595c1eeb73039ff519df9fe221cd17cb35e11a0d",
+      "bytes": 1096732,
+      "mtimeNsBeforeHash": 1791386960075781665,
+      "mtimeNsAfterHash": 1791386960075781665,
+      "sizeMtimeStableDuringHash": true
+    },
+    {
+      "path": "/private/tmp/mediamuster-duration-root-review-2026-10-08.md",
+      "sha256": "806e80fc6104be6a9f0215bed3ce45b59c64ba5797be965678c23b3c5def0ddf",
+      "bytes": 5940,
+      "mtimeNs": 1791387502111116742
+    }
+  ],
+  "limits": "Stat equality does not prove native-handle identity or unchanged equal-size/equal-time content. Historical whole-object scan plus matching retained graph establishes the excluded source of prior supported duration facts; no Avid deletion history is proved. No universal OMF effect interpretation.",
+  "separateMxfReviewEvidence": "Parent MXF reviewer retained A02.6A041588... MaterialPackage709\u2192Track725(ID1,48000/1)\u2192Sequence726(Duration462720)\u2192SourceClip727\u2192SourcePackage700, DisplayRate25/1. That separate receipt is linked by root; it is not produced by this MDB-only probe.",
+  "durableCopies": [
+    {
+      "originalPath": "/private/tmp/mediamuster-duration-root-summary-2026-10-08.json",
+      "retainedPath": "Project Canon/evidence/root-membership-duration-summary-2026-10-08.json",
+      "sha256": "d42c3cac27dcb5d58e5084f23ca61d116979916a7dbf545b9d5e090b11efc95a",
+      "bytes": 57978
+    },
+    {
+      "originalPath": "/private/tmp/mediamuster-duration-root-evidence-2026-10-08.jsonl.gz",
+      "retainedPath": "Project Canon/evidence/root-membership-duration-evidence-2026-10-08.jsonl.gz",
+      "sha256": "36de2e9ddff4b9854a97a878b9484c06a329a12895ff8a91e9a45b6ce20efea0",
+      "bytes": 66705
+    },
+    {
+      "originalPath": "/private/tmp/mediamuster-duration-root-requests-2026-10-08.json",
+      "retainedPath": "Project Canon/evidence/root-membership-duration-requests-2026-10-08.json",
+      "sha256": "b2bc2262ecde0cf4a033e9c0ff6e9b7ff033658a5015fdcbc6d1b1a3681044da",
+      "bytes": 26917
+    },
+    {
+      "originalPath": "/private/tmp/mediamuster-duration-root-probe-2026-10-08.cpp",
+      "retainedPath": "Project Canon/evidence/root-membership-duration-probe-2026-10-08.cpp",
+      "sha256": "f8005ff5eadd75e1dfc50b450aa6366c289983f237c987ba03f2090e13b4c975",
+      "bytes": 8819
+    },
+    {
+      "originalPath": "/private/tmp/mediamuster-duration-root-historical-omfprojection-2026-10-08.cpp",
+      "retainedPath": "Project Canon/evidence/root-membership-duration-historical-omfprojection-2026-10-08.cpp",
+      "sha256": "759568ca5d37944f79a3e62392b62ba36bf725a89a633da2e7d8d8794a9274c3",
+      "bytes": 63899
+    }
+  ]
+}

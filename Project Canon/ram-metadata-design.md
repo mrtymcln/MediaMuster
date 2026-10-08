@@ -10,6 +10,11 @@ A `MediaFile` describes a physical file at a particular volume and location. It
 stores filesystem information, scan/read status, local database membership,
 selected metadata, and links to supporting evidence and Avid identities.
 
+Use `Compression` consistently for the selected semantic property and table/CSV
+heading, with `MediaFile::compression` holding its readable value. The separate
+`CompressionLabel` evidence field identifies the coding format; it is not the
+display cell. Raw recorded property names remain unchanged.
+
 Do not use a Mob ID as the unique key of the physical-file inventory. Copies can
 carry the same identity. A scan-local record ID plus volume/location information
 can distinguish their rows. Path changes and later rescans need explicit handling;
@@ -95,7 +100,7 @@ requires a separate verification method. Do not automatically delete or hide cop
 | `Relationship` | A reference between objects; track, start, length and units where supplied; recorded/derived basis | Origin object, target object, supporting source/observations |
 | `SourceSnapshot` | Which PMR, MDB, bin or media header was inspected; source location/version markers, read time, parser version and read outcome | Observations from that inspection |
 | `MetadataObservation` | Field, typed decoded value, original value where practical, exact property/object locator, and recorded/derived basis | Subject file/object, source snapshot, derivation inputs/rule |
-| `ResolvedField` | Selected value, selection rule/version, explanation, supporting and competing observations | Observations and the file/object whose field it resolves |
+| `ResolvedField` | Selected value, semantic property name, explanation, supporting and competing observations | Observations and the file/object whose field it resolves |
 | `ScanIssue` | An unresolved condition, supporting references, affected location/identity, scan scope and completion status | Source snapshots, objects, physical records where present |
 | `ScanResult` | Shared RAM collections for one scan, including physical files | All of the above |
 
@@ -181,8 +186,8 @@ Names need not repeat "Property" once scoped by their type.
 
 | Value | Meaning |
 | --- | --- |
-| `NotRead` | That property/source has not yet been checked |
-| `Present` | A usable value was read |
+| `NotRead` | No interpreted read result is established; the reason distinguishes an unattempted read, incomplete coverage or unsupported interpretation |
+| `Present` | An observation was read, including explicit empty text, false or zero; it is not necessarily selected or displayable |
 | `Absent` | A sufficiently complete read established that the property was not supplied |
 | `Unreadable` | The attempted read could not establish a usable value |
 
@@ -226,7 +231,7 @@ and compact per-record states can expose a complete table while storing efficien
 | Value | Meaning |
 | --- | --- |
 | `NotCompared` | No comparison result has been established |
-| `SingleSource` | One usable source supports the field |
+| `SingleSource` | One usable comparable observation supports the field; the resolver counts observations, not distinct source kinds or files |
 | `Agreeing` | Multiple comparable observations agree |
 | `Conflicting` | Comparable observations disagree |
 
@@ -236,16 +241,23 @@ one enum. Agreement applies to retained comparable evidence, not unread sources.
 Only compare the same semantic field/object/context; absent optional metadata in one
 source is not automatically a conflict with metadata supplied elsewhere.
 
-Selection is separate again: keep an optional selected observation/value, its rule
-and version, inputs and reason. Conflicting evidence can still support a selected
+Selection is separate again: keep an optional selected observation/value, its
+semantic property name, inputs and reason. Do not track rule versions or custom
+rule-name tags. Conflicting evidence can still support a selected
 value under an explicit rule. An ambiguous association can remain unresolved without
 being a property read error. Recorded/derived basis and freshness are also independent.
+
+The shared [selection policy](metadata-selection-policy.md) expresses preferred
+sources as named `prefer(...)` groups, from first choice to final fallback. Sources
+in one group have equal preference. Omitted sources cannot supply that property's
+selected value, but their observations and comparison results remain available.
+These groups belong to the shared policy, not a copied table in each MediaFile.
 
 ## Future presentation without changing evidence collection
 
 The user explicitly deferred a "Why this value?" detail UI. Preserve observations,
 source/property locators, raw values where needed, read outcomes, derivation inputs,
-selected-value rule/version/reason, competing observations and freshness in RAM now.
+selected-value property name/reason, competing observations and freshness in RAM now.
 Any later UI feature flag should control presentation only, not whether that evidence
 is collected. A detail panel should consume the same read-only evidence interface as
 the table/Console, rather than introducing another parser or selection implementation.
@@ -424,7 +436,7 @@ Physical system allocation failures must still be reported explicitly; the polic
 does not mean available system memory is unlimited.
 
 - Store shared source receipts and clip objects once; link to them from physical rows.
-- Use typed values, compact IDs and shared strings/rule identifiers instead of
+- Use typed values, compact IDs and shared property names instead of
   duplicating long explanations per observation.
 - Parse a database/bin once per unchanged snapshot within the session.
 - Read metadata regions and skip media payloads. Bound parallel reads and temporary

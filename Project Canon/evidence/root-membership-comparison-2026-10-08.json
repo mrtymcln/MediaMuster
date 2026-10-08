@@ -1,0 +1,417 @@
+{
+  "beforeCsv": "Project Canon/evidence/full-scan-metadata-evidence-2026-10-07.csv",
+  "beforeSha256": "c5fed6e2613704155e360ca813da5750e030732360b915cd55ac4735db6274ee",
+  "afterCsv": "Project Canon/evidence/full-scan-root-membership-2026-10-08.csv",
+  "afterSha256": "488b33fd4367695ca72633bf595c1eeb73039ff519df9fe221cd17cb35e11a0d",
+  "beforeRows": 2413,
+  "afterRows": 2413,
+  "columnsIdentical": true,
+  "addedPaths": [],
+  "removedPaths": [],
+  "changedCellsExcludingScanSessionKelpieId": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AB_1543D1543D7E1A.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "Mac and Levi dancing_The Teskey Brothers - Carry You.mp3"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AD_1544215442E0AA.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "Mac and Levi dancing_The Teskey Brothers - Carry You.mp3"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A2_166FC166FCC8DA.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "8646 sc2 second version.m4a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A3_166FE166FEC21A.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "8646 sc2 second version.m4a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041588_152EE152EE266A.mxf",
+      "property": "Clip Duration",
+      "before": "Track 2: 00:00:09:16",
+      "after": "Track 1: 00:00:09:16"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AC_1543D1543D7FEA.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "Mac and Levi dancing_The Teskey Brothers - Carry You.mp3"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AE_1544215442E2BA.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "Mac and Levi dancing_The Teskey Brothers - Carry You.mp3"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V copy.mxf",
+      "property": "Bin",
+      "before": "8645_v2",
+      "after": ""
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V.mxf",
+      "property": "Bin",
+      "before": "8645_v2",
+      "after": ""
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF64_8969B08969B2DA.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "8646 sc2 second version.m4a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF65_896B20896B240A.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "8646 sc2 second version.m4a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF66_896C60896C6F2A.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "8646 sc2 second version.m4a"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF67_896DB0896DB75A.mxf",
+      "property": "Source Filename",
+      "before": "",
+      "after": "8646 sc2 second version.m4a"
+    }
+  ],
+  "nonzeroUniqueKelpieIds": true,
+  "sourceReadOutcomeChanges": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041583_152E7152E7A15A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041585_152EA152EABE8A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041586_152EB152EBF31A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AB_1543D1543D7E1A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AD_1544215442E0AA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041780_164A5164A5CA5A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A2_166FC166FCC8DA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A3_166FE166FEC21A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A04181A_16B9716B97262A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041584_152E7152E7A37A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041587_152EB152EBF4EA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041588_152EE152EE266A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AC_1543D1543D7FEA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AE_1544215442E2BA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041781_164A5164A5CC2A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A04181B_16B9716B97281A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FE5B_87AA1087AA101A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FEBA_883E90883E973A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF29_88FB5088FB55EA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF3B_892F50892F5F1A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF42_893BE0893BE41A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF55_895760895760BA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF64_8969B08969B2DA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF65_896B20896B240A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF66_896C60896C6F2A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF67_896DB0896DB75A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF6B_898FD0898FD9CA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF96_8A37308A37311A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FE5C_87AA1087AA117A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FEBB_883E90883E990A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF3C_892F60892F60CA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF43_893BE0893BE61A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF56_895760895762BA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF6C_898FD0898FDD9A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF97_8A37308A37334A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A050273_B95940B959404A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502C7_BCFEE0BCFEEAEA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CB_BD2E30BD2E3F6A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CC_BD2E40BD2E43EA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CD_BD2E40BD2E454A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A05030F_BFADF0BFADF69A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A050327_C0F430C0F4377A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0503C2_C8B7C0C8B7C50A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050274_B95940B95941AA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502C8_BCFEE0BCFEED0A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502CE_BD2E40BD2E468A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502CF_BD2E40BD2E47CA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502D0_BD2E40BD2E48EA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050310_BFADF0BFADF87A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050328_C0F430C0F43B7A.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0503C3_C8B7C0C8B7C6DA.mxf",
+      "before": 0,
+      "after": 1,
+      "readReason": "Header read: required table metadata missing or conflicting: Clip Duration"
+    }
+  ],
+  "addedSources": [],
+  "removedSources": [],
+  "issueCountsBefore": {
+    "2": 273,
+    "1": 23
+  },
+  "issueCountsAfter": {
+    "2": 275,
+    "1": 23
+  },
+  "scanMs": 20736,
+  "memoryRetained": {
+    "peakResidentBytes": 2792472576,
+    "physicalFootprintBytes": 2534185472,
+    "residentBytes": 2792374272
+  },
+  "performanceBoundary": "Read-only Debug scan with uncontrolled filesystem cache; no comparative speed or memory claim."
+}

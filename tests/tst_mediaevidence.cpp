@@ -65,10 +65,10 @@ private slots:
 	void excluded_evidence_is_retained_without_selecting_it()
 	{
 		MediaEvidence evidence;
-		evidence.observe(MediaProperty::Codec, observation(MetadataSource::Mdb, QStringLiteral("old codec")));
+		evidence.observe(MediaProperty::Compression, observation(MetadataSource::Mdb, QStringLiteral("old codec")));
 		evidence.excludeDatabaseMetadata();
-		QCOMPARE(evidence.observations(MediaProperty::Codec).size(), 1);
-		QVERIFY(!evidence.resolve(MediaProperty::Codec, priority, {}).value.isValid());
+		QCOMPARE(evidence.observations(MediaProperty::Compression).size(), 1);
+		QVERIFY(!evidence.resolve(MediaProperty::Compression, priority, {}).value.isValid());
 	}
 	void source_reads_do_not_imply_property_absence()
 	{
@@ -124,7 +124,7 @@ private slots:
 		const auto read = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			MetadataSource::Mxf, QStringLiteral("header.mxf"), {}, SourceReadState::Complete});
 		evidence.registerSource(unopened);
-		QCOMPARE(evidence.readStatus(MediaProperty::Codec, unopened).reason, PropertyReadReason::SourceNotRead);
+		QCOMPARE(evidence.readStatus(MediaProperty::Compression, unopened).reason, PropertyReadReason::SourceNotRead);
 		evidence.registerSource(read);
 		QCOMPARE(evidence.sourceCoverage().size(), 1);
 		QCOMPARE(evidence.sourceCoverage().first().snapshot, SourceSnapshotRef(read));
@@ -171,13 +171,13 @@ private slots:
 	void copy_on_write_keeps_original_evidence_unchanged()
 	{
 		MediaEvidence original;
-		original.observe(MediaProperty::Codec, observation(MetadataSource::Mdb, QStringLiteral("codec")));
+		original.observe(MediaProperty::Compression, observation(MetadataSource::Mdb, QStringLiteral("codec")));
 		MediaEvidence copy = original;
 		copy.excludeDatabaseMetadata();
-		QVERIFY(original.observations(MediaProperty::Codec).first().eligible);
-		QVERIFY(!copy.observations(MediaProperty::Codec).first().eligible);
-		QCOMPARE(original.observations(MediaProperty::Codec).first().snapshot,
-			copy.observations(MediaProperty::Codec).first().snapshot);
+		QVERIFY(original.observations(MediaProperty::Compression).first().eligible);
+		QVERIFY(!copy.observations(MediaProperty::Compression).first().eligible);
+		QCOMPARE(original.observations(MediaProperty::Compression).first().snapshot,
+			copy.observations(MediaProperty::Compression).first().snapshot);
 	}
 	void id_allocation_never_wraps_or_reuses_removed_ids()
 	{

@@ -1,5 +1,7 @@
 #include "binmetadataresolver.h"
 #include "avbparser.h"
+#include "canonadapter.h"
+#include "canon/metadataselectionpolicy.h"
 #include "canon/projection.h"
 #include "mediafile.h"
 
@@ -54,20 +56,24 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 {
 	const QString previousName = file.clipName;
 	const QString previousBin = file.originalBin;
+	const auto previousNameSource = file.clipNameSource;
+	const bool previousBinFromAvb = file.originalBinFromAvb;
 	file.evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Avb);
 	file.evidence.excludeSource(MediaProperty::OriginalBin, MetadataSource::Avb);
-	if (file.clipNameSource == MediaFile::ClipNameSource::Avb)
+	if (!file.canonScan && file.clipNameSource == MediaFile::ClipNameSource::Avb)
 	{
 		file.clipName.clear();
 		file.clipNameSource = MediaFile::ClipNameSource::None;
 	}
-	if (file.originalBinFromAvb)
+	if (!file.canonScan && file.originalBinFromAvb)
 	{
 		file.originalBin.clear();
 		file.originalBinFromAvb = false;
 	}
 	MasterMobMetadata combined;
-	const auto identities = file.masterMobIds.isEmpty() ? QStringList{file.masterMobId} : file.masterMobIds;
+	const auto identities = file.canonScan				  ? file.evidence.selected(MediaProperty::MasterMobId).value.toStringList()
+							: file.masterMobIds.isEmpty() ? QStringList{file.masterMobId}
+														  : file.masterMobIds;
 	for (const auto &identity : identities)
 	{
 		const auto found = m_metadataByMasterMobId.constFind(identity);
@@ -95,22 +101,13 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		file.evidence.observe(MediaProperty::ClipName, value);
 	for (const auto &value : combined.bins)
 		file.evidence.observe(MediaProperty::OriginalBin, value);
-	// Selection is per field. AVB remains a fallback; header/database facts keep
-	// their agreed priority, and every alternative stays inspectable in RAM.
-	const auto nameRank = [](MetadataSource source)
-	{ return source == MetadataSource::Mxf || source == MetadataSource::Omf ? 3 : source == MetadataSource::Mdb ? 2
-																			  : source == MetadataSource::Avb	? 1
-																												: 0; };
-	const auto binRank = [](MetadataSource source)
-	{ return source == MetadataSource::Mdb ? 3 : source == MetadataSource::Mxf || source == MetadataSource::Omf ? 2
-											 : source == MetadataSource::Avb									? 1
-																												: 0; };
-	auto selectedName = file.evidence.resolve(MediaProperty::ClipName, nameRank, QStringLiteral("Header > MDB > AVB"));
-	auto selectedBin = file.evidence.resolve(MediaProperty::OriginalBin, binRank, QStringLiteral("MDB > header > AVB"));
+	auto selectedName = Canon::resolveProperty(file.evidence, Canon::propertyPolicy(MediaProperty::ClipName));
+	auto selectedBin = Canon::resolveProperty(file.evidence, Canon::propertyPolicy(MediaProperty::OriginalBin));
 	const auto qualifyConflict = [&](MediaProperty property, bool conflict, ResolvedField &selected)
 	{
-		if (conflict && selected.selectedObservation >= 0 &&
-			file.evidence.observations(property)[selected.selectedObservation].snapshot->source == MetadataSource::Avb)
+		const auto &observations = file.evidence.observations(property);
+		if (conflict && selected.selectedObservation >= 0 && selected.selectedObservation < observations.size() &&
+			observations[selected.selectedObservation].snapshot && observations[selected.selectedObservation].snapshot->source == MetadataSource::Avb)
 		{
 			selected.value.clear();
 			selected.selectedObservation = -1;
@@ -124,6 +121,13 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 	file.evidence.select(MediaProperty::OriginalBin, selectedBin);
 	combined.nameConflict |= selectedName.selectedObservation < 0 && selectedName.agreement == PropertyAgreement::Conflicting;
 	combined.binConflict |= selectedBin.selectedObservation < 0 && selectedBin.agreement == PropertyAgreement::Conflicting;
+	if (file.canonScan)
+	{
+		Canon::selectEffectMetadata(file.evidence);
+		const bool changed = applyResolvedMetadata(file);
+		return changed || file.clipName != previousName || file.originalBin != previousBin ||
+			   file.clipNameSource != previousNameSource || file.originalBinFromAvb != previousBinFromAvb;
+	}
 	if (file.clipName.isEmpty() && selectedName.selectedObservation >= 0)
 	{
 		const auto source = file.evidence.observations(MediaProperty::ClipName)[selectedName.selectedObservation].snapshot->source;
@@ -155,12 +159,6 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		file.originalBin = combined.originalBin;
 		file.originalBinFromAvb = true;
 	}
-	if (file.canonScan)
-	{
-		Canon::selectEffectMetadata(file.evidence);
-		file.effect = file.evidence.selected(MediaProperty::Effect).value.toString();
-		file.effectCategory = file.evidence.selected(MediaProperty::EffectCategory).value.toString();
-		file.effectSequence = file.evidence.selected(MediaProperty::EffectSequence).value.toString();
-	}
-	return file.clipName != previousName || file.originalBin != previousBin;
+	return file.clipName != previousName || file.originalBin != previousBin ||
+		   file.clipNameSource != previousNameSource || file.originalBinFromAvb != previousBinFromAvb;
 }

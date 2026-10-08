@@ -64,6 +64,7 @@ int main()
 	{
 		TypedBento writer;
 		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 		object(writer, 101, "MOBJ");
 		object(writer, 201, "CDCI");
 		const auto id = wideId ? QByteArray::fromHex("060a2b340101010501010f1013000000") + QByteArray(16, 'f') : uid(11);
@@ -77,13 +78,14 @@ int main()
 						{"reader_outcome", int(source.outcome)},
 						{"file_candidates", projection.files.size()}};
 		if (!projection.files.isEmpty())
-			row.insert("codec", single(projection.files.first(), MediaProperty::Codec).toString());
+			row.insert("codec", single(projection.files.first(), MediaProperty::Compression).toString());
 		reports.append(row);
 	}
 	for (const bool aifc : {false, true})
 	{
 		TypedBento writer;
 		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
 		object(writer, 101, "MOBJ");
 		object(writer, 201, aifc ? "AIFD" : "WAVD");
 		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
@@ -114,7 +116,7 @@ int main()
 		}
 		const auto &file = projection.files.first();
 		row.insert("bit_depth", single(file, MediaProperty::BitDepth).toString());
-		row.insert("codec", single(file, MediaProperty::Codec).toString());
+		row.insert("codec", single(file, MediaProperty::Compression).toString());
 		const auto values = file.evidence.observations(MediaProperty::BitDepth);
 		if (!values.isEmpty())
 		{

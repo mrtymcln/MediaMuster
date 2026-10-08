@@ -1,0 +1,2369 @@
+{
+  "rowCount": 51,
+  "distinctMasters": 28,
+  "counts": {
+    "older duration and label match": 51,
+    "files activeSourceMobs count1": 51
+  },
+  "rows": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041583_152E7152E7A15A.mxf",
+      "activeMaster": 203062,
+      "excludedMaster": 93586,
+      "olderTracks": [
+        {
+          "track": 93576,
+          "label": 1,
+          "sequence": 93575,
+          "units": 360,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:14:10",
+      "afterDuration": "Track 1: 00:00:14:10",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 127963
+            }
+          ],
+          "handle": 127964,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 202643
+            }
+          ],
+          "handle": 202644,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041585_152EA152EABE8A.mxf",
+      "activeMaster": 203227,
+      "excludedMaster": 93389,
+      "olderTracks": [
+        {
+          "track": 93388,
+          "label": 1,
+          "sequence": 93387,
+          "units": 269,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:10:19",
+      "afterDuration": "Track 1: 00:00:10:19",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 111894
+            }
+          ],
+          "handle": 111895,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 204350
+            }
+          ],
+          "handle": 204351,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041586_152EB152EBF31A.mxf",
+      "activeMaster": 203469,
+      "excludedMaster": 93186,
+      "olderTracks": [
+        {
+          "track": 93176,
+          "label": 1,
+          "sequence": 93175,
+          "units": 153,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:06:03",
+      "afterDuration": "Track 1: 00:00:06:03",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 118152
+            }
+          ],
+          "handle": 118153,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 202895
+            }
+          ],
+          "handle": 202896,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AB_1543D1543D7E1A.mxf",
+      "activeMaster": 203174,
+      "excludedMaster": 84257,
+      "olderTracks": [
+        {
+          "track": 84247,
+          "label": 1,
+          "sequence": 84246,
+          "units": 1465,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:58:15",
+      "afterDuration": "Track 1: 00:00:58:15",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 69139
+            }
+          ],
+          "handle": 69140,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 204286
+            }
+          ],
+          "handle": 204287,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0415AD_1544215442E0AA.mxf",
+      "activeMaster": 203400,
+      "excludedMaster": 84114,
+      "olderTracks": [
+        {
+          "track": 84104,
+          "label": 1,
+          "sequence": 84103,
+          "units": 499,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:19:24",
+      "afterDuration": "Track 1: 00:00:19:24",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 71034
+            }
+          ],
+          "handle": 71035,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 202597
+            }
+          ],
+          "handle": 202598,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A041780_164A5164A5CA5A.mxf",
+      "activeMaster": 204259,
+      "excludedMaster": 109568,
+      "olderTracks": [
+        {
+          "track": 109558,
+          "label": 1,
+          "sequence": 109557,
+          "units": 250,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:10:00",
+      "afterDuration": "Track 1: 00:00:10:00",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 69695
+            }
+          ],
+          "handle": 69696,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203851
+            }
+          ],
+          "handle": 203852,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A2_166FC166FCC8DA.mxf",
+      "activeMaster": 202507,
+      "excludedMaster": 100683,
+      "olderTracks": [
+        {
+          "track": 100682,
+          "label": 1,
+          "sequence": 100681,
+          "units": 340,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:13:15",
+      "afterDuration": "Track 1: 00:00:13:15",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 100995
+            }
+          ],
+          "handle": 100996,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203731
+            }
+          ],
+          "handle": 203732,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A0417A3_166FE166FEC21A.mxf",
+      "activeMaster": 202699,
+      "excludedMaster": 100349,
+      "olderTracks": [
+        {
+          "track": 100348,
+          "label": 1,
+          "sequence": 100347,
+          "units": 406,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:16:06",
+      "afterDuration": "Track 1: 00:00:16:06",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 71841
+            }
+          ],
+          "handle": 71842,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 202800
+            }
+          ],
+          "handle": 202801,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A01.6A04181A_16B9716B97262A.mxf",
+      "activeMaster": 202570,
+      "excludedMaster": 79979,
+      "olderTracks": [
+        {
+          "track": 79969,
+          "label": 1,
+          "sequence": 79968,
+          "units": 627,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:25:02",
+      "afterDuration": "Track 1: 00:00:25:02",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 125490
+            }
+          ],
+          "handle": 125491,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203289
+            }
+          ],
+          "handle": 203290,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041584_152E7152E7A37A.mxf",
+      "activeMaster": 203062,
+      "excludedMaster": 93586,
+      "olderTracks": [
+        {
+          "track": 93585,
+          "label": 2,
+          "sequence": 93584,
+          "units": 360,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:14:10",
+      "afterDuration": "Track 2: 00:00:14:10",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 127289
+            }
+          ],
+          "handle": 127290,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 202922
+            }
+          ],
+          "handle": 202923,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041587_152EB152EBF4EA.mxf",
+      "activeMaster": 203469,
+      "excludedMaster": 93186,
+      "olderTracks": [
+        {
+          "track": 93185,
+          "label": 2,
+          "sequence": 93184,
+          "units": 153,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:06:03",
+      "afterDuration": "Track 2: 00:00:06:03",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 117834
+            }
+          ],
+          "handle": 117835,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203090
+            }
+          ],
+          "handle": 203091,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041588_152EE152EE266A.mxf",
+      "activeMaster": 203586,
+      "excludedMaster": 92878,
+      "olderTracks": [
+        {
+          "track": 92877,
+          "label": 2,
+          "sequence": 92876,
+          "units": 241,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:09:16",
+      "afterDuration": "Track 1: 00:00:09:16",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 80386
+            }
+          ],
+          "handle": 80387,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203316
+            }
+          ],
+          "handle": 203317,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AC_1543D1543D7FEA.mxf",
+      "activeMaster": 203174,
+      "excludedMaster": 84257,
+      "olderTracks": [
+        {
+          "track": 84256,
+          "label": 2,
+          "sequence": 84255,
+          "units": 1465,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:58:15",
+      "afterDuration": "Track 2: 00:00:58:15",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 68875
+            }
+          ],
+          "handle": 68876,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 207572
+            }
+          ],
+          "handle": 207573,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A0415AE_1544215442E2BA.mxf",
+      "activeMaster": 203400,
+      "excludedMaster": 84114,
+      "olderTracks": [
+        {
+          "track": 84113,
+          "label": 2,
+          "sequence": 84112,
+          "units": 499,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:19:24",
+      "afterDuration": "Track 2: 00:00:19:24",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 70467
+            }
+          ],
+          "handle": 70468,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 202847
+            }
+          ],
+          "handle": 202848,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A041781_164A5164A5CC2A.mxf",
+      "activeMaster": 204259,
+      "excludedMaster": 109568,
+      "olderTracks": [
+        {
+          "track": 109567,
+          "label": 2,
+          "sequence": 109566,
+          "units": 250,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:10:00",
+      "afterDuration": "Track 2: 00:00:10:00",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 69342
+            }
+          ],
+          "handle": 69343,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203990
+            }
+          ],
+          "handle": 203991,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/A02.6A04181B_16B9716B97281A.mxf",
+      "activeMaster": 202570,
+      "excludedMaster": 79979,
+      "olderTracks": [
+        {
+          "track": 79978,
+          "label": 2,
+          "sequence": 79977,
+          "units": 627,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:25:02",
+      "afterDuration": "Track 2: 00:00:25:02",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 125006
+            }
+          ],
+          "handle": 125007,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 203667
+            }
+          ],
+          "handle": 203668,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FE5B_87AA1087AA101A.mxf",
+      "activeMaster": 134732,
+      "excludedMaster": 71343,
+      "olderTracks": [
+        {
+          "track": 71333,
+          "label": 1,
+          "sequence": 71332,
+          "units": 13,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:00:13",
+      "afterDuration": "Track 1: 00:00:00:13",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 83657
+            }
+          ],
+          "handle": 83658,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 123735
+            }
+          ],
+          "handle": 123736,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FEBA_883E90883E973A.mxf",
+      "activeMaster": 155873,
+      "excludedMaster": 105499,
+      "olderTracks": [
+        {
+          "track": 105489,
+          "label": 1,
+          "sequence": 105488,
+          "units": 23,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:00:23",
+      "afterDuration": "Track 1: 00:00:00:23",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 107431
+            }
+          ],
+          "handle": 107432,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 143460
+            }
+          ],
+          "handle": 143461,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF29_88FB5088FB55EA.mxf",
+      "activeMaster": 164197,
+      "excludedMaster": 97010,
+      "olderTracks": [
+        {
+          "track": 97009,
+          "label": 1,
+          "sequence": 97008,
+          "units": 36,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:01:11",
+      "afterDuration": "Track 1: 00:00:01:11",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 101907
+            }
+          ],
+          "handle": 101908,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 140161
+            }
+          ],
+          "handle": 140162,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF3B_892F50892F5F1A.mxf",
+      "activeMaster": 161897,
+      "excludedMaster": 95001,
+      "olderTracks": [
+        {
+          "track": 94991,
+          "label": 1,
+          "sequence": 94990,
+          "units": 904,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:36:04",
+      "afterDuration": "Track 1: 00:00:36:04",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 85505
+            }
+          ],
+          "handle": 85506,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 165793
+            }
+          ],
+          "handle": 165794,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF42_893BE0893BE41A.mxf",
+      "activeMaster": 131877,
+      "excludedMaster": 94215,
+      "olderTracks": [
+        {
+          "track": 94205,
+          "label": 1,
+          "sequence": 94204,
+          "units": 250,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:10:00",
+      "afterDuration": "Track 1: 00:00:10:00",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 76232
+            }
+          ],
+          "handle": 76233,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 135006
+            }
+          ],
+          "handle": 135007,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF55_895760895760BA.mxf",
+      "activeMaster": 125381,
+      "excludedMaster": 92678,
+      "olderTracks": [
+        {
+          "track": 92668,
+          "label": 1,
+          "sequence": 92667,
+          "units": 8,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:00:08",
+      "afterDuration": "Track 1: 00:00:00:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 109104
+            }
+          ],
+          "handle": 109105,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 125568
+            }
+          ],
+          "handle": 125569,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF64_8969B08969B2DA.mxf",
+      "activeMaster": 136928,
+      "excludedMaster": 91958,
+      "olderTracks": [
+        {
+          "track": 91957,
+          "label": 1,
+          "sequence": 91956,
+          "units": 341,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:13:16",
+      "afterDuration": "Track 1: 00:00:13:16",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 85955
+            }
+          ],
+          "handle": 85956,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 131335
+            }
+          ],
+          "handle": 131336,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF65_896B20896B240A.mxf",
+      "activeMaster": 139635,
+      "excludedMaster": 91831,
+      "olderTracks": [
+        {
+          "track": 91830,
+          "label": 1,
+          "sequence": 91829,
+          "units": 406,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:16:06",
+      "afterDuration": "Track 1: 00:00:16:06",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 83306
+            }
+          ],
+          "handle": 83307,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 134779
+            }
+          ],
+          "handle": 134780,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF66_896C60896C6F2A.mxf",
+      "activeMaster": 140104,
+      "excludedMaster": 91782,
+      "olderTracks": [
+        {
+          "track": 91781,
+          "label": 1,
+          "sequence": 91780,
+          "units": 317,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:12:17",
+      "afterDuration": "Track 1: 00:00:12:17",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 84766
+            }
+          ],
+          "handle": 84767,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 165990
+            }
+          ],
+          "handle": 165991,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF67_896DB0896DB75A.mxf",
+      "activeMaster": 140309,
+      "excludedMaster": 91750,
+      "olderTracks": [
+        {
+          "track": 91749,
+          "label": 1,
+          "sequence": 91748,
+          "units": 238,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:09:13",
+      "afterDuration": "Track 1: 00:00:09:13",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 87674
+            }
+          ],
+          "handle": 87675,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 143699
+            }
+          ],
+          "handle": 143700,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF6B_898FD0898FD9CA.mxf",
+      "activeMaster": 149807,
+      "excludedMaster": 91433,
+      "olderTracks": [
+        {
+          "track": 91423,
+          "label": 1,
+          "sequence": 91422,
+          "units": 126,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:05:01",
+      "afterDuration": "Track 1: 00:00:05:01",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 80693
+            }
+          ],
+          "handle": 80694,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 151292
+            }
+          ],
+          "handle": 151293,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A01.6A04FF96_8A37308A37311A.mxf",
+      "activeMaster": 133196,
+      "excludedMaster": 87936,
+      "olderTracks": [
+        {
+          "track": 87926,
+          "label": 1,
+          "sequence": 87925,
+          "units": 23,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:00:23",
+      "afterDuration": "Track 1: 00:00:00:23",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 110394
+            }
+          ],
+          "handle": 110395,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 126858
+            }
+          ],
+          "handle": 126859,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FE5C_87AA1087AA117A.mxf",
+      "activeMaster": 134732,
+      "excludedMaster": 71343,
+      "olderTracks": [
+        {
+          "track": 71342,
+          "label": 2,
+          "sequence": 71341,
+          "units": 13,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:00:13",
+      "afterDuration": "Track 2: 00:00:00:13",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 83478
+            }
+          ],
+          "handle": 83479,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 127441
+            }
+          ],
+          "handle": 127442,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FEBB_883E90883E990A.mxf",
+      "activeMaster": 155873,
+      "excludedMaster": 105499,
+      "olderTracks": [
+        {
+          "track": 105498,
+          "label": 2,
+          "sequence": 105497,
+          "units": 23,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:00:23",
+      "afterDuration": "Track 2: 00:00:00:23",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 107120
+            }
+          ],
+          "handle": 107121,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 149109
+            }
+          ],
+          "handle": 149110,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF3C_892F60892F60CA.mxf",
+      "activeMaster": 161897,
+      "excludedMaster": 95001,
+      "olderTracks": [
+        {
+          "track": 95000,
+          "label": 2,
+          "sequence": 94999,
+          "units": 904,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:36:04",
+      "afterDuration": "Track 2: 00:00:36:04",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 85145
+            }
+          ],
+          "handle": 85146,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 126008
+            }
+          ],
+          "handle": 126009,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF43_893BE0893BE61A.mxf",
+      "activeMaster": 131877,
+      "excludedMaster": 94215,
+      "olderTracks": [
+        {
+          "track": 94214,
+          "label": 2,
+          "sequence": 94213,
+          "units": 250,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:10:00",
+      "afterDuration": "Track 2: 00:00:10:00",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 76051
+            }
+          ],
+          "handle": 76052,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 140447
+            }
+          ],
+          "handle": 140448,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF56_895760895762BA.mxf",
+      "activeMaster": 125381,
+      "excludedMaster": 92678,
+      "olderTracks": [
+        {
+          "track": 92677,
+          "label": 2,
+          "sequence": 92676,
+          "units": 8,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:00:08",
+      "afterDuration": "Track 2: 00:00:00:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 108654
+            }
+          ],
+          "handle": 108655,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 130833
+            }
+          ],
+          "handle": 130834,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF6C_898FD0898FDD9A.mxf",
+      "activeMaster": 149807,
+      "excludedMaster": 91433,
+      "olderTracks": [
+        {
+          "track": 91432,
+          "label": 2,
+          "sequence": 91431,
+          "units": 126,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:05:01",
+      "afterDuration": "Track 2: 00:00:05:01",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 80220
+            }
+          ],
+          "handle": 80221,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 161740
+            }
+          ],
+          "handle": 161741,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/A02.6A04FF97_8A37308A37334A.mxf",
+      "activeMaster": 133196,
+      "excludedMaster": 87936,
+      "olderTracks": [
+        {
+          "track": 87935,
+          "label": 2,
+          "sequence": 87934,
+          "units": 23,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:00:23",
+      "afterDuration": "Track 2: 00:00:00:23",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 110217
+            }
+          ],
+          "handle": 110218,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 132889
+            }
+          ],
+          "handle": 132890,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A050273_B95940B959404A.mxf",
+      "activeMaster": 158395,
+      "excludedMaster": 97060,
+      "olderTracks": [
+        {
+          "track": 97050,
+          "label": 1,
+          "sequence": 97049,
+          "units": 363,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:14:13",
+      "afterDuration": "Track 1: 00:00:14:13",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 74665
+            }
+          ],
+          "handle": 74666,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 121466
+            }
+          ],
+          "handle": 121467,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502C7_BCFEE0BCFEEAEA.mxf",
+      "activeMaster": 144776,
+      "excludedMaster": 85124,
+      "olderTracks": [
+        {
+          "track": 85114,
+          "label": 1,
+          "sequence": 85113,
+          "units": 168,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:06:18",
+      "afterDuration": "Track 1: 00:00:06:18",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 68824
+            }
+          ],
+          "handle": 68825,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 150460
+            }
+          ],
+          "handle": 150461,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CB_BD2E30BD2E3F6A.mxf",
+      "activeMaster": 157901,
+      "excludedMaster": 84546,
+      "olderTracks": [
+        {
+          "track": 84534,
+          "label": 1,
+          "sequence": 84533,
+          "units": 383,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:15:08",
+      "afterDuration": "Track 1: 00:00:15:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 72538
+            }
+          ],
+          "handle": 72539,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 162542
+            }
+          ],
+          "handle": 162543,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CC_BD2E40BD2E43EA.mxf",
+      "activeMaster": 157901,
+      "excludedMaster": 84546,
+      "olderTracks": [
+        {
+          "track": 84534,
+          "label": 1,
+          "sequence": 84533,
+          "units": 383,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:15:08",
+      "afterDuration": "Track 1: 00:00:15:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 72231
+            }
+          ],
+          "handle": 72232,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 132028
+            }
+          ],
+          "handle": 132029,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0502CD_BD2E40BD2E454A.mxf",
+      "activeMaster": 157901,
+      "excludedMaster": 84546,
+      "olderTracks": [
+        {
+          "track": 84534,
+          "label": 1,
+          "sequence": 84533,
+          "units": 383,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:15:08",
+      "afterDuration": "Track 1: 00:00:15:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 71912
+            }
+          ],
+          "handle": 71913,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 134692
+            }
+          ],
+          "handle": 134693,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A05030F_BFADF0BFADF69A.mxf",
+      "activeMaster": 130782,
+      "excludedMaster": 77013,
+      "olderTracks": [
+        {
+          "track": 77003,
+          "label": 1,
+          "sequence": 77002,
+          "units": 184,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:07:09",
+      "afterDuration": "Track 1: 00:00:07:09",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 94211
+            }
+          ],
+          "handle": 94212,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 138364
+            }
+          ],
+          "handle": 138365,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A050327_C0F430C0F4377A.mxf",
+      "activeMaster": 139795,
+      "excludedMaster": 73262,
+      "olderTracks": [
+        {
+          "track": 73252,
+          "label": 1,
+          "sequence": 73251,
+          "units": 23,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:00:23",
+      "afterDuration": "Track 1: 00:00:00:23",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 72411
+            }
+          ],
+          "handle": 72412,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 140314
+            }
+          ],
+          "handle": 140315,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A0503C2_C8B7C0C8B7C50A.mxf",
+      "activeMaster": 143903,
+      "excludedMaster": 97100,
+      "olderTracks": [
+        {
+          "track": 97090,
+          "label": 1,
+          "sequence": 97089,
+          "units": 250,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 1: 00:00:10:00",
+      "afterDuration": "Track 1: 00:00:10:00",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 72366
+            }
+          ],
+          "handle": 72367,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 134410
+            }
+          ],
+          "handle": 134411,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050274_B95940B95941AA.mxf",
+      "activeMaster": 158395,
+      "excludedMaster": 97060,
+      "olderTracks": [
+        {
+          "track": 97059,
+          "label": 2,
+          "sequence": 97058,
+          "units": 363,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:14:13",
+      "afterDuration": "Track 2: 00:00:14:13",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 74523
+            }
+          ],
+          "handle": 74524,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 125352
+            }
+          ],
+          "handle": 125353,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502C8_BCFEE0BCFEED0A.mxf",
+      "activeMaster": 144776,
+      "excludedMaster": 85124,
+      "olderTracks": [
+        {
+          "track": 85123,
+          "label": 2,
+          "sequence": 85122,
+          "units": 168,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:06:18",
+      "afterDuration": "Track 2: 00:00:06:18",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 68706
+            }
+          ],
+          "handle": 68707,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 156596
+            }
+          ],
+          "handle": 156597,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502CE_BD2E40BD2E468A.mxf",
+      "activeMaster": 157901,
+      "excludedMaster": 84546,
+      "olderTracks": [
+        {
+          "track": 84545,
+          "label": 2,
+          "sequence": 84544,
+          "units": 383,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:15:08",
+      "afterDuration": "Track 2: 00:00:15:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 71802
+            }
+          ],
+          "handle": 71803,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 137766
+            }
+          ],
+          "handle": 137767,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502CF_BD2E40BD2E47CA.mxf",
+      "activeMaster": 157901,
+      "excludedMaster": 84546,
+      "olderTracks": [
+        {
+          "track": 84545,
+          "label": 2,
+          "sequence": 84544,
+          "units": 383,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:15:08",
+      "afterDuration": "Track 2: 00:00:15:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 71725
+            }
+          ],
+          "handle": 71726,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 141033
+            }
+          ],
+          "handle": 141034,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0502D0_BD2E40BD2E48EA.mxf",
+      "activeMaster": 157901,
+      "excludedMaster": 84546,
+      "olderTracks": [
+        {
+          "track": 84545,
+          "label": 2,
+          "sequence": 84544,
+          "units": 383,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:15:08",
+      "afterDuration": "Track 2: 00:00:15:08",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 71516
+            }
+          ],
+          "handle": 71517,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 144114
+            }
+          ],
+          "handle": 144115,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050310_BFADF0BFADF87A.mxf",
+      "activeMaster": 130782,
+      "excludedMaster": 77013,
+      "olderTracks": [
+        {
+          "track": 77012,
+          "label": 2,
+          "sequence": 77011,
+          "units": 184,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:07:09",
+      "afterDuration": "Track 2: 00:00:07:09",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 93924
+            }
+          ],
+          "handle": 93925,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 142967
+            }
+          ],
+          "handle": 142968,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A050328_C0F430C0F43B7A.mxf",
+      "activeMaster": 139795,
+      "excludedMaster": 73262,
+      "olderTracks": [
+        {
+          "track": 73261,
+          "label": 2,
+          "sequence": 73260,
+          "units": 23,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:00:23",
+      "afterDuration": "Track 2: 00:00:00:23",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 72011
+            }
+          ],
+          "handle": 72012,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 151543
+            }
+          ],
+          "handle": 151544,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A02.6A0503C3_C8B7C0C8B7C6DA.mxf",
+      "activeMaster": 143903,
+      "excludedMaster": 97100,
+      "olderTracks": [
+        {
+          "track": 97099,
+          "label": 2,
+          "sequence": 97098,
+          "units": 250,
+          "clock": {
+            "denominator": 1,
+            "numerator": 25
+          }
+        }
+      ],
+      "beforeDuration": "Track 2: 00:00:10:00",
+      "afterDuration": "Track 2: 00:00:10:00",
+      "olderMatchesBefore": true,
+      "rawFileCopies": [
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 72259
+            }
+          ],
+          "handle": 72260,
+          "inObjectSpine": false,
+          "inSourceMobs": false
+        },
+        {
+          "descriptors": [
+            {
+              "class": "PCMA",
+              "explanation": "",
+              "handle": 138830
+            }
+          ],
+          "handle": 138831,
+          "inObjectSpine": true,
+          "inSourceMobs": true
+        }
+      ]
+    }
+  ],
+  "scope": "51 physical paths already newly read in the saved comparison; three MDBs read sequentially with QFile ReadOnly. No ScanEngine, operations, source writes or new effect semantics.",
+  "componentReferenceChecks": {
+    "declaredProperties": 338,
+    "unresolvedOrTypeExtentMismatch": 0
+  },
+  "allDatabaseClipDurationObservationCountsZero": true,
+  "visibleClipDurationExactStringMatches": 50,
+  "visibleClipDurationUnitMatches": 51,
+  "globalDistinctMasterIds": 28,
+  "allMasterIdsHaveTwoCopies": true,
+  "activeTopLevelComponent": "PVOL",
+  "excludedTopLevelComponent": "SEQU",
+  "unsupportedEffectDurationRemains": "F16; no new PVOL interpretation or timeline correctness claim."
+}

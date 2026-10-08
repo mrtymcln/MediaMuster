@@ -86,15 +86,28 @@ namespace Canon
 			return named(value, {"MOBJ", "SMOB", "MMOB", "CMOB"});
 		}
 
+		bool mediaDataClass(const QString &value)
+		{
+			return named(value, {"MDAT", "IDAT", "JPEG", "TIFF", "WAVE", "AIFC"});
+		}
+
+		bool descriptorOrComponentClass(const QString &value)
+		{
+			return (mediaClass(value) && value != QLatin1String("WAVE")) ||
+				   named(value, {"HEAD", "CLSD", "TRAK", "ATTB", "ATTR", "MDES", "MDFL", "MDFM", "MDTP",
+								 "DIDD", "CPNT", "SCLP", "TCCP", "SEQU", "FILL", "TRKG", "TRAN", "SLCT",
+								 "SPED", "MASK", "REPT", "PVOL", "PDWN", "CTRL", "ECCP", "FXCP", "NEST"});
+		}
+
 		bool completeObject(const ParsedSource &source, const AvidObject &object)
 		{
 			// A complete Bento read enumerates the owner's TOC entries. An unnamed
 			// entry may conceal a checked property behind an unresolved dictionary
 			// definition, so it cannot establish that property's absence.
 			return source.outcome == ParsedSource::Outcome::Complete && !object.properties.isEmpty() &&
-				std::all_of(object.properties.cbegin(), object.properties.cend(), [&](const auto &property)
-							{ return property.bento && !property.locator.name.isEmpty() &&
-									 property.locator.objectNumber == object.handle; });
+				   std::all_of(object.properties.cbegin(), object.properties.cend(), [&](const auto &property)
+							   { return property.bento && !property.locator.name.isEmpty() &&
+										property.locator.objectNumber == object.handle; });
 		}
 
 		std::optional<qint64> integer(Property property)
@@ -227,10 +240,12 @@ namespace Canon
 				file.objects.append({source.snapshot, object.handle});
 		}
 
-		void retainAmbiguousCandidate(ProjectedFile &file, const ProjectedFile &candidate)
+		void retainAmbiguousCandidate(ProjectedFile &file, const ProjectedFile &candidate, bool retainIdentity = true)
 		{
 			appendEvidence(file.evidence, candidate.evidence, false);
 			file.objects += candidate.objects;
+			if (!retainIdentity)
+				return;
 			// A positive identity disagreement is different from an unreadable ID:
 			// keep competing IDs active while excluding unowned technical facts.
 			for (auto value : candidate.evidence.observations(MediaProperty::FileMobId))
@@ -251,12 +266,6 @@ namespace Canon
 					if (cancellation.cancelled())
 						return;
 					m_objects.insert(object.handle, &object);
-					if (mobClass(objectClass(object)))
-					{
-						const auto id = identity(unique(object, {"OMFI:MOBJ:MobID"}));
-						if (!id.isEmpty())
-							m_mobs[id].append(object.handle);
-					}
 				}
 				for (const auto &edge : source.relationships)
 				{
@@ -264,18 +273,62 @@ namespace Canon
 						return;
 					m_edges[edge.origin].append(&edge);
 				}
+				establishContents();
+				for (const auto handle : m_activeMobs)
+				{
+					const auto *object = m_objects.value(handle);
+					QSet<QString> claims;
+					for (const auto *property : properties(*object, {"OMFI:MOBJ:MobID"}))
+						if (const auto id = identity(property); !id.isEmpty())
+							claims.insert(id);
+					if (claims.size() > 1 &&
+						!properties(*object, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"}).isEmpty())
+						m_conflictingMobIds += claims;
+				}
+				for (const auto handle : m_activeMobs)
+					if (!m_disputedMobs.contains(handle))
+					{
+						const auto id = identity(unique(*m_objects.value(handle), {"OMFI:MOBJ:MobID"}));
+						if (!id.isEmpty() && !m_conflictingMobIds.contains(id))
+							m_mobs[id].append(handle);
+					}
 			}
 
 			Projection project(bool database)
 			{
 				Projection result;
+				result.diagnostics = m_contentsDiagnostics;
+				if (!m_contentsComplete)
+					return result;
 				QHash<ObjectHandle, QVector<qsizetype>> fileSubjects;
 				QHash<qsizetype, QVariantList> clipDurations;
 				for (const auto &object : m_source.objects)
 				{
 					if (m_cancellation.cancelled())
 						return result;
-					if (!mobClass(objectClass(object)))
+					if (!m_activeMobs.contains(object.handle))
+						continue;
+					QSet<QString> recordedIds;
+					for (const auto *property : properties(object, {"OMFI:MOBJ:MobID"}))
+						if (const auto id = identity(property); !id.isEmpty())
+							recordedIds.insert(id);
+					const bool disputedIdentity = std::any_of(recordedIds.cbegin(), recordedIds.cend(),
+															  [&](const auto &id)
+															  { return m_conflictingMobIds.contains(id); });
+					if (disputedIdentity &&
+						!properties(object, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"}).isEmpty())
+					{
+						ProjectedFile carrier;
+						link(carrier, m_source, object);
+						for (const auto *property : properties(object, {"OMFI:MOBJ:MobID"}))
+							if (const auto id = identity(property); !id.isEmpty())
+								observe(carrier, MediaProperty::FileMobId, m_source, object, *property, id, EvidenceBasis::Derived,
+										QStringLiteral("This active descriptor-owning mob's identity claims overlap a conflicting active owner; technical and editorial ownership is not established."));
+						result.files.append(std::move(carrier));
+						result.diagnostics.append(QStringLiteral("An active OMF mob has conflicting MobID claims; identity evidence is retained without technical ownership."));
+						continue;
+					}
+					if (m_disputedMobs.contains(object.handle))
 						continue;
 					const auto *mobId = unique(object, {"OMFI:MOBJ:MobID"});
 					const QString id = identity(mobId);
@@ -306,7 +359,7 @@ namespace Canon
 				{
 					if (m_cancellation.cancelled())
 						return result;
-					if (!isMaster(master))
+					if (!m_activeMobs.contains(master.handle) || m_disputedMobs.contains(master.handle) || !isMaster(master))
 						continue;
 					const auto *masterProperty = unique(master, {"OMFI:MOBJ:MobID"});
 					const auto masterId = identity(masterProperty);
@@ -316,11 +369,11 @@ namespace Canon
 					masterFacts.masterMobIds.append(masterId);
 					link(masterFacts, m_source, master);
 					recordPropertyCoverage(masterFacts, MediaProperty::ClipName, m_source, master,
-									   {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}, completeObject(m_source, master));
+										   {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}, completeObject(m_source, master));
 					recordPropertyCoverage(masterFacts, MediaProperty::Type, m_source, master,
-									   {"OMFI:MOBJ:UsageCode"}, false);
+										   {"OMFI:MOBJ:UsageCode"}, false);
 					recordPropertyCoverage(masterFacts, MediaProperty::PrecomputeCategory, m_source, master,
-									   {"OMFI:MOBJ:UsageCode", "OMFI:CPNT:Attributes", "OMFI:TRKG:Tracks"}, false);
+										   {"OMFI:MOBJ:UsageCode", "OMFI:CPNT:Attributes", "OMFI:TRKG:Tracks"}, false);
 					observe(masterFacts, MediaProperty::MasterMobId, m_source, master, *masterProperty, masterId,
 							EvidenceBasis::Derived, QStringLiteral("Canonical identity of this recorded master object."));
 					for (const auto *name : properties(master, {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}))
@@ -352,22 +405,40 @@ namespace Canon
 					observe(file, MediaProperty::ClipDuration, m_source, *owner, *id, clipDurations.value(index), EvidenceBasis::Derived,
 							QStringLiteral("Independent recorded master-track lengths linked to this file; unknown lengths, clocks or drop-frame status are not invented."));
 				}
+				result.diagnostics += m_referenceDiagnostics;
 				if (database)
 					return result;
+				if (m_disputedMedia)
+				{
+					result.files.clear();
+					return result;
+				}
 
 				QSet<QString> mediaIds;
-				bool mediaIdentityRecorded = false;
-				bool uncertainMediaIdentity = false;
+				bool mediaIdentityRecorded = !m_activeMedia.isEmpty();
+				bool unreadableMediaIdentity = !mediaIdentityRecorded;
+				bool uncertainMediaIdentity = m_disputedMedia;
+				for (const auto &file : result.files)
+					if (file.fileMobId.isEmpty() && !file.evidence.observations(MediaProperty::FileMobId).isEmpty())
+						uncertainMediaIdentity = true;
 				for (const auto &object : m_source.objects)
-					for (const auto *property : properties(object, {"OMFI:MDAT:MobID", "OMFI:WAVE:MobID", "OMFI:AIFC:MobID"}))
+				{
+					const auto identities = mediaIdentities(object);
+					if (m_activeMedia.contains(object.handle) && identities.isEmpty())
+						unreadableMediaIdentity = true;
+					for (const auto *property : identities)
 					{
 						mediaIdentityRecorded = true;
 						const auto id = identity(property);
 						if (!id.isEmpty())
 							mediaIds.insert(id);
 						else
-							uncertainMediaIdentity = true;
+							unreadableMediaIdentity = true;
 					}
+				}
+				uncertainMediaIdentity = uncertainMediaIdentity || unreadableMediaIdentity;
+				if (unreadableMediaIdentity)
+					result.diagnostics.append(QStringLiteral("No complete positive root-listed MediaData identity establishes this physical OMF file's ownership; absent or unreadable identity leaves candidate metadata unqualified. Independent sources remain available."));
 				QVector<ProjectedFile> eligible;
 				QSet<QString> eligibleIds;
 				for (auto &file : result.files)
@@ -386,16 +457,20 @@ namespace Canon
 					// Candidates moved to eligible are still observations, even though
 					// their ownership could not be selected.
 					for (const auto &candidate : result.files)
-						retainAmbiguousCandidate(ambiguous, candidate);
+						retainAmbiguousCandidate(ambiguous, candidate, !unreadableMediaIdentity || candidate.fileMobId.isEmpty());
 					for (const auto &candidate : eligible)
-						retainAmbiguousCandidate(ambiguous, candidate);
+						retainAmbiguousCandidate(ambiguous, candidate, !unreadableMediaIdentity || candidate.fileMobId.isEmpty());
 					for (const auto &object : m_source.objects)
-						for (const auto *property : properties(object, {"OMFI:MDAT:MobID", "OMFI:WAVE:MobID", "OMFI:AIFC:MobID"}))
+						for (const auto *property : mediaIdentities(object))
 						{
 							const auto id = identity(property);
 							if (!id.isEmpty())
-								observe(ambiguous, MediaProperty::FileMobId, m_source, object, *property, id, EvidenceBasis::Derived,
-										QStringLiteral("Recorded media-data ownership disagrees with the available file-mob candidates; original identity retained."));
+							{
+								auto value = observation(m_source, object, *property, id, EvidenceBasis::Derived,
+														 QStringLiteral("Recorded media-data ownership disagrees with the available file-mob candidates; original identity retained."));
+								value.eligible = !unreadableMediaIdentity || mediaIds.size() > 1;
+								ambiguous.evidence.observe(MediaProperty::FileMobId, std::move(value));
+							}
 						}
 					result.files.clear();
 					if (!ambiguous.evidence.observations(MediaProperty::FileMobId).isEmpty())
@@ -405,14 +480,224 @@ namespace Canon
 			}
 
 		private:
+			struct ContentsList
+			{
+				bool present = false;
+				bool complete = false;
+				QSet<ObjectHandle> objects;
+				QVector<const Relationship *> entries;
+			};
+
+			ContentsList contentsList(const char *name, bool index = false) const
+			{
+				ContentsList result;
+				const auto *head = m_objects.value(1);
+				if (!head || !m_source.omfRevision)
+					return result;
+				const auto values = properties(*head, {name});
+				result.present = !values.isEmpty();
+				if (values.size() != 1)
+					return result;
+				const auto *value = values.first();
+				const qsizetype width = *m_source.omfRevision == OmfRevision::V1 ? 8 : 4;
+				const qsizetype stride = width + (index ? 12 : 0);
+				if (value->state != PropertyReadState::Present || !value->bytesRetained || !value->bento ||
+					value->bento->typeName != QLatin1String(index ? "omfi:MobIndex" : "omfi:ObjRefArray") ||
+					value->encoding.size() < 2 || (value->encoding.size() - 2) % stride != 0)
+					return result;
+				// The toolkit's array length is determined by byte extent. This also
+				// accommodates its 0xffff count marker without dropping any slots.
+				const qsizetype count = (value->encoding.size() - 2) / stride;
+				for (const auto *edge : m_edges.value(1))
+					if (edge->locator.name == QLatin1String(name))
+					{
+						result.entries.append(edge);
+						if (!edge->target || !m_objects.contains(edge->target))
+							return result;
+						result.objects.insert(edge->target);
+					}
+				result.complete = result.entries.size() == count;
+				return result;
+			}
+
+			void qualifyLegacyIndex(const char *name, const QSet<ObjectHandle> &expected, bool media = false)
+			{
+				const auto list = contentsList(name, true);
+				if (!list.present)
+					return; // OMF1's typed indexes are optional; ObjectSpine establishes membership.
+				QSet<ObjectHandle> disputed;
+				bool incomparableWidth = false;
+				if (!list.complete)
+					disputed = expected;
+				else
+				{
+					disputed = expected - list.objects;
+					for (const auto *edge : list.entries)
+					{
+						const auto *owner = m_objects.value(edge->target);
+						const auto uid = edge->recordedReference.toMap().value(QStringLiteral("mobId")).toByteArray();
+						const auto *head = m_objects.value(1);
+						const auto *index = uniqueRaw(*head, {name});
+						const auto recordedId = uid.size() == 12 && index && index->bento && index->bento->metadataBigEndian
+													? canonicalDatabaseId(uid, *index->bento->metadataBigEndian)
+													: QString{};
+						const auto ownerIds = media ? mediaIdentities(*owner) : properties(*owner, {"OMFI:MOBJ:MobID"});
+						QSet<QString> ownerClaims;
+						bool unreadableClaim = ownerIds.isEmpty();
+						for (const auto *property : ownerIds)
+						{
+							const auto claim = identity(property);
+							if (claim.isEmpty())
+								unreadableClaim = true;
+							else
+								ownerClaims.insert(claim);
+						}
+						const auto ownerId = !unreadableClaim && ownerClaims.size() == 1 ? *ownerClaims.cbegin() : QString{};
+						if (!expected.contains(edge->target) || recordedId.isEmpty() || ownerId.isEmpty())
+							disputed.insert(edge->target);
+						else if (ownerIds.first()->encoding.size() == 12 && recordedId != ownerId)
+							disputed.insert(edge->target);
+						else if (ownerIds.first()->encoding.size() == 32 && recordedId != ownerId)
+							incomparableWidth = true;
+					}
+				}
+				if (incomparableWidth)
+					m_contentsDiagnostics.append(QStringLiteral("%1 contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.").arg(QLatin1String(name)));
+				if (!list.complete || !disputed.isEmpty())
+				{
+					m_contentsDiagnostics.append(QStringLiteral("%1 is unreadable or disagrees with ObjectSpine membership/recorded MobID; affected identity associations are not eligible. Raw properties and references remain available.").arg(QLatin1String(name)));
+					if (media)
+						m_disputedMedia = true;
+					else
+						m_disputedMobs += disputed;
+				}
+			}
+
+			void establishContents()
+			{
+				const auto fail = [&](const char *name)
+				{
+					m_contentsDiagnostics.append(QStringLiteral("%1 required contents list is absent, unreadable or has unresolved/unsupported ownership; owned OMF metadata is not eligible. Raw properties and references remain available.").arg(QLatin1String(name)));
+				};
+				if (!m_source.omfRevision)
+				{
+					fail("OMF HEAD");
+					return;
+				}
+				if (*m_source.omfRevision == OmfRevision::V1)
+				{
+					const auto spine = contentsList("OMFI:ObjectSpine");
+					if (!spine.complete)
+					{
+						fail("OMFI:ObjectSpine");
+						return;
+					}
+					QSet<ObjectHandle> sources, compositions;
+					for (const auto handle : spine.objects)
+					{
+						const auto *object = m_objects.value(handle);
+						const auto cls = objectClass(*object);
+						if (cls == QLatin1String("MOBJ"))
+						{
+							m_activeMobs.insert(handle);
+							if (properties(*object, {"OMFI:MOBJ:PhysicalMedia"}).isEmpty())
+								compositions.insert(handle);
+							else
+								sources.insert(handle);
+						}
+						else if (cls.isEmpty() || descriptorOrComponentClass(cls) || mobClass(cls))
+						{
+							fail("OMFI:ObjectSpine");
+							return;
+						}
+						else
+						{
+							m_activeMedia.insert(handle);
+							if (!mediaDataClass(cls))
+							{
+								m_disputedMedia = true;
+								m_contentsDiagnostics.append(QStringLiteral("ObjectSpine media-data class %1 has no established identity interpretation; physical ownership remains unknown and its raw context is retained.").arg(cls));
+							}
+						}
+					}
+					qualifyLegacyIndex("OMFI:SourceMobs", sources);
+					qualifyLegacyIndex("OMFI:CompositionMobs", compositions);
+					qualifyLegacyIndex("OMFI:MediaData", m_activeMedia, true);
+				}
+				else
+				{
+					const auto mobs = contentsList("OMFI:HEAD:Mobs"), media = contentsList("OMFI:HEAD:MediaData");
+					if (!mobs.complete || !media.complete)
+					{
+						if (!mobs.complete)
+							fail("OMFI:HEAD:Mobs");
+						if (!media.complete)
+							fail("OMFI:HEAD:MediaData");
+						return;
+					}
+					for (const auto handle : mobs.objects)
+						if (!mobClass(objectClass(*m_objects.value(handle))))
+						{
+							fail("OMFI:HEAD:Mobs");
+							return;
+						}
+					for (const auto handle : media.objects)
+						if (!mediaDataClass(objectClass(*m_objects.value(handle))))
+						{
+							fail("OMFI:HEAD:MediaData");
+							return;
+						}
+					m_activeMobs = mobs.objects;
+					m_activeMedia = media.objects;
+				}
+				m_contentsComplete = true;
+			}
+
+			QVector<Property> mediaIdentities(const AvidObject &object) const
+			{
+				if (!m_activeMedia.contains(object.handle))
+					return {};
+				const auto cls = objectClass(object);
+				if (*m_source.omfRevision == OmfRevision::V2)
+					return mediaDataClass(cls) ? properties(object, {"OMFI:MDAT:MobID"}) : QVector<Property>{};
+				if (cls == QLatin1String("WAVE"))
+					return properties(object, {"OMFI:WAVE:MobID"});
+				if (cls == QLatin1String("AIFC"))
+					return properties(object, {"OMFI:AIFC:MobID"});
+				if (cls == QLatin1String("TIFF"))
+					return properties(object, {"OMFI:TIFF:MobID"});
+				if (named(cls, {"MDAT", "IDAT", "JPEG"}))
+					return properties(object, {"OMFI:MDAT:MobID"});
+				return {};
+			}
+
 			QVector<const AvidObject *> targets(ObjectHandle handle, std::initializer_list<const char *> names) const
 			{
 				QVector<const AvidObject *> result;
+				const auto *owner = m_objects.value(handle);
+				if (!owner)
+					return result;
+				for (const auto *name : names)
+					if (!properties(*owner, {name}).isEmpty() &&
+						!completeReferences(*owner, name, named(QLatin1String(name), {"OMFI:CPNT:Attributes", "OMFI:MOBJ:UserAttributes"})))
+					{
+						incompleteReference(*owner, name);
+						return result;
+					}
 				for (const auto *edge : m_edges.value(handle))
 					if (edge->target && named(edge->locator.name, names))
 						if (const auto *object = m_objects.value(edge->target))
 							result.append(object);
 				return result;
+			}
+
+			void incompleteReference(const AvidObject &owner, const char *name) const
+			{
+				const auto explanation = QStringLiteral("%1 on object %2 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained.")
+											 .arg(QLatin1String(name))
+											 .arg(owner.handle);
+				if (!m_referenceDiagnostics.contains(explanation))
+					m_referenceDiagnostics.append(explanation);
 			}
 
 			bool isMaster(const AvidObject &object) const
@@ -445,25 +730,26 @@ namespace Canon
 			bool completeReferences(const AvidObject &object, const char *name, bool nullAllowed = false) const
 			{
 				const auto values = properties(object, {name});
-				if (values.isEmpty())
+				if (values.isEmpty() || !m_source.omfRevision)
 					return false;
+				const qsizetype width = *m_source.omfRevision == OmfRevision::V1 ? 8 : 4;
 				quint64 expected = 0, observed = 0;
 				for (const auto *value : values)
 				{
-					if (value->state != PropertyReadState::Present || !value->bento ||
+					if (value->state != PropertyReadState::Present || !value->bytesRetained || !value->bento ||
 						(value->bento->typeName != QLatin1String("omfi:ObjRef") && value->bento->typeName != QLatin1String("omfi:ObjRefArray")))
 						return false;
 					if (value->bento->typeName == QLatin1String("omfi:ObjRef"))
+					{
+						if (value->encoding.size() != width)
+							return false;
 						++expected;
+					}
 					else
 					{
-						if (value->encoding.size() < 2 || !value->bento->metadataBigEndian)
+						if (value->encoding.size() < 2 || (value->encoding.size() - 2) % width != 0)
 							return false;
-						const auto count = *value->bento->metadataBigEndian ? qFromBigEndian<quint16>(value->encoding.constData())
-																			: qFromLittleEndian<quint16>(value->encoding.constData());
-						if (count == 0xffff)
-							return false; // Retained extended count needs a separate absence proof.
-						expected += count;
+						expected += (value->encoding.size() - 2) / width;
 					}
 				}
 				for (const auto *edge : m_edges.value(object.handle))
@@ -496,6 +782,14 @@ namespace Canon
 					const auto *object = m_objects.value(handle);
 					if (!object)
 						continue;
+					for (const auto *name : {"OMFI:TRKG:Tracks", "OMFI:TRAK:TrackComponent", "OMFI:SEQU:Sequence",
+											 "OMFI:MOBJ:Slots", "OMFI:MSLT:Segment", "OMFI:SEQU:Components", "OMFI:NEST:Slots",
+											 "OMFI:SLCT:Selected", "OMFI:SLCT:Alternates", "OMFI:MGRP:Choices", "OMFI:ERAT:InputSegment"})
+						if (!properties(*object, {name}).isEmpty() && !completeReferences(*object, name))
+						{
+							incompleteReference(*object, name);
+							return {}; // A resolved branch cannot hide a missing declared component.
+						}
 					result.append(object);
 					for (const auto *target : targets(handle, {"OMFI:TRKG:Tracks", "OMFI:TRAK:TrackComponent", "OMFI:SEQU:Sequence",
 															   "OMFI:MOBJ:Slots", "OMFI:MSLT:Segment", "OMFI:SEQU:Components", "OMFI:NEST:Slots",
@@ -510,10 +804,27 @@ namespace Canon
 				QVector<ObjectHandle> result;
 				for (const auto *object : components(mob))
 					if (objectClass(*object) == QLatin1String("SCLP"))
-						for (const auto *sourceId : properties(*object, {"OMFI:SCLP:SourceID"}))
-							for (const auto target : m_mobs.value(identity(sourceId)))
-								if (target != mob.handle && !result.contains(target))
-									result.append(target);
+					{
+						if (properties(*object, {"OMFI:SCLP:SourceID"}).isEmpty())
+							continue; // Original-source endpoints need not name an onward mob.
+						const auto *sourceId = unique(*object, {"OMFI:SCLP:SourceID"});
+						const auto id = identity(sourceId);
+						if (id.isEmpty())
+						{
+							if (sourceId && sourceId->bento && sourceId->bento->typeName == QLatin1String("omfi:UID") &&
+								(sourceId->encoding.size() == 12 || sourceId->encoding.size() == 32) &&
+								std::all_of(sourceId->encoding.cbegin(), sourceId->encoding.cend(), [](char byte)
+											{ return byte == 0; }))
+								continue; // Explicit zero UID is the original-source sentinel.
+							const auto explanation = QStringLiteral("OMFI:SCLP:SourceID on object %1 has no unique interpreted identity; dependent mob associations remain unknown and original properties are retained.").arg(object->handle);
+							if (!m_referenceDiagnostics.contains(explanation))
+								m_referenceDiagnostics.append(explanation);
+							return {};
+						}
+						for (const auto target : m_mobs.value(id))
+							if (target != mob.handle && !result.contains(target))
+								result.append(target);
+					}
 				return result;
 			}
 
@@ -695,7 +1006,8 @@ namespace Canon
 			{
 				const auto interpreted = withInferredText(property, 0, true);
 				const auto value = interpreted.decoded.metaType().id() == QMetaType::QString
-								 ? interpreted.decoded : QVariant{};
+									   ? interpreted.decoded
+									   : QVariant{};
 				observe(file, field, m_source, object, interpreted, value);
 			}
 
@@ -733,6 +1045,11 @@ namespace Canon
 						}
 						if (*kind != 3)
 							continue;
+						if (!completeReferences(*entry, "OMFI:ATTB:ObjAttribute"))
+						{
+							incompleteReference(*entry, "OMFI:ATTB:ObjAttribute");
+							continue;
+						}
 						if (key == QLatin1String("_IMPORTSETTING") && !projectOnly)
 							observe(file, MediaProperty::Imported, m_source, *entry, *name, true,
 									EvidenceBasis::Derived, QStringLiteral("Recorded _IMPORTSETTING object attribute."));
@@ -783,8 +1100,9 @@ namespace Canon
 				const auto interpreted = withInferredText(property, 0, true);
 				text(file, MediaProperty::SourcePath, object, interpreted);
 				recordPropertyCoverage(file, MediaProperty::SourceFilename, m_source, object,
-					{"OMFI:ATTB:StringAttribute", "OMFI:FL:POSIXPathName", "OMFI:FL:PathNameUTF8",
-					 "OMFI:FL:PathName", "OMFI:UNXL:PathName", "OMFI:WINL:PathName", "OMFI:MACL:PathName"}, false);
+									   {"OMFI:ATTB:StringAttribute", "OMFI:FL:POSIXPathName", "OMFI:FL:PathNameUTF8",
+										"OMFI:FL:PathName", "OMFI:UNXL:PathName", "OMFI:WINL:PathName", "OMFI:MACL:PathName"},
+									   false);
 				if (interpreted.decoded.metaType().id() != QMetaType::QString || interpreted.decoded.toString().isEmpty())
 					return;
 				observe(file, MediaProperty::SourceFilename, m_source, object, interpreted,
@@ -870,6 +1188,14 @@ namespace Canon
 			QHash<ObjectHandle, const AvidObject *> m_objects;
 			QHash<ObjectHandle, QVector<const Relationship *>> m_edges;
 			QHash<QString, QVector<ObjectHandle>> m_mobs;
+			QSet<ObjectHandle> m_activeMobs;
+			QSet<ObjectHandle> m_activeMedia;
+			QSet<ObjectHandle> m_disputedMobs;
+			QSet<QString> m_conflictingMobIds;
+			QStringList m_contentsDiagnostics;
+			mutable QStringList m_referenceDiagnostics;
+			bool m_contentsComplete = false;
+			bool m_disputedMedia = false;
 		};
 
 		struct AudioFacts
@@ -1024,7 +1350,7 @@ namespace Canon
 			if (audio.sampleRate.valid())
 				observe(file, MediaProperty::SampleRate, source, object, property, rateValue(audio.sampleRate), EvidenceBasis::Derived, reason);
 			if (!audio.codec.isEmpty())
-				observe(file, MediaProperty::Codec, source, object, property, audio.codec, EvidenceBasis::Derived, reason);
+				observe(file, MediaProperty::Compression, source, object, property, audio.codec, EvidenceBasis::Derived, reason);
 			if (!audio.representation.isEmpty())
 				observe(file, MediaProperty::SampleFormat, source, object, property, audio.representation, EvidenceBasis::Derived, reason);
 			if (duration && audio.frames && *audio.frames >= 0 && audio.sampleRate.valid())
@@ -1044,9 +1370,10 @@ namespace Canon
 								   {"OMFI:MDFL:SampleRate", "OMFI:WAVD:Summary", "OMFI:AIFD:Summary"}, complete);
 			recordPropertyCoverage(file, MediaProperty::FileDuration, m_source, descriptor,
 								   {"OMFI:MDFL:Length", "OMFI:MDFL:SampleRate", "OMFI:WAVD:Summary", "OMFI:AIFD:Summary"}, false);
-			recordPropertyCoverage(file, MediaProperty::Codec, m_source, descriptor,
+			recordPropertyCoverage(file, MediaProperty::Compression, m_source, descriptor,
 								   {"OMFI:DIDD:EssenceCompression", "OMFI:DIDD:DIDResolutionID", "OMFI:DIDD:Compression",
-									"OMFI:WAVD:Summary", "OMFI:AIFD:Summary", "OMFI:ObjID", "OMFI:OOBJ:ObjClass"}, false);
+									"OMFI:WAVD:Summary", "OMFI:AIFD:Summary", "OMFI:ObjID", "OMFI:OOBJ:ObjClass"},
+								   false);
 			recordPropertyCoverage(file, MediaProperty::CompressionLabel, m_source, descriptor,
 								   {"OMFI:DIDD:EssenceCompression", "OMFI:DIDD:DIDResolutionID"}, complete);
 			recordPropertyCoverage(file, MediaProperty::ComponentDepth, m_source, descriptor,
@@ -1054,7 +1381,8 @@ namespace Canon
 			for (const auto field : {MediaProperty::BitDepth, MediaProperty::SampleFormat})
 				recordPropertyCoverage(file, field, m_source, descriptor,
 									   {"OMFI:CDCI:ComponentWidth", "OMFI:MDAU:BitsPerSample", "OMFI:RGBA:PixelStructure",
-										"OMFI:WAVD:Summary", "OMFI:AIFD:Summary", "OMFI:DIDD:EssenceCompression"}, false);
+										"OMFI:WAVD:Summary", "OMFI:AIFD:Summary", "OMFI:DIDD:EssenceCompression"},
+									   false);
 			if (audio)
 				recordPropertyCoverage(file, MediaProperty::Channels, m_source, descriptor,
 									   {"OMFI:MDAU:NumChannels", "OMFI:WAVD:Summary", "OMFI:AIFD:Summary"}, complete);
@@ -1067,7 +1395,8 @@ namespace Canon
 				recordPropertyCoverage(file, MediaProperty::Resolution, m_source, descriptor,
 									   {"OMFI:DIDD:StoredWidth", "OMFI:DIDD:StoredHeight", "OMFI:DIDD:FrameLayout",
 										"OMFI:DIDD:SampledWidth", "OMFI:DIDD:SampledHeight", "OMFI:DIDD:SampledXOffset", "OMFI:DIDD:SampledYOffset",
-										"OMFI:DIDD:DisplayWidth", "OMFI:DIDD:DisplayHeight", "OMFI:DIDD:DisplayXOffset", "OMFI:DIDD:DisplayYOffset"}, false);
+										"OMFI:DIDD:DisplayWidth", "OMFI:DIDD:DisplayHeight", "OMFI:DIDD:DisplayXOffset", "OMFI:DIDD:DisplayYOffset"},
+									   false);
 				for (const auto field : {MediaProperty::NewDnx, MediaProperty::OldDnx, MediaProperty::ReallyOldDnx})
 					recordPropertyCoverage(file, field, m_source, descriptor,
 										   {"OMFI:DIDD:EssenceCompression", "OMFI:DIDD:DIDResolutionID"}, false);
@@ -1089,7 +1418,7 @@ namespace Canon
 				if (summary)
 				{
 					summaryFacts = audioSummary(summary->encoding);
-					// Codec is the actual encoding; WAVE/AIFF is retained as the
+					// Compression is the actual encoding; WAVE/AIFF is retained as the
 					// descriptor/container fact, not substituted for compression.
 					audioObservations(file, m_source, descriptor, *summary, summaryFacts, false);
 					if (!unitsRate.valid())
@@ -1216,7 +1545,7 @@ namespace Canon
 						codec += QStringLiteral(" — %1 %2").arg(depth, format);
 				}
 				if (!codec.isEmpty() && codecProperty)
-					observe(file, MediaProperty::Codec, m_source, descriptor, *codecProperty, codec, EvidenceBasis::Derived,
+					observe(file, MediaProperty::Compression, m_source, descriptor, *codecProperty, codec, EvidenceBasis::Derived,
 							QStringLiteral("Established descriptor coding and applicable verified name table; original identifiers retained."));
 			};
 
@@ -1369,7 +1698,7 @@ namespace Canon
 			owner.properties = source.unownedProperties;
 			file.evidence.registerSource(source.snapshot, QStringLiteral("object:0"));
 			for (const auto field : {MediaProperty::Kind, MediaProperty::Channels, MediaProperty::BitDepth,
-									MediaProperty::SampleRate, MediaProperty::Codec, MediaProperty::SampleFormat})
+									 MediaProperty::SampleRate, MediaProperty::Compression, MediaProperty::SampleFormat})
 				recordPropertyCoverage(file, field, source, owner, {"Audio.fmt ", "Audio.COMM"}, false);
 			recordPropertyCoverage(file, MediaProperty::FileDuration, source, owner,
 								   {"Audio.fmt ", "Audio.COMM", "Audio.data", "Audio.SSND"}, false);
