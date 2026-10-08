@@ -4,6 +4,7 @@
 
 #include "omfobjects_p.h"
 #include "audioreader_p.h"
+#include "sourcestorage_p.h"
 
 #include <QHash>
 #include <QSet>
@@ -688,6 +689,7 @@ namespace Canon
 		result.snapshot = receipt;
 		for (auto &object : result.objects)
 			object.snapshot = receipt;
+		Detail::squeezeSourceStorage(result, context.cancellation);
 		return result;
 	}
 }

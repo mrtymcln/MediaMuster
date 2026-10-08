@@ -5,6 +5,7 @@
 #include "legacyreader.h"
 #include "audioreader_p.h"
 #include "omfobjects_p.h"
+#include "sourcestorage_p.h"
 
 #include <QSet>
 #include <array>
@@ -189,6 +190,7 @@ namespace Canon
 			result.diagnostics.append(failure.message);
 		}
 		receipt(result, context);
+		Detail::squeezeSourceStorage(result, context.cancellation);
 		return result;
 	}
 }

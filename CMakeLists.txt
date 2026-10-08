@@ -105,6 +105,7 @@ add_library(mediamuster_canon STATIC
     src/canon/compressionnames_p.cpp
     src/canon/metadataselectionpolicy.cpp
     src/canon/metadataselectionpolicy.h
+    src/canon/sourcestorage_p.h
     src/canon/pmrprojection.cpp
     src/canon/mxfprojection.cpp
     src/canon/omfprojection.cpp

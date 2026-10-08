@@ -1,0 +1,250 @@
+{
+  "roots": [
+    "/Users/Shared/AvidMediaComposer",
+    "/Volumes/EDIT"
+  ],
+  "rows": 2413,
+  "sources": 2425,
+  "issues": 298,
+  "allCsvByteIdentical": true,
+  "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+  "allInventoryIncludingKelpieIdsIdentical": true,
+  "allIssuesIdentical": true,
+  "allSourcesIdenticalExceptPropertyCapacity": true,
+  "comparisonCount": 11,
+  "runs": [
+    {
+      "receipt": "source-compaction-after-real-scan-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 22322,
+      "memoryRetained": {
+        "peakResidentBytes": 2722873344,
+        "physicalFootprintBytes": 2415286592,
+        "residentBytes": 2722873344
+      }
+    },
+    {
+      "receipt": "source-compaction-after-repeat1-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 20843,
+      "memoryRetained": {
+        "peakResidentBytes": 2750513152,
+        "physicalFootprintBytes": 2369968448,
+        "residentBytes": 2750513152
+      }
+    },
+    {
+      "receipt": "source-compaction-after-repeat2-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21084,
+      "memoryRetained": {
+        "peakResidentBytes": 2738356224,
+        "physicalFootprintBytes": 2364692800,
+        "residentBytes": 2738257920
+      }
+    },
+    {
+      "receipt": "source-compaction-after-repeat3-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 20853,
+      "memoryRetained": {
+        "peakResidentBytes": 2731212800,
+        "physicalFootprintBytes": 2292685184,
+        "residentBytes": 2731114496
+      }
+    },
+    {
+      "receipt": "source-compaction-before-real-scan-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21919,
+      "memoryRetained": {
+        "peakResidentBytes": 2729852928,
+        "physicalFootprintBytes": 2382223680,
+        "residentBytes": 2729754624
+      }
+    },
+    {
+      "receipt": "source-compaction-before-repeat1-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21193,
+      "memoryRetained": {
+        "peakResidentBytes": 2688466944,
+        "physicalFootprintBytes": 2318014784,
+        "residentBytes": 2688368640
+      }
+    },
+    {
+      "receipt": "source-compaction-before-repeat2-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21002,
+      "memoryRetained": {
+        "peakResidentBytes": 2739224576,
+        "physicalFootprintBytes": 2353125696,
+        "residentBytes": 2739126272
+      }
+    },
+    {
+      "receipt": "source-compaction-before-repeat3-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 20855,
+      "memoryRetained": {
+        "peakResidentBytes": 2695692288,
+        "physicalFootprintBytes": 2316654912,
+        "residentBytes": 2695593984
+      }
+    },
+    {
+      "receipt": "source-compaction-final-repeat1-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21783,
+      "memoryRetained": {
+        "peakResidentBytes": 2725134336,
+        "physicalFootprintBytes": 2363349248,
+        "residentBytes": 2725036032
+      }
+    },
+    {
+      "receipt": "source-compaction-final-repeat2-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21797,
+      "memoryRetained": {
+        "peakResidentBytes": 2752643072,
+        "physicalFootprintBytes": 2331138432,
+        "residentBytes": 2752544768
+      }
+    },
+    {
+      "receipt": "source-compaction-final-repeat3-2026-10-08.json",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "scanMs": 21819,
+      "memoryRetained": {
+        "peakResidentBytes": 2751184896,
+        "physicalFootprintBytes": 2349668672,
+        "residentBytes": 2751086592
+      }
+    }
+  ],
+  "series": {
+    "before": {
+      "trials": [
+        {
+          "receipt": "source-compaction-before-repeat1-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 21193,
+          "memoryRetained": {
+            "peakResidentBytes": 2688466944,
+            "physicalFootprintBytes": 2318014784,
+            "residentBytes": 2688368640
+          }
+        },
+        {
+          "receipt": "source-compaction-before-repeat2-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 21002,
+          "memoryRetained": {
+            "peakResidentBytes": 2739224576,
+            "physicalFootprintBytes": 2353125696,
+            "residentBytes": 2739126272
+          }
+        },
+        {
+          "receipt": "source-compaction-before-repeat3-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 20855,
+          "memoryRetained": {
+            "peakResidentBytes": 2695692288,
+            "physicalFootprintBytes": 2316654912,
+            "residentBytes": 2695593984
+          }
+        }
+      ],
+      "medianScanMs": 21002,
+      "medianPhysicalFootprintBytes": 2318014784,
+      "medianPeakResidentBytes": 2695692288
+    },
+    "after": {
+      "trials": [
+        {
+          "receipt": "source-compaction-after-repeat1-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 20843,
+          "memoryRetained": {
+            "peakResidentBytes": 2750513152,
+            "physicalFootprintBytes": 2369968448,
+            "residentBytes": 2750513152
+          }
+        },
+        {
+          "receipt": "source-compaction-after-repeat2-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 21084,
+          "memoryRetained": {
+            "peakResidentBytes": 2738356224,
+            "physicalFootprintBytes": 2364692800,
+            "residentBytes": 2738257920
+          }
+        },
+        {
+          "receipt": "source-compaction-after-repeat3-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 20853,
+          "memoryRetained": {
+            "peakResidentBytes": 2731212800,
+            "physicalFootprintBytes": 2292685184,
+            "residentBytes": 2731114496
+          }
+        }
+      ],
+      "medianScanMs": 20853,
+      "medianPhysicalFootprintBytes": 2364692800,
+      "medianPeakResidentBytes": 2738356224
+    },
+    "final": {
+      "trials": [
+        {
+          "receipt": "source-compaction-final-repeat1-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 21783,
+          "memoryRetained": {
+            "peakResidentBytes": 2725134336,
+            "physicalFootprintBytes": 2363349248,
+            "residentBytes": 2725036032
+          }
+        },
+        {
+          "receipt": "source-compaction-final-repeat2-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 21797,
+          "memoryRetained": {
+            "peakResidentBytes": 2752643072,
+            "physicalFootprintBytes": 2331138432,
+            "residentBytes": 2752544768
+          }
+        },
+        {
+          "receipt": "source-compaction-final-repeat3-2026-10-08.json",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "scanMs": 21819,
+          "memoryRetained": {
+            "peakResidentBytes": 2751184896,
+            "physicalFootprintBytes": 2349668672,
+            "residentBytes": 2751086592
+          }
+        }
+      ],
+      "medianScanMs": 21797,
+      "medianPhysicalFootprintBytes": 2349668672,
+      "medianPeakResidentBytes": 2751184896
+    }
+  },
+  "baseline": "Copied pre-expansion library: first MDB/OMF property-only compaction plus existing MXF cleanup.",
+  "after": "Exploratory public MDB boundary; later superseded.",
+  "final": "Shared OMF interpreter boundary preserves the first change's allocation lifetime. Final AVB per-object timing only affects bin reads, not these scans.",
+  "method": "Fixed QT_HASH_SEED=0 for repeats; before/after runs alternated, then final batch after relocating MDB cleanup. Fresh processes; Debug Qt6.5.3 arm64; caches not cleared; no builds/tests/probes overlapped fixed repeat scans. Memory captured before report serialization, GUI MediaTableModel population and bin loading.",
+  "limits": [
+    "Final batch and before batch were not alternated with each other.",
+    "No additional ordinary full-scan RAM reduction established.",
+    "Final median scan took 795 ms longer (3.8%) in these Debug runs.",
+    "No Release or Windows/NEXIS measurements."
+  ]
+}

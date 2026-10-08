@@ -56,6 +56,21 @@ all 806 DNx names and every other exported metadata value unchanged. The
 records both app builds, tests and that separate corpus comparison.
 Historical corpus and byte-search receipts remain unchanged.
 
+The user then approved the first [performance-review proposal](performance-review-2026-10-08.md).
+The [property storage compaction report](property-compaction-2026-10-08.md) records
+Qt-native compaction of finished MDB/OMF property lists. The fresh 2,413-row
+comparison retains identical CSVs and all 298 notices, with approximately 152 MB
+less retained physical footprint in that measured pair. All 90 genuine source
+graph and projection comparisons match, and all 40 native suites pass. The report
+distinguishes allocation savings, process measurements and platform limits.
+
+The subsequent [reader storage compaction report](source-storage-compaction-2026-10-08.md)
+extends that Qt-native cleanup across PMR, MDB, MXF, OMF, legacy audio and AVB
+using one private helper. AVB also trims each completed object's property list
+before reading the next. The report separates ordinary scan results from bin
+loading and records actual RAM/time tradeoffs rather than equating removed
+capacity with process memory savings.
+
 The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
 This supersedes the historical “not yet connected” status of the reader reports below.
 Memory optimization is not a prerequisite. Work began on 4 October and continued

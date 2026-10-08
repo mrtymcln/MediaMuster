@@ -1,0 +1,146 @@
+{
+  "recordedUtc": "2026-10-08T11:23:00.819158+00:00",
+  "scope": "Read-only review. No application, parser, model or test code changes; diagnostic/proposal artifacts only.",
+  "skill": "/Users/martymclean/Downloads/CPP SKILL.md",
+  "userReference": "https://github.com/AnthonyCalandra/modern-cpp-features/tree/master",
+  "baseline": {
+    "receipt": "dnx-alias-removal-real-scan-2026-10-08.json",
+    "build": "macOS arm64 execution of universal Debug build, Qt6.5.3,C++17",
+    "rows": 2413,
+    "scanMs": 20965,
+    "physicalFootprintBytes": 2534824448,
+    "objects": 475088,
+    "properties": 2719926,
+    "propertyCapacity": 3381679,
+    "relationships": 498221,
+    "encodingBytes": 83566949,
+    "measurementBoundary": "Includes MediaScanner, Canon, adapter rows and signal capture. Does not populate MediaTableModel or apply its initial BinMetadataResolver pass."
+  },
+  "measuredSizesArm64": {
+    "AvidObject": 136,
+    "BentoPropertyContext": 72,
+    "CanonMediaFile": 256,
+    "MetadataObservation": 192,
+    "MxfPropertyContext": 112,
+    "PropertyLocator": 80,
+    "RawProperty": 224,
+    "Relationship": 184,
+    "UiMediaFile": 920
+  },
+  "mdbSpareCapacity": {
+    "databases": 6,
+    "properties": 2174798,
+    "propertyCapacity": 2817231,
+    "spareSlots": 642433,
+    "rawPropertyBytes": 224,
+    "unusedSlotBytes": 143904992,
+    "interpretation": "Allocated slot-storage estimate, not a measured process-footprint reduction. A squeeze/reservation change has not been made or benchmarked."
+  },
+  "ioPrototype": {
+    "sourceSha256": "f0c7b90b89cf6f240d402248e0da7a7d9c8c2e481ddbfd1a0f323700e130d647",
+    "trials": "performance-review-probes-2026-10-08.jsonl",
+    "summary": [
+      {
+        "source": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "baselineParseMs": [
+          3108,
+          3075,
+          2971
+        ],
+        "wrapperParseMs": [
+          2985,
+          2978,
+          2969
+        ],
+        "baselineMedianMs": 3075,
+        "wrapperMedianMs": 2978,
+        "readerSeekRequests": 234620,
+        "samePositionSeekRequests": 234616,
+        "baselineForwardedQFileSeeks": 234620,
+        "wrapperForwardedQFileSeeks": 4,
+        "checkedRawPropertyDigestAndCountsEqual": true
+      },
+      {
+        "source": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V copy.mxf",
+        "baselineParseMs": [
+          45,
+          40,
+          39
+        ],
+        "wrapperParseMs": [
+          35,
+          36,
+          35
+        ],
+        "baselineMedianMs": 40,
+        "wrapperMedianMs": 35,
+        "readerSeekRequests": 14109,
+        "samePositionSeekRequests": 14099,
+        "baselineForwardedQFileSeeks": 14109,
+        "wrapperForwardedQFileSeeks": 10,
+        "checkedRawPropertyDigestAndCountsEqual": true
+      }
+    ],
+    "method": "Fresh diagnostic process per trial, baseline/wrapper alternation, three trials each on one live MDB and one live MXF. Current Debug Canon library linked to an O2 diagnostic. Both modes wrap a buffered QFile; wrapper mode suppresses forwarded same-position seeks. No production source patch.",
+    "limits": [
+      "Logical reader and QFile seek calls are not measured disk/network syscalls.",
+      "Tiny warm-cache local sample; time ranges overlap for MDB. Not a whole-scan, Release, cold-cache or Windows/NEXIS result.",
+      "Fingerprint covers ordered property names,keys,encodings and located ranges, with object/property/reference/projected counts checked. It is not a complete decoded graph/evidence comparison.",
+      "No claimed improvement to RAM from the wrapper; reported per-process footprints fluctuate."
+    ]
+  },
+  "recommendedCandidates": [
+    {
+      "change": "Compact or exactly reserve finished MDB/OMF property vectors",
+      "evidence": "Measured spare capacity; code omfobjects_p.cpp139–168 and689–691 lacks MXF-style final compaction",
+      "validation": "Retained and peak footprint, parsing time, raw properties/ranges/relationships/evidence and all exported values"
+    },
+    {
+      "change": "Cache checked folder contexts and folder identity membership per scan",
+      "evidence": "scanengine.cpp387,393,532,665 repeats folder canonicalization/stats during provisional and final matching",
+      "validation": "Filesystem-call counts and timings on NEXIS; identical per-file freshness, joins and missing-reference scope"
+    },
+    {
+      "change": "Resolve only needed identity/master fields during intermediate matching",
+      "evidence": "Five complete selections per matchFile; provisional and final calls. Effects are deduplicated, but lookup/formatting/retraction repeats",
+      "validation": "Resolver counts, CPU time, eligibility, conflicts, clock selection, raw evidence and CSV"
+    },
+    {
+      "change": "Avoid redundant same-position seeks and evaluate metadata buffering",
+      "evidence": "Small read-only wrapper experiment",
+      "validation": "Release/Windows comparison, all framing/read states/source-change and cancellation checks plus complete graph/export equivalence"
+    },
+    {
+      "change": "Projection-local completed track source associations and allocation-free unique property lookup",
+      "evidence": "omfprojection.cpp382–392,962–964 and30–64 repeat graph walks or allocate temporary pointer vectors",
+      "validation": "Projection timing and temporary allocations; preserve ordered reference slots, file-specific clocks/drop-frame and cancellation"
+    },
+    {
+      "change": "Share immutable reference descriptions and avoid no-op evidence detachment during model population",
+      "evidence": "omfobjects_p.cpp486–489; mediaevidence.h570–589; binmetadataresolver.cpp61–127",
+      "validation": "Distinct string allocations, model population footprint/time, loading/removing bins and effects behavior"
+    }
+  ],
+  "notRecommendedYet": [
+    "Dropping raw/unknown properties, changing format interpretation or imposing a RAM cap.",
+    "Changing Qt containers to STL or QVariant to std::variant across the schema purely for modernity.",
+    "Custom allocator/pool redesign before an allocation profile.",
+    "Unbounded parallel reading or assuming distinct NEXIS drive letters represent independent hardware."
+  ],
+  "alreadyEfficient": [
+    "Database-first header scheduling skipped2297/2413 headers in baseline.",
+    "Immutable source graphs and snapshots are shared across rows.",
+    "Dictionary names and keys already share Qt storage.",
+    "Bento and MXF decoding use byte views in several paths.",
+    "Known recording payloads remain source ranges.",
+    "MXF reader already compacts completed vectors.",
+    "Per-property unknown/absence/evidence defaults are sparse rather than dense empty records."
+  ],
+  "productionSourceHashesStillMatchRemovalReceipt": true,
+  "sources": [
+    "https://doc.qt.io/qt-6.5/qlist.html#squeeze",
+    "https://doc.qt.io/qt-6.5/implicit-sharing.html",
+    "https://doc.qt.io/qt-6.5/qbytearrayview.html",
+    "https://github.com/AnthonyCalandra/modern-cpp-features/blob/master/CPP17.md"
+  ]
+}

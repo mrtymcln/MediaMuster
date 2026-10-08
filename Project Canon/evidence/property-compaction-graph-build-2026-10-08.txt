@@ -1,0 +1,24 @@
+Working directory: /Users/martymclean/Developer/MediaMuster
+
+The following are the exact successful compiler commands used for the diagnostic.
+The source and output locations were temporary. Both Canon libraries were Debug,
+Qt6.5.3 universal builds; the diagnostic used arm64 and -O2. No application source
+was rebuilt or changed by these commands.
+
+Before (copied static library from immediately before property compaction):
+clang++ -std=c++17 -O2 -arch arm64 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/property-compaction-graph-proof.cpp /private/tmp/libmediamuster_canon-before-property-compaction.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/property-compaction-graph-before
+
+After (current static library after property compaction):
+clang++ -std=c++17 -O2 -arch arm64 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/property-compaction-graph-proof.cpp build-canon/libmediamuster_canon.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/property-compaction-graph-after
+
+Run (read-only source data, fresh process for each source/mode; runner sets QT_HASH_SEED=0):
+python3 /private/tmp/run-property-compaction-proof.py
+
+The runner reads /private/tmp/property-compaction-graph-paths.json and writes
+/private/tmp/property-compaction-graph-results.jsonl and
+/private/tmp/property-compaction-graph-errors.json.
+
+Source lists can be reconstructed from six .mdb paths in the before real-scan
+receipt plus sorted files ending .mdb/.omf/.wav/.aif directly in
+/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting and
+/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio.

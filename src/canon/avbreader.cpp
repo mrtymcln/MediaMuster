@@ -5,6 +5,7 @@
 // Framing/layout evidence: pyavb file.py, bin.py and ioctx.py.
 
 #include "avbreader.h"
+#include "sourcestorage_p.h"
 #include "avbobjects_p.h"
 
 #include <QFileDevice>
@@ -284,6 +285,9 @@ namespace Canon
 					if (!m_input.remaining())
 						throw AvbFailure{Outcome::Incomplete, QStringLiteral("AVB ends before declared object %1.").arg(handle)};
 					chunk(handle);
+					// Release this object's growth space before reading the next one.
+					if (!m_cancellation.cancelled())
+						m_result.objects.last().properties.squeeze();
 				}
 				table.framingComplete = true;
 				if (m_input.remaining())
@@ -563,6 +567,7 @@ namespace Canon
 		result.snapshot = snapshot;
 		for (auto &object : result.objects)
 			object.snapshot = snapshot;
+		Detail::squeezeSourceStorage(result, context.cancellation);
 		return result;
 	}
 }
