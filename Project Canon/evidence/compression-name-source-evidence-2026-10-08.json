@@ -1,0 +1,1340 @@
+{
+  "recordedUtc": "2026-10-08T06:53:07.133852+00:00",
+  "scope": "Selected factual naming definitions from this installed Avid build and representative genuine media metadata. Not a complete extraction of every Avid codec/profile, a claim that every file has a coding label, or proof of wording in every Media Composer version/bin UI. DNx display policy is deliberately unchanged.",
+  "installedAvid": {
+    "infoPlist": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Info.plist",
+    "infoPlistSha256": "98adf3bb60492e300e9dd03a4ccf386f204c9599a8050089fa06a02a747e7a47",
+    "CFBundleShortVersionString": "26.8.0.58987",
+    "CFBundleVersion": "26.8.0"
+  },
+  "moduleSources": [
+    {
+      "module": "dfm/dv.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/dv.lua",
+      "sha256": "5411668b75661244a2bb1d5e8a99adebed3697040085857511dcd6aede4c5978",
+      "lineCount": 210
+    },
+    {
+      "module": "dfm/prores.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/prores.lua",
+      "sha256": "a2274b57eb6eda5e4f401f717676233cdbdcad64f7cb92d781b3833c544d5ea1",
+      "lineCount": 219
+    },
+    {
+      "module": "dfm/avc.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/avc.lua",
+      "sha256": "dcd42bad14528ea889dce4df9cd6b130a67d9703e546dd3df5de793fab7ae636",
+      "lineCount": 498
+    },
+    {
+      "module": "dfm/avci.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/avci.lua",
+      "sha256": "7b70ff99f94ac38ad56aac21badd24c6a6154869cecb7156caf249f158ca4a6a",
+      "lineCount": 698
+    },
+    {
+      "module": "dfm/avci_sd.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/avci_sd.lua",
+      "sha256": "fc51c93c04fead12c7b97fe2aac6ad4cc633ebbb25d6eb2b14396580783ad3bf",
+      "lineCount": 135
+    },
+    {
+      "module": "dfm/avcproxy.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/avcproxy.lua",
+      "sha256": "0e0110a072cb25a9fd8030159d6e18b038f6d097ef39747550b7b1641054d3db",
+      "lineCount": 235
+    },
+    {
+      "module": "dfm/avc_hires_proxy.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/avc_hires_proxy.lua",
+      "sha256": "0ab84df2536044890c9b8b5adfb16150bb75124fce515d105959423c59f176c7",
+      "lineCount": 180
+    },
+    {
+      "module": "dfm/j2k.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/j2k.lua",
+      "sha256": "0a36b0eab408daf440e5a76fcd30b6a3fc24462cb69d4abcb415eb30378e737a",
+      "lineCount": 403
+    },
+    {
+      "module": "dfm/packer.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/packer.lua",
+      "sha256": "44b6cae25628de0077fcea9fd464be08e9f9dcef62b1f840a4ae60819e799a31",
+      "lineCount": 357
+    },
+    {
+      "module": "dfm/m2v.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/m2v.lua",
+      "sha256": "7ad9a6ab9b9d3637fe21135a71976b05c43e15feb0ffc28a853a47ba5b174935",
+      "lineCount": 659
+    },
+    {
+      "module": "dfm/dnx.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/dnx.lua",
+      "sha256": "92454474a6697e5e266e285b587cde9db70caa01b9112a735ee7efedac3e550b",
+      "lineCount": 438
+    },
+    {
+      "module": "dfm/dnx_uncompressed.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/dnx_uncompressed.lua",
+      "sha256": "5a912f1ff8bdfd16a6192f5f7eca98f193e9c33d1199c0912d5df5cf19478817",
+      "lineCount": 228
+    },
+    {
+      "module": "shared/mxf.lua",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/shared/mxf.lua",
+      "sha256": "816b61c1b4f8259ae0d6755ef893f8e86830db6ee81091f9fc80c8c92ea4cc29",
+      "lineCount": 348
+    }
+  ],
+  "baselineScan": {
+    "path": "Project Canon/evidence/full-scan-legacy-audio-2026-10-08.csv",
+    "sha256": "dd96534f6a00bc09aa6ee20bd01ca57a2cfb98b7af2e6aa7bcd9c92d90536ee6",
+    "rows": 2413,
+    "compressionNameCounts": {
+      "AVC Intra": 12,
+      "AVC Long GOP": 21,
+      "Apple ProRes 422": 6,
+      "Apple ProRes HQ": 6,
+      "Apple ProRes LT": 6,
+      "Apple ProRes Proxy": 6,
+      "Avid DNx HQ [DNxHD 175]": 1,
+      "Avid DNx HQ [DNxHD 220]": 2,
+      "Avid DNx HQ [DNxHD 90]": 1,
+      "Avid DNx HQX [DNxHD 175x]": 1,
+      "Avid DNx HQX [DNxHD 185x]": 670,
+      "Avid DNx HQX [DNxHD 220x]": 2,
+      "Avid DNx HQX [DNxHD 90x]": 1,
+      "Avid DNx LB [DNxHD 36]": 94,
+      "Avid DNx LB [DNxHD 45]": 1,
+      "Avid DNx SQ [DNxHD 115]": 1,
+      "Avid DNx SQ [DNxHD 145]": 3,
+      "Avid DNx SQ [DNxHD 60]": 1,
+      "Avid DNxUncompressed": 8,
+      "Avid DNxUncompressed — 10-bit Integer": 4,
+      "Avid DNxUncompressed — 12-bit Integer": 4,
+      "Avid DNxUncompressed — 16-bit S2.14 fixed point": 4,
+      "Avid DNxUncompressed — 32-bit Float": 4,
+      "Avid DNxUncompressed — 8-bit Integer": 4,
+      "DV 1080 60i": 1,
+      "DV 25 411": 1,
+      "DV 50": 1,
+      "H.264": 8,
+      "J2K HD": 6,
+      "JPEG 2000 IMF": 2,
+      "PCM": 1513,
+      "Uncompressed alpha": 10,
+      "XDCAM EX 35": 4,
+      "XDCAM HD 50": 4
+    }
+  },
+  "labelNotation": "All labels below are 16-byte UL octets in lowercase hex, not the GUID text spelling used inside the Lua files. Exact facts are separated from the app selection policy; no generic cross-family version normalization is asserted.",
+  "definitionFacts": {
+    "dv": {
+      "refs": [
+        {
+          "module": "dfm/dv.lua",
+          "lines": [
+            48,
+            57
+          ]
+        },
+        {
+          "module": "dfm/dv.lua",
+          "lines": [
+            60,
+            85
+          ]
+        },
+        {
+          "module": "dfm/dv.lua",
+          "lines": [
+            95,
+            120
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "label": "060e2b34040101010401020202020100",
+          "codecName": "DV NTSC 25Mbps 4:1:1",
+          "definitionLine": 70
+        },
+        {
+          "label": "060e2b34040101010401020202020300",
+          "codecName": "DV NTSC 50Mbps 4:2:2",
+          "definitionLine": 73
+        },
+        {
+          "label": "060e2b34040101010401020202020200",
+          "codecName": "DV PAL 25Mbps 4:1:1",
+          "definitionLine": 76
+        },
+        {
+          "label": "060e2b34040101010401020202020400",
+          "codecName": "DV PAL 50Mbps 4:2:2",
+          "definitionLine": 79
+        },
+        {
+          "labels": [
+            "060e2b34040101010401020202010200",
+            "060e2b34040101010401020202010400"
+          ],
+          "codecName": "IEC-DV PAL 25Mbps 4:2:0",
+          "definitionLine": 85
+        },
+        {
+          "label": "060e2b34040101010401020202020500",
+          "codecName": "DV 1080 60i",
+          "definitionLine": 95
+        }
+      ],
+      "boundary": "These names are codec_name facts from this build. Legacy progressive 24/23.976 variants are expressly accepted in lines54–57; the long NTSC/PAL names do not alone assert interlaced frame layout. Legacy DIDResolutionID values must not be equated globally with the current vcid namespace."
+    },
+    "prores": {
+      "refs": [
+        {
+          "module": "dfm/prores.lua",
+          "lines": [
+            9,
+            21
+          ]
+        },
+        {
+          "module": "dfm/prores.lua",
+          "lines": [
+            35,
+            45
+          ]
+        },
+        {
+          "module": "dfm/prores.lua",
+          "lines": [
+            124,
+            153
+          ]
+        },
+        {
+          "module": "dfm/prores.lua",
+          "lines": [
+            174,
+            184
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "label": "060e2b340401010d0401020203060100",
+          "avidPrivateLabel": "060e2b34040101010e04020102110100",
+          "codecName": "Apple ProRes 422 Proxy",
+          "nameLine": 42,
+          "aliasLine": 128
+        },
+        {
+          "label": "060e2b340401010d0401020203060200",
+          "avidPrivateLabel": "060e2b34040101010e04020102110200",
+          "codecName": "Apple ProRes 422 LT",
+          "nameLine": 43,
+          "aliasLine": 129
+        },
+        {
+          "label": "060e2b340401010d0401020203060300",
+          "avidPrivateLabel": "060e2b34040101010e04020102110300",
+          "codecName": "Apple ProRes 422",
+          "nameLine": 44,
+          "aliasLine": 130
+        },
+        {
+          "label": "060e2b340401010d0401020203060400",
+          "avidPrivateLabel": "060e2b34040101010e04020102110400",
+          "codecName": "Apple ProRes 422 HQ",
+          "nameLine": 45,
+          "aliasLine": 131
+        },
+        {
+          "label": "060e2b340401010d0401020203060500",
+          "avidPrivateLabel": "060e2b34040101010e04020102110500",
+          "codecName": "Apple ProRes 4444",
+          "nameLine": 35,
+          "aliasLine": 132
+        },
+        {
+          "label": "060e2b340401010d0401020203060600",
+          "avidPrivateLabel": "060e2b34040101010e04020102110600",
+          "codecName": "Apple ProRes 4444 XQ",
+          "nameLine": 36,
+          "aliasLine": 133
+        }
+      ],
+      "boundary": "The source expressly maps this listed Avid-private set to the corresponding RDD44 labels, using its own version handling. This supports these aliases specifically, not a universal ignore-version rule. It also warns that ProRes metadata can carry improper colour information; naming is based primarily on its flavour coding label."
+    },
+    "avcIntra": {
+      "refs": [
+        {
+          "module": "dfm/avci.lua",
+          "lines": [
+            39,
+            86
+          ]
+        },
+        {
+          "module": "dfm/avci.lua",
+          "lines": [
+            90,
+            159
+          ]
+        },
+        {
+          "module": "dfm/avci.lua",
+          "lines": [
+            167,
+            209
+          ]
+        },
+        {
+          "module": "dfm/avci.lua",
+          "lines": [
+            453,
+            453
+          ]
+        },
+        {
+          "module": "dfm/avci.lua",
+          "lines": [
+            626,
+            649
+          ]
+        }
+      ],
+      "sameLabelDifferentDefinitions": {
+        "exampleLabel": "060e2b340401010a0401020201323101",
+        "names": [
+          "AVC Intra 100",
+          "XAVC HD Intra CBG Class 100",
+          "XAVC HD Intra VBR Class 100"
+        ],
+        "nameLines": [
+          136,
+          90,
+          116
+        ],
+        "requiredContextBeyondLabel": [
+          "PictureItemPattern where present",
+          "AVC bitrate context where present",
+          "qualified raster/layout/rate context"
+        ]
+      },
+      "genericNames": [
+        {
+          "label": "060e2b340401010a0401020201323001",
+          "codecName": "AVC High 4:2:2 Intra",
+          "nameLine": 70
+        },
+        {
+          "label": "060e2b340401010d0401020201325001",
+          "codecName": "AVC High 4:4:4 Intra",
+          "nameLine": 74
+        }
+      ],
+      "boundary": "The coding label and common raster/rate/depth alone do not uniquely identify Sony/Panasonic branding for the shared variants. Clip names are not codec evidence. If the distinguishing facts are unavailable, a verified general family is preferable to a manufactured exact brand."
+    },
+    "avcLongGop": {
+      "refs": [
+        {
+          "module": "dfm/avc.lua",
+          "lines": [
+            23,
+            29
+          ]
+        },
+        {
+          "module": "dfm/avc.lua",
+          "lines": [
+            112,
+            151
+          ]
+        },
+        {
+          "module": "dfm/avc.lua",
+          "lines": [
+            159,
+            188
+          ]
+        },
+        {
+          "module": "dfm/avc.lua",
+          "lines": [
+            246,
+            251
+          ]
+        },
+        {
+          "module": "dfm/avc.lua",
+          "lines": [
+            418,
+            443
+          ]
+        }
+      ],
+      "boundary": "The profile-derived coding label can be shared across bitrate classes. The installed decoder request also uses AVCMaximumBitRate and GOP/IDR context. Exact Panasonic/XAVC class names require those supported distinctions; a generic family or profile may remain when they are not established."
+    },
+    "jpeg2000": {
+      "refs": [
+        {
+          "module": "dfm/j2k.lua",
+          "lines": [
+            12,
+            25
+          ]
+        },
+        {
+          "module": "dfm/j2k.lua",
+          "lines": [
+            68,
+            75
+          ]
+        },
+        {
+          "module": "dfm/j2k.lua",
+          "lines": [
+            111,
+            152
+          ]
+        },
+        {
+          "module": "dfm/j2k.lua",
+          "lines": [
+            191,
+            230
+          ]
+        },
+        {
+          "module": "dfm/j2k.lua",
+          "lines": [
+            252,
+            295
+          ]
+        }
+      ],
+      "genericIsoLabel": "060e2b34040101070401020203010100",
+      "genericIsoNames": [
+        "J2K SD",
+        "J2K HD"
+      ],
+      "hdNameContext": "Lines136–152 restrict J2K HD to listed 1920x1080 or1280x720 combinations, supported rates/layout and 10-bit YCbCr4:2:2. Same generic ISO label also appears in SD rows.",
+      "imfExample": {
+        "label": "060e2b340401010d040102020301020a",
+        "meaning": "2K IMF M4S2 label",
+        "nameWithSupported10bit422Context": "J2K IMF YCrCb",
+        "nameRuleLines": [
+          209,
+          229
+        ],
+        "boundary": "The same IMF profile labels also support RGB/depth variants and generic IMF naming. Colour model, depth, geometry and relevant context determine the suffix; the label alone is not a literal complete name."
+      }
+    },
+    "uncompressedAndAlpha": {
+      "refs": [
+        {
+          "module": "dfm/packer.lua",
+          "lines": [
+            9,
+            21
+          ]
+        },
+        {
+          "module": "dfm/packer.lua",
+          "lines": [
+            57,
+            67
+          ]
+        },
+        {
+          "module": "dfm/packer.lua",
+          "lines": [
+            112,
+            172
+          ]
+        },
+        {
+          "module": "dfm/packer.lua",
+          "lines": [
+            328,
+            348
+          ]
+        },
+        {
+          "module": "shared/mxf.lua",
+          "lines": [
+            108,
+            136
+          ]
+        },
+        {
+          "module": "shared/mxf.lua",
+          "lines": [
+            209,
+            227
+          ]
+        }
+      ],
+      "sharedLabelsWithDifferentNames": [
+        "1:1 YCbCr 8bit",
+        "1:1 Alpha 8bit",
+        "1:1 RGBA 8bit"
+      ],
+      "boundary": "Packer rows can share an uncompressed coding label while distinguishing colour model, alpha depth, subsampling and container context. PixelLayout can establish alpha components without establishing uncompressed encoding in an arbitrary MXF. Its missing-coding fallback admits only the listed known containers."
+    },
+    "xdcam": {
+      "refs": [
+        {
+          "module": "dfm/m2v.lua",
+          "lines": [
+            168,
+            170
+          ]
+        },
+        {
+          "module": "dfm/m2v.lua",
+          "lines": [
+            577,
+            590
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "label": "060e2b34040101030401020201040300",
+          "codecName": "XDCAM HD 50",
+          "nameLine": 169
+        },
+        {
+          "label": "060e2b34040101030401020201030300",
+          "codecName": "XDCAM",
+          "nameLine": 168,
+          "boundary": "The source further selects EX35/HD35/HD25/HD17.5 using BitRate, stored raster and sometimes vcid. Do not map this generic label unconditionally to XDCAM EX35."
+        }
+      ]
+    },
+    "h264Proxy": {
+      "refs": [
+        {
+          "module": "dfm/avcproxy.lua",
+          "lines": [
+            25,
+            69
+          ]
+        },
+        {
+          "module": "dfm/avcproxy.lua",
+          "lines": [
+            207,
+            217
+          ]
+        },
+        {
+          "module": "dfm/avc.lua",
+          "lines": [
+            188,
+            188
+          ]
+        }
+      ],
+      "boundary": "Avid has H.264 bitrate-specific Proxy names, but also a generic H.264 name. An H.264 label alone is not sufficient to select every proxy bitrate/preset."
+    },
+    "preservedPolicies": {
+      "dnx": "Current NewDnx / ReallyOldDnx and DNxUncompressed presentation remains outside this naming-source change; these module files are hashed for source context, not used to redefine the approved display.",
+      "pcm": "The scan contains1513 PCM rows. This selected video-module receipt does not claim a new Avid audio naming table or replace the established audio format interpretation."
+    }
+  },
+  "genuineSelectedMetadata": {
+    "probeResult": "/private/tmp/mediamuster-avid-compression-contexts.jsonl",
+    "probeResultSha256": "5099ef9fa03573cbf2d0cb4bd3c91c31955383577bbba01096396cc13565f78e",
+    "probeSource": "Project Canon/evidence/root-membership-probe-2026-10-08.cpp",
+    "probeSourceSha256": "911421bee22d7d975fd08e18abd2fce91e48a36c76f6894b25a387ab9563aba1",
+    "scope": "Existing read-only diagnostic probe; metadata field bytes retained below, not full-file hashes or byte-identity proofs. These field values are not a test of the newly edited naming catalogue. Source paths/stat are recorded after the read.",
+    "sources": [
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967670_1178C1178C48BV.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 434001505,
+          "mtimeNs": 1785739607078494686
+        },
+        "objects": [
+          {
+            "handle": 745,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000001"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "0000000a"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b340401010a0401020201323101"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b34010101ff4b464141000d4d4f"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          },
+          {
+            "handle": 746,
+            "class": "AVCSubDescriptor",
+            "properties": [
+              {
+                "name": "AVCSubDescriptor.AVCAverageBitrate",
+                "bytesHex": "06c0ea15"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCLevel",
+                "bytesHex": "29"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCProfile",
+                "bytesHex": "7a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69676B7_11AF211AF2D58V.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 433849441,
+          "mtimeNs": 1785739679277468138
+        },
+        "objects": [
+          {
+            "handle": 744,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "GenericPictureEssenceDescriptor.ResolutionID",
+                "bytesHex": "00000d62"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000001"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "0000000a"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b340401010a0401020201323101"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b340401010a0d01030102106002"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          },
+          {
+            "handle": 745,
+            "class": "AVCSubDescriptor",
+            "properties": [
+              {
+                "name": "AVCSubDescriptor.AVCAverageBitrate",
+                "bytesHex": "06c0ea15"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCLevel",
+                "bytesHex": "29"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCProfile",
+                "bytesHex": "7a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E18_174791747975EV.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 22852705,
+          "mtimeNs": 1785741565009208606
+        },
+        "objects": [
+          {
+            "handle": 745,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "00000008"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "00000220"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b340401010d0401020201314001"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b340401010a0d01030102106002"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          },
+          {
+            "handle": 746,
+            "class": "AVCSubDescriptor",
+            "properties": [
+              {
+                "name": "AVCSubDescriptor.AVCAverageBitrate",
+                "bytesHex": "005b8d80"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCLevel",
+                "bytesHex": "28"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCMaximumBitrate",
+                "bytesHex": "00895400"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCProfile",
+                "bytesHex": "64"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E2C_1757117571C45V.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 35269729,
+          "mtimeNs": 1785741585676293767
+        },
+        "objects": [
+          {
+            "handle": 745,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "00000008"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "00000220"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b340401010d0401020201314001"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b340401010a0d01030102106002"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          },
+          {
+            "handle": 746,
+            "class": "AVCSubDescriptor",
+            "properties": [
+              {
+                "name": "AVCSubDescriptor.AVCAverageBitrate",
+                "bytesHex": "00b71b00"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCLevel",
+                "bytesHex": "28"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCMaximumBitrate",
+                "bytesHex": "0112a800"
+              },
+              {
+                "name": "AVCSubDescriptor.AVCProfile",
+                "bytesHex": "64"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69685CF_1D2171D217E9EV.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 116310625,
+          "mtimeNs": 1785743541018832301
+        },
+        "objects": [
+          {
+            "handle": 728,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "GenericPictureEssenceDescriptor.ResolutionID",
+                "bytesHex": "00000226"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000001"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "0000000a"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b34040101070401020203010100"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b34040101070d010301020c0200"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696916A_25EF525EF5BE2V.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 167035489,
+          "mtimeNs": 1785746511076398438
+        },
+        "objects": [
+          {
+            "handle": 744,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "GenericPictureEssenceDescriptor.ResolutionID",
+                "bytesHex": "00000227"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000001"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "0000000a"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "00"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "00000438"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "00000438"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b340401010d040102020301020a"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b340401010d0d010301020c0600"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00005dc0000003e9"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 2490977,
+          "mtimeNs": 1561095046000000000
+        },
+        "objects": [
+          {
+            "handle": 698,
+            "class": "RGBAEssenceDescriptor",
+            "properties": [
+              {
+                "name": "RGBAEssenceDescriptor.PixelLayout",
+                "bytesHex": "41080000300030003000300030003000"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "00"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "00000438"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "00000438"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b34010101ff4b464141000d4d4f"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "0000001800000001"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967651_11614116145A2V.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 358640737,
+          "mtimeNs": 1785739573644661237
+        },
+        "objects": [
+          {
+            "handle": 728,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000001"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "0000000a"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b340401010d0401020203060400"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b340401010d0d010301021c0100"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968416_1BD321BD3225EV.mxf",
+        "readOutcome": 1,
+        "statAfterProbe": {
+          "size": 191275105,
+          "mtimeNs": 1785743098283793016
+        },
+        "objects": [
+          {
+            "handle": 738,
+            "class": "CDCIEssenceDescriptor",
+            "properties": [
+              {
+                "name": "GenericPictureEssenceDescriptor.ResolutionID",
+                "bytesHex": "00000fe9"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.VerticalSubsampling",
+                "bytesHex": "00000001"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.HorizontalSubsampling",
+                "bytesHex": "00000002"
+              },
+              {
+                "name": "CDCIEssenceDescriptor.ComponentDepth",
+                "bytesHex": "00000008"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.FrameLayout",
+                "bytesHex": "01"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.SampledHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredWidth",
+                "bytesHex": "00000780"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.StoredHeight",
+                "bytesHex": "0000021c"
+              },
+              {
+                "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                "bytesHex": "060e2b34040101030401020201040300"
+              },
+              {
+                "name": "FileDescriptor.EssenceContainer",
+                "bytesHex": "060e2b34010101ff4b464141000d4d4f"
+              },
+              {
+                "name": "FileDescriptor.SampleRate",
+                "bytesHex": "00007530000003e9"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "genuineAmbiguityConclusions": [
+    {
+      "kind": "AVC-Intra versus XAVC",
+      "files": [
+        "V01.E6967670_1178C1178C48BV.mxf",
+        "V01.E69676B7_11AF211AF2D58V.mxf"
+      ],
+      "facts": "Exact same coding UL01323101, sampled1920x540, separate-fields,30000/1001,10-bit4:2:2 and average bitrate. One records ResolutionID3426; using that as a brand discriminator needs its own proven dictionary. Clip-name text is not used for identification."
+    },
+    {
+      "kind": "AVC Long GOP6 versus12",
+      "files": [
+        "V01.E6967E18_174791747975EV.mxf",
+        "V01.E6967E2C_1757117571C45V.mxf"
+      ],
+      "facts": "Exact same coding UL01314001 and common descriptor shape; recorded average/max bitrates differ6,000,000/8,999,936 versus12,000,000/17,999,872. The UL does not alone encode the displayed bitrate class."
+    },
+    {
+      "kind": "J2K ISO HD",
+      "file": "V01.E69685CF_1D2171D217E9EV.mxf",
+      "facts": "Generic ISO coding label plus stored/sampled1920x540, separate-fields,30000/1001 and10-bit4:2:2 matches the installed HD row context. The label by itself is also used for SD."
+    },
+    {
+      "kind": "J2K IMF",
+      "file": "V01.E696916A_25EF525EF5BE2V.mxf",
+      "facts": "IMF2K M4S2 coding label,1920x1080 progressive,24000/1001,10-bit4:2:2; the suffix requires these descriptor facts rather than a literal name from the file."
+    },
+    {
+      "kind": "Alpha outside packer fallback list",
+      "file": "FEB_79.0V02.2232CBEE.586550.mxf",
+      "facts": "RGBA PixelLayout41080000300030003000300030003000 recordsA8 with zero-depth padding slots; PictureEssenceCoding is absent. EssenceContainer060e2b34010101ff4b464141000d4d4f does not equal packer.lua recognized fallback values. Alpha sample identity is established; exact uncompressed packing is not proved by pixel layout alone. A separately matched MDB may establish uncompressed meaning through supported OMF descriptor semantics."
+    }
+  ],
+  "legacyDvNamespaceQualification": {
+    "existingReceipt": "Project Canon/evidence/legacy-compression-pairs-2026-10-08.json",
+    "genuineFiles": [
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/BLACK_720x480x1_DV411.omf",
+        "sha256": "798f85327c90a260f1d114e856bb6b084bf03ae241cb22dc71f114070ac8bc6a",
+        "descriptorHandle": 68023,
+        "compression": "DV/C",
+        "resolutionId": 140,
+        "storedSize": [
+          720,
+          240
+        ],
+        "frameLayout": 1,
+        "rate": [
+          2997,
+          100
+        ],
+        "hasEssenceCompression": false
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/BLACK_720x576x1_DV411.omf",
+        "sha256": "460e05c0f2e8205ebb32a00e619206e864e5db76e1ecee6bbcb4ffe718bd743b",
+        "descriptorHandle": 68023,
+        "compression": "DV/C",
+        "resolutionId": 140,
+        "storedSize": [
+          720,
+          288
+        ],
+        "frameLayout": 1,
+        "rate": [
+          25,
+          1
+        ],
+        "hasEssenceCompression": false
+      }
+    ],
+    "facts": "Both genuine PAL/NTSC legacy4:1:1 files use DIDResolutionID140, so that ID alone does not choose the standard. The legacy verified141/D25B resource is4:2:0; installed current dv.lua vcid141 row isPAL4:1:1. These namespaces are not interchangeable."
+  },
+  "inheritedImxMismatch": {
+    "historicalCommit": "2e708126e30f02a9a53916f8ff5bd24e7dee9ef1",
+    "path": "src/mediametadata.cpp",
+    "fileSha256AtCommit": "c1d7f43c7f0e7d06741d35d4176e3ae366f94b687ef905640bb1b6aa2f2cf754",
+    "historicalLines": [
+      325,
+      327
+    ],
+    "boundary": "These are inherited C++ lookup facts, not authority for the active Canon catalogue. The six installed Avid definitions and independent libMXF registrations establish the corrections; no current baseline scan row uses IMX.",
+    "rows": [
+      {
+        "label": "060e2b34040101010401020201020101",
+        "inheritedName": "Sony IMX 30",
+        "avidName": "SMPTE D-10/IMX 50Mbps 625x50I",
+        "avidLine": 74
+      },
+      {
+        "label": "060e2b34040101010401020201020102",
+        "inheritedName": "Sony IMX 40",
+        "avidName": "SMPTE D-10/IMX 50Mbps 525x59.94I",
+        "avidLine": 75
+      },
+      {
+        "label": "060e2b34040101010401020201020103",
+        "inheritedName": "Sony IMX 50",
+        "avidName": "SMPTE D-10/IMX 40Mbps 625x50I",
+        "avidLine": 76
+      }
+    ],
+    "completeInstalledRows": [
+      {
+        "label": "060e2b34040101010401020201020101",
+        "codecName": "SMPTE D-10/IMX 50Mbps 625x50I",
+        "module": "dfm/m2v.lua",
+        "line": 74
+      },
+      {
+        "label": "060e2b34040101010401020201020102",
+        "codecName": "SMPTE D-10/IMX 50Mbps 525x59.94I",
+        "module": "dfm/m2v.lua",
+        "line": 75
+      },
+      {
+        "label": "060e2b34040101010401020201020103",
+        "codecName": "SMPTE D-10/IMX 40Mbps 625x50I",
+        "module": "dfm/m2v.lua",
+        "line": 76
+      },
+      {
+        "label": "060e2b34040101010401020201020104",
+        "codecName": "SMPTE D-10/IMX 40Mbps 525x59.94I",
+        "module": "dfm/m2v.lua",
+        "line": 77
+      },
+      {
+        "label": "060e2b34040101010401020201020105",
+        "codecName": "SMPTE D-10/IMX 30Mbps 625x50I",
+        "module": "dfm/m2v.lua",
+        "line": 78
+      },
+      {
+        "label": "060e2b34040101010401020201020106",
+        "codecName": "SMPTE D-10/IMX 30Mbps 525x59.94I",
+        "module": "dfm/m2v.lua",
+        "line": 79
+      }
+    ],
+    "independentSource": {
+      "path": "/private/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_labels_and_keys.h",
+      "sha256": "4d88873a9e7aa4360eef797869b8456c798ba9a4e056892e56e0b38f55e4cee4",
+      "relevantLines": [
+        174,
+        185
+      ],
+      "primaryUrl": "https://raw.githubusercontent.com/BBC-archive/libMXF/main/mxf/mxf_labels_and_keys.h"
+    }
+  },
+  "limits": [
+    "Installed-source facts apply to Media Composer26.8.0.58987; other builds may supply different nomenclature.",
+    "Name strings are catalogue definitions, not claims that the string is literally stored in every media file/database or chosen by every bin UI.",
+    "Lua matching rows use multiple facts and some repairs/fuzzy policies; this receipt does not import every repair or tolerance into MediaMuster.",
+    "An unrecognized exact variant may remain a verified general family; no nearest-rate/profile guess is implied.",
+    "No production code, parser rules, selection priorities or tests were edited to create this receipt."
+  ]
+}

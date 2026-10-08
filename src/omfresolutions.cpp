@@ -1,6 +1,6 @@
-// OMF-era (legacy Avid media, pre-MXF). The resolution-id → short-name
-// table for OMF-era picture descriptors; see omfresolutions.h for where
-// it sits. Entirely OMF-specific — no MXF-era row is ever looked up here.
+// Short names for Avid's older OMF picture-descriptor vocabulary. The caller
+// establishes the descriptor context and compatible coding before using a row;
+// neither a file's container nor its MobID length establishes that context.
 //
 // MARK: - Sources
 //
@@ -105,8 +105,8 @@ namespace
 
 QString OmfResolutions::name(quint32 resolutionId, const QByteArray &compression)
 {
-	// The property is a NUL-terminated string ("JFIF\0"); compare the
-	// four characters before the terminator and nothing else.
+	// Compare the four-character Compression string, with or without a
+	// recorded terminator. Its characters and resolution ID form the key.
 	const int len = int(qstrnlen(compression.constData(), compression.size()));
 	if (len != 4)
 		return {};

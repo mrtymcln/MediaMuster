@@ -1,0 +1,26 @@
+{
+  "baselineCsv": "full-scan-compression-names-2026-10-08.csv",
+  "newCsv": "full-scan-dnx-alias-removal-2026-10-08.csv",
+  "baselineRows": 2413,
+  "newRows": 2413,
+  "addedPaths": [],
+  "removedPaths": [],
+  "columnNamesUnchanged": true,
+  "excludedField": "KelpieId is scan-session identity and is expected to be reassigned.",
+  "changedCells": [],
+  "dnxRows": 806,
+  "changedDnxCompressionCells": 0,
+  "baselineHeaderScheduling": {
+    "notRead": 2297,
+    "read": 116
+  },
+  "newHeaderScheduling": {
+    "notRead": 2297,
+    "read": 116
+  },
+  "sourceReceiptChanges": [],
+  "baselineNotices": 298,
+  "newNotices": 298,
+  "noticesUnchanged": true,
+  "scanMs": 20965
+}

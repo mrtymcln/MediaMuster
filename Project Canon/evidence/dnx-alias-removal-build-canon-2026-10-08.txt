@@ -1,0 +1,13 @@
+[1/15] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/compressionnames_p.cpp.o
+[2/15] Building CXX object CMakeFiles/mediamuster_canon.dir/src/mediametadata.cpp.o
+[3/15] Linking CXX static library libmediamuster_canon.a
+[4/15] Automatic MOC for target tst_scanner
+[5/14] Automatic MOC for target MediaMuster
+[6/13] Automatic MOC for target tst_canon_compressionnames
+[7/12] Building CXX object tests/CMakeFiles/tst_scanner.dir/__/src/mediametadata.cpp.o
+[8/12] Building CXX object CMakeFiles/MediaMuster.dir/src/mediametadata.cpp.o
+[9/12] Linking CXX executable tests/tst_scanner
+[10/12] Building CXX object tests/CMakeFiles/tst_canon_compressionnames.dir/tst_canon_compressionnames.cpp.o
+[11/12] Linking CXX executable tests/tst_canon_compressionnames
+[12/12] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build-canon/MediaMuster.app: replacing existing signature

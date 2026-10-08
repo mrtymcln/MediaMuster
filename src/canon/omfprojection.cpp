@@ -3,11 +3,10 @@
 // filenames and an unrelated descriptor never supply a missing association.
 
 #include "projection.h"
-#include "dnxnames_p.h"
+#include "compressionnames_p.h"
 #include "picturegeometry_p.h"
 #include "avidprecompute.h"
 #include "mediametadata.h"
-#include "omfresolutions.h"
 
 #include <QHash>
 #include <QSet>
@@ -344,7 +343,7 @@ namespace Canon
 						link(file, m_source, *descriptor);
 						observe(file, MediaProperty::FileMobId, m_source, object, *mobId, id, EvidenceBasis::Derived,
 								QStringLiteral("Canonical identity of the mob owning this media descriptor; original UID retained."));
-						technical(file, *descriptor, mobId->encoding.size() == 12, editRate(object));
+						technical(file, *descriptor, editRate(object));
 						timecode(file, object);
 						attributes(file, object);
 						for (const auto referenced : sourceMobs(object))
@@ -1181,7 +1180,7 @@ namespace Canon
 							QStringLiteral("Avid's direct import-attribute/direct video-track predicate; not an effect-name guess."));
 			}
 
-			void technical(ProjectedFile &file, const AvidObject &descriptor, bool legacyIdentity, MediaRate editRate);
+			void technical(ProjectedFile &file, const AvidObject &descriptor, MediaRate editRate);
 
 			const ParsedSource &m_source;
 			const Cancellation &m_cancellation;
@@ -1208,37 +1207,71 @@ namespace Canon
 			QString representation;
 			quint16 blockAlign = 0;
 			bool uncompressed = false;
+			Property channelsProperty = nullptr;
+			Property bitsProperty = nullptr;
+			Property rateProperty = nullptr;
+			Property framesProperty = nullptr;
+			Property codecProperty = nullptr;
 		};
 
-		AudioFacts waveFormat(QByteArrayView bytes)
+		Property audioField(const AvidObject &owner, const RawProperty &header, const char *name)
+		{
+			const QString fieldName = header.locator.name + QLatin1Char('.') + QLatin1String(name);
+			for (const auto &field : owner.properties)
+			{
+				if (field.locator.name != fieldName || field.bento != header.bento || field.locator.ranges.isEmpty())
+					continue;
+				const bool contained = std::all_of(field.locator.ranges.cbegin(), field.locator.ranges.cend(), [&](const auto &range)
+				{
+					return std::any_of(header.locator.ranges.cbegin(), header.locator.ranges.cend(), [&](const auto &parent)
+					{
+						return range.offset >= parent.offset && range.offset - parent.offset <= parent.length &&
+							range.length <= parent.length - (range.offset - parent.offset);
+					});
+				});
+				if (contained)
+					return &field;
+			}
+			return nullptr;
+		}
+
+		AudioFacts waveFormat(const AvidObject &owner, const RawProperty &header)
 		{
 			AudioFacts result;
-			if (bytes.size() < 16)
+			const auto fields = header.decoded.toMap();
+			if (!fields.contains(QStringLiteral("wFormatTag")))
 				return result;
-			const auto u16 = [&](qsizetype offset)
-			{ return qFromLittleEndian<quint16>(bytes.data() + offset); };
-			quint16 format = u16(0);
-			result.channels = u16(2);
-			const quint32 sampleRate = qFromLittleEndian<quint32>(bytes.data() + 4);
+			quint16 format = quint16(fields.value(QStringLiteral("wFormatTag")).toUInt());
+			result.channelsProperty = audioField(owner, header, "nChannels");
+			result.rateProperty = audioField(owner, header, "nSamplesPerSec");
+			result.codecProperty = audioField(owner, header, "wFormatTag");
+			result.bitsProperty = audioField(owner, header, "wBitsPerSample");
+			result.channels = fields.value(QStringLiteral("nChannels")).toInt();
+			const quint32 sampleRate = fields.value(QStringLiteral("nSamplesPerSec")).toUInt();
 			if (sampleRate <= quint32(std::numeric_limits<qint32>::max()))
 				result.sampleRate = {qint32(sampleRate), 1};
-			result.blockAlign = u16(12);
-			result.bits = u16(14);
+			result.blockAlign = quint16(fields.value(QStringLiteral("nBlockAlign")).toUInt());
 			if (format == 0xfffe)
 			{
-				if (bytes.size() < 40 || u16(16) < 22 || u16(16) > bytes.size() - 18)
-					return result;
-				const QByteArray guid = bytes.mid(24, 16).toByteArray();
+				result.codecProperty = audioField(owner, header, "SubFormat");
+				result.bitsProperty = audioField(owner, header, "wValidBitsPerSample");
+				const auto guid = result.codecProperty && result.codecProperty->state == PropertyReadState::Present
+									  ? result.codecProperty->encoding : QByteArray{};
 				if (guid == QByteArray::fromHex("0100000000001000800000aa00389b71"))
 					format = 1;
 				else if (guid == QByteArray::fromHex("0300000000001000800000aa00389b71"))
 					format = 3;
 				else
+				{
+					// Storage width remains recorded, but cannot stand in for
+					// valid precision when this extension is not established.
+					if (result.codecProperty && result.codecProperty->state == PropertyReadState::Unreadable)
+						result.bitsProperty = result.codecProperty;
 					return result;
-				const auto validBits = u16(18);
-				if (validBits > 0 && validBits <= result.bits)
-					result.bits = validBits;
+				}
 			}
+			if (result.bitsProperty && result.bitsProperty->state == PropertyReadState::Present)
+				result.bits = result.bitsProperty->decoded.toInt();
 			if (format == 1)
 			{
 				result.codec = QStringLiteral("PCM");
@@ -1284,17 +1317,25 @@ namespace Canon
 			return {qint32(significand), qint32(quint32(1) << -power)};
 		}
 
-		AudioFacts aiffCommon(QByteArrayView bytes, bool compressed)
+		AudioFacts aiffCommon(const AvidObject &owner, const RawProperty &header)
 		{
 			AudioFacts result;
-			if (bytes.size() < 18)
+			const auto fields = header.decoded.toMap();
+			if (!fields.contains(QStringLiteral("sampleSize")))
 				return result;
-			result.channels = qFromBigEndian<qint16>(bytes.data());
-			result.frames = qFromBigEndian<quint32>(bytes.data() + 2);
-			result.bits = qFromBigEndian<qint16>(bytes.data() + 6);
-			result.sampleRate = extendedRate(bytes.mid(8, 10));
-			const auto codec = compressed && bytes.size() >= 22 ? bytes.mid(18, 4).toByteArray() : QByteArray{};
-			if (!compressed || codec == "NONE" || codec == "twos" || codec == "sowt" || codec == "in24" || codec == "in32")
+			result.channelsProperty = audioField(owner, header, "numChannels");
+			result.bitsProperty = audioField(owner, header, "sampleSize");
+			result.rateProperty = audioField(owner, header, "sampleRate");
+			result.framesProperty = audioField(owner, header, "numSampleFrames");
+			result.codecProperty = audioField(owner, header, "compressionType");
+			result.channels = fields.value(QStringLiteral("numChannels")).toInt();
+			result.frames = fields.value(QStringLiteral("numSampleFrames")).toLongLong();
+			result.bits = fields.value(QStringLiteral("sampleSize")).toInt();
+			if (result.rateProperty)
+				result.sampleRate = extendedRate(result.rateProperty->encoding);
+			const auto codec = result.codecProperty && result.codecProperty->state == PropertyReadState::Present
+								   ? result.codecProperty->encoding : QByteArray{};
+			if (!result.codecProperty || codec == "NONE" || codec == "twos" || codec == "sowt" || codec == "in24" || codec == "in32")
 			{
 				result.codec = QStringLiteral("PCM");
 				result.representation = QStringLiteral("Integer");
@@ -1309,57 +1350,33 @@ namespace Canon
 			return result;
 		}
 
-		AudioFacts audioSummary(QByteArrayView bytes)
-		{
-			if (bytes.size() < 12)
-				return {};
-			const bool wave = bytes.first(4) == QByteArrayView("RIFF") && bytes.mid(8, 4) == QByteArrayView("WAVE");
-			const bool aiff = bytes.first(4) == QByteArrayView("FORM") &&
-							  (bytes.mid(8, 4) == QByteArrayView("AIFF") || bytes.mid(8, 4) == QByteArrayView("AIFC"));
-			if (!wave && !aiff)
-				return {};
-			// Summaries deliberately omit samples and can advertise the full
-			// recording extent. Validate each copied metadata chunk, not that extent.
-			for (qsizetype offset = 12; offset <= bytes.size() - 8;)
-			{
-				const auto key = bytes.mid(offset, 4);
-				const quint32 length = wave ? qFromLittleEndian<quint32>(bytes.data() + offset + 4)
-											: qFromBigEndian<quint32>(bytes.data() + offset + 4);
-				if (key == QByteArrayView("data") || key == QByteArrayView("SSND"))
-					return {};
-				if (length > quint64(bytes.size() - offset - 8))
-					return {};
-				const auto payload = bytes.mid(offset + 8, length);
-				if (wave && key == QByteArrayView("fmt "))
-					return waveFormat(payload);
-				if (aiff && key == QByteArrayView("COMM"))
-					return aiffCommon(payload, bytes.mid(8, 4) == QByteArrayView("AIFC"));
-				offset += 8 + qsizetype(length) + (length & 1);
-			}
-			return {};
-		}
-
 		void audioObservations(ProjectedFile &file, const ParsedSource &source, const AvidObject &object,
 							   const RawProperty &property, const AudioFacts &audio, bool duration)
 		{
-			const auto reason = QStringLiteral("Decoded fields in the recorded audio format header; original header bytes retained.");
-			if (audio.channels > 0)
-				observe(file, MediaProperty::Channels, source, object, property, audio.channels, EvidenceBasis::Derived, reason);
-			if (audio.bits > 0 && audio.bits <= 64)
-				observe(file, MediaProperty::BitDepth, source, object, property, QStringLiteral("%1-bit").arg(audio.bits), EvidenceBasis::Derived, reason);
-			if (audio.sampleRate.valid())
-				observe(file, MediaProperty::SampleRate, source, object, property, rateValue(audio.sampleRate), EvidenceBasis::Derived, reason);
-			if (!audio.codec.isEmpty())
-				observe(file, MediaProperty::Compression, source, object, property, audio.codec, EvidenceBasis::Derived, reason);
-			if (!audio.representation.isEmpty())
-				observe(file, MediaProperty::SampleFormat, source, object, property, audio.representation, EvidenceBasis::Derived, reason);
+			const auto add = [&](MediaProperty field, Property input, const QVariant &value)
+			{
+				if (input && (value.isValid() || input->state == PropertyReadState::Unreadable))
+					observe(file, field, source, object, *input, value, EvidenceBasis::Derived,
+							input->state == PropertyReadState::Unreadable ? input->interpretation
+							: QStringLiteral("Decoded recorded audio field %1; original header and field bytes retained. %2")
+								  .arg(input->locator.name, input->interpretation));
+			};
+			add(MediaProperty::Channels, audio.channelsProperty, audio.channels > 0 ? QVariant(audio.channels) : QVariant{});
+			add(MediaProperty::BitDepth, audio.bitsProperty, audio.bits > 0 && audio.bits <= 64 ? QVariant(QStringLiteral("%1-bit").arg(audio.bits)) : QVariant{});
+			add(MediaProperty::SampleRate, audio.rateProperty, audio.sampleRate.valid() ? QVariant(rateValue(audio.sampleRate)) : QVariant{});
+			if (audio.codecProperty || !audio.codec.isEmpty())
+			{
+				add(MediaProperty::Compression, audio.codecProperty ? audio.codecProperty : &property, audio.codec.isEmpty() ? QVariant{} : QVariant(audio.codec));
+				add(MediaProperty::SampleFormat, audio.codecProperty ? audio.codecProperty : &property, audio.representation.isEmpty() ? QVariant{} : QVariant(audio.representation));
+			}
 			if (duration && audio.frames && *audio.frames >= 0 && audio.sampleRate.valid())
-				observe(file, MediaProperty::FileDuration, source, object, property,
+				observe(file, MediaProperty::FileDuration, source, object, audio.framesProperty ? *audio.framesProperty : property,
 						durationValue({*audio.frames, audio.sampleRate, {}, MediaDuration::Source::Descriptor}), EvidenceBasis::Derived,
-						QStringLiteral("Recorded sample-frame count and exact native sampling rate; no video clock inferred."));
+						property.locator.key == "COMM" ? QStringLiteral("Recorded sample-frame count and exact native sampling rate; no video clock inferred.")
+						: QStringLiteral("Sample-frame count derived from the single native data extent and recorded block alignment, using the exact native sampling rate; sound samples remain unread and no video clock is inferred."));
 		}
 
-		void ObjectProjection::technical(ProjectedFile &file, const AvidObject &descriptor, bool legacyIdentity, MediaRate editRate)
+		void ObjectProjection::technical(ProjectedFile &file, const AvidObject &descriptor, MediaRate editRate)
 		{
 			const auto cls = objectClass(descriptor);
 			const bool audio = audioClass(cls);
@@ -1410,20 +1427,31 @@ namespace Canon
 			MediaRate unitsRate = rate(sampleRate);
 			if (unitsRate.valid())
 				observe(file, audio ? MediaProperty::SampleRate : MediaProperty::FrameRate, m_source, descriptor, *sampleRate, rateValue(unitsRate));
-			Property summary = nullptr;
-			AudioFacts summaryFacts;
 			if (audio)
 			{
-				summary = uniqueRaw(descriptor, {"OMFI:WAVD:Summary", "OMFI:AIFD:Summary"});
-				if (summary)
+				MediaRate summaryRate;
+				bool conflictingRates = false;
+				for (const auto &header : descriptor.properties)
 				{
-					summaryFacts = audioSummary(summary->encoding);
+					const bool waveSummary = (cls == QLatin1String("WAVD") || cls == QLatin1String("WAVE")) &&
+						header.locator.name == QLatin1String("OMFI:WAVD:Summary.fmt ");
+					const bool aiffSummary = cls == QLatin1String("AIFD") && header.locator.name == QLatin1String("OMFI:AIFD:Summary.COMM");
+					if (!waveSummary && !aiffSummary)
+						continue;
+					const auto facts = waveSummary ? waveFormat(descriptor, header) : aiffCommon(descriptor, header);
 					// Compression is the actual encoding; WAVE/AIFF is retained as the
 					// descriptor/container fact, not substituted for compression.
-					audioObservations(file, m_source, descriptor, *summary, summaryFacts, false);
-					if (!unitsRate.valid())
-						unitsRate = summaryFacts.sampleRate;
+					audioObservations(file, m_source, descriptor, header, facts, false);
+					if (facts.sampleRate.valid())
+					{
+						if (summaryRate.valid() && (summaryRate.numerator != facts.sampleRate.numerator || summaryRate.denominator != facts.sampleRate.denominator))
+							conflictingRates = true;
+						else
+							summaryRate = facts.sampleRate;
+					}
 				}
+				if (!unitsRate.valid() && !conflictingRates)
+					unitsRate = summaryRate;
 				for (const auto *channels : properties(descriptor, {"OMFI:MDAU:NumChannels"}))
 					if (const auto value = integer(channels); value && *value > 0)
 						observe(file, MediaProperty::Channels, m_source, descriptor, *channels, *value);
@@ -1436,6 +1464,7 @@ namespace Canon
 						EvidenceBasis::Derived, QStringLiteral("Descriptor Length in its recorded SampleRate clock; any separate display clock comes from this file mob's explicit CPNT/MSLT EditRate. Master/reference lengths do not replace it."));
 
 			const auto *coding = uniqueRaw(descriptor, {"OMFI:DIDD:EssenceCompression"});
+			const bool codingAbsent = properties(descriptor, {"OMFI:DIDD:EssenceCompression"}).isEmpty();
 			const auto layout = integer(unique(descriptor, {"OMFI:DIDD:FrameLayout"}));
 			const bool omf1 = !properties(descriptor, {"OMFI:ObjID"}).isEmpty();
 			const auto *storedWidthProperty = unique(descriptor, {"OMFI:DIDD:StoredWidth"});
@@ -1448,105 +1477,79 @@ namespace Canon
 			const auto *resolutionId = unique(descriptor, {"OMFI:DIDD:DIDResolutionID"});
 			const auto resolution = integer(resolutionId);
 			Property codecProperty = coding;
-			if (label.isEmpty() && properties(descriptor, {"OMFI:DIDD:EssenceCompression"}).isEmpty() && resolution)
+			if (label.isEmpty() && codingAbsent && resolution)
 			{
 				label = knownDnxLabel(*resolution);
 				codecProperty = resolutionId;
 			}
-			QString codec;
 			if (!label.isEmpty())
-			{
 				observe(file, MediaProperty::CompressionLabel, m_source, descriptor, *codecProperty, label, EvidenceBasis::Derived,
 						coding ? QStringLiteral("Recorded structured AUID converted to its UL octet order.") : QStringLiteral("Verified Avid DNx resolution-ID mapping; not a recorded compression UL."));
-				codec = MediaMetadataUtil::codecFromCompressionLabel(label, {});
-				for (const auto &profile : Detail::dnxProfiles)
-				{
-					if (label != QByteArray::fromHex(profile.label))
-						continue;
-					codec = QStringLiteral("Avid DNx %1").arg(QLatin1String(profile.level));
-					observe(file, MediaProperty::NewDnx, m_source, descriptor, *codecProperty, codec, EvidenceBasis::Derived,
-							QStringLiteral("Verified coding profile mapped to Avid's unified DNx branding."));
-					observe(file, MediaProperty::OldDnx, m_source, descriptor, *codecProperty,
-							QStringLiteral("DNx%1 %2").arg(profile.hr ? QLatin1String("HR") : QLatin1String("HD"), QLatin1String(profile.level)),
-							EvidenceBasis::Derived, QStringLiteral("Historical HD/HR profile identity; not inferred from image dimensions."));
-					const auto namingRate = resolution && label == knownDnxLabel(*resolution)
-												? legacyDnxNamingRate(*resolution, unitsRate)
-												: unitsRate;
-					const auto oldName = Detail::reallyOldDnx(profile, {storedWidth.value_or(0), frameHeight}, namingRate, layout,
-															  integer(unique(descriptor, {"OMFI:CDCI:ComponentWidth"})),
-															  integer(unique(descriptor, {"OMFI:CDCI:HorizontalSubsampling"})),
-															  integer(unique(descriptor, {"OMFI:CDCI:VerticalSubsampling"})));
-					if (!oldName.isEmpty())
-					{
-						observe(file, MediaProperty::ReallyOldDnx, m_source, descriptor, *codecProperty, oldName, EvidenceBasis::Derived,
-								!namingRate.sameRate(unitsRate)
-									? QStringLiteral("Verified legacy OMF/MDB name-table clock spelling for resolution ID %1: recorded %2/%3, naming operating point %4/%5. Matching MDB/MXF identities or Avid's supplied OMF slate corroborate this exact profile/clock pair; raster, layout, depth and sampling must also match Avid's 2012 white paper pp. 9–10. Recorded Frame Rate and Duration are unchanged.")
-										  .arg(*resolution)
-										  .arg(unitsRate.numerator)
-										  .arg(unitsRate.denominator)
-										  .arg(namingRate.numerator)
-										  .arg(namingRate.denominator)
-									: QStringLiteral("Exact profile, stored raster, frame layout, depth, sampling and rational rate match Avid's 2012 white paper pp. 9–10."));
-						codec += QStringLiteral(" [%1]").arg(oldName);
-					}
-					break;
-				}
-			}
+
+			Detail::CompressionFacts facts;
+			facts.codingLabel = label;
+			facts.descriptorClass = cls;
+			facts.codingAbsent = codingAbsent && complete;
+			facts.geometry = {storedWidth.value_or(0), frameHeight};
+			const auto namingRate = resolution && label == knownDnxLabel(*resolution)
+				? legacyDnxNamingRate(*resolution, unitsRate) : unitsRate;
+			facts.rate = namingRate;
+			facts.layout = layout;
+			facts.depth = integer(unique(descriptor, {"OMFI:CDCI:ComponentWidth"}));
+			facts.horizontal = integer(unique(descriptor, {"OMFI:CDCI:HorizontalSubsampling"}));
+			facts.vertical = integer(unique(descriptor, {"OMFI:CDCI:VerticalSubsampling"}));
 			const auto *compression = uniqueRaw(descriptor, {"OMFI:DIDD:Compression"});
-			if (legacyIdentity && resolution && compression && *resolution >= 0 && *resolution <= std::numeric_limits<quint32>::max())
+			// Only typed descriptor identifiers enter the legacy name table. An
+			// unknown or conflicting coding property is not evidence of absence.
+			if (resolutionId && compression && resolutionId->bento && compression->bento &&
+				named(resolutionId->bento->typeName, {"omfi:Long", "omfi:Int32", "omfi:UInt32"}) &&
+				resolutionId->encoding.size() == 4 && compression->bento->typeName == QLatin1String("omfi:String") &&
+				(compression->encoding.size() == 4 ||
+					(compression->encoding.size() == 5 && compression->encoding.back() == '\0')))
 			{
-				// Exclude the old table's expressly unverified filename-only DV100 rows.
-				if (*resolution != 2500 && *resolution != 2502 && *resolution != 2402)
-				{
-					const auto legacyName = OmfResolutions::name(quint32(*resolution), compression->encoding);
-					if (!legacyName.isEmpty())
-					{
-						codec = legacyName;
-						codecProperty = compression;
-					}
-				}
-			}
-			if (codec.isEmpty() && (cls == QLatin1String("PCMA") || cls == QLatin1String("WAVE")))
-			{
-				codec = QStringLiteral("PCM");
-				codecProperty = classProperty;
-			}
-			if (named(codec, {"DV 25 411", "DV 25 420", "DV 50", "DV 25P 420"}) && storedWidth == 720 && layout)
-			{
-				const QString scan = *layout == 0 ? QStringLiteral("p") : (*layout == 1 || *layout == 3) ? QStringLiteral("i")
-																										 : QString{};
-				const QString standard = unitsRate.sameRate({25, 1}) && frameHeight == 576								   ? QStringLiteral("PAL")
-										 : unitsRate.sameRate({30000, 1001}) && (frameHeight == 480 || frameHeight == 486) ? QStringLiteral("NTSC")
-																														   : QString{};
-				if (!scan.isEmpty() && !standard.isEmpty())
-					codec += QStringLiteral(" %1(%2)").arg(scan, standard);
+				facts.legacyResolution = resolution;
+				facts.legacyCompression = compression->encoding.first(4);
 			}
 			const auto saveCodec = [&]
 			{
-				if (label == QByteArray::fromHex("060e2b340401010d0401020203070100") ||
-					label == QByteArray::fromHex("060e2b340401010d0401020203070200"))
+				const auto descriptorValue = [&](MediaProperty field)
 				{
-					codec = QStringLiteral("Avid DNxUncompressed");
-					const auto descriptorValue = [&](MediaProperty field)
-					{
-						QString selected;
-						for (const auto &value : file.evidence.observations(field))
-							if (value.objectIdentity == QStringLiteral("object:%1").arg(descriptor.handle) && value.readState == PropertyReadState::Present)
-							{
-								if (!selected.isEmpty() && selected != value.value.toString())
-									return QString{};
-								selected = value.value.toString();
-							}
-						return selected;
-					};
-					const auto depth = descriptorValue(MediaProperty::BitDepth);
-					const auto format = descriptorValue(MediaProperty::SampleFormat);
-					if (!depth.isEmpty() && !format.isEmpty())
-						codec += QStringLiteral(" — %1 %2").arg(depth, format);
-				}
-				if (!codec.isEmpty() && codecProperty)
-					observe(file, MediaProperty::Compression, m_source, descriptor, *codecProperty, codec, EvidenceBasis::Derived,
-							QStringLiteral("Established descriptor coding and applicable verified name table; original identifiers retained."));
+					QString selected;
+					for (const auto &value : file.evidence.observations(field))
+						if (value.objectIdentity == QStringLiteral("object:%1").arg(descriptor.handle) && value.readState == PropertyReadState::Present)
+						{
+							if (!selected.isEmpty() && selected != value.value.toString())
+								return QString{};
+							selected = value.value.toString();
+						}
+					return selected;
+				};
+				facts.bitDepth = descriptorValue(MediaProperty::BitDepth);
+				facts.sampleFormat = descriptorValue(MediaProperty::SampleFormat);
+				const auto names = Detail::compressionNames(facts);
+				if (!names.newDnx.isEmpty() && codecProperty)
+					observe(file, MediaProperty::NewDnx, m_source, descriptor, *codecProperty, names.newDnx, EvidenceBasis::Derived,
+							QStringLiteral("Verified coding profile mapped to Avid's unified DNx branding."));
+				if (!names.oldDnx.isEmpty() && codecProperty)
+					observe(file, MediaProperty::OldDnx, m_source, descriptor, *codecProperty, names.oldDnx,
+							EvidenceBasis::Derived, QStringLiteral("Historical HD/HR profile identity; not inferred from image dimensions."));
+				if (!names.reallyOldDnx.isEmpty() && codecProperty)
+					observe(file, MediaProperty::ReallyOldDnx, m_source, descriptor, *codecProperty, names.reallyOldDnx, EvidenceBasis::Derived,
+							!namingRate.sameRate(unitsRate)
+								? QStringLiteral("Verified legacy OMF/MDB name-table clock spelling for resolution ID %1: recorded %2/%3, naming operating point %4/%5. Matching MDB/MXF identities or Avid's supplied OMF slate corroborate this exact profile/clock pair; raster, layout, depth and sampling must also match Avid's 2012 white paper pp. 9–10. Recorded Frame Rate and Duration are unchanged.")
+									  .arg(*resolution).arg(unitsRate.numerator).arg(unitsRate.denominator)
+									  .arg(namingRate.numerator).arg(namingRate.denominator)
+								: QStringLiteral("Exact profile, stored raster, frame layout, depth, sampling and rational rate match Avid's 2012 white paper pp. 9–10."));
+				const auto *anchor = names.legacyIdentifiersUsed ? compression : codecProperty;
+				if (!anchor && (cls == QLatin1String("PCMA") || cls == QLatin1String("WAVE")))
+					anchor = classProperty;
+				if (!names.compression.isEmpty() && anchor)
+					observe(file, MediaProperty::Compression, m_source, descriptor, *anchor, names.compression, EvidenceBasis::Derived,
+							names.legacyIdentifiersUsed
+								? QStringLiteral("Typed %1 descriptor Compression '%2' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue%3; original properties retained.")
+									  .arg(cls, QString::fromLatin1(compression->encoding.first(4)), codingAbsent
+										  ? QStringLiteral("; EssenceCompression is absent") : QStringLiteral(" and its exact compatible recorded EssenceCompression label"))
+								: QStringLiteral("Established descriptor coding and shared verified Avid compression-name catalogue; original identifiers retained."));
 			};
 
 			for (const auto *depth : properties(descriptor, {"OMFI:CDCI:ComponentWidth", "OMFI:MDAU:BitsPerSample"}))
@@ -1663,14 +1666,14 @@ namespace Canon
 						return bytes == QByteArray(1, expected) ||
 							   bytes == QByteArray(1, expected) + '\0';
 					};
-					if (codec.isEmpty() && properties(descriptor, {"OMFI:DIDD:EssenceCompression"}).isEmpty() &&
+					if (codingAbsent && complete &&
 						compression && (compression->encoding == "NONE" || compression->encoding == QByteArray("NONE\0", 5)) &&
 						oneValue(pixels->encoding, 'A') && depths && !depths->encoding.isEmpty() &&
 						quint8(depths->encoding.front()) > 0 && quint8(depths->encoding.front()) <= 64 &&
 						oneValue(depths->encoding, depths->encoding.front()))
 					{
-						codec = QStringLiteral("Uncompressed alpha");
-						codecProperty = compression;
+						facts.legacyCompression = QByteArray("NONE");
+						facts.alphaDepth = quint8(depths->encoding.front());
 					}
 					observe(file, MediaProperty::Alpha, m_source, descriptor, *pixels, seen.contains('A'), EvidenceBasis::Derived,
 							QStringLiteral("Explicit complete RGBA component list; transparency polarity alone is not presence evidence."));
@@ -1708,28 +1711,31 @@ namespace Canon
 					dataChunks.append(&property);
 			for (const auto &property : source.unownedProperties)
 			{
-				if (property.state != PropertyReadState::Present || !property.bytesRetained)
+				if (!property.bytesRetained)
 					continue;
 				AudioFacts facts;
 				if (property.locator.key == "fmt ")
 				{
-					facts = waveFormat(property.encoding);
+					facts = waveFormat(owner, property);
 					if (facts.uncompressed && facts.blockAlign && dataChunks.size() == 1 && dataChunks.first()->locator.ranges.size() == 1)
 					{
 						const auto bytes = dataChunks.first()->locator.ranges.first().length;
 						if (bytes >= 0 && bytes % facts.blockAlign == 0)
+						{
 							facts.frames = bytes / facts.blockAlign;
+							facts.framesProperty = dataChunks.first();
+						}
 					}
 				}
 				else if (property.locator.key == "COMM")
 				{
-					const auto fields = property.decoded.toMap();
-					facts = aiffCommon(property.encoding, fields.contains(QStringLiteral("compressionType")));
+					facts = aiffCommon(owner, property);
 				}
 				else
 					continue;
-				observe(file, MediaProperty::Kind, source, owner, property, 1, EvidenceBasis::Derived,
-						QStringLiteral("A native WAVE/AIFF audio format header was recorded."));
+				if (!property.decoded.toMap().isEmpty())
+					observe(file, MediaProperty::Kind, source, owner, facts.channelsProperty ? *facts.channelsProperty : property, 1, EvidenceBasis::Derived,
+							QStringLiteral("A native WAVE/AIFF audio format header was recorded."));
 				audioObservations(file, source, owner, property, facts, true);
 			}
 			return file;

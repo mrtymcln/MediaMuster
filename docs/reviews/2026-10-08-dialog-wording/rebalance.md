@@ -5,7 +5,7 @@ Read-only review of all visible strings in `RebalanceDialog`, its preview, confi
 ## State corrections required
 
 | Finding | Evidence | Required correction / intended message |
-|---|---|---|
+| --- | --- | --- |
 | Zero planned moves is displayed as a balanced result even when the planner could not inspect the root. | [renderPlan](../../../src/rebalancedialog.cpp#L539) tests only `moveCount() == 0`; [computePlan](../../../src/rebalanceplanner.cpp#L188) returns an empty plan for an unavailable/invalid root. Unreadable folders can also be excluded. | Carry a planning outcome. Distinguish **No moves needed**, **No eligible media to rebalance**, and **Couldn’t check these folders**. A zero-move count alone cannot establish success. |
 | The intro promises every clip’s relatives remain together. | [Intro](../../../src/rebalancedialog.cpp#L392); [oversized groups](../../../src/rebalanceplanner.cpp#L366) deliberately span folders; [missing/invalid master identities](../../../src/rebalanceplanner.cpp#L121) produce independent file groups. | Explain **related media together where possible**, with a 5,000-file target. Do not promise every file of every clip is found or grouped. |
 | The confirmation promises an automatic database rebuild on the next project open for every selected location. | [Confirmation](../../../src/rebalancedialog.cpp#L608); the planner preserves workstation prefixes, including other hosts’ prefixes. Official Avid evidence below limits which host can reindex its folders. | **Media Composer must rebuild the affected media databases afterwards. For workstation-named folders on shared storage, use the owning workstation to rebuild its databases.** Do not promise the current workstation/project open will rebuild every affected folder. |
@@ -18,7 +18,7 @@ Read-only review of all visible strings in `RebalanceDialog`, its preview, confi
 Every literal user-facing string in the Rebalance dialog is listed below. Dynamic folder/volume/file names, ordinary numeric counts, layout CSS and rich-text separators are formatting/data rather than additional messages.
 
 | Source | Current text | Recommendation / Keep | Kind |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [Folder card](../../../src/rebalancedialog.cpp#L183) | `Unavailable` | **Count unavailable** distinguishes a failed count from a confirmed missing folder. | Copy |
 | [Folder card](../../../src/rebalancedialog.cpp#L185) | `Not created` | **Keep.** A planned new folder was not created. | Keep |
 | [Folder card](../../../src/rebalancedialog.cpp#L185) | `Missing` | **Keep.** Existing planned folder is now absent. | Keep |
@@ -63,7 +63,7 @@ Every literal user-facing string in the Rebalance dialog is listed below. Dynami
 Shared file-operation validation/native errors also flow through Rebalance. Their full common inventory belongs to the operation-engine section; these are the Rebalance-specific messages and nearby UI outcomes.
 
 | Source | Current text | Recommendation / Keep | Kind |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [Preflight](../../../src/rebalancer.cpp#L76) | `The media files are unavailable. Rescan and try again.` | **The media location or folder layout has changed. Rescan and try again.** Preparation can reject invalid/stale layout as well as missing media. | Accuracy |
 | [Start Console](../../../src/rebalancer.cpp#L94) | `Rebalance started.` | **Keep.** | Keep |
 | [Result Console](../../../src/rebalancer.cpp#L22) | `result.name + ": " + result.message` for every non-Completed result | **Keep** filename context. Consider informational rather than warning severity for confirmed `NoEffect`; do not reduce warning severity for partial/failed/uncertain results. | Severity review |
@@ -74,7 +74,7 @@ Shared file-operation validation/native errors also flow through Rebalance. Thei
 | [Capacity skip](../../../src/oprunner.cpp#L598) | `Rebalance group skipped: a destination folder would exceed 5,000 files. Rescan and replan.` | **Skipped these related media files: their destination would exceed 5,000 MXF files. Rescan and try Rebalance again.** | Copy |
 | [Conflict skip](../../../src/oprunner.cpp#L600) | `Rebalance group skipped: a destination is occupied. Rescan and replan.` | **Skipped these related media files: a destination file already exists. Rescan and try Rebalance again.** | Copy |
 | [Preparation](../../../src/oprunner.cpp#L618), [directory sync](../../../src/oprunner.cpp#L622) | `Rebalance unavailable; source files retained.\n` + native error | **Couldn’t prepare the next group. Its media files remain in their original locations.** Retain native detail. Do not imply previous groups were rolled back. | Accuracy/scope |
-| [Database maintenance](../../../src/oprunner.cpp#L671) | `Avid database retirement stopped: ` + outcome | **Couldn’t move an outdated Avid database to MediaMuster Trash: …** | Copy |
+| [Database maintenance](../../../src/oprunner.cpp#L671) | `Avid database retirement stopped:` + outcome | **Couldn’t move an outdated Avid database to MediaMuster Trash: …** | Copy |
 | [Late conflict](../../../src/oprunner.cpp#L772) | `Rebalance stopped: a destination became occupied after the group check. Rescan and replan.` | **Rebalance stopped because a destination file appeared while it was running. Rescan and try again.** | Copy |
 | [Late native conflict](../../../src/oprunner.cpp#L1058) | `Rebalance stopped: a destination became occupied. Completed moves and remaining files are recorded.` | **Rebalance stopped because a destination file appeared while it was running. Completed moves and remaining files are recorded for recovery.** | Copy |
 | [Relocation unavailable](../../../src/oprunner.cpp#L818) | `Safe same-filesystem relocation is unavailable. The source was retained.` | **This file couldn’t be moved safely within the drive. It remains in its original location.** Retain additional native error. | Copy |

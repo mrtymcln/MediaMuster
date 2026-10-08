@@ -236,7 +236,7 @@ private slots:
 	void copied_media_tree_requires_its_direct_base_or_managed_root();
 	void omf_root_pointed_at_directly_never_scans_as_mxf_folders();
 	void omf_root_without_a_pmr_gets_identity_from_its_header();
-	void omf_video_rows_show_avid_short_names();
+	void omf_video_rows_show_avid_descriptive_names();
 	void shared_omf_folder_uses_current_databases_and_header_fallback();
 	void shared_omf_folder_without_pmr_uses_its_media_headers();
 	void shared_omf_folder_without_any_database_is_scanned();
@@ -2704,7 +2704,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 	}
 }
 
-void TestScanner::omf_video_rows_show_avid_short_names()
+void TestScanner::omf_video_rows_show_avid_descriptive_names()
 {
 	// Three shipped slates under their own databases exercise verified codec
 	// naming and visible-raster selection without opening headers.
@@ -2719,8 +2719,8 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 	const Pin kPins[] = {
 		// OMF and MDB record 248 stored lines per field, with a 243-line
 		// display crop. Resolution shows the cropped full-frame raster.
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x486", "29.97", true},
-		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
+		{"BLACK_720x243x2_JFIF35.omf", "JFIF 20:1", "720x486", "29.97", true},
+		{"BLACK_720x576x1_DV420.omf", "IEC-DV PAL 25Mbps 4:2:0", "720x576", "25", true},
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ [DNxHD 220]", "1920x1080", "29.97", false},
 	};
 
@@ -2775,8 +2775,8 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		bool stamp; ///< Exercise different filesystem mtimes without declaring database freshness.
 	};
 	const Pin kPins[] = {
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x486", "29.97", true},
-		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
+		{"BLACK_720x243x2_JFIF35.omf", "JFIF 20:1", "720x486", "29.97", true},
+		{"BLACK_720x576x1_DV420.omf", "IEC-DV PAL 25Mbps 4:2:0", "720x576", "25", true},
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ [DNxHD 220]", "1920x1080", "29.97", false},
 	};
 
@@ -2854,7 +2854,7 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 	}
 	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
 	QVERIFY(slate != nullptr);
-	QCOMPARE(slate->compression, QStringLiteral("20:1"));
+	QCOMPARE(slate->compression, QStringLiteral("JFIF 20:1"));
 	QCOMPARE(slate->originalBin, QStringLiteral("NTSC slides")); // the MDB's record, joined by identity
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);

@@ -1,0 +1,398 @@
+{
+  "recordedUtc": "2026-10-08T08:26:14.534107+00:00",
+  "purpose": "Independent complete-file exact-byte search of live non-MXF scan sources and the nine supplied bins. Includes unparsed or unknown AVB tails without relying on Canon interpretation.",
+  "manifest": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/dnx-alias-corpus-manifest-2026-10-08.json",
+    "sha256": "14cb03a11bcfb9e1ddf68a9e098cd451ac12680a565fdcef2467fd89837abd15",
+    "selection": "Every live-scan entry whose extension is not .mxf, plus every supplied-bin entry; no repository fixtures or live MXF essence reread."
+  },
+  "scope": {
+    "filesSelected": 23,
+    "filesFullyRead": 23,
+    "bytesRead": 96327581,
+    "byGroup": {
+      "live-scan": 14,
+      "supplied-bin": 9
+    },
+    "byExtension": {
+      ".pmr": 6,
+      ".mdb": 6,
+      ".wav": 1,
+      ".aif": 1,
+      ".avb": 9
+    },
+    "wholeFileReads": true,
+    "mediaOrDatabaseWrites": false
+  },
+  "method": {
+    "chunkBytes": 1048576,
+    "overlapBytes": 15,
+    "unique16BytePatterns": 27,
+    "encodings": [
+      "UlOctets",
+      "StructuredAuidBigEndian",
+      "StructuredAuidLittleEndian"
+    ],
+    "auidTransformSource": "src/canon/omfprojection.cpp::auidToUl",
+    "structuredAuidBigEndian": "UL[8:16] + UL[0:8]",
+    "structuredAuidLittleEndian": "reverse(UL[8:12]) + reverse(UL[12:14]) + reverse(UL[14:16]) + UL[0:8]",
+    "offsetConvention": "Zero-based absolute byte offsets in the searched source file.",
+    "boundaries": "15 retained bytes between chunks detect every 16-byte occurrence spanning a read boundary without duplicate complete occurrences.",
+    "sourceStability": "File size and modification time checked before and after each read."
+  },
+  "files": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "group": "live-scan",
+      "bytesRead": 86754,
+      "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+      "modificationTimeNs": 1790740372078265906,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "group": "live-scan",
+      "bytesRead": 3668720,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "modificationTimeNs": 1788291273218255487,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+      "group": "live-scan",
+      "bytesRead": 8665912,
+      "sha256": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "modificationTimeNs": 1788291444212837609,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972997.0C53E0.aif",
+      "group": "live-scan",
+      "bytesRead": 8659584,
+      "sha256": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "modificationTimeNs": 1788291480006999401,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+      "group": "live-scan",
+      "bytesRead": 392,
+      "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+      "modificationTimeNs": 1788291482553506886,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "group": "live-scan",
+      "bytesRead": 60680,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "modificationTimeNs": 1788291495301754724,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/martymclean/Downloads/sample.avb",
+      "group": "supplied-bin",
+      "bytesRead": 30614,
+      "sha256": "add6deb6184d5b1ac5ad9f6b900a19c9b22c9f007374ff794087839d6128f94f",
+      "modificationTimeNs": 1784886927566905817,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Users/martymclean/Library/Group Containers/group.com.apple.notes/Accounts/05F4B15D-DD7C-454C-B334-B1E4C72107E4/Media/D109B927-C69B-4EFA-AFB9-43FE3E91414C/1_DA583EA9-1B03-4A3E-A2A7-2C78C7E68095/Nön English bin náme™ 你好 漢.avb",
+      "group": "supplied-bin",
+      "bytesRead": 64500,
+      "sha256": "dcadf7d11c596ee046c9982efe7dffd5b4c7ba140143b5223257c93a654a4957",
+      "modificationTimeNs": 1783052387895211133,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+      "group": "supplied-bin",
+      "bytesRead": 9126981,
+      "sha256": "8a2be56a3818a14e50a2733ceb2c8029575fd77ede8a0c73a90ca063d086a344",
+      "modificationTimeNs": 1561094149000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/02_SEQ_LOCK.avb",
+      "group": "supplied-bin",
+      "bytesRead": 3403226,
+      "sha256": "65e6323cb3fe244b603e493e79a8991703e189feba232852c764c79d19c25185",
+      "modificationTimeNs": 1561095049000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D001_A001_TRNSCDS.avb",
+      "group": "supplied-bin",
+      "bytesRead": 281276,
+      "sha256": "de1d9b374330c357302f379b0f8b5c29516f52512ee3da35132eedcf5cb739f7",
+      "modificationTimeNs": 1539694496000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D001_A002_TRNSCDS.avb",
+      "group": "supplied-bin",
+      "bytesRead": 322223,
+      "sha256": "6ae52c9b5c01cff9bdf98ea4f6dba1768668f14f8293dc6ddeeac189471142f3",
+      "modificationTimeNs": 1539699216000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D002_A001_TRNSCDS.avb",
+      "group": "supplied-bin",
+      "bytesRead": 370756,
+      "sha256": "2e4c184ca09001c52c67665162ed778f76302d7d3c2d8ff84ecea98da77f00e7",
+      "modificationTimeNs": 1539736393000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D003_A001_TRNSCDS.avb",
+      "group": "supplied-bin",
+      "bytesRead": 445822,
+      "sha256": "7da1e46fbd95473b9e81d10412f3ad36e4658efcd86b7375b275588858c33a73",
+      "modificationTimeNs": 1539751320000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D003_A002_TRNSCDS.avb",
+      "group": "supplied-bin",
+      "bytesRead": 419191,
+      "sha256": "a73dc06fa8e453ca6232e66dad58cb5ed32ab56dbf2b24ace18387e79a780af5",
+      "modificationTimeNs": 1539816348000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "group": "live-scan",
+      "bytesRead": 97250,
+      "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+      "modificationTimeNs": 1561095049000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "group": "live-scan",
+      "bytesRead": 5159032,
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "modificationTimeNs": 1561096331000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+      "group": "live-scan",
+      "bytesRead": 164660,
+      "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+      "modificationTimeNs": 1785052993000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "group": "live-scan",
+      "bytesRead": 22745976,
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "modificationTimeNs": 1785052712000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+      "group": "live-scan",
+      "bytesRead": 123140,
+      "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+      "modificationTimeNs": 1790763274000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "group": "live-scan",
+      "bytesRead": 16616336,
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "modificationTimeNs": 1778753153000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+      "group": "live-scan",
+      "bytesRead": 111140,
+      "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+      "modificationTimeNs": 1785052993000000000,
+      "sizeAndModificationTimeStable": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "group": "live-scan",
+      "bytesRead": 15703416,
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "modificationTimeNs": 1778753179000000000,
+      "sizeAndModificationTimeStable": true
+    }
+  ],
+  "rawOccurrences": 0,
+  "matchedSourceFiles": 0,
+  "aliases": [
+    {
+      "identifier": "060e2b34040101010d01030102060301",
+      "currentLevel": "LB",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060301",
+        "StructuredAuidBigEndian": "0d01030102060301060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020103060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060101",
+      "currentLevel": "SQ",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060101",
+        "StructuredAuidBigEndian": "0d01030102060101060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020101060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060201",
+      "currentLevel": "HQ",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060201",
+        "StructuredAuidBigEndian": "0d01030102060201060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020102060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060202",
+      "currentLevel": "HQX",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060202",
+        "StructuredAuidBigEndian": "0d01030102060202060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020202060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110101",
+      "currentLevel": "LB",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110101",
+        "StructuredAuidBigEndian": "0d01030102110101060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020101060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110201",
+      "currentLevel": "SQ",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110201",
+        "StructuredAuidBigEndian": "0d01030102110201060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020102060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110301",
+      "currentLevel": "HQ",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110301",
+        "StructuredAuidBigEndian": "0d01030102110301060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020103060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110401",
+      "currentLevel": "HQX",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110401",
+        "StructuredAuidBigEndian": "0d01030102110401060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020104060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110501",
+      "currentLevel": "444",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110501",
+        "StructuredAuidBigEndian": "0d01030102110501060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020105060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    }
+  ],
+  "errors": [],
+  "interpretation": "A zero match count establishes absence of these exact contiguous 16-byte encodings in the bytes successfully searched. It does not prove that no historical/private format used an alias, exclude fragmented/non-contiguous encodings, or establish whether a matching byte sequence would be a coding property rather than a container, identity, or essence payload.",
+  "provenance": "These paths come from the preserved live-scan/supplied-bin manifest. No authored synthetic buffer is included. A raw occurrence would require separate typed-property review to establish whether it records compression semantics."
+}

@@ -1,0 +1,7 @@
+[1/7] Building CXX object CMakeFiles/mediamuster_canon.dir/src/canon/compressionnames_p.cpp.o
+[2/7] Building CXX object CMakeFiles/mediamuster_canon.dir/src/mediametadata.cpp.o
+[3/7] Linking CXX static library libmediamuster_canon.a
+[4/7] Automatic MOC for target MediaMuster
+[5/6] Building CXX object CMakeFiles/MediaMuster.dir/src/mediametadata.cpp.o
+[6/6] Linking CXX executable MediaMuster.app/Contents/MacOS/MediaMuster; Codesigning the bundle
+/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app: replacing existing signature

@@ -22,8 +22,10 @@ definitions, Media Composer evidence or genuine specimens supporting that exact
 interpretation. The old engine's behaviour and a lack of observed failures do not
 justify retaining a rule. Unsupported inherited assumptions need reassessment and
 evidenced replacement or removal. In particular, MobId storage width has not been
-established as a codec-selection criterion; a replacement must establish descriptor
-context and private compression/resolution mapping applicability and precedence.
+established as a codec-selection criterion. The
+[8 October correction](legacy-compression-and-audio-summaries-2026-10-08.md) replaces
+it with typed descriptor context, verified private compression/resolution pairs
+and exact compatible coding labels, with applicability and evidence limits recorded.
 
 Display preferences are explicit MediaMuster product decisions. A format can record
 different names in different places without prescribing which name our table shows.
@@ -92,6 +94,12 @@ Loaded AVB ------+                         PropertyPolicy table
 
 This is an internal developer-controlled policy table, not a new user-facing editor,
 new persistent database, or a requirement for a "Why this value?" UI in v1.
+
+Compression naming has its own [shared catalogue](compression-name-catalogue-2026-10-08.md).
+It translates one source's established format facts into a readable name before
+this policy chooses between sources. Editing a name mapping does not change source
+priority or authorize additional reads. Raw identifiers and descriptor facts remain
+retained; uncertain variants receive only an established general name.
 
 ## Two different tables
 
@@ -204,17 +212,17 @@ using Source = MetadataSource;
 // Four illustrative rows; the linked production table contains all 41.
 constexpr PropertyPolicy examplePolicies[] =
 {
-	// Clip name: header first, MDB second, loaded AVB third.
-	{MediaProperty::ClipName, SelectionRule::PreferredValue,
-		prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Avb})},
-	// Project: PMR first, MDB second, header third.
-	{MediaProperty::Project, SelectionRule::PreferredValue,
-		prefer({Source::Pmr}, {Source::Mdb}, {Source::Mxf, Source::Omf})},
-	// Original bin: MDB first, header second, loaded AVB third.
-	{MediaProperty::OriginalBin, SelectionRule::PreferredValue,
-		prefer({Source::Mdb}, {Source::Mxf, Source::Omf}, {Source::Avb})},
-	// Master associations: retain every eligible association, rather than one winner.
-	{MediaProperty::MasterMobId, SelectionRule::MasterAssociations, {}}
+ // Clip name: header first, MDB second, loaded AVB third.
+ {MediaProperty::ClipName, SelectionRule::PreferredValue,
+  prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Avb})},
+ // Project: PMR first, MDB second, header third.
+ {MediaProperty::Project, SelectionRule::PreferredValue,
+  prefer({Source::Pmr}, {Source::Mdb}, {Source::Mxf, Source::Omf})},
+ // Original bin: MDB first, header second, loaded AVB third.
+ {MediaProperty::OriginalBin, SelectionRule::PreferredValue,
+  prefer({Source::Mdb}, {Source::Mxf, Source::Omf}, {Source::Avb})},
+ // Master associations: retain every eligible association, rather than one winner.
+ {MediaProperty::MasterMobId, SelectionRule::MasterAssociations, {}}
 };
 ```
 
@@ -265,7 +273,7 @@ The implemented shared API is:
 const PropertyPolicy &propertyPolicy(MediaProperty property);
 const PropertyPolicies &propertyPolicies() noexcept;
 ResolvedField resolveProperty(const MediaEvidence &evidence,
-	const PropertyPolicy &policy);
+ const PropertyPolicy &policy);
 void selectMetadata(MediaEvidence &evidence);
 bool applyResolvedMetadata(::MediaFile &file);
 ```

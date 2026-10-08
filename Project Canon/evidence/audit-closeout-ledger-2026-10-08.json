@@ -1,9 +1,9 @@
 {
   "date": "2026-10-08",
-  "basis": "Four ownership/reference findings reassessed after the recorded-contents corrections, final 38-suite native verification, authored counterexamples and the read-only 2,413-row comparison. The other 36 assessments are inherited from 7 October with their original evidence and limits.",
+  "basis": "Seven findings reassessed on 8 October: four ownership/reference findings after the recorded-contents corrections, then F17/F20/F21 after descriptor-based compression identification and shared audio-summary field decoding. Each stage links its own primary/genuine evidence, authored controls, native verification and 2,413-row read-only comparison. The other 33 assessments retain their original evidence and limits.",
   "counts": {
-    "Resolved": 25,
-    "Partly resolved": 9,
+    "Resolved": 28,
+    "Partly resolved": 6,
     "Needs evidence": 1,
     "Accepted scope limit": 4,
     "Open": 1
@@ -140,10 +140,10 @@
     {
       "id": "F17",
       "title": "Identifier width is used as a media-era discriminator",
-      "status": "Partly resolved",
-      "mechanismAndEvidence": "Managed family/container/schema are independent in Canon, and WINL/UNXL locator admission no longer depends on UID width. Legacy codec precedence still passes `mobId->encoding.size()==12` to `technical(... legacyIdentity ...)`. [projection call and legacy codec gate](../src/canon/omfprojection.cpp); opposite-endian UID/genuine codec tests in [projection suite](../tests/tst_canon_omfprojection.cpp); authored width-only JFIF probe below.",
-      "limits": "Identical legacy descriptor compression/resolution gives `20:1` with a 12-byte MobID and blank Codec with a 32-byte MobID in the authored probe. Descriptor/schema evidence must replace the remaining width gate.",
-      "assessmentDate": "2026-10-07"
+      "status": "Resolved",
+      "mechanismAndEvidence": "MobId storage width no longer participates in compression lookup. The admitted legacy mapping requires descriptor class, exact Compression/DIDResolutionID property types and verified pairs; a present coding label permits refinement only for exact corroborated compatible labels. Unknown or differing coding stays independently retained without private override. [implementation and primary evidence](legacy-compression-and-audio-summaries-2026-10-08.md), [typed mapping](../src/canon/omfprojection.cpp), [genuine pairs/resources](evidence/legacy-compression-pairs-2026-10-08.json), [two real DV name refinements](evidence/legacy-audio-dv-name-evidence-2026-10-08.json), [projection tests](../tests/tst_canon_omfprojection.cpp). Final native suites: 39/39; real scan: 2,413 identical paths and only two supported DV short-name changes.",
+      "limits": "The exact 32-byte-owner/JFIF independence control is authored; genuine inspected JFIF owners are 12-byte. The real 32-byte-owner DV refinements independently demonstrate width-free lookup for their verified pairs. Only the finite corroborated mapping subset is admitted; unverified DV100 IDs are excluded. Naming refinement does not prove earlier genuine DV rows identified a different encoding family.",
+      "assessmentDate": "2026-10-08"
     },
     {
       "id": "F18",
@@ -164,18 +164,18 @@
     {
       "id": "F20",
       "title": "WAVE valid bits and subtype are ignored",
-      "status": "Partly resolved",
-      "mechanismAndEvidence": "Native WAVE parsing preserves storage bits, Samples/valid bits, channel mask and SubFormat; projection recognizes PCM/IEEE float GUIDs and valid precision. OMF summary projection reads an extensible tail but reduces it to AudioFacts, leaving storage/mask/GUID only in raw summary bytes. [native `waveFormat`](../src/canon/audioreader_p.cpp), [summary/native projection `waveFormat`](../src/canon/omfprojection.cpp); `waveExtensibleKeepsPrecisionAndAssignments` / `truncatedNativeExtensionsKeepBaseFields` in [legacy tests](../tests/tst_canonlegacy.cpp), native audio projection in [OMF tests](../tests/tst_canon_omfprojection.cpp).",
-      "limits": "OMF summary fields are not separately decoded retained observations; invalid/missing extensible tail and impossible valid-bit values need explicit qualification. Native metadata tests do not establish all summary paths or every subtype's semantics.",
-      "assessmentDate": "2026-10-07"
+      "status": "Resolved",
+      "mechanismAndEvidence": "Native WAVE fmt and OMF/MDB WAVD Summary fmt chunks now share one field decoder. Storage width, valid precision, Samples union, channel mask and SubFormat survive as separate original-byte/range/read-state observations. Known PCM/IEEE float subtypes qualify valid-bit interpretation; unknown, missing or invalid precision cannot be selected merely from storage width. [implementation, Microsoft semantics and verification](legacy-compression-and-audio-summaries-2026-10-08.md), [shared decoder](../src/canon/audioreader_p.cpp), [projection](../src/canon/omfprojection.cpp), [genuine decoded Summary receipt](evidence/audio-summary-decoded-evidence-2026-10-08.json), [reader tests](../tests/tst_canonlegacy.cpp), [projection tests](../tests/tst_canon_omfprojection.cpp).",
+      "limits": "No genuine extensible-WAVE Summary was found in the inspected corpus. Its valid-bit, GUID, channel-mask and malformed-extension controls are authored against the published WAVE structure. Genuine PCM summaries and their original hashes are checked; this does not certify every WAVE subtype or historical Avid writer.",
+      "assessmentDate": "2026-10-08"
     },
     {
       "id": "F21",
       "title": "AIFF/RIFF summary validity is weaker than chunk validity",
-      "status": "Partly resolved",
-      "mechanismAndEvidence": "Summary parsing checks the full declared copied metadata-chunk extent and gates compression decoding on FORM AIFC. Native chunks have strict bounds/extension failure states. Summary helpers still return base facts from malformed extensions without a recovered/partial summary state. [`audioSummary`, `waveFormat`, `aiffCommon`, `audioObservations`](../src/canon/omfprojection.cpp), [native framing/extension validation](../src/canon/audioreader_p.cpp); `truncatedNativeExtensionsKeepBaseFields` / malformed framing cases in [legacy tests](../tests/tst_canonlegacy.cpp); authored summary probe below.",
-      "limits": "An extensible summary missing its GUID yields Present 24-bit; AIFC COMM missing compression-name length yields Present 24-bit and PCM, with Complete source and generic explanation. Full recording extent must remain exempt from summary validation; individual malformed metadata chunks/tails still need qualification.",
-      "assessmentDate": "2026-10-07"
+      "status": "Resolved",
+      "mechanismAndEvidence": "Summary interpretation requires the exact supported property/type and matching RIFF/WAVE or FORM/AIFF/AIFC family, checks copied metadata bounds, and shares native field decoding. It deliberately stops at omitted sample data rather than demanding a full recording. Individual extension/name failures retain their bytes and Unreadable state without discarding independently readable base fields. Original Bento framing outcome remains distinct from audio-field interpretation. [implementation/specification/evidence report](legacy-compression-and-audio-summaries-2026-10-08.md), [decoder](../src/canon/audioreader_p.cpp), [MDB attachment](../src/canon/omfobjects_p.cpp), [genuine Summary provenance](evidence/audio-summary-decoded-evidence-2026-10-08.json), [projection tests](../tests/tst_canon_omfprojection.cpp). All three genuine Summary byte hashes remain identical; AIFF-C compressionName is separately decoded at offset10523/length14.",
+      "limits": "Missing GUID/name, malformed bounds and contradictory Summary controls are authored, not claimed damaged real Avid specimens. The supported Summary copy is not treated as a complete native file. Readable fields can remain usable while independent fields are unreadable; no corruption recovery or universal Summary writer certification is claimed.",
+      "assessmentDate": "2026-10-08"
     },
     {
       "id": "F22",

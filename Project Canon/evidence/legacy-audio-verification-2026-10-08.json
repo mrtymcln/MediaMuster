@@ -1,0 +1,213 @@
+{
+  "date": "2026-10-08",
+  "recordedUTC": "2026-10-08T05:33:27.750319+00:00",
+  "baseCommit": "2e708126e30f02a9a53916f8ff5bd24e7dee9ef1",
+  "workingDirectory": "/Users/martymclean/Developer/MediaMuster",
+  "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H212",
+  "runtimeArchitecture": "arm64",
+  "qtVersion": "6.5.3",
+  "buildType": "Debug",
+  "builds": [
+    {
+      "path": "build/MediaMuster.app",
+      "result": "succeeded",
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "deepStrictCodesignVerify": "succeeded"
+    },
+    {
+      "path": "build-canon/MediaMuster.app",
+      "result": "succeeded",
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ]
+    }
+  ],
+  "nativeSuites": {
+    "passed": 39,
+    "failed": 0,
+    "seconds": 42.01,
+    "log": "evidence/legacy-audio-full-tests-2026-10-08.txt",
+    "guardedScope": "Opt-in tests remain opt-in; the actual-drive scanner audit was separately enabled and passed."
+  },
+  "initialSuiteFailure": {
+    "log": "evidence/legacy-audio-initial-tests-2026-10-08.txt",
+    "reason": "Real MDB fixture counted new decoded child fields as native TOC entries. Corrected test still demands1368 original physical entries,24 decoded fields for this fixture, retained parent context and exact original-file byte reconstruction."
+  },
+  "realComparison": "evidence/legacy-audio-real-scan-comparison-2026-10-08.json",
+  "probe": "evidence/audio-summary-decoded-probe-2026-10-08.cpp",
+  "commands": [
+    "cmake --build build-canon -j 6",
+    "cmake --build build -j 6",
+    "cmake --build build-canon --target tst_canonmdb -j 6",
+    "QT_QPA_PLATFORM=offscreen ctest --test-dir build-canon --output-on-failure -j 4 > 'Project Canon/evidence/legacy-audio-full-tests-2026-10-08.txt' 2>&1",
+    "QT_QPA_PLATFORM=offscreen MEDIAMUSTER_CANON_REAL_SCAN_ROOTS='/Users/Shared/AvidMediaComposer;/Volumes/EDIT' MEDIAMUSTER_CANON_REAL_SCAN_CSV='Project Canon/evidence/full-scan-legacy-audio-2026-10-08.csv' MEDIAMUSTER_CANON_REAL_SCAN_REPORT='Project Canon/evidence/legacy-audio-real-scan-2026-10-08.json' build-canon/tests/tst_scanner optional_read_only_real_scan",
+    "codesign --verify --deep --strict build/MediaMuster.app",
+    "lipo -archs build/MediaMuster.app/Contents/MacOS/MediaMuster",
+    "git diff --check"
+  ],
+  "bounds": [
+    "Windows/NEXIS not runtime-tested in this pass.",
+    "File reads were read-only; outputs are new repository evidence artifacts.",
+    "No claim of all compression mappings or writer/subtype coverage.",
+    "Missing-extension, conflicting-summary and JFIF32-owner controls are authored; genuine observations are separately identified.",
+    "Recorded scan time and footprint are not a controlled performance comparison.",
+    "Superseded engines/tests retained pending user approval."
+  ],
+  "snapshots": [
+    {
+      "path": "src/canon/audioreader_p.cpp",
+      "size": 35019,
+      "mtimeNs": 1791436877002798732,
+      "sha256": "091de70773b0bee31ef3f2cff6b3e15c0ab6654e415318e82fdf0c5ecc96ca55"
+    },
+    {
+      "path": "src/canon/audioreader_p.h",
+      "size": 1144,
+      "mtimeNs": 1791436342043601046,
+      "sha256": "886294be1a6cea1defc7d075355dd5a36a218805b726e25ed6881c150ea58310"
+    },
+    {
+      "path": "src/canon/omfobjects_p.cpp",
+      "size": 26129,
+      "mtimeNs": 1791436447289452255,
+      "sha256": "8fb4cfadd63cebce044ccf40d7a8e73120822f7c1723b23b06ee60ea04a7732e"
+    },
+    {
+      "path": "src/canon/omfprojection.cpp",
+      "size": 84264,
+      "mtimeNs": 1791437046715528742,
+      "sha256": "2b83403dac6c9353432c500867594b63d47f2fc8640bb65e939ab36ad5e74701"
+    },
+    {
+      "path": "src/omfresolutions.cpp",
+      "size": 5680,
+      "mtimeNs": 1791437073202843243,
+      "sha256": "0077e35cab587db768499af64c9d7030b87f84ace65fcd9c9926f6db968b6daf"
+    },
+    {
+      "path": "src/omfresolutions.h",
+      "size": 1313,
+      "mtimeNs": 1791436558899192409,
+      "sha256": "3554f7fc14eb074110d8ecb9bfe736dd73078d8e98f0d259d8b49b3fe8c5422e"
+    },
+    {
+      "path": "tests/tst_canonlegacy.cpp",
+      "size": 33320,
+      "mtimeNs": 1791436751278489142,
+      "sha256": "1ec38be888b09ee8154a8d7423c51c2d392a26a8843b5259c47cf4f308e11831"
+    },
+    {
+      "path": "tests/tst_canon_omfprojection.cpp",
+      "size": 117959,
+      "mtimeNs": 1791437046737464146,
+      "sha256": "20b6027dfd310b027d8ba1d0872ebb52287b44271418b192b10ae8826dc45ccd"
+    },
+    {
+      "path": "tests/tst_canonmdb.cpp",
+      "size": 32670,
+      "mtimeNs": 1791437227354269461,
+      "sha256": "c919d78a6867538a9180f9519e5518c2ec0becd238f13eda83dbb6ad39c9da60"
+    },
+    {
+      "path": "build-canon/libmediamuster_canon.a",
+      "size": 75333224,
+      "mtimeNs": 1791437077809466000,
+      "sha256": "3c6fdf91673b40ff3fd1e39635eef6dc1b03e6eb4ddbf5bdd2edf79c5b479ba9"
+    },
+    {
+      "path": "build-canon/tests/tst_scanner",
+      "size": 13675720,
+      "mtimeNs": 1791437079486400137,
+      "sha256": "6dab98c7869c4ce4bd90522c34977a86fc9a0bec816e8afd5337526c8d2439f1"
+    },
+    {
+      "path": "build-canon/tests/tst_canonmdb",
+      "size": 2964224,
+      "mtimeNs": 1791437230327453266,
+      "sha256": "e64c111d3523b2bc424d0742f879f97b943ec58bd6c0c75eeaea875207b6a0c3"
+    },
+    {
+      "path": "build-canon/tests/tst_canonlegacy",
+      "size": 3151248,
+      "mtimeNs": 1791437078585039257,
+      "sha256": "4df0fc49843dff82ca8bce5cf71e50cdf5f1a35f933a0d4c1a6d627f58944ae6"
+    },
+    {
+      "path": "build-canon/tests/tst_canon_omfprojection",
+      "size": 6814184,
+      "mtimeNs": 1791437082282528299,
+      "sha256": "711d6bac0c10963d5babddb9285dce8d6770b5ae4a9e87475521082a88098e0d"
+    },
+    {
+      "path": "build/MediaMuster.app/Contents/MacOS/MediaMuster",
+      "size": 26400848,
+      "mtimeNs": 1791437166229753339,
+      "sha256": "bb219a1ae333ae001f473e8a23c4a27b88a639b2c8ebf9b7de1a650c63f454bb"
+    },
+    {
+      "path": "build-canon/MediaMuster.app/Contents/MacOS/MediaMuster",
+      "size": 26401264,
+      "mtimeNs": 1791437080285161481,
+      "sha256": "cf6a70f3130485e629160325bdcf9b572b5f3e67cb62a444fca10142b64a767b"
+    },
+    {
+      "path": "Project Canon/evidence/full-scan-shared-policy-2026-10-08.csv",
+      "size": 1096732,
+      "mtimeNs": 1791424602874546184,
+      "sha256": "488b33fd4367695ca72633bf595c1eeb73039ff519df9fe221cd17cb35e11a0d"
+    },
+    {
+      "path": "Project Canon/evidence/full-scan-legacy-audio-2026-10-08.csv",
+      "size": 1096712,
+      "mtimeNs": 1791437438188598654,
+      "sha256": "dd96534f6a00bc09aa6ee20bd01ca57a2cfb98b7af2e6aa7bcd9c92d90536ee6"
+    },
+    {
+      "path": "Project Canon/evidence/audio-summary-decoded-probe-2026-10-08.cpp",
+      "size": 2833,
+      "mtimeNs": 1791437150941899825,
+      "sha256": "c7bdaf6a433a2ab0f8feff2a35afe53ed5e9e392e021cfc695de6e1a4f799171"
+    },
+    {
+      "path": "Project Canon/evidence/audio-summary-decoded-evidence-2026-10-08.json",
+      "size": 21362,
+      "mtimeNs": 1791437150884162552,
+      "sha256": "e416fdf2f92aa8b98977addc85bcd3852dcf90eb797e91db01a657e366ff0b4c"
+    },
+    {
+      "path": "Project Canon/evidence/legacy-audio-full-tests-2026-10-08.txt",
+      "size": 4421,
+      "mtimeNs": 1791437409926420199,
+      "sha256": "7281dd71df3fd79379b85f82117271df65eb152d8b1cede99e4756cc863e59a1"
+    },
+    {
+      "path": "Project Canon/evidence/legacy-audio-real-scan-2026-10-08.txt",
+      "size": 4956,
+      "mtimeNs": 1791437440070933967,
+      "sha256": "11d5734697a301dcc9a7b28cc314ef5efc71d688fa50de5f83cd0167c3ac3408"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "size": 60680,
+      "mtimeNs": 1788291495301754724,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+    },
+    {
+      "path": "Project Canon/evidence/legacy-audio-dv-name-evidence-2026-10-08.json",
+      "size": 26394,
+      "mtimeNs": 1791437697539113116,
+      "sha256": "4ea5aa2f859ff9f4c6a1d61e63c13d03bba28b02ff7ab500939072e4e36c8e97"
+    },
+    {
+      "path": "Project Canon/evidence/legacy-audio-dv-name-probe-2026-10-08.cpp",
+      "size": 6988,
+      "mtimeNs": 1791437568293007087,
+      "sha256": "7ffef3b1c1d2802ec7413323ab03bc1ebe435cee1a632ae19e46b5eb94ecccbf"
+    }
+  ],
+  "dvIndependentEvidence": "evidence/legacy-audio-dv-name-evidence-2026-10-08.json"
+}

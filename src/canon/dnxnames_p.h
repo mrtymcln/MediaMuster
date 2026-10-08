@@ -21,7 +21,7 @@ namespace Canon::Detail
 		int layout;
 	};
 
-	// Exact registered VC-3 labels; profile identities are distinct from an
+	// Registered VC-3 profile labels; profile identity is distinct from an
 	// application's numeric ResolutionID. See the Canon DNx evidence document,
 	// ST 2019-1:2016 Annex C/H and Avid's 2012 and 2026 white papers.
 	inline constexpr DnxProfile dnxProfiles[] = {
@@ -40,16 +40,7 @@ namespace Canon::Detail
 		{"060e2b340401010d0401020271260000", "HQ", true, 0, 0, -1},
 		{"060e2b340401010d0401020271270000", "SQ", true, 0, 0, -1},
 		{"060e2b340401010d0401020271280000", "LB", true, 0, 0, -1},
-		{"060e2b340401010d0401020271240000", "444", true, 0, 0, -1},
-		{"060e2b34040101010d01030102060301", "LB", false, 0, 0, -1},
-		{"060e2b34040101010d01030102060101", "SQ", false, 0, 0, -1},
-		{"060e2b34040101010d01030102060201", "HQ", false, 0, 0, -1},
-		{"060e2b34040101010d01030102060202", "HQX", false, 0, 0, -1},
-		{"060e2b34040101010d01030102110101", "LB", true, 0, 0, -1},
-		{"060e2b34040101010d01030102110201", "SQ", true, 0, 0, -1},
-		{"060e2b34040101010d01030102110301", "HQ", true, 0, 0, -1},
-		{"060e2b34040101010d01030102110401", "HQX", true, 0, 0, -1},
-		{"060e2b34040101010d01030102110501", "444", true, 0, 0, -1}};
+		{"060e2b340401010d0401020271240000", "444", true, 0, 0, -1}};
 
 	struct DnxOperatingPoint
 	{

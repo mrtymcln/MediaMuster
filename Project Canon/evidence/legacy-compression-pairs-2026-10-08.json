@@ -1,0 +1,2265 @@
+{
+  "basis": "Genuine Avid regenerated MDB descriptor properties retained by 8 October specimen probe; no authored 32-byte graph is included. Property metadata byte order is little endian. Labels are converted from retained AUID fields to UL octet order. Only existing verified legacy mapping pairs included.",
+  "sources": [
+    {
+      "path": "/private/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_avid_labels_and_keys.h",
+      "sha256": "f19f8fb86383c5e31fafca86ddcab6e0a1e496ad1dd83bb90aab296c5d4750aa"
+    },
+    {
+      "path": "/private/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_labels_and_keys.h",
+      "sha256": "4d88873a9e7aa4360eef797869b8456c798ba9a4e056892e56e0b38f55e4cee4"
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/avidjpg/AVRJFIF35.h",
+      "sha256": "e89b0107fc7647c0a1520c73e037bff10d37eb172f2f224a7a5c3ff1c2677348"
+    },
+    {
+      "path": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936"
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omSearch.c",
+      "sha256": "960355a20ccdc87d23347a192bfb5c2fdb4744a16937c289431101779c1d5b4b",
+      "relevantLines": [
+        79,
+        105
+      ]
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omFile.c",
+      "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f",
+      "relevantLines": [
+        638,
+        643
+      ]
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omcJPEG.c",
+      "sha256": "4984bc37f649e9661c35d210bc4c3472fbc5672f082f226c42b439b981447fdf",
+      "relevantLines": [
+        175,
+        185,
+        358,
+        368,
+        2063,
+        2065
+      ]
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/avidjpg/omcAvidJFIF.c",
+      "sha256": "79e328c89e926f2c217fa5fdb8a1d6dc4d657fb4cf1d499c640d1ed2a6bc7e95",
+      "relevantLines": [
+        8,
+        29
+      ]
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omcCDCI.c",
+      "sha256": "8a5986ee5234b47092c989d57f803a61a4a6176d694d38f25e3fadcff6c8018d",
+      "relevantLines": [
+        228,
+        239,
+        1991,
+        1994
+      ]
+    },
+    {
+      "path": "/private/tmp/mediamuster-mdb-reference/omfkt22-main/kitomfi/omAcces.c",
+      "sha256": "075ec5b04ae79a5107e4885e8ce66f3be2136d485642b59afaa00cb3e5941757",
+      "relevantLines": [
+        317,
+        348,
+        364,
+        393
+      ]
+    }
+  ],
+  "descriptors": [
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68023,
+      "mobIdBytes": 12,
+      "descriptorObject": 68022,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 104,
+      "label": "060e2b34040101010e04020102010304",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "68000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020403060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68056,
+      "mobIdBytes": 12,
+      "descriptorObject": 68055,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 140,
+      "label": "060e2b34040101010401020202020100",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8c000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020001060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68100,
+      "mobIdBytes": 12,
+      "descriptorObject": 68099,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 112,
+      "label": "060e2b34040101010e04020102010501",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "70000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020105060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68135,
+      "mobIdBytes": 12,
+      "descriptorObject": 68134,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 144,
+      "label": "060e2b34040101010401020202010200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "90000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010401020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68168,
+      "mobIdBytes": 12,
+      "descriptorObject": 68167,
+      "descriptorClass": "MPGI",
+      "compression": "MPG2",
+      "resolutionId": 160,
+      "label": "060e2b34040101010401020201020102",
+      "properties": [
+        {
+          "hex": "4d50473200",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MPG2",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "a0000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402010201060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68201,
+      "mobIdBytes": 12,
+      "descriptorObject": 68200,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 152,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "98000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68236,
+      "mobIdBytes": 12,
+      "descriptorObject": 68235,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 112,
+      "label": "060e2b34040101010e04020102010501",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "70000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020105060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68270,
+      "mobIdBytes": 12,
+      "descriptorObject": 68269,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 142,
+      "label": "060e2b34040101010401020202020400",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020004060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68299,
+      "mobIdBytes": 12,
+      "descriptorObject": 68298,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 82,
+      "label": "060e2b34040101010e04020102010101",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "52000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68366,
+      "mobIdBytes": 12,
+      "descriptorObject": 68365,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 104,
+      "label": "060e2b34040101010e04020102010303",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "68000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020303060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68450,
+      "mobIdBytes": 12,
+      "descriptorObject": 68449,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 78,
+      "label": "060e2b34040101010e04020102010201",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "4e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020102060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68484,
+      "mobIdBytes": 12,
+      "descriptorObject": 68483,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 143,
+      "label": "060e2b34040101010401020202020100",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8f000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020001060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68581,
+      "mobIdBytes": 12,
+      "descriptorObject": 68580,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 104,
+      "label": "060e2b34040101010e04020102010304",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "68000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020403060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68598,
+      "mobIdBytes": 12,
+      "descriptorObject": 68597,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 151,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "97000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68615,
+      "mobIdBytes": 12,
+      "descriptorObject": 68614,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 151,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "97000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68682,
+      "mobIdBytes": 12,
+      "descriptorObject": 68681,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 152,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "98000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68702,
+      "mobIdBytes": 12,
+      "descriptorObject": 68701,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 78,
+      "label": "060e2b34040101010e04020102010202",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "4e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020202060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68769,
+      "mobIdBytes": 12,
+      "descriptorObject": 68768,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 152,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "98000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68804,
+      "mobIdBytes": 12,
+      "descriptorObject": 68803,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 112,
+      "label": "060e2b34040101010e04020102010502",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "70000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020205060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68825,
+      "mobIdBytes": 12,
+      "descriptorObject": 68824,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 82,
+      "label": "060e2b34040101010e04020102010101",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "52000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68896,
+      "mobIdBytes": 12,
+      "descriptorObject": 68895,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 110,
+      "label": "060e2b34040101010e04020102010401",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "6e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020104060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 68951,
+      "mobIdBytes": 12,
+      "descriptorObject": 68950,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 78,
+      "label": "060e2b34040101010e04020102010201",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "4e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020102060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69056,
+      "mobIdBytes": 12,
+      "descriptorObject": 69055,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 110,
+      "label": "060e2b34040101010e04020102010402",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "6e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020204060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69077,
+      "mobIdBytes": 12,
+      "descriptorObject": 69076,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 78,
+      "label": "060e2b34040101010e04020102010202",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "4e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020202060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69127,
+      "mobIdBytes": 12,
+      "descriptorObject": 69126,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 141,
+      "label": "060e2b34040101010401020202010200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8d000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010401020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69194,
+      "mobIdBytes": 12,
+      "descriptorObject": 69193,
+      "descriptorClass": "MPGI",
+      "compression": "MPG2",
+      "resolutionId": 160,
+      "label": "060e2b34040101010401020201020102",
+      "properties": [
+        {
+          "hex": "4d50473200",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MPG2",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "a0000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402010201060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69227,
+      "mobIdBytes": 12,
+      "descriptorObject": 69226,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 152,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "98000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69262,
+      "mobIdBytes": 12,
+      "descriptorObject": 69261,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 110,
+      "label": "060e2b34040101010e04020102010401",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "6e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020104060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69296,
+      "mobIdBytes": 12,
+      "descriptorObject": 69295,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 142,
+      "label": "060e2b34040101010401020202020300",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020003060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69314,
+      "mobIdBytes": 12,
+      "descriptorObject": 69313,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 151,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "97000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69338,
+      "mobIdBytes": 12,
+      "descriptorObject": 69337,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 152,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "98000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69358,
+      "mobIdBytes": 12,
+      "descriptorObject": 69357,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 82,
+      "label": "060e2b34040101010e04020102010101",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "52000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69444,
+      "mobIdBytes": 12,
+      "descriptorObject": 69443,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 112,
+      "label": "060e2b34040101010e04020102010501",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "70000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020105060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69478,
+      "mobIdBytes": 12,
+      "descriptorObject": 69477,
+      "descriptorClass": "MPGI",
+      "compression": "MPG2",
+      "resolutionId": 160,
+      "label": "060e2b34040101010401020201020101",
+      "properties": [
+        {
+          "hex": "4d50473200",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MPG2",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "a0000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402010101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69496,
+      "mobIdBytes": 12,
+      "descriptorObject": 69495,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 151,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "97000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69522,
+      "mobIdBytes": 12,
+      "descriptorObject": 69521,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 110,
+      "label": "060e2b34040101010e04020102010401",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "6e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020104060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69558,
+      "mobIdBytes": 12,
+      "descriptorObject": 69557,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 112,
+      "label": "060e2b34040101010e04020102010502",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "70000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020205060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69647,
+      "mobIdBytes": 12,
+      "descriptorObject": 69646,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 78,
+      "label": "060e2b34040101010e04020102010201",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "4e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020102060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69721,
+      "mobIdBytes": 12,
+      "descriptorObject": 69720,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 110,
+      "label": "060e2b34040101010e04020102010402",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "6e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020204060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69789,
+      "mobIdBytes": 12,
+      "descriptorObject": 69788,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 152,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "98000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69822,
+      "mobIdBytes": 12,
+      "descriptorObject": 69821,
+      "descriptorClass": "MPGI",
+      "compression": "MPG2",
+      "resolutionId": 160,
+      "label": "060e2b34040101010401020201020101",
+      "properties": [
+        {
+          "hex": "4d50473200",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MPG2",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "a0000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402010101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69855,
+      "mobIdBytes": 12,
+      "descriptorObject": 69854,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 104,
+      "label": "060e2b34040101010e04020102010303",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "68000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020303060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69889,
+      "mobIdBytes": 12,
+      "descriptorObject": 69888,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 141,
+      "label": "060e2b34040101010401020202010200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8d000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010401020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69943,
+      "mobIdBytes": 12,
+      "descriptorObject": 69942,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 82,
+      "label": "060e2b34040101010e04020102010101",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "52000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69973,
+      "mobIdBytes": 12,
+      "descriptorObject": 69972,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 140,
+      "label": "060e2b34040101010401020202020200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8c000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 69984,
+      "mobIdBytes": 12,
+      "descriptorObject": 69983,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 78,
+      "label": "060e2b34040101010e04020102010202",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "4e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020202060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70026,
+      "mobIdBytes": 12,
+      "descriptorObject": 70025,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 104,
+      "label": "060e2b34040101010e04020102010304",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "68000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020403060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70096,
+      "mobIdBytes": 12,
+      "descriptorObject": 70095,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 151,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "97000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70116,
+      "mobIdBytes": 12,
+      "descriptorObject": 70115,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 140,
+      "label": "060e2b34040101010401020202020100",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8c000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020001060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70149,
+      "mobIdBytes": 12,
+      "descriptorObject": 70148,
+      "descriptorClass": "MPGI",
+      "compression": "MPG2",
+      "resolutionId": 160,
+      "label": "060e2b34040101010401020201020102",
+      "properties": [
+        {
+          "hex": "4d50473200",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MPG2",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "a0000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402010201060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70203,
+      "mobIdBytes": 12,
+      "descriptorObject": 70202,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 140,
+      "label": "060e2b34040101010401020202020100",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8c000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020001060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70223,
+      "mobIdBytes": 12,
+      "descriptorObject": 70222,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 140,
+      "label": "060e2b34040101010401020202020200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8c000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70256,
+      "mobIdBytes": 12,
+      "descriptorObject": 70255,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 140,
+      "label": "060e2b34040101010401020202020200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8c000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70276,
+      "mobIdBytes": 12,
+      "descriptorObject": 70275,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 82,
+      "label": "060e2b34040101010e04020102010101",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "52000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70309,
+      "mobIdBytes": 12,
+      "descriptorObject": 70308,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 104,
+      "label": "060e2b34040101010e04020102010303",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "68000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020303060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70378,
+      "mobIdBytes": 12,
+      "descriptorObject": 70377,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 112,
+      "label": "060e2b34040101010e04020102010502",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "70000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020205060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70412,
+      "mobIdBytes": 12,
+      "descriptorObject": 70411,
+      "descriptorClass": "CDCI",
+      "compression": "DV/C",
+      "resolutionId": 141,
+      "label": "060e2b34040101010401020202010200",
+      "properties": [
+        {
+          "hex": "44562f4300",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "DV/C",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "8d000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010401020002060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70432,
+      "mobIdBytes": 12,
+      "descriptorObject": 70431,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 82,
+      "label": "060e2b34040101010e04020102010101",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "52000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70492,
+      "mobIdBytes": 12,
+      "descriptorObject": 70491,
+      "descriptorClass": "JPED",
+      "compression": "JFIF",
+      "resolutionId": 110,
+      "label": "060e2b34040101010e04020102010402",
+      "properties": [
+        {
+          "hex": "4a46494600",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "JFIF",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "6e000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102040e01020204060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70520,
+      "mobIdBytes": 12,
+      "descriptorObject": 70519,
+      "descriptorClass": "CDCI",
+      "compression": "MXF1",
+      "resolutionId": 151,
+      "label": "060e2b34040101010401020100000000",
+      "properties": [
+        {
+          "hex": "4d58463100",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MXF1",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "97000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0102010400000000060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    },
+    {
+      "source": "tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "mobObject": 70545,
+      "mobIdBytes": 12,
+      "descriptorObject": 70544,
+      "descriptorClass": "MPGI",
+      "compression": "MPG2",
+      "resolutionId": 160,
+      "label": "060e2b34040101010401020201020101",
+      "properties": [
+        {
+          "hex": "4d50473200",
+          "length": 5,
+          "name": "OMFI:DIDD:Compression",
+          "state": 1,
+          "text": "MPG2",
+          "type": "omfi:String"
+        },
+        {
+          "hex": "a0000000",
+          "length": 4,
+          "name": "OMFI:DIDD:DIDResolutionID",
+          "state": 1,
+          "type": "omfi:Long"
+        },
+        {
+          "hex": "0202010402010101060e2b3404010101",
+          "length": 16,
+          "name": "OMFI:DIDD:EssenceCompression",
+          "state": 1,
+          "type": "omfi:GUID"
+        }
+      ]
+    }
+  ],
+  "resolutionResources": [
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/JfifVideoRes_J12S.vr",
+      "sha256": "9d9fa3bcb1966871c5db820855f80880f05105dbd3a6bacdb62722b33b3beb8e",
+      "resolutionId": 78,
+      "wordAt0x84": "404e",
+      "displayName": "15:1s",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/JfifVideoRes_JF35.vr",
+      "sha256": "707a8c5fddce910e7f4d57b4b960164f9d667b9383159cc89fae07cb2240c611",
+      "resolutionId": 82,
+      "wordAt0x84": "4052",
+      "displayName": "20:1",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/JfifVideoRes_J25P.vr",
+      "sha256": "97f5daeb5122b24359e195aa1ec46625c901c9b1e7c4880a7eb842e48f2138c8",
+      "resolutionId": 104,
+      "wordAt0x84": "4068",
+      "displayName": "28:1",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/JfifVideoRes_J15m.vr",
+      "sha256": "89419339e1476cb5a8c5c122c1284ab942904464581d5291cfa04feea50b2f14",
+      "resolutionId": 110,
+      "wordAt0x84": "006e",
+      "displayName": "10:1m",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/JfifVideoRes_J2mP.vr",
+      "sha256": "5e2f077fee375bf3a7505d4a17f2f01329b6e5fac002de8580370b3c084f1694",
+      "resolutionId": 112,
+      "wordAt0x84": "0070",
+      "displayName": "8:1m",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_D25A.vr",
+      "sha256": "3664c1e8942aa295704b4cf9c078d26d7178eb48886062e0ce797d4987a68b18",
+      "resolutionId": 140,
+      "wordAt0x84": "008c",
+      "displayName": "DV 25 411",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_D25B.vr",
+      "sha256": "d1eec0d9bf2502f5bb35ca5463c00e812824b8d5a27cc29eda2b7b6c0e6e7aef",
+      "resolutionId": 141,
+      "wordAt0x84": "008d",
+      "displayName": "DV 25 420",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_DV50.vr",
+      "sha256": "8a006537f39910f1d1f4556ca1e3272d51ecbbcbab9fc86ee79485ea3c69c3c5",
+      "resolutionId": 142,
+      "wordAt0x84": "008e",
+      "displayName": "DV 50",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_D24P.vr",
+      "sha256": "991caf0a1565a4b8da6dc3ce82f7aa935bdde92cd2c14786f20cbc82733fec91",
+      "resolutionId": 143,
+      "wordAt0x84": "008f",
+      "displayName": "DV25P 411",
+      "displayNameOffset": 142
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_D25P.vr",
+      "sha256": "de64ee8aecebbd72aff1a635ce9be4d34a8613098391215c0c4dad78deb28cfb",
+      "resolutionId": 144,
+      "wordAt0x84": "0090",
+      "displayName": "DV 25P 420",
+      "displayNameOffset": 142
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/AvidUncompressed_Y422.vr",
+      "sha256": "4b99db7197721b63c1a888ca3dd868eb69f0f87e403f5a6606214f27e8ad5641",
+      "resolutionId": 151,
+      "wordAt0x84": "4097",
+      "displayName": "1:1",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/AvidUncompressed_422P.vr",
+      "sha256": "0953c66f5f22033551f9835699648d1d12631cb791bc5e42c30da9f95d55c1f1",
+      "resolutionId": 152,
+      "wordAt0x84": "4098",
+      "displayName": "1:1",
+      "displayNameOffset": 139
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/MPEG2VideoRes_MP50.vr",
+      "sha256": "3c9ccd1075160f3d7c224bb18a8acc33e8c7a4dd07c614f311ffbee7f1e4fcc0",
+      "resolutionId": 160,
+      "wordAt0x84": "00a0",
+      "displayName": "MPEG 50",
+      "displayNameOffset": 139
+    }
+  ],
+  "limits": [
+    "All 61 evidenced descriptor owners have 12-byte MobIDs; authored identity-width tests are not included and do not prove a genuine 32-byte-owner/JFIF format.",
+    "Exact compatible labels are used; no UL-prefix wildcard or unverified DV100 mapping is admitted.",
+    "Source vocabulary registrations establish names/type meaning; genuine Avid descriptor pairs corroborate compatibility. OMF specifications do not prescribe MediaMuster display priority."
+  ],
+  "typeBoundary": "Compression must be an omfi:String containing exactly a 4-character code, optionally followed by NUL. The original toolkit omfsWriteString writes strlen+1 for strings of length 4 or greater; omfsReadString also accepts an unterminated recorded string and terminates it at the actual value end. ResolutionID must be a named 32-bit integer property (omfi:Long, omfi:Int32 or omfi:UInt32) with 4 bytes. Other types remain raw evidence."
+}

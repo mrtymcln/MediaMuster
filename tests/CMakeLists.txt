@@ -84,6 +84,11 @@ mediamuster_add_test(tst_canonscan media
 )
 target_link_libraries(tst_canonscan PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonscan PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
+# Shared compression names: recorded labels and qualified Avid operating points.
+mediamuster_add_test(tst_canon_compressionnames media)
+target_link_libraries(tst_canon_compressionnames PRIVATE mediamuster_canon)
+
 mediamuster_add_test(tst_canon_omfprojection media)
 target_link_libraries(tst_canon_omfprojection PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canon_omfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")

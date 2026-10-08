@@ -1,0 +1,272 @@
+{
+  "recordedUtc": "2026-10-08T08:28:59.885280+00:00",
+  "question": "Which formats do the nine inherited aliases claim to identify, and does the available MediaMuster corpus contain them?",
+  "answer": "Zero exact alias matches in typed compression properties or retained metadata; zero occurrences in independent full-byte searches of every saved fixture and all live non-MXF sources/supplied bins.",
+  "productionDecision": "No production mappings changed. Removing or retaining these nine aliases remains a separate user decision.",
+  "scope": {
+    "totalSourcePaths": 3353,
+    "liveMediaFiles": 2413,
+    "liveDatabases": 12,
+    "repositoryFixtureSources": 919,
+    "suppliedBins": 9,
+    "liveScanRoots": [
+      "/Users/Shared/AvidMediaComposer",
+      "/Volumes/EDIT"
+    ],
+    "groups": {
+      "live-scan": {
+        "files": 2425,
+        "extensions": {
+          ".mxf": 2411,
+          ".pmr": 6,
+          ".mdb": 6,
+          ".wav": 1,
+          ".aif": 1
+        },
+        "readerOutcomes": {
+          "Complete": 2425,
+          "Incomplete": 0
+        },
+        "sourcesContainingRecordedVerifiedDnxProfiles": {
+          "DNxHD SQ": 5,
+          "DNxHD HQ": 4,
+          "DNxHD HQX": 674,
+          "DNxHD LB": 95
+        }
+      },
+      "repository-fixture": {
+        "files": 919,
+        "extensions": {
+          ".mxf": 824,
+          ".pmr": 5,
+          ".mdb": 6,
+          ".omf": 80,
+          ".wav": 1,
+          ".aif": 1,
+          ".avb": 2
+        },
+        "readerOutcomes": {
+          "Complete": 96,
+          "Incomplete": 823
+        },
+        "sourcesContainingRecordedVerifiedDnxProfiles": {
+          "DNxHD SQ": 14,
+          "DNxHD HQ": 7,
+          "DNxHD HQX": 7,
+          "DNxHR SQ": 9,
+          "DNxHR LB": 8,
+          "DNxHR HQ": 8,
+          "DNxHR HQX": 8,
+          "DNxHD LB": 2
+        }
+      },
+      "supplied-bin": {
+        "files": 9,
+        "extensions": {
+          ".avb": 9
+        },
+        "readerOutcomes": {
+          "Complete": 9,
+          "Incomplete": 0
+        },
+        "sourcesContainingRecordedVerifiedDnxProfiles": {}
+      }
+    }
+  },
+  "method": {
+    "directReads": "Every manifest source was opened directly with its Canon reader; normal database-first header skipping was bypassed for this investigation only.",
+    "semanticProperties": [
+      "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+      "GenericSoundEssenceDescriptor.SoundEssenceCompression",
+      "OMFI:DIDD:EssenceCompression",
+      "DIDDescriptor.essence_compression"
+    ],
+    "normalization": "Exact 16-byte UL comparison; structured AUID numeric fields follow recorded byte order. AVB positional UUID fields use the containing chunk byte order.",
+    "otherMetadata": "Every retained RawProperty encoding, including unowned and recursively embedded-source properties, searched separately in UL, structured AUID big-endian and structured AUID little-endian forms.",
+    "rawBytesExamined": 522469847,
+    "rangeOnlyPropertiesNotByteSearchedByProbe": 25644,
+    "independentByteSearches": "All 919 saved fixture files and all 23 live non-MXF/supplied-bin files were fully read independently; hashes, size/mtime stability checks and 15-byte boundary overlap recorded in their receipts."
+  },
+  "aliases": [
+    {
+      "identifier": "060e2b34040101010d01030102060301",
+      "oldCodeAssignment": "DNxHD LB",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060101",
+      "oldCodeAssignment": "DNxHD SQ",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060201",
+      "oldCodeAssignment": "DNxHD HQ",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060202",
+      "oldCodeAssignment": "DNxHD HQX",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110101",
+      "oldCodeAssignment": "DNxHR LB",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110201",
+      "oldCodeAssignment": "DNxHR SQ",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110301",
+      "oldCodeAssignment": "DNxHR HQ",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110401",
+      "oldCodeAssignment": "DNxHR HQX",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110501",
+      "oldCodeAssignment": "DNxHR 444",
+      "compressionPropertyMatches": 0,
+      "retainedMetadataMatches": 0,
+      "fixtureRawByteMatches": 0,
+      "liveNonMxfRawByteMatches": 0
+    }
+  ],
+  "verifiedExamples": [
+    {
+      "group": "live-scan",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271030000",
+      "verifiedProfile": "DNxHD SQ",
+      "scanCompressionDisplay": "Avid DNx SQ [DNxHD 145]"
+    },
+    {
+      "group": "live-scan",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967022_CB0BE0CB0BE6CV.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271090000",
+      "verifiedProfile": "DNxHD HQ",
+      "scanCompressionDisplay": "Avid DNx HQ [DNxHD 220]"
+    },
+    {
+      "group": "live-scan",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967030_CBBA90CBBA935V.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271070000",
+      "verifiedProfile": "DNxHD HQX",
+      "scanCompressionDisplay": "Avid DNx HQX [DNxHD 220x]"
+    },
+    {
+      "group": "live-scan",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696869E_1DBEC1DBECCC4V.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271130000",
+      "verifiedProfile": "DNxHD LB",
+      "scanCompressionDisplay": "Avid DNx LB [DNxHD 36]"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/avid_headers/V01.E683C412_F82F4F82F461DV.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271120000",
+      "verifiedProfile": "DNxHD SQ"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/avid_headers/V01.E6842930_44E2544E25602V.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271110000",
+      "verifiedProfile": "DNxHD HQ"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/avid_headers/V01.E684294C_44F7C44F7C4E0V.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271100000",
+      "verifiedProfile": "DNxHD HQX"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/Untitled_Sequence.061365D4V.mxf",
+      "recordedCodingUl": "060e2b340401010d0401020271270000",
+      "verifiedProfile": "DNxHR SQ"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/V01.E68BFCF0_126D30126D3CBV.mxf",
+      "recordedCodingUl": "060e2b340401010d0401020271280000",
+      "verifiedProfile": "DNxHR LB"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/V01.E68BFDC8_1CAA501CAA5F3V.mxf",
+      "recordedCodingUl": "060e2b340401010d0401020271260000",
+      "verifiedProfile": "DNxHR HQ"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/V01.E68BFE80_2566E02566E94V.mxf",
+      "recordedCodingUl": "060e2b340401010d0401020271250000",
+      "verifiedProfile": "DNxHR HQX"
+    },
+    {
+      "group": "repository-fixture",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/V01.E696869E_1DBEC1DBECCC4V.mxf",
+      "recordedCodingUl": "060e2b340401010a0401020271130000",
+      "verifiedProfile": "DNxHD LB"
+    }
+  ],
+  "limits": [
+    "The 823 Incomplete repository reader outcomes are MXF header extracts ending before the original recording does; the separate raw search covers every byte actually archived.",
+    "All 2425 live scan sources and all nine supplied bins returned Complete. A complete reader result is not a claim that every private field meaning is known.",
+    "The live MXF recording payloads, padding and opaque range-only data were not searched byte-for-byte. Arbitrary matches in recorded picture/audio bytes would not establish a compression identifier.",
+    "Archived slices cannot establish absence from omitted original footer or essence bytes.",
+    "This is the explicit manifest corpus, not every file on every mounted volume or every Avid version. Zero matches do not prove an identifier can never exist elsewhere.",
+    "Verified profile source counts are occurrences by source path, including database graphs and archived copies; they are not deduplicated clip counts."
+  ],
+  "receipts": [
+    {
+      "path": "dnx-alias-corpus-probe-2026-10-08.cpp",
+      "sha256": "8fbd0428ca5b99dd0f686f9fd5ffdc04c7ee50031909c07c2c413b9417c159dc"
+    },
+    {
+      "path": "dnx-alias-corpus-manifest-2026-10-08.json",
+      "sha256": "14cb03a11bcfb9e1ddf68a9e098cd451ac12680a565fdcef2467fd89837abd15"
+    },
+    {
+      "path": "dnx-alias-corpus-properties-2026-10-08.jsonl",
+      "sha256": "e65fc0e52f3fc35f988940a33840d7f71b8afadf8368c3f75dce2278a3a5df59"
+    },
+    {
+      "path": "dnx-alias-fixture-byte-search-2026-10-08.json",
+      "sha256": "6d422c37f5f13ed299cd38df1e637e79ca1a607b2bff406a6159e6c06624a1eb"
+    },
+    {
+      "path": "dnx-alias-live-nonmxf-byte-search-2026-10-08.json",
+      "sha256": "d5906b13fb52c87d8be3f67d3948c6a30528bccbbe3c00842f67bc77c77f4064"
+    }
+  ]
+}

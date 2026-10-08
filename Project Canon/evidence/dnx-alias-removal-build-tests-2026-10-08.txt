@@ -1,0 +1,37 @@
+[1/43] Automatic MOC for target tst_mdbparser
+[2/42] Automatic MOC for target tst_omfparser
+[3/41] Automatic MOC for target tst_operationui
+[4/40] Automatic MOC for target tst_fileoperations
+[5/39] Automatic MOC for target tst_mediametadata
+[6/38] Automatic MOC for target tst_mxfparser
+[7/37] Building CXX object tests/CMakeFiles/tst_operationui.dir/__/src/mediametadata.cpp.o
+[8/37] Building CXX object tests/CMakeFiles/tst_mdbparser.dir/__/src/mediametadata.cpp.o
+[9/37] Building CXX object tests/CMakeFiles/tst_mediametadata.dir/__/src/mediametadata.cpp.o
+[10/37] Building CXX object tests/CMakeFiles/tst_mediametadata.dir/tst_mediametadata.cpp.o
+[11/37] Building CXX object tests/CMakeFiles/tst_omfparser.dir/__/src/mediametadata.cpp.o
+[12/37] Linking CXX executable tests/tst_metadataselectionpolicy
+[13/37] Linking CXX executable tests/tst_canondiscovery
+[14/37] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/__/src/mediametadata.cpp.o
+[15/37] Linking CXX executable tests/tst_canonpmr
+[16/37] Linking CXX executable tests/tst_canonpmrrobustness
+[17/37] Building CXX object tests/CMakeFiles/tst_fileoperations.dir/__/src/mediametadata.cpp.o
+[18/37] Linking CXX executable tests/tst_canonmdb
+[19/37] Linking CXX executable tests/tst_canonlegacy
+[20/37] Linking CXX executable tests/tst_canonmxf
+[21/37] Linking CXX executable tests/tst_canonavb
+[22/37] Linking CXX executable tests/tst_canonavbreferences
+[23/37] Building CXX object tests/CMakeFiles/tst_mxfparser.dir/tst_mxfparser.cpp.o
+[24/37] Linking CXX executable tests/tst_canonscan
+[25/37] Linking CXX executable tests/tst_canon_omfprojection
+[26/37] Linking CXX executable tests/tst_canon_mxfprojection
+[27/37] Linking CXX executable tests/tst_mediametadata
+[28/37] Linking CXX executable tests/tst_mdbparser
+[29/37] Linking CXX executable tests/tst_omfparser
+[30/37] Linking CXX executable tests/tst_avbparser
+[31/37] Linking CXX executable tests/tst_mxfparser
+[32/37] Linking CXX executable tests/tst_fileoperations
+[33/37] Linking CXX executable tests/tst_mediatablemodel
+[34/37] Linking CXX executable tests/tst_mediafilterproxy
+[35/37] Linking CXX executable tests/tst_precomputefilterdialog
+[36/37] Linking CXX executable tests/tst_binfilterdialog
+[37/37] Linking CXX executable tests/tst_operationui

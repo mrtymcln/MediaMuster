@@ -102,14 +102,14 @@ void TestMediaMetadata::codec_labels_data()
 	add("prores-422", "060E2B34040101010D010301020C0301", "", "Apple ProRes 422");
 
 	// DNxHD keeps its rate-dependent technical bitrate beside the current Avid tier.
-	const char *sq = "060E2B34040101010D01030102060101";
+	const char *sq = "060E2B340401010A0401020271030000";
 	add("dnxhd-sq-25", sq, "25", "Avid DNx SQ (DNxHD 120)");
 	add("dnxhd-sq-29.97", sq, "29.97", "Avid DNx SQ (DNxHD 145)");
 	add("dnxhd-sq-50", sq, "50", "Avid DNx SQ (DNxHD 240)");
 	add("dnxhd-sq-59.94", sq, "59.94", "Avid DNx SQ (DNxHD 290)");
 	add("dnxhd-sq-unsupported-rate", sq, "48", "Avid DNx SQ");
 	add("dnxhd-sq-no-rate", sq, "", "Avid DNx SQ");
-	add("dnxhd-hqx", "060E2B34040101010D01030102060202", "25", "Avid DNx HQX (DNxHD 185X)");
+	add("dnxhd-hqx", "060E2B340401010A0401020271010000", "25", "Avid DNx HQX (DNxHD 185X)");
 
 	// The 720p CIDs use their own bitrate table, distinct from 1080-line DNxHD.
 	const char *sq720 = "060E2B340401010A0401020271120000";
@@ -121,8 +121,8 @@ void TestMediaMetadata::codec_labels_data()
 	add("720p-hqx", "060E2B340401010A0401020271100000", "29.97", "Avid DNx HQX (DNxHD 110x)");
 
 	// DNxHR names contain the tier alone, regardless of rate.
-	add("dnxhr-sq", "060E2B34040101010D01030102110201", "25", "Avid DNx SQ");
-	add("dnxhr-444", "060E2B34040101010D01030102110501", "50", "Avid DNx 444");
+	add("dnxhr-sq", "060E2B340401010D0401020271270000", "25", "Avid DNx SQ");
+	add("dnxhr-444", "060E2B340401010D0401020271240000", "50", "Avid DNx 444");
 }
 
 void TestMediaMetadata::codec_labels()
@@ -198,7 +198,7 @@ void TestMediaMetadata::applyEditRate_labels_fractional_rates()
 // the header path derives — and must NOT double a layout-1 height twice.
 void TestMediaMetadata::mdb_style_metadata_finalises_like_a_header()
 {
-	const QByteArray sq = ul("060E2B34040101010D01030102060101");
+	const QByteArray sq = ul("060E2B340401010A0401020271080000");
 
 	MediaMetadata db;
 	db.compressionLabel = sq;

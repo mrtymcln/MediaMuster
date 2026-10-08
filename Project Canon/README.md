@@ -22,11 +22,39 @@ The [8 October root membership corrections](root-membership-corrections-2026-10-
 record the approved strict ownership policy and current projection changes; the
 [bounded specimen investigation](root-membership-specimens-2026-10-08.md) retains
 the genuine-file observations and hashes.
-The final native suite passes 38/38. The repeat scan keeps all 2,413 physical rows;
+That stage's final native suite passes 38/38. The repeat scan keeps all 2,413 physical rows;
 13 displayed cells change for the recorded reasons in that report. F06, F07, F14
 and F40 are closed within the admitted scope. The [8 October ledger](evidence/audit-closeout-ledger-2026-10-08.json)
-records 25 Resolved, 9 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted
-scope limits; the other 36 assessments retain their earlier evidence boundaries.
+retains those findings and their evidence boundaries.
+
+The later [legacy compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
+closes F17, F20 and F21 within their admitted scope. Compression lookup now follows
+typed descriptors and verified compatible labels, without using MobId width.
+Native and copied audio headers share their field decoder and retain individual
+field bytes, locations and read states. Final verification passes 39/39 native
+suites and keeps all 2,413 physical rows; only two supported DV short names change.
+Database-first scheduling and all existing scan notices remain unchanged. The
+[current ledger](evidence/audit-closeout-ledger-2026-10-08.json) records 28 Resolved,
+6 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted scope limits. Genuine
+specimen coverage and authored controls are distinguished in the correction report.
+
+The [shared compression-name catalogue](compression-name-catalogue-2026-10-08.md)
+now supplies verified descriptive names to both MXF and MDB/OMF projections.
+It is separate from source selection and preserves raw evidence. Initial catalogue
+verification passes 40/40 native suites and keeps all 2,413 physical rows: 71 Compression cells
+change, every other exported metadata value and all 806 DNx names remain unchanged.
+Database-first scheduling and source graph receipts remain unchanged. The report
+also records corrected IMX/container interpretations and nine unproven DNx
+compatibility aliases. The subsequent
+[corpus check](dnx-alias-corpus-check-2026-10-08.md) found no exact matches in
+the available live media, databases, saved specimens or supplied bins. The user
+then approved removing those exact nine rows from Canon and the old lookup, while
+retaining the verified DNx naming rules and the old engine itself. Removal
+verification passes 40/40 native suites. The repeat scan keeps all 2,413 rows,
+all 806 DNx names and every other exported metadata value unchanged. The
+[current verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json)
+records both app builds, tests and that separate corpus comparison.
+Historical corpus and byte-search receipts remain unchanged.
 
 The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
 This supersedes the historical “not yet connected” status of the reader reports below.
