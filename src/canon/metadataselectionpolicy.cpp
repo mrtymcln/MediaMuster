@@ -32,7 +32,7 @@ namespace Canon
 		// Compile named groups into the resolver's existing ranks. Invalid or repeated
 		// sources make a constexpr policy fail compilation rather than silently overwrite it.
 		constexpr SourceRanks prefer(std::initializer_list<Source> first,
-			std::initializer_list<Source> second = {}, std::initializer_list<Source> third = {})
+									 std::initializer_list<Source> second = {}, std::initializer_list<Source> third = {})
 		{
 			SourceRanks ranks;
 			int priority = 3;
@@ -56,8 +56,7 @@ namespace Canon
 		// Source::Omf includes the LegacyReader's OMF, WAV and AIFF observations.
 		// These are application field names; observations retain original source property names.
 		// Edit one row for the next build. Keep one row per property in catalogue order.
-		constexpr PropertyPolicies kPropertyPolicies
-		{{
+		constexpr PropertyPolicies kPropertyPolicies{{
 			// Editor's clip name: header first, MDB second, loaded AVB third.
 			{MediaProperty::ClipName, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Avb})},
@@ -190,8 +189,7 @@ namespace Canon
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Pmr})},
 
 			// Keep every eligible master association. This union rule does not use source preferences.
-			{MediaProperty::MasterMobId, SelectionRule::MasterAssociations,
-			 {}},
+			{MediaProperty::MasterMobId, SelectionRule::MasterAssociations, {}},
 
 			// Local database membership/readability, derived from this folder's scan outcomes.
 			{MediaProperty::DatabaseStatus, SelectionRule::PreferredValue,
@@ -285,8 +283,6 @@ namespace Canon
 	ResolvedField resolveProperty(const MediaEvidence &evidence, const PropertyPolicy &policy)
 	{
 		return evidence.resolve(policy.property, [&policy](MetadataSource source)
-		{
-			return policy.sources.priority(source);
-		}, mediaPropertyName(policy.property));
+								{ return policy.sources.priority(source); }, mediaPropertyName(policy.property));
 	}
 }

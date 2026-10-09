@@ -145,6 +145,24 @@ baseline. The final local scan retains about 417 MB instead of 2.37 GB, with
 additional scanning CPU time. Windows/NEXIS capacity verification remains
 outstanding.
 
+The [MDVX and remaining performance review](mdvx-performance-review-2026-10-09.md)
+records static inspection of the installed MDVX 4073 scanner and the remaining
+Canon candidates. Three local comparisons of the same Canon code measured
+median scan times of 35.401 seconds in Debug and 12.731 seconds in Release,
+with identical checked outputs. Shipping CI already uses Release. No production
+optimization was applied in this review; full metadata/evidence preservation and
+Windows/NEXIS verification remain requirements for proposed changes.
+
+The [10 October database lookup optimization](database-lookup-optimization-2026-10-10.md)
+implements the first two proposals: direct unique-property lookups and reuse of
+completed source-mob relationships within one projection. Full live and genuine
+specimen graph/evidence comparisons match, all 41 Release suites pass, and the
+primary app builds. Three Release pairs show a modest local median reduction
+from 12.066 to 11.652 seconds (3.43%); they do not support a RAM-saving claim.
+The separate six-MDB buffered-read experiment preserves the compared successful
+results, but buffering and redundant-seek suppression remain diagnostic-only.
+Windows/NEXIS throughput and the 300,000-file workload still need verification.
+
 ## Implementation direction
 
 The user subsequently clarified that scanner, parser and metadata engines should

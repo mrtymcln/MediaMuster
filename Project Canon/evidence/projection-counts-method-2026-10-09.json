@@ -1,0 +1,125 @@
+{
+  "recordedUtc": "2026-10-09T11:55:55.583399+00:00",
+  "scope": "Read-only projection call-count diagnostic. No production edits, no whole scan, no timing or RAM result.",
+  "baselineCommit": "1a705eaefc191d6efda6cd0485ed953b1c555840",
+  "baselineSource": "src/canon/omfprojection.cpp",
+  "baselineSourceSha256": "f19f07bfae7cad5745b722e49d6477a579217289171f2bc02b995c62f76ec852",
+  "compileWorkingDirectory": "/Users/martymclean/Developer/MediaMuster",
+  "compileLinkArgv": [
+    "clang++",
+    "-std=c++17",
+    "-O2",
+    "-arch",
+    "arm64",
+    "-DQT_CORE_LIB",
+    "-I/Users/martymclean/Developer/MediaMuster/src",
+    "-I/Users/martymclean/Developer/MediaMuster/src/canon",
+    "-isystem",
+    "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+    "-iframework",
+    "/Users/martymclean/Qt/6.5.3/macos/lib",
+    "-isystem",
+    "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+    "-isystem",
+    "/Users/martymclean/Qt/6.5.3/macos/include",
+    "/private/tmp/canon-remaining-review/omfprojection-counts.cpp",
+    "/private/tmp/canon-remaining-review/probe.cpp",
+    "build-canon/libmediamuster_canon.a",
+    "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+    "-framework",
+    "QtCore",
+    "-framework",
+    "Security",
+    "-framework",
+    "AppKit",
+    "-framework",
+    "ApplicationServices",
+    "-framework",
+    "Foundation",
+    "-framework",
+    "IOKit",
+    "-framework",
+    "DiskArbitration",
+    "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+    "-o",
+    "/private/tmp/canon-remaining-review/projection-counts"
+  ],
+  "compileLinkCommand": "clang++ -std=c++17 -O2 -arch arm64 -DQT_CORE_LIB -I/Users/martymclean/Developer/MediaMuster/src -I/Users/martymclean/Developer/MediaMuster/src/canon -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/canon-remaining-review/omfprojection-counts.cpp /private/tmp/canon-remaining-review/probe.cpp build-canon/libmediamuster_canon.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/canon-remaining-review/projection-counts",
+  "libraryHashCapture": "Captured after diagnostic execution; library mtime predates final linked binary.",
+  "libraryMtimePredatesLinkedBinary": true,
+  "files": {
+    "/private/tmp/canon-remaining-review/omfprojection-counts.cpp": {
+      "bytes": 82040,
+      "mtimeNs": 1791546475373921483,
+      "sha256": "3ec98624de783f4f0db4c8e970093f27eb9cac8c2e363fb1e58f51ba6e2a87df"
+    },
+    "/private/tmp/canon-remaining-review/probe.cpp": {
+      "bytes": 1045,
+      "mtimeNs": 1791546325806402601,
+      "sha256": "1aedeab5faa55eae76f1f9e9ebeabaac12e532759722adfccf366396dd61cbbf"
+    },
+    "/private/tmp/canon-remaining-review/projection-counts": {
+      "bytes": 2081664,
+      "mtimeNs": 1791546479833142767,
+      "sha256": "363a51884187b1b8a617641c0af846739c8e2b08e6703c81cd1cbd70520d3369"
+    },
+    "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a": {
+      "bytes": 83454480,
+      "mtimeNs": 1791543928132406000,
+      "sha256": "878988b6449cad6f5a6bfbaebcdef2ea8e243ffb2f80accf63857e1f804524d2"
+    },
+    "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb": {
+      "bytes": 3528208,
+      "mtimeNs": 1785719912863320262,
+      "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+    },
+    "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb": {
+      "bytes": 6411016,
+      "mtimeNs": 1786262281141627428,
+      "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+    },
+    "/private/tmp/canon-remaining-review/corpus-counts.jsonl": {
+      "bytes": 768,
+      "mtimeNs": 1791546489512027447,
+      "sha256": "2f2787385490480f8fb9eb0d9a382ee4bfcfe58aeacad4c1e2a0136d77b6f001"
+    },
+    "/private/tmp/canon-remaining-review/round3-counts.jsonl": {
+      "bytes": 779,
+      "mtimeNs": 1791546490793172754,
+      "sha256": "04c42e274401537fd7312658437111ef48bc59ffc92cb0bf01b3a112fb6c7d69"
+    }
+  },
+  "executionCommands": [
+    [
+      "/private/tmp/canon-remaining-review/projection-counts",
+      "tests/fixtures/corpus_headers/msmMMOB.mdb"
+    ],
+    [
+      "/private/tmp/canon-remaining-review/projection-counts",
+      "tests/fixtures/corpus_headers/msmMMOB_round3.mdb"
+    ]
+  ],
+  "executionWorkingDirectory": "/Users/martymclean/Developer/MediaMuster",
+  "executionEnvironment": "macOS native arm64, Qt 6.5.3; temporary projection translation unit and harness compiled O2, linked to existing Debug Canon archive. Execution required sandbox escalation because Qt ARM CPU-feature sysctl access was denied in sandbox.",
+  "instrumentation": "Adds counters to properties, unique, uniqueRaw, components, sourceMobs and trackDurations. For unique and uniqueRaw, names are matched once into a local const vector before looping so the exact nonempty-list counts can be recorded; it is the same list and preserves inspection order/results. No extra property-name/class lookup is performed for classification. Original HEAD source is saved beside the instrumentation-only diff.",
+  "counts": {
+    "propertiesCalls": "Every call to properties() constructs a temporary QVector, including empty lists. This includes unique/uniqueRaw calls and all other callers.",
+    "propertySlotsScanned": "Sum of object.properties.size() across every properties() call; loops inspect every property slot.",
+    "nonemptyTemporaryPropertyLists": "All properties() results with at least one matched pointer, irrespective of caller. This counts nonempty vector instances, not allocator calls; multiple growth allocations per vector are not counted.",
+    "uniqueCalls": "Calls to unique(); each calls properties() exactly once.",
+    "uniqueRawCalls": "Calls to uniqueRaw(); each calls properties() exactly once.",
+    "uniqueNonempty": "unique() calls whose temporary properties() result has at least one pointer.",
+    "uniqueRawNonempty": "uniqueRaw() calls whose temporary properties() result has at least one pointer.",
+    "reported98161": "Round 3 uniqueNonempty 96250 + uniqueRawNonempty 1911 = 98161. This is only the nonempty lists created for unique/uniqueRaw, not all properties() calls or all nonempty lists.",
+    "sourceMobsRepeatedCalls": "sourceMobsCalls minus distinct input object handles; does not assert identical completed results under cancellation.",
+    "componentsRepeatedCalls": "componentsCalls minus distinct input object handles.",
+    "trackDurationRepeatedMasterCalls": "trackDurationCalls minus distinct master object handles; file-specific inputs remain separate."
+  },
+  "limitations": [
+    "Only two genuine MDB fixtures; no extrapolated speed or RAM saving.",
+    "No candidate optimization was applied or semantically verified by this counter diagnostic.",
+    "Other build work overlapped; elapsed time was deliberately not measured/reported.",
+    "No Windows/NEXIS or full GUI measurement.",
+    "The uncommitted policy-file whitespace formatting was excluded by taking omfprojection source from the fixed HEAD commit."
+  ]
+}

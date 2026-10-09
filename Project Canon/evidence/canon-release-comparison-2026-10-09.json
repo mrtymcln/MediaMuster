@@ -1,0 +1,394 @@
+{
+  "runs": [
+    {
+      "run": "01-pair1-debug",
+      "pair": 1,
+      "mode": "debug",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/usr/bin/arch",
+        "-arm64",
+        "/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner",
+        "optional_read_only_real_scan"
+      ],
+      "startedUtc": "2026-10-09T11:51:52.964182+00:00",
+      "processWallSeconds": 49.53357279201737,
+      "returncode": 0,
+      "sourceAndFolderStampsStable": true,
+      "scanMs": 35409,
+      "memoryBefore": {
+        "peakResidentBytes": 10092544,
+        "physicalFootprintBytes": 3195840,
+        "residentBytes": 10010624
+      },
+      "memoryRetained": {
+        "peakResidentBytes": 1159266304,
+        "physicalFootprintBytes": 462589376,
+        "residentBytes": 1148370944
+      },
+      "rows": 2413,
+      "sourceCount": 2425,
+      "issueCount": 298,
+      "csv": "/private/tmp/mdvx-performance-audit/measurements/01-pair1-debug.csv",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "report": "/private/tmp/mdvx-performance-audit/measurements/01-pair1-debug.json",
+      "stdout": "/private/tmp/mdvx-performance-audit/measurements/01-pair1-debug.stdout.txt",
+      "stderrTime": "/private/tmp/mdvx-performance-audit/measurements/01-pair1-debug.stderr-time.txt"
+    },
+    {
+      "run": "02-pair1-release",
+      "pair": 1,
+      "mode": "release",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/usr/bin/arch",
+        "-arm64",
+        "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+        "optional_read_only_real_scan"
+      ],
+      "startedUtc": "2026-10-09T11:52:42.541825+00:00",
+      "processWallSeconds": 17.470844790979754,
+      "returncode": 0,
+      "sourceAndFolderStampsStable": true,
+      "scanMs": 11884,
+      "memoryBefore": {
+        "peakResidentBytes": 8798208,
+        "physicalFootprintBytes": 3032000,
+        "residentBytes": 8716288
+      },
+      "memoryRetained": {
+        "peakResidentBytes": 1126187008,
+        "physicalFootprintBytes": 436538624,
+        "residentBytes": 1124040704
+      },
+      "rows": 2413,
+      "sourceCount": 2425,
+      "issueCount": 298,
+      "csv": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.csv",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "report": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.json",
+      "stdout": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.stdout.txt",
+      "stderrTime": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.stderr-time.txt"
+    },
+    {
+      "run": "03-pair2-release",
+      "pair": 2,
+      "mode": "release",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/usr/bin/arch",
+        "-arm64",
+        "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+        "optional_read_only_real_scan"
+      ],
+      "startedUtc": "2026-10-09T11:53:00.105357+00:00",
+      "processWallSeconds": 18.42619349999586,
+      "returncode": 0,
+      "sourceAndFolderStampsStable": true,
+      "scanMs": 12731,
+      "memoryBefore": {
+        "peakResidentBytes": 8749056,
+        "physicalFootprintBytes": 2982848,
+        "residentBytes": 8667136
+      },
+      "memoryRetained": {
+        "peakResidentBytes": 1142587392,
+        "physicalFootprintBytes": 420875392,
+        "residentBytes": 1141489664
+      },
+      "rows": 2413,
+      "sourceCount": 2425,
+      "issueCount": 298,
+      "csv": "/private/tmp/mdvx-performance-audit/measurements/03-pair2-release.csv",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "report": "/private/tmp/mdvx-performance-audit/measurements/03-pair2-release.json",
+      "stdout": "/private/tmp/mdvx-performance-audit/measurements/03-pair2-release.stdout.txt",
+      "stderrTime": "/private/tmp/mdvx-performance-audit/measurements/03-pair2-release.stderr-time.txt"
+    },
+    {
+      "run": "04-pair2-debug",
+      "pair": 2,
+      "mode": "debug",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/usr/bin/arch",
+        "-arm64",
+        "/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner",
+        "optional_read_only_real_scan"
+      ],
+      "startedUtc": "2026-10-09T11:53:18.647067+00:00",
+      "processWallSeconds": 48.441568750014994,
+      "returncode": 0,
+      "sourceAndFolderStampsStable": true,
+      "scanMs": 35401,
+      "memoryBefore": {
+        "peakResidentBytes": 10141696,
+        "physicalFootprintBytes": 3261440,
+        "residentBytes": 10059776
+      },
+      "memoryRetained": {
+        "peakResidentBytes": 1209696256,
+        "physicalFootprintBytes": 474074560,
+        "residentBytes": 1209597952
+      },
+      "rows": 2413,
+      "sourceCount": 2425,
+      "issueCount": 298,
+      "csv": "/private/tmp/mdvx-performance-audit/measurements/04-pair2-debug.csv",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "report": "/private/tmp/mdvx-performance-audit/measurements/04-pair2-debug.json",
+      "stdout": "/private/tmp/mdvx-performance-audit/measurements/04-pair2-debug.stdout.txt",
+      "stderrTime": "/private/tmp/mdvx-performance-audit/measurements/04-pair2-debug.stderr-time.txt"
+    },
+    {
+      "run": "05-pair3-debug",
+      "pair": 3,
+      "mode": "debug",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/usr/bin/arch",
+        "-arm64",
+        "/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner",
+        "optional_read_only_real_scan"
+      ],
+      "startedUtc": "2026-10-09T11:54:07.237396+00:00",
+      "processWallSeconds": 47.51250104204519,
+      "returncode": 0,
+      "sourceAndFolderStampsStable": true,
+      "scanMs": 34077,
+      "memoryBefore": {
+        "peakResidentBytes": 10190848,
+        "physicalFootprintBytes": 3310592,
+        "residentBytes": 10108928
+      },
+      "memoryRetained": {
+        "peakResidentBytes": 1142800384,
+        "physicalFootprintBytes": 439045568,
+        "residentBytes": 1117143040
+      },
+      "rows": 2413,
+      "sourceCount": 2425,
+      "issueCount": 298,
+      "csv": "/private/tmp/mdvx-performance-audit/measurements/05-pair3-debug.csv",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "report": "/private/tmp/mdvx-performance-audit/measurements/05-pair3-debug.json",
+      "stdout": "/private/tmp/mdvx-performance-audit/measurements/05-pair3-debug.stdout.txt",
+      "stderrTime": "/private/tmp/mdvx-performance-audit/measurements/05-pair3-debug.stderr-time.txt"
+    },
+    {
+      "run": "06-pair3-release",
+      "pair": 3,
+      "mode": "release",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/usr/bin/arch",
+        "-arm64",
+        "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+        "optional_read_only_real_scan"
+      ],
+      "startedUtc": "2026-10-09T11:54:54.926506+00:00",
+      "processWallSeconds": 23.050690333009697,
+      "returncode": 0,
+      "sourceAndFolderStampsStable": true,
+      "scanMs": 15217,
+      "memoryBefore": {
+        "peakResidentBytes": 8650752,
+        "physicalFootprintBytes": 2868160,
+        "residentBytes": 8552448
+      },
+      "memoryRetained": {
+        "peakResidentBytes": 1182318592,
+        "physicalFootprintBytes": 414813696,
+        "residentBytes": 1175453696
+      },
+      "rows": 2413,
+      "sourceCount": 2425,
+      "issueCount": 298,
+      "csv": "/private/tmp/mdvx-performance-audit/measurements/06-pair3-release.csv",
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "report": "/private/tmp/mdvx-performance-audit/measurements/06-pair3-release.json",
+      "stdout": "/private/tmp/mdvx-performance-audit/measurements/06-pair3-release.stdout.txt",
+      "stderrTime": "/private/tmp/mdvx-performance-audit/measurements/06-pair3-release.stderr-time.txt"
+    }
+  ],
+  "pairs": [
+    {
+      "pair": 1,
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      },
+      "releaseSpeedupRatio": 2.979552339279704,
+      "releaseElapsedReductionPercent": 66.43791126549748
+    },
+    {
+      "pair": 2,
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      },
+      "releaseSpeedupRatio": 2.7806927971094177,
+      "releaseElapsedReductionPercent": 64.03773904691958
+    },
+    {
+      "pair": 3,
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      },
+      "releaseSpeedupRatio": 2.2394032989419728,
+      "releaseElapsedReductionPercent": 55.345247527657946
+    }
+  ],
+  "acrossAllRuns": [
+    {
+      "run": "02-pair1-release",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      }
+    },
+    {
+      "run": "03-pair2-release",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      }
+    },
+    {
+      "run": "04-pair2-debug",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      }
+    },
+    {
+      "run": "05-pair3-debug",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      }
+    },
+    {
+      "run": "06-pair3-release",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "issuesEveryEntry": true,
+        "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+        "propertyAllocationCapacities": true,
+        "csvByteIdentical": true
+      }
+    }
+  ],
+  "modes": {
+    "debug": {
+      "scanMs": [
+        35409,
+        35401,
+        34077
+      ],
+      "medianScanMs": 35401,
+      "minScanMs": 34077,
+      "maxScanMs": 35409,
+      "retainedMemory": [
+        {
+          "peakResidentBytes": 1159266304,
+          "physicalFootprintBytes": 462589376,
+          "residentBytes": 1148370944
+        },
+        {
+          "peakResidentBytes": 1209696256,
+          "physicalFootprintBytes": 474074560,
+          "residentBytes": 1209597952
+        },
+        {
+          "peakResidentBytes": 1142800384,
+          "physicalFootprintBytes": 439045568,
+          "residentBytes": 1117143040
+        }
+      ]
+    },
+    "release": {
+      "scanMs": [
+        11884,
+        12731,
+        15217
+      ],
+      "medianScanMs": 12731,
+      "minScanMs": 11884,
+      "maxScanMs": 15217,
+      "retainedMemory": [
+        {
+          "peakResidentBytes": 1126187008,
+          "physicalFootprintBytes": 436538624,
+          "residentBytes": 1124040704
+        },
+        {
+          "peakResidentBytes": 1142587392,
+          "physicalFootprintBytes": 420875392,
+          "residentBytes": 1141489664
+        },
+        {
+          "peakResidentBytes": 1182318592,
+          "physicalFootprintBytes": 414813696,
+          "residentBytes": 1175453696
+        }
+      ]
+    }
+  },
+  "complete": true,
+  "allSemanticChecksPass": true,
+  "medianReleaseSpeedupRatio": 2.7806927971094177,
+  "medianReleaseElapsedReductionPercent": 64.03773904691958
+}

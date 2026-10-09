@@ -1,0 +1,733 @@
+{
+  "recordedUtc": "2026-10-09T22:22:47.811699+00:00",
+  "baseCommit": "1a705eaefc191d6efda6cd0485ed953b1c555840",
+  "productionChange": "Only src/canon/omfprojection.cpp: direct unique-property loops and projection-local completed source-mob lookup reuse.",
+  "sourceSha256": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1",
+  "unrelatedPolicyFormattingPreservedAndExcludedFromReleaseSnapshot": true,
+  "stageBuild": {
+    "baseCommit": "1a705eaefc191d6efda6cd0485ed953b1c555840",
+    "sourceMethod": "Exact HEAD git archive plus only frozen omfprojection-stage2.cpp overlay",
+    "sourceRoot": "/private/tmp/mediamuster-projection-improvement-20261010/source",
+    "frozenSource": "/private/tmp/canon-database-lookups-20261010/omfprojection-stage2.cpp",
+    "sourceSha256": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1",
+    "sourcePatch": "/private/tmp/canon-projection-proof-20261010/stage2.patch",
+    "unrelatedPolicyFormattingIncluded": false,
+    "buildRoot": "/private/tmp/mediamuster-projection-improvement-20261010/build",
+    "buildType": "Release",
+    "architecture": "arm64",
+    "qtVersion": "6.5.3",
+    "cxxStandard": 17,
+    "effectiveFlags": "-O3 -DNDEBUG -DQT_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -Wall -Wextra",
+    "targets": [
+      "mediamuster_canon",
+      "tst_scanner",
+      "tst_canon_omfprojection",
+      "tst_canonscan",
+      "tst_canonmdb",
+      "tst_canonlegacy",
+      "tst_sourcearchive"
+    ],
+    "buildExit": 0,
+    "sha256": {
+      "/private/tmp/mediamuster-projection-improvement-20261010/build/libmediamuster_canon.a": "33a709cdacf641f9510445697015016be1376134ebc5e25844cba66e37ce25b7",
+      "/private/tmp/mediamuster-projection-improvement-20261010/build/tests/tst_scanner": "b36190a937cccf2cebd8c4b8e5c64cfee3d284f9cebc703ec6617b9483a139e2",
+      "/private/tmp/mediamuster-projection-improvement-20261010/source/src/canon/omfprojection.cpp": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1",
+      "/private/tmp/mediamuster-projection-improvement-20261010/source/src/canon/scanengine.cpp": "b960553c2747f623751eb1fea0311785d917f97d3e24323c213826ada0720d3a",
+      "/private/tmp/mediamuster-projection-improvement-20261010/source/src/canon/sourcearchive.cpp": "62973bdf01f7e8033ee527e51c0e01da4fbd0c4017560a57aeb7f39af3b74a9c"
+    }
+  },
+  "liveCounts": {
+    "rows": 2413,
+    "sources": 2425,
+    "sourceObjects": 475088,
+    "sourceRelationships": 498221,
+    "sourceProperties": 2719926,
+    "originalValueBytes": 83566949
+  },
+  "stage1": {
+    "comparison": {
+      "mode": "stage1",
+      "checks": {
+        "archiveBlocks": true,
+        "callbackCounts": true,
+        "cancelled": true,
+        "candidates": true,
+        "compressedBytes": true,
+        "discoveryComplete": true,
+        "discoveryIssues": true,
+        "fileDigests": true,
+        "hashes": true,
+        "originalValueBytes": true,
+        "parsingComplete": true,
+        "reconciliationComplete": true,
+        "reconciliationIssues": true,
+        "roots": true,
+        "rows": true,
+        "serializedBytes": true,
+        "sourceDigests": true,
+        "sourceObjects": true,
+        "sourceProperties": true,
+        "sourceRelationships": true,
+        "sources": true
+      },
+      "allSemanticChecksPass": true,
+      "beforeScanMsInstrumented": 12506,
+      "afterScanMsInstrumented": 11419,
+      "beforeFootprintRetained": 422694208,
+      "afterFootprintRetained": 469404992,
+      "beforePeakResidentRetained": 1137475584,
+      "afterPeakResidentRetained": 1104216064,
+      "hashes": {
+        "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+        "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+        "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+        "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+        "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+        "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+      }
+    },
+    "corpus-comparison": {
+      "mode": "stage1",
+      "fixtureCount": 88,
+      "sameFixtureCount": true,
+      "comparedFields": [
+        "path",
+        "outcome",
+        "objects",
+        "relationships",
+        "properties",
+        "encodingBytes",
+        "files",
+        "masters",
+        "graphSha256",
+        "projectionSha256",
+        "archiveGraphSha256",
+        "archivePreserved"
+      ],
+      "differences": [],
+      "allChecksPass": true
+    },
+    "scanner-comparison": {
+      "mode": "stage1",
+      "baselineReport": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.json",
+      "baselineCSV": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.csv",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issues": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "sourcesOrderStatusReadReasonsArchiveMetricsAndGraphCounts": true,
+        "csvByteIdentical": true
+      },
+      "allChecksPass": true,
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "rows": 2413,
+      "sources": 2425,
+      "scanMs": 11290,
+      "memoryRetained": {
+        "peakResidentBytes": 1109065728,
+        "physicalFootprintBytes": 481938816,
+        "residentBytes": 1107968000
+      }
+    }
+  },
+  "stage2": {
+    "comparison": {
+      "mode": "stage2",
+      "checks": {
+        "archiveBlocks": true,
+        "callbackCounts": true,
+        "cancelled": true,
+        "candidates": true,
+        "compressedBytes": true,
+        "discoveryComplete": true,
+        "discoveryIssues": true,
+        "fileDigests": true,
+        "hashes": true,
+        "originalValueBytes": true,
+        "parsingComplete": true,
+        "reconciliationComplete": true,
+        "reconciliationIssues": true,
+        "roots": true,
+        "rows": true,
+        "serializedBytes": true,
+        "sourceDigests": true,
+        "sourceObjects": true,
+        "sourceProperties": true,
+        "sourceRelationships": true,
+        "sources": true
+      },
+      "allSemanticChecksPass": true,
+      "beforeScanMsInstrumented": 12506,
+      "afterScanMsInstrumented": 11758,
+      "beforeFootprintRetained": 422694208,
+      "afterFootprintRetained": 425610624,
+      "beforePeakResidentRetained": 1137475584,
+      "afterPeakResidentRetained": 1162100736,
+      "hashes": {
+        "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+        "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+        "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+        "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+        "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+        "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+      }
+    },
+    "corpus-comparison": {
+      "mode": "stage2",
+      "fixtureCount": 88,
+      "sameFixtureCount": true,
+      "comparedFields": [
+        "path",
+        "outcome",
+        "objects",
+        "relationships",
+        "properties",
+        "encodingBytes",
+        "files",
+        "masters",
+        "graphSha256",
+        "projectionSha256",
+        "archiveGraphSha256",
+        "archivePreserved"
+      ],
+      "differences": [],
+      "allChecksPass": true
+    },
+    "scanner-comparison": {
+      "mode": "stage2",
+      "baselineReport": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.json",
+      "baselineCSV": "/private/tmp/mdvx-performance-audit/measurements/02-pair1-release.csv",
+      "checks": {
+        "roots": true,
+        "rows": true,
+        "issues": true,
+        "issueCount": true,
+        "inventoryEveryRow": true,
+        "sourcesOrderStatusReadReasonsArchiveMetricsAndGraphCounts": true,
+        "csvByteIdentical": true
+      },
+      "allChecksPass": true,
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "rows": 2413,
+      "sources": 2425,
+      "scanMs": 11359,
+      "memoryRetained": {
+        "peakResidentBytes": 1121550336,
+        "physicalFootprintBytes": 447663424,
+        "residentBytes": 1104297984
+      }
+    }
+  },
+  "timingSummary": {
+    "runs": [
+      {
+        "run": "01-pair1-baseline",
+        "pair": 1,
+        "mode": "baseline",
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/usr/bin/arch",
+          "-arm64",
+          "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+          "optional_read_only_real_scan"
+        ],
+        "startedUtc": "2026-10-09T22:17:26.502387+00:00",
+        "processWallSeconds": 17.950758999970276,
+        "returncode": 0,
+        "sourceAndFolderStampsStable": true,
+        "scanMs": 12412,
+        "memoryBefore": {
+          "peakResidentBytes": 8667136,
+          "physicalFootprintBytes": 2900928,
+          "residentBytes": 8585216
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1123614720,
+          "physicalFootprintBytes": 438062528,
+          "residentBytes": 1123532800
+        },
+        "rows": 2413,
+        "sourceCount": 2425,
+        "issueCount": 298,
+        "csv": "/private/tmp/canon-projection-proof-20261010/scanner-timings/01-pair1-baseline.csv",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "report": "/private/tmp/canon-projection-proof-20261010/scanner-timings/01-pair1-baseline.json",
+        "stdout": "/private/tmp/canon-projection-proof-20261010/scanner-timings/01-pair1-baseline.stdout.txt",
+        "stderrTime": "/private/tmp/canon-projection-proof-20261010/scanner-timings/01-pair1-baseline.stderr-time.txt"
+      },
+      {
+        "run": "02-pair1-final",
+        "pair": 1,
+        "mode": "final",
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/usr/bin/arch",
+          "-arm64",
+          "/private/tmp/mediamuster-projection-improvement-20261010/build/tests/tst_scanner",
+          "optional_read_only_real_scan"
+        ],
+        "startedUtc": "2026-10-09T22:17:44.495518+00:00",
+        "processWallSeconds": 17.03888949996326,
+        "returncode": 0,
+        "sourceAndFolderStampsStable": true,
+        "scanMs": 11518,
+        "memoryBefore": {
+          "peakResidentBytes": 8798208,
+          "physicalFootprintBytes": 2999232,
+          "residentBytes": 8716288
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1136246784,
+          "physicalFootprintBytes": 402853248,
+          "residentBytes": 1136164864
+        },
+        "rows": 2413,
+        "sourceCount": 2425,
+        "issueCount": 298,
+        "csv": "/private/tmp/canon-projection-proof-20261010/scanner-timings/02-pair1-final.csv",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "report": "/private/tmp/canon-projection-proof-20261010/scanner-timings/02-pair1-final.json",
+        "stdout": "/private/tmp/canon-projection-proof-20261010/scanner-timings/02-pair1-final.stdout.txt",
+        "stderrTime": "/private/tmp/canon-projection-proof-20261010/scanner-timings/02-pair1-final.stderr-time.txt"
+      },
+      {
+        "run": "03-pair2-final",
+        "pair": 2,
+        "mode": "final",
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/usr/bin/arch",
+          "-arm64",
+          "/private/tmp/mediamuster-projection-improvement-20261010/build/tests/tst_scanner",
+          "optional_read_only_real_scan"
+        ],
+        "startedUtc": "2026-10-09T22:18:01.626049+00:00",
+        "processWallSeconds": 17.14121787494514,
+        "returncode": 0,
+        "sourceAndFolderStampsStable": true,
+        "scanMs": 11652,
+        "memoryBefore": {
+          "peakResidentBytes": 8716288,
+          "physicalFootprintBytes": 2900864,
+          "residentBytes": 8634368
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1149648896,
+          "physicalFootprintBytes": 474959360,
+          "residentBytes": 1146454016
+        },
+        "rows": 2413,
+        "sourceCount": 2425,
+        "issueCount": 298,
+        "csv": "/private/tmp/canon-projection-proof-20261010/scanner-timings/03-pair2-final.csv",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "report": "/private/tmp/canon-projection-proof-20261010/scanner-timings/03-pair2-final.json",
+        "stdout": "/private/tmp/canon-projection-proof-20261010/scanner-timings/03-pair2-final.stdout.txt",
+        "stderrTime": "/private/tmp/canon-projection-proof-20261010/scanner-timings/03-pair2-final.stderr-time.txt"
+      },
+      {
+        "run": "04-pair2-baseline",
+        "pair": 2,
+        "mode": "baseline",
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/usr/bin/arch",
+          "-arm64",
+          "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+          "optional_read_only_real_scan"
+        ],
+        "startedUtc": "2026-10-09T22:18:18.878510+00:00",
+        "processWallSeconds": 17.566199375025462,
+        "returncode": 0,
+        "sourceAndFolderStampsStable": true,
+        "scanMs": 12066,
+        "memoryBefore": {
+          "peakResidentBytes": 8732672,
+          "physicalFootprintBytes": 2966464,
+          "residentBytes": 8650752
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1134198784,
+          "physicalFootprintBytes": 425004608,
+          "residentBytes": 1131511808
+        },
+        "rows": 2413,
+        "sourceCount": 2425,
+        "issueCount": 298,
+        "csv": "/private/tmp/canon-projection-proof-20261010/scanner-timings/04-pair2-baseline.csv",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "report": "/private/tmp/canon-projection-proof-20261010/scanner-timings/04-pair2-baseline.json",
+        "stdout": "/private/tmp/canon-projection-proof-20261010/scanner-timings/04-pair2-baseline.stdout.txt",
+        "stderrTime": "/private/tmp/canon-projection-proof-20261010/scanner-timings/04-pair2-baseline.stderr-time.txt"
+      },
+      {
+        "run": "05-pair3-baseline",
+        "pair": 3,
+        "mode": "baseline",
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/usr/bin/arch",
+          "-arm64",
+          "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+          "optional_read_only_real_scan"
+        ],
+        "startedUtc": "2026-10-09T22:18:36.601183+00:00",
+        "processWallSeconds": 17.3375351249706,
+        "returncode": 0,
+        "sourceAndFolderStampsStable": true,
+        "scanMs": 11791,
+        "memoryBefore": {
+          "peakResidentBytes": 8749056,
+          "physicalFootprintBytes": 2982848,
+          "residentBytes": 8667136
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1137983488,
+          "physicalFootprintBytes": 450547200,
+          "residentBytes": 1136885760
+        },
+        "rows": 2413,
+        "sourceCount": 2425,
+        "issueCount": 298,
+        "csv": "/private/tmp/canon-projection-proof-20261010/scanner-timings/05-pair3-baseline.csv",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "report": "/private/tmp/canon-projection-proof-20261010/scanner-timings/05-pair3-baseline.json",
+        "stdout": "/private/tmp/canon-projection-proof-20261010/scanner-timings/05-pair3-baseline.stdout.txt",
+        "stderrTime": "/private/tmp/canon-projection-proof-20261010/scanner-timings/05-pair3-baseline.stderr-time.txt"
+      },
+      {
+        "run": "06-pair3-final",
+        "pair": 3,
+        "mode": "final",
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/usr/bin/arch",
+          "-arm64",
+          "/private/tmp/mediamuster-projection-improvement-20261010/build/tests/tst_scanner",
+          "optional_read_only_real_scan"
+        ],
+        "startedUtc": "2026-10-09T22:18:54.112407+00:00",
+        "processWallSeconds": 17.164120041998103,
+        "returncode": 0,
+        "sourceAndFolderStampsStable": true,
+        "scanMs": 11666,
+        "memoryBefore": {
+          "peakResidentBytes": 8749056,
+          "physicalFootprintBytes": 2966528,
+          "residentBytes": 8667136
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1100578816,
+          "physicalFootprintBytes": 463981696,
+          "residentBytes": 1098022912
+        },
+        "rows": 2413,
+        "sourceCount": 2425,
+        "issueCount": 298,
+        "csv": "/private/tmp/canon-projection-proof-20261010/scanner-timings/06-pair3-final.csv",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "report": "/private/tmp/canon-projection-proof-20261010/scanner-timings/06-pair3-final.json",
+        "stdout": "/private/tmp/canon-projection-proof-20261010/scanner-timings/06-pair3-final.stdout.txt",
+        "stderrTime": "/private/tmp/canon-projection-proof-20261010/scanner-timings/06-pair3-final.stderr-time.txt"
+      }
+    ],
+    "pairs": [
+      {
+        "pair": 1,
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        },
+        "finalSpeedupRatio": 1.0776176419517278,
+        "finalElapsedReductionPercent": 7.2027070576861085
+      },
+      {
+        "pair": 2,
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        },
+        "finalSpeedupRatio": 1.0355303810504635,
+        "finalElapsedReductionPercent": 3.431128791645943
+      },
+      {
+        "pair": 3,
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        },
+        "finalSpeedupRatio": 1.0107148979941711,
+        "finalElapsedReductionPercent": 1.0601306080909145
+      }
+    ],
+    "acrossAllRuns": [
+      {
+        "run": "02-pair1-final",
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        }
+      },
+      {
+        "run": "03-pair2-final",
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        }
+      },
+      {
+        "run": "04-pair2-baseline",
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        }
+      },
+      {
+        "run": "05-pair3-baseline",
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        }
+      },
+      {
+        "run": "06-pair3-final",
+        "checks": {
+          "roots": true,
+          "rows": true,
+          "issueCount": true,
+          "inventoryEveryRow": true,
+          "issuesEveryEntry": true,
+          "sourceOrderStatusReadReasonArchivesAndGraphCounts": true,
+          "propertyAllocationCapacities": true,
+          "csvByteIdentical": true
+        }
+      }
+    ],
+    "modes": {
+      "baseline": {
+        "scanMs": [
+          12412,
+          12066,
+          11791
+        ],
+        "medianScanMs": 12066,
+        "minScanMs": 11791,
+        "maxScanMs": 12412,
+        "retainedMemory": [
+          {
+            "peakResidentBytes": 1123614720,
+            "physicalFootprintBytes": 438062528,
+            "residentBytes": 1123532800
+          },
+          {
+            "peakResidentBytes": 1134198784,
+            "physicalFootprintBytes": 425004608,
+            "residentBytes": 1131511808
+          },
+          {
+            "peakResidentBytes": 1137983488,
+            "physicalFootprintBytes": 450547200,
+            "residentBytes": 1136885760
+          }
+        ]
+      },
+      "final": {
+        "scanMs": [
+          11518,
+          11652,
+          11666
+        ],
+        "medianScanMs": 11652,
+        "minScanMs": 11518,
+        "maxScanMs": 11666,
+        "retainedMemory": [
+          {
+            "peakResidentBytes": 1136246784,
+            "physicalFootprintBytes": 402853248,
+            "residentBytes": 1136164864
+          },
+          {
+            "peakResidentBytes": 1149648896,
+            "physicalFootprintBytes": 474959360,
+            "residentBytes": 1146454016
+          },
+          {
+            "peakResidentBytes": 1100578816,
+            "physicalFootprintBytes": 463981696,
+            "residentBytes": 1098022912
+          }
+        ]
+      }
+    },
+    "complete": true,
+    "allSemanticChecksPass": true,
+    "medianFinalSpeedupRatio": 1.0355303810504635,
+    "medianFinalElapsedReductionPercent": 3.431128791645943
+  },
+  "testReceipt": {
+    "buildCommand": [
+      "cmake",
+      "--build",
+      "/private/tmp/mediamuster-projection-improvement-20261010/build",
+      "--target",
+      "tst_diagnostics",
+      "tst_mobid",
+      "tst_pathkey",
+      "tst_format",
+      "tst_mediaevidence",
+      "tst_metadataselectionpolicy",
+      "tst_conventions",
+      "tst_canondiscovery",
+      "tst_canonpmr",
+      "tst_canonpmrrobustness",
+      "tst_canonmdb",
+      "tst_canonlegacy",
+      "tst_canonmxf",
+      "tst_canonavb",
+      "tst_canonavbreferences",
+      "tst_sourcearchive",
+      "tst_canonscan",
+      "tst_canon_compressionnames",
+      "tst_canon_omfprojection",
+      "tst_canon_mxfprojection",
+      "tst_omfuid",
+      "tst_mediametadata",
+      "tst_bentofile",
+      "tst_pmrparser",
+      "tst_mdbparser",
+      "tst_omfparser",
+      "tst_avbparser",
+      "tst_mxfparser",
+      "tst_avideffects",
+      "tst_scanner",
+      "tst_opcleanup",
+      "tst_volumeidentity",
+      "tst_opjournal",
+      "tst_rebalanceplanner",
+      "tst_fileoperations",
+      "tst_mediacsv",
+      "tst_mediatablemodel",
+      "tst_mediafilterproxy",
+      "tst_precomputefilterdialog",
+      "tst_binfilterdialog",
+      "tst_operationui",
+      "-j",
+      "4"
+    ],
+    "testCommand": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/mediamuster-projection-improvement-20261010/build",
+      "--output-on-failure",
+      "-j",
+      "2"
+    ],
+    "testTargetCount": 41,
+    "buildExit": 0,
+    "testExit": 0,
+    "qtVersion": "6.5.3",
+    "buildType": "Release",
+    "architecture": "native arm64",
+    "environmentOverrides": {
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_HASH_SEED": "0"
+    },
+    "realDriveAuditEnvironmentRemoved": true,
+    "librarySha256": "33a709cdacf641f9510445697015016be1376134ebc5e25844cba66e37ce25b7",
+    "scannerSha256": "b36190a937cccf2cebd8c4b8e5c64cfee3d284f9cebc703ec6617b9483a139e2",
+    "projectionSourceSha256": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1"
+  },
+  "primaryAppBuild": {
+    "recordedUtc": "2026-10-09T22:21:43.032017+00:00",
+    "command": [
+      "cmake",
+      "--build",
+      "/Users/martymclean/Developer/MediaMuster/build",
+      "--target",
+      "MediaMuster",
+      "-j",
+      "4"
+    ],
+    "exitCode": 0,
+    "seconds": 4.239969709014986,
+    "buildType": "Debug",
+    "architecture": "arm64;x86_64",
+    "qtVersion": "6.5.3",
+    "projectionSourceSha256": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1",
+    "binary": "/Users/martymclean/Developer/MediaMuster/build/MediaMuster.app/Contents/MacOS/MediaMuster",
+    "binarySha256": "6e8b80d4c81575357588821f18fe9149b74b73d143a8da5492e85bb0847502d1",
+    "scope": "Build the actual primary workspace app; no scan, GUI launch or timing measurement."
+  },
+  "bufferExperiment": {
+    "receipt": "database-buffer-experiment-2026-10-10.json",
+    "sha256": "aca388fd2b3b91c92a691a40d8549d6794078c71fe496e266a50e6a9b5b86a95",
+    "semanticChecks": 66,
+    "allMatched": true,
+    "productionBufferingOrSeekChangeApplied": false
+  },
+  "evidenceArchive": {
+    "file": "database-lookup-proof-2026-10-10.zip",
+    "sha256": "66806e0c4d0736c894c7015293db00d5c9b89bd6e7138971271d794e9181579f",
+    "bytes": 3087497,
+    "retainedTextFiles": 190,
+    "crcPass": true,
+    "memberSha256Pass": true
+  },
+  "limits": [
+    "Repeated scan timings are warm-cache native arm64 macOS Release results without GUI model population.",
+    "No supported RAM-saving claim, Windows/NEXIS throughput claim or 300,000-file qualification.",
+    "Both stage correctness proofs compare all represented graph/evidence fields; tested genuine variants do not establish every possible Avid variant.",
+    "The old engine remains; no production reader, source schema, metadata selection, scan scheduling or feature flag changes.",
+    "Buffer and seek modes remain diagnostic-only; successful-input equality does not qualify failure/partial-read semantics."
+  ]
+}

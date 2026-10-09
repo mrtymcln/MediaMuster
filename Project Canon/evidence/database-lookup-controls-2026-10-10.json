@@ -1,0 +1,1669 @@
+{
+  "method": {
+    "method": "Read-only diagnostic over two unchanged genuine MDB fixtures. Three temporary projection translation units instrument the fixed before/stage1/stage2 sources; common supporting reader library frozen once. No parser rules or production hooks. Counts captured immediately after ordinary projection, before diagnostic-only helper queries. Full graph/projection/evidence fingerprints, per-object property pointer-index choices and ordered diagnostics compared. Cancellation is deterministically triggered using borrowed external atomic at two specified boundaries; no timing or memory claims.",
+    "limits": [
+      "One genuine fixture family; production full-suite/full-corpus proofs are separate.",
+      "Cancellation checkpoints are instrumented solely in temporary copied translation units; this is a control of execution, not a corrupt-file interpretation or new recovery rule.",
+      "Mid-traversal case checks acquired ordered components and no cache publication; wall-clock partial scan inventories can naturally differ when execution is faster.",
+      "Property choice proof exercises every actual Latin-1 property name singly and the existing ObjID/OOBJ:ObjClass alias group; unchanged graph hash plus identical pointer indices establish selected-property provenance for those queries.",
+      "The instrumentation and hash diagnostics add work and are unsuitable for speed/RAM measurements.",
+      "The chosen genuine cancellation/empty owners emit no reference diagnostics, so these controls compare empty ordered diagnostic lists. Full projection fingerprints include all diagnostic content/order; existing unresolved-reference tests and the separate full-corpus proof cover error-path diagnostics."
+    ],
+    "controls": {
+      "partial": "External flag is set after exactly two appended objects while work remains pending. Existing next-iteration cancellation returns that ordered component prefix; helper records the returned prefix and cache state.",
+      "preinsert": "External flag is set immediately before the cache publication guard; computed associations are still returned but no entry may be stored.",
+      "empty": "A genuine active mob with a finished empty association is queried twice; second Stage 2 query must hit cache and perform no component traversal.",
+      "cached-cancel": "A complete lookup first populates cache; cancellation is then set before its next request. Cached handles must not be returned."
+    },
+    "expectedInstrumentationDifference": "For cached-cancel, baseline/stage1 enter components and record an empty cancelled prefix, while Stage 2 stops at its entry cancellation guard before components. Returned vectors and diagnostics match; this instrumentation-only partialRecorded flag is intentionally excluded from cross-version equality.",
+    "buildReceipt": "/private/tmp/canon-projection-controls-20261010/build-receipt.json",
+    "sourceReceipt": "/private/tmp/canon-projection-controls-20261010/source-receipt.json",
+    "results": "/private/tmp/canon-projection-controls-20261010/results.json",
+    "checks": [
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "sourceStampsUnchanged",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "sourceOutcomeEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "objectsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "filesEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "mastersEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "graphSha256Equal",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "projectionSha256Equal",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "choicesEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "selectedOwnersEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "full_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partial_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsert_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "empty_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cached-cancel_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cached-cancel_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cached-cancel_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cached-cancel_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cached-cancel_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cached-cancel_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partialOrderedPrefixPreserved",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "partialCancelledAndUncached",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "preinsertCancelledFullAnswerUncached",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "finishedEmptyIsCachedAndHit",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cancelEntryAvoidsTraversal",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "check": "cancelPreventsCachedAnswer",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "sourceStampsUnchanged",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "sourceOutcomeEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "objectsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "filesEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "mastersEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "graphSha256Equal",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "projectionSha256Equal",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "choicesEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "selectedOwnersEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "full_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partial_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsert_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "empty_partialRecordedEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cached-cancel_ownerEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cached-cancel_firstEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cached-cancel_secondEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cached-cancel_cancelledEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cached-cancel_partialComponentsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cached-cancel_diagnosticsEqual",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partialOrderedPrefixPreserved",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "partialCancelledAndUncached",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "preinsertCancelledFullAnswerUncached",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "finishedEmptyIsCachedAndHit",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cancelEntryAvoidsTraversal",
+        "pass": true
+      },
+      {
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "check": "cancelPreventsCachedAnswer",
+        "pass": true
+      }
+    ],
+    "errors": [],
+    "allPassed": true,
+    "files": {
+      "/private/tmp/canon-projection-controls-20261010/prepare.py": {
+        "bytes": 14762,
+        "sha256": "f207f75f8017b253e9b4a3efbccb4319b113350d71c1a63baf116d168e3f7395"
+      },
+      "/private/tmp/canon-projection-controls-20261010/build.py": {
+        "bytes": 2107,
+        "sha256": "34892f2286d10657b59d47e36ad1878c812b2461b5c7df6ccba340a05a21b816"
+      },
+      "/private/tmp/canon-projection-controls-20261010/run.py": {
+        "bytes": 8018,
+        "sha256": "3b8026cf11cbfe8078f5506841359465b4d608d0f1fa17bdc017f48b2b77e2cd"
+      },
+      "/private/tmp/canon-projection-controls-20261010/probe.cpp": {
+        "bytes": 9497,
+        "sha256": "f8dca151e95ab27843ebf01dde3385f71180e0767db7650456feeaea575d53a4"
+      },
+      "/private/tmp/canon-projection-controls-20261010/libmediamuster_canon-common.a": {
+        "bytes": 3313904,
+        "sha256": "69f6d453a94eeb8ac87a497b32629a67eafcd55c151876376739c4dd5162f1e7"
+      },
+      "/private/tmp/canon-projection-controls-20261010/omfprojection-before-instrumented.cpp": {
+        "bytes": 87511,
+        "sha256": "de495666ea3a95183fd591e1afc18080036d9471cc04ea243d3102f18227b8b8"
+      },
+      "/private/tmp/canon-projection-controls-20261010/omfprojection-stage1-instrumented.cpp": {
+        "bytes": 87603,
+        "sha256": "34b48e8c2db4f047724d3e62643aea2a0bd4a7c72a1ae11dbb26cadff8439070"
+      },
+      "/private/tmp/canon-projection-controls-20261010/omfprojection-stage2-instrumented.cpp": {
+        "bytes": 88754,
+        "sha256": "886ac62db73730d64ef90c43c2f30b073cdbbf1ea657712cd12835eadb2722a5"
+      },
+      "/private/tmp/canon-projection-controls-20261010/validate-existing-results.py": {
+        "bytes": 6889,
+        "sha256": "9683fe7fe454e4e3c155048be6099b72067d0408e529b604983ca5ae97ef727a"
+      }
+    },
+    "countDefinitions": {
+      "propertiesCalls": "Temporary QVector instances constructed by properties(), including empty results; direct unique/uniqueRaw loops are not counted here.",
+      "propertySlotsScanned": "Sum of object.properties.size() only at properties() entry. After Stage 1 this excludes properties inspected by direct unique/uniqueRaw loops; it is not a total property-visit count across implementations.",
+      "nonemptyTemporaryPropertyLists": "All nonempty properties() result vectors; this counts vector instances, not allocator calls or allocation bytes.",
+      "nonemptyUniqueTemporaryLists": "Nonempty properties() vectors specifically materialized by unique(). Zero after Stage 1.",
+      "nonemptyUniqueRawTemporaryLists": "Nonempty properties() vectors specifically materialized by uniqueRaw(). Zero after Stage 1.",
+      "componentComputes": "Actual components traversal computations: components() before/Stage 1, collectComponents() in Stage 2. Wrapper calls that do not compute are excluded.",
+      "sourceMobsCalls": "All sourceMobs() requests, including Stage 2 cache hits.",
+      "sourceMobsCacheHits": "Requests answered by constFind cache entry after the entry cancellation guard.",
+      "sourceMobsCacheInserts": "Finished lookup publications that pass the final cancellation guard; includes finished empty results."
+    },
+    "compileWorkingDirectory": "/Users/martymclean/Developer/MediaMuster",
+    "executionWorkingDirectory": "/Users/martymclean/Developer/MediaMuster",
+    "executionEnvironment": {
+      "QT_HASH_SEED": "0",
+      "architecture": "arm64",
+      "qtVersion": "6.5.3",
+      "supportingLibraryBuild": "Release",
+      "instrumentedProjectionAndHarnessFlags": "C++17 / O2"
+    }
+  },
+  "results": {
+    "recordedUtc": "2026-10-09T22:12:04.993399+00:00",
+    "records": [
+      {
+        "mode": "before",
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "command": [
+          "/private/tmp/canon-projection-controls-20261010/probe-before",
+          "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb"
+        ],
+        "exit": 0,
+        "binarySha256": "6e870d238a52687e49bcbab6a46bdf1fec0483d6db381994f387f93925daffd1",
+        "fixtureBefore": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "device": 16777233,
+          "inode": 7406208,
+          "size": 3528208,
+          "mtimeNs": 1785719912863320262,
+          "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+        },
+        "fixtureAfter": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "device": 16777233,
+          "inode": 7406208,
+          "size": 3528208,
+          "mtimeNs": 1785719912863320262,
+          "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+        },
+        "result": {
+          "choices": {
+            "choiceProvenanceSha256": "94ea95dd839375f06fa53dd34242dc67e4b0717a1bbce83a318eb734816952c4",
+            "nullUnique": 27778,
+            "nullUniqueRaw": 807,
+            "queries": 138216
+          },
+          "controls": {
+            "cached-cancel": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "cached-cancel",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "empty": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "empty",
+              "owner": 68108,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "full": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "full",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "partial": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "partial",
+              "owner": 68101,
+              "partialComponents": [
+                68101,
+                68098
+              ],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "preinsert": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "preinsert",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "selected": {
+              "emptyOwner": 68108,
+              "partialOwner": 68101
+            }
+          },
+          "counts": {
+            "componentComputes": 3626,
+            "componentDistinctHandles": 1214,
+            "matchedPropertyPointers": 132419,
+            "nonemptyTemporaryPropertyLists": 120941,
+            "nonemptyUniqueRawTemporaryLists": 1080,
+            "nonemptyUniqueTemporaryLists": 52324,
+            "propertiesCalls": 547094,
+            "propertySlotsScanned": 5527166,
+            "sourceMobsCacheHits": 0,
+            "sourceMobsCacheInserts": 0,
+            "sourceMobsCalls": 2750,
+            "sourceMobsDistinctHandles": 1214,
+            "sourceMobsMaxCallsPerHandle": 11,
+            "sourceMobsRepeatedCalls": 1536,
+            "uniqueCalls": 54354,
+            "uniqueRawCalls": 1990
+          },
+          "files": 450,
+          "graphSha256": "4e3d7af974f2e9b8936eb408c4c59f388b125c7e0c8b77c8df4cd6e0ae6cd3f4",
+          "masters": 176,
+          "objects": 18797,
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "projectionSha256": "acc56dfeb9f6bc75ba5a366a47d499735095949746e296a0f2a96818ea3e5279",
+          "sourceOutcome": 1
+        }
+      },
+      {
+        "mode": "stage1",
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "command": [
+          "/private/tmp/canon-projection-controls-20261010/probe-stage1",
+          "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb"
+        ],
+        "exit": 0,
+        "binarySha256": "d54295cf8ebf442da22e84b11c5300dd1d00e5db6107d0ae4a04082d5a6171a7",
+        "fixtureBefore": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "device": 16777233,
+          "inode": 7406208,
+          "size": 3528208,
+          "mtimeNs": 1785719912863320262,
+          "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+        },
+        "fixtureAfter": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "device": 16777233,
+          "inode": 7406208,
+          "size": 3528208,
+          "mtimeNs": 1785719912863320262,
+          "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+        },
+        "result": {
+          "choices": {
+            "choiceProvenanceSha256": "94ea95dd839375f06fa53dd34242dc67e4b0717a1bbce83a318eb734816952c4",
+            "nullUnique": 27778,
+            "nullUniqueRaw": 807,
+            "queries": 138216
+          },
+          "controls": {
+            "cached-cancel": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "cached-cancel",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "empty": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "empty",
+              "owner": 68108,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "full": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "full",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "partial": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "partial",
+              "owner": 68101,
+              "partialComponents": [
+                68101,
+                68098
+              ],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "preinsert": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "preinsert",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "selected": {
+              "emptyOwner": 68108,
+              "partialOwner": 68101
+            }
+          },
+          "counts": {
+            "componentComputes": 3626,
+            "componentDistinctHandles": 1214,
+            "matchedPropertyPointers": 73819,
+            "nonemptyTemporaryPropertyLists": 67537,
+            "nonemptyUniqueRawTemporaryLists": 0,
+            "nonemptyUniqueTemporaryLists": 0,
+            "propertiesCalls": 490750,
+            "propertySlotsScanned": 4654159,
+            "sourceMobsCacheHits": 0,
+            "sourceMobsCacheInserts": 0,
+            "sourceMobsCalls": 2750,
+            "sourceMobsDistinctHandles": 1214,
+            "sourceMobsMaxCallsPerHandle": 11,
+            "sourceMobsRepeatedCalls": 1536,
+            "uniqueCalls": 54354,
+            "uniqueRawCalls": 1990
+          },
+          "files": 450,
+          "graphSha256": "4e3d7af974f2e9b8936eb408c4c59f388b125c7e0c8b77c8df4cd6e0ae6cd3f4",
+          "masters": 176,
+          "objects": 18797,
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "projectionSha256": "acc56dfeb9f6bc75ba5a366a47d499735095949746e296a0f2a96818ea3e5279",
+          "sourceOutcome": 1
+        }
+      },
+      {
+        "mode": "stage2",
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "command": [
+          "/private/tmp/canon-projection-controls-20261010/probe-stage2",
+          "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb"
+        ],
+        "exit": 0,
+        "binarySha256": "0bc2c212a59d386934cfc2c8ede38d40e6a2bd3b3dab3249650ce315e6f56ca2",
+        "fixtureBefore": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "device": 16777233,
+          "inode": 7406208,
+          "size": 3528208,
+          "mtimeNs": 1785719912863320262,
+          "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+        },
+        "fixtureAfter": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "device": 16777233,
+          "inode": 7406208,
+          "size": 3528208,
+          "mtimeNs": 1785719912863320262,
+          "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+        },
+        "result": {
+          "choices": {
+            "choiceProvenanceSha256": "94ea95dd839375f06fa53dd34242dc67e4b0717a1bbce83a318eb734816952c4",
+            "nullUnique": 27778,
+            "nullUniqueRaw": 807,
+            "queries": 138216
+          },
+          "controls": {
+            "cached-cancel": {
+              "cacheEntryAfterFirst": true,
+              "cacheEntryAfterSecond": true,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "cached-cancel",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "empty": {
+              "cacheEntryAfterFirst": true,
+              "cacheEntryAfterSecond": true,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "empty",
+              "owner": 68108,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 1,
+              "secondComponentComputes": 0
+            },
+            "full": {
+              "cacheEntryAfterFirst": true,
+              "cacheEntryAfterSecond": true,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "full",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "partial": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "partial",
+              "owner": 68101,
+              "partialComponents": [
+                68101,
+                68098
+              ],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "preinsert": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "preinsert",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "selected": {
+              "emptyOwner": 68108,
+              "partialOwner": 68101
+            }
+          },
+          "counts": {
+            "componentComputes": 2090,
+            "componentDistinctHandles": 1214,
+            "matchedPropertyPointers": 55719,
+            "nonemptyTemporaryPropertyLists": 50691,
+            "nonemptyUniqueRawTemporaryLists": 0,
+            "nonemptyUniqueTemporaryLists": 0,
+            "propertiesCalls": 307778,
+            "propertySlotsScanned": 3036983,
+            "sourceMobsCacheHits": 1536,
+            "sourceMobsCacheInserts": 1214,
+            "sourceMobsCalls": 2750,
+            "sourceMobsDistinctHandles": 1214,
+            "sourceMobsMaxCallsPerHandle": 11,
+            "sourceMobsRepeatedCalls": 1536,
+            "uniqueCalls": 45232,
+            "uniqueRawCalls": 1990
+          },
+          "files": 450,
+          "graphSha256": "4e3d7af974f2e9b8936eb408c4c59f388b125c7e0c8b77c8df4cd6e0ae6cd3f4",
+          "masters": 176,
+          "objects": 18797,
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+          "projectionSha256": "acc56dfeb9f6bc75ba5a366a47d499735095949746e296a0f2a96818ea3e5279",
+          "sourceOutcome": 1
+        }
+      },
+      {
+        "mode": "before",
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "command": [
+          "/private/tmp/canon-projection-controls-20261010/probe-before",
+          "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb"
+        ],
+        "exit": 0,
+        "binarySha256": "6e870d238a52687e49bcbab6a46bdf1fec0483d6db381994f387f93925daffd1",
+        "fixtureBefore": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "device": 16777233,
+          "inode": 7849664,
+          "size": 6411016,
+          "mtimeNs": 1786262281141627428,
+          "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+        },
+        "fixtureAfter": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "device": 16777233,
+          "inode": 7849664,
+          "size": 6411016,
+          "mtimeNs": 1786262281141627428,
+          "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+        },
+        "result": {
+          "choices": {
+            "choiceProvenanceSha256": "85c9f1dfd99750dcf867e65610121730b0b11646393d2049f8ca108ad6cf28fe",
+            "nullUnique": 50032,
+            "nullUniqueRaw": 851,
+            "queries": 251082
+          },
+          "controls": {
+            "cached-cancel": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "cached-cancel",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "empty": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "empty",
+              "owner": 68108,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "full": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "full",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "partial": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "partial",
+              "owner": 68101,
+              "partialComponents": [
+                68101,
+                68098
+              ],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "preinsert": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "preinsert",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "selected": {
+              "emptyOwner": 68108,
+              "partialOwner": 68101
+            }
+          },
+          "counts": {
+            "componentComputes": 6618,
+            "componentDistinctHandles": 2182,
+            "matchedPropertyPointers": 243383,
+            "nonemptyTemporaryPropertyLists": 222651,
+            "nonemptyUniqueRawTemporaryLists": 1911,
+            "nonemptyUniqueTemporaryLists": 96250,
+            "propertiesCalls": 1013658,
+            "propertySlotsScanned": 10167904,
+            "sourceMobsCacheHits": 0,
+            "sourceMobsCacheInserts": 0,
+            "sourceMobsCalls": 5022,
+            "sourceMobsDistinctHandles": 2182,
+            "sourceMobsMaxCallsPerHandle": 11,
+            "sourceMobsRepeatedCalls": 2840,
+            "uniqueCalls": 99967,
+            "uniqueRawCalls": 3556
+          },
+          "files": 810,
+          "graphSha256": "9c435c89309a2c1f0d06bdc86514cf5d09d6df913164fa6937f29c5aa7f89a6e",
+          "masters": 300,
+          "objects": 33907,
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "projectionSha256": "d5b3ed8d83f2f7d03144a642d024a678b090b13ae0ea5110e98064c7c8bdb330",
+          "sourceOutcome": 1
+        }
+      },
+      {
+        "mode": "stage1",
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "command": [
+          "/private/tmp/canon-projection-controls-20261010/probe-stage1",
+          "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb"
+        ],
+        "exit": 0,
+        "binarySha256": "d54295cf8ebf442da22e84b11c5300dd1d00e5db6107d0ae4a04082d5a6171a7",
+        "fixtureBefore": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "device": 16777233,
+          "inode": 7849664,
+          "size": 6411016,
+          "mtimeNs": 1786262281141627428,
+          "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+        },
+        "fixtureAfter": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "device": 16777233,
+          "inode": 7849664,
+          "size": 6411016,
+          "mtimeNs": 1786262281141627428,
+          "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+        },
+        "result": {
+          "choices": {
+            "choiceProvenanceSha256": "85c9f1dfd99750dcf867e65610121730b0b11646393d2049f8ca108ad6cf28fe",
+            "nullUnique": 50032,
+            "nullUniqueRaw": 851,
+            "queries": 251082
+          },
+          "controls": {
+            "cached-cancel": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "cached-cancel",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "empty": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "empty",
+              "owner": 68108,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 1
+            },
+            "full": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "full",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "partial": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "partial",
+              "owner": 68101,
+              "partialComponents": [
+                68101,
+                68098
+              ],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "preinsert": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "preinsert",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "selected": {
+              "emptyOwner": 68108,
+              "partialOwner": 68101
+            }
+          },
+          "counts": {
+            "componentComputes": 6618,
+            "componentDistinctHandles": 2182,
+            "matchedPropertyPointers": 135818,
+            "nonemptyTemporaryPropertyLists": 124490,
+            "nonemptyUniqueRawTemporaryLists": 0,
+            "nonemptyUniqueTemporaryLists": 0,
+            "propertiesCalls": 910135,
+            "propertySlotsScanned": 8594402,
+            "sourceMobsCacheHits": 0,
+            "sourceMobsCacheInserts": 0,
+            "sourceMobsCalls": 5022,
+            "sourceMobsDistinctHandles": 2182,
+            "sourceMobsMaxCallsPerHandle": 11,
+            "sourceMobsRepeatedCalls": 2840,
+            "uniqueCalls": 99967,
+            "uniqueRawCalls": 3556
+          },
+          "files": 810,
+          "graphSha256": "9c435c89309a2c1f0d06bdc86514cf5d09d6df913164fa6937f29c5aa7f89a6e",
+          "masters": 300,
+          "objects": 33907,
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "projectionSha256": "d5b3ed8d83f2f7d03144a642d024a678b090b13ae0ea5110e98064c7c8bdb330",
+          "sourceOutcome": 1
+        }
+      },
+      {
+        "mode": "stage2",
+        "fixture": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "command": [
+          "/private/tmp/canon-projection-controls-20261010/probe-stage2",
+          "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb"
+        ],
+        "exit": 0,
+        "binarySha256": "0bc2c212a59d386934cfc2c8ede38d40e6a2bd3b3dab3249650ce315e6f56ca2",
+        "fixtureBefore": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "device": 16777233,
+          "inode": 7849664,
+          "size": 6411016,
+          "mtimeNs": 1786262281141627428,
+          "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+        },
+        "fixtureAfter": {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "device": 16777233,
+          "inode": 7849664,
+          "size": 6411016,
+          "mtimeNs": 1786262281141627428,
+          "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+        },
+        "result": {
+          "choices": {
+            "choiceProvenanceSha256": "85c9f1dfd99750dcf867e65610121730b0b11646393d2049f8ca108ad6cf28fe",
+            "nullUnique": 50032,
+            "nullUniqueRaw": 851,
+            "queries": 251082
+          },
+          "controls": {
+            "cached-cancel": {
+              "cacheEntryAfterFirst": true,
+              "cacheEntryAfterSecond": true,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "cached-cancel",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "empty": {
+              "cacheEntryAfterFirst": true,
+              "cacheEntryAfterSecond": true,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "empty",
+              "owner": 68108,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 1,
+              "secondComponentComputes": 0
+            },
+            "full": {
+              "cacheEntryAfterFirst": true,
+              "cacheEntryAfterSecond": true,
+              "cancelled": false,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "full",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "partial": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "partial",
+              "owner": 68101,
+              "partialComponents": [
+                68101,
+                68098
+              ],
+              "partialRecorded": true,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "preinsert": {
+              "cacheEntryAfterFirst": false,
+              "cacheEntryAfterSecond": false,
+              "cancelled": true,
+              "diagnostics": [],
+              "first": [
+                68108
+              ],
+              "firstCacheHits": 0,
+              "firstComponentComputes": 1,
+              "mode": "preinsert",
+              "owner": 68101,
+              "partialComponents": [],
+              "partialRecorded": false,
+              "second": [],
+              "secondCacheHits": 0,
+              "secondComponentComputes": 0
+            },
+            "selected": {
+              "emptyOwner": 68108,
+              "partialOwner": 68101
+            }
+          },
+          "counts": {
+            "componentComputes": 3778,
+            "componentDistinctHandles": 2182,
+            "matchedPropertyPointers": 102046,
+            "nonemptyTemporaryPropertyLists": 93040,
+            "nonemptyUniqueRawTemporaryLists": 0,
+            "nonemptyUniqueTemporaryLists": 0,
+            "propertiesCalls": 568755,
+            "propertySlotsScanned": 5582066,
+            "sourceMobsCacheHits": 2840,
+            "sourceMobsCacheInserts": 2182,
+            "sourceMobsCalls": 5022,
+            "sourceMobsDistinctHandles": 2182,
+            "sourceMobsMaxCallsPerHandle": 11,
+            "sourceMobsRepeatedCalls": 2840,
+            "uniqueCalls": 82965,
+            "uniqueRawCalls": 3556
+          },
+          "files": 810,
+          "graphSha256": "9c435c89309a2c1f0d06bdc86514cf5d09d6df913164fa6937f29c5aa7f89a6e",
+          "masters": 300,
+          "objects": 33907,
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "projectionSha256": "d5b3ed8d83f2f7d03144a642d024a678b090b13ae0ea5110e98064c7c8bdb330",
+          "sourceOutcome": 1
+        }
+      }
+    ],
+    "errors": []
+  },
+  "build": {
+    "recordedUtc": "2026-10-09T22:11:08.703122+00:00",
+    "commonLibraryOriginalPath": "/private/tmp/mediamuster-release-performance-20261009/build/libmediamuster_canon.a",
+    "commonLibraryOriginalSha256": "69f6d453a94eeb8ac87a497b32629a67eafcd55c151876376739c4dd5162f1e7",
+    "commonLibraryFrozenPath": "/private/tmp/canon-projection-controls-20261010/libmediamuster_canon-common.a",
+    "headerSourceRoot": "/private/tmp/mediamuster-release-performance-20261009/source",
+    "records": [
+      {
+        "mode": "before",
+        "command": [
+          "clang++",
+          "-std=c++17",
+          "-O2",
+          "-arch",
+          "arm64",
+          "-DQT_CORE_LIB",
+          "-I/private/tmp/mediamuster-release-performance-20261009/source/src",
+          "-I/private/tmp/mediamuster-release-performance-20261009/source/src/canon",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+          "-iframework",
+          "/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/include",
+          "/private/tmp/canon-projection-controls-20261010/omfprojection-before-instrumented.cpp",
+          "/private/tmp/canon-projection-controls-20261010/probe.cpp",
+          "/private/tmp/canon-projection-controls-20261010/libmediamuster_canon-common.a",
+          "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-framework",
+          "QtCore",
+          "-framework",
+          "Security",
+          "-framework",
+          "AppKit",
+          "-framework",
+          "ApplicationServices",
+          "-framework",
+          "Foundation",
+          "-framework",
+          "IOKit",
+          "-framework",
+          "DiskArbitration",
+          "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-o",
+          "/private/tmp/canon-projection-controls-20261010/probe-before"
+        ],
+        "exit": 0,
+        "sourceSha256": "de495666ea3a95183fd591e1afc18080036d9471cc04ea243d3102f18227b8b8",
+        "harnessSha256": "f8dca151e95ab27843ebf01dde3385f71180e0767db7650456feeaea575d53a4",
+        "librarySha256": "69f6d453a94eeb8ac87a497b32629a67eafcd55c151876376739c4dd5162f1e7",
+        "binarySha256": "6e870d238a52687e49bcbab6a46bdf1fec0483d6db381994f387f93925daffd1"
+      },
+      {
+        "mode": "stage1",
+        "command": [
+          "clang++",
+          "-std=c++17",
+          "-O2",
+          "-arch",
+          "arm64",
+          "-DQT_CORE_LIB",
+          "-I/private/tmp/mediamuster-release-performance-20261009/source/src",
+          "-I/private/tmp/mediamuster-release-performance-20261009/source/src/canon",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+          "-iframework",
+          "/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/include",
+          "/private/tmp/canon-projection-controls-20261010/omfprojection-stage1-instrumented.cpp",
+          "/private/tmp/canon-projection-controls-20261010/probe.cpp",
+          "/private/tmp/canon-projection-controls-20261010/libmediamuster_canon-common.a",
+          "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-framework",
+          "QtCore",
+          "-framework",
+          "Security",
+          "-framework",
+          "AppKit",
+          "-framework",
+          "ApplicationServices",
+          "-framework",
+          "Foundation",
+          "-framework",
+          "IOKit",
+          "-framework",
+          "DiskArbitration",
+          "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-o",
+          "/private/tmp/canon-projection-controls-20261010/probe-stage1"
+        ],
+        "exit": 0,
+        "sourceSha256": "34b48e8c2db4f047724d3e62643aea2a0bd4a7c72a1ae11dbb26cadff8439070",
+        "harnessSha256": "f8dca151e95ab27843ebf01dde3385f71180e0767db7650456feeaea575d53a4",
+        "librarySha256": "69f6d453a94eeb8ac87a497b32629a67eafcd55c151876376739c4dd5162f1e7",
+        "binarySha256": "d54295cf8ebf442da22e84b11c5300dd1d00e5db6107d0ae4a04082d5a6171a7"
+      },
+      {
+        "mode": "stage2",
+        "command": [
+          "clang++",
+          "-std=c++17",
+          "-O2",
+          "-arch",
+          "arm64",
+          "-DQT_CORE_LIB",
+          "-I/private/tmp/mediamuster-release-performance-20261009/source/src",
+          "-I/private/tmp/mediamuster-release-performance-20261009/source/src/canon",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+          "-iframework",
+          "/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/include",
+          "/private/tmp/canon-projection-controls-20261010/omfprojection-stage2-instrumented.cpp",
+          "/private/tmp/canon-projection-controls-20261010/probe.cpp",
+          "/private/tmp/canon-projection-controls-20261010/libmediamuster_canon-common.a",
+          "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-framework",
+          "QtCore",
+          "-framework",
+          "Security",
+          "-framework",
+          "AppKit",
+          "-framework",
+          "ApplicationServices",
+          "-framework",
+          "Foundation",
+          "-framework",
+          "IOKit",
+          "-framework",
+          "DiskArbitration",
+          "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-o",
+          "/private/tmp/canon-projection-controls-20261010/probe-stage2"
+        ],
+        "exit": 0,
+        "sourceSha256": "886ac62db73730d64ef90c43c2f30b073cdbbf1ea657712cd12835eadb2722a5",
+        "harnessSha256": "f8dca151e95ab27843ebf01dde3385f71180e0767db7650456feeaea575d53a4",
+        "librarySha256": "69f6d453a94eeb8ac87a497b32629a67eafcd55c151876376739c4dd5162f1e7",
+        "binarySha256": "0bc2c212a59d386934cfc2c8ede38d40e6a2bd3b3dab3249650ce315e6f56ca2"
+      }
+    ]
+  },
+  "source": {
+    "before": {
+      "inputSha256": "f19f07bfae7cad5745b722e49d6477a579217289171f2bc02b995c62f76ec852",
+      "instrumentedSha256": "de495666ea3a95183fd591e1afc18080036d9471cc04ea243d3102f18227b8b8"
+    },
+    "stage1": {
+      "inputSha256": "87b70b060a92ce76e54d84d6b8710d24f2eaa60e94a7013b283d465e03a71512",
+      "instrumentedSha256": "34b48e8c2db4f047724d3e62643aea2a0bd4a7c72a1ae11dbb26cadff8439070"
+    },
+    "stage2": {
+      "inputSha256": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1",
+      "instrumentedSha256": "886ac62db73730d64ef90c43c2f30b073cdbbf1ea657712cd12835eadb2722a5"
+    }
+  }
+}

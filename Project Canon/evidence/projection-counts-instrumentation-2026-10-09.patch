@@ -1,0 +1,92 @@
+--- src/canon/omfprojection.cpp
++++ diagnostic/omfprojection-counts.cpp
+@@ -1,3 +1,6 @@
++#include <cstdio>
++#include <QJsonObject>
++#include <QJsonDocument>
+ // Turns the fresh MDB/legacy reader's object graph into file-owned observations.
+ // Dictionary names and recorded references establish ownership; object order,
+ // filenames and an unrelated descriptor never supply a missing association.
+@@ -20,6 +23,8 @@
+ 	namespace
+ 	{
+ 		using Property = const RawProperty *;
++qint64 propertiesCalls=0, propertySlots=0, matchedPropertyPointers=0, nonemptyPropertyLists=0, uniqueCalls=0, uniqueRawCalls=0, componentsCalls=0, sourceMobsCalls=0, trackDurationCalls=0, uniqueNonempty=0, uniqueRawNonempty=0, uniqueSlots=0, uniqueRawSlots=0;
++QHash<ObjectHandle,qint64> sourceMobsByHandle, componentsByHandle, tracksByMaster;
+ 
+ 		bool named(const QString &name, std::initializer_list<const char *> names)
+ 		{
+@@ -30,16 +35,20 @@
+ 		QVector<Property> properties(const AvidObject &object, std::initializer_list<const char *> names)
+ 		{
+ 			QVector<Property> result;
++++propertiesCalls; propertySlots += object.properties.size();
+ 			for (const auto &property : object.properties)
+ 				if (named(property.locator.name, names))
+ 					result.append(&property);
+-			return result;
++			matchedPropertyPointers += result.size(); nonemptyPropertyLists += !result.isEmpty();
++return result;
+ 		}
+ 
+ 		Property unique(const AvidObject &object, std::initializer_list<const char *> names)
+ 		{
++++uniqueCalls; uniqueSlots+=object.properties.size();
++const auto matches=properties(object,names); uniqueNonempty+=!matches.isEmpty();
+ 			Property result = nullptr;
+-			for (const auto *property : properties(object, names))
++			for (const auto *property : matches)
+ 			{
+ 				if (property->state != PropertyReadState::Present || !property->decoded.isValid())
+ 					return nullptr;
+@@ -52,8 +61,10 @@
+ 
+ 		Property uniqueRaw(const AvidObject &object, std::initializer_list<const char *> names)
+ 		{
++++uniqueRawCalls; uniqueRawSlots+=object.properties.size();
++const auto matches=properties(object,names); uniqueRawNonempty+=!matches.isEmpty();
+ 			Property result = nullptr;
+-			for (const auto *property : properties(object, names))
++			for (const auto *property : matches)
+ 			{
+ 				if (property->state != PropertyReadState::Present || !property->bytesRetained)
+ 					return nullptr;
+@@ -767,6 +778,7 @@
+ 
+ 			QVector<const AvidObject *> components(const AvidObject &owner) const
+ 			{
++++componentsCalls; ++componentsByHandle[owner.handle];
+ 				QVector<ObjectHandle> pending{owner.handle};
+ 				QVector<const AvidObject *> result;
+ 				QSet<ObjectHandle> visited;
+@@ -800,6 +812,7 @@
+ 
+ 			QVector<ObjectHandle> sourceMobs(const AvidObject &mob) const
+ 			{
++++sourceMobsCalls; ++sourceMobsByHandle[mob.handle];
+ 				QVector<ObjectHandle> result;
+ 				for (const auto *object : components(mob))
+ 					if (objectClass(*object) == QLatin1String("SCLP"))
+@@ -951,6 +964,7 @@
+ 
+ 			QVariantList trackDurations(const AvidObject &master, const AvidObject &fileMob, const ProjectedFile &file) const
+ 			{
++++trackDurationCalls; ++tracksByMaster[master.handle];
+ 				QVariantList result;
+ 				const auto masterId = identity(unique(master, {"OMFI:MOBJ:MobID"}));
+ 				const auto drop = file.evidence.resolve(MediaProperty::DropFrame, [](MetadataSource)
+@@ -1792,3 +1806,14 @@
+ 		return result;
+ 	}
+ }
++
++namespace Canon {
++void reportProjectionCounters() {
++qint64 sourceRepeats=0, sourceMax=0, componentRepeats=0, componentMax=0, masterRepeats=0,masterMax=0;
++for (auto n:sourceMobsByHandle) {sourceRepeats += n-1; sourceMax=qMax(sourceMax,n);}
++for (auto n:componentsByHandle) {componentRepeats += n-1; componentMax=qMax(componentMax,n);}
++for (auto n:tracksByMaster) {masterRepeats += n-1; masterMax=qMax(masterMax,n);}
++const QJsonObject o{{"propertiesCalls",propertiesCalls},{"propertySlotsScanned",propertySlots},{"matchedPropertyPointers",matchedPropertyPointers},{"nonemptyTemporaryPropertyLists",nonemptyPropertyLists},{"uniqueNonempty",uniqueNonempty},{"uniqueRawNonempty",uniqueRawNonempty},{"uniqueSlots",uniqueSlots},{"uniqueRawSlots",uniqueRawSlots},{"uniqueCalls",uniqueCalls},{"uniqueRawCalls",uniqueRawCalls},{"sourceMobsCalls",sourceMobsCalls},{"sourceMobsDistinctHandles",sourceMobsByHandle.size()},{"sourceMobsRepeatedCalls",sourceRepeats},{"sourceMobsMaxCallsPerHandle",sourceMax},{"componentsCalls",componentsCalls},{"componentsDistinctHandles",componentsByHandle.size()},{"componentsRepeatedCalls",componentRepeats},{"componentsMaxCallsPerHandle",componentMax},{"trackDurationCalls",trackDurationCalls},{"trackDurationDistinctMasters",tracksByMaster.size()},{"trackDurationRepeatedMasterCalls",masterRepeats},{"trackDurationMaxCallsPerMaster",masterMax}};
++std::puts(QJsonDocument(o).toJson(QJsonDocument::Compact).constData());
++}
++}

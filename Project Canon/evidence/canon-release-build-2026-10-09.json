@@ -1,0 +1,69 @@
+{
+  "sourceCommit": "1a705eaefc191d6efda6cd0485ed953b1c555840",
+  "sourceMethod": "git archive exact commit into separate temporary tree; excludes uncommitted workspace changes",
+  "sourceRoot": "/private/tmp/mediamuster-release-performance-20261009/source",
+  "buildRoot": "/private/tmp/mediamuster-release-performance-20261009/build",
+  "configureCommand": [
+    "cmake",
+    "-S",
+    "/private/tmp/mediamuster-release-performance-20261009/source",
+    "-B",
+    "/private/tmp/mediamuster-release-performance-20261009/build",
+    "-G",
+    "Ninja",
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_OSX_ARCHITECTURES=arm64",
+    "-DCMAKE_PREFIX_PATH=/Users/martymclean/Qt/6.5.3/macos",
+    "-DCMAKE_CXX_STANDARD=17",
+    "-DMEDIAMUSTER_BUILD_TESTS=ON",
+    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+  ],
+  "buildCommand": [
+    "cmake",
+    "--build",
+    "/private/tmp/mediamuster-release-performance-20261009/build",
+    "--target",
+    "tst_scanner",
+    "mediamuster_canon",
+    "-j",
+    "4"
+  ],
+  "compiler": "AppleClang 17.0.0.17000013",
+  "generator": "Ninja 1.13.2",
+  "cmakeVersion": "4.3.4",
+  "qtVersion": "6.5.3",
+  "cxxStandard": 17,
+  "architecture": "arm64",
+  "effectiveFlags": [
+    "-O3",
+    "-DNDEBUG",
+    "-DQT_NO_DEBUG",
+    "-std=c++17",
+    "-arch arm64",
+    "-mmacosx-version-min=11.0",
+    "-Wall",
+    "-Wextra"
+  ],
+  "scannerExecutable": "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner",
+  "canonLibrary": "/private/tmp/mediamuster-release-performance-20261009/build/libmediamuster_canon.a",
+  "validation": {
+    "buildExit": 0,
+    "scannerFunctionsExit": 0,
+    "smokeTest": "scans_folder_with_pmr_mdb_and_audio_mxf",
+    "smokeExit": 0,
+    "realDriveScanRun": false
+  },
+  "sha256": {
+    "/private/tmp/mediamuster-release-performance-20261009/source.tar": "6bf52b366e38710e21498755e9468b1b36cfd9875a6934828a79667f2ce152bc",
+    "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner": "02a7916eede6d0b927eb912872d77d7eba4309db428950ff359e4c0bf2f0d75e",
+    "/private/tmp/mediamuster-release-performance-20261009/build/libmediamuster_canon.a": "69f6d453a94eeb8ac87a497b32629a67eafcd55c151876376739c4dd5162f1e7",
+    "/private/tmp/mediamuster-release-performance-20261009/source/src/canon/sourcearchive.cpp": "62973bdf01f7e8033ee527e51c0e01da4fbd0c4017560a57aeb7f39af3b74a9c",
+    "/private/tmp/mediamuster-release-performance-20261009/source/src/canon/metadataselectionpolicy.cpp": "32c62f44a3118e2b9e53f199a89aa57361c7a85d6fb3bdc14fdd4a9d2f9f5a78"
+  },
+  "notes": [
+    "Qt configure/build/launch run unsandboxed with authorized escalation because sandbox masks NEON.",
+    "Only scanner and Canon targets built; app not built.",
+    "Release performance comparison should run sequentially using QT_HASH_SEED=0, same managed roots and CSV/report paths.",
+    "optional_read_only_real_scan saves retained memory before archive inspection, then source status/counts, row inventory, issues and CSV; raw recursive equivalence needs full-proof diagnostic."
+  ]
+}

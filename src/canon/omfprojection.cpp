@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <utility>
 
 namespace Canon
 {
@@ -39,13 +40,17 @@ namespace Canon
 		Property unique(const AvidObject &object, std::initializer_list<const char *> names)
 		{
 			Property result = nullptr;
-			for (const auto *property : properties(object, names))
+			// Inspect every matching property in place, keeping duplicate conflicts
+			// and the chosen property's provenance without a temporary pointer list.
+			for (const auto &property : object.properties)
 			{
-				if (property->state != PropertyReadState::Present || !property->decoded.isValid())
+				if (!named(property.locator.name, names))
+					continue;
+				if (property.state != PropertyReadState::Present || !property.decoded.isValid())
 					return nullptr;
-				if (result && result->decoded != property->decoded)
+				if (result && result->decoded != property.decoded)
 					return nullptr;
-				result = property;
+				result = &property;
 			}
 			return result;
 		}
@@ -53,13 +58,15 @@ namespace Canon
 		Property uniqueRaw(const AvidObject &object, std::initializer_list<const char *> names)
 		{
 			Property result = nullptr;
-			for (const auto *property : properties(object, names))
+			for (const auto &property : object.properties)
 			{
-				if (property->state != PropertyReadState::Present || !property->bytesRetained)
+				if (!named(property.locator.name, names))
+					continue;
+				if (property.state != PropertyReadState::Present || !property.bytesRetained)
 					return nullptr;
-				if (result && result->encoding != property->encoding)
+				if (result && result->encoding != property.encoding)
 					return nullptr;
-				result = property;
+				result = &property;
 			}
 			return result;
 		}
@@ -346,7 +353,8 @@ namespace Canon
 						technical(file, *descriptor, editRate(object));
 						timecode(file, object);
 						attributes(file, object);
-						for (const auto referenced : sourceMobs(object))
+						const auto sourceHandles = sourceMobs(object);
+						for (const auto referenced : sourceHandles)
 							if (const auto *sourceMob = m_objects.value(referenced))
 								attributes(file, *sourceMob, true);
 						fileSubjects[object.handle].append(result.files.size());
@@ -379,7 +387,8 @@ namespace Canon
 						text(masterFacts, MediaProperty::ClipName, master, *name);
 					attributes(masterFacts, master);
 					classification(masterFacts, master);
-					for (const auto handle : sourceMobs(master))
+					const auto sourceHandles = sourceMobs(master);
+					for (const auto handle : sourceHandles)
 						for (const auto index : fileSubjects.value(handle))
 						{
 							auto &file = result.files[index];
@@ -765,22 +774,32 @@ namespace Canon
 				return observed == expected;
 			}
 
-			QVector<const AvidObject *> components(const AvidObject &owner) const
+			struct ComponentTraversal
+			{
+				QVector<const AvidObject *> objects;
+				bool complete = false;
+			};
+
+			ComponentTraversal collectComponents(const AvidObject &owner) const
 			{
 				QVector<ObjectHandle> pending{owner.handle};
 				QVector<const AvidObject *> result;
 				QSet<ObjectHandle> visited;
+				bool complete = true;
 				while (!pending.isEmpty())
 				{
 					if (m_cancellation.cancelled())
-						return result;
+						return {std::move(result), false};
 					const auto handle = pending.takeLast();
 					if (visited.contains(handle))
 						continue;
 					visited.insert(handle);
 					const auto *object = m_objects.value(handle);
 					if (!object)
+					{
+						complete = false;
 						continue;
+					}
 					for (const auto *name : {"OMFI:TRKG:Tracks", "OMFI:TRAK:TrackComponent", "OMFI:SEQU:Sequence",
 											 "OMFI:MOBJ:Slots", "OMFI:MSLT:Segment", "OMFI:SEQU:Components", "OMFI:NEST:Slots",
 											 "OMFI:SLCT:Selected", "OMFI:SLCT:Alternates", "OMFI:MGRP:Choices", "OMFI:ERAT:InputSegment"})
@@ -795,13 +814,24 @@ namespace Canon
 															   "OMFI:SLCT:Selected", "OMFI:SLCT:Alternates", "OMFI:MGRP:Choices", "OMFI:ERAT:InputSegment"}))
 						pending.append(target->handle);
 				}
-				return result;
+				return {std::move(result), complete};
+			}
+
+			QVector<const AvidObject *> components(const AvidObject &owner) const
+			{
+				return collectComponents(owner).objects;
 			}
 
 			QVector<ObjectHandle> sourceMobs(const AvidObject &mob) const
 			{
+				if (m_cancellation.cancelled())
+					return {};
+				if (const auto cached = m_sourceMobsCache.constFind(mob.handle); cached != m_sourceMobsCache.cend())
+					return cached.value();
+
 				QVector<ObjectHandle> result;
-				for (const auto *object : components(mob))
+				const auto traversal = collectComponents(mob);
+				for (const auto *object : traversal.objects)
 					if (objectClass(*object) == QLatin1String("SCLP"))
 					{
 						if (properties(*object, {"OMFI:SCLP:SourceID"}).isEmpty())
@@ -824,6 +854,10 @@ namespace Canon
 							if (target != mob.handle && !result.contains(target))
 								result.append(target);
 					}
+				// Reuse only finished lookups within this source's projection. A valid
+				// empty answer is cacheable; unresolved or cancelled work is not.
+				if (traversal.complete && !m_cancellation.cancelled())
+					m_sourceMobsCache.insert(mob.handle, result);
 				return result;
 			}
 
@@ -1187,6 +1221,7 @@ namespace Canon
 			QHash<ObjectHandle, const AvidObject *> m_objects;
 			QHash<ObjectHandle, QVector<const Relationship *>> m_edges;
 			QHash<QString, QVector<ObjectHandle>> m_mobs;
+			mutable QHash<ObjectHandle, QVector<ObjectHandle>> m_sourceMobsCache;
 			QSet<ObjectHandle> m_activeMobs;
 			QSet<ObjectHandle> m_activeMedia;
 			QSet<ObjectHandle> m_disputedMobs;

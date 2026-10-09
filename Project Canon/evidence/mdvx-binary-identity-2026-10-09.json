@@ -1,0 +1,12 @@
+{
+  "binary": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+  "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+  "architectures": [
+    "x86_64",
+    "arm64"
+  ],
+  "arm64_slice_offset": 1638400,
+  "arm64_slice_size": 1566240,
+  "bundle_version": "4073",
+  "short_version": "0.2"
+}

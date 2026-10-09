@@ -1,0 +1,72 @@
+{
+  "exactSourceCommit": "1a705eaefc191d6efda6cd0485ed953b1c555840",
+  "previousArchiveImplementationCommit": "5d9dec5",
+  "previousReceipt": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/source-archive-full-proof-final-build-receipt-2026-10-09.json",
+  "previousReceiptChecks": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a",
+      "expectedSha256": "878988b6449cad6f5a6bfbaebcdef2ea8e243ffb2f80accf63857e1f804524d2",
+      "actualSha256": "878988b6449cad6f5a6bfbaebcdef2ea8e243ffb2f80accf63857e1f804524d2",
+      "matches": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/scanmodel.h",
+      "expectedSha256": "ff6d53300092614b19f8ccd10dcbc252555c6facc3d9d822a8c4a6f3f721d64b",
+      "actualSha256": "ff6d53300092614b19f8ccd10dcbc252555c6facc3d9d822a8c4a6f3f721d64b",
+      "matches": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/scanengine.h",
+      "expectedSha256": "279fb1e20e589461dafb931b4294104a4226739372b7fdc17632d9e81c2c6f17",
+      "actualSha256": "279fb1e20e589461dafb931b4294104a4226739372b7fdc17632d9e81c2c6f17",
+      "matches": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/scanengine.cpp",
+      "expectedSha256": "b960553c2747f623751eb1fea0311785d917f97d3e24323c213826ada0720d3a",
+      "actualSha256": "b960553c2747f623751eb1fea0311785d917f97d3e24323c213826ada0720d3a",
+      "matches": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/sourcearchive.h",
+      "expectedSha256": "b0872b22fab6382c3a5ec54656d6f424116bff40281b120e92d0e808d1177e05",
+      "actualSha256": "b0872b22fab6382c3a5ec54656d6f424116bff40281b120e92d0e808d1177e05",
+      "matches": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/canon/sourcearchive.cpp",
+      "expectedSha256": "62973bdf01f7e8033ee527e51c0e01da4fbd0c4017560a57aeb7f39af3b74a9c",
+      "actualSha256": "62973bdf01f7e8033ee527e51c0e01da4fbd0c4017560a57aeb7f39af3b74a9c",
+      "matches": true
+    }
+  ],
+  "canonLibraries": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build/libmediamuster_canon.a",
+      "wholeFileSha256": "86569e7298141d89c59357c0392c3d76c2bbfa9393d922eea796230c0c60ee74",
+      "arm64TextSha256": "c0a1b4301e124b5417d9ad591e0c0fe9c72456b57fc4b31e95abd2000106fdff"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a",
+      "wholeFileSha256": "878988b6449cad6f5a6bfbaebcdef2ea8e243ffb2f80accf63857e1f804524d2",
+      "arm64TextSha256": "c0a1b4301e124b5417d9ad591e0c0fe9c72456b57fc4b31e95abd2000106fdff"
+    }
+  ],
+  "currentDebugAndProvenCanonArm64TextByteIdentical": true,
+  "currentWorkspaceVersusExactReleaseSourceDifferences": [
+    {
+      "path": "src/canon/metadataselectionpolicy.cpp",
+      "byteIdentical": false,
+      "identicalIgnoringWhitespace": true
+    }
+  ],
+  "previousArchiveCommitVersusHeadDiff": "diff --git a/src/featureflags.h b/src/featureflags.h\nindex 054a606..d390608 100644\n--- a/src/featureflags.h\n+++ b/src/featureflags.h\n@@ -3,10 +3,10 @@\n namespace FeatureFlags\n {\n \tinline constexpr bool kDebugMenu = true;\n-\tinline constexpr bool kMonospaceTable = false;\n+\tinline constexpr bool kMonospaceTable = false; /// always in Debug menu regardless\n \tinline constexpr bool kOmfScan = true;\n \tinline constexpr bool kPrecomputeFilter = true;\n \tinline constexpr bool kSequenceFilter = false; /// for the future sequence selector\n \tinline constexpr bool kClipDuration = true;\n \tinline constexpr bool kUndo = true;\n-}\n+}\n\\ No newline at end of file\n",
+  "currentWorkspaceDiff": "diff --git a/src/canon/metadataselectionpolicy.cpp b/src/canon/metadataselectionpolicy.cpp\nindex 52eef01..e6fb208 100644\n--- a/src/canon/metadataselectionpolicy.cpp\n+++ b/src/canon/metadataselectionpolicy.cpp\n@@ -32,7 +32,7 @@ namespace Canon\n \t\t// Compile named groups into the resolver's existing ranks. Invalid or repeated\n \t\t// sources make a constexpr policy fail compilation rather than silently overwrite it.\n \t\tconstexpr SourceRanks prefer(std::initializer_list<Source> first,\n-\t\t\tstd::initializer_list<Source> second = {}, std::initializer_list<Source> third = {})\n+\t\t\t\t\t\t\t\t\t std::initializer_list<Source> second = {}, std::initializer_list<Source> third = {})\n \t\t{\n \t\t\tSourceRanks ranks;\n \t\t\tint priority = 3;\n@@ -56,8 +56,7 @@ namespace Canon\n \t\t// Source::Omf includes the LegacyReader's OMF, WAV and AIFF observations.\n \t\t// These are application field names; observations retain original source property names.\n \t\t// Edit one row for the next build. Keep one row per property in catalogue order.\n-\t\tconstexpr PropertyPolicies kPropertyPolicies\n-\t\t{{\n+\t\tconstexpr PropertyPolicies kPropertyPolicies{{\n \t\t\t// Editor's clip name: header first, MDB second, loaded AVB third.\n \t\t\t{MediaProperty::ClipName, SelectionRule::PreferredValue,\n \t\t\t prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Avb})},\n@@ -190,8 +189,7 @@ namespace Canon\n \t\t\t prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Pmr})},\n \n \t\t\t// Keep every eligible master association. This union rule does not use source preferences.\n-\t\t\t{MediaProperty::MasterMobId, SelectionRule::MasterAssociations,\n-\t\t\t {}},\n+\t\t\t{MediaProperty::MasterMobId, SelectionRule::MasterAssociations, {}},\n \n \t\t\t// Local database membership/readability, derived from this folder's scan outcomes.\n \t\t\t{MediaProperty::DatabaseStatus, SelectionRule::PreferredValue,\n@@ -285,8 +283,6 @@ namespace Canon\n \tResolvedField resolveProperty(const MediaEvidence &evidence, const PropertyPolicy &policy)\n \t{\n \t\treturn evidence.resolve(policy.property, [&policy](MetadataSource source)\n-\t\t{\n-\t\t\treturn policy.sources.priority(source);\n-\t\t}, mediaPropertyName(policy.property));\n+\t\t\t\t\t\t\t\t{ return policy.sources.priority(source); }, mediaPropertyName(policy.property));\n \t}\n }\n",
+  "debugArchitecture": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64]\n/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner (for architecture x86_64):\tMach-O 64-bit executable x86_64\n/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner (for architecture arm64):\tMach-O 64-bit executable arm64",
+  "releaseArchitecture": "/private/tmp/mediamuster-release-performance-20261009/build/tests/tst_scanner: Mach-O 64-bit executable arm64",
+  "debugEffectiveFlags": "-g -std=c++17 -arch arm64 -arch x86_64 -mmacosx-version-min=11.0 -Wall -Wextra",
+  "releaseEffectiveFlags": "-O3 -DNDEBUG -DQT_NO_DEBUG -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -Wall -Wextra",
+  "qtVersion": "6.5.3",
+  "nativeArchitectureForced": "/usr/bin/arch -arm64",
+  "scope": "The existing all-field graph/source/row preservation proof is prior evidence, not rerun here. Current Debug Canon arm64 text matches the prior proven library and current source model/scan/archive hashes match its build receipt. These fresh scanner measurements compare the exported app boundary and semantic source counts/scheduling statuses."
+}
