@@ -1,3 +1,4 @@
+#include "folder-cache-probe-counters.h"
 #include "scanengine.h"
 #include "discoveryengine.h"
 #include "projection.h"
@@ -22,7 +23,7 @@ namespace Canon
 		QString folderKey(const QString &path)
 		{
 			const QFileInfo info(path);
-			const QString canonical = info.canonicalFilePath();
+			const QString canonical = FolderCacheProbe::canonical(info);
 			return canonical.isEmpty() ? QDir::cleanPath(info.absoluteFilePath()) : canonical;
 		}
 		bool safeName(const QString &name)
@@ -247,19 +248,6 @@ namespace Canon
 		};
 		if (stopRequested())
 			return result;
-		// Folder locations belong to this scan's discovered scope. Resolve each
-		// spelling once; individual file/database change checks stay fresh below.
-		QHash<QString, QString> folderKeys;
-		const auto cachedFolderKey = [&](const QString &path)
-		{
-			if (const auto found = folderKeys.constFind(path); found != folderKeys.cend())
-				return found.value();
-			if (cancellation.cancelled())
-				return QString{};
-			const auto key = folderKey(path);
-			folderKeys.insert(path, key);
-			return key;
-		};
 		QVector<Projection> projections;
 		QHash<KelpieId, qsizetype> headers;
 		QHash<QString, QVector<qsizetype>> databases;
@@ -289,13 +277,14 @@ namespace Canon
 			if (candidate.kelpieId)
 				headers.insert(candidate.kelpieId, index);
 			else
-				databases[cachedFolderKey(QFileInfo(candidate.path).absolutePath())].append(index);
+				databases[folderKey(QFileInfo(candidate.path).absolutePath())].append(index);
 		}
 		const auto checkUnchanged = [&](qsizetype index)
 		{
 			if (!unchanged[index])
 				return false;
 			const auto &candidate = result.candidates[index];
+			FolderCacheProbe::freshCheck(candidate.path, candidate.hint);
 			const QFileInfo current(candidate.path);
 			if (current.exists() && current.lastModified() == candidate.modified)
 				return true;
@@ -391,35 +380,19 @@ namespace Canon
 				checkUnchanged(index);
 			}
 		QHash<QString, QStringList> pathsById;
-		QHash<QString, QSet<QString>> identitiesByFolder;
 		QHash<QString, QHash<QString, QStringList>> namesByFolder;
 		for (const auto &file : result.files)
 		{
 			if (stopRequested())
 				return result;
 			const QFileInfo info(file.path);
-			namesByFolder[cachedFolderKey(info.absolutePath())][PmrKey::primary(info.fileName())].append(info.fileName());
+			namesByFolder[folderKey(info.absolutePath())][PmrKey::primary(info.fileName())].append(info.fileName());
 		}
-		// Share the folder observation within a matching pass. Clear it before
-		// another pass so its first visit obtains a new timestamp. This receipt
-		// describes folder membership, not the freshness of individual contents.
-		QHash<QString, SourceSnapshotRef> folderReceipts;
-		const auto folderReceipt = [&](const QString &folder) -> SourceSnapshotRef
-		{
-			if (const auto found = folderReceipts.constFind(folder); found != folderReceipts.cend())
-				return found.value();
-			if (cancellation.cancelled())
-				return {};
-			const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-				MetadataSource::Filesystem, folder, QFileInfo(folder).lastModified(), SourceReadState::Complete});
-			folderReceipts.insert(folder, snapshot);
-			return snapshot;
-		};
 		const auto matchFile = [&](MediaFile &file, bool reportIssues)
 		{
 			if (cancellation.cancelled())
 				return false;
-			const QString folder = cachedFolderKey(QFileInfo(file.path).absolutePath());
+			const QString folder = folderKey(QFileInfo(file.path).absolutePath());
 			const QString filename = QFileInfo(file.path).fileName();
 			const QString name = PmrKey::primary(filename);
 			const bool physicalChanged = headers.contains(file.kelpieId) && !unchanged[headers.value(file.kelpieId)];
@@ -557,9 +530,8 @@ namespace Canon
 										: hasPmr		   ? 1
 														   : 2;
 			MetadataObservation dbStatus;
-			dbStatus.snapshot = folderReceipt(folder);
-			if (cancellation.cancelled())
-				return false;
+			dbStatus.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+				MetadataSource::Filesystem, folder, FolderCacheProbe::folderModified(folder), SourceReadState::Complete});
 			dbStatus.property = QStringLiteral("Local PMR membership and database source outcomes");
 			dbStatus.value = status;
 			dbStatus.rawValue = databaseReceipts;
@@ -637,7 +609,6 @@ namespace Canon
 		// and excluded, rather than making the scan chase a moving database.
 		if (unchanged.contains(false))
 		{
-			folderReceipts.clear();
 			for (const auto &file : result.files)
 			{
 				if (cancellation.cancelled())
@@ -660,17 +631,13 @@ namespace Canon
 											 { return complete; });
 		if (callbacks.finalising)
 			callbacks.finalising();
-		folderReceipts.clear();
 		for (auto &file : result.files)
 		{
 			if (cancellation.cancelled())
 				break;
 			matchFile(file, true);
 			if (!file.stamp.mobId.isEmpty())
-			{
 				pathsById[file.stamp.mobId].append(file.path);
-				identitiesByFolder[cachedFolderKey(QFileInfo(file.path).absolutePath())].insert(file.stamp.mobId);
-			}
 		}
 		for (qsizetype index = 0; index < result.sources.size(); ++index)
 		{
@@ -679,7 +646,7 @@ namespace Canon
 			const auto &source = result.sources[index];
 			if (source.snapshot->source != MetadataSource::Pmr && source.snapshot->source != MetadataSource::Mdb)
 				continue;
-			const QString folder = cachedFolderKey(QFileInfo(source.snapshot->path).absolutePath());
+			const QString folder = folderKey(QFileInfo(source.snapshot->path).absolutePath());
 			QSet<QString> reported;
 			for (const auto &facts : projections[index].files)
 			{
@@ -692,7 +659,13 @@ namespace Canon
 					if (safeName(name) && !names.contains(name) && names.size() != 1)
 						missing.append(QDir(folder).filePath(name));
 				}
-				const bool localIdentity = identitiesByFolder.value(folder).contains(facts.fileMobId);
+				bool localIdentity = false;
+				for (const auto &path : pathsById.value(facts.fileMobId))
+				{
+					if (cancellation.cancelled())
+						break;
+					localIdentity |= folderKey(QFileInfo(path).absolutePath()) == folder;
+				}
 				if (cancellation.cancelled())
 					break;
 				if (source.snapshot->source == MetadataSource::Mdb && !facts.fileMobId.isEmpty() && !localIdentity)

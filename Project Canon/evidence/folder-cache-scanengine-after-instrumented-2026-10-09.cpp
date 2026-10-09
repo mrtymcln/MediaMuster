@@ -1,3 +1,4 @@
+#include "folder-cache-probe-counters.h"
 #include "scanengine.h"
 #include "discoveryengine.h"
 #include "projection.h"
@@ -22,7 +23,7 @@ namespace Canon
 		QString folderKey(const QString &path)
 		{
 			const QFileInfo info(path);
-			const QString canonical = info.canonicalFilePath();
+			const QString canonical = FolderCacheProbe::canonical(info);
 			return canonical.isEmpty() ? QDir::cleanPath(info.absoluteFilePath()) : canonical;
 		}
 		bool safeName(const QString &name)
@@ -296,6 +297,7 @@ namespace Canon
 			if (!unchanged[index])
 				return false;
 			const auto &candidate = result.candidates[index];
+			FolderCacheProbe::freshCheck(candidate.path, candidate.hint);
 			const QFileInfo current(candidate.path);
 			if (current.exists() && current.lastModified() == candidate.modified)
 				return true;
@@ -411,7 +413,7 @@ namespace Canon
 			if (cancellation.cancelled())
 				return {};
 			const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-				MetadataSource::Filesystem, folder, QFileInfo(folder).lastModified(), SourceReadState::Complete});
+				MetadataSource::Filesystem, folder, FolderCacheProbe::folderModified(folder), SourceReadState::Complete});
 			folderReceipts.insert(folder, snapshot);
 			return snapshot;
 		};

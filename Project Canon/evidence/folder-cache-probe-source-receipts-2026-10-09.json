@@ -1,0 +1,10 @@
+{
+  "before": {
+    "originalSourceSha256": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+    "instrumentedSourceSha256": "069634e521e7369c88db1d2601648e837d95348758a74589b98c4ebce907b83d"
+  },
+  "after": {
+    "originalSourceSha256": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+    "instrumentedSourceSha256": "c06faacc0071eab48f874a0f3fbd16e098a3220610994f75ffd103d5ffd5b2ff"
+  }
+}

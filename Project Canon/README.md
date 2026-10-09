@@ -71,10 +71,17 @@ before reading the next. The report separates ordinary scan results from bin
 loading and records actual RAM/time tradeoffs rather than equating removed
 capacity with process memory savings.
 
+The [9 October folder reuse report](folder-reuse-2026-10-09.md) records the next
+contained optimization: scan-local canonical folder keys, refreshed per-pass
+folder receipts and final folder identity indexes. Individual source change
+checks, physical rows and file-operation validation remain intact. Discovery's
+folder listing is a separate phase; this change does not claim to fix its earlier
+Windows/NEXIS delay.
+
 The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
 This supersedes the historical “not yet connected” status of the reader reports below.
 Memory optimization is not a prerequisite. Work began on 4 October and continued
-through 8 October 2026; the dated reports record verification status. The live scanner
+through 9 October 2026; the dated reports record verification status. The live scanner
 uses Canon discovery, raw source graphs, file/master projections and per-field
 selection. The AVB whole-bin path uses the fresh reader; the individual-sequence
 picker remains behind `SequenceFilter` for a later release.

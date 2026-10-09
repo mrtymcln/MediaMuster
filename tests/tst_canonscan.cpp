@@ -6,6 +6,8 @@
 #include "testcanonbento.h"
 #include <QtEndian>
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>
@@ -290,6 +292,44 @@ private slots:
 		QCOMPARE(scan.files[1].evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
 		QVERIFY(std::any_of(scan.reconciliationIssues.cbegin(), scan.reconciliationIssues.cend(), [&](const ScanIssue &issue)
 							{ return issue.kind == ScanIssue::Kind::SourceChanged && issue.expectedPath == first; }));
+	}
+	void final_folder_evidence_observes_changes_since_header_decisions()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		QVERIFY(QDir().mkpath(folder));
+		for (const auto &name : {QStringLiteral("a.mxf"), QStringLiteral("b.mxf")})
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"), folder + '/' + name));
+		std::error_code error;
+		const auto nativeFolder = QDir(folder).filesystemPath();
+		const auto before = std::filesystem::last_write_time(nativeFolder, error);
+		QVERIFY(!error);
+		const auto original = QFileInfo(folder).lastModified();
+		QDateTime expected;
+		Canon::ScanCallbacks callbacks;
+		callbacks.finalising = [&]
+		{
+			// A later matching pass must observe the folder again, rather than
+			// retaining its earlier timestamp for the whole scan.
+			std::filesystem::last_write_time(nativeFolder, before + std::chrono::seconds(10), error);
+			expected = QFileInfo(folder).lastModified();
+		};
+		const Canon::Cancellation cancellation;
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(!error);
+		QVERIFY(expected.isValid() && expected != original);
+		QVERIFY(scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 2);
+		for (const auto &file : scan.files)
+		{
+			const auto observations = file.evidence.observations(MediaProperty::DatabaseStatus);
+			QVERIFY(!observations.isEmpty());
+			for (const auto &observation : observations)
+			{
+				QVERIFY(observation.snapshot);
+				QCOMPARE(observation.snapshot->modified, expected);
+			}
+		}
 	}
 	void a_database_changed_after_a_skip_triggers_header_fallback()
 	{

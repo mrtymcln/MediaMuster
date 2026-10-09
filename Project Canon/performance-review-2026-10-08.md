@@ -38,6 +38,11 @@ and confirmed repeated folder work. Shared immutable reference descriptions are
 another small, contained improvement. Selection/projection caching needs more
 careful evidence-equivalence checks.
 
+The user subsequently approved [reader compaction](source-storage-compaction-2026-10-08.md)
+and [scan-local folder reuse](folder-reuse-2026-10-09.md). Their implementation
+reports retain measured outcomes and limitations; this review's table records
+the preceding proposals.
+
 ## Small read-only I/O experiment
 
 The diagnostic uses the current production readers, wrapped in a counting device.
