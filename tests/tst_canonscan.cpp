@@ -83,7 +83,7 @@ namespace
 		}
 		return writer.build();
 	}
-	const Canon::ParsedSource *mediaSource(const Canon::ScanResult &scan, const QString &path)
+	const Canon::StoredSource *mediaSource(const Canon::ScanResult &scan, const QString &path)
 	{
 		for (const auto &source : scan.sources)
 			if (source.snapshot && source.snapshot->path == path)
@@ -147,8 +147,11 @@ private slots:
 			{ return message.contains(QStringLiteral("ObjectSpine")); }));
 		const auto *database = mediaSource(scan, folder + QStringLiteral("/metadata.mdb"));
 		QVERIFY(database);
-		QVERIFY(!database->objects.isEmpty());
-		QVERIFY(std::any_of(database->relationships.cbegin(), database->relationships.cend(),
+		const auto restored = database->restore(cancellation);
+		QVERIFY(restored);
+		QCOMPARE(restored->snapshot, database->snapshot);
+		QVERIFY(!restored->objects.isEmpty());
+		QVERIFY(std::any_of(restored->relationships.cbegin(), restored->relationships.cend(),
 			[](const Canon::Relationship &link)
 			{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
 	}
@@ -195,7 +198,9 @@ private slots:
 		QVERIFY(header);
 		QVERIFY2(header->outcome == Canon::ParsedSource::Outcome::NotRead, qPrintable(header->readReason));
 		QCOMPARE(header->snapshot->readState, SourceReadState::NotRead);
-		QVERIFY(header->objects.isEmpty());
+		const auto restoredHeader = header->restore(cancellation);
+		QVERIFY(restoredHeader);
+		QVERIFY(restoredHeader->objects.isEmpty());
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).state, PropertyReadState::NotRead);
@@ -500,7 +505,13 @@ private slots:
 		QVERIFY(first.mediaFilePath != second.mediaFilePath);
 		QCOMPARE(first.canonScan, second.canonScan);
 		QCOMPARE(first.scanStamp.mobId, first.fileMobId);
-		QVERIFY(!first.canonScan->sources.front().objects.isEmpty());
+		const auto &stored = first.canonScan->sources.front();
+		QVERIFY(stored.archive);
+		QVERIFY(!stored.unfinishedGraph);
+		const auto restored = stored.restore(cancellation);
+		QVERIFY(restored);
+		QCOMPARE(restored->snapshot, stored.snapshot);
+		QVERIFY(!restored->objects.isEmpty());
 		QVERIFY(!first.evidence.observations(MediaProperty::FileMobId).isEmpty());
 		QCOMPARE(first.kind, MediaFile::Kind::Audio);
 		QCOMPARE(first.dbStatus, MediaFile::DbStatus::NoDatabase);
@@ -721,12 +732,16 @@ private slots:
 	void cancellation_before_source_open_data()
 	{
 		QTest::addColumn<bool>("withDatabases");
-		QTest::newRow("database-progress") << true;
-		QTest::newRow("header-progress") << false;
+		QTest::addColumn<bool>("atReading");
+		QTest::newRow("database-progress") << true << false;
+		QTest::newRow("header-progress") << false << false;
+		QTest::newRow("database-reading") << true << true;
+		QTest::newRow("header-reading") << false << true;
 	}
 	void cancellation_before_source_open()
 	{
 		QFETCH(bool, withDatabases);
+		QFETCH(bool, atReading);
 		QTemporaryDir temporary;
 		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 		const QString path = folder + QStringLiteral("/take.mxf");
@@ -739,16 +754,24 @@ private slots:
 		}
 		Canon::Cancellation cancellation;
 		int progressCalls = 0;
+		int readingCalls = 0;
 		bool finalising = false;
 		Canon::ScanCallbacks callbacks;
 		callbacks.progress = [&](int, int, const QString &)
 		{
 			++progressCalls;
+			if (!atReading)
+				cancellation.cancel();
+		};
+		callbacks.reading = [&](const Canon::SourceCandidate &)
+		{
+			++readingCalls;
 			cancellation.cancel();
 		};
 		callbacks.finalising = [&] { finalising = true; };
 		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(progressCalls, 1);
+		QCOMPARE(readingCalls, atReading ? 1 : 0);
 		QVERIFY(!finalising);
 		QVERIFY(scan.cancelled);
 		QVERIFY(scan.discoveryComplete);
@@ -761,7 +784,10 @@ private slots:
 		{
 			QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::NotRead);
 			QCOMPARE(source.snapshot->readState, SourceReadState::NotRead);
-			QVERIFY(source.objects.isEmpty());
+			const Canon::Cancellation inspection;
+			const auto restored = source.restore(inspection);
+			QVERIFY(restored);
+			QVERIFY(restored->objects.isEmpty());
 		}
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}
@@ -790,7 +816,11 @@ private slots:
 		const auto *parsed = mediaSource(scan, database);
 		QVERIFY(parsed);
 		QCOMPARE(parsed->outcome, Canon::ParsedSource::Outcome::Complete);
-		QVERIFY(!parsed->objects.isEmpty());
+		const Canon::Cancellation inspection;
+		const auto restored = parsed->restore(inspection);
+		QVERIFY(restored);
+		QCOMPARE(restored->snapshot, parsed->snapshot);
+		QVERIFY(!restored->objects.isEmpty());
 		QCOMPARE(mediaSource(scan, path)->outcome, Canon::ParsedSource::Outcome::NotRead);
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}

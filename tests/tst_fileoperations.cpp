@@ -1576,7 +1576,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	file.sizeBytes = QFileInfo(path).size();
 	file.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(), condition == QLatin1String("different") ? QStringLiteral("another-database-file-id") : fileId, {QStringLiteral("database-only-master")}};
 	auto scan = QSharedPointer<Canon::ScanResult>::create();
-	Canon::ParsedSource unread;
+	Canon::StoredSource unread;
 	unread.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path,
 																			file.scanStamp.modified, SourceReadState::NotRead});
 	unread.readReason = QStringLiteral("Header not read: usable database match supplies required table metadata");
@@ -1643,7 +1643,7 @@ void TestFileOperations::transferred_row_does_not_borrow_another_headers_receipt
 	const auto scan = QSharedPointer<Canon::ScanResult>::create();
 	for (const auto &path : {originalPath, file.mediaFilePath})
 	{
-		Canon::ParsedSource source;
+		Canon::StoredSource source;
 		source.outcome = path == originalPath ? Canon::ParsedSource::Outcome::IoError : Canon::ParsedSource::Outcome::NotRead;
 		source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path, {}, path == originalPath ? SourceReadState::Unreadable : SourceReadState::NotRead});
 		scan->sources.append(source);

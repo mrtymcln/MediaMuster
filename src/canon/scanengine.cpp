@@ -282,7 +282,7 @@ namespace Canon
 			if (stopRequested())
 				return result;
 			const auto &candidate = result.candidates[index];
-			ParsedSource source;
+			StoredSource source;
 			source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
 			result.sources.append(std::move(source));
@@ -316,14 +316,20 @@ namespace Canon
 			if (cancellation.cancelled())
 				return;
 			const auto &candidate = result.candidates[index];
-			result.sources[index] = readSource(candidate, cancellation);
-			auto &source = result.sources[index];
-			source.readReason = reason;
+			if (callbacks.reading)
+				callbacks.reading(candidate);
 			if (cancellation.cancelled())
 				return;
-			projections[index] = project(source, cancellation);
+			auto parsed = readSource(candidate, cancellation);
+			parsed.readReason = reason;
+			if (!cancellation.cancelled())
+				projections[index] = project(parsed, cancellation);
+			// Keep only this source expanded while reading/projecting. A cancelled
+			// pack retains its obtained graph instead of discarding partial facts.
+			result.sources[index] = StoredSource::store(std::move(parsed), cancellation);
 			if (cancellation.cancelled())
 				return;
+			const auto &source = result.sources[index];
 			if (!checkUnchanged(index))
 				for (auto *subjects : {&projections[index].files, &projections[index].masters})
 					for (auto &facts : *subjects)

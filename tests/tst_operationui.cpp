@@ -10,6 +10,7 @@
 #include "binfilterdialog.h"
 #include "testavb.h"
 #include "mobid.h"
+#include "canon/scanmodel.h"
 
 #include <QAction>
 #include <QApplication>
@@ -144,6 +145,8 @@ class TestOperationUi : public QObject
 	Q_OBJECT
 private slots:
 	void scan_results_keep_reconciliation_issues();
+	void scan_start_releases_previous_session();
+	void scan_failure_closes_progress_and_restores_actions();
 	void initTestCase();
 	void init();
 	void cleanup();
@@ -233,6 +236,54 @@ void TestOperationUi::scan_results_keep_reconciliation_issues()
 	QTRY_COMPARE(window.m_model->rowCount(), 1);
 	QVERIFY(!qvariant_cast<QVector<ScanIssue>>(issues.first().first()).isEmpty());
 	QCOMPARE(window.m_model->scanIssues().size(), qvariant_cast<QVector<ScanIssue>>(issues.first().first()).size());
+}
+
+void TestOperationUi::scan_start_releases_previous_session()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto previous = QSharedPointer<Canon::ScanResult>::create();
+	const QWeakPointer<Canon::ScanResult> receipt(previous);
+	MediaFile row;
+	row.mediaFilePath = path("previous.mxf");
+	row.canonScan = previous;
+	window.m_model->setMediaFiles({row});
+	row.canonScan.clear();
+	previous.clear();
+	QVERIFY(!receipt.isNull());
+	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
+	window.startScanWithPaths({m_root});
+	QCOMPARE(window.m_model->rowCount(), 0);
+	QVERIFY(receipt.isNull());
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::scan_failure_closes_progress_and_restores_actions()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
+	window.progressDialog()->begin();
+	QVERIFY(!window.m_exportAction->isEnabled());
+	bool explained = false;
+	QTimer dismiss;
+	dismiss.setInterval(1);
+	connect(&dismiss, &QTimer::timeout, [&]
+	{
+		for (QWidget *widget : QApplication::topLevelWidgets())
+			if (auto *message = qobject_cast<QMessageBox *>(widget))
+				if (message->text() == QStringLiteral("Archive allocation failed"))
+				{
+					explained = true;
+					message->accept();
+				}
+	});
+	dismiss.start();
+	// Exercise the worker/UI failure notification, without inventing a bad media format.
+	emit window.m_scanner->scanFailed(QStringLiteral("Archive allocation failed"));
+	QTRY_VERIFY(explained);
+	QVERIFY(window.m_operations->isIdle());
+	QVERIFY(!window.progressDialog()->isVisible());
+	QCOMPARE(window.m_statusScanTime->text(), QStringLiteral("Scan failed"));
 }
 
 void TestOperationUi::project_sidebar_uses_whole_inventory_totals()

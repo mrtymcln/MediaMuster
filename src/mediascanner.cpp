@@ -2,6 +2,7 @@
 // Canon owns discovery, source parsing, matching and metadata selection.
 #include "mediascanner.h"
 #include "canon/scanengine.h"
+#include "canon/sourcearchive.h"
 #include "canonadapter.h"
 #include "avidmedialayout.h"
 #include "conventions.h"
@@ -10,9 +11,14 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QScopeGuard>
+#include <exception>
+#include <new>
+#include <utility>
 
 namespace
 {
+	constexpr qint64 kSourceCheckpointIntervalMs = 10000;
+
 	QString scannerFolderKey(const QString &path)
 	{
 		const QFileInfo info(path);
@@ -101,8 +107,47 @@ void MediaScanner::startScan(const Options &options)
 	m_options = options;
 	m_job.start([this]
 				{
-		const auto running = qScopeGuard([this] { m_running.store(false); });
-		doScan(); });
+		std::optional<ScanCompletion> completion;
+		QString failure;
+		{
+			const auto running = qScopeGuard([this] { m_running.store(false); });
+			// Unwind the failed scan's graphs before reporting. Exceptions must
+			// not escape Qt's worker-thread entry point.
+			try
+			{
+				completion = doScan();
+			}
+			catch (const std::bad_alloc &)
+			{
+				failure = QStringLiteral("The scan stopped because memory could not be allocated. Please try scanning fewer locations at once.");
+			}
+			catch (const std::exception &error)
+			{
+				failure = QStringLiteral("The scan stopped: %1").arg(QString::fromUtf8(error.what()));
+			}
+			catch (...)
+			{
+				failure = QStringLiteral("The scan stopped because of an unexpected error.");
+			}
+		}
+		// Clear running before queuing completion: its receiver may immediately
+		// start another scan. BackgroundJob still joins this worker on restart.
+		if (completion)
+		{
+			emit scanFinished(completion->rows);
+			emit scanIssuesFinished(completion->issues);
+		}
+		else
+			reportFailure(failure);
+	});
+}
+
+void MediaScanner::reportFailure(const QString &message)
+{
+	const QString module = QStringLiteral("scanner");
+	Diagnostics::appendConsoleLine(QtCriticalMsg, module, message);
+	emit scanLogBatch({{QtCriticalMsg, module, message}});
+	emit scanFailed(message);
 }
 
 void MediaScanner::cancelScan()
@@ -110,10 +155,12 @@ void MediaScanner::cancelScan()
 	m_job.cancel();
 }
 
-void MediaScanner::doScan()
+MediaScanner::ScanCompletion MediaScanner::doScan()
 {
 	QElapsedTimer timer;
 	timer.start();
+	Diagnostics::appendConsoleLine(QtInfoMsg, QStringLiteral("scanner"),
+								   QStringLiteral("Scan starting: %1 volume(s), %2 added location(s)").arg(m_options.volumePaths.size()).arg(m_options.manualPaths.size()));
 	const Canon::Cancellation cancellation(&m_job.cancelFlag());
 	Canon::ScanRequest request;
 	QVector<MediaRoot> contexts;
@@ -174,6 +221,9 @@ void MediaScanner::doScan()
 	{
 		if (logs.isEmpty())
 			return;
+		// Persist from the worker: queued Console updates may arrive much later.
+		for (const auto &message : std::as_const(logs))
+			Diagnostics::appendConsoleLine(message.level, message.module, message.message);
 		emit scanLogBatch(logs);
 		logs.clear();
 	};
@@ -191,6 +241,22 @@ void MediaScanner::doScan()
 		flush();
 	};
 	Canon::ScanCallbacks callbacks;
+	QElapsedTimer sourceCheckpoint;
+	sourceCheckpoint.start();
+	callbacks.reading = [&](const Canon::SourceCandidate &candidate)
+	{
+		const bool database = candidate.hint == Canon::SourceCandidate::ReaderHint::Pmr ||
+							  candidate.hint == Canon::SourceCandidate::ReaderHint::Mdb;
+		// Database starts are rare; throttle header checkpoints to avoid a log
+		// write for every media file on large network scans.
+		if (database || sourceCheckpoint.elapsed() >= kSourceCheckpointIntervalMs)
+		{
+			logs.append({QtInfoMsg, QStringLiteral("scanner"),
+						 QStringLiteral("Reading %1: %2").arg(database ? QStringLiteral("database") : QStringLiteral("media header"), candidate.path)});
+			flush();
+			sourceCheckpoint.restart();
+		}
+	};
 	callbacks.discovering = [&](const QString &path)
 	{ emit scanDiscovering(path); };
 	callbacks.progress = [&](int current, int total, const QString &path)
@@ -207,9 +273,25 @@ void MediaScanner::doScan()
 			flush();
 	};
 	callbacks.finalising = [&]
-	{ emit scanFinalising(); };
+	{
+		logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Finalising scan: matching media and selecting metadata")});
+		flush();
+		emit scanFinalising();
+	};
 	auto session = QSharedPointer<Canon::ScanResult>::create(Canon::ScanEngine{}.scan(request, cancellation, callbacks));
 	reportPreparation(); // Empty or cancelled scans may never reach source progress.
+	qint64 serializedBytes = 0;
+	qint64 compressedBytes = 0;
+	qsizetype archivedSources = 0;
+	for (const auto &source : std::as_const(session->sources))
+		if (source.archive)
+		{
+			++archivedSources;
+			serializedBytes += source.archive->serializedBytes();
+			compressedBytes += source.archive->compressedBytes();
+		}
+	logs.append({QtInfoMsg, QStringLiteral("scanner"),
+				 QStringLiteral("RAM source archives: %1 source(s), %2 serialized bytes, %3 compressed bytes").arg(archivedSources).arg(serializedBytes).arg(compressedBytes)});
 	QVector<MediaFile> rows;
 	rows.reserve(session->files.size());
 	for (const auto &file : session->files)
@@ -243,6 +325,5 @@ void MediaScanner::doScan()
 	flush();
 	// The UI replaces rows on scanFinished, which clears the previous issues.
 	// Queue this scan's issues after that replacement.
-	emit scanFinished(rows);
-	emit scanIssuesFinished(session->reconciliationIssues);
+	return {std::move(rows), session->reconciliationIssues};
 }

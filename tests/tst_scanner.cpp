@@ -3,6 +3,7 @@
 
 #include "conventions.h"
 #include "canon/scanmodel.h"
+#include "canon/sourcearchive.h"
 #include "featureflags.h"
 #include "mediafile.h"
 #include "mediacsv.h"
@@ -112,12 +113,15 @@ namespace
 	void checkDatabaseOnlyRead(const MediaFile &file)
 	{
 		QVERIFY(file.canonScan);
-		const auto source = std::find_if(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(), [&](const Canon::ParsedSource &candidate)
+		const auto source = std::find_if(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(), [&](const Canon::StoredSource &candidate)
 										 { return candidate.snapshot && candidate.snapshot->path == file.mediaFilePath; });
 		QVERIFY(source != file.canonScan->sources.cend());
 		QCOMPARE(source->outcome, Canon::ParsedSource::Outcome::NotRead);
 		QCOMPARE(source->snapshot->readState, SourceReadState::NotRead);
-		QVERIFY(source->objects.isEmpty());
+		const Canon::Cancellation inspection;
+		const auto restored = source->restore(inspection);
+		QVERIFY(restored);
+		QVERIFY(restored->objects.isEmpty());
 		QVERIFY(source->readReason.startsWith(QStringLiteral("Header not read:")));
 		QVERIFY(hasDatabaseEvidence(file));
 		for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
@@ -160,6 +164,7 @@ private slots:
 	void appledouble_sibling_is_never_media();
 	void non_avid_files_are_invisible();
 	void cancelled_scan_does_not_leak_databases_into_the_next();
+	void completed_scan_can_restart_from_its_queued_receiver();
 	void cancellation_during_finalising_reports_cancelled();
 	void discovery_progress_precedes_source_progress();
 	void cancellation_during_root_preparation_stops_scan();
@@ -335,7 +340,8 @@ void TestScanner::optional_read_only_real_scan()
 	QTRY_COMPARE(issues.count(), 1);
 	const qint64 elapsed = timer.elapsed();
 	const auto files = qvariant_cast<QVector<MediaFile>>(finished.first().first());
-	// Capture before audit serialization: the source graphs and UI rows are alive.
+	// Capture before inspecting archives: retained source storage and UI rows
+	// are alive, but this audit has not temporarily restored any source graphs.
 	const QJsonObject memoryRetained = auditMemory();
 	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_CSV");
 	if (!csvOutput.isEmpty())
@@ -350,13 +356,22 @@ void TestScanner::optional_read_only_real_scan()
 		QVERIFY(!scan.cancelled);
 		for (const auto &source : scan.sources)
 		{
+			// Inspect one source at a time; retaining every restored graph would
+			// recreate the application's former memory use in this audit itself.
+			const Canon::Cancellation inspection;
+			const auto restored = source.restore(inspection);
+			QVERIFY(restored);
 			AuditGraphSize size;
-			countAuditGraph(source, size);
+			countAuditGraph(*restored, size);
 			sourceDetails.append(QJsonObject{
 				{"path", source.snapshot ? source.snapshot->path : QString{}},
 				{"source", source.snapshot ? int(source.snapshot->source) : -1},
 				{"outcome", int(source.outcome)},
 				{"readReason", source.readReason},
+				{"archivedBytes", source.archive ? source.archive->compressedBytes() : qint64(0)},
+				{"serializedBytes", source.archive ? source.archive->serializedBytes() : qint64(0)},
+				{"archiveBlocks", source.archive ? qint64(source.archive->blockCount()) : qint64(0)},
+				{"expandedCancellationFallback", !source.unfinishedGraph.isNull()},
 				{"objects", size.objects},
 				{"relationships", size.relationships},
 				{"properties", size.properties},
@@ -1203,6 +1218,44 @@ void TestScanner::cancellation_during_finalising_reports_cancelled()
 	for (const auto &message : messages)
 		QVERIFY(!message.startsWith(QStringLiteral("Scan complete:")));
 	QCOMPARE(finished.first().first().value<QVector<MediaFile>>().size(), 1);
+}
+
+void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
+{
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
+
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
+	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	MediaScanner::Options options;
+	options.volumePaths = {temporary.path()};
+	int received = 0;
+	// A UI receiver can request the next scan as soon as completion arrives.
+	// Its restart must join the old worker without being rejected as running.
+	connect(&scanner, &MediaScanner::scanFinished, &scanner, [&]
+	{
+		if (++received == 1)
+			scanner.startScan(options);
+	}, Qt::QueuedConnection);
+	scanner.startScan(options);
+	QTRY_COMPARE(finished.count(), 2);
+	QTRY_COMPARE(received, 2);
+	QTRY_COMPARE(issues.count(), 2);
+	QVERIFY(failed.isEmpty());
+	const auto first = qvariant_cast<QVector<MediaFile>>(finished[0][0]);
+	const auto second = qvariant_cast<QVector<MediaFile>>(finished[1][0]);
+	QCOMPARE(first.size(), 1);
+	QCOMPARE(second.size(), 1);
+	QCOMPARE(first.front().fileMobId, second.front().fileMobId);
+	QVERIFY(!first.front().fileMobId.isEmpty());
+	QVERIFY(first.front().canonScan != second.front().canonScan);
 }
 
 void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()

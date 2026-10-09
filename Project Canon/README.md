@@ -132,6 +132,19 @@ accepts the current 2.40 GB peak footprint and 20,802 ms scan time for now;
 further memory optimization is no longer an immediate priority. This decision
 does not establish correctness for every format variant.
 
+The [9 October Windows/NEXIS regression report](nexis-memory-regression-2026-10-09.md)
+records a subsequent large-scan failure: approximately 50 GB RAM followed by
+termination in build `e47299c`. The earlier local memory acceptance does not
+qualify that workload; large-scan storage and failure reporting now need correction.
+The [RAM storage repair proposal](ram-storage-repair-proposal-2026-10-09.md)
+records the Qt/C++17 design and bounded genuine-source archive measurements.
+The [implemented RAM source archive](ram-source-archive-implementation-2026-10-09.md)
+now preserves typed records, relationships and source identities in compressed
+RAM. All 41 suites pass; full local graph/row comparisons and CSV match the
+baseline. The final local scan retains about 417 MB instead of 2.37 GB, with
+additional scanning CPU time. Windows/NEXIS capacity verification remains
+outstanding.
+
 ## Implementation direction
 
 The user subsequently clarified that scanner, parser and metadata engines should

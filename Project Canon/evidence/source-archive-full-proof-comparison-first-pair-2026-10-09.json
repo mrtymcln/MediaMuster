@@ -1,0 +1,76 @@
+{
+  "checks": {
+    "roots": true,
+    "rows": true,
+    "candidates": true,
+    "sources": true,
+    "discoveryIssues": true,
+    "reconciliationIssues": true,
+    "discoveryComplete": true,
+    "parsingComplete": true,
+    "reconciliationComplete": true,
+    "cancelled": true,
+    "hashes": true,
+    "fileDigests": true,
+    "sourceDigests": true,
+    "callbackCounts": true,
+    "sourceObjects": true,
+    "sourceRelationships": true,
+    "sourceProperties": true,
+    "originalValueBytes": true
+  },
+  "stampsUnchanged": true,
+  "hashesBefore": {
+    "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+    "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+    "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+    "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+    "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+    "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+  },
+  "hashesAfter": {
+    "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+    "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+    "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+    "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+    "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+    "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+  },
+  "counts": {
+    "rows": 2413,
+    "candidates": 2425,
+    "sources": 2425,
+    "sourceObjects": 475088,
+    "sourceRelationships": 498221,
+    "sourceProperties": 2719926,
+    "originalValueBytes": 83566949,
+    "compressedBytes": 157781368,
+    "serializedBytes": 1087257058,
+    "archiveBlocks": 16651
+  },
+  "memory": {
+    "footprintBefore": {
+      "before": 2720704,
+      "after": 2851840
+    },
+    "footprintRetained": {
+      "before": 2336987456,
+      "after": 463916480
+    },
+    "peakResidentRetained": {
+      "before": 2727510016,
+      "after": 1152761856
+    }
+  },
+  "timing": {
+    "scanMsInstrumented": {
+      "before": 19833,
+      "after": 31467
+    },
+    "hashMs": {
+      "before": 11989,
+      "after": 23784
+    }
+  },
+  "timingScope": "First diagnostic pair. Before scan ran 19.833 s; archive scan 31.467 s. Hashing is excluded. This is a verification probe, not a speed benchmark; the final guard proof repeat may overlap regression-suite CPU load."
+}

@@ -1,0 +1,97 @@
+{
+  "method": "Two fresh sequential diagnostic processes, each retains three complete reads of the same unchanged genuine MDB. Baseline keeps three expanded graphs and their hot projections; packed mode retains three lossless RAM archives and the same hot projections. A controlled cumulative-storage experiment, not three distinct databases or physical-file rows and not a scanner benchmark.",
+  "sourceStamp": {
+    "size": 22745976,
+    "mtimeNs": "1785052712000000000",
+    "device": "16777241",
+    "inode": "1081262"
+  },
+  "results": [
+    {
+      "archiveCapacityBytes": 0,
+      "archivePayloadBytes": 0,
+      "graphSha256": "5f850a1ce31fc0ceb0b598ee40af75e3ce5dd665eaa80a1b479c1cbef1a55907",
+      "mode": "baseline",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "peakResidentBytes": 2412052480,
+      "projectionSha256": "163c321bce4a0b76b842e9d5431294ac057c723ba368b1c91f4d836d90dfacf7",
+      "reads": 3,
+      "retainedFootprintBytes": 1912198848,
+      "stages": [
+        {
+          "archiveExact": true,
+          "packingMs": 0,
+          "read": 1,
+          "readAndProjectMs": 3978,
+          "retainedFootprintBytes": 714574784,
+          "verifyMs": 0
+        },
+        {
+          "archiveExact": true,
+          "packingMs": 0,
+          "read": 2,
+          "readAndProjectMs": 4042,
+          "retainedFootprintBytes": 1303187840,
+          "verifyMs": 0
+        },
+        {
+          "archiveExact": true,
+          "packingMs": 0,
+          "read": 3,
+          "readAndProjectMs": 4034,
+          "retainedFootprintBytes": 1912198848,
+          "verifyMs": 0
+        }
+      ],
+      "startingFootprintBytes": 2573184,
+      "stderr": ""
+    },
+    {
+      "archiveCapacityBytes": 124573629,
+      "archivePayloadBytes": 124573629,
+      "graphSha256": "5f850a1ce31fc0ceb0b598ee40af75e3ce5dd665eaa80a1b479c1cbef1a55907",
+      "mode": "packed",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "peakResidentBytes": 1199472640,
+      "projectionSha256": "163c321bce4a0b76b842e9d5431294ac057c723ba368b1c91f4d836d90dfacf7",
+      "reads": 3,
+      "retainedFootprintBytes": 443223552,
+      "stages": [
+        {
+          "archiveExact": true,
+          "packingMs": 1611,
+          "read": 1,
+          "readAndProjectMs": 4051,
+          "retainedFootprintBytes": 293325888,
+          "verifyMs": 2755
+        },
+        {
+          "archiveExact": true,
+          "packingMs": 1714,
+          "read": 2,
+          "readAndProjectMs": 3984,
+          "retainedFootprintBytes": 372346240,
+          "verifyMs": 2814
+        },
+        {
+          "archiveExact": true,
+          "packingMs": 1556,
+          "read": 3,
+          "readAndProjectMs": 3975,
+          "retainedFootprintBytes": 443223552,
+          "verifyMs": 2756
+        }
+      ],
+      "startingFootprintBytes": 2671488,
+      "stderr": ""
+    }
+  ],
+  "sourceSha256": "2a8d4716ea1a0fbc42c7e0d498a360a90dadfd577c89d698d077d606a64a6f7d",
+  "binarySha256": "598b618cf44d8b4026ddc0d46eca0cb91dacd8b5ed15c91bcd133cebfb571902",
+  "limitations": [
+    "One process per mode, baseline then packed. No repeated timing claim.",
+    "Archive verified as exact serialization bytes, not a typed struct/receipt-sharing roundtrip.",
+    "Current Debug Canon library/O2 diagnostic, Qt6.5.3 macOS arm64; no Windows/NEXIS or300k test.",
+    "The largest individual graph is still expanded during parse/projection."
+  ]
+}

@@ -23,7 +23,7 @@ namespace
 			return {};
 		const QString scannedPath = originalLocation(file);
 		const bool skipped = std::any_of(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(),
-										 [&](const Canon::ParsedSource &source)
+											 [&](const Canon::StoredSource &source)
 										 {
 											 return source.snapshot && scannedPath == source.snapshot->path &&
 													(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf) &&

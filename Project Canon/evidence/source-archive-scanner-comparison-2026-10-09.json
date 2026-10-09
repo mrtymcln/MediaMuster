@@ -1,0 +1,44 @@
+{
+  "baselineCommit": "325f2399b959d2b11d90d7a5ca02bbb36bc71b34",
+  "roots": [
+    "/Users/Shared/AvidMediaComposer",
+    "/Volumes/EDIT"
+  ],
+  "checks": {
+    "roots": true,
+    "rows": true,
+    "issueCount": true,
+    "inventory": true,
+    "issues": true,
+    "sourceStatusAndGraphCounts": true,
+    "csvByteIdentical": true
+  },
+  "rows": 2413,
+  "sources": 2425,
+  "scanMs": {
+    "before": 22120,
+    "after": 36102
+  },
+  "memoryRetained": {
+    "before": {
+      "peakResidentBytes": 2716729344,
+      "physicalFootprintBytes": 2366363968,
+      "residentBytes": 2716729344
+    },
+    "after": {
+      "peakResidentBytes": 1141850112,
+      "physicalFootprintBytes": 417336832,
+      "residentBytes": 1138376704
+    }
+  },
+  "csvSha256": {
+    "before": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "after": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7"
+  },
+  "notes": [
+    "One sequential before/after app-boundary scan pair, not a performance benchmark.",
+    "Retained memory is captured with adapter rows and session, before scoped archive restoration; GUI model is not populated.",
+    "Source allocation capacities are intentionally excluded from semantic equality.",
+    "Real Windows/NEXIS 300,000-file capacity and prior crash mechanism remain unverified."
+  ]
+}
