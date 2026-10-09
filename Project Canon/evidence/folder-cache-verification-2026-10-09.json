@@ -1,0 +1,343 @@
+{
+  "recordedUtc": "2026-10-08T13:41:44.124379+00:00",
+  "clientDate": "2026-10-09",
+  "timezone": "Australia/Sydney",
+  "authorization": "User approved Qt/C++17 scan-local folder reuse: Ok lets go! And what do you mean Starting scan... is a separate area?",
+  "parentCommit": "2d96ac2450795d164d2f44ec79cf0c9c1a43713e",
+  "change": {
+    "file": "src/canon/scanengine.cpp",
+    "mechanism": "Scan-local Qt QHash folder keys, per-matching-phase shared folder snapshots, QHash/QSet final folder-identity index. Cache misses check cancellation before I/O.",
+    "productionSourceSha256": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+    "beforeSourceSha256": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+    "schemaChanged": false,
+    "formatRulesChanged": false,
+    "discoveryOrVolumeResolutionChanged": false,
+    "fileOperationsChanged": false,
+    "uiChanged": false,
+    "oldEngineRetired": false,
+    "checkUnchangedBodyByteIdentical": true,
+    "checkUnchangedBodySha256": "e47ae72f9cc70901c6cf45dc8dbc513dca35089d62d6320465fbdf607f652ae9"
+  },
+  "libraries": {
+    "beforeSha256": "e85aa421afce822a6f24a4a784269d6ab12b76763784b2842c51ee32c75ee6a8",
+    "afterCanonSha256": "0406d210f59d8c85a927395341e3819f0af78407bf56a425ab7dc219524de2b4",
+    "afterNormalSha256": "36401861a0803f1a40f7bc6a27b10a25f1d2a287f1e59bfd2241088015801999"
+  },
+  "scannerBinaries": {
+    "beforeSha256": "bb47b18d858efc41d2645d5680451a059dbde234a7d00e201a3e540446dfee98",
+    "afterSha256": "c4ea20209d18e46e995cd96134633c62a360e8f9067f76794d2055ec81f6966d"
+  },
+  "builds": [
+    {
+      "directory": "build-canon",
+      "command": "cmake --build build-canon --parallel 4",
+      "configuration": "Debug",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "passed": true,
+      "normalAppCodesignVerification": "passed"
+    },
+    {
+      "directory": "build",
+      "command": "cmake --build build --parallel 4",
+      "configuration": "Debug",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "passed": true,
+      "normalAppCodesignVerification": "passed"
+    }
+  ],
+  "tests": {
+    "command": "ctest --test-dir build-canon --output-on-failure -j 4 --output-log /private/tmp/folder-cache-final-tests-2026-10-09.txt",
+    "passed": 40,
+    "failed": 0,
+    "elapsedSeconds": 44.52,
+    "nativeArchitecture": "arm64",
+    "log": "folder-cache-tests-2026-10-09.txt",
+    "logSha256": "886856ad169a70956c1df341c75f582bd6653ab7d6357348390c0337f6d9e7fe",
+    "newRegression": {
+      "file": "tests/tst_canonscan.cpp",
+      "sha256": "90998e32c91c80751f8a96f825cba5f6843ef7d050c7949b3028fddb79c3e80c",
+      "name": "final_folder_evidence_observes_changes_since_header_decisions",
+      "purpose": "Two copies of a genuine MXF fixture; modify temporary directory mtime before final matching and assert freshly observed folder receipts. No cache-internal assertions or constructed format/corruption rule."
+    }
+  },
+  "realSourceProbe": {
+    "baselineCommit": "2d96ac2",
+    "roots": [
+      "/Users/Shared/AvidMediaComposer",
+      "/Volumes/EDIT"
+    ],
+    "rows": 2413,
+    "sourceCandidates": 2425,
+    "folders": 6,
+    "issues": 298,
+    "counts": {
+      "canonicalFolderLookups": {
+        "before": 14502,
+        "after": 6
+      },
+      "folderTimestampQueries": {
+        "before": 4826,
+        "after": 12
+      },
+      "freshCheckUnchangedProbes": {
+        "before": 4978,
+        "after": 4978
+      }
+    },
+    "freshCheckProbesByHint": {
+      "Pmr": 18,
+      "Mdb": 18,
+      "Mxf": 4938,
+      "LegacyMedia": 4
+    },
+    "allFinalRecordHashesEqual": true,
+    "allRawSourceGraphHashesEqual": true,
+    "allSafetyCountsEqualPerPath": true,
+    "allSemanticComponentsEqual": true,
+    "allSourceAndFolderStampsStable": true,
+    "hashes": {
+      "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+      "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+      "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+      "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+      "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+      "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+    },
+    "sourceReceipts": {
+      "before": {
+        "originalSourceSha256": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+        "instrumentedSourceSha256": "069634e521e7369c88db1d2601648e837d95348758a74589b98c4ebce907b83d"
+      },
+      "after": {
+        "originalSourceSha256": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+        "instrumentedSourceSha256": "c06faacc0071eab48f874a0f3fbd16e098a3220610994f75ffd103d5ffd5b2ff"
+      }
+    },
+    "binaryReceipts": {
+      "/private/tmp/folder-cache-probe-counters.h": "128bc4aa660043f02227e6f914fe89af68455b5bfde5ac23cf632c59bdfe9d06",
+      "/private/tmp/folder-cache-scan-proof.cpp": "4d00dce7bdfb876f1597dc8aaca4ce8d458dfe8a23e2c0ce5576810af351cf5b",
+      "/private/tmp/folder-cache-scan-proof-before": "ef98a4be66459e014ed207a5619dc4fd8fd506f31dbc6ab58811bf480b62a9d4",
+      "/private/tmp/folder-cache-scan-proof-after": "311051d07d525c86b33bd5fc86576f3caaeb1e539d4141eee6537198f876b140",
+      "/private/tmp/libmediamuster_canon-before-folder-cache.a": "e85aa421afce822a6f24a4a784269d6ab12b76763784b2842c51ee32c75ee6a8",
+      "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a": "0406d210f59d8c85a927395341e3819f0af78407bf56a425ab7dc219524de2b4"
+    },
+    "artifacts": {
+      "/private/tmp/folder-cache-probe-counters.h": "128bc4aa660043f02227e6f914fe89af68455b5bfde5ac23cf632c59bdfe9d06",
+      "/private/tmp/folder-cache-scan-proof.cpp": "4d00dce7bdfb876f1597dc8aaca4ce8d458dfe8a23e2c0ce5576810af351cf5b",
+      "/private/tmp/folder-cache-scanengine-before-original.cpp": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+      "/private/tmp/folder-cache-scanengine-after-original.cpp": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+      "/private/tmp/folder-cache-scanengine-before-instrumented.cpp": "069634e521e7369c88db1d2601648e837d95348758a74589b98c4ebce907b83d",
+      "/private/tmp/folder-cache-scanengine-after-instrumented.cpp": "c06faacc0071eab48f874a0f3fbd16e098a3220610994f75ffd103d5ffd5b2ff",
+      "/private/tmp/folder-cache-probe-build.txt": "0f7eb541685b80cc9c084659181d5e7b1111620004cfe288ea99dcf6cbf3d03e",
+      "/private/tmp/folder-cache-probe-source-receipts.json": "2171e3928ffd63c7e59ac37b25a78daaf763b5f407340f04581695388507afa8",
+      "/private/tmp/folder-cache-probe-binary-receipts.json": "d35c2132ec19f5240c0f73830262fb936347a167e8ba435c35e3f7ab824b427c",
+      "/private/tmp/run-folder-cache-probe.py": "1e04b2d6f972b5398bda34fdf53610459bfd2fc8b763fdce42503b33e1290677",
+      "/private/tmp/folder-cache-probe-before.json": "618f89e071020f249fcc55e6298c0fcb8741d79f2a0e5fc3c174968fd2a48679",
+      "/private/tmp/folder-cache-probe-after.json": "53b40cbc11ca81cda6b4b5d030fb3af07b48d9162f346ae40064a79d1414d5e0",
+      "/private/tmp/folder-cache-probe-summary.json": "8149683bd80993d46b72598f14b03f8f3be2ec2e6d4da2c4c2fe01231d9845db",
+      "/private/tmp/folder-cache-probe-before.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/private/tmp/folder-cache-probe-after.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "notes": [
+      "The counters record application-level Qt calls in ScanEngine only, not OS syscalls or NEXIS network requests.",
+      "Final files include all physical/stamp fields, all evidence observations/coverage/read states/selected values and complete source receipts, including unknown/false/zero values. Raw graph hashes preserve all declared semantic fields and original ranges/bytes/native framing; allocation capacity and pointer addresses are deliberately excluded.",
+      "Each mode runs in a fresh process with QT_HASH_SEED=0 and the same roots. Hash-map field keys are sorted for serialization; vector/recorded order is preserved.",
+      "Pre/post os.stat stamps cover all 2,425 source candidates and six media folders using path/device/inode/size/mtime_ns. These checks occur outside the instrumented scan body.",
+      "The direct temporary ScanEngine TU satisfies the archive symbols before archive extraction, so the original scanengine object is not linked. All other Canon objects use matching before/after archives.",
+      "No production or test files were edited by this diagnostic. Instrumented scan time/memory are supplementary; uninstrumented application trials are run separately by root.",
+      "The proof covers this real mounted corpus. Alias, cancellation, directory changes and database/file freshness also rely on the separately executed production regression tests, not a claim of NEXIS coverage."
+    ]
+  },
+  "fullScan": {
+    "roots": [
+      "/Users/Shared/AvidMediaComposer",
+      "/Volumes/EDIT"
+    ],
+    "rows": 2413,
+    "sources": 2425,
+    "issues": 298,
+    "runs": 6,
+    "series": {
+      "before": {
+        "trials": [
+          {
+            "pair": 1,
+            "order": [
+              "before",
+              "after"
+            ],
+            "mode": "before",
+            "stem": "folder-cache-before-repeat1-2026-10-09",
+            "scanMs": 21345,
+            "processWallSeconds": 24.04609775543213,
+            "memoryRetained": {
+              "peakResidentBytes": 2710650880,
+              "physicalFootprintBytes": 2373900608,
+              "residentBytes": 2710552576
+            }
+          },
+          {
+            "pair": 2,
+            "order": [
+              "after",
+              "before"
+            ],
+            "mode": "before",
+            "stem": "folder-cache-before-repeat2-2026-10-09",
+            "scanMs": 20890,
+            "processWallSeconds": 22.882747888565063,
+            "memoryRetained": {
+              "peakResidentBytes": 2723364864,
+              "physicalFootprintBytes": 2354256192,
+              "residentBytes": 2723266560
+            }
+          },
+          {
+            "pair": 3,
+            "order": [
+              "before",
+              "after"
+            ],
+            "mode": "before",
+            "stem": "folder-cache-before-repeat3-2026-10-09",
+            "scanMs": 20810,
+            "processWallSeconds": 22.818026065826416,
+            "memoryRetained": {
+              "peakResidentBytes": 2722037760,
+              "physicalFootprintBytes": 2257115392,
+              "residentBytes": 2721939456
+            }
+          }
+        ],
+        "medianScanMs": 20890,
+        "medianPhysicalFootprintBytes": 2354256192,
+        "medianPeakResidentBytes": 2722037760
+      },
+      "after": {
+        "trials": [
+          {
+            "pair": 1,
+            "order": [
+              "before",
+              "after"
+            ],
+            "mode": "after",
+            "stem": "folder-cache-after-repeat1-2026-10-09",
+            "scanMs": 20773,
+            "processWallSeconds": 22.7723650932312,
+            "memoryRetained": {
+              "peakResidentBytes": 2740469760,
+              "physicalFootprintBytes": 2397083968,
+              "residentBytes": 2740371456
+            }
+          },
+          {
+            "pair": 2,
+            "order": [
+              "after",
+              "before"
+            ],
+            "mode": "after",
+            "stem": "folder-cache-after-repeat2-2026-10-09",
+            "scanMs": 20940,
+            "processWallSeconds": 22.97462511062622,
+            "memoryRetained": {
+              "peakResidentBytes": 2723741696,
+              "physicalFootprintBytes": 2363480384,
+              "residentBytes": 2723643392
+            }
+          },
+          {
+            "pair": 3,
+            "order": [
+              "before",
+              "after"
+            ],
+            "mode": "after",
+            "stem": "folder-cache-after-repeat3-2026-10-09",
+            "scanMs": 20925,
+            "processWallSeconds": 22.924636840820312,
+            "memoryRetained": {
+              "peakResidentBytes": 2733228032,
+              "physicalFootprintBytes": 2351749504,
+              "residentBytes": 2733129728
+            }
+          }
+        ],
+        "medianScanMs": 20925,
+        "medianPhysicalFootprintBytes": 2363480384,
+        "medianPeakResidentBytes": 2733228032
+      }
+    },
+    "allCsvByteIdentical": true,
+    "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "allInventoryIncludingKelpieIdsIdentical": true,
+    "allSourceSummariesIdentical": true,
+    "allNoticesIdentical": true,
+    "headersRead": 116,
+    "headersSkipped": 2297,
+    "method": "Three fresh-process alternating pairs (before/after, after/before, before/after); QT_HASH_SEED=0; Qt6.5.3 native arm64 universal Debug; caches not cleared; no builds/tests/other probe scans overlapped timed trials. Memory before report serialization and GUI model population.",
+    "conclusion": "No material Mac whole-scan speed change: median +35ms (0.17%), overlapping ranges. Median retained footprint +9,224,192 bytes and peak resident +11,190,272 bytes; no RAM-saving claim. Avoided folder queries are proven; NEXIS timing unmeasured."
+  },
+  "independentReview": {
+    "actionableIssuesRemaining": 0,
+    "scope": "Cache cancellation, alias/case semantics, shared receipt lifetime, phase refresh, local versus wider-scan identity matching, and unchanged fresh safety checks."
+  },
+  "limits": [
+    "Counters are application-level ScanEngine calls, not measured syscalls or NEXIS transactions.",
+    "Discovery/VolumeManager and file-operation validation are outside the cache and unchanged.",
+    "No Release or Windows/NEXIS measurements.",
+    "Semantic hashes exclude allocation capacity, pointer addresses and sharing topology; pointed-to contents included.",
+    "Directory receipts observe once on first visit per matching phase; later changes within that phase are not continuously polled. New files/redirected paths are not rediscovered.",
+    "All source/file/folder stamps stable for the genuine-corpus before/after semantic proof.",
+    "No universal format coverage claim."
+  ],
+  "artifactSha256": {
+    "folder-cache-after-repeat1-2026-10-09.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "folder-cache-after-repeat1-2026-10-09.json": "d64362ff2734b33974dc4dba7be9dd5064c56324c2965f09a4246e0ee27687be",
+    "folder-cache-after-repeat1-2026-10-09.txt": "cecba4455b51af3a39b0b1f4adc20f42484988297ad5f3992985f81ed40baed7",
+    "folder-cache-after-repeat2-2026-10-09.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "folder-cache-after-repeat2-2026-10-09.json": "098f578a5267255a25edb55161dafd830b2a6b3bc0e94e0a26497ccc45626b1c",
+    "folder-cache-after-repeat2-2026-10-09.txt": "b1848674539fff82884f4af003eb63419535c16dcfc47bf570b7b6624b815169",
+    "folder-cache-after-repeat3-2026-10-09.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "folder-cache-after-repeat3-2026-10-09.json": "8916ba388de5563f76a4b7e48adda69b8345d9694b7dc88abfe1679042211077",
+    "folder-cache-after-repeat3-2026-10-09.txt": "4b00561cfcab740693b88592961385a4238c9561796afb4db21dbea36a7f2ae3",
+    "folder-cache-artifact-paths-2026-10-09.json": "cddd9a13891062a4f9963aac0318304f1933c8eb043f015c4f41ff75ced6d898",
+    "folder-cache-before-repeat1-2026-10-09.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "folder-cache-before-repeat1-2026-10-09.json": "b1236e1d9a505025d5a7d4064cb58ee0eff1ddc81a78a6dce279ad00408b1191",
+    "folder-cache-before-repeat1-2026-10-09.txt": "45e68a76c5b895010843d8f6b2468732af4132772094bb0b2adb8c400d8990b7",
+    "folder-cache-before-repeat2-2026-10-09.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "folder-cache-before-repeat2-2026-10-09.json": "e4dc3c78cd5158d1e39f012d0f39ea39c69798b1ded1ce69687e9668c3a52bca",
+    "folder-cache-before-repeat2-2026-10-09.txt": "f0d738792931e4f50477587a5043430d00d7965d50aa0744c7a62adc6be5b5e6",
+    "folder-cache-before-repeat3-2026-10-09.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "folder-cache-before-repeat3-2026-10-09.json": "10de1b64478a4ea67164b56ee4ac86b6474cce3ecb0993fdadbc7de226f375e9",
+    "folder-cache-before-repeat3-2026-10-09.txt": "8f13c79bc0253bca98c6026011ff3beadfe4224cfdfa7db78051f1805c5eb9cd",
+    "folder-cache-probe-after-2026-10-09.json": "53b40cbc11ca81cda6b4b5d030fb3af07b48d9162f346ae40064a79d1414d5e0",
+    "folder-cache-probe-after.stderr-2026-10-09.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "folder-cache-probe-before-2026-10-09.json": "618f89e071020f249fcc55e6298c0fcb8741d79f2a0e5fc3c174968fd2a48679",
+    "folder-cache-probe-before.stderr-2026-10-09.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "folder-cache-probe-binary-receipts-2026-10-09.json": "d35c2132ec19f5240c0f73830262fb936347a167e8ba435c35e3f7ab824b427c",
+    "folder-cache-probe-build-2026-10-09.txt": "0f7eb541685b80cc9c084659181d5e7b1111620004cfe288ea99dcf6cbf3d03e",
+    "folder-cache-probe-counters-2026-10-09.h": "128bc4aa660043f02227e6f914fe89af68455b5bfde5ac23cf632c59bdfe9d06",
+    "folder-cache-probe-method-2026-10-09.txt": "b7333cbac3fbc3d519d461aa8698d6d8941987135eb2984fed0c8dc80d0b0ee0",
+    "folder-cache-probe-receipt-2026-10-09.json": "6be14b04a17d84efc78f3a5330bba14573286008cc41043e3f6e4a970dd0a8fb",
+    "folder-cache-probe-source-receipts-2026-10-09.json": "2171e3928ffd63c7e59ac37b25a78daaf763b5f407340f04581695388507afa8",
+    "folder-cache-probe-summary-2026-10-09.json": "8149683bd80993d46b72598f14b03f8f3be2ec2e6d4da2c4c2fe01231d9845db",
+    "folder-cache-scan-proof-2026-10-09.cpp": "4d00dce7bdfb876f1597dc8aaca4ce8d458dfe8a23e2c0ce5576810af351cf5b",
+    "folder-cache-scan-trials-2026-10-09.json": "00522c109bf06e87a2c320156f99c50740de89d1ef91871c5257e5acd9662ef5",
+    "folder-cache-scanengine-after-instrumented-2026-10-09.cpp": "c06faacc0071eab48f874a0f3fbd16e098a3220610994f75ffd103d5ffd5b2ff",
+    "folder-cache-scanengine-after-original-2026-10-09.cpp": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+    "folder-cache-scanengine-before-instrumented-2026-10-09.cpp": "069634e521e7369c88db1d2601648e837d95348758a74589b98c4ebce907b83d",
+    "folder-cache-scanengine-before-original-2026-10-09.cpp": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+    "folder-cache-tests-2026-10-09.txt": "886856ad169a70956c1df341c75f582bd6653ab7d6357348390c0337f6d9e7fe",
+    "run-folder-cache-probe-2026-10-09.py": "1e04b2d6f972b5398bda34fdf53610459bfd2fc8b763fdce42503b33e1290677",
+    "run-folder-cache-scans-2026-10-09.py": "142debeeff804e99fa57dfb7cc55e4473a8ee76f0de3be19c11a9037b88aad22"
+  },
+  "reportSha256": "8a6c23bc09bdec4339e6a144a1efd1ca9625a2ee42dd7b779c06fadbcaa83375"
+}

@@ -6,7 +6,8 @@
 #include "canon/scanmodel.h"
 
 MediaFile canonMediaFile(const Canon::MediaFile &file,
-						 const QSharedPointer<const Canon::ScanResult> &scan);
+						 const QSharedPointer<const Canon::ScanResult> &scan,
+						 const QString &volumePath = {}, const QString &volumeName = {});
 
 // Refresh only semantic fields from current selections. Physical row identity,
 // filesystem/volume/family details and operation stamps remain unchanged.

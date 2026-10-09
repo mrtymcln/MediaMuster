@@ -3,6 +3,7 @@
 // cannot accidentally pass by copying the audio or video into memory.
 
 #include "canon/legacyreader.h"
+#include "canon/audioreader_p.h"
 #include "testcanonbento.h"
 
 #include <QBuffer>
@@ -180,6 +181,9 @@ private slots:
 	void realAvidSlates();
 	void realAvidAudio_data();
 	void realAvidAudio();
+	void realAudioSummariesMatchNativeFields_data();
+	void realAudioSummariesMatchNativeFields();
+	void audioSummaryFieldsFollowFragmentedRanges();
 };
 
 void TestCanonLegacy::plainNativeAudio_data()
@@ -676,6 +680,88 @@ void TestCanonLegacy::realAvidAudio()
 	QVERIFY(summary);
 	QVERIFY(summary->bytesRetained);
 	QCOMPARE(summary->locator.ranges[0].offset, isWave ? qint64(8650086) : qint64(8647094));
+}
+
+void TestCanonLegacy::realAudioSummariesMatchNativeFields_data()
+{
+	realAvidAudio_data();
+}
+
+void TestCanonLegacy::realAudioSummariesMatchNativeFields()
+{
+	QFETCH(QString, name);
+	QFETCH(bool, isWave);
+	QFile input(QStringLiteral(FIXTURES_DIR) + "/omf/mc2026_audio/" + name);
+	QVERIFY(input.open(QIODevice::ReadOnly));
+	Canon::Cancellation cancellation;
+	const auto source = Canon::LegacyReader{}.read(input, {{}, cancellation});
+	QCOMPARE(source.outcome, Outcome::Complete);
+	QCOMPARE(source.embeddedSources.size(), 1);
+	const auto &embedded = source.embeddedSources.first();
+	const auto parentName = isWave ? QStringLiteral("OMFI:WAVD:Summary") : QStringLiteral("OMFI:AIFD:Summary");
+	const auto *summary = objectProperty(embedded, parentName);
+	const auto *copied = objectProperty(embedded, parentName + (isWave ? QStringLiteral(".fmt ") : QStringLiteral(".COMM")));
+	const auto *native = nativeChunk(source, isWave ? "fmt " : "COMM");
+	QVERIFY(summary && copied && native);
+	QCOMPARE(summary->state, PropertyReadState::Present);
+	QCOMPARE(summary->encoding.size(), isWave ? 4152 : 726);
+	QVERIFY(input.seek(summary->locator.ranges.first().offset));
+	QCOMPARE(input.read(summary->encoding.size()), summary->encoding);
+	QCOMPARE(copied->decoded.toMap(), native->decoded.toMap());
+	QCOMPARE(copied->bento, summary->bento);
+	QCOMPARE(copied->locator.objectNumber, summary->locator.objectNumber);
+	const auto *precision = objectProperty(embedded, copied->locator.name + (isWave ? QStringLiteral(".wBitsPerSample") : QStringLiteral(".sampleSize")));
+	QVERIFY(precision);
+	QCOMPARE(precision->state, PropertyReadState::Present);
+	QCOMPARE(precision->decoded.toInt(), 24);
+	QCOMPARE(precision->locator.ranges.first().offset, copied->locator.ranges.first().offset + (isWave ? 14 : 6));
+	if (isWave)
+	{
+		// This genuine short copy advertises millions of omitted sound bytes.
+		QCOMPARE(summary->encoding.mid(4088, 4), QByteArray("data"));
+		QCOMPARE(qFromLittleEndian<quint32>(summary->encoding.constData() + 4092), quint32(8640006));
+	}
+	else
+	{
+		const auto *compressionName = objectProperty(embedded, copied->locator.name + QStringLiteral(".compressionName"));
+		QVERIFY(compressionName);
+		QCOMPARE(compressionName->encoding, QByteArray("24-bit Integer"));
+		QCOMPARE(compressionName->decoded.toString(), QStringLiteral("24-bit Integer"));
+		QCOMPARE(compressionName->textEncoding, std::optional<Canon::TextEncoding>(Canon::TextEncoding::Ascii));
+		QCOMPARE(compressionName->locator.ranges.first().offset, summary->locator.ranges.first().offset + 655);
+	}
+}
+
+void TestCanonLegacy::audioSummaryFieldsFollowFragmentedRanges()
+{
+	// Microsoft WAVEFORMATEXTENSIBLE: 24 storage bits, 20 valid bits, stereo
+	// speaker mask and PCM GUID. Only its Bento storage is fragmented here.
+	const auto format = number<quint16>(0xfffe) + number<quint16>(2) + number<quint32>(48000) + number<quint32>(288000) +
+		number<quint16>(6) + number<quint16>(24) + number<quint16>(22) + number<quint16>(20) + number<quint32>(3) +
+		QByteArray::fromHex("0100000000001000800000aa00389b71");
+	Canon::RawProperty summary;
+	summary.locator.name = QStringLiteral("OMFI:WAVD:Summary");
+	summary.locator.objectNumber = 201;
+	summary.encoding = wave(chunk("fmt ", format));
+	summary.locator.ranges = {{100, 50}, {900, 10}};
+	summary.state = PropertyReadState::Present;
+	auto context = QSharedPointer<Canon::BentoPropertyContext>::create();
+	context->property = 123;
+	context->typeName = QStringLiteral("omfi:DataValue");
+	summary.bento = context;
+	const auto fields = Canon::Detail::decodeAudioSummary(summary);
+	const auto guid = std::find_if(fields.cbegin(), fields.cend(), [](const auto &field)
+		{ return field.locator.name == QLatin1String("OMFI:WAVD:Summary.fmt .SubFormat"); });
+	QVERIFY(guid != fields.cend());
+	QCOMPARE(guid->state, PropertyReadState::Present);
+	QCOMPARE(guid->encoding, QByteArray::fromHex("0100000000001000800000aa00389b71"));
+	QCOMPARE(guid->locator.objectNumber, quint64(201));
+	QCOMPARE(guid->bento, summary.bento);
+	QCOMPARE(guid->locator.ranges.size(), 2);
+	QCOMPARE(guid->locator.ranges[0].offset, qint64(144));
+	QCOMPARE(guid->locator.ranges[0].length, qint64(6));
+	QCOMPARE(guid->locator.ranges[1].offset, qint64(900));
+	QCOMPARE(guid->locator.ranges[1].length, qint64(10));
 }
 
 QTEST_APPLESS_MAIN(TestCanonLegacy)

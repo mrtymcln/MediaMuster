@@ -759,12 +759,16 @@ void MainWindow::setupConnections()
 		},
 		Qt::QueuedConnection);
 
+	connect(m_scanner, &MediaScanner::scanDiscovering, this, &MainWindow::onScanDiscovering,
+			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanProgress, this, &MainWindow::onScanProgress,
 			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanLogBatch, this, &MainWindow::onScanLogBatch,
 			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanIssuesFinished, m_model, &MediaTableModel::setScanIssues, Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanFinished, this, &MainWindow::onScanFinished,
+			Qt::QueuedConnection);
+	connect(m_scanner, &MediaScanner::scanFailed, this, &MainWindow::onScanFailed,
 			Qt::QueuedConnection);
 	connect(
 		m_scanner, &MediaScanner::scanFinalising, this,
@@ -1440,11 +1444,24 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 	}
 
 	m_operations->setActivity(FileOperationController::Activity::Scanning);
+	// A new scan replaces the session, including its archived source details.
+	// Release the old rows before constructing another complete inventory.
+	m_model->setMediaFiles({});
+	m_persistentSelectedPaths.clear();
+	resetFiltersForNewScan();
+	refreshEverything();
 	progressDialog()->begin();
 	progressDialog()->setDetail(tr("Starting scan..."));
 	m_scanTimer.start();
 
 	m_scanner->startScan(opts);
+}
+
+void MainWindow::onScanDiscovering(const QString &path)
+{
+	auto *dlg = progressDialog();
+	dlg->setProgress(0, 0);
+	dlg->setDetail(tr("Finding media files… %1").arg(QDir::toNativeSeparators(path)));
 }
 
 void MainWindow::onScanProgress(int current, int total, const QString &currentPath)
@@ -1481,7 +1498,6 @@ void MainWindow::onScanLogBatch(const QVector<LogMessage> &batch)
 		if (i > 0)
 			combined += QLatin1Char('\n');
 		combined += formatConsoleLine(batch[i].module, batch[i].message);
-		Diagnostics::appendConsoleLine(batch[i].level, batch[i].module, batch[i].message);
 	}
 	m_console->appendPlainText(combined);
 }
@@ -1501,6 +1517,13 @@ void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 	refreshEverything();
 
 	m_operations->setActivity(FileOperationController::Activity::Idle);
+}
+
+void MainWindow::onScanFailed(const QString &message)
+{
+	m_statusScanTime->setText(tr("Scan failed"));
+	m_operations->setActivity(FileOperationController::Activity::Idle);
+	QMessageBox::critical(this, tr("Scan failed"), message);
 }
 
 void MainWindow::refreshEverything()

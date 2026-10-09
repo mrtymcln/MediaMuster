@@ -22,16 +22,66 @@ The [8 October root membership corrections](root-membership-corrections-2026-10-
 record the approved strict ownership policy and current projection changes; the
 [bounded specimen investigation](root-membership-specimens-2026-10-08.md) retains
 the genuine-file observations and hashes.
-The final native suite passes 38/38. The repeat scan keeps all 2,413 physical rows;
+That stage's final native suite passes 38/38. The repeat scan keeps all 2,413 physical rows;
 13 displayed cells change for the recorded reasons in that report. F06, F07, F14
 and F40 are closed within the admitted scope. The [8 October ledger](evidence/audit-closeout-ledger-2026-10-08.json)
-records 25 Resolved, 9 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted
-scope limits; the other 36 assessments retain their earlier evidence boundaries.
+retains those findings and their evidence boundaries.
+
+The later [legacy compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
+closes F17, F20 and F21 within their admitted scope. Compression lookup now follows
+typed descriptors and verified compatible labels, without using MobId width.
+Native and copied audio headers share their field decoder and retain individual
+field bytes, locations and read states. Final verification passes 39/39 native
+suites and keeps all 2,413 physical rows; only two supported DV short names change.
+Database-first scheduling and all existing scan notices remain unchanged. The
+[current ledger](evidence/audit-closeout-ledger-2026-10-08.json) records 28 Resolved,
+6 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted scope limits. Genuine
+specimen coverage and authored controls are distinguished in the correction report.
+
+The [shared compression-name catalogue](compression-name-catalogue-2026-10-08.md)
+now supplies verified descriptive names to both MXF and MDB/OMF projections.
+It is separate from source selection and preserves raw evidence. Initial catalogue
+verification passes 40/40 native suites and keeps all 2,413 physical rows: 71 Compression cells
+change, every other exported metadata value and all 806 DNx names remain unchanged.
+Database-first scheduling and source graph receipts remain unchanged. The report
+also records corrected IMX/container interpretations and nine unproven DNx
+compatibility aliases. The subsequent
+[corpus check](dnx-alias-corpus-check-2026-10-08.md) found no exact matches in
+the available live media, databases, saved specimens or supplied bins. The user
+then approved removing those exact nine rows from Canon and the old lookup, while
+retaining the verified DNx naming rules and the old engine itself. Removal
+verification passes 40/40 native suites. The repeat scan keeps all 2,413 rows,
+all 806 DNx names and every other exported metadata value unchanged. The
+[current verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json)
+records both app builds, tests and that separate corpus comparison.
+Historical corpus and byte-search receipts remain unchanged.
+
+The user then approved the first [performance-review proposal](performance-review-2026-10-08.md).
+The [property storage compaction report](property-compaction-2026-10-08.md) records
+Qt-native compaction of finished MDB/OMF property lists. The fresh 2,413-row
+comparison retains identical CSVs and all 298 notices, with approximately 152 MB
+less retained physical footprint in that measured pair. All 90 genuine source
+graph and projection comparisons match, and all 40 native suites pass. The report
+distinguishes allocation savings, process measurements and platform limits.
+
+The subsequent [reader storage compaction report](source-storage-compaction-2026-10-08.md)
+extends that Qt-native cleanup across PMR, MDB, MXF, OMF, legacy audio and AVB
+using one private helper. AVB also trims each completed object's property list
+before reading the next. The report separates ordinary scan results from bin
+loading and records actual RAM/time tradeoffs rather than equating removed
+capacity with process memory savings.
+
+The [9 October folder reuse report](folder-reuse-2026-10-09.md) records the next
+contained optimization: scan-local canonical folder keys, refreshed per-pass
+folder receipts and final folder identity indexes. Individual source change
+checks, physical rows and file-operation validation remain intact. Discovery's
+folder listing is a separate phase; this change does not claim to fix its earlier
+Windows/NEXIS delay.
 
 The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
 This supersedes the historical “not yet connected” status of the reader reports below.
 Memory optimization is not a prerequisite. Work began on 4 October and continued
-through 8 October 2026; the dated reports record verification status. The live scanner
+through 9 October 2026; the dated reports record verification status. The live scanner
 uses Canon discovery, raw source graphs, file/master projections and per-field
 selection. The AVB whole-bin path uses the fresh reader; the individual-sequence
 picker remains behind `SequenceFilter` for a later release.
@@ -81,6 +131,19 @@ Current user decision, 7 October 2026: the feature name is singular
 accepts the current 2.40 GB peak footprint and 20,802 ms scan time for now;
 further memory optimization is no longer an immediate priority. This decision
 does not establish correctness for every format variant.
+
+The [9 October Windows/NEXIS regression report](nexis-memory-regression-2026-10-09.md)
+records a subsequent large-scan failure: approximately 50 GB RAM followed by
+termination in build `e47299c`. The earlier local memory acceptance does not
+qualify that workload; large-scan storage and failure reporting now need correction.
+The [RAM storage repair proposal](ram-storage-repair-proposal-2026-10-09.md)
+records the Qt/C++17 design and bounded genuine-source archive measurements.
+The [implemented RAM source archive](ram-source-archive-implementation-2026-10-09.md)
+now preserves typed records, relationships and source identities in compressed
+RAM. All 41 suites pass; full local graph/row comparisons and CSV match the
+baseline. The final local scan retains about 417 MB instead of 2.37 GB, with
+additional scanning CPU time. Windows/NEXIS capacity verification remains
+outstanding.
 
 ## Implementation direction
 

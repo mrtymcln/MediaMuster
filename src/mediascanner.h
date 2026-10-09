@@ -30,14 +30,22 @@ public:
 	void startScan(const Options &options);
 	void cancelScan();
 signals:
+	void scanDiscovering(const QString &path);
 	void scanProgress(int current, int total, const QString &currentPath);
 	void scanFinalising();
 	void scanLogBatch(const QVector<LogMessage> &batch);
 	void scanFinished(const QVector<MediaFile> &results);
+	void scanFailed(const QString &message);
 	void scanIssuesFinished(const QVector<ScanIssue> &issues);
 
 private:
-	void doScan();
+	struct ScanCompletion
+	{
+		QVector<MediaFile> rows;
+		QVector<ScanIssue> issues;
+	};
+	ScanCompletion doScan();
+	void reportFailure(const QString &message);
 	BackgroundJob m_job;
 	std::atomic_bool m_running{false};
 	Options m_options;

@@ -1,0 +1,22 @@
+Read-only before/after folder-cache proof, 2026-10-09
+
+Baseline: git show 2d96ac2:src/canon/scanengine.cpp and copied baseline Canon archive.
+After: production scanengine.cpp source SHA256 6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02.
+Each temporary TU differs only by one instrumentation include and three counted call sites. The wrappers delegate the exact original QFileInfo calls. Other Canon objects link from the matching archive. Temporary main is O2; instrumented ScanEngine is O0 -g; C++17/arm64/Qt6.5.3.
+
+Exact successful build commands: /private/tmp/folder-cache-probe-build.txt
+Exact run command: python3 /private/tmp/run-folder-cache-probe.py
+Runner supplies QT_HASH_SEED=0; roots /Users/Shared/AvidMediaComposer and /Volumes/EDIT; OmfScan enabled. Qt CPU-feature detection required the normal read-only diagnostic sandbox escalation. No GUI, file operation or media write occurs.
+
+Measured counts in ScanEngine only:
+  canonicalFilePath folder lookups: 14502 -> 6
+  folder lastModified queries:       4826 -> 12 (six folders, provisional + final passes)
+  checkUnchanged fresh probes:       4978 -> 4978
+    PMR 18, MDB 18, MXF 4,938, legacy 4; every per-path count identical.
+These are Qt application calls, not measured OS/network transactions. Discovery/VolumeManager calls are outside this instrumentation scope.
+
+Proof: all 2,413 final MediaFile rows (path/volume/size/creation/modification/family/quarantine/KelpieId, all typed evidence observations/raw values/coverage/states/basis/eligibility/freshness/selection/reasons and object receipts, complete operation stamps), all 2,425 raw ParsedSource graphs (including deliberately unopened headers), scheduling/candidate identity, all 298 issues, callbacks and completion state serialize identically. QDataStream Qt_6_0 BigEndian is streamed through a bounded 64 KiB SHA256 sink; no giant graph copy. Vector order preserved, hash field keys sorted. Pointer addresses/sharing topology and allocation capacity excluded because they are not semantic values; all pointed-to receipt/context values included.
+
+Runner checks device/inode/size/mtime_ns on all 2,425 source paths and six media folders before/after each mode and across modes: all unchanged. Both exits 0, stderr empty. Source/library/executable hashes and full outputs saved alongside this file. Source paths are existing genuine media, not generated format cases. This is a real corpus proof, not Windows/NEXIS network measurement. Root separately runs regression suites for aliases, changed files/databases/folders and cancellation, and uninstrumented performance trials.
+
+Instrumented before scan 19,834 ms, after 20,191 ms; hashing 11,767/11,858 ms is outside scan measurement. Do not infer a speed gain from these probes; root's uninstrumented alternating trials provide performance evidence.

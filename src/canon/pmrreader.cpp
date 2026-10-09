@@ -3,6 +3,7 @@
 // so format rules and damaged-file handling can be checked without the UI.
 
 #include "pmrreader.h"
+#include "sourcestorage_p.h"
 
 #include <QByteArrayView>
 #include <QStringDecoder>
@@ -356,6 +357,7 @@ namespace Canon
 		result.snapshot = SourceSnapshotRef::create(receipt);
 		for (auto &object : result.objects)
 			object.snapshot = result.snapshot;
+		Detail::squeezeSourceStorage(result, context.cancellation);
 		return result;
 	}
 }

@@ -1,0 +1,465 @@
+{
+  "recordedUtc": "2026-10-08T13:01:58.163047+00:00",
+  "localCompletionDate": "2026-10-09",
+  "timezone": "Australia/Sydney",
+  "dateNote": "Work began on 8 October; final verification completed just after midnight on 9 October. Evidence filenames retain the starting date.",
+  "authorization": "User: Ok, lets put Qt squeeze everywhere! Context: extend the proven MDB/OMF property-list cleanup across remaining Canon source readers.",
+  "implementation": {
+    "privateHelper": "src/canon/sourcestorage_p.h",
+    "readerFamilies": [
+      "PMR",
+      "MDB",
+      "MXF",
+      "OMF",
+      "native WAV/AIF and embedded OMF",
+      "AVB"
+    ],
+    "mechanism": "Qt QVector/QList::squeeze on finished, owned source lists before publication/indexing; AVB object properties also squeezed after each completed chunk. Shared strings, byte buffers, locator ranges and native contexts left intact. Optional cleanup skipped when cancelled.",
+    "formatRulesChanged": false,
+    "schemaChanged": false,
+    "fileOperationsOrUiChanged": false,
+    "oldEngineRetired": false,
+    "mdbPlacement": "End of the shared OMF interpreter, retaining the first-stage allocation lifetime."
+  },
+  "parentCommit": "5443141d557f0286e15b1c6aa2c7b481659f60ef",
+  "productionSourceSha256": {
+    "CMakeLists.txt": "ef614a3e222ce6b764218dc45c2869267319763bafaf61bfe9cefb313c7ed11c",
+    "src/canon/sourcestorage_p.h": "aa179651fbb4add4e9e5ffbe1b2193bc2fa8167e609eac0c6a05a3c999618c9e",
+    "src/canon/pmrreader.cpp": "5b90366fa8a7f378a89d12635733e3c74a8305a3bfb416a5c7153c92e7a1c367",
+    "src/canon/omfobjects_p.cpp": "431d0dd9b1ee46f237a86bbbc51224bd3f1a86249f6872f5d1ecf6c8da789d1c",
+    "src/canon/mdbreader.cpp": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825",
+    "src/canon/mxfreader.cpp": "ec922ad0cd8935d8863e6e373e94471f28275764fcdc83104ecd320a626dc2f9",
+    "src/canon/legacyreader.cpp": "03040fbdd9d248c4dd8172d8076e3494a32a441845692f8031452641eccfaa0c",
+    "src/canon/avbreader.cpp": "2887b256092bc4de396dfae771fe3cb73ba10daf2c4249feeb4641d94bec78ba"
+  },
+  "baselineLibrarySha256": "f57fc66af640f37bca9cbe416b55f3aa6d557732fba0917bf12b0f954208f311",
+  "finalCanonLibrarySha256": "e85aa421afce822a6f24a4a784269d6ab12b76763784b2842c51ee32c75ee6a8",
+  "normalLibrarySha256": "e94acbdec1d538beb25e14fd3738b13a0f798569c84a685962b922bdd3dd1151",
+  "qtVersion": "6.5.3",
+  "cxxStandard": "C++17",
+  "qtLocalSqueezeImplementation": {
+    "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qlist.h",
+    "line": 746,
+    "sha256": "8e588f0d45e223f5a7232a47069c85785314a5d04f097c56cbb5790ff5a7f294",
+    "behavior": "For mutable lists, allocates exact size and moves detached contents or copies shared contents when size is below capacity or detachment is needed; reader boundaries precede sharing."
+  },
+  "builds": [
+    {
+      "directory": "build-canon",
+      "configuration": "Debug",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "command": "cmake --build build-canon --parallel 4",
+      "result": "passed",
+      "normalAppCodesignVerification": "passed",
+      "codesignOutput": "build-canon/MediaMuster.app: valid on disk; satisfies its Designated Requirement"
+    },
+    {
+      "directory": "build",
+      "configuration": "Debug",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "command": "cmake --build build --parallel 4",
+      "result": "passed",
+      "normalAppCodesignVerification": "passed",
+      "codesignOutput": "build/MediaMuster.app: valid on disk; satisfies its Designated Requirement"
+    }
+  ],
+  "tests": {
+    "command": "ctest --test-dir build-canon --output-on-failure -j 4 --output-log /private/tmp/source-storage-compaction-final-ctest-2026-10-08.txt",
+    "passed": 40,
+    "failed": 0,
+    "elapsedSeconds": 44.6,
+    "nativeArchitecture": "arm64",
+    "newTestsAdded": false,
+    "log": "source-storage-compaction-tests-2026-10-08.txt",
+    "logSha256": "0b6b5dceddc6f61ac87efbd925a547dfeb90f459f8e2bc5c7578313c0b9c0000"
+  },
+  "fullScanVerification": {
+    "receipt": "source-storage-full-scan-verification-2026-10-08.json",
+    "runs": 11,
+    "rows": 2413,
+    "sources": 2425,
+    "issues": 298,
+    "allCsvByteIdentical": true,
+    "allInventoryIncludingKelpieIdsIdentical": true,
+    "allIssuesIdentical": true,
+    "allSourceFieldsExceptCapacityIdentical": true,
+    "series": {
+      "before": {
+        "trials": [
+          {
+            "receipt": "source-compaction-before-repeat1-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 21193,
+            "memoryRetained": {
+              "peakResidentBytes": 2688466944,
+              "physicalFootprintBytes": 2318014784,
+              "residentBytes": 2688368640
+            }
+          },
+          {
+            "receipt": "source-compaction-before-repeat2-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 21002,
+            "memoryRetained": {
+              "peakResidentBytes": 2739224576,
+              "physicalFootprintBytes": 2353125696,
+              "residentBytes": 2739126272
+            }
+          },
+          {
+            "receipt": "source-compaction-before-repeat3-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 20855,
+            "memoryRetained": {
+              "peakResidentBytes": 2695692288,
+              "physicalFootprintBytes": 2316654912,
+              "residentBytes": 2695593984
+            }
+          }
+        ],
+        "medianScanMs": 21002,
+        "medianPhysicalFootprintBytes": 2318014784,
+        "medianPeakResidentBytes": 2695692288
+      },
+      "after": {
+        "trials": [
+          {
+            "receipt": "source-compaction-after-repeat1-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 20843,
+            "memoryRetained": {
+              "peakResidentBytes": 2750513152,
+              "physicalFootprintBytes": 2369968448,
+              "residentBytes": 2750513152
+            }
+          },
+          {
+            "receipt": "source-compaction-after-repeat2-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 21084,
+            "memoryRetained": {
+              "peakResidentBytes": 2738356224,
+              "physicalFootprintBytes": 2364692800,
+              "residentBytes": 2738257920
+            }
+          },
+          {
+            "receipt": "source-compaction-after-repeat3-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 20853,
+            "memoryRetained": {
+              "peakResidentBytes": 2731212800,
+              "physicalFootprintBytes": 2292685184,
+              "residentBytes": 2731114496
+            }
+          }
+        ],
+        "medianScanMs": 20853,
+        "medianPhysicalFootprintBytes": 2364692800,
+        "medianPeakResidentBytes": 2738356224
+      },
+      "final": {
+        "trials": [
+          {
+            "receipt": "source-compaction-final-repeat1-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 21783,
+            "memoryRetained": {
+              "peakResidentBytes": 2725134336,
+              "physicalFootprintBytes": 2363349248,
+              "residentBytes": 2725036032
+            }
+          },
+          {
+            "receipt": "source-compaction-final-repeat2-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 21797,
+            "memoryRetained": {
+              "peakResidentBytes": 2752643072,
+              "physicalFootprintBytes": 2331138432,
+              "residentBytes": 2752544768
+            }
+          },
+          {
+            "receipt": "source-compaction-final-repeat3-2026-10-08.json",
+            "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+            "scanMs": 21819,
+            "memoryRetained": {
+              "peakResidentBytes": 2751184896,
+              "physicalFootprintBytes": 2349668672,
+              "residentBytes": 2751086592
+            }
+          }
+        ],
+        "medianScanMs": 21797,
+        "medianPhysicalFootprintBytes": 2349668672,
+        "medianPeakResidentBytes": 2751184896
+      }
+    },
+    "finalAvbTimingChangeOutsideThisScan": "No bins loaded; non-AVB code is unchanged from final full-scan batch.",
+    "conclusion": "No additional ordinary full-scan RAM reduction established. Final median +795 ms in Debug; footprint ranges overlap, peak resident median higher."
+  },
+  "sourceGraphVerification": {
+    "scope": "Read-only diagnostic; no app/test production edits by diagnostic agent.",
+    "sources": 105,
+    "pairs": 105,
+    "graphHashesEqual": true,
+    "nonAvbProjectionHashesEqual": true,
+    "avbSequenceResolutionHashesEqual": true,
+    "sourceKinds": {
+      ".mdb": 8,
+      ".omf": 80,
+      ".wav": 1,
+      ".aif": 1,
+      ".pmr": 6,
+      ".avb": 9
+    },
+    "outcomes": {
+      "1": 210
+    },
+    "sourceStampsUnchanged": true,
+    "stderrEmpty": true,
+    "allAfterCoveredListsHaveExactCapacity": true,
+    "capacityByKind": {
+      ".mdb": {
+        "sources": 8,
+        "beforeRequestedSlotBytes": 682176088,
+        "afterRequestedSlotBytes": 616304824,
+        "requestedSlotByteReduction": 65871264
+      },
+      ".pmr": {
+        "sources": 6,
+        "beforeRequestedSlotBytes": 12024792,
+        "afterRequestedSlotBytes": 6992736,
+        "requestedSlotByteReduction": 5032056
+      },
+      ".avb": {
+        "sources": 9,
+        "beforeRequestedSlotBytes": 1048529184,
+        "afterRequestedSlotBytes": 766112872,
+        "requestedSlotByteReduction": 282416312
+      },
+      ".omf": {
+        "sources": 80,
+        "beforeRequestedSlotBytes": 13275120,
+        "afterRequestedSlotBytes": 12226224,
+        "requestedSlotByteReduction": 1048896
+      },
+      ".wav": {
+        "sources": 1,
+        "beforeRequestedSlotBytes": 142976,
+        "afterRequestedSlotBytes": 128008,
+        "requestedSlotByteReduction": 14968
+      },
+      ".aif": {
+        "sources": 1,
+        "beforeRequestedSlotBytes": 144320,
+        "afterRequestedSlotBytes": 128816,
+        "requestedSlotByteReduction": 15504
+      }
+    },
+    "largestAvbIsolatedRepeats": {
+      "footprintParsed": {
+        "before": {
+          "values": [
+            1088916608,
+            1091275904,
+            1092881728
+          ],
+          "median": 1091275904,
+          "min": 1088916608,
+          "max": 1092881728
+        },
+        "after": {
+          "values": [
+            945916992,
+            951127040,
+            952126464
+          ],
+          "median": 951127040,
+          "min": 945916992,
+          "max": 952126464
+        }
+      },
+      "peakResidentParsed": {
+        "before": {
+          "values": [
+            1122172928,
+            1133592576,
+            1127497728
+          ],
+          "median": 1127497728,
+          "min": 1122172928,
+          "max": 1133592576
+        },
+        "after": {
+          "values": [
+            1040416768,
+            1046888448,
+            1043693568
+          ],
+          "median": 1043693568,
+          "min": 1040416768,
+          "max": 1046888448
+        }
+      },
+      "parseMs": {
+        "before": {
+          "values": [
+            2215,
+            2158,
+            2204
+          ],
+          "median": 2204,
+          "min": 2158,
+          "max": 2215
+        },
+        "after": {
+          "values": [
+            2419,
+            2408,
+            2438
+          ],
+          "median": 2419,
+          "min": 2408,
+          "max": 2438
+        }
+      },
+      "medianParsedFootprintReduction": 140148864,
+      "medianPeakResidentReduction": 83804160,
+      "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/01_SEQ/01_SEQ.avb",
+      "method": "Largest AVB by file size, 01_SEQ.avb; three isolated fresh-process pairs after all app builds and tests finished. Orders: before/after, after/before, before/after. QT_HASH_SEED=0. Parsed physical footprint and peak resident memory captured immediately after reading, before any hashing, indexing, projection or graph counting."
+    },
+    "hashMethod": "QDataStream Qt_6_0, big-endian, streamed through a bounded 64 KB SHA256 sink. All declared ParsedSource fields recursively, including source receipts, record sets, objects, raw properties, decoded QVariants, read/text encoding/basis flags, native contexts, locators, framing/ranges, ordered relationships/references and diagnostics. Complete PMR/OMF projection file/master IDs, object references, observations, coverage and read/selected states. AVB sequence candidates and whole-bin, all-selected and each-selected-sequence resolutions, including ordered roots, edges, media, terminals, issues, completeness and cancellation. Hash-map keys sorted; QT_HASH_SEED=0 in both modes. Pointer addresses and capacities excluded from semantic digests.",
+    "storageMethod": "For each ParsedSource recursively: counts, capacities and element sizes of object properties, unowned properties, objects, relationships, record sets, record-set object handles, embedded children and diagnostics. Requested slot bytes = capacity * sizeof(element). This measures neither actual malloc bucket sizes nor process RAM nor deep string/byte/context allocations.",
+    "sourceStampMethod": "Exact size, modification timestamp in nanoseconds, device/inode and absolute path before each pair; rechecked after the pair and unchanged for all 105 sources and all three isolated AVB pairs.",
+    "build": "Qt 6.5.3, C++17; before copied Canon Debug library with only MDB/OMF property compaction versus final Canon Debug library with shared source-storage helper and AVB property compaction after each completed chunk. Diagnostic compiled arm64 with -O2.",
+    "limitations": [
+      "Real unchanged specimens, not a guarantee for every possible file.",
+      "Final 105-source semantic pairs ran without competing app builds/tests. Individual one-off times and footprints remain supplementary; largest AVB repeats provide the bounded repeated measurement.",
+      "AVB resolution uses one loaded bin at a time. All issues and partial results are retained identically; this is not a claim of complete dependency coverage.",
+      "Pointer-sharing topology is not hashed; pointed-to receipt/context contents are included.",
+      "Requested slot reductions cannot be added to claim process-footprint reductions; allocation behavior changes.",
+      "Full managed-media scan outputs and scheduling are compared separately by the root agent; those runs do not establish an ordinary-scan RAM benefit.",
+      "No Windows/NEXIS or Release benchmark."
+    ],
+    "sourceSha256": "2c0a973f5defcd09fbb65d7f7f423fb4909a1679b8e0d9db1518724ff72a36b1",
+    "runnerSha256": "9e99448a1befc55c21c7c08e8e6c2042b3ec1ff53f773bea89d17f523122fff5",
+    "avbRepeatRunnerSha256": "126fa9eb0aabb8696c180ab7e2cc8d601ce901ec1bf7c7acf11d5a140bee0ef8",
+    "artifactSha256": {
+      "all-source-compaction-graph-proof.cpp": "2c0a973f5defcd09fbb65d7f7f423fb4909a1679b8e0d9db1518724ff72a36b1",
+      "run-all-source-compaction-proof.py": "9e99448a1befc55c21c7c08e8e6c2042b3ec1ff53f773bea89d17f523122fff5",
+      "run-all-source-compaction-avb-repeats.py": "126fa9eb0aabb8696c180ab7e2cc8d601ce901ec1bf7c7acf11d5a140bee0ef8",
+      "all-source-compaction-graph-before": "aa124e993f72f4d5965ef1592a5f2750b4b3a13fd87dd158baa63e64348e85be",
+      "all-source-compaction-graph-after": "27d1da888914c2a37672732ec3c3fede2baff064556275fbb1e259e14b221f6f"
+    },
+    "librarySha256": {
+      "/private/tmp/libmediamuster_canon-before-all-source-compaction.a": "f57fc66af640f37bca9cbe416b55f3aa6d557732fba0917bf12b0f954208f311",
+      "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a": "e85aa421afce822a6f24a4a784269d6ab12b76763784b2842c51ee32c75ee6a8"
+    },
+    "finalSourceSha256": {
+      "/Users/martymclean/Developer/MediaMuster/src/canon/sourcestorage_p.h": "aa179651fbb4add4e9e5ffbe1b2193bc2fa8167e609eac0c6a05a3c999618c9e",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/avbreader.cpp": "2887b256092bc4de396dfae771fe3cb73ba10daf2c4249feeb4641d94bec78ba",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/mdbreader.cpp": "f915192bd49a4b650737a236f97bc73e0fdb148e9132fa7c934032b58c2d4825",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/omfobjects_p.cpp": "431d0dd9b1ee46f237a86bbbc51224bd3f1a86249f6872f5d1ecf6c8da789d1c",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/legacyreader.cpp": "03040fbdd9d248c4dd8172d8076e3494a32a441845692f8031452641eccfaa0c",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/pmrreader.cpp": "5b90366fa8a7f378a89d12635733e3c74a8305a3bfb416a5c7153c92e7a1c367",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/mxfreader.cpp": "ec922ad0cd8935d8863e6e373e94471f28275764fcdc83104ecd320a626dc2f9",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/scanmodel.h": "084cba79ff3efe5345c60815a18592d6beec54c42c0e2c0138293c1d0fd5ab37",
+      "/Users/martymclean/Developer/MediaMuster/src/canon/projection.h": "1c241f16be8b096d52d2106a771815f2ef3e185225b2370fb639768195b1878b",
+      "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h": "ada96ea6f8f885935e52aa0629cdc4ec641a7328f2a2d6a78cd04aba3a14318d"
+    },
+    "historicalEndOnlyReceipt": "/private/tmp/all-source-end-only-compaction-history.json"
+  },
+  "independentReview": {
+    "ownership": "Completed source lists are owned; parser temporaries/pointers are gone before reallocation; projection/indexing follows reader return.",
+    "avbEarlyBoundary": "After chunk(handle) returns exactly one last object exists, including unsupported chunks. Cursors/property views are destroyed. finishReferences updates relationships and root validation, without adding properties or retaining property pointers.",
+    "cancelAndPartial": "Thrown partial chunks reach final cleanup; cancellation skips optional cleanup and retains acquired evidence.",
+    "actionableIssuesRemaining": 0
+  },
+  "limits": [
+    "Qt6.5.3, C++17, universal Debug apps, native arm64 macOS. Diagnostic compiled O2 against Debug Canon libraries.",
+    "No Release or Windows/NEXIS performance claim.",
+    "105-source graph proof excludes MXF; MXF covered by existing fixtures and unchanged scan outputs.",
+    "Allocation slot reductions are not equivalent to process-footprint reduction.",
+    "Before/final full-scan batches were not interleaved; final AVB isolated pairs alternated order.",
+    "Source graph content hashes exclude pointer addresses/capacities and do not fingerprint sharing topology.",
+    "Original media and databases unchanged; no claim of universal format coverage."
+  ],
+  "artifactExecutionPathMap": {
+    "all-source-compaction-graph-proof.cpp": "source-storage-graph-proof-2026-10-08.cpp",
+    "run-all-source-compaction-proof.py": "source-storage-graph-runner-2026-10-08.py",
+    "run-all-source-compaction-avb-repeats.py": "source-storage-avb-repeat-runner-2026-10-08.py",
+    "all-source-compaction-graph-paths.json": "source-storage-graph-paths-2026-10-08.json",
+    "all-source-compaction-graph-results.jsonl": "source-storage-graph-results-2026-10-08.jsonl",
+    "all-source-compaction-graph-summary.json": "source-storage-graph-summary-2026-10-08.json",
+    "all-source-compaction-graph-errors.json": "source-storage-graph-errors-2026-10-08.json",
+    "all-source-compaction-graph-build.txt": "source-storage-graph-build-2026-10-08.txt",
+    "all-source-compaction-avb-repeat-results.jsonl": "source-storage-avb-repeat-results-2026-10-08.jsonl",
+    "all-source-compaction-avb-repeat-errors.json": "source-storage-avb-repeat-errors-2026-10-08.json"
+  },
+  "artifactSha256": {
+    "source-compaction-after-real-scan-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-after-real-scan-2026-10-08.json": "a03338e08f26536ecdbe05cd5b43a60742878eeaa6cb4484bce70cbfc47d228f",
+    "source-compaction-after-real-scan-2026-10-08.txt": "20281defb5b966ff36b67f4d336e7573c978f2a56479e0f788fc2536d2bae53e",
+    "source-compaction-after-repeat1-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-after-repeat1-2026-10-08.json": "85861bf84125c683c4fe83147437b7703e077d23ea895a02d0240722a700f29e",
+    "source-compaction-after-repeat1-2026-10-08.txt": "a87e0004004e109146a68f42136fd75ed8105df9316ddbaf8902767aeef1dcae",
+    "source-compaction-after-repeat2-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-after-repeat2-2026-10-08.json": "96d459ea28bce26aa9634050aaa422ea25a1acaa927dd25eea46a0b99a9d5c4d",
+    "source-compaction-after-repeat2-2026-10-08.txt": "e609983cfc2c311aaf515216ce73bdd62a7782d602e070ccf5e93ecc4026e8f2",
+    "source-compaction-after-repeat3-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-after-repeat3-2026-10-08.json": "d254225e24872356868b434307ea044150a6e9e5c7d79862945dd960780d2586",
+    "source-compaction-after-repeat3-2026-10-08.txt": "3fd26daaaea4461055e4d0f54580493c0e08f19dfd4bcac4b0dcd6cba5883f72",
+    "source-compaction-before-real-scan-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-before-real-scan-2026-10-08.json": "ab89ca5c9906ba5f80ce87b61aebb8889a46a28e1f366f2ee1e594c2ff915e60",
+    "source-compaction-before-real-scan-2026-10-08.txt": "1675977dc6db6c760f95945bf8cd0cc114eeec714a6c7b49ccfa4fa6b512a1ec",
+    "source-compaction-before-repeat1-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-before-repeat1-2026-10-08.json": "f1b91ebffca5753dcc8c3ae3b17e1c45c7ac61ee4e0f7704683c6e41e30bce4c",
+    "source-compaction-before-repeat1-2026-10-08.txt": "4fd4b059074834f66f395cc4a04c71340ff5ffc54799dd66269688c9b6b4a6dd",
+    "source-compaction-before-repeat2-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-before-repeat2-2026-10-08.json": "07f8236005fcf776e1b044e6947866919f341b8c59a954089e9b9f5c094d33c3",
+    "source-compaction-before-repeat2-2026-10-08.txt": "cbf7dd2b20fee7ac4474d6a83c99161e801a042d74b0aa6eae2091923627d872",
+    "source-compaction-before-repeat3-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-before-repeat3-2026-10-08.json": "bb137799d04f7c6d0a9729e5c1d850bbfe8035ad476cee058882985c86963c22",
+    "source-compaction-before-repeat3-2026-10-08.txt": "683c7ef6cc5157660d656e3ab3005a9d6549c19c1506a0420d395233e6de6666",
+    "source-compaction-final-repeat1-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-final-repeat1-2026-10-08.json": "b29e7dbea142fd599fd6fd3c17bee84a34aacf958b9eb3df43661c834fcdc340",
+    "source-compaction-final-repeat1-2026-10-08.txt": "9968f43114b941c7332f9fae05be3d05e49ace5e3e0b24c63cf3580923a4d0e9",
+    "source-compaction-final-repeat2-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-final-repeat2-2026-10-08.json": "f4cace1de619971acf85a293782ada36e2c14cd0b6f3aed573476c1e8e317296",
+    "source-compaction-final-repeat2-2026-10-08.txt": "d1276dd2c613634349e09f192f144267372f7f6de53b3b017edc9300a8de094e",
+    "source-compaction-final-repeat3-2026-10-08.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "source-compaction-final-repeat3-2026-10-08.json": "a27557cbca5cff73f1e8cd3e16391d525db61c97e3c0664cd9a2b2092bbccc05",
+    "source-compaction-final-repeat3-2026-10-08.txt": "d0023e524b91473e03819d878c0ceb8fa161c192ecf685ff184cd0ee919794e7",
+    "source-storage-avb-repeat-errors-2026-10-08.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "source-storage-avb-repeat-results-2026-10-08.jsonl": "8f93bebc88305a89223e621f3cd029faf377c7d17cbba6cdbc2539bcb37f98c5",
+    "source-storage-avb-repeat-runner-2026-10-08.py": "126fa9eb0aabb8696c180ab7e2cc8d601ce901ec1bf7c7acf11d5a140bee0ef8",
+    "source-storage-compaction-tests-2026-10-08.txt": "0b6b5dceddc6f61ac87efbd925a547dfeb90f459f8e2bc5c7578313c0b9c0000",
+    "source-storage-end-only-avb-repeat-errors-2026-10-08.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "source-storage-end-only-avb-repeat-results-2026-10-08.jsonl": "b043a8192b85deb33f42b07cc6d05ee801082b71ed86f379695a140b39c1517d",
+    "source-storage-end-only-graph-build-2026-10-08.txt": "077d10fadf2a74174bb361952c7be87f044c0456d71239f45f4ce416e8d64abc",
+    "source-storage-end-only-graph-errors-2026-10-08.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "source-storage-end-only-graph-paths-2026-10-08.json": "8b8cda22cd3a906674ceec11c194a08f546a6acbd0d9eb72a96132901935c4ba",
+    "source-storage-end-only-graph-proof-2026-10-08.cpp": "2c0a973f5defcd09fbb65d7f7f423fb4909a1679b8e0d9db1518724ff72a36b1",
+    "source-storage-end-only-graph-results-2026-10-08.jsonl": "74adf182cb397c95396c4bc79e9ce98a1b04d6e9db065831e1e42234e66c0b69",
+    "source-storage-end-only-graph-summary-2026-10-08.json": "de0273c9040a79dfdfcffe16299b3c48bbe2eec7eb52d2c33c671c219c7c3ccb",
+    "source-storage-end-only-history-2026-10-08.json": "5aa16d0a1a09eaf1837cb4013930057c1b37102f96d6b48634f0bff4c14555ed",
+    "source-storage-end-only-history-2026-10-08.txt": "0a2dc34b89101273f85bd10771479909809dca1f09f8829fb1941796bb594ad7",
+    "source-storage-full-scan-verification-2026-10-08.json": "be226a2a2fcb60b93e418891434215090780fffbc8bd7345372434d3a31974af",
+    "source-storage-graph-build-2026-10-08.txt": "fe2ff8eed5291cd1be5f33d16d3723ee905998a240db1da74f1a98b3f5fa33f1",
+    "source-storage-graph-errors-2026-10-08.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "source-storage-graph-paths-2026-10-08.json": "8b8cda22cd3a906674ceec11c194a08f546a6acbd0d9eb72a96132901935c4ba",
+    "source-storage-graph-proof-2026-10-08.cpp": "2c0a973f5defcd09fbb65d7f7f423fb4909a1679b8e0d9db1518724ff72a36b1",
+    "source-storage-graph-results-2026-10-08.jsonl": "8b55c981ecfff603fe2a404dae3457c31e2210193ad7fa6145819e20df2af992",
+    "source-storage-graph-runner-2026-10-08.py": "9e99448a1befc55c21c7c08e8e6c2042b3ec1ff53f773bea89d17f523122fff5",
+    "source-storage-graph-summary-2026-10-08.json": "386dd80678809c7ea31ba7d035b3a51d34433a12dbe6b74d3ea47ae1c6ea65ec"
+  },
+  "reportSha256": "a695e77aff156f4e2d7df63a019fa5f3ae54d6542fc162935dfa0d12e0cdb237"
+}

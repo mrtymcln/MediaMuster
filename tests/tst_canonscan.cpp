@@ -6,6 +6,8 @@
 #include "testcanonbento.h"
 #include <QtEndian>
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>
@@ -81,7 +83,7 @@ namespace
 		}
 		return writer.build();
 	}
-	const Canon::ParsedSource *mediaSource(const Canon::ScanResult &scan, const QString &path)
+	const Canon::StoredSource *mediaSource(const Canon::ScanResult &scan, const QString &path)
 	{
 		for (const auto &source : scan.sources)
 			if (source.snapshot && source.snapshot->path == path)
@@ -145,8 +147,11 @@ private slots:
 			{ return message.contains(QStringLiteral("ObjectSpine")); }));
 		const auto *database = mediaSource(scan, folder + QStringLiteral("/metadata.mdb"));
 		QVERIFY(database);
-		QVERIFY(!database->objects.isEmpty());
-		QVERIFY(std::any_of(database->relationships.cbegin(), database->relationships.cend(),
+		const auto restored = database->restore(cancellation);
+		QVERIFY(restored);
+		QCOMPARE(restored->snapshot, database->snapshot);
+		QVERIFY(!restored->objects.isEmpty());
+		QVERIFY(std::any_of(restored->relationships.cbegin(), restored->relationships.cend(),
 			[](const Canon::Relationship &link)
 			{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
 	}
@@ -193,7 +198,9 @@ private slots:
 		QVERIFY(header);
 		QVERIFY2(header->outcome == Canon::ParsedSource::Outcome::NotRead, qPrintable(header->readReason));
 		QCOMPARE(header->snapshot->readState, SourceReadState::NotRead);
-		QVERIFY(header->objects.isEmpty());
+		const auto restoredHeader = header->restore(cancellation);
+		QVERIFY(restoredHeader);
+		QVERIFY(restoredHeader->objects.isEmpty());
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).state, PropertyReadState::NotRead);
@@ -290,6 +297,44 @@ private slots:
 		QCOMPARE(scan.files[1].evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
 		QVERIFY(std::any_of(scan.reconciliationIssues.cbegin(), scan.reconciliationIssues.cend(), [&](const ScanIssue &issue)
 							{ return issue.kind == ScanIssue::Kind::SourceChanged && issue.expectedPath == first; }));
+	}
+	void final_folder_evidence_observes_changes_since_header_decisions()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		QVERIFY(QDir().mkpath(folder));
+		for (const auto &name : {QStringLiteral("a.mxf"), QStringLiteral("b.mxf")})
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"), folder + '/' + name));
+		std::error_code error;
+		const auto nativeFolder = QDir(folder).filesystemPath();
+		const auto before = std::filesystem::last_write_time(nativeFolder, error);
+		QVERIFY(!error);
+		const auto original = QFileInfo(folder).lastModified();
+		QDateTime expected;
+		Canon::ScanCallbacks callbacks;
+		callbacks.finalising = [&]
+		{
+			// A later matching pass must observe the folder again, rather than
+			// retaining its earlier timestamp for the whole scan.
+			std::filesystem::last_write_time(nativeFolder, before + std::chrono::seconds(10), error);
+			expected = QFileInfo(folder).lastModified();
+		};
+		const Canon::Cancellation cancellation;
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(!error);
+		QVERIFY(expected.isValid() && expected != original);
+		QVERIFY(scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 2);
+		for (const auto &file : scan.files)
+		{
+			const auto observations = file.evidence.observations(MediaProperty::DatabaseStatus);
+			QVERIFY(!observations.isEmpty());
+			for (const auto &observation : observations)
+			{
+				QVERIFY(observation.snapshot);
+				QCOMPARE(observation.snapshot->modified, expected);
+			}
+		}
 	}
 	void a_database_changed_after_a_skip_triggers_header_fallback()
 	{
@@ -460,7 +505,13 @@ private slots:
 		QVERIFY(first.mediaFilePath != second.mediaFilePath);
 		QCOMPARE(first.canonScan, second.canonScan);
 		QCOMPARE(first.scanStamp.mobId, first.fileMobId);
-		QVERIFY(!first.canonScan->sources.front().objects.isEmpty());
+		const auto &stored = first.canonScan->sources.front();
+		QVERIFY(stored.archive);
+		QVERIFY(!stored.unfinishedGraph);
+		const auto restored = stored.restore(cancellation);
+		QVERIFY(restored);
+		QCOMPARE(restored->snapshot, stored.snapshot);
+		QVERIFY(!restored->objects.isEmpty());
 		QVERIFY(!first.evidence.observations(MediaProperty::FileMobId).isEmpty());
 		QCOMPARE(first.kind, MediaFile::Kind::Audio);
 		QCOMPARE(first.dbStatus, MediaFile::DbStatus::NoDatabase);
@@ -677,6 +728,120 @@ private slots:
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);
 		QVERIFY(!scan.parsingComplete);
+	}
+	void cancellation_before_source_open_data()
+	{
+		QTest::addColumn<bool>("withDatabases");
+		QTest::addColumn<bool>("atReading");
+		QTest::newRow("database-progress") << true << false;
+		QTest::newRow("header-progress") << false << false;
+		QTest::newRow("database-reading") << true << true;
+		QTest::newRow("header-reading") << false << true;
+	}
+	void cancellation_before_source_open()
+	{
+		QFETCH(bool, withDatabases);
+		QFETCH(bool, atReading);
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(tryWriteFile(path, "Header must remain unopened"));
+		if (withDatabases)
+		{
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+				pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase()));
+		}
+		Canon::Cancellation cancellation;
+		int progressCalls = 0;
+		int readingCalls = 0;
+		bool finalising = false;
+		Canon::ScanCallbacks callbacks;
+		callbacks.progress = [&](int, int, const QString &)
+		{
+			++progressCalls;
+			if (!atReading)
+				cancellation.cancel();
+		};
+		callbacks.reading = [&](const Canon::SourceCandidate &)
+		{
+			++readingCalls;
+			cancellation.cancel();
+		};
+		callbacks.finalising = [&] { finalising = true; };
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QCOMPARE(progressCalls, 1);
+		QCOMPARE(readingCalls, atReading ? 1 : 0);
+		QVERIFY(!finalising);
+		QVERIFY(scan.cancelled);
+		QVERIFY(scan.discoveryComplete);
+		QVERIFY(!scan.parsingComplete);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 1);
+		QCOMPARE(scan.files.front().path, path);
+		QCOMPARE(scan.sources.size(), scan.candidates.size());
+		for (const auto &source : scan.sources)
+		{
+			QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::NotRead);
+			QCOMPARE(source.snapshot->readState, SourceReadState::NotRead);
+			const Canon::Cancellation inspection;
+			const auto restored = source.restore(inspection);
+			QVERIFY(restored);
+			QVERIFY(restored->objects.isEmpty());
+		}
+		QVERIFY(scan.reconciliationIssues.isEmpty());
+	}
+	void cancellation_after_database_read_keeps_raw_evidence()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		const QString database = folder + QStringLiteral("/index.pmr");
+		QVERIFY(tryWriteFile(path, "Header must remain unopened"));
+		QVERIFY(tryWriteFile(database, pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		Canon::Cancellation cancellation;
+		QStringList discovered;
+		Canon::ScanCallbacks callbacks;
+		callbacks.discovering = [&](const QString &folder) { discovered.append(folder); };
+		callbacks.progress = [&](int, int, const QString &current)
+		{
+			QVERIFY(!discovered.isEmpty());
+			if (current == path)
+				cancellation.cancel();
+		};
+		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(scan.cancelled);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 1);
+		const auto *parsed = mediaSource(scan, database);
+		QVERIFY(parsed);
+		QCOMPARE(parsed->outcome, Canon::ParsedSource::Outcome::Complete);
+		const Canon::Cancellation inspection;
+		const auto restored = parsed->restore(inspection);
+		QVERIFY(restored);
+		QCOMPARE(restored->snapshot, parsed->snapshot);
+		QVERIFY(!restored->objects.isEmpty());
+		QCOMPARE(mediaSource(scan, path)->outcome, Canon::ParsedSource::Outcome::NotRead);
+		QVERIFY(scan.reconciliationIssues.isEmpty());
+	}
+	void row_conversion_reuses_known_volume_and_does_not_probe_after_cancel()
+	{
+		const auto scan = QSharedPointer<Canon::ScanResult>::create();
+		scan->cancelled = true;
+		Canon::MediaFile file;
+		file.kelpieId = 42;
+		file.path = QStringLiteral("/unavailable/Avid MediaFiles/MXF/1/take.mxf");
+		file.volumeIdentifier = QStringLiteral("captured-physical-volume");
+		file.stamp.volumeIdentifier = file.volumeIdentifier;
+		const auto known = canonMediaFile(file, scan, QStringLiteral("/selected-volume"), QStringLiteral("NEXIS workspace"));
+		QCOMPARE(known.volumePath, QStringLiteral("/selected-volume"));
+		QCOMPARE(known.volumeName, QStringLiteral("NEXIS workspace"));
+		QCOMPARE(known.kelpieId, KelpieId(42));
+		QCOMPARE(known.scanStamp.volumeIdentifier, file.volumeIdentifier);
+		const auto unknown = canonMediaFile(file, scan);
+		QVERIFY(unknown.volumePath.isEmpty());
+		QVERIFY(unknown.volumeName.isEmpty());
+		QCOMPARE(unknown.mediaFilePath, file.path);
 	}
 };
 

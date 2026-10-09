@@ -3,6 +3,7 @@
 
 #include "conventions.h"
 #include "canon/scanmodel.h"
+#include "canon/sourcearchive.h"
 #include "featureflags.h"
 #include "mediafile.h"
 #include "mediacsv.h"
@@ -112,12 +113,15 @@ namespace
 	void checkDatabaseOnlyRead(const MediaFile &file)
 	{
 		QVERIFY(file.canonScan);
-		const auto source = std::find_if(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(), [&](const Canon::ParsedSource &candidate)
+		const auto source = std::find_if(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(), [&](const Canon::StoredSource &candidate)
 										 { return candidate.snapshot && candidate.snapshot->path == file.mediaFilePath; });
 		QVERIFY(source != file.canonScan->sources.cend());
 		QCOMPARE(source->outcome, Canon::ParsedSource::Outcome::NotRead);
 		QCOMPARE(source->snapshot->readState, SourceReadState::NotRead);
-		QVERIFY(source->objects.isEmpty());
+		const Canon::Cancellation inspection;
+		const auto restored = source->restore(inspection);
+		QVERIFY(restored);
+		QVERIFY(restored->objects.isEmpty());
 		QVERIFY(source->readReason.startsWith(QStringLiteral("Header not read:")));
 		QVERIFY(hasDatabaseEvidence(file));
 		for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
@@ -160,7 +164,10 @@ private slots:
 	void appledouble_sibling_is_never_media();
 	void non_avid_files_are_invisible();
 	void cancelled_scan_does_not_leak_databases_into_the_next();
+	void completed_scan_can_restart_from_its_queued_receiver();
 	void cancellation_during_finalising_reports_cancelled();
+	void discovery_progress_precedes_source_progress();
+	void cancellation_during_root_preparation_stops_scan();
 
 	// This real effect render carries private MobAppCode 1 and the standard
 	// LowerLevel UID in AAF byte order. Its name cannot decide classification.
@@ -234,7 +241,7 @@ private slots:
 	void copied_media_tree_requires_its_direct_base_or_managed_root();
 	void omf_root_pointed_at_directly_never_scans_as_mxf_folders();
 	void omf_root_without_a_pmr_gets_identity_from_its_header();
-	void omf_video_rows_show_avid_short_names();
+	void omf_video_rows_show_avid_descriptive_names();
 	void shared_omf_folder_uses_current_databases_and_header_fallback();
 	void shared_omf_folder_without_pmr_uses_its_media_headers();
 	void shared_omf_folder_without_any_database_is_scanned();
@@ -333,7 +340,8 @@ void TestScanner::optional_read_only_real_scan()
 	QTRY_COMPARE(issues.count(), 1);
 	const qint64 elapsed = timer.elapsed();
 	const auto files = qvariant_cast<QVector<MediaFile>>(finished.first().first());
-	// Capture before audit serialization: the source graphs and UI rows are alive.
+	// Capture before inspecting archives: retained source storage and UI rows
+	// are alive, but this audit has not temporarily restored any source graphs.
 	const QJsonObject memoryRetained = auditMemory();
 	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_CSV");
 	if (!csvOutput.isEmpty())
@@ -348,13 +356,22 @@ void TestScanner::optional_read_only_real_scan()
 		QVERIFY(!scan.cancelled);
 		for (const auto &source : scan.sources)
 		{
+			// Inspect one source at a time; retaining every restored graph would
+			// recreate the application's former memory use in this audit itself.
+			const Canon::Cancellation inspection;
+			const auto restored = source.restore(inspection);
+			QVERIFY(restored);
 			AuditGraphSize size;
-			countAuditGraph(source, size);
+			countAuditGraph(*restored, size);
 			sourceDetails.append(QJsonObject{
 				{"path", source.snapshot ? source.snapshot->path : QString{}},
 				{"source", source.snapshot ? int(source.snapshot->source) : -1},
 				{"outcome", int(source.outcome)},
 				{"readReason", source.readReason},
+				{"archivedBytes", source.archive ? source.archive->compressedBytes() : qint64(0)},
+				{"serializedBytes", source.archive ? source.archive->serializedBytes() : qint64(0)},
+				{"archiveBlocks", source.archive ? qint64(source.archive->blockCount()) : qint64(0)},
+				{"expandedCancellationFallback", !source.unfinishedGraph.isNull()},
 				{"objects", size.objects},
 				{"relationships", size.relationships},
 				{"properties", size.properties},
@@ -1123,6 +1140,59 @@ void TestScanner::non_avid_files_are_invisible()
 	QCOMPARE(results.first().fileName, QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
 }
 
+void TestScanner::discovery_progress_precedes_source_progress()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const QString folder = temp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
+	MediaScanner scanner;
+	QStringList events;
+	connect(&scanner, &MediaScanner::scanDiscovering, &scanner, [&](const QString &path)
+		{ events.append(QStringLiteral("Discover: ") + path); }, Qt::DirectConnection);
+	connect(&scanner, &MediaScanner::scanProgress, &scanner, [&](int, int, const QString &path)
+		{ events.append(QStringLiteral("Read: ") + path); }, Qt::DirectConnection);
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	MediaScanner::Options options;
+	options.volumePaths = {temp.path()};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QVERIFY(!events.isEmpty());
+	QCOMPARE(events.first(), QStringLiteral("Discover: ") + temp.path());
+	const qsizetype folderEvent = events.indexOf(QStringLiteral("Discover: ") + folder);
+	const qsizetype readEvent = events.indexOf(QStringLiteral("Read: ") + folder + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"));
+	QVERIFY(folderEvent >= 0);
+	QVERIFY(readEvent > folderEvent);
+	QCOMPARE(finished.first().first().value<QVector<MediaFile>>().size(), 1);
+}
+
+void TestScanner::cancellation_during_root_preparation_stops_scan()
+{
+	QTemporaryDir first, second;
+	QVERIFY(first.isValid());
+	QVERIFY(second.isValid());
+	const QString folder = first.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
+	MediaScanner scanner;
+	QStringList reported;
+	connect(&scanner, &MediaScanner::scanDiscovering, &scanner, [&](const QString &path)
+		{
+			reported.append(path);
+			scanner.cancelScan();
+		}, Qt::DirectConnection);
+	QSignalSpy progress(&scanner, &MediaScanner::scanProgress);
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	MediaScanner::Options options;
+	options.volumePaths = {first.path(), second.path()};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QCOMPARE(reported, QStringList{first.path()});
+	QVERIFY(progress.isEmpty());
+	QVERIFY(finished.first().first().value<QVector<MediaFile>>().isEmpty());
+}
+
 void TestScanner::cancellation_during_finalising_reports_cancelled()
 {
 	QTemporaryDir tmp;
@@ -1148,6 +1218,44 @@ void TestScanner::cancellation_during_finalising_reports_cancelled()
 	for (const auto &message : messages)
 		QVERIFY(!message.startsWith(QStringLiteral("Scan complete:")));
 	QCOMPARE(finished.first().first().value<QVector<MediaFile>>().size(), 1);
+}
+
+void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
+{
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
+
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
+	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	MediaScanner::Options options;
+	options.volumePaths = {temporary.path()};
+	int received = 0;
+	// A UI receiver can request the next scan as soon as completion arrives.
+	// Its restart must join the old worker without being rejected as running.
+	connect(&scanner, &MediaScanner::scanFinished, &scanner, [&]
+	{
+		if (++received == 1)
+			scanner.startScan(options);
+	}, Qt::QueuedConnection);
+	scanner.startScan(options);
+	QTRY_COMPARE(finished.count(), 2);
+	QTRY_COMPARE(received, 2);
+	QTRY_COMPARE(issues.count(), 2);
+	QVERIFY(failed.isEmpty());
+	const auto first = qvariant_cast<QVector<MediaFile>>(finished[0][0]);
+	const auto second = qvariant_cast<QVector<MediaFile>>(finished[1][0]);
+	QCOMPARE(first.size(), 1);
+	QCOMPARE(second.size(), 1);
+	QCOMPARE(first.front().fileMobId, second.front().fileMobId);
+	QVERIFY(!first.front().fileMobId.isEmpty());
+	QVERIFY(first.front().canonScan != second.front().canonScan);
 }
 
 void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
@@ -2649,7 +2757,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 	}
 }
 
-void TestScanner::omf_video_rows_show_avid_short_names()
+void TestScanner::omf_video_rows_show_avid_descriptive_names()
 {
 	// Three shipped slates under their own databases exercise verified codec
 	// naming and visible-raster selection without opening headers.
@@ -2664,8 +2772,8 @@ void TestScanner::omf_video_rows_show_avid_short_names()
 	const Pin kPins[] = {
 		// OMF and MDB record 248 stored lines per field, with a 243-line
 		// display crop. Resolution shows the cropped full-frame raster.
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x486", "29.97", true},
-		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
+		{"BLACK_720x243x2_JFIF35.omf", "JFIF 20:1", "720x486", "29.97", true},
+		{"BLACK_720x576x1_DV420.omf", "IEC-DV PAL 25Mbps 4:2:0", "720x576", "25", true},
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ [DNxHD 220]", "1920x1080", "29.97", false},
 	};
 
@@ -2720,8 +2828,8 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		bool stamp; ///< Exercise different filesystem mtimes without declaring database freshness.
 	};
 	const Pin kPins[] = {
-		{"BLACK_720x243x2_JFIF35.omf", "20:1", "720x486", "29.97", true},
-		{"BLACK_720x576x1_DV420.omf", "DV 25 420 i(PAL)", "720x576", "25", true},
+		{"BLACK_720x243x2_JFIF35.omf", "JFIF 20:1", "720x486", "29.97", true},
+		{"BLACK_720x576x1_DV420.omf", "IEC-DV PAL 25Mbps 4:2:0", "720x576", "25", true},
 		{"BLACK_1920x540x2_AVHD_220.omf", "Avid DNx HQ [DNxHD 220]", "1920x1080", "29.97", false},
 	};
 
@@ -2799,7 +2907,7 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 	}
 	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
 	QVERIFY(slate != nullptr);
-	QCOMPARE(slate->compression, QStringLiteral("20:1"));
+	QCOMPARE(slate->compression, QStringLiteral("JFIF 20:1"));
 	QCOMPARE(slate->originalBin, QStringLiteral("NTSC slides")); // the MDB's record, joined by identity
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);

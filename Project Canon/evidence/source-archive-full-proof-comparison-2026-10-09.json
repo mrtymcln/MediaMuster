@@ -1,0 +1,89 @@
+{
+  "baselineCommit": "325f2399b959d2b11d90d7a5ca02bbb36bc71b34",
+  "checks": {
+    "roots": true,
+    "rows": true,
+    "candidates": true,
+    "sources": true,
+    "discoveryIssues": true,
+    "reconciliationIssues": true,
+    "discoveryComplete": true,
+    "parsingComplete": true,
+    "reconciliationComplete": true,
+    "cancelled": true,
+    "hashes": true,
+    "fileDigests": true,
+    "sourceDigests": true,
+    "callbackCounts": true,
+    "sourceObjects": true,
+    "sourceRelationships": true,
+    "sourceProperties": true,
+    "originalValueBytes": true
+  },
+  "sourceAndFolderStampsUnchangedAcrossModes": true,
+  "hashes": {
+    "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+    "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+    "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+    "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+    "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+    "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+  },
+  "counts": {
+    "rows": 2413,
+    "candidates": 2425,
+    "sources": 2425,
+    "discoveryIssues": 0,
+    "reconciliationIssues": 298,
+    "sourceObjects": 475088,
+    "sourceRelationships": 498221,
+    "sourceProperties": 2719926,
+    "originalValueBytes": 83566949,
+    "compressedBytes": 157781368,
+    "serializedBytes": 1087257058,
+    "archiveBlocks": 16651
+  },
+  "memory": {
+    "footprintBefore": {
+      "before": 2720704,
+      "after": 2982976
+    },
+    "footprintRetained": {
+      "before": 2336987456,
+      "after": 475549184
+    },
+    "peakResidentRetained": {
+      "before": 2727510016,
+      "after": 1190559744
+    }
+  },
+  "timingFinalDiagnostic": {
+    "scanMsInstrumented": {
+      "before": 19833,
+      "after": 33885
+    },
+    "hashMs": {
+      "before": 11989,
+      "after": 24100
+    }
+  },
+  "definitions": {
+    "data": "Complete final MediaFile rows, every source raw graph (one scoped restoration at a time), all observations/coverage/selected values/eligibility/freshness/read states/basis/reasons, every file operation stamp and object receipt, source scheduling, discovery/reconciliation issues, existing callbacks and completion flags. Field order and list order preserved; source pointer identity is covered in archive unit tests. Allocation capacities are not semantic facts.",
+    "hashBuffer": "QDataStream Qt_6_0 BigEndian streams through a bounded 64 KiB SHA256 sink; no whole-graph serialization buffer. The probe retains only one restored source at a time.",
+    "memory": "Current process physical footprint and peak resident size captured immediately after ScanEngine::scan returns, before hashing/restoring any source. This direct Canon probe excludes UI row adapters and widgets.",
+    "timing": "Diagnostic verification only, not a speed benchmark. Final guard repeat may overlap regression-suite CPU load. Earlier diagnostic timings are preserved in comparison-first-pair.json.",
+    "inputs": "Existing genuine local Avid media and databases; device/inode/size/mtime_ns checked on 2,425 source paths and six media folders before/after each scan and across the final before/after pair."
+  },
+  "artifacts": [
+    "source-archive-full-proof.cpp",
+    "run-full-proof.py",
+    "before.json",
+    "after.json",
+    "before-receipt.json",
+    "after-receipt.json",
+    "final-build-receipt.json",
+    "build-before.txt",
+    "build-after-final.txt",
+    "comparison-first-pair.json"
+  ]
+}

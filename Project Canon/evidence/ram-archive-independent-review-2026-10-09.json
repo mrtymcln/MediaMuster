@@ -1,0 +1,76 @@
+{
+  "reviewOnly": true,
+  "consumerAudit": {
+    "ScanEngine": "After readCandidate projects the source, downstream matching/final issues use source.snapshot/source.outcome/source.readReason and projections. They do not traverse raw objects/properties/relationships.",
+    "OpScanReceipt": "opscanreceipt.cpp:25-32 uses source.snapshot/path/source kind/outcome; lambda explicitly names Canon::ParsedSource and needs StoredSource or auto after model change.",
+    "CanonAdapterAndRows": "canonadapter.cpp:111-118 and mediafile.h:30-34 keep shared ScanResult ownership; selected fields and evidence remain independent, no raw graph traversal.",
+    "BinMetadataResolver": "binmetadataresolver.cpp:63-124 tests canonScan presence and uses evidence/master IDs. AVB graph ownership is separate canonAvbSources, not ScanResult sources.",
+    "AVBFiltering": "avbreferences.cpp actively traverses separately loaded ParsedSource graphs; leave this reader/filter ownership unchanged in the first scan-only repair."
+  },
+  "proposedTypes": {
+    "StoredSource": [
+      "ParsedSource::Outcome outcome",
+      "QString readReason",
+      "SourceSnapshotRef snapshot",
+      "ParsedSource::Container container",
+      "QStringList diagnostics",
+      "QSharedPointer<const SourceArchive> archive"
+    ],
+    "SourceArchive": [
+      "QVector<QByteArray> compressedBlocks",
+      "quint64 serializedByteCount",
+      "QVector<SourceSnapshotRef> existingReceipts"
+    ],
+    "Notes": "Types are an outline, not an implementation commitment. No expanded graph cache persists inside the archived source. Materialization is one explicitly scoped RAII-owned source when needed. Partial/cancelled or failed encoding must retain existing obtained facts rather than silently omit data."
+  },
+  "noLossRequirements": [
+    "Serialize every declared ParsedSource field recursively, all original raw bytes/ranges, native Bento/MXF/AVB contexts, record sets, ordered references, typed decoded QVariant values, unknown properties, text states/basis and diagnostics.",
+    "Retain original SourceSnapshotRef identities in a small table and encode indices. Rehydrate with those exact existing pointers so evidence deduplication/coverage identity semantics remain stable.",
+    "Preserve invalid versus valid zero/false/empty, null strings/byte arrays, optional values, exact QVariant types, vector order and distinct file-specific identifiers.",
+    "Specify matching QDataStream version/byte order/floating precision. Check status on write/read and do not release original graph until the archive is complete.",
+    "Use genuine corpus graph fingerprints and typed round trips; compare projections, final evidence, sequence resolutions and source receipt identity. Byte-hash compression proof alone is not a typed-deserialization proof."
+  ],
+  "transientMemory": [
+    "Monolithic QDataStream QByteArray + qCompress requires graph plus full serialized buffer plus compressed output simultaneously; avoid it for a first memory repair.",
+    "A QIODevice sink can compress modest fixed blocks with qCompress(level1), removing the source-sized temporary buffer and allowing cancellation between blocks. Sequential decompression feeds QDataStream from one bounded block.",
+    "The largest original graph still expands during initial parsing and during scoped materialization; per-value QVariant/QString/QByteArray reconstruction may create more individual allocations than the original graph unless sharing is restored.",
+    "Current projections/observations and discovery/UI rows remain hot. Compression alone does not eliminate those costs or prove 300000-file scalability.",
+    "Cancelling mid-freeze must not demand finishing compression; retain the current obtained graph/observations and stop scheduling further sources."
+  ],
+  "touchpoints": [
+    "new sourcearchive_p.h/.cpp",
+    "scanmodel.h StoredSource and ScanResult::sources storage",
+    "scanengine.cpp read/project/freeze boundary and summary initialization",
+    "opscanreceipt.cpp explicitly typed source lambda",
+    "CMake registration and meaningful genuine round-trip/scan tests"
+  ],
+  "readers": "PMR/MDB/MXF/legacy reader implementations can remain unchanged: each continues returning ParsedSource. AVB bin graphs need not be packed in this first repair.",
+  "compactNativeAlternative": "For a longer-term representation, store exact bytes/ranges in source arenas and compact property/native-context/relationship indices; materialize decoded QVariant views as needed. This avoids one large wrapper/QSharedPointer/QVariantMap allocation per native value, but changes more reader/model/consumer access and has greater migration risk than a scan-boundary archive.",
+  "existingPools": "Do not propose key/name interning as new: failing e472 already shares OMF numeric keys and dictionary QString names. Repeated MXF dictionaries cannot be merged wholesale because original UIDs/references differ.",
+  "recommendation": "First measure a bounded-block in-RAM archive on the genuine MDB/header corpus, then prove typed restore and pointer/identity behavior before integrating at the scan boundary. It is a contained storage repair, preserves parsers/matching/UI/file operations, and should not be sold as a guaranteed RAM or speed target before measurement.",
+  "officialQtSources": [
+    "https://doc.qt.io/qt-6.5/qbytearray.html#qCompress",
+    "https://doc.qt.io/qt-6.5/qbytearray.html#qUncompress",
+    "https://doc.qt.io/qt-6.5/qdatastream.html#details"
+  ],
+  "localQtHeaders": [
+    "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qbytearray.h:607",
+    "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qdatastream.h:65"
+  ],
+  "prototypeIndependentReview": {
+    "source": "/private/tmp/canon-chunk-archive-probe.cpp",
+    "scope": "Read-only review of first prototype source; root independently confirmed compressed QByteArray spare capacity, preserved unsqueezed artifacts, and is rerunning after per-block squeeze/capacity accounting.",
+    "fieldCoverage": "Graph serializer covers all declared source fields, raw/decoded properties, optional encodings/basis, native contexts, snapshot values, ordered relationships/recordedReference, record sets, diagnostics, embedded sources. It does not preserve source receipt sharing topology and has no typed restore.",
+    "ownership": "No expanded graph back-reference remains after graph = {}. Fingerprint owns only hash state/scratch/counters. ProjectedFile holds evidence/shared values, object handles and SourceSnapshotRefs; SourceSnapshot has no graph back-pointer. ObjectProjection object/source pointers are local to projection construction.",
+    "capacityIssue": "First prototype measured logical compressed payload only. qCompress output QByteArray may retain compression-bound capacity per block; sum capacities and squeeze each block before storing. Otherwise archive allocations can approach serialized raw extent despite smaller logical payload.",
+    "measurementCaveat": "Baseline memoryGraphAndProjection is captured before hashing; packed settled memory is after hashing/compression and graph release. Both values are real process footprint, but allocator history differs. Do not label the difference precise live allocation or whole-app benefit.",
+    "AVBCaveat": "AVB projection is intentionally empty; successful byte hashes do not establish AVB sequence resolution after typed materialization.",
+    "proofNeededBeforeProduction": [
+      "Typed graph round trip on all genuine reader corpus, including embedded graphs and both PMR sets",
+      "Existing SourceSnapshotRef identity reused during restore, ordered object/relationship identity preserved",
+      "Original and restored projection/evidence fingerprints and AVB sequence resolution hashes equal",
+      "Same live scan selected fields/read scheduling/issues/stamps and file-operation identity checks",
+      "Settled/peak RAM plus CPU measured on cumulative sources and Windows workload; no 300000-file capacity claim from small corpus"
+    ]
+  }
+}

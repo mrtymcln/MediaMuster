@@ -1,5 +1,10 @@
 # Fresh OMF and legacy-audio reader
 
+Later status: this reader is now connected to the application. The
+[8 October compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
+records shared native/Summary field decoding, per-field evidence and current
+verification. The implementation-stage description below remains dated 4 October.
+
 Implemented 4 October 2026 as the next independent Canon reader. The shared Bento
 work and original OMF toolkit made this a useful next step after MDB. The toolkit
 is a format reference and test corpus, not a new runtime dependency. The existing

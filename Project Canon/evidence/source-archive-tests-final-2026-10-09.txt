@@ -1,0 +1,23 @@
+********* Start testing of TestSourceArchive *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestSourceArchive::initTestCase()
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(PMR)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(legacy-PMR)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(MDB)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(MacRoman-MDB)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(modern-audio-MDB)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(MXF)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(MXF-header-excerpt)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(OMF)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(native-WAV)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(native-AIFF-C)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(WAVE-AVB)
+PASS   : TestSourceArchive::genuine_reader_output_round_trips(AIFF-AVB)
+PASS   : TestSourceArchive::authored_archive_values_keep_types_optionals_and_namespaces()
+PASS   : TestSourceArchive::authored_value_crosses_blocks_and_cancellation_keeps_published_archive_usable()
+PASS   : TestSourceArchive::unsupported_authored_value_reports_an_archive_error()
+PASS   : TestSourceArchive::stored_sources_release_expanded_graph_and_keep_cancelled_facts()
+PASS   : TestSourceArchive::cancellation_does_not_publish_a_partial_archive_or_source()
+PASS   : TestSourceArchive::cleanupTestCase()
+Totals: 19 passed, 0 failed, 0 skipped, 0 blacklisted, 1008ms
+********* Finished testing of TestSourceArchive *********

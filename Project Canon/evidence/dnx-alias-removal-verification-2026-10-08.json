@@ -1,0 +1,120 @@
+{
+  "recordedUtc": "2026-10-08T08:36:51.823883+00:00",
+  "authorization": "User: Great! Lets remove it then — approval to remove the nine unproven DNx identifier-to-name rules after the zero-match corpus investigation.",
+  "change": "Removed the exact nine unproven aliases from Canon dnxProfiles and retained legacy codecFromCompressionLabel. Corrected unsupported source/test comments and moved existing positive legacy naming assertions to verified labels. Old engine/readers/tests remain.",
+  "removedIdentifiers": [
+    "060e2b34040101010d01030102060301",
+    "060e2b34040101010d01030102060101",
+    "060e2b34040101010d01030102060201",
+    "060e2b34040101010d01030102060202",
+    "060e2b34040101010d01030102110101",
+    "060e2b34040101010d01030102110201",
+    "060e2b34040101010d01030102110301",
+    "060e2b34040101010d01030102110401",
+    "060e2b34040101010d01030102110501"
+  ],
+  "verifiedCanonProfileRows": 16,
+  "verifiedProfileRowsAndOperatingPointRulesUnchanged": true,
+  "evidenceRetention": "No readers or raw-property retention changed. Unknown labels remain observations; Canon no longer assigns DNx names from these nine unsupported mappings.",
+  "sourceHashes": {
+    "src/canon/dnxnames_p.h": "12b11f934e73ab4f36f8adf7275015262109c7f6d406fbc820218fa7d698c7c1",
+    "src/mediametadata.cpp": "7face641bd1c82aa9f96596bf5e660588250ebc267544b61a24f5574358fc290",
+    "src/canon/compressionnames_p.cpp": "342b765e3b21bff065564bb5846c698b87569b4921a600f36e71e7950c269bd3",
+    "src/canon/mxfprojection.cpp": "6b4f0922f95fd7d97a06cce9ea1395e4df090b13f8836b3b31df0cb3ae6869c9",
+    "src/canon/omfprojection.cpp": "f19f07bfae7cad5745b722e49d6477a579217289171f2bc02b995c62f76ec852",
+    "tests/tst_canon_compressionnames.cpp": "b062b085f785a61ab2445be9a3986ea93c090a5290e4b9ca8bb4c3b99692c808",
+    "tests/tst_mediametadata.cpp": "563a1d0a78ca49a6b458f2e6c1d3a759261ddf85e579b425d4ddc64f95a9eed6",
+    "tests/tst_mxfparser.cpp": "2bef9e687e7f3be9044c070abe10580cd169bcdf8325fb2688774b757f077afc"
+  },
+  "builds": {
+    "build/MediaMuster.app": "Succeeded: universal arm64/x86_64 Debug",
+    "build-canon/MediaMuster.app": "Succeeded: universal arm64/x86_64 Debug",
+    "regressionExecutables": "Rebuilt before full suite"
+  },
+  "normalAppCodesignVerification": "codesign --verify --deep --strict build/MediaMuster.app: exit 0 outside sandbox",
+  "tests": {
+    "nativeSuitesPassed": 40,
+    "nativeSuitesFailed": 0,
+    "focusedNameCasesPassed": 31,
+    "focusedNameCasesFailed": 0,
+    "newUnknownIdentifierRows": 9,
+    "newTestsAre": "Authored lookup-policy controls, not simulated Avid format specimens. Existing positive DNx name tests remain."
+  },
+  "realScan": {
+    "baselineCsv": "full-scan-compression-names-2026-10-08.csv",
+    "newCsv": "full-scan-dnx-alias-removal-2026-10-08.csv",
+    "baselineRows": 2413,
+    "newRows": 2413,
+    "addedPaths": [],
+    "removedPaths": [],
+    "columnNamesUnchanged": true,
+    "excludedField": "KelpieId is scan-session identity and is expected to be reassigned.",
+    "changedCells": [],
+    "dnxRows": 806,
+    "changedDnxCompressionCells": 0,
+    "baselineHeaderScheduling": {
+      "notRead": 2297,
+      "read": 116
+    },
+    "newHeaderScheduling": {
+      "notRead": 2297,
+      "read": 116
+    },
+    "sourceReceiptChanges": [],
+    "baselineNotices": 298,
+    "newNotices": 298,
+    "noticesUnchanged": true,
+    "scanMs": 20965
+  },
+  "independentReview": "Confirmed exact nine-row removal in both lookups; verified profile/rate rules intact; no missed mappings or unsupported new test assertions.",
+  "investigationProbeMaintenance": {
+    "path": "Project Canon/evidence/dnx-alias-corpus-probe-2026-10-08.cpp",
+    "change": "Frozen the nine investigated labels in the diagnostic source instead of indexing production rows16 onward, so repeating the investigation still searches nine identifiers after removal. Diagnostic recompiled successfully; its earlier corpus output was not rewritten.",
+    "originalSourceHashAtCorpusCheck": "8fbd0428ca5b99dd0f686f9fd5ffdc04c7ee50031909c07c2c413b9417c159dc",
+    "currentSourceSha256": "2689754e57c93745d00f36e96787dd3965ec8f40bc3a4404e4820955d1f95aaa"
+  },
+  "limits": [
+    "macOS native test execution and universal builds; no new Windows/NEXIS runtime claim.",
+    "The repeat comparison uses the same explicit2413-file scope as the immediately preceding Canon run, not all files on every volume.",
+    "KelpieId is excluded because it is assigned anew each scan session. No other exported field is excluded.",
+    "No format claim is made that these identifiers cannot appear in some other Avid version/file; unsupported naming assignments are removed."
+  ],
+  "receipts": [
+    {
+      "path": "dnx-alias-removal-build-canon-2026-10-08.txt",
+      "sha256": "a4ed131db7a875f340b7ee1d3c70ae431910d91c22c2a17acf0fb46511c38f9c"
+    },
+    {
+      "path": "dnx-alias-removal-build-app-2026-10-08.txt",
+      "sha256": "4f1f1478a69f4aee8bd940fa4551c45a78e28c9777662375abc8c26fc2b7b431"
+    },
+    {
+      "path": "dnx-alias-removal-build-tests-2026-10-08.txt",
+      "sha256": "b530dc1edd161632c5225fcf6e0ea37a4ee5e64961d00d8c2147d0b1de7e7c56"
+    },
+    {
+      "path": "dnx-alias-removal-name-tests-2026-10-08.txt",
+      "sha256": "4426dbb113ca13f7c96b975db7bee687c96a3339dc3c5b23b44be64e276fabc5"
+    },
+    {
+      "path": "dnx-alias-removal-full-tests-2026-10-08.txt",
+      "sha256": "b8494f0afefd55bc49f27d26947dbf90d4bee779227f8f671103c03cb9bb26db"
+    },
+    {
+      "path": "dnx-alias-removal-real-scan-2026-10-08.txt",
+      "sha256": "3030b6f71ede5116f9d65172ae6ee33d19e5b8e27734556df74685d0220c1e39"
+    },
+    {
+      "path": "dnx-alias-removal-real-scan-2026-10-08.json",
+      "sha256": "e8d8d55e17ab6f123dd30b88a4b750ccdab11568b7974b5dc69c3a7ff737fd9b"
+    },
+    {
+      "path": "dnx-alias-removal-real-scan-comparison-2026-10-08.json",
+      "sha256": "7539b0fa1d5e082e58e564e7bb1dd9c8e223196a5328f9d2b6366f51660a2a49"
+    },
+    {
+      "path": "full-scan-dnx-alias-removal-2026-10-08.csv",
+      "sha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7"
+    }
+  ]
+}

@@ -2,8 +2,8 @@
 
 // Maps a legacy Avid picture descriptor's compression 4CC and numeric
 // resolution id to its short codec name, for OMF files and their MDBs.
-// DNxHD ids 1235–1489 are deliberately absent: OmfObjects::ulFromResId
-// resolves those through the shared codec-label path.
+// DNxHD ids are deliberately absent: callers use their separately verified
+// coding-label/profile mappings for those formats.
 
 #include <QByteArray>
 #include <QString>

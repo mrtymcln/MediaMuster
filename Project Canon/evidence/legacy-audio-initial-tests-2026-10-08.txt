@@ -1,0 +1,130 @@
+Test project /Users/martymclean/Developer/MediaMuster/build-canon
+      Start 13: tst_canonmxf
+      Start 25: tst_avbparser
+      Start 33: tst_fileoperations
+      Start 28: tst_scanner
+ 1/39 Test #28: tst_scanner ......................   Passed   15.73 sec
+      Start 32: tst_rebalanceplanner
+ 2/39 Test #33: tst_fileoperations ...............   Passed   23.82 sec
+      Start 39: tst_operationui
+ 3/39 Test #32: tst_rebalanceplanner .............   Passed   14.80 sec
+      Start 26: tst_mxfparser
+ 4/39 Test #39: tst_operationui ..................   Passed    9.52 sec
+      Start 23: tst_mdbparser
+ 5/39 Test #25: tst_avbparser ....................   Passed   35.94 sec
+      Start 11: tst_canonmdb
+ 6/39 Test #26: tst_mxfparser ....................   Passed    5.61 sec
+      Start  6: tst_metadataselectionpolicy
+ 7/39 Test  #6: tst_metadataselectionpolicy ......   Passed    0.68 sec
+      Start 38: tst_binfilterdialog
+ 8/39 Test #23: tst_mdbparser ....................   Passed    5.10 sec
+      Start 24: tst_omfparser
+ 9/39 Test #11: tst_canonmdb .....................***Failed    2.80 sec
+********* Start testing of TestCanonMdb *********
+Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
+PASS   : TestCanonMdb::initTestCase()
+PASS   : TestCanonMdb::dictionariesDuplicatesAndUnknownProperties()
+PASS   : TestCanonMdb::ambiguousDictionariesAndUnknownSchema()
+PASS   : TestCanonMdb::fragmentedValues(fixed TOC)
+PASS   : TestCanonMdb::fragmentedValues(compact TOC)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento1 OMF1 metadata LE)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 0 metadata 0)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 1 metadata 0)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento1 OMF1 metadata BE)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 0 metadata 1)
+PASS   : TestCanonMdb::metadataAndContainerOrders(Bento2 OMF2 container 1 metadata 1)
+PASS   : TestCanonMdb::referenceMapsAndAmbiguity()
+PASS   : TestCanonMdb::fragmentedReferenceLocations()
+PASS   : TestCanonMdb::compactWidthsBoundariesAndIncompleteContinuations()
+PASS   : TestCanonMdb::textEncodingIsPerProperty()
+PASS   : TestCanonMdb::ambiguousContextAndTimestampShapes()
+PASS   : TestCanonMdb::classAndObjectByteOrderEvidence()
+PASS   : TestCanonMdb::realFixtures(msmMMOB.mdb)
+PASS   : TestCanonMdb::realFixtures(msmMMOB_macroman.mdb)
+PASS   : TestCanonMdb::realFixtures(corpus_headers/msmMMOB.mdb)
+PASS   : TestCanonMdb::realFixtures(corpus_headers/msmMMOB_round3.mdb)
+PASS   : TestCanonMdb::realFixtures(omf/avid_supporting/msmMMOB.mdb)
+FAIL!  : TestCanonMdb::realFixtures(omf/mc2026_audio/msmMMOB.mdb) Compared values are not the same
+   Actual   (totalProperties)          : 1392
+   Expected (qsizetype(tocLength / 24)): 1368
+   Loc: [/Users/martymclean/Developer/MediaMuster/tests/tst_canonmdb.cpp(564)]
+PASS   : TestCanonMdb::realNonEnglishEvidence()
+PASS   : TestCanonMdb::realOrderedRepeatedScalars()
+PASS   : TestCanonMdb::borrowedDeviceAndReceipt()
+PASS   : TestCanonMdb::truncationAndCorruption()
+PASS   : TestCanonMdb::shortReadsCancellationAndFailures()
+PASS   : TestCanonMdb::cleanupTestCase()
+Totals: 28 passed, 1 failed, 0 skipped, 0 blacklisted, 2338ms
+********* Finished testing of TestCanonMdb *********
+
+      Start 21: tst_bentofile
+10/39 Test #38: tst_binfilterdialog ..............   Passed    3.45 sec
+      Start 31: tst_opjournal
+11/39 Test #21: tst_bentofile ....................   Passed    1.62 sec
+      Start 17: tst_canon_omfprojection
+12/39 Test #24: tst_omfparser ....................   Passed    2.48 sec
+      Start 12: tst_canonlegacy
+13/39 Test #31: tst_opjournal ....................   Passed    1.53 sec
+      Start 37: tst_precomputefilterdialog
+14/39 Test #12: tst_canonlegacy ..................   Passed    0.94 sec
+      Start 14: tst_canonavb
+15/39 Test #17: tst_canon_omfprojection ..........   Passed    1.54 sec
+      Start 18: tst_canon_mxfprojection
+16/39 Test #37: tst_precomputefilterdialog .......   Passed    0.71 sec
+      Start 15: tst_canonavbreferences
+17/39 Test #14: tst_canonavb .....................   Passed    0.86 sec
+      Start 22: tst_pmrparser
+18/39 Test #18: tst_canon_mxfprojection ..........   Passed    1.42 sec
+      Start 10: tst_canonpmrrobustness
+19/39 Test #15: tst_canonavbreferences ...........   Passed    1.05 sec
+      Start 19: tst_omfuid
+20/39 Test #19: tst_omfuid .......................   Passed    0.03 sec
+      Start 36: tst_mediafilterproxy
+21/39 Test #22: tst_pmrparser ....................   Passed    1.47 sec
+      Start 27: tst_avideffects
+22/39 Test #27: tst_avideffects ..................   Passed    0.02 sec
+      Start 30: tst_volumeidentity
+23/39 Test #30: tst_volumeidentity ...............   Passed    0.04 sec
+      Start  9: tst_canonpmr
+24/39 Test #10: tst_canonpmrrobustness ...........   Passed    1.16 sec
+      Start 20: tst_mediametadata
+25/39 Test #36: tst_mediafilterproxy .............   Passed    1.26 sec
+      Start 35: tst_mediatablemodel
+26/39 Test  #9: tst_canonpmr .....................   Passed    1.04 sec
+      Start 34: tst_mediacsv
+27/39 Test #34: tst_mediacsv .....................   Passed    0.03 sec
+      Start 16: tst_canonscan
+28/39 Test #20: tst_mediametadata ................   Passed    1.20 sec
+      Start  5: tst_mediaevidence
+29/39 Test  #5: tst_mediaevidence ................   Passed    0.03 sec
+      Start 29: tst_opcleanup
+30/39 Test #29: tst_opcleanup ....................   Passed    0.09 sec
+      Start  8: tst_canondiscovery
+31/39 Test #35: tst_mediatablemodel ..............   Passed    1.30 sec
+      Start  1: tst_diagnostics
+32/39 Test #16: tst_canonscan ....................   Passed    1.67 sec
+      Start  3: tst_pathkey
+33/39 Test  #8: tst_canondiscovery ...............   Passed    1.20 sec
+      Start  7: tst_conventions
+34/39 Test  #3: tst_pathkey ......................   Passed    0.03 sec
+      Start  2: tst_mobid
+35/39 Test  #7: tst_conventions ..................   Passed    0.03 sec
+      Start  4: tst_format
+36/39 Test  #2: tst_mobid ........................   Passed    0.02 sec
+37/39 Test  #4: tst_format .......................   Passed    0.02 sec
+38/39 Test  #1: tst_diagnostics ..................   Passed    1.22 sec
+39/39 Test #13: tst_canonmxf .....................   Passed   49.94 sec
+
+97% tests passed, 1 tests failed out of 39
+
+Label Time Summary:
+core          =   2.04 sec*proc (7 tests)
+media         = 132.81 sec*proc (21 tests)
+operations    =  40.29 sec*proc (5 tests)
+ui            =  16.27 sec*proc (6 tests)
+
+Total Test time (real) =  49.95 sec
+
+The following tests FAILED:
+	 11 - tst_canonmdb (Failed)                             media
+Errors while running CTest

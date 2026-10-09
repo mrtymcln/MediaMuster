@@ -49,6 +49,13 @@ namespace Canon
 		{
 			const auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
+			if (cancellation.cancelled())
+			{
+				ParsedSource result;
+				result.snapshot = snapshot;
+				result.outcome = ParsedSource::Outcome::Cancelled;
+				return result;
+			}
 			QFile input(candidate.path);
 			if (!input.open(QIODevice::ReadOnly))
 			{
@@ -229,7 +236,30 @@ namespace Canon
 	ScanResult ScanEngine::scan(const ScanRequest &request, const Cancellation &cancellation,
 								const ScanCallbacks &callbacks) const
 	{
-		ScanResult result = DiscoveryEngine{}.discover(request, cancellation);
+		ScanResult result = DiscoveryEngine{}.discover(request, cancellation, callbacks.discovering);
+		// Keep discovered rows and any source evidence already obtained. Once
+		// Cancel is observed, do not start another filesystem request to finish
+		// indexing or rechecking the unfinished scan.
+		const auto stopRequested = [&]
+		{
+			result.cancelled = cancellation.cancelled();
+			return result.cancelled;
+		};
+		if (stopRequested())
+			return result;
+		// Folder locations belong to this scan's discovered scope. Resolve each
+		// spelling once; individual file/database change checks stay fresh below.
+		QHash<QString, QString> folderKeys;
+		const auto cachedFolderKey = [&](const QString &path)
+		{
+			if (const auto found = folderKeys.constFind(path); found != folderKeys.cend())
+				return found.value();
+			if (cancellation.cancelled())
+				return QString{};
+			const auto key = folderKey(path);
+			folderKeys.insert(path, key);
+			return key;
+		};
 		QVector<Projection> projections;
 		QHash<KelpieId, qsizetype> headers;
 		QHash<QString, QVector<qsizetype>> databases;
@@ -240,6 +270,8 @@ namespace Canon
 		for (const auto &issue : result.discoveryIssues)
 			if (callbacks.warning)
 				callbacks.warning(QStringLiteral("%1: %2").arg(issue.path, issue.explanation));
+		if (stopRequested())
+			return result;
 		// Candidate and source positions stay aligned, including media headers
 		// deliberately left unopened by the database-first scheduler.
 		projections.resize(result.candidates.size());
@@ -247,15 +279,17 @@ namespace Canon
 		QVector<bool> scheduled(result.candidates.size(), false);
 		for (qsizetype index = 0; index < result.candidates.size(); ++index)
 		{
+			if (stopRequested())
+				return result;
 			const auto &candidate = result.candidates[index];
-			ParsedSource source;
+			StoredSource source;
 			source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
 			result.sources.append(std::move(source));
 			if (candidate.kelpieId)
 				headers.insert(candidate.kelpieId, index);
 			else
-				databases[folderKey(QFileInfo(candidate.path).absolutePath())].append(index);
+				databases[cachedFolderKey(QFileInfo(candidate.path).absolutePath())].append(index);
 		}
 		const auto checkUnchanged = [&](qsizetype index)
 		{
@@ -279,11 +313,23 @@ namespace Canon
 		};
 		const auto readCandidate = [&](qsizetype index, const QString &reason)
 		{
+			if (cancellation.cancelled())
+				return;
 			const auto &candidate = result.candidates[index];
-			result.sources[index] = readSource(candidate, cancellation);
-			auto &source = result.sources[index];
-			source.readReason = reason;
-			projections[index] = project(source, cancellation);
+			if (callbacks.reading)
+				callbacks.reading(candidate);
+			if (cancellation.cancelled())
+				return;
+			auto parsed = readSource(candidate, cancellation);
+			parsed.readReason = reason;
+			if (!cancellation.cancelled())
+				projections[index] = project(parsed, cancellation);
+			// Keep only this source expanded while reading/projecting. A cancelled
+			// pack retains its obtained graph instead of discarding partial facts.
+			result.sources[index] = StoredSource::store(std::move(parsed), cancellation);
+			if (cancellation.cancelled())
+				return;
+			const auto &source = result.sources[index];
 			if (!checkUnchanged(index))
 				for (auto *subjects : {&projections[index].files, &projections[index].masters})
 					for (auto &facts : *subjects)
@@ -307,7 +353,11 @@ namespace Canon
 				break;
 			if (callbacks.progress)
 				callbacks.progress(processed++, int(result.candidates.size()), candidate.path);
+			if (cancellation.cancelled())
+				break;
 			readCandidate(sourceIndex, QStringLiteral("Read database before deciding which media headers are needed"));
+			if (cancellation.cancelled())
+				break;
 			if (candidate.hint == SourceCandidate::ReaderHint::Pmr)
 			{
 				auto &names = pmrByName[sourceIndex];
@@ -323,29 +373,59 @@ namespace Canon
 			if (candidate.hint == SourceCandidate::ReaderHint::Mdb)
 				for (qsizetype record = 0; record < projections[sourceIndex].files.size(); ++record)
 				{
+					if (cancellation.cancelled())
+						break;
 					for (const auto &id : fileIdentityClaims(projections[sourceIndex].files[record]))
 						if (!MobId::isAllZero(id))
 							mdbById[id].append({sourceIndex, record});
 				}
 			if (candidate.hint == SourceCandidate::ReaderHint::Mdb)
 				for (qsizetype record = 0; record < projections[sourceIndex].masters.size(); ++record)
+				{
+					if (cancellation.cancelled())
+						break;
 					for (const auto &id : projections[sourceIndex].masters[record].masterMobIds)
 						if (!id.isEmpty() && !MobId::isAllZero(id))
 							mastersById[id].append({sourceIndex, record});
+				}
 		}
 		for (const auto &indices : databases)
 			for (const auto index : indices)
+			{
+				if (stopRequested())
+					return result;
 				checkUnchanged(index);
+			}
 		QHash<QString, QStringList> pathsById;
+		QHash<QString, QSet<QString>> identitiesByFolder;
 		QHash<QString, QHash<QString, QStringList>> namesByFolder;
 		for (const auto &file : result.files)
 		{
+			if (stopRequested())
+				return result;
 			const QFileInfo info(file.path);
-			namesByFolder[folderKey(info.absolutePath())][PmrKey::primary(info.fileName())].append(info.fileName());
+			namesByFolder[cachedFolderKey(info.absolutePath())][PmrKey::primary(info.fileName())].append(info.fileName());
 		}
+		// Share the folder observation within a matching pass. Clear it before
+		// another pass so its first visit obtains a new timestamp. This receipt
+		// describes folder membership, not the freshness of individual contents.
+		QHash<QString, SourceSnapshotRef> folderReceipts;
+		const auto folderReceipt = [&](const QString &folder) -> SourceSnapshotRef
+		{
+			if (const auto found = folderReceipts.constFind(folder); found != folderReceipts.cend())
+				return found.value();
+			if (cancellation.cancelled())
+				return {};
+			const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+				MetadataSource::Filesystem, folder, QFileInfo(folder).lastModified(), SourceReadState::Complete});
+			folderReceipts.insert(folder, snapshot);
+			return snapshot;
+		};
 		const auto matchFile = [&](MediaFile &file, bool reportIssues)
 		{
-			const QString folder = folderKey(QFileInfo(file.path).absolutePath());
+			if (cancellation.cancelled())
+				return false;
+			const QString folder = cachedFolderKey(QFileInfo(file.path).absolutePath());
 			const QString filename = QFileInfo(file.path).fileName();
 			const QString name = PmrKey::primary(filename);
 			const bool physicalChanged = headers.contains(file.kelpieId) && !unchanged[headers.value(file.kelpieId)];
@@ -375,7 +455,7 @@ namespace Canon
 			for (const auto sourceIndex : databases.value(folder))
 			{
 				if (cancellation.cancelled())
-					break;
+					return false;
 				const auto &source = result.sources[sourceIndex];
 				const bool complete = source.outcome == ParsedSource::Outcome::Complete && unchanged[sourceIndex];
 				failedDatabase |= !complete;
@@ -399,6 +479,8 @@ namespace Canon
 			QSet<QString> compatibleIds;
 			for (const auto &match : pmrMatches)
 			{
+				if (cancellation.cancelled())
+					return false;
 				const auto &facts = projections[match.source].files[match.record];
 				if (match.complete && (!hasExact || match.exact) && !facts.fileMobId.isEmpty() &&
 					(headerId.isEmpty() || headerId == facts.fileMobId))
@@ -408,7 +490,7 @@ namespace Canon
 			for (const auto &match : pmrMatches)
 			{
 				if (cancellation.cancelled())
-					break;
+					return false;
 				const auto &facts = projections[match.source].files[match.record];
 				const bool chosenName = !hasExact || match.exact;
 				const bool sameIdentity = !conflictingHeader && (headerId.isEmpty() || headerId == facts.fileMobId);
@@ -441,6 +523,8 @@ namespace Canon
 			for (const auto &candidateId : candidateIds)
 				for (const auto &entry : mdbById.value(candidateId))
 				{
+					if (cancellation.cancelled())
+						return false;
 					if (attachedMdbFacts.contains(entry))
 						continue;
 					attachedMdbFacts.insert(entry);
@@ -463,18 +547,25 @@ namespace Canon
 				}
 			for (const auto &master : candidateMasters)
 				for (const auto &entry : mastersById.value(master))
+				{
+					if (cancellation.cancelled())
+						return false;
 					attach(file, projections[entry.first].masters[entry.second],
 						   unchanged[entry.first] && !physicalChanged && selectedMasters.contains(master));
+				}
 			selectMetadata(file.evidence);
 			file.stamp.mobId = file.evidence.selected(MediaProperty::FileMobId).value.toString();
 			file.stamp.masterMobIds = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
 			// DatabaseStatus uses the UI's stable values: Listed/NoReference/NoDatabase/DbUnreadable.
+			if (cancellation.cancelled())
+				return false;
 			const int status = listed ? 0 : failedDatabase ? 3
 										: hasPmr		   ? 1
 														   : 2;
 			MetadataObservation dbStatus;
-			dbStatus.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-				MetadataSource::Filesystem, folder, QFileInfo(folder).lastModified(), SourceReadState::Complete});
+			dbStatus.snapshot = folderReceipt(folder);
+			if (cancellation.cancelled())
+				return false;
 			dbStatus.property = QStringLiteral("Local PMR membership and database source outcomes");
 			dbStatus.value = status;
 			dbStatus.rawValue = databaseReceipts;
@@ -505,10 +596,16 @@ namespace Canon
 
 		const auto decideHeader = [&](const MediaFile &file)
 		{
+			if (cancellation.cancelled())
+				return;
 			const auto sourceIndex = headers.value(file.kelpieId);
 			const bool current = checkUnchanged(sourceIndex);
+			if (cancellation.cancelled())
+				return;
 			MediaFile databaseFile = file;
 			const bool matched = matchFile(databaseFile, false);
+			if (cancellation.cancelled())
+				return;
 			const QStringList missing = requiredTableMetadata(databaseFile.evidence);
 			if (current && matched && missing.isEmpty())
 			{
@@ -529,18 +626,24 @@ namespace Canon
 				break;
 			if (callbacks.progress)
 				callbacks.progress(processed++, int(result.candidates.size()), file.path);
+			if (cancellation.cancelled())
+				break;
 			decideHeader(file);
 		}
 		// Recheck even deliberately unopened media: a database match is not
 		// permission to retain metadata for a file replaced during the scan.
 		for (qsizetype index = 0; index < result.candidates.size(); ++index)
-			if (!cancellation.cancelled())
-				checkUnchanged(index);
+		{
+			if (cancellation.cancelled())
+				break;
+			checkUnchanged(index);
+		}
 		// A database changed after an earlier skip can invalidate that decision.
 		// Make one bounded fallback pass; continuing source changes are reported
 		// and excluded, rather than making the scan chase a moving database.
 		if (unchanged.contains(false))
 		{
+			folderReceipts.clear();
 			for (const auto &file : result.files)
 			{
 				if (cancellation.cancelled())
@@ -550,21 +653,30 @@ namespace Canon
 					decideHeader(file);
 			}
 			for (qsizetype index = 0; index < result.candidates.size(); ++index)
-				if (!cancellation.cancelled())
-					checkUnchanged(index);
+			{
+				if (cancellation.cancelled())
+					break;
+				checkUnchanged(index);
+			}
 		}
+		if (stopRequested())
+			return result;
 		result.parsingComplete = !cancellation.cancelled() &&
 								 std::all_of(scheduled.cbegin(), scheduled.cend(), [](bool complete)
 											 { return complete; });
 		if (callbacks.finalising)
 			callbacks.finalising();
+		folderReceipts.clear();
 		for (auto &file : result.files)
 		{
 			if (cancellation.cancelled())
 				break;
 			matchFile(file, true);
 			if (!file.stamp.mobId.isEmpty())
+			{
 				pathsById[file.stamp.mobId].append(file.path);
+				identitiesByFolder[cachedFolderKey(QFileInfo(file.path).absolutePath())].insert(file.stamp.mobId);
+			}
 		}
 		for (qsizetype index = 0; index < result.sources.size(); ++index)
 		{
@@ -573,7 +685,7 @@ namespace Canon
 			const auto &source = result.sources[index];
 			if (source.snapshot->source != MetadataSource::Pmr && source.snapshot->source != MetadataSource::Mdb)
 				continue;
-			const QString folder = folderKey(QFileInfo(source.snapshot->path).absolutePath());
+			const QString folder = cachedFolderKey(QFileInfo(source.snapshot->path).absolutePath());
 			QSet<QString> reported;
 			for (const auto &facts : projections[index].files)
 			{
@@ -586,9 +698,9 @@ namespace Canon
 					if (safeName(name) && !names.contains(name) && names.size() != 1)
 						missing.append(QDir(folder).filePath(name));
 				}
-				bool localIdentity = false;
-				for (const auto &path : pathsById.value(facts.fileMobId))
-					localIdentity |= folderKey(QFileInfo(path).absolutePath()) == folder;
+				const bool localIdentity = identitiesByFolder.value(folder).contains(facts.fileMobId);
+				if (cancellation.cancelled())
+					break;
 				if (source.snapshot->source == MetadataSource::Mdb && !facts.fileMobId.isEmpty() && !localIdentity)
 					missing.append(QString{});
 				for (const auto &path : missing)
@@ -611,6 +723,9 @@ namespace Canon
 		}
 		result.cancelled = cancellation.cancelled();
 		result.reconciliationComplete = result.parsingComplete && !result.cancelled;
+		if (result.cancelled)
+			for (auto &issue : result.reconciliationIssues)
+				issue.scopeComplete = false;
 		return result;
 	}
 }

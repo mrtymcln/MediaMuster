@@ -1,0 +1,88 @@
+{
+  "baselineCommit": "2d96ac2",
+  "roots": [
+    "/Users/Shared/AvidMediaComposer",
+    "/Volumes/EDIT"
+  ],
+  "rows": 2413,
+  "sourceCandidates": 2425,
+  "folders": 6,
+  "issues": 298,
+  "counts": {
+    "canonicalFolderLookups": {
+      "before": 14502,
+      "after": 6
+    },
+    "folderTimestampQueries": {
+      "before": 4826,
+      "after": 12
+    },
+    "freshCheckUnchangedProbes": {
+      "before": 4978,
+      "after": 4978
+    }
+  },
+  "freshCheckProbesByHint": {
+    "Pmr": 18,
+    "Mdb": 18,
+    "Mxf": 4938,
+    "LegacyMedia": 4
+  },
+  "allFinalRecordHashesEqual": true,
+  "allRawSourceGraphHashesEqual": true,
+  "allSafetyCountsEqualPerPath": true,
+  "allSemanticComponentsEqual": true,
+  "allSourceAndFolderStampsStable": true,
+  "hashes": {
+    "callbacksSha256": "0b08e87287c7c6870ee256e4bbdcd0e11d891efa3af7be927d8a8a702e4c3ca3",
+    "filesSha256": "1b893b1ab94bba36f63f9ba21ce7dc11580a13095f2f4b67ceb1781716a21b2c",
+    "issuesSha256": "a3718ce8089388de29cd1c09458350a971ce87d39b2714382489e1f7bb0ee52a",
+    "schedulingSha256": "b58273c5673df9b4547be5f0e915bc2a6fe154add388ebc053be7546ea9fcc0b",
+    "sourceGraphsSha256": "bdc79e9f5ba5c8a3e007fb70475f8b54614a3917da639b8d9caf2fdf35fb17b6",
+    "stateSha256": "576beeec24774749da8ee14558ae4092310fa91fe31e7171503cc59f742ba79f"
+  },
+  "sourceReceipts": {
+    "before": {
+      "originalSourceSha256": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+      "instrumentedSourceSha256": "069634e521e7369c88db1d2601648e837d95348758a74589b98c4ebce907b83d"
+    },
+    "after": {
+      "originalSourceSha256": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+      "instrumentedSourceSha256": "c06faacc0071eab48f874a0f3fbd16e098a3220610994f75ffd103d5ffd5b2ff"
+    }
+  },
+  "binaryReceipts": {
+    "/private/tmp/folder-cache-probe-counters.h": "128bc4aa660043f02227e6f914fe89af68455b5bfde5ac23cf632c59bdfe9d06",
+    "/private/tmp/folder-cache-scan-proof.cpp": "4d00dce7bdfb876f1597dc8aaca4ce8d458dfe8a23e2c0ce5576810af351cf5b",
+    "/private/tmp/folder-cache-scan-proof-before": "ef98a4be66459e014ed207a5619dc4fd8fd506f31dbc6ab58811bf480b62a9d4",
+    "/private/tmp/folder-cache-scan-proof-after": "311051d07d525c86b33bd5fc86576f3caaeb1e539d4141eee6537198f876b140",
+    "/private/tmp/libmediamuster_canon-before-folder-cache.a": "e85aa421afce822a6f24a4a784269d6ab12b76763784b2842c51ee32c75ee6a8",
+    "/Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a": "0406d210f59d8c85a927395341e3819f0af78407bf56a425ab7dc219524de2b4"
+  },
+  "artifacts": {
+    "/private/tmp/folder-cache-probe-counters.h": "128bc4aa660043f02227e6f914fe89af68455b5bfde5ac23cf632c59bdfe9d06",
+    "/private/tmp/folder-cache-scan-proof.cpp": "4d00dce7bdfb876f1597dc8aaca4ce8d458dfe8a23e2c0ce5576810af351cf5b",
+    "/private/tmp/folder-cache-scanengine-before-original.cpp": "df34d3e12174ee7be776467226ae24bd09cb931d704b3f0370d69705bd45371f",
+    "/private/tmp/folder-cache-scanengine-after-original.cpp": "6258efafa7fe533e60857755299900ed86efabbd7b31e4e37b87e5088e1b3e02",
+    "/private/tmp/folder-cache-scanengine-before-instrumented.cpp": "069634e521e7369c88db1d2601648e837d95348758a74589b98c4ebce907b83d",
+    "/private/tmp/folder-cache-scanengine-after-instrumented.cpp": "c06faacc0071eab48f874a0f3fbd16e098a3220610994f75ffd103d5ffd5b2ff",
+    "/private/tmp/folder-cache-probe-build.txt": "0f7eb541685b80cc9c084659181d5e7b1111620004cfe288ea99dcf6cbf3d03e",
+    "/private/tmp/folder-cache-probe-source-receipts.json": "2171e3928ffd63c7e59ac37b25a78daaf763b5f407340f04581695388507afa8",
+    "/private/tmp/folder-cache-probe-binary-receipts.json": "d35c2132ec19f5240c0f73830262fb936347a167e8ba435c35e3f7ab824b427c",
+    "/private/tmp/run-folder-cache-probe.py": "1e04b2d6f972b5398bda34fdf53610459bfd2fc8b763fdce42503b33e1290677",
+    "/private/tmp/folder-cache-probe-before.json": "618f89e071020f249fcc55e6298c0fcb8741d79f2a0e5fc3c174968fd2a48679",
+    "/private/tmp/folder-cache-probe-after.json": "53b40cbc11ca81cda6b4b5d030fb3af07b48d9162f346ae40064a79d1414d5e0",
+    "/private/tmp/folder-cache-probe-summary.json": "8149683bd80993d46b72598f14b03f8f3be2ec2e6d4da2c4c2fe01231d9845db",
+    "/private/tmp/folder-cache-probe-before.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/folder-cache-probe-after.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "notes": [
+    "The counters record application-level Qt calls in ScanEngine only, not OS syscalls or NEXIS network requests.",
+    "Final files include all physical/stamp fields, all evidence observations/coverage/read states/selected values and complete source receipts, including unknown/false/zero values. Raw graph hashes preserve all declared semantic fields and original ranges/bytes/native framing; allocation capacity and pointer addresses are deliberately excluded.",
+    "Each mode runs in a fresh process with QT_HASH_SEED=0 and the same roots. Hash-map field keys are sorted for serialization; vector/recorded order is preserved.",
+    "Pre/post os.stat stamps cover all 2,425 source candidates and six media folders using path/device/inode/size/mtime_ns. These checks occur outside the instrumented scan body.",
+    "The direct temporary ScanEngine TU satisfies the archive symbols before archive extraction, so the original scanengine object is not linked. All other Canon objects use matching before/after archives.",
+    "No production or test files were edited by this diagnostic. Instrumented scan time/memory are supplementary; uninstrumented application trials are run separately by root.",
+    "The proof covers this real mounted corpus. Alias, cancellation, directory changes and database/file freshness also rely on the separately executed production regression tests, not a claim of NEXIS coverage."
+  ]
+}

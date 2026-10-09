@@ -1,0 +1,729 @@
+{
+  "sources": [
+    {
+      "descriptors": [
+        {
+          "handle": 73474,
+          "mxfClass": "",
+          "properties": [
+            {
+              "decoded": "CDCI",
+              "encodingBytes": 4,
+              "encodingHex": "43444349",
+              "interpretation": "",
+              "metadataBigEndian": false,
+              "name": "OMFI:ObjID",
+              "propertyId": 66060,
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 1413668
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 1413656
+                }
+              ],
+              "type": "omfi:ObjectTag",
+              "typeId": 65665,
+              "rangeBytesVerified": true
+            },
+            {
+              "decoded": 142,
+              "encodingBytes": 4,
+              "encodingHex": "8e000000",
+              "interpretation": "",
+              "metadataBigEndian": false,
+              "name": "OMFI:DIDD:DIDResolutionID",
+              "propertyId": 67831,
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 1414340
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 1414328
+                }
+              ],
+              "type": "omfi:Long",
+              "typeId": 65640,
+              "rangeBytesVerified": true
+            },
+            {
+              "decoded": "DV/C",
+              "encodingBytes": 5,
+              "encodingHex": "44562f4300",
+              "interpretation": "All recorded text bytes are ASCII; the producer's broader character set is not established.",
+              "metadataBigEndian": false,
+              "name": "OMFI:DIDD:Compression",
+              "propertyId": 67801,
+              "ranges": [
+                {
+                  "length": 5,
+                  "offset": 147739
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 1414376
+                }
+              ],
+              "type": "omfi:String",
+              "typeId": 65680,
+              "rangeBytesVerified": true
+            },
+            {
+              "decoded": null,
+              "encodingBytes": 16,
+              "encodingHex": "0202010402020003060e2b3404010101",
+              "interpretation": "Native property/type and original bytes retained; this private type, shape or byte order has no established interpretation here.",
+              "metadataBigEndian": false,
+              "name": "OMFI:DIDD:EssenceCompression",
+              "propertyId": 67297,
+              "ranges": [
+                {
+                  "length": 16,
+                  "offset": 147744
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 1415144
+                }
+              ],
+              "type": "omfi:GUID",
+              "typeId": 65760,
+              "rangeBytesVerified": true
+            }
+          ]
+        },
+        {
+          "handle": 77815,
+          "mxfClass": "",
+          "properties": [
+            {
+              "decoded": "CDCI",
+              "encodingBytes": 4,
+              "encodingHex": "43444349",
+              "interpretation": "",
+              "metadataBigEndian": false,
+              "name": "OMFI:ObjID",
+              "propertyId": 66060,
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 2084084
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 2084072
+                }
+              ],
+              "type": "omfi:ObjectTag",
+              "typeId": 65665,
+              "rangeBytesVerified": true
+            },
+            {
+              "decoded": 140,
+              "encodingBytes": 4,
+              "encodingHex": "8c000000",
+              "interpretation": "",
+              "metadataBigEndian": false,
+              "name": "OMFI:DIDD:DIDResolutionID",
+              "propertyId": 67831,
+              "ranges": [
+                {
+                  "length": 4,
+                  "offset": 2084756
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 2084744
+                }
+              ],
+              "type": "omfi:Long",
+              "typeId": 65640,
+              "rangeBytesVerified": true
+            },
+            {
+              "decoded": "DV/C",
+              "encodingBytes": 5,
+              "encodingHex": "44562f4300",
+              "interpretation": "All recorded text bytes are ASCII; the producer's broader character set is not established.",
+              "metadataBigEndian": false,
+              "name": "OMFI:DIDD:Compression",
+              "propertyId": 67801,
+              "ranges": [
+                {
+                  "length": 5,
+                  "offset": 265723
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 2084792
+                }
+              ],
+              "type": "omfi:String",
+              "typeId": 65680,
+              "rangeBytesVerified": true
+            },
+            {
+              "decoded": null,
+              "encodingBytes": 16,
+              "encodingHex": "0202010402020001060e2b3404010101",
+              "interpretation": "Native property/type and original bytes retained; this private type, shape or byte order has no established interpretation here.",
+              "metadataBigEndian": false,
+              "name": "OMFI:DIDD:EssenceCompression",
+              "propertyId": 67297,
+              "ranges": [
+                {
+                  "length": 16,
+                  "offset": 265728
+                }
+              ],
+              "readState": 1,
+              "tocRanges": [
+                {
+                  "length": 24,
+                  "offset": 2085560
+                }
+              ],
+              "type": "omfi:GUID",
+              "typeId": 65760,
+              "rangeBytesVerified": true
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "canonicalId": "060a2b3401010105.01010f1013000000.a0543bf960120690.c6ab46fc807fda72",
+          "descriptorLinks": [
+            {
+              "explanation": "",
+              "property": "OMFI:MOBJ:PhysicalMedia",
+              "target": 73474
+            }
+          ],
+          "handle": 73475,
+          "identity": {
+            "encodingBytes": 32,
+            "encodingHex": "060a2b340101010501010f1013000000a0543bf960120690c6ab46fc807fda72",
+            "interpretation": "Recorded identity bytes; Avid MDBs contain both standard 12-byte UIDs and 32-byte identities. No byte-order conversion or cross-file matching performed.",
+            "metadataBigEndian": false,
+            "name": "OMFI:MOBJ:MobID",
+            "propertyId": 66350,
+            "ranges": [
+              {
+                "length": 32,
+                "offset": 147803
+              }
+            ],
+            "readState": 1,
+            "tocRanges": [
+              {
+                "length": 24,
+                "offset": 1415768
+              }
+            ],
+            "type": "omfi:UID",
+            "typeId": 65695,
+            "rangeBytesVerified": true
+          }
+        },
+        {
+          "canonicalId": "060a2b3401010105.01010f1013000000.a0543bf960120690.c6ab46fc807fda72",
+          "descriptorLinks": [
+            {
+              "explanation": "",
+              "property": "OMFI:MOBJ:PhysicalMedia",
+              "target": 73474
+            }
+          ],
+          "handle": 73475,
+          "identity": {
+            "encodingBytes": 32,
+            "encodingHex": "060a2b340101010501010f1013000000a0543bf960120690c6ab46fc807fda72",
+            "interpretation": "Recorded identity bytes; Avid MDBs contain both standard 12-byte UIDs and 32-byte identities. No byte-order conversion or cross-file matching performed.",
+            "metadataBigEndian": false,
+            "name": "OMFI:MOBJ:MobID",
+            "propertyId": 66350,
+            "ranges": [
+              {
+                "length": 32,
+                "offset": 147848
+              }
+            ],
+            "readState": 1,
+            "tocRanges": [
+              {
+                "length": 24,
+                "offset": 1415888
+              }
+            ],
+            "type": "omfi:UID",
+            "typeId": 65695,
+            "rangeBytesVerified": true
+          }
+        },
+        {
+          "canonicalId": "060a2b3401010105.01010f1013000000.83c926f960120690.0c1146fc807fda72",
+          "descriptorLinks": [
+            {
+              "explanation": "",
+              "property": "OMFI:MOBJ:PhysicalMedia",
+              "target": 77815
+            }
+          ],
+          "handle": 77816,
+          "identity": {
+            "encodingBytes": 32,
+            "encodingHex": "060a2b340101010501010f101300000083c926f9601206900c1146fc807fda72",
+            "interpretation": "Recorded identity bytes; Avid MDBs contain both standard 12-byte UIDs and 32-byte identities. No byte-order conversion or cross-file matching performed.",
+            "metadataBigEndian": false,
+            "name": "OMFI:MOBJ:MobID",
+            "propertyId": 66350,
+            "ranges": [
+              {
+                "length": 32,
+                "offset": 265787
+              }
+            ],
+            "readState": 1,
+            "tocRanges": [
+              {
+                "length": 24,
+                "offset": 2086184
+              }
+            ],
+            "type": "omfi:UID",
+            "typeId": 65695,
+            "rangeBytesVerified": true
+          }
+        },
+        {
+          "canonicalId": "060a2b3401010105.01010f1013000000.83c926f960120690.0c1146fc807fda72",
+          "descriptorLinks": [
+            {
+              "explanation": "",
+              "property": "OMFI:MOBJ:PhysicalMedia",
+              "target": 77815
+            }
+          ],
+          "handle": 77816,
+          "identity": {
+            "encodingBytes": 32,
+            "encodingHex": "060a2b340101010501010f101300000083c926f9601206900c1146fc807fda72",
+            "interpretation": "Recorded identity bytes; Avid MDBs contain both standard 12-byte UIDs and 32-byte identities. No byte-order conversion or cross-file matching performed.",
+            "metadataBigEndian": false,
+            "name": "OMFI:MOBJ:MobID",
+            "propertyId": 66350,
+            "ranges": [
+              {
+                "length": 32,
+                "offset": 265832
+              }
+            ],
+            "readState": 1,
+            "tocRanges": [
+              {
+                "length": 24,
+                "offset": 2086304
+              }
+            ],
+            "type": "omfi:UID",
+            "typeId": 65695,
+            "rangeBytesVerified": true
+          }
+        }
+      ],
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "projection": [
+        {
+          "fields": [
+            {
+              "observations": [
+                {
+                  "basis": 1,
+                  "explanation": "Typed CDCI descriptor Compression 'DV/C' and DIDResolutionID 142 match a verified Avid name and its exact compatible recorded EssenceCompression label; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+                  "object": "object:73474",
+                  "property": "OMFI:DIDD:Compression",
+                  "value": "DV 50"
+                }
+              ],
+              "property": "Compression",
+              "selected": "DV 50",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            },
+            {
+              "observations": [
+                {
+                  "basis": 1,
+                  "explanation": "Recorded structured AUID converted to its UL octet order.",
+                  "object": "object:73474",
+                  "property": "OMFI:DIDD:EssenceCompression",
+                  "value": "060e2b34040101010401020202020300"
+                }
+              ],
+              "property": "Compression Label",
+              "selected": "060e2b34040101010401020202020300",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            }
+          ],
+          "fileMobId": "060a2b3401010105.01010f1013000000.a0543bf960120690.c6ab46fc807fda72"
+        },
+        {
+          "fields": [
+            {
+              "observations": [
+                {
+                  "basis": 1,
+                  "explanation": "Typed CDCI descriptor Compression 'DV/C' and DIDResolutionID 140 match a verified Avid name and its exact compatible recorded EssenceCompression label; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+                  "object": "object:77815",
+                  "property": "OMFI:DIDD:Compression",
+                  "value": "DV 25 411"
+                }
+              ],
+              "property": "Compression",
+              "selected": "DV 25 411",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            },
+            {
+              "observations": [
+                {
+                  "basis": 1,
+                  "explanation": "Recorded structured AUID converted to its UL octet order.",
+                  "object": "object:77815",
+                  "property": "OMFI:DIDD:EssenceCompression",
+                  "value": "060e2b34040101010401020202020100"
+                }
+              ],
+              "property": "Compression Label",
+              "selected": "060e2b34040101010401020202020100",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            }
+          ],
+          "fileMobId": "060a2b3401010105.01010f1013000000.83c926f960120690.0c1146fc807fda72"
+        }
+      ],
+      "sourceOutcome": 1,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "statDuringHashAndRangeVerification": {
+        "size": 3668720,
+        "mtimeNs": 1788291273218255487
+      },
+      "unchangedDuringHashAndRangeVerification": true
+    },
+    {
+      "descriptors": [
+        {
+          "handle": 728,
+          "mxfClass": "CDCIEssenceDescriptor",
+          "properties": [
+            {
+              "encodingBytes": 16,
+              "encodingHex": "060e2b34040101010401020202020100",
+              "interpretation": "",
+              "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+              "ranges": [
+                {
+                  "length": 16,
+                  "offset": 131411
+                }
+              ],
+              "readState": 1,
+              "type": "UL",
+              "rangeBytesVerified": true
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "canonicalId": "060a2b3401010105.01010f1013000000.83c926f960120690.0c1146fc807fda72",
+          "descriptorLinks": [
+            {
+              "explanation": "A unique InstanceUID target was found in this partition's metadata copy.",
+              "property": "SourcePackage.Descriptor",
+              "target": 728
+            }
+          ],
+          "handle": 726,
+          "identity": {
+            "encodingBytes": 32,
+            "encodingHex": "060a2b340101010501010f1013000000f926c983126090060c1146fc807fda72",
+            "interpretation": "",
+            "name": "GenericPackage.PackageUID",
+            "ranges": [
+              {
+                "length": 32,
+                "offset": 130912
+              }
+            ],
+            "readState": 1,
+            "type": "UMID",
+            "rangeBytesVerified": true
+          }
+        }
+      ],
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDE0_F926CF926C983V.mxf",
+      "projection": [
+        {
+          "fields": [
+            {
+              "observations": [
+                {
+                  "basis": 1,
+                  "explanation": "Coding-label lookup; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available.",
+                  "object": "object:728",
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "value": "DV NTSC 25Mbps 4:1:1"
+                }
+              ],
+              "property": "Compression",
+              "selected": "DV NTSC 25Mbps 4:1:1",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            },
+            {
+              "observations": [
+                {
+                  "basis": 0,
+                  "explanation": "",
+                  "object": "object:728",
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "value": "060e2b34040101010401020202020100"
+                }
+              ],
+              "property": "Compression Label",
+              "selected": "060e2b34040101010401020202020100",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            }
+          ],
+          "fileMobId": "060a2b3401010105.01010f1013000000.83c926f960120690.0c1146fc807fda72"
+        }
+      ],
+      "sourceOutcome": 1,
+      "sha256": "4363f0918678143b51d45b1d2b2caa0f7d9f88ed171134cdab16571cdb6f387d",
+      "statDuringHashAndRangeVerification": {
+        "size": 110630497,
+        "mtimeNs": 1786163394027156088
+      },
+      "unchangedDuringHashAndRangeVerification": true
+    },
+    {
+      "descriptors": [
+        {
+          "handle": 728,
+          "mxfClass": "CDCIEssenceDescriptor",
+          "properties": [
+            {
+              "encodingBytes": 16,
+              "encodingHex": "060e2b34040101010401020202020300",
+              "interpretation": "",
+              "name": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+              "ranges": [
+                {
+                  "length": 16,
+                  "offset": 131383
+                }
+              ],
+              "readState": 1,
+              "type": "UL",
+              "rangeBytesVerified": true
+            }
+          ]
+        }
+      ],
+      "owners": [
+        {
+          "canonicalId": "060a2b3401010105.01010f1013000000.a0543bf960120690.c6ab46fc807fda72",
+          "descriptorLinks": [
+            {
+              "explanation": "A unique InstanceUID target was found in this partition's metadata copy.",
+              "property": "SourcePackage.Descriptor",
+              "target": 728
+            }
+          ],
+          "handle": 726,
+          "identity": {
+            "encodingBytes": 32,
+            "encodingHex": "060a2b340101010501010f1013000000f93b54a012609006c6ab46fc807fda72",
+            "interpretation": "",
+            "name": "GenericPackage.PackageUID",
+            "ranges": [
+              {
+                "length": 32,
+                "offset": 130884
+              }
+            ],
+            "readState": 1,
+            "type": "UMID",
+            "rangeBytesVerified": true
+          }
+        }
+      ],
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDFB_F93B5F93B54A0V.mxf",
+      "projection": [
+        {
+          "fields": [
+            {
+              "observations": [
+                {
+                  "basis": 1,
+                  "explanation": "Coding-label lookup; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available.",
+                  "object": "object:728",
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "value": "DV NTSC 50Mbps 4:2:2"
+                }
+              ],
+              "property": "Compression",
+              "selected": "DV NTSC 50Mbps 4:2:2",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            },
+            {
+              "observations": [
+                {
+                  "basis": 0,
+                  "explanation": "",
+                  "object": "object:728",
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "value": "060e2b34040101010401020202020300"
+                }
+              ],
+              "property": "Compression Label",
+              "selected": "060e2b34040101010401020202020300",
+              "selectionReason": "Selected by the field-specific source priority; alternatives retained"
+            }
+          ],
+          "fileMobId": "060a2b3401010105.01010f1013000000.a0543bf960120690.c6ab46fc807fda72"
+        }
+      ],
+      "sourceOutcome": 1,
+      "sha256": "c12c0a3b18be9e89a03c17d762888910e9a6c80886fcd5bf5590aebfc547f1ad",
+      "statDuringHashAndRangeVerification": {
+        "size": 220732513,
+        "mtimeNs": 1786163421212436192
+      },
+      "unchangedDuringHashAndRangeVerification": true
+    }
+  ],
+  "observedChanges": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDE0_F926CF926C983V.mxf",
+      "property": "Compression",
+      "before": "DV NTSC 25Mbps 4:1:1",
+      "after": "DV 25 411"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDFB_F93B5F93B54A0V.mxf",
+      "property": "Compression",
+      "before": "DV NTSC 50Mbps 4:2:2",
+      "after": "DV 50"
+    }
+  ],
+  "namingResourceEvidence": [
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_D25A.vr",
+      "sha256": "3664c1e8942aa295704b4cf9c078d26d7178eb48886062e0ce797d4987a68b18",
+      "resolutionId": 140,
+      "wordAt0x84": "008c",
+      "displayName": "DV 25 411",
+      "displayNameOffset": 139,
+      "wordAndNameBytesVerified": true
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_Resolutions/DvVideoRes_DV50.vr",
+      "sha256": "8a006537f39910f1d1f4556ca1e3272d51ecbbcbab9fc86ee79485ea3c69c3c5",
+      "resolutionId": 142,
+      "wordAt0x84": "008e",
+      "displayName": "DV 50",
+      "displayNameOffset": 139,
+      "wordAndNameBytesVerified": true
+    }
+  ],
+  "codingLabelVocabulary": {
+    "path": "/private/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_labels_and_keys.h",
+    "sha256": "4d88873a9e7aa4360eef797869b8456c798ba9a4e056892e56e0b38f55e4cee4",
+    "relevantLines": [
+      159,
+      167
+    ],
+    "primaryUrl": "https://raw.githubusercontent.com/BBC-archive/libMXF/main/mxf/mxf_labels_and_keys.h",
+    "meaning": "Exact DV-based coding-label registrations distinguish DV25NTSC411 and DV50NTSC; the labels in each file and its MDB agree."
+  },
+  "recordedUtc": "2026-10-08T05:34:57.499854+00:00",
+  "boundary": "Read-only targeted MDB and MXF-header evidence for the two changed Compression cells in the 2,413-row scan. Raw source identities and coding labels remain unchanged. The new MDB descriptor-based short-name lookup applies to the same DV25/DV50 essence already identified by the MXF labels. This proves genuine 32-byte-owner/DV descriptor examples; it does not establish a genuine 32-byte-owner/JFIF specimen or any unverified DV100 mapping.",
+  "identityObservations": "The MDB stores two agreeing MobID property observations per relevant owner; both observations and their distinct source ranges are retained. There are two distinct matching owner objects, not four media files.",
+  "verification": {
+    "mdbAndMxfCanonicalFileIdsAgree": true,
+    "mdbAndMxfCodingLabelsAgree": true,
+    "genuineMdbOwningMobIdsAre32Bytes": true,
+    "allRetainedRawPropertyRangesMatchFiles": true,
+    "nameOnlyRefinements": true,
+    "selectionPriorityChanged": false,
+    "compressionFamilyChanged": false,
+    "rawSourceHashAndRangeVerification": "Source stat unchanged across full-file SHA256 and direct range re-read after the read-only parser probe. Each retained raw value matches the specified source-file byte ranges."
+  },
+  "probe": {
+    "source": "Project Canon/evidence/legacy-audio-dv-name-probe-2026-10-08.cpp",
+    "sourceSha256AfterRun": "7ffef3b1c1d2802ec7413323ab03bc1ebe435cee1a632ae19e46b5eb94ecccbf",
+    "archive": "build-canon/libmediamuster_canon.a",
+    "archiveSha256AfterRun": "3c6fdf91673b40ff3fd1e39635eef6dc1b03e6eb4ddbf5bdd2edf79c5b479ba9",
+    "binary": "/private/tmp/mediamuster-legacy-dv-name-probe",
+    "binarySha256AfterRun": "032bc2d05fc66e5e90e7d9f68bdd0d5261b508ea6199d82b36da2203a436219b",
+    "exitCode": 0,
+    "compilerOutput": "",
+    "runtimeOutput": "",
+    "rawResultSha256": "467ae3625d5d25f48990d5218fd3b5776309c72ba399fa6c5f7021cb9726d762",
+    "compileArgv": [
+      "c++",
+      "-std=c++17",
+      "-arch",
+      "arm64",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wsign-conversion",
+      "-I",
+      "src",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+      "-iframework",
+      "/Users/martymclean/Qt/6.5.3/macos/lib",
+      "Project Canon/evidence/legacy-audio-dv-name-probe-2026-10-08.cpp",
+      "build-canon/libmediamuster_canon.a",
+      "-framework",
+      "QtCore",
+      "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-o",
+      "/private/tmp/mediamuster-legacy-dv-name-probe"
+    ],
+    "runArgv": [
+      "/private/tmp/mediamuster-legacy-dv-name-probe",
+      "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDE0_F926CF926C983V.mxf",
+      "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDFB_F93B5F93B54A0V.mxf"
+    ]
+  }
+}

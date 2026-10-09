@@ -1,0 +1,188 @@
+{
+  "recordedUtc": "2026-10-08T12:29:39.095728+00:00",
+  "authorization": "User approved the first proposal: trim unused database property storage using Qt-native/C++17 tools.",
+  "change": {
+    "file": "src/canon/omfobjects_p.cpp",
+    "mechanism": "QVector::squeeze() on finished object property lists and unowned properties, after all interpretation and audio-summary decoding.",
+    "productionLinesAdded": 6,
+    "parentCommit": "5443141d557f0286e15b1c6aa2c7b481659f60ef",
+    "beforeSourceSha256": "8fb4cfadd63cebce044ccf40d7a8e73120822f7c1723b23b06ee60ea04a7732e",
+    "afterSourceSha256": "751fbfb762f3e8584463d10de2dff3f4d511c078d543b7c2fc84959da9dd3752",
+    "newSchemaOrParserRules": false
+  },
+  "builds": [
+    {
+      "directory": "build-canon",
+      "configuration": "Debug",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "result": "passed",
+      "normalAppCodesignVerification": "passed"
+    },
+    {
+      "directory": "build",
+      "configuration": "Debug",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "result": "passed",
+      "normalAppCodesignVerification": "passed"
+    }
+  ],
+  "tests": {
+    "command": "ctest --test-dir build-canon --output-on-failure -j 4",
+    "nativeArchitecture": "arm64",
+    "suites": 40,
+    "passed": 40,
+    "failed": 0,
+    "elapsedSeconds": 47.01,
+    "lastTestLogSha256": "d534b288a4921884760655d419e458e999f6c1321504e2f47cca8b3d52cd02a1",
+    "newTestsAdded": false
+  },
+  "fullScan": {
+    "roots": [
+      "/Users/Shared/AvidMediaComposer",
+      "/Volumes/EDIT"
+    ],
+    "measurementBoundary": "Fresh process MediaScanner+Canon+formatted rows; before audit serialization, before MediaTableModel population; Debug, filesystem caches not cleared; tests/build/proof did not overlap the timed after scan.",
+    "rowsBefore": 2413,
+    "rowsAfter": 2413,
+    "csvByteIdentical": true,
+    "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "inventoryIncludingKelpieIdsIdentical": true,
+    "noticesIdentical": true,
+    "noticeCount": 298,
+    "sourceCountsOutcomesReadReasonsAndEncodingBytesIdentical": true,
+    "beforeScanMs": 21266,
+    "afterScanMs": 21048,
+    "beforeMemory": {
+      "peakResidentBytes": 2784018432,
+      "physicalFootprintBytes": 2511821312,
+      "residentBytes": 2784018432
+    },
+    "afterMemory": {
+      "peakResidentBytes": 2711158784,
+      "physicalFootprintBytes": 2359843072,
+      "residentBytes": 2711060480
+    },
+    "observedPhysicalFootprintReductionBytes": 151978240,
+    "observedPhysicalFootprintReductionPercent": 6.050519568169028,
+    "observedPeakResidentReductionBytes": 72859648,
+    "mdbPropertyStorageBefore": {
+      "properties": 2174798,
+      "allocatedPropertySlots": 2817231
+    },
+    "mdbPropertyStorageAfter": {
+      "properties": 2174798,
+      "allocatedPropertySlots": 2174798
+    },
+    "removedMdbPropertySlots": 642433,
+    "nativeRawPropertyBytes": 224,
+    "removedMdbPropertySlotStorageBytes": 143904992
+  },
+  "sourceGraphProof": {
+    "scope": "Read-only temporary diagnostic; production and tests unchanged by diagnostic.",
+    "build": "Same Qt6.5.3 and C++17; before copied Canon Debug static library vs after current Canon Debug static library; diagnostic O2 arm64.",
+    "sources": 90,
+    "pairs": 90,
+    "graphHashesEqual": true,
+    "projectionHashesEqual": true,
+    "stderrEmpty": true,
+    "sourceKinds": {
+      ".mdb": 8,
+      ".omf": 80,
+      ".wav": 1,
+      ".aif": 1
+    },
+    "outcomes": {
+      "1": 180
+    },
+    "hashMethod": "QDataStream Qt_6_0 big-endian serialized all declared ParsedSource fields recursively, including source receipts, record sets, objects, properties, native contexts, decoded QVariants, locators/framing/ranges, ordered relationships and recorded references, diagnostics; full Projection files/masters/object references/observations/coverage and read/selected states. Streamed through 64KB SHA256 sink; QHash fields sorted; QT_HASH_SEED=0 both modes. Pointer addresses and capacities excluded.",
+    "sourceStampMethod": "Before each pair exact size, mtime nanoseconds, device/inode and absolute path; stamp rechecked after pair and unchanged for all90.",
+    "limitations": [
+      "Same unchanged local source specimens, not a guarantee for every possible file.",
+      "Full-scan output/evidence scheduling equivalence measured separately by main task.",
+      "No pointer-sharing topology fingerprint; pointed-to receipt/context contents are serialized.",
+      "Timing supplementary only; main task tests/build ran concurrently.",
+      "Mac arm64 Debug library; no Windows/NEXIS benchmark."
+    ],
+    "sourceSha256": "993d3d780724bc16c01113140828637d681e9566dd9c42db1d6b8baebbf8cc64",
+    "runnerSha256": "0abba7fbffab59585cba1c1dd53737138310cae78f627ab38004aed6c5431650"
+  },
+  "independentReview": {
+    "ownershipAndIndexLifetime": "Compaction precedes projection; parser owns indices and copied locators, not pointers into property lists. Native contexts retain their QSharedPointer ownership. Each vector compacted separately.",
+    "simplestApproach": "Mirrors MXF reader. Exact reserve would add counting/index work and must account for decoded audio-summary fields; no custom allocation or new memory cap introduced."
+  },
+  "limits": [
+    "One comparable full-scan timing/memory pair; no statistically established speed gain.",
+    "Peak measured is resident memory; no sampled peak physical-footprint claim.",
+    "Mac arm64 native execution with universal Debug builds; Windows/NEXIS/Release behavior unmeasured.",
+    "Graph proof covers 90 unchanged genuine sources, excludes allocation capacity and pointer-sharing topology from semantic hashes.",
+    "Diagnostic program and runner are evidence artifacts, not app targets; runner retains temporary paths from the captured experiment."
+  ],
+  "artifacts": [
+    {
+      "path": "property-compaction-after-real-scan-2026-10-08.csv",
+      "bytes": 1097122,
+      "sha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7"
+    },
+    {
+      "path": "property-compaction-after-real-scan-2026-10-08.json",
+      "bytes": 2551047,
+      "sha256": "9780f00977fe7724ec915fba08dafcf6895c55548b7ac1c14194a7e9890f699b"
+    },
+    {
+      "path": "property-compaction-after-real-scan-2026-10-08.txt",
+      "bytes": 4956,
+      "sha256": "00a0d159bda212157b758cdf868d27f087877c8c5e17e5aba674843687294fe9"
+    },
+    {
+      "path": "property-compaction-before-real-scan-2026-10-08.csv",
+      "bytes": 1097122,
+      "sha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7"
+    },
+    {
+      "path": "property-compaction-before-real-scan-2026-10-08.json",
+      "bytes": 2551048,
+      "sha256": "318f85975c09c629c193db4ac8697d314a43a2b8ac09c6a352d4cd0f50426dc6"
+    },
+    {
+      "path": "property-compaction-before-real-scan-2026-10-08.txt",
+      "bytes": 4956,
+      "sha256": "e30893d38ec3d7a929bdee8b3aa35eceeda118d1d93f5e7f8f88718cfaaaa022"
+    },
+    {
+      "path": "property-compaction-graph-paths-2026-10-08.json",
+      "bytes": 9569,
+      "sha256": "9d4f106218354dd0c185046607af49288ecd6a713578cfe58f47841c36ed2d03"
+    },
+    {
+      "path": "property-compaction-graph-proof-2026-10-08.cpp",
+      "bytes": 10636,
+      "sha256": "993d3d780724bc16c01113140828637d681e9566dd9c42db1d6b8baebbf8cc64"
+    },
+    {
+      "path": "property-compaction-graph-results-2026-10-08.jsonl",
+      "bytes": 160725,
+      "sha256": "e94f30c0fe864b75b7806b15f575b8a00a6fa96d1dc6a964b6f931d889d0f9d0"
+    },
+    {
+      "path": "property-compaction-graph-runner-2026-10-08.py",
+      "bytes": 1859,
+      "sha256": "0abba7fbffab59585cba1c1dd53737138310cae78f627ab38004aed6c5431650"
+    },
+    {
+      "path": "property-compaction-graph-summary-2026-10-08.json",
+      "bytes": 79859,
+      "sha256": "8836acf0171f8563d2133207508b4c7b54cf369fb3b2b0fb135516c05ec9f0ae"
+    },
+    {
+      "path": "property-compaction-graph-build-2026-10-08.txt",
+      "bytes": 2476,
+      "sha256": "25adf45880a7f98a36357d508c665cc733c3020cbe6a6d2751f4fde28bbf89ce"
+    }
+  ]
+}

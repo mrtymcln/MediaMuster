@@ -1,0 +1,37 @@
+{
+  "purpose": "Measured design proposal only; no production changes.",
+  "clientDate": "2026-10-09",
+  "clientTimezone": "Australia/Sydney",
+  "genuineSources": 7,
+  "pairedReads": 11,
+  "packedReadsWithExactRecoveredStream": 11,
+  "typedGraphRestorationImplemented": false,
+  "receiptPointerTopologyVerified": false,
+  "productionIntegrationImplemented": false,
+  "windowsNexisCapacityVerified": false,
+  "smallSourcePhysicalFootprintSavingEstablished": false,
+  "qtVersion": "6.5.3",
+  "cxxStandard": "C++17",
+  "blockBytes": 65536,
+  "compressionLevel": 1,
+  "cumulativeBaselineFootprintBytes": 1912198848,
+  "cumulativePackedFootprintBytes": 443223552,
+  "cumulativeBaselinePeakResidentBytes": 2412052480,
+  "cumulativePackedPeakResidentBytes": 1199472640,
+  "productionSourceChange": false,
+  "artifacts": {
+    "ram-archive-feasibility-probe-2026-10-09.cpp": "1427974fd9c4ee96ec73df64856b42bf3bb4f7e46e16b7eab82925bc403e2676",
+    "run-ram-archive-feasibility-2026-10-09.py": "565c284a85bbf6195f20703bb20615010dffe4e7d4bc0fa572ee4e6aa91c735e",
+    "ram-archive-feasibility-2026-10-09.json": "b0fc13c4a4bde5196432849d62d0688c672db4150e3fa39673ebae953c57560c",
+    "ram-archive-feasibility-results-2026-10-09.jsonl": "fc5b703e7741ded69d39ec4dfad4dd61ffb4005f4b34806e4b8fe87ff16b84b3",
+    "ram-archive-cumulative-probe-2026-10-09.cpp": "2a8d4716ea1a0fbc42c7e0d498a360a90dadfd577c89d698d077d606a64a6f7d",
+    "run-ram-archive-cumulative-2026-10-09.py": "651b4e5548155e9c9f7514d51e4a008b066e617c34597ed911f651c272208568",
+    "ram-archive-cumulative-2026-10-09.json": "20da23c71cbd6e712f101a91ffa1a9d9811ce5a49b0782b5f263b82f43da06b8",
+    "ram-archive-independent-review-2026-10-09.json": "d487f919242fc8a57c7ae83066b10bac6a7e17d98b6b5b26ee9a6512c471535d"
+  },
+  "sources": [
+    "https://doc.qt.io/qt-6.5/qdatastream.html",
+    "https://doc.qt.io/qt-6.5/qbytearray.html#qCompress",
+    "https://doc.qt.io/qt-6.5/implicit-sharing.html"
+  ]
+}

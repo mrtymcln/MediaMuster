@@ -1,0 +1,130 @@
+{
+  "recordedUtc": "2026-10-08T06:59:42.956772+00:00",
+  "purpose": "Record an evidence boundary discovered while centralizing compression display names. The nine compatibility mappings are not established as recorded PictureEssenceCoding aliases by the installed Avid naming definitions searched here.",
+  "implementationDecisionAtReceipt": "DNx output behavior is retained while the user decides whether these unsupported aliases should be removed now or kept pending evidence. Production mapping entries were not changed by this evidence capture; their comments distinguish them from verified coding profiles.",
+  "scopeLimits": [
+    "No claim that these byte sequences can never occur in an Avid file, in another Media Composer version, or in a different property.",
+    "An installed-definition text search is evidence about the searched files, not a complete specification or disproof of historical support.",
+    "No genuine, source-anchored media/database specimen demonstrating these nine identifiers as picture coding labels was identified in this review. Existing source comments and authored tests are not independent format evidence.",
+    "This receipt does not represent an exhaustive binary scan of every media file or every mounted volume.",
+    "The appearance of a generic-container identifier domain prompts investigation; the shared prefix alone does not identify a particular container or establish a compression profile."
+  ],
+  "installedAvid": {
+    "infoPlist": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Info.plist",
+    "infoPlistSha256": "98adf3bb60492e300e9dd03a4ccf386f204c9599a8050089fa06a02a747e7a47",
+    "CFBundleShortVersionString": "26.8.0.58987",
+    "CFBundleVersion": "26.8.0"
+  },
+  "search": {
+    "luaRoot": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config",
+    "luaFileCount": 40,
+    "dfmLuaFileCount": 30,
+    "luaScope": "Every .lua under CodecToolkit_Config, including dfm and shared modules. Case-insensitive searches for normalized UL hex and Avid GUID field-order text.",
+    "paramExtenderPath": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/ParamExtender/dfm_param_extender.json",
+    "paramExtenderSha256": "8eb0210f0aa4060433f7ef126bd071540b2b494f96a8bea34a9f7b156bc5fbb9",
+    "paramExtenderVersion": "1.0.18",
+    "paramExtenderRows": 3601,
+    "paramExtenderScope": "Entire JSON text, not only primary keys: normalized UL hex and Avid GUID field-order text.",
+    "allNineAliasesHadZeroMatches": true
+  },
+  "currentMappingSource": {
+    "path": "/Users/martymclean/Developer/MediaMuster/src/canon/dnxnames_p.h",
+    "sha256AtReceipt": "bf99cc25a665bdb5109348c9aaef1d8335b6fd4f9ef5856ef8cdce84650f278e",
+    "commentOnlyChange": "The last nine mappings are labelled retained/unproven compatibility aliases rather than registered coding labels."
+  },
+  "aliases": [
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102060301",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-06-03-01",
+      "currentLevel": "LB",
+      "currentBrandFamily": "DNxHD",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102060101",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-06-01-01",
+      "currentLevel": "SQ",
+      "currentBrandFamily": "DNxHD",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102060201",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-06-02-01",
+      "currentLevel": "HQ",
+      "currentBrandFamily": "DNxHD",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102060202",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-06-02-02",
+      "currentLevel": "HQX",
+      "currentBrandFamily": "DNxHD",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102110101",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-11-01-01",
+      "currentLevel": "LB",
+      "currentBrandFamily": "DNxHR",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102110201",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-11-02-01",
+      "currentLevel": "SQ",
+      "currentBrandFamily": "DNxHR",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102110301",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-11-03-01",
+      "currentLevel": "HQ",
+      "currentBrandFamily": "DNxHR",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102110401",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-11-04-01",
+      "currentLevel": "HQX",
+      "currentBrandFamily": "DNxHR",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    },
+    {
+      "retainedIdentifier": "060e2b34040101010d01030102110501",
+      "avidGuidTextSearched": "342B0E06-0104-0101-0D-01-03-01-02-11-05-01",
+      "currentLevel": "444",
+      "currentBrandFamily": "DNxHR",
+      "matchingInstalledLuaFiles": [],
+      "occurrencesInEntireParamExtenderJson": 0,
+      "status": "Unproven as a recorded picture coding-label alias within the reviewed evidence."
+    }
+  ],
+  "primarySourceContrast": {
+    "sourceUrl": "https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_avid_labels_and_keys.h",
+    "localReviewedSource": "/private/tmp/mediamuster-mxf-reference/libMXF-main/mxf/mxf_avid_labels_and_keys.h",
+    "localReviewedSourceSha256": "f19f8fb86383c5e31fafca86ddcab6e0a1e496ad1dd83bb90aab296c5d4750aa",
+    "definitions": "MXF_AVID_LABEL, MXF_AVID_EC_L, MXF_AVID_DNXHD_EC_L and DNxHD1080p1235ClipWrapped.",
+    "avidContainerExample": "060e2b34040101010e04030102060101",
+    "retainedAliasExample": "060e2b34040101010d01030102060101",
+    "difference": "The BBC-defined Avid container example has 0e040301 in octets 9-12; the retained alias has 0d010301. They are different full identifiers. The actual container definition does not validate the retained alias or its current SQ level.",
+    "genericContainerSourceUrl": "https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_labels_and_keys.h",
+    "genericContainerDefinition": "MXF_GENERIC_CONTAINER_LABEL uses the 0d01030102 domain. This is a container-label domain, distinct from the registered 04010202 picture-coding domain.",
+    "separateConfirmedCorrection": "060e2b34040101010d01030102060100 is BWFFrameWrapped in the BBC definitions and was removed from the new compression coding-name catalogue; qualified PCM descriptor fallbacks remain."
+  }
+}

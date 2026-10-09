@@ -1,0 +1,528 @@
+{
+  "baseline": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/full-scan-legacy-audio-2026-10-08.csv",
+  "after": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/full-scan-compression-names-2026-10-08.csv",
+  "baselineRows": 2413,
+  "afterRows": 2413,
+  "addedPaths": [],
+  "removedPaths": [],
+  "ignoredField": "KelpieId (assigned anew per scan session)",
+  "changedCells": 71,
+  "changedCellsByProperty": {
+    "Compression": 71
+  },
+  "changedRows": 71,
+  "dnxRows": 806,
+  "dnxNameChanges": 0,
+  "compressionTransitions": [
+    {
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High",
+      "rows": 6
+    },
+    {
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422",
+      "rows": 15
+    },
+    {
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ",
+      "rows": 6
+    },
+    {
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT",
+      "rows": 6
+    },
+    {
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy",
+      "rows": 6
+    },
+    {
+      "before": "DV 25 411",
+      "after": "DV NTSC 25Mbps 4:1:1",
+      "rows": 1
+    },
+    {
+      "before": "DV 50",
+      "after": "DV NTSC 50Mbps 4:2:2",
+      "rows": 1
+    },
+    {
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline",
+      "rows": 8
+    },
+    {
+      "before": "J2K HD",
+      "after": "JPEG2000",
+      "rows": 6
+    },
+    {
+      "before": "JPEG 2000 IMF",
+      "after": "JPEG2000",
+      "rows": 2
+    },
+    {
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit",
+      "rows": 10
+    },
+    {
+      "before": "XDCAM EX 35",
+      "after": "XDCAM",
+      "rows": 4
+    }
+  ],
+  "nonCompressionChanges": [],
+  "changes": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69671C4_DEDE70DEDE787V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69674FA_105D6105D63B7V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967651_11614116145A2V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E18_174791747975EV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E2C_1757117571C45V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967E51_1772E1772E57CV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967F59_183B5183B5129V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967F8B_1860F1860FA6DV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6967FA8_18774187744DFV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69682F2_1AF611AF61D83V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968361_1B4A21B4A27ECV.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968378_1B5B61B5B6A96V.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968408_1BC8D1BC8D372V.mxf",
+      "property": "Compression",
+      "before": "XDCAM EX 35",
+      "after": "XDCAM"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69685CF_1D2171D217E9EV.mxf",
+      "property": "Compression",
+      "before": "J2K HD",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69687E9_1EB9D1EB9DB98V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69687F6_1EC3D1EC3D7B2V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968823_1EE611EE61A8AV.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968EF3_2410E2410ECB0V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968F32_244072440782EV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968F80_247B8247B8796V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968F92_2489724897CA3V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968FAA_249BD249BDA15V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969008_24E2724E27AB9V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969022_24F6E24F6EAE5V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969069_252C9252C952BV.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6969077_25373253732E1V.mxf",
+      "property": "Compression",
+      "before": "XDCAM EX 35",
+      "after": "XDCAM"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696915A_25E3625E36DC6V.mxf",
+      "property": "Compression",
+      "before": "J2K HD",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696916A_25EF525EF5BE2V.mxf",
+      "property": "Compression",
+      "before": "JPEG 2000 IMF",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69692B3_26E9326E9358AV.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69692C2_26F3E26F3EFBFV.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69692DA_2706B2706B01DV.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696933E_27529275294A1V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC5A1_1871E1871E408V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC5BF_1888B1888B724V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC5EC_18AAC18AACC9BV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC650_18F6518F650A2V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC67F_191A8191A8458V.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC695_192B1192B1A8FV.mxf",
+      "property": "Compression",
+      "before": "AVC Long GOP",
+      "after": "AVC Long-GOP High422"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC6C3_194DA194DA6F9V.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC74F_19B8319B835BBV.mxf",
+      "property": "Compression",
+      "before": "XDCAM EX 35",
+      "after": "XDCAM"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC980_1B6141B614459V.mxf",
+      "property": "Compression",
+      "before": "J2K HD",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC990_1B6DA1B6DA017V.mxf",
+      "property": "Compression",
+      "before": "JPEG 2000 IMF",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BE901_3347233472095V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB087_CA9EBCA9EB008V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB190_CB673CB673FE8V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB1AA_CB7B1CB7B19CFV.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB573_CE5A0CE5A0628V.mxf",
+      "property": "Compression",
+      "before": "XDCAM EX 35",
+      "after": "XDCAM"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB5EF_CEB88CEB88AC8V.mxf",
+      "property": "Compression",
+      "before": "J2K HD",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED6C_F8CF2F8CF2246V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED76_F8D71F8D71A10V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED8A_F8E5DF8E5DD42V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CED98_F8F08F8F08A76V.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDC3_F9117F9117290V.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDE0_F926CF926C983V.mxf",
+      "property": "Compression",
+      "before": "DV 25 411",
+      "after": "DV NTSC 25Mbps 4:1:1"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDFB_F93B5F93B54A0V.mxf",
+      "property": "Compression",
+      "before": "DV 50",
+      "after": "DV NTSC 50Mbps 4:2:2"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE12_F94CEF94CEE65V.mxf",
+      "property": "Compression",
+      "before": "J2K HD",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE5E_F9868F98687D7V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes Proxy",
+      "after": "Apple ProRes 422 Proxy"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE68_F98E3F98E32C3V.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes LT",
+      "after": "Apple ProRes 422 LT"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE7B_F99D0F99D03CEV.mxf",
+      "property": "Compression",
+      "before": "Apple ProRes HQ",
+      "after": "Apple ProRes 422 HQ"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE89_F9A77F9A77023V.mxf",
+      "property": "Compression",
+      "before": "H.264",
+      "after": "AVC Long-GOP Constrained Baseline"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEE95_F9B01F9B01A50V.mxf",
+      "property": "Compression",
+      "before": "J2K HD",
+      "after": "JPEG2000"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_791549863640V01A4EB2EDV.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79FFV02.21F84E6C.586550.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_781549863710V01A83E1CEV.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATE.01V02.21719A73.586550.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATE1549867000V02443C0F7V.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATEA09V02.214C1556.586550.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE1549863508V019EA9DAAV.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE3E0V02.21D19536.586550.mxf",
+      "property": "Compression",
+      "before": "Uncompressed alpha",
+      "after": "1:1 Alpha 8bit"
+    }
+  ],
+  "beforeScheduling": {
+    "media": 2413,
+    "headersNotRead": 2297,
+    "headersRead": 116
+  },
+  "afterScheduling": {
+    "media": 2413,
+    "headersNotRead": 2297,
+    "headersRead": 116
+  },
+  "sourceGraphReceiptsUnchanged": true,
+  "noticesUnchanged": true,
+  "beforeIssueCount": 298,
+  "afterIssueCount": 298,
+  "scanMs": 20636,
+  "memoryRetained": {
+    "peakResidentBytes": 2784657408,
+    "physicalFootprintBytes": 2525600128,
+    "residentBytes": 2784657408
+  },
+  "outputSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7"
+}

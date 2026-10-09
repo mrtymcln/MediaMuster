@@ -105,7 +105,7 @@ separately; it supersedes the earlier Media Format column proposal.
 | No defensible selected value | Blank display and Console conflict issue; all observations retained |
 | Move/delete source changed or applicable stamp check cannot be completed | Stop the affected operation and explain the failed/unavailable check; never silently treat an unavailable check as passed |
 | Partial/unreadable database | Read completeness shown; no confident absence conclusion from unread data |
-| Cancelled scan or unavailable drive | Issues qualify incomplete scope; no global "missing" conclusion |
+| Cancelled scan or unavailable drive | Retain gathered rows and evidence; after observing Cancel, start no further source reads, freshness checks or matching. Issues qualify incomplete scope; no global "missing" conclusion. An operating-system call in progress may delay stopping. |
 | Source changes during/after reading | Observations retain their snapshot; change detected/qualified instead of silent mixing |
 | Same metadata but different payload bytes | Identity match is not labelled verified byte equality |
 
@@ -113,6 +113,17 @@ Use controlled fixtures for precise conflict/absence/cancellation cases and real
 media for representative compatibility. Do not modify the user's originals to
 manufacture cases. Each check should exercise observable behaviour, not merely
 repeat the implementation's selection logic.
+
+Discovery now reports its current location before source totals are known, and
+the live presentation adapter reuses the scanner's display-volume context rather
+than querying storage for every row. Windows/NEXIS needs a fresh real-world
+comparison covering discovery time, source-reading time and cancellation. These
+changes do not yet establish a measured speed improvement on shared storage.
+
+Local verification on 2026-10-08: the macOS Qt 6.5.3 application build and all
+39 test suites passed. Deterministic regressions cover cancellation during root
+preparation, before database/header opening, after a database read, and during
+finalising, including retained physical rows and raw source evidence.
 
 ## Diagnostic examples
 

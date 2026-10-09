@@ -89,6 +89,33 @@ namespace
 		const auto chunks = chunk("fmt ", fmt) + chunk("data", QByteArray(align * 2, '\0'));
 		return QByteArray("RIFF") + number(quint32(chunks.size() + 4)) + "WAVE" + chunks;
 	}
+
+	QByteArray copiedWaveSummary(const QByteArray &format)
+	{
+		// Only the header is copied. The recorded sound-data extent is omitted.
+		const auto chunks = chunk("fmt ", format) + "data" + number<quint32>(8640006);
+		return QByteArray("RIFF") + number(quint32(chunks.size() + 4)) + "WAVE" + chunks;
+	}
+
+	QByteArray copiedAiffSummary(const QByteArray &common)
+	{
+		const auto copied = QByteArray("COMM") + number(quint32(common.size()), true) + common + QByteArray(common.size() & 1, '\0');
+		return QByteArray("FORM") + number(quint32(copied.size() + 4), true) + "AIFC" + copied;
+	}
+
+	Canon::ParsedSource copiedAudioSource(const QByteArray &summary, bool wave, const QByteArray &type = "omfi:VarLenBytes")
+	{
+		TypedBento writer;
+		writer.head(1);
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
+		object(writer, 101, "MOBJ");
+		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
+		writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
+		object(writer, 201, wave ? "WAVD" : "AIFD");
+		writer.add(201, wave ? "OMFI:WAVD:Summary" : "OMFI:AIFD:Summary", type, summary);
+		writer.add(201, "OMFI:MDFL:Length", "omfi:Length64", number<qint64>(96000));
+		return read(writer.build());
+	}
 }
 
 class TestCanonOmfProjection final : public QObject
@@ -126,6 +153,11 @@ private slots:
 	void verifiedProxyResolution_data();
 	void verifiedProxyResolution();
 	void nativeAudio();
+	void audioSummaryExtensiblePrecisionAndOrigins();
+	void audioPartialExtensionsKeepIndependentFacts();
+	void audioUnknownFormatsStayUninterpreted();
+	void audioSummaryRequiresCompatibleTypeAndContainer();
+	void conflictingAudioSummaryRatesDoNotChooseDuration();
 	void rgbaAlphaEvidence();
 	void uncompressedAlphaRequiresExplicitEvidence_data();
 	void uncompressedAlphaRequiresExplicitEvidence();
@@ -144,6 +176,14 @@ private slots:
 	void genuineDatabaseSequenceDurations();
 	void genuineVideoCodecNames_data();
 	void genuineVideoCodecNames();
+	void legacyCompressionDescriptorContexts_data();
+	void legacyCompressionDescriptorContexts();
+	void legacyCompressionIdentityIndependent_data();
+	void legacyCompressionIdentityIndependent();
+	void legacyCompressionCodingPrecedence_data();
+	void legacyCompressionCodingPrecedence();
+	void legacyCompressionAbsenceRequiresCompleteRead();
+	void genuineLegacyCompressionRefinements();
 	void exactDnxOperatingPoint();
 	void legacyDnx220NamingIsExact();
 	void legacyDecimalDnxNaming_data();
@@ -1111,6 +1151,8 @@ void TestCanonOmfProjection::nativeAudio()
 		QCOMPARE(single(file, MediaProperty::SampleFormat).toString(), format == 1 ? QStringLiteral("Integer") : QStringLiteral("Float"));
 		QCOMPARE(Canon::mediaRate(single(file, MediaProperty::SampleRate)).numerator, 48000);
 		QCOMPARE(Canon::mediaDuration(single(file, MediaProperty::FileDuration)).units, 2);
+		QCOMPARE(file.evidence.observations(MediaProperty::FileDuration).first().property, QStringLiteral("Audio.data"));
+		QVERIFY(file.evidence.observations(MediaProperty::FileDuration).first().explanation.contains(QStringLiteral("derived")));
 		QVERIFY(file.evidence.observations(MediaProperty::FrameRate).isEmpty());
 	}
 }
@@ -1166,7 +1208,7 @@ void TestCanonOmfProjection::uncompressedAlphaRequiresExplicitEvidence()
 	const auto result = project(read(writer.build()));
 	QCOMPARE(result.files.size(), 1);
 	const auto codec = single(result.files.first(), MediaProperty::Compression);
-	QCOMPARE(codec.toString(), named ? QStringLiteral("Uncompressed alpha") : QString{});
+	QCOMPARE(codec.toString(), named ? (quint8(depths.front()) == 8 ? QStringLiteral("1:1 Alpha 8bit") : QStringLiteral("Uncompressed alpha")) : QString{});
 	if (named)
 	{
 		const auto &observation = result.files.first().evidence.observations(MediaProperty::Compression).first();
@@ -1593,13 +1635,252 @@ void TestCanonOmfProjection::genuineVideoCodecNames_data()
 {
 	QTest::addColumn<QString>("filename");
 	QTest::addColumn<QString>("expected");
-	QTest::newRow("DV-PAL") << QStringLiteral("BLACK_720x576x1_DV420.omf") << QStringLiteral("DV 25 420 i(PAL)");
-	QTest::newRow("DV-PAL-progressive") << QStringLiteral("BLACK_720x576x1_DV420P.omf") << QStringLiteral("DV 25P 420 p(PAL)");
+	QTest::newRow("DV-PAL") << QStringLiteral("BLACK_720x576x1_DV420.omf") << QStringLiteral("IEC-DV PAL 25Mbps 4:2:0");
+	QTest::newRow("DV-PAL-progressive") << QStringLiteral("BLACK_720x576x1_DV420P.omf") << QStringLiteral("IEC-DV PAL 25Mbps 4:2:0");
 	// These legacy slates record exactly 2997/100, not 30000/1001.
 	// Preserve that clock. The independently confirmed DNx naming rule accepts
 	// this exact legacy spelling; no tolerance or filename token supplies it.
-	QTest::newRow("DV-decimal-clock") << QStringLiteral("BLACK_720x480x1_DV411.omf") << QStringLiteral("DV 25 411");
+	QTest::newRow("DV-decimal-clock") << QStringLiteral("BLACK_720x480x1_DV411.omf") << QStringLiteral("DV NTSC 25Mbps 4:1:1");
 	QTest::newRow("DNx-decimal-clock") << QStringLiteral("BLACK_1920x540x2_AVHD_220.omf") << QStringLiteral("Avid DNx HQ [DNxHD 220]");
+}
+
+void TestCanonOmfProjection::legacyCompressionDescriptorContexts_data()
+{
+	QTest::addColumn<QByteArray>("descriptorClass");
+	QTest::addColumn<QByteArray>("compression");
+	QTest::addColumn<quint32>("resolution");
+	QTest::addColumn<QByteArray>("compressionType");
+	QTest::addColumn<QByteArray>("resolutionType");
+	QTest::addColumn<bool>("terminated");
+	QTest::addColumn<QString>("expected");
+	const auto row = [](const char *name, const char *cls, const char *fourcc, quint32 id, const char *expected,
+		const char *compressionType = "omfi:String", const char *resolutionType = "omfi:Long", bool terminated = true)
+	{
+		QTest::newRow(name) << QByteArray(cls) << QByteArray(fourcc) << id << QByteArray(compressionType)
+			<< QByteArray(resolutionType) << terminated << QString::fromLatin1(expected);
+	};
+	row("jfif-15:1s", "JPED", "JFIF", 78, "JFIF 15:1s");
+	row("jfif-20:1", "JPED", "JFIF", 82, "JFIF 20:1");
+	row("jfif-28:1", "JPED", "JFIF", 104, "JFIF 28:1");
+	row("jfif-10:1m", "JPED", "JFIF", 110, "JFIF 10:1m");
+	row("jfif-8:1m", "JPED", "JFIF", 112, "JFIF 8:1m");
+	row("toolkit-cdci-jfif", "CDCI", "JFIF", 82, "JFIF 20:1");
+	row("toolkit-unterminated-string", "JPED", "JFIF", 82, "JFIF 20:1", "omfi:String", "omfi:Long", false);
+	row("dv-411", "CDCI", "DV/C", 140, "DV");
+	row("dv-420", "CDCI", "DV/C", 141, "DV");
+	row("dv-50", "CDCI", "DV/C", 142, "DV");
+	row("dv-411p", "CDCI", "DV/C", 143, "DV");
+	row("dv-420p", "CDCI", "DV/C", 144, "DV");
+	row("uncompressed", "CDCI", "AUNC", 151, "Avid Packed");
+	row("uncompressed-24p", "CDCI", "AUNC", 152, "Avid Packed");
+	row("mdb-uncompressed-alias", "CDCI", "MXF1", 151, "Avid Packed");
+	row("mdb-uncompressed-24p-alias", "CDCI", "MXF1", 152, "Avid Packed");
+	row("mpeg-50", "MPGI", "MPG2", 160, "MPEG-2");
+	row("audio-is-not-picture", "WAVD", "JFIF", 82, "");
+	row("rgba-is-not-jfif", "RGBA", "JFIF", 82, "");
+	row("wrong-picture-class", "MPGI", "JFIF", 82, "");
+	row("wrong-compression-family", "JPED", "DV/C", 82, "");
+	row("unknown-resolution-id", "JPED", "JFIF", 83, "");
+	row("unverified-dv100", "CDCI", "DV/C", 2500, "");
+	row("unverified-dv100-alias", "CDCI", "MXF1", 2500, "");
+	row("unverified-dv100-720", "CDCI", "DV/C", 2502, "");
+	row("unverified-dv100-database-id", "CDCI", "DV/C", 2402, "");
+	row("untyped-compression", "JPED", "JFIF", 82, "", "TestOpaque");
+	row("untyped-resolution", "JPED", "JFIF", 82, "", "omfi:String", "TestOpaque");
+}
+
+void TestCanonOmfProjection::legacyCompressionDescriptorContexts()
+{
+	QFETCH(QByteArray, descriptorClass);
+	QFETCH(QByteArray, compression);
+	QFETCH(quint32, resolution);
+	QFETCH(QByteArray, compressionType);
+	QFETCH(QByteArray, resolutionType);
+	QFETCH(bool, terminated);
+	QFETCH(QString, expected);
+	const auto compressionBytes = compression + (terminated ? QByteArray(1, '\0') : QByteArray{});
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
+	object(writer, 101, "MOBJ");
+	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
+	writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
+	object(writer, 201, descriptorClass.constData());
+	writer.add(201, "OMFI:DIDD:Compression", compressionType, compressionBytes);
+	writer.add(201, "OMFI:DIDD:DIDResolutionID", resolutionType, number(resolution));
+	const auto result = project(read(writer.build()));
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(single(result.files.first(), MediaProperty::Compression).toString(), expected);
+	if (!expected.isEmpty())
+	{
+		const auto &observation = result.files.first().evidence.observations(MediaProperty::Compression).first();
+		QCOMPARE(observation.property, QStringLiteral("OMFI:DIDD:Compression"));
+		QCOMPARE(observation.rawValue.toByteArray(), compressionBytes);
+		QVERIFY(observation.explanation.contains(QStringLiteral("DIDResolutionID")));
+		QVERIFY(observation.explanation.contains(QStringLiteral("EssenceCompression is absent")));
+	}
+}
+
+void TestCanonOmfProjection::legacyCompressionIdentityIndependent_data()
+{
+	QTest::addColumn<int>("revision");
+	QTest::addColumn<int>("identityBytes");
+	QTest::addColumn<bool>("codingPresent");
+	for (const int revision : {1, 2})
+		for (const int identityBytes : {12, 32})
+			for (const bool codingPresent : {false, true})
+				QTest::newRow(qPrintable(QStringLiteral("omf%1-id%2-coding%3").arg(revision).arg(identityBytes).arg(codingPresent)))
+					<< revision << identityBytes << codingPresent;
+}
+
+void TestCanonOmfProjection::legacyCompressionIdentityIndependent()
+{
+	QFETCH(int, revision);
+	QFETCH(int, identityBytes);
+	QFETCH(bool, codingPresent);
+	// Authored controls assert that identity representation cannot change a
+	// verified descriptor interpretation. They do not claim Avid writes this
+	// exact JFIF descriptor with a 32-byte owning identity.
+	TypedBento writer;
+	writer.head(revision);
+	writer.referenceArray(1, revision == 1 ? "OMFI:ObjectSpine" : "OMFI:HEAD:Mobs", {101}, revision);
+	if (revision == 2)
+		writer.referenceArray(1, "OMFI:HEAD:MediaData", {}, revision);
+	object(writer, 101, revision == 1 ? "MOBJ" : "SMOB", revision);
+	writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", identityBytes == 12 ? uid(11)
+		: QByteArray::fromHex("060a2b340101010501010f10130000000de37d9a8412069034364a963681a3eb"));
+	writer.add(101, revision == 1 ? "OMFI:MOBJ:PhysicalMedia" : "OMFI:SMOB:MediaDescription",
+		"omfi:ObjRef", writer.reference(201, revision));
+	object(writer, 201, "JPED", revision);
+	writer.add(201, "OMFI:DIDD:Compression", "omfi:String", QByteArray("JFIF\0", 5));
+	writer.add(201, "OMFI:DIDD:DIDResolutionID", "omfi:Int32", number<qint32>(82));
+	if (codingPresent)
+		writer.add(201, "OMFI:DIDD:EssenceCompression", "omfi:GUID", QByteArray::fromHex("0102040e01020101060e2b3404010101"));
+	const auto result = project(read(writer.build()));
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(single(result.files.first(), MediaProperty::Compression).toString(), QStringLiteral("JFIF 20:1"));
+	if (codingPresent)
+	{
+		QCOMPARE(single(result.files.first(), MediaProperty::CompressionLabel).toByteArray(),
+			QByteArray::fromHex("060e2b34040101010e04020102010101"));
+		QVERIFY(result.files.first().evidence.observations(MediaProperty::Compression).first().explanation
+			.contains(QStringLiteral("shared verified Avid compression-name catalogue")));
+	}
+}
+
+void TestCanonOmfProjection::legacyCompressionCodingPrecedence_data()
+{
+	QTest::addColumn<QString>("variation");
+	for (const char *name : {"compatible", "different-known", "different-jfif", "unknown", "unreadable", "conflicting"})
+		QTest::newRow(name) << QString::fromLatin1(name);
+}
+
+void TestCanonOmfProjection::legacyCompressionCodingPrecedence()
+{
+	QFETCH(QString, variation);
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
+	fileMob(writer, 101, 201, 11);
+	writer.add(201, "OMFI:DIDD:Compression", "omfi:String", QByteArray("JFIF\0", 5));
+	writer.add(201, "OMFI:DIDD:DIDResolutionID", "omfi:Long", number<qint32>(82));
+	const auto label = QByteArray::fromHex(variation == QLatin1String("different-known") ? "060e2b340401010a0401020271040000"
+		: variation == QLatin1String("different-jfif") ? "060e2b34040101010e04020102010201"
+		: variation == QLatin1String("unknown") ? "060e2b34040101010e0402010201ffff"
+		: "060e2b34040101010e04020102010101");
+	const auto auid = number(qFromBigEndian<quint32>(label.constData() + 8)) +
+		number(qFromBigEndian<quint16>(label.constData() + 12)) + number(qFromBigEndian<quint16>(label.constData() + 14)) + label.first(8);
+	writer.add(201, "OMFI:DIDD:EssenceCompression", "omfi:GUID", variation == QLatin1String("unreadable") ? QByteArray(1, '\0') : auid);
+	if (variation == QLatin1String("conflicting"))
+		writer.add(201, "OMFI:DIDD:EssenceCompression", "omfi:GUID", QByteArray::fromHex("0102040e01020201060e2b3404010101"));
+	const auto source = read(writer.build());
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &file = result.files.first();
+	const auto compression = single(file, MediaProperty::Compression).toString();
+	if (variation == QLatin1String("compatible"))
+		QCOMPARE(compression, QStringLiteral("JFIF 20:1"));
+	else if (variation == QLatin1String("different-known"))
+		QCOMPARE(compression, QStringLiteral("Avid DNx HQ"));
+	else if (variation == QLatin1String("different-jfif"))
+		QCOMPARE(compression, QStringLiteral("JFIF 15:1s"));
+	else
+		QVERIFY(compression.isEmpty()); // Unknown coding is retained, not guessed from its prefix.
+
+	if (variation != QLatin1String("unreadable") && variation != QLatin1String("conflicting"))
+		QCOMPARE(single(file, MediaProperty::CompressionLabel).toByteArray(), label);
+	const auto descriptor = std::find_if(source.objects.cbegin(), source.objects.cend(), [](const auto &object)
+		{ return object.handle == 201; });
+	QVERIFY(descriptor != source.objects.cend());
+	QVERIFY(std::any_of(descriptor->properties.cbegin(), descriptor->properties.cend(), [](const auto &property)
+		{ return property.locator.name == QLatin1String("OMFI:DIDD:Compression") && property.encoding == QByteArray("JFIF\0", 5); }));
+}
+
+void TestCanonOmfProjection::legacyCompressionAbsenceRequiresCompleteRead()
+{
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101}, 1);
+	fileMob(writer, 101, 201, 11);
+	writer.add(201, "OMFI:DIDD:Compression", "omfi:String", QByteArray("JFIF\0", 5));
+	writer.add(201, "OMFI:DIDD:DIDResolutionID", "omfi:Long", number<qint32>(82));
+	auto source = read(writer.build());
+	const auto complete = project(source);
+	QCOMPARE(complete.files.size(), 1);
+	QCOMPARE(single(complete.files.first(), MediaProperty::Compression).toString(), QStringLiteral("JFIF 20:1"));
+	// Exercise read-state qualification, not a claim about a damaged format.
+	source.outcome = Canon::ParsedSource::Outcome::Incomplete;
+	const auto incomplete = project(source);
+	QCOMPARE(incomplete.files.size(), 1);
+	QVERIFY(single(incomplete.files.first(), MediaProperty::Compression).toString().isEmpty());
+}
+
+void TestCanonOmfProjection::genuineLegacyCompressionRefinements()
+{
+	QFile input(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/msmMMOB.mdb"));
+	QVERIFY(input.open(QIODevice::ReadOnly));
+	Canon::Cancellation cancellation;
+	const auto source = Canon::MdbReader{}.read(input, {{}, cancellation});
+	QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::Complete);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 80);
+	int checked = 0;
+	// The retained genuine-file receipt identifies 61 legacy descriptors.
+	// Their qualified coding labels now give the same catalogue names directly,
+	// without a second short-name override from the private identifiers.
+	for (const auto &descriptor : source.objects)
+	{
+		qint64 resolution = -1;
+		QByteArray compression;
+		for (const auto &property : descriptor.properties)
+		{
+			if (property.locator.name == QLatin1String("OMFI:DIDD:DIDResolutionID"))
+				resolution = property.decoded.toLongLong();
+			if (property.locator.name == QLatin1String("OMFI:DIDD:Compression"))
+				compression = property.encoding.first(4);
+		}
+		const bool evidenced = (compression == "JFIF" && QList<qint64>{78, 82, 104, 110, 112}.contains(resolution)) ||
+			(compression == "DV/C" && QList<qint64>{140, 141, 142, 143, 144}.contains(resolution)) ||
+			((compression == "AUNC" || compression == "MXF1") && (resolution == 151 || resolution == 152)) ||
+			(compression == "MPG2" && resolution == 160);
+		if (!evidenced)
+			continue;
+		const auto owner = QStringLiteral("object:%1").arg(descriptor.handle);
+		bool named = false;
+		for (const auto &file : result.files)
+			for (const auto &observation : file.evidence.observations(MediaProperty::Compression))
+				if (observation.objectIdentity == owner)
+				{
+					QVERIFY(!observation.value.toString().isEmpty());
+					QVERIFY(!observation.value.toString().contains(QStringLiteral("unknown variant")));
+					QCOMPARE(observation.basis, EvidenceBasis::Derived);
+					QVERIFY(!observation.rawValue.toByteArray().isEmpty());
+					named = true;
+				}
+		QVERIFY2(named, qPrintable(owner));
+		++checked;
+	}
+	QCOMPARE(checked, 61);
 }
 
 void TestCanonOmfProjection::exactDnxOperatingPoint()
@@ -1951,6 +2232,154 @@ void TestCanonOmfProjection::genuineFiles()
 		QVERIFY(!result.files.first().evidence.observations(MediaProperty::FileDuration).isEmpty());
 		QVERIFY(!result.files.first().evidence.observations(MediaProperty::BitDepth).isEmpty());
 	}
+}
+
+void TestCanonOmfProjection::audioSummaryExtensiblePrecisionAndOrigins()
+{
+	// Published WAVEFORMATEXTENSIBLE layout, independently authored: precision
+	// differs from storage width. This is not claimed as a real Avid specimen.
+	const auto format = number<quint16>(0xfffe) + number<quint16>(2) + number<quint32>(48000) + number<quint32>(288000) +
+		number<quint16>(6) + number<quint16>(24) + number<quint16>(22) + number<quint16>(20) + number<quint32>(3) +
+		QByteArray::fromHex("0100000000001000800000aa00389b71");
+	const auto source = copiedAudioSource(copiedWaveSummary(format), true);
+	QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::Complete);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &file = result.files.first();
+	QCOMPARE(single(file, MediaProperty::BitDepth).toString(), QStringLiteral("20-bit"));
+	QCOMPARE(single(file, MediaProperty::Compression).toString(), QStringLiteral("PCM"));
+	QCOMPARE(single(file, MediaProperty::SampleFormat).toString(), QStringLiteral("Integer"));
+	QCOMPARE(single(file, MediaProperty::Channels).toInt(), 2);
+	const auto &depth = file.evidence.observations(MediaProperty::BitDepth).first();
+	QCOMPARE(depth.property, QStringLiteral("OMFI:WAVD:Summary.fmt .wValidBitsPerSample"));
+	QCOMPARE(depth.rawValue.toByteArray(), number<quint16>(20));
+	QCOMPARE(depth.objectIdentity, QStringLiteral("object:201"));
+	const auto &compression = file.evidence.observations(MediaProperty::Compression).first();
+	QCOMPARE(compression.property, QStringLiteral("OMFI:WAVD:Summary.fmt .SubFormat"));
+	QCOMPARE(compression.rawValue.toByteArray(), QByteArray::fromHex("0100000000001000800000aa00389b71"));
+	const auto nativeChunks = chunk("fmt ", format) + chunk("data", QByteArray(12, '\0'));
+	const auto native = project(read(QByteArray("RIFF") + number(quint32(nativeChunks.size() + 4)) + "WAVE" + nativeChunks, false));
+	QCOMPARE(native.files.size(), 1);
+	QCOMPARE(single(native.files.first(), MediaProperty::BitDepth), single(file, MediaProperty::BitDepth));
+
+	// Published precision cannot exceed storage width. Keep both recorded
+	// numbers, without quietly displaying storage width as valid precision.
+	auto impossible = format;
+	impossible.replace(18, 2, number<quint16>(25));
+	const auto invalidSource = copiedAudioSource(copiedWaveSummary(impossible), true);
+	const auto invalid = project(invalidSource);
+	QCOMPARE(invalid.files.size(), 1);
+	const auto &precision = invalid.files.first().evidence.observations(MediaProperty::BitDepth).first();
+	QCOMPARE(precision.readState, PropertyReadState::Unreadable);
+	QVERIFY(!precision.value.isValid());
+	QCOMPARE(precision.rawValue.toByteArray(), number<quint16>(25));
+}
+
+void TestCanonOmfProjection::audioPartialExtensionsKeepIndependentFacts()
+{
+	// Deliberately shortened internal fields, with intact outer chunk framing.
+	// These qualify evidence handling; they are not observations of damaged Avid media.
+	const auto missingGuid = number<quint16>(0xfffe) + number<quint16>(2) + number<quint32>(48000) + number<quint32>(288000) +
+		number<quint16>(6) + number<quint16>(24) + number<quint16>(22) + number<quint16>(20) + number<quint32>(3);
+	const auto missingName = number<qint16>(1, true) + number<quint32>(2, true) + number<qint16>(24, true) +
+		QByteArray::fromHex("400ebb80000000000000") + "in24";
+	for (const bool isWave : {true, false})
+	{
+		const auto summary = isWave ? copiedWaveSummary(missingGuid) : copiedAiffSummary(missingName);
+		for (const bool database : {true, false})
+		{
+			// The WAVE summary's deliberately omitted data must not be used as a
+			// native recording. Give that path only the copied fmt chunk instead.
+			const auto nativeChunks = chunk("fmt ", missingGuid);
+			const auto native = isWave ? QByteArray("RIFF") + number(quint32(nativeChunks.size() + 4)) + "WAVE" + nativeChunks : summary;
+			const auto source = database ? copiedAudioSource(summary, isWave) : read(native, false);
+			QCOMPARE(source.outcome, database ? Canon::ParsedSource::Outcome::Complete : Canon::ParsedSource::Outcome::Malformed);
+			const auto result = project(source);
+			QCOMPARE(result.files.size(), 1);
+			const auto &file = result.files.first();
+			QCOMPARE(single(file, MediaProperty::Channels).toInt(), isWave ? 2 : 1);
+			QCOMPARE(Canon::mediaRate(single(file, MediaProperty::SampleRate)).numerator, 48000);
+			QCOMPARE(file.evidence.observations(MediaProperty::SampleRate).first().readState, PropertyReadState::Present);
+			if (isWave)
+			{
+				const auto &precision = file.evidence.observations(MediaProperty::BitDepth).first();
+				QCOMPARE(precision.readState, PropertyReadState::Unreadable);
+				QVERIFY(!precision.value.isValid());
+				QVERIFY(precision.property.endsWith(QStringLiteral(".SubFormat")));
+				QCOMPARE(file.evidence.observations(MediaProperty::Compression).first().readState, PropertyReadState::Unreadable);
+			}
+			else
+			{
+				QCOMPARE(single(file, MediaProperty::BitDepth).toString(), QStringLiteral("24-bit"));
+				QCOMPARE(single(file, MediaProperty::Compression).toString(), QStringLiteral("PCM"));
+				QCOMPARE(file.evidence.observations(MediaProperty::Compression).first().readState, PropertyReadState::Present);
+				QVERIFY(file.evidence.observations(MediaProperty::Compression).first().property.endsWith(QStringLiteral(".compressionType")));
+			}
+		}
+	}
+}
+
+void TestCanonOmfProjection::audioUnknownFormatsStayUninterpreted()
+{
+	const auto unknownGuid = QByteArray::fromHex("ffffffffffffffffffffffffffffffff");
+	const auto format = number<quint16>(0xfffe) + number<quint16>(1) + number<quint32>(48000) + number<quint32>(144000) +
+		number<quint16>(3) + number<quint16>(24) + number<quint16>(22) + number<quint16>(20) + number<quint32>(0) + unknownGuid;
+	const auto common = number<qint16>(1, true) + number<quint32>(2, true) + number<qint16>(24, true) +
+		QByteArray::fromHex("400ebb80000000000000") + QByteArray("ZZZZ\0\0", 6);
+	for (const bool isWave : {true, false})
+	{
+		const auto source = copiedAudioSource(isWave ? copiedWaveSummary(format) : copiedAiffSummary(common), isWave);
+		QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::Complete);
+		const auto result = project(source);
+		QCOMPARE(result.files.size(), 1);
+		const auto &file = result.files.first();
+		QVERIFY(file.evidence.observations(MediaProperty::Compression).isEmpty());
+		QVERIFY(file.evidence.observations(MediaProperty::SampleFormat).isEmpty());
+		QCOMPARE(file.evidence.readStatus(MediaProperty::Compression, source.snapshot, QStringLiteral("object:201")).reason,
+			PropertyReadReason::UnsupportedInterpretation);
+		QCOMPARE(Canon::mediaRate(single(file, MediaProperty::SampleRate)).numerator, 48000);
+		if (isWave)
+			QVERIFY(file.evidence.observations(MediaProperty::BitDepth).isEmpty());
+		else
+			QCOMPARE(single(file, MediaProperty::BitDepth).toString(), QStringLiteral("24-bit"));
+	}
+}
+
+void TestCanonOmfProjection::audioSummaryRequiresCompatibleTypeAndContainer()
+{
+	const auto format = wave(1, 24).mid(20, 16);
+	const auto summary = copiedWaveSummary(format);
+	for (const auto &type : {QByteArray("omfi:UInt32"), QByteArray("omfi:String")})
+	{
+		const auto result = project(copiedAudioSource(summary, true, type));
+		QCOMPARE(result.files.size(), 1);
+		QVERIFY(result.files.first().evidence.observations(MediaProperty::BitDepth).isEmpty());
+		QVERIFY(result.files.first().evidence.observations(MediaProperty::SampleRate).isEmpty());
+	}
+	const auto mismatched = project(copiedAudioSource(copiedAiffSummary(QByteArray(18, '\0')), true));
+	QCOMPARE(mismatched.files.size(), 1);
+	QVERIFY(mismatched.files.first().evidence.observations(MediaProperty::BitDepth).isEmpty());
+}
+
+void TestCanonOmfProjection::conflictingAudioSummaryRatesDoNotChooseDuration()
+{
+	auto source = copiedAudioSource(copiedWaveSummary(wave(1, 24).mid(20, 16)), true);
+	// Build the second complete Summary through the reader too: no hand-built
+	// decoded fields or implementation-specific receipts supply the conflict.
+	auto format = wave(1, 24).mid(20, 16);
+	format.replace(4, 4, number<quint32>(44100));
+	const auto other = copiedAudioSource(copiedWaveSummary(format), true);
+	for (const auto &object : other.objects)
+		if (object.handle == 201)
+			for (auto &owner : source.objects)
+				if (owner.handle == 201)
+					for (const auto &property : object.properties)
+						if (property.locator.name.startsWith(QStringLiteral("OMFI:WAVD:Summary")))
+							owner.properties.append(property);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	QCOMPARE(result.files.first().evidence.observations(MediaProperty::SampleRate).size(), 2);
+	QVERIFY(result.files.first().evidence.observations(MediaProperty::FileDuration).isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TestCanonOmfProjection)

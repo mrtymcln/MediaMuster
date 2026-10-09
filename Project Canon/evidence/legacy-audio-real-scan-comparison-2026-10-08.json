@@ -1,0 +1,64 @@
+{
+  "baseline": "Project Canon/evidence/full-scan-shared-policy-2026-10-08.csv",
+  "current": "Project Canon/evidence/full-scan-legacy-audio-2026-10-08.csv",
+  "comparison": "Exact Location key; Codec normalized to Compression; KelpieId deliberately excluded because IDs are per scan session.",
+  "baselineRows": 2413,
+  "currentRows": 2413,
+  "addedPaths": [],
+  "removedPaths": [],
+  "duplicateBaselinePaths": 0,
+  "duplicateCurrentPaths": 0,
+  "changedCells": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDE0_F926CF926C983V.mxf",
+      "property": "Compression",
+      "before": "DV NTSC 25Mbps 4:1:1",
+      "after": "DV 25 411"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CEDFB_F93B5F93B54A0V.mxf",
+      "property": "Compression",
+      "before": "DV NTSC 50Mbps 4:2:2",
+      "after": "DV 50"
+    }
+  ],
+  "changedCellCount": 2,
+  "changedColumns": {
+    "Compression": 2
+  },
+  "scanMs": 21141,
+  "issueCount": 298,
+  "memoryRetained": {
+    "peakResidentBytes": 2788966400,
+    "physicalFootprintBytes": 2531203584,
+    "residentBytes": 2788868096
+  },
+  "sourceCounts": {
+    "3": 2411,
+    "1": 6,
+    "2": 6,
+    "4": 2
+  },
+  "readReasonCounts": {
+    "Header not read: usable database match supplies required table metadata; database freshness remains unknown": 2297,
+    "Read database before deciding which media headers are needed": 12,
+    "Header read: required table metadata missing or conflicting: Clip Duration": 115,
+    "Header read: no usable database match": 1
+  },
+  "inputMdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+  "sourceSchedulingChanges": [],
+  "addedSourcePaths": [],
+  "removedSourcePaths": [],
+  "identicalIssues": true,
+  "issueKinds": {
+    "2": 275,
+    "1": 23
+  },
+  "headerReads": 116,
+  "headersDeliberatelyUnopened": 2297,
+  "rootRowCounts": {
+    "Macintosh HD managed-media tree": 361,
+    "EDIT": 2052
+  },
+  "performanceBoundary": "Debug read-only scan with uncontrolled filesystem cache; recorded measurements are not a controlled performance comparison."
+}

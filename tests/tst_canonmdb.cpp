@@ -11,6 +11,7 @@
 #include <QMap>
 #include <QTest>
 #include <QtEndian>
+#include <algorithm>
 
 namespace
 {
@@ -529,6 +530,7 @@ void TestCanonMdb::realFixtures()
 	QVERIFY(!result.objects.isEmpty());
 	QSet<Canon::ObjectHandle> handles;
 	qsizetype totalProperties = 0;
+	qsizetype decodedFields = 0;
 	for (const auto &entry : result.objects)
 	{
 		QVERIFY(entry.handle != 0);
@@ -537,8 +539,20 @@ void TestCanonMdb::realFixtures()
 		QCOMPARE(entry.snapshot, result.snapshot);
 		for (const auto &value : entry.properties)
 		{
-			++totalProperties;
 			QVERIFY(value.bento);
+			if (value.locator.key == number(value.bento->property, true))
+				++totalProperties;
+			else
+			{
+				// Decoded fields inside Summary values are not extra Bento TOC
+				// entries. Require their recorded parent before excluding them.
+				++decodedFields;
+				QVERIFY(std::any_of(entry.properties.cbegin(), entry.properties.cend(), [&](const auto &parent)
+				{
+					return parent.bento == value.bento && parent.locator.key == number(value.bento->property, true) &&
+						value.locator.name.startsWith(parent.locator.name + QLatin1Char('.'));
+				}));
+			}
 			QVERIFY(!value.bento->tocRanges.isEmpty());
 			QCOMPARE(value.locator.objectNumber, entry.handle);
 			if (!value.bytesRetained) continue;
@@ -562,6 +576,7 @@ void TestCanonMdb::realFixtures()
 	for (quint32 offset = tocOffset; offset < tocOffset + tocLength; offset += 24)
 		QCOMPARE(qFromLittleEndian<quint16>(bytes.constData() + offset + 22) & 2, 0);
 	QCOMPARE(totalProperties, qsizetype(tocLength / 24));
+	QCOMPARE(decodedFields, path == QLatin1String("omf/mc2026_audio/msmMMOB.mdb") ? qsizetype(24) : qsizetype(0));
 	const auto *head = object(result, 1);
 	QVERIFY(head);
 	int extentProperties = 0;

@@ -77,6 +77,11 @@ target_compile_definitions(tst_canonavb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR
 mediamuster_add_test(tst_canonavbreferences media)
 target_link_libraries(tst_canonavbreferences PRIVATE mediamuster_canon)
 
+# Lossless RAM storage: genuine reader graphs, typed values and source receipts.
+mediamuster_add_test(tst_sourcearchive media)
+target_link_libraries(tst_sourcearchive PRIVATE mediamuster_canon)
+target_compile_definitions(tst_sourcearchive PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
 # Live Canon matching, projections and presentation boundary.
 mediamuster_add_test(tst_canonscan media
     ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
@@ -84,6 +89,11 @@ mediamuster_add_test(tst_canonscan media
 )
 target_link_libraries(tst_canonscan PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonscan PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
+# Shared compression names: recorded labels and qualified Avid operating points.
+mediamuster_add_test(tst_canon_compressionnames media)
+target_link_libraries(tst_canon_compressionnames PRIVATE mediamuster_canon)
+
 mediamuster_add_test(tst_canon_omfprojection media)
 target_link_libraries(tst_canon_omfprojection PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canon_omfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")

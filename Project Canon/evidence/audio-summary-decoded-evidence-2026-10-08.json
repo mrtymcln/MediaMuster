@@ -1,0 +1,508 @@
+{
+    "sources": [
+        {
+            "diagnostics": [
+                "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+            ],
+            "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+            "sourceOutcome": 1,
+            "summaryFields": [
+                {
+                    "decoded": null,
+                    "encodingBytes": 4152,
+                    "encodingHex": "",
+                    "encodingSha256": "21b4275867b0a6a7d6584f43d73e813c3d1c5b766d69e63ee0118f38f4f32a55",
+                    "interpretation": "Native property/type and original bytes retained; this private type, shape or byte order has no established interpretation here.",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary",
+                    "ranges": [
+                        {
+                            "length": 4152,
+                            "offset": 356
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": {
+                        "fieldNames": [
+                            "nAvgBytesPerSec",
+                            "nBlockAlign",
+                            "nChannels",
+                            "nSamplesPerSec",
+                            "wBitsPerSample",
+                            "wFormatTag"
+                        ]
+                    },
+                    "encodingBytes": 16,
+                    "encodingHex": "0100010080bb00008032020003001800",
+                    "encodingSha256": "33ee82c4526b548188c369e79dd2b748ebc9308986ffe9ca052aab0bf799b4f2",
+                    "interpretation": "Decoded audio fields copied inside this OMF descriptor Summary; this is not the media file's native header.",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt ",
+                    "ranges": [
+                        {
+                            "length": 16,
+                            "offset": 4428
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 1,
+                    "encodingBytes": 2,
+                    "encodingHex": "0100",
+                    "encodingSha256": "47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254",
+                    "interpretation": "",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt .wFormatTag",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 4428
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 1,
+                    "encodingBytes": 2,
+                    "encodingHex": "0100",
+                    "encodingSha256": "47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254",
+                    "interpretation": "",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt .nChannels",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 4430
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 48000,
+                    "encodingBytes": 4,
+                    "encodingHex": "80bb0000",
+                    "encodingSha256": "66d85f78876e0fab490f733649bf372210d32034677b958fd4b2575589f65798",
+                    "interpretation": "",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt .nSamplesPerSec",
+                    "ranges": [
+                        {
+                            "length": 4,
+                            "offset": 4432
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 144000,
+                    "encodingBytes": 4,
+                    "encodingHex": "80320200",
+                    "encodingSha256": "3b79f0b411812ff2ef435cb792aee52998b811223b7903dcd94fd84941773379",
+                    "interpretation": "",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt .nAvgBytesPerSec",
+                    "ranges": [
+                        {
+                            "length": 4,
+                            "offset": 4436
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 3,
+                    "encodingBytes": 2,
+                    "encodingHex": "0300",
+                    "encodingSha256": "9b4fb24edd6d1d8830e272398263cdbf026b97392cc35387b991dc0248a628f9",
+                    "interpretation": "",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt .nBlockAlign",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 4440
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 24,
+                    "encodingBytes": 2,
+                    "encodingHex": "1800",
+                    "encodingSha256": "78a23af8da46b1b37e8767921a2d3f528fdc8eca37cea8aea775fd2b283d3776",
+                    "interpretation": "Recorded sample storage width; an extensible format can record a different valid precision.",
+                    "object": 68013,
+                    "property": "OMFI:WAVD:Summary.fmt .wBitsPerSample",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 4442
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": null,
+                    "encodingBytes": 4152,
+                    "encodingHex": "",
+                    "encodingSha256": "e056fd306d7e4165794c69837993f4d3e6d36d4a9926fb0faedf004651021301",
+                    "interpretation": "Native property/type and original bytes retained; this private type, shape or byte order has no established interpretation here.",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary",
+                    "ranges": [
+                        {
+                            "length": 4152,
+                            "offset": 5102
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": {
+                        "fieldNames": [
+                            "nAvgBytesPerSec",
+                            "nBlockAlign",
+                            "nChannels",
+                            "nSamplesPerSec",
+                            "wBitsPerSample",
+                            "wFormatTag"
+                        ]
+                    },
+                    "encodingBytes": 16,
+                    "encodingHex": "0100010080bb00008032020003001800",
+                    "encodingSha256": "33ee82c4526b548188c369e79dd2b748ebc9308986ffe9ca052aab0bf799b4f2",
+                    "interpretation": "Decoded audio fields copied inside this OMF descriptor Summary; this is not the media file's native header.",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt ",
+                    "ranges": [
+                        {
+                            "length": 16,
+                            "offset": 9174
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 1,
+                    "encodingBytes": 2,
+                    "encodingHex": "0100",
+                    "encodingSha256": "47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254",
+                    "interpretation": "",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt .wFormatTag",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 9174
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 1,
+                    "encodingBytes": 2,
+                    "encodingHex": "0100",
+                    "encodingSha256": "47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254",
+                    "interpretation": "",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt .nChannels",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 9176
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 48000,
+                    "encodingBytes": 4,
+                    "encodingHex": "80bb0000",
+                    "encodingSha256": "66d85f78876e0fab490f733649bf372210d32034677b958fd4b2575589f65798",
+                    "interpretation": "",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt .nSamplesPerSec",
+                    "ranges": [
+                        {
+                            "length": 4,
+                            "offset": 9178
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 144000,
+                    "encodingBytes": 4,
+                    "encodingHex": "80320200",
+                    "encodingSha256": "3b79f0b411812ff2ef435cb792aee52998b811223b7903dcd94fd84941773379",
+                    "interpretation": "",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt .nAvgBytesPerSec",
+                    "ranges": [
+                        {
+                            "length": 4,
+                            "offset": 9182
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 3,
+                    "encodingBytes": 2,
+                    "encodingHex": "0300",
+                    "encodingSha256": "9b4fb24edd6d1d8830e272398263cdbf026b97392cc35387b991dc0248a628f9",
+                    "interpretation": "",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt .nBlockAlign",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 9186
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 24,
+                    "encodingBytes": 2,
+                    "encodingHex": "1800",
+                    "encodingSha256": "78a23af8da46b1b37e8767921a2d3f528fdc8eca37cea8aea775fd2b283d3776",
+                    "interpretation": "Recorded sample storage width; an extensible format can record a different valid precision.",
+                    "object": 68070,
+                    "property": "OMFI:WAVD:Summary.fmt .wBitsPerSample",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 9188
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": null,
+                    "encodingBytes": 726,
+                    "encodingHex": "",
+                    "encodingSha256": "0879958223727b2679172a33efed338659985c474d81d49d8e5f8f2113b200a3",
+                    "interpretation": "Native property/type and original bytes retained; this private type, shape or byte order has no established interpretation here.",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary",
+                    "ranges": [
+                        {
+                            "length": 726,
+                            "offset": 9868
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": {
+                        "fieldNames": [
+                            "compressionName",
+                            "compressionNameBytes",
+                            "compressionNameLength",
+                            "compressionType",
+                            "numChannels",
+                            "numSampleFrames",
+                            "sampleRate",
+                            "sampleRateSignExponent",
+                            "sampleRateSignificand",
+                            "sampleSize"
+                        ]
+                    },
+                    "encodingBytes": 38,
+                    "encodingHex": "0001002bf2020018400ebb80000000000000696e32340e32342d62697420496e746567657200",
+                    "encodingSha256": "3ff00e4e8dec28e2b894183ee124f05bd9f509532e5d26436fbfe8ebaac8e2f4",
+                    "interpretation": "Decoded audio fields copied inside this OMF descriptor Summary; this is not the media file's native header.",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM",
+                    "ranges": [
+                        {
+                            "length": 38,
+                            "offset": 10500
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 1,
+                    "encodingBytes": 2,
+                    "encodingHex": "0001",
+                    "encodingSha256": "b413f47d13ee2fe6c845b2ee141af81de858df4ec549a58b7970bb96645bc8d2",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.numChannels",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 10500
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 2880002,
+                    "encodingBytes": 4,
+                    "encodingHex": "002bf202",
+                    "encodingSha256": "d6e79ded1dc66d52f07aeca8149350dbb78062a0a60eb74ee127e2613bcd161d",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.numSampleFrames",
+                    "ranges": [
+                        {
+                            "length": 4,
+                            "offset": 10502
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 24,
+                    "encodingBytes": 2,
+                    "encodingHex": "0018",
+                    "encodingSha256": "b5609376c87f00c645433e48648cb02e6a3f83467f2c827194de5d58f971c8f0",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.sampleSize",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 10506
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 16398,
+                    "encodingBytes": 2,
+                    "encodingHex": "400e",
+                    "encodingSha256": "559773e1257f9e2f61e973503554c3aefcd3039ad4e4e933f56f1f0d75d11709",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.sampleRateSignExponent",
+                    "ranges": [
+                        {
+                            "length": 2,
+                            "offset": 10508
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": {
+                        "unsignedInteger": "13510798882111488000"
+                    },
+                    "encodingBytes": 8,
+                    "encodingHex": "bb80000000000000",
+                    "encodingSha256": "7e83b51b2bf0d17bf44ad376d3173fc489b5aaa77d66b19c69b23e3cad7ced14",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.sampleRateSignificand",
+                    "ranges": [
+                        {
+                            "length": 8,
+                            "offset": 10510
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 48000,
+                    "encodingBytes": 10,
+                    "encodingHex": "400ebb80000000000000",
+                    "encodingSha256": "81472b85bd110c424ab4bdd023879689e41c0e6ce88ba4ffcb873190428c9431",
+                    "interpretation": "Original 80-bit sampling-rate bytes retained; the double approximation may be rounded and does not describe the sound samples' numeric format.",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.sampleRate",
+                    "ranges": [
+                        {
+                            "length": 10,
+                            "offset": 10508
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": {
+                        "bytesHex": "696e3234"
+                    },
+                    "encodingBytes": 4,
+                    "encodingHex": "696e3234",
+                    "encodingSha256": "4394aae95e21938d36255ea9cc55ab6142c7d76bad82b67d50c8945fa79754c0",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.compressionType",
+                    "ranges": [
+                        {
+                            "length": 4,
+                            "offset": 10518
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": 14,
+                    "encodingBytes": 1,
+                    "encodingHex": "0e",
+                    "encodingSha256": "4d7b3ef7300acf70c892d8327db8272f54434adbc61a4e130a563cb59a0d0f47",
+                    "interpretation": "",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.compressionNameLength",
+                    "ranges": [
+                        {
+                            "length": 1,
+                            "offset": 10522
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": -1
+                },
+                {
+                    "decoded": "24-bit Integer",
+                    "encodingBytes": 14,
+                    "encodingHex": "32342d62697420496e7465676572",
+                    "encodingSha256": "19005a33c7ea4760d7c2fec8ed85574fea26601c11141075d4e375d31284e2c5",
+                    "interpretation": "AIFF-C compressionName is a counted Pascal string, potentially localized. ASCII is recognized from its bytes; non-ASCII encoding is not assumed to be MacRoman or UTF-8.",
+                    "object": 68127,
+                    "property": "OMFI:AIFD:Summary.COMM.compressionName",
+                    "ranges": [
+                        {
+                            "length": 14,
+                            "offset": 10523
+                        }
+                    ],
+                    "state": 1,
+                    "textEncoding": 0
+                }
+            ]
+        }
+    ]
+}
+

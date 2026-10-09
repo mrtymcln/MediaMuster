@@ -1,0 +1,20 @@
+{
+  "/private/tmp/folder-cache-probe-counters.h": "folder-cache-probe-counters-2026-10-09.h",
+  "/private/tmp/folder-cache-scan-proof.cpp": "folder-cache-scan-proof-2026-10-09.cpp",
+  "/private/tmp/folder-cache-scanengine-before-original.cpp": "folder-cache-scanengine-before-original-2026-10-09.cpp",
+  "/private/tmp/folder-cache-scanengine-after-original.cpp": "folder-cache-scanengine-after-original-2026-10-09.cpp",
+  "/private/tmp/folder-cache-scanengine-before-instrumented.cpp": "folder-cache-scanengine-before-instrumented-2026-10-09.cpp",
+  "/private/tmp/folder-cache-scanengine-after-instrumented.cpp": "folder-cache-scanengine-after-instrumented-2026-10-09.cpp",
+  "/private/tmp/folder-cache-probe-build.txt": "folder-cache-probe-build-2026-10-09.txt",
+  "/private/tmp/folder-cache-probe-source-receipts.json": "folder-cache-probe-source-receipts-2026-10-09.json",
+  "/private/tmp/folder-cache-probe-binary-receipts.json": "folder-cache-probe-binary-receipts-2026-10-09.json",
+  "/private/tmp/run-folder-cache-probe.py": "run-folder-cache-probe-2026-10-09.py",
+  "/private/tmp/folder-cache-probe-before.json": "folder-cache-probe-before-2026-10-09.json",
+  "/private/tmp/folder-cache-probe-after.json": "folder-cache-probe-after-2026-10-09.json",
+  "/private/tmp/folder-cache-probe-summary.json": "folder-cache-probe-summary-2026-10-09.json",
+  "/private/tmp/folder-cache-probe-before.stderr.txt": "folder-cache-probe-before.stderr-2026-10-09.txt",
+  "/private/tmp/folder-cache-probe-after.stderr.txt": "folder-cache-probe-after.stderr-2026-10-09.txt",
+  "/private/tmp/folder-cache-probe-receipt.json": "folder-cache-probe-receipt-2026-10-09.json",
+  "/private/tmp/folder-cache-probe-method.txt": "folder-cache-probe-method-2026-10-09.txt",
+  "/private/tmp/run-folder-cache-scans-2026-10-09.py": "run-folder-cache-scans-2026-10-09.py"
+}

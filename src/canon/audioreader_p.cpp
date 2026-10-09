@@ -114,6 +114,69 @@ namespace Canon::Detail
             return printable ? QString::fromLatin1(key) : QStringLiteral("0x") + QString::fromLatin1(key.toHex());
         }
 
+        RawProperty audioSlice(const RawProperty &parent, const QString &suffix, qsizetype offset, qsizetype length)
+        {
+            RawProperty result;
+            result.locator.name = parent.locator.name + QLatin1Char('.') + suffix;
+            result.locator.objectNumber = parent.locator.objectNumber;
+            result.bento = parent.bento;
+            const qsizetype available = std::max(qsizetype(0), parent.encoding.size() - offset);
+            const qsizetype retained = std::min(length, available);
+            result.encoding = parent.encoding.mid(offset, retained);
+            result.state = retained == length ? PropertyReadState::Present : PropertyReadState::Unreadable;
+            // Bento can split one value across several physical ranges. Map the
+            // field's logical bytes through them instead of assuming contiguity.
+            qint64 skip = std::min(offset, parent.encoding.size());
+            qint64 remaining = retained;
+            for (const auto &range : parent.locator.ranges)
+            {
+                if (skip > range.length || (skip == range.length && remaining > 0))
+                {
+                    skip -= range.length;
+                    continue;
+                }
+                const qint64 count = std::min(remaining, range.length - skip);
+                result.locator.ranges.append({range.offset + skip, count});
+                remaining -= count;
+                skip = 0;
+                if (remaining == 0)
+                    break;
+            }
+            return result;
+        }
+
+        class AudioFields
+        {
+        public:
+            explicit AudioFields(const RawProperty &property) : m_property(property) {}
+
+            void add(const QString &name, qsizetype offset, qsizetype length, const QVariant &value = {})
+            {
+                auto field = audioSlice(m_property, name, offset, length);
+                if (field.state == PropertyReadState::Present)
+                {
+                    field.decoded = value;
+                    if (value.isValid())
+                        result.values.insert(name, value);
+                }
+                else
+                    fail(field, QStringLiteral("Recorded %1 is truncated.").arg(name));
+                result.fields.append(std::move(field));
+            }
+
+            void fail(RawProperty &field, const QString &reason)
+            {
+                field.state = PropertyReadState::Unreadable;
+                field.interpretation = reason;
+                result.diagnostics.append(reason);
+            }
+
+            AudioFormatResult result;
+
+        private:
+            const RawProperty &m_property;
+        };
+
         struct SizeEntry
         {
             QByteArray key;
@@ -327,118 +390,20 @@ namespace Canon::Detail
 
             void waveFormat(qsizetype index)
             {
-                auto &property = properties()[index];
-                const auto &bytes = property.encoding;
-                if (bytes.size() < 16)
-                {
-                    invalid(index, QStringLiteral("WAVE fmt chunk is shorter than WAVEFORMAT's fixed fields."));
-                    return;
-                }
-                const quint16 tag = word(bytes, 0, false);
-                QVariantMap fields{{QStringLiteral("wFormatTag"), tag}, {QStringLiteral("nChannels"), word(bytes, 2, false)}, {QStringLiteral("nSamplesPerSec"), dword(bytes, 4, false)}, {QStringLiteral("nAvgBytesPerSec"), dword(bytes, 8, false)}, {QStringLiteral("nBlockAlign"), word(bytes, 12, false)}, {QStringLiteral("wBitsPerSample"), word(bytes, 14, false)}};
-                property.decoded = fields;
-                if (bytes.size() == 17 || (tag != 1 && bytes.size() < 18))
-                {
-                    invalid(index, QStringLiteral("WAVEFORMATEX extension length is missing or truncated."));
-                    return;
-                }
-                if (bytes.size() >= 18)
-                {
-                    const quint16 extra = word(bytes, 16, false);
-                    fields.insert(QStringLiteral("cbSize"), extra);
-                    property.decoded = fields;
-                    if (extra > bytes.size() - 18)
-                    {
-                        invalid(index, QStringLiteral("WAVEFORMATEX cbSize extends beyond its fmt chunk."));
-                        return;
-                    }
-                    if (tag == 0xfffe)
-                    {
-                        if (extra < 22)
-                        {
-                            invalid(index, QStringLiteral("WAVE_FORMAT_EXTENSIBLE requires 22 extension bytes."));
-                            return;
-                        }
-                        const auto subformat = bytes.mid(24, 16);
-                        const quint16 samples = word(bytes, 18, false);
-                        fields.insert(QStringLiteral("Samples"), samples);
-                        fields.insert(QStringLiteral("dwChannelMask"), dword(bytes, 20, false));
-                        fields.insert(QStringLiteral("SubFormat"), subformat);
-                        const auto pcm = QByteArray::fromHex("0100000000001000800000aa00389b71");
-                        const auto floatingPoint = QByteArray::fromHex("0300000000001000800000aa00389b71");
-                        if (subformat == pcm || subformat == floatingPoint)
-                            fields.insert(QStringLiteral("wValidBitsPerSample"), samples);
-                        property.interpretation = QStringLiteral("wBitsPerSample describes sample-container width. Samples is a union; valid-bit interpretation is supplied only for the recorded PCM or IEEE-float subformat. Channel mask is a speaker assignment, not a free-text channel name.");
-                    }
-                }
-                property.decoded = fields;
+                retainFormat(index, decodeWaveFormat(properties()[index]));
             }
 
             void common(qsizetype index)
             {
-                auto &property = properties()[index];
-                const auto &bytes = property.encoding;
-                if (bytes.size() < 18)
-                {
-                    invalid(index, QStringLiteral("AIFF COMM chunk is shorter than its fixed fields."));
-                    return;
-                }
-                const quint16 signExponent = word(bytes, 8, true);
-                const quint16 exponent = signExponent & 0x7fff;
-                const quint64 mantissa = qFromBigEndian<quint64>(bytes.constData() + 10);
-                QVariantMap fields{{QStringLiteral("numChannels"), qint16(word(bytes, 0, true))},
-                                   {QStringLiteral("numSampleFrames"), dword(bytes, 2, true)},
-                                   {QStringLiteral("sampleSize"), qint16(word(bytes, 6, true))},
-                                   {QStringLiteral("sampleRateSignExponent"), signExponent},
-                                   {QStringLiteral("sampleRateSignificand"), QVariant::fromValue(mantissa)}};
-                // Keep the exact 80-bit representation as well as a useful approximation.
-                // This is the sample rate's representation, not the sound samples' format.
-                if (exponent != 0x7fff)
-                {
-                    double sampleRate = std::ldexp(double(mantissa), (exponent == 0 ? 1 : exponent) - 16383 - 63);
-                    if (signExponent & 0x8000)
-                        sampleRate = -sampleRate;
-                    if (std::isfinite(sampleRate))
-                        fields.insert(QStringLiteral("sampleRate"), sampleRate);
-                }
-                property.decoded = fields;
-                property.interpretation = QStringLiteral("sampleRate preserves the original extended-precision fields; its double value may be rounded. No audio sample format is inferred from the sample-rate encoding.");
-                if (!m_aifc)
-                    return;
-                if (bytes.size() < 23)
-                {
-                    invalid(index, QStringLiteral("AIFF-C COMM lacks its compression type or Pascal-string length."));
-                    return;
-                }
-                fields.insert(QStringLiteral("compressionType"), bytes.mid(18, 4));
-                const qsizetype nameLength = quint8(bytes[22]);
-                fields.insert(QStringLiteral("compressionNameLength"), nameLength);
-                property.decoded = fields;
-                if (bytes.size() - 23 < nameLength)
-                {
-                    invalid(index, QStringLiteral("AIFF-C compression name extends beyond COMM."));
-                    return;
-                }
-                const QByteArray name = bytes.mid(23, nameLength);
-                fields.insert(QStringLiteral("compressionNameBytes"), name);
-                const bool ascii = std::all_of(name.cbegin(), name.cend(), [](char c)
-                                               { return static_cast<unsigned char>(c) < 128; });
-                if (ascii)
-                    fields.insert(QStringLiteral("compressionName"), QString::fromLatin1(name));
-                property.decoded = fields;
-                const qint64 nameOffset = property.locator.ranges.front().offset + 23;
-                const auto nameIndex = append(QStringLiteral("Audio.COMM.compressionName"));
-                auto &nameProperty = properties()[nameIndex];
-                nameProperty.encoding = name;
-                nameProperty.locator.ranges = {{nameOffset, nameLength}};
-                nameProperty.state = PropertyReadState::Present;
-                nameProperty.textEncoding = ascii ? TextEncoding::Ascii : TextEncoding::Unknown;
-                if (ascii)
-                {
-                    nameProperty.decoded = QString::fromLatin1(name);
-                    nameProperty.textEncodingBasis = EvidenceBasis::Derived;
-                }
-                nameProperty.interpretation = QStringLiteral("AIFF-C compressionName is a counted Pascal string, potentially localized. ASCII is recognized from its bytes; non-ASCII encoding is not assumed to be MacRoman or UTF-8.");
+                retainFormat(index, decodeAiffCommon(properties()[index], m_aifc));
+            }
+
+            void retainFormat(qsizetype index, AudioFormatResult decoded)
+            {
+                properties()[index].decoded = std::move(decoded.values);
+                if (!decoded.diagnostics.isEmpty())
+                    invalid(index, decoded.diagnostics.join(QLatin1Char(' ')));
+                properties() += decoded.fields;
             }
 
             void sizes(qsizetype index)
@@ -499,6 +464,171 @@ namespace Canon::Detail
             quint64 m_dataSize = 0;
             QVector<SizeEntry> m_sizeTable;
         };
+    }
+
+    AudioFormatResult decodeWaveFormat(const RawProperty &property)
+    {
+        AudioFields fields(property);
+        const auto &bytes = property.encoding;
+        if (bytes.size() < 16)
+        {
+            fields.add(QStringLiteral("FixedFields"), 0, 16);
+            return std::move(fields.result);
+        }
+        const quint16 tag = word(bytes, 0, false);
+        fields.add(QStringLiteral("wFormatTag"), 0, 2, tag);
+        fields.add(QStringLiteral("nChannels"), 2, 2, word(bytes, 2, false));
+        fields.add(QStringLiteral("nSamplesPerSec"), 4, 4, dword(bytes, 4, false));
+        fields.add(QStringLiteral("nAvgBytesPerSec"), 8, 4, dword(bytes, 8, false));
+        fields.add(QStringLiteral("nBlockAlign"), 12, 2, word(bytes, 12, false));
+        fields.add(QStringLiteral("wBitsPerSample"), 14, 2, word(bytes, 14, false));
+        fields.result.fields.last().interpretation = QStringLiteral("Recorded sample storage width; an extensible format can record a different valid precision.");
+        if (tag == 1 && bytes.size() == 16)
+            return std::move(fields.result);
+        fields.add(QStringLiteral("cbSize"), 16, 2, bytes.size() >= 18 ? QVariant(word(bytes, 16, false)) : QVariant{});
+        if (bytes.size() < 18)
+            return std::move(fields.result);
+        const quint16 extra = word(bytes, 16, false);
+        if (extra > bytes.size() - 18)
+            fields.fail(fields.result.fields.last(), QStringLiteral("WAVEFORMATEX cbSize extends beyond its fmt chunk."));
+        if (tag != 0xfffe)
+            return std::move(fields.result);
+
+        fields.add(QStringLiteral("Samples"), 18, 2, bytes.size() >= 20 ? QVariant(word(bytes, 18, false)) : QVariant{});
+        fields.add(QStringLiteral("dwChannelMask"), 20, 4, bytes.size() >= 24 ? QVariant(dword(bytes, 20, false)) : QVariant{});
+        fields.result.fields.last().interpretation += QStringLiteral(" Channel mask describes speaker assignments, not free-text channel names.");
+        fields.add(QStringLiteral("SubFormat"), 24, 16, bytes.size() >= 40 ? QVariant(bytes.mid(24, 16)) : QVariant{});
+        if (extra < 22)
+            fields.fail(fields.result.fields.last(), QStringLiteral("WAVE_FORMAT_EXTENSIBLE requires 22 declared extension bytes."));
+        const auto &subformat = fields.result.fields.last();
+        const auto pcm = QByteArray::fromHex("0100000000001000800000aa00389b71");
+        const auto floatingPoint = QByteArray::fromHex("0300000000001000800000aa00389b71");
+        if (subformat.state == PropertyReadState::Present && (subformat.encoding == pcm || subformat.encoding == floatingPoint))
+        {
+            const quint16 precision = word(bytes, 18, false);
+            fields.add(QStringLiteral("wValidBitsPerSample"), 18, 2, precision);
+            fields.result.fields.last().interpretation = QStringLiteral("The Samples union means valid sample precision for this recorded PCM/IEEE-float SubFormat.");
+            if (precision == 0)
+                fields.result.fields.last().interpretation += QStringLiteral(" The recorded zero does not establish a usable precision.");
+            if (precision > word(bytes, 14, false))
+                fields.fail(fields.result.fields.last(), QStringLiteral("Recorded valid precision exceeds the recorded sample storage width; neither number is changed."));
+        }
+        return std::move(fields.result);
+    }
+
+    AudioFormatResult decodeAiffCommon(const RawProperty &property, bool compressed)
+    {
+        AudioFields fields(property);
+        const auto &bytes = property.encoding;
+        if (bytes.size() < 18)
+        {
+            fields.add(QStringLiteral("FixedFields"), 0, 18);
+            return std::move(fields.result);
+        }
+        fields.add(QStringLiteral("numChannels"), 0, 2, qint16(word(bytes, 0, true)));
+        fields.add(QStringLiteral("numSampleFrames"), 2, 4, dword(bytes, 2, true));
+        fields.add(QStringLiteral("sampleSize"), 6, 2, qint16(word(bytes, 6, true)));
+        const quint16 signExponent = word(bytes, 8, true);
+        const quint16 exponent = signExponent & 0x7fff;
+        const quint64 mantissa = qFromBigEndian<quint64>(bytes.constData() + 10);
+        fields.add(QStringLiteral("sampleRateSignExponent"), 8, 2, signExponent);
+        fields.add(QStringLiteral("sampleRateSignificand"), 10, 8, QVariant::fromValue(mantissa));
+        QVariant sampleRate;
+        if (exponent != 0x7fff)
+        {
+            double approximation = std::ldexp(double(mantissa), (exponent == 0 ? 1 : exponent) - 16383 - 63);
+            if (signExponent & 0x8000)
+                approximation = -approximation;
+            if (std::isfinite(approximation))
+                sampleRate = approximation;
+        }
+        fields.add(QStringLiteral("sampleRate"), 8, 10, sampleRate);
+        fields.result.fields.last().interpretation = QStringLiteral("Original 80-bit sampling-rate bytes retained; the double approximation may be rounded and does not describe the sound samples' numeric format.");
+        if (!compressed)
+            return std::move(fields.result);
+        fields.add(QStringLiteral("compressionType"), 18, 4, bytes.size() >= 22 ? QVariant(bytes.mid(18, 4)) : QVariant{});
+        fields.add(QStringLiteral("compressionNameLength"), 22, 1, bytes.size() >= 23 ? QVariant(quint8(bytes[22])) : QVariant{});
+        if (bytes.size() < 23)
+        {
+            auto name = audioSlice(property, QStringLiteral("compressionName"), 23, 0);
+            fields.fail(name, QStringLiteral("AIFF-C compression-name length is missing; independently recorded base fields and compression type remain usable."));
+            fields.result.fields.append(std::move(name));
+            return std::move(fields.result);
+        }
+        const qsizetype length = quint8(bytes[22]);
+        fields.add(QStringLiteral("compressionName"), 23, length);
+        auto &name = fields.result.fields.last();
+        if (name.state == PropertyReadState::Present)
+        {
+            fields.result.values.insert(QStringLiteral("compressionNameBytes"), name.encoding);
+            const bool ascii = std::all_of(name.encoding.cbegin(), name.encoding.cend(), [](char c)
+                                           { return static_cast<unsigned char>(c) < 128; });
+            name.textEncoding = ascii ? TextEncoding::Ascii : TextEncoding::Unknown;
+            if (ascii)
+            {
+                name.decoded = QString::fromLatin1(name.encoding);
+                name.textEncodingBasis = EvidenceBasis::Derived;
+                fields.result.values.insert(QStringLiteral("compressionName"), name.decoded);
+            }
+            name.interpretation = QStringLiteral("AIFF-C compressionName is a counted Pascal string, potentially localized. ASCII is recognized from its bytes; non-ASCII encoding is not assumed to be MacRoman or UTF-8.");
+        }
+        return std::move(fields.result);
+    }
+
+    QVector<RawProperty> decodeAudioSummary(const RawProperty &summary)
+    {
+        QVector<RawProperty> result;
+        const auto &bytes = summary.encoding;
+        if (summary.state != PropertyReadState::Present || !summary.bytesRetained || !summary.bento ||
+            (summary.bento->typeName != QLatin1String("omfi:DataValue") && summary.bento->typeName != QLatin1String("omfi:VarLenBytes")))
+            return result;
+        if (bytes.size() < 12)
+        {
+            auto header = audioSlice(summary, QStringLiteral("ContainerHeader"), 0, 12);
+            header.interpretation = QStringLiteral("Audio Summary container header is truncated; no format fields inferred.");
+            result.append(std::move(header));
+            return result;
+        }
+        const bool wave = summary.locator.name == QLatin1String("OMFI:WAVD:Summary") && bytes.first(4) == "RIFF" && bytes.mid(8, 4) == "WAVE";
+        const bool aiff = summary.locator.name == QLatin1String("OMFI:AIFD:Summary") && bytes.first(4) == "FORM" && (bytes.mid(8, 4) == "AIFF" || bytes.mid(8, 4) == "AIFC");
+        if (!wave && !aiff)
+        {
+            auto header = audioSlice(summary, QStringLiteral("ContainerHeader"), 0, 12);
+            header.interpretation = QStringLiteral("Audio Summary bytes retained, but this container signature has no supported interpretation.");
+            result.append(std::move(header));
+            return result;
+        }
+        // A Summary is a header copy, not a recording. Its sample chunk may
+        // describe sound bytes deliberately omitted from this property.
+        for (qsizetype offset = 12; offset <= bytes.size() - 8;)
+        {
+            const auto key = bytes.mid(offset, 4);
+            const quint32 length = dword(bytes, offset + 4, aiff);
+            if (key == "data" || key == "SSND")
+                break;
+            if (length > quint64(bytes.size() - offset - 8))
+            {
+                auto chunk = audioSlice(summary, chunkName(key), offset + 8, length);
+                chunk.state = PropertyReadState::Unreadable;
+                chunk.interpretation = QStringLiteral("Copied metadata chunk extends beyond its Summary; omitted sample data is not required here.");
+                result.append(std::move(chunk));
+                break;
+            }
+            if ((wave && key == "fmt ") || (aiff && key == "COMM"))
+            {
+                auto chunk = audioSlice(summary, chunkName(key), offset + 8, length);
+                chunk.locator.key = key;
+                auto decoded = wave ? decodeWaveFormat(chunk) : decodeAiffCommon(chunk, bytes.mid(8, 4) == "AIFC");
+                chunk.decoded = std::move(decoded.values);
+                chunk.interpretation = QStringLiteral("Decoded audio fields copied inside this OMF descriptor Summary; this is not the media file's native header.");
+                if (!decoded.diagnostics.isEmpty())
+                    chunk.interpretation += QLatin1Char(' ') + decoded.diagnostics.join(QLatin1Char(' '));
+                result.append(std::move(chunk));
+                result += decoded.fields;
+            }
+            offset += 8 + qsizetype(length) + (length & 1);
+        }
+        return result;
     }
 
     AudioReadResult readChunkedAudio(QIODevice &device, const ReaderContext &context)

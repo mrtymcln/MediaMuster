@@ -12,6 +12,7 @@ list or a guarantee about later builds. For current behaviour, start with the
 | 20 September 2026 | [Media scope](2026-09-20-media-scope/REVIEW.md) | [Public specifications](2026-09-20-media-scope/public-specs.md), [audio extensions](2026-09-20-media-scope/audio-extensions.md), [validation history](2026-09-20-media-scope/validation-history.md) |
 | 22 September 2026 | [Code review](2026-09-22-current-code/REVIEW.md) | [Operations](2026-09-22-current-code/operations.md), [parsers](2026-09-22-current-code/parsers.md), [scanner and filters](2026-09-22-current-code/scanner-filters.md), [UI and build](2026-09-22-current-code/ui-build-docs.md), [identity audit](2026-09-22-current-code/identity-audit.md) |
 | 24 September 2026 | [Console wording](2026-09-24-console/console-review.md) | Accepted wording decisions and implementation summary |
+| 8 October 2026 | [Dialog and progress wording](2026-10-08-dialog-wording/REVIEW.md) | [Operations and recovery](2026-10-08-dialog-wording/operations.md), [bins and About](2026-10-08-dialog-wording/bins-and-about.md), [Rebalance](2026-10-08-dialog-wording/rebalance.md); proposals with source evidence |
 
 Keep this archive document-only. Store durable regression tests and media fixtures
 under `tests/`; keep temporary probes, logs, generated data, copied source and

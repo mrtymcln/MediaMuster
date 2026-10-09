@@ -5,24 +5,9 @@
 #include <iterator>
 #include <limits>
 
-/// Sound essence identified from the essence label alone, for files
-/// whose audio-ness never appears in a descriptor set. Two registered
-/// forms, and one trap between them:
-///
-///  - SMPTE sound CODING node, bytes 8-9 = 04 02 (picture coding is
-///    04 01). Unambiguous; covers MP2's compression UL.
-///  - MXF Generic Container AES3/BWF sound MAPPINGS in the 0D
-///    namespace: bytes 12-13 = 02 06, byte 14 = the wrapping variant,
-///    byte 15 = 00.
-///
-/// That trailing 00 is load-bearing, not decoration. Avid reuses the
-/// very same 0D…02 06 prefix for its PRIVATE DNxHD PICTURE labels —
-/// …02060101 (SQ), …02060201 (HQ), …02060202 (HQX), …02060301 (LB) —
-/// which end 01 or 02 where the registered sound wrappings end 00.
-/// Without the byte-15 test those four legacy video codecs classify as
-/// audio, which also zeroes their duration in the post-processing
-/// below. tst_mxfparser::essence_label_audio_classification pins every
-/// one of these six colliding ULs.
+// Legacy audio classification keeps sound-coding labels separate from the
+// AES3/BWF wrapping pattern. Its trailing zero is part of that pattern;
+// neighbouring unknown identifiers do not establish audio or a DNx profile.
 static bool isAudioCompressionLabel(const QByteArray &label)
 {
 	if (label.size() < 16)
@@ -294,10 +279,6 @@ QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, co
 		{"060E2B34040101010D01030102010401", "Avid 3:1"},
 		{"060E2B34040101010D01030102010101", "Avid 15:1s"},
 		{"060E2B34040101010E04020102040100", "Avid 20:1"},
-		{"060E2B34040101010D01030102060301", "DNxHD LB"},
-		{"060E2B34040101010D01030102060101", "DNxHD SQ"},
-		{"060E2B34040101010D01030102060201", "DNxHD HQ"},
-		{"060E2B34040101010D01030102060202", "DNxHD HQX"},
 		{"060E2B340401010A0401020271130000", "DNxHD LB"},		 // Avid config also: "Avid DNx LB"
 		{"060E2B340401010A0401020271030000", "DNxHD SQ"},		 // Avid config also: "Avid DNx SQ"
 		{"060E2B340401010A0401020271040000", "DNxHD HQ"},		 // Avid config also: "Avid DNx HQ"
@@ -309,11 +290,6 @@ QString MediaMetadataUtil::codecFromCompressionLabel(const QByteArray &label, co
 		{"060E2B340401010A0401020271110000", "DNxHD HQ (720p)"}, // Avid config also: "Avid DNx HQ"
 		{"060E2B340401010A0401020271100000",
 		 "DNxHD HQX (720p)"}, // Avid config also: "Avid DNx HQX"
-		{"060E2B34040101010D01030102110101", "DNxHR LB"},
-		{"060E2B34040101010D01030102110201", "DNxHR SQ"},
-		{"060E2B34040101010D01030102110301", "DNxHR HQ"},
-		{"060E2B34040101010D01030102110401", "DNxHR HQX"},
-		{"060E2B34040101010D01030102110501", "DNxHR 444"},
 		{"060E2B34040101010E04020102110300", "Apple ProRes 422"},
 		{"060E2B34040101010E04020102110400", "Apple ProRes HQ"},
 		{"060E2B340401010D0401020271250000", "DNxHR HQX"}, // Avid config also: "Avid DNx HQX"

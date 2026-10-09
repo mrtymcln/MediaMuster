@@ -36,9 +36,11 @@ namespace Canon
 			while (!error && current != end && !cancellation.cancelled())
 			{
 				const QFileInfo entry(current->path());
-				if (!Conventions::isDotHidden(entry.fileName()) && !entry.isHidden() &&
-					(filters.isEmpty() || QDir::match(filters, entry.fileName())))
+				if (!Conventions::isDotHidden(entry.fileName()) &&
+					(filters.isEmpty() || QDir::match(filters, entry.fileName())) && !entry.isHidden())
 				{
+					if (cancellation.cancelled())
+						break;
 					std::error_code statusError;
 					// The free function checks access; directory_entry may cache a type
 					// from the listing even when the entry itself cannot be inspected.
@@ -53,6 +55,8 @@ namespace Canon
 							 (type == QDir::Dirs ? std::filesystem::is_directory(status) : std::filesystem::is_regular_file(status)))
 						result.entries.append(entry);
 				}
+				if (cancellation.cancelled())
+					break;
 				current.increment(error);
 			}
 			if (error && result.error.isEmpty())
@@ -84,7 +88,8 @@ namespace Canon
 		}
 	}
 
-	ScanResult DiscoveryEngine::discover(const ScanRequest &request, const Cancellation &cancellation) const
+	ScanResult DiscoveryEngine::discover(const ScanRequest &request, const Cancellation &cancellation,
+										 const std::function<void(const QString &)> &discovering) const
 	{
 		ScanResult result;
 		result.request = request;
@@ -98,6 +103,8 @@ namespace Canon
 		};
 		const auto list = [&](const QString &path, QDir::Filter type, const QStringList &filters = QStringList{})
 		{
+			if (!cancellation.cancelled() && discovering)
+				discovering(path);
 			auto listing = listEntries(path, type, filters, cancellation);
 			if (!listing.error.isEmpty())
 				issue(DiscoveryIssue::Kind::UnreadableFolder, path, listing.error);
@@ -111,7 +118,11 @@ namespace Canon
 			const bool legacy = location->family == AvidMediaLayout::Family::Omf;
 			const QStringList filters = legacy ? QStringList{"*.omf", "*.aif", "*.wav", "*.pmr", "*.mdb"} : QStringList{"*.mxf", "*.pmr", "*.mdb"};
 			const auto entries = list(path, QDir::Files, filters);
+			if (cancellation.cancelled())
+				return;
 			const QString volumeRoot = QStorageInfo(path).rootPath();
+			if (cancellation.cancelled())
+				return;
 			if (!volumeIdentifiers.contains(volumeRoot))
 				volumeIdentifiers.insert(volumeRoot, VolumeIdentity::capture(path).identifier());
 			for (const auto &entry : entries)
@@ -158,6 +169,10 @@ namespace Canon
 		{
 			if (cancellation.cancelled())
 				break;
+			if (discovering)
+				discovering(requested);
+			if (cancellation.cancelled())
+				break;
 			const QFileInfo info(requested);
 			if (!info.isDir() || !info.isReadable() || info.isSymLink())
 			{
@@ -180,6 +195,10 @@ namespace Canon
 				const bool legacy = AvidMediaLayout::isOmfRoot(root);
 				if (legacy && !request.omfScan)
 					continue;
+				if (discovering)
+					discovering(root);
+				if (cancellation.cancelled())
+					break;
 				const QFileInfo rootInfo(root);
 				const QString canonicalRoot = rootInfo.canonicalFilePath();
 				const QString physicalRoot = canonicalRoot.isEmpty() ? rootInfo.absoluteFilePath() : canonicalRoot;

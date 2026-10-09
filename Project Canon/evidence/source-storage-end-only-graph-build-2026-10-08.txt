@@ -1,0 +1,30 @@
+Working directory: /Users/martymclean/Developer/MediaMuster
+
+Exact successful commands below. Canon libraries are universal Debug builds;
+the read-only diagnostic runs arm64 with -O2, Qt6.5.3, C++17. These commands
+compile only the temporary diagnostic, without changing application/test sources.
+
+Before baseline (MDB/OMF property-only compaction already present):
+clang++ -std=c++17 -O2 -arch arm64 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/all-source-compaction-graph-proof.cpp /private/tmp/libmediamuster_canon-before-all-source-compaction.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/all-source-compaction-graph-before
+
+After (shared compaction at public source-reader boundaries):
+clang++ -std=c++17 -O2 -arch arm64 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /private/tmp/all-source-compaction-graph-proof.cpp build-canon/libmediamuster_canon.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/all-source-compaction-graph-after
+
+Run (each source/mode in a fresh process; runner sets QT_HASH_SEED=0):
+python3 /private/tmp/run-all-source-compaction-proof.py
+
+The runner reads /private/tmp/all-source-compaction-graph-paths.json and writes
+/private/tmp/all-source-compaction-graph-results.jsonl and
+/private/tmp/all-source-compaction-graph-errors.json.
+Source list: six live .mdb and six live .pmr from the before property-compaction
+real-scan receipt; sorted .mdb/.omf/.wav/.aif files directly in genuine Avid
+fixture folders tests/fixtures/omf/avid_supporting and tests/fixtures/omf/mc2026_audio;
+nine AVBs from Project Canon/evidence/avb-corpus-paths-2026-10-04.json.
+
+Isolated largest-AVB repeated checks (run after app builds/tests completed):
+python3 /private/tmp/run-all-source-compaction-avb-repeats.py
+
+The repeat runner selects the largest .avb in the same path list, runs three
+fresh-process pairs with alternating order, sets QT_HASH_SEED=0, rechecks source
+stamps, and writes /private/tmp/all-source-compaction-avb-repeat-results.jsonl
+and /private/tmp/all-source-compaction-avb-repeat-errors.json.

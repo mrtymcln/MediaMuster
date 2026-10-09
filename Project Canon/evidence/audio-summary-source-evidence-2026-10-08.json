@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-08",
+  "purpose": "Read-only observation of genuine Avid MDB audio Summary bytes, obtained before the audio-summary decoder change. SourceOutcome refers to Bento/source framing, not full semantic certification. No malformed-header example is represented as genuine.",
+  "sources": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "sourceSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "readerOutcome": 1,
+      "summaries": [
+        {
+          "length": 4152,
+          "name": "OMFI:WAVD:Summary",
+          "object": 68013,
+          "ranges": [
+            {
+              "length": 4152,
+              "offset": 356
+            }
+          ],
+          "state": 1,
+          "sha256": "21b4275867b0a6a7d6584f43d73e813c3d1c5b766d69e63ee0118f38f4f32a55",
+          "outerHeader": "524946463010000057415645",
+          "outerDeclaredTotal": 4152,
+          "boundedChunksBeforeSamples": [
+            {
+              "key": "bext",
+              "offsetWithinSummary": 12,
+              "declaredPayloadLength": 604
+            },
+            {
+              "key": "fill",
+              "offsetWithinSummary": 624,
+              "declaredPayloadLength": 3432
+            },
+            {
+              "key": "fmt ",
+              "offsetWithinSummary": 4064,
+              "declaredPayloadLength": 16,
+              "payloadHex": "0100010080bb00008032020003001800"
+            },
+            {
+              "key": "data",
+              "offsetWithinSummary": 4088,
+              "declaredPayloadLength": 8640006
+            }
+          ]
+        },
+        {
+          "length": 4152,
+          "name": "OMFI:WAVD:Summary",
+          "object": 68070,
+          "ranges": [
+            {
+              "length": 4152,
+              "offset": 5102
+            }
+          ],
+          "state": 1,
+          "sha256": "e056fd306d7e4165794c69837993f4d3e6d36d4a9926fb0faedf004651021301",
+          "outerHeader": "524946463010000057415645",
+          "outerDeclaredTotal": 4152,
+          "boundedChunksBeforeSamples": [
+            {
+              "key": "bext",
+              "offsetWithinSummary": 12,
+              "declaredPayloadLength": 604
+            },
+            {
+              "key": "fill",
+              "offsetWithinSummary": 624,
+              "declaredPayloadLength": 3432
+            },
+            {
+              "key": "fmt ",
+              "offsetWithinSummary": 4064,
+              "declaredPayloadLength": 16,
+              "payloadHex": "0100010080bb00008032020003001800"
+            },
+            {
+              "key": "data",
+              "offsetWithinSummary": 4088,
+              "declaredPayloadLength": 8640006
+            }
+          ]
+        },
+        {
+          "length": 726,
+          "name": "OMFI:AIFD:Summary",
+          "object": 68127,
+          "ranges": [
+            {
+              "length": 726,
+              "offset": 9868
+            }
+          ],
+          "state": 1,
+          "sha256": "0879958223727b2679172a33efed338659985c474d81d49d8e5f8f2113b200a3",
+          "outerHeader": "464f524d000002ce41494643",
+          "outerDeclaredTotal": 726,
+          "boundedChunksBeforeSamples": [
+            {
+              "key": "bext",
+              "offsetWithinSummary": 12,
+              "declaredPayloadLength": 604
+            },
+            {
+              "key": "COMM",
+              "offsetWithinSummary": 624,
+              "declaredPayloadLength": 38,
+              "payloadHex": "0001002bf2020018400ebb80000000000000696e32340e32342d62697420496e746567657200",
+              "recordedCompressionType": "in24",
+              "recordedCompressionName": "24-bit Integer"
+            },
+            {
+              "key": "umid",
+              "offsetWithinSummary": 670,
+              "declaredPayloadLength": 24
+            },
+            {
+              "key": "minf",
+              "offsetWithinSummary": 702,
+              "declaredPayloadLength": 16
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sourceSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "readerOutcome": 1,
+      "summaries": []
+    }
+  ]
+}

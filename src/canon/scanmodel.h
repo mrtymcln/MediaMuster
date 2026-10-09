@@ -12,6 +12,8 @@
 
 namespace Canon
 {
+	class Cancellation;
+	class SourceArchive;
 	enum class PmrFileSet
 	{
 		Legacy,
@@ -200,6 +202,24 @@ namespace Canon
 		QStringList diagnostics;
 	};
 
+	// A scan keeps the complete source graph in a lossless RAM archive after
+	// projection. Matching and file-operation checks use these small receipts;
+	// callers explicitly restore a graph when they need its original records.
+	struct StoredSource
+	{
+		ParsedSource::Outcome outcome = ParsedSource::Outcome::NotRead;
+		QString readReason;
+		SourceSnapshotRef snapshot;
+		ParsedSource::Container container = ParsedSource::Container::Unknown;
+		QStringList diagnostics;
+		QSharedPointer<const SourceArchive> archive;
+		// If packing is cancelled, keep the obtained graph without losing facts.
+		QSharedPointer<const ParsedSource> unfinishedGraph;
+
+		static StoredSource store(ParsedSource &&source, const Cancellation &cancellation);
+		std::optional<ParsedSource> restore(const Cancellation &cancellation) const;
+	};
+
 	/// Canonical physical record. UI strings belong in a later adapter.
 	struct MediaFile
 	{
@@ -256,7 +276,7 @@ namespace Canon
 		ScanRequest request;
 		QVector<MediaFile> files;
 		QVector<SourceCandidate> candidates;
-		QVector<ParsedSource> sources;
+		QVector<StoredSource> sources;
 		QVector<DiscoveryIssue> discoveryIssues;
 		QVector<ScanIssue> reconciliationIssues;
 		bool discoveryComplete = true;

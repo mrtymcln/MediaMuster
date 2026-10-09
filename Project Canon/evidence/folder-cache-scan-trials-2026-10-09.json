@@ -1,0 +1,98 @@
+[
+  {
+    "pair": 1,
+    "order": [
+      "before",
+      "after"
+    ],
+    "mode": "before",
+    "stem": "folder-cache-before-repeat1-2026-10-09",
+    "scanMs": 21345,
+    "processWallSeconds": 24.04609775543213,
+    "memoryRetained": {
+      "peakResidentBytes": 2710650880,
+      "physicalFootprintBytes": 2373900608,
+      "residentBytes": 2710552576
+    }
+  },
+  {
+    "pair": 1,
+    "order": [
+      "before",
+      "after"
+    ],
+    "mode": "after",
+    "stem": "folder-cache-after-repeat1-2026-10-09",
+    "scanMs": 20773,
+    "processWallSeconds": 22.7723650932312,
+    "memoryRetained": {
+      "peakResidentBytes": 2740469760,
+      "physicalFootprintBytes": 2397083968,
+      "residentBytes": 2740371456
+    }
+  },
+  {
+    "pair": 2,
+    "order": [
+      "after",
+      "before"
+    ],
+    "mode": "after",
+    "stem": "folder-cache-after-repeat2-2026-10-09",
+    "scanMs": 20940,
+    "processWallSeconds": 22.97462511062622,
+    "memoryRetained": {
+      "peakResidentBytes": 2723741696,
+      "physicalFootprintBytes": 2363480384,
+      "residentBytes": 2723643392
+    }
+  },
+  {
+    "pair": 2,
+    "order": [
+      "after",
+      "before"
+    ],
+    "mode": "before",
+    "stem": "folder-cache-before-repeat2-2026-10-09",
+    "scanMs": 20890,
+    "processWallSeconds": 22.882747888565063,
+    "memoryRetained": {
+      "peakResidentBytes": 2723364864,
+      "physicalFootprintBytes": 2354256192,
+      "residentBytes": 2723266560
+    }
+  },
+  {
+    "pair": 3,
+    "order": [
+      "before",
+      "after"
+    ],
+    "mode": "before",
+    "stem": "folder-cache-before-repeat3-2026-10-09",
+    "scanMs": 20810,
+    "processWallSeconds": 22.818026065826416,
+    "memoryRetained": {
+      "peakResidentBytes": 2722037760,
+      "physicalFootprintBytes": 2257115392,
+      "residentBytes": 2721939456
+    }
+  },
+  {
+    "pair": 3,
+    "order": [
+      "before",
+      "after"
+    ],
+    "mode": "after",
+    "stem": "folder-cache-after-repeat3-2026-10-09",
+    "scanMs": 20925,
+    "processWallSeconds": 22.924636840820312,
+    "memoryRetained": {
+      "peakResidentBytes": 2733228032,
+      "physicalFootprintBytes": 2351749504,
+      "residentBytes": 2733129728
+    }
+  }
+]

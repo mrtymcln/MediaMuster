@@ -1,0 +1,13 @@
+Working directory: /Users/martymclean/Developer/MediaMuster
+
+Temporary read-only diagnostic. Application library is Debug; main/hash code O2; instrumented scanengine TU O0 -g.
+
+clang++ -std=c++17 -arch arm64 -DQT_CORE_LIB -I/Users/martymclean/Developer/MediaMuster/src -I/Users/martymclean/Developer/MediaMuster/src/canon -I/private/tmp -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include -O2 -c /private/tmp/folder-cache-scan-proof.cpp -o /private/tmp/folder-cache-scan-proof.o
+
+clang++ -std=c++17 -arch arm64 -DQT_CORE_LIB -I/Users/martymclean/Developer/MediaMuster/src -I/Users/martymclean/Developer/MediaMuster/src/canon -I/private/tmp -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include -O0 -g -c /private/tmp/folder-cache-scanengine-before-instrumented.cpp -o /private/tmp/folder-cache-scanengine-before.o
+
+clang++ -arch arm64 /private/tmp/folder-cache-scan-proof.o /private/tmp/folder-cache-scanengine-before.o /private/tmp/libmediamuster_canon-before-folder-cache.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/folder-cache-scan-proof-before
+
+clang++ -std=c++17 -arch arm64 -DQT_CORE_LIB -I/Users/martymclean/Developer/MediaMuster/src -I/Users/martymclean/Developer/MediaMuster/src/canon -I/private/tmp -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include -O0 -g -c /private/tmp/folder-cache-scanengine-after-instrumented.cpp -o /private/tmp/folder-cache-scanengine-after.o
+
+clang++ -arch arm64 /private/tmp/folder-cache-scan-proof.o /private/tmp/folder-cache-scanengine-after.o /Users/martymclean/Developer/MediaMuster/build-canon/libmediamuster_canon.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework Security -framework AppKit -framework ApplicationServices -framework Foundation -framework IOKit -framework DiskArbitration -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /private/tmp/folder-cache-scan-proof-after

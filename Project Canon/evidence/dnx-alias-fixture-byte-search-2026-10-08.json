@@ -1,0 +1,258 @@
+{
+  "recordedUtc": "2026-10-08T08:23:08.352867+00:00",
+  "purpose": "Independent exact-byte fixture search for nine inherited DNx coding aliases. This supplements typed property parsing of live sources; it does not identify compression semantics from an arbitrary byte occurrence.",
+  "root": "/Users/martymclean/Developer/MediaMuster/tests/fixtures",
+  "scope": {
+    "extensions": [
+      ".aif",
+      ".avb",
+      ".mdb",
+      ".mxf",
+      ".omf",
+      ".pmr",
+      ".wav"
+    ],
+    "enumeration": "Recursive os.walk including hidden/ignored files; extension checks are case insensitive; directory symlinks are not followed.",
+    "filesDiscovered": 919,
+    "filesFullyRead": 919,
+    "bytesRead": 488393888,
+    "byExtension": {
+      ".aif": 1,
+      ".avb": 2,
+      ".mdb": 6,
+      ".mxf": 824,
+      ".omf": 80,
+      ".pmr": 5,
+      ".wav": 1
+    },
+    "byDirectory": [
+      {
+        "directory": ".",
+        "files": 4,
+        "bytesRead": 9479313
+      },
+      {
+        "directory": "avid_headers",
+        "files": 28,
+        "bytesRead": 7340032
+      },
+      {
+        "directory": "corpus_headers",
+        "files": 799,
+        "bytesRead": 426937862
+      },
+      {
+        "directory": "omf/avid_supporting",
+        "files": 82,
+        "bytesRead": 27184448
+      },
+      {
+        "directory": "omf/mc2026_audio",
+        "files": 4,
+        "bytesRead": 17386568
+      },
+      {
+        "directory": "omf/mc2026_audio/bins",
+        "files": 2,
+        "bytesRead": 65665
+      }
+    ],
+    "fileSymlinks": [],
+    "inventorySha256": "798f92878df6637b5ac355c996367425611787ae12a25799b03d1abd7d80c498",
+    "inventoryHashDefinition": "SHA-256 of UTF-8 JSON array sorted by repository-relative path, each entry {path,bytes,sha256}; object keys sorted, compact separators, ensure_ascii=false. Per-file sha256 hashes cover all bytes read."
+  },
+  "method": {
+    "chunkBytes": 1048576,
+    "overlapBytes": 15,
+    "unique16BytePatterns": 27,
+    "encodings": [
+      "UlOctets",
+      "StructuredAuidBigEndian",
+      "StructuredAuidLittleEndian"
+    ],
+    "auidTransformSource": "src/canon/omfprojection.cpp::auidToUl",
+    "structuredAuidBigEndian": "UL[8:16] + UL[0:8]",
+    "structuredAuidLittleEndian": "reverse(UL[8:12]) + reverse(UL[12:14]) + reverse(UL[14:16]) + UL[0:8]",
+    "offsetConvention": "Zero-based absolute byte offsets in the searched fixture file.",
+    "boundaries": "15 retained bytes between chunks detect every 16-byte occurrence spanning a read boundary without duplicate complete occurrences.",
+    "sourceStability": "File size and modification time checked before and after each read."
+  },
+  "provenance": {
+    "documentedGenuineSources": [
+      "tests/fixtures/omf/README.md documents 80 supplied Avid OMF slates, database pairs, native audio and two bins.",
+      "tests/fixtures/corpus_headers/README.md documents genuine Avid MXF header slices and captured PMR/MDB generations.",
+      "tests/tst_mxfparser.cpp::real_avid_headers_parse_exactly and tst_canonmxf.cpp::realFixtures identify avid_headers and root tone as real-file cases.",
+      "tests/tst_canonmdb.cpp::realFixtures treats root MDBs as real sources."
+    ],
+    "qualification": "Provenance above is attributed to repository records, not an independent recreation of every media capture. No synthetic on-disk source was identified among these 919 files. Test-authored byte buffers and temporary generated files outside tests/fixtures are outside this search.",
+    "archivedExtentLimit": "MXF header archives are searched in their entirety as stored. This does not search omitted original essence or footer bytes."
+  },
+  "rawOccurrences": 0,
+  "matchedFixtureFiles": 0,
+  "aliases": [
+    {
+      "identifier": "060e2b34040101010d01030102060301",
+      "currentLevel": "LB",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060301",
+        "StructuredAuidBigEndian": "0d01030102060301060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020103060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060101",
+      "currentLevel": "SQ",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060101",
+        "StructuredAuidBigEndian": "0d01030102060101060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020101060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060201",
+      "currentLevel": "HQ",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060201",
+        "StructuredAuidBigEndian": "0d01030102060201060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020102060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102060202",
+      "currentLevel": "HQX",
+      "currentBrandFamily": "DNxHD",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102060202",
+        "StructuredAuidBigEndian": "0d01030102060202060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d06020202060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110101",
+      "currentLevel": "LB",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110101",
+        "StructuredAuidBigEndian": "0d01030102110101060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020101060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110201",
+      "currentLevel": "SQ",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110201",
+        "StructuredAuidBigEndian": "0d01030102110201060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020102060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110301",
+      "currentLevel": "HQ",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110301",
+        "StructuredAuidBigEndian": "0d01030102110301060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020103060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110401",
+      "currentLevel": "HQX",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110401",
+        "StructuredAuidBigEndian": "0d01030102110401060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020104060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    },
+    {
+      "identifier": "060e2b34040101010d01030102110501",
+      "currentLevel": "444",
+      "currentBrandFamily": "DNxHR",
+      "searchedEncodings": {
+        "UlOctets": "060e2b34040101010d01030102110501",
+        "StructuredAuidBigEndian": "0d01030102110501060e2b3404010101",
+        "StructuredAuidLittleEndian": "0103010d11020105060e2b3404010101"
+      },
+      "occurrencesByEncoding": {
+        "UlOctets": 0,
+        "StructuredAuidBigEndian": 0,
+        "StructuredAuidLittleEndian": 0
+      },
+      "rawOccurrences": 0,
+      "matchedFiles": 0,
+      "matches": []
+    }
+  ],
+  "errors": [],
+  "interpretation": "A zero match count establishes absence of these exact contiguous 16-byte encodings in the bytes successfully searched. It does not prove that no historical/private format used an alias, exclude fragmented/non-contiguous encodings, or establish whether a matching byte sequence would be a coding property rather than a container, identity, or essence payload."
+}

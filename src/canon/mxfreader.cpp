@@ -3,6 +3,7 @@
 // every encountered set and property remains available for later reconciliation.
 
 #include "mxfreader.h"
+#include "sourcestorage_p.h"
 #include "mxfobjects_p.h"
 
 #include <QHash>
@@ -609,15 +610,8 @@ namespace Canon
 																   : SourceReadState::Incomplete;
 		result.snapshot = snapshot;
 		for (auto &object : result.objects)
-		{
 			object.snapshot = snapshot;
-			object.properties.squeeze();
-		}
-		// Parsing is finished, so unused growth capacity need not stay in RAM
-		// for every media file. All properties, references and locators remain.
-		result.objects.squeeze();
-		result.unownedProperties.squeeze();
-		result.relationships.squeeze();
+		Detail::squeezeSourceStorage(result, context.cancellation);
 		return result;
 	}
 }

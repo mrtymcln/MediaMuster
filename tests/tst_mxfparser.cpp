@@ -202,11 +202,9 @@ private slots:
 	// file fell through as an invalid Kind=Video row.
 	void label_only_audio_classifies_from_ul();
 
-	// The collision guard. Avid's private DNxHD PICTURE labels share the
-	// 0D…02 06 prefix with the registered AES3/BWF SOUND wrappings and
-	// differ only in the trailing byte. A classifier that ignores it
-	// calls four legacy video codecs "audio" and zeroes their duration.
-	// Every colliding UL is pinned here, audio and video alike.
+	// Exact-label classification guard. Unproven identifiers near a known
+	// sound wrapping must not become audio through a prefix match. A false
+	// result means no established audio identity; it does not prove video.
 	void essence_label_audio_classification();
 
 	// A sentinel alone does not establish bit count or number representation.
@@ -555,9 +553,9 @@ void TestMxfParser::label_only_audio_classifies_from_ul()
 
 void TestMxfParser::essence_label_audio_classification()
 {
-	// Label-only headers (no descriptor set) so the UL alone decides.
-	// The four DNxHD entries are the trap: same 0D…02 06 prefix as the
-	// PCM sound wrapping, differing only at the last byte.
+	// Label-only headers exercise classification without a sound descriptor.
+	// The four unproven identifiers share part of a registered sound wrapping
+	// prefix; that similarity is not audio evidence.
 	const struct
 	{
 		const char *ul;
@@ -566,10 +564,10 @@ void TestMxfParser::essence_label_audio_classification()
 	} kCases[] = {
 		{"060E2B34040101010D01030102060100", true, "PCM: registered BWF sound wrapping (ends 00)"},
 		{"060E2B34040101010402020203020500", true, "MP2: SMPTE sound coding node (04 02)"},
-		{"060E2B34040101010D01030102060101", false, "DNxHD SQ: Avid private PICTURE label"},
-		{"060E2B34040101010D01030102060201", false, "DNxHD HQ: Avid private PICTURE label"},
-		{"060E2B34040101010D01030102060202", false, "DNxHD HQX: Avid private PICTURE label"},
-		{"060E2B34040101010D01030102060301", false, "DNxHD LB: Avid private PICTURE label"},
+		{"060E2B34040101010D01030102060101", false, "Unproven identifier 060101: prefix alone is not audio evidence"},
+		{"060E2B34040101010D01030102060201", false, "Unproven identifier 060201: prefix alone is not audio evidence"},
+		{"060E2B34040101010D01030102060202", false, "Unproven identifier 060202: prefix alone is not audio evidence"},
+		{"060E2B34040101010D01030102060301", false, "Unproven identifier 060301: prefix alone is not audio evidence"},
 		{"060E2B340401010A0401020271030000", false, "DNxHD SQ via CID UL: picture coding (04 01)"},
 		{"060E2B34040101010D01030102050101", false, "Avid 1:1 8-bit: picture"},
 		{"060E2B340401010D0401020203060300", false, "Apple ProRes 422: picture"},

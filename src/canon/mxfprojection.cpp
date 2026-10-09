@@ -3,7 +3,7 @@
 // not. Header/footer copies remain separate observations for reconciliation.
 
 #include "projection.h"
-#include "dnxnames_p.h"
+#include "compressionnames_p.h"
 #include "mxfcatalogue_p.h"
 #include "picturegeometry_p.h"
 #include "avidusage.h"
@@ -990,58 +990,45 @@ namespace Canon
 			void projectCodec(ProjectedFile &file, const AvidObject &descriptor, const RawProperty &coding,
 							  const QByteArray &label, MediaRate editRate) const
 			{
-				QString codec = MediaMetadataUtil::codecFromCompressionLabel(label, {});
-				for (const auto &profile : Detail::dnxProfiles)
+				Detail::CompressionFacts facts;
+				facts.codingLabel = label;
+				facts.descriptorClass = descriptor.mxf ? descriptor.mxf->name : QString{};
+				facts.geometry = dnxNamingGeometry(descriptor);
+				facts.rate = editRate;
+				facts.layout = integer(unique(descriptor, "GenericPictureEssenceDescriptor.FrameLayout"));
+				facts.depth = integer(unique(descriptor, "CDCIEssenceDescriptor.ComponentDepth"));
+				facts.horizontal = integer(unique(descriptor, "CDCIEssenceDescriptor.HorizontalSubsampling"));
+				facts.vertical = integer(unique(descriptor, "CDCIEssenceDescriptor.VerticalSubsampling"));
+				if (!has(descriptor, "CDCIEssenceDescriptor.VerticalSubsampling") && completeSet(descriptor))
+					facts.vertical = 1; // ST 377-1:2019 G.2.28 default.
+				const auto descriptorValue = [&](MediaProperty field)
 				{
-					if (label != QByteArray::fromHex(profile.label))
-						continue;
-					const auto level = QString::fromLatin1(profile.level);
-					const QString newDnx = QStringLiteral("Avid DNx %1").arg(level);
-					const QString oldDnx = QStringLiteral("DNx%1 %2").arg(profile.hr ? QLatin1String("HR") : QLatin1String("HD"), level);
-					observe(file, MediaProperty::NewDnx, m_source, descriptor, coding, newDnx, EvidenceBasis::Derived,
+					QString result;
+					for (const auto &item : file.evidence.observations(field))
+						if (item.objectIdentity == QStringLiteral("object:%1").arg(descriptor.handle) &&
+							item.readState == PropertyReadState::Present)
+						{
+							if (!result.isEmpty() && result != item.value.toString())
+								return QString{};
+							result = item.value.toString();
+						}
+					return result;
+				};
+				facts.bitDepth = descriptorValue(MediaProperty::BitDepth);
+				facts.sampleFormat = descriptorValue(MediaProperty::SampleFormat);
+				const auto names = Detail::compressionNames(facts);
+				if (!names.newDnx.isEmpty())
+					observe(file, MediaProperty::NewDnx, m_source, descriptor, coding, names.newDnx, EvidenceBasis::Derived,
 							QStringLiteral("Exact registered coding-label profile mapped to Avid's unified DNx branding."));
-					observe(file, MediaProperty::OldDnx, m_source, descriptor, coding, oldDnx, EvidenceBasis::Derived,
+				if (!names.oldDnx.isEmpty())
+					observe(file, MediaProperty::OldDnx, m_source, descriptor, coding, names.oldDnx, EvidenceBasis::Derived,
 							QStringLiteral("Historical HD/HR profile identity comes from the coding label, not image dimensions."));
-					codec = newDnx;
-					const auto layout = integer(unique(descriptor, "GenericPictureEssenceDescriptor.FrameLayout"));
-					const auto depth = integer(unique(descriptor, "CDCIEssenceDescriptor.ComponentDepth"));
-					const auto horizontal = integer(unique(descriptor, "CDCIEssenceDescriptor.HorizontalSubsampling"));
-					const auto recordedVertical = integer(unique(descriptor, "CDCIEssenceDescriptor.VerticalSubsampling"));
-					const auto vertical = recordedVertical ? recordedVertical : !has(descriptor, "CDCIEssenceDescriptor.VerticalSubsampling") && completeSet(descriptor) ? std::optional<qint64>(1)
-																																										 : std::nullopt; // ST 377-1:2019 G.2.28 default.
-					const auto reallyOld = Detail::reallyOldDnx(profile, dnxNamingGeometry(descriptor), editRate, layout, depth, horizontal, vertical);
-					if (!reallyOld.isEmpty())
-					{
-						observe(file, MediaProperty::ReallyOldDnx, m_source, descriptor, coding, reallyOld, EvidenceBasis::Derived,
-								QStringLiteral("Exact HD profile, raster, frame layout, sampling, depth and rational rate; Avid 2012 white paper pp. 9–10. No nearest-rate match or thin-raster substitution."));
-						codec += QStringLiteral(" [%1]").arg(reallyOld);
-					}
-					break;
-				}
-				if (label == QByteArray::fromHex("060e2b340401010d0401020203070100") ||
-					label == QByteArray::fromHex("060e2b340401010d0401020203070200"))
-				{
-					codec = QStringLiteral("Avid DNxUncompressed");
-					const auto descriptorValue = [&](MediaProperty field)
-					{
-						QString result;
-						for (const auto &item : file.evidence.observations(field))
-							if (item.objectIdentity == QStringLiteral("object:%1").arg(descriptor.handle) &&
-								item.readState == PropertyReadState::Present)
-							{
-								if (!result.isEmpty() && result != item.value.toString())
-									return QString{};
-								result = item.value.toString();
-							}
-						return result;
-					};
-					const auto depth = descriptorValue(MediaProperty::BitDepth);
-					const auto format = descriptorValue(MediaProperty::SampleFormat);
-					if (!depth.isEmpty() && !format.isEmpty())
-						codec += QStringLiteral(" — %1 %2").arg(depth, format);
-				}
-				observe(file, MediaProperty::Compression, m_source, descriptor, coding, codec, EvidenceBasis::Derived,
-						QStringLiteral("Coding-label lookup; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available."));
+				if (!names.reallyOldDnx.isEmpty())
+					observe(file, MediaProperty::ReallyOldDnx, m_source, descriptor, coding, names.reallyOldDnx, EvidenceBasis::Derived,
+							QStringLiteral("Exact HD profile, raster, frame layout, sampling, depth and rational rate; Avid 2012 white paper pp. 9–10. No nearest-rate match or thin-raster substitution."));
+				if (!names.compression.isEmpty())
+					observe(file, MediaProperty::Compression, m_source, descriptor, coding, names.compression, EvidenceBasis::Derived,
+							QStringLiteral("Shared verified Avid compression-name catalogue; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available."));
 			}
 
 			void projectTrackDuration(ProjectedFile &file, const AvidObject &package,

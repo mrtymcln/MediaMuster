@@ -3,6 +3,8 @@
 // observation. File matching and display selection belong to later stages.
 
 #include "omfobjects_p.h"
+#include "audioreader_p.h"
+#include "sourcestorage_p.h"
 
 #include <QHash>
 #include <QSet>
@@ -174,12 +176,25 @@ namespace Canon
 					if (cancelled())
 						return;
 					objectFacts(object);
+					QVector<RawProperty> audioFields;
 					for (auto &property : object.properties)
 					{
 						if (cancelled())
 							return;
 						interpret(property);
+						if (property.locator.name == QLatin1String("OMFI:WAVD:Summary") ||
+							property.locator.name == QLatin1String("OMFI:AIFD:Summary"))
+						{
+							auto decoded = Detail::decodeAudioSummary(property);
+							for (const auto &field : decoded)
+								if (field.state == PropertyReadState::Unreadable)
+									m_result.diagnostics.append(QStringLiteral("%1: %2").arg(field.locator.name, field.interpretation));
+							// These are fields inside an already-read value, not more
+							// Bento entries. Keep its original framing outcome intact.
+							audioFields += decoded;
+						}
 					}
+					object.properties += audioFields;
 				}
 			}
 
@@ -674,6 +689,7 @@ namespace Canon
 		result.snapshot = receipt;
 		for (auto &object : result.objects)
 			object.snapshot = receipt;
+		Detail::squeezeSourceStorage(result, context.cancellation);
 		return result;
 	}
 }
