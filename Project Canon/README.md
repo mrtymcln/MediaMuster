@@ -165,6 +165,26 @@ Windows/NEXIS throughput and the 300,000-file workload still need verification.
 
 ## Implementation direction
 
+The user authorized a separate [Canon2 comparison engine](canon2-comparison-engine-2026-10-10.md)
+on 10 October. Its first stage retains exact PMR/MDB images in RAM while reusing
+the verified readers and the shared database-first scanner. Canon remains live;
+direct compact-index interpretation and per-row evidence compaction are later
+work. The report distinguishes source-byte preservation, temporary expansion and
+the measurements needed before claiming a performance or memory improvement.
+
+The user subsequently clarified that the 300,000-file Interplay workload is
+dominated by media-header fallback. The [media-source storage proposal](media-source-storage-proposal-2026-10-10.md)
+records the relevant MXF/OMF costs and a native metadata/framing-image approach,
+with compact layout/evidence storage and a header-heavy comparison requirement.
+This proposal is not implemented; the database-only benchmark does not qualify
+that workload.
+
+Before choosing a media-reading scope, the [MXF/OMF specification review](mxf-omf-read-scope-review-2026-10-10.md)
+separates completed OP-Atom, general/open MXF, body metadata and OMF's indexed
+layout. It classifies current scan needs versus original-byte preservation and
+optional content inspection, and records the present readers' scope limits.
+This review does not approve a new reading, retention or selection policy.
+
 The user subsequently clarified that scanner, parser and metadata engines should
 be fresh replacements, while the UI and file-operation executor stay. See the
 [fresh replacement plan](replacement-engine-plan.md). This supersedes the earlier

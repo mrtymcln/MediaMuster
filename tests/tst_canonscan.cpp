@@ -1,4 +1,10 @@
 #include "canon/scanengine.h"
+#ifdef MEDIAMUSTER_TEST_CANON2
+#include "canon2/scanengine.h"
+using TestScanEngine = Canon2::ScanEngine;
+#else
+using TestScanEngine = Canon::ScanEngine;
+#endif
 #include "canon/projection.h"
 #include "canon/metadataselectionpolicy.h"
 #include "canonadapter.h"
@@ -107,7 +113,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
 			audioDatabase(24, {101, 301, 601}, true)));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(mediaSource(scan, path)->outcome != Canon::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
@@ -136,7 +142,7 @@ private slots:
 		QStringList warnings;
 		Canon::ScanCallbacks callbacks;
 		callbacks.warning = [&](const QString &message) { warnings.append(message); };
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.files.front().kelpieId != 0);
 		QVERIFY(mediaSource(scan, path)->outcome != Canon::ParsedSource::Outcome::NotRead);
@@ -167,7 +173,7 @@ private slots:
 		// The master is readable in the database, but its contents list omits it.
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {101})));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.files.front().kelpieId != 0);
 		QVERIFY(mediaSource(scan, path)->outcome != Canon::ParsedSource::Outcome::NotRead);
@@ -191,7 +197,7 @@ private slots:
 		Canon::ScanCallbacks callbacks;
 		callbacks.progress = [&](int, int, const QString &source)
 		{ decisions.append(source); };
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		const auto *header = mediaSource(scan, path);
@@ -243,7 +249,7 @@ private slots:
 		if (conflicting)
 			QVERIFY(tryWriteFile(folder + QStringLiteral("/other.mdb"), audioDatabase(16)));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		const auto *header = mediaSource(scan, path);
 		QVERIFY(header);
 		QVERIFY(header->outcome != Canon::ParsedSource::Outcome::NotRead);
@@ -262,7 +268,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("listed.mxf", toneFileId, "Project")})));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase()));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		QVERIFY(scan.files[0].kelpieId != scan.files[1].kelpieId);
 		QCOMPARE(mediaSource(scan, folder + QStringLiteral("/listed.mxf"))->outcome, Canon::ParsedSource::Outcome::NotRead);
@@ -290,7 +296,7 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 2);
 		QVERIFY(!scan.files[0].evidence.selected(MediaProperty::Compression).value.isValid());
@@ -320,7 +326,7 @@ private slots:
 			expected = QFileInfo(folder).lastModified();
 		};
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(!error);
 		QVERIFY(expected.isValid() && expected != original);
 		QVERIFY(scan.reconciliationComplete);
@@ -358,7 +364,7 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QVERIFY(mediaSource(scan, first)->outcome != Canon::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
@@ -492,7 +498,7 @@ private slots:
 			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + '/' + name, path + '/' + name));
 		}
 		const Canon::Cancellation cancellation;
-		const auto scan = QSharedPointer<Canon::ScanResult>::create(Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
+		const auto scan = QSharedPointer<Canon::ScanResult>::create(TestScanEngine{}.scan({{temporary.path()}, false}, cancellation));
 		QCOMPARE(scan->files.size(), 2);
 		QVERIFY(scan->reconciliationComplete);
 		QVERIFY(scan->files[0].kelpieId != scan->files[1].kelpieId);
@@ -525,7 +531,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("TAKE.MXF", otherId, "wrong case"), pmrRecord("take.mxf", toneFileId, "exact name")})));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("exact name"));
@@ -546,7 +552,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("TAKE.MXF", toneFileId, "normalized match")})));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QCOMPARE(scan.files.front().evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("normalized match"));
 	}
@@ -559,7 +565,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("take.mxf", toneFileId, "same project"), pmrRecord("take.mxf", otherId, "same project")})));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QVERIFY(!evidence.selected(MediaProperty::FileMobId).value.isValid());
@@ -580,7 +586,7 @@ private slots:
 			QSKIP("Temporary filesystem does not preserve case-distinct file locations");
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("Take.mxf", toneFileId, "ambiguous location")})));
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		for (const auto &file : scan.files)
 		{
@@ -609,7 +615,7 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const Canon::Cancellation cancellation;
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
@@ -724,7 +730,7 @@ private slots:
 		const Canon::Cancellation cancellation(&flag);
 		QVERIFY(!cancellation.cancelled());
 		flag.store(true);
-		const auto scan = Canon::ScanEngine{}.scan({}, cancellation);
+		const auto scan = TestScanEngine{}.scan({}, cancellation);
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);
 		QVERIFY(!scan.parsingComplete);
@@ -769,7 +775,7 @@ private slots:
 			cancellation.cancel();
 		};
 		callbacks.finalising = [&] { finalising = true; };
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(progressCalls, 1);
 		QCOMPARE(readingCalls, atReading ? 1 : 0);
 		QVERIFY(!finalising);
@@ -809,7 +815,7 @@ private slots:
 			if (current == path)
 				cancellation.cancel();
 		};
-		const auto scan = Canon::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);
 		QCOMPARE(scan.files.size(), 1);

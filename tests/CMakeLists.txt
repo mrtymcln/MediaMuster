@@ -90,6 +90,37 @@ mediamuster_add_test(tst_canonscan media
 target_link_libraries(tst_canonscan PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonscan PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Run the same matching/header-scheduling regressions against the alternative store.
+add_executable(tst_canon2scan tst_canonscan.cpp
+    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+)
+target_link_libraries(tst_canon2scan PRIVATE Qt6::Test mediamuster_canon2)
+target_include_directories(tst_canon2scan PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_compile_definitions(tst_canon2scan PRIVATE
+    MEDIAMUSTER_TEST_CANON2
+    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+)
+add_test(NAME tst_canon2scan COMMAND tst_canon2scan
+    -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/tst_canon2scan.result.txt,txt)
+set_tests_properties(tst_canon2scan PROPERTIES LABELS "media")
+
+mediamuster_add_test(tst_canon2database media)
+target_link_libraries(tst_canon2database PRIVATE mediamuster_canon2)
+target_compile_definitions(tst_canon2database PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
+# Read-only comparison tool. Run one engine per process to measure its own peak RAM.
+add_executable(canon2_compare canon2_compare.cpp
+    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
+)
+set_target_properties(canon2_compare PROPERTIES AUTOMOC OFF)
+target_include_directories(canon2_compare PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(canon2_compare PRIVATE mediamuster_canon2 Qt6::Core)
+if(WIN32)
+    target_link_libraries(canon2_compare PRIVATE Psapi)
+endif()
+
 # Shared compression names: recorded labels and qualified Avid operating points.
 mediamuster_add_test(tst_canon_compressionnames media)
 target_link_libraries(tst_canon_compressionnames PRIVATE mediamuster_canon)

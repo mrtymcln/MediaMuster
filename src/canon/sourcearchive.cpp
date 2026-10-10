@@ -1,4 +1,5 @@
 #include "sourcearchive.h"
+#include "sourcestore.h"
 
 #include <QDataStream>
 #include <QHash>
@@ -504,6 +505,7 @@ namespace Canon
 			if (cancellation.cancelled()) return std::nullopt;
 			return source;
 		}
+		if (storage) return storage->restore(cancellation);
 		if (outcome != ParsedSource::Outcome::NotRead)
 			throw SourceArchiveError("A parsed source has no stored graph");
 		// Unopened headers only have these scheduling/receipt fields.

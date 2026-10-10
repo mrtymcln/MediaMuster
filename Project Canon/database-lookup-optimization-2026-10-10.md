@@ -146,6 +146,54 @@ freshness checks also remain necessary when parsing a RAM buffer. A future
 I/O change must preserve those behaviors and be qualified on actual NEXIS;
 successful-input fingerprints alone are insufficient.
 
+## Next candidates: read-only review
+
+The user's follow-up asks what else can improve. The items below remain
+proposals; this review applies no additional production optimization.
+
+First measure discovery, reading/decoding, projection, RAM archive packing,
+matching and table population separately. Existing scanner elapsed figures do
+not isolate these costs, and exclude table population. Scoped Qt elapsed timers
+in a diagnostic build can establish which remaining work matters most.
+
+The smallest next I/O candidate is redundant-seek suppression, supported by the
+successful-input experiment above. Preserve cancellation checkpoints, byte
+ranges, short-read outcomes, source-change checks and partial evidence, and
+compare real sources through the actual reader before adopting it. The single
+MDB result is not a whole-scan gain prediction.
+
+`scanengine.cpp` still makes five full metadata selections per `matchFile`
+call, normally used both provisionally and finally. The normal 2,413-row path
+therefore implies 24,130 full selection passes; this is a structural calculation,
+not a fresh runtime counter. Intermediate matching often needs only identity
+and master dependencies. The conservative first change would narrow these
+intermediate selections on the disposable provisional row, retaining one full
+selection before the header decision. Extract the existing shared per-property
+logic rather than duplicating the preference rules. Preserve the master-ID
+union/sort and intermediate ClipName/Type-derived effect history. Keep final
+matching unchanged initially: its partially selected rows can survive
+cancellation, so reducing those passes needs a separate partial-result proof.
+
+Table population always calls `BinMetadataResolver::apply`. Source/effect
+exclusion helpers enter mutable Qt containers even when no matching eligible
+observation exists. A const preflight could preserve observation-list sharing
+until a change is necessary. Keep existing selection invalidation for present
+properties, bin withdrawal/reactivation, effect history and legacy-row refresh.
+A blanket return whenever no bins are loaded is unsafe. Measure table
+population independently and compare both observations and displayed cells.
+
+Sharing a complete eligible observation list when the destination is empty is
+another candidate. The current `appendEvidence` loop copies observation slots
+individually. Source coverage, eligibility qualification, insertion order,
+snapshot identity and selection invalidation must remain intact. Actual eligible
+cases and allocation effects need measurement before any saving is claimed.
+
+Parallel independent database work is a later, larger experiment. Qt's task
+pool can run a small number of source-local read/project/pack tasks, then publish
+results in deterministic order. First qualify the RAM repair on the real
+Windows/NEXIS workload; concurrent expanded graphs multiply peak storage.
+No worker count or speed improvement is established by the present evidence.
+
 ## Evidence
 
 - [Combined verification/build/timing receipt](evidence/database-lookup-verification-2026-10-10.json).

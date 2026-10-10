@@ -1,4 +1,5 @@
 #include "scanengine.h"
+#include "sourcepipeline.h"
 #include "discoveryengine.h"
 #include "projection.h"
 #include "metadataselectionpolicy.h"
@@ -234,7 +235,7 @@ namespace Canon
 	}
 
 	ScanResult ScanEngine::scan(const ScanRequest &request, const Cancellation &cancellation,
-								const ScanCallbacks &callbacks) const
+								const ScanCallbacks &callbacks, const SourcePipeline *pipeline) const
 	{
 		ScanResult result = DiscoveryEngine{}.discover(request, cancellation, callbacks.discovering);
 		// Keep discovered rows and any source evidence already obtained. Once
@@ -320,13 +321,23 @@ namespace Canon
 				callbacks.reading(candidate);
 			if (cancellation.cancelled())
 				return;
-			auto parsed = readSource(candidate, cancellation);
-			parsed.readReason = reason;
-			if (!cancellation.cancelled())
-				projections[index] = project(parsed, cancellation);
-			// Keep only this source expanded while reading/projecting. A cancelled
-			// pack retains its obtained graph instead of discarding partial facts.
-			result.sources[index] = StoredSource::store(std::move(parsed), cancellation);
+			if (pipeline && (candidate.hint == SourceCandidate::ReaderHint::Pmr ||
+							 candidate.hint == SourceCandidate::ReaderHint::Mdb))
+			{
+				auto prepared = pipeline->processDatabase(candidate, reason, cancellation);
+				projections[index] = std::move(prepared.projection);
+				result.sources[index] = std::move(prepared.source);
+			}
+			else
+			{
+				auto parsed = readSource(candidate, cancellation);
+				parsed.readReason = reason;
+				if (!cancellation.cancelled())
+					projections[index] = project(parsed, cancellation);
+				// Keep only this source expanded while reading/projecting. A cancelled
+				// pack retains its obtained graph instead of discarding partial facts.
+				result.sources[index] = StoredSource::store(std::move(parsed), cancellation);
+			}
 			if (cancellation.cancelled())
 				return;
 			const auto &source = result.sources[index];

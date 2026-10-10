@@ -124,6 +124,20 @@ set_target_properties(mediamuster_canon PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_canon PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(mediamuster_canon PUBLIC Qt6::Core)
 
+# Comparison engine: original PMR/MDB images replace their expanded RAM archives.
+# The live app continues to use mediamuster_canon until comparison is accepted.
+add_library(mediamuster_canon2 STATIC
+    src/canon2/databaseimage.cpp
+    src/canon2/databaseimage.h
+    src/canon2/databasesource.cpp
+    src/canon2/databasesource.h
+    src/canon2/scanengine.cpp
+    src/canon2/scanengine.h
+)
+set_target_properties(mediamuster_canon2 PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_canon2 PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_canon2 PUBLIC mediamuster_canon Qt6::Core)
+
 message(STATUS "Using Qt6 ${Qt6_VERSION}")
 
 ### AGL deprecated ###
