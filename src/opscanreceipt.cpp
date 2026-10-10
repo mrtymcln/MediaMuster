@@ -1,7 +1,7 @@
 #include "opscanreceipt.h"
 #include "mediafile.h"
 #include "mobid.h"
-#include "canon/scanmodel.h"
+#include "mediaengine/scanmodel.h"
 #include <algorithm>
 
 namespace
@@ -19,15 +19,15 @@ namespace
 
 	QString databaseIdentityForSkippedHeader(const MediaFile &file)
 	{
-		if (!file.canonScan || file.scanStamp.mobId.isEmpty() || MobId::isAllZero(file.scanStamp.mobId))
+		if (!file.mediaEngineScan || file.scanStamp.mobId.isEmpty() || MobId::isAllZero(file.scanStamp.mobId))
 			return {};
 		const QString scannedPath = originalLocation(file);
-		const bool skipped = std::any_of(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(),
-											 [&](const Canon::StoredSource &source)
+		const bool skipped = std::any_of(file.mediaEngineScan->sources.cbegin(), file.mediaEngineScan->sources.cend(),
+											 [&](const MediaEngine::StoredSource &source)
 										 {
 											 return source.snapshot && scannedPath == source.snapshot->path &&
 													(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf) &&
-													source.outcome == Canon::ParsedSource::Outcome::NotRead;
+													source.outcome == MediaEngine::ParsedSource::Outcome::NotRead;
 										 });
 		if (!skipped)
 			return {};
@@ -67,10 +67,10 @@ namespace
 			identity.mobId = fileIds.front();
 		else if (fileIds.size() > 1)
 			identity.unavailableReason = QStringLiteral("The media header has conflicting file identities. Rescan before proceeding.");
-		if (file.canonScan)
+		if (file.mediaEngineScan)
 		{
 			const QString scannedPath = originalLocation(file);
-			for (const auto &issue : file.canonScan->reconciliationIssues)
+			for (const auto &issue : file.mediaEngineScan->reconciliationIssues)
 				if (issue.kind == ScanIssue::Kind::SourceChanged && issue.source && issue.source->path == scannedPath)
 					identity.unavailableReason = QStringLiteral("The media header changed during scanning. Rescan before proceeding.");
 		}

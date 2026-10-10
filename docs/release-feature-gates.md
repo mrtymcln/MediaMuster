@@ -22,7 +22,7 @@ uses `.wav`. A missing `.aiff` alias is not a v1 requirement for that workflow.
 descriptors under that suffix. Other suffixes, including `.sd2`, are ignored by
 the filename allowlist just like unrelated documents. There is no SDII-specific
 parser or exclusion path. Historical filename research is archived in the
-[20 September review](reviews/2026-09-20-media-scope/REVIEW.md); retained Media
+[primary format research](reviews/2026-09-20-media-scope/public-specs.md); retained Media
 Composer code does not define MediaMuster's supported scope.
 
 ## Managed media locations
@@ -125,7 +125,7 @@ verify that the removed feature toggles are absent. Rebuild after changing flags
 ## Experimental Clip Duration
 
 `FeatureFlags::kClipDuration` controls this experiment. Enabling it adds
-**Clip Duration** to the table and CSV. Canon projects separate, identified
+**Clip Duration** to the table and CSV. MediaEngine projects separate, identified
 master tracks from MXF and OMF/MDB graphs. Supported OMF1 sequence-backed tracks
 retain their recorded component/transition calculation. AVB recovery is not
 included. Unknown clip lengths stay blank. Each track is labelled separately;

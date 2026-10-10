@@ -1,15 +1,16 @@
-# Canon2 acquired MXF metadata storage
+# MediaEngine acquired MXF metadata storage
 
 The user authorized this comparison stage on 10 October 2026 after the
 [media-source storage proposal](media-source-storage-proposal-2026-10-10.md).
-Canon2 was separate from the application's live Canon engine during this
-comparison. The user subsequently approved [Canon2 live integration](canon2-live-integration-2026-10-10.md);
+Native MXF storage was compared with the live archive strategy during this
+stage, using the same MediaEngine format readers. The user subsequently approved [MediaEngine live integration](canon2-live-integration-2026-10-10.md);
 that report records the current application path. The saved comparison evidence
-and measurements below remain unchanged.
+and measured values below retain their original scope. Documentation extraction
+removed superseded code-input copies; original archive hashes preserve provenance.
 
 ## What changes
 
-Canon2's PMR/MDB source images are already implemented. This stage replaces
+MediaEngine's PMR/MDB source images are already implemented. This stage replaces
 completed MXF source graph archives with the exact bytes returned to the existing
 `MxfReader`, plus their original physical offsets and file extent. `MediaFile`
 values, observations, selections and object references keep their existing form.
@@ -40,12 +41,12 @@ invent missing bytes, or retain picture/sound payloads which the reader skipped.
 Original published source receipts and source-local object handles survive.
 
 Only complete, consistent acquisitions use native replay in this first stage.
-Other outcomes use Canon's existing archive of the actual obtained graph;
+Other outcomes use MediaEngine's existing archive of the actual obtained graph;
 cancellation can retain its unfinished graph as before. This does not reject
 additional media or change its metadata-selection eligibility. It prevents an
 inspection with a fresh cancellation token from improving an interrupted result.
 
-The new classes are `Canon2::MxfImage`, `MxfCaptureDevice`, `MxfReplayDevice` and
+The new classes are `MediaEngine::MxfImage`, `MxfCaptureDevice`, `MxfReplayDevice` and
 `MxfSource`; `prepareMxf` supplies the shared scan coordinator with the same
 projection and a different source store. Qt 6.5.3 value containers, implicit
 sharing, `QIODevice`, immutable shared ownership and C++17 RAII manage lifetimes.
@@ -53,7 +54,7 @@ No new format decoder, memory cap or disk database is introduced.
 
 ## Boundaries
 
-- PMR/MDB-first discovery, matching and header decisions remain shared with Canon.
+- PMR/MDB-first discovery, matching and header decisions remain shared with MediaEngine.
 - The physical KLV walk and metadata read scope remain unchanged.
 - Acquired bytes mean bytes actually returned to the reader. Unknown payloads
   represented only by ranges stay ranges; this is not every byte in every header.
@@ -62,7 +63,7 @@ No new format decoder, memory cap or disk database is introduced.
 - The first native image is uncompressed. Native-block compression is a separate
   measurable choice; graph serialization/compression is avoided for native sources.
 - OMF/legacy uses its existing, independent reader and archive path in this stage.
-- UI, file operations and the superseded readers/tests remain available.
+- UI and file-operation behavior remain unchanged.
 - Captured bytes do not establish atomicity if another app changes a file while
   it is read. Conflicting rereads and changed lengths force original graph storage;
   existing discovery timestamp checks still apply.
@@ -107,7 +108,7 @@ The 256 genuine files contain 202 audio and 54 video files. Both engines produce
 the same 256 physical rows and opened the same 256 headers. With no databases
 present, this collection isolates the MXF storage change.
 
-| Median of three fresh-process scans | Canon | Canon2 | Reduction |
+| Median of three fresh-process scans | Archive storage | Native storage | Reduction |
 | --- | ---: | ---: | ---: |
 | Scan time | 7.269 s | 4.536 s | 37.6% |
 | Process physical footprint | 119,752,384 bytes | 84,985,408 bytes | 29.0% |
@@ -119,14 +120,14 @@ offset. Reconstructed details and direct original-reader results matched:
 184,960 objects, 241,800 relationships, 1,148,342 properties and 33,603,780 original
 property-value bytes. The seven semantic hashes and CSV output matched too.
 
-Canon2 retained 37,426,316 unique acquired bytes in 2,500 ranges, replacing
+MediaEngine retained 37,426,316 unique acquired bytes in 2,500 ranges, replacing
 78,143,091 bytes of compressed graph archives. This is a 52.1% reduction in source
 payload storage, separate from the whole-process memory reduction above. Returned
 bytes totalled 37,430,412 because the reader reread 4,096 bytes. Byte-array capacity
 equalled retained length after squeezing. All 256 complete sources used native
 images; none needed the archive fallback.
 
-### Database-rich collection: combined Canon2 storage changes
+### Database-rich collection: combined MediaEngine storage changes
 
 Both engines produced 2,413 physical rows and the same 2,425 source receipts.
 Database-first scheduling remained identical: 12 databases read, 116 MXF headers
@@ -134,7 +135,7 @@ read and 2,297 media headers left unopened. The skipped headers included 2,295 M
 files and two legacy WAV/AIF files. This collection therefore does not exercise
 an OMF header fallback; the independent OMF reader's regression tests still pass.
 
-| Median of three fresh-process scans | Canon | Canon2 | Reduction |
+| Median of three fresh-process scans | Archive storage | Native storage | Reduction |
 | --- | ---: | ---: | ---: |
 | Scan time | 11.488 s | 5.265 s | 54.2% |
 | Process physical footprint | 428,919,872 bytes | 360,238,144 bytes | 16.0% |
@@ -145,7 +146,7 @@ These combined results include the earlier native database-image improvement as
 well as this MXF stage. The 54.2% time reduction cannot all be attributed to MXF.
 Peak resident memory changed little: large databases still expand temporarily.
 
-Canon2 retained 12 exact database images totalling 64,537,496 bytes and 116 MXF
+MediaEngine retained 12 exact database images totalling 64,537,496 bytes and 116 MXF
 images totalling 16,512,896 unique acquired bytes. Every database and acquired MXF
 range matched its unchanged original. All 128 opened sources passed direct
 original-reader comparison. The complete restored representation matched
@@ -155,7 +156,7 @@ property-value bytes. Seven semantic hashes and CSV output matched. The existing
 
 ### What these results establish
 
-For these real inputs, Canon2 stores the information already obtained by Canon
+For these real inputs, native storage retains the information already obtained by the same readers
 more efficiently without changing its physical rows, detailed metadata,
 relationships, evidence, selection rules or database-first decisions. The reader
 still follows its existing read scope; retaining exact acquired bytes does not
@@ -167,7 +168,7 @@ process, rather than total GUI application memory. The 300,000-file Windows/NEXI
 workload remains unqualified. Native-byte compression, native OMF storage, direct
 compact parsing and further row-evidence changes remain separate decisions.
 
-This comparison stage did not promote Canon2 or retire superseded readers/tests.
+This comparison stage did not promote MediaEngine or retire superseded readers/tests.
 The later live integration is linked above; retirement still needs the user's
 separate approval.
 

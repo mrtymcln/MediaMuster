@@ -264,12 +264,6 @@
       "sha256": "c1d7f43c7f0e7d06741d35d4176e3ae366f94b687ef905640bb1b6aa2f2cf754"
     },
     {
-      "path": "src/omfresolutions.cpp",
-      "size": 5656,
-      "mtime_ns": 1790770979370435401,
-      "sha256": "8b3f9336d97b25c7b8b54afea6bb8aab8073b9419c402761d600272c67311232"
-    },
-    {
       "path": "tests/testcanonbento.h",
       "size": 4260,
       "mtime_ns": 1791043166475799349,
@@ -560,12 +554,6 @@
       "sha256": "c1d7f43c7f0e7d06741d35d4176e3ae366f94b687ef905640bb1b6aa2f2cf754"
     },
     {
-      "path": "src/omfresolutions.cpp",
-      "size": 5656,
-      "mtime_ns": 1790770979370435401,
-      "sha256": "8b3f9336d97b25c7b8b54afea6bb8aab8073b9419c402761d600272c67311232"
-    },
-    {
       "path": "tests/testcanonbento.h",
       "size": 4260,
       "mtime_ns": 1791043166475799349,
@@ -649,5 +637,10 @@
       "result_path": "Project Canon/evidence/audit-closeout-omfprojection-2026-10-07.json",
       "result_sha256": "a5cb384c32f8331c282cd46f10f79d1a734b3ec5697195f4e5725cc5d0a8240f"
     }
-  ]
+  ],
+  "documentationExtraction": {
+    "date": "2026-10-11",
+    "originalArtifactSha256": "c820fb03316ddcdd3e1ff114810e918ea461bc6b20928bf82a1cbb99b5075ae8",
+    "scope": "Preserved measured format/source facts and current-reader results; removed superseded implementation references. This is an extracted receipt, not a new verification or a renamed source-code fingerprint."
+  }
 }

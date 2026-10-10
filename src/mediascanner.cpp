@@ -1,11 +1,11 @@
 // Owns the background scan and forwards progress/results to the existing UI.
-// Canon2 retains source bytes; Canon supplies the shared readers and matching.
+// MediaEngine owns source reading, matching and retained scan evidence.
 #include "mediascanner.h"
-#include "canon2/scanengine.h"
-#include "canon2/databasesource.h"
-#include "canon2/mxfsource.h"
-#include "canon/sourcearchive.h"
-#include "canonadapter.h"
+#include "mediaengine/scanengine.h"
+#include "mediaengine/databasesource.h"
+#include "mediaengine/mxfsource.h"
+#include "mediaengine/sourcearchive.h"
+#include "mediaengineadapter.h"
 #include "avidmedialayout.h"
 #include "conventions.h"
 #include "testpause.h"
@@ -29,7 +29,7 @@ namespace
 	}
 
 	QString childDirectory(const QString &parent, QLatin1String name,
-						   const Canon::Cancellation *cancellation = nullptr)
+						   const MediaEngine::Cancellation *cancellation = nullptr)
 	{
 		if (cancellation && cancellation->cancelled())
 			return {};
@@ -57,7 +57,7 @@ namespace
 	};
 
 	QVector<MediaRoot> rootsForAddedPath(const QString &requestedPath, bool includeOmf = true,
-									   const Canon::Cancellation *cancellation = nullptr)
+									   const MediaEngine::Cancellation *cancellation = nullptr)
 	{
 		if (cancellation && cancellation->cancelled())
 			return {};
@@ -163,8 +163,8 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 	timer.start();
 	Diagnostics::appendConsoleLine(QtInfoMsg, QStringLiteral("scanner"),
 								   QStringLiteral("Scan starting: %1 volume(s), %2 added location(s)").arg(m_options.volumePaths.size()).arg(m_options.manualPaths.size()));
-	const Canon::Cancellation cancellation(&m_job.cancelFlag());
-	Canon::ScanRequest request;
+	const MediaEngine::Cancellation cancellation(&m_job.cancelFlag());
+	MediaEngine::ScanRequest request;
 	QVector<MediaRoot> contexts;
 	QHash<QString, QString> labels;
 	const auto addRoot = [&](MediaRoot root, const QString &label)
@@ -229,7 +229,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		emit scanLogBatch(logs);
 		logs.clear();
 	};
-	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s) with Canon2...").arg(request.roots.size())});
+	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s) with MediaEngine...").arg(request.roots.size())});
 	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Root lookup: %1 ms").arg(rootLookupMs)});
 	flush();
 	bool preparationReported = false;
@@ -242,13 +242,13 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 					 QStringLiteral("Discovery and source preparation: %1 ms").arg(timer.elapsed() - rootLookupMs)});
 		flush();
 	};
-	Canon::ScanCallbacks callbacks;
+	MediaEngine::ScanCallbacks callbacks;
 	QElapsedTimer sourceCheckpoint;
 	sourceCheckpoint.start();
-	callbacks.reading = [&](const Canon::SourceCandidate &candidate)
+	callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
 	{
-		const bool database = candidate.hint == Canon::SourceCandidate::ReaderHint::Pmr ||
-							  candidate.hint == Canon::SourceCandidate::ReaderHint::Mdb;
+		const bool database = candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Pmr ||
+							  candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Mdb;
 		// Database starts are rare; throttle header checkpoints to avoid a log
 		// write for every media file on large network scans.
 		if (database || sourceCheckpoint.elapsed() >= kSourceCheckpointIntervalMs)
@@ -270,7 +270,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 	};
 	callbacks.warning = [&](const QString &message)
 	{
-		logs.append({QtWarningMsg, QStringLiteral("canon"), message});
+		logs.append({QtWarningMsg, QStringLiteral("mediaengine"), message});
 		if (logs.size() >= 50)
 			flush();
 	};
@@ -280,7 +280,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		flush();
 		emit scanFinalising();
 	};
-	auto session = QSharedPointer<Canon::ScanResult>::create(Canon2::ScanEngine{}.scan(request, cancellation, callbacks));
+	auto session = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan(request, cancellation, callbacks));
 	reportPreparation(); // Empty or cancelled scans may never reach source progress.
 	qint64 serializedBytes = 0;
 	qint64 compressedBytes = 0;
@@ -297,12 +297,12 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 			serializedBytes += source.archive->serializedBytes();
 			compressedBytes += source.archive->compressedBytes();
 		}
-		if (const auto *database = dynamic_cast<const Canon2::DatabaseSource *>(source.storage.data()))
+		if (const auto *database = dynamic_cast<const MediaEngine::DatabaseSource *>(source.storage.data()))
 		{
 			++databaseImages;
 			databaseImageBytes += database->image().bytes().size();
 		}
-		else if (const auto *mxf = dynamic_cast<const Canon2::MxfSource *>(source.storage.data()))
+		else if (const auto *mxf = dynamic_cast<const MediaEngine::MxfSource *>(source.storage.data()))
 		{
 			++mxfImages;
 			mxfImageBytes += mxf->image().storedBytes();
@@ -325,7 +325,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 				volumeName = labels.value(context.path);
 				break;
 			}
-		rows.append(canonMediaFile(file, session, volumePath, volumeName));
+		rows.append(mediaEngineMediaFile(file, session, volumePath, volumeName));
 	}
 	for (const auto &issue : session->reconciliationIssues)
 		callbacks.warning(QStringLiteral("%1: %2%3").arg(issue.expectedPath.isEmpty() && issue.source ? issue.source->path : issue.expectedPath, issue.explanation, issue.matchingPaths.isEmpty() ? QString{} : QStringLiteral("; matching locations: %1").arg(issue.matchingPaths.join(QStringLiteral("; ")))));

@@ -1,9 +1,9 @@
 // Authored in-memory typed Bento specimens characterize F17/F21 boundaries.
 // No genuine-format certification or real-media I/O is performed.
 
-#include "canon/projection.h"
-#include "canon/mdbreader.h"
-#include "testcanonbento.h"
+#include "mediaengine/projection.h"
+#include "mediaengine/mdbreader.h"
+#include "testmediaenginebento.h"
 
 #include <QBuffer>
 #include <QJsonDocument>
@@ -15,8 +15,8 @@
 
 namespace
 {
-	using TestCanonBento::number;
-	using TestCanonBento::TypedBento;
+	using TestMediaEngineBento::number;
+	using TestMediaEngineBento::TypedBento;
 
 	QByteArray uid(quint32 value, bool big = false)
 	{
@@ -28,21 +28,21 @@ namespace
 		writer.add(handle, "OMFI:ObjID", "omfi:ObjectTag", cls, true);
 	}
 
-	Canon::ParsedSource read(QByteArray bytes)
+	MediaEngine::ParsedSource read(QByteArray bytes)
 	{
 		QBuffer input(&bytes);
 		input.open(QIODevice::ReadOnly);
-		Canon::Cancellation cancellation;
-		return Canon::MdbReader{}.read(input, {{}, cancellation});
+		MediaEngine::Cancellation cancellation;
+		return MediaEngine::MdbReader{}.read(input, {{}, cancellation});
 	}
 
-	Canon::Projection project(const Canon::ParsedSource &source)
+	MediaEngine::Projection project(const MediaEngine::ParsedSource &source)
 	{
-		Canon::Cancellation cancellation;
-		return Canon::projectMdb(source, cancellation);
+		MediaEngine::Cancellation cancellation;
+		return MediaEngine::projectMdb(source, cancellation);
 	}
 
-	QVariant single(const Canon::ProjectedFile &file, MediaProperty field)
+	QVariant single(const MediaEngine::ProjectedFile &file, MediaProperty field)
 	{
 		const auto &values = file.evidence.observations(field);
 		return values.size() == 1 ? values.first().value : QVariant{};

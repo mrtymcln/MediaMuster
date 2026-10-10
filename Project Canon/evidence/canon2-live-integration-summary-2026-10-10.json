@@ -75,7 +75,7 @@
     "This is a live adapter equality audit, not a controlled performance benchmark; single-run timing and memory observations remain in the raw reports without a performance conclusion.",
     "Earlier full recursive graph/evidence/raw-byte comparisons are recorded separately by the Canon2 comparison stage. This live audit compares inventory, CSV, issues, scheduling/outcomes and restored graph/encoding-byte counts.",
     "Local macOS verification does not qualify Windows/NEXIS or the approximately 300,000-file Interplay workload, or compare throughput/reliability against MDVX.",
-    "No persistent metadata database, memory cap, format-reader/selection-policy change, or retirement of old engines/tests.",
+    "No persistent metadata database, memory cap, or format-reader/selection-policy change.",
     "Native byte images are still uncompressed; each source still expands temporarily while reading/inspecting."
   ]
 }

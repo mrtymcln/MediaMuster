@@ -2,7 +2,7 @@
 
 Reviewed 5 September 2026 using static inspection of Media Composer 26.8.0.58987 arm64 code. Media Composer was not executed or modified. The review compared focused disassembly with decompiler output; inferred decompiler types were not treated as authoritative.
 
-These findings support the [historical parser review](../../avb-review-2026-09-05.md). They establish a bounded reader's feasibility, not an exhaustive AVB grammar or support for every historical version.
+These findings establish a bounded reader's feasibility, not an exhaustive AVB grammar or support for every historical version.
 
 ## MOB serialization
 

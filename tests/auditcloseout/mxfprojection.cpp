@@ -1,8 +1,8 @@
 // Authored post-reader graphs check F06/F07 reference and identity selection.
 // This diagnostic reports observations; it does not certify genuine MXF files.
 
-#include "canon/projection.h"
-#include "canon/scanengine.h"
+#include "mediaengine/projection.h"
+#include "mediaengine/scancoordinator.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -13,7 +13,7 @@
 
 namespace
 {
-	using namespace Canon;
+	using namespace MediaEngine;
 
 	QByteArray umid(char material)
 	{

@@ -1,18 +1,18 @@
 # PMR reader selection
 
 On 4 October 2026 the user chose the independently written alternative PMR reader
-and requested removal of the first Canon implementation.
+and requested removal of the first MediaEngine implementation.
 
 ## Implemented decision
 
-- The chosen implementation now lives in `src/canon/pmrreader.h/.cpp` as
-  `Canon::PmrReader`. Its parsing implementation is unchanged from the alternative
+- The chosen implementation now lives in `src/mediaengine/pmrreader.h/.cpp` as
+  `MediaEngine::PmrReader`. Its parsing implementation is unchanged from the alternative
   at commit `23a1ab5`, apart from the include and class names.
-- The first Canon implementation was removed. There is no fallback, switch or
-  second Canon PMR implementation in the current source tree.
+- The first MediaEngine implementation was removed. There is no fallback, switch or
+  second MediaEngine PMR implementation in the current source tree.
 - The alternative filenames/class and duplicate build/test target were removed.
   The common contract suite now tests the chosen reader directly.
-- The former comparison suite is now `tst_canonpmrrobustness`. Tests assert the
+- The former comparison suite is now `tst_mediaenginepmrrobustness`. Tests assert the
   required behaviour and compare retained evidence with input bytes, rather than
   comparing against the discarded implementation.
 - The [dated comparison](pmr-reader-comparison-2026-10-03.md), its evidence logs
@@ -21,7 +21,7 @@ and requested removal of the first Canon implementation.
 
 The selected reader retains both `PmrFileSet` values independently, per-property
 text encoding/basis, raw bytes, source ranges, identities, master references and
-read outcomes in the existing Canon evidence model. This promotion adds no new
+read outcomes in the existing MediaEngine evidence model. This promotion adds no new
 format interpretation or display policy.
 
 ## Checks completed
@@ -47,8 +47,7 @@ the comparison's useful regression checks remain in the robustness suite.
 - Independent review and a direct source comparison confirmed the chosen parsing
   implementation was preserved. `git diff --check` passed.
 
-Evidence: [full test run](evidence/pmr-selection-all-tests-2026-10-04.txt),
-[PMR contract](evidence/pmr-selection-contract-2026-10-04.txt),
+Evidence: [PMR contract](evidence/pmr-selection-contract-2026-10-04.txt),
 [robustness and real files](evidence/pmr-selection-robustness-2026-10-04.txt).
 
 Current checks can be run with:
@@ -58,19 +57,17 @@ cmake --build build-canon -j4
 ctest --test-dir build-canon --output-on-failure
 ```
 
-Use `-R 'tst_canonpmr'` for the two PMR suites. Setting
-`MEDIAMUSTER_CANON_REAL_SCAN_ROOTS` to semicolon-separated managed roots enables
-the optional real-drive checks. `MEDIAMUSTER_CANON_PMR_FILES` adds explicit PMR
+Use `-R 'tst_mediaenginepmr'` for the two PMR suites. Setting
+`MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS` to semicolon-separated managed roots enables
+the optional real-drive checks. `MEDIAMUSTER_MEDIAENGINE_PMR_FILES` adds explicit PMR
 paths to the robustness suite. Without these settings, checked-in fixtures and
 controlled inputs still run. The retained benchmark is opt-in through
-`MEDIAMUSTER_CANON_PMR_BENCHMARK`; no new timing comparison was made for this promotion.
+`MEDIAMUSTER_MEDIAENGINE_PMR_BENCHMARK`; no new timing comparison was made for this promotion.
 
 ## Integration boundary
 
-The existing production `src/pmrparser.h/.cpp` remains in use by the live app and
-related readers. It is separate from the first Canon implementation removed here.
-The new reader remains part of the replacement engine until the other readers,
-reconciliation, selection and consumer adapter are ready and verified.
+The PMR reader is part of MediaEngine's source-reading pipeline. Selection and
+consumer presentation remain separate from parsing.
 
 The tests establish the observed behaviour for these inputs. They do not establish
 all historical PMR layouts or atomic reads while Avid rewrites a database. The

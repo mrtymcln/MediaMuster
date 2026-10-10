@@ -1,4 +1,4 @@
-# Connecting Canon to the application
+# Connecting MediaEngine to the application
 
 Started 4 October 2026; continued 7 October 2026. The user authorized connecting the replacement engines immediately,
 without making RAM optimization a prerequisite. The existing table, CSV and file
@@ -11,7 +11,7 @@ Selected volumes / managed folders
                 |
         MediaScanner worker
                 |
-       Canon::DiscoveryEngine
+       MediaEngine::DiscoveryEngine
                 |
          PMR / MDB readers first
                 |
@@ -25,14 +25,14 @@ Selected volumes / managed folders
                 |
      Identity matching + field selection
                 |
-       Canon::MediaFile records
+       MediaEngine::MediaFile records
                 |
        presentation adapter
                 |
    existing table / CSV / file operations
 ```
 
-`MediaScanner` now coordinates a `Canon::ScanEngine`. It no longer calls the old
+`MediaScanner` now coordinates a `MediaEngine::ScanEngine`. It no longer calls the old
 PMR/MDB/MXF/OMF parsers or fills the old `MediaMetadata` aggregate. Source projectors
 may reuse independently checked, stateless codec/catalogue utilities.
 
@@ -42,7 +42,7 @@ all parsed source graphs. That receipt describes the original scan; the live row
 location and operation receipt follow confirmed moves/copies. There is no new
 persistent database and no application memory cap.
 
-The existing `AvbParser` public interface becomes an adapter over the Canon AVB
+The existing `AvbParser` public interface becomes an adapter over the MediaEngine AVB
 reader and whole-bin reference engine. `SequenceFilter` remains disabled; this
 connection does not add a sequence picker. Usable partial bin results retain their
 warnings and source evidence, including in an applied filter after its loaded-bin
@@ -99,7 +99,7 @@ a database changes after a header was skipped, one bounded reconsideration reads
 that header; later changes are reported without an unbounded retry loop.
 
 The earlier foundation change `92b69db` removed the old database-only shortcut,
-and the initial live Canon connection carried that regression forward. The old
+and the initial live MediaEngine connection carried that regression forward. The old
 shortcut in `86c500c` also relied on an unproven PMR timestamp interpretation;
 that assumption is not restored.
 
@@ -218,10 +218,9 @@ a clean-looking comparison. See the detailed report for their classification.
 
 Verified on macOS 15.8 with Qt 6.5.3. Both normal `build/MediaMuster.app` and
 `build-canon/MediaMuster.app` build successfully as universal arm64/x86_64 Debug
-binaries. The final [native test run](evidence/live-connection-full-tests-2026-10-07.txt)
-passes **38/38 test executables**, including scanner/projection, AVB, table/UI,
-file operations, Rebalance and journal recovery coverage. The native suite also
-includes the final DNx decimal-clock and stored-raster corrections.
+binaries. The dated checks include scanner/projection, AVB, table/UI, file
+operations, Rebalance and journal recovery coverage, alongside the final DNx
+decimal-clock and stored-raster corrections.
 Conditional external-corpus/benchmark cases and case-sensitive filesystem cases
 were skipped by their documented guards. The real-drive scan, normally opt-in,
 was run separately and passed; it is not inferred from the default suite's skip.

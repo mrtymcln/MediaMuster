@@ -1,7 +1,7 @@
 {
   "recordedUtc": "2026-10-08T08:36:51.823883+00:00",
   "authorization": "User: Great! Lets remove it then — approval to remove the nine unproven DNx identifier-to-name rules after the zero-match corpus investigation.",
-  "change": "Removed the exact nine unproven aliases from Canon dnxProfiles and retained legacy codecFromCompressionLabel. Corrected unsupported source/test comments and moved existing positive legacy naming assertions to verified labels. Old engine/readers/tests remain.",
+  "change": "Removed the exact nine unproven aliases from Canon dnxProfiles and retained legacy codecFromCompressionLabel. Corrected unsupported source/test comments and moved existing positive legacy naming assertions to verified labels.",
   "removedIdentifiers": [
     "060e2b34040101010d01030102060301",
     "060e2b34040101010d01030102060101",
@@ -23,8 +23,7 @@
     "src/canon/mxfprojection.cpp": "6b4f0922f95fd7d97a06cce9ea1395e4df090b13f8836b3b31df0cb3ae6869c9",
     "src/canon/omfprojection.cpp": "f19f07bfae7cad5745b722e49d6477a579217289171f2bc02b995c62f76ec852",
     "tests/tst_canon_compressionnames.cpp": "b062b085f785a61ab2445be9a3986ea93c090a5290e4b9ca8bb4c3b99692c808",
-    "tests/tst_mediametadata.cpp": "563a1d0a78ca49a6b458f2e6c1d3a759261ddf85e579b425d4ddc64f95a9eed6",
-    "tests/tst_mxfparser.cpp": "2bef9e687e7f3be9044c070abe10580cd169bcdf8325fb2688774b757f077afc"
+    "tests/tst_mediametadata.cpp": "563a1d0a78ca49a6b458f2e6c1d3a759261ddf85e579b425d4ddc64f95a9eed6"
   },
   "builds": {
     "build/MediaMuster.app": "Succeeded: universal arm64/x86_64 Debug",
@@ -116,5 +115,10 @@
       "path": "full-scan-dnx-alias-removal-2026-10-08.csv",
       "sha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7"
     }
-  ]
+  ],
+  "documentationExtraction": {
+    "date": "2026-10-11",
+    "originalArtifactSha256": "c36bd0e2193c9e86e1e6913c9de410f437f39a5a65ba4772d3f30bedac03b4fa",
+    "scope": "Preserved measured format/source facts and current-reader results; removed superseded implementation references. This is an extracted receipt, not a new verification or a renamed source-code fingerprint."
+  }
 }

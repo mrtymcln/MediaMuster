@@ -20,7 +20,7 @@ This replaces the earlier Desktop/local-only comparison with the complete set of
 
 Both measurements use the same native arm64 Debug scan harness, Qt 6.5.3, and the same 2,413-path corpus. GB below means decimal gigabytes.
 
-| Measurement | Initial eager-header Canon | Final database-first Canon |
+| Measurement | Initial eager-header MediaEngine | Final database-first MediaEngine |
 | --- | ---: | ---: |
 | Scan time | 181,021 ms | 20,763 ms |
 | Peak process memory footprint | 13,590,966,144 bytes (13.59 GB) | 2,405,603,648 bytes (2.41 GB) |
@@ -70,7 +70,7 @@ Counts compare exact cell text across the 2,413 matching paths. “Filled” is 
 
 ## What the changed cells mean
 
-- **Clip Duration — 1,696 cells:** 1,694 retain exactly the same set of displayed time values. Canon lists only master tracks associated with that file, rather than all sibling tracks; database-native track labels can differ from MXF TrackIDs. Two previously empty native-audio cells now contain recorded durations. Equivalent repeated master/track/timing facts are coalesced only in the selected list, with all original observations retained. This time-value comparison does not assert that cross-format track numbers are interchangeable. See [duration evidence and rules](database-first-scheduling-2026-10-07.md).
+- **Clip Duration — 1,696 cells:** 1,694 retain exactly the same set of displayed time values. MediaEngine lists only master tracks associated with that file, rather than all sibling tracks; database-native track labels can differ from MXF TrackIDs. Two previously empty native-audio cells now contain recorded durations. Equivalent repeated master/track/timing facts are coalesced only in the selected list, with all original observations retained. This time-value comparison does not assert that cross-format track numbers are interchangeable. See [duration evidence and rules](database-first-scheduling-2026-10-07.md).
 - **Codec — 800 cells:** 778 adopt the approved bracketed DNx historical names and capitalization; 20 identify the established DNxUncompressed flavour; two distinguish PCM encoding from WAVE/AIFF container names. The 14 intermediate missing numbered aliases were traced to exact MDB decimal clocks, verified against matching MXF headers, and restored by finite naming-only rules. `BLACK_1920x540x2_AVHD_220.omf` is `Avid DNx HQ [DNxHD 220]`. See [codec evidence](dnx-codec-evidence.md).
 - **Resolution — 21 cells:** `1920x1080` becomes recorded stored `1920x1088`, retaining padding under the user’s chosen stored-raster meaning. All eight proxy-size differences in the intermediate run are resolved. Display and sampled geometry remain in RAM. This is a deliberate column-semantics change, not a claim that the cropped display dimensions were false. See [geometry evidence](proxy-resolution-2026-10-07.md).
 - **Bit Depth — 16 cells:** eight previously blank values become `16-bit`; four `Float` cells become `32-bit`; four become `16-bit`. Numeric representation remains separately recorded in internal Sample Format, as agreed.
@@ -89,9 +89,9 @@ A conflict notice does not necessarily leave a table field blank: a recorded hig
 Build the app/tests, then run from the repository root:
 
 ```sh
-MEDIAMUSTER_CANON_REAL_SCAN_ROOTS='/Users/Shared/AvidMediaComposer;/Volumes/EDIT' \
-MEDIAMUSTER_CANON_REAL_SCAN_REPORT='/tmp/canon-scan.json' \
-MEDIAMUSTER_CANON_REAL_SCAN_CSV='/tmp/canon-scan.csv' \
+MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS='/Users/Shared/AvidMediaComposer;/Volumes/EDIT' \
+MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_REPORT='/tmp/canon-scan.json' \
+MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_CSV='/tmp/canon-scan.csv' \
 QTEST_FUNCTION_TIMEOUT=900000 \
 /usr/bin/time -l ./build-canon/tests/tst_scanner optional_read_only_real_scan
 ```

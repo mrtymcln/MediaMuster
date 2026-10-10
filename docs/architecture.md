@@ -10,11 +10,12 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
    changes to the drive list. It does not maintain a live media inventory.
 2. [MainWindow](../src/mainwindow.cpp) passes the selected detected and manually
    added paths to [MediaScanner](../src/mediascanner.cpp).
-3. The worker calls [Canon::ScanEngine](../src/canon/scanengine.cpp). Its
-   [DiscoveryEngine](../src/canon/discoveryengine.cpp) applies the managed-location
-   rules, then fresh source readers retain graphs for reconciliation and selection.
-4. The [Canon adapter](../src/canonadapter.cpp) supplies one compatibility
-   [MediaFile](../src/mediafile.h) row per physical file. Each row retains the Canon
+3. The worker calls [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp), which
+   supplies native source storage to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
+   The coordinator uses [DiscoveryEngine](../src/mediaengine/discoveryengine.cpp), reads
+   databases first, schedules necessary headers, then matches and selects metadata.
+4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) supplies one compatibility
+   [MediaFile](../src/mediafile.h) row per physical file. Each row retains the MediaEngine
    evidence and a shared immutable scan receipt; [MediaTableModel](../src/mediatablemodel.cpp)
    stores the rows and supplies cells.
 5. [MediaFilterProxy](../src/mediafilterproxy.cpp) filters and sorts the rows for the
@@ -64,27 +65,26 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 
 | Component | Responsibility |
 | --- | --- |
-| [Canon::PmrReader](../src/canon/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |
-| [Canon::MdbReader](../src/canon/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
-| [Canon::MxfReader](../src/canon/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
-| [Canon::OmfReader](../src/canon/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
-| [Canon::AvbReader](../src/canon/avbreader.cpp) and [reference engine](../src/canon/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
-| [Canon source projections](../src/canon/projection.h) | Interpret recorded properties as file-owned or master-owned observations, retaining original graphs and competing evidence. |
-| [Canon::ScanEngine](../src/canon/scanengine.cpp) | Coordinates reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
-| [Canon selection policy](../src/canon/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
+| [MediaEngine::PmrReader](../src/mediaengine/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |
+| [MediaEngine::MdbReader](../src/mediaengine/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
+| [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
+| [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
+| [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
+| [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, retaining original graphs and competing evidence. |
+| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Supplies native database/MXF source storage to the live scan. |
+| [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
+| [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
-| [AvbParser](../src/avbparser.cpp) | Compatibility adapter used by the existing bin dialog; delegates parsing and reference resolution to Canon. |
+| [AvbParser](../src/avbparser.cpp) | Compatibility adapter used by the existing bin dialog; delegates parsing and reference resolution to MediaEngine. |
 | [BinMetadataResolver](../src/binmetadataresolver.cpp) | Applies and retracts eligible AVB name/bin observations without erasing scan evidence. |
-| [Canon presentation adapter](../src/canonadapter.cpp) | Refreshes semantic table/filter/CSV fields from selected evidence, including clearing unresolved values; physical operation fields keep their current location and identity. |
+| [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Refreshes semantic table/filter/CSV fields from selected evidence, including clearing unresolved values; physical operation fields keep their current location and identity. |
 | [AvidEffects](../src/avideffects.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
 `MediaScanner::doScan()` owns the background/UI boundary, cancellation, progress,
-logs and result delivery. Canon owns per-scan source graphs and reconciliation;
+logs and result delivery. MediaEngine owns per-scan source storage and reconciliation;
 the compatibility adapter formats selected facts for existing consumers. The
-live source loop currently reads candidates sequentially. Old PMR/MDB/MXF/OMF
-parser classes remain comparison-test code, outside the production scan path.
-Checked stateless codec/path utilities may be reused without passing the old
-`MediaMetadata` aggregate through the replacement engines.
+live source loop currently reads candidates sequentially. Checked stateless
+codec/path utilities and media value types remain shared with the application.
 
 Discovery reports the location before root and folder access, while the file
 total is still unknown. Cancellation checks stop subsequent source reads,
@@ -96,7 +96,7 @@ separate discovery evidence. A filesystem call already in progress can still
 delay cancellation. Windows/NEXIS performance needs a real-world retest; these
 changes do not establish a measured improvement there.
 
-A `Canon::ParsedSource` contains source-local objects, raw properties and edges.
+A `MediaEngine::ParsedSource` contains source-local objects, raw properties and edges.
 An object reference is a source receipt plus handle, not a globally unique Avid ID.
 Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
 partition copies also remain separate observations. Every physical location keeps
@@ -118,15 +118,15 @@ unambiguous physical location and compatible identity. MDB file facts join by fu
 canonical file identities; master-only facts require an established association.
 Changed source facts and unowned technical facts remain retained but ineligible.
 Known contradictory active file identities remain conflict evidence in an ownerless
-carrier; ScanEngine indexes its eligible claims so the disagreement reaches
+carrier; ScanCoordinator indexes its eligible claims so the disagreement reaches
 reconciliation and header fallback. The selection engine then applies the approved
 per-field priorities; raw bytes and
 alternatives are not replaced by the selected display value. Scanning and bin
-enrichment share the [compiled policy table](../src/canon/metadataselectionpolicy.cpp).
+enrichment share the [compiled policy table](../src/mediaengine/metadataselectionpolicy.cpp).
 Zero excludes a source from value selection while retaining its read state and
 comparable observations for agreement. Source qualification and header-read
 scheduling remain separate from display preference. The presentation adapter
-refreshes nonempty Canon cells as well as missing ones, so changing a policy for a
+refreshes nonempty MediaEngine cells as well as missing ones, so changing a policy for a
 new build applies consistently to table values, filters and CSV.
 
 Source read outcomes, property read states, agreement and selection are different
@@ -135,7 +135,7 @@ source may be unreadable, incomplete or uninterpreted. Consumers must inspect th
 source receipt as well as property evidence. Discovery/parsing/reconciliation
 completion flags describe their respective stages, not universal format support.
 
-The model holds current row locations and transfer receipts. Its shared `canonScan`
+The model holds current row locations and transfer receipts. Its shared `mediaEngineScan`
 remains an immutable receipt of the original scan, so confirmed moves/copies update
 row-owned filesystem evidence and selection rather than rewriting history. The
 new inventory is delivered before its reconciliation issues so model reset cannot
@@ -216,7 +216,7 @@ These helpers use the same journal and recovery state machine.
 - Save intent before the corresponding file mutation. Preserve uncertain outcomes
   for recovery rather than reporting a completed job without evidence.
 - Recheck native source identity, size and supplied modification time. New scan
-  receipts also check path and persistent volume identity. Fresh Canon MXF/legacy
+  receipts also check path and persistent volume identity. Fresh MediaEngine MXF/legacy
   readers recheck applicable header-established Avid identities through the opened
   source. If scanning deliberately skipped the header, the selected PMR/MDB file
   MobId must instead be confirmed at operation time. Database-only master
@@ -280,7 +280,7 @@ displays them in the Console and passes them to Diagnostics for writing.
 Qt diagnostic messages also go to the file; the Console does not read the file.
 
 [BackgroundJob](../src/backgroundjob.h) owns a worker thread with cooperative
-cancellation. The Canon scan uses that worker; Qt's shared pool is also used for bin
+cancellation. The MediaEngine scan uses that worker; Qt's shared pool is also used for bin
 loads, previews, exports and history reads. The owner must join a worker before destroying
 data it can access; an in-progress filesystem call can delay shutdown. Do not
 force-stop a worker while its callbacks or file operations are still active.
@@ -291,7 +291,7 @@ include `tst_scanner`, the individual parser suites, `tst_mediafilterproxy`,
 and `tst_operationui`. Test scenarios document intended guarantees; passing results
 must still identify the tested platform and source state.
 
-Canon separates per-scan state and metadata decisions from scanner/UI orchestration.
+MediaEngine separates per-scan state and metadata decisions from scanner/UI orchestration.
 Recovery/Undo planning and execution remain the established operation engine.
 Windows and NEXIS behaviour need their own documented runtime checks; local macOS
 results do not establish those platform guarantees.
@@ -301,7 +301,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for development and documentation convention
 ## Duration ownership
 
 `MediaDuration` carries original units, their rational rate, a separate display
-frame rate, and descriptor/file-track/clip-reference provenance in Canon observations.
+frame rate, and descriptor/file-track/clip-reference provenance in MediaEngine observations.
 The compatibility adapter supplies the selected measurement to `MediaFile`.
 Frame rounding is confined to display and the
 existing sort-by-displayed-timecode rule. Exact integer conversion avoids losing

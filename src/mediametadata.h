@@ -1,146 +1,15 @@
 #pragma once
 
-#include "avidprecompute.h"
-#include "mediaduration.h"
-
-#include <QByteArray>
 #include <QString>
-#include <QVector>
 
-// MARK: - Shared codec names
+// Small presentation helpers shared by the current format projectors.
+// Format interpretation and value selection belong to the media engine.
 
-/// Shared PCM display name. Classification uses descriptor/label evidence,
-/// never this presentation string.
+/// Shared PCM display name. Classification uses descriptor/label evidence.
 inline constexpr char kPcmAudioName[] = "PCM";
-
-// MARK: - MediaMetadata
-
-/// Shared metadata assembled from MXF headers, OMF files or Avid databases.
-/// This is MediaMuster's aggregate, not a serialized Avid object class.
-/// `valid=false` means technical facts could not be established reliably.
-/// Classification has its own validity flag. Empty strings mean unknown;
-/// HeaderStatus distinguishes malformed/incomplete data from a completed read.
-struct MediaMetadata
-{
-	enum class HeaderStatus
-	{
-		NotRead,
-		Complete,
-		Incomplete,
-		Malformed,
-		IoError
-	};
-	HeaderStatus headerStatus = HeaderStatus::NotRead;
-	QString fileMobId; ///< Owning file SourcePackage, distinct from the material/master UMID.
-	bool pcmDescriptor =
-		false; ///< A Wave/AES3/legacy PCM descriptor establishes PCM when coding is absent.
-	bool rgbaDescriptor =
-		false;						   ///< The selected essence descriptor is RGBA, not another picture class.
-	bool rgbaAlpha8 = false;		   ///< Its complete pixel layout describes only an 8-bit alpha component.
-	bool pictureCodingPresent = false; ///< A present but unusable coding property must not become
-									   ///< an absent-property fallback.
-	bool hasMaterialPackage =
-		false; ///< A completed header selected a logical master identity (MaterialPackage in MXF),
-			   ///< independently of usage classification.
-	bool classificationKnown =
-		false;				  ///< An identified material/master package supplied a usage verdict.
-	QString codec;			  ///< Resolved codec name, e.g. 'Avid DNx HQ (DNxHD 220)'.
-	QString resolution;		  ///< '1920x1080', or empty for audio.
-	QString frameRate;		  ///< Display label: '23.976', '25', '29.97', etc.
-	MediaRate frameRateRatio; ///< Original video rate, retained independently of duration availability.
-	QString bitDepth;		  ///< '8-bit', '10-bit', '24-bit'.
-	int componentDepth = -1; ///< Original descriptor code; 253/254 are not bit counts.
-	QString sampleFormat; ///< Internal number representation, independently of bit count.
-	QString
-		umid;		  ///< Canonical hex UMID from tag 0x4401 (MaterialPackage, or SourcePackage fallback).
-	QString clipName; ///< Clip name from tag 0x4402 in the material package.
-
-	/// True when clipName came from the MaterialPackage (the master clip —
-	/// what Avid/MediaInfo display) rather than a SourcePackage fallback
-	/// (tape/file source). Only a material name is a rung of the clip-name
-	/// ladder (see MediaFile::ClipNameSource); a source name is not.
-	bool clipNameFromMaterial = false;
-
-	/// A verified master usage1 identifies a precompute. Standard LowerLevel
-	/// alone is ambiguous (Avid also uses it for group/motion clips). Consult
-	/// classificationKnown before interpreting false as ordinary media.
-	bool isPrecompute = false;
-	AvidPrecompute::Category precomputeCategory = AvidPrecompute::Category::Unknown;
-
-	/// Import and project metadata from the selected mob/package attributes.
-	/// MXF TaggedValues use `UNC Path`, `Video`, `_IMPORTSETTING` and
-	/// `_PJ`/`PROJNAME`; MDB and OMF readers map their object attributes here.
-	/// Empty text remains unknown. hasImportSetting records recovered presence,
-	/// independently of whether an import path or container name was recovered.
-	QString sourceFilePath;
-	QString sourceContainer;
-	bool hasImportSetting = false;
-	QString projectName;
-
-	QByteArray compressionLabel; ///< Compression/coding UL; distinct from the file wrapping label.
-	QByteArray
-		wrappingLabel; ///< FileDescriptor EssenceContainer (0x3004); separate from compression.
-	int width = 0;
-	int height = 0;				   ///< Stored value; interlaced files store one field height.
-	int channels = 0;			   ///< Audio only.
-	int sampleRate = 0;			   ///< Whole-Hz compatibility value; exact rate is sampleRateRatio.
-	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction; may differ from descriptor edit rate.
-	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate when the legacy header supplies it.
-
-	/// 0 = Full Frame, 1 = Separate Fields, 2 = Single Field, 3 = Mixed Fields.
-	/// Used to decide whether to double `height` and to pick `i` vs `p`
-	/// for DV codec name formatting.
-	int frameLayout = -1;
-
-	/// Set by a producer whose `height` is already the full frame. The MXF
-	/// header stores one FIELD height for layout 1 (finalise doubles it);
-	/// the MDB stores half heights for layouts 1 AND 3 and normalises them
-	/// itself, then sets this so finalise doesn't double a second time while
-	/// `frameLayout` still carries the real value for the DV i/p suffix.
-	bool heightIsFrameHeight = false;
-
-	/// Selected file length and original rational rate, retained through scanning.
-	/// Display frames are derived only for presentation; master holds can differ.
-	MediaDuration duration;
-	QVector<ClipTrackDuration> clipDurations; ///< Selected master's non-timecode tracks, when recovered.
-	bool durationIsResolved = false;		  ///< Selection is complete; do not apply graphless recovery.
-	qint64 structuralDuration = 0;			  ///< Scratch value used only by graphless legacy recovery.
-	MediaRate descriptorRate;				  ///< Original descriptor edit/sample rate, before display formatting.
-
-	/// Nominal timecode base (24, 25, 30...) from a known edit/timecode rate.
-	/// Audio infers it from frame/sample counts only when that rate is missing.
-	/// 0 = unknown.
-	int timecodeBase = 0;
-
-	/// A timecode component (set 0x14) carried DropFrame=true (tag 0x1503).
-	bool dropFrame = false;
-
-	/// Duration from the essence descriptor's ContainerDuration (tag 0x3002),
-	/// in the descriptor's edit units; audio uses samples when its unit clock is the sample rate.
-	/// Collected separately from the structural-component durations because
-	/// an audio header mixes units. The selected duration retains its own rate.
-	qint64 descriptorDuration = 0;
-
-	bool isAudio = false;
-	bool valid = false;
-};
 
 namespace MediaMetadataUtil
 {
-	/// Derive codec, resolution, validity and duration display facts from raw metadata.
-	/// Shared by all producers so a database and a file header use the same rules.
-	void finalise(MediaMetadata &metadata);
-
-	/// Apply a positive descriptor unit-rate rational and derive rate display fields.
-	void applyEditRate(MediaMetadata &metadata, quint32 numerator, quint32 denominator);
-
-	/// Actual bit counts only; sentinels require format-specific interpretation in finalise().
-	[[nodiscard]] QString bitDepthLabel(quint32 bits);
-
-	/// Resolve a compression/coding UL, including rate-dependent DNxHD names.
-	/// Unknown labels retain their hex value and any recognizable coding family.
-	[[nodiscard]] QString codecFromCompressionLabel(const QByteArray &label, const QString &frameRate);
-
 	/// A recorded import path may use either OS's separators, regardless of this host.
 	[[nodiscard]] QString sourceFileBaseName(const QString &path);
-} // namespace MediaMetadataUtil
+}

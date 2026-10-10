@@ -14,7 +14,7 @@
 
 // MARK: - MediaFile
 
-namespace Canon
+namespace MediaEngine
 {
 	struct ScanResult;
 	struct ParsedSource;
@@ -31,9 +31,9 @@ struct MediaFile
 	MediaScanStamp scanStamp;
 	// Immutable scan receipt owns every original property and source graph.
 	// This row's current path/identity fields continue to follow moves and copies.
-	QSharedPointer<const Canon::ScanResult> canonScan;
+	QSharedPointer<const MediaEngine::ScanResult> mediaEngineScan;
 	/// Bin evidence remains inspectable after its current fallback is retracted.
-	QVector<QSharedPointer<const Canon::ParsedSource>> canonAvbSources;
+	QVector<QSharedPointer<const MediaEngine::ParsedSource>> mediaEngineAvbSources;
 	QStringList masterMobIds; ///< All established associations; the scalar below is compatibility only.
 	QString masterMobIdDisplay() const
 	{
@@ -51,7 +51,7 @@ struct MediaFile
 	QString clipName;
 
 	/// The source of the selected name; these enum values are source tags,
-	/// not preference ranks. Canon's shared policy table chooses the value.
+	/// not preference ranks. MediaEngine's shared policy table chooses the value.
 	/// Source-package names describe imports/tapes and belong in sourceFileName.
 	/// Unknown clip names stay blank rather than falling back to filenames.
 	enum class ClipNameSource
@@ -63,7 +63,7 @@ struct MediaFile
 	};
 	ClipNameSource clipNameSource = ClipNameSource::None;
 
-	/// Selected project name under Canon's shared policy. Empty means unknown,
+	/// Selected project name under MediaEngine's shared policy. Empty means unknown,
 	/// independently of whether the folder's PMR currently lists this file.
 	QString project;
 	QString originalBin;			 ///< The recorded import-time _ORG_BIN, from media metadata or a bin reference.

@@ -1,16 +1,16 @@
 # Independent PMR reader comparison
 
 > Historical comparison, captured in commit `23a1ab5`. On 4 October 2026 the user
-> chose the alternative and requested removal of the first Canon implementation.
-> The alternative is now `Canon::PmrReader` in `src/canon/pmrreader.h/.cpp`.
+> chose the alternative and requested removal of the first MediaEngine implementation.
+> The alternative is now `MediaEngine::PmrReader` in `src/mediaengine/pmrreader.h/.cpp`.
 > The old names, test counts and measurements below describe the comparison at
 > that commit, not two readers in the current tree. See [selection and current checks](pmr-reader-selection-2026-10-04.md).
 
 The user requested a second implementation, written from scratch beside the first,
 to compare code quality. At the comparison revision, both existed:
 
-- First: `src/canon/pmrreader.h/.cpp`, `Canon::PmrReader`.
-- Alternative: `src/canon/pmrreaderalternative.h/.cpp`, `Canon::PmrReaderAlternative`.
+- First: `src/canon/pmrreader.h/.cpp`, `Canon::PmrReader` at that historical commit.
+- Alternative: `src/canon/pmrreaderalternative.h/.cpp`, `Canon::PmrReaderAlternative` at that historical commit.
 
 The alternative implements the same `SourceReader` interface and `ParsedSource`
 model, including the agreed `PmrFileSet`, `TextEncoding`, raw bytes, source ranges,
@@ -40,7 +40,7 @@ coverage of every historical PMR or guarantees a stable source while Avid writes
 | Source extent | Consults device size as parsing progresses | Captures the starting size, bounds reads to it and checks it again before success | Alternative detects the tested concurrent append |
 | Cancellation at final read | Can report Complete when cancellation arrives during the last scalar read | Checks cancellation again before declaring completion | Alternative catches the reproduced case |
 | Zero-byte read without EOF | Reports Incomplete | Reports IoError: device failed to make progress | Alternative distinguishes truncation from an I/O stall |
-| Public data model | Shared Canon evidence model | Same model | Neither requires consumer schema changes |
+| Public data model | Shared MediaEngine evidence model | Same model | Neither requires consumer schema changes |
 | Approximate implementation size | 354 lines of `.cpp` | 357 lines of `.cpp` at review | Similar size; line count is not the quality criterion |
 | Valid-input parsing time | 3.04 ms per corpus pass | 3.33 ms per corpus pass | Alternative about 10% slower in this measured run; no end-to-end scan conclusion |
 
@@ -93,7 +93,6 @@ Proof files:
 
 - [Alternative contract and direct real-file checks](evidence/pmr-alternative-contract-2026-10-03.txt).
 - [Differential and I/O comparison](evidence/pmr-comparison-real-2026-10-03.txt).
-- [Complete Debug CTest run](evidence/pmr-alternative-all-tests-2026-10-03.txt).
 - [Release parsing benchmark](evidence/pmr-comparison-benchmark-2026-10-03.txt).
 
 ## Benchmark scope and reproduction
@@ -117,13 +116,13 @@ cmake --build build-canon-compare --target tst_canonpmrcomparison tst_canonpmral
 MEDIAMUSTER_CANON_PMR_BENCHMARK=1 build-canon-compare/tests/tst_canonpmrcomparison benchmark -iterations 100 -median 9
 ```
 
-Run the two common suites and comparison with:
+At that historical revision, run the two common suites and comparison with:
 
 ```sh
-ctest --test-dir build-canon -R 'tst_canonpmr' --output-on-failure
+ctest --test-dir build-canon-compare -R 'tst_canonpmr' --output-on-failure
 ```
 
-`MEDIAMUSTER_CANON_REAL_SCAN_ROOTS` accepts semicolon-separated managed roots.
+At that revision, `MEDIAMUSTER_CANON_REAL_SCAN_ROOTS` accepts semicolon-separated managed roots.
 `MEDIAMUSTER_CANON_PMR_FILES` adds explicit read-only PMR paths to the comparison.
 Without those variables, the tests use repository fixtures and controlled inputs.
 
@@ -137,5 +136,5 @@ independent version-16 count, counted text framing and observed capacities. The
 signed 16-bit limit. Its format coverage has not been expanded by this experiment.
 
 The comparison originally left both implementations available pending selection.
-That decision was made on 4 October: retain the alternative as the sole Canon PMR
+That decision was made on 4 October: retain the alternative as the sole MediaEngine PMR
 reader. The live scanner is still awaiting the remaining replacement-engine stages.

@@ -2,15 +2,15 @@
 // raw bytes, typed values and downstream interpretation. Authored value controls
 // below test serialization only; they make no claim about an Avid file format.
 
-#include "canon/sourcearchive.h"
-#include "canon/avbreader.h"
-#include "canon/avbreferences.h"
-#include "canon/omfreader.h"
-#include "canon/mdbreader.h"
-#include "canon/mxfreader.h"
-#include "canon/pmrreader.h"
-#include "canon/projection.h"
-#include "canon/scanengine.h"
+#include "mediaengine/sourcearchive.h"
+#include "mediaengine/avbreader.h"
+#include "mediaengine/avbreferences.h"
+#include "mediaengine/omfreader.h"
+#include "mediaengine/mdbreader.h"
+#include "mediaengine/mxfreader.h"
+#include "mediaengine/pmrreader.h"
+#include "mediaengine/projection.h"
+#include "mediaengine/scancoordinator.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -91,25 +91,25 @@ namespace
 			QCOMPARE(left, right);
 		}
 	}
-	void compareRange(const Canon::ByteRange &a, const Canon::ByteRange &b)
+	void compareRange(const MediaEngine::ByteRange &a, const MediaEngine::ByteRange &b)
 	{
 		QCOMPARE(a.offset, b.offset);
 		QCOMPARE(a.length, b.length);
 	}
-	void compareRanges(const QVector<Canon::ByteRange> &a, const QVector<Canon::ByteRange> &b)
+	void compareRanges(const QVector<MediaEngine::ByteRange> &a, const QVector<MediaEngine::ByteRange> &b)
 	{
 		QCOMPARE(a.size(), b.size());
 		for (qsizetype i = 0; i < a.size(); ++i)
 			compareRange(a[i], b[i]);
 	}
-	void compareLocator(const Canon::PropertyLocator &a, const Canon::PropertyLocator &b)
+	void compareLocator(const MediaEngine::PropertyLocator &a, const MediaEngine::PropertyLocator &b)
 	{
 		compareText(a.name, b.name);
 		compareBytes(a.key, b.key);
 		QCOMPARE(a.objectNumber, b.objectNumber);
 		compareRanges(a.ranges, b.ranges);
 	}
-	void compareProperty(const Canon::RawProperty &a, const Canon::RawProperty &b)
+	void compareProperty(const MediaEngine::RawProperty &a, const MediaEngine::RawProperty &b)
 	{
 		compareLocator(a.locator, b.locator);
 		compareBytes(a.encoding, b.encoding);
@@ -141,7 +141,7 @@ namespace
 			compareRanges(a.mxf->framingRanges, b.mxf->framingRanges);
 		}
 	}
-	void compareSource(const Canon::ParsedSource &a, const Canon::ParsedSource &b)
+	void compareSource(const MediaEngine::ParsedSource &a, const MediaEngine::ParsedSource &b)
 	{
 		QCOMPARE(a.outcome, b.outcome);
 		compareText(a.readReason, b.readReason);
@@ -212,9 +212,9 @@ namespace
 			compareProperty(a.unownedProperties[i], b.unownedProperties[i]);
 		QCOMPARE(a.diagnostics, b.diagnostics);
 	}
-	void appendContextPointers(const Canon::ParsedSource &source, QVector<const void *> &pointers)
+	void appendContextPointers(const MediaEngine::ParsedSource &source, QVector<const void *> &pointers)
 	{
-		const auto appendProperty = [&pointers](const Canon::RawProperty &property) {
+		const auto appendProperty = [&pointers](const MediaEngine::RawProperty &property) {
 			pointers.append(property.bento.data());
 			pointers.append(property.mxf.data());
 		};
@@ -230,7 +230,7 @@ namespace
 		for (const auto &child : source.embeddedSources)
 			appendContextPointers(child, pointers);
 	}
-	void compareContextAliases(const Canon::ParsedSource &a, const Canon::ParsedSource &b)
+	void compareContextAliases(const MediaEngine::ParsedSource &a, const MediaEngine::ParsedSource &b)
 	{
 		QVector<const void *> left, right;
 		appendContextPointers(a, left);
@@ -300,8 +300,8 @@ namespace
 			}
 			compareReadResult(a.readStatus(property), b.readStatus(property));
 		}
-		Canon::selectMetadata(a);
-		Canon::selectMetadata(b);
+		MediaEngine::selectMetadata(a);
+		MediaEngine::selectMetadata(b);
 		for (int i = 0; i < int(MediaProperty::Count); ++i)
 		{
 			const auto x = a.selected(MediaProperty(i)), y = b.selected(MediaProperty(i));
@@ -315,7 +315,7 @@ namespace
 			QCOMPARE(x.applicability, y.applicability);
 		}
 	}
-	void compareProjectedFiles(const QVector<Canon::ProjectedFile> &a, const QVector<Canon::ProjectedFile> &b)
+	void compareProjectedFiles(const QVector<MediaEngine::ProjectedFile> &a, const QVector<MediaEngine::ProjectedFile> &b)
 	{
 		QCOMPARE(a.size(), b.size());
 		for (qsizetype i = 0; i < a.size(); ++i)
@@ -332,21 +332,21 @@ namespace
 			compareEvidence(a[i].evidence, b[i].evidence);
 		}
 	}
-	Canon::Projection project(const Canon::ParsedSource &source, const Canon::Cancellation &cancellation)
+	MediaEngine::Projection project(const MediaEngine::ParsedSource &source, const MediaEngine::Cancellation &cancellation)
 	{
-		if (source.container == Canon::ParsedSource::Container::Pmr)
-			return Canon::projectPmr(source, cancellation);
-		if (source.container == Canon::ParsedSource::Container::Mxf)
-			return Canon::projectMxf(source, cancellation);
+		if (source.container == MediaEngine::ParsedSource::Container::Pmr)
+			return MediaEngine::projectPmr(source, cancellation);
+		if (source.container == MediaEngine::ParsedSource::Container::Mxf)
+			return MediaEngine::projectMxf(source, cancellation);
 		if (source.snapshot && source.snapshot->source == MetadataSource::Mdb)
-			return Canon::projectMdb(source, cancellation);
-		return Canon::projectOmf(source, cancellation);
+			return MediaEngine::projectMdb(source, cancellation);
+		return MediaEngine::projectOmf(source, cancellation);
 	}
-	void compareAvbResolution(const Canon::ParsedSource &a, const Canon::ParsedSource &b,
-							  const Canon::Cancellation &cancellation)
+	void compareAvbResolution(const MediaEngine::ParsedSource &a, const MediaEngine::ParsedSource &b,
+							  const MediaEngine::Cancellation &cancellation)
 	{
-		const Canon::AvbReferenceIndex ai({QSharedPointer<Canon::ParsedSource>::create(a)}, cancellation);
-		const Canon::AvbReferenceIndex bi({QSharedPointer<Canon::ParsedSource>::create(b)}, cancellation);
+		const MediaEngine::AvbReferenceIndex ai({QSharedPointer<MediaEngine::ParsedSource>::create(a)}, cancellation);
+		const MediaEngine::AvbReferenceIndex bi({QSharedPointer<MediaEngine::ParsedSource>::create(b)}, cancellation);
 		QCOMPARE(ai.sequences().size(), bi.sequences().size());
 		for (qsizetype i = 0; i < ai.sequences().size(); ++i)
 		{
@@ -357,7 +357,7 @@ namespace
 			QCOMPARE(x.userPlaced, y.userPlaced);
 			compareLocator(x.membership, y.membership);
 		}
-		const QVector<Canon::AvbScope> scopes{{0, Canon::AvbScope::Kind::EntireBin, {}}};
+		const QVector<MediaEngine::AvbScope> scopes{{0, MediaEngine::AvbScope::Kind::EntireBin, {}}};
 		const auto x = ai.resolve(scopes, cancellation), y = bi.resolve(scopes, cancellation);
 		QCOMPARE(x.complete, y.complete);
 		QCOMPARE(x.cancelled, y.cancelled);
@@ -426,26 +426,26 @@ private slots:
 						: reader == 2 ? MetadataSource::Mxf : reader == 4 ? MetadataSource::Avb : MetadataSource::Omf;
 		const SourceSnapshotRef receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			kind, input.fileName(), QFileInfo(input).lastModified(), SourceReadState::NotRead});
-		const Canon::Cancellation cancellation;
-		const Canon::ReaderContext context{receipt, cancellation};
-		Canon::ParsedSource original;
+		const MediaEngine::Cancellation cancellation;
+		const MediaEngine::ReaderContext context{receipt, cancellation};
+		MediaEngine::ParsedSource original;
 		switch (reader)
 		{
-		case 0: original = Canon::PmrReader{}.read(input, context); break;
-		case 1: original = Canon::MdbReader{}.read(input, context); break;
-		case 2: original = Canon::MxfReader{}.read(input, context); break;
-		case 3: original = Canon::OmfReader{}.read(input, context); break;
-		case 4: original = Canon::AvbReader{}.read(input, context); break;
+		case 0: original = MediaEngine::PmrReader{}.read(input, context); break;
+		case 1: original = MediaEngine::MdbReader{}.read(input, context); break;
+		case 2: original = MediaEngine::MxfReader{}.read(input, context); break;
+		case 3: original = MediaEngine::OmfReader{}.read(input, context); break;
+		case 4: original = MediaEngine::AvbReader{}.read(input, context); break;
 		}
 		// Native audio keeps its chunks at the container level; its OMF
 		// objects live in an embedded source with a separate handle namespace.
 		QVERIFY(!original.objects.isEmpty() || !original.unownedProperties.isEmpty() || !original.embeddedSources.isEmpty());
 		if (relative.endsWith(QStringLiteral(".wav")) || relative.endsWith(QStringLiteral(".aif")))
 		{
-			QVERIFY(original.container == Canon::ParsedSource::Container::Wave || original.container == Canon::ParsedSource::Container::Aiff);
+			QVERIFY(original.container == MediaEngine::ParsedSource::Container::Wave || original.container == MediaEngine::ParsedSource::Container::Aiff);
 			QVERIFY(!original.embeddedSources.isEmpty());
 		}
-		const auto archive = Canon::SourceArchive::pack(original, cancellation);
+		const auto archive = MediaEngine::SourceArchive::pack(original, cancellation);
 		QVERIFY(archive);
 		QVERIFY(archive->compressedBytes() > 0);
 		QVERIFY(archive->serializedBytes() > 0);
@@ -470,25 +470,25 @@ private slots:
 	void authored_archive_values_keep_types_optionals_and_namespaces()
 	{
 		// A serializer control, not a fabricated OMF/MXF specimen or parser rule.
-		Canon::ParsedSource original;
-		original.outcome = Canon::ParsedSource::Outcome::Incomplete;
+		MediaEngine::ParsedSource original;
+		original.outcome = MediaEngine::ParsedSource::Outcome::Incomplete;
 		original.readReason = QStringLiteral("serialization value control");
 		original.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			MetadataSource::Mdb, QStringLiteral("archive-control"), QDateTime::fromMSecsSinceEpoch(123456789, Qt::UTC), SourceReadState::Incomplete});
-		original.container = Canon::ParsedSource::Container::Bento;
-		original.omfRevision = Canon::OmfRevision::V2;
-		original.recordSets.append({QStringLiteral("set"), Canon::PmrFileSet::Unicode, -7, 2, {1, 9}, false});
+		original.container = MediaEngine::ParsedSource::Container::Bento;
+		original.omfRevision = MediaEngine::OmfRevision::V2;
+		original.recordSets.append({QStringLiteral("set"), MediaEngine::PmrFileSet::Unicode, -7, 2, {1, 9}, false});
 		original.embedding = {QStringLiteral("embedded"), QByteArray("a\0b", 3), 9, {{-1, 0}, {27, 3}}};
 		original.diagnostics = {QStringLiteral("read evidence retained")};
-		Canon::AvidObject object;
+		MediaEngine::AvidObject object;
 		object.handle = 1;
-		object.role = Canon::AvidObject::Role::Unknown;
+		object.role = MediaEngine::AvidObject::Role::Unknown;
 		object.snapshot = original.snapshot;
 		object.recordedIdentity = QByteArray("i\0d", 3);
 		object.identityEncoding = QStringLiteral("uninterpreted");
-		object.mxf = QSharedPointer<Canon::MxfSetContext>::create(Canon::MxfSetContext{
+		object.mxf = QSharedPointer<MediaEngine::MxfSetContext>::create(MediaEngine::MxfSetContext{
 			QByteArray("set-key"), QStringLiteral("set context"), -1, {42, 3}, {45, 7}});
-		object.avb = QSharedPointer<Canon::AvbObjectContext>::create(Canon::AvbObjectContext{
+		object.avb = QSharedPointer<MediaEngine::AvbObjectContext>::create(MediaEngine::AvbObjectContext{
 			QByteArray("TEST"), {100, 8}, {108, 20}, false, false});
 		quint32 floatBits = 0x7fc01234u;
 		quint64 doubleBits = Q_UINT64_C(0x7ff8000000005678);
@@ -505,7 +505,7 @@ private slots:
 			QDateTime{}, QDateTime::fromMSecsSinceEpoch(123456789, Qt::UTC)};
 		for (qsizetype i = 0; i < values.size(); ++i)
 		{
-			Canon::RawProperty value;
+			MediaEngine::RawProperty value;
 			value.locator = {QStringLiteral("value%1").arg(i), QByteArray("k\0", 2), 1, {{qint64(i), 1}}};
 			value.encoding = QByteArray("\0raw\0", 5);
 			value.decoded = values[i];
@@ -513,14 +513,14 @@ private slots:
 			value.interpretation = i % 2 ? QStringLiteral("interpreted") : QString{};
 			if (i % 2)
 			{
-				value.textEncoding = Canon::TextEncoding::Unknown;
+				value.textEncoding = MediaEngine::TextEncoding::Unknown;
 				value.textEncodingBasis = EvidenceBasis::Derived;
 			}
 			value.bytesRetained = i % 2 == 0;
-			value.bento = QSharedPointer<Canon::BentoPropertyContext>::create(Canon::BentoPropertyContext{
+			value.bento = QSharedPointer<MediaEngine::BentoPropertyContext>::create(MediaEngine::BentoPropertyContext{
 				7, 8, 9, 10, QStringLiteral("omfi:control"), {{22, 3}, {40, 2}},
 				i % 3 == 0 ? std::optional<bool>{} : std::optional<bool>{i % 3 == 2}});
-			value.mxf = QSharedPointer<Canon::MxfPropertyContext>::create(Canon::MxfPropertyContext{
+			value.mxf = QSharedPointer<MediaEngine::MxfPropertyContext>::create(MediaEngine::MxfPropertyContext{
 				0x8001, -1, QByteArray("auid"), QStringLiteral("local control"), QByteArray("\0\1", 2), {{88, 2}}});
 			object.properties.append(std::move(value));
 		}
@@ -528,16 +528,16 @@ private slots:
 		original.unownedProperties.append(object.properties.front());
 		original.relationships.append({1, 0, original.embedding, QVariantList{quint64(9), QByteArray("ref")},
 			QStringLiteral("control reference"), EvidenceBasis::Derived, QStringLiteral("unresolved retained")});
-		Canon::ParsedSource child = original;
+		MediaEngine::ParsedSource child = original;
 		child.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			MetadataSource::Omf, QStringLiteral("child-control"), {}, SourceReadState::Complete});
 		child.objects[0].snapshot = child.snapshot;
 		child.objects[0].recordedIdentity = QByteArray("different-id");
-		child.container = Canon::ParsedSource::Container::Omf;
+		child.container = MediaEngine::ParsedSource::Container::Omf;
 		child.omfRevision.reset();
 		original.embeddedSources.append(std::move(child));
-		const Canon::Cancellation cancellation;
-		const auto archive = Canon::SourceArchive::pack(original, cancellation);
+		const MediaEngine::Cancellation cancellation;
+		const auto archive = MediaEngine::SourceArchive::pack(original, cancellation);
 		QVERIFY(archive);
 		const auto restored = archive->restore(cancellation);
 		QVERIFY(restored);
@@ -553,9 +553,9 @@ private slots:
 		// Large retained metadata exercises archive blocks only; this is not an
 		// invented media layout or a performance benchmark for real databases.
 		constexpr qsizetype payloadBytes = 8 * 1024 * 1024;
-		Canon::ParsedSource original;
+		MediaEngine::ParsedSource original;
 		original.snapshot = QSharedPointer<SourceSnapshot>::create();
-		Canon::RawProperty property;
+		MediaEngine::RawProperty property;
 		property.locator = {QStringLiteral("archive block control"), {}, 0, {{0, payloadBytes}}};
 		property.encoding = QByteArray(payloadBytes, '\0');
 		for (qsizetype i = 0; i < payloadBytes; ++i)
@@ -563,8 +563,8 @@ private slots:
 		property.decoded = property.encoding;
 		property.state = PropertyReadState::Present;
 		original.unownedProperties.append(std::move(property));
-		const Canon::Cancellation active;
-		const auto archive = Canon::SourceArchive::pack(original, active);
+		const MediaEngine::Cancellation active;
+		const auto archive = MediaEngine::SourceArchive::pack(original, active);
 		QVERIFY(archive);
 		QVERIFY(archive->blockCount() > 1);
 		const auto restored = archive->restore(active);
@@ -577,17 +577,17 @@ private slots:
 		for (const bool packing : {true, false})
 		{
 			std::atomic_bool stop{false}, finished{false};
-			const Canon::Cancellation cancellation(&stop);
+			const MediaEngine::Cancellation cancellation(&stop);
 			QSemaphore entered;
-			QSharedPointer<const Canon::SourceArchive> packed;
-			std::optional<Canon::ParsedSource> unpacked;
+			QSharedPointer<const MediaEngine::SourceArchive> packed;
+			std::optional<MediaEngine::ParsedSource> unpacked;
 			std::exception_ptr error;
 			std::thread worker([&] {
 				entered.release();
 				try
 				{
 					if (packing)
-						packed = Canon::SourceArchive::pack(original, cancellation);
+						packed = MediaEngine::SourceArchive::pack(original, cancellation);
 					else
 						unpacked = archive->restore(cancellation);
 				}
@@ -621,28 +621,28 @@ private slots:
 	{
 		// A codec failure is distinct from cancellation and never changes a
 		// source's format outcome or quietly discards its unstreamable value.
-		Canon::ParsedSource original;
-		Canon::RawProperty property;
+		MediaEngine::ParsedSource original;
+		MediaEngine::RawProperty property;
 		property.decoded = QVariant::fromValue(UnstreamableArchiveValue{7});
 		original.unownedProperties.append(std::move(property));
-		const Canon::Cancellation cancellation;
-		QVERIFY_THROWS_EXCEPTION(Canon::SourceArchiveError, Canon::SourceArchive::pack(original, cancellation));
+		const MediaEngine::Cancellation cancellation;
+		QVERIFY_THROWS_EXCEPTION(MediaEngine::SourceArchiveError, MediaEngine::SourceArchive::pack(original, cancellation));
 	}
 	void stored_sources_release_expanded_graph_and_keep_cancelled_facts()
 	{
 		// Storage lifecycle control: cancellation must keep facts already read.
-		Canon::ParsedSource expected;
+		MediaEngine::ParsedSource expected;
 		expected.snapshot = QSharedPointer<SourceSnapshot>::create();
-		expected.outcome = Canon::ParsedSource::Outcome::Incomplete;
+		expected.outcome = MediaEngine::ParsedSource::Outcome::Incomplete;
 		expected.readReason = QStringLiteral("archive lifecycle control");
-		Canon::RawProperty value;
+		MediaEngine::RawProperty value;
 		value.encoding = QByteArray("retained bytes");
 		value.decoded = false;
 		value.state = PropertyReadState::Present;
 		expected.unownedProperties.append(std::move(value));
-		const Canon::Cancellation active;
+		const MediaEngine::Cancellation active;
 		auto expanded = expected;
-		const auto stored = Canon::StoredSource::store(std::move(expanded), active);
+		const auto stored = MediaEngine::StoredSource::store(std::move(expanded), active);
 		QVERIFY(stored.archive);
 		QVERIFY(!stored.unfinishedGraph);
 		QVERIFY(!expanded.snapshot);
@@ -651,10 +651,10 @@ private slots:
 		QVERIFY(restored);
 		compareSource(expected, *restored);
 
-		Canon::Cancellation cancelled;
+		MediaEngine::Cancellation cancelled;
 		cancelled.cancel();
 		expanded = expected;
-		const auto unfinished = Canon::StoredSource::store(std::move(expanded), cancelled);
+		const auto unfinished = MediaEngine::StoredSource::store(std::move(expanded), cancelled);
 		QVERIFY(!unfinished.archive);
 		QVERIFY(unfinished.unfinishedGraph);
 		QVERIFY(!unfinished.restore(cancelled));
@@ -664,14 +664,14 @@ private slots:
 	}
 	void cancellation_does_not_publish_a_partial_archive_or_source()
 	{
-		Canon::ParsedSource original;
+		MediaEngine::ParsedSource original;
 		original.snapshot = QSharedPointer<SourceSnapshot>::create();
-		const Canon::Cancellation active;
-		const auto archive = Canon::SourceArchive::pack(original, active);
+		const MediaEngine::Cancellation active;
+		const auto archive = MediaEngine::SourceArchive::pack(original, active);
 		QVERIFY(archive);
-		Canon::Cancellation cancelled;
+		MediaEngine::Cancellation cancelled;
 		cancelled.cancel();
-		QVERIFY(!Canon::SourceArchive::pack(original, cancelled));
+		QVERIFY(!MediaEngine::SourceArchive::pack(original, cancelled));
 		QVERIFY(!archive->restore(cancelled));
 		// Cancellation cannot alter an already published immutable archive.
 		const auto restored = archive->restore(active);

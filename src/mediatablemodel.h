@@ -67,7 +67,7 @@ public:
 	int omfScanColumn() const;
 
 	/// Attach or retract matching master-clip observations from loaded bins.
-	/// Canon rows refresh under the shared policy; unresolved ties stay blank.
+	/// MediaEngine rows refresh under the shared policy; unresolved ties stay blank.
 	/// Removing a bin retains its evidence history while excluding its values.
 	void setAvbBins(const QVector<AvbBin> &bins);
 

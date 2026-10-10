@@ -1,4 +1,4 @@
-# Fresh Canon AVB reader
+# Fresh MediaEngine AVB reader
 
 Recorded 4 October 2026. This document describes the new bin reader work and
 its evidence. The user confirmed **engine first**: implement and verify the
@@ -155,7 +155,7 @@ cryptographic identity check of those bins.
 ## Source-reference terminals and dependency meanings
 
 The original sequence probe reported two unresolved, sentinel-shaped IDs. Native
-Avid functions now establish their meaning. The exact bytes below use the Canon
+Avid functions now establish their meaning. The exact bytes below use the MediaEngine
 material-UUID-little-endian representation; the original serialized bytes remain
 separately retained.
 
@@ -171,7 +171,7 @@ bytes at `0x10ec848` and `0x10ec850` establish the Avid tail and prefix. These
 findings support the two observed full IDs without requiring a search for a
 nonexistent target composition.
 
-Canon deliberately recognizes those **exact full null/filler identities**, plus
+MediaEngine deliberately recognizes those **exact full null/filler identities**, plus
 an explicitly recorded all-32-bytes-zero ID. Preserve the original identity and
 the terminal reason. Do not copy the native broad zero-material test to arbitrary
 non-Avid identifiers, and do not treat every ID accepted by the native

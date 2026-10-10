@@ -7,7 +7,7 @@ times for information shared by files in the same folder. This follows the
 
 ## Implementation
 
-`src/canon/scanengine.cpp` now uses small scan-local Qt containers:
+`src/mediaengine/scancoordinator.cpp` now uses small scan-local Qt containers:
 
 - A `QHash<QString, QString>` remembers each folder spelling's canonical key.
   Case-sensitive lookup and the existing canonical-path/fallback rules remain.
@@ -38,7 +38,7 @@ Copies keep their own physical rows and KelpieIds.
 ## Why this differs from “Starting scan…”
 
 The application first resolves selected roots and discovers/list files in the
-admitted folders. Only then can Canon read databases, decide which media headers
+admitted folders. Only then can MediaEngine read databases, decide which media headers
 are needed, and reconcile metadata. This change is inside that latter matching
 work. It leaves the directory discovery/enumeration implementation unchanged.
 
@@ -65,7 +65,7 @@ formats or add a parser rule.
 ## Real-source query and evidence comparison
 
 A temporary diagnostic runs the before and after `ScanEngine` implementations
-against their matching Canon libraries. It adds counters at the existing query
+against their matching MediaEngine libraries. It adds counters at the existing query
 sites, preserving the original operations, and streams semantic comparisons
 through a bounded SHA-256 buffer. It is not an application/test target.
 
@@ -134,8 +134,7 @@ match exactly. Database-first scheduling retains 116 media-header reads and
 supplementary, not substituted for these uninstrumented trials.
 
 See the [query and semantic proof](evidence/folder-cache-probe-receipt-2026-10-09.json),
-[method](evidence/folder-cache-probe-method-2026-10-09.txt),
-[test log](evidence/folder-cache-tests-2026-10-09.txt) and
+[method](evidence/folder-cache-probe-method-2026-10-09.txt) and
 [final verification](evidence/folder-cache-verification-2026-10-09.json).
 
 ## Measurement limits
@@ -144,5 +143,5 @@ Application-level filesystem calls are not equivalent to system calls, NEXIS
 transactions or physical disk activity. Qt, the OS and storage clients can cache
 information. The Mac measurements use Qt 6.5.3, native arm64 execution and the
 existing universal Debug builds; filesystem caches are not cleared. No Release
-or Windows/NEXIS speed claim is made. The scan diagnostic retains Canon and
+or Windows/NEXIS speed claim is made. The scan diagnostic retains MediaEngine and
 formatted adapter rows, before audit serialization and GUI model population.

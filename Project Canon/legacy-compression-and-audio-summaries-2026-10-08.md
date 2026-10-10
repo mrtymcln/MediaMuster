@@ -15,8 +15,7 @@ separate read-only investigation of their evidence.
 | Omitted audio samples in a Summary | The special Summary decoder correctly avoided demanding the entire recording. | That distinction remains. Shared format-field decoding does not turn the Summary into an ordinary full-file validation request. |
 
 These changes do not add a new display column, persistent database, recovery engine
-or compression family. The old engines and their tests remain pending the user's
-separate retirement approval. Source selection preferences remain in the shared
+or compression family. Source selection preferences remain in the shared
 policy table.
 
 ## Compression evidence and boundaries
@@ -98,14 +97,12 @@ for arm64 and x86_64. Runtime verification used arm64, Qt 6.5.3 and macOS 15.8.1
 Windows/NEXIS was not exercised in this pass. The normal app's deep/strict code
 signature verification succeeds. These are Debug builds.
 
-The [final native test run](evidence/legacy-audio-full-tests-2026-10-08.txt) passes
-**39/39 suites**. The first coordinated run exposed an outdated MDB test count:
+The first coordinated run exposed an outdated MDB test count:
 it counted newly decoded child fields as extra physical TOC entries. The corrected
 test still requires the exact original count, verifies each child against its
 retained parent, and reconstructs every retained value from the original file's
 byte ranges. The genuine audio fixture retains all **1,368 original entries** and
 adds **24 decoded chunk/field receipts**, rather than inventing database entries.
-The [initial run](evidence/legacy-audio-initial-tests-2026-10-08.txt) remains available.
 
 The new controls exercise descriptor class/type admission, identity-width
 independence, compatible and conflicting coding labels, shared native/Summary
@@ -116,7 +113,7 @@ sample reads. No new corruption-recovery path was added.
 
 The [genuine MDB decoding receipt](evidence/audio-summary-decoded-evidence-2026-10-08.json)
 was produced by a [small read-only probe](evidence/audio-summary-decoded-probe-2026-10-08.cpp)
-linked against the rebuilt Canon library. The three original summaries retain
+linked against the rebuilt MediaEngine library. The three original summaries retain
 their exact hashes. It separately records AIFF-C's `24-bit Integer` at absolute
 MDB offset **10,523**, length **14**. The existing diagnostic about two ambiguous
 dictionary definitions remains; it is not silently suppressed or treated as a
@@ -124,7 +121,7 @@ new audio-summary failure.
 
 ### Real media comparison
 
-The read-only repeat scan uses the same managed roots as the prior Canon receipt:
+The read-only repeat scan uses the same managed roots as the prior MediaEngine receipt:
 `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT`. This is the established
 baseline scope, not a new claim that every directory on both volumes was searched.
 

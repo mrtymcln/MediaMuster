@@ -15,17 +15,17 @@ rule and its reason; dated investigations belong in the records below.
 ## Technical references and validation
 
 - [Native file-operation validation](file-operations-native-api-validation.md): tested behaviour and outstanding platform checks.
-- [Parser compatibility](parser-compatibility.md) and [dated validation results](reviews/2026-09-20-media-scope/validation-history.md).
+- [Parser compatibility](parser-compatibility.md) and [engine terminology](media-engine.md).
+- [MediaEngine cleanup verification](media-engine-cleanup-2026-10-11.md): sole-engine integration and the genuine MPEG OMF ownership correction.
 - [AVB parser](avb-parser.md) and [AVB error examples](avb-error-examples.md).
 - [Usage-code identification](usage-code-identification.md): provenance for Avid classification rules.
-- [PMR completeness](pmr-completeness.md): conditions for trusting the file index.
+- [PMR reader evidence](../Project%20Canon/fresh-pmr-reader-2026-10-03.md): framing, text and index coverage.
 - [Precompute details](effect-details-preview.md): classification, display and filter design.
 
 Validation records describe the source revision, platform and scenarios actually
 checked. They do not establish that a later build or another storage system passes.
-Records predating 22 September 2026 include the former Verify copies option and
-xxHash dependency. Both have been removed; current native-copy and journal behavior
-is described in [the behaviour guide](current-behaviour.md#copy-move-and-delete).
+Current native-copy and journal behavior is described in
+[the behaviour guide](current-behaviour.md#copy-move-and-delete).
 
 ## Design history and evidence
 

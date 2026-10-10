@@ -1,5 +1,5 @@
 #include "mediatablemodel.h"
-#include "canon/scanengine.h"
+#include "mediaengine/scancoordinator.h"
 #include "enumutil.h"
 
 #include <QStringList>
@@ -141,7 +141,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		transferred.evidence.observe(MediaProperty::DatabaseStatus, std::move(membership));
 		// Update only this row's evidence. The retained scan is an immutable
 		// receipt of the original location, shared with other physical rows.
-		Canon::selectMetadata(transferred.evidence);
+		MediaEngine::selectMetadata(transferred.evidence);
 		m_binMetadata.apply(transferred);
 		if (copy)
 		{

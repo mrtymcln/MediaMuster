@@ -55,7 +55,7 @@
     "No claim of all compression mappings or writer/subtype coverage.",
     "Missing-extension, conflicting-summary and JFIF32-owner controls are authored; genuine observations are separately identified.",
     "Recorded scan time and footprint are not a controlled performance comparison.",
-    "Superseded engines/tests retained pending user approval."
+    "Source retention changes require separate measurement and approval."
   ],
   "snapshots": [
     {
@@ -81,18 +81,6 @@
       "size": 84264,
       "mtimeNs": 1791437046715528742,
       "sha256": "2b83403dac6c9353432c500867594b63d47f2fc8640bb65e939ab36ad5e74701"
-    },
-    {
-      "path": "src/omfresolutions.cpp",
-      "size": 5680,
-      "mtimeNs": 1791437073202843243,
-      "sha256": "0077e35cab587db768499af64c9d7030b87f84ace65fcd9c9926f6db968b6daf"
-    },
-    {
-      "path": "src/omfresolutions.h",
-      "size": 1313,
-      "mtimeNs": 1791436558899192409,
-      "sha256": "3554f7fc14eb074110d8ecb9bfe736dd73078d8e98f0d259d8b49b3fe8c5422e"
     },
     {
       "path": "tests/tst_canonlegacy.cpp",
@@ -209,5 +197,10 @@
       "sha256": "7ffef3b1c1d2802ec7413323ab03bc1ebe435cee1a632ae19e46b5eb94ecccbf"
     }
   ],
-  "dvIndependentEvidence": "evidence/legacy-audio-dv-name-evidence-2026-10-08.json"
+  "dvIndependentEvidence": "evidence/legacy-audio-dv-name-evidence-2026-10-08.json",
+  "documentationExtraction": {
+    "date": "2026-10-11",
+    "originalArtifactSha256": "bf898c8e677d9f295e79e75bf2d29cec1eb4baff1894c100601d05bdca859f89",
+    "scope": "Preserved measured format/source facts and current-reader results; removed superseded implementation references. This is an extracted receipt, not a new verification or a renamed source-code fingerprint."
+  }
 }

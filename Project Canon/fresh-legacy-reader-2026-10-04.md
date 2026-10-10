@@ -8,14 +8,14 @@ On 10 October the user named this reader **OmfReader** and required independent
 MDB/OMF implementations. [Reader ownership](reader-boundaries-2026-10-10.md)
 supersedes the original sharing arrangement below.
 
-Implemented 4 October 2026 as the next independent Canon reader. The shared Bento
+Implemented 4 October 2026 as the next independent MediaEngine reader. The shared Bento
 work and original OMF toolkit made this a useful next step after MDB. The toolkit
 is a format reference and test corpus, not a new runtime dependency. The existing
 app scanner, UI and file-operation executor have not been switched to this reader.
 
 ## What it does
 
-`Canon::OmfReader` accepts an already-open binary device and inspects its bytes.
+`MediaEngine::OmfReader` accepts an already-open binary device and inspects its bytes.
 It handles supported OMF/Bento containers and native RIFF/RF64 WAVE or FORM
 AIFF/AIFF-C files, including the OMF metadata embedded in real Avid audio files.
 No PMR/MDB database is required to read a media file's own metadata.
@@ -50,12 +50,12 @@ Neither path calls the old production parsers.
 
 Implementation files:
 
-- [`omfreader.h/.cpp`](../src/canon/omfreader.cpp): public reader and native/embedded source coordination.
-- [`audioreader_p.h/.cpp`](../src/canon/audioreader_p.cpp): bounded native audio chunk reader.
-- [`omfbentoreader_p.h/.cpp`](../src/canon/omfbentoreader_p.cpp): OMF-owned container framing and selective value reads.
-- [`omfobjects_p.h/.cpp`](../src/canon/omfobjects_p.cpp): OMF-owned object interpretation.
-- [`scanmodel.h`](../src/canon/scanmodel.h): embedded source contexts and original embedding locations.
-- [`tst_canonlegacy.cpp`](../tests/tst_canonlegacy.cpp): real specimens and independently authored failure/boundary cases.
+- [`omfreader.h/.cpp`](../src/mediaengine/omfreader.cpp): public reader and native/embedded source coordination.
+- [`audioreader_p.h/.cpp`](../src/mediaengine/audioreader_p.cpp): bounded native audio chunk reader.
+- [`omfbentoreader_p.h/.cpp`](../src/mediaengine/omfbentoreader_p.cpp): OMF-owned container framing and selective value reads.
+- [`omfobjects_p.h/.cpp`](../src/mediaengine/omfobjects_p.cpp): OMF-owned object interpretation.
+- [`scanmodel.h`](../src/mediaengine/scanmodel.h): embedded source contexts and original embedding locations.
+- [`tst_mediaenginelegacy.cpp`](../tests/tst_mediaenginelegacy.cpp): real specimens and independently authored failure/boundary cases.
 
 ## Evidence and memory rules
 
@@ -178,8 +178,7 @@ requests, not filesystem read-ahead or physical disk traffic. The probe is an
 unoptimized x86_64 build under Rosetta, not a full-scan speed/RAM benchmark. These
 results do not establish coverage of every possible private codec or OMF variant.
 
-Evidence: [full tests](evidence/fresh-legacy-full-tests-2026-10-04.txt),
-[detailed MDB/legacy tests](evidence/fresh-legacy-tests-2026-10-04.txt),
+Evidence: [detailed MDB/legacy tests](evidence/fresh-legacy-tests-2026-10-04.txt),
 [build log](evidence/fresh-legacy-build-2026-10-04.txt),
 [probe source](evidence/fresh-legacy-probe-2026-10-04.cpp),
 [reproduction commands](evidence/fresh-legacy-reproduction-2026-10-04.txt),
@@ -210,7 +209,7 @@ remain as [agreed](scan-scope-and-omf.md).
 
 ## Comparison after the MXF stage
 
-The fresh legacy reader is better suited to Canon's evidence model: it preserves
+The fresh legacy reader is better suited to MediaEngine's evidence model: it preserves
 the graph, competing observations, native/embedded source contexts and explicit
 interpretation limits instead of immediately selecting one metadata aggregate.
 The [MXF reader](fresh-mxf-reader-2026-10-04.md) subsequently follows that same design.

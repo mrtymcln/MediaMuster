@@ -6,7 +6,7 @@
 #include <QtEndian>
 
 /// Authored compact-TOC fixtures. Numeric TOC words follow the container
-/// order; immediate bytes are opaque. This writer does not use BentoFile.
+/// order; immediate bytes are opaque.
 class Bento2Builder
 {
 public:

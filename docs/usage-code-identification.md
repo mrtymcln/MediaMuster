@@ -39,16 +39,23 @@ MediaMuster now uses the shared definitions in `src/avidusage.h`:
 - For a selected master, integer 1 identifies Precompute and 7 identifies Media. Other, malformed or conflicting integers leave classification Unknown. OMF1 master-role selection and OMF2 `MMOB` class selection remain distinct; an OMF2 master with no Avid usage integer has a known role but unknown render classification.
 - For MXF, private 1 accepts an absent standard usage or `LowerLevel`; private 7 accepts an absent standard usage or `AdjustedClip`. Conflicting or unrecognised positive metadata stays Unknown. `LowerLevel` without the private integer stays Unknown.
 - A selected MXF MaterialPackage with both usage properties absent retains the ordinary-media convention found throughout this corpus. This is an explicit compatibility rule supported by the files and their databases, **not a claim that every absent usage or stored integer 0 means Media**.
-- Master identity is independent of the verdict: `hasMaterialPackage` preserves a selected 32-byte material UID even when usage is unknown. Failed header reads clear that role flag.
+- Package/master associations are retained separately from classification observations. Unknown usage does not fabricate a render classification.
 
-## Corpus and validation
+## Recorded source observations
 
-The export's 2,493 accessible media files comprise 2,411 MXF and 82 OMF files. Updated parser classifications are unchanged: **2,322 Media and 171 Precompute**. Every corresponding MDB master agrees: 2,322 have integer 7 and 171 have integer 1.
+The inspected export contained 2,493 accessible media files: 2,411 MXF and 82 OMF.
+Their corresponding MDB masters recorded integer 7 for 2,322 ordinary media files
+and integer 1 for 171 precomputes.
 
-An independent raw MXF walk found all 171 rendered MaterialPackages carry private integer 1 and standard `LowerLevel` (92 normal UL encodings, 79 with exchanged eight-byte halves). All 2,240 ordinary MXF MaterialPackages omit both properties. The corresponding physical MDB file mobs show why file code is insufficient: all 2,322 Media files have code 0, but so do **64 Precomputes**; the other 107 Precomputes have file code 9.
+An independent raw MXF walk found all 171 rendered MaterialPackages carry private
+integer 1 and standard `LowerLevel` (92 normal UL encodings, 79 with exchanged
+eight-byte halves). All 2,240 ordinary MXF MaterialPackages omit both properties.
+The corresponding physical MDB file mobs show why file code is insufficient:
+all 2,322 ordinary media files have code 0, but so do **64 precomputes**; the other
+107 precomputes have file code 9.
 
-Raw and parser comparison records are retained under `/tmp/mediamuster-audit/`: `usage-corpus-probe.json`, `usage-mdb-file-corroboration.json`, and `usage-export-classification-comparison.json`. A final rebuilt probe after separating master identity confirmed the same 2,493 verdicts and a selected MaterialPackage in all 2,411 MXF files; see `usage-identity-corpus-validation.json` and `usage-identity-export-after.json`. The tests cover private-tag remapping, incorrect widths, negative integers, contradictory metadata, ambiguous standard usage, source-package isolation, duplicate OMF mob records and both OMF payload byte orders.
-
-On 5 September 2026, both the normal build and the AddressSanitizer/UndefinedBehaviorSanitizer build passed `tst_mxfparser` **80**, `tst_mdbparser` **32**, and `tst_omfparser` **36** test checks, including setup/cleanup: **148 total, no failures or skips**. The external-fixture semantic regression ran with `OMF_TOOLKIT_SAMPLES` set. There were no sanitizer diagnostics; 35 expected parser warnings came from negative fixtures. All 122 checked repository dependency-to-object timestamps were current in each build.
-
-Complete final test output is preserved as `usage-identity-parser-qttest.log` and `usage-identity-sanitizer-qttest.log`; build logs use the same prefixes with `-build.log`. `usage-identity-validation-evidence.json` records the check totals, dependency audit and source hashes. The sanitizer build uses `-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all`; the run sets `UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1`. These are reader tests, not a claim to have exercised every Media Composer behavior or every effects UI path.
+These are dated observations of the inspected source files, not a new test of the
+current checkout or a guarantee covering every Media Composer export path. Raw
+source receipts were recorded under `/tmp/mediamuster-audit/` as
+`usage-corpus-probe.json` and `usage-mdb-file-corroboration.json`; that temporary
+location is historical provenance, not a retained repository test dependency.

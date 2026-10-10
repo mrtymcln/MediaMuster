@@ -7,7 +7,7 @@ features or a claim that every storage system has been tested.
 
 For the names and responsibilities of the code components, see the
 [architecture map](architecture.md). For dated platform test results, see
-[validation history](reviews/2026-09-20-media-scope/validation-history.md) and
+[current integration verification](../Project%20Canon/canon2-live-integration-2026-10-10.md) and
 [file-operation validation](file-operations-native-api-validation.md).
 
 ## Starting the app
@@ -42,14 +42,14 @@ The Console and diagnostic log use the same bare category labels:
 | `app` | Startup, permissions, crashes, selection, CSV export, revealing files and background-task problems |
 | `volumes` | Finding, adding and refreshing storage locations |
 | `scanner` | Scanning, cancellation and completion notices |
-| `canon` | Fresh-reader diagnostics, retained metadata conflicts and scoped reconciliation notices |
+| `mediaengine` | Fresh-reader diagnostics, retained metadata conflicts and scoped reconciliation notices |
 | `operations` | File operations, Undo and startup recovery |
 | `rebalance` | Rebalance and its automatic rescan |
 | `filters` | Bin and Precompute filters |
 
 The diagnostic log also has `avb`, `pmr`, `mdb`, `mxf`, `omf` and `metadata`
-categories for parser and metadata details. The live Canon scan forwards source
-reader and matching diagnostics to the Console under `canon`. Neither output adds
+categories for parser and metadata details. The live MediaEngine scan forwards source
+reader and matching diagnostics to the Console under `mediaengine`. Neither output adds
 a `console/` or `mediamuster.` prefix to these labels. The category identifies the
 source of a message; its severity is separate.
 
@@ -141,17 +141,17 @@ The scanner combines information from three places:
 | Avid's folder databases | The PMR file index connects filenames to Avid identifiers. MDB records provide clip relationships, names and technical details. Project information can also come from these databases. |
 | Metadata inside the media file | Independent technical details, identifiers and other recorded information retained alongside matching database observations. |
 
-The live scanner uses the new Canon discovery, PMR/MDB/MXF/legacy readers and
+The live scanner uses the new MediaEngine discovery, PMR/MDB/MXF/legacy readers and
 metadata selection engine. It reads every `.pmr` and `.mdb` in admitted folders
 first, regardless of basename. It reads a media header when there is no usable
 database match or required table metadata is missing or conflicting. A deliberately
 unopened header keeps a `NotRead` receipt and the scheduling reason. Empty or malformed
-files remain physical inventory rows. The old parser classes and selected-metadata
-aggregate are not used by this scan path.
+files remain physical inventory rows.
 
-Each source that is read retains its local objects, raw properties, encodings, references and
-read outcomes in RAM. Rows share an immutable receipt owning those source graphs;
-they also retain their own observations, selected values and selection reasons.
+Source details remain in RAM: complete PMR/MDB bytes, acquired MXF metadata ranges,
+or OMF/legacy graph archives. Detailed records can be restored from this backing.
+Rows share an immutable scan receipt and retain their own observations, selected
+values and selection reasons.
 Known recording payloads are skipped or retained as byte ranges rather than loaded
 as metadata. Unknown property meanings are preserved without fabricated values.
 
@@ -292,7 +292,7 @@ summing associated files.
 `FeatureFlags::kClipDuration` controls this experiment. When enabled, an
 experimental **Clip Duration** column and CSV field show separately
 recovered material/master track lengths, labelled by track ID. It preserves
-multiple track lengths rather than inventing one aggregate. Canon reads media
+multiple track lengths rather than inventing one aggregate. MediaEngine reads media
 headers and retains underlying evidence independently of this display flag.
 MXF and supported OMF/MDB graph projections can supply associated track lengths;
 unavailable clip lengths stay blank. AVB clip lengths are not currently projected
@@ -335,7 +335,7 @@ with the matching rows. Other active filters still apply. The result depends on
 the loaded bins and recoverable identifiers; it is not a search of every project
 or every bin on disk.
 
-The whole-bin filter now uses the Canon AVB reader and reference engine. Readable
+The whole-bin filter now uses the MediaEngine AVB reader and reference engine. Readable
 partial results remain usable with a persistent **Results may be incomplete**
 warning and Console details. A completely unreadable bin or cancelled operation
 cannot supply an applicable filter. Applied filter steps keep their warning and
@@ -408,7 +408,7 @@ compare the complete source and destination contents after copying.
 
 Before acting on a scanned row, operation checks compare the applicable scan path,
 volume identifier and modification time. Header-established file/master identities
-are checked with the fresh Canon MXF or legacy reader through the opened source.
+are checked with the fresh MediaEngine MXF or legacy reader through the opened source.
 Database-only master associations remain retained claims; they are not imposed on a
 header that did not establish them. A changed or contradictory header cannot be used
 to authorize a stale scan record. These scan checks remain separate from the native

@@ -2,10 +2,10 @@
 #include "operationplan.h"
 #include "conventions.h"
 #include "mobid.h"
-#include "canon/mxfreader.h"
-#include "canon/omfreader.h"
-#include "canon/projection.h"
-#include "canon/scanengine.h"
+#include "mediaengine/mxfreader.h"
+#include "mediaengine/omfreader.h"
+#include "mediaengine/projection.h"
+#include "mediaengine/scancoordinator.h"
 #include "pathkey.h"
 #include <QDateTime>
 #include <QDir>
@@ -119,16 +119,16 @@ namespace
 		const bool fileKnown = !fileId.isEmpty() && !MobId::isAllZero(fileId);
 		if (!fileKnown && expectedMasters.isEmpty())
 			return true;
-		const Canon::Cancellation cancellation;
+		const MediaEngine::Cancellation cancellation;
 		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			mxf ? MetadataSource::Mxf : MetadataSource::Omf, item.src, QFileInfo(item.src).lastModified(), SourceReadState::NotRead});
-		const auto parsed = mxf ? Canon::MxfReader{}.read(source.io(), {receipt, cancellation})
-								: Canon::OmfReader{}.read(source.io(), {receipt, cancellation});
-		const auto projection = mxf ? Canon::projectMxf(parsed, cancellation) : Canon::projectOmf(parsed, cancellation);
+		const auto parsed = mxf ? MediaEngine::MxfReader{}.read(source.io(), {receipt, cancellation})
+								: MediaEngine::OmfReader{}.read(source.io(), {receipt, cancellation});
+		const auto projection = mxf ? MediaEngine::projectMxf(parsed, cancellation) : MediaEngine::projectOmf(parsed, cancellation);
 		MediaEvidence evidence;
 		for (const auto &file : projection.files)
-			Canon::appendEvidence(evidence, file.evidence);
-		Canon::selectMetadata(evidence);
+			MediaEngine::appendEvidence(evidence, file.evidence);
+		MediaEngine::selectMetadata(evidence);
 		const QString actualFile = evidence.selected(MediaProperty::FileMobId).value.toString();
 		const QStringList masters = evidence.selected(MediaProperty::MasterMobId).value.toStringList();
 		const bool mastersMatch = std::all_of(expectedMasters.cbegin(), expectedMasters.cend(),

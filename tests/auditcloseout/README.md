@@ -23,7 +23,7 @@ the test writer does not invent membership by enumerating all objects.
 ## Reproduction
 
 Run from the repository root on macOS with the pinned Qt 6.5.3 installation.
-First ensure `build-canon/libmediamuster_canon.a` is freshly rebuilt from the same
+First ensure `build-mediaengine/libmediamuster_mediaengine_core.a` is freshly rebuilt from the same
 checkout. The commands below compile only the standalone diagnostic sources and link
 the freshly rebuilt archive. Production translation units are not compiled again;
 all reader/projector/model dependencies come from the same build. Keep binaries/results outside the repository.
@@ -36,18 +36,18 @@ auditOutput=$(mktemp -d /private/tmp/mediamuster-audit-closeout.XXXXXX)
 c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests \
   -isystem "$auditQt/QtCore.framework/Headers" -iframework "$auditQt" \
   tests/auditcloseout/mxfprojection.cpp \
-  build-canon/libmediamuster_canon.a -framework QtCore \
+  build-mediaengine/libmediamuster_mediaengine_core.a -framework QtCore \
   -Wl,-rpath,"$auditQt" -o "$auditOutput/mxfprojection"
 
 c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests \
   -isystem "$auditQt/QtCore.framework/Headers" -iframework "$auditQt" \
-  tests/auditcloseout/mxfwidths.cpp build-canon/libmediamuster_canon.a \
+  tests/auditcloseout/mxfwidths.cpp build-mediaengine/libmediamuster_mediaengine_core.a \
   -framework QtCore -Wl,-rpath,"$auditQt" -o "$auditOutput/mxfwidths"
 
 c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests \
   -isystem "$auditQt/QtCore.framework/Headers" -iframework "$auditQt" \
   tests/auditcloseout/omfprojection.cpp \
-  build-canon/libmediamuster_canon.a -framework QtCore \
+  build-mediaengine/libmediamuster_mediaengine_core.a -framework QtCore \
   -Wl,-rpath,"$auditQt" -o "$auditOutput/omfprojection"
 
 "$auditOutput/mxfprojection" > "$auditOutput/mxfprojection.json"

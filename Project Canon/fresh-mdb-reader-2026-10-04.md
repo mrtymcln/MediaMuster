@@ -3,13 +3,13 @@
 Implemented 4 October 2026, alongside the existing production reader. This is the
 next replacement-engine component after the selected fresh PMR reader. It does
 not activate the replacement scanner or change table/CSV selection rules.
-Later status: Canon is live. The [10 October reader-ownership refactor](reader-boundaries-2026-10-10.md)
+Later status: MediaEngine is live. The [10 October reader-ownership refactor](reader-boundaries-2026-10-10.md)
 gives MDB its own container, object, audio-summary and metadata interpretation
 implementations, independent of OMF support.
 
 ## What it does
 
-`Canon::MdbReader` reads an already-open binary device and returns the database's
+`MediaEngine::MdbReader` reads an already-open binary device and returns the database's
 source objects, every encountered property value, and recorded local references.
 It does not flatten those objects into a selected clip/file metadata aggregate.
 
@@ -36,14 +36,13 @@ Later: reconcile ownership/identities, match physical MediaFiles,
 
 Implementation files:
 
-- `src/canon/mdbreader.h/.cpp`: public MDB reader; delegates container and object interpretation.
-- `src/canon/mdbobjects_p.h/.cpp`: MDB-owned dictionary and object interpretation.
-- `src/canon/mdbaudiosummary_p.h/.cpp`: MDB-owned copied audio-format decoding.
-- `src/canon/mdbprojection.cpp`: MDB-owned metadata interpretation.
-- `src/canon/mdbbentoreader_p.h/.cpp`: private container reader; no dependency on the
-  old `BentoFile`, `MdbParser` or `OmfObjects` implementations.
-- `src/canon/scanmodel.h`: optional `BentoPropertyContext` on a raw property.
-- `tests/tst_canonmdb.cpp`: independently authored containers and genuine fixtures.
+- `src/mediaengine/mdbreader.h/.cpp`: public MDB reader; delegates container and object interpretation.
+- `src/mediaengine/mdbobjects_p.h/.cpp`: MDB-owned dictionary and object interpretation.
+- `src/mediaengine/mdbaudiosummary_p.h/.cpp`: MDB-owned copied audio-format decoding.
+- `src/mediaengine/mdbprojection.cpp`: MDB-owned metadata interpretation.
+- `src/mediaengine/mdbbentoreader_p.h/.cpp`: MDB-owned private container reader.
+- `src/mediaengine/scanmodel.h`: optional `BentoPropertyContext` on a raw property.
+- `tests/tst_mediaenginemdb.cpp`: independently authored containers and genuine fixtures.
 
 Subsequent same-day update: the [legacy reader](fresh-legacy-reader-2026-10-04.md)
 shares this object interpreter and adds selective essence reads to the Bento layer.
@@ -143,10 +142,8 @@ device ownership and cancellation with partially acquired evidence.
 
 The native universal Debug build and final regression results are recorded in
 [build output](evidence/fresh-mdb-build-2026-10-04.txt),
-[MDB tests](evidence/fresh-mdb-tests-2026-10-04.txt), and
-[complete suite](evidence/fresh-mdb-full-tests-2026-10-04.txt).
-All **31 CTest suites passed**; the MDB suite has **29 passing cases**, including
-its data variations and setup/cleanup checks. The final full run took 56.41 seconds.
+[MDB tests](evidence/fresh-mdb-tests-2026-10-04.txt). The focused MDB suite records
+**29 passing cases**, including its data variations and setup/cleanup checks.
 
 A separate read-only probe of the six MDBs actually present in local/EDIT managed
 folders returned `Complete` for every source:

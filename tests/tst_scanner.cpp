@@ -1,26 +1,29 @@
-// Drives the live Canon2 scanner through MediaScanner using disposable Avid
-// layouts and real format fixtures. Old parsers appear only as comparison oracles.
+// Drives the live MediaEngine scanner through MediaScanner using disposable Avid
+// layouts and real format fixtures. Reader checks use the same verified format APIs.
 
 #include "conventions.h"
-#include "canon/scanmodel.h"
-#include "canon/projection.h"
-#include "canon/sourcearchive.h"
-#include "canon2/databasesource.h"
-#include "canon2/mxfsource.h"
+#include "mediaengine/scanmodel.h"
+#include "mediaengine/projection.h"
+#include "mediaengine/mdbreader.h"
+#include "mediaengine/mxfreader.h"
+#include "mediaengine/omfreader.h"
+#include "mediaengine/pmrreader.h"
+#include "mediaengine/scancoordinator.h"
+#include "mediaengineadapter.h"
+#include "mediaengine/sourcearchive.h"
+#include "mediaengine/databasesource.h"
+#include "mediaengine/mxfsource.h"
 #include "featureflags.h"
 #include "mediafile.h"
+#include "mediametadata.h"
 #include "mediacsv.h"
 #include "testpause.h"
 #include "mediascanner.h"
-#include "mdbparser.h"
 #include "mobid.h"
-#include "mxfparser.h"
-#include "omfparser.h"
 #include "omfuid.h"
 #include "testbento.h"
 #include "testtypedbento.h"
 #include "testomf.h"
-#include "pmrparser.h"
 
 #include "testutil.h"
 
@@ -33,6 +36,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <algorithm>
 
 #ifdef Q_OS_MACOS
 #include <mach/mach.h>
@@ -41,6 +45,53 @@
 
 namespace
 {
+	MediaEngine::ParsedSource readSource(const MediaEngine::SourceReader &reader, const QString &path, MetadataSource kind)
+	{
+		QFile input(path);
+		input.open(QIODevice::ReadOnly);
+		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			kind, path, QFileInfo(path).lastModified(), SourceReadState::NotRead});
+		const MediaEngine::Cancellation cancellation;
+		return reader.read(input, {receipt, cancellation});
+	}
+
+	MediaFile projectedMetadata(const MediaEngine::ProjectedFile &projected)
+	{
+		MediaFile row;
+		row.evidence = projected.evidence;
+		MediaEngine::selectMetadata(row.evidence);
+		applyResolvedMetadata(row);
+		return row;
+	}
+
+	MediaFile headerMetadata(const QString &path, bool omf = false)
+	{
+		const MediaEngine::Cancellation cancellation;
+		const auto source = omf ? readSource(MediaEngine::OmfReader{}, path, MetadataSource::Omf)
+							  : readSource(MediaEngine::MxfReader{}, path, MetadataSource::Mxf);
+		const auto projection = omf ? MediaEngine::projectOmf(source, cancellation)
+								  : MediaEngine::projectMxf(source, cancellation);
+		if (projection.files.size() != 1)
+		{
+			QTest::qFail(qPrintable(path + QStringLiteral(": expected one owned header projection")), __FILE__, __LINE__);
+			return {};
+		}
+		return projectedMetadata(projection.files.first());
+	}
+
+	MediaEngine::Projection databaseProjection(const QString &path)
+	{
+		const MediaEngine::Cancellation cancellation;
+		return MediaEngine::projectMdb(readSource(MediaEngine::MdbReader{}, path, MetadataSource::Mdb), cancellation);
+	}
+
+	const MediaEngine::ProjectedFile *fileWithId(const QVector<MediaEngine::ProjectedFile> &files, const QString &identity)
+	{
+		const auto match = std::find_if(files.cbegin(), files.cend(), [&](const auto &file)
+									  { return file.fileMobId == identity || file.masterMobIds.contains(identity); });
+		return match == files.cend() ? nullptr : &*match;
+	}
+
 	QJsonObject auditMemory()
 	{
 		QJsonObject result;
@@ -69,11 +120,11 @@ namespace
 		qint64 encodingBytes = 0;
 	};
 
-	void countAuditGraph(const Canon::ParsedSource &source, AuditGraphSize &size)
+	void countAuditGraph(const MediaEngine::ParsedSource &source, AuditGraphSize &size)
 	{
 		size.objects += source.objects.size();
 		size.relationships += source.relationships.size();
-		const auto countProperties = [&](const QVector<Canon::RawProperty> &properties)
+		const auto countProperties = [&](const QVector<MediaEngine::RawProperty> &properties)
 		{
 			size.properties += properties.size();
 			size.propertyCapacity += properties.capacity();
@@ -89,11 +140,11 @@ namespace
 
 	bool headerWasRead(const MediaFile &file)
 	{
-		if (!file.canonScan)
+		if (!file.mediaEngineScan)
 			return false;
-		for (const auto &source : file.canonScan->sources)
+		for (const auto &source : file.mediaEngineScan->sources)
 			if (source.snapshot && source.snapshot->path == file.mediaFilePath &&
-				source.outcome != Canon::ParsedSource::Outcome::NotRead)
+				source.outcome != MediaEngine::ParsedSource::Outcome::NotRead)
 				return true;
 		return false;
 	}
@@ -115,13 +166,13 @@ namespace
 	}
 	void checkDatabaseOnlyRead(const MediaFile &file)
 	{
-		QVERIFY(file.canonScan);
-		const auto source = std::find_if(file.canonScan->sources.cbegin(), file.canonScan->sources.cend(), [&](const Canon::StoredSource &candidate)
+		QVERIFY(file.mediaEngineScan);
+		const auto source = std::find_if(file.mediaEngineScan->sources.cbegin(), file.mediaEngineScan->sources.cend(), [&](const MediaEngine::StoredSource &candidate)
 										 { return candidate.snapshot && candidate.snapshot->path == file.mediaFilePath; });
-		QVERIFY(source != file.canonScan->sources.cend());
-		QCOMPARE(source->outcome, Canon::ParsedSource::Outcome::NotRead);
+		QVERIFY(source != file.mediaEngineScan->sources.cend());
+		QCOMPARE(source->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
 		QCOMPARE(source->snapshot->readState, SourceReadState::NotRead);
-		const Canon::Cancellation inspection;
+		const MediaEngine::Cancellation inspection;
 		const auto restored = source->restore(inspection);
 		QVERIFY(restored);
 		QVERIFY(restored->objects.isEmpty());
@@ -154,7 +205,7 @@ class TestScanner : public QObject
 private slots:
 	void scans_folder_with_pmr_mdb_and_audio_mxf();
 	void optional_read_only_real_scan();
-	void canon_extension_discovery_keeps_copies_and_local_reference_issues();
+	void mediaengine_extension_discovery_keeps_copies_and_local_reference_issues();
 	void unreferenced_mxf_recovered_via_mdb();
 	void stage3_mdb_name_must_not_clobber_material_name();
 	void header_master_lookup_uses_canonical_identity_data();
@@ -176,16 +227,8 @@ private slots:
 	// LowerLevel UID in AAF byte order. Its name cannot decide classification.
 	void effect_render_names_classify_as_precompute();
 
-	// The clip-name ladder (user ruling 2026-08-14): MaterialPackage name,
-	// else the MDB record's own name, else BLANK.
-	// The filename is no longer a rung — it is a fact about the disk, not a
-	// name Avid gave the clip.
-	//
-	// This reverses the 2026-07-30 ruling, and only because the thing being
-	// ruled on changed: that ruling was made against the old parser, which
-	// mined names out of a ±1 KB window and picked a neighbouring clip ~18%
-	// of the time. The parser now walks the database's real record framing
-	// and measured 360/360 exact on a real folder.
+	// Clip Name follows the shared source policy. A matching MDB can fill
+	// a missing media-header name; the filesystem filename is never a clip name.
 	void mdb_name_fills_in_when_the_mxf_has_none();
 	void unknown_clip_name_is_blank_not_the_filename();
 
@@ -320,9 +363,9 @@ QByteArray TestScanner::writeJunk(const QString &path, int size)
 
 void TestScanner::optional_read_only_real_scan()
 {
-	const QString roots = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_ROOTS");
+	const QString roots = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS");
 	if (roots.isEmpty())
-		QSKIP("Opt-in real-drive audit; set MEDIAMUSTER_CANON_REAL_SCAN_ROOTS to semicolon-separated managed roots");
+		QSKIP("Opt-in real-drive audit; set MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS to semicolon-separated managed roots");
 	MediaScanner scanner;
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
@@ -335,9 +378,9 @@ void TestScanner::optional_read_only_real_scan()
 	connect(&scanner, &MediaScanner::scanProgress, &scanner, [&](int current, int total, const QString &path)
 			{
 		if (current % 100 == 0)
-			qInfo() << "Canon2 audit progress:" << current << "/" << total << "at" << timer.elapsed() << "ms" << path; });
+			qInfo() << "MediaEngine audit progress:" << current << "/" << total << "at" << timer.elapsed() << "ms" << path; });
 	connect(&scanner, &MediaScanner::scanFinalising, &scanner, [&]
-			{ qInfo() << "Canon2 audit matching at" << timer.elapsed() << "ms"; });
+			{ qInfo() << "MediaEngine audit matching at" << timer.elapsed() << "ms"; });
 	scanner.startScan(options);
 	QVERIFY(finished.wait(600000));
 	QTRY_COMPARE(issues.count(), 1);
@@ -346,7 +389,7 @@ void TestScanner::optional_read_only_real_scan()
 	// Capture before restoring records: retained source storage and UI rows
 	// are alive, but this audit has not temporarily restored any source graphs.
 	const QJsonObject memoryRetained = auditMemory();
-	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_CSV");
+	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_CSV");
 	if (!csvOutput.isEmpty())
 		QVERIFY(MediaCsv::write(csvOutput, files, {true, true}));
 	QJsonArray sourceDetails;
@@ -356,17 +399,17 @@ void TestScanner::optional_read_only_real_scan()
 	qint64 mxfImageBytes = 0;
 	qint64 archiveCount = 0;
 	qint64 archiveBytes = 0;
-	if (!files.isEmpty() && files.first().canonScan)
+	if (!files.isEmpty() && files.first().mediaEngineScan)
 	{
-		const auto &scan = *files.first().canonScan;
+		const auto &scan = *files.first().mediaEngineScan;
 		QVERIFY(scan.discoveryComplete);
 		QVERIFY(scan.parsingComplete);
 		QVERIFY(scan.reconciliationComplete);
 		QVERIFY(!scan.cancelled);
 		for (const auto &source : scan.sources)
 		{
-			const auto *database = dynamic_cast<const Canon2::DatabaseSource *>(source.storage.data());
-			const auto *mxf = dynamic_cast<const Canon2::MxfSource *>(source.storage.data());
+			const auto *database = dynamic_cast<const MediaEngine::DatabaseSource *>(source.storage.data());
+			const auto *mxf = dynamic_cast<const MediaEngine::MxfSource *>(source.storage.data());
 			const qint64 capturedDatabaseBytes = database ? database->image().bytes().size() : 0;
 			const qint64 capturedMxfBytes = mxf ? mxf->image().storedBytes() : 0;
 			databaseImageCount += database != nullptr;
@@ -377,7 +420,7 @@ void TestScanner::optional_read_only_real_scan()
 			archiveBytes += source.archive ? source.archive->compressedBytes() : 0;
 			// Inspect one source at a time; retaining every restored graph would
 			// recreate the application's former memory use in this audit itself.
-			const Canon::Cancellation inspection;
+			const MediaEngine::Cancellation inspection;
 			const auto restored = source.restore(inspection);
 			QVERIFY(restored);
 			AuditGraphSize size;
@@ -417,7 +460,7 @@ void TestScanner::optional_read_only_real_scan()
 	QJsonArray issueDetails;
 	for (const auto &issue : qvariant_cast<QVector<ScanIssue>>(issues.first().first()))
 		issueDetails.append(QJsonObject{{"kind", int(issue.kind)}, {"source", issue.source ? issue.source->path : QString{}}, {"expectedPath", issue.expectedPath}, {"mobId", issue.fileMobId}, {"matchingPaths", QJsonArray::fromStringList(issue.matchingPaths)}, {"scopeComplete", issue.scopeComplete}, {"explanation", issue.explanation}});
-	const QString output = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_REPORT");
+	const QString output = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_REPORT");
 	if (!output.isEmpty())
 	{
 		QFile report(output);
@@ -437,10 +480,10 @@ void TestScanner::optional_read_only_real_scan()
 												 {"issues", issueDetails}});
 		QVERIFY(report.write(document.toJson()) > 0);
 	}
-	qInfo() << "Read-only Canon2 audit:" << files.size() << "rows in" << elapsed << "ms";
+	qInfo() << "Read-only MediaEngine audit:" << files.size() << "rows in" << elapsed << "ms";
 }
 
-void TestScanner::canon_extension_discovery_keeps_copies_and_local_reference_issues()
+void TestScanner::mediaengine_extension_discovery_keeps_copies_and_local_reference_issues()
 {
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
@@ -524,16 +567,16 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 
 	const MediaFile &mf = results.first();
 
-	// Exercise the live adapter, not just the standalone Canon2 coordinator.
+	// Exercise the live adapter, not just the standalone MediaEngine coordinator.
 	// Each database keeps its original fixture bytes instead of a graph archive.
-	QVERIFY(mf.canonScan);
+	QVERIFY(mf.mediaEngineScan);
 	int databaseSources = 0;
-	for (const auto &source : mf.canonScan->sources)
+	for (const auto &source : mf.mediaEngineScan->sources)
 	{
 		if (!source.snapshot || (source.snapshot->source != MetadataSource::Pmr &&
 							 source.snapshot->source != MetadataSource::Mdb))
 			continue;
-		const auto *database = dynamic_cast<const Canon2::DatabaseSource *>(source.storage.data());
+		const auto *database = dynamic_cast<const MediaEngine::DatabaseSource *>(source.storage.data());
 		QVERIFY(database);
 		QVERIFY(!source.archive);
 		QVERIFY(!source.unfinishedGraph);
@@ -899,7 +942,7 @@ namespace
 
 	/// One MXF metadata set: `setType` 0x36 = MaterialPackage, 0x37 =
 	/// SourcePackage. Local tag 0x4401 is the package UMID, 0x4402 the name
-	/// (UTF-16BE). Mirrors the builder in tst_mxfparser.cpp.
+	/// (UTF-16BE), as stored by the MXF tagged-value type.
 	QByteArray packageSet(quint8 setType, const QByteArray &umid32, const QString &name)
 	{
 		const auto u16be = [](quint16 v)
@@ -929,7 +972,7 @@ namespace
 	}
 
 	/// A CDCI picture descriptor carrying stored width/height. Without one the
-	/// parse yields MediaMetadata::valid == false and applyMediaMetadata skips
+	/// the descriptor ownership cannot be established, so metadata selection skips
 	/// everything, so a package-only buffer would prove nothing about naming.
 	QByteArray cdciSet(quint32 width, quint32 height)
 	{
@@ -1045,7 +1088,7 @@ void TestScanner::source_package_name_is_not_a_clip_name()
 												   "3333333333333333"
 												   "4444444444444444");
 	// The descriptor is what makes the parse `valid`; without it
-	// applyMediaMetadata skips every field and the test would pass for the
+	// a reader without an owning descriptor could skip every field and pass for the
 	// wrong reason. Stage 2 also skips files under 1 KB, so pad past that —
 	// trailing zeros read as empty KLV keys and the walk still terminates.
 	QByteArray mxf = cdciSet(1920, 1080);
@@ -1303,7 +1346,7 @@ void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
 	QCOMPARE(second.size(), 1);
 	QCOMPARE(first.front().fileMobId, second.front().fileMobId);
 	QVERIFY(!first.front().fileMobId.isEmpty());
-	QVERIFY(first.front().canonScan != second.front().canonScan);
+	QVERIFY(first.front().mediaEngineScan != second.front().mediaEngineScan);
 }
 
 void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
@@ -1856,9 +1899,15 @@ void TestScanner::current_render_with_missing_project_survives_failed_header_rea
 	w.setHandles(1, "OMFI:ObjectSpine", {master, file});
 	const QString dbPath = folder + QStringLiteral("/msmMMOB.mdb");
 	QVERIFY(tryWriteFile(dbPath, w.build()));
-	const MdbDatabase db = MdbParser::load(dbPath);
-	QVERIFY(db.files.value(MobId::format(kToneFileId)).essenceComplete);
-	QVERIFY(db.masters.value(MobId::format(kLadderMob)).classificationKnown);
+	const auto projection = databaseProjection(dbPath);
+	const auto *projectedFile = fileWithId(projection.files, MobId::format(kToneFileId));
+	const auto *masterFacts = fileWithId(projection.masters, MobId::format(kLadderMob));
+	QVERIFY(projectedFile);
+	QVERIFY(masterFacts);
+	const auto technical = projectedMetadata(*projectedFile);
+	QCOMPARE(technical.sampleRate, 48000);
+	QCOMPARE(technical.bitDepth, QStringLiteral("24-bit"));
+	QCOMPARE(projectedMetadata(*masterFacts).type, MediaFile::Type::Precompute);
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
 						 singlePmr("render.mxf", kToneFileId, kLadderMob, {}, kToneModified)));
 	writeJunk(folder + QStringLiteral("/render.mxf"), 4096);
@@ -1935,10 +1984,11 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	removeDatabaseClipNames(folder + QStringLiteral("/msmMMOB.mdb"));
 	const QString replacement = fixturesDir() + QString::fromUtf8("/corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
-	const MediaMetadata header = MxfParser::parseHeader(replacement);
-	QVERIFY(header.valid && header.classificationKnown && header.isPrecompute);
-	const QString newFileId = MobId::swapMaterialByteOrder(header.fileMobId);
-	const QString newMasterId = MobId::swapMaterialByteOrder(header.umid);
+	const MediaFile header = headerMetadata(replacement);
+	QCOMPARE(header.kind, MediaFile::Kind::Video);
+	QCOMPARE(header.type, MediaFile::Type::Precompute);
+	const QString newFileId = header.fileMobId;
+	const QString newMasterId = header.masterMobId;
 	QVERIFY(!newFileId.isEmpty() && newFileId != MobId::format(kToneFileId));
 	QVERIFY(!newMasterId.isEmpty() && newMasterId != MobId::format(kLadderMob));
 	QVERIFY(QFile::copy(replacement, folder + QLatin1Char('/') + kToneName));
@@ -1952,16 +2002,16 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	QCOMPARE(mf.fileMobId, newFileId);
 	QCOMPARE(mf.masterMobId, newMasterId);
 	QCOMPARE(mf.clipName, header.clipName);
-	QCOMPARE(mf.project, header.projectName);
+	QCOMPARE(mf.project, header.project);
 	QVERIFY(mf.originalBin.isEmpty()); // the obsolete tone's MDB bin must not survive
 	QCOMPARE(mf.sourceFilePath, header.sourceFilePath);
 	QCOMPARE(mf.sourceContainer, header.sourceContainer);
-	QCOMPARE(mf.isImported, header.hasImportSetting);
+	QCOMPARE(mf.isImported, header.isImported);
 	QCOMPARE(mf.kind, MediaFile::Kind::Video);
 	QCOMPARE(mf.type, MediaFile::Type::Precompute);
 	QCOMPARE(mf.precomputeCategory, header.precomputeCategory);
 	QCOMPARE(mf.sampleRate, 0);
-	QCOMPARE(mf.compression, header.codec);
+	QCOMPARE(mf.compression, header.compression);
 }
 
 void TestScanner::precompute_category_from_current_database_data()
@@ -2009,10 +2059,10 @@ void TestScanner::precompute_category_conflict_and_stale_database()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	const QString fixture = QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf");
-	const auto header = MxfParser::parseHeader(fixturesDir() + QLatin1Char('/') + fixture);
+	const auto header = headerMetadata(fixturesDir() + QLatin1Char('/') + fixture);
 	QCOMPARE(header.precomputeCategory, MediaFile::PrecomputeCategory::RenderedEffects);
-	const QByteArray fileId = QByteArray::fromHex(MobId::swapMaterialByteOrder(header.fileMobId).toLatin1());
-	const QByteArray masterId = QByteArray::fromHex(MobId::swapMaterialByteOrder(header.umid).toLatin1());
+	const QByteArray fileId = QByteArray::fromHex(header.fileMobId.toLatin1());
+	const QByteArray masterId = QByteArray::fromHex(header.masterMobId.toLatin1());
 	QVERIFY(QFile::copy(fixturesDir() + QLatin1Char('/') + fixture, folder + QStringLiteral("/render.mxf")));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), categoryDatabase(masterId, fileId, true, 2)));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), singlePmr("render.mxf", fileId, masterId, {}, kToneModified)));
@@ -2161,17 +2211,16 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	const QByteArray bytes = klv(QByteArray::fromHex("060e2b34020501010d01020101020400"), pack) + metadata;
 	const QString path = folder + QStringLiteral("/unknown-usage.mxf");
 	QVERIFY(tryWriteFile(path, bytes));
-	const MediaMetadata parsed = MxfParser::parseHeader(path);
-	QVERIFY(parsed.valid);
-	QVERIFY(parsed.hasMaterialPackage);
-	QVERIFY(!parsed.classificationKnown); // LowerLevel alone also describes groups/motion.
-	QVERIFY(!parsed.umid.isEmpty());
+	const MediaFile parsed = headerMetadata(path);
+	QCOMPARE(parsed.kind, MediaFile::Kind::Video);
+	QCOMPARE(parsed.type, MediaFile::Type::Unknown); // LowerLevel alone also describes groups/motion.
+	QVERIFY(!parsed.masterMobId.isEmpty());
 	QVERIFY(!parsed.fileMobId.isEmpty());
 	const auto rows = runScan(tmp.path());
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &mf = rows.first();
-	QCOMPARE(mf.masterMobId, MobId::swapMaterialByteOrder(parsed.umid));
-	QCOMPARE(mf.fileMobId, MobId::swapMaterialByteOrder(parsed.fileMobId));
+	QCOMPARE(mf.masterMobId, parsed.masterMobId);
+	QCOMPARE(mf.fileMobId, parsed.fileMobId);
 	QCOMPARE(mf.kind, MediaFile::Kind::Video);
 	QCOMPARE(mf.type, MediaFile::Type::Unknown);
 	QCOMPARE(mf.clipName, QStringLiteral("Sequence,3D_Warp+1"));
@@ -2236,17 +2285,17 @@ void TestScanner::folder_without_databases_reads_every_header()
 	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
 
-	QVERIFY(mf.canonScan);
-	QCOMPARE(mf.canonScan->sources.size(), 1);
-	const auto &stored = mf.canonScan->sources.first();
-	QCOMPARE(stored.outcome, Canon::ParsedSource::Outcome::Complete);
-	const auto *mxf = dynamic_cast<const Canon2::MxfSource *>(stored.storage.data());
+	QVERIFY(mf.mediaEngineScan);
+	QCOMPARE(mf.mediaEngineScan->sources.size(), 1);
+	const auto &stored = mf.mediaEngineScan->sources.first();
+	QCOMPARE(stored.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+	const auto *mxf = dynamic_cast<const MediaEngine::MxfSource *>(stored.storage.data());
 	QVERIFY(mxf);
 	QVERIFY(!stored.archive);
 	QVERIFY(!stored.unfinishedGraph);
 	QVERIFY(mxf->image().valid());
 	QVERIFY(mxf->image().storedBytes() > 0);
-	const Canon::Cancellation inspection;
+	const MediaEngine::Cancellation inspection;
 	const auto beforeRemoval = stored.restore(inspection);
 	QVERIFY(beforeRemoval);
 	QVERIFY(!beforeRemoval->objects.isEmpty());
@@ -2258,7 +2307,7 @@ void TestScanner::folder_without_databases_reads_every_header()
 	QCOMPARE(restored->objects.size(), beforeRemoval->objects.size());
 	QCOMPARE(restored->relationships.size(), beforeRemoval->relationships.size());
 	QCOMPARE(restored->objects.first().snapshot, beforeRemoval->objects.first().snapshot);
-	const auto projection = Canon::projectMxf(*restored, inspection);
+	const auto projection = MediaEngine::projectMxf(*restored, inspection);
 	QCOMPARE(projection.files.size(), 1);
 	QCOMPARE(projection.files.first().fileMobId, mf.fileMobId);
 	bool sharedReceipt = false;
@@ -2281,9 +2330,22 @@ void TestScanner::mpeg_audio_falls_back_to_its_header()
 	const QString name = QStringLiteral("A01.E68C35B3_2C34B2C34B61AA.mxf");
 	copyFixture(QStringLiteral("corpus_headers/") + name, folder);
 	quint32 modified = 0;
-	for (const PmrEntry &e : PmrParser::parse(folder + QStringLiteral("/msmFMID.pmr")))
-		if (e.fileName == name)
-			modified = e.fileModifiedSecs;
+	const auto pmr = readSource(MediaEngine::PmrReader{}, folder + QStringLiteral("/msmFMID.pmr"), MetadataSource::Pmr);
+	QCOMPARE(pmr.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+	for (const auto &record : pmr.objects)
+	{
+		QString filename;
+		quint32 modificationWord = 0;
+		for (const auto &property : record.properties)
+		{
+			if (property.locator.name == QLatin1String("Filename"))
+				filename = MediaEngine::withInferredText(property).decoded.toString();
+			else if (property.locator.name == QLatin1String("ModificationWord"))
+				modificationWord = property.decoded.toUInt();
+		}
+		if (filename == name)
+			modified = modificationWord;
+	}
 	QVERIFY(modified != 0);
 	setModified(folder + QLatin1Char('/') + name, modified);
 
@@ -2349,8 +2411,8 @@ void TestScanner::modified_is_the_filesystem_mtime()
 namespace
 {
 	/// The MC 2026 audio pair in fixtures/omf/mc2026_audio and what the
-	/// v2 PMR / MDB say about each (pinned by tst_pmrparser, tst_mdbparser
-	/// and tst_omfparser; repeated here so a scanner row can be checked
+	/// v2 PMR / MDB say about each (pinned by the reader fixtures;
+	/// repeated here so a scanner row can be checked
 	/// end to end).
 	const QString kOmfWav = QStringLiteral("TONE_100A01.6A972974.039700.wav");
 	const QString kOmfAif = QStringLiteral("TONE_100A01.6A972997.0C53E0.aif");
@@ -2372,7 +2434,8 @@ namespace
 	const QString kOmfFolder = QString(Conventions::kOmfMediaFilesDir);
 	/// The trailer of 73 of the shipped PMR's 80 pairs — every slate pinned
 	/// below among them; the other 7 read 1626810312, still inside
-	/// PmrParser::trailerMatchesModified's ±2 s (tst_pmrparser has the split).
+	/// a two-second recording difference. These words are retained without
+	/// certifying an otherwise unverified database timestamp interpretation.
 	constexpr quint32 kSlateModified = 1626810310u;
 
 	QVector<MediaFile> runScanWith(const MediaScanner::Options &opts)
@@ -2648,19 +2711,19 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 
 	// The indexed timestamp matches, but the database's incomplete
 	// technical description requires a header read. The actual
-	// WAVE is usable yet lacks a master, so HeaderStatus stays Incomplete.
-	const MdbDatabase database = MdbParser::load(mdbPath);
+	// The file descriptor is usable; the missing master association remains unknown.
+	const auto database = databaseProjection(mdbPath);
 	const QString oldFileId = OmfUid::toIdText(TestOmf::uid(2));
-	QVERIFY(database.files.contains(oldFileId));
-	QVERIFY(!database.files.value(oldFileId).essenceComplete);
-	QVERIFY(PmrParser::trailerMatchesModified(kToneModified, QFileInfo(path).lastModified()));
-	const OmfMetadata header = OmfParser::parseHeader(path);
-	QVERIFY(header.essence.valid);
-	QCOMPARE(header.essence.headerStatus, MediaMetadata::HeaderStatus::Incomplete);
-	QVERIFY(header.essence.umid.isEmpty());
+	const auto *databaseFile = fileWithId(database.files, oldFileId);
+	QVERIFY(databaseFile);
+	QVERIFY(projectedMetadata(*databaseFile).compression.isEmpty());
+	QCOMPARE(QFileInfo(path).lastModified().toSecsSinceEpoch(), qint64(kToneModified));
+	const auto header = headerMetadata(path, true);
+	QCOMPARE(header.kind, MediaFile::Kind::Audio);
+	QVERIFY(header.masterMobId.isEmpty());
 	QCOMPARE(header.fileMobId, OmfUid::toIdText(TestOmf::uid(fileUid)));
 	QCOMPARE(header.fileMobId == oldFileId, fileUid == 2);
-	QCOMPARE(header.essence.codec, QStringLiteral("WAVE (OMF)"));
+	QCOMPARE(header.compression, QStringLiteral("PCM"));
 
 	const auto rows = runScan(tmp.path(), true);
 	QCOMPARE(rows.size(), 1);
@@ -3127,7 +3190,10 @@ void TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format()
 	const QString name = QStringLiteral("incomplete.wav");
 	const QString path = folder + QLatin1Char('/') + name;
 	QVERIFY(tryWriteFile(path, waveOmf(false, false)));
-	QCOMPARE(OmfParser::parseHeader(path).essence.headerStatus, MediaMetadata::HeaderStatus::Incomplete);
+	const auto header = headerMetadata(path, true);
+	QCOMPARE(header.kind, MediaFile::Kind::Audio);
+	QVERIFY(header.masterMobId.isEmpty());
+	QCOMPARE(header.type, MediaFile::Type::Unknown);
 
 	// The selected WAVE descriptor establishes OMF even though no master
 	// exists to name the clip or classify it as media versus precompute.
@@ -3161,15 +3227,16 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 
 	// The descriptor remains intact, but the required database clip name is
 	// absent. Header fallback must reject the unrelated database identity.
-	const MdbDatabase database = MdbParser::load(folder + QStringLiteral("/msmMMOB.mdb"));
-	QVERIFY(database.files.contains(kOmfWavFileMob));
-	QVERIFY(database.files.value(kOmfWavFileMob).essenceComplete);
-	QVERIFY(database.masters.contains(kOmfWavMasterMob));
-	const OmfMetadata header = OmfParser::parseHeader(path);
-	QVERIFY(header.hasMediaDescriptor);
-	QVERIFY(!header.essence.valid);
-	QVERIFY(!header.essence.classificationKnown);
-	QCOMPARE(header.essence.headerStatus, MediaMetadata::HeaderStatus::Incomplete);
+	const auto database = databaseProjection(folder + QStringLiteral("/msmMMOB.mdb"));
+	const auto *databaseFile = fileWithId(database.files, kOmfWavFileMob);
+	QVERIFY(databaseFile);
+	QCOMPARE(projectedMetadata(*databaseFile).sampleRate, 48000);
+	QVERIFY(fileWithId(database.masters, kOmfWavMasterMob));
+	const auto header = headerMetadata(path, true);
+	QCOMPARE(header.kind, MediaFile::Kind::Audio);
+	QCOMPARE(header.type, MediaFile::Type::Unknown);
+	QVERIFY(header.compression.isEmpty());
+	QVERIFY(header.masterMobId.isEmpty());
 	QCOMPARE(header.fileMobId, OmfUid::toIdText(TestOmf::uid(replacementUid)));
 	QVERIFY(header.fileMobId != kOmfWavFileMob);
 

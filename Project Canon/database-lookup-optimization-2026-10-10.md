@@ -1,6 +1,6 @@
 # Database lookup optimization
 
-Recorded 10 October 2026. Canon now looks up individual MDB/OMF properties without
+Recorded 10 October 2026. MediaEngine now looks up individual MDB/OMF properties without
 building temporary matching-property lists, and reuses completed source-mob
 relationship lookups while projecting one source. The measured local Release
 scan median fell from **12.066 to 11.652 seconds**, a **3.43% reduction**.
@@ -10,7 +10,7 @@ experiment.
 
 ## What changed
 
-Only `src/canon/omfprojection.cpp` changes production behavior in this stage.
+Only `src/mediaengine/omfprojection.cpp` changes production behavior in this stage.
 
 | Work | Before | Now |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ in temporary diagnostic copies; they do not invent corrupt format layouts or
 add production test hooks.
 
 All **41 native arm64 Release test suites pass**. The actual primary Debug app
-also builds and links successfully for arm64 and x86_64. The old engine remains.
+also builds and links successfully for arm64 and x86_64.
 Database-first scheduling, feature flags, selection preferences, UI and
 file-operation rules are unchanged.
 

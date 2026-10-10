@@ -1,0 +1,1621 @@
+{
+  "scope": "Read-only independent raw Bento1 examination of six genuine Avid MPEG50 OMF fixtures; no MediaMuster or removed application reader used.",
+  "method": "Decode 24-byte Bento1 TOC records with <IIIIIHH; property/type names from dictionary values; values from recorded extents or immediate TOC bytes. Decode OMF1 8-byte object references using the first little-endian 32-bit object-handle word and retain complete bytes. MobIndex slots have 12-byte UID then 8-byte object reference.",
+  "confidence": "High confidence in this narrow producer-specific MPEG ownership rule: exact MPEG class, direct HEAD MediaData and ObjectSpine membership, exact MDAT MobID matching active SourceMob. Formal MPEG-to-MDAT/IDAT parent registration remains unproven; this does not establish arbitrary extension classes or compression expansion.",
+  "fixtures": [
+    {
+      "filename": "BLACK_720x486x1_MPEG50.omf",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x486x1_MPEG50.omf",
+      "sha256": "6ee0b7831f309621229c173e3b7b87d904b5daeb564fa2d6887f32036594f012",
+      "size_bytes": 279512,
+      "container_major": 1,
+      "container_minor": 0,
+      "toc_offset": 267152,
+      "toc_length": 12336,
+      "omfi_version_hex": "0001",
+      "mpeg": {
+        "handle": 68000,
+        "class": "MPEG",
+        "class_records": [
+          {
+            "object": 68000,
+            "property_id": 66060,
+            "type_id": 65665,
+            "data_offset": null,
+            "length": 4,
+            "generation": 1,
+            "flags": 1,
+            "toc_record_offset": 271304,
+            "hex": "4d504547",
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag"
+          }
+        ],
+        "mdat_mobid_hex": "2a000000b368093bfed90800",
+        "mdat_mobid_records": [
+          {
+            "object": 68000,
+            "property_id": 67940,
+            "type_id": 65695,
+            "data_offset": 262146,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 271328,
+            "hex": "2a000000b368093bfed90800",
+            "property": "OMFI:MDAT:MobID",
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      "matching_source_mob": {
+        "handle": 68024,
+        "class": "MOBJ",
+        "mobid_hex": "2a000000b368093bfed90800",
+        "mobid_records": [
+          {
+            "object": 68024,
+            "property_id": 66350,
+            "type_id": 65695,
+            "data_offset": 263264,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275720,
+            "hex": "2a000000b368093bfed90800",
+            "property": "OMFI:MOBJ:MobID",
+            "type": "omfi:UID"
+          }
+        ],
+        "descriptor_handle": 68023,
+        "descriptor_class": "MPGI",
+        "physicalmedia_records": [
+          {
+            "object": 68024,
+            "property_id": 66355,
+            "type_id": 65655,
+            "data_offset": 263281,
+            "length": 8,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275792,
+            "hex": "b709010000000000",
+            "property": "OMFI:MOBJ:PhysicalMedia",
+            "type": "omfi:ObjRef"
+          }
+        ]
+      },
+      "root_proof": {
+        "MediaData": {
+          "count": 1,
+          "slots": [
+            {
+              "handle": 68000,
+              "objref_hex": "a009010030210000",
+              "uid_hex": "2a000000b368093bfed90800"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66050,
+              "type_id": 65645,
+              "data_offset": 263979,
+              "length": 22,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267536,
+              "hex": "01002a000000b368093bfed90800a009010030210000",
+              "property": "OMFI:MediaData",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        },
+        "ObjectSpine": {
+          "count": 4,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010000000000"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010000000000"
+            },
+            {
+              "handle": 68016,
+              "objref_hex": "b009010000000000"
+            },
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66065,
+              "type_id": 65660,
+              "data_offset": 264001,
+              "length": 34,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267560,
+              "hex": "0400b809010000000000c109010000000000b009010000000000a009010000000000",
+              "property": "OMFI:ObjectSpine",
+              "type": "omfi:ObjRefArray"
+            }
+          ]
+        },
+        "SourceMobs": {
+          "count": 2,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010020dd1200",
+              "uid_hex": "2a000000b368093bfed90800"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010020dd1200",
+              "uid_hex": "2a000000b368093bffd90800"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66070,
+              "type_id": 65645,
+              "data_offset": 263915,
+              "length": 42,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267488,
+              "hex": "02002a000000b368093bfed90800b809010020dd12002a000000b368093bffd90800c109010020dd1200",
+              "property": "OMFI:SourceMobs",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        }
+      },
+      "class_dictionary": {
+        "recorded_class_count": 36,
+        "recorded_classes": {
+          "68034": "MDES",
+          "68035": "MDTP",
+          "68036": "MCMR",
+          "68037": "TMCS",
+          "68038": "TMBC",
+          "68039": "MCBR",
+          "68040": "TRAN",
+          "68041": "TNFX",
+          "68042": "TRKG",
+          "68043": "TKFX",
+          "68044": "PVOL",
+          "68045": "RSET",
+          "68046": "SMLS",
+          "68047": "FXPS",
+          "68048": "WARP",
+          "68049": "STRB",
+          "68050": "EQMB",
+          "68051": "EQBD",
+          "68052": "ASPI",
+          "68053": "ASpi",
+          "68054": "LITM",
+          "68055": "MDFL",
+          "68056": "DIDD",
+          "68057": "CDCI",
+          "68058": "JPED",
+          "68059": "MPGI",
+          "68060": "TXTL",
+          "68061": "DOML",
+          "68062": "MSML",
+          "68063": "SDSL",
+          "68064": "MFML",
+          "68065": "TKMN",
+          "68066": "TKPS",
+          "68067": "TKDS",
+          "68068": "TKPA",
+          "68069": "TKDA"
+        },
+        "MPEG_MDAT_IDAT_parentage_recorded": false,
+        "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+      }
+    },
+    {
+      "filename": "BLACK_720x576x1_MPEG50.omf",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x576x1_MPEG50.omf",
+      "sha256": "ee1c8d77ebcd78eddab60639585759917098a3693a40617d83dda67a8122d6ad",
+      "size_bytes": 279512,
+      "container_major": 1,
+      "container_minor": 0,
+      "toc_offset": 267152,
+      "toc_length": 12336,
+      "omfi_version_hex": "0001",
+      "mpeg": {
+        "handle": 68000,
+        "class": "MPEG",
+        "class_records": [
+          {
+            "object": 68000,
+            "property_id": 66060,
+            "type_id": 65665,
+            "data_offset": null,
+            "length": 4,
+            "generation": 1,
+            "flags": 1,
+            "toc_record_offset": 271304,
+            "hex": "4d504547",
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag"
+          }
+        ],
+        "mdat_mobid_hex": "2a000000d8fcb83a9b6bfa00",
+        "mdat_mobid_records": [
+          {
+            "object": 68000,
+            "property_id": 67940,
+            "type_id": 65695,
+            "data_offset": 262146,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 271328,
+            "hex": "2a000000d8fcb83a9b6bfa00",
+            "property": "OMFI:MDAT:MobID",
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      "matching_source_mob": {
+        "handle": 68024,
+        "class": "MOBJ",
+        "mobid_hex": "2a000000d8fcb83a9b6bfa00",
+        "mobid_records": [
+          {
+            "object": 68024,
+            "property_id": 66350,
+            "type_id": 65695,
+            "data_offset": 263260,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275720,
+            "hex": "2a000000d8fcb83a9b6bfa00",
+            "property": "OMFI:MOBJ:MobID",
+            "type": "omfi:UID"
+          }
+        ],
+        "descriptor_handle": 68023,
+        "descriptor_class": "MPGI",
+        "physicalmedia_records": [
+          {
+            "object": 68024,
+            "property_id": 66355,
+            "type_id": 65655,
+            "data_offset": 263277,
+            "length": 8,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275792,
+            "hex": "b709010000000000",
+            "property": "OMFI:MOBJ:PhysicalMedia",
+            "type": "omfi:ObjRef"
+          }
+        ]
+      },
+      "root_proof": {
+        "MediaData": {
+          "count": 1,
+          "slots": [
+            {
+              "handle": 68000,
+              "objref_hex": "a009010030210000",
+              "uid_hex": "2a000000d8fcb83a9b6bfa00"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66050,
+              "type_id": 65645,
+              "data_offset": 263979,
+              "length": 22,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267536,
+              "hex": "01002a000000d8fcb83a9b6bfa00a009010030210000",
+              "property": "OMFI:MediaData",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        },
+        "ObjectSpine": {
+          "count": 4,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010000000000"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010000000000"
+            },
+            {
+              "handle": 68016,
+              "objref_hex": "b009010000000000"
+            },
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66065,
+              "type_id": 65660,
+              "data_offset": 264001,
+              "length": 34,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267560,
+              "hex": "0400b809010000000000c109010000000000b009010000000000a009010000000000",
+              "property": "OMFI:ObjectSpine",
+              "type": "omfi:ObjRefArray"
+            }
+          ]
+        },
+        "SourceMobs": {
+          "count": 2,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010074dd1200",
+              "uid_hex": "2a000000d8fcb83a9b6bfa00"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010074dd1200",
+              "uid_hex": "2a000000d8fcb83a9c6bfa00"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66070,
+              "type_id": 65645,
+              "data_offset": 263915,
+              "length": 42,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267488,
+              "hex": "02002a000000d8fcb83a9b6bfa00b809010074dd12002a000000d8fcb83a9c6bfa00c109010074dd1200",
+              "property": "OMFI:SourceMobs",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        }
+      },
+      "class_dictionary": {
+        "recorded_class_count": 36,
+        "recorded_classes": {
+          "68034": "MDES",
+          "68035": "MDTP",
+          "68036": "MCMR",
+          "68037": "TMCS",
+          "68038": "TMBC",
+          "68039": "MCBR",
+          "68040": "TRAN",
+          "68041": "TNFX",
+          "68042": "TRKG",
+          "68043": "TKFX",
+          "68044": "PVOL",
+          "68045": "RSET",
+          "68046": "SMLS",
+          "68047": "FXPS",
+          "68048": "WARP",
+          "68049": "STRB",
+          "68050": "EQMB",
+          "68051": "EQBD",
+          "68052": "ASPI",
+          "68053": "ASpi",
+          "68054": "LITM",
+          "68055": "MDFL",
+          "68056": "DIDD",
+          "68057": "CDCI",
+          "68058": "JPED",
+          "68059": "MPGI",
+          "68060": "TXTL",
+          "68061": "DOML",
+          "68062": "MSML",
+          "68063": "SDSL",
+          "68064": "MFML",
+          "68065": "TKMN",
+          "68066": "TKPS",
+          "68067": "TKDS",
+          "68068": "TKPA",
+          "68069": "TKDA"
+        },
+        "MPEG_MDAT_IDAT_parentage_recorded": false,
+        "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+      }
+    },
+    {
+      "filename": "FORMAT_720x486x1_MPEG50.omf",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_720x486x1_MPEG50.omf",
+      "sha256": "cfa60ee977d6ee10dbaef75d9f4798843b56ba3dcb2db707ea2e65e20743895c",
+      "size_bytes": 279512,
+      "container_major": 1,
+      "container_minor": 0,
+      "toc_offset": 267152,
+      "toc_length": 12336,
+      "omfi_version_hex": "0001",
+      "mpeg": {
+        "handle": 68000,
+        "class": "MPEG",
+        "class_records": [
+          {
+            "object": 68000,
+            "property_id": 66060,
+            "type_id": 65665,
+            "data_offset": null,
+            "length": 4,
+            "generation": 1,
+            "flags": 1,
+            "toc_record_offset": 271304,
+            "hex": "4d504547",
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag"
+          }
+        ],
+        "mdat_mobid_hex": "2a000000b268093b7ad50800",
+        "mdat_mobid_records": [
+          {
+            "object": 68000,
+            "property_id": 67940,
+            "type_id": 65695,
+            "data_offset": 262146,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 271328,
+            "hex": "2a000000b268093b7ad50800",
+            "property": "OMFI:MDAT:MobID",
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      "matching_source_mob": {
+        "handle": 68024,
+        "class": "MOBJ",
+        "mobid_hex": "2a000000b268093b7ad50800",
+        "mobid_records": [
+          {
+            "object": 68024,
+            "property_id": 66350,
+            "type_id": 65695,
+            "data_offset": 263268,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275720,
+            "hex": "2a000000b268093b7ad50800",
+            "property": "OMFI:MOBJ:MobID",
+            "type": "omfi:UID"
+          }
+        ],
+        "descriptor_handle": 68023,
+        "descriptor_class": "MPGI",
+        "physicalmedia_records": [
+          {
+            "object": 68024,
+            "property_id": 66355,
+            "type_id": 65655,
+            "data_offset": 263285,
+            "length": 8,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275792,
+            "hex": "b709010000000000",
+            "property": "OMFI:MOBJ:PhysicalMedia",
+            "type": "omfi:ObjRef"
+          }
+        ]
+      },
+      "root_proof": {
+        "MediaData": {
+          "count": 1,
+          "slots": [
+            {
+              "handle": 68000,
+              "objref_hex": "a009010030210000",
+              "uid_hex": "2a000000b268093b7ad50800"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66050,
+              "type_id": 65645,
+              "data_offset": 263985,
+              "length": 22,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267536,
+              "hex": "01002a000000b268093b7ad50800a009010030210000",
+              "property": "OMFI:MediaData",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        },
+        "ObjectSpine": {
+          "count": 4,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010000000000"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010000000000"
+            },
+            {
+              "handle": 68016,
+              "objref_hex": "b009010000000000"
+            },
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66065,
+              "type_id": 65660,
+              "data_offset": 264007,
+              "length": 34,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267560,
+              "hex": "0400b809010000000000c109010000000000b009010000000000a009010000000000",
+              "property": "OMFI:ObjectSpine",
+              "type": "omfi:ObjRefArray"
+            }
+          ]
+        },
+        "SourceMobs": {
+          "count": 2,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010020dd1200",
+              "uid_hex": "2a000000b268093b7ad50800"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010020dd1200",
+              "uid_hex": "2a000000b268093b7bd50800"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66070,
+              "type_id": 65645,
+              "data_offset": 263921,
+              "length": 42,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267488,
+              "hex": "02002a000000b268093b7ad50800b809010020dd12002a000000b268093b7bd50800c109010020dd1200",
+              "property": "OMFI:SourceMobs",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        }
+      },
+      "class_dictionary": {
+        "recorded_class_count": 36,
+        "recorded_classes": {
+          "68034": "MDES",
+          "68035": "MDTP",
+          "68036": "MCMR",
+          "68037": "TMCS",
+          "68038": "TMBC",
+          "68039": "MCBR",
+          "68040": "TRAN",
+          "68041": "TNFX",
+          "68042": "TRKG",
+          "68043": "TKFX",
+          "68044": "PVOL",
+          "68045": "RSET",
+          "68046": "SMLS",
+          "68047": "FXPS",
+          "68048": "WARP",
+          "68049": "STRB",
+          "68050": "EQMB",
+          "68051": "EQBD",
+          "68052": "ASPI",
+          "68053": "ASpi",
+          "68054": "LITM",
+          "68055": "MDFL",
+          "68056": "DIDD",
+          "68057": "CDCI",
+          "68058": "JPED",
+          "68059": "MPGI",
+          "68060": "TXTL",
+          "68061": "DOML",
+          "68062": "MSML",
+          "68063": "SDSL",
+          "68064": "MFML",
+          "68065": "TKMN",
+          "68066": "TKPS",
+          "68067": "TKDS",
+          "68068": "TKPA",
+          "68069": "TKDA"
+        },
+        "MPEG_MDAT_IDAT_parentage_recorded": false,
+        "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+      }
+    },
+    {
+      "filename": "FORMAT_720x576x1_MPEG50.omf",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_720x576x1_MPEG50.omf",
+      "sha256": "8ba3033e889f3276083849839a4afcea62feba6abd1f901f9825c7c135cc8dca",
+      "size_bytes": 279512,
+      "container_major": 1,
+      "container_minor": 0,
+      "toc_offset": 267152,
+      "toc_length": 12336,
+      "omfi_version_hex": "0001",
+      "mpeg": {
+        "handle": 68000,
+        "class": "MPEG",
+        "class_records": [
+          {
+            "object": 68000,
+            "property_id": 66060,
+            "type_id": 65665,
+            "data_offset": null,
+            "length": 4,
+            "generation": 1,
+            "flags": 1,
+            "toc_record_offset": 271304,
+            "hex": "4d504547",
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag"
+          }
+        ],
+        "mdat_mobid_hex": "2a00000032fdb83ad4c9fb00",
+        "mdat_mobid_records": [
+          {
+            "object": 68000,
+            "property_id": 67940,
+            "type_id": 65695,
+            "data_offset": 262146,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 271328,
+            "hex": "2a00000032fdb83ad4c9fb00",
+            "property": "OMFI:MDAT:MobID",
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      "matching_source_mob": {
+        "handle": 68024,
+        "class": "MOBJ",
+        "mobid_hex": "2a00000032fdb83ad4c9fb00",
+        "mobid_records": [
+          {
+            "object": 68024,
+            "property_id": 66350,
+            "type_id": 65695,
+            "data_offset": 263264,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275720,
+            "hex": "2a00000032fdb83ad4c9fb00",
+            "property": "OMFI:MOBJ:MobID",
+            "type": "omfi:UID"
+          }
+        ],
+        "descriptor_handle": 68023,
+        "descriptor_class": "MPGI",
+        "physicalmedia_records": [
+          {
+            "object": 68024,
+            "property_id": 66355,
+            "type_id": 65655,
+            "data_offset": 263281,
+            "length": 8,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275792,
+            "hex": "b709010000000000",
+            "property": "OMFI:MOBJ:PhysicalMedia",
+            "type": "omfi:ObjRef"
+          }
+        ]
+      },
+      "root_proof": {
+        "MediaData": {
+          "count": 1,
+          "slots": [
+            {
+              "handle": 68000,
+              "objref_hex": "a009010030210000",
+              "uid_hex": "2a00000032fdb83ad4c9fb00"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66050,
+              "type_id": 65645,
+              "data_offset": 263985,
+              "length": 22,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267536,
+              "hex": "01002a00000032fdb83ad4c9fb00a009010030210000",
+              "property": "OMFI:MediaData",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        },
+        "ObjectSpine": {
+          "count": 4,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010000000000"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010000000000"
+            },
+            {
+              "handle": 68016,
+              "objref_hex": "b009010000000000"
+            },
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66065,
+              "type_id": 65660,
+              "data_offset": 264007,
+              "length": 34,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267560,
+              "hex": "0400b809010000000000c109010000000000b009010000000000a009010000000000",
+              "property": "OMFI:ObjectSpine",
+              "type": "omfi:ObjRefArray"
+            }
+          ]
+        },
+        "SourceMobs": {
+          "count": 2,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010074dd1200",
+              "uid_hex": "2a00000032fdb83ad4c9fb00"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010074dd1200",
+              "uid_hex": "2a00000032fdb83ad5c9fb00"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66070,
+              "type_id": 65645,
+              "data_offset": 263921,
+              "length": 42,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267488,
+              "hex": "02002a00000032fdb83ad4c9fb00b809010074dd12002a00000032fdb83ad5c9fb00c109010074dd1200",
+              "property": "OMFI:SourceMobs",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        }
+      },
+      "class_dictionary": {
+        "recorded_class_count": 36,
+        "recorded_classes": {
+          "68034": "MDES",
+          "68035": "MDTP",
+          "68036": "MCMR",
+          "68037": "TMCS",
+          "68038": "TMBC",
+          "68039": "MCBR",
+          "68040": "TRAN",
+          "68041": "TNFX",
+          "68042": "TRKG",
+          "68043": "TKFX",
+          "68044": "PVOL",
+          "68045": "RSET",
+          "68046": "SMLS",
+          "68047": "FXPS",
+          "68048": "WARP",
+          "68049": "STRB",
+          "68050": "EQMB",
+          "68051": "EQBD",
+          "68052": "ASPI",
+          "68053": "ASpi",
+          "68054": "LITM",
+          "68055": "MDFL",
+          "68056": "DIDD",
+          "68057": "CDCI",
+          "68058": "JPED",
+          "68059": "MPGI",
+          "68060": "TXTL",
+          "68061": "DOML",
+          "68062": "MSML",
+          "68063": "SDSL",
+          "68064": "MFML",
+          "68065": "TKMN",
+          "68066": "TKPS",
+          "68067": "TKDS",
+          "68068": "TKPA",
+          "68069": "TKDA"
+        },
+        "MPEG_MDAT_IDAT_parentage_recorded": false,
+        "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+      }
+    },
+    {
+      "filename": "OFFLINE_720x486x1_MPEG50.omf",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/OFFLINE_720x486x1_MPEG50.omf",
+      "sha256": "d6cd4a0c8962003bbf269257dbbf2ec69310fcc5ade7317796e05e6b44fa3f3d",
+      "size_bytes": 279528,
+      "container_major": 1,
+      "container_minor": 0,
+      "toc_offset": 267168,
+      "toc_length": 12336,
+      "omfi_version_hex": "0001",
+      "mpeg": {
+        "handle": 68000,
+        "class": "MPEG",
+        "class_records": [
+          {
+            "object": 68000,
+            "property_id": 66060,
+            "type_id": 65665,
+            "data_offset": null,
+            "length": 4,
+            "generation": 1,
+            "flags": 1,
+            "toc_record_offset": 271320,
+            "hex": "4d504547",
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag"
+          }
+        ],
+        "mdat_mobid_hex": "2a000000b068093b0ecd0800",
+        "mdat_mobid_records": [
+          {
+            "object": 68000,
+            "property_id": 67940,
+            "type_id": 65695,
+            "data_offset": 262146,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 271344,
+            "hex": "2a000000b068093b0ecd0800",
+            "property": "OMFI:MDAT:MobID",
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      "matching_source_mob": {
+        "handle": 68024,
+        "class": "MOBJ",
+        "mobid_hex": "2a000000b068093b0ecd0800",
+        "mobid_records": [
+          {
+            "object": 68024,
+            "property_id": 66350,
+            "type_id": 65695,
+            "data_offset": 263272,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275736,
+            "hex": "2a000000b068093b0ecd0800",
+            "property": "OMFI:MOBJ:MobID",
+            "type": "omfi:UID"
+          }
+        ],
+        "descriptor_handle": 68023,
+        "descriptor_class": "MPGI",
+        "physicalmedia_records": [
+          {
+            "object": 68024,
+            "property_id": 66355,
+            "type_id": 65655,
+            "data_offset": 263289,
+            "length": 8,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 275808,
+            "hex": "b709010000000000",
+            "property": "OMFI:MOBJ:PhysicalMedia",
+            "type": "omfi:ObjRef"
+          }
+        ]
+      },
+      "root_proof": {
+        "MediaData": {
+          "count": 1,
+          "slots": [
+            {
+              "handle": 68000,
+              "objref_hex": "a009010030210000",
+              "uid_hex": "2a000000b068093b0ecd0800"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66050,
+              "type_id": 65645,
+              "data_offset": 263991,
+              "length": 22,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267552,
+              "hex": "01002a000000b068093b0ecd0800a009010030210000",
+              "property": "OMFI:MediaData",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        },
+        "ObjectSpine": {
+          "count": 4,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010000000000"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010000000000"
+            },
+            {
+              "handle": 68016,
+              "objref_hex": "b009010000000000"
+            },
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66065,
+              "type_id": 65660,
+              "data_offset": 264013,
+              "length": 34,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267576,
+              "hex": "0400b809010000000000c109010000000000b009010000000000a009010000000000",
+              "property": "OMFI:ObjectSpine",
+              "type": "omfi:ObjRefArray"
+            }
+          ]
+        },
+        "SourceMobs": {
+          "count": 2,
+          "slots": [
+            {
+              "handle": 68024,
+              "objref_hex": "b809010020dd1200",
+              "uid_hex": "2a000000b068093b0ecd0800"
+            },
+            {
+              "handle": 68033,
+              "objref_hex": "c109010020dd1200",
+              "uid_hex": "2a000000b068093b1ccd0800"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66070,
+              "type_id": 65645,
+              "data_offset": 263927,
+              "length": 42,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267504,
+              "hex": "02002a000000b068093b0ecd0800b809010020dd12002a000000b068093b1ccd0800c109010020dd1200",
+              "property": "OMFI:SourceMobs",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        }
+      },
+      "class_dictionary": {
+        "recorded_class_count": 36,
+        "recorded_classes": {
+          "68034": "MDES",
+          "68035": "MDTP",
+          "68036": "MCMR",
+          "68037": "TMCS",
+          "68038": "TMBC",
+          "68039": "MCBR",
+          "68040": "TRAN",
+          "68041": "TNFX",
+          "68042": "TRKG",
+          "68043": "TKFX",
+          "68044": "PVOL",
+          "68045": "RSET",
+          "68046": "SMLS",
+          "68047": "FXPS",
+          "68048": "WARP",
+          "68049": "STRB",
+          "68050": "EQMB",
+          "68051": "EQBD",
+          "68052": "ASPI",
+          "68053": "ASpi",
+          "68054": "LITM",
+          "68055": "MDFL",
+          "68056": "DIDD",
+          "68057": "CDCI",
+          "68058": "JPED",
+          "68059": "MPGI",
+          "68060": "TXTL",
+          "68061": "DOML",
+          "68062": "MSML",
+          "68063": "SDSL",
+          "68064": "MFML",
+          "68065": "TKMN",
+          "68066": "TKPS",
+          "68067": "TKDS",
+          "68068": "TKPA",
+          "68069": "TKDA"
+        },
+        "MPEG_MDAT_IDAT_parentage_recorded": false,
+        "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+      }
+    },
+    {
+      "filename": "OFFLINE_720x576x1_MPEG50.omf",
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/OFFLINE_720x576x1_MPEG50.omf",
+      "sha256": "8d96c7a36f1fb9e1941bd2432e146c7c3dc13f7d370d2300df9ba43ae3960743",
+      "size_bytes": 279864,
+      "container_major": 1,
+      "container_minor": 0,
+      "toc_offset": 267264,
+      "toc_length": 12576,
+      "omfi_version_hex": "0001",
+      "mpeg": {
+        "handle": 68000,
+        "class": "MPEG",
+        "class_records": [
+          {
+            "object": 68000,
+            "property_id": 66060,
+            "type_id": 65665,
+            "data_offset": null,
+            "length": 4,
+            "generation": 1,
+            "flags": 1,
+            "toc_record_offset": 271464,
+            "hex": "4d504547",
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag"
+          }
+        ],
+        "mdat_mobid_hex": "2a0000008c1a453fbbb04a00",
+        "mdat_mobid_records": [
+          {
+            "object": 68000,
+            "property_id": 67940,
+            "type_id": 65695,
+            "data_offset": 262146,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 271488,
+            "hex": "2a0000008c1a453fbbb04a00",
+            "property": "OMFI:MDAT:MobID",
+            "type": "omfi:UID"
+          }
+        ]
+      },
+      "matching_source_mob": {
+        "handle": 68025,
+        "class": "MOBJ",
+        "mobid_hex": "2a0000008c1a453fbbb04a00",
+        "mobid_records": [
+          {
+            "object": 68025,
+            "property_id": 66350,
+            "type_id": 65695,
+            "data_offset": 263335,
+            "length": 12,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 276072,
+            "hex": "2a0000008c1a453fbbb04a00",
+            "property": "OMFI:MOBJ:MobID",
+            "type": "omfi:UID"
+          }
+        ],
+        "descriptor_handle": 68024,
+        "descriptor_class": "MPGI",
+        "physicalmedia_records": [
+          {
+            "object": 68025,
+            "property_id": 66355,
+            "type_id": 65655,
+            "data_offset": 263352,
+            "length": 8,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 276144,
+            "hex": "b809010000000000",
+            "property": "OMFI:MOBJ:PhysicalMedia",
+            "type": "omfi:ObjRef"
+          }
+        ]
+      },
+      "root_proof": {
+        "MediaData": {
+          "count": 1,
+          "slots": [
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000",
+              "uid_hex": "2a0000008c1a453fbbb04a00"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66050,
+              "type_id": 65645,
+              "data_offset": 264065,
+              "length": 22,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267648,
+              "hex": "01002a0000008c1a453fbbb04a00a009010000000000",
+              "property": "OMFI:MediaData",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        },
+        "ObjectSpine": {
+          "count": 4,
+          "slots": [
+            {
+              "handle": 68025,
+              "objref_hex": "b909010000000000"
+            },
+            {
+              "handle": 68034,
+              "objref_hex": "c209010000000000"
+            },
+            {
+              "handle": 68017,
+              "objref_hex": "b109010000000000"
+            },
+            {
+              "handle": 68000,
+              "objref_hex": "a009010000000000"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66065,
+              "type_id": 65660,
+              "data_offset": 264087,
+              "length": 34,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267672,
+              "hex": "0400b909010000000000c209010000000000b109010000000000a009010000000000",
+              "property": "OMFI:ObjectSpine",
+              "type": "omfi:ObjRefArray"
+            }
+          ]
+        },
+        "SourceMobs": {
+          "count": 2,
+          "slots": [
+            {
+              "handle": 68025,
+              "objref_hex": "b9090100e8c41200",
+              "uid_hex": "2a0000008c1a453fbbb04a00"
+            },
+            {
+              "handle": 68034,
+              "objref_hex": "c2090100e8c41200",
+              "uid_hex": "2a0000008c1a453fbcb04a00"
+            }
+          ],
+          "records": [
+            {
+              "object": 1,
+              "property_id": 66070,
+              "type_id": 65645,
+              "data_offset": 264001,
+              "length": 42,
+              "generation": 1,
+              "flags": 0,
+              "toc_record_offset": 267600,
+              "hex": "02002a0000008c1a453fbbb04a00b9090100e8c412002a0000008c1a453fbcb04a00c2090100e8c41200",
+              "property": "OMFI:SourceMobs",
+              "type": "omfi:MobIndex"
+            }
+          ]
+        }
+      },
+      "class_dictionary": {
+        "recorded_class_count": 36,
+        "recorded_classes": {
+          "68035": "MDES",
+          "68036": "MDTP",
+          "68037": "MCMR",
+          "68038": "TMCS",
+          "68039": "TMBC",
+          "68040": "MCBR",
+          "68041": "TRAN",
+          "68042": "TNFX",
+          "68043": "TRKG",
+          "68044": "TKFX",
+          "68045": "PVOL",
+          "68046": "RSET",
+          "68047": "SMLS",
+          "68048": "FXPS",
+          "68049": "WARP",
+          "68050": "STRB",
+          "68051": "EQMB",
+          "68052": "EQBD",
+          "68053": "ASPI",
+          "68054": "ASpi",
+          "68055": "LITM",
+          "68056": "MDFL",
+          "68057": "DIDD",
+          "68058": "CDCI",
+          "68059": "JPED",
+          "68060": "MPGI",
+          "68061": "TXTL",
+          "68062": "DOML",
+          "68063": "MSML",
+          "68064": "SDSL",
+          "68065": "MFML",
+          "68066": "TKMN",
+          "68067": "TKPS",
+          "68068": "TKDS",
+          "68069": "TKPA",
+          "68070": "TKDA"
+        },
+        "MPEG_MDAT_IDAT_parentage_recorded": false,
+        "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/omfspec21.pdf",
+      "sha256": "62dd18226aee3fda27c4ac25cf50ab1764b7776d4a42eac8f00d3e5b07909794",
+      "citations": [
+        {
+          "printed_page": 164,
+          "pdf_page": 176,
+          "heading": "Media Data Class (MDAT)",
+          "finding": "Private classes containing digital media with associated SourceMob should subclass MDAT; OMFI:MDAT:MobID identifies describing source; HEAD indexes all MediaData; each has corresponding SourceMob with same MobID. Complete page text extracted and visually rendered/inspected."
+        },
+        {
+          "printed_page": 152,
+          "pdf_page": 164,
+          "heading": "Header Class (HEAD)",
+          "finding": "OMFI:HEAD:MediaData is the set of all media-data objects; OMFI:HEAD:Mobs is all defined Mobs."
+        },
+        {
+          "printed_page": 237,
+          "pdf_page": 249,
+          "heading": "Changed Properties",
+          "finding": "OMF2 removes ObjectSpine and replaces traversal with HEAD mob/media indexes; indexes become object-reference arrays."
+        }
+      ]
+    },
+    {
+      "path": "/private/tmp/omf-review-omFile.c",
+      "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f",
+      "upstream_reference": "https://github.com/LWKS-Software/omfkt22/blob/main/kitomfi/omFile.c",
+      "citations": [
+        {
+          "lines": "352-353",
+          "finding": "MDAT registered as private for revision1."
+        },
+        {
+          "lines": "374-377",
+          "finding": "IDAT registers as MDAT subclass in either revision."
+        },
+        {
+          "lines": "758-765",
+          "finding": "OMF1 MediaData is optional MobIndex; ObjectSpine required ObjRefArray."
+        },
+        {
+          "lines": "783-784",
+          "finding": "OMF2 HEAD MediaData is required ObjRefArray."
+        },
+        {
+          "lines": "831-832",
+          "finding": "MDAT MobID required UID in either revision."
+        },
+        {
+          "lines": "2819-2843",
+          "finding": "Media cache enumerates recorded HEAD MediaData. OMF2 reads MDAT MobID; OMF1 uses MobIndex ID/object pair. No MPEG-specific registration appears in this retained core source."
+        }
+      ]
+    }
+  ],
+  "example_offsets": {
+    "filename": "BLACK_720x486x1_MPEG50.omf",
+    "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x486x1_MPEG50.omf",
+    "sha256": "6ee0b7831f309621229c173e3b7b87d904b5daeb564fa2d6887f32036594f012",
+    "size_bytes": 279512,
+    "container_major": 1,
+    "container_minor": 0,
+    "toc_offset": 267152,
+    "toc_length": 12336,
+    "omfi_version_hex": "0001",
+    "mpeg": {
+      "handle": 68000,
+      "class": "MPEG",
+      "class_records": [
+        {
+          "object": 68000,
+          "property_id": 66060,
+          "type_id": 65665,
+          "data_offset": null,
+          "length": 4,
+          "generation": 1,
+          "flags": 1,
+          "toc_record_offset": 271304,
+          "hex": "4d504547",
+          "property": "OMFI:ObjID",
+          "type": "omfi:ObjectTag"
+        }
+      ],
+      "mdat_mobid_hex": "2a000000b368093bfed90800",
+      "mdat_mobid_records": [
+        {
+          "object": 68000,
+          "property_id": 67940,
+          "type_id": 65695,
+          "data_offset": 262146,
+          "length": 12,
+          "generation": 1,
+          "flags": 0,
+          "toc_record_offset": 271328,
+          "hex": "2a000000b368093bfed90800",
+          "property": "OMFI:MDAT:MobID",
+          "type": "omfi:UID"
+        }
+      ]
+    },
+    "matching_source_mob": {
+      "handle": 68024,
+      "class": "MOBJ",
+      "mobid_hex": "2a000000b368093bfed90800",
+      "mobid_records": [
+        {
+          "object": 68024,
+          "property_id": 66350,
+          "type_id": 65695,
+          "data_offset": 263264,
+          "length": 12,
+          "generation": 1,
+          "flags": 0,
+          "toc_record_offset": 275720,
+          "hex": "2a000000b368093bfed90800",
+          "property": "OMFI:MOBJ:MobID",
+          "type": "omfi:UID"
+        }
+      ],
+      "descriptor_handle": 68023,
+      "descriptor_class": "MPGI",
+      "physicalmedia_records": [
+        {
+          "object": 68024,
+          "property_id": 66355,
+          "type_id": 65655,
+          "data_offset": 263281,
+          "length": 8,
+          "generation": 1,
+          "flags": 0,
+          "toc_record_offset": 275792,
+          "hex": "b709010000000000",
+          "property": "OMFI:MOBJ:PhysicalMedia",
+          "type": "omfi:ObjRef"
+        }
+      ]
+    },
+    "root_proof": {
+      "MediaData": {
+        "count": 1,
+        "slots": [
+          {
+            "handle": 68000,
+            "objref_hex": "a009010030210000",
+            "uid_hex": "2a000000b368093bfed90800"
+          }
+        ],
+        "records": [
+          {
+            "object": 1,
+            "property_id": 66050,
+            "type_id": 65645,
+            "data_offset": 263979,
+            "length": 22,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 267536,
+            "hex": "01002a000000b368093bfed90800a009010030210000",
+            "property": "OMFI:MediaData",
+            "type": "omfi:MobIndex"
+          }
+        ]
+      },
+      "ObjectSpine": {
+        "count": 4,
+        "slots": [
+          {
+            "handle": 68024,
+            "objref_hex": "b809010000000000"
+          },
+          {
+            "handle": 68033,
+            "objref_hex": "c109010000000000"
+          },
+          {
+            "handle": 68016,
+            "objref_hex": "b009010000000000"
+          },
+          {
+            "handle": 68000,
+            "objref_hex": "a009010000000000"
+          }
+        ],
+        "records": [
+          {
+            "object": 1,
+            "property_id": 66065,
+            "type_id": 65660,
+            "data_offset": 264001,
+            "length": 34,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 267560,
+            "hex": "0400b809010000000000c109010000000000b009010000000000a009010000000000",
+            "property": "OMFI:ObjectSpine",
+            "type": "omfi:ObjRefArray"
+          }
+        ]
+      },
+      "SourceMobs": {
+        "count": 2,
+        "slots": [
+          {
+            "handle": 68024,
+            "objref_hex": "b809010020dd1200",
+            "uid_hex": "2a000000b368093bfed90800"
+          },
+          {
+            "handle": 68033,
+            "objref_hex": "c109010020dd1200",
+            "uid_hex": "2a000000b368093bffd90800"
+          }
+        ],
+        "records": [
+          {
+            "object": 1,
+            "property_id": 66070,
+            "type_id": 65645,
+            "data_offset": 263915,
+            "length": 42,
+            "generation": 1,
+            "flags": 0,
+            "toc_record_offset": 267488,
+            "hex": "02002a000000b368093bfed90800b809010020dd12002a000000b368093bffd90800c109010020dd1200",
+            "property": "OMFI:SourceMobs",
+            "type": "omfi:MobIndex"
+          }
+        ]
+      }
+    },
+    "class_dictionary": {
+      "recorded_class_count": 36,
+      "recorded_classes": {
+        "68034": "MDES",
+        "68035": "MDTP",
+        "68036": "MCMR",
+        "68037": "TMCS",
+        "68038": "TMBC",
+        "68039": "MCBR",
+        "68040": "TRAN",
+        "68041": "TNFX",
+        "68042": "TRKG",
+        "68043": "TKFX",
+        "68044": "PVOL",
+        "68045": "RSET",
+        "68046": "SMLS",
+        "68047": "FXPS",
+        "68048": "WARP",
+        "68049": "STRB",
+        "68050": "EQMB",
+        "68051": "EQBD",
+        "68052": "ASPI",
+        "68053": "ASpi",
+        "68054": "LITM",
+        "68055": "MDFL",
+        "68056": "DIDD",
+        "68057": "CDCI",
+        "68058": "JPED",
+        "68059": "MPGI",
+        "68060": "TXTL",
+        "68061": "DOML",
+        "68062": "MSML",
+        "68063": "SDSL",
+        "68064": "MFML",
+        "68065": "TKMN",
+        "68066": "TKPS",
+        "68067": "TKDS",
+        "68068": "TKPA",
+        "68069": "TKDA"
+      },
+      "MPEG_MDAT_IDAT_parentage_recorded": false,
+      "qualification": "No MPEG, MDAT, or IDAT ClassID entry is recorded. MPGI descriptor inheritance must not be confused with MPEG media-data inheritance."
+    }
+  },
+  "supplementary_dv10090_resolution_evidence": {
+    "scope": "Raw recorded numeric ID only; does not establish or modify a production codec mapping.",
+    "property": "OMFI:DIDD:DIDResolutionID",
+    "property_id": 67831,
+    "native_type": "omfi:Long",
+    "hex": "c6090000",
+    "little_endian_value": 2502,
+    "object_handle": 68024,
+    "immediate": true,
+    "fixtures": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_1280x720x1_DV100_90.omf",
+        "toc_record_offset": 274056
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_1280x720x1_DV100_90.omf",
+        "toc_record_offset": 274120
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/OFFLINE_1280x720x1_DV100_90.omf",
+        "toc_record_offset": 274120
+      }
+    ]
+  }
+}

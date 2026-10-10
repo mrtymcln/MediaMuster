@@ -36,7 +36,7 @@ Disabling or removing legacy-media support must not remove MDB decoding. See
 `FeatureFlags::kOmfScan` controls the OMFI-family path, enabled by default as
 previously agreed. Off skips its media and databases; on includes the OMFI root
 and admitted immediate subfolders with `.omf`, `.aif`, `.wav`, `.pmr`, `.mdb`.
-The family gate already existed in Canon; the subsequent independence refactor
+The family gate already existed in MediaEngine; the subsequent independence refactor
 changes implementation ownership, not byte-reading, retention or recovery policy.
 
 Three different requirements must remain separate:
@@ -224,7 +224,7 @@ zero Body/Footer HeaderByteCount and one recording/system packet. All initial
 headers have status value 4. This is local/EDIT evidence, not a new Windows scan.
 The [complete-file reader proof](fresh-mxf-reader-2026-10-04.md) requested about
 2.9 MB of logical bytes across about 2.66 GB of twenty media files, without
-reading their independently identified recording ranges. Canon does not load
+reading their independently identified recording ranges. MediaEngine does not load
 all those recordings into RAM.
 
 Four real [root-membership specimens](root-membership-specimens-2026-10-08.md)
@@ -240,26 +240,26 @@ all Windows/Interplay files have that layout. Most KLVs there describe genuine
 initial-header sets/dictionaries, not repeated recording blocks; improving the
 RAM representation is therefore a distinct concern from narrowing read scope.
 
-## Current Canon limitations relevant to this decision
+## Current MediaEngine limitations relevant to this decision
 
-- [MxfReader](../src/canon/mxfreader.cpp) physically visits KLV headings to EOF
+- [MxfReader](../src/mediaengine/mxfreader.cpp) physically visits KLV headings to EOF
   and skips recording/index payloads. It retains metadata by partition and keeps
   framing/range observations.
 - Unknown header KLV values and unsupported local-set payloads can be retained
   **as ranges only**. A range preserves where bytes were, not the bytes themselves.
-  Current Canon therefore does not retain every possible original header byte.
+  Current MediaEngine therefore does not retain every possible original header byte.
 - Body/System/ANC payloads are not comprehensively interpreted. Walking the
   full physical structure is not equivalent to preserving every metadata stream.
-- [MxfProjection](../src/canon/mxfprojection.cpp) preserves separate partition
+- [MxfProjection](../src/mediaengine/mxfprojection.cpp) preserves separate partition
   candidates; it does not automatically select closed/latest-generation metadata
   under the general MXF authority rules. No affected local sample is established;
   handling actual open/growing files needs focused qualification before a change.
-- [OmfReader](../src/canon/omfreader.cpp) uses metadata-only Bento reading.
-  [Bento metadata reading](../src/canon/omfbentoreader_p.cpp) skips seven
+- [OmfReader](../src/mediaengine/omfreader.cpp) uses metadata-only Bento reading.
+  [Bento metadata reading](../src/mediaengine/omfbentoreader_p.cpp) skips seven
   toolkit-identified recording properties, but reads other values, including
   unfamiliar ones. A private DataValue can be large recording data; its generic
   type alone cannot establish that it is small metadata.
-- [SourceArchive](../src/canon/sourcearchive.cpp) compresses completed expanded
+- [SourceArchive](../src/mediaengine/sourcearchive.cpp) compresses completed expanded
   records and releases them. Native-byte storage can avoid some conversion and
   serialization overhead, but narrowing traversal alone cannot remove the
   representation cost of all the initial-header properties.

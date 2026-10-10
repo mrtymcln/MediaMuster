@@ -10,7 +10,7 @@
 #include <atomic>
 #include <QSharedPointer>
 
-namespace Canon
+namespace MediaEngine
 {
 	struct ParsedSource;
 	struct AvbResolution;
@@ -45,8 +45,8 @@ struct AvbBin
 	BinFileReferences mediaFileIds;
 
 	/// Shared source evidence survives worker delivery and filter snapshots.
-	QSharedPointer<const Canon::ParsedSource> source;
-	QSharedPointer<const Canon::AvbResolution> resolution;
+	QSharedPointer<const MediaEngine::ParsedSource> source;
+	QSharedPointer<const MediaEngine::AvbResolution> resolution;
 
 	/// Readability and reference coverage are separate. Partial results remain
 	/// usable with persistent warnings; empty reference sets create no operand.

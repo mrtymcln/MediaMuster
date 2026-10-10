@@ -1,8 +1,8 @@
-// Compatibility view of Canon's retained bin graph. The reader owns decoding;
+// Compatibility view of MediaEngine's retained bin graph. The reader owns decoding;
 // this adapter supplies the existing table and whole-bin filter contracts.
 #include "avbparser.h"
-#include "canon/avbreader.h"
-#include "canon/avbreferences.h"
+#include "mediaengine/avbreader.h"
+#include "mediaengine/avbreferences.h"
 #include "diagnostics.h"
 #include "omfuid.h"
 
@@ -23,8 +23,8 @@ namespace
 	constexpr auto bigHeader = "\x00\x06"
 							   "DomainOBJD\x00\x07"
 							   "AObjDoc"sv;
-	using Object = Canon::AvidObject;
-	using Property = Canon::RawProperty;
+	using Object = MediaEngine::AvidObject;
+	using Property = MediaEngine::RawProperty;
 
 	const Property *field(const Object &object, const QString &name, QStringList &warnings, bool nonEmptyText = false)
 	{
@@ -99,8 +99,8 @@ namespace
 		QString uid;
 		QVector<MetadataObservation> observations;
 	};
-	OriginalBin originalBin(const Object &composition, const QHash<Canon::ObjectHandle, const Object *> &objects,
-							QStringList &warnings, const Canon::Cancellation &cancel)
+	OriginalBin originalBin(const Object &composition, const QHash<MediaEngine::ObjectHandle, const Object *> &objects,
+							QStringList &warnings, const MediaEngine::Cancellation &cancel)
 	{
 		const auto *attributes = field(composition, QStringLiteral("Component.attributes"), warnings);
 		const auto *table = attributes ? objects.value(attributes->decoded.toULongLong()) : nullptr;
@@ -200,7 +200,7 @@ AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
 	AvbBin bin;
 	bin.filePath = path;
 	bin.displayName = QFileInfo(path).completeBaseName();
-	Canon::Cancellation cancel(cancelled);
+	MediaEngine::Cancellation cancel(cancelled);
 	if (cancel.cancelled())
 	{
 		bin.error = QStringLiteral("Bin reading cancelled.");
@@ -222,10 +222,10 @@ AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
 	auto snapshot = QSharedPointer<SourceSnapshot>::create();
 	snapshot->path = path;
 	snapshot->source = MetadataSource::Avb;
-	auto source = QSharedPointer<Canon::ParsedSource>::create(Canon::AvbReader{}.read(file, {snapshot, cancel}));
+	auto source = QSharedPointer<MediaEngine::ParsedSource>::create(MediaEngine::AvbReader{}.read(file, {snapshot, cancel}));
 	bin.source = source;
-	using Outcome = Canon::ParsedSource::Outcome;
-	Canon::ObjectHandle root = 0;
+	using Outcome = MediaEngine::ParsedSource::Outcome;
+	MediaEngine::ObjectHandle root = 0;
 	for (const auto &property : source->unownedProperties)
 		if (property.locator.name == QLatin1String("Header.root_index") && property.state == PropertyReadState::Present)
 			root = property.decoded.toULongLong();
@@ -245,12 +245,12 @@ AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
 		return bin;
 	}
 	bin.warnings = source->diagnostics;
-	Canon::AvbReferenceIndex index({source}, cancel);
-	auto resolution = QSharedPointer<Canon::AvbResolution>::create(index.resolve({{0, Canon::AvbScope::Kind::EntireBin, {}}}, cancel));
+	MediaEngine::AvbReferenceIndex index({source}, cancel);
+	auto resolution = QSharedPointer<MediaEngine::AvbResolution>::create(index.resolve({{0, MediaEngine::AvbScope::Kind::EntireBin, {}}}, cancel));
 	bin.resolution = resolution;
 	for (const auto &issue : resolution->issues)
 		bin.warnings.append(QStringLiteral("Object %1: %2").arg(issue.object.object).arg(issue.explanation));
-	QHash<Canon::ObjectHandle, const Object *> objects;
+	QHash<MediaEngine::ObjectHandle, const Object *> objects;
 	for (const auto &object : source->objects)
 		objects.insert(object.handle, &object);
 	for (const auto &relation : source->relationships)

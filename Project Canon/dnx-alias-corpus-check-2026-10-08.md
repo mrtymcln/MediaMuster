@@ -3,7 +3,7 @@
 Checked 8 October 2026. **No matching files were found in the checked corpus.** None of the nine identifiers appeared in a parsed compression property, another retained metadata value, or the independent byte searches described below. That investigation did not change production mappings.
 
 The user subsequently **approved removing these nine unsupported mapping rows**
-from Canon and the old lookup. Removal verification passes 40/40 native suites and
+from the supported compression lookup. Removal verification passes 40/40 native suites and
 both universal Debug app builds. The repeat scan keeps all 2,413 rows and every
 exported metadata value unchanged, including all 806 DNx names. See the
 [removal verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json).
@@ -46,8 +46,7 @@ Recorded coding identifier: `060e2b340401010a0401020271070000`. This is a separa
 
 The available corpus provides no evidence that these nine extra aliases are needed.
 Their approved removal leaves the independently verified DNx rules and historical
-operating-point names in place. This is a narrow mapping correction; retirement of
-the old engine still requires the user's separate approval. The original corpus
+operating-point names in place. This is a narrow mapping correction. The original corpus
 check establishes zero matches, while the subsequent verification receipt records
 the builds, regression tests and exported-value comparison after removal.
 

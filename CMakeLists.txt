@@ -78,7 +78,7 @@ if(APPLE)
         CACHE STRING "Codesign identity for the .app bundle")
 endif()
 
-### Independent Canon replacement engine; no legacy parser or UI dependencies ###
+### MediaEngine: format readers, matching and scan storage ###
 # The live scanner and bin adapter share this parsing and reconciliation engine.
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
@@ -88,72 +88,71 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
 # MDB and OMF own separate parsing and interpretation implementations. Keep the
 # lists independent so removing one media family cannot remove the MDB decoder.
-set(CANON_MDB_SOURCES
-    src/canon/mdbreader.cpp
-    src/canon/mdbbentoreader_p.cpp
-    src/canon/mdbobjects_p.cpp
-    src/canon/mdbaudiosummary_p.cpp
-    src/canon/mdbprojection.cpp
+set(MEDIAENGINE_MDB_SOURCES
+    src/mediaengine/mdbreader.cpp
+    src/mediaengine/mdbbentoreader_p.cpp
+    src/mediaengine/mdbobjects_p.cpp
+    src/mediaengine/mdbaudiosummary_p.cpp
+    src/mediaengine/mdbprojection.cpp
 )
-set(CANON_OMF_SOURCES
-    src/canon/omfreader.cpp
-    src/canon/omfbentoreader_p.cpp
-    src/canon/omfobjects_p.cpp
-    src/canon/audioreader_p.cpp
-    src/canon/omfprojection.cpp
+set(MEDIAENGINE_OMF_SOURCES
+    src/mediaengine/omfreader.cpp
+    src/mediaengine/omfbentoreader_p.cpp
+    src/mediaengine/omfobjects_p.cpp
+    src/mediaengine/audioreader_p.cpp
+    src/mediaengine/omfprojection.cpp
 )
 
-add_library(mediamuster_canon STATIC
-    src/canon/discoveryengine.cpp
-    src/canon/pmrreader.cpp
-    ${CANON_MDB_SOURCES}
-    ${CANON_OMF_SOURCES}
-    src/canon/mxfreader.cpp
-    src/canon/mxfobjects_p.cpp
-    src/canon/avbreader.cpp
-    src/canon/avbobjects_p.cpp
-    src/canon/avbcomponents_p.cpp
-    src/canon/avbdescriptors_p.cpp
-    src/canon/avbreferences.cpp
-    src/canon/projection.cpp
-    src/canon/compressionnames_p.cpp
-    src/canon/metadataselectionpolicy.cpp
-    src/canon/metadataselectionpolicy.h
-    src/canon/sourcestorage_p.h
-    src/canon/sourcearchive.cpp
-    src/canon/sourcearchive.h
-    src/canon/pmrprojection.cpp
-    src/canon/mxfprojection.cpp
-    src/canon/picturegeometry_p.h
-    src/canon/scanengine.cpp
+add_library(mediamuster_mediaengine_core STATIC
+    src/mediaengine/discoveryengine.cpp
+    src/mediaengine/pmrreader.cpp
+    ${MEDIAENGINE_MDB_SOURCES}
+    ${MEDIAENGINE_OMF_SOURCES}
+    src/mediaengine/mxfreader.cpp
+    src/mediaengine/mxfobjects_p.cpp
+    src/mediaengine/avbreader.cpp
+    src/mediaengine/avbobjects_p.cpp
+    src/mediaengine/avbcomponents_p.cpp
+    src/mediaengine/avbdescriptors_p.cpp
+    src/mediaengine/avbreferences.cpp
+    src/mediaengine/projection.cpp
+    src/mediaengine/compressionnames_p.cpp
+    src/mediaengine/metadataselectionpolicy.cpp
+    src/mediaengine/metadataselectionpolicy.h
+    src/mediaengine/sourcestorage_p.h
+    src/mediaengine/sourcearchive.cpp
+    src/mediaengine/sourcearchive.h
+    src/mediaengine/pmrprojection.cpp
+    src/mediaengine/mxfprojection.cpp
+    src/mediaengine/picturegeometry_p.h
+    src/mediaengine/scancoordinator.cpp
     src/avideffects.cpp
     src/mediametadata.cpp
-    src/omfresolutions.cpp
     src/diagnostics.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
 )
-set_target_properties(mediamuster_canon PROPERTIES AUTOMOC OFF)
-target_include_directories(mediamuster_canon PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(mediamuster_canon PUBLIC Qt6::Core)
+set_target_properties(mediamuster_mediaengine_core PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_mediaengine_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_mediaengine_core PUBLIC Qt6::Core)
 
 # Live scan storage: original PMR/MDB images and acquired MXF bytes replace graphs.
-# Verified readers, matching and metadata selection remain shared with Canon.
-add_library(mediamuster_canon2 STATIC
-    src/canon2/databaseimage.cpp
-    src/canon2/databaseimage.h
-    src/canon2/databasesource.cpp
-    src/canon2/databasesource.h
-    src/canon2/mxfimage.cpp
-    src/canon2/mxfimage.h
-    src/canon2/mxfsource.cpp
-    src/canon2/mxfsource.h
-    src/canon2/scanengine.cpp
-    src/canon2/scanengine.h
+# The engine supplies native storage to the core's verified readers and coordinator.
+add_library(mediamuster_mediaengine STATIC
+    src/mediaengine/databaseimage.cpp
+    src/mediaengine/databaseimage.h
+    src/mediaengine/databasesource.cpp
+    src/mediaengine/databasesource.h
+    src/mediaengine/mxfimage.cpp
+    src/mediaengine/mxfimage.h
+    src/mediaengine/mxfsource.cpp
+    src/mediaengine/mxfsource.h
+    src/mediaengine/scanengine.cpp
+    src/mediaengine/scanengine.h
 )
-set_target_properties(mediamuster_canon2 PROPERTIES AUTOMOC OFF)
-target_include_directories(mediamuster_canon2 PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(mediamuster_canon2 PUBLIC mediamuster_canon Qt6::Core)
+set_target_properties(mediamuster_mediaengine PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_mediaengine PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_mediaengine PUBLIC mediamuster_mediaengine_core Qt6::Core)
 
 message(STATUS "Using Qt6 ${Qt6_VERSION}")
 
@@ -181,9 +180,8 @@ set(SOURCES
     src/volumelistwidget.cpp
     src/volumemanager.cpp
     src/mediascanner.cpp
-    src/canonadapter.cpp
+    src/mediaengineadapter.cpp
     src/mediametadata.cpp
-    src/omfresolutions.cpp
     src/avideffects.cpp
     src/mediacsv.cpp
     src/volumeidentity.cpp
@@ -257,7 +255,7 @@ target_include_directories(MediaMuster PRIVATE
 )
 
 target_link_libraries(MediaMuster PRIVATE
-    mediamuster_canon2
+    mediamuster_mediaengine
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui

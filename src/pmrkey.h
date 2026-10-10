@@ -2,9 +2,8 @@
 
 #include <QString>
 
-/// The PMR file-record lookup key, shared by PmrParser (table builder)
-/// and MediaScanner (table querier). Centralised here so the two sides
-/// can't drift out of sync.
+/// Matching PMR filenames and discovered files uses the same normalisation.
+/// Keeping it here prevents the two lookups from drifting apart.
 
 namespace PmrKey
 {

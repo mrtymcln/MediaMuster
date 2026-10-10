@@ -1,7 +1,7 @@
 # MXF identity byte-order correction — 7 October 2026
 
 The full comparison exposed a genuine matching bug: 277 file IDs differed from
-the old CSV because Canon retained an MXF byte ordering where its database
+the old CSV because MediaEngine retained an MXF byte ordering where its database
 matching expected the database ordering. All 277 differences have exactly this
 conversion pattern. This was not an intentional display change.
 
@@ -34,12 +34,12 @@ that this marker prevents the identity from using MXF serialization.
 
 ## Correction and proof
 
-[The MXF projection helper](../src/canon/projection.cpp) now converts those numeric
+[The MXF projection helper](../src/mediaengine/projection.cpp) now converts those numeric
 fields for this family too. Original source bytes remain in the evidence.
 PMR/MDB and OMF wrapping keep their existing database representation. Comments in
 [omfuid.h](../src/omfuid.h) now distinguish the identity family from its encoding.
 
-The added [projection regression](../tests/tst_canon_mxfprojection.cpp) checks the
+The added [projection regression](../tests/tst_mediaengine_mxfprojection.cpp) checks the
 sample's file ID and master ID, unchanged PMR encoding, legacy eight-byte wrapping,
 retained raw bytes, and the all-zero identity. The isolated projector suite passed
 **25 cases, 0 failures**.

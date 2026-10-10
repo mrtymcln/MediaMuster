@@ -6,7 +6,7 @@ all observations; blank unresolved values with Console diagnostics; show all
 established MasterMobIds in table and CSV. These are agreed behaviour, not implemented
 changes. Preserve today's behaviour as the comparison baseline, with deliberate
 corrections separately documented. On 4 October the user explicitly approved the editorial orders below for the live
-Canon connection: Clip Name header > MDB > AVB; Project PMR > MDB > header;
+MediaEngine connection: Clip Name header > MDB > AVB; Project PMR > MDB > header;
 Original Bin MDB > header > AVB. See [live connection](live-connection-2026-10-04.md).
 
 ## Common eligibility rules

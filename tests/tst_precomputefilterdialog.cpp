@@ -1,3 +1,4 @@
+#include "testmediafile.h"
 #include "precomputefilterdialog.h"
 #include "mediafilterproxy.h"
 #include "mediatablemodel.h"
@@ -18,6 +19,7 @@ namespace
 		row.type = MediaFile::Type::Precompute;
 		row.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 		row.effect = effect;
+		row.clipName = QString(effect).replace(QLatin1Char(' '), QLatin1Char('_'));
 		row.effectCategory = QStringLiteral("Blend");
 		row.volumeName = QStringLiteral("EDIT");
 		row.volumePath = volume;
@@ -41,6 +43,7 @@ namespace
 		title.effectCategory = QStringLiteral("Title");
 		files.append(title);
 		title.effect = QStringLiteral("3D Warp"); // same inferred name must not change its proven subtype
+		title.clipName = QStringLiteral("3D_Warp");
 		title.fileName = QStringLiteral("renamed-title.mxf");
 		title.mediaFilePath = QStringLiteral("/Volumes/EDIT/renamed-title.mxf");
 		files.append(title);
@@ -51,7 +54,7 @@ namespace
 		auto ordinary = render(QStringLiteral("Ordinary fake effect"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("source.mxf"));
 		ordinary.type = MediaFile::Type::Media;
 		files.append(ordinary);
-		return files;
+		return TestMediaFile::seeded(files);
 	}
 
 	QTreeWidgetItem *choice(PrecomputeFilterDialog &dialog, const QStringList &path)
@@ -81,7 +84,7 @@ namespace
 	QStringList matchingFiles(const QVector<MediaFile> &files, const PrecomputeFilter &filter, const QString &volume = {})
 	{
 		MediaTableModel model;
-		model.setMediaFiles(files);
+		model.setMediaFiles(TestMediaFile::seeded(files));
 		MediaFilterProxy proxy;
 		proxy.setSourceModel(&model);
 		proxy.setPrecomputesEnabled(true);

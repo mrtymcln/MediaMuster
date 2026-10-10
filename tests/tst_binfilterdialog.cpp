@@ -2,9 +2,10 @@
 // table proxy. Fixtures are complete structured AVBs from testavb.h.
 
 #include "binfilterdialog.h"
-#include "canon/avbreferences.h"
+#include "mediaengine/avbreferences.h"
 #include "mediafilterproxy.h"
 #include "mediatablemodel.h"
+#include "testmediafile.h"
 #include "mobid.h"
 #include "testavb.h"
 
@@ -63,7 +64,7 @@ namespace
 			outside.fileName = QStringLiteral("outside.mxf");
 			outside.fileMobId = MobId::format(TestAvb::Other);
 			outside.masterMobId = hit.masterMobId; // A shared master must not admit this file.
-			model.setMediaFiles({hit, outside});
+			model.setMediaFiles(TestMediaFile::seeded({hit, outside}));
 			proxy.setSourceModel(&model);
 			QObject::connect(&dialog, &BinFilterDialog::filterChainChanged, &proxy,
 							 [this](const BinFilter &current, const QStringList &binNames)
@@ -177,7 +178,7 @@ void TestBinFilterDialog::locator_identity_controls_file_matching()
 	Harness h;
 	auto rows = h.model.allFiles();
 	rows[0].fileMobId = fileId;
-	h.model.setMediaFiles(rows);
+	h.model.setMediaFiles(TestMediaFile::seeded(rows));
 	TestAvb::Document d;
 	d.objects = {{"ABIN", TestAvb::bin(false)},
 				 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source, typed, locatorId)}};

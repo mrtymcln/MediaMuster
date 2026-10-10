@@ -36,7 +36,7 @@ dimensions default to Stored, with zero offsets; Display need not fit inside
 Sampled. The original
 [OMF Interchange Specification 2.1, DIDD pp. 134–135](https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf)
 also requires all four members of an optional rectangle when any are specified.
-Canon retains the original toolkit's tolerant defaults for legacy partial sets,
+MediaEngine retains the original toolkit's tolerant defaults for legacy partial sets,
 explicitly explained as compatibility interpretation rather than strict
 conformance. A present unreadable or conflicting property never receives an
 absence default. The existing OMF1 mixed-field convention is retained separately
@@ -76,7 +76,7 @@ not a claim that every possible Avid proxy profile has now been identified.
 
 [Proxy evidence](evidence/proxy-resolution-2026-10-07.json) retains all eight paths,
 identities, source associations, raw dimensions, labels, ResolutionIDs and ffprobe
-results. [Padding evidence](evidence/stored-resolution-padding-2026-10-07.json)
+results. [Padding evidence](evidence/stored-resolution-source-evidence-2026-10-11.json)
 records all 21 padded MDB descriptors. The earlier evidence remains unchanged.
 The supplementary [offset evidence](evidence/visible-resolution-offsets-2026-10-07.json)
 records 156 independently reread/decoded offsets across 39 descriptors: sixteen
@@ -85,10 +85,10 @@ All proxy/padding offsets are zero. Both JFIF sources record DisplayYOffset 5.
 
 ## Implementation and verification
 
-The shared private [geometry selector](../src/canon/picturegeometry_p.h) performs
+The shared private [geometry selector](../src/mediaengine/picturegeometry_p.h) performs
 bounds checks and the narrow proxy comparison. The
-[MXF projection](../src/canon/mxfprojection.cpp) and
-[MDB/OMF projection](../src/canon/omfprojection.cpp) supply their format-specific
+[MXF projection](../src/mediaengine/mxfprojection.cpp) and
+[MDB/OMF projection](../src/mediaengine/omfprojection.cpp) supply their format-specific
 coordinate systems and defaults. Parsing and database-first scheduling stay in
 their existing engines.
 
@@ -99,12 +99,12 @@ coordinates, missing versus unreadable/conflicting values, offset bounds and
 overflow, all seven verified proxy configurations and nearby rejected cases.
 They also check that raw geometry and source locators survive projection.
 
-The complete native regression suite passes **38/38 executables** on macOS 15.8
-with Qt 6.5.3, Debug, arm64. Both app build directories produce universal
-arm64/x86_64 binaries. This pass does not establish Windows runtime behavior.
+These dated checks used macOS 15.8 with Qt 6.5.3, Debug, arm64. Both app build
+directories produced universal arm64/x86_64 binaries. This pass does not establish
+Windows runtime behavior.
 The opt-in external-corpus/benchmark and case-sensitive-volume guards still skip
 their default cases; the real scan below was run separately rather than inferred
-from a guarded skip. [Full test log](evidence/visible-resolution-full-tests-2026-10-07.txt).
+from a guarded skip.
 
 The subsequent read-only scan uses the same roots as the earlier complete
 baseline-scope check: `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT`.
@@ -112,11 +112,11 @@ It produces **2,413 unique rows**, matching every baseline `Location`, with no
 extra or missing paths and no blanked populated baseline cells. All KelpieIds
 are nonzero and unique; copied files retain separate rows.
 
-- All 2,413 **Resolution** cells now match the pre-Canon CSV, including the
+- All 2,413 **Resolution** cells agree with the supplied reference export, including the
   eight small proxies and all 21 padded files. Matching old output alone is not
   proof; the independently recorded geometry and source checks establish these
   interpretations.
-- Relative to the immediately preceding stored-only Canon CSV, exactly 21
+- Relative to the immediately preceding stored-only MediaEngine CSV, exactly 21
   Resolution cells change from 1920×1088 to 1920×1080. No other exported field
   changes, excluding scan-session KelpieIds from cross-scan comparison.
 - Twenty of the old CSV's 24 columns match for every row. The four remaining
@@ -145,7 +145,7 @@ The earlier stored-only evidence is retained with a superseded-policy label.
 This pass removes unused old metadata selection helpers from
 `mediaobservations.h`; its used transfer-time filesystem observations remain.
 The user confirmed the singular feature name `PrecomputeFilter`; the internal
-constant is `FeatureFlags::kPrecomputeFilter`. Stale Canon implementation-status
+constant is `FeatureFlags::kPrecomputeFilter`. Stale MediaEngine implementation-status
 descriptions have been corrected. The user accepts the current 2.40 GB peak
 footprint and 20,802 ms scan time for now, so further memory optimization is no
 longer an immediate priority. These measured results do not establish correctness
@@ -153,7 +153,7 @@ for every format variant.
 
 Older PMR/MDB/MXF/OMF parsers and their supporting Bento/OMF code still support
 meaningful regression suites. Deleting them requires moving that coverage first.
-The `AvbParser` interface is a live adapter over Canon, so it remains needed.
+The `AvbParser` interface is a live adapter over MediaEngine, so it remains needed.
 The earlier database-first engine used about 2.41 GB on this corpus. If further
 allocation work is undertaken, it should preserve the agreed evidence rather than
 discarding facts just to reduce the measurement. The original format-audit findings

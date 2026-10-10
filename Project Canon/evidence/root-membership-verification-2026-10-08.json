@@ -79,18 +79,6 @@
       "sha256": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2"
     },
     {
-      "path": "src/bentofile.cpp",
-      "size": 22137,
-      "mtimeNs": 1790865516074140751,
-      "sha256": "7a448068989a0eeadad6d24b186b07fbb4cd5a9ff9ca51f209b6c236d9b64b88"
-    },
-    {
-      "path": "src/bentofile.h",
-      "size": 4295,
-      "mtimeNs": 1790865516070693257,
-      "sha256": "c8ab0efa1e3107142f23042bd136d5aa0c18506a6d9634b95e032fff2fefc6a0"
-    },
-    {
       "path": "src/binfilereferences.h",
       "size": 2958,
       "mtimeNs": 1790835964192049066,
@@ -463,18 +451,6 @@
       "sha256": "a7f62a3f1547990b185c436839cfa24c878680d6ad31fa2abcd459d2bbb8d5bb"
     },
     {
-      "path": "src/mdbparser.cpp",
-      "size": 12457,
-      "mtimeNs": 1791020478797920116,
-      "sha256": "20867a5b325b23fea30a0fa3db05ed511d296d589029516009d8b3f4fe42c711"
-    },
-    {
-      "path": "src/mdbparser.h",
-      "size": 3363,
-      "mtimeNs": 1791020273764943184,
-      "sha256": "c9c94f99b6233854e2c34c1cf078d83d21423c7f44d26a6a10545981500cbf3c"
-    },
-    {
       "path": "src/mediacsv.cpp",
       "size": 3836,
       "mtimeNs": 1791020792280587584,
@@ -565,18 +541,6 @@
       "sha256": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8"
     },
     {
-      "path": "src/mxfparser.cpp",
-      "size": 55077,
-      "mtimeNs": 1791022585584110170,
-      "sha256": "e834f20d48dde9ff2f8076eb074318985dd27fd276eabd2c174551924bee3533"
-    },
-    {
-      "path": "src/mxfparser.h",
-      "size": 2401,
-      "mtimeNs": 1790770979339385538,
-      "sha256": "fca4d4a9b96424dc7af30491e337253b6aa0e5a66d510355bb83799f440e20a8"
-    },
-    {
       "path": "src/mxfproperties.h",
       "size": 6242,
       "mtimeNs": 1790812989787732302,
@@ -593,42 +557,6 @@
       "size": 1029,
       "mtimeNs": 1790053749060450647,
       "sha256": "d22a83873134e61d934f082cbb4b1c5cdab7201c178ac89873d3f569850445ee"
-    },
-    {
-      "path": "src/omfobjects.cpp",
-      "size": 36101,
-      "mtimeNs": 1791022585584523382,
-      "sha256": "42add657225f12ed769595b17030cb4b1909cf8b711cddd8db3fb71fffa88f1d"
-    },
-    {
-      "path": "src/omfobjects.h",
-      "size": 11403,
-      "mtimeNs": 1790864263613848985,
-      "sha256": "b5eb338af20c1661e1524e85e71d83511138ac4faf009122e504bba2b3adb717"
-    },
-    {
-      "path": "src/omfparser.cpp",
-      "size": 12324,
-      "mtimeNs": 1790986886783204197,
-      "sha256": "65d8fbad269e5f5390dc910dd0494671ec368033e3f4bd14f269f5c2969fa7f9"
-    },
-    {
-      "path": "src/omfparser.h",
-      "size": 2926,
-      "mtimeNs": 1790770979379715647,
-      "sha256": "657c0d91d76eba4732590a3ea02a6dda3e47467cf88151efdba846aef3400926"
-    },
-    {
-      "path": "src/omfresolutions.cpp",
-      "size": 5656,
-      "mtimeNs": 1790770979370435401,
-      "sha256": "8b3f9336d97b25c7b8b54afea6bb8aab8073b9419c402761d600272c67311232"
-    },
-    {
-      "path": "src/omfresolutions.h",
-      "size": 1314,
-      "mtimeNs": 1790337499273084833,
-      "sha256": "b343f9b7b513eddb1752b8650210e97e0a18b8d85645d4f4320b49e3a2ad2f43"
     },
     {
       "path": "src/omfuid.h",
@@ -767,18 +695,6 @@
       "size": 634,
       "mtimeNs": 1788617728974389525,
       "sha256": "a7c1368514542e3b433e7ca78e20916a4423a301d85d0b9c93fb63457f51cac7"
-    },
-    {
-      "path": "src/pmrparser.cpp",
-      "size": 10394,
-      "mtimeNs": 1790853089100381700,
-      "sha256": "869816fb9516cbec9cfa6a86dfa247ece797a716cfd4c9a909ddc36c74d42a89"
-    },
-    {
-      "path": "src/pmrparser.h",
-      "size": 3965,
-      "mtimeNs": 1790986886779559101,
-      "sha256": "347ddafd138cf7c610963449d6ea77ecac7c8c9978b9730b927eddbe63c1a31c"
     },
     {
       "path": "src/precomputefilter.h",
@@ -1147,5 +1063,10 @@
       "sha256": "2490c5487765070804f5216025c972b776e1351d3969af0f21a1ea15715ae447"
     }
   ],
-  "scope": "Fresh final builds and retained source hashes. Authored controls plus bounded genuine-file evidence, not universal conformance. Initial suite failure from unrooted authored scanner fixtures is retained separately; final fixture assertions unchanged. Original media accessed read-only. Windows runtime not exercised."
+  "scope": "Fresh final builds and retained source hashes. Authored controls plus bounded genuine-file evidence, not universal conformance. Initial suite failure from unrooted authored scanner fixtures is retained separately; final fixture assertions unchanged. Original media accessed read-only. Windows runtime not exercised.",
+  "documentationExtraction": {
+    "date": "2026-10-11",
+    "originalArtifactSha256": "38956aa6fefdb8eebaeb4eed50d390041872c04e8579017630938aadc77bf0b7",
+    "scope": "Preserved measured format/source facts and current-reader results; removed superseded implementation references. This is an extracted receipt, not a new verification or a renamed source-code fingerprint."
+  }
 }

@@ -1,8 +1,7 @@
 # Implementation and proof
 
 Status: the fresh engines are connected to the live application; see the
-[live connection and verification report](live-connection-2026-10-04.md). The first
-RAM/evidence stage is recorded in [foundation implementation](foundation-implementation-2026-10-03.md).
+[live connection and verification report](live-connection-2026-10-04.md).
 Requirements below remain the acceptance plan, not a claim that every check is complete.
 The [complete Macintosh HD + EDIT comparison](full-scan-comparison-2026-10-07.md)
 now covers all 2,413 baseline paths and supersedes the earlier local-only check.
@@ -62,7 +61,7 @@ Its DNx catalogue must be handwritten/hardcoded in C++ for v1, with source refer
 and exact supported mappings; the agreed design has no runtime CSV/TSV dependency.
 Review [column meanings](column-review.md) and the pending
 [conflict-rule proposals](conflict-selection-proposals.md) before changing display
-behaviour. Use the supplied [scan baseline](scan-baseline-2026-10-03.md) for comparison
+behaviour. Use matching user-exported scans for comparison
 and request a matching fresh CSV when needed. Preserve current managed-folder scope;
 OMF scanning remains enabled by default behind `FeatureFlags::kOmfScan`. The agreed
 OmfScan boolean column marks each row's managed family, with actual container retained

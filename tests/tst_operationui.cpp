@@ -1,3 +1,4 @@
+#include "testmediafile.h"
 #include "mainwindow.h"
 #include "featureflags.h"
 #include "mediacsv.h"
@@ -10,7 +11,7 @@
 #include "binfilterdialog.h"
 #include "testavb.h"
 #include "mobid.h"
-#include "canon/scanmodel.h"
+#include "mediaengine/scanmodel.h"
 
 #include <QAction>
 #include <QApplication>
@@ -241,13 +242,13 @@ void TestOperationUi::scan_results_keep_reconciliation_issues()
 void TestOperationUi::scan_start_releases_previous_session()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	auto previous = QSharedPointer<Canon::ScanResult>::create();
-	const QWeakPointer<Canon::ScanResult> receipt(previous);
+	auto previous = QSharedPointer<MediaEngine::ScanResult>::create();
+	const QWeakPointer<MediaEngine::ScanResult> receipt(previous);
 	MediaFile row;
 	row.mediaFilePath = path("previous.mxf");
-	row.canonScan = previous;
-	window.m_model->setMediaFiles({row});
-	row.canonScan.clear();
+	row.mediaEngineScan = previous;
+	window.m_model->setMediaFiles(TestMediaFile::seeded({row}));
+	row.mediaEngineScan.clear();
 	previous.clear();
 	QVERIFY(!receipt.isNull());
 	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
@@ -301,7 +302,7 @@ void TestOperationUi::project_sidebar_uses_whole_inventory_totals()
 	files[1].kind = MediaFile::Kind::Audio;
 	files[1].dbStatus = MediaFile::DbStatus::NoReference;
 	files[2].dbStatus = MediaFile::DbStatus::NoDatabase;
-	window.m_model->setMediaFiles(files);
+	window.m_model->setMediaFiles(TestMediaFile::seeded(files));
 	window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::Audio);
 	window.rebuildProjectList();
 	QCOMPARE(window.m_proxy->rowCount(), 1);
@@ -333,7 +334,7 @@ void TestOperationUi::removed_sources_refresh_status_and_project_filters()
 		files[i].project = i < 2 ? QStringLiteral("Project A") : QStringLiteral("Project B");
 		files[i].sizeBytes = 100 * (1 << i);
 	}
-	window.onScanFinished(files);
+	window.onScanFinished(TestMediaFile::seeded(files));
 	window.m_projectList->item(0)->setSelected(true);
 	window.m_tableView->selectAll();
 	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files (filtered from 3)"));
@@ -770,7 +771,7 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	file.mediaFilePath = path("volume/clip.mxf");
 	file.fileName = QStringLiteral("clip.mxf");
 	file.masterMobId = QStringLiteral("master-clip");
-	window.onScanFinished({file});
+	window.onScanFinished(TestMediaFile::seeded({file}));
 	QVERIFY(rebalance->isEnabled());
 	QVERIFY(window.m_rebalanceButton->isEnabled());
 	QVERIFY(exportCsv->isEnabled());
@@ -825,11 +826,11 @@ void TestOperationUi::menu_availability_tracks_locations_selection_and_activity(
 	QCOMPARE(window.m_proxy->rowCount(), 0);
 	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAction})
 		QVERIFY(!command->isEnabled());
-	window.onScanFinished({file});
+	window.onScanFinished(TestMediaFile::seeded({file}));
 	window.m_tableView->selectRow(0);
 	QVERIFY(manage->isEnabled());
 	QVERIFY(relatives->isEnabled());
-	window.m_model->setMediaFiles({});
+	window.m_model->setMediaFiles(TestMediaFile::seeded({}));
 	QCOMPARE(window.m_proxy->rowCount(), 0);
 	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAction})
 		QVERIFY(!command->isEnabled());
@@ -882,7 +883,7 @@ void TestOperationUi::select_relatives_counts_all_visible_matches()
 	// The unrelated file deliberately shares the clip name, but not the master ID.
 	if (hideLastRelative)
 		files[total - 1].kind = MediaFile::Kind::Video;
-	window.onScanFinished(files);
+	window.onScanFinished(TestMediaFile::seeded(files));
 	if (hideLastRelative)
 		window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::Audio);
 	const int visibleRelatives = total - (hideLastRelative ? 1 : 0);
@@ -941,7 +942,7 @@ void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
 								   : QStringLiteral("unrelated-master");
 		file.kind = MediaFile::Kind::Audio;
 	}
-	window.onScanFinished(files);
+	window.onScanFinished(TestMediaFile::seeded(files));
 	for (int row : {0, 2})
 	{
 		const auto index = window.m_proxy->mapFromSource(window.m_model->index(row, 0));
@@ -983,7 +984,7 @@ void TestOperationUi::select_relatives_preserves_hidden_selections_without_using
 		file.masterMobId = i < 2 ? QStringLiteral("master-a") : QStringLiteral("master-b");
 		file.kind = MediaFile::Kind::Audio;
 	}
-	window.onScanFinished(files);
+	window.onScanFinished(TestMediaFile::seeded(files));
 	for (int row : {0, 2})
 		window.m_tableView->selectionModel()->select(
 			window.m_proxy->mapFromSource(window.m_model->index(row, 0)),
@@ -1034,7 +1035,7 @@ void TestOperationUi::invert_selection_preserves_hidden_selections()
 		file.mediaFilePath = path(file.fileName);
 		file.kind = MediaFile::Kind::Audio;
 	}
-	window.onScanFinished(files);
+	window.onScanFinished(TestMediaFile::seeded(files));
 	QSet<QString> initialPaths{files[2].mediaFilePath};
 	for (int row = 0; row < files.size(); ++row)
 	{
@@ -1109,7 +1110,7 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 		MediaFile file;
 		file.mediaFilePath = path("clip.mxf");
 		file.clipName = QString(100, QLatin1Char('W'));
-		window.onScanFinished({file});
+		window.onScanFinished(TestMediaFile::seeded({file}));
 		QCOMPARE(table->columnWidth(clipColumn), 333);
 		QCOMPARE(header->visualIndex(fileColumn), 1);
 
@@ -1122,7 +1123,7 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 		const int fittedWidth = table->columnWidth(clipColumn);
 		QVERIFY(fittedWidth > 333);
 		file.clipName = QStringLiteral("Short");
-		window.onScanFinished({file});
+		window.onScanFinished(TestMediaFile::seeded({file}));
 		QCOMPARE(table->columnWidth(clipColumn), fittedWidth);
 	}
 	MainWindow freshWindow(nullptr, MainWindow::StartupMode::UiOnly);
@@ -1162,9 +1163,10 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	precompute.type = MediaFile::Type::Precompute;
 	precompute.project = QStringLiteral("Render project");
 	precompute.effect = QStringLiteral("Resize");
+	precompute.clipName = QStringLiteral("Resize");
 	precompute.effectCategory = QStringLiteral("Image");
 	precompute.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
-	window.onScanFinished({media, precompute});
+	window.onScanFinished(TestMediaFile::seeded({media, precompute}));
 	QVERIFY(!window.m_precomputesEnabled);
 	QVERIFY(!window.m_model->precomputesEnabled());
 	QVERIFY(!window.m_proxy->precomputesEnabled());
@@ -1239,7 +1241,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QCOMPARE(projects.size(), 1);
 	projects.first()->setSelected(true);
 	QCOMPARE(window.m_proxy->rowCount(), 1);
-	window.onScanFinished({media, precompute});
+	window.onScanFinished(TestMediaFile::seeded({media, precompute}));
 	QVERIFY(window.m_projectList->selectedItems().isEmpty());
 	QCOMPARE(window.m_proxy->rowCount(), 2);
 }
@@ -1249,7 +1251,7 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	MediaFile file;
 	file.clipName = QStringLiteral("Clip");
-	window.m_model->setMediaFiles({file});
+	window.m_model->setMediaFiles(TestMediaFile::seeded({file}));
 	// Exercise both gates in one window, including removing and reinserting columns.
 	for (const bool clip : {true, false, true})
 	{
@@ -1295,7 +1297,7 @@ void TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv()
 	known.clipName = QStringLiteral("Database clip");
 	known.clipNameSource = MediaFile::ClipNameSource::Mdb;
 	known.originalBin = QStringLiteral("Database bin");
-	window.onScanFinished({missing, known});
+	window.onScanFinished(TestMediaFile::seeded({missing, known}));
 	window.onFilterByBins();
 	auto *dialog = window.m_binFilterDialog;
 	QVERIFY(dialog);
@@ -1360,18 +1362,18 @@ void TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv()
 	list->item(0)->setSelected(true);
 	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
 	check(QStringLiteral("Second"), QStringLiteral("Second bin"));
-	window.onScanFinished({missing, known});
+	window.onScanFinished(TestMediaFile::seeded({missing, known}));
 	check(QStringLiteral("Second"), QStringLiteral("Second bin"));
 	MediaFile refreshed = missing;
 	refreshed.clipName = QStringLiteral("Fresh database clip");
 	refreshed.clipNameSource = MediaFile::ClipNameSource::Mdb;
 	refreshed.originalBin = QStringLiteral("Fresh database bin");
-	window.onScanFinished({refreshed, known});
+	window.onScanFinished(TestMediaFile::seeded({refreshed, known}));
 	check(refreshed.clipName, refreshed.originalBin);
 	list->item(0)->setSelected(true);
 	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
 	check(refreshed.clipName, refreshed.originalBin);
-	window.onScanFinished({missing, known});
+	window.onScanFinished(TestMediaFile::seeded({missing, known}));
 	check({}, {});
 }
 
@@ -1432,7 +1434,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	legacySuffix.mediaFilePath = path("legacy.omf");
 	legacySuffix.fileName = QStringLiteral("legacy.omf");
 	legacySuffix.project = legacyMetadata.project;
-	window.onScanFinished({modern, otherModern, legacyMetadata, legacySuffix});
+	window.onScanFinished(TestMediaFile::seeded({modern, otherModern, legacyMetadata, legacySuffix}));
 	for (const auto &project : {modern.project, legacyMetadata.project})
 	{
 		const auto matches = window.m_projectList->findItems(project, Qt::MatchExactly);
@@ -1450,7 +1452,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QCOMPARE(window.m_projectList->selectedItems().first()->text(), modern.project);
 	QCOMPARE(window.m_proxy->rowCount(), 1);
 	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, modern.mediaFilePath);
-	window.onScanFinished({modern, otherModern});
+	window.onScanFinished(TestMediaFile::seeded({modern, otherModern}));
 	QVERIFY(window.m_projectList->selectedItems().isEmpty());
 	QCOMPARE(window.m_proxy->rowCount(), 2);
 }
@@ -1770,7 +1772,7 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	copied.fileName = QStringLiteral("clip-1.bin");
 	copied.project = QStringLiteral("Copied project");
 	copied.sizeBytes = QFileInfo(copied.mediaFilePath).size();
-	window.onScanFinished({copied});
+	window.onScanFinished(TestMediaFile::seeded({copied}));
 	QCOMPARE(window.m_projectList->count(), 1);
 	QSignalSpy restored(window.m_operations, &FileOperationController::originalsRestored);
 	QSignalSpy finished(window.m_operations->m_operationManager, &OpManager::operationFinished);
@@ -1845,7 +1847,7 @@ void TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows(
 	sibling.volumePath = path("retained");
 	sibling.volumeName = QStringLiteral("retained");
 	QVERIFY(put(sibling.mediaFilePath, QByteArray(1024, 's')));
-	window.m_model->setMediaFiles({untouched, sibling});
+	window.m_model->setMediaFiles(TestMediaFile::seeded({untouched, sibling}));
 	auto *operations = window.m_operations;
 	operations->refreshHistory();
 	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
@@ -2014,7 +2016,7 @@ void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention
 	retired.mediaFilePath = path("retired.mxf");
 	removed.mediaFilePath = path("removed.mxf");
 	retained.mediaFilePath = path("retained.mxf");
-	window.m_model->setMediaFiles({retired, removed, retained});
+	window.m_model->setMediaFiles(TestMediaFile::seeded({retired, removed, retained}));
 	window.m_operations->m_pruneSourceRowsAfterOperation = true;
 	OpResult retirement;
 	retirement.state = OpResult::State::SourceRetained;

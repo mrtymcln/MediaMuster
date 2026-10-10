@@ -1,18 +1,20 @@
 # Project Canon
 
-Recorded 3 October 2026. This folder captures the user's requirements, the proposed
-RAM metadata design, and the evidence discussed during the Avid format investigation.
-The fresh engines are now connected to the application. The user approved
-[Canon2 as the live scanner](canon2-live-integration-2026-10-10.md) on 10 October.
-That report records the current source-storage path; the earlier
-[live connection report](live-connection-2026-10-04.md) records the shared scanner,
-metadata integration and its limits. The [foundation implementation](foundation-implementation-2026-10-03.md)
-records the earlier milestone; some design requirements and optional UI features
-remain future work.
+This folder records the user's requirements, RAM metadata design and the evidence
+behind MediaMuster's Avid-format interpretation. **MediaEngine** is the live engine,
+under `src/mediaengine/` and namespace `MediaEngine`; its concrete components are
+explained in [engine terminology](../docs/media-engine.md).
 
-"Canon" means the plan for canonical correctness: preserve the distinctions in
-Avid's formats and the evidence behind MediaMuster's interpretation. It is an
-objective, not a declaration that every current or proposed parser rule is proven.
+The [11 October cleanup verification](../docs/media-engine-cleanup-2026-10-11.md)
+records the sole-engine integration, migrated real-media checks and approved
+MPEG OMF ownership correction.
+
+The [live integration report](canon2-live-integration-2026-10-10.md) records native
+PMR/MDB and MXF source storage. The [retention plan](newtestament-retention-plan-2026-10-10.md)
+records proposed stepwise trade-offs; no retention cut is approved by that plan.
+Compression changes remain on hold. Project Canon remains the requirements folder
+name: canonical correctness is an objective, not a claim that every parser rule
+is proven. Dated verification records retain their source-state limits.
 
 ## Live connection update
 
@@ -50,8 +52,8 @@ also records corrected IMX/container interpretations and nine unproven DNx
 compatibility aliases. The subsequent
 [corpus check](dnx-alias-corpus-check-2026-10-08.md) found no exact matches in
 the available live media, databases, saved specimens or supplied bins. The user
-then approved removing those exact nine rows from Canon and the old lookup, while
-retaining the verified DNx naming rules and the old engine itself. Removal
+then approved removing those exact nine unsupported rows, while
+retaining the verified DNx naming rules. Removal
 verification passes 40/40 native suites. The repeat scan keeps all 2,413 rows,
 all 806 DNx names and every other exported metadata value unchanged. The
 [current verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json)
@@ -80,12 +82,12 @@ checks, physical rows and file-operation validation remain intact. Discovery's
 folder listing is a separate phase; this change does not claim to fix its earlier
 Windows/NEXIS delay.
 
-The user has authorized [connecting Canon to the application](live-connection-2026-10-04.md).
+The user has authorized [connecting MediaEngine to the application](live-connection-2026-10-04.md).
 This supersedes the historical “not yet connected” status of the reader reports below.
 Memory optimization is not a prerequisite. Work began on 4 October and continued
 through 9 October 2026; the dated reports record verification status. The live scanner
-uses the shared Canon discovery, source interpretation, file/master projections
-and per-field selection, with Canon2's source storage linked below. The AVB
+uses the shared MediaEngine discovery, source interpretation, file/master projections
+and per-field selection, with MediaEngine's source storage linked below. The AVB
 whole-bin path uses the fresh reader; the individual-sequence
 picker remains behind `SequenceFilter` for a later release.
 
@@ -95,7 +97,7 @@ to right: first choice, fallback, final fallback. Sources in one group have equa
 preference. Omitted sources cannot supply the selected value, while their read
 evidence and agreement remain retained. Scanning and bin enrichment use that
 same policy.
-Canon-backed semantic cells and provenance flags refresh from final selections,
+MediaEngine-backed semantic cells and provenance flags refresh from final selections,
 including clearing unresolved values. Source qualification and header scheduling
 remain separate. Verification of this change is recorded after the coordinated run.
 The [implementation and proof](shared-selection-policy-2026-10-08.md) records
@@ -150,7 +152,7 @@ outstanding.
 
 The [MDVX and remaining performance review](mdvx-performance-review-2026-10-09.md)
 records static inspection of the installed MDVX 4073 scanner and the remaining
-Canon candidates. Three local comparisons of the same Canon code measured
+MediaEngine candidates. Three local comparisons of the same MediaEngine code measured
 median scan times of 35.401 seconds in Debug and 12.731 seconds in Release,
 with identical checked outputs. Shipping CI already uses Release. No production
 optimization was applied in this review; full metadata/evidence preservation and
@@ -168,10 +170,10 @@ Windows/NEXIS throughput and the 300,000-file workload still need verification.
 
 ## Implementation direction
 
-The user first authorized a separate [Canon2 comparison engine](canon2-comparison-engine-2026-10-10.md)
+The user first authorized a separate [MediaEngine comparison engine](canon2-comparison-engine-2026-10-10.md)
 on 10 October. Its first stage retains exact PMR/MDB images in RAM while reusing
 the verified readers and the shared database-first scanner. The later
-[live integration](canon2-live-integration-2026-10-10.md) promotes Canon2 to the
+[live integration](canon2-live-integration-2026-10-10.md) promotes MediaEngine to the
 application's scanner after the MXF comparison below. Direct compact-index
 interpretation and per-row evidence compaction remain later work. The comparison
 report retains its historical measurements and their limits.
@@ -189,13 +191,12 @@ physical footprint fell 29.0%; the report records the scope and qualifications.
 OMF image storage, compact-index parsing and row-evidence compaction remain later
 work; the database-only benchmark does not qualify the Interplay workload.
 
-The user then approved using Canon2 in the app. Completed PMR/MDB sources retain
+The user then approved using MediaEngine in the app. Completed PMR/MDB sources retain
 their exact database bytes; completed MXF sources retain the reader's acquired
 bytes and original offsets. MediaFile values, relationships, evidence, metadata
 selection and database-first header decisions keep their existing behavior.
 OMF/legacy remains on its independent reader and existing source-storage path.
-The old engines/readers/tests remain available until the user's separate
-retirement decision. See [Canon2 live integration](canon2-live-integration-2026-10-10.md)
+See [MediaEngine live integration](canon2-live-integration-2026-10-10.md)
 for verification status; the 300,000-file Windows/NEXIS test is still required.
 
 Before choosing a media-reading scope, the [MXF/OMF specification review](mxf-omf-read-scope-review-2026-10-10.md)
@@ -213,9 +214,9 @@ The user subsequently clarified that scanner, parser and metadata engines should
 be fresh replacements, while the UI and file-operation executor stay. See the
 [fresh replacement plan](replacement-engine-plan.md). This supersedes the earlier
 aggregate-based refactor as the final engine architecture.
-The selected `Canon::PmrReader` preserves both record sets and raw source evidence
+The selected `MediaEngine::PmrReader` preserves both record sets and raw source evidence
 independently of the former production parser. On 4 October the user chose the
-alternative implementation and requested removal of the first Canon reader; see
+alternative implementation and requested removal of the first MediaEngine reader; see
 [PMR reader selection](pmr-reader-selection-2026-10-04.md).
 The [fresh MDB reader](fresh-mdb-reader-2026-10-04.md) now preserves Bento objects,
 typed property occurrences and references independently of the former production parser.
@@ -260,7 +261,7 @@ The agreed [text-encoding names](text-encoding-names.md) keep `PmrFileSet` and
 per-property `TextEncoding` separate.
 The historical [PMR reader comparison](pmr-reader-comparison-2026-10-03.md) retains
 the shared test results, reproduced behavioural differences and measured parsing time.
-Only the selected implementation remains in the current Canon source.
+Only the selected implementation remains in the current MediaEngine source.
 
 ## Agreed v1 requirements
 
@@ -271,7 +272,7 @@ Only the selected implementation remains in the current Canon source.
   Keep the checks needed to read declared lengths and references correctly; do not
   add speculative repair paths or special cases solely for invented corrupt files.
   Preserve unsupported evidence without assigning an unproven meaning.
-- The old engine is comparison material, not format authority. Retaining a rule
+- Retaining a rule
   requires format, Media Composer or specimen evidence, or an explicit product
   decision for presentation. Inheritance and the absence of a known affected file
   do not justify a rule. Reassess unsupported assumptions; remove or replace them
@@ -291,8 +292,6 @@ Only the selected implementation remains in the current Canon source.
   Write source preferences as named groups with `prefer(...)`; moving a source
   between groups changes that property's preference for the next build.
   The concrete table/API is implemented in [metadata selection policy](metadata-selection-policy.md).
-- Do not retire the superseded engine code or tests until the user explicitly
-  authorizes retirement. The earlier proposed cleanup order is not authorization.
 - Keep scan metadata and its supporting evidence in RAM. Do not add a persistent
   catalogue database for v1.
 - Do not impose an application-defined memory cap. Minimize avoidable allocations
@@ -408,7 +407,12 @@ Only the selected implementation remains in the current Canon source.
 
 ## Documents
 
-- [Canon2 live integration](canon2-live-integration-2026-10-10.md): current scanner
+- [MediaEngine names and retention plan](newtestament-retention-plan-2026-10-10.md):
+  no-loss optimization candidates, source replay sacrifices
+  and the correctness boundary; proposal only apart from the naming change.
+- [Lossless compression estimate](canon2-compression-payload-estimate-2026-10-10.md):
+  measured native payload reductions and the limits of whole-app RAM projections.
+- [MediaEngine live integration](canon2-live-integration-2026-10-10.md): current scanner
   engine, native source storage, unchanged behavior and remaining qualification.
 - [Original live connection](live-connection-2026-10-04.md): shared scanner and
   metadata integration, approved priorities, retained evidence and earlier verification.
@@ -423,13 +427,12 @@ Only the selected implementation remains in the current Canon source.
 - [AVB sequence selection](avb-sequence-selection.md): approved sequence picker
   flow and dependency policies, verified relationships in the supplied sequence
   bins, and filter integration/completeness checks.
-- [Column review](column-review.md): three-column property/current UI/proposed UI
-  comparison for the user's decisions, including distinctions from CSV-only fields.
+- [Column review](column-review.md): agreed property meanings and remaining
+  presentation proposals.
 - [Conflict selection proposals](conflict-selection-proposals.md): eligibility,
   field-specific rules, the subsequently approved editorial priorities and unresolved
   interpretations that still require evidence or a user decision.
-- [Pre-Canon scan baseline](scan-baseline-2026-10-03.md): supplied full-scan CSV,
-  3,774 ms timing, memory/CPU screenshots, file receipts and comparison limits.
+
 - [File-operation checks in plain language](file-operation-checks.md): how row
   identity differs from confirming the physical file before a move/copy/delete.
 - [Scan scope and OmfScan](scan-scope-and-omf.md): current admission rules and
@@ -441,9 +444,7 @@ Only the selected implementation remains in the current Canon source.
   a genuine video/audio group, local copies, and the limits of the observations.
 - [Implementation and proof](implementation-and-proof.md): staged changes and
   acceptance checks for correctness, memory, and scan speed.
-- [Current matching and selection](current-matching-and-selection.md): the inspected
-  pre-Canon scanner's matching rules and field-specific selection examples, retained
-  as a comparison reference rather than the current engine contract.
+
 - [Metadata selection policy](metadata-selection-policy.md): implemented central
   developer-controlled selection table, retained observations, and shared resolution.
 - [Audit coverage](audit-coverage.md): all 40 audit entries mapped to direct design
@@ -469,7 +470,7 @@ root's package and essence-data membership; OMF projections require their record
 HEAD contents. Dependent technical and editorial fields require complete declared
 reference paths. An unknown OMF revision or damaged required membership leaves
 owned values unresolved in the affected projection. Known contradictory active
-file identities remain ownerless conflict carriers, and ScanEngine indexes their
+file identities remain ownerless conflict carriers, and ScanCoordinator indexes their
 eligible claims for reconciliation and header fallback. Raw excluded records remain
 available.
 
@@ -482,19 +483,22 @@ recorded in the [root membership correction report](root-membership-corrections-
 The operation journal remains responsible for file-operation recovery and Undo.
 It is not the live metadata evidence store.
 
-## Wider audit
+## Format research and verification
 
-The preceding [format audit](../docs/reviews/2026-10-03-format-audit/format-audit.txt)
-contains the wider code/comments/documentation investigation: 40 findings or
-scope entries and 1,103 related occurrence locations. These design documents
-supplement that audit rather than repeating its entire occurrence inventory.
-Its conclusions are evidence-bounded; an accepted parse is not proof that every
-possible Avid object or property is interpreted correctly.
+The 11 October documentation cleanup removes superseded implementation copies
+and source-input references. Extracted receipts/archive notes retain the original
+artifact SHA-256 and the measured source facts. Those facts are dated evidence;
+the extraction does not verify this renamed checkout or reproduce deleted code.
+
+The [format closeout](audit-closeout-2026-10-07.md) and its current ledger retain
+40 identified format/scope topics, their implementation status and evidence
+boundaries. Direct Avid/specification research remains under `docs/reviews/`.
+An accepted parse is not proof that every possible object/property is understood.
 
 ## Continuing the implementation
 
 The replacement engines are connected. Read this requirements index together with
-the detailed documents, live verification report and wider audit before changing
+the detailed documents, live verification report and format ledger before changing
 the implementation. Original media and Avid databases were not changed by the
 read-only corpus checks.
 

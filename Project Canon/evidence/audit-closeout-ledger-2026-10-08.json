@@ -86,7 +86,7 @@
       "title": "4–8 byte duration “flavours” are not established MXF types",
       "status": "Resolved",
       "mechanismAndEvidence": "Registered MXF Length is a signed Int64 with exactly eight value bytes. The fresh live reader has no 4–7-byte duration-flavour compatibility assertion. Raw invalid bytes survive with a type-width explanation. [Length→Int64 catalogue entry](../src/canon/mxfcatalogue_p.h), [exact decoder](../src/canon/mxfobjects_p.cpp); fresh-source authored width probe below: five-byte Length Unreadable/Incomplete, eight-byte control Present/Complete.",
-      "limits": "No new support for short-width manufacturer serialization is claimed. The old parser's synthetic compatibility tests remain historical regression dependencies.",
+      "limits": "No new support for short-width manufacturer serialization is claimed.",
       "assessmentDate": "2026-10-07"
     },
     {
@@ -286,7 +286,7 @@
       "title": "Hard-coded placeholder identity is assumed never real",
       "status": "Resolved",
       "mechanismAndEvidence": "The live [MDB reader](../src/canon/mdbreader.cpp) retains the value graph; [OMF projection](../src/canon/omfprojection.cpp) admits file mobs through descriptor/object-role relationships and has no former fixed-ID blacklist. [MDB tests](../tests/tst_canonmdb.cpp) preserve repeated/private object/property evidence; [reader report](fresh-mdb-reader-2026-10-04.md) records genuine graph retention.",
-      "limits": "No dedicated regression using the exact formerly blacklisted UID was located. The obsolete never-real assertion/blacklist remains in the old `src/mdbparser.cpp` test-support path, which is not live scanning.",
+      "limits": "No dedicated regression using the exact formerly blacklisted UID was located.",
       "assessmentDate": "2026-10-07"
     },
     {
@@ -302,7 +302,7 @@
       "title": "Rate display buckets obscure exact nearby rates",
       "status": "Resolved",
       "mechanismAndEvidence": "The live [adapter](../src/canonadapter.cpp) formats the exact retained rational to three decimal places; it does not use the old ±0.01 bucket selector. [DNx lookup](../src/canon/dnxnames_p.h) requires an exact checked operating point; [MXF projection tests](../tests/tst_canon_mxfprojection.cpp): `dnx_alias_needs_the_exact_profile_and_operating_point`, `historical_dnx_operating_points`; [scan tests](../tests/tst_canonscan.cpp) compare equivalent rationals without altering observations.",
-      "limits": "Three-decimal display is still rounded presentation; exact rational remains evidence and decision input. Explicitly evidenced legacy MDB naming-clock spellings are narrowly mapped. Old bucket comments remain only in the earlier metadata test-support path.",
+      "limits": "Three-decimal display is still rounded presentation; exact rational remains evidence and decision input. Explicitly evidenced legacy MDB naming-clock spellings are narrowly mapped.",
       "assessmentDate": "2026-10-07"
     },
     {

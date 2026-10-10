@@ -8,7 +8,7 @@
 #include <QSharedPointer>
 #include <QStringList>
 
-namespace Canon
+namespace MediaEngine
 {
 	struct ParsedSource;
 	struct AvbResolution;
@@ -31,8 +31,8 @@ struct BinFilter
 		QVector<QString> binDisplayNames;
 		BinFileReferences mediaFileIds;
 		QStringList warnings;
-		QVector<QSharedPointer<const Canon::ParsedSource>> sources;
-		QVector<QSharedPointer<const Canon::AvbResolution>> resolutions;
+		QVector<QSharedPointer<const MediaEngine::ParsedSource>> sources;
+		QVector<QSharedPointer<const MediaEngine::AvbResolution>> resolutions;
 	};
 
 	QVector<Step> steps;

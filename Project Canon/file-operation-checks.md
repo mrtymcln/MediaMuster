@@ -1,6 +1,6 @@
 # File-operation checks in plain language
 
-Explanation requested 3 October 2026. Updated 7 October 2026 for the live Canon handoff.
+Explanation requested 3 October 2026. Updated 7 October 2026 for the live MediaEngine handoff.
 
 ## The distinction
 
@@ -40,7 +40,7 @@ The audit does not say the app has no safeguards. It identifies specific gaps:
 
 See [audit coverage](audit-coverage.md) and the original finding evidence. These
 checks now have explicit operation handoff code and focused regression tests as
-part of the live Canon connection described below. The original audit remains a
+part of the live MediaEngine connection described below. The original audit remains a
 record of the previous implementation.
 
 ## Capturing a stamp without writing into media
@@ -142,7 +142,7 @@ Before acting on a newly scanned source, the runner:
 1. Checks the selected path against its scan receipt.
 2. Checks the persistent volume identifier and modification timestamp; unavailable
    required location/time evidence stops the item.
-3. Uses the fresh Canon MXF or legacy reader on the already opened file to compare
+3. Uses the fresh MediaEngine MXF or legacy reader on the already opened file to compare
    the file MobId and each master identity established in its scan-time header.
    If the header was deliberately skipped, verifies the selected PMR/MDB FileMobId
    instead, without requiring database-only master associations.
@@ -155,7 +155,7 @@ was never established in the header has no equality claim to verify; it remains
 unknown unless the explicitly approved database-first FileMobId check applies.
 Ordinary WAV/AIFF files without any established Avid identity retain the existing
 filesystem checks.
-Embedded OMF identities in supported WAV/AIFF containers receive the same Canon
+Embedded OMF identities in supported WAV/AIFF containers receive the same MediaEngine
 legacy-reader check as OMF media.
 
 The journal preserves the applicability receipt. The new fields are optional when

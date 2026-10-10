@@ -1,4 +1,4 @@
-# Preserve Canon's information with smaller RAM storage
+# Preserve MediaEngine's information with smaller RAM storage
 
 Recorded 9 October 2026. This is a measured implementation proposal, following
 the attached C++ coding standards and the [NEXIS regression investigation](nexis-memory-regression-2026-10-09.md).
@@ -58,7 +58,7 @@ empty shell and silently change filtering.
 Qt provides the necessary building blocks:
 
 - [QDataStream](https://doc.qt.io/qt-6.5/qdatastream.html) for typed binary
-  serialization, with explicit functions for every custom Canon field.
+  serialization, with explicit functions for every custom MediaEngine field.
 - [QByteArray and qCompress/qUncompress](https://doc.qt.io/qt-6.5/qbytearray.html#qCompress)
   for owned, lossless byte blocks. Stream blocks incrementally through QIODevice.
 - QSharedPointer to immutable source data where multiple rows need ownership;
@@ -110,7 +110,7 @@ process per mode, baseline then packed, with three retained source reads rather
 than three distinct databases or a real scanner inventory. It does not establish
 Windows/NEXIS capacity, scan speed or a proportional saving at 300,000 files.
 
-Both experiments use Qt 6.5.3, C++17, a current Debug Canon reader library and
+Both experiments use Qt 6.5.3, C++17, a current Debug MediaEngine reader library and
 an O2 arm64 diagnostic. Packing adds CPU work. Hashing/decompression verification
 in these probes is diagnostic work, not proposed per-file production work.
 Allocator reuse and source sizes affect process-memory results.
@@ -166,5 +166,3 @@ distinct framing/ranges/generation. An inline std::variant of whole contexts may
 increase every property's size; default-invalid QVariant values do not inherently
 allocate heap, and dictionary strings already share storage. Modern C++ features
 must solve a measured problem rather than replace Qt types for appearance.
-
-The old engine remains available pending the user's retirement approval.

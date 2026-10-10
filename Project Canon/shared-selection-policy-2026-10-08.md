@@ -1,7 +1,7 @@
 # Shared metadata selection policy — 8 October 2026
 
 Implemented the approved **3 > 2 > 1 > 0** plan. There is one handwritten,
-commented [C++ policy table](../src/canon/metadataselectionpolicy.cpp), with an
+commented [C++ policy table](../src/mediaengine/metadataselectionpolicy.cpp), with an
 explicit row for each of the 41 defined metadata properties, including internal
 RAM-only properties. Adding a property without its policy row stops the build.
 
@@ -21,7 +21,7 @@ preferences are MediaMuster product decisions; they do not establish an Avid
 format interpretation or permit a join to the wrong file.
 
 Scanning and bin enrichment now use this same table. The
-[presentation adapter](../src/canonadapter.cpp) refreshes chosen semantic values,
+[presentation adapter](../src/mediaengineadapter.cpp) refreshes chosen semantic values,
 including replacing nonempty cells and clearing unresolved ones. Table display,
 filters and CSV consume those refreshed values. Physical paths, KelpieIds and
 operation stamps keep their existing lifecycle. Identical bin reapplication does
@@ -66,23 +66,20 @@ baseline: `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT`.
 | Scan time | 22,007 ms for this repeat; one run is not a controlled speed benchmark |
 | Peak memory footprint | 2,527,238,592 bytes, approximately 2.53 GB |
 
-Receipts: [final native suites](evidence/shared-policy-full-tests-2026-10-08.txt),
-[controlled preference change](evidence/shared-policy-controlled-change-2026-10-08.md),
+Receipts: [controlled preference change](evidence/shared-policy-controlled-change-2026-10-08.md),
 [source hashes and verification](evidence/shared-policy-verification-2026-10-08.json),
 [app build](evidence/shared-policy-app-build-2026-10-08.txt),
-[all-target build](evidence/shared-policy-build-2026-10-08.txt),
 [full-scan comparison](evidence/shared-policy-full-comparison-2026-10-08.json),
 [scan log](evidence/shared-policy-real-scan-2026-10-08.txt),
 [export](evidence/full-scan-shared-policy-2026-10-08.csv), and
 [scan detail](live-scan-shared-policy-2026-10-08.json).
 
-The first suite run exposed one UI-only fixture that copied a Canon record and then
+The first suite run exposed one UI-only fixture that copied a MediaEngine record and then
 changed its display labels without changing its evidence. Its row-filtering section
 now uses explicitly authored compatibility rows; its actual scanner assertions remain
 intact. The final complete rerun passes. The first full-drive attempt correctly
 reported incomplete discovery while EDIT was unmounted; the successful comparison
 above was performed after mounting it. Initial logs are retained with `initial` names.
 
-The superseded engines and their tests remain in place until the user authorizes
-retirement. This change centralizes selection; it does not close separately tracked
+This change centralizes selection; it does not close separately tracked
 format interpretation work or prove every historical/private Avid variant.

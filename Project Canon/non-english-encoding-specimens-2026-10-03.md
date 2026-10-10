@@ -51,10 +51,9 @@ from the stored original observation.
   characters from the legacy bytes or silently discard them as duplicates.
 - A whole record set's Unicode label must not automatically establish the encoding
   of every property. In PMR version 16, the project field is still legacy text.
-- Existing MDB/AVB readers prefer UTF-8 counterparts and flatten their output into
-  selected strings. The new PMR reader already retains both sets; fresh MDB/AVB
-  readers and propagation into physical MediaFile evidence remain pending.
+- Legacy and Unicode text observations remain separate; preferred display
+  selection must not discard either encoding or its source context.
 
-Inspection used the fresh `Canon::PmrReader`, the existing low-level `BentoFile`
-container reader, direct byte-span checks and the local Python AVB reference.
+Inspection used direct byte-span checks and the local Python AVB reference,
+alongside the recorded PMR source observations.
 No scanner/parser implementation changed during this specimen inspection.

@@ -4,7 +4,7 @@
 // The older untyped BentoBuilder remains useful for low-level container tests;
 // this writer declares the schema that the semantic tests intend to exercise.
 
-#include "testcanonbento.h"
+#include "testmediaenginebento.h"
 #include <cstring>
 
 class TypedBentoBuilder
@@ -27,9 +27,9 @@ public:
 		setImmediate(handle, m_revision == 1 ? "OMFI:ObjID" : "OMFI:OOBJ:ObjClass", QByteArray(cls, 4));
 		return handle;
 	}
-	QByteArray word(quint32 value) const { return TestCanonBento::number(value, m_writer.metadataBig); }
-	QByteArray half(quint16 value) const { return TestCanonBento::number(value, m_writer.metadataBig); }
-	QByteArray wide(quint64 value) const { return TestCanonBento::number(value, m_writer.metadataBig); }
+	QByteArray word(quint32 value) const { return TestMediaEngineBento::number(value, m_writer.metadataBig); }
+	QByteArray half(quint16 value) const { return TestMediaEngineBento::number(value, m_writer.metadataBig); }
+	QByteArray wide(quint64 value) const { return TestMediaEngineBento::number(value, m_writer.metadataBig); }
 	void set(quint32 object, const char *property, const QByteArray &bytes, quint16 flags = 0)
 	{
 		m_writer.add(object, property, type(property, bytes), bytes, flags & 1, flags & 2);
@@ -103,7 +103,7 @@ private:
 			return "omfi:DataValue";
 		return "TestOpaque";
 	}
-	TestCanonBento::TypedBento m_writer;
+	TestMediaEngineBento::TypedBento m_writer;
 	int m_revision;
 	quint32 m_nextObject = 68000;
 };

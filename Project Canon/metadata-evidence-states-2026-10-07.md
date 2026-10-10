@@ -42,22 +42,22 @@ existing qualified derived presentation; their presence is not codec certificati
   defined field. Defaults do not allocate an empty observation per source/field.
   Original observations remain separate. Repeated attachment merges checked
   fields, preserves earlier coverage and deduplicates source/object receipts.
-- [Projection helpers](../src/canon/projection.cpp) preserve the named inputs in
+- [Projection helpers](../src/mediaengine/projection.cpp) preserve the named inputs in
   coverage explanations. A null unique-value lookup is not used as absence proof.
   Original raw properties and relationships remain in the source graph.
-- [PMR projection](../src/canon/pmrprojection.cpp) uses the established layout for
+- [PMR projection](../src/mediaengine/pmrprojection.cpp) uses the established layout for
   format omissions, retains v1 omission reasons, and distinguishes an unread or
   failed modification word from one whose timestamp meaning is unsupported.
-- [MXF projection](../src/canon/mxfprojection.cpp) qualifies recognized descriptor
+- [MXF projection](../src/mediaengine/mxfprojection.cpp) qualifies recognized descriptor
   inputs. Object-local absence requires complete mapped framing; partial or
   unsupported objects stay unknown. Missing compression cannot imply PCM unless
   the owning Wave/AES3 descriptor is complete. This is a deliberate correctness
   correction, covered by a malformed/incomplete-object regression.
-- [OMF/MDB/native audio projection](../src/canon/omfprojection.cpp) keeps empty and
+- [OMF/MDB/native audio projection](../src/mediaengine/omfprojection.cpp) keeps empty and
   unreadable text, failures deriving a source filename, descriptor input coverage
   and native fmt/COMM coverage. Local omission proof requires complete enumeration
   and identified native property names. Dependency-heavy mappings remain conservative.
-- [Scan attachment](../src/canon/scanengine.cpp) registers the actual header
+- [Scan attachment](../src/mediaengine/scancoordinator.cpp) registers the actual header
   receipt even when skipped, failed or unable to establish ownership. A later
   read replaces its unobserved unopened receipt; distinct observed snapshots stay
   distinct. Changed header coverage is ineligible and retains Changed freshness.
@@ -89,7 +89,7 @@ log reports zero failures.
 The read-only scan of `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT`
 produces **2,413 distinct physical rows**, with no added/missing paths. All
 exported cells and columns match the immediately preceding visible-resolution
-Canon CSV, excluding scan-session KelpieIds. Every new KelpieId is nonzero and
+MediaEngine CSV, excluding scan-session KelpieIds. Every new KelpieId is nonzero and
 unique. Source read outcomes are identical: six PMRs, six MDBs, **65 headers
 read and 2,348 NotRead**. The same 273 metadata-alternative notices and 23 scoped
 unmatched database identities remain.
@@ -99,7 +99,6 @@ It ran alongside the native suite with uncontrolled filesystem-cache state;
 these numbers do not establish a comparative performance change. The user has
 accepted current resource usage; no cap or evidence-discard policy was added.
 
-- [Full test log](evidence/metadata-evidence-full-tests-2026-10-07.txt)
 - [Explicit real-scan log](evidence/metadata-evidence-real-scan-2026-10-07.txt)
 - [Fresh CSV](evidence/full-scan-metadata-evidence-2026-10-07.csv)
 - [Every-cell/path comparison and hashes](evidence/metadata-evidence-comparison-2026-10-07.json)

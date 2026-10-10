@@ -201,13 +201,13 @@ filter readiness is narrower than complete format interpretation.
 Archived evidence: [pyavb probe](evidence/avb-sequence-probe-2026-10-04.py),
 [graph summary](evidence/avb-sequence-summary-2026-10-04.json),
 [representative locators](evidence/avb-sequence-locators-2026-10-04.json),
-[current-parser results](evidence/avb-current-parser-2026-10-04.jsonl).
+[reader results](evidence/avb-reader-probe-results-2026-10-04.jsonl).
 The probe uses local input paths and writes its report to `/tmp`; the reported
 unchanged-file check compares size and modification time, not cryptographic hashes.
 
 ## Implementation and proof
 
-Current engine-stage result: `Canon::AvbReader` and `Canon::AvbReferenceIndex`
+Current engine-stage result: `MediaEngine::AvbReader` and `MediaEngine::AvbReferenceIndex`
 implement the reader, catalogue and graph traversal below. The two new suites
 exercise source evidence and selection rules; the supplied nine-bin corpus was
 also read without modification. `Testsequenz` and `FINE_01` through `FINE_06`
@@ -220,7 +220,7 @@ adapter, live filter operation, sequence picker or Media Composer export oracle
 is claimed as delivered in this stage. `AvbResolution.complete` describes
 coverage; the revised warning policy governs the later adapter's eligibility.
 
-1. Implement the independent Canon AVB reader, retaining bin membership, sequence
+1. Implement the independent MediaEngine AVB reader, retaining bin membership, sequence
    properties, typed identities, original text encodings and qualified references.
 2. Verify sequence listing against the supplied bins and controlled examples,
    including duplicate sequence names and non-user-placed dependencies.

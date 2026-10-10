@@ -1,9 +1,9 @@
 # Metadata selection policy
 
 Status: implemented 8 October 2026. The shared
-[policy table](../src/canon/metadataselectionpolicy.cpp) selects displayed values
+[policy table](../src/mediaengine/metadataselectionpolicy.cpp) selects displayed values
 from retained source observations; scanning and bin enrichment use the same rules.
-Canon-backed rows refresh their semantic values from the final selections.
+MediaEngine-backed rows refresh their semantic values from the final selections.
 Verification results are recorded separately after the coordinated build.
 
 Each row says which sources may supply one semantic field and which source takes
@@ -11,16 +11,13 @@ priority. The same choice feeds the table, filters and CSV. These preferences ar
 compiled into the application; the user rejected rule-version tracking and custom
 rule-name tags.
 
-Existing code is a comparison baseline, never format authority. Intentional format
-corrections require their own evidence. The user has reserved retirement of the old
-engine/code/tests for later explicit authorization.
+Format corrections require their own evidence; passing tests alone do not establish format authority.
 
 ## What justifies a decision
 
 Byte decoding, object ownership and format interpretation need primary format
 definitions, Media Composer evidence or genuine specimens supporting that exact
-interpretation. The old engine's behaviour and a lack of observed failures do not
-justify retaining a rule. Unsupported inherited assumptions need reassessment and
+interpretation. A lack of observed failures does not justify retaining a rule. Unsupported inherited assumptions need reassessment and
 evidenced replacement or removal. In particular, MobId storage width has not been
 established as a codec-selection criterion. The
 [8 October correction](legacy-compression-and-audio-summaries-2026-10-08.md) replaces
@@ -143,10 +140,8 @@ These are display preferences, not a format specification. Ownership, interpreta
 and eligibility require separate evidence. The resolver does not impose a blanket
 "header always wins" policy.
 
-The expanded [current source priority matrix](current-matching-and-selection.md#source-priority-matrix)
-records the inspected pre-Canon implementation, including its nonempty/positive-value gates,
-identity replacement, recovery paths and flags that only become true. It is the
-compatibility baseline to review, not automatic endorsement of every existing rule.
+The compiled policy table is the current source of display priorities. Ownership,
+format interpretation and header-read scheduling remain separate decisions.
 
 ## Code terminology and responsibilities
 
@@ -193,8 +188,8 @@ filter and export results. A selection update does not change KelpieIds or fold 
 
 ## Shared C++17 policy table
 
-The [header](../src/canon/metadataselectionpolicy.h) and
-[implementation](../src/canon/metadataselectionpolicy.cpp) define one
+The [header](../src/mediaengine/metadataselectionpolicy.h) and
+[implementation](../src/mediaengine/metadataselectionpolicy.cpp) define one
 developer-controlled constant table. Its 41 explicit rows cover every defined
 `MediaProperty`, including properties kept only in RAM. `MediaProperty::Count`
 sizes the array; compile-time validation requires exactly one row in catalogue
@@ -203,7 +198,7 @@ validation rather than receiving a default rule.
 
 Four illustrative rows are shown below. Read the named source groups from left
 to right; no numeric source positions or preference legend are needed. The linked
-[production table](../src/canon/metadataselectionpolicy.cpp) is the complete
+[production table](../src/mediaengine/metadataselectionpolicy.cpp) is the complete
 41-row definition; this excerpt does not duplicate it:
 
 ```cpp
@@ -278,16 +273,16 @@ void selectMetadata(MediaEvidence &evidence);
 bool applyResolvedMetadata(::MediaFile &file);
 ```
 
-The policy accessors and resolution functions are in `Canon`;
+The policy accessors and resolution functions are in `MediaEngine`;
 `applyResolvedMetadata` is the presentation helper in
-[canonadapter](../src/canonadapter.h). `MediaEvidence::resolve` accepts a callable
+[MediaEngine adapter](../src/mediaengineadapter.h). `MediaEvidence::resolve` accepts a callable
 for table-backed ranking, retaining its equivalent-value and unresolved-conflict
 rules. Ownership, association and freshness qualification remain separate from
 ranking. Checked lookup throws `std::out_of_range` for an invalid property enum.
 Dispatch uses typed rules/properties. The selected result's `rule` is the existing
 semantic property name, rather than a separately maintained rule-name tag.
 
-Both scan selection and bin enrichment call the shared policy. Canon-backed display
+Both scan selection and bin enrichment call the shared policy. MediaEngine-backed display
 rows then refresh from the final selected results, including provenance flags and
 clearing unresolved values. `applyResolvedMetadata` returns whether a semantic row
 value changed and preserves physical row identity, filesystem/volume/family details

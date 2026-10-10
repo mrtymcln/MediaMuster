@@ -1,14 +1,14 @@
 # Fresh PMR reader — implementation and proof
 
 > Historical implementation report. On 4 October 2026 the user selected the
-> independently written alternative. It now occupies `src/canon/pmrreader.h/.cpp`
-> as `Canon::PmrReader`; the first implementation described here was removed.
+> independently written alternative. It now occupies `src/mediaengine/pmrreader.h/.cpp`
+> as `MediaEngine::PmrReader`; the first implementation described here was removed.
 > The format evidence below remains relevant. See [selection and current checks](pmr-reader-selection-2026-10-04.md).
 
-Implemented 3 October 2026 in `src/canon/pmrreader.h/.cpp`. This is a replacement
-reader returning `Canon::ParsedSource`, without calling the old PMR parser or
+Implemented 3 October 2026 in `src/mediaengine/pmrreader.h/.cpp`. This is a replacement
+reader returning `MediaEngine::ParsedSource`, independently of
 passing facts through `PmrEntry` or `MediaMetadata`. It is built in the independent
-`mediamuster_canon` library. The app has not switched to this reader yet.
+`mediamuster_mediaengine_core` library. The app has not switched to this reader yet.
 
 ## What this stage stores
 
@@ -83,7 +83,7 @@ selection rule, qualified by read outcome and usability.
 
 ## Verification
 
-The new suite `tst_canonpmr` checks:
+The new suite `tst_mediaenginepmr` checks:
 
 - Versions 1, 2, 7, 8 and observed zero/negative branches in both byte orders;
   big-endian Unicode framing and UTF-8 decoding.
@@ -106,10 +106,7 @@ records**, with both sets independently counted. File size/modification time wer
 checked before/after as test safeguards. These are source records, not a physical
 media count. Source-level completeness is not yet proof of reconciliation correctness.
 
-All **29 registered CTest suites passed** after this stage.
-
-Proof: [PMR test/real-drive output](evidence/fresh-pmr-tests-2026-10-03.txt) and
-[full CTest result](evidence/fresh-pmr-all-tests-2026-10-03.txt).
+Proof: [PMR test/real-drive output](evidence/fresh-pmr-tests-2026-10-03.txt).
 The universal Debug build includes arm64 and x86_64; these test runs executed on the
 host architecture. The whole app still uses its comparison engines, so no full-scan
 performance or memory improvement is claimed at this stage.

@@ -614,79 +614,6 @@
     "medianFinalSpeedupRatio": 1.0355303810504635,
     "medianFinalElapsedReductionPercent": 3.431128791645943
   },
-  "testReceipt": {
-    "buildCommand": [
-      "cmake",
-      "--build",
-      "/private/tmp/mediamuster-projection-improvement-20261010/build",
-      "--target",
-      "tst_diagnostics",
-      "tst_mobid",
-      "tst_pathkey",
-      "tst_format",
-      "tst_mediaevidence",
-      "tst_metadataselectionpolicy",
-      "tst_conventions",
-      "tst_canondiscovery",
-      "tst_canonpmr",
-      "tst_canonpmrrobustness",
-      "tst_canonmdb",
-      "tst_canonlegacy",
-      "tst_canonmxf",
-      "tst_canonavb",
-      "tst_canonavbreferences",
-      "tst_sourcearchive",
-      "tst_canonscan",
-      "tst_canon_compressionnames",
-      "tst_canon_omfprojection",
-      "tst_canon_mxfprojection",
-      "tst_omfuid",
-      "tst_mediametadata",
-      "tst_bentofile",
-      "tst_pmrparser",
-      "tst_mdbparser",
-      "tst_omfparser",
-      "tst_avbparser",
-      "tst_mxfparser",
-      "tst_avideffects",
-      "tst_scanner",
-      "tst_opcleanup",
-      "tst_volumeidentity",
-      "tst_opjournal",
-      "tst_rebalanceplanner",
-      "tst_fileoperations",
-      "tst_mediacsv",
-      "tst_mediatablemodel",
-      "tst_mediafilterproxy",
-      "tst_precomputefilterdialog",
-      "tst_binfilterdialog",
-      "tst_operationui",
-      "-j",
-      "4"
-    ],
-    "testCommand": [
-      "ctest",
-      "--test-dir",
-      "/private/tmp/mediamuster-projection-improvement-20261010/build",
-      "--output-on-failure",
-      "-j",
-      "2"
-    ],
-    "testTargetCount": 41,
-    "buildExit": 0,
-    "testExit": 0,
-    "qtVersion": "6.5.3",
-    "buildType": "Release",
-    "architecture": "native arm64",
-    "environmentOverrides": {
-      "QT_QPA_PLATFORM": "offscreen",
-      "QT_HASH_SEED": "0"
-    },
-    "realDriveAuditEnvironmentRemoved": true,
-    "librarySha256": "33a709cdacf641f9510445697015016be1376134ebc5e25844cba66e37ce25b7",
-    "scannerSha256": "b36190a937cccf2cebd8c4b8e5c64cfee3d284f9cebc703ec6617b9483a139e2",
-    "projectionSourceSha256": "41af99601967c9157100df2f20e5506a3a6b3ea9ba34a2ea2a74ba00b0ab65b1"
-  },
   "primaryAppBuild": {
     "recordedUtc": "2026-10-09T22:21:43.032017+00:00",
     "command": [
@@ -727,7 +654,12 @@
     "Repeated scan timings are warm-cache native arm64 macOS Release results without GUI model population.",
     "No supported RAM-saving claim, Windows/NEXIS throughput claim or 300,000-file qualification.",
     "Both stage correctness proofs compare all represented graph/evidence fields; tested genuine variants do not establish every possible Avid variant.",
-    "The old engine remains; no production reader, source schema, metadata selection, scan scheduling or feature flag changes.",
+    "No production reader, source schema, metadata selection, scan scheduling or feature flag changes.",
     "Buffer and seek modes remain diagnostic-only; successful-input equality does not qualify failure/partial-read semantics."
-  ]
+  ],
+  "documentationExtraction": {
+    "date": "2026-10-11",
+    "originalArtifactSha256": "3279ed65f8b3c8bf592586a9884d40778babb569f057fb0b5689e2db8cd3e804",
+    "scope": "Retained genuine source/lookup/timing observations; removed the obsolete mixed full-suite build/test receipt. This extraction is not a new verification and does not replace dated source fingerprints."
+  }
 }

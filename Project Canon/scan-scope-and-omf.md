@@ -75,7 +75,7 @@ dot-hidden/symlink exclusions and current managed folder scope.
 
 Implementation correction, 4 October 2026: `QDir::entryInfoList()` returns an
 empty list for both failed reads and empty/nonmatching directories
-([Qt 6.5 documentation](https://doc.qt.io/qt-6.5/qdir.html#entryInfoList)). Canon now
+([Qt 6.5 documentation](https://doc.qt.io/qt-6.5/qdir.html#entryInfoList)). MediaEngine now
 uses a checked C++17 directory iterator plus explicit entry-status checks, with
 Qt's native path conversion, wildcard matching and hidden/symlink checks. Every
 enumeration level reports access errors, retains readable results and marks the
@@ -94,7 +94,7 @@ filter would accidentally disable agreed legacy support.
 
 ## Fresh legacy reader, 4 October 2026
 
-`Canon::OmfReader` is now implemented independently of the production scanner;
+`MediaEngine::OmfReader` is now implemented independently of the production scanner;
 see [implementation, evidence and limits](fresh-legacy-reader-2026-10-04.md).
 It inspects bytes for supported OMF, WAVE/RF64 or AIFF/AIFF-C containers and retains
 embedded OMF graphs separately from native audio headers. Database-free media
@@ -110,7 +110,7 @@ third-party applications for Media Composer. OMF/legacy support stays separate.
 The broad [format review](mxf-omf-read-scope-review-2026-10-10.md) supplies evidence
 and qualifications, not a requirement to support every MXF application profile.
 
-Canon now routes MXF to `MxfReader`/`projectMxf` and legacy media to
+MediaEngine now routes MXF to `MxfReader`/`projectMxf` and legacy media to
 `OmfReader`/`projectOmf`. Native WAV/AIF helpers preserve the previously agreed
 legacy audio support. Both paths produce the shared source evidence and MediaFile
 model; PMR/MDB matching and selection policies remain shared. The user subsequently

@@ -1,12 +1,12 @@
-# Canon2 media-source storage proposal
+# MediaEngine media-source storage proposal
 
 Originally recorded 10 October 2026 as an investigated proposal, before any
 media-source image implementation or change to retained information was approved.
 
 The user subsequently authorized the first MXF comparison milestone. Its
 implementation and proof are recorded in
-[Canon2 acquired MXF metadata storage](canon2-mxf-native-storage-2026-10-10.md).
-The user then approved [Canon2 live integration](canon2-live-integration-2026-10-10.md).
+[MediaEngine acquired MXF metadata storage](canon2-mxf-native-storage-2026-10-10.md).
+The user then approved [MediaEngine live integration](canon2-live-integration-2026-10-10.md).
 Those decisions do not approve the broader compact-index, OMF image or read-scope
 proposals below. The original proposal text remains useful context for those
 decisions.
@@ -23,26 +23,23 @@ MXF research is background. No new byte-reading or retention policy is approved.
 
 The user clarified that the vast majority of the approximately 300,000 media
 files on the work Windows/NEXIS machine are absent from PMR/MDB databases because
-of its Interplay environment. Those files use media-header fallback. The old
-engine completed that workload; Canon build `e47299c` stalled and disappeared
+of its Interplay environment. Those files use media-header fallback. MediaEngine build `e47299c` stalled and disappeared
 with roughly 50,000 MB reported RAM. The exact fatal mechanism remains unknown.
 
 This makes media-source storage the priority for that collection. The completed
-Canon2 database comparison opens only 116 of 2,413 media headers. Its measured
+MediaEngine database comparison opens only 116 of 2,413 media headers. Its measured
 database improvement does not qualify a scan dominated by header reads.
 
 There is an important historical distinction: the failed build retained expanded
-`ParsedSource` graphs. Today's Canon and the first Canon2 comparison engine
-compress completed media-source graphs and release the expanded graph. That
+`ParsedSource` graphs. The archive strategy compresses completed media-source
+graphs and releases the expanded graph. That
 archive repair is a real change, although Windows qualification remains pending.
-At the time of this proposal, Canon2's native-image substitution covered PMR/MDB
+At the time of this proposal, MediaEngine's native-image substitution covered PMR/MDB
 only. The subsequently approved MXF implementation is linked above.
 
-## What is genuinely different from the old engine
+## Current media-source storage
 
-The old MXF parser stopped at its declared header boundary or the first recording,
-body or footer boundary, and returned selected `MediaMetadata` fields. The Canon
-MXF reader walks physical KLV framing to the end of the file, retains metadata
+The MediaEngine MXF reader walks physical KLV framing to the end of the file, retains metadata
 from its encountered partitions, and records packet headers and skipped payload
 locations. Recognized picture/sound payloads remain on disk.
 
@@ -85,11 +82,6 @@ metadata, rather than thousands of recording blocks. The expensive representatio
 of that metadata is the relevant demonstrated storage concern; narrowing the
 physical walk alone does not solve it. These are the saved inventory's files,
 not the unmeasured Windows/Interplay collection.
-
-The old reader still in the repository follows a format-defined first-header
-extent, not an arbitrary fixed byte limit, but selects only certain metadata
-sets and flattens their facts. Preserving the complete original metadata in that
-header is a distinct improvement from discovering later metadata.
 
 A metadata-focused alternative can retain original metadata bytes and inspect
 validated indexed partitions without enumerating every recording-block heading.
@@ -188,7 +180,7 @@ Before implementation, measure representative genuine short/long MXFs, OMFs and
 embedded OMF audio. Separate native bytes, physical packet bookkeeping, metadata
 graphs, row observations and source coverage. Measure both retained and peak RAM.
 
-Compare the candidate with Canon on complete source graphs, typed values,
+Compare the candidate with MediaEngine on complete source graphs, typed values,
 relationships, read states, encodings, receipts, projections, selections, all
 observations, diagnostics and CSV. Compare each retained byte range with its
 original. Verify restoration after closing/removing temporary input copies.
@@ -196,7 +188,7 @@ Use a header-heavy comparison collection as well as the database-rich baseline.
 The same 300,000-file Windows/NEXIS workload remains the decisive qualification.
 
 PMR/MDB-first scheduling and established fallback/selection rules remain fixed.
-The UI, operations, old readers and existing Canon engine stay available.
+The UI, operations, old readers and existing MediaEngine engine stay available.
 Stopping after the first header, dropping footer/dictionary/private observations,
 or discarding body-layout evidence would be information-policy changes requiring
 the user's decision. This proposal instead preserves them compactly. Native
@@ -204,11 +196,10 @@ storage savings and large-workload completion are unproven until measured.
 
 ## Code and prior evidence
 
-- [Canon2 measured comparison](canon2-comparison-engine-2026-10-10.md).
+- [MediaEngine measured comparison](canon2-comparison-engine-2026-10-10.md).
 - [Original Windows/NEXIS regression investigation](nexis-memory-regression-2026-10-09.md).
-- `src/canon/mxfreader.cpp`: physical KLV walk, metadata and packet-range records.
-- `src/canon/omfreader.cpp`, `omfbentoreader_p.cpp`, `audioreader_p.cpp`:
+- `src/mediaengine/mxfreader.cpp`: physical KLV walk, metadata and packet-range records.
+- `src/mediaengine/omfreader.cpp`, `omfbentoreader_p.cpp`, `audioreader_p.cpp`:
   OMF/audio value extents and payload exclusions.
-- `src/canon/scanengine.cpp`, `sourcearchive.cpp`: current media storage lifecycle.
-- `src/mediaevidence.h`, `canonadapter.cpp`: evidence and display-row ownership.
-- `src/mxfparser.cpp`: superseded selected-header extraction for comparison only.
+- `src/mediaengine/scancoordinator.cpp`, `sourcearchive.cpp`: current media storage lifecycle.
+- `src/mediaevidence.h`, `mediaengineadapter.cpp`: evidence and display-row ownership.

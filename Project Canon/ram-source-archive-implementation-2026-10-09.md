@@ -7,7 +7,7 @@ and capacity at 300,000 files still require a real Windows comparison.
 
 ## What changes for an Assistant Editor
 
-Canon still reads the same metadata and gives each physical media file its own
+MediaEngine still reads the same metadata and gives each physical media file its own
 row. After interpreting a source, it packs the full source details in RAM and
 releases the expanded parsing graph. The values needed by the table and matching
 remain immediately available. Original bytes, unknown properties, relationships,
@@ -40,7 +40,7 @@ publish its unfinished results as a successful scan.
 
 ## Code and ownership
 
-- `src/canon/sourcearchive.h/.cpp` own the immutable archive and typed codec.
+- `src/mediaengine/sourcearchive.h/.cpp` own the immutable archive and typed codec.
 - `StoredSource` in `scanmodel.h` distinguishes packed source details, unopened
   headers, and the obtained graph retained when packing was cancelled.
 - `ScanEngine::readCandidate` reads and projects one source locally, stores it,
@@ -127,8 +127,7 @@ semantic fields. The final app-boundary CSV is **byte-for-byte identical**.
 
 See the [full graph/row comparison](evidence/source-archive-full-proof-comparison-2026-10-09.json),
 [first diagnostic pair](evidence/source-archive-full-proof-comparison-first-pair-2026-10-09.json),
-[app-boundary comparison](evidence/source-archive-scanner-comparison-2026-10-09.json),
-[full test log](evidence/source-archive-full-tests-2026-10-09.txt) and
+[app-boundary comparison](evidence/source-archive-scanner-comparison-2026-10-09.json) and
 [final archive test log](evidence/source-archive-tests-final-2026-10-09.txt).
 Diagnostic sources, build commands, library/code hashes, baseline ABI headers
 and input stamps are retained beside these receipts. Temporary probe binaries
@@ -149,14 +148,14 @@ This is about **82% less retained footprint** on this collection. The additional
 CPU work makes this measured local scan slower. These are one sequential pair,
 not a general speed benchmark or a Windows RAM forecast.
 
-An independent direct-Canon diagnostic pair measured 2,336,987,456 to
+An independent direct-MediaEngine diagnostic pair measured 2,336,987,456 to
 463,916,480 B retained footprint, and 19,833 to 31,467 ms scanning. Its final
 equivalence repeat retains 475,549,184 B; that repeat overlapped test work and
 its timing is not presented as a speed result. The packed payload is
 157,781,368 B from 1,087,257,058 B serialized details. Payload size and actual
 process memory are different measurements.
 
-Measurements use macOS arm64, Qt 6.5.3 and Debug Canon libraries; the independent
+Measurements use macOS arm64, Qt 6.5.3 and Debug MediaEngine libraries; the independent
 probe itself uses C++17/O2. Peak/retained memory is recorded before diagnostic
 restoration. Restoring a large source temporarily needs its expanded graph.
 
@@ -177,5 +176,4 @@ writable. No Windows dump or original crash cause has been established.
 Repeat the same real Windows/NEXIS scan with this implementation, recording the
 build, row count, completion time, peak/settled RAM and `mediamuster.log`. Compare
 the CSV and retained evidence. Only that result can establish whether the
-reported 300,000-file regression is resolved. The superseded engine stays until
-the user's explicit retirement approval.
+reported 300,000-file regression is resolved.

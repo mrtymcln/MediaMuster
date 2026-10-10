@@ -10,8 +10,8 @@ It must work on a machine without Media Composer installed.
 
 | Code | Question it answers |
 | --- | --- |
-| `src/canon/metadataselectionpolicy.cpp` | Which eligible source supplies this MediaFile property? |
-| `src/canon/compressionnames_p.cpp` | What readable compression name do this source's established format facts support? |
+| `src/mediaengine/metadataselectionpolicy.cpp` | Which eligible source supplies this MediaFile property? |
+| `src/mediaengine/compressionnames_p.cpp` | What readable compression name do this source's established format facts support? |
 
 MXF and MDB/OMF projections use the same naming function before source selection.
 The function does no scanning, parsing, source ranking or filesystem access. Raw
@@ -49,7 +49,7 @@ other recorded properties. For example:
   establish the legacy uncompressed-alpha case. Alpha presence alone does not.
 
 Unknown labels remain raw evidence with no invented precise display name. The new
-Canon path does not use the old lookup's unsupported family guessing. An unreadable
+MediaEngine path does not use the old lookup's unsupported family guessing. An unreadable
 or conflicting coding property does not count as an absent property and cannot
 unlock a legacy fallback. Exact present coding is not overwritten by an unrelated
 legacy identifier pair.
@@ -114,7 +114,6 @@ force extra header reads just to obtain a longer name.
 Verification files:
 
 - [Source definitions and genuine specimens](evidence/compression-name-source-evidence-2026-10-08.json).
-- [Full test run](evidence/compression-names-full-tests-2026-10-08.txt).
 - [Repeat scan CSV](evidence/full-scan-compression-names-2026-10-08.csv) and
   [scan report](evidence/compression-names-real-scan-2026-10-08.json).
 - [Every changed cell and scheduling comparison](evidence/compression-names-real-scan-comparison-2026-10-08.json).
@@ -122,7 +121,7 @@ Verification files:
 
 ## Unsupported inherited identifiers
 
-The source review also corrected two factual issues in the new Canon catalogue:
+The source review also corrected two factual issues in the new MediaEngine catalogue:
 Avid's IMX labels identify 50/50/40 Mbps for the three identifiers the old table
 called 30/40/50. Separately, the old PCM entry ending `0d01030102060100` is a
 BWF frame-wrapping **container** label, not a compression identifier. The new
@@ -146,7 +145,7 @@ sources also found zero occurrences. The receipt records archive and payload
 coverage limits. This evidence capture did not remove any mapping.
 
 The user subsequently **approved removing all nine unsupported aliases**, from both
-Canon's profile table and the old name lookup. Verified DNx profiles, NewDnx/OldDnx
+MediaEngine's profile table and the old name lookup. Verified DNx profiles, NewDnx/OldDnx
 names, exact ReallyOldDnx operating points and DNxUncompressed descriptions remain.
 The original evidence receipts above are historical observations and are not rewritten.
 Removal verification passes **40/40 native suites** and both universal Debug app

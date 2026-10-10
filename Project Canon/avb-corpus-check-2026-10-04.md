@@ -1,4 +1,4 @@
-# Canon AVB corpus check — 4 October 2026
+# MediaEngine AVB corpus check — 4 October 2026
 
 The fresh reader successfully read all nine supplied bins. It retained **132,165 objects and 2,988,319 object properties**, with no unreadable properties, unknown object layouts or reader diagnostics in these specimens. Object and class counts match the separate pyavb framing inventory. These are observations about this corpus, not proof of support for every AVB ever written.
 
@@ -54,7 +54,11 @@ Memory is the process high-water mark reported by macOS `getrusage`, in decimal 
 - [Independent framing inventory script](evidence/avb-framing-inventory-2026-10-04.py) and [results](evidence/avb-framing-inventory-2026-10-04.json).
 - [Six ROUGH descriptor observations](evidence/avb-rough-descriptors-2026-10-04.json), [narrow parent-locator probe](evidence/avb-rough-parent-probe-2026-10-04.py), and [parent-locator results](evidence/avb-rough-parent-locators-2026-10-04.json).
 
-From the repository root, link the standalone probe against the built library:
+The following is the historical build command used for the retained probe. Its
+source includes the historical reader paths and names, and is preserved unchanged
+for provenance; it cannot be linked unchanged against the current headers. A new
+probe must be adapted in a separate copy and linked to the rebuilt MediaEngine
+library, producing its own evidence and hashes.
 
 ```sh
 clang++ -std=c++17 -arch x86_64 -Isrc \

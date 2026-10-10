@@ -34,7 +34,7 @@ mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
 mediamuster_add_test(tst_mediaevidence core)
 mediamuster_add_test(tst_metadataselectionpolicy core)
-target_link_libraries(tst_metadataselectionpolicy PRIVATE mediamuster_canon)
+target_link_libraries(tst_metadataselectionpolicy PRIVATE mediamuster_mediaengine_core)
 
 # Conventions: the agreed folder names, essence-name rules and folder
 # limits every feature keys on (header-only).
@@ -42,35 +42,35 @@ mediamuster_add_test(tst_conventions core)
 
 ### Media ###
 
-# Fresh Canon discovery and record model; does not link legacy metadata/parsers.
-mediamuster_add_test(tst_canondiscovery media)
-target_link_libraries(tst_canondiscovery PRIVATE mediamuster_canon)
+# Discovery and physical-file record model.
+mediamuster_add_test(tst_mediaenginediscovery media)
+target_link_libraries(tst_mediaenginediscovery PRIVATE mediamuster_mediaengine_core)
 
-mediamuster_add_test(tst_canonpmr media)
-target_link_libraries(tst_canonpmr PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonpmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaenginepmr media)
+target_link_libraries(tst_mediaenginepmr PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaenginepmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # Corrupt-input evidence retention, device failures and cancellation regressions.
-mediamuster_add_test(tst_canonpmrrobustness media)
-target_link_libraries(tst_canonpmrrobustness PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonpmrrobustness PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaenginepmrrobustness media)
+target_link_libraries(tst_mediaenginepmrrobustness PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaenginepmrrobustness PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # Fresh MDB graph reader: original bytes, dictionaries, references and real sources.
-mediamuster_add_test(tst_canonmdb media)
-target_link_libraries(tst_canonmdb PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonmdb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaenginemdb media)
+target_link_libraries(tst_mediaenginemdb PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaenginemdb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # Legacy OMF graphs and native audio metadata, with guarded sample ranges.
-mediamuster_add_test(tst_canonlegacy media)
-target_link_libraries(tst_canonlegacy PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonlegacy PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaenginelegacy media)
+target_link_libraries(tst_mediaenginelegacy PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaenginelegacy PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # Build each reader/projector without the other family's implementation. Linking
-# the full Canon library here would hide an accidental cross-reader dependency.
-set(CANON_ISOLATED_VALUE_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/canon/projection.cpp
-    ${CMAKE_SOURCE_DIR}/src/canon/compressionnames_p.cpp
-    ${CMAKE_SOURCE_DIR}/src/canon/metadataselectionpolicy.cpp
+# the full MediaEngine library here would hide an accidental cross-reader dependency.
+set(MEDIAENGINE_ISOLATED_VALUE_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/mediaengine/projection.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediaengine/compressionnames_p.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediaengine/metadataselectionpolicy.cpp
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
@@ -78,90 +78,95 @@ set(CANON_ISOLATED_VALUE_SOURCES
 foreach(family IN ITEMS MDB OMF)
     string(TOLOWER "${family}" family_lower)
     set(isolated_sources)
-    foreach(source IN LISTS CANON_${family}_SOURCES)
+    foreach(source IN LISTS MEDIAENGINE_${family}_SOURCES)
         list(APPEND isolated_sources "${CMAKE_SOURCE_DIR}/${source}")
     endforeach()
-    set(test_name "tst_canon${family_lower}isolated")
+    set(test_name "tst_mediaengine${family_lower}isolated")
     mediamuster_add_test(${test_name} media
         ${isolated_sources}
-        ${CANON_ISOLATED_VALUE_SOURCES}
+        ${MEDIAENGINE_ISOLATED_VALUE_SOURCES}
     )
     target_compile_definitions(${test_name} PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 endforeach()
 
 # Full MXF metadata framing, scoped Primers, source graphs and guarded essence.
-mediamuster_add_test(tst_canonmxf media)
-target_link_libraries(tst_canonmxf PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonmxf PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaenginemxf media)
+target_link_libraries(tst_mediaenginemxf PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaenginemxf PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # Bin object graphs, source evidence and selected-sequence reference resolution.
-mediamuster_add_test(tst_canonavb media)
-target_link_libraries(tst_canonavb PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonavb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-mediamuster_add_test(tst_canonavbreferences media)
-target_link_libraries(tst_canonavbreferences PRIVATE mediamuster_canon)
+mediamuster_add_test(tst_mediaengineavb media)
+target_link_libraries(tst_mediaengineavb PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaengineavb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaengineavbreferences media)
+target_link_libraries(tst_mediaengineavbreferences PRIVATE mediamuster_mediaengine_core)
 
 # Lossless RAM storage: genuine reader graphs, typed values and source receipts.
 mediamuster_add_test(tst_sourcearchive media)
-target_link_libraries(tst_sourcearchive PRIVATE mediamuster_canon)
+target_link_libraries(tst_sourcearchive PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_sourcearchive PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Live Canon matching, projections and presentation boundary.
-mediamuster_add_test(tst_canonscan media
-    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+# MediaEngine matching, projections and presentation with archive storage.
+mediamuster_add_test(tst_mediaenginescanarchive media
+    ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
 )
-target_link_libraries(tst_canonscan PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canonscan PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+target_link_libraries(tst_mediaenginescanarchive PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaenginescanarchive PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Run the same matching/header-scheduling regressions against the alternative store.
-add_executable(tst_canon2scan tst_canonscan.cpp
-    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+# Run the same matching/header-scheduling regressions against live native storage.
+add_executable(tst_mediaenginescan tst_mediaenginescanarchive.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
 )
-target_link_libraries(tst_canon2scan PRIVATE Qt6::Test mediamuster_canon2)
-target_include_directories(tst_canon2scan PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_compile_definitions(tst_canon2scan PRIVATE
-    MEDIAMUSTER_TEST_CANON2
+target_link_libraries(tst_mediaenginescan PRIVATE Qt6::Test mediamuster_mediaengine)
+target_include_directories(tst_mediaenginescan PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_compile_definitions(tst_mediaenginescan PRIVATE
+    MEDIAMUSTER_TEST_NATIVE_STORAGE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
-add_test(NAME tst_canon2scan COMMAND tst_canon2scan
-    -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/tst_canon2scan.result.txt,txt)
-set_tests_properties(tst_canon2scan PROPERTIES LABELS "media")
+add_test(NAME tst_mediaenginescan COMMAND tst_mediaenginescan
+    -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/tst_mediaenginescan.result.txt,txt)
+set_tests_properties(tst_mediaenginescan PROPERTIES LABELS "media")
 
-mediamuster_add_test(tst_canon2database media)
-target_link_libraries(tst_canon2database PRIVATE mediamuster_canon2)
-target_compile_definitions(tst_canon2database PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaenginedatabase media)
+target_link_libraries(tst_mediaenginedatabase PRIVATE mediamuster_mediaengine)
+target_compile_definitions(tst_mediaenginedatabase PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # Native sparse MXF bytes and restoration through the verified format reader.
-foreach(suite IN ITEMS tst_canon2mxfimage tst_canon2mxfsource)
+foreach(suite IN ITEMS tst_mediaenginemxfimage tst_mediaenginemxfsource)
     mediamuster_add_test(${suite} media)
-    target_link_libraries(${suite} PRIVATE mediamuster_canon2)
+    target_link_libraries(${suite} PRIVATE mediamuster_mediaengine)
     target_compile_definitions(${suite} PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 endforeach()
 
-# Read-only comparison tool. Run one engine per process to measure its own peak RAM.
-add_executable(canon2_compare canon2_compare.cpp
-    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+# Read-only storage comparison. Run each storage mode in its own process.
+add_executable(mediaengine_compare mediaengine_compare.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
 )
-set_target_properties(canon2_compare PROPERTIES AUTOMOC OFF)
-target_include_directories(canon2_compare PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(canon2_compare PRIVATE mediamuster_canon2 Qt6::Core)
+set_target_properties(mediaengine_compare PROPERTIES AUTOMOC OFF)
+target_include_directories(mediaengine_compare PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediaengine_compare PRIVATE mediamuster_mediaengine Qt6::Core)
 if(WIN32)
-    target_link_libraries(canon2_compare PRIVATE Psapi)
+    target_link_libraries(mediaengine_compare PRIVATE Psapi)
 endif()
 
 # Shared compression names: recorded labels and qualified Avid operating points.
-mediamuster_add_test(tst_canon_compressionnames media)
-target_link_libraries(tst_canon_compressionnames PRIVATE mediamuster_canon)
+mediamuster_add_test(tst_mediaengine_compressionnames media)
+target_link_libraries(tst_mediaengine_compressionnames PRIVATE mediamuster_mediaengine_core)
 
-mediamuster_add_test(tst_canon_omfprojection media)
-target_link_libraries(tst_canon_omfprojection PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canon_omfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-mediamuster_add_test(tst_canon_mxfprojection media)
-target_link_libraries(tst_canon_mxfprojection PRIVATE mediamuster_canon)
-target_compile_definitions(tst_canon_mxfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaengine_omfprojection media)
+target_link_libraries(tst_mediaengine_omfprojection PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaengine_omfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_mediaengine_mxfprojection media)
+target_link_libraries(tst_mediaengine_mxfprojection PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_mediaengine_mxfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
+# Real PMR/MDB/header joins across the 795 MXF and 82 legacy corpus files.
+mediamuster_add_test(tst_readerregressions media)
+target_link_libraries(tst_readerregressions PRIVATE mediamuster_mediaengine_core)
+target_compile_definitions(tst_readerregressions PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 # OmfUid: the OMF-era 8/12-byte -> 32-byte id wrap (header-only), pinned
 # against the real version-2 PMRs in fixtures/omf.
@@ -170,66 +175,10 @@ target_compile_definitions(tst_omfuid PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# Shared codec lookup and metadata derivation, without binary parser dependencies.
+# Recorded import-path basename handling.
 mediamuster_add_test(tst_mediametadata media
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
-)
-
-# BentoFile: the container primitive under msmMMOB.mdb — label, TOC,
-# immediate/offset values, the file's own property dictionary — against
-# builder-made containers (tests/testbento.h) and the real MDB fixtures.
-mediamuster_add_test(tst_bentofile media
-    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
-)
-target_compile_definitions(tst_bentofile PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-
-# PMR filename normalization and fixed-layout parsing, driven by hand-crafted byte buffers.
-mediamuster_add_test(tst_pmrparser media
-    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
-)
-target_compile_definitions(tst_pmrparser PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-
-# MdbParser: msmMMOB.mdb read through its Bento table of contents. Links
-# PmrParser and MxfParser too: the corpus databases are joined through their
-# PMRs to the real MXF headers captured from the same folders, with each
-# header as ground truth for every technical field.
-mediamuster_add_test(tst_mdbparser media
-    ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfobjects.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
-    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
-)
-target_compile_definitions(tst_mdbparser PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-
-# OmfParser: one OMF-era essence file read tail-first, pinned against all
-# 80 shipped slates and the two MC 2026 audio files. Links PmrParser and
-# MdbParser too: each file's facts are joined through the version-2 PMR
-# to the msmMMOB.mdb row for the same file, which must agree.
-mediamuster_add_test(tst_omfparser media
-    ${CMAKE_SOURCE_DIR}/src/omfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfobjects.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
-    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
-)
-target_compile_definitions(tst_omfparser PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
 # AvbParser: complete structured documents in both byte orders, malformed
@@ -239,19 +188,8 @@ mediamuster_add_test(tst_avbparser media
     ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
-target_link_libraries(tst_avbparser PRIVATE mediamuster_canon)
+target_link_libraries(tst_avbparser PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_avbparser PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-
-# MxfParser: binary framing, metadata ownership and real Avid header fixtures,
-# including the shared codec/rate/audio facts derived from decoded fields.
-mediamuster_add_test(tst_mxfparser media
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
-)
-target_compile_definitions(tst_mxfparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
@@ -262,23 +200,16 @@ mediamuster_add_test(tst_avideffects media
 )
 
 mediamuster_add_test(tst_scanner media
-    ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfobjects.cpp
-    ${CMAKE_SOURCE_DIR}/src/omfresolutions.cpp
-    ${CMAKE_SOURCE_DIR}/src/bentofile.cpp
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
-target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent mediamuster_canon2)
+target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent mediamuster_mediaengine)
 target_compile_definitions(tst_scanner PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
@@ -327,12 +258,11 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-target_link_libraries(tst_fileoperations PRIVATE mediamuster_canon)
+target_link_libraries(tst_fileoperations PRIVATE mediamuster_mediaengine_core)
 target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)
 if(APPLE)
     target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash_mac.mm)
@@ -378,7 +308,7 @@ mediamuster_add_test(tst_binfilterdialog ui
     ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
-target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_canon)
+target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_mediaengine_core)
 set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
 # Production UI and coordinator behavior, with no alternate operation model.
@@ -388,7 +318,7 @@ list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
 list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
 mediamuster_add_test(tst_operationui ui ${_operation_ui_sources})
 target_include_directories(tst_operationui PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_canon2)
+target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_mediaengine)
 mediamuster_link_native_operations(tst_operationui)
 if(APPLE)
     set_source_files_properties(${CMAKE_SOURCE_DIR}/src/revealinfinder.cpp PROPERTIES LANGUAGE OBJCXX)
@@ -400,9 +330,9 @@ set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=off
 
 # Model transfer receipts use the same native volume identity as operations.
 foreach(_model_test tst_mediatablemodel tst_mediafilterproxy tst_precomputefilterdialog tst_binfilterdialog)
-    target_link_libraries(${_model_test} PRIVATE mediamuster_canon)
+    target_link_libraries(${_model_test} PRIVATE mediamuster_mediaengine_core)
     target_sources(${_model_test} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
+        ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
         ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
         ${CMAKE_SOURCE_DIR}/src/nativefile.cpp)
 endforeach()

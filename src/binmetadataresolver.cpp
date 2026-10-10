@@ -1,11 +1,11 @@
 #include "binmetadataresolver.h"
 #include "avbparser.h"
-#include "canonadapter.h"
-#include "canon/metadataselectionpolicy.h"
-#include "canon/projection.h"
+#include "mediaengineadapter.h"
+#include "mediaengine/metadataselectionpolicy.h"
+#include "mediaengine/projection.h"
 #include "mediafile.h"
 
-void BinMetadataResolver::MasterMobMetadata::merge(const AvbMob &mob, const QSharedPointer<const Canon::ParsedSource> &source)
+void BinMetadataResolver::MasterMobMetadata::merge(const AvbMob &mob, const QSharedPointer<const MediaEngine::ParsedSource> &source)
 {
 	names += mob.nameObservations;
 	bins += mob.originalBinObservations;
@@ -60,20 +60,8 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 	const bool previousBinFromAvb = file.originalBinFromAvb;
 	file.evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Avb);
 	file.evidence.excludeSource(MediaProperty::OriginalBin, MetadataSource::Avb);
-	if (!file.canonScan && file.clipNameSource == MediaFile::ClipNameSource::Avb)
-	{
-		file.clipName.clear();
-		file.clipNameSource = MediaFile::ClipNameSource::None;
-	}
-	if (!file.canonScan && file.originalBinFromAvb)
-	{
-		file.originalBin.clear();
-		file.originalBinFromAvb = false;
-	}
 	MasterMobMetadata combined;
-	const auto identities = file.canonScan				  ? file.evidence.selected(MediaProperty::MasterMobId).value.toStringList()
-							: file.masterMobIds.isEmpty() ? QStringList{file.masterMobId}
-														  : file.masterMobIds;
+	const auto identities = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
 	for (const auto &identity : identities)
 	{
 		const auto found = m_metadataByMasterMobId.constFind(identity);
@@ -90,9 +78,9 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		combined.nameConflict |= value.nameConflict;
 		combined.binConflict |= value.binConflict;
 		for (const auto &source : value.sources)
-			if (!file.canonAvbSources.contains(source))
+			if (!file.mediaEngineAvbSources.contains(source))
 			{
-				file.canonAvbSources.append(source);
+				file.mediaEngineAvbSources.append(source);
 				if (source)
 					file.evidence.registerSource(source->snapshot);
 			}
@@ -101,8 +89,8 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		file.evidence.observe(MediaProperty::ClipName, value);
 	for (const auto &value : combined.bins)
 		file.evidence.observe(MediaProperty::OriginalBin, value);
-	auto selectedName = Canon::resolveProperty(file.evidence, Canon::propertyPolicy(MediaProperty::ClipName));
-	auto selectedBin = Canon::resolveProperty(file.evidence, Canon::propertyPolicy(MediaProperty::OriginalBin));
+	auto selectedName = MediaEngine::resolveProperty(file.evidence, MediaEngine::propertyPolicy(MediaProperty::ClipName));
+	auto selectedBin = MediaEngine::resolveProperty(file.evidence, MediaEngine::propertyPolicy(MediaProperty::OriginalBin));
 	const auto qualifyConflict = [&](MediaProperty property, bool conflict, ResolvedField &selected)
 	{
 		const auto &observations = file.evidence.observations(property);
@@ -119,46 +107,8 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 	qualifyConflict(MediaProperty::OriginalBin, combined.binConflict, selectedBin);
 	file.evidence.select(MediaProperty::ClipName, selectedName);
 	file.evidence.select(MediaProperty::OriginalBin, selectedBin);
-	combined.nameConflict |= selectedName.selectedObservation < 0 && selectedName.agreement == PropertyAgreement::Conflicting;
-	combined.binConflict |= selectedBin.selectedObservation < 0 && selectedBin.agreement == PropertyAgreement::Conflicting;
-	if (file.canonScan)
-	{
-		Canon::selectEffectMetadata(file.evidence);
-		const bool changed = applyResolvedMetadata(file);
-		return changed || file.clipName != previousName || file.originalBin != previousBin ||
-			   file.clipNameSource != previousNameSource || file.originalBinFromAvb != previousBinFromAvb;
-	}
-	if (file.clipName.isEmpty() && selectedName.selectedObservation >= 0)
-	{
-		const auto source = file.evidence.observations(MediaProperty::ClipName)[selectedName.selectedObservation].snapshot->source;
-		if (source != MetadataSource::Avb || !combined.nameConflict)
-		{
-			file.clipName = selectedName.value.toString();
-			file.clipNameSource = source == MetadataSource::Avb	  ? MediaFile::ClipNameSource::Avb
-								  : source == MetadataSource::Mdb ? MediaFile::ClipNameSource::Mdb
-																  : MediaFile::ClipNameSource::MaterialPackage;
-		}
-	}
-	if (file.originalBin.isEmpty() && selectedBin.selectedObservation >= 0)
-	{
-		const auto source = file.evidence.observations(MediaProperty::OriginalBin)[selectedBin.selectedObservation].snapshot->source;
-		if (source != MetadataSource::Avb || !combined.binConflict)
-		{
-			file.originalBin = selectedBin.value.toString();
-			file.originalBinFromAvb = source == MetadataSource::Avb;
-		}
-	}
-	// Pre-Canon callers may still provide only the compatibility values.
-	if (file.clipName.isEmpty() && !combined.nameConflict && combined.names.isEmpty() && !combined.clipName.isEmpty())
-	{
-		file.clipName = combined.clipName;
-		file.clipNameSource = MediaFile::ClipNameSource::Avb;
-	}
-	if (file.originalBin.isEmpty() && !combined.binConflict && combined.bins.isEmpty() && !combined.originalBin.isEmpty())
-	{
-		file.originalBin = combined.originalBin;
-		file.originalBinFromAvb = true;
-	}
-	return file.clipName != previousName || file.originalBin != previousBin ||
+	MediaEngine::selectEffectMetadata(file.evidence);
+	const bool changed = applyResolvedMetadata(file);
+	return changed || file.clipName != previousName || file.originalBin != previousBin ||
 		   file.clipNameSource != previousNameSource || file.originalBinFromAvb != previousBinFromAvb;
 }

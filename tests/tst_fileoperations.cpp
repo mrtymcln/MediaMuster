@@ -6,10 +6,10 @@
 #include "operationplan.h"
 #include "operationrecovery.h"
 #include "optrash.h"
-#include "mxfparser.h"
-#include "canon/omfreader.h"
-#include "canon/projection.h"
-#include "canon/scanengine.h"
+#include "mediaengine/mxfreader.h"
+#include "mediaengine/omfreader.h"
+#include "mediaengine/projection.h"
+#include "mediaengine/scancoordinator.h"
 #include <QTest>
 #include <QSignalSpy>
 #include <memory>
@@ -32,6 +32,31 @@
 
 namespace
 {
+	MediaEngine::ParsedSource readMxf(QIODevice &input, const QString &path)
+	{
+		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, path, QFileInfo(path).lastModified(), SourceReadState::NotRead});
+		const MediaEngine::Cancellation cancellation;
+		return MediaEngine::MxfReader{}.read(input, {receipt, cancellation});
+	}
+
+	MediaEngine::ParsedSource readMxf(const QString &path)
+	{
+		QFile input(path);
+		input.open(QIODevice::ReadOnly);
+		return readMxf(input, path);
+	}
+
+	MediaEvidence mxfEvidence(const MediaEngine::ParsedSource &source)
+	{
+		MediaEvidence evidence;
+		const MediaEngine::Cancellation cancellation;
+		for (const auto &file : MediaEngine::projectMxf(source, cancellation).files)
+			MediaEngine::appendEvidence(evidence, file.evidence);
+		MediaEngine::selectMetadata(evidence);
+		return evidence;
+	}
+
 	void put(const QString &path, const QByteArray &bytes)
 	{
 		if (!QDir().mkpath(QFileInfo(path).absolutePath()))
@@ -243,11 +268,12 @@ private slots:
 	void partial_group_failure_keeps_every_file_recorded();
 	void same_volume_keep_both_handles_late_conflict();
 	void real_mxf_identity_is_checked();
-	void canon_scan_receipt_checks_location_and_header_subset();
+	void mediaengine_scan_receipt_checks_location_and_header_subset();
 	void skipped_header_checks_database_file_identity_data();
 	void skipped_header_checks_database_file_identity();
 	void transferred_row_does_not_borrow_another_headers_receipt();
 	void changed_scan_header_cannot_become_unknown();
+	void real_legacy_header_identity_is_checked_data();
 	void real_legacy_header_identity_is_checked();
 	void mxf_parser_borrows_protected_handle();
 	void journal_volume_paths_survive_two_resolutions();
@@ -1468,9 +1494,9 @@ void TestFileOperations::real_mxf_identity_is_checked()
 {
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const auto header = MxfParser::parseHeader(sample);
-	QVERIFY(header.hasMaterialPackage);
-	QVERIFY(!header.fileMobId.isEmpty());
+	const auto header = mxfEvidence(readMxf(sample));
+	QVERIFY(!header.selected(MediaProperty::MasterMobId).value.toStringList().isEmpty());
+	QVERIFY(!header.selected(MediaProperty::FileMobId).value.toString().isEmpty());
 	OpRequest request;
 	request.destRoot = f.dest;
 	OpItem item;
@@ -1478,8 +1504,8 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	item.name = "sample.mxf";
 	item.bytes = QFileInfo(sample).size();
 	// Operation requests use the canonical database-order IDs stored by the scan.
-	item.mobId = MobId::swapMaterialByteOrder(header.fileMobId);
-	item.masterMobId = MobId::swapMaterialByteOrder(header.umid);
+	item.mobId = header.selected(MediaProperty::FileMobId).value.toString();
+	item.masterMobId = header.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
 	request.items.append(item);
 	Sink sink;
 	std::atomic<bool> cancel{false};
@@ -1491,13 +1517,13 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	QCOMPARE(runner.run(request, f.journals).failed, 1);
 	QVERIFY(!QFile::exists(f.dest + "/refused.mxf"));
 }
-void TestFileOperations::canon_scan_receipt_checks_location_and_header_subset()
+void TestFileOperations::mediaengine_scan_receipt_checks_location_and_header_subset()
 {
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const auto header = MxfParser::parseHeader(sample);
-	const QString fileId = MobId::swapMaterialByteOrder(header.fileMobId);
-	const QString headerMaster = MobId::swapMaterialByteOrder(header.umid);
+	const auto header = mxfEvidence(readMxf(sample));
+	const QString fileId = header.selected(MediaProperty::FileMobId).value.toString();
+	const QString headerMaster = header.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
 	MediaFile file;
 	file.mediaFilePath = sample;
 	file.fileName = QStringLiteral("sample.mxf");
@@ -1562,7 +1588,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	QFETCH(QString, condition);
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const QString fileId = MobId::swapMaterialByteOrder(MxfParser::parseHeader(sample).fileMobId);
+	const QString fileId = mxfEvidence(readMxf(sample)).selected(MediaProperty::FileMobId).value.toString();
 	QVERIFY(!fileId.isEmpty());
 	const QString path = f.root + QStringLiteral("/source/managed.mxf");
 	if (condition == QLatin1String("unreadable"))
@@ -1575,13 +1601,13 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	file.fileName = QFileInfo(path).fileName();
 	file.sizeBytes = QFileInfo(path).size();
 	file.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(), condition == QLatin1String("different") ? QStringLiteral("another-database-file-id") : fileId, {QStringLiteral("database-only-master")}};
-	auto scan = QSharedPointer<Canon::ScanResult>::create();
-	Canon::StoredSource unread;
+	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
+	MediaEngine::StoredSource unread;
 	unread.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path,
 																			file.scanStamp.modified, SourceReadState::NotRead});
 	unread.readReason = QStringLiteral("Header not read: usable database match supplies required table metadata");
 	scan->sources.append(unread);
-	file.canonScan = scan;
+	file.mediaEngineScan = scan;
 	MetadataObservation identity;
 	identity.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb,
 																			  f.root + QStringLiteral("/source/index.mdb"),
@@ -1628,7 +1654,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	}
 	// A header that was attempted but unreadable retains the earlier policy;
 	// the mandatory database expectation applies only to deliberate NotRead.
-	scan->sources[0].outcome = Canon::ParsedSource::Outcome::IoError;
+	scan->sources[0].outcome = MediaEngine::ParsedSource::Outcome::IoError;
 	QVERIFY(OpManager::itemsFromMediaFiles({file}, {}).front().databaseMobIdToVerify.isEmpty());
 }
 
@@ -1640,11 +1666,11 @@ void TestFileOperations::transferred_row_does_not_borrow_another_headers_receipt
 	file.fileName = QStringLiteral("reused.mxf");
 	file.scanStamp.path = file.mediaFilePath;
 	file.scanStamp.mobId = QStringLiteral("database-file-id");
-	const auto scan = QSharedPointer<Canon::ScanResult>::create();
+	const auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 	for (const auto &path : {originalPath, file.mediaFilePath})
 	{
-		Canon::StoredSource source;
-		source.outcome = path == originalPath ? Canon::ParsedSource::Outcome::IoError : Canon::ParsedSource::Outcome::NotRead;
+		MediaEngine::StoredSource source;
+		source.outcome = path == originalPath ? MediaEngine::ParsedSource::Outcome::IoError : MediaEngine::ParsedSource::Outcome::NotRead;
 		source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path, {}, path == originalPath ? SourceReadState::Unreadable : SourceReadState::NotRead});
 		scan->sources.append(source);
 		MetadataObservation location;
@@ -1654,7 +1680,7 @@ void TestFileOperations::transferred_row_does_not_borrow_another_headers_receipt
 		location.eligible = path != originalPath;
 		file.evidence.observe(MediaProperty::Location, location);
 	}
-	file.canonScan = scan;
+	file.mediaEngineScan = scan;
 	MetadataObservation identity;
 	identity.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb, QStringLiteral("/source/index.mdb"), {}, SourceReadState::Complete});
 	identity.readState = PropertyReadState::Present;
@@ -1702,23 +1728,30 @@ void TestFileOperations::changed_scan_header_cannot_become_unknown()
 	QVERIFY(!QFile::exists(f.dest + '/' + file.fileName));
 }
 
+void TestFileOperations::real_legacy_header_identity_is_checked_data()
+{
+	QTest::addColumn<QString>("sample");
+	QTest::newRow("Avid-WAVE") << QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav");
+	QTest::newRow("Avid-MPEG50") << QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/BLACK_720x486x1_MPEG50.omf");
+}
+
 void TestFileOperations::real_legacy_header_identity_is_checked()
 {
 	Fixture f;
-	const QString sample = QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav");
+	QFETCH(QString, sample);
 	QFile media(sample);
 	QVERIFY(media.open(QIODevice::ReadOnly));
 	const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Omf, sample,
 																			   QFileInfo(sample).lastModified(), SourceReadState::NotRead});
-	const Canon::Cancellation cancellation;
-	const auto parsed = Canon::OmfReader{}.read(media, {receipt, cancellation});
+	const MediaEngine::Cancellation cancellation;
+	const auto parsed = MediaEngine::OmfReader{}.read(media, {receipt, cancellation});
 	MediaEvidence evidence;
-	for (const auto &file : Canon::projectOmf(parsed, cancellation).files)
-		Canon::appendEvidence(evidence, file.evidence);
-	Canon::selectMetadata(evidence);
+	for (const auto &file : MediaEngine::projectOmf(parsed, cancellation).files)
+		MediaEngine::appendEvidence(evidence, file.evidence);
+	MediaEngine::selectMetadata(evidence);
 	OpItem item;
 	item.src = sample;
-	item.name = QStringLiteral("legacy.wav");
+	item.name = QStringLiteral("legacy.") + QFileInfo(sample).suffix();
 	item.bytes = QFileInfo(sample).size();
 	item.headerIdentity = OpHeaderIdentity{evidence.selected(MediaProperty::FileMobId).value.toString(),
 										   evidence.selected(MediaProperty::MasterMobId).value.toStringList(),
@@ -1732,16 +1765,16 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 	OpRunner runner(sink, cancel);
 	QCOMPARE(runner.run(request, f.journals).succeeded, 1);
 	request.items[0].headerIdentity->mobId = QStringLiteral("different-file-id");
-	request.items[0].name = QStringLiteral("refused.wav");
+	request.items[0].name = QStringLiteral("refused.") + QFileInfo(sample).suffix();
 	QCOMPARE(runner.run(request, f.journals).failed, 1);
-	QVERIFY(!QFile::exists(f.dest + "/refused.wav"));
+	QVERIFY(!QFile::exists(f.dest + '/' + request.items[0].name));
 }
 
 void TestFileOperations::mxf_parser_borrows_protected_handle()
 {
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const auto expected = MxfParser::parseHeader(sample);
+	const auto expected = mxfEvidence(readMxf(sample));
 	const QString path = f.root + "/protected.mxf";
 	QVERIFY(QFile::copy(sample, path));
 	QString error;
@@ -1750,12 +1783,12 @@ void TestFileOperations::mxf_parser_borrows_protected_handle()
 	const auto before = file->stamp();
 	const int descriptor = file->io().handle();
 	QVERIFY(file->io().seek(128));
-	qint64 bytesRead = 0;
-	const auto actual = MxfParser::parseHeader(file->io(), &bytesRead);
-	QCOMPARE(actual.headerStatus, MediaMetadata::HeaderStatus::Complete);
-	QCOMPARE(actual.fileMobId, expected.fileMobId);
-	QCOMPARE(actual.umid, expected.umid);
-	QVERIFY(bytesRead > 0);
+	const auto parsed = readMxf(file->io(), path);
+	QCOMPARE(parsed.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+	const auto actual = mxfEvidence(parsed);
+	QCOMPARE(actual.selected(MediaProperty::FileMobId).value, expected.selected(MediaProperty::FileMobId).value);
+	QCOMPARE(actual.selected(MediaProperty::MasterMobId).value, expected.selected(MediaProperty::MasterMobId).value);
+	QVERIFY(!parsed.objects.isEmpty());
 	QVERIFY(file->io().isOpen());
 	QCOMPARE(file->io().handle(), descriptor);
 	QVERIFY(file->stillAt(path, before));
@@ -1765,10 +1798,9 @@ void TestFileOperations::mxf_parser_borrows_protected_handle()
 	QVERIFY(!writer.open(QIODevice::ReadWrite));
 #endif
 	QFile closed;
-	bytesRead = 123;
-	QCOMPARE(MxfParser::parseHeader(closed, &bytesRead).headerStatus,
-			 MediaMetadata::HeaderStatus::IoError);
-	QCOMPARE(bytesRead, 0);
+	const auto unavailable = readMxf(closed, path);
+	QCOMPARE(unavailable.outcome, MediaEngine::ParsedSource::Outcome::IoError);
+	QVERIFY(unavailable.objects.isEmpty());
 }
 void TestFileOperations::journal_volume_paths_survive_two_resolutions()
 {
@@ -2093,14 +2125,18 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	// Keeping only the master claim would let the wrong track pass validation.
 	const QString first = QStringLiteral(FIXTURES_DIR "/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf");
 	const QString second = QStringLiteral(FIXTURES_DIR "/avid_headers/A02.E683CD74_FF4BEFF4BE93AA.mxf");
-	const auto firstHeader = MxfParser::parseHeader(first);
-	const auto secondHeader = MxfParser::parseHeader(second);
-	QVERIFY(firstHeader.hasMaterialPackage);
-	QVERIFY(secondHeader.hasMaterialPackage);
-	QVERIFY(!firstHeader.fileMobId.isEmpty());
-	QVERIFY(!secondHeader.fileMobId.isEmpty());
-	QCOMPARE(firstHeader.umid, secondHeader.umid);
-	QVERIFY(firstHeader.fileMobId != secondHeader.fileMobId);
+	const auto firstHeader = mxfEvidence(readMxf(first));
+	const auto secondHeader = mxfEvidence(readMxf(second));
+	const QString firstFileId = firstHeader.selected(MediaProperty::FileMobId).value.toString();
+	const QString secondFileId = secondHeader.selected(MediaProperty::FileMobId).value.toString();
+	const QString firstMaster = firstHeader.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
+	const QString secondMaster = secondHeader.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
+	QVERIFY(!firstMaster.isEmpty());
+	QVERIFY(!secondMaster.isEmpty());
+	QVERIFY(!firstFileId.isEmpty());
+	QVERIFY(!secondFileId.isEmpty());
+	QCOMPARE(firstMaster, secondMaster);
+	QVERIFY(firstFileId != secondFileId);
 
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
@@ -2109,8 +2145,8 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	MediaFile home;
 	home.mediaFilePath = root + "/1/home.mxf";
 	home.mediaFolderName = "1";
-	home.masterMobId = firstHeader.umid;
-	home.fileMobId = firstHeader.fileMobId;
+	home.masterMobId = firstMaster;
+	home.fileMobId = firstFileId;
 	put(home.mediaFilePath, get(first));
 	home.sizeBytes = QFileInfo(home.mediaFilePath).size();
 	MediaFile moved = home;
@@ -2122,7 +2158,7 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	QCOMPARE(plan.ops.size(), 1);
 	const auto request = RebalancePlanner::requestForPlan(plan);
 	QCOMPARE(request.items.size(), 1);
-	QCOMPARE(request.items.first().mobId, firstHeader.fileMobId);
+	QCOMPARE(request.items.first().mobId, firstFileId);
 
 	Sink sink;
 	std::atomic<bool> cancel{false};

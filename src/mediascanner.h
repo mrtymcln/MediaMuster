@@ -1,6 +1,6 @@
 #pragma once
 
-// Background/UI boundary for the Canon2 scan engine. A fresh session is owned
+// Background/UI boundary for the MediaEngine scan engine. A fresh session is owned
 // by its returned rows, so later scans cannot borrow stale parser caches.
 #include "backgroundjob.h"
 #include "mediafile.h"

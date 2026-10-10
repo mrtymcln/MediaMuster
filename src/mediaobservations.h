@@ -4,7 +4,7 @@
 #include <utility>
 
 // Records filesystem observations after a confirmed move or copy. The original
-// Canon source evidence stays attached to the row alongside its new location.
+// MediaEngine source evidence stays attached to the row alongside its new location.
 namespace MediaObservations
 {
 	inline void add(MediaFile &file, MediaProperty field, const SourceSnapshotRef &source,

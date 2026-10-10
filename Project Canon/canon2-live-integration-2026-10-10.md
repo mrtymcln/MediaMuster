@@ -1,9 +1,8 @@
-# Canon2 live integration
+# MediaEngine live integration
 
 On 10 October 2026, after reviewing the native MXF storage comparison, the user
-approved: “Lets make the app use Canon2.” Canon2 now supplies the application's
-MediaScanner engine. The earlier Canon path and superseded readers/tests remain
-available until the user approves their retirement.
+approved the native-source-storage pipeline. MediaEngine supplies the application's
+MediaScanner engine.
 
 ## What changes for the app
 
@@ -12,7 +11,7 @@ metadata-selection policy. It still reads PMR/MDB databases first. A media heade
 opens only when the existing rules require it: no usable database match, required
 table information missing or conflicting, or an invalidated source match.
 
-Canon2 changes how source details are retained in RAM:
+MediaEngine changes how source details are retained in RAM:
 
 | Source | Retained source storage |
 | --- | --- |
@@ -38,14 +37,14 @@ The live integration passed verification on 10 October 2026:
 
 - All 47 Release regression suites passed, including the live MediaScanner,
   cancellation/restart, OMF gating, bin filtering, UI and file-operation tests.
-- The rebuilt Mac application contains Canon2, builds for arm64 and x86_64,
+- The rebuilt Mac application contains MediaEngine, builds for arm64 and x86_64,
   and passes code-signature verification. The Windows target selects the same
   static engine library; a Windows build/run was not performed on this Mac.
 - Genuine fixture tests confirm the live rows own exact PMR/MDB bytes and that
   a complete MXF's records restore from RAM after its disposable file copy is
   removed. The shared source receipt and projected MobId remain the same.
 
-The prior live Canon test executable was preserved before rebuilding. Both live
+The prior live MediaEngine test executable was preserved before rebuilding. Both live
 adapters then scanned `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT` with
 OMF discovery enabled. Both returned the same 2,413 physical rows, inventory,
 issues and byte-identical CSV. The CSV SHA-256 is
@@ -67,7 +66,7 @@ live adapter: 475,088 objects, 498,221 relationships, 2,719,926 properties and
 This live audit compares these counts and the app results; the earlier comparison
 below supplies the complete recursive graph/evidence/original-byte proof.
 
-The Console now names Canon2 and reports retained native database/MXF payloads
+The Console now names MediaEngine and reports retained native database/MXF payloads
 alongside any graph archives. These payload figures are not total app RAM.
 Single live-audit timings are saved as observations, without a performance claim.
 
@@ -88,11 +87,10 @@ The saved JSON and proof archive remain unchanged.
 The approximately 300,000-file Windows/NEXIS Interplay scan still needs testing.
 Successful local comparisons do not prove its memory fit, speed or completion,
 and they do not establish that MediaMuster outperforms MDVX. The earlier failed
-Canon build's high memory usage exposed a real storage problem; its exact fatal
+MediaEngine build's high memory usage exposed a real storage problem; its exact fatal
 mechanism remains unproven.
 
-Canon2 still expands one source temporarily while reading or inspecting it.
+MediaEngine still expands one source temporarily while reading or inspecting it.
 Per-row evidence remains unchanged, and acquired MXF bytes do not include payloads
 the reader skipped. Compact parsing, evidence compaction, compression and native
-OMF storage remain separate future decisions. Promoting Canon2 does not authorize
-removing the earlier engines or tests.
+OMF storage remain separate future decisions.

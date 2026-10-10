@@ -1,10 +1,8 @@
 #pragma once
 
-// A tiny in-memory Bento container writer for tests — the inverse of
-// src/bentofile.h, built to the same layout Avid writes msmMMOB.mdb in:
-// values first, then the property-name dictionary entries, then the TOC,
-// then the 24-byte label. Shared by tst_bentofile, tst_mdbparser and
-// tst_scanner, which is what earns it a header of its own.
+// A small Bento container writer for reader tests. It writes values, a
+// property-name dictionary, the table of contents and the 24-byte label,
+// using the layout found in Avid MDB fixtures.
 
 #include <QByteArray>
 #include <QHash>
@@ -130,7 +128,7 @@ public:
 	}
 
 private:
-	static constexpr quint16 kImmediate = 1; ///< TOC flag bit 0, as BentoFile reads it.
+	static constexpr quint16 kImmediate = 1; ///< TOC flag bit 0: value bytes are stored in the entry.
 
 	struct Pending
 	{

@@ -1,20 +1,20 @@
-# Historical reviews
+# Format research and operational reviews
 
-Written findings, research and validation summaries, grouped by review date.
-These describe the revisions examined at the time; they are not a current bug
-list or a guarantee about later builds. For current behaviour, start with the
-[behaviour guide](../current-behaviour.md) and [architecture](../architecture.md).
+These records describe their inspected source revisions and platforms. They do
+not certify later builds. Current ownership and behavior are in the
+[architecture](../architecture.md) and [application guide](../current-behaviour.md).
 
-| Date | Review | Supporting reports |
-| --- | --- | --- |
-| 5 September 2026 | [AVB parser review](../avb-review-2026-09-05.md) | [Binary findings](2026-09-05-avb/binary-findings.md), [consumer findings](2026-09-05-avb/consumer-findings.md), [corpus review](2026-09-05-avb/corpus-review.md) |
-| 6 September 2026 | [Code review](2026-09-06-current-code/REVIEW.md) | [File operations](2026-09-06-current-code/file-operations.md), [parsers](2026-09-06-current-code/parsers.md), [scanner and filters](2026-09-06-current-code/scanner-filters.md), [UI and tests](2026-09-06-current-code/ui-build-tests.md) |
-| 20 September 2026 | [Media scope](2026-09-20-media-scope/REVIEW.md) | [Public specifications](2026-09-20-media-scope/public-specs.md), [audio extensions](2026-09-20-media-scope/audio-extensions.md), [validation history](2026-09-20-media-scope/validation-history.md) |
-| 22 September 2026 | [Code review](2026-09-22-current-code/REVIEW.md) | [Operations](2026-09-22-current-code/operations.md), [parsers](2026-09-22-current-code/parsers.md), [scanner and filters](2026-09-22-current-code/scanner-filters.md), [UI and build](2026-09-22-current-code/ui-build-docs.md), [identity audit](2026-09-22-current-code/identity-audit.md) |
-| 24 September 2026 | [Console wording](2026-09-24-console/console-review.md) | Accepted wording decisions and implementation summary |
-| 8 October 2026 | [Dialog and progress wording](2026-10-08-dialog-wording/REVIEW.md) | [Operations and recovery](2026-10-08-dialog-wording/operations.md), [bins and About](2026-10-08-dialog-wording/bins-and-about.md), [Rebalance](2026-10-08-dialog-wording/rebalance.md); proposals with source evidence |
+| Record | Retained scope |
+| --- | --- |
+| [AVB binary findings](2026-09-05-avb/binary-findings.md) | Direct Media Composer serialization and object-reference evidence. |
+| [File operations](2026-09-06-current-code/file-operations.md) and [coverage](2026-09-06-current-code/file-operation-coverage.md) | Operation-engine findings and validation boundaries. |
+| [Primary format sources](2026-09-20-media-scope/public-specs.md), [binary dispatch](2026-09-20-media-scope/binary-dispatch.md), [audio extensions](2026-09-20-media-scope/audio-extensions.md) | Avid/SMPTE/OMF sources and independently inspected Media Composer behavior. |
+| [Operational review](2026-09-22-current-code/operations.md) | File-operation/recovery findings. |
+| [Console wording](2026-09-24-console/console-review.md) | Accepted wording decisions. |
+| [Dialog/progress review](2026-10-08-dialog-wording/REVIEW.md) | Pending wording proposals for scans, operations, bins and Rebalance. |
 
-Keep this archive document-only. Store durable regression tests and media fixtures
-under `tests/`; keep temporary probes, logs, generated data, copied source and
-screenshots out of the documentation tree. Include useful results and their
-limits directly in the report. Historical source line numbers may have shifted.
+Direct source evidence under the September/October research folders includes
+Avid disassembly, genuine-file observations, Media Tool output and format
+specifications. Current format-reader verification and acceptance plans are in
+[Project Canon](../../Project%20Canon/README.md). Superseded parser code inventories,
+comparison probes and implementation-only reports have been removed.

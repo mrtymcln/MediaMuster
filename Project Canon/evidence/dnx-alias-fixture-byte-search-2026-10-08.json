@@ -81,7 +81,6 @@
     "documentedGenuineSources": [
       "tests/fixtures/omf/README.md documents 80 supplied Avid OMF slates, database pairs, native audio and two bins.",
       "tests/fixtures/corpus_headers/README.md documents genuine Avid MXF header slices and captured PMR/MDB generations.",
-      "tests/tst_mxfparser.cpp::real_avid_headers_parse_exactly and tst_canonmxf.cpp::realFixtures identify avid_headers and root tone as real-file cases.",
       "tests/tst_canonmdb.cpp::realFixtures treats root MDBs as real sources."
     ],
     "qualification": "Provenance above is attributed to repository records, not an independent recreation of every media capture. No synthetic on-disk source was identified among these 919 files. Test-authored byte buffers and temporary generated files outside tests/fixtures are outside this search.",
@@ -254,5 +253,10 @@
     }
   ],
   "errors": [],
-  "interpretation": "A zero match count establishes absence of these exact contiguous 16-byte encodings in the bytes successfully searched. It does not prove that no historical/private format used an alias, exclude fragmented/non-contiguous encodings, or establish whether a matching byte sequence would be a coding property rather than a container, identity, or essence payload."
+  "interpretation": "A zero match count establishes absence of these exact contiguous 16-byte encodings in the bytes successfully searched. It does not prove that no historical/private format used an alias, exclude fragmented/non-contiguous encodings, or establish whether a matching byte sequence would be a coding property rather than a container, identity, or essence payload.",
+  "documentationExtraction": {
+    "date": "2026-10-11",
+    "originalArtifactSha256": "6d422c37f5f13ed299cd38df1e637e79ca1a607b2bff406a6159e6c06624a1eb",
+    "scope": "Preserved measured format/source facts and current-reader results; removed superseded implementation references. This is an extracted receipt, not a new verification or a renamed source-code fingerprint."
+  }
 }

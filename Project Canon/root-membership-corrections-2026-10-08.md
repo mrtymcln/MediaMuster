@@ -82,7 +82,7 @@ format-conformance claim is implied.
 
 ## Verification
 
-The normal app and Canon test build complete successfully as universal
+The normal app and MediaEngine test build complete successfully as universal
 arm64/x86_64 Debug binaries, using Qt 6.5.3. The normal app's existing signature
 passes verification. The final native run passes **38/38 suites** on macOS 15.8.1
 (arm64), in 42.09 seconds. Windows runtime was not exercised.
@@ -162,8 +162,6 @@ The scan took **20,736 ms**. `/usr/bin/time` recorded **2,539,395,648 bytes** pe
 process footprint (about 2.54 GB). This is a Debug observation with uncontrolled
 filesystem cache, not a comparative performance guarantee or a new memory cap.
 
-- [Final full-suite log](evidence/root-membership-full-tests-2026-10-08.txt)
-- [Initial failure log](evidence/root-membership-full-tests-initial-2026-10-08.txt)
 - [Corrected scanner-fixture run](evidence/root-membership-scanner-fixtures-2026-10-08.txt)
 - [Fresh MXF counterexample results](evidence/root-membership-mxfprojection-2026-10-08.json)
 - [OMF counterexamples retaining other open findings](evidence/root-membership-omfprojection-2026-10-08.json)

@@ -3,13 +3,13 @@
 Work began on 8 October; final verification completed just after midnight on
 9 October in Australia/Sydney. Evidence filenames retain the starting date.
 
-The user approved extending Qt-native storage compaction across Canon's readers.
+The user approved extending Qt-native storage compaction across MediaEngine's readers.
 This continues the [first MDB/OMF property compaction](property-compaction-2026-10-08.md).
 It releases unused list capacity; it does not discard metadata or change format rules.
 
 ## Implementation
 
-`src/canon/sourcestorage_p.h` contains one small private helper for completed
+`src/mediaengine/sourcestorage_p.h` contains one small private helper for completed
 source graphs. PMR, MDB, MXF, OMF, native legacy audio and AVB now use it. The
 helper compacts object/property lists, relationships, record sets and their object
 handles, embedded-source lists and diagnostics. Embedded graphs use the same
@@ -124,21 +124,20 @@ read separately; the reductions cannot be added to claim a single app-footprint
 saving. MXF behavior is covered by existing genuine-fixture tests and the
 unchanged ordinary-scan outputs, rather than this 105-source graph diagnostic.
 
-The final code passes **40/40 existing native test suites**. Both universal Debug
-app builds complete and pass normal macOS code-signature verification. Independent
+Both universal Debug app builds complete and pass normal macOS code-signature
+verification. Independent
 review checks graph ownership, reference/index lifetimes and the early AVB cleanup
 boundary. No test implementation changes were needed for this storage-only work.
 
-See the [source/filter proof](evidence/source-storage-graph-summary-2026-10-08.json),
-[test log](evidence/source-storage-compaction-tests-2026-10-08.txt) and
+See the [source/filter proof](evidence/source-storage-graph-summary-2026-10-08.json) and
 [verification receipt](evidence/source-storage-compaction-verification-2026-10-08.json).
 
 ## Limits
 
 These checks use Qt 6.5.3 and the existing universal Debug app builds, running
 natively on arm64 macOS. The supplementary diagnostic itself is compiled with
-`-O2` against those Debug Canon libraries. No Release or Windows/NEXIS benchmark
+`-O2` against those Debug MediaEngine libraries. No Release or Windows/NEXIS benchmark
 is claimed. Genuine unchanged files demonstrate preservation for this corpus,
 not universal coverage of every possible Avid file. No media or databases were
-modified, no old engine was retired, and no new synthetic format rules or tests
+modified, and no new synthetic format rules or tests
 were introduced.

@@ -4,9 +4,8 @@ For the current implementation assessment, use the
 [7 October finding-by-finding closeout](audit-closeout-2026-10-07.md). The counts
 and categories below describe the original planning stage.
 
-Assessment: 3 October 2026. Compared the HTML audit and its 40 finding/scope entries
-with the agreed requirements and proposed design in Project Canon. These categories
-are an engineering assessment of design coverage, not measured completed fixes.
+Assessment: 3 October 2026. These 40 format/scope topics record planning coverage,
+not measured completed fixes.
 
 This preserves the planning-stage assessment. The replacement engines were
 subsequently connected; current verified corrections and remaining limits are in
@@ -24,9 +23,8 @@ not a current tally of open or closed implementation findings.
 | Total audit entries | 40 | Includes genuine defects, authored/static findings, documentation errors and intentional scope limits |
 | Closed by verified implementation in this planning work | 0 | Production code has not yet changed |
 
-The 1,103 occurrence locations are related code/tests/comments/docs references, not
-1,103 independent bugs. A single finding can require several code and documentation
-changes. The 31 entries in the first two groups are not a promise of 31 automatic fixes.
+A single format topic can require several implementation and documentation
+changes. Planning coverage is not a promise of automatic fixes.
 
 The rewrite must preserve the current information while treating deliberate format
 corrections as separately evidenced changes. A faithful evidence container cannot
@@ -39,7 +37,7 @@ must be brought to the user as agreed.
 
 ### Directly addressed by the central model
 
-| Finding | Audit title | Remaining work / connection to Canon |
+| Finding | Audit title | Remaining work / connection to MediaEngine |
 | --- | --- | --- |
 | F07 | Repeated MXF PackageUIDs overwrite the lookup | Candidate-preserving identity indexes and explicit ambiguity replace silent overwrites. Apply this inside MXF package lookup, not just the physical-file inventory. |
 | F13 | Repeated OMF/MDB mob records choose the first descriptor and values | Retained observations, multiple object candidates and per-field selection replace first-descriptor/first-value wins. Parser candidates must survive through resolution. |
@@ -51,7 +49,7 @@ must be brought to the user as agreed.
 
 ### Supported, but needs a specific correction or decision
 
-| Finding | Audit title | Remaining work / connection to Canon |
+| Finding | Audit title | Remaining work / connection to MediaEngine |
 | --- | --- | --- |
 | F01 | 2.14 fixed point is displayed as Float | Bit depth and sample encoding have separate places in the model, but fixed-versus-float descriptor decoding and tests must actually be corrected. |
 | F02 | RGBA component depths are mostly ignored | Complete property/component observations can retain PixelLayout, but readers must parse every component/depth pair correctly. |
@@ -80,7 +78,7 @@ must be brought to the user as agreed.
 
 ### Separate correction or scope decision
 
-| Finding | Audit title | Remaining work / connection to Canon |
+| Finding | Audit title | Remaining work / connection to MediaEngine |
 | --- | --- | --- |
 | F10 | 4–8 byte duration “flavours” are not established MXF types | Strict MXF duration width/recovery admission and unsupported format claims require a specific decoder/test/documentation correction. |
 | F18 | Private AUID conversion assumes little-endian numeric fields | Private AUID endianness requires serialization evidence, a genuine big-endian specimen or explicitly narrower support; the RAM model does not answer it. |
@@ -106,6 +104,3 @@ The two output defects established on genuine media, F01 and F02, should receive
 explicit parser fixes and regression checks early. Typed graph traversal/completeness
 and operation identity checks deserve their own work items; they cannot be inferred
 from KelpieId uniqueness.
-
-[Original HTML audit](../docs/reviews/2026-10-03-format-audit/format-audit.html)
-and [audit findings data](../docs/reviews/2026-10-03-format-audit/evidence/findings.json).

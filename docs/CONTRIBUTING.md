@@ -20,7 +20,7 @@ and [the documentation index](README.md).
 Use ordinary variable names for local `const` values. Prefer `constexpr` for fixed
 constants. Name booleans as facts or options (`hasPendingJob`, `precomputesEnabled`). Include
 units when the type does not express them (`retryDelayMs`, `sampleRateHz`). Preserve
-the native unit of opaque platform timestamps. Treat acronyms as words (`MxfParser`,
+the native unit of opaque platform timestamps. Treat acronyms as words (`MxfReader`,
 `MobId`), while keeping SDK symbols and actual Avid identifiers unchanged.
 
 Feature flag constants use `k` plus the feature name, without an `Enabled` suffix:
@@ -124,7 +124,10 @@ CMake. Preserve the small Objective-C++ Mac Trash bridge. GitHub YAML and native
 resource/metadata formats retain their platform roles; avoid adding shell or
 PowerShell recipes around CMake commands.
 
-Keep sources and headers flat under `src/`. Dated written reviews live under
+MediaEngine's readers, projections, source storage and scan coordination belong
+under `src/mediaengine/`, in namespace `MediaEngine`. The application facade,
+presentation adapter, UI and file-operation engine remain under `src/`. See the
+[engine terminology](media-engine.md) for these boundaries. Dated written reviews live under
 `docs/reviews/`. Keep temporary probes, copied code, generated output and logs out
 of the documentation tree; put durable regression coverage under `tests/`.
 The standalone Avid catalogue extractor has been retired. Future

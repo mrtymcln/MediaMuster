@@ -27,10 +27,6 @@ codec-table bug by construction. Projects are named `<name>_<raster>_<rate>`
 AVC Long GOP, DVCPro HD, J2K, XDCAM, H.264 proxy, PCM and MP2 audio, plus
 timeline effect renders. Known gap: no drop-frame project.
 
-The two database pairs are also ground truth for `tst_mdbparser`: every PMR
-pair is joined to its MDB records and every technical field compared to the
-slice's own header (795 files, two database generations).
-
-`tst_mxfparser`'s `archived_corpus_all_parses_with_no_unknowns` walks this
-folder and fails if any slice stops parsing or resolves to an
-"unknown variant" label — the tripwire that keeps the dictionary complete.
+The current reader suites use these genuine databases and MXF slices to
+check stored records, references and projected metadata. Corpus-wide
+checks compare those recorded facts without depending on a second parser.

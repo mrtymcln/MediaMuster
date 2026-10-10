@@ -14,7 +14,6 @@ remains outstanding.
 - Progress reaches roughly file 10,000, stalls for about ten minutes, then the
   app disappears without an error. The last displayed file differs between runs.
 - Observed application RAM is approximately 50,000 MB before termination.
-- The old engine completed this workload according to the user.
 - The latest folder-reuse commit has not been tested on this workload.
 
 These are user observations. We do not yet have the Windows exception event,
@@ -22,22 +21,16 @@ dump, memory timeline, exact source counts or actual header-read counts.
 
 ## What the code and existing measurements establish
 
-| Area | Old engine | Live Canon engine |
-| --- | --- | --- |
-| MDB storage | `MdbParser::load` parses a local Bento graph, returns selected file/master maps, and destroys that graph on return. The scanner consumes file metadata and temporarily keeps master maps. | `ScanResult::sources` retains every parsed source's object/property/reference graph for the scan session. |
-| Media headers | Returns selected `MediaMetadata`; full parsing structures do not become session records. | Every opened header's complete parsed metadata graph also remains in the session. |
-| Additional working data | Selected maps and physical rows. | Raw source graphs coexist with projections, identity indexes and row evidence during scanning. |
-| Copies with shared Avid identities | Selected metadata joins. | Global MDB indexes attach observations from each matching database snapshot. Physical rows stay distinct; their observation containers can multiply when many copies share identities. |
-| Rescan peak | Previous displayed rows remain while replacement rows are built. | Previous displayed rows also own the previous full Canon session, overlapping the next session until replacement. This does not explain a fresh-process crash. |
+The failing build retained complete object/property/reference graphs for every
+opened source, alongside projections, identity indexes and per-file evidence.
+Rows sharing Avid identities could have multiple source observations; physical
+rows remained separate. A rescan could additionally overlap the previous session.
 
-Relevant code is `src/mdbparser.cpp`, `src/mdbparser.h`, the pre-Canon scanner
-at commit `86c500c`, and current `src/canon/scanmodel.h`,
-`src/canon/scanengine.cpp`, `src/mediascanner.cpp` and `src/mainwindow.cpp`.
 The failed commit already retained the full source graphs and had the missing
 exception boundary described below.
 
 Existing measurements use genuine local files, Qt 6.5.3, macOS arm64 and Debug
-Canon libraries. They establish storage cost; they are not Windows measurements:
+MediaEngine libraries. They establish storage cost; they are not Windows measurements:
 
 - Six live MDBs total **63,954,160 bytes** on disk, with **386,450 objects**,
   **383,956 relationships** and **2,174,798 properties**.
@@ -61,7 +54,7 @@ retain the underlying evidence. Do not extrapolate this small workload into a
 measured 300,000-file RAM figure: source sizes, header fallback and duplicate
 identity joins differ by collection.
 
-Canon parses all discovered databases before its media-file loop. Consequently,
+MediaEngine parses all discovered databases before its media-file loop. Consequently,
 the displayed media count is not a count of everything already held in RAM.
 The reviewed code has no 10,000-file limit, and 300,000 is below its progress
 integer limit. No concrete pointer-lifetime defect was found in the bounded
@@ -118,7 +111,7 @@ establishes a remedy for the reported 50 GB workload.
    of valid sources, then complete the same real Windows/NEXIS scan. Passing
    small parser tests is necessary but does not establish that capacity.
 
-Keep the old engine until the user's explicit retirement approval. No format
+No format
 interpretation or matching-policy change is justified solely by this memory
 report. Any needed product-policy choice remains a user decision.
 
@@ -127,5 +120,5 @@ expensive expanded representation. Compactness must be demonstrated without
 losing source distinctions or hiding unrecognized properties.
 
 The prior local memory acceptance and successful tests remain historical
-evidence. They do not qualify Canon for this large NEXIS workload. Its reported
+evidence. They do not qualify MediaEngine for this large NEXIS workload. Its reported
 crash is an unresolved regression.

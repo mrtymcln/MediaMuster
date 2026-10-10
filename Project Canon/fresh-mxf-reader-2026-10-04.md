@@ -1,12 +1,12 @@
 # Fresh MXF reader
 
-Implemented 4 October 2026 as another independent Canon reader. This is the
+Implemented 4 October 2026 as another independent MediaEngine reader. This is the
 container/property-reading stage; it does not activate the replacement scanner,
 select displayed values or replace the existing file-operation executor.
 
 ## What is implemented
 
-`Canon::MxfReader` inspects an already-open binary device. It follows the actual
+`MediaEngine::MxfReader` inspects an already-open binary device. It follows the actual
 KLV framing through the file, reads Header Metadata, and seeks across recording
 payloads, index data and padding. A file's own metadata can be read independently
 of any PMR/MDB database.
@@ -42,18 +42,17 @@ The reader does not automatically choose the first header or the footer as a win
 
 Implementation:
 
-- [`mxfreader.h/.cpp`](../src/canon/mxfreader.cpp): framing, partitions, Primers,
+- [`mxfreader.h/.cpp`](../src/mediaengine/mxfreader.cpp): framing, partitions, Primers,
   local property boundaries and raw evidence collection.
-- [`mxfobjects_p.h/.cpp`](../src/canon/mxfobjects_p.cpp): verified type decoding,
+- [`mxfobjects_p.h/.cpp`](../src/mediaengine/mxfobjects_p.cpp): verified type decoding,
   schema names, identities and qualified reference resolution.
-- [`mxfcatalogue_p.h`](../src/canon/mxfcatalogue_p.h): static source vocabulary
+- [`mxfcatalogue_p.h`](../src/mediaengine/mxfcatalogue_p.h): static source vocabulary
   derived from BBC libMXF's baseline, extension and Avid data-model definitions.
-- [`scanmodel.h`](../src/canon/scanmodel.h): optional MXF set/property contexts.
-- [`tst_canonmxf.cpp`](../tests/tst_canonmxf.cpp): independently authored cases,
+- [`scanmodel.h`](../src/mediaengine/scanmodel.h): optional MXF set/property contexts.
+- [`tst_mediaenginemxf.cpp`](../tests/tst_mediaenginemxf.cpp): independently authored cases,
   guarded payloads and real fixtures.
 
-The library has no dependency on the old `MxfParser`, `MediaMetadata` aggregate or
-runtime libMXF. The catalogue contains 76 types, 103 sets and 372 property
+The reader has no runtime libMXF dependency. The catalogue contains 76 types, 103 sets and 372 property
 definitions. It supplies known names/types, not a whitelist of retained properties
 or a table of codec/display decisions. Its original source hashes and BSD notice
 are retained. The agreed future handwritten DNx naming catalogue remains separate.
@@ -212,7 +211,6 @@ pending. This implementation changes no agreed admission scope or OmfScan policy
 ## Evidence and primary sources
 
 - [Final build](evidence/fresh-mxf-build-2026-10-04.txt),
-  [complete test run](evidence/fresh-mxf-full-tests-2026-10-04.txt),
   [detailed MXF tests](evidence/fresh-mxf-tests-2026-10-04.txt).
 - [Full-file probe source](evidence/fresh-mxf-reader-probe-2026-10-04.cpp),
   [results](evidence/fresh-mxf-reader-probe-2026-10-04.jsonl),

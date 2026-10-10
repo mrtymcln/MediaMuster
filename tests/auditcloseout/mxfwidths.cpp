@@ -1,7 +1,7 @@
 // Authored in-memory MXF packets characterize the F09/F10 type-width boundary.
 // Controls compare valid widths; no genuine-format certification is implied.
 
-#include "canon/mxfreader.h"
+#include "mediaengine/mxfreader.h"
 
 #include <QBuffer>
 #include <QJsonDocument>
@@ -69,16 +69,16 @@ namespace
 		const quint64 footerOffset = quint64(partition(2, 0, 0, 0).size() + headerMetadata.size());
 		return partition(2, 0, 0, footerOffset, quint64(headerMetadata.size())) + headerMetadata + partition(4, footerOffset, 0, footerOffset, quint64(footerMetadata.size())) + footerMetadata;
 	}
-	Canon::ParsedSource parse(QByteArray bytes)
+	MediaEngine::ParsedSource parse(QByteArray bytes)
 	{
 		QBuffer source(&bytes);
 		source.open(QIODevice::ReadOnly);
-		Canon::Cancellation cancellation;
-		return Canon::MxfReader{}.read(source, {{}, cancellation});
+		MediaEngine::Cancellation cancellation;
+		return MediaEngine::MxfReader{}.read(source, {{}, cancellation});
 	}
-	QVector<const Canon::RawProperty *> properties(const Canon::ParsedSource &result, const QByteArray &ul)
+	QVector<const MediaEngine::RawProperty *> properties(const MediaEngine::ParsedSource &result, const QByteArray &ul)
 	{
-		QVector<const Canon::RawProperty *> found;
+		QVector<const MediaEngine::RawProperty *> found;
 		for (const auto &object : result.objects)
 			for (const auto &property : object.properties)
 				if (property.mxf && property.mxf->mappedAuid == ul)

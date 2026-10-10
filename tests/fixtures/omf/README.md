@@ -16,10 +16,10 @@ are used because both database pairs share the filenames
 `zTeßt_PAL_25p` (the `ß` is deliberate: a MacRoman-hostile character, as
 in the MXF corpus) in bins `WAVE(OMF)` and `AIFF-C(OMF)` — one tone each,
 48 kHz, 24-bit, mono, one minute at 25 fps. Their PMR carries the project
-name in MacRoman in BOTH record sets (the Unicode set only re-spells the
-FILE name in UTF-8; the project stays MacRoman, `ß` = 0xA7, as PmrParser's
-layout comment records) — so the `ß` reaches the app through AvidText's
-MacRoman decode, exactly as it does for MXF-era PMRs.
+name in MacRoman in both record sets; the Unicode set stores the filename
+in UTF-8 while the project retains MacRoman (`ß` = `0xA7`). The current PMR
+reader preserves the file-set and text-encoding evidence separately.
+
 
 **What every file here has in common.** Each essence file is an Apple
 Bento container (essence first, TOC at the tail) — the same container

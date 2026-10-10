@@ -3,7 +3,7 @@
 // OMF fixtures pin compatibility with the PMR/file identities already shipped.
 
 #include "avbparser.h"
-#include "canon/avbreferences.h"
+#include "mediaengine/avbreferences.h"
 #include "mobid.h"
 #include "testavb.h"
 
@@ -325,14 +325,14 @@ void TestAvbParser::source_and_mob_references_and_owned_metadata()
 	QCOMPARE(owner->nameObservations[0].objectIdentity, QStringLiteral("2"));
 	QCOMPARE(owner->nameObservations[0].snapshot, result.source->snapshot);
 	QCOMPARE(owner->nameObservations[0].value.toString(), owner->name);
-	QCOMPARE(owner->nameObservations[0].textEncoding, Canon::TextEncoding::MacRoman);
+	QCOMPARE(owner->nameObservations[0].textEncoding, MediaEngine::TextEncoding::MacRoman);
 	QCOMPARE(owner->nameObservations[0].textEncodingBasis, EvidenceBasis::Recorded);
 	QCOMPARE(owner->originalBinObservations.size(), 2);
 	QVERIFY(!owner->originalBinObservations[0].eligible);
 	QVERIFY(owner->originalBinObservations[1].eligible);
 	QCOMPARE(owner->originalBinObservations[1].property, QStringLiteral("BinRef.name_utf8"));
 	QCOMPARE(owner->originalBinObservations[1].objectIdentity, QStringLiteral("5"));
-	QCOMPARE(owner->originalBinObservations[1].textEncoding, Canon::TextEncoding::Utf8);
+	QCOMPARE(owner->originalBinObservations[1].textEncoding, MediaEngine::TextEncoding::Utf8);
 	QCOMPARE(owner->originalBinObservations[1].textEncodingBasis, EvidenceBasis::Recorded);
 }
 
@@ -366,9 +366,9 @@ void TestAvbParser::macroman_names_are_decoded_without_utf8_extension()
 	QCOMPARE(result.mobs.size(), 1);
 	QCOMPARE(result.mobs.first().name, QStringLiteral("café"));
 	QCOMPARE(result.mobs.first().originalBin, QStringLiteral("café originals"));
-	QCOMPARE(result.mobs.first().nameObservations.first().textEncoding, Canon::TextEncoding::MacRoman);
+	QCOMPARE(result.mobs.first().nameObservations.first().textEncoding, MediaEngine::TextEncoding::MacRoman);
 	QCOMPARE(result.mobs.first().nameObservations.first().textEncodingBasis, EvidenceBasis::Recorded);
-	QCOMPARE(result.mobs.first().originalBinObservations.first().textEncoding, Canon::TextEncoding::MacRoman);
+	QCOMPARE(result.mobs.first().originalBinObservations.first().textEncoding, MediaEngine::TextEncoding::MacRoman);
 }
 
 void TestAvbParser::malformed_utf8_metadata_keeps_qualified_legacy_name()

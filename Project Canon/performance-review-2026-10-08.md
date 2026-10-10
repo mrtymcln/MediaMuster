@@ -123,7 +123,7 @@ WAV/AIFF chunk fields have separate storage and have not been compacted by that
 change.
 
 A subsequent read-only check measured the six live PMRs and the nine supplied
-AVBs with the current Qt 6.5.3 arm64 Debug Canon library. All 15 sources completed;
+AVBs with the current Qt 6.5.3 arm64 Debug MediaEngine library. All 15 sources completed;
 source size and modification timestamps stayed unchanged. PMR retains **19,320
 unused property slots**, equivalent to **4,327,680 bytes** of slot storage. Across
 the nine bins, AVB retains **1,173,435 unused slots**, equivalent to **262,849,440 bytes**.

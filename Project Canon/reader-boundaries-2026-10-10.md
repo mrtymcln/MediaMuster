@@ -32,7 +32,7 @@ remain separate, and the PMR/MDB-first scan policy remains unchanged.
 
 ## The per-row OmfScan marker
 
-Discovery stores `Canon::MediaFile::omfScan` from the admitted folder family.
+Discovery stores `MediaEngine::MediaFile::omfScan` from the admitted folder family.
 The adapter carries it into the presentation row's existing `omfEra` boolean;
 the table and CSV expose it as **OmfScan**, with `true`/`false` values.
 
@@ -65,12 +65,12 @@ does not claim a speed or RAM improvement.
 ## Verification
 
 Two isolation suites compile/link only their own format implementations, plus
-neutral application helpers, and do not link the complete Canon library:
+neutral application helpers, and do not link the complete MediaEngine library:
 
-- [`tst_canonmdbisolated`](../tests/tst_canonmdbisolated.cpp): a genuine MDB with
+- [`tst_mediaenginemdbisolated`](../tests/tst_mediaenginemdbisolated.cpp): a genuine MDB with
   WAVE/AIFC descriptor summaries; original bytes, independently pinned file/master
   identities, descriptor relationships, 24-bit precision and 48 kHz sampling.
-- [`tst_canonomfisolated`](../tests/tst_canonomfisolated.cpp): genuine OMF DV PAL,
+- [`tst_mediaengineomfisolated`](../tests/tst_mediaengineomfisolated.cpp): genuine OMF DV PAL,
   WAV and AIFC media; source/container identity, metadata, relationships and
   recording payloads retained only as ranges.
 
@@ -100,7 +100,7 @@ passing runs. Old-reader test suites remain present and passed.
 
 ### Full comparison after EDIT was mounted
 
-The preserved before-change binary and the current Canon binary each completed
+The preserved before-change binary and the current MediaEngine binary each completed
 full read-only scans of `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT`.
 The existing full-report validators passed for both, as did exact cross-report
 comparison and an independent byte comparison of the CSV files.

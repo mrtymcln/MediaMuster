@@ -1,0 +1,178 @@
+{
+  "date": "2026-10-10",
+  "qtVersion": "6.5.3",
+  "method": "Read exact original database bytes and previously acquired MXF ranges from verified full reports. Verify original SHA-256 and extent. Include MXF original physical extent plus every range offset/length in a measurement-only QDataStream container. Measure qCompress levels 1 and 6 for whole sources and independent 64KiB blocks. Require every qUncompress round trip to reproduce exact input bytes.",
+  "collections": {
+    "header": {
+      "inputReport": "/private/tmp/mediamuster-canon2-mxf-20261010/header-comparison/02-full-pair0-canon2.json",
+      "sourceCount": 256,
+      "groups": {
+        "Mxf": {
+          "count": 256,
+          "originalPayloadBytes": 37426316,
+          "framedBytes": 37470412,
+          "wholeLevel1Bytes": 14043381,
+          "wholeLevel6Bytes": 12782395,
+          "blocks64KiBLevel1Bytes": 14595024,
+          "blocks64KiBLevel6Bytes": 13364423,
+          "savingsPercent": {
+            "wholeLevel1Bytes": 62.47725530880464,
+            "wholeLevel6Bytes": 65.84650490312752,
+            "blocks64KiBLevel1Bytes": 61.00331114609303,
+            "blocks64KiBLevel6Bytes": 64.29137455046336
+          }
+        }
+      },
+      "allRoundTripsExact": true,
+      "allNativeSources": {
+        "originalPayloadBytes": 37426316,
+        "framedBytes": 37470412,
+        "wholeLevel1Bytes": 14043381,
+        "wholeLevel6Bytes": 12782395,
+        "blocks64KiBLevel1Bytes": 14595024,
+        "blocks64KiBLevel6Bytes": 13364423,
+        "count": 256,
+        "savingsPercent": {
+          "wholeLevel1Bytes": 62.47725530880464,
+          "wholeLevel6Bytes": 65.84650490312752,
+          "blocks64KiBLevel1Bytes": 61.00331114609303,
+          "blocks64KiBLevel6Bytes": 64.29137455046336
+        }
+      }
+    },
+    "database": {
+      "inputReport": "/private/tmp/mediamuster-canon2-mxf-20261010/database-comparison/02-full-pair0-canon2.json",
+      "sourceCount": 128,
+      "groups": {
+        "Pmr": {
+          "count": 6,
+          "originalPayloadBytes": 583336,
+          "framedBytes": 583336,
+          "wholeLevel1Bytes": 137834,
+          "wholeLevel6Bytes": 118645,
+          "blocks64KiBLevel1Bytes": 142438,
+          "blocks64KiBLevel6Bytes": 124000,
+          "savingsPercent": {
+            "wholeLevel1Bytes": 76.37142230206948,
+            "wholeLevel6Bytes": 79.66095012137087,
+            "blocks64KiBLevel1Bytes": 75.5821687672285,
+            "blocks64KiBLevel6Bytes": 78.74295431792312
+          }
+        },
+        "Mdb": {
+          "count": 6,
+          "originalPayloadBytes": 63954160,
+          "framedBytes": 63954160,
+          "wholeLevel1Bytes": 12953174,
+          "wholeLevel6Bytes": 11620352,
+          "blocks64KiBLevel1Bytes": 13435577,
+          "blocks64KiBLevel6Bytes": 12143514,
+          "savingsPercent": {
+            "wholeLevel1Bytes": 79.74615881124856,
+            "wholeLevel6Bytes": 81.83018587062983,
+            "blocks64KiBLevel1Bytes": 78.99186385998972,
+            "blocks64KiBLevel6Bytes": 81.01215933412307
+          }
+        },
+        "Mxf": {
+          "count": 116,
+          "originalPayloadBytes": 16512896,
+          "framedBytes": 16533312,
+          "wholeLevel1Bytes": 6087750,
+          "wholeLevel6Bytes": 5522909,
+          "blocks64KiBLevel1Bytes": 6307233,
+          "blocks64KiBLevel6Bytes": 5755462,
+          "savingsPercent": {
+            "wholeLevel1Bytes": 63.13335952700241,
+            "wholeLevel6Bytes": 66.55396485268241,
+            "blocks64KiBLevel1Bytes": 61.804198367142874,
+            "blocks64KiBLevel6Bytes": 65.14565343353462
+          }
+        }
+      },
+      "allRoundTripsExact": true,
+      "allNativeSources": {
+        "originalPayloadBytes": 81050392,
+        "framedBytes": 81070808,
+        "wholeLevel1Bytes": 19178758,
+        "wholeLevel6Bytes": 17261906,
+        "blocks64KiBLevel1Bytes": 19885248,
+        "blocks64KiBLevel6Bytes": 18022976,
+        "count": 128,
+        "savingsPercent": {
+          "wholeLevel1Bytes": 76.33724214436866,
+          "wholeLevel6Bytes": 78.70225476515894,
+          "blocks64KiBLevel1Bytes": 75.46557455268076,
+          "blocks64KiBLevel6Bytes": 77.76324635172647
+        }
+      }
+    }
+  },
+  "legacyAlreadyCompressed": {
+    "source": "ram-archive-feasibility-2026-10-09.json",
+    "records": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_1280x720x1_DNxHD_145.omf",
+        "serializedBytes": 240306,
+        "archivePayloadBytes": 31158,
+        "compressionLevel": 1,
+        "blockBytes": 65536,
+        "archiveExact": true
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav",
+        "serializedBytes": 199095,
+        "archivePayloadBytes": 27189,
+        "compressionLevel": 1,
+        "blockBytes": 65536,
+        "archiveExact": true
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif",
+        "serializedBytes": 195450,
+        "archivePayloadBytes": 26686,
+        "compressionLevel": 1,
+        "blockBytes": 65536,
+        "archiveExact": true
+      }
+    ]
+  },
+  "limitations": [
+    "Native source payload sizes only; not measured whole-app memory savings.",
+    "Table values, per-file evidence, indexes, receipts, allocation/container overhead and temporary expanded reader graphs excluded.",
+    "Two collections overlap in their original media; they are independent workloads, not one combined inventory.",
+    "Compression CPU cost and production restore behavior not benchmarked by this experiment.",
+    "300000-file projection assumes these local MXF averages; work-machine corpus not measured.",
+    "No production storage, scheduling, parsing, selection, UI or engine-retirement changes."
+  ],
+  "mxf300000Projection": {
+    "assumedFiles": 300000,
+    "sampleFiles": 256,
+    "originalPayloadBytes": 43858964062.5,
+    "blocks64KiBLevel1Bytes": 17103543750.0,
+    "blocks64KiBLevel6Bytes": 15661433203.125,
+    "scope": "Prospective source payload only; not whole-app RAM or a measurement of Windows/NEXIS."
+  },
+  "proofArchive": {
+    "path": "canon2-compression-payload-proof-2026-10-10.zip",
+    "sha256": "ef704838c693d2b77470f0b1b87683415f9bb0dabbee430fc796fbcccaeab6ce",
+    "members": {
+      "CMakeLists.txt": {
+        "bytes": 360,
+        "sha256": "2dfcf626e93e1785b7d8ce881988b929b8b55acf6014153c1c078755c994818f"
+      },
+      "compression_estimate.cpp": {
+        "bytes": 6287,
+        "sha256": "3ff807048326d284b418fe327c660084ce1f9d386db4be8be682d6d51e302c3e"
+      },
+      "header-compression.json": {
+        "bytes": 129125,
+        "sha256": "4b739f886b2aaa8bb2ccd2ed539b7b722639882befa0848f572c7a83ef2c7cf6"
+      },
+      "database-compression.json": {
+        "bytes": 59306,
+        "sha256": "5e516f839148184b623e8b35ce6ebed4e0bd0a5a26550702f23ad69ba296ea98"
+      }
+    }
+  }
+}

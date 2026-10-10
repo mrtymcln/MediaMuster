@@ -10,7 +10,7 @@ the historical first-stage comparison.
 
 ## Change
 
-`src/canon/omfobjects_p.cpp` now calls Qt’s `QVector::squeeze()` on each
+`src/mediaengine/omfobjects_p.cpp` now calls Qt’s `QVector::squeeze()` on each
 finished object’s property list and the source’s unowned property list. This runs
 after interpretation and audio-summary decoding, before the source is returned
 for projection. It follows the existing MXF reader’s approach.
@@ -57,7 +57,7 @@ rows and session IDs remain intact in this comparison.
 This is one comparable before/after pair, not a statistical speed benchmark.
 No material timing difference was observed in this pair; it does not establish
 a speed improvement. The audit includes
-`MediaScanner`, Canon graphs and formatted adapter rows; it does not populate
+`MediaScanner`, MediaEngine graphs and formatted adapter rows; it does not populate
 `MediaTableModel` or measure the complete GUI. Release and Windows/NEXIS results
 have not been measured for this change.
 

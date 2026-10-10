@@ -14,7 +14,7 @@
 #include <utility>
 #include <optional>
 
-namespace Canon
+namespace MediaEngine
 {
 	enum class TextEncoding;
 }
@@ -311,7 +311,7 @@ struct MetadataObservation
 	SourceFreshness freshness = SourceFreshness::Unknown;
 	QString explanation;
 	bool eligible = true; ///< False retains evidence that belongs to a different file.
-	std::optional<Canon::TextEncoding> textEncoding;
+	std::optional<MediaEngine::TextEncoding> textEncoding;
 	std::optional<EvidenceBasis> textEncodingBasis;
 };
 
@@ -321,7 +321,7 @@ struct ResolvedField
 	PropertyReadState readState = PropertyReadState::NotRead;
 	PropertyAgreement agreement = PropertyAgreement::NotCompared;
 	int selectedObservation = -1;
-	QString rule; ///< Diagnostic selection label; Canon uses the shared property name.
+	QString rule; ///< Diagnostic selection label; MediaEngine uses the shared property name.
 	QString reason;
 	PropertyReadReason readReason = PropertyReadReason::NoAssociatedSource;
 	PropertyApplicability applicability = PropertyApplicability::Unknown;

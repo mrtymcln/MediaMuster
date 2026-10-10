@@ -12,7 +12,7 @@ An unknown encoding is distinct from absent, unreadable and not-read properties.
 The original encoded bytes, value locator and decoded value remain separate facts.
 Binary identities and numeric properties are not text; do not assign them an encoding.
 
-Implemented in the replacement model under namespace `Canon` on 3 October 2026.
+Implemented in the replacement model under namespace `MediaEngine` on 3 October 2026.
 `RecordSet::pmrFileSet` identifies `Legacy` or `Unicode`; its readable name follows
 that terminology. The on-disk version and declared count remain independent fields.
 Non-PMR record sets leave this optional PMR classification unset. Earlier evidence
@@ -43,7 +43,7 @@ the original bytes and property locator, `EvidenceBasis::Derived`, interpreted
 `TextEncoding`, and an explanation that the source does not declare that encoding.
 Declared encodings retain their recorded basis. See the
 [live connection text rules](live-connection-2026-10-04.md#text-interpretation) and
-[projection helper](../src/canon/projection.cpp).
+[projection helper](../src/mediaengine/projection.cpp).
 
 | Encoding | Meaning | Established application/example |
 | --- | --- | --- |
@@ -108,9 +108,9 @@ properties remain raw; they do not inherit a guessed text encoding. See the
 
 Evidence and limits: [fresh PMR reader](fresh-pmr-reader-2026-10-03.md),
 [non-English specimens](non-english-encoding-specimens-2026-10-03.md), and
-[Canon MXF property interpretation](../src/canon/mxfobjects_p.cpp).
+[MediaEngine MXF property interpretation](../src/mediaengine/mxfobjects_p.cpp).
 The older PMR/MDB helper tried UTF-8 followed by MacRoman without retaining the
-same distinction. Those parsers remain historical comparison-test code. Canon
+same distinction. Those parsers remain historical comparison-test code. MediaEngine
 separates raw reader evidence from the approved projected inference; a successful
 interpretation does not establish the writer's undeclared encoding.
 

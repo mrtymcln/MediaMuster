@@ -38,10 +38,8 @@ for those values.
 
 ## Why the result changed
 
-The old [MDB property selection](../src/omfobjects.cpp) and
-[MXF descriptor parser](../src/mxfparser.cpp) selected stored dimensions.
-Canon's [MDB/OMF projection](../src/canon/omfprojection.cpp) and
-[MXF projection](../src/canon/mxfprojection.cpp) initially preferred display
+MediaEngine's [MDB/OMF projection](../src/mediaengine/omfprojection.cpp) and
+[MXF projection](../src/mediaengine/mxfprojection.cpp) initially preferred display
 geometry, then sampled, then stored. That produced the larger values in the
 comparison above.
 
@@ -80,7 +78,7 @@ StoredHeight is little-endian `f8000000` at OMF offset 19124 and MDB offset
 file size and modification timestamp, canonical file MobId, the matching MDB
 file-object-to-descriptor reference, the selected descriptor's raw bytes and
 source offsets, MXF equivalents, and the ffprobe command/version/results.
-The evidence was extracted by freshly compiled Canon readers; no media
+The evidence was extracted by freshly compiled MediaEngine readers; no media
 fixtures were copied into the repository.
 
 The JSON's `currentResolution` fields describe the audit before this correction;
@@ -105,7 +103,7 @@ meaning. Each was checked individually against its matching MDB descriptor:
 
 The larger values preserve recorded storage padding; they do not claim that the
 visible image has 1088 active lines. Sampled/display geometry remains available
-in RAM. [Per-file evidence](evidence/stored-resolution-padding-2026-10-07.json)
+in RAM. [Per-file evidence](evidence/stored-resolution-source-evidence-2026-10-11.json)
 contains every path, MobId association, descriptor reference and exact property
 bytes/offsets. The saved source ranges were reread and all dimension/layout
 integers independently decoded. No unexplained Resolution difference was found

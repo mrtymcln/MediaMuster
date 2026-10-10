@@ -2,7 +2,7 @@
 
 Read-only bounded proof, 8 October 2026. This examines the 51 physical paths whose
 saved scan receipt changed from NotRead to Complete solely for missing/conflicting
-Clip Duration. It reads their three MDBs sequentially through the frozen Canon
+Clip Duration. It reads their three MDBs sequentially through the frozen MediaEngine
 archive. It does not run another full scan, modify media or add PVOL semantics.
 
 Every affected row has one currently active file-mob candidate and no eligible
@@ -27,7 +27,7 @@ bounded set, rather than claiming all format paths are supported.
 
 All 51 prior display durations **and track labels** exactly match the excluded
 master's supported sequence graph, using recorded 25/1 clocks. Historical
-`src/canon/omfprojection.cpp` at commit
+`src/mediaengine/omfprojection.cpp` at commit
 `da87337098c1ba2fb817ada1dda4e160c34e527d` lines 250–259 indexed mobs from every
 raw object; lines 305–340 projected every master and attached track durations
 without active-root qualification. That code and the matching raw graphs explain
@@ -36,7 +36,7 @@ with retained deleted records but does not prove their deletion history.
 
 The current active graphs contain nine mono and nineteen two-track masters,
 with 47 top-level PVOL components. The current
-[legacy component-length evaluator](../src/canon/omfprojection.cpp#L924)
+[legacy component-length evaluator](../src/mediaengine/omfprojection.cpp#L924)
 does not claim PVOL GroupLength semantics. Active master membership, resolved
 references, or an inner SCLP with a readable length does not authorize replacing
 the outer effect's timeline semantics. Unsupported effect duration remains part
@@ -81,10 +81,10 @@ the displayed values after excluded database duration ownership is removed.
 - [Source/artifact hashes and exact compile command](evidence/root-membership-duration-manifest-2026-10-08.json)
 - [Requested paths](evidence/root-membership-duration-requests-2026-10-08.json)
 - [Frozen probe source](evidence/root-membership-duration-probe-2026-10-08.cpp)
-- [Historical projector source](evidence/root-membership-duration-historical-omfprojection-2026-10-08.cpp)
 
 The manifest retains the original temporary artifact paths and maps their durable
-copies. The gzip retains all 866,280 bytes of JSONL (uncompressed SHA-256
+copies where retained. The implementation-only projector snapshot was removed;
+its recorded hash remains dated provenance. The gzip retains all 866,280 bytes of JSONL (uncompressed SHA-256
 `f21fc50305ccfb2c5abd694e73ea9a9731de848d1529b0fc7802afba6cf0c071`).
 The diagnostic binary is represented by its hash rather than copied into the
 repository. Recompile the saved source only against a rebuilt archive with the

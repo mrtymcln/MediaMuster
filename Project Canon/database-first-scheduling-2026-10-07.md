@@ -2,12 +2,12 @@
 
 The user confirmed this policy: **read the databases first; read a media header
 only when there is no usable database match, or required table metadata is
-missing or conflicting.** This replaces the initial Canon connection's practice
+missing or conflicting.** This replaces the initial MediaEngine connection's practice
 of opening every media header. It does not impose a memory cap.
 
 ## When the header is needed
 
-[The Canon scheduler](../src/canon/scanengine.cpp) first reads discovered PMR/MDB
+[The MediaEngine scheduler](../src/mediaengine/scancoordinator.cpp) first reads discovered PMR/MDB
 sources. A skip requires a complete, unchanged local PMR with an unambiguous
 filename-to-FileMobId match, joined to a complete, unchanged MDB file projection.
 Master metadata alone is insufficient. Exact filenames take precedence over
@@ -82,7 +82,7 @@ from `CLIP:Length`, track-group lengths from `TRKG:GroupLength`, and sequence
 lengths through that calculation. The locally inspected toolkit source contains
 these functions at lines 1206–1240 and 1275–1310 respectively.
 
-[Canon's projection](../src/canon/omfprojection.cpp) now follows that rule for
+[MediaEngine's projection](../src/mediaengine/omfprojection.cpp) now follows that rule for
 supported components, requiring complete references, established lengths and
 equivalent exact component clocks. It guards cycles, overflow and negative
 totals; repeated references count once per occurrence. Transition lengths use
@@ -112,7 +112,7 @@ Track numbers also need their source context. For
 records `GenericTrack.TrackID = 2` and `GenericTrack.TrackNumber = 1` for the same
 master/file association. The toolkit's `omfiTrackGetInfo` reads both LabelNumber
 and TrackKind before converting OMF 1 numbering through `CvtTrackNumtoID`.
-Canon currently presents the recorded source number under the existing Track
+MediaEngine currently presents the recorded source number under the existing Track
 label; it does not invent a cross-format mapping. Its Clip Duration list includes
 tracks explicitly referencing this physical file. The older parser could include
 all material-package tracks once the package contained any reference to the file.
@@ -136,8 +136,8 @@ inheritance or timing semantics. Their properties remain retained and the header
 fallback remains available. This example does not classify all 33 remaining
 missing durations.
 
-Focused validation passed: [Canon scan tests](../tests/tst_canonscan.cpp),
-19 passed and one filesystem-dependent skip; [OMF projection tests](../tests/tst_canon_omfprojection.cpp),
+Focused validation passed: [MediaEngine scan tests](../tests/tst_mediaenginescanarchive.cpp),
+19 passed and one filesystem-dependent skip; [OMF projection tests](../tests/tst_mediaengine_omfprojection.cpp),
 58 passed. Cases cover actual skipped headers, missing/conflicting metadata,
 source changes after a skip, equivalent and contradictory durations, sequence
 transitions, nested/repeated components, incomplete references, clocks, cycles

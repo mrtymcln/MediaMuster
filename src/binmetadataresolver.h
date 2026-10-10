@@ -8,7 +8,7 @@
 struct AvbBin;
 struct AvbMob;
 struct MediaFile;
-namespace Canon
+namespace MediaEngine
 {
 	struct ParsedSource;
 }
@@ -26,7 +26,7 @@ public:
 private:
 	struct MasterMobMetadata
 	{
-		void merge(const AvbMob &mob, const QSharedPointer<const Canon::ParsedSource> &source);
+		void merge(const AvbMob &mob, const QSharedPointer<const MediaEngine::ParsedSource> &source);
 		QString clipName;
 		QString originalBin;
 		QString originalBinUid;
@@ -34,7 +34,7 @@ private:
 		bool binConflict = false;
 		QVector<MetadataObservation> names;
 		QVector<MetadataObservation> bins;
-		QVector<QSharedPointer<const Canon::ParsedSource>> sources;
+		QVector<QSharedPointer<const MediaEngine::ParsedSource>> sources;
 	};
 	QHash<QString, MasterMobMetadata> m_metadataByMasterMobId;
 };

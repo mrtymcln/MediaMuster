@@ -1,6 +1,6 @@
 # Database-first scanning and retained memory
 
-The 12.8 GB report exposed a real cost of the initial Canon connection: it attempted
+The 12.8 GB report exposed a real cost of the initial MediaEngine connection: it attempted
 every media header and retained the resulting metadata graphs. Most objects in
 sampled Avid MXF headers describe the embedded format dictionary. Each physical
 file brought another expanded graph into RAM.
@@ -18,7 +18,7 @@ were definitions, with 3,352 of its 3,511 object properties belonging to them.
 The expanded structures, decoded values, byte ranges and repeated text explain
 why a small header can occupy several megabytes.
 
-UI rows share the scan receipt; [the adapter](../src/canonadapter.cpp) does not
+UI rows share the scan receipt; [the adapter](../src/mediaengineadapter.cpp) does not
 copy the entire scan into each row. Essence payloads are skipped. This evidence
 supports excessive retained graph overhead; it does not establish a memory leak.
 
@@ -30,8 +30,8 @@ file-specific facts rather than merge dictionaries by assumption.
 
 | Change | Isolated result |
 | --- | --- |
-| Release unused vector capacity after parsing in [mxfreader.cpp](../src/canon/mxfreader.cpp) | 1,238,944 bytes of spare property slots removed across the three files; all properties remain. |
-| Assign an explanation directly when its destination is empty in [mxfobjects_p.cpp](../src/canon/mxfobjects_p.cpp) | One sample's repeated explanation text occupies 36,544 character-payload bytes instead of 243,088, with the same 11 distinct values. |
+| Release unused vector capacity after parsing in [mxfreader.cpp](../src/mediaengine/mxfreader.cpp) | 1,238,944 bytes of spare property slots removed across the three files; all properties remain. |
+| Assign an explanation directly when its destination is empty in [mxfobjects_p.cpp](../src/mediaengine/mxfobjects_p.cpp) | One sample's repeated explanation text occupies 36,544 character-payload bytes instead of 243,088, with the same 11 distinct values. |
 | Share the two literal reference descriptions in that same file | 280 character-payload bytes instead of 142,792, with the same two descriptions. |
 
 Text measurements count each distinct underlying QString storage pointer once.
@@ -43,7 +43,7 @@ covers raw and decoded values, ranges, native MXF contexts, identities,
 relationships, states and wording. It excludes allocation capacity and pointer
 addresses; it is not a checksum of the entire media file.
 
-The isolated [MXF reader tests](../tests/tst_canonmxf.cpp) passed **856 cases,
+The isolated [MXF reader tests](../tests/tst_mediaenginemxf.cpp) passed **856 cases,
 0 failures**. The added regression checks compact storage and shared repeated
 text while verifying distinct names and exact reference targets. Existing real
 fixtures also compare retained bytes with the recorded source ranges.
