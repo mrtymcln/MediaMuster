@@ -538,7 +538,7 @@ namespace MediaEngine
 							m_activeMedia.insert(handle);
 							if (!mediaDataClass(cls))
 							{
-								m_contentsDiagnostics.append(QStringLiteral("ObjectSpine media-data class %1 has no established identity interpretation; physical ownership remains unknown and its raw context is retained.").arg(cls));
+								m_contentsDiagnostics.append(QStringLiteral("ObjectSpine media-data class %1 has no established identity interpretation; physical ownership remains unknown.").arg(cls));
 							}
 						}
 					}
@@ -759,7 +759,7 @@ namespace MediaEngine
 								std::all_of(sourceId->encoding.cbegin(), sourceId->encoding.cend(), [](char byte)
 											{ return byte == 0; }))
 								continue; // Explicit zero UID is the original-source sentinel.
-							const auto explanation = QStringLiteral("OMFI:SCLP:SourceID on object %1 has no unique interpreted identity; dependent mob associations remain unknown and original properties are retained.").arg(object->handle);
+							const auto explanation = QStringLiteral("OMFI:SCLP:SourceID on object %1 has no unique interpreted identity; dependent mob associations remain unknown.").arg(object->handle);
 							if (!m_referenceDiagnostics.contains(explanation))
 								m_referenceDiagnostics.append(explanation);
 							return {};
@@ -1293,7 +1293,7 @@ namespace MediaEngine
 				if (input && (value.isValid() || input->state == PropertyReadState::Unreadable))
 					observe(file, field, source, object, *input, value, EvidenceBasis::Derived,
 							input->state == PropertyReadState::Unreadable ? input->interpretation
-																		  : QStringLiteral("Decoded recorded audio field %1; original header and field bytes retained. %2")
+																		  : QStringLiteral("Decoded recorded audio field %1; original field bytes retained. %2")
 																				.arg(input->locator.name, input->interpretation));
 			};
 			add(MediaProperty::Channels, audio.channelsProperty, audio.channels > 0 ? QVariant(audio.channels) : QVariant{});
@@ -1568,7 +1568,7 @@ namespace MediaEngine
 						anchor = storedWidthProperty;
 					const QString reason = selected.origin == Detail::VisibleGeometry::Origin::VerifiedProxy
 											   ? QStringLiteral("Verified Avid H.264 descriptor configuration (ResolutionID %1, coding label, all three rasters, layout and zero offsets) selects this file's stored proxy raster. Matching specimens were independently checked with ffprobe; this is a qualified inference, not a universal proxy flag.").arg(*geometry.resolutionId)
-											   : QStringLiteral("Visible raster: OMF Display offsets are relative to Stored, independently of Sampled. The Display rectangle is validated within Stored before field-height handling. Absent optional properties follow original toolkit Stored/zero defaults, including legacy partial sets; unreadable/conflicting values do not default. All recorded rectangles remain retained.");
+											   : QStringLiteral("Visible raster: OMF Display offsets are relative to Stored, independently of Sampled. The Display rectangle is validated within Stored before field-height handling. Absent optional properties follow original toolkit Stored/zero defaults, including legacy partial sets; unreadable/conflicting values do not default. The resolution observation records the chosen raster and its source property.");
 					observe(file, MediaProperty::Resolution, m_source, descriptor, *anchor,
 							QStringLiteral("%1x%2").arg(selected.width).arg(selected.height), EvidenceBasis::Derived, reason);
 				}

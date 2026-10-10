@@ -37,10 +37,10 @@ namespace MediaEngine
 
 	MediaEngine::PreparedSource prepareMxf(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
 										   const MediaEngine::Cancellation &cancellation,
-										   SourceRetention retention = SourceRetention::Replay);
+										   SourceRetention retention = SourceRetention::MetadataOnly);
 	// Borrows an already-open input. It never closes the caller's device; controlled
 	// I/O tests use this same acquisition path without inventing MXF structures.
 	MediaEngine::PreparedSource prepareMxf(QIODevice &input, const MediaEngine::SourceCandidate &candidate,
 										   const QString &readReason, const MediaEngine::Cancellation &cancellation,
-										   SourceRetention retention = SourceRetention::Replay);
+										   SourceRetention retention = SourceRetention::MetadataOnly);
 }

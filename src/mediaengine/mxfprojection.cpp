@@ -987,7 +987,7 @@ namespace MediaEngine
 					anchor = unique(descriptor, "GenericPictureEssenceDescriptor.StoredWidth");
 				const QString reason = selected.origin == Detail::VisibleGeometry::Origin::VerifiedProxy
 										   ? QStringLiteral("Verified Avid H.264 descriptor configuration (ResolutionID %1, coding label, all three rasters, layout and zero offsets) selects this file's stored proxy raster. Matching specimens were independently checked with ffprobe; this is a qualified inference, not a universal proxy flag.").arg(*geometry.resolutionId)
-										   : QStringLiteral("Visible raster: Sampled is validated within Stored, and Display within Sampled, including offsets, under ST 377-1 Annex G. Absent optional properties use that format's defaults; unreadable/conflicting properties do not. FrameLayout supplies field-height handling; original geometry remains retained.");
+										   : QStringLiteral("Visible raster: Sampled is validated within Stored, and Display within Sampled, including offsets, under ST 377-1 Annex G. Absent optional properties use that format's defaults; unreadable/conflicting properties do not. FrameLayout supplies field-height handling; the resolution observation records the chosen raster and its source property.");
 				observe(file, MediaProperty::Resolution, m_source, descriptor, *anchor,
 						QStringLiteral("%1x%2").arg(selected.width).arg(selected.height), EvidenceBasis::Derived, reason);
 			}

@@ -5,6 +5,12 @@ and amended by the subsequent user decisions below. The presentation proposals
 are distinct from implemented availability. Current behavior is described in
 [the application guide](../docs/current-behaviour.md).
 
+The approved [source lifetimes](source-lifetimes.md) supersede the original goal of
+keeping every source record. Normal scans retain all supported metadata observations,
+alternatives, original value bytes, evidence and receipts; complete source copies
+and unused records are temporary. Presentation proposals below do not establish
+parser support or require a permanent archive of unknown properties.
+
 Sources: [table model](../src/mediatablemodel.cpp), [row model](../src/mediafile.h),
 [CSV writer](../src/mediacsv.cpp), [selection policy](metadata-selection-policy.md)
 and [DNx evidence](dnx-codec-evidence.md).
@@ -24,7 +30,7 @@ and [DNx evidence](dnx-codec-evidence.md).
 | Current DNx naming scheme | `NewDnx`: **Agreed** internal scheme name, consumed prominently by **Compression**. A duplicate visible column is unnecessary unless the user wants one. Example `Avid DNx HQX`. |
 | Historical brand and quality naming | `OldDnx`: **Agreed** retain separately, e.g. `DNxHD HQX` or `DNxHR HQX`. Recommend an optional column rather than putting all aliases in the primary Compression cell; visibility is undecided. |
 | Historical nominal-rate naming | `ReallyOldDnx`: **Agreed** retain separately and display in square brackets after `NewDnx` in **Compression** when established. Blank internally resolved display if unresolved or inapplicable, with those meanings distinct in RAM. No numbered DNxHR name. An independent visible alias column remains optional. |
-| Picture dimensions | **Agreed Resolution (revised 7 October 2026)**: show the visible raster, with format-correct crop coordinates and field handling. A valid recorded display crop can give 1920×1080 from padded 1920×1088 storage. Verified small proxy configurations use their actual stored raster, such as 480×270 or 320×180, with an inference explanation. Unexplained inconsistent rectangles remain unresolved and can trigger header fallback; no unconditional 1088 trim or generic proxy guess. Retain all original rectangles, offsets and pixel aspect in RAM. DNx naming uses its independent exact-profile rules. See [the current geometry policy](visible-resolution-2026-10-07.md). |
+| Picture dimensions | **Agreed Resolution (revised 7 October 2026)**: show the visible raster, with format-correct crop coordinates and field handling. A valid recorded display crop can give 1920×1080 from padded 1920×1088 storage. Verified small proxy configurations use their actual stored raster, such as 480×270 or 320×180, with an inference explanation. Unexplained inconsistent rectangles remain unresolved and can trigger header fallback; no unconditional 1088 trim or generic proxy guess. Keep the projected resolution, supporting observation bytes and explanation. The reader checks recorded rectangles and offsets during projection; normal scan storage does not preserve every original geometry property. DNx naming uses its independent exact-profile rules. See [the geometry policy](visible-resolution-2026-10-07.md) and [current source lifetimes](source-lifetimes.md). |
 | Video picture/track rate | **Frame Rate**: retain the familiar readable rate for video, but format it from the exact relevant rational without bucketing a different rate into a standard one. Distinguish frame rate, field rate and unrelated master/audio edit rates internally. Exact rates drive naming/calculation. |
 | Audio sampling frequency | **Sample Rate**: keep kHz presentation for the relevant audio essence; retain exact rate. Do not substitute clip edit rate. Video-only files remain blank. |
 | Bits in a component/sample | **Agreed Bit Depth**: stored in the RAM MediaFile record and shown in the table and CSV as the established bit depth, e.g. `10-bit`, `16-bit`, `24-bit` or `32-bit`. Do not include numeric representation in this cell. Interpret depth according to the identified format; retain valid precision, storage/container width and per-component differences separately. Do not print 253/254 as bit counts. |
@@ -46,7 +52,7 @@ and [DNx evidence](dnx-codec-evidence.md).
 | Managed media family / actual container | **Agreed OmfScan** in the table and CSV: true for admitted OMFI-family media, including legacy .wav/.aif; false for MXF-family media. Hide the table column when the global OmfScan feature flag is false. The global flag controls legacy discovery and is enabled by default; the per-row boolean does not repeat that enabled state. Actual parsed container remains separate. CSV inclusion is agreed; no CSV hiding rule was specified. |
 | Audio channels | **Agreed: no audio-channel column or CSV field.** This supersedes the earlier Channels approval. Retain source-recorded channel metadata internally under the existing evidence policy; do not add channel-count or channel-name UI/export. |
 | Scan/database issues | **Agreed** Console issues for unresolved database references; retain local and whole-scan results independently. No physical-file row is invented for a missing reference. Summary dialog remains undecided. |
-| Additional metadata not enumerated here | Retain source properties/values/contexts, including unknown properties. This column review is never a whitelist. Ask the user about newly discovered semantics/selection/display as already agreed. |
+| Additional metadata not enumerated here | This column review is never a whitelist. Investigate newly discovered properties and document their values/contexts; ask the user about semantics, representation, selection and display before adding support. Keep all supported observations and alternatives under the approved source lifetimes; unused unknown records are not permanent normal-scan storage. |
 
 ## Review instructions
 
@@ -107,8 +113,9 @@ production names such as Boom or Lav.
 The inspected MediaMuster metadata/parser paths retain a numeric channel count
 (`MediaMetadata::channels`, MXF descriptor reads and OMF descriptor/header reads).
 A complete channel-name reader has not been established by this review. During the
-rewrite, inspect actual source properties and linked objects, retain discovered
-names/roles and their evidence, and ask about their UI presentation. The user subsequently removed audio channels from the planned table and CSV.
+rewrite, inspect actual source properties and linked objects, document discovered
+names/roles and their evidence, and ask how they should be represented and presented.
+The user subsequently removed audio channels from the planned table and CSV.
 The evidence above remains reference material, not authorization for a channel
 column or channel-name UI/export.
 
@@ -126,5 +133,5 @@ column or channel-name UI/export.
   local example of one, has been established by this check. The current MDB reader
   handles `OMFI:MDAU:NumChannels`, which is a count and does not establish names.
   Do not infer database support from Pro Tools Workspace databases, AVB/bin fields,
-  or general MXF capabilities. Preserve newly discovered properties and investigate
+  or general MXF capabilities. Document newly discovered properties and investigate
   their semantics as required by the MediaEngine evidence policy.

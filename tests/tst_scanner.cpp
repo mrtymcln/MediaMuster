@@ -584,7 +584,8 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	const MediaFile &mf = results.first();
 
 	// Exercise the live adapter, not just the standalone MediaEngine coordinator.
-	// Each database keeps its original fixture bytes instead of a graph archive.
+	// Each database keeps its source receipt and extracted evidence, without an
+	// unused original image or graph archive. Exact replay is tested separately.
 	QVERIFY(mf.mediaEngineScan);
 	int databaseSources = 0;
 	for (const auto &source : mf.mediaEngineScan->sources)
@@ -592,14 +593,12 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 		if (!source.snapshot || (source.snapshot->source != MetadataSource::Pmr &&
 							 source.snapshot->source != MetadataSource::Mdb))
 			continue;
-		const auto *database = dynamic_cast<const MediaEngine::DatabaseSource *>(source.storage.data());
-		QVERIFY(database);
-		QVERIFY(!source.archive);
-		QVERIFY(!source.unfinishedGraph);
-		QVERIFY(database->image().acquisitionComplete());
-		QFile original(fixturesDir() + QLatin1Char('/') + QFileInfo(source.snapshot->path).fileName());
-		QVERIFY(original.open(QIODevice::ReadOnly));
-		QCOMPARE(database->image().bytes(), original.readAll());
+		QCOMPARE(source.retention, MediaEngine::SourceRetention::MetadataOnly);
+		QCOMPARE(source.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+		QCOMPARE(source.snapshot->readState, SourceReadState::Complete);
+		QVERIFY(!source.archive && !source.storage && !source.unfinishedGraph);
+		const MediaEngine::Cancellation inspection;
+		QVERIFY(!source.restore(inspection));
 		++databaseSources;
 	}
 	QCOMPARE(databaseSources, 2);

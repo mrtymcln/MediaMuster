@@ -29,7 +29,7 @@ struct MediaFile
 	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
 	MediaEvidence evidence;
 	MediaScanStamp scanStamp;
-	// Immutable scan receipt owns every original property and source graph.
+	// Shared scan results own supported observations, associations and source receipts.
 	// This row's current path/identity fields continue to follow moves and copies.
 	QSharedPointer<const MediaEngine::ScanResult> mediaEngineScan;
 	/// Bin evidence remains inspectable after its current fallback is retracted.

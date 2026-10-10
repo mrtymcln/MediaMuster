@@ -2,9 +2,6 @@
 // MediaEngine owns source reading, matching and retained scan evidence.
 #include "mediascanner.h"
 #include "mediaengine/scanengine.h"
-#include "mediaengine/databasesource.h"
-#include "mediaengine/mxfsource.h"
-#include "mediaengine/sourcearchive.h"
 #include "mediaengineadapter.h"
 #include "avidmedialayout.h"
 #include "conventions.h"
@@ -282,38 +279,8 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 	};
 	auto session = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan(request, cancellation, callbacks));
 	reportPreparation(); // Empty or cancelled scans may never reach source progress.
-	qint64 serializedBytes = 0;
-	qint64 compressedBytes = 0;
-	qsizetype archivedSources = 0;
-	qint64 databaseImageBytes = 0;
-	qint64 mxfImageBytes = 0;
-	qsizetype databaseImages = 0;
-	qsizetype mxfImages = 0;
-	for (const auto &source : std::as_const(session->sources))
-	{
-		if (source.archive)
-		{
-			++archivedSources;
-			serializedBytes += source.archive->serializedBytes();
-			compressedBytes += source.archive->compressedBytes();
-		}
-		if (const auto *database = dynamic_cast<const MediaEngine::DatabaseSource *>(source.storage.data()))
-		{
-			++databaseImages;
-			databaseImageBytes += database->image().bytes().size();
-		}
-		else if (const auto *mxf = dynamic_cast<const MediaEngine::MxfSource *>(source.storage.data()))
-		{
-			++mxfImages;
-			mxfImageBytes += mxf->image().storedBytes();
-		}
-	}
 	logs.append({QtInfoMsg, QStringLiteral("scanner"),
-				 QStringLiteral("RAM source images: %1 database(s), %2 bytes; %3 MXF source(s), %4 bytes").arg(databaseImages).arg(databaseImageBytes).arg(mxfImages).arg(mxfImageBytes)});
-	logs.append({QtInfoMsg, QStringLiteral("scanner"),
-				 QStringLiteral("RAM source archives: %1 source(s), %2 serialized bytes, %3 compressed bytes").arg(archivedSources).arg(serializedBytes).arg(compressedBytes)});
-	logs.append({QtInfoMsg, QStringLiteral("scanner"),
-				 QStringLiteral("RAM retention: %1 source receipts plus extracted metadata/evidence; PMR/MDB snapshots retained, media replay discarded").arg(session->sources.size())});
+				 QStringLiteral("Scan evidence: %1 source receipts plus extracted metadata and observations").arg(session->sources.size())});
 	QVector<MediaFile> rows;
 	rows.reserve(session->files.size());
 	for (const auto &file : session->files)

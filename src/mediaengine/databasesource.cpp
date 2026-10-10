@@ -1,5 +1,5 @@
-// Uses MediaEngine's database readers and projections without keeping their expanded
-// graphs after a completed read. The original image remains available in RAM.
+// Reads each database into a temporary image and projects its supported facts.
+// Replay mode also keeps the image; ordinary scans release the reading materials.
 
 #include "databasesource.h"
 #include "mediaengine/mdbreader.h"
@@ -200,7 +200,7 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource prepareDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-												const MediaEngine::Cancellation &cancellation)
+												const MediaEngine::Cancellation &cancellation, SourceRetention retention)
 	{
 		const auto kind = sourceKind(candidate.hint);
 		auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
@@ -227,6 +227,13 @@ namespace MediaEngine
 			prepared.projection = candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Pmr
 									  ? MediaEngine::projectPmr(parsed, cancellation)
 									  : MediaEngine::projectMdb(parsed, cancellation);
+		if (retention == SourceRetention::MetadataOnly)
+		{
+			// Projection owns its facts and raw observation bytes independently of
+			// this temporary image and graph.
+			prepared.source = MediaEngine::StoredSource::store(std::move(parsed), cancellation, retention);
+			return prepared;
+		}
 		auto data = QSharedPointer<DatabaseSource::Data>::create(std::move(image));
 		data->hint = candidate.hint;
 		data->frame = sourceFrame(parsed);

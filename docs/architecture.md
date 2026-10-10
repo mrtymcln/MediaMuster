@@ -11,7 +11,7 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
 2. [MainWindow](../src/mainwindow.cpp) passes the selected detected and manually
    added paths to [MediaScanner](../src/mediascanner.cpp).
 3. The worker calls [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp), which
-   supplies native source storage to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
+   supplies the read/project/retain pipeline to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
    The coordinator uses [DiscoveryEngine](../src/mediaengine/discoveryengine.cpp), reads
    databases first, schedules necessary headers, then matches and selects metadata.
 4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) supplies one compatibility
@@ -65,13 +65,13 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 
 | Component | Responsibility |
 | --- | --- |
-| [MediaEngine::PmrReader](../src/mediaengine/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |
-| [MediaEngine::MdbReader](../src/mediaengine/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
-| [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
-| [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
+| [MediaEngine::PmrReader](../src/mediaengine/pmrreader.cpp) | Decodes both PMR file sets, names, identities, original encodings and record locations into temporary source records for projection. |
+| [MediaEngine::MdbReader](../src/mediaengine/mdbreader.cpp) | Decodes source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
+| [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Decodes MXF partitions, Primer mappings, raw/typed metadata and source-local references for projection; skips recording payloads. |
+| [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
 | [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
 | [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of optional source replay. |
-| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Retains exact captured PMR/MDB bytes; defaults to `MetadataOnly` for MXF/OMF media, keeping supported evidence and receipts without media source replay. AVB graphs remain independently retained. |
+| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Defaults to `MetadataOnly` for PMR/MDB/MXF/OMF sources: retains supported evidence and receipts, then releases temporary images and unused graphs. AVB graphs remain independently retained for active use. |
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
 | [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
@@ -96,7 +96,11 @@ separate discovery evidence. A filesystem call already in progress can still
 delay cancellation. Windows/NEXIS performance needs a real-world retest; these
 changes do not establish a measured improvement there.
 
-A `MediaEngine::ParsedSource` contains source-local objects, raw properties and edges.
+A `MediaEngine::ParsedSource` temporarily contains source-local objects, raw properties
+and edges while readers and projectors establish supported facts. Normal scans retain
+those facts and their observation evidence, not every original record or framing
+detail. Diagnostic replay retains source backing for tests and format verification
+through the same engine and readers. AVB graphs remain retained for bin consumers.
 An object reference is a source receipt plus handle, not a globally unique Avid ID.
 Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
 partition copies also remain separate observations. Every physical location keeps
@@ -106,7 +110,8 @@ MXF ownership follows a unique partition Preface to ContentStorage and its recor
 package and essence-data membership. OMF1 uses required ObjectSpine membership and
 qualifies optional typed indexes when present; OMF2 uses HEAD:Mobs and HEAD:MediaData.
 Optional PrimaryMobs does not replace the complete mob collection. Unknown OMF
-revision keeps raw evidence without owned OMF projection. Missing or damaged
+revision cannot establish owned OMF facts; source outcomes and diagnostics describe
+the unresolved interpretation. Missing or damaged
 required contents leave dependent values blank, with independently established
 fallback still available. Complete declared reference paths are required for the
 technical or editorial facts that depend on them. See the
@@ -116,11 +121,11 @@ and [bounded specimen evidence](../Project%20Canon/root-membership-specimens-202
 Matching prefers exact local PMR filenames, with normalized fallback only for an
 unambiguous physical location and compatible identity. MDB file facts join by full
 canonical file identities; master-only facts require an established association.
-Changed source facts and unowned technical facts remain retained but ineligible.
+Supported observations from changed or disputed sources remain retained but ineligible.
 Known contradictory active file identities remain conflict evidence in an ownerless
 carrier; ScanCoordinator indexes its eligible claims so the disagreement reaches
 reconciliation and header fallback. The selection engine then applies the approved
-per-field priorities; raw bytes and
+per-field priorities; original observation bytes and
 alternatives are not replaced by the selected display value. Scanning and bin
 enrichment share the [compiled policy table](../src/mediaengine/metadataselectionpolicy.cpp).
 Zero excludes a source from value selection while retaining its read state and
@@ -323,5 +328,6 @@ Clip Duration immediately after Duration when enabled.
 
 Current associations establish package/mob membership. Exact SourceTrackID and
 SourceClip start-position qualification, applicable timecode branches and offsets,
-and relevant OMF slot-clock selection remain incomplete (F15/F16). Retained related
-timecodes and track rates do not claim a complete timeline evaluation.
+and relevant OMF slot-clock selection remain incomplete (F15/F16). Supported
+projected timing evidence does not imply every related timecode/track record is
+retained or claim a complete timeline evaluation.

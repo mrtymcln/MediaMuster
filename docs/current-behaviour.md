@@ -141,22 +141,24 @@ The scanner combines information from three places:
 | Avid's folder databases | The PMR file index connects filenames to Avid identifiers. MDB records provide clip relationships, names and technical details. Project information can also come from these databases. |
 | Metadata inside the media file | Independent technical details, identifiers and other recorded information retained alongside matching database observations. |
 
-The live scanner uses the new MediaEngine discovery, PMR/MDB/MXF/legacy readers and
+The live scanner uses MediaEngine discovery, PMR/MDB/MXF/legacy readers and
 metadata selection engine. It reads every `.pmr` and `.mdb` in admitted folders
 first, regardless of basename. It reads a media header when there is no usable
 database match or required table metadata is missing or conflicting. A deliberately
 unopened header keeps a `NotRead` receipt and the scheduling reason. Empty or malformed
 files remain physical inventory rows.
 
-Exact captured PMR/MDB bytes remain in RAM with source replay available. Live
-MXF/OMF media uses `MetadataOnly`: rows retain supported observations and their
-original bytes, alternatives, field coverage, selected values and selection
-reasons, plus an immutable scan receipt. Their full source images/graphs,
-unprojected properties and framing details are released after projection, including
-partial or failed reads; media source replay is unavailable. Outcomes and
-diagnostics remain recorded. Known recording payloads are skipped rather than
-loaded as metadata. Independently loaded AVB bin graphs remain retained for
-filtering and enrichment. Readers do not invent meanings for unknown properties.
+PMR/MDB/MXF/OMF reading storage is temporary. Databases are buffered in RAM while
+parsing; after projection, the scan keeps supported observations and their original
+bytes, alternatives, field coverage, selected values and selection reasons, plus
+immutable source receipts. Full source images and unused graphs, unprojected
+properties and framing details are released, including those from partial or
+failed reads. Outcomes and diagnostics remain recorded; scan-time source replay
+is unavailable. Projected database facts remain available for matching and unmatched
+reference reporting. Known recording payloads are skipped rather than loaded as
+metadata. Independently loaded AVB bin graphs remain retained because filtering,
+reference resolution and enrichment use them. Readers do not invent meanings for
+unknown properties.
 
 PMR association prefers an exact filename. A normalized spelling is a fallback only
 when it identifies one physical location; contradictory or ambiguous identities
@@ -238,7 +240,7 @@ when its flag is enabled. Multiple master IDs share a cell separated by `;`.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
 The selected property is `MediaProperty::Compression` and the row value is
 `MediaFile::compression`. `CompressionLabel` remains separate internal coding
-evidence; source properties and their recorded names are retained unchanged.
+evidence; observations retain recorded property names and original value bytes.
 OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
 for MXF-family media. Type is always visible. Enabling
 the Clip Duration feature flag places Clip Duration immediately after Duration

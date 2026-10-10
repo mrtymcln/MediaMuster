@@ -1,4 +1,4 @@
-// Supplies original database images and the chosen media-header retention to the coordinator.
+// Supplies the chosen retention policy for database and media sources to the coordinator.
 
 #include "scanengine.h"
 #include "databasesource.h"
@@ -8,32 +8,32 @@ namespace MediaEngine
 {
 	namespace
 	{
-		class ImagePipeline final : public MediaEngine::SourcePipeline
+		class ReadingPipeline final : public MediaEngine::SourcePipeline
 		{
 		public:
-			explicit ImagePipeline(SourceRetention mediaRetention) : m_mediaRetention(mediaRetention) {}
-			SourceRetention mediaRetention() const override { return m_mediaRetention; }
+			explicit ReadingPipeline(SourceRetention sourceRetention) : m_sourceRetention(sourceRetention) {}
+			SourceRetention sourceRetention() const override { return m_sourceRetention; }
 			MediaEngine::PreparedSource processDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
 														const MediaEngine::Cancellation &cancellation) const override
 			{
-				return prepareDatabase(candidate, readReason, cancellation);
+				return prepareDatabase(candidate, readReason, cancellation, m_sourceRetention);
 			}
 			std::optional<MediaEngine::PreparedSource> processMxf(const MediaEngine::SourceCandidate &candidate,
 																  const QString &readReason,
 																  const MediaEngine::Cancellation &cancellation) const override
 			{
-				return prepareMxf(candidate, readReason, cancellation, m_mediaRetention);
+				return prepareMxf(candidate, readReason, cancellation, m_sourceRetention);
 			}
 
 		private:
-			SourceRetention m_mediaRetention;
+			SourceRetention m_sourceRetention;
 		};
 	}
 
 	MediaEngine::ScanResult ScanEngine::scan(const MediaEngine::ScanRequest &request, const MediaEngine::Cancellation &cancellation,
 											 const MediaEngine::ScanCallbacks &callbacks) const
 	{
-		const ImagePipeline pipeline(m_mediaRetention);
+		const ReadingPipeline pipeline(m_sourceRetention);
 		return MediaEngine::ScanCoordinator{}.scan(request, cancellation, callbacks, &pipeline);
 	}
 }

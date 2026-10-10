@@ -1,7 +1,7 @@
 #pragma once
 
-// Projects a database through the established MediaEngine reader, then keeps its
-// original bytes in RAM. Restoring records reuses the scan's original receipts.
+// Projects a database through the established reader. Ordinary scans keep the
+// supported facts and receipt; optional replay storage keeps its original bytes.
 
 #include "databaseimage.h"
 #include "mediaengine/sourcepipeline.h"
@@ -27,10 +27,11 @@ namespace MediaEngine
 		explicit DatabaseSource(QSharedPointer<const Data> data);
 		friend class QSharedPointer<DatabaseSource>;
 		friend MediaEngine::PreparedSource prepareDatabase(const MediaEngine::SourceCandidate &, const QString &,
-														   const MediaEngine::Cancellation &);
+														   const MediaEngine::Cancellation &, SourceRetention);
 		QSharedPointer<const Data> m_data;
 	};
 
 	MediaEngine::PreparedSource prepareDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-												const MediaEngine::Cancellation &cancellation);
+												const MediaEngine::Cancellation &cancellation,
+												SourceRetention retention = SourceRetention::MetadataOnly);
 }

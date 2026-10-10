@@ -100,7 +100,9 @@ private:
 		case Reason::CheckedInputsAbsent:
 			return QStringLiteral("The complete owning object has none of the checked input properties");
 		case Reason::CheckedInputsUninterpreted:
-			return QStringLiteral("Recognized input properties are retained; the field has no usable interpretation unless an observation establishes it");
+			// Field coverage keeps the checked property names and read states;
+			// this does not promise storage of unused source records or their bytes.
+			return QStringLiteral("Recognized inputs have no usable interpretation for this field unless an observation establishes it");
 		case Reason::CheckedInputsIncomplete:
 			return QStringLiteral("Owning object coverage is incomplete; missing inputs cannot establish absence");
 		case Reason::PmrKnownField:
@@ -110,7 +112,7 @@ private:
 		case Reason::PmrModificationUnreadable:
 			return QStringLiteral("The PMR modification word could not be read");
 		case Reason::PmrModificationUninterpreted:
-			return QStringLiteral("PMR ModificationWord is retained without a proven timestamp interpretation");
+			return QStringLiteral("PMR ModificationWord has no proven timestamp interpretation; its read status is recorded");
 		case Reason::SoundDescriptor:
 			return QStringLiteral("This sound descriptor does not describe a picture raster");
 		case Reason::EqualRankConflict:

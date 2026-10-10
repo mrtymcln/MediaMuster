@@ -4,6 +4,12 @@ Status: proposed implementation, with the requirements in [README](README.md)
 accepted for v1. The names below are MediaMuster design terminology, not a claim
 that Avid defines these exact classes.
 
+The approved [source lifetimes](source-lifetimes.md) supersede the original goal of
+keeping every source record. Normal PMR/MDB/MXF/OMF scans retain supported metadata,
+alternatives, original observation bytes, evidence and receipts. Complete source
+copies and unused reader graphs are temporary. Loaded AVB graphs remain available
+because bin filtering, reference resolution and enrichment use them.
+
 ## Physical files remain individual
 
 A `MediaFile` describes a physical file at a particular volume and location. It
@@ -94,12 +100,17 @@ requires a separate verification method. Do not automatically delete or hide cop
 
 ## Supporting records
 
+These are design roles, not a promise that every reader object and relationship
+remains in normal scan RAM. Projections keep the supported facts and associations
+needed by the application; source-local object handles identify their origins
+without owning the complete original objects.
+
 | Proposed name | Stores | Links to |
 | --- | --- | --- |
 | `AvidObject` | An Avid identity, its role, and observations about that object | Physical locations, observations, recorded relationships |
 | `Relationship` | A reference between objects; track, start, length and units where supplied; recorded/derived basis | Origin object, target object, supporting source/observations |
 | `SourceSnapshot` | Which PMR, MDB, bin or media header was inspected; source location/version markers, read time, parser version and read outcome | Observations from that inspection |
-| `MetadataObservation` | Field, typed decoded value, original value where practical, exact property/object locator, and recorded/derived basis | Subject file/object, source snapshot, derivation inputs/rule |
+| `MetadataObservation` | Field, typed decoded value, original value bytes, source property/object identifiers, and recorded/derived basis | Subject file/object, source snapshot, supporting evidence/rule |
 | `ResolvedField` | Selected value, semantic property name, explanation, supporting and competing observations | Observations and the file/object whose field it resolves |
 | `ScanIssue` | An unresolved condition, supporting references, affected location/identity, scan scope and completion status | Source snapshots, objects, physical records where present |
 | `ScanResult` | Shared RAM collections for one scan, including physical files | All of the above |
@@ -193,7 +204,8 @@ Names need not repeat "Property" once scoped by their type.
 
 Retain a structured reason for `Unreadable`, such as I/O error, malformed encoding,
 unsupported interpretation or incomplete source. Unknown-format properties may have
-raw bytes retained even when their interpreted value is unreadable. An absent
+raw bytes in a supported observation even when its interpreted value is unreadable;
+this does not retain every unused unknown record. An absent
 descriptor/object does not automatically prove every possible property absent.
 Coverage records must say which object and property were actually checked.
 
@@ -214,14 +226,15 @@ observation is absent. Unsupported extraction is not proof that the format omits
 property: preserve `NotRead` if not attempted or `Unreadable` with an unsupported
 reason if an attempted interpretation cannot establish a value.
 
-The scope is not limited to fields defined by today's MediaMuster. The user requires
-1:1 fidelity to every source property/value/context/reference, including newly
-discovered vendor/private properties. Extend the semantic field model as discoveries
-are agreed; preserve unmapped observations/raw encodings meanwhile and ask the user
-how new properties/value meanings should be represented and selected. Current tables
-are reference only. Actual completeness must be supported by coverage evidence;
-unrecognised structures must be retained/reported, not silently skipped or labelled
-absent. See the selection-policy document for the discovery/decision workflow.
+Current tables are reference only; newly discovered vendor/private properties still
+require investigation. Document their recorded values and contexts in investigation
+evidence, and ask the user how new properties/value meanings should be represented
+and selected before extending the semantic model. Normal scans retain all supported
+observations and raw value bytes, including unresolved alternatives; unused unknown
+records are temporary under the approved source lifetimes. Report unsupported
+coverage rather than labelling it absent. Complete original records can be kept
+explicitly for diagnostic replay, or inspected again from the source. See the
+selection-policy document for the discovery/decision workflow.
 Complete logical coverage does not require duplicating empty strings and identical
 format capability records for every file: shared field definitions/source capabilities
 and compact per-record states can expose a complete table while storing efficiently.
@@ -255,9 +268,11 @@ These groups belong to the shared policy, not a copied table in each MediaFile.
 
 ## Future presentation without changing evidence collection
 
-The user explicitly deferred a "Why this value?" detail UI. Preserve observations,
-source/property locators, raw values where needed, read outcomes, derivation inputs,
-selected-value property name/reason, competing observations and freshness in RAM now.
+The user explicitly deferred a "Why this value?" detail UI. Preserve supported
+observations, source/property/object identifiers, original value bytes, read outcomes,
+derivation explanations, selected-value property name/reason, competing observations
+and freshness in RAM now. This is the retained evidence described by the source
+lifetimes, without a complete source graph or every unused derivation input.
 Any later UI feature flag should control presentation only, not whether that evidence
 is collected. A detail panel should consume the same read-only evidence interface as
 the table/Console, rather than introducing another parser or selection implementation.
@@ -335,8 +350,9 @@ selection priorities:
 A snapshot is a small receipt for an inspection, not an entire media file copied
 into RAM. Record source type, volume/location, size, modification time, read time,
 parser version, completeness/read outcome, and stronger version/fingerprint evidence
-when available. Observations locate their precise PMR entry, MDB/bin object or header
-descriptor/property within that source.
+when available. Retained observations identify their source-local PMR entry,
+MDB/bin object or header descriptor/property. This provenance does not imply that
+the original complete object, byte ranges or source graph remain in RAM.
 
 Distinguish `NotChecked`, `TimestampConsistent`, `ChangedSinceRead` and any stronger
 validation states eventually implemented. Timestamp agreement is not proof of byte

@@ -354,7 +354,7 @@ int main(int argc, char **argv)
 	parser.setApplicationDescription(QStringLiteral("Read-only MediaEngine source-retention, semantic and process-memory comparison"));
 	parser.addHelpOption();
 	// All modes share readers and matching; only source retention differs.
-	const QCommandLineOption engineOption(QStringLiteral("engine"), QStringLiteral("Storage mode: archive, native (replay), or metadata (live media retention)"), QStringLiteral("mode"));
+	const QCommandLineOption engineOption(QStringLiteral("engine"), QStringLiteral("Storage mode: archive, native (replay), or metadata (live source retention)"), QStringLiteral("mode"));
 	const QCommandLineOption outputOption(QStringLiteral("output"), QStringLiteral("JSON report path; - writes stdout"), QStringLiteral("path"), QStringLiteral("-"));
 	const QCommandLineOption csvOption(QStringLiteral("csv"), QStringLiteral("Optional app-boundary CSV path"), QStringLiteral("path"));
 	const QCommandLineOption expectedRowsOption(QStringLiteral("expected-rows"), QStringLiteral("Require this physical row count"), QStringLiteral("count"));
@@ -374,7 +374,7 @@ int main(int argc, char **argv)
 	const bool measureOnly = parser.isSet(measureOnlyOption);
 	if (engine == QLatin1String("metadata") && !measureOnly)
 	{
-		std::fprintf(stderr, "Metadata-only media has no replay graph; use --measure-only to verify all retained row evidence and receipts.\n");
+		std::fprintf(stderr, "Metadata-only sources have no replay graph; use --measure-only to verify all retained row evidence and receipts.\n");
 		return 1;
 	}
 	QJsonObject report{{QStringLiteral("engine"), engine}, {QStringLiteral("schemaVersion"), 2},
@@ -514,9 +514,10 @@ int main(int argc, char **argv)
 				{QStringLiteral("retention"), stored.retention == MediaEngine::SourceRetention::MetadataOnly
 					? QStringLiteral("metadata-only") : QStringLiteral("replay")},
 				{QStringLiteral("sourceBackingAvailable"), bool(stored.archive || stored.storage || stored.unfinishedGraph)}};
-			if (engine == QLatin1String("metadata") && !database
-				&& (stored.archive || stored.storage || stored.unfinishedGraph))
-				errors.append(QStringLiteral("Metadata-only media retained source backing: %1").arg(candidate.path));
+			if (engine == QLatin1String("metadata")
+				&& (stored.retention != MediaEngine::SourceRetention::MetadataOnly
+					|| stored.archive || stored.storage || stored.unfinishedGraph))
+				errors.append(QStringLiteral("Metadata-only source retained replay policy or backing: %1").arg(candidate.path));
 			if (const auto native = dynamic_cast<const MediaEngine::DatabaseSource *>(stored.storage.data()))
 			{
 				++nativeImages;

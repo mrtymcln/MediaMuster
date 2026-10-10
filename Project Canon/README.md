@@ -9,16 +9,20 @@ The [11 October cleanup verification](../docs/media-engine-cleanup-2026-10-11.md
 records the sole-engine integration, migrated real-media checks and approved
 MPEG OMF ownership correction.
 
-The [live integration report](canon2-live-integration-2026-10-10.md) records native
-PMR/MDB and MXF source storage. The [retention plan](newtestament-retention-plan-2026-10-10.md)
-records proposed stepwise trade-offs. The user approved steps 1 and 2; the
-[11 October optimization report](mediaengine-steps-1-2-2026-10-11.md) records their
-implementation, preservation proofs and measurements. The user then approved
-stages 3a and 3b: live media scans retain supported MXF/OMF observations and
-evidence without full source replay backing. PMR/MDB snapshots and AVB graphs
-remain retained. The [media-retention report](mediaengine-media-retention-2026-10-11.md)
-records the bounded change, its deliberate loss and measurements. Removing
-PMR/MDB snapshots remains a separate, unapproved proposal.
+The [source lifetime contract](source-lifetimes.md) defines the normal ownership
+rule: keep data while something uses it, then release it. PMR/MDB/MXF/OMF scans
+retain supported observations, alternatives, evidence and source receipts;
+complete source copies and unused reader graphs are temporary. Database-first
+scheduling is unchanged. Loaded AVB graphs remain available while bin filtering
+and enrichment use their relationships.
+
+The [retention plan](newtestament-retention-plan-2026-10-10.md) records approved
+stages and further proposed trade-offs. Dated implementation reports record the
+source state tested at each stage: [live integration](canon2-live-integration-2026-10-10.md),
+[steps 1 and 2](mediaengine-steps-1-2-2026-10-11.md) and
+[media retention](mediaengine-media-retention-2026-10-11.md).
+The [database lifetime report](mediaengine-database-lifetime-2026-10-11.md) records
+the all-source policy, its preservation checks and measured RAM/speed limits.
 Compression changes remain on hold. Project Canon remains the requirements folder
 name: canonical correctness is an objective, not a claim that every parser rule
 is proven. Dated verification records retain their source-state limits.
@@ -327,19 +331,19 @@ Only the selected implementation remains in the current MediaEngine source.
 - Handle selection individually for each metadata field, rather than applying one
   universal source priority. Existing priorities are documented for review, not
   automatically accepted as canonically correct.
-- The current matching/priority tables are reference only, never a whitelist of
-  properties the rewrite may read or retain. The new evidence/matching/selection
-  model has a 1:1 fidelity and completeness goal across PMR/MDB/MXF/OMF/AVB properties,
-  values, object contexts and references, including properties today's app misses.
-  Preserve unrecognised evidence and ask the user how newly discovered properties
-  and value interpretations should be represented before choosing their semantics
-  or selection/display policy. Group related findings to make those questions useful.
+- Matching/priority tables do not define the entire source format. Investigate
+  newly encountered properties and ask the user how their meanings and selection
+  or display should be represented; do not silently invent their semantics.
+  The [source lifetime contract](source-lifetimes.md) supersedes the initial goal
+  of permanently retaining every original record. Normal results keep supported
+  observations, alternatives and evidence; unused unknown/private records are
+  temporary reader input. AVB relationships remain retained for active consumers.
 - Use the agreed enums `PropertyReadState` (`NotRead`, `Present`, `Absent`,
   `Unreadable`) and `PropertyAgreement` (`NotCompared`, `SingleSource`, `Agreeing`,
   `Conflicting`). Keep read outcome, agreement, recorded/derived basis, selection
   and freshness separate.
 - Leave dependent values blank when required recorded contents are missing or
-  damaged, retaining raw records and trying independently established fallback.
+  damaged, preserving supported evidence and warnings and trying independently established fallback.
   Format-optional omissions are distinct: OMF1's typed indexes may be absent when
   required ObjectSpine establishes membership. Do not recover owned metadata by
   enumerating unlisted objects or assuming an unknown OMF revision.
@@ -461,7 +465,8 @@ Only the selected implementation remains in the current MediaEngine source.
 ## Current implementation
 
 The live scanner creates one `MediaFile` per admitted physical location. It retains
-source graphs, property observations and per-field selection explanations in RAM.
+supported property observations and per-field selection explanations in RAM;
+unused source records are released under the [lifetime contract](source-lifetimes.md).
 Database entries without a local media match produce scoped `ScanIssue` records,
 including wider-scan matches when found; they do not create phantom media rows.
 
@@ -478,8 +483,8 @@ HEAD contents. Dependent technical and editorial fields require complete declare
 reference paths. An unknown OMF revision or damaged required membership leaves
 owned values unresolved in the affected projection. Known contradictory active
 file identities remain ownerless conflict carriers, and ScanCoordinator indexes their
-eligible claims for reconciliation and header fallback. Raw excluded records remain
-available.
+eligible claims for reconciliation and header fallback. Reader warnings and
+supported excluded observations remain available; unused raw records do not.
 
 Package/mob associations remain distinct from exact source-track and SourceClip
 start-position qualification. Applicable timecode branches/offsets and relevant

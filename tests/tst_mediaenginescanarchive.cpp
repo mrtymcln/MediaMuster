@@ -154,12 +154,20 @@ private slots:
 		const auto *database = mediaSource(scan, folder + QStringLiteral("/metadata.mdb"));
 		QVERIFY(database);
 		const auto restored = database->restore(cancellation);
-		QVERIFY(restored);
-		QCOMPARE(restored->snapshot, database->snapshot);
-		QVERIFY(!restored->objects.isEmpty());
-		QVERIFY(std::any_of(restored->relationships.cbegin(), restored->relationships.cend(),
-			[](const MediaEngine::Relationship &link)
-			{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
+		if (database->retention == MediaEngine::SourceRetention::MetadataOnly)
+		{
+			QVERIFY(!database->archive && !database->storage && !database->unfinishedGraph);
+			QVERIFY(!restored);
+		}
+		else
+		{
+			QVERIFY(restored);
+			QCOMPARE(restored->snapshot, database->snapshot);
+			QVERIFY(!restored->objects.isEmpty());
+			QVERIFY(std::any_of(restored->relationships.cbegin(), restored->relationships.cend(),
+				[](const MediaEngine::Relationship &link)
+				{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
+		}
 	}
 
 	void unlisted_database_master_cannot_supply_clip_name()
@@ -824,7 +832,7 @@ private slots:
 		}
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}
-	void cancellation_after_database_read_keeps_raw_evidence()
+	void cancellation_after_database_read_keeps_source_receipt()
 	{
 		QTemporaryDir temporary;
 		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -849,11 +857,20 @@ private slots:
 		const auto *parsed = mediaSource(scan, database);
 		QVERIFY(parsed);
 		QCOMPARE(parsed->outcome, MediaEngine::ParsedSource::Outcome::Complete);
+		QCOMPARE(parsed->snapshot->readState, SourceReadState::Complete);
 		const MediaEngine::Cancellation inspection;
 		const auto restored = parsed->restore(inspection);
-		QVERIFY(restored);
-		QCOMPARE(restored->snapshot, parsed->snapshot);
-		QVERIFY(!restored->objects.isEmpty());
+		if (parsed->retention == MediaEngine::SourceRetention::MetadataOnly)
+		{
+			QVERIFY(!parsed->archive && !parsed->storage && !parsed->unfinishedGraph);
+			QVERIFY(!restored);
+		}
+		else
+		{
+			QVERIFY(restored);
+			QCOMPARE(restored->snapshot, parsed->snapshot);
+			QVERIFY(!restored->objects.isEmpty());
+		}
 		QCOMPARE(mediaSource(scan, path)->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}

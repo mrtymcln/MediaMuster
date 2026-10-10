@@ -7,18 +7,21 @@ information or correctness would be lost. The user subsequently approved steps
 [11 October report](mediaengine-steps-1-2-2026-10-11.md). On 11 October the user
 approved stages 3a and 3b, including discarding partial media archives, while
 explicitly keeping PMR/MDB snapshots for later consideration. The
-[media-retention report](mediaengine-media-retention-2026-10-11.md) records this scope.
-Stages 3c and 4–7 remain proposals.
+[media-retention report](mediaengine-media-retention-2026-10-11.md) records that scope.
+The user then approved stage 3c: the same lifetime rule applies to database sources.
+The [database lifetime report](mediaengine-database-lifetime-2026-10-11.md) records
+its implementation, preservation checks and measurements.
+Stages 4–7 remain proposals.
 
 ## Current status
 
 MediaEngine lives in `src/mediaengine` under namespace `MediaEngine`. Its
-`ScanEngine` supplies native source storage to the shared `ScanCoordinator`.
+`ScanEngine` supplies the source-reading and retention policy to the shared `ScanCoordinator`.
 Naming and source layout do not change reading scope, storage, matching, metadata
 selection or the UI contract.
 
-The user's current Windows/NEXIS scan is still underway: about five hours elapsed,
-100,000 files remaining, and approximately 4 GB RAM observed. These are interim
+At the planning stage the user reported an ongoing Windows/NEXIS scan: about five
+hours elapsed, 100,000 files remaining, and approximately 4 GB RAM observed. These are interim
 user observations, not a completed throughput, peak-memory or correctness result.
 Do not treat the local sample's byte sizes as measurements of this work corpus.
 
@@ -29,10 +32,12 @@ alternatives or retained row/candidate receipts. Step 2 adds compact explanation
 codes, narrow state enums and source-scoped shared owner text. Numeric object
 handles, typed rate/duration APIs and shared receipts were already present; no
 new observation-value schema migration or blanket index/row clearing was done.
-Live media now retains extracted metadata and evidence without full MXF images
-or OMF/legacy graph archives, including partial/failed/cancelled reads. Exact
-PMR/MDB source images remain retained; AVB reference graphs are unchanged.
-Standalone reader verification can explicitly retain media replay. The stage
+Live PMR/MDB/MXF/OMF scans retain extracted metadata and evidence without complete
+source images or unused graph archives, including partial/failed/cancelled reads.
+Databases are buffered during reading and released after projection; their
+supported claims remain available for matching. AVB reference graphs are used
+by bin filtering and remain available. The [source lifetime contract](source-lifetimes.md)
+defines current ownership. Standalone reader verification can explicitly retain replay. The stage
 descriptions below explain each change's scope and trade-offs; approval of one
 does not authorize another.
 

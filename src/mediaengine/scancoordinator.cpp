@@ -300,8 +300,8 @@ namespace MediaEngine
 				return result;
 			const auto &candidate = result.candidates[index];
 			StoredSource source;
-			if (pipeline && candidate.kelpieId)
-				source.retention = pipeline->mediaRetention();
+			if (pipeline)
+				source.retention = pipeline->sourceRetention();
 			source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
 			result.sources.append(std::move(source));
@@ -356,9 +356,9 @@ namespace MediaEngine
 				parsed.readReason = reason;
 				if (!cancellation.cancelled())
 					projections[index] = project(parsed, cancellation);
-				// Projection owns the supported facts. Live media scans keep their
+				// Projection owns the supported facts. Live scans keep their
 				// receipt instead of packing the remaining records for later replay.
-				const auto retention = pipeline ? pipeline->mediaRetention() : SourceRetention::Replay;
+				const auto retention = pipeline ? pipeline->sourceRetention() : SourceRetention::Replay;
 				result.sources[index] = StoredSource::store(std::move(parsed), cancellation, retention);
 			}
 			if (cancellation.cancelled())

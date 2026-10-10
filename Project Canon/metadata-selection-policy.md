@@ -33,40 +33,46 @@ a wrong-owner join or make incomparable facts interchangeable.
 ## Completeness requirement and user decisions
 
 The current-priority matrix and illustrative tables are **reference only**, not a
-list of allowed properties. The user requires the new matching/selection model to
-reflect source properties and values 1:1, including fields that current readers miss.
-Do not preserve current displayed results by excluding additional source evidence.
+list of allowed properties. Newly discovered fields still require investigation and
+user review; current displayed values must not define which format evidence matters.
 
-For PMR/MDB/MXF/OMF/AVB, preserve property identity, subject/object context, source
-snapshot/locator, repeated values and ordering where meaningful, original type and
-encoding where needed, decoded value when supported, and recorded references. A
-single display cell must not flatten away multiple tracks, descriptors, objects or
-occurrences. Normalized semantic fields link back to those source observations.
+The approved [source lifetimes](source-lifetimes.md) supersede the original goal of
+retaining every source record. Normal PMR/MDB/MXF/OMF scans keep all supported
+observations and alternatives, their original value bytes, property/object
+identifiers, source receipts, read states and selection evidence, plus associations
+needed by the application. Full source copies, unused graphs and unknown/unprojected
+properties are temporary reading storage. Loaded AVB graphs remain available because
+bin filtering, reference resolution and enrichment use them.
 
-Unknown/private properties need a raw/uninterpreted representation rather than silent
-dropping or invented semantics. For an unsupported structure whose properties cannot
-yet be enumerated, retain its locator/available raw evidence and report incomplete
-coverage; do not manufacture a list of absent fields. Metadata completeness is not
-a requirement to load picture/audio essence payloads into RAM as metadata values.
+A single display cell must not flatten away supported observations of multiple
+tracks, descriptors, objects or occurrences. Normalized semantic fields link back
+to their retained source observations. An unsupported input to a defined field
+keeps its coverage/read reason; it is not proof that the property is absent. Do not
+invent a meaning or manufacture absent-field results for an unenumerated structure.
+Investigation or diagnostic replay can capture unknown/private records for review;
+normal scan RAM is not a permanent archive of those unused records. Picture/audio
+essence payloads are not loaded as metadata values.
 
 When additional properties or previously unsupported value meanings are discovered:
 
-1. Preserve what the source actually records and where it occurs.
+1. Record what the source actually stores and where it occurs in investigation
+   evidence; use diagnostic replay when complete original records are needed.
 2. Establish the format/object role and interpretation from available evidence;
    keep uncertainty explicit rather than presenting a guess as established.
 3. Ask the user how the finding should be represented, named, associated and selected
    before adopting a new semantic/display-selection policy. Present plain-language
    examples, evidence and a recommendation; group related discoveries sensibly.
-4. Continue independent collection/research while that choice is pending. Retain the
-   observation as uninterpreted or unresolved; do not silently ignore or choose it.
+4. Continue independent collection/research while that choice is pending. Document
+   unresolved findings without inventing semantics. Retain existing supported
+   observations and their uncertainty; unused unknown records need not remain in
+   normal scan RAM while a future field is being considered.
 5. Add the agreed mapping/rule and a meaningful coverage check to Project Canon.
 
-"Every possible property/value" is the completeness objective, not a claim that a
-finite current corpus or the existing parsers enumerate every historical/future
-private extension. Track coverage per format/revision/object/property; explicitly
-report what remains unsupported. Future extension must be possible without discarding
-old observations or rebuilding every MediaFile/UI consumer. Normal reads retain actual
-values encountered, not every hypothetical value in a property's allowed domain.
+Track coverage per format/revision/object/property and explicitly report what remains
+unsupported. A finite corpus cannot establish every historical/future private
+extension. Adding an agreed field must preserve existing supported observations and
+use the shared selection model. Information not extracted during a normal scan
+requires another read; it cannot be recovered from a discarded original graph.
 
 ## Separate collection from selection
 
@@ -95,8 +101,9 @@ new persistent database, or a requirement for a "Why this value?" UI in v1.
 Compression naming has its own [shared catalogue](compression-name-catalogue-2026-10-08.md).
 It translates one source's established format facts into a readable name before
 this policy chooses between sources. Editing a name mapping does not change source
-priority or authorize additional reads. Raw identifiers and descriptor facts remain
-retained; uncertain variants receive only an established general name.
+priority or authorize additional reads. Supported identifier/descriptor observations
+and their original value bytes remain retained; uncertain variants receive only an
+established general name.
 
 ## Two different tables
 
@@ -155,13 +162,13 @@ format interpretation and header-read scheduling remain separate decisions.
   `mediaPropertyName(policy.property)`; there is no rule version or custom rule ID.
 
 `NewDnx`, `OldDnx` and `ReallyOldDnx` are the agreed typed semantic fields for the
-three DNx naming schemes. Use those standard names directly. Underlying raw source
-properties retain their original names and locators separately; a semantic field
-does not rename the recorded property. `CompressionLabel` holds the normalized
-coding UL used to interpret the human-readable `Compression` value. It can be derived
-from `DIDResolutionID` or AUID normalization; the original bytes and source
-properties remain separately retained. It is an internal evidence field, without
-a direct table column. `SourceContainer` describes an import/source-container tag;
+three DNx naming schemes. Use those standard names directly. Retained source
+observations keep their original property names and object identifiers; a semantic
+field does not rename the recorded property. `CompressionLabel` holds the normalized
+coding UL used to interpret the human-readable `Compression` value. It can be
+derived from `DIDResolutionID` or AUID normalization; its supporting observations
+retain their original value bytes. It is an internal evidence field, without a
+direct table column. `SourceContainer` describes an import/source-container tag;
 `WrappingLabel` carries the essence-container UL. Keep those different facts separate.
 
 Use `Compression` for the table and CSV heading, `MediaProperty::Compression`
@@ -254,8 +261,9 @@ Those rows summarize the table rather than limiting source retention. Physical
 facts such as current path/size use this file's filesystem evidence. KelpieId is a
 scan-session identity rather than a competing Avid value; its allocator does not
 participate in source ranking. Derived metadata uses a typed rule with retained
-inputs. File durations retain their units/rate and a separately selected compatible
-display clock. The compatible clock uses the File Duration row's own source ranks,
+supporting observations and an explanation. File durations retain their units/rate
+and a separately selected compatible display clock. The compatible clock uses the
+File Duration row's own source ranks,
 not the independent Frame Rate preference. Clip durations retain master/track
 contexts through the resolver's equivalence and conflict checks. Effects are derived
 after the final Clip Name and Type selection and retain the name observation's

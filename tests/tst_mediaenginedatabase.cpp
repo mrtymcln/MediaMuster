@@ -1,4 +1,4 @@
-// Checks exact database acquisition and RAM-only restoration against genuine
+// Checks database projection ownership and optional exact RAM replay against genuine
 // reader output. Authored byte controls below exercise acquisition failures only;
 // they do not make claims about PMR or MDB framing.
 
@@ -7,6 +7,7 @@
 #include "mediaengine/mdbreader.h"
 #include "mediaengine/pmrreader.h"
 #include "mediaengine/scancoordinator.h"
+#include "mediaenginefingerprint.h"
 
 #include <QBuffer>
 #include <QFile>
@@ -358,21 +359,32 @@ namespace
 			? MediaEngine::projectPmr(source, cancellation) : MediaEngine::projectMdb(source, cancellation);
 	}
 
-	void addDatabaseFixtures()
+	void addDatabaseFixtures(bool compareRetention = false)
 	{
 		QTest::addColumn<QString>("relative");
 		QTest::addColumn<bool>("pmr");
-		QTest::newRow("PMR") << QStringLiteral("msmFMID.pmr") << true;
-		QTest::newRow("corpus-PMR") << QStringLiteral("corpus_headers/msmFMID.pmr") << true;
-		QTest::newRow("round3-PMR") << QStringLiteral("corpus_headers/msmFMID_round3.pmr") << true;
-		QTest::newRow("legacy-PMR") << QStringLiteral("omf/avid_supporting/msmFMID.pmr") << true;
-		QTest::newRow("modern-audio-PMR") << QStringLiteral("omf/mc2026_audio/msmFMID.pmr") << true;
-		QTest::newRow("MDB") << QStringLiteral("msmMMOB.mdb") << false;
-		QTest::newRow("MacRoman-MDB") << QStringLiteral("msmMMOB_macroman.mdb") << false;
-		QTest::newRow("corpus-MDB") << QStringLiteral("corpus_headers/msmMMOB.mdb") << false;
-		QTest::newRow("round3-MDB") << QStringLiteral("corpus_headers/msmMMOB_round3.mdb") << false;
-		QTest::newRow("legacy-MDB") << QStringLiteral("omf/avid_supporting/msmMMOB.mdb") << false;
-		QTest::newRow("modern-audio-MDB") << QStringLiteral("omf/mc2026_audio/msmMMOB.mdb") << false;
+		if (compareRetention)
+			QTest::addColumn<bool>("metadataOnly");
+		const auto add = [compareRetention](const char *name, const QString &relative, bool pmr)
+		{
+			if (compareRetention)
+				for (const bool metadataOnly : {false, true})
+					QTest::newRow(qPrintable(QString::fromLatin1(name) + (metadataOnly ? QStringLiteral("-metadata") : QStringLiteral("-replay"))))
+						<< relative << pmr << metadataOnly;
+			else
+				QTest::newRow(name) << relative << pmr;
+		};
+		add("PMR", QStringLiteral("msmFMID.pmr"), true);
+		add("corpus-PMR", QStringLiteral("corpus_headers/msmFMID.pmr"), true);
+		add("round3-PMR", QStringLiteral("corpus_headers/msmFMID_round3.pmr"), true);
+		add("legacy-PMR", QStringLiteral("omf/avid_supporting/msmFMID.pmr"), true);
+		add("modern-audio-PMR", QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), true);
+		add("MDB", QStringLiteral("msmMMOB.mdb"), false);
+		add("MacRoman-MDB", QStringLiteral("msmMMOB_macroman.mdb"), false);
+		add("corpus-MDB", QStringLiteral("corpus_headers/msmMMOB.mdb"), false);
+		add("round3-MDB", QStringLiteral("corpus_headers/msmMMOB_round3.mdb"), false);
+		add("legacy-MDB", QStringLiteral("omf/avid_supporting/msmMMOB.mdb"), false);
+		add("modern-audio-MDB", QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), false);
 	}
 
 	QByteArray acquisitionControl(qsizetype size)
@@ -656,14 +668,15 @@ private slots:
 		}
 	}
 
-	void genuineDatabaseGraphsRestoreFromOwnedRam_data() { addDatabaseFixtures(); }
-	void genuineDatabaseGraphsRestoreFromOwnedRam()
+	void genuineDatabaseSourcesPreserveProjectedFacts_data() { addDatabaseFixtures(true); }
+	void genuineDatabaseSourcesPreserveProjectedFacts()
 	{
 		QFETCH(QString, relative);
 		QFETCH(bool, pmr);
+		QFETCH(bool, metadataOnly);
 		QFile fixture(QStringLiteral(FIXTURES_DIR) + '/' + relative);
 		QVERIFY2(fixture.open(QIODevice::ReadOnly), qPrintable(fixture.errorString()));
-		const QByteArray expectedBytes = fixture.readAll();
+		QByteArray expectedBytes = fixture.readAll();
 		QVERIFY(!expectedBytes.isEmpty());
 		fixture.close();
 
@@ -676,17 +689,23 @@ private slots:
 			path, QFileInfo(path).lastModified(), 0};
 		const QString readReason = QStringLiteral("Database-first RAM comparison");
 		const MediaEngine::Cancellation active;
-		const auto prepared = MediaEngine::prepareDatabase(candidate, readReason, active);
-		QVERIFY(prepared.source.storage);
+		const auto retention = metadataOnly ? MediaEngine::SourceRetention::MetadataOnly : MediaEngine::SourceRetention::Replay;
+		const auto prepared = MediaEngine::prepareDatabase(candidate, readReason, active, retention);
+		QCOMPARE(prepared.source.retention, retention);
 		QVERIFY(!prepared.source.archive);
 		QVERIFY(!prepared.source.unfinishedGraph);
 		const auto *database = dynamic_cast<const MediaEngine::DatabaseSource *>(prepared.source.storage.data());
-		QVERIFY(database);
-		QCOMPARE(database->image().bytes(), expectedBytes);
-		QCOMPARE(database->image().expectedSize(), qint64(expectedBytes.size()));
-		QCOMPARE(database->image().outcome(), Outcome::Complete);
-		QVERIFY(database->image().acquisitionComplete());
-		const char *const imageBacking = database->image().bytes().constData();
+		if (metadataOnly)
+			QVERIFY(!prepared.source.storage);
+		else
+		{
+			QVERIFY(database);
+			QCOMPARE(database->image().bytes(), expectedBytes);
+			QCOMPARE(database->image().expectedSize(), qint64(expectedBytes.size()));
+			QCOMPARE(database->image().outcome(), Outcome::Complete);
+			QVERIFY(database->image().acquisitionComplete());
+		}
+		const char *const imageBacking = database ? database->image().bytes().constData() : nullptr;
 
 		QBuffer directInput;
 		directInput.setData(expectedBytes);
@@ -704,7 +723,7 @@ private slots:
 		QCOMPARE(prepared.source.container, original.container);
 		QCOMPARE(prepared.source.readReason, original.readReason);
 		QCOMPARE(prepared.source.diagnostics, original.diagnostics);
-		const auto expectedProjection = project(original, active);
+		auto expectedProjection = project(original, active);
 		QVERIFY(!expectedProjection.files.isEmpty() || !expectedProjection.masters.isEmpty());
 		QCOMPARE(prepared.projection.diagnostics, expectedProjection.diagnostics);
 		compareProjectedFiles(prepared.projection.files, expectedProjection.files);
@@ -712,14 +731,33 @@ private slots:
 		if (QTest::currentTestFailed())
 			return;
 
-		// Replace and remove the only input copy before restoring. The stored graph
-		// must come from the captured image, with its original published receipt.
+		// Replace and remove the only input copy before checking the retained facts
+		// or optional replay, with the originally published receipt.
 		QFile replacement(path);
 		QVERIFY(replacement.open(QIODevice::WriteOnly | QIODevice::Truncate));
 		QCOMPARE(replacement.write(acquisitionControl(257)), qint64(257));
 		replacement.close();
 		QVERIFY(QFile::remove(path));
 		QVERIFY(!QFileInfo::exists(path));
+		if (metadataOnly)
+		{
+			MediaEngineProof::Fingerprint before;
+			before.projection(expectedProjection);
+			const auto expectedDigest = before.result();
+			original = {};
+			expectedProjection = {};
+			directInput.close();
+			directInput.setData(QByteArray{});
+			expectedBytes.clear();
+			for (int repetition = 0; repetition < 2; ++repetition)
+			{
+				MediaEngineProof::Fingerprint after;
+				after.projection(prepared.projection);
+				QCOMPARE(after.result(), expectedDigest);
+				QVERIFY(!prepared.source.restore(active));
+			}
+			return;
+		}
 		const auto restored = prepared.source.restore(active);
 		QVERIFY(restored);
 		QCOMPARE(restored->snapshot.data(), prepared.source.snapshot.data());
