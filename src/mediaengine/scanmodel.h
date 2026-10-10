@@ -203,9 +203,16 @@ namespace MediaEngine
 		QStringList diagnostics;
 	};
 
-	// A scan retains the collected source records in its chosen RAM storage.
-	// Matching and file-operation checks use these small receipts; callers
-	// explicitly restore a graph when they need its original records.
+	// Replay keeps original records for later inspection. MetadataOnly keeps the
+	// source receipt; supported observations remain in the projected file evidence.
+	enum class SourceRetention : quint8
+	{
+		Replay,
+		MetadataOnly
+	};
+
+	// Matching and file-operation checks use these small receipts. Replay backing
+	// is optional and does not determine which properties a reader interprets.
 	struct StoredSource
 	{
 		ParsedSource::Outcome outcome = ParsedSource::Outcome::NotRead;
@@ -213,12 +220,14 @@ namespace MediaEngine
 		SourceSnapshotRef snapshot;
 		ParsedSource::Container container = ParsedSource::Container::Unknown;
 		QStringList diagnostics;
+		SourceRetention retention = SourceRetention::Replay;
 		QSharedPointer<const SourceArchive> archive;
-		QSharedPointer<const SourceStore> storage; ///< Alternative backing; ordinary MediaEngine uses archive.
-		// If packing is cancelled, keep the obtained graph without losing facts.
+		QSharedPointer<const SourceStore> storage; ///< Native image backing when replay is retained.
+		// Replay mode keeps the obtained graph if packing is cancelled.
 		QSharedPointer<const ParsedSource> unfinishedGraph;
 
-		static StoredSource store(ParsedSource &&source, const Cancellation &cancellation);
+		static StoredSource store(ParsedSource &&source, const Cancellation &cancellation,
+								  SourceRetention retention = SourceRetention::Replay);
 		std::optional<ParsedSource> restore(const Cancellation &cancellation) const;
 	};
 

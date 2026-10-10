@@ -13,7 +13,7 @@ are used because both database pairs share the filenames
 | `mc2026_audio/bins/` | `WAVE(OMF).avb`, `AIFF-C(OMF).avb` | `~/Documents/Avid Projects/zTeßt_PAL_25p/` |
 
 **Project and bins.** The two audio files were created in project
-`zTeßt_PAL_25p` (the `ß` is deliberate: a MacRoman-hostile character, as
+`zTeßt_PAL_25p` (the `ß` is deliberate: a non-ASCII character, as
 in the MXF corpus) in bins `WAVE(OMF)` and `AIFF-C(OMF)` — one tone each,
 48 kHz, 24-bit, mono, one minute at 25 fps. Their PMR carries the project
 name in MacRoman in both record sets; the Unicode set stores the filename
@@ -21,9 +21,10 @@ in UTF-8 while the project retains MacRoman (`ß` = `0xA7`). The current PMR
 reader preserves the file-set and text-encoding evidence separately.
 
 
-**What every file here has in common.** Each essence file is an Apple
-Bento container (essence first, TOC at the tail) — the same container
-`msmMMOB.mdb` uses. MobIDs inside the files and the MDBs are 12-byte
+**Containers and identities.** The `.omf` files are Apple Bento containers
+(essence first, TOC at the tail), the same container `msmMMOB.mdb` uses.
+The native WAV and AIFF-C files have their own audio-container framing with
+embedded Bento metadata. MobIDs inside the OMF metadata and the MDBs are 12-byte
 `omfi:UID`s; the version-2 PMR stores 8-byte MOBs; Avid's own PMR Unicode
 set and the two bins wrap those 8 bytes in a fixed 16-byte prefix and
 8-byte suffix to make the 32-byte form (`src/omfuid.h`). MC 2026

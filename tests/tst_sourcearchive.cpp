@@ -15,6 +15,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QSemaphore>
+#include <QTemporaryDir>
 #include <QTest>
 #include <cstring>
 #include <exception>
@@ -466,6 +467,60 @@ private slots:
 			compareProjectedFiles(a.files, b.files);
 			compareProjectedFiles(a.masters, b.masters);
 		}
+	}
+	void genuine_legacy_projection_outlives_source_backing_data()
+	{
+		QTest::addColumn<QString>("relative");
+		QTest::addColumn<bool>("cancelBeforeStore");
+		for (const auto &relative : {
+			QStringLiteral("omf/avid_supporting/BLACK_720x576x1_DV411.omf"),
+			QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
+			QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif")})
+			for (const bool cancelBeforeStore : {false, true})
+				QTest::newRow(qPrintable(relative + (cancelBeforeStore ? QStringLiteral("-cancelled-storage") : QStringLiteral("-active"))))
+					<< relative << cancelBeforeStore;
+	}
+	void genuine_legacy_projection_outlives_source_backing()
+	{
+		QFETCH(QString, relative);
+		QFETCH(bool, cancelBeforeStore);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const auto path = temporary.filePath(QFileInfo(relative).fileName());
+		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + '/' + relative, path));
+		QFile input(path);
+		QVERIFY2(input.open(QIODevice::ReadOnly), qPrintable(input.errorString()));
+		const SourceSnapshotRef receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Omf, path, QFileInfo(input).lastModified(), SourceReadState::NotRead});
+		const MediaEngine::Cancellation active;
+		auto original = MediaEngine::OmfReader{}.read(input, {receipt, active});
+		const auto expected = MediaEngine::projectOmf(original, active);
+		QVERIFY(!expected.files.isEmpty());
+		QVERIFY(!expected.files.front().fileMobId.isEmpty());
+		const auto retained = expected;
+		const auto outcome = original.outcome;
+		const auto publishedReceipt = original.snapshot;
+		const auto diagnostics = original.diagnostics;
+		MediaEngine::Cancellation storageCancellation;
+		if (cancelBeforeStore)
+			storageCancellation.cancel();
+		// Already extracted facts and reader outcomes survive cancellation;
+		// MetadataOnly never retains the original records.
+		const auto stored = MediaEngine::StoredSource::store(std::move(original), storageCancellation,
+			MediaEngine::SourceRetention::MetadataOnly);
+		QCOMPARE(stored.retention, MediaEngine::SourceRetention::MetadataOnly);
+		QCOMPARE(stored.outcome, outcome);
+		QCOMPARE(stored.snapshot, publishedReceipt);
+		QCOMPARE(stored.diagnostics, diagnostics);
+		QVERIFY(!stored.archive && !stored.storage && !stored.unfinishedGraph);
+		QVERIFY(!original.snapshot);
+		QVERIFY(original.objects.isEmpty() && original.unownedProperties.isEmpty() && original.embeddedSources.isEmpty());
+		input.close();
+		QVERIFY(QFile::remove(path));
+		QVERIFY(!stored.restore(active));
+		QCOMPARE(retained.diagnostics, expected.diagnostics);
+		compareProjectedFiles(retained.files, expected.files);
+		compareProjectedFiles(retained.masters, expected.masters);
 	}
 	void authored_archive_values_keep_types_optionals_and_namespaces()
 	{

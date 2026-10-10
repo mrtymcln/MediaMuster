@@ -7,11 +7,11 @@ namespace `MediaEngine`.
 | Component | Role |
 | --- | --- |
 | `DiscoveryEngine` | Finds admitted folders/files and creates one physical-file record per location. |
-| `ScanEngine` | Supplies the live native database/MXF storage pipeline. |
+| `ScanEngine` | Keeps exact captured PMR/MDB bytes in RAM; live MXF/OMF media uses `MetadataOnly` retention after projection. |
 | `ScanCoordinator` | Runs discovery, reads databases first, schedules necessary headers, matches identities and selects metadata. |
 | `PmrReader`, `MdbReader`, `MxfReader`, `OmfReader`, `AvbReader` | Decode their source formats with source-local records and read outcomes. MXF and OMF readers remain independent. |
 | `projectPmr`, `projectMdb`, `projectMxf`, `projectOmf` | Interpret recorded properties as qualified file/master facts. Projectors establish meaning and ownership; they do not choose the UI's preferred source. |
-| Source images, archives and `SourceStore` | Keep obtained source information in RAM and allow detailed records to be restored. Original file bytes and decoded source records are different representations. |
+| Source images, archives and `SourceStore` | Supply optional replay backing. Live PMR/MDB snapshots retain their captured bytes; live media retains supported evidence without its source image or graph. Original bytes and decoded records are different representations. |
 | `SourceSnapshot` | Identifies the source and captured context behind an observation. |
 | `MediaEvidence` | Keeps observations, alternatives, read states, basis, eligibility, agreement and selected results. |
 | Metadata selection policy | One compiled preference row per supported property. Scanning and loaded-bin enrichment consume the same selections. |
@@ -19,8 +19,22 @@ namespace `MediaEngine`.
 
 The two build targets, `mediamuster_mediaengine_core` and
 `mediamuster_mediaengine`, are parts of this implementation: readers/coordination
-and live source storage. The diagnostic comparison's `archive` and `native`
-modes use the same format readers with different storage strategies.
+and live source retention. The default `ScanEngine` uses `MetadataOnly` for
+MXF/OMF media: supported values, original observation bytes, alternatives, coverage,
+source receipts and selection evidence survive projection. Complete source graphs,
+unprojected properties and framing details are not retained for those media files,
+so their scan-time source replay is unavailable. This also applies to partial or
+failed media reads; their actual outcomes and diagnostics remain recorded.
+
+PMR/MDB snapshots retain the exact captured database bytes and can replay their
+source records. AVB loading is independent: bin graphs remain retained for reference
+resolution, filtering and enrichment.
+
+The diagnostic comparison's `archive`, `native` and `metadata` modes use this same
+engine and format readers. `archive` retains graph archives, `native` retains native
+database/MXF replay backing, and `metadata` uses the live media-retention policy.
+The latter compares all retained row evidence and receipts without media source
+replay; replay modes remain available for detailed source verification.
 
 Outside this folder, `MediaScanner` owns the background/UI boundary. The
 presentation adapter supplies selected facts to the table and CSV. The interface

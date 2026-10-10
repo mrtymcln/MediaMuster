@@ -148,12 +148,15 @@ database match or required table metadata is missing or conflicting. A deliberat
 unopened header keeps a `NotRead` receipt and the scheduling reason. Empty or malformed
 files remain physical inventory rows.
 
-Source details remain in RAM: complete PMR/MDB bytes, acquired MXF metadata ranges,
-or OMF/legacy graph archives. Detailed records can be restored from this backing.
-Rows share an immutable scan receipt and retain their own observations, selected
-values and selection reasons.
-Known recording payloads are skipped or retained as byte ranges rather than loaded
-as metadata. Unknown property meanings are preserved without fabricated values.
+Exact captured PMR/MDB bytes remain in RAM with source replay available. Live
+MXF/OMF media uses `MetadataOnly`: rows retain supported observations and their
+original bytes, alternatives, field coverage, selected values and selection
+reasons, plus an immutable scan receipt. Their full source images/graphs,
+unprojected properties and framing details are released after projection, including
+partial or failed reads; media source replay is unavailable. Outcomes and
+diagnostics remain recorded. Known recording payloads are skipped rather than
+loaded as metadata. Independently loaded AVB bin graphs remain retained for
+filtering and enrichment. Readers do not invent meanings for unknown properties.
 
 PMR association prefers an exact filename. A normalized spelling is a fallback only
 when it identifies one physical location; contradictory or ambiguous identities
@@ -177,8 +180,8 @@ Unknown clip names stay blank; filenames are not substitutes.
 
 For unlabelled text, valid UTF-8 may supply a displayed value as an explicit inference.
 Legacy OMF/MDB text may fall back to inferred MacRoman when UTF-8 is invalid. The
-original bytes and undeclared encoding remain in the source graph; the interpreted
-observation records the inferred encoding and explanation. This does not relabel a
+original bytes remain in the observation evidence, alongside the inferred encoding
+and an explanation that the source did not declare it. This does not relabel a
 whole file set as having one proven encoding.
 
 Every physical row receives a scan-session `KelpieId`. Copies with matching metadata

@@ -1,4 +1,4 @@
-// Supplies native database and MXF storage to MediaEngine's existing scan coordinator.
+// Supplies original database images and the chosen media-header retention to the coordinator.
 
 #include "scanengine.h"
 #include "databasesource.h"
@@ -11,6 +11,8 @@ namespace MediaEngine
 		class ImagePipeline final : public MediaEngine::SourcePipeline
 		{
 		public:
+			explicit ImagePipeline(SourceRetention mediaRetention) : m_mediaRetention(mediaRetention) {}
+			SourceRetention mediaRetention() const override { return m_mediaRetention; }
 			MediaEngine::PreparedSource processDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
 														const MediaEngine::Cancellation &cancellation) const override
 			{
@@ -20,15 +22,18 @@ namespace MediaEngine
 																  const QString &readReason,
 																  const MediaEngine::Cancellation &cancellation) const override
 			{
-				return prepareMxf(candidate, readReason, cancellation);
+				return prepareMxf(candidate, readReason, cancellation, m_mediaRetention);
 			}
+
+		private:
+			SourceRetention m_mediaRetention;
 		};
 	}
 
 	MediaEngine::ScanResult ScanEngine::scan(const MediaEngine::ScanRequest &request, const MediaEngine::Cancellation &cancellation,
 											 const MediaEngine::ScanCallbacks &callbacks) const
 	{
-		const ImagePipeline pipeline;
+		const ImagePipeline pipeline(m_mediaRetention);
 		return MediaEngine::ScanCoordinator{}.scan(request, cancellation, callbacks, &pipeline);
 	}
 }

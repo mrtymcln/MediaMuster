@@ -13,8 +13,12 @@ The [live integration report](canon2-live-integration-2026-10-10.md) records nat
 PMR/MDB and MXF source storage. The [retention plan](newtestament-retention-plan-2026-10-10.md)
 records proposed stepwise trade-offs. The user approved steps 1 and 2; the
 [11 October optimization report](mediaengine-steps-1-2-2026-10-11.md) records their
-implementation, preservation proofs and measurements. Source-retention cuts
-remain unapproved.
+implementation, preservation proofs and measurements. The user then approved
+stages 3a and 3b: live media scans retain supported MXF/OMF observations and
+evidence without full source replay backing. PMR/MDB snapshots and AVB graphs
+remain retained. The [media-retention report](mediaengine-media-retention-2026-10-11.md)
+records the bounded change, its deliberate loss and measurements. Removing
+PMR/MDB snapshots remains a separate, unapproved proposal.
 Compression changes remain on hold. Project Canon remains the requirements folder
 name: canonical correctness is an objective, not a claim that every parser rule
 is proven. Dated verification records retain their source-state limits.

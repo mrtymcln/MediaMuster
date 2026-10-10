@@ -13,6 +13,7 @@
 #include "mediaengine/sourcearchive.h"
 #include "mediaengine/databasesource.h"
 #include "mediaengine/mxfsource.h"
+#include "mediaenginefingerprint.h"
 #include "featureflags.h"
 #include "mediafile.h"
 #include "mediametadata.h"
@@ -172,10 +173,10 @@ namespace
 		QVERIFY(source != file.mediaEngineScan->sources.cend());
 		QCOMPARE(source->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
 		QCOMPARE(source->snapshot->readState, SourceReadState::NotRead);
+		QCOMPARE(source->retention, MediaEngine::SourceRetention::MetadataOnly);
+		QVERIFY(!source->archive && !source->storage && !source->unfinishedGraph);
 		const MediaEngine::Cancellation inspection;
-		const auto restored = source->restore(inspection);
-		QVERIFY(restored);
-		QVERIFY(restored->objects.isEmpty());
+		QVERIFY(!source->restore(inspection));
 		QVERIFY(source->readReason.startsWith(QStringLiteral("Header not read:")));
 		QVERIFY(hasDatabaseEvidence(file));
 		for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
@@ -418,14 +419,7 @@ void TestScanner::optional_read_only_real_scan()
 			mxfImageBytes += capturedMxfBytes;
 			archiveCount += !source.archive.isNull();
 			archiveBytes += source.archive ? source.archive->compressedBytes() : 0;
-			// Inspect one source at a time; retaining every restored graph would
-			// recreate the application's former memory use in this audit itself.
-			const MediaEngine::Cancellation inspection;
-			const auto restored = source.restore(inspection);
-			QVERIFY(restored);
-			AuditGraphSize size;
-			countAuditGraph(*restored, size);
-			sourceDetails.append(QJsonObject{
+			QJsonObject detail{
 				{"path", source.snapshot ? source.snapshot->path : QString{}},
 				{"source", source.snapshot ? int(source.snapshot->source) : -1},
 				{"outcome", int(source.outcome)},
@@ -438,11 +432,31 @@ void TestScanner::optional_read_only_real_scan()
 				{"serializedBytes", source.archive ? source.archive->serializedBytes() : qint64(0)},
 				{"archiveBlocks", source.archive ? qint64(source.archive->blockCount()) : qint64(0)},
 				{"expandedCancellationFallback", !source.unfinishedGraph.isNull()},
-				{"objects", size.objects},
-				{"relationships", size.relationships},
-				{"properties", size.properties},
-				{"propertyCapacity", size.propertyCapacity},
-				{"encodingBytes", size.encodingBytes}});
+				{"retention", source.retention == MediaEngine::SourceRetention::MetadataOnly ? "metadata-only" : "replay"}};
+			const MediaEngine::Cancellation inspection;
+			const auto restored = source.restore(inspection);
+			if (source.retention == MediaEngine::SourceRetention::MetadataOnly)
+			{
+				QVERIFY(!source.archive && !source.storage && !source.unfinishedGraph);
+				QVERIFY(!restored);
+				// Unavailable replay counts are omitted, rather than reported as zero
+				// records. Media facts and source receipts remain in the row inventory.
+				detail.insert(QStringLiteral("replayAvailable"), false);
+			}
+			else
+			{
+				// Inspect retained databases one at a time, after the memory sample.
+				QVERIFY(restored);
+				AuditGraphSize size;
+				countAuditGraph(*restored, size);
+				detail.insert(QStringLiteral("replayAvailable"), true);
+				detail.insert(QStringLiteral("objects"), size.objects);
+				detail.insert(QStringLiteral("relationships"), size.relationships);
+				detail.insert(QStringLiteral("properties"), size.properties);
+				detail.insert(QStringLiteral("propertyCapacity"), size.propertyCapacity);
+				detail.insert(QStringLiteral("encodingBytes"), size.encodingBytes);
+			}
+			sourceDetails.append(detail);
 		}
 	}
 	QSet<KelpieId> ids;
@@ -455,7 +469,9 @@ void TestScanner::optional_read_only_real_scan()
 		ids.insert(file.kelpieId);
 		paths.insert(file.mediaFilePath);
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
-		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"mobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Compression).size())}});
+		MediaEngineProof::Fingerprint evidence;
+		evidence.evidence(file.evidence); // All supported fields, observations, coverage and selections.
+		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"mobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Compression).size())}, {"evidenceSha256", QString::fromLatin1(evidence.result())}});
 	}
 	QJsonArray issueDetails;
 	for (const auto &issue : qvariant_cast<QVector<ScanIssue>>(issues.first().first()))
@@ -2289,30 +2305,30 @@ void TestScanner::folder_without_databases_reads_every_header()
 	QCOMPARE(mf.mediaEngineScan->sources.size(), 1);
 	const auto &stored = mf.mediaEngineScan->sources.first();
 	QCOMPARE(stored.outcome, MediaEngine::ParsedSource::Outcome::Complete);
-	const auto *mxf = dynamic_cast<const MediaEngine::MxfSource *>(stored.storage.data());
-	QVERIFY(mxf);
+	QCOMPARE(stored.retention, MediaEngine::SourceRetention::MetadataOnly);
+	QVERIFY(!stored.storage);
 	QVERIFY(!stored.archive);
 	QVERIFY(!stored.unfinishedGraph);
-	QVERIFY(mxf->image().valid());
-	QVERIFY(mxf->image().storedBytes() > 0);
 	const MediaEngine::Cancellation inspection;
-	const auto beforeRemoval = stored.restore(inspection);
-	QVERIFY(beforeRemoval);
-	QVERIFY(!beforeRemoval->objects.isEmpty());
-	// Removing only the disposable copy proves the UI row owns its RAM source.
+	QVERIFY(!stored.restore(inspection));
+	QCOMPARE(mf.mediaEngineScan->files.size(), 1);
+	MediaEngineProof::Fingerprint before;
+	before.file(mf.mediaEngineScan->files.front());
+	const auto beforeDigest = before.result();
+	// Removing only the disposable copy proves the row owns its extracted facts.
 	QVERIFY(QFile::remove(mf.mediaFilePath));
-	const auto restored = stored.restore(inspection);
-	QVERIFY(restored);
-	QCOMPARE(restored->snapshot, stored.snapshot);
-	QCOMPARE(restored->objects.size(), beforeRemoval->objects.size());
-	QCOMPARE(restored->relationships.size(), beforeRemoval->relationships.size());
-	QCOMPARE(restored->objects.first().snapshot, beforeRemoval->objects.first().snapshot);
-	const auto projection = MediaEngine::projectMxf(*restored, inspection);
-	QCOMPARE(projection.files.size(), 1);
-	QCOMPARE(projection.files.first().fileMobId, mf.fileMobId);
+	MediaEngineProof::Fingerprint after;
+	after.file(mf.mediaEngineScan->files.front());
+	QCOMPARE(after.result(), beforeDigest);
+	const auto retained = mediaEngineMediaFile(mf.mediaEngineScan->files.front(), mf.mediaEngineScan);
+	QCOMPARE(retained.fileMobId, mf.fileMobId);
+	QCOMPARE(retained.clipName, mf.clipName);
+	QCOMPARE(retained.compression, mf.compression);
+	QCOMPARE(retained.sampleRate, mf.sampleRate);
+	QVERIFY(!stored.restore(inspection));
 	bool sharedReceipt = false;
 	for (const auto &observation : mf.evidence.observations(MediaProperty::FileMobId))
-		sharedReceipt |= observation.snapshot == restored->snapshot;
+		sharedReceipt |= observation.snapshot == stored.snapshot;
 	QVERIFY(sharedReceipt);
 }
 

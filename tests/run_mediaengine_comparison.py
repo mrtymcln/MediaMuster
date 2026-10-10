@@ -176,7 +176,7 @@ def check_report(report, mode, expected_rows, csv_path):
     else:
         require(not any(field in report for field in FULL_COUNT_FIELDS),
                 "Scan mode reports unmeasured source graph counts")
-    if report["engine"] == "native":
+    if report["engine"] in ("native", "metadata"):
         require(report["storage"]["databaseArchives"] == 0, "MediaEngine retained full database archives")
         databases = [source for source in report["sourceDigests"]
                      if source["hint"] in (0, 1) and source["outcome"] != 0]
@@ -209,6 +209,24 @@ def check_report(report, mode, expected_rows, csv_path):
                 "MediaEngine native MXF array capacity total differs from source images")
         require(storage["nativeDatabaseImageBytes"] == storage["nativeImageBytes"],
                 "Explicit database byte total differs from historical report alias")
+        if report["engine"] == "metadata":
+            require(mode == "scan", "Metadata-only media incorrectly claims a full replay proof")
+            for source in report["sourceDigests"]:
+                if source["hint"] in (2, 3):
+                    require(source.get("retention") == "metadata-only"
+                            and source.get("sourceBackingAvailable") is False,
+                            f"Media source retained replay backing: {source['path']}")
+                    require("mxfImage" not in source,
+                            f"Metadata-only media published an acquired image: {source['path']}")
+                else:
+                    require(source.get("retention") == "replay",
+                            f"Database retention policy changed: {source['path']}")
+            require(all(storage[field] == 0 for field in (
+                "mxfArchives", "legacyMediaArchives", "nativeMxfImages",
+                "nativeMxfImageBytes", "nativeMxfAcquiredBytes", "nativeMxfImageRanges",
+                "nativeMxfRangeCapacityBytes", "mxfArchiveCompressedBytes",
+                "legacyMediaArchiveCompressedBytes", "completeMxfArchiveFallbacks",
+            )), "Metadata-only media kept an image or graph archive")
         for source in mxf_sources:
             image = source["mxfImage"]
             require(source["hint"] == 2 and source["outcome"] == 1,

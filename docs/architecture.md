@@ -70,8 +70,8 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
 | [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
 | [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
-| [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, retaining original graphs and competing evidence. |
-| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Supplies native database/MXF source storage to the live scan. |
+| [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of optional source replay. |
+| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Retains exact captured PMR/MDB bytes; defaults to `MetadataOnly` for MXF/OMF media, keeping supported evidence and receipts without media source replay. AVB graphs remain independently retained. |
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
 | [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |

@@ -22,10 +22,12 @@ namespace MediaEngine
 		SourcePipeline &operator=(const SourcePipeline &) = delete;
 		SourcePipeline(SourcePipeline &&) = delete;
 		SourcePipeline &operator=(SourcePipeline &&) = delete;
+		// Applies only to media headers. Database retention remains independent.
+		virtual SourceRetention mediaRetention() const { return SourceRetention::Replay; }
 		virtual PreparedSource processDatabase(const SourceCandidate &candidate,
 											   const QString &readReason, const Cancellation &cancellation) const = 0;
-		// An absent alternative keeps the scanner's established MXF reader/archive
-		// path. This hook changes storage after the scheduler has chosen a header.
+		// An absent alternative keeps the scanner's established MXF reader path.
+		// This hook changes storage after the scheduler has chosen a header.
 		virtual std::optional<PreparedSource> processMxf(const SourceCandidate &,
 														 const QString &, const Cancellation &) const
 		{

@@ -1,4 +1,4 @@
-// Genuine Avid media proves RAM-only graph/evidence restoration. The controlled
+// Genuine Avid media proves extracted-fact ownership and optional RAM replay. The controlled
 // device alters I/O timing and failures, never authors an alternative MXF layout.
 // A small selection of genuine excerpts checks incomplete-read fallback; the
 // existing archive suites already cover that storage path across the full corpus.
@@ -129,11 +129,18 @@ class TestMediaEngineMxfSource final : public QObject
 {
 	Q_OBJECT
 private slots:
-	void genuineSourcesRestoreFromOwnedRam_data()
+	void genuineSourcesPreserveProjectedFacts_data()
 	{
 		QTest::addColumn<QString>("relative");
 		QTest::addColumn<bool>("complete");
-		QTest::newRow("full-Avid-tone") << QStringLiteral("TONE_100A01.EA7D504A.611740.mxf") << true;
+		QTest::addColumn<bool>("metadataOnly");
+		const auto add = [](const QString &name, const QString &relative, bool complete)
+		{
+			for (const bool metadataOnly : {false, true})
+				QTest::newRow(qPrintable(name + (metadataOnly ? QStringLiteral("-metadata") : QStringLiteral("-replay"))))
+					<< relative << complete << metadataOnly;
+		};
+		add(QStringLiteral("full-Avid-tone"), QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), true);
 		for (const auto &relative : {
 			QStringLiteral("avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf"),
 			QStringLiteral("avid_headers/A02.E683C414_F82F4F82F462CA.mxf"),
@@ -143,16 +150,17 @@ private slots:
 			QStringLiteral("corpus_headers/A02.E69CEE7D_F99D0F99D03E7A.mxf"),
 			QStringLiteral("corpus_headers/V01.E68C0042_3ABA203ABA24EV.mxf"),
 			QStringLiteral("corpus_headers/V01.E69BC935_1B2851B28565FV.mxf")})
-			QTest::newRow(qPrintable(relative)) << relative << false;
+			add(relative, relative, false);
 	}
 
-	void genuineSourcesRestoreFromOwnedRam()
+	void genuineSourcesPreserveProjectedFacts()
 	{
 		QFETCH(QString, relative);
 		QFETCH(bool, complete);
+		QFETCH(bool, metadataOnly);
 		QFile fixture(QStringLiteral(FIXTURES_DIR) + '/' + relative);
 		QVERIFY2(fixture.open(QIODevice::ReadOnly), qPrintable(fixture.errorString()));
-		const QByteArray originalBytes = fixture.readAll();
+		QByteArray originalBytes = fixture.readAll();
 		QVERIFY(!originalBytes.isEmpty());
 		fixture.close();
 		QTemporaryDir temporary;
@@ -162,9 +170,15 @@ private slots:
 		const MediaEngine::SourceCandidate candidate{MediaEngine::SourceCandidate::ReaderHint::Mxf,
 			path, QFileInfo(path).lastModified(), 73};
 		const MediaEngine::Cancellation active;
-		const auto prepared = MediaEngine::prepareMxf(candidate, readReason, active);
+		const auto retention = metadataOnly ? MediaEngine::SourceRetention::MetadataOnly : MediaEngine::SourceRetention::Replay;
+		const auto prepared = MediaEngine::prepareMxf(candidate, readReason, active, retention);
+		QCOMPARE(prepared.source.retention, retention);
 		const auto *native = dynamic_cast<const MediaEngine::MxfSource *>(prepared.source.storage.data());
-		if (complete)
+		if (metadataOnly)
+		{
+			QVERIFY(!prepared.source.storage && !prepared.source.archive && !prepared.source.unfinishedGraph);
+		}
+		else if (complete)
 		{
 			QVERIFY(native);
 			QVERIFY(!prepared.source.archive);
@@ -195,7 +209,7 @@ private slots:
 		QCOMPARE(prepared.source.outcome, complete ? Outcome::Complete : Outcome::Incomplete);
 		QCOMPARE(prepared.source.container, expected.container);
 		QCOMPARE(prepared.source.diagnostics, expected.diagnostics);
-		const auto expectedProjection = MediaEngine::projectMxf(expected, active);
+		auto expectedProjection = MediaEngine::projectMxf(expected, active);
 		QCOMPARE(projectionFingerprint(prepared.projection), projectionFingerprint(expectedProjection));
 		QVERIFY(!expected.objects.isEmpty());
 
@@ -205,6 +219,24 @@ private slots:
 		replacement.close();
 		QVERIFY(QFile::remove(path));
 		QVERIFY(!QFileInfo::exists(path));
+		if (metadataOnly)
+		{
+			const auto expectedDigest = projectionFingerprint(expectedProjection);
+			// Remove the independent reader, its input and its projection before
+			// checking that the extracted facts own their values and source receipts.
+			expected = {};
+			expectedProjection = {};
+			direct.close();
+			direct.setData(QByteArray{});
+			originalBytes.clear();
+			QVERIFY(!prepared.projection.files.isEmpty());
+			for (int repetition = 0; repetition < 2; ++repetition)
+			{
+				QCOMPARE(projectionFingerprint(prepared.projection), expectedDigest);
+				QVERIFY(!prepared.source.restore(active));
+			}
+			return;
+		}
 		for (int repetition = 0; repetition < 2; ++repetition)
 		{
 			const auto restored = prepared.source.restore(active);
@@ -221,16 +253,19 @@ private slots:
 	void controlledAcquisitionPreservesActualOutcome_data()
 	{
 		QTest::addColumn<int>("control");
-		QTest::newRow("short-reads") << 0;
-		QTest::newRow("I-O-failure") << 1;
-		QTest::newRow("cancelled-read") << 2;
-		QTest::newRow("changing-length") << 3;
-		QTest::newRow("conflicting-reread") << 4;
+		QTest::addColumn<bool>("metadataOnly");
+		const QStringList names{QStringLiteral("short-reads"), QStringLiteral("I-O-failure"),
+			QStringLiteral("cancelled-read"), QStringLiteral("changing-length"), QStringLiteral("conflicting-reread")};
+		for (int control = 0; control < names.size(); ++control)
+			for (const bool metadataOnly : {false, true})
+				QTest::newRow(qPrintable(names[control] + (metadataOnly ? QStringLiteral("-metadata") : QStringLiteral("-replay"))))
+					<< control << metadataOnly;
 	}
 
 	void controlledAcquisitionPreservesActualOutcome()
 	{
 		QFETCH(int, control);
+		QFETCH(bool, metadataOnly);
 		const auto bytes = fixtureBytes();
 		QVERIFY(!bytes.isEmpty());
 		MediaEngine::Cancellation acquisition, expectedAcquisition;
@@ -247,7 +282,9 @@ private slots:
 			QStringLiteral("/unavailable/original-tone.mxf"), {}, 73};
 		auto expected = MediaEngine::MxfReader{}.read(direct, {receipt(candidate), expectedAcquisition});
 		expected.readReason = readReason;
-		const auto prepared = MediaEngine::prepareMxf(input, candidate, readReason, acquisition);
+		const auto retention = metadataOnly ? MediaEngine::SourceRetention::MetadataOnly : MediaEngine::SourceRetention::Replay;
+		const auto prepared = MediaEngine::prepareMxf(input, candidate, readReason, acquisition, retention);
+		QCOMPARE(prepared.source.retention, retention);
 		QVERIFY(input.isOpen());
 		QCOMPARE(input.acquired, direct.acquired);
 		QCOMPARE(prepared.source.outcome, expected.outcome);
@@ -256,6 +293,20 @@ private slots:
 		mapPublishedReceipt(expected, prepared.source.snapshot);
 		if (QTest::currentTestFailed())
 			return;
+		const MediaEngine::Cancellation inspect;
+		if (metadataOnly)
+		{
+			QVERIFY(!prepared.source.storage && !prepared.source.archive && !prepared.source.unfinishedGraph);
+			QVERIFY(!prepared.source.restore(inspect));
+			if (control != 2)
+				QCOMPARE(projectionFingerprint(prepared.projection), projectionFingerprint(MediaEngine::projectMxf(expected, inspect)));
+			else
+			{
+				QVERIFY(prepared.projection.files.isEmpty());
+				QVERIFY(prepared.projection.masters.isEmpty());
+			}
+			return;
+		}
 		const auto *native = dynamic_cast<const MediaEngine::MxfSource *>(prepared.source.storage.data());
 		if (control == 0)
 		{
@@ -276,7 +327,6 @@ private slots:
 			else
 				QVERIFY(prepared.source.archive);
 		}
-		const MediaEngine::Cancellation inspect;
 		const auto restored = prepared.source.restore(inspect);
 		QVERIFY(restored);
 		QCOMPARE(graphFingerprint(*restored), graphFingerprint(expected));
@@ -285,30 +335,49 @@ private slots:
 			QCOMPARE(projectionFingerprint(prepared.projection), projectionFingerprint(MediaEngine::projectMxf(expected, inspect)));
 	}
 
+	void alreadyCancelledDoesNotTouchInput_data()
+	{
+		QTest::addColumn<bool>("metadataOnly");
+		QTest::newRow("replay") << false;
+		QTest::newRow("metadata") << true;
+	}
 	void alreadyCancelledDoesNotTouchInput()
 	{
+		QFETCH(bool, metadataOnly);
 		ControlledDevice input(fixtureBytes());
 		MediaEngine::Cancellation cancelled;
 		cancelled.cancel();
 		const MediaEngine::SourceCandidate candidate{MediaEngine::SourceCandidate::ReaderHint::Mxf,
 			QStringLiteral("/unavailable/tone.mxf"), {}, 73};
-		const auto prepared = MediaEngine::prepareMxf(input, candidate, readReason, cancelled);
+		const auto retention = metadataOnly ? MediaEngine::SourceRetention::MetadataOnly : MediaEngine::SourceRetention::Replay;
+		const auto prepared = MediaEngine::prepareMxf(input, candidate, readReason, cancelled, retention);
+		QCOMPARE(prepared.source.retention, retention);
 		QCOMPARE(input.acquired, qint64(0));
 		QCOMPARE(prepared.source.outcome, Outcome::Cancelled);
 		QCOMPARE(prepared.source.snapshot->readState, SourceReadState::NotRead);
 		QVERIFY(prepared.source.diagnostics.isEmpty());
-		QVERIFY(prepared.source.unfinishedGraph);
 		QVERIFY(!prepared.source.storage);
 		const MediaEngine::Cancellation inspect;
 		const auto restored = prepared.source.restore(inspect);
-		QVERIFY(restored);
-		QCOMPARE(restored->outcome, Outcome::Cancelled);
-		QVERIFY(restored->objects.isEmpty());
+		if (metadataOnly)
+		{
+			QVERIFY(!prepared.source.archive && !prepared.source.unfinishedGraph);
+			QVERIFY(!restored);
+		}
+		else
+		{
+			QVERIFY(prepared.source.unfinishedGraph);
+			QVERIFY(restored);
+			QCOMPARE(restored->outcome, Outcome::Cancelled);
+			QVERIFY(restored->objects.isEmpty());
+		}
 		QVERIFY(prepared.projection.files.isEmpty());
 	}
 
+	void openFailureKeepsFilesystemDiagnostic_data() { alreadyCancelledDoesNotTouchInput_data(); }
 	void openFailureKeepsFilesystemDiagnostic()
 	{
+		QFETCH(bool, metadataOnly);
 		QTemporaryDir temporary;
 		QVERIFY(temporary.isValid());
 		const auto path = temporary.filePath(QStringLiteral("missing.mxf"));
@@ -316,17 +385,27 @@ private slots:
 		QVERIFY(!reference.open(QIODevice::ReadOnly));
 		const MediaEngine::SourceCandidate candidate{MediaEngine::SourceCandidate::ReaderHint::Mxf, path, {}, 73};
 		const MediaEngine::Cancellation active;
-		const auto prepared = MediaEngine::prepareMxf(candidate, readReason, active);
+		const auto retention = metadataOnly ? MediaEngine::SourceRetention::MetadataOnly : MediaEngine::SourceRetention::Replay;
+		const auto prepared = MediaEngine::prepareMxf(candidate, readReason, active, retention);
+		QCOMPARE(prepared.source.retention, retention);
 		QCOMPARE(prepared.source.outcome, Outcome::IoError);
 		QCOMPARE(prepared.source.container, MediaEngine::ParsedSource::Container::Unknown);
 		QCOMPARE(prepared.source.snapshot->readState, SourceReadState::Unreadable);
 		QCOMPARE(prepared.source.diagnostics, QStringList{reference.errorString()});
-		QVERIFY(prepared.source.archive);
 		const auto restored = prepared.source.restore(active);
-		QVERIFY(restored);
-		QCOMPARE(restored->snapshot.data(), prepared.source.snapshot.data());
-		QCOMPARE(restored->diagnostics, prepared.source.diagnostics);
-		QVERIFY(restored->objects.isEmpty());
+		if (metadataOnly)
+		{
+			QVERIFY(!prepared.source.storage && !prepared.source.archive && !prepared.source.unfinishedGraph);
+			QVERIFY(!restored);
+		}
+		else
+		{
+			QVERIFY(prepared.source.archive);
+			QVERIFY(restored);
+			QCOMPARE(restored->snapshot.data(), prepared.source.snapshot.data());
+			QCOMPARE(restored->diagnostics, prepared.source.diagnostics);
+			QVERIFY(restored->objects.isEmpty());
+		}
 	}
 };
 

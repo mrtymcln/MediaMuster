@@ -136,8 +136,8 @@ set_target_properties(mediamuster_mediaengine_core PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_mediaengine_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(mediamuster_mediaengine_core PUBLIC Qt6::Core)
 
-# Live scan storage: original PMR/MDB images and acquired MXF bytes replace graphs.
-# The engine supplies native storage to the core's verified readers and coordinator.
+# Live scans retain exact PMR/MDB images and supported MXF/OMF evidence.
+# Optional native media replay uses the same core readers and coordinator.
 add_library(mediamuster_mediaengine STATIC
     src/mediaengine/databaseimage.cpp
     src/mediaengine/databaseimage.h

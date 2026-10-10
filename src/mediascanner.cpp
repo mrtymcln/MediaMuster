@@ -312,6 +312,8 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 				 QStringLiteral("RAM source images: %1 database(s), %2 bytes; %3 MXF source(s), %4 bytes").arg(databaseImages).arg(databaseImageBytes).arg(mxfImages).arg(mxfImageBytes)});
 	logs.append({QtInfoMsg, QStringLiteral("scanner"),
 				 QStringLiteral("RAM source archives: %1 source(s), %2 serialized bytes, %3 compressed bytes").arg(archivedSources).arg(serializedBytes).arg(compressedBytes)});
+	logs.append({QtInfoMsg, QStringLiteral("scanner"),
+				 QStringLiteral("RAM retention: %1 source receipts plus extracted metadata/evidence; PMR/MDB snapshots retained, media replay discarded").arg(session->sources.size())});
 	QVector<MediaFile> rows;
 	rows.reserve(session->files.size());
 	for (const auto &file : session->files)

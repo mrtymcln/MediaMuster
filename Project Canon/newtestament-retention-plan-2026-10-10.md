@@ -2,9 +2,13 @@
 
 Recorded 10 October 2026. The user approved the names below and asked for a
 step-by-step account of what could be removed, what it could improve, and what
-information or correctness would be lost. The retention cuts in this document remain proposals. The user subsequently
-approved steps 1 and 2; their bounded implementation and measurements are recorded
-in the [11 October report](mediaengine-steps-1-2-2026-10-11.md).
+information or correctness would be lost. The user subsequently approved steps
+1 and 2; their bounded implementation and measurements are recorded in the
+[11 October report](mediaengine-steps-1-2-2026-10-11.md). On 11 October the user
+approved stages 3a and 3b, including discarding partial media archives, while
+explicitly keeping PMR/MDB snapshots for later consideration. The
+[media-retention report](mediaengine-media-retention-2026-10-11.md) records this scope.
+Stages 3c and 4–7 remain proposals.
 
 ## Current status
 
@@ -25,11 +29,16 @@ alternatives or retained row/candidate receipts. Step 2 adds compact explanation
 codes, narrow state enums and source-scoped shared owner text. Numeric object
 handles, typed rate/duration APIs and shared receipts were already present; no
 new observation-value schema migration or blanket index/row clearing was done.
-The original stage descriptions below retain their proposal scope.
+Live media now retains extracted metadata and evidence without full MXF images
+or OMF/legacy graph archives, including partial/failed/cancelled reads. Exact
+PMR/MDB source images remain retained; AVB reference graphs are unchanged.
+Standalone reader verification can explicitly retain media replay. The stage
+descriptions below explain each change's scope and trade-offs; approval of one
+does not authorize another.
 
 ## The useful dividing line
 
-The app currently uses extracted metadata, competing observations, source
+The app uses extracted metadata, competing observations, source
 receipts, read/encoding/freshness states, identities and relationships required
 for matching/filtering. It does not call stored PMR/MDB/MXF/OMF source replay from
 the live table, CSV, matching, bin enrichment or file-operation path.

@@ -1,7 +1,6 @@
 #include "mediaengine/scancoordinator.h"
 #ifdef MEDIAMUSTER_TEST_NATIVE_STORAGE
 #include "mediaengine/scanengine.h"
-#include "mediaengine/mxfsource.h"
 using TestScanEngine = MediaEngine::ScanEngine;
 #else
 using TestScanEngine = MediaEngine::ScanCoordinator;
@@ -206,8 +205,16 @@ private slots:
 		QVERIFY2(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, qPrintable(header->readReason));
 		QCOMPARE(header->snapshot->readState, SourceReadState::NotRead);
 		const auto restoredHeader = header->restore(cancellation);
-		QVERIFY(restoredHeader);
-		QVERIFY(restoredHeader->objects.isEmpty());
+		if (header->retention == MediaEngine::SourceRetention::MetadataOnly)
+		{
+			QVERIFY(!header->archive && !header->storage && !header->unfinishedGraph);
+			QVERIFY(!restoredHeader);
+		}
+		else
+		{
+			QVERIFY(restoredHeader);
+			QVERIFY(restoredHeader->objects.isEmpty());
+		}
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).state, PropertyReadState::NotRead);
@@ -487,7 +494,7 @@ private slots:
 			QCOMPARE(distinct.observations(MediaProperty::ClipDuration).first().value.toList(), (QVariantList{first, other}));
 		}
 	}
-	void copies_own_rows_and_share_original_sources()
+	void copies_own_rows_and_share_source_receipts()
 	{
 		QTemporaryDir temporary;
 		QVERIFY(temporary.isValid());
@@ -514,16 +521,22 @@ private slots:
 		QCOMPARE(first.scanStamp.mobId, first.fileMobId);
 		const auto &stored = first.mediaEngineScan->sources.front();
 #ifdef MEDIAMUSTER_TEST_NATIVE_STORAGE
-		QVERIFY(dynamic_cast<const MediaEngine::MxfSource *>(stored.storage.data()));
+		QCOMPARE(stored.retention, MediaEngine::SourceRetention::MetadataOnly);
+		QVERIFY(!stored.storage);
 		QVERIFY(!stored.archive);
 #else
 		QVERIFY(stored.archive);
 #endif
 		QVERIFY(!stored.unfinishedGraph);
 		const auto restored = stored.restore(cancellation);
-		QVERIFY(restored);
-		QCOMPARE(restored->snapshot, stored.snapshot);
-		QVERIFY(!restored->objects.isEmpty());
+		if (stored.retention == MediaEngine::SourceRetention::MetadataOnly)
+			QVERIFY(!restored);
+		else
+		{
+			QVERIFY(restored);
+			QCOMPARE(restored->snapshot, stored.snapshot);
+			QVERIFY(!restored->objects.isEmpty());
+		}
 		QVERIFY(!first.evidence.observations(MediaProperty::FileMobId).isEmpty());
 		QCOMPARE(first.kind, MediaFile::Kind::Audio);
 		QCOMPARE(first.dbStatus, MediaFile::DbStatus::NoDatabase);
@@ -798,8 +811,16 @@ private slots:
 			QCOMPARE(source.snapshot->readState, SourceReadState::NotRead);
 			const MediaEngine::Cancellation inspection;
 			const auto restored = source.restore(inspection);
-			QVERIFY(restored);
-			QVERIFY(restored->objects.isEmpty());
+			if (source.retention == MediaEngine::SourceRetention::MetadataOnly)
+			{
+				QVERIFY(!source.archive && !source.storage && !source.unfinishedGraph);
+				QVERIFY(!restored);
+			}
+			else
+			{
+				QVERIFY(restored);
+				QVERIFY(restored->objects.isEmpty());
+			}
 		}
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}

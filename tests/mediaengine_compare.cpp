@@ -351,10 +351,10 @@ int main(int argc, char **argv)
 	QCoreApplication app(argc, argv);
 	QCoreApplication::setApplicationName(QStringLiteral("mediaengine_compare"));
 	QCommandLineParser parser;
-	parser.setApplicationDescription(QStringLiteral("Read-only MediaEngine archive/native semantic, byte and process-memory comparison"));
+	parser.setApplicationDescription(QStringLiteral("Read-only MediaEngine source-retention, semantic and process-memory comparison"));
 	parser.addHelpOption();
-	// Both modes use the same engine; only their retained source backing differs.
-	const QCommandLineOption engineOption(QStringLiteral("engine"), QStringLiteral("Storage mode: archive or native"), QStringLiteral("mode"));
+	// All modes share readers and matching; only source retention differs.
+	const QCommandLineOption engineOption(QStringLiteral("engine"), QStringLiteral("Storage mode: archive, native (replay), or metadata (live media retention)"), QStringLiteral("mode"));
 	const QCommandLineOption outputOption(QStringLiteral("output"), QStringLiteral("JSON report path; - writes stdout"), QStringLiteral("path"), QStringLiteral("-"));
 	const QCommandLineOption csvOption(QStringLiteral("csv"), QStringLiteral("Optional app-boundary CSV path"), QStringLiteral("path"));
 	const QCommandLineOption expectedRowsOption(QStringLiteral("expected-rows"), QStringLiteral("Require this physical row count"), QStringLiteral("count"));
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
 	parser.addPositionalArgument(QStringLiteral("roots"), QStringLiteral("One or more managed roots or direct containing bases"), QStringLiteral("roots..."));
 	parser.process(app);
 	const auto engine = parser.value(engineOption);
-	if ((engine != QLatin1String("archive") && engine != QLatin1String("native")) || parser.positionalArguments().isEmpty())
+	if ((engine != QLatin1String("archive") && engine != QLatin1String("native") && engine != QLatin1String("metadata")) || parser.positionalArguments().isEmpty())
 		parser.showHelp(1);
 	bool validRows = true;
 	const qint64 expectedRows = parser.isSet(expectedRowsOption) ? parser.value(expectedRowsOption).toLongLong(&validRows) : -1;
@@ -372,6 +372,11 @@ int main(int argc, char **argv)
 		parser.showHelp(1);
 
 	const bool measureOnly = parser.isSet(measureOnlyOption);
+	if (engine == QLatin1String("metadata") && !measureOnly)
+	{
+		std::fprintf(stderr, "Metadata-only media has no replay graph; use --measure-only to verify all retained row evidence and receipts.\n");
+		return 1;
+	}
 	QJsonObject report{{QStringLiteral("engine"), engine}, {QStringLiteral("schemaVersion"), 2},
 		{QStringLiteral("verificationMode"), measureOnly ? QStringLiteral("scan") : QStringLiteral("full")},
 		{QStringLiteral("sourceVerificationPerformed"), !measureOnly}};
@@ -411,7 +416,9 @@ int main(int argc, char **argv)
 		timer.start();
 		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(engine == QLatin1String("archive")
 			? MediaEngine::ScanCoordinator{}.scan(request, cancellation, observers)
-			: MediaEngine::ScanEngine{}.scan(request, cancellation, observers));
+			: engine == QLatin1String("native")
+				? MediaEngine::ScanEngine{MediaEngine::SourceRetention::Replay}.scan(request, cancellation, observers)
+				: MediaEngine::ScanEngine{}.scan(request, cancellation, observers));
 		const auto scanMs = timer.elapsed();
 		// These samples precede all graph restoration, original rereads, hashes,
 		// file-byte comparison and adapter/CSV rows. The session stays retained.
@@ -503,7 +510,13 @@ int main(int argc, char **argv)
 			alternativeStores += !stored.storage.isNull();
 			unfinishedGraphs += !stored.unfinishedGraph.isNull();
 			QJsonObject details{{QStringLiteral("path"), candidate.path}, {QStringLiteral("hint"), int(candidate.hint)},
-				{QStringLiteral("outcome"), int(stored.outcome)}, {QStringLiteral("readReason"), stored.readReason}};
+				{QStringLiteral("outcome"), int(stored.outcome)}, {QStringLiteral("readReason"), stored.readReason},
+				{QStringLiteral("retention"), stored.retention == MediaEngine::SourceRetention::MetadataOnly
+					? QStringLiteral("metadata-only") : QStringLiteral("replay")},
+				{QStringLiteral("sourceBackingAvailable"), bool(stored.archive || stored.storage || stored.unfinishedGraph)}};
+			if (engine == QLatin1String("metadata") && !database
+				&& (stored.archive || stored.storage || stored.unfinishedGraph))
+				errors.append(QStringLiteral("Metadata-only media retained source backing: %1").arg(candidate.path));
 			if (const auto native = dynamic_cast<const MediaEngine::DatabaseSource *>(stored.storage.data()))
 			{
 				++nativeImages;
@@ -626,7 +639,7 @@ int main(int argc, char **argv)
 		const bool complete = scan->discoveryComplete && scan->parsingComplete && scan->reconciliationComplete && !scan->cancelled;
 		if (!complete)
 			errors.append(QStringLiteral("Scan did not complete discovery, parsing and reconciliation"));
-		if (engine == QLatin1String("native") && databaseArchives != 0)
+		if ((engine == QLatin1String("native") || engine == QLatin1String("metadata")) && databaseArchives != 0)
 			errors.append(QStringLiteral("MediaEngine retained %1 full database archives").arg(databaseArchives));
 		report.insert(QStringLiteral("roots"), QJsonArray::fromStringList(scan->request.roots));
 		report.insert(QStringLiteral("omfScan"), scan->request.omfScan);

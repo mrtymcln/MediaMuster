@@ -644,7 +644,7 @@ namespace MediaEngine
 	qint64 SourceArchive::serializedBytes() const { return m_data->serializedBytes; }
 	qsizetype SourceArchive::blockCount() const { return m_data->blocks.size(); }
 
-	StoredSource StoredSource::store(ParsedSource &&source, const Cancellation &cancellation)
+	StoredSource StoredSource::store(ParsedSource &&source, const Cancellation &cancellation, SourceRetention retention)
 	{
 		StoredSource stored;
 		stored.outcome = source.outcome;
@@ -652,6 +652,12 @@ namespace MediaEngine
 		stored.snapshot = source.snapshot;
 		stored.container = source.container;
 		stored.diagnostics = source.diagnostics;
+		stored.retention = retention;
+		if (retention == SourceRetention::MetadataOnly)
+		{
+			source = {}; // Projected evidence owns the supported facts, including their raw value bytes.
+			return stored;
+		}
 		stored.archive = SourceArchive::pack(source, cancellation);
 		if (stored.archive)
 			source = {}; // Consume the rvalue caller's expanded graph after packing.
@@ -664,6 +670,8 @@ namespace MediaEngine
 	{
 		if (cancellation.cancelled())
 			return std::nullopt;
+		if (retention == SourceRetention::MetadataOnly)
+			return std::nullopt; // Original records were deliberately not retained.
 		if (archive)
 			return archive->restore(cancellation);
 		if (unfinishedGraph)

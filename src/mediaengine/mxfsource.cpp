@@ -1,6 +1,6 @@
 // Source storage changes here; MXF interpretation and selection remain MediaEngine's.
-// Interrupted reads keep their actual obtained graph rather than being replayed
-// later as though the original scan had completed.
+// Replay mode keeps interrupted reads as obtained graphs. Metadata-only mode
+// keeps their receipts and supported observations without an original-record archive.
 
 #include "mxfsource.h"
 #include "mediaengine/mxfreader.h"
@@ -60,10 +60,11 @@ namespace MediaEngine
 			return frame;
 		}
 
-		MediaEngine::PreparedSource archive(MediaEngine::ParsedSource source, MediaEngine::Projection projection,
-											const MediaEngine::Cancellation &cancellation)
+		MediaEngine::PreparedSource store(MediaEngine::ParsedSource source, MediaEngine::Projection projection,
+										const MediaEngine::Cancellation &cancellation,
+										SourceRetention retention = SourceRetention::Replay)
 		{
-			return {std::move(projection), MediaEngine::StoredSource::store(std::move(source), cancellation)};
+			return {std::move(projection), MediaEngine::StoredSource::store(std::move(source), cancellation, retention)};
 		}
 
 		std::optional<ReceiptLayout> collectReceipts(const MediaEngine::ParsedSource &source,
@@ -161,16 +162,27 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource MxfSource::prepare(QIODevice &input, const MediaEngine::SourceCandidate &candidate,
-												   const QString &readReason, const MediaEngine::Cancellation &cancellation)
+												   const QString &readReason, const MediaEngine::Cancellation &cancellation,
+												   SourceRetention retention)
 	{
 		const auto snapshot = inputReceipt(candidate);
+		if (retention == SourceRetention::MetadataOnly)
+		{
+			// Interpret the same properties without collecting a second replay copy.
+			auto parsed = MediaEngine::MxfReader{}.read(input, {snapshot, cancellation});
+			parsed.readReason = readReason;
+			MediaEngine::Projection projection;
+			if (!cancellation.cancelled())
+				projection = MediaEngine::projectMxf(parsed, cancellation);
+			return store(std::move(parsed), std::move(projection), cancellation, retention);
+		}
 		if (cancellation.cancelled())
 		{
 			// Cancellation during file opening reaches the reader's own outcome
 			// without an additional network query to initialize the capture extent.
 			auto parsed = MediaEngine::MxfReader{}.read(input, {snapshot, cancellation});
 			parsed.readReason = readReason;
-			return archive(std::move(parsed), {}, cancellation);
+			return store(std::move(parsed), {}, cancellation);
 		}
 		MxfCaptureDevice capture(input);
 		auto parsed = MediaEngine::MxfReader{}.read(capture, {snapshot, cancellation});
@@ -180,10 +192,10 @@ namespace MediaEngine
 		if (!cancellation.cancelled())
 			projection = MediaEngine::projectMxf(parsed, cancellation);
 		if (parsed.outcome != Outcome::Complete || !image.valid() || cancellation.cancelled())
-			return archive(std::move(parsed), std::move(projection), cancellation);
+			return store(std::move(parsed), std::move(projection), cancellation);
 		auto receipts = collectReceipts(parsed, cancellation);
 		if (!receipts)
-			return archive(std::move(parsed), std::move(projection), cancellation);
+			return store(std::move(parsed), std::move(projection), cancellation);
 		MediaEngine::PreparedSource prepared{std::move(projection), sourceFrame(parsed)};
 		auto data = QSharedPointer<MxfSource::Data>::create(std::move(image), prepared.source, std::move(*receipts));
 		prepared.source.storage = QSharedPointer<MxfSource>::create(std::move(data));
@@ -191,7 +203,8 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource prepareMxf(QIODevice &input, const MediaEngine::SourceCandidate &candidate,
-										   const QString &readReason, const MediaEngine::Cancellation &cancellation)
+										   const QString &readReason, const MediaEngine::Cancellation &cancellation,
+										   SourceRetention retention)
 	{
 		requireMxf(candidate);
 		if (cancellation.cancelled())
@@ -200,20 +213,20 @@ namespace MediaEngine
 			parsed.snapshot = inputReceipt(candidate);
 			parsed.outcome = Outcome::Cancelled;
 			parsed.readReason = readReason;
-			return archive(std::move(parsed), {}, cancellation);
+			return store(std::move(parsed), {}, cancellation, retention);
 		}
-		return MxfSource::prepare(input, candidate, readReason, cancellation);
+		return MxfSource::prepare(input, candidate, readReason, cancellation, retention);
 	}
 
 	MediaEngine::PreparedSource prepareMxf(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-										   const MediaEngine::Cancellation &cancellation)
+										   const MediaEngine::Cancellation &cancellation, SourceRetention retention)
 	{
 		requireMxf(candidate);
 		QFile input(candidate.path);
 		if (cancellation.cancelled())
-			return prepareMxf(input, candidate, readReason, cancellation);
+			return prepareMxf(input, candidate, readReason, cancellation, retention);
 		if (input.open(QIODevice::ReadOnly))
-			return MxfSource::prepare(input, candidate, readReason, cancellation);
+			return MxfSource::prepare(input, candidate, readReason, cancellation, retention);
 		MediaEngine::ParsedSource parsed;
 		auto snapshot = inputReceipt(candidate);
 		parsed.snapshot = snapshot;
@@ -223,6 +236,6 @@ namespace MediaEngine
 		snapshot->readState = SourceReadState::Unreadable;
 		parsed.outcome = Outcome::IoError;
 		parsed.diagnostics.append(input.errorString());
-		return archive(std::move(parsed), {}, cancellation);
+		return store(std::move(parsed), {}, cancellation, retention);
 	}
 }
